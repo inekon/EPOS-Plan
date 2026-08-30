@@ -133,13 +133,13 @@ namespace WPPlan.Core
         /// (In WP-Plan importiert, aber nicht aufgerufen – die App berechnet die Grenzen selbst.
         /// Hier aus Vollständigkeit/Referenz enthalten.) ret 8.
         /// </summary>
-        ///public static int MonatsGrenzen(int[] anfang, int[] ende)
-        ///{
-        ///int[] a = { 0, 744, 1416, 2160, 2880, 3624, 4344, 5088, 5832, 6552, 7296, 8016 };
-        ///int[] e = { 743, 1415, 2159, 2879, 3623, 4343, 5087, 5831, 6551, 7295, 8015, 8759 };
-        ///    for (int m = 0; m < Months; m++) { anfang[m] = a[m]; ende[m] = e[m]; }
-        ///    return 0;
-        ///}
+        public static int MonatsGrenzen(int[] anfang, int[] ende)
+        {
+        int[] a = { 0, 744, 1416, 2160, 2880, 3624, 4344, 5088, 5832, 6552, 7296, 8016 };
+        int[] e = { 743, 1415, 2159, 2879, 3623, 4343, 5087, 5831, 6551, 7295, 8015, 8759 };
+            for (int m = 0; m < Months; m++) { anfang[m] = a[m]; ende[m] = e[m]; }
+            return 0;
+        }
 
         // =========================================================================================
         // Jahresdauerlinie

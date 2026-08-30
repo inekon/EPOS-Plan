@@ -719,6 +719,276 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BEHG: {0} ähnelt.
+        /// </summary>
+        public static string BB_BTN_CO2 {
+            get {
+                return ResourceManager.GetString("BB_BTN_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Arbeitspreis übernehmen ähnelt.
+        /// </summary>
+        public static string BB_BTN_IN_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("BB_BTN_IN_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string BB_BTN_KEIN_SATZ {
+            get {
+                return ResourceManager.GetString("BB_BTN_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 53a: {0} ähnelt.
+        /// </summary>
+        public static string BB_BTN_SATZ_53A {
+            get {
+                return ResourceManager.GetString("BB_BTN_SATZ_53A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 54: {0} ähnelt.
+        /// </summary>
+        public static string BB_BTN_SATZ_54 {
+            get {
+                return ResourceManager.GetString("BB_BTN_SATZ_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 2: {0} ähnelt.
+        /// </summary>
+        public static string BB_BTN_SATZ_REGEL {
+            get {
+                return ResourceManager.GetString("BB_BTN_SATZ_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz gilt je 1.000 {0}; dieser Träger rechnet je {1}. Ohne gepflegte Dichte ist die Umrechnung nicht belegbar. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_EINHEIT {
+            get {
+                return ResourceManager.GetString("BB_GRUND_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_EINHEIT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("BB_GRUND_EINHEIT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Heizwert lässt sich der Satz nicht in ct/kWh umrechnen. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_HEIZWERT {
+            get {
+                return ResourceManager.GetString("BB_GRUND_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt für das Jahr {0} keinen CO₂-Preis. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_KEIN_CO2_PREIS {
+            get {
+                return ResourceManager.GetString("BB_GRUND_KEIN_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Energieträger ist kein CO₂-Faktor größer null gepflegt. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_KEIN_EF {
+            get {
+                return ResourceManager.GetString("BB_GRUND_KEIN_EF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt für {0} keinen Satz im Jahr {1}. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_KEIN_JAHR {
+            get {
+                return ResourceManager.GetString("BB_GRUND_KEIN_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesem Energieträger ist im Katalog kein Energiesteuersatz zugeordnet. ähnelt.
+        /// </summary>
+        public static string BB_GRUND_KEIN_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("BB_GRUND_KEIN_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbestandteile des Brennstoffs ähnelt.
+        /// </summary>
+        public static string BB_GRUPPE_BESTANDTEILE {
+            get {
+                return ResourceManager.GetString("BB_GRUPPE_BESTANDTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Anteil (BEHG) ähnelt.
+        /// </summary>
+        public static string BB_KOMP_CO2 {
+            get {
+                return ResourceManager.GetString("BB_KOMP_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer ähnelt.
+        /// </summary>
+        public static string BB_KOMP_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("BB_KOMP_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netz-/Messentgelt ähnelt.
+        /// </summary>
+        public static string BB_KOMP_NETZENTGELT {
+            get {
+                return ResourceManager.GetString("BB_KOMP_NETZENTGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vertrieb ähnelt.
+        /// </summary>
+        public static string BB_KOMP_VERTRIEB {
+            get {
+                return ResourceManager.GetString("BB_KOMP_VERTRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis (Trägerdialog) ähnelt.
+        /// </summary>
+        public static string BB_LABEL_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("BB_LABEL_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aufgeschlüsselt (Summe ist der Preis) ähnelt.
+        /// </summary>
+        public static string BB_MODUS_AUFGESCHLUESSELT {
+            get {
+                return ResourceManager.GetString("BB_MODUS_AUFGESCHLUESSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert (Arbeitspreis gilt) ähnelt.
+        /// </summary>
+        public static string BB_MODUS_GESAMTWERT {
+            get {
+                return ResourceManager.GetString("BB_MODUS_GESAMTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis aus den Bestandteilen: {0} ct/kWh ähnelt.
+        /// </summary>
+        public static string BB_PREIS_AUS_BESTANDTEILEN {
+            get {
+                return ResourceManager.GetString("BB_PREIS_AUS_BESTANDTEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} (ab {2}, {3}) ähnelt.
+        /// </summary>
+        public static string BB_QUELLE {
+            get {
+                return ResourceManager.GetString("BB_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} × {1} g/kWh ähnelt.
+        /// </summary>
+        public static string BB_QUELLE_CO2 {
+            get {
+                return ResourceManager.GetString("BB_QUELLE_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/t (ab {1}, {2}) ähnelt.
+        /// </summary>
+        public static string BB_QUELLE_CO2_KATALOG {
+            get {
+                return ResourceManager.GetString("BB_QUELLE_CO2_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/t (Projektwert) ähnelt.
+        /// </summary>
+        public static string BB_QUELLE_CO2_PROJEKT {
+            get {
+                return ResourceManager.GetString("BB_QUELLE_CO2_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgeschlüsselter Rest: {0} ct/kWh ähnelt.
+        /// </summary>
+        public static string BB_REST {
+            get {
+                return ResourceManager.GetString("BB_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Modus „aufgeschlüsselt“ ist die Summe der Bestandteile der Preis. Der Arbeitspreis ändert sich erst, wenn Sie ihn übernehmen. ähnelt.
+        /// </summary>
+        public static string BB_REST_HINWEIS_MODUS {
+            get {
+                return ResourceManager.GetString("BB_REST_HINWEIS_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellwahl (Katalog): ähnelt.
+        /// </summary>
+        public static string BB_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("BB_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der aktiven Bestandteile: {0} ct/kWh ähnelt.
+        /// </summary>
+        public static string BB_SUMME_AKTIV {
+            get {
+                return ResourceManager.GetString("BB_SUMME_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
         /// </summary>
         public static string BEMESSUNG_BETRAG {
@@ -1684,6 +1954,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — CO₂ aus Ebene „{0}“, Berechnungsmodus {1}. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ENERGIE {
@@ -1893,6 +2172,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ [g/kWh] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_CO2 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
         /// </summary>
         public static string BK_KOSTEN_SP_GRUNDPREIS {
@@ -1925,6 +2213,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_LEISTUNGSPREIS {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NOx [mg/kWh] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_NOX {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_NOX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SO₂ [mg/kWh] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_SO2 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_SO2", resourceCulture);
             }
         }
         
@@ -1988,6 +2294,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_TRAEGER_FEHLT {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — nicht zugeordnet ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_FEHLZEILE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ wird von {1} verwendet, ist dem Projekt aber nicht zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert noch Emissionsfaktoren, und die Energiekosten bleiben „—“. Zuordnen über den Knopf „{2}“ oben rechts. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_TRAEGER_FEHLZEILE_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_TRAEGER_FEHLZEILE_HINT", resourceCulture);
             }
         }
         
@@ -2809,7 +3133,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BM_P_BRENNSTOFF", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die % des Endenergiebedarfs ähnelt.
         /// </summary>
@@ -9746,6 +10070,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energiesteuer-Gutschrift von {0} €/a setzt voraus, dass der erfasste Brennstoffpreis die Energiesteuer enthält. Im Preis ist sie nicht ausgewiesen: {1}. ähnelt.
+        /// </summary>
+        public static string KOH_FALL2_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("KOH_FALL2_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a wird als Erlös gebucht, obwohl der erfasste Strompreis die Stromsteuer nicht ausweist ({1}). ähnelt.
+        /// </summary>
+        public static string KOH_FALL2_STROMST_9_1_3 {
+            get {
+                return ResourceManager.GetString("KOH_FALL2_STROMST_9_1_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromsteuer-Entlastung nach § 9b StromStG von {0} €/a setzt voraus, dass der erfasste Strompreis die Stromsteuer enthält. Im Preis ist sie nicht ausgewiesen ({1}). ähnelt.
+        /// </summary>
+        public static string KOH_FALL2_STROMST_9B {
+            get {
+                return ResourceManager.GetString("KOH_FALL2_STROMST_9B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Brennstoffpreis weist eine Energiesteuer aus, es ist aber keine Entlastung gewählt (§ 53 / § 53a Abs. 5 / § 54): {0}. ähnelt.
+        /// </summary>
+        public static string KOH_FALL3_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("KOH_FALL3_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Strompreis weist eine Stromsteuer von {0} ct/kWh aus, eine Entlastung nach § 9b StromStG wird nicht gebucht. ähnelt.
+        /// </summary>
+        public static string KOH_FALL3_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("KOH_FALL3_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der erfasste Energiesteueranteil {1} ct/kWh weicht vom Katalogsatz {2} {3} des Jahres {4} ab — das sind {5} ct/kWh. ähnelt.
+        /// </summary>
+        public static string KOH_FALL4_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("KOH_FALL4_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Stromsteueranteil {0} ct/kWh weicht vom Katalogsatz {1} {2} des Jahres {3} ab — das sind {4} ct/kWh. ähnelt.
+        /// </summary>
+        public static string KOH_FALL4_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("KOH_FALL4_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen&quot; ist aus ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_AUFSCHLAG_AUS {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_AUFSCHLAG_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Anteil erfasst ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_BB_FEHLT {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_BB_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil abgeschaltet ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_BB_INAKTIV {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_BB_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil 0 ct/kWh ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_BB_NULL {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_BB_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dem Projekt ist kein Strom-Energieträger zugeordnet ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_KEIN_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_KEIN_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_STROM_GESAMTWERT {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_STROM_GESAMTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer ist abgeschaltet ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_STROM_INAKTIV {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_STROM_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer steht auf 0 ct/kWh ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_STROM_NULL {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_STROM_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts. ähnelt.
+        /// </summary>
+        public static string KOH_HILFSENERGIE_DOPPELT {
+            get {
+                return ResourceManager.GetString("KOH_HILFSENERGIE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kohärenzprüfung ähnelt.
+        /// </summary>
+        public static string KOH_ZEILE_TITEL {
+            get {
+                return ResourceManager.GetString("KOH_ZEILE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KONFIG_BHKW {
@@ -13093,6 +13570,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein produzierendes Gewerbe ähnelt.
+        /// </summary>
+        public static string PREIS_ST_ART_KEIN_PROD_GEWERBE {
+            get {
+                return ResourceManager.GetString("PREIS_ST_ART_KEIN_PROD_GEWERBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Land- und Forstwirtschaft ähnelt.
+        /// </summary>
+        public static string PREIS_ST_ART_LAND_FORST {
+            get {
+                return ResourceManager.GetString("PREIS_ST_ART_LAND_FORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die produzierendes Gewerbe ähnelt.
+        /// </summary>
+        public static string PREIS_ST_ART_PROD_GEWERBE {
+            get {
+                return ResourceManager.GetString("PREIS_ST_ART_PROD_GEWERBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Unternehmensart „{0}“ dieses Projekts. Eingetragen wird der Satz erst mit einem Klick. ähnelt.
+        /// </summary>
+        public static string PREIS_ST_EMPFOHLEN {
+            get {
+                return ResourceManager.GetString("PREIS_ST_EMPFOHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen. ähnelt.
+        /// </summary>
+        public static string PREIS_ST_GRUND_EINHEIT {
+            get {
+                return ResourceManager.GetString("PREIS_ST_GRUND_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt für „{0}“ keinen Satz im Jahr {1}. ähnelt.
+        /// </summary>
+        public static string PREIS_ST_GRUND_KEIN_JAHR {
+            get {
+                return ResourceManager.GetString("PREIS_ST_GRUND_KEIN_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog: {0} {1} (ab {2}, {3}) ähnelt.
+        /// </summary>
+        public static string PREIS_ST_QUELLE {
+            get {
+                return ResourceManager.GetString("PREIS_ST_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfallebene: {0} ct/kWh aus dem Programm. {1} Nachpflegbar über „Gesetzliche Parameter“. ähnelt.
+        /// </summary>
+        public static string PREIS_ST_QUELLE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("PREIS_ST_QUELLE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer energieintensiver Unternehmen — was nach der Entlastung nach § 9b StromStG im Preis verbleibt. ähnelt.
+        /// </summary>
+        public static string PREIS_ST_ZWECK_REDUZIERT {
+            get {
+                return ResourceManager.GetString("PREIS_ST_ZWECK_REDUZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer im Regelfall (§ 3 StromStG). ähnelt.
+        /// </summary>
+        public static string PREIS_ST_ZWECK_REGELFALL {
+            get {
+                return ResourceManager.GetString("PREIS_ST_ZWECK_REGELFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 0,05 ähnelt.
         /// </summary>
         public static string PREIS_STROMSTEUER_REDUZIERT {
@@ -15789,6 +16356,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul {0} von {1} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_MODUL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Anlage im Projekt ähnelt.
         /// </summary>
         public static string SIM_KARTE_OHNE_ANLAGE {
@@ -16042,6 +16618,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KARTE_TIP_KASKADE {
             get {
                 return ResourceManager.GetString("SIM_KARTE_TIP_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_MODUL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_MODUL", resourceCulture);
             }
         }
         
@@ -21702,6 +22287,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: § 53 und § 53a Abs. 5 EnergieStG entlasten nur Anlagen mit Stromerzeugung. Für diese Anlage kommt allein § 54 EnergieStG in Betracht. ähnelt.
+        /// </summary>
+        public static string STEUER_ENERGIEST_NUR_54 {
+            get {
+                return ResourceManager.GetString("STEUER_ENERGIEST_NUR_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_SATZ_FEHLT {
@@ -22883,6 +23477,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet. ähnelt.
+        /// </summary>
+        public static string WIRT_CO2_STROMMIX_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_CO2_STROMMIX_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis BEHG [€/t] (0 = Pfad): ähnelt.
         /// </summary>
         public static string WIRT_DLG_CO2 {
@@ -23306,6 +23909,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_HILFSSTROM_UNKLAR {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_HILFSSTROM_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Zuschlag je BHKW-Modul gerechnet — {0}. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_JE_MODUL {
@@ -23545,6 +24157,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_SP_VBH {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_SP_VBH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2). ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_TATBESTAND_ANLAGE_KEINER {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_ANLAGE_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN", resourceCulture);
             }
         }
         
@@ -24166,6 +24796,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZUSCHUSS_UEBERHANG {
             get {
                 return ResourceManager.GetString("WIRT_ZUSCHUSS_UEBERHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string WIZ_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("WIZ_BTN_SPEICHERN", resourceCulture);
             }
         }
         
