@@ -8486,4 +8486,22 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
     <value>„{0}“ wird von {1} verwendet, ist dem Projekt aber nicht zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert noch Emissionsfaktoren, und die Energiekosten bleiben „—“. Zuordnen über den Knopf „{2}“ oben rechts.</value>
   </data>
+  <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
+    <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_NUR_54" xml:space="preserve">
+    <value>{0}: § 53 und § 53a Abs. 5 EnergieStG entlasten nur Anlagen mit Stromerzeugung. Für diese Anlage kommt allein § 54 EnergieStG in Betracht.</value>
+  </data>
+  <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
+    <value>CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet.</value>
+  </data>
+  <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
+    <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_ANLAGE_KEINER" xml:space="preserve">
+    <value>KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2).</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
+    <value>KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0.</value>
+  </data>
 </root>

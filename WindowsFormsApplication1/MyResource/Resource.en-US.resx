@@ -8479,4 +8479,22 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
     <value>“{0}” is used by {1} but is not assigned to this project — without an assignment there is neither a price nor a calorific value nor emission factors, and the energy costs stay “—”. Assign it via the “{2}” button at the top right.</value>
   </data>
+  <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
+    <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The quantity reduces the CHP bonus, the cost item burdens the operating costs — nothing is offset.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_NUR_54" xml:space="preserve">
+    <value>{0}: Sections 53 and 53a (5) of the Energy Duty Act only relieve units that generate electricity. For this unit only Section 54 of the Energy Duty Act can apply.</value>
+  </data>
+  <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
+    <value>CO2 balance: no electricity energy carrier assigned — grid supply calculated with the default grid-mix value.</value>
+  </data>
+  <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
+    <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_ANLAGE_KEINER" xml:space="preserve">
+    <value>CHP Act: For "{0}" the qualifying case under Section 6 (3) is set to "none" — its own rate for self-consumed electricity does not apply (Section 7 (2)).</value>
+  </data>
+  <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
+    <value>CHP Act: "{0}" carries its own rate for self-consumed electricity but no qualifying case under Section 6 (3) — without it there is no self-consumption bonus (Section 7 (2)); rate of this unit = 0.</value>
+  </data>
 </root>
