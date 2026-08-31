@@ -43,7 +43,8 @@ Dokument** — bei Abweichung gilt der Text hier.
 | [**B5-Dialogmockup**](https://claude.ai/code/artifact/e928091e-44ef-41b9-ae31-d6bb7535cf1f) | alle Anlagen, BHKW und PV im Detail, Entscheidungen K1–K11 | § 2 |
 | [**Rechenwege der Wirtschaftlichkeit**](https://claude.ai/code/artifact/588f6e21-b9b4-4e4f-b732-56aeca3d5882) | Formelkarte aller Ketten mit Prüfliste | § 3, § 4 |
 | [**Erlösrubrik BHKW**](https://claude.ai/code/artifact/d924b2ec-9c41-4e84-a670-88e83bae7ff9) | Entwurf der eigenen Erlösrubrik, zwei Blöcke mit getrennten Summen; die beiden geprüften Befunde zur Stromsteuer-Reduktion und zur Unternehmensart | § 2.6 |
-| [**Pflichtpositionen je Komponente**](https://claude.ai/code/artifact/236c8a8a-a2e0-47f4-a099-aa1456de883a) | Kostendialoge, Bezugsgrößen und die Hilfsenergie-Definition | § 3.4, Etappe H1 |
+| [**Pflichtpositionen je Komponente**](https://claude.ai/code/artifact/236c8a8a-a2e0-47f4-a099-aa1456de883a) |  Kostendialoge, Bezugsgrößen und die Hilfsenergie-Definition; **Entwurf B ist als § 2.8 übernommen** | § 3.4, Etappe H1 |
+| [**ValERI-Bewertung Höfingen**](https://claude.ai/code/artifact/f8968739-df34-4892-9d7d-9c07e6858a4f) | die fünf ValERI-Blöcke in der Wirtschaftlichkeitsseite, reale Höfingen-Zahlen, Cashflow über Nutzungsdauer, Sensitivität mit Steigung €/%, XLSX-Formelblatt nach Anhang A | § 2.9–2.11 |
 
 ---
 
@@ -351,6 +352,259 @@ Segoe UI 9 pt, Gruppentitel fett, Eckenradius 6 · Fußknöpfe 110 × 30 · `Inf
 
 **Die Fußleiste von `UcWirtschaftlichkeit` ist voll** — sieben Knöpfe, ein achter läge bei
 x = −50 (**Lücke K8**).
+
+## 2.8 Betriebskosten-Raster der Kostenverwaltung — Entwurf B (übernommen 31.08.2026)
+
+*Aus dem Artifact [Pflichtpositionen je Komponente](https://claude.ai/code/artifact/236c8a8a-a2e0-47f4-a099-aa1456de883a),
+Entwurf B, auf Anwenderentscheid in dieses Konzept übernommen. Es ist die Spezifikation des offenen
+Punkts „Live-Frisch-Anzeige der Bezugsgröße samt Herleitungszeile im Kostendialog"
+(§ 6.3 Nr. 2, H21-Grenze 1).*
+
+Das Raster der Kostenverwaltung (`Form_KostenKomponente`, Betriebskosten-Seite) ändert sich
+gegenüber dem heutigen Stand in **vier Punkten**:
+
+**1. Pflichtzeilen stehen oben, hinterlegt, mit Schloss statt Papierkorb.**
+Die Zeilen mit `IstPflicht` (Wartung, Instandhaltung der eigenen Komponente, Hilfsenergie) tragen
+in der Aktionsspalte ein Schloss-Symbol; der Löschversuch führt zum Dialog „Satz auf 0 setzen"
+(Löschsperre aus H3 — hier ihr Anzeige-Teil). Unter der Positionsbezeichnung steht der Vermerk
+„Pflicht nach VDI 2067" bzw. der Empfehlungsbereich („Pflicht · üblich 3,0–9,0 %").
+
+**2. Unter dem Satz steht die Herleitung im Klartext** — Menge **und** Quelle, anlagenscharf:
+
+| Bemessung | Herleitungszeile (Beispiel) |
+|---|---|
+| je kWh elektrisch | `× 60.000 kWh el · BHKW 1` |
+| % der Investition | `× 48.000,00 € · Investition BHKW 1` |
+| % der Investition (Rückfall) | `× 66.500,00 € · Investition gesamt` — die Rückfallstufe wird benannt, nie verschwiegen |
+| % der Endenergiekosten | `× 14.760,00 € Endenergiekosten · BHKW 1 → 1.200 kWh Strom` — die rückgerechnete Strommenge wird als solche ausgewiesen |
+
+**3. Der Betrag rechnet sofort — aus dem einen Rechenweg, mit frischer Menge.**
+Anzeige und Rechnung laufen über `BetriebskostenCtrl.Betrag` mit der Menge aus dem
+`EndenergieAufloeser` (Vorrang „frisch vor Konserve", H21). Der Dialog zeigt damit **nicht mehr den
+Konservenstand** aus `Tab_ProjektWerte.Menge`, sondern denselben Wert, den der nächste
+Wirtschaftlichkeitslauf ansetzen wird. Unter dem Betrag steht „berechnet"; absolute Positionen
+zeigen stattdessen das Kettensymbol am gesperrten Satzfeld.
+
+**4. Der Fuß summiert je Anlage** — netto führend, brutto nachrichtlich (Umsatzsteuersatz aus dem
+Gesetzeskatalog, KL5: Brutto ist reine Anzeige):
+
+```
+Betriebskosten BHKW 1        brutto 8.358,08 €/a        7.023,60
+```
+
+**Rahmen der Seite:**
+
+- **Banner** oben: „Alle Beträge und Bezugsgrößen sind NETTO. Eine gepflegte Satzangabe hat
+  Vorrang — das Betragsfeld wird dann gesperrt, aber nicht geleert. **Mengen stammen aus dem
+  Simulationslauf vom ‹Datum, Uhrzeit›.**" — der Laufzeitpunkt ist sichtbar, damit eine gealterte
+  Bezugsgröße erkennbar ist.
+- **Ohne Simulationslauf** zeigen mengenbasierte Zeilen einen **Strich statt einer 0** samt
+  Warnzeile („Stromproduktion unbekannt — Simulation noch nicht gelaufen"); investitionsbasierte
+  Sätze rechnen sofort. Fußhinweis: „n von m Pflichtpositionen rechnen noch nicht — Simulation
+  ausführen." (Entwurf E im selben Artifact.)
+- **Worst/Best** bleibt je Zeile über den ±-Knopf (`Form_CaseEingabe`), Speichern über die
+  nicht schließende `SpeichernLeiste` mit Statuszeile („✓ Gespeichert 14:18").
+- Fußknöpfe: „Aus Vorlage übernehmen…" · „+ Position hinzufügen" · „Speichern".
+
+**Einordnung und Grenzen:** Nur Konzept, keine Umsetzung (Arbeitsregel). Der Klick auf einen
+Betrag öffnet die vollständige Herleitung (Entwurf C im Artifact); die Mengenherkunft folgt den
+Rechenwegen aus § 3.4 — insbesondere gilt Befund **B-1** (Kessel-Endenergie strukturell 0) bis zu
+seiner Behebung auch hier: Die Herleitungszeile würde am Kessel „× 0 kWh" zeigen und macht den
+Befund damit erstmals sichtbar statt ihn zu verstecken.
+
+## 2.9 Wählbares Vergleichsprojekt — die Referenz der Differenzrechnung (Anforderung 31.08.2026)
+
+**Anforderung des Anwenders:** Die Differenzrechnung soll nicht fest gegen das Stammprojekt laufen —
+**die Referenz (das Vergleichsprojekt) soll wählbar sein.**
+
+**Ist-Zustand — die Referenz ist hart verdrahtet.** Das Stammprojekt ist überall die
+Unterlassensalternative: `Kapitalwertdifferenz = KW(Variante) − KW(Stamm)`; Annuität, dynamische
+Amortisation und IZF rechnen ausschließlich auf dieser Differenz; in `UcWirtschaftlichkeit` ist der
+Stamm als Referenz **nicht abwählbar**, und die Nachweiszeile sagt fest „Referenz: Stammprojekt".
+Eine Auswahl existiert nirgends.
+
+**Warum die Anforderung fachlich richtig ist:** Die Altanwendung (Höfingen-Mappe,
+`Tab_kurz_KWKG2020`) rechnet durchgehend gegen eine ausdrücklich benannte **Vergleichsheizung** —
+Investition 9.624 €, Betriebskosten 518 €/a, Brennstoff 11.498 €/a sind dort eigene Größen der
+Referenz, und jede Erlöszeile („Einnahmen Wärme = Betriebskosten des Vergleichssystems") ist eine
+Differenz dagegen. Auch DIN EN 17463 verlangt den Vergleich gegen die **Unterlassensalternative** —
+und welche Alternative das ist, ist eine fachliche Entscheidung je Bewertung, keine Strukturvorgabe
+der Software. Wer zwei Ausbauvarianten gegeneinander stellen will (statt jede gegen den Stamm),
+braucht die freie Wahl.
+
+**Soll:**
+
+| Aspekt | Festlegung |
+|---|---|
+| Auswahl | je Vergleichsgruppe **ein** Referenzprojekt: Stamm **oder** eine beliebige Variante der Gruppe |
+| Vorgabe | **Stamm** — damit ist die Umstellung für jede Bestandsrechnung ergebnisneutral |
+| Persistenz | `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` (LONG, nullable; NULL = Stamm). Die Spalte gehört an die Rahmenzeile, weil die Referenz wie Zins und Zeitraum **je Gruppe** gilt (R-1) — und wie bei jeder Spalte dieser Tabelle an **beide** DDL-Orte (SchemaMigration **und** `StelleTabellenSicher`) |
+| Rechenwirkung | alle Differenzkennzahlen (KW-Differenz, Annuität, Amortisation, IZF, Sensitivität der Differenz) rechnen gegen die gewählte Referenz; die Referenz selbst erhält **keine** Differenzkennzahlen |
+| Anzeige | Referenzspalte im Kennzahlengrid markiert; ListView: die **gewählte** Referenz ist nicht abwählbar (heute: der Stamm); Nachweiszeile nennt die Referenz beim Namen („Referenz: ‹Variantenname›") statt der festen Formel |
+| Bericht | Word und Excel übernehmen die Benennung aus derselben Zeilendefinition (`WirtschaftlichkeitZeilen`) — keine dritte Wahrheit |
+| ValERI-Sicht | die gewählte Referenz **ist** die Unterlassensalternative im Sinne der Norm; der ValERI-Bewertungsbericht weist sie als solche aus |
+
+**Randfälle, ausdrücklich geregelt:**
+
+- Gewählte Referenz **ohne Simulationsergebnis** → der Sammler rechnet sie nach (Bestandsverhalten
+  für jede Variante); scheitert das, Abbruch mit Fehlgrund — nie stiller Rückfall auf den Stamm.
+- Gewählte Referenz **gelöscht** oder nicht mehr in der Gruppe → Rückfall auf Stamm **mit
+  Warnzeile**, die den Rückfall benennt; die Spalte wird nicht still bereinigt.
+- Referenz = Stamm (Vorgabe) → Verhalten byte-gleich zum Bestand; das ist das Abnahmekriterium der
+  Etappe.
+
+**Einordnung:** Nur Konzept (Arbeitsregel). Umsetzung als eigene, kleine Etappe — ergebnisneutral
+in der Vorgabe, erste Rechenwirkung erst bei ausdrücklicher Wahl einer anderen Referenz. Sie gehört
+**vor** die ValERI-Berichtsetappe, weil deren Bewertungsbericht die Unterlassensalternative benennen
+muss.
+
+## 2.10 Integrationsort der ValERI-Darstellung (Anwendervorgabe 31.08.2026)
+
+**Die ValERI-Blöcke werden Bestandteil der Seite „Berichte && Kosten → Wirtschaftlichkeit"
+(`UcWirtschaftlichkeit`) — kein separater Dialog.** Die Seite trägt bereits heute den Titel
+„Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)" und die passende Grundausstattung:
+Vergleichsgruppen-Liste (mit dem Vermerk „Referenz: Stamm, fest gewählt" — der Ist-Zustand aus
+§ 2.9), Szenariowahl, vier Kennzahl-Kacheln, Kennzahlengrid (Zeilen × Projekte), Parameternachweis
+und Fußknöpfe.
+
+**Andockvorschlag** (Einzelheiten in den ValERI-Mockups):
+
+| Element | Ort auf der Seite |
+|---|---|
+| Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste — die Beschriftung „fest gewählt" wird zur Auswahl; die gewählte Referenz ist nicht abwählbar |
+| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | unterhalb des Kennzahlengrids als auf-/zuklappbare Abschnitte **oder** als zweite Ansicht der Seite (Umschalter „Kennzahlen / ValERI-Bewertung") — Entscheidung am Mockup |
+| Kumulierter diskontierter Cashflow | inline in den Block „Wirtschaftlichkeit über Nutzungsdauer"; der vorhandene Verlauf-Dialog bleibt als Vollbild-Absprung |
+| ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition |
+
+Damit bleibt die Regel „eine Wahrheit je Größe": Die ValERI-Ansicht **rendert** die vorhandenen
+Ergebnisse (`WirtschaftlichkeitErgebnis`, `WirtschaftlichkeitZeilen`, Verlaufsreihe) — sie rechnet
+nichts Eigenes.
+
+## 2.11 ValERI (DIN EN 17463) — Integration und Darstellung (Auftrag 31.08.2026)
+
+*Quellen: der Normtext DIN EN 17463:2021-12 (vom Anwender bereitgestellt, vollständig ausgewertet —
+alle Anforderungen hier paraphrasiert, Abschnittsnummern der Norm in Klammern) und als reales
+Zahlenbeispiel die Altmappe `BHKWPlan\BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
+`Tab_kurz_KWKG2020`. Mockups: siehe Artifact-Tabelle am Dokumentanfang.*
+
+### 2.11.1 Die Kernaussage
+
+**EPOS-Plan rechnet bereits nach dieser Norm** — der `KapitalwertRechner` trägt sie im Namen, und
+NPV, drei Szenarien, Sensitivität und dynamische Amortisation existieren. Die Integration ist
+deshalb **keine Rechenreform, sondern eine Vervollständigungs- und Darstellungsaufgabe**: Die Norm
+verlangt vor allem Dinge *um* die Rechnung herum — Deklarationen, ein Berichtsformat, konsistente
+Szenarien, und die richtige Gewichtung der Kennzahlen.
+
+Vier Normaussagen tragen alles Weitere:
+
+1. **Der Kapitalwert ist das einzige Entscheidungskriterium** (Anhang C). IZF und dynamische
+   Amortisation sind dort ausdrücklich als Entscheidungsgrundlage verworfen — der IZF wegen
+   Mehrdeutigkeit bei mehr als einem Vorzeichenwechsel, die Amortisation, weil sie alles nach dem
+   Break-Even ausblendet. Jeder **NPV > 0 gilt als vorteilhaft** (8.1.2); ein negativer Worst-Case
+   ist **kein Ausschlusskriterium**, sondern beziffert das Risiko (8.1.3).
+2. **Nur Nominalrechnung** (6.3.2, Anhang G) — Realwerte sind unzulässig, weil sich im Zins nur
+   eine Inflationsrate unterbringen lässt, das Modell aber mehrere Preisraten braucht. EPOS rechnet
+   nominal: ✓.
+3. **Der Vergleich läuft gegen eine Alternative** — der NPV ist Wertbeitrag *gegenüber* der
+   Unterlassensalternative (8.1.2). Das ist die gewählte Referenz aus § 2.9.
+4. **Der Bericht ist Pflichtteil des Verfahrens** (Abschnitt 9), inklusive einer harten
+   Muss-Anforderung: Aushändigung als **editierbare Tabellenkalkulationsdatei** mit sichtbarer
+   Rechenlogik (Raster nach Anhang A). Ein Werte-Export genügt nicht.
+
+### 2.11.2 Abgleich Norm ↔ EPOS-Plan (Gap-Tabelle V-G)
+
+| # | Normanforderung | EPOS heute | Lücke / Behandlung |
+|---|---|---|---|
+| V-G1 | ≥ 2 differenzierte **Preisschwankungsraten**, nominal (6.3.2) | p_E und p_B vorhanden, nominal ✓ | dem Grunde nach erfüllt; keine Raten je Träger/Position (bekannt, R-2) — Deklaration genügt, Ausbau optional |
+| V-G2 | **Degradation** je Position [%/a] **mit Quellenangabe** (6.3.1/6.3.3) | fehlt vollständig | neue optionale Positionsattribute; Vorgabe 0 %/a = ergebnisneutral |
+| V-G3 | **Zeitpunktattribut** je Cashflow: Periode 0 · jährlich · alle n Jahre · einmalig in k (6.3.1) | teilweise (StartJahr, Ersatz über Nutzungsdauer) | „alle n Jahre" fehlt (z. B. Dichtheitsprüfung alle 2 a) — kleiner Ausbau der Bemessung |
+| V-G4 | **Kein Restwertverfahren** — Endzahlungen (Demontage, Veräußerung) gehören als explizite Cashflows in die Endperiode (6.4) | Restwert linear | **dokumentierte Abweichung**: Restwert bleibt als Schätzer des Veräußerungswerts, wird aber im Bericht als Modellannahme deklariert; Endzahlungs-Positionen sind über StartJahr bereits abbildbar |
+| V-G5 | **Szenarien = gleichzeitige Variation aller Einstellparameter** — auch r, T, Preisraten, Mengen (7.3) | Best/Worst variieren nur die Kosten-/Betragsspalten; r, T, p sind je Szenario fix | **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten, Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5 |
+| V-G6 | **Sensitivität**: die 7 Regelparameter, Ausweis mit **Steigung €/%** und Liniendiagramm (7.2, 8.1.3) | 5 Fälle vorhanden (Zins, p_E, Invest, Energie, KWKG-Wegfall) | fehlt: T-Variation, Endzahlungen; Ausgabeformat um Steigungsspalte + Diagramm ergänzen |
+| V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
+| V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme |
+| V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt" |
+| V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** | **größte Einzellücke mit hartem Muss**: ein ValERI-Blatt mit Parameterblock (absolute Bezüge), Periodenspalten, Periodenschalter, Gesamt-/Barwert-/NPV-Zeile — je Szenario eines |
+| V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | fehlt | neue kleine Datenklasse je Projekt (Freitext + Kategorie + Beurteilung); fließt nie in den NPV, immer in den Bericht |
+| V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe |
+
+**Anhang D der Norm ist eine BHKW-Fallstudie** (90 kW_th, 18 Jahre, NPV 64.480 €, Worst −202.802 €,
+Best +598.320 €) — sie dient der Etappe als **externe Gegenprobe**: EPOS muss mit denselben
+Eingaben dieselben Zahlen treffen. *(Vorsicht: Zwei Zeilen der Sensitivitätstabelle D.6 tragen im
+Normtext versehentlich Werte des Pumpenbeispiels — als Prüfreferenz ungeeignet, dokumentiert.)*
+
+### 2.11.3 Die fünf Darstellungsblöcke
+
+Andockung nach § 2.10 in `UcWirtschaftlichkeit`, Referenz nach § 2.9. Alle Blöcke rendern
+vorhandene Größen; Beispielzahlen in den Mockups aus der Höfingen-Mappe (20-kW-BHKW-Erneuerung
+gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortisation 4,33 a).
+
+| Block | Inhalt | Normbezug |
+|---|---|---|
+| **Investitionskosten** | Anlage · Referenz · Differenz; Zuschusszeile; je Szenario | 6.1, 7.3 |
+| **Betriebskosten** | Positionsliste mit den Normattributen Zeitpunkt · Preisrate · Degradation · Quelle | 6.3.1 |
+| **Erlöse** | die Rubrik aus § 2.6 — in der Differenzsicht sind vermiedene Bezüge reguläre Differenz-Cashflows (die Referenzkosten laufen als Gegenposition), Block-B-Kennzeichnung bleibt für die Absolutsicht | 6.1 |
+| **Energiekosten** | je Träger, Anlage gegen Referenz, BEHG mit Preispfad, Preisraten-Ausweis | 6.3.2 |
+| **Wirtschaftlichkeit über Nutzungsdauer** | kumulierter diskontierter Cashflow (drei Szenarien), NPV-Regel, Kennzahlen mit „nachrichtlich"-Kennzeichnung, Sensitivitätstafel mit Steigung €/%, Deklarationszeilen (nominal · Steuern · Restwert · Risiko) | 7, 8, Anhang A |
+
+### 2.11.4 Etappen und Entscheidungen
+
+| Etappe | Inhalt | Wirkung |
+|---|---|---|
+| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | keine |
+| **V-B** | Referenzwahl (§ 2.9) | keine in der Vorgabe |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in `UcWirtschaftlichkeit` | Ausweis |
+| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | Ausgabe |
+| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), Degradation (V-G2), n-jährliche Zeitpunkte (V-G3) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral |
+
+| Nr. | Entscheidungsfrage | Empfehlung |
+|---|---|---|
+| **V-1** | Fünf Blöcke als Aufklappabschnitte unter dem Grid oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll |
+| **V-2** | XLSX-Formelexport: nur das ValERI-Blatt oder den ganzen Bericht formelbasiert? | nur das ValERI-Blatt (drei Szenariotabellen + Parameterblock); der übrige Bericht bleibt Werte |
+| **V-3** | IZF/Amortisation von den Kacheln nehmen oder mit „nachrichtlich"-Label behalten? | behalten mit Label — Anwender kennen die Größen, die Norm verlangt nur die richtige Einordnung |
+| **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5), Zeitpunkt offen — Empfehlung: danach, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis |
+
+### 2.11.5 Vollständige Szenarioabdeckung (Entscheidung 31.08.2026)
+
+**Anwenderentscheid:** Alle Parameter — Investitionskosten, Energiekosten, Betriebskosten,
+Erlöse, dazu Rahmen und Mengen — werden mit Best- und Worst-Case-Werten versehen.
+
+**Das Prinzip ist eine Fortschreibung, kein Neubau:** Die Kostenpositionen haben das Muster schon —
+`BestCase`/`WorstCase` je Zeile, VALERI-Vorrang (0/NULL = wie Erwartet), Pflege über
+`Form_CaseEingabe` (±-Knopf). **Dasselbe Muster wandert an jeden Ort, an dem ein Erwartet-Wert
+gepflegt wird.** Der Anwender trägt je Parameter die beiden Werte selbst ein (wie die Norm es in
+ihren Szenariotabellen vormacht — je Parameter ein realistischer Extremwert je Richtung); die
+Software wendet im Szenario Best **alle** Best-Werte gleichzeitig an, im Worst alle Worst-Werte.
+Eine automatische „Richtungslogik" gibt es nicht und braucht es nicht.
+
+| Parameterklasse | Ort des Erwartet-Werts | Best/Worst | Stand |
+|---|---|---|---|
+| **Investitionskosten** je Position | `Tab_ProjektWerte` Kat. 1 | `BestCase`/`WorstCase` (+ Nutzungsdauern) | **vorhanden** (E3/H4b, Kaskadenwirkung gemessen) |
+| **Betriebskosten** je Position | `Tab_ProjektWerte` Kat. 2 | dito | **vorhanden** |
+| **Energiepreise** je Träger | `energy_project_settings.custom_price_work` (+ Grundpreis) | neue Spalten `custom_price_work_best/_worst` (Grund-/Leistungspreis analog, nullable) | **neu** |
+| **Erlössätze** (Marktgrößen) | `Einspeiseverguetung`, `Einspeiseverguetung_KWK`, PPA-/DV-Preise des PV-Dialogs | je Feld ein Best/Worst-Paar an derselben Tabelle | **neu** |
+| **Rahmen** | `Tab_ProjektWirtschaftlichkeit`: `Zinssatz`, `Betrachtungszeitraum`, `Preissteigerung_Energie`, `Preissteigerung_Betrieb` | je Größe `_Best`/`_Worst` (8 Spalten), NULL/0 = wie Erwartet | **neu** |
+| **Mengen** (Simulationsergebnis) | Stromerzeugung, Wärme, Einspeisung … | **ein Mengenfaktor [%] je Szenario** an der Rahmenzeile (wirkt multiplikativ auf die Energie- und Erlösmengen) — die Simulation selbst wird nicht dreifach gerechnet | **neu** |
+
+**Ausdrücklich nicht szenariert werden gesetzliche Sätze** — KWKG-Zuschläge, Energie- und
+Stromsteuersätze, BEHG-Festpreise sind Rechtsgrößen, keine Unsicherheitsparameter; ihre Zukunft
+bildet der Katalogpfad ab (Status GESICHERT/PROGNOSE), nicht ein Worst-Case. Unsicher sind Mengen,
+Preise, Laufzeit und Zins — genau die stehen oben.
+
+**Regeln (aus dem Bestand fortgeschrieben):**
+
+- **NULL/0 heißt „wie Erwartet"** — jede neue Spalte ist damit ergebnisneutral, bis sie gepflegt
+  wird. Das ist zugleich das Abnahmekriterium der Etappe.
+- Der **VALERI-Vorrang** gilt unverändert: Ein gepflegter Szenariowert verdrängt die Ableitung
+  (`szenarioGepflegt ⇔ |Wert − Erwartet| > 1e−9`), an allen Lesestellen identisch.
+- Die **Sensitivität** (7.2) bleibt davon getrennt: Sie variiert einzeln ceteris paribus; die
+  Szenarien variieren alles gleichzeitig (7.3). Beide nutzen dieselben Erwartet-Werte als Basis.
+- **Pflege**: der vorhandene ±-Knopf (`Form_CaseEingabe`) als einheitliches Muster auch an
+  Trägerpreisen, Erlösfeldern und der Rahmen-Gruppe; die ValERI-Ansicht zeigt je Szenario, welche
+  Parameter gepflegte Abweichungen tragen („12 von 31 Parametern szenariert").
+- **Ausweis im Bericht** (Norm 9c): Die Kalkulationstabelle je Szenario nennt die
+  Parametereinstellungen vollständig — die Szenariospalten der Rahmenzeile erscheinen im
+  Parameterblock des XLSX-Blatts.
 
 ---
 
@@ -884,6 +1138,7 @@ Dazu die Entscheidungen zur Darstellung (30.08.2026):
 | **D-1** | Emissionsspalte der Energieträgertabelle | **eine** Spalte, Kopf und Inhalt nach `Emission_Berechnungsmodus`; SO₂/NOx entfallen aus dieser Übersicht (§ 2.5) |
 | **E-1** | Modus `CO2E`, wenn außer CO₂ nichts gepflegt ist bzw. der Wert schon ein Äquivalent ist | **Wert zeigen, Umstand im Tooltip benennen** — drei Herleitungsfälle, kein stiller Rückfall auf „CO₂" (§ 2.5) |
 | **D-2** | Erlösdarstellung | eigene Rubrik in zwei Blöcken, getrennte Summen; Block B (Ausweis) wird nicht addiert (§ 2.6) |
+| **D-3** | Referenz der Differenzrechnung | **wählbares Vergleichsprojekt** je Gruppe (Stamm oder Variante), Vorgabe Stamm = ergebnisneutral; `ID_Referenzprojekt` an der Rahmenzeile; die Referenz ist die Unterlassensalternative der DIN EN 17463 (§ 2.9, Anforderung 31.08.2026) |
 
 Aus dem Energieträger-Umfeld kommt eine weitere Entscheidung desselben Tages hinzu. Sie betrifft
 die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernraum:
@@ -942,7 +1197,7 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 **B5-Kernaufgaben**
 
 1. Schreibweg der drei B3a-Anlagenspalten — `KwkgAnlagenCtrl.Speichere` von 8 auf 11 Spalten (K7)
-2. Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog
+2. Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog — **spezifiziert in § 2.8 (Entwurf B, übernommen 31.08.2026)**
 3. Erste Kostenposition mit Anlagenbezug entsteht erst hier
 
 **Nach B6**
