@@ -18,6 +18,31 @@ namespace WindowsFormsApplication1
         private WizardParent wizardparent = null;
         int startindex = 100000;
 
+        // =============================================================================
+        // PV-Anlagenparameter (Paket A des PV-Ertragsmodells, Stufe E1.3)
+        // =============================================================================
+        //
+        // PROGRAMMATISCH, nicht im Designer: Der Designer und die .resx dieses
+        // Formulars werden nicht von Hand editiert (CLAUDE.md des Hauptprojekts) -
+        // dieselbe Linie wie beim KI-Knopf oben. Die Beschriftungen kommen aus
+        // MyResource (de + en), die Masse aus den Konstanten darunter.
+
+        /// <summary>Neue Breite von <c>panel1</c> - Platz fuer eine dritte Spalte.</summary>
+        private const int PANEL_BREITE = 420;
+
+        /// <summary>Linke Kante der dritten Spalte im Panel.</summary>
+        private const int SPALTE_LINKS = 252;
+
+        /// <summary>Feste Beschriftungsbreite - AutoSize koennte unter das Feld laufen.</summary>
+        private const int LABEL_BREITE = 100;
+
+        /// <summary>Breite der beiden neuen Eingabefelder.</summary>
+        private const int FELD_BREITE = 58;
+
+        private TextBox textBox_WrWirkungsgrad;
+        private TextBox textBox_Systemverluste;
+        private ToolTip _tipPvAnlage;
+
         public Form_PV ()
         {
             InitializeComponent();
@@ -27,8 +52,78 @@ namespace WindowsFormsApplication1
             // unberuehrt bleiben.
             KiAufrufKnopf.Anbringen(this);
 
+            PvAnlagenfelderAnlegen();
+
             listBox_DB.Items.Clear();
             listBox_Auswahl.Items.Clear();
+        }
+
+        /// <summary>
+        /// Legt die dritte Spalte des Panels „PV Anlage Eigenschaften" an:
+        /// Wechselrichter-Wirkungsgrad und Systemverluste (Stufe E1.3).
+        ///
+        /// <para>Das Panel waechst dafuer von 308 auf <see cref="PANEL_BREITE"/> px. Der
+        /// gestrichelte Rahmen in <c>Form_PV_Paint</c> liest Lage und Groesse des Panels
+        /// zur Zeichenzeit und folgt automatisch; rechts daneben beginnt erst bei x = 449
+        /// die Herstellerspalte, die Breite ist also frei.</para>
+        /// </summary>
+        private void PvAnlagenfelderAnlegen()
+        {
+            panel1.Width = PANEL_BREITE;
+            _tipPvAnlage = new ToolTip();
+
+            textBox_WrWirkungsgrad = PvFeldAnlegen(MyResource.Resource.PV_ANLAGE_LABEL_WRWIRKUNGSGRAD,
+                                                   MyResource.Resource.PV_ANLAGE_TIP_WRWIRKUNGSGRAD, 8);
+            textBox_Systemverluste = PvFeldAnlegen(MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE,
+                                                   MyResource.Resource.PV_ANLAGE_TIP_SYSTEMVERLUSTE, 35);
+        }
+
+        /// <summary>Beschriftung + Zahlenfeld in der dritten Spalte des Panels.</summary>
+        private TextBox PvFeldAnlegen(string beschriftung, string hilfe, int oben)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(LABEL_BREITE, 19);
+            lbl.Location = new Point(SPALTE_LINKS, oben + 5);
+            lbl.Font = new Font("Segoe UI", 8.25f, FontStyle.Bold);
+            lbl.ForeColor = Color.FromArgb(0, 0, 192);   // wie die Bestandsbeschriftungen
+            panel1.Controls.Add(lbl);
+
+            TextBox tb = new TextBox();
+            tb.Location = new Point(SPALTE_LINKS + LABEL_BREITE + 4, oben);
+            tb.Size = new Size(FELD_BREITE, 25);
+            tb.Font = new Font("Segoe UI", 10f);
+            tb.TextAlign = HorizontalAlignment.Right;
+            tb.TextChanged += (s, e) => Program.ZahlFaerben(s);
+            panel1.Controls.Add(tb);
+
+            _tipPvAnlage.SetToolTip(lbl, hilfe);
+            _tipPvAnlage.SetToolTip(tb, hilfe);
+            return tb;
+        }
+
+        /// <summary>
+        /// Anzeigetext eines Anlagenparameters: LEER, wenn er nicht gepflegt ist.
+        /// Leer und 0 sind hier zwei verschiedene Aussagen - „es gilt der Vorgabewert"
+        /// gegen „ausdruecklich 0".
+        /// </summary>
+        private static string PvWertText(double? wert)
+        {
+            return wert.HasValue ? wert.Value.ToString() : "";
+        }
+
+        /// <summary>
+        /// Der Feldwert eines Anlagenparameters: leer = <c>null</c> („Vorgabewert"),
+        /// lesbare Zahl = der Wert, unlesbarer Text = <paramref name="bisher"/>.
+        /// </summary>
+        private static double? PvWertAusFeld(TextBox feld, double? bisher)
+        {
+            if (feld == null) return bisher;
+            if (feld.Text.Trim().Length == 0) return null;
+
+            double wert;
+            return Program.ZahlParsen(feld.Text, out wert) ? (double?)wert : bisher;
         }
 
         public void SetControls(string projekt, bool bWizard = false)
@@ -143,6 +238,14 @@ namespace WindowsFormsApplication1
                     if (Program.ZahlParsen(textBox_AnlagenLeistung.Text, out anzahlModule) || textBox_AnlagenLeistung.Text.Trim().Length == 0)
                         list_pvmodel[i].PV_Leistung = anzahlModule;
 
+                    // E1.3: LEER heisst hier nicht 0, sondern "nicht gepflegt" - der
+                    // Rechenweg setzt dann 0,95 bzw. 0 % ein. Ein unlesbarer Text laesst
+                    // wie bei den Feldern darueber den bisherigen Wert stehen.
+                    list_pvmodel[i].PV_WrWirkungsgrad = PvWertAusFeld(textBox_WrWirkungsgrad,
+                                                                      list_pvmodel[i].PV_WrWirkungsgrad);
+                    list_pvmodel[i].PV_Systemverluste = PvWertAusFeld(textBox_Systemverluste,
+                                                                      list_pvmodel[i].PV_Systemverluste);
+
                     break;
                 }
             }
@@ -182,6 +285,8 @@ namespace WindowsFormsApplication1
                     textBox_Neigung.Text = list_pvmodel[i].m_Neigung.ToString();
                     textBox_Azimut.Text = list_pvmodel[i].m_Azimut.ToString();
                     textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString();
+                    textBox_WrWirkungsgrad.Text = PvWertText(list_pvmodel[i].PV_WrWirkungsgrad);
+                    textBox_Systemverluste.Text = PvWertText(list_pvmodel[i].PV_Systemverluste);
                     panel1.Visible = true;
                 }
             }

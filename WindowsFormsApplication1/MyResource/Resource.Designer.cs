@@ -15140,7 +15140,73 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_VOLLZYKLEN_KOMBI_TIP", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemverluste [%]: ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_LABEL_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_LABEL_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WR-Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_LABEL_WRWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_LABEL_WRWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verluste der Anlage außerhalb des Moduls (Verschmutzung, Mismatch, DC-Verkabelung) in Prozent.
+        ///Leer bedeutet 0 % und ändert am Ergebnis nichts. ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_TIP_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_TIP_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad des Wechselrichters als Faktor zwischen 0 und 1.
+        ///Leer bedeutet 0,95 — der Wert, mit dem die Simulation bisher fest gerechnet hat. ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_TIP_WRWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_TIP_WRWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltemperatur NOCT ähnelt.
+        /// </summary>
+        public static string PV_MODUL_FELD_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_FELD_TNOCT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltemperatur NOCT: ähnelt.
+        /// </summary>
+        public static string PV_MODUL_LABEL_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_LABEL_TNOCT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominal Operating Cell Temperature nach Datenblatt, üblich 42 bis 48 °C.
+        ///Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C. ähnelt.
+        /// </summary>
+        public static string PV_MODUL_TIP_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_TIP_TNOCT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die greift nicht: Inbetriebnahme vor dem 25.02.2025. ähnelt.
         /// </summary>

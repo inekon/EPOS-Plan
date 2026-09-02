@@ -13,12 +13,89 @@ namespace WindowsFormsApplication1
         public bool m_bItemBearbeiten = false;
         private bool m_Neu = false;
 
+        // =============================================================================
+        // T_NOCT und der Erhalt der nicht editierten Katalogfelder (Paket A, E1.2)
+        // =============================================================================
+        //
+        // DAS FELD. Bis Paket A war T_NOCT die einzige Ertragsgroesse des Modulkatalogs
+        // ohne Eingabemoeglichkeit - die Simulation rechnete mit fest verdrahteten
+        // 45 Grad C. Seit E1.2 liest sie den Katalogwert; damit braucht er eine Maske.
+        // Programmatisch, weil Designer und .resx dieses Formulars nicht von Hand
+        // editiert werden (CLAUDE.md des Hauptprojekts).
+        //
+        // DER BESTANDSFEHLER, DER DABEI GESCHLOSSEN WIRD. btn_Speichern_Click fuellte
+        // ein FRISCHES PhotovoltaikModel nur aus den Maskenfeldern; alpha_SC, beta_OC
+        // und T_NOCT blieben auf 0 und wurden von PhotovoltaikStammCtrl.Update
+        // mitgeschrieben. Jedes Speichern eines CEC-Moduls loeschte damit genau die
+        // drei Katalogwerte, die der Import geliefert hatte. T_NOCT ist jetzt
+        // editierbar, alpha_SC und beta_OC werden aus dem GELADENEN Datensatz erhalten.
+
+        private const int TNOCT_LABEL_LINKS = 11;
+        private const int TNOCT_LABEL_BREITE = 150;
+        private const int TNOCT_FELD_LINKS = 165;
+        private const int TNOCT_FELD_BREITE = 55;
+        private const int TNOCT_OBEN = 319;
+
+        private TextBox textBox_TNoct;
+        private ToolTip _tipAdminPv;
+
+        /// <summary>alpha_SC des gerade geladenen Katalogsatzes - nicht editierbar, aber zu erhalten.</summary>
+        private double _alphaScGeladen;
+
+        /// <summary>beta_OC des gerade geladenen Katalogsatzes - nicht editierbar, aber zu erhalten.</summary>
+        private double _betaOcGeladen;
+
         public Form_AdminPV ()
         {
             InitializeComponent();
             InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
+            TNoctFeldAnlegen();
         }
-        
+
+        /// <summary>
+        /// Legt Beschriftung, Eingabefeld und Einheit fuer <c>T_NOCT</c> an - in der
+        /// linken Spalte unter den Knoepfen „Loeschen"/„Neu…", wo als einziger Bereich
+        /// der Maske Platz frei ist (die rechte Wertespalte beginnt bei x = 253 und ist
+        /// bis zu den Knoepfen bei y = 449 durchgehend belegt).
+        /// </summary>
+        private void TNoctFeldAnlegen()
+        {
+            _tipAdminPv = new ToolTip();
+
+            Label lbl = new Label();
+            lbl.Text = MyResource.Resource.PV_MODUL_LABEL_TNOCT;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(TNOCT_LABEL_BREITE, 19);
+            lbl.Location = new Point(TNOCT_LABEL_LINKS, TNOCT_OBEN + 3);
+            lbl.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            Controls.Add(lbl);
+
+            textBox_TNoct = new TextBox();
+            textBox_TNoct.Location = new Point(TNOCT_FELD_LINKS, TNOCT_OBEN);
+            textBox_TNoct.Size = new Size(TNOCT_FELD_BREITE, 25);
+            textBox_TNoct.Font = new Font("Segoe UI", 10f);
+            textBox_TNoct.TextAlign = HorizontalAlignment.Right;
+            textBox_TNoct.TextChanged += (s, e) => Program.ZahlFaerben(s);
+            Controls.Add(textBox_TNoct);
+
+            Label einheit = new Label();
+            einheit.Text = "°C";
+            einheit.AutoSize = true;
+            einheit.Location = new Point(TNOCT_FELD_LINKS + TNOCT_FELD_BREITE + 6, TNOCT_OBEN + 3);
+            einheit.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            Controls.Add(einheit);
+
+            _tipAdminPv.SetToolTip(lbl, MyResource.Resource.PV_MODUL_TIP_TNOCT);
+            _tipAdminPv.SetToolTip(textBox_TNoct, MyResource.Resource.PV_MODUL_TIP_TNOCT);
+        }
+
+        /// <summary>Zahlenwert einer Katalogspalte; NULL und Unlesbares gelten als 0.</summary>
+        private static double ZuZahl(object wert)
+        {
+            if (wert == null || wert == DBNull.Value) return 0.0;
+            try { return Convert.ToDouble(wert); } catch { return 0.0; }
+        }
+
         public void SetControls(string projekt)
         {
             listBox_PV.Items.Clear();
@@ -82,6 +159,12 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(textBox_Breite, "Breite", out breite, true)) return;
             if (!Program.ZahlPruefen(textBox_Modulkosten, "Modulkosten", out modulkosten, true)) return;
 
+            // E1.2: neu editierbar. Leer gilt wie bei den uebrigen Feldern als 0 - und
+            // 0 liegt ausserhalb des Plausibilitaetsfensters, die Simulation faellt dann
+            // auf 45 Grad C zurueck und sagt das im Protokoll.
+            double tNoct;
+            if (!Program.ZahlPruefen(textBox_TNoct, MyResource.Resource.PV_MODUL_FELD_TNOCT, out tNoct, true)) return;
+
             try
             {
                 model.m_szName = textBox_Bezeichner.Text;
@@ -94,9 +177,17 @@ namespace WindowsFormsApplication1
                 model.m_I_Mpp = iMpp;
                 model.m_I_Kurzschluss = iKurzschluss;
                 model.m_Temp_Coeff_Pmax = tempKoeff;
+                model.m_T_NOCT = tNoct;
                 model.m_Laenge = laenge;
                 model.m_Breite = breite;
                 model.m_Modulkosten = modulkosten;
+
+                // NICHT EDITIERTE FELDER AUS DEM GELADENEN DATENSATZ ERHALTEN.
+                // alpha_SC und beta_OC haben keine Maske; ohne diese beiden Zeilen
+                // schriebe der Speicherweg sie mit 0 zurueck und loeschte damit die
+                // Werte des CEC-Imports (Bestandsfehler, siehe Kopf der Klasse).
+                model.m_alpha_SC = _alphaScGeladen;
+                model.m_beta_OC = _betaOcGeladen;
 
                 if (m_Neu)
                 {
@@ -158,10 +249,15 @@ namespace WindowsFormsApplication1
                 textBox_IMpp.Text = rs.Read("I_Mpp").ToString();
                 textBox_IKurzschluss.Text = rs.Read("I_Kurzschluss").ToString();
                 textBox_TempKoeff.Text = rs.Read("gamma_PMP").ToString();
+                textBox_TNoct.Text = rs.Read("T_NOCT").ToString();
                 textBox_Laenge.Text = rs.Read("Laenge").ToString();
                 textBox_Breite.Text = rs.Read("Breite").ToString();
                 textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
 
+                // Merken, was die Maske NICHT zeigt - damit das Speichern es nicht
+                // ueberschreibt (siehe Kopf der Klasse).
+                _alphaScGeladen = ZuZahl(rs.Read("alpha_SC"));
+                _betaOcGeladen = ZuZahl(rs.Read("beta_OC"));
             }
             rs.Close();
         }
@@ -188,9 +284,13 @@ namespace WindowsFormsApplication1
                 textBox_IMpp.Text = "0";
                 textBox_IKurzschluss.Text = "0";
                 textBox_TempKoeff.Text = "0";
+                textBox_TNoct.Text = "0";
                 textBox_Laenge.Text = "0";
                 textBox_Breite.Text = "0";
-                textBox_Modulkosten.Text = "0"; 
+                textBox_Modulkosten.Text = "0";
+                // Ein NEUER Katalogsatz hat nichts zu erhalten.
+                _alphaScGeladen = 0.0;
+                _betaOcGeladen = 0.0;
             }
             return;
         }
@@ -208,9 +308,12 @@ namespace WindowsFormsApplication1
             textBox_IMpp.Text = "";
             textBox_IKurzschluss.Text = "";
             textBox_TempKoeff.Text = "";
+            textBox_TNoct.Text = "";
             textBox_Laenge.Text = "";
             textBox_Breite.Text = "";
             textBox_Modulkosten.Text = "0";
+            _alphaScGeladen = 0.0;
+            _betaOcGeladen = 0.0;
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
