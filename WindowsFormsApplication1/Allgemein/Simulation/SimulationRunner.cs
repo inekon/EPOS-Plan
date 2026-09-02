@@ -23,6 +23,22 @@ namespace WindowsFormsApplication1
         public SimulationControl sim = new SimulationControl();
 
         /// <summary>
+        /// DER HAKEN für die Ergebniszeile des Stromspeichers (Umsetzungskonzept iU3,
+        /// Kante K8) — dieselbe Begründung wie bei
+        /// <see cref="SimulationControl.Speicherlauf"/>: Die Abbildung liegt in
+        /// <c>StromspeicherSimCtrl</c>, einer Klasse mit weitem Umfeld, die der
+        /// Rechenkern nicht kennen soll. Gesetzt wird der Haken vom Hauptprogramm über
+        /// den ModuleInitializer in <c>SimulationControl.Stromspeicher.cs</c>.
+        ///
+        /// <para>Bleibt er leer, entfällt die Detailzeile — was ein Lauf ohne Speicher
+        /// ohnehin tut. Kopf und Detail können dabei nicht widersprechen: Ohne den Haken
+        /// gibt es auch kein <c>Speicherergebnis</c>, weil derselbe Initialisierer beide
+        /// Haken setzt.</para>
+        /// </summary>
+        public static Func<SpeicherEngine.SpeicherErgebnis, StromspeicherLaufKontext,
+                           ErgebnisStromspeicherModel> Speicherergebnismodell;
+
+        /// <summary>
         /// Protokoll- und Fehlerkanal dieses Laufs (Paket 8, Konzept 13.4).
         ///
         /// <see cref="Simuliere"/> erzeugt ihn als ERSTES und legt ihn hier ab; er
@@ -869,9 +885,13 @@ namespace WindowsFormsApplication1
             // Ergebnisseite verwendet dieselbe Methode, damit Bildschirm und Datenbank
             // nicht auseinanderlaufen. Der Zusammenbau des ErgebnisModel bleibt wie bei
             // allen anderen Detailmodellen HIER.
-            if (sim.bSimulationSSP && sim.Speicherergebnis != null)
+            //
+            // iU3 KANTE K8: erreicht ueber den Haken Speicherergebnismodell, damit der
+            // Rechenkern StromspeicherSimCtrl nicht kennen muss. Ist er nicht gesetzt,
+            // bleibt die Detailzeile aus - genauso wie bei einem Lauf ohne Speicher.
+            if (sim.bSimulationSSP && sim.Speicherergebnis != null && Speicherergebnismodell != null)
             {
-                m.Stromspeicher.Add(StromspeicherSimCtrl.AlsErgebnismodell(
+                m.Stromspeicher.Add(Speicherergebnismodell(
                     sim.Speicherergebnis, sim.Speicherkontext));
             }
 

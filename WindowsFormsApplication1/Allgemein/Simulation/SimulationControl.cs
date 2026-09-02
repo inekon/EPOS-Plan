@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace WindowsFormsApplication1
 {
-    public  class SimulationControl
+    public partial class SimulationControl
     {
         // Simulationen Deklaration
         public SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
@@ -4240,64 +4240,39 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Rechnet die aktive Speichervariante über die <c>SpeicherEngine</c> und
-        /// liefert die ENTLADUNG je Viertelstunde als Leistung [kW] — oder
-        /// <c>null</c>, wenn nicht gerechnet wurde.
+        /// DER HAKEN für den Stromspeicherlauf (Umsetzungskonzept iU3, Kante K8).
+        ///
+        /// <para><b>Warum ein Haken und keine Weiterleitung.</b> Der Speicherzweig geht
+        /// über <c>StromspeicherSimCtrl</c> — eine Klasse, die Preisreihen, Varianten
+        /// und Auslegungsoptimierung mitbringt und darüber weit in die Oberfläche reicht.
+        /// Der Rechenkern soll sie nicht kennen. Er kennt deshalb nur diese Signatur;
+        /// GESETZT wird sie vom Hauptprogramm über einen
+        /// <see cref="System.Runtime.CompilerServices.ModuleInitializerAttribute"/> in
+        /// <c>SimulationControl.Stromspeicher.cs</c> — also ohne dass irgendein Aufrufer
+        /// daran denken müsste.</para>
+        ///
+        /// <para><b>Ist der Haken nicht gesetzt</b> (Kern ohne die Partial-Datei), fällt
+        /// der Lauf in genau den Fehlerfall, den die Methode dort ohnehin dokumentiert:
+        /// eine Warnung ins Protokoll, Rückgabe <c>null</c> — „die Kette rechnet ohne
+        /// Speicherwirkung weiter". Der Speicher darf den Lauf nicht kippen.</para>
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Ersetzt den wirkungslosen <c>SimulationSSP</c>-Stub (AP2b, Fachkonzept 8.2,
-        /// Rudiment 1). Gerechnet wird die Anlagenzeile der <b>aktiven Speichervariante</b>
-        /// (AP9b, Fachkonzept 7.3) mit der Berechnungsart, die diese Variante vorgibt;
-        /// nur ohne bestimmbare aktive Variante fällt der Lauf auf die Aggregation über
-        /// alle <c>SP_TYP</c>-Anlagen zurück (Protokollhinweis). Die Reihen- und
-        /// Parameterbeschaffung liegt vollständig in <see cref="StromspeicherSimCtrl"/>,
-        /// die Formeln in der Engine.
-        /// </para>
-        /// <para>
-        /// <b>Der Speicher darf den Lauf nicht kippen.</b> Jeder Fehler — fehlende
-        /// Stammdaten, Rasterabweichung, Ausnahme aus der Engine — landet als Hinweis
-        /// bzw. Warnung im Protokoll; die Kette rechnet dann ohne Speicherwirkung
-        /// weiter, genau wie vor diesem Paket. Der Datenzugriff liegt im
-        /// dialogfreien Modus (der ganze Lauf steht in
-        /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
-        /// </para>
-        /// </remarks>
+        public static Func<SimulationControl, int, float[]> Speicherlauf;
+
+        /// <summary>
+        /// Ruft den Speicherlauf über <see cref="Speicherlauf"/> — oder meldet, dass es
+        /// ihn in diesem Programm nicht gibt.
+        /// </summary>
         private float[] Simulation_Stromspeicher_Ctrl(int ID_Projekt)
         {
-            StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
-            SpeicherEngine.SpeicherErgebnis ergebnis;
-
-            try
+            if (Speicherlauf == null)
             {
-                ergebnis = ctrl.RechneAktiveVariante(this, ID_Projekt);
-            }
-            catch (Exception ex)
-            {
-                Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_FEHLGESCHLAGEN, ex.Message));
+                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                    MyResource.Resource.SIMENG_SPEICHER_FEHLGESCHLAGEN,
+                    "Der Stromspeicherzweig ist in dieser Fassung nicht eingebunden."));
                 return null;
             }
 
-            // Hinweise des Controllers (kein Speicher, keine Kapazität, 1-C-Rückfall)
-            // gehören in jedem Fall ins Protokoll - auch wenn gerechnet wurde.
-            if (!string.IsNullOrEmpty(ctrl.LetzterHinweis)) Protokoll.Hinweis(ctrl.LetzterHinweis);
-
-            if (ergebnis == null) return null;
-
-            float[] entladung = StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
-            if (entladung.Length != Rest_Strombedarf_viertelstuendlich.Length)
-            {
-                Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
-                                                entladung.Length, Rest_Strombedarf_viertelstuendlich.Length));
-                return null;
-            }
-
-            Speicherergebnis = ergebnis;
-            Speicherkontext = ctrl.LetzterKontext;
-            Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.ZuFloat(ergebnis.SoCKwh);
-            Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(Speicherfuellstand_viertelstuendlich);
-
-            return entladung;
+            return Speicherlauf(this, ID_Projekt);
         }
 
     }
