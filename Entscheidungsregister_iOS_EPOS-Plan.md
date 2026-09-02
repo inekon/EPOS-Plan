@@ -108,7 +108,38 @@ enthält nirgends Kundendaten — die Prüfung auf Kundenbezug entfällt, die Re
 der Dateigröße: **Die produktive `Kenndaten.sqlite` hat 148 MB** (Anwender, 02.09.2026) — GitHub
 lehnt Einzeldateien über 100 MB ab, die Reduzierung auf die 13 Projekte ist damit Pflicht. Das
 Reduzierungsskript liegt unter `sql/tools/`. Erst damit sind der Spike (iU3) und der Referenzlauf in der CI (iE6) möglich. Die
-Referenz-CSV selbst sind nach dem Befund oben unkritisch.
+Referenz-CSV selbst sind nach dem Befund oben unkritisch. **Nachtrag: Der Anwender hat die
+Reduzierung am 02.09.2026 selbst durchgeführt** — die Datei ist als `Referenzlaeufe/Kenndaten_Test.sqlite`
+einzuchecken.
+
+### 2.2 Befund zum Machbarkeits-Spike (iU3), 02.09.2026 — zwei Messungen auf Linux
+
+Vor dem Spike wurde geprüft, was der heutige Bestand außerhalb von Windows *zur Laufzeit* tut.
+Beide Tests liefen hier, ohne Mac, ohne Datenbank:
+
+| Test | Ergebnis | Folge |
+|---|---|---|
+| **A** — die fertig gebaute `Referenzlauf.dll` (`net10.0-windows`) auf Linux starten, Modus `vergleich` (braucht keine Datenbank) | **startet nicht:** „Framework `Microsoft.WindowsDesktop.App` 10.0.0 not found". Nicht die Typreferenzen blockieren, sondern die `FrameworkReference`, die `UseWindowsForms=true` in die `runtimeconfig.json` schreibt — dieses Shared Framework existiert nur auf Windows | Der Rechenkern muss in einer Assembly **ohne** `UseWindowsForms` liegen (`EPOS.Kern`, `net10.0`). Ein Runner, der die WinForms-App referenziert, läuft nirgends außer Windows — egal wie wenig WinForms er nutzt |
+| **B** — `new OleDbParameter("@p0", 42.5)` in einem `net10.0`-Konsolenprojekt mit `System.Data.OleDb 10.0.11` auf Linux | **wirft `PlatformNotSupportedException`** schon im Konstruktor; ebenso `OleDbConnection` | `OleDbParameter` ist auf Nicht-Windows **kein** Datenträger, sondern eine Wand. Jeder Aufruf von `DataRepository.GetDataTable(sql, params OleDbParameter[])` mit Parametern scheitert. **`DbParam` (Umsetzungskonzept § 1.4, iF10) ist damit Vorbedingung des Spikes, nicht Folgearbeit** |
+
+Dazu die Abhängigkeitsmessung (Agent, 02.09.): Ein headless-Lauf von Projekt 1030 zieht transitiv
+**180 Dateien / 132.117 Zeilen** (80 % aller Nicht-View-Zeilen) — wegen eines Abhängigkeitsknäuels
+von 64 Dateien über `SimulationControl` → `SchemaMigration`/`PufferSpCtrl`/`WirtschaftlichkeitCtrl`
+→ `Program.cs`. Die WinForms-Bindung *im* Rechenkern ist dagegen winzig: vier tote `using`, vier
+`Cursor.Current`, ein Formularaufruf (`Warnkriterien.cs:525`), zwei echte `MessageBox` in
+`AnlagenEindeutigkeit.cs`, `Form_Kosten.KATEGORIE_*`-Konstanten — alles Ein-Zeilen-Fixes. Für den
+Lauf selbst ist der Weg bereits dialogfrei (`EngineModus`, `SimulationProtokoll`,
+`PfadUeberschreibung` existieren). `OleDb` ist die einzige Bindung ohne Ein-Zeilen-Ausweg:
+**3.787 Vorkommen in 115 Nicht-View-Dateien.**
+
+**Folge für iU3:** Der Spike ist kein Wegwerf-Auszug „für wenige Tage" (Grundlagenkonzept S0),
+sondern setzt zwei Umbauten voraus, die das Konzept erst für iU4/iU6 vorsah:
+1. `OleDbParameter` → `DbParam` im gesamten Bestand (Weg (a) aus § 1.4 — maschinell, hier
+   kompilierprüfbar);
+2. Rechenkern-Auszug in eine `net10.0`-Assembly ohne `UseWindowsForms` — mindestens die
+   Simulationskette plus `DataRepository`, mit den Ein-Zeilen-Fixes oben.
+Beides ist auf Linux nachweisbar, bevor ein Mac beteiligt ist. **iF11 verschiebt sich damit:** Der
+Spike läuft zuerst auf Linux (hier), macOS-Runner folgt für die ARM64-Frage (iF15).
 
 ---
 
