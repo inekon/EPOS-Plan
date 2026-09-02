@@ -173,6 +173,99 @@
 Here the full cycles are the annual throughput relative to the capacity —
 with a small tank the figure becomes large without any additional ageing.</value>
   </data>
+  <data name="PVM_ANLAGE_BTN_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverter…</value>
+  </data>
+  <data name="PVM_ANLAGE_LABEL_MODELL" xml:space="preserve">
+    <value>Calculation model:</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_MODELL" xml:space="preserve">
+    <value>Simple = existing calculation (isotropic irradiance, module formula with gamma_PMP, fixed inverter efficiency). Extended = Hay-Davies, Huld low-light model and inverter part-load curve with clipping.</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_WECHSELRICHTER" xml:space="preserve">
+    <value>AC rating and part-load curve of this array's inverter. Only effective in the extended model.</value>
+  </data>
+  <data name="PVM_DEGRADATION" xml:space="preserve">
+    <value>Degradation [%/a]:</value>
+  </data>
+  <data name="PVM_DEGRADATION_TIP" xml:space="preserve">
+    <value>Annual power loss of the modules. Affects the revenue series only, not the hourly simulation of the base year. 0 = no degradation; 0.3 to 0.5 %/a is typical.</value>
+  </data>
+  <data name="PVM_DLG_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PVM_DLG_DCAC" xml:space="preserve">
+    <value>DC/AC: {0:N2} kWp on {1:N2} kW = {2:N2}</value>
+  </data>
+  <data name="PVM_DLG_DCAC_OHNE" xml:space="preserve">
+    <value>Without an AC rating: no clipping, load factor referred to the array's kWp.</value>
+  </data>
+  <data name="PVM_DLG_ETA_TIP" xml:space="preserve">
+    <value>Point of the part-load curve as a factor between 0 and 1. 0 means: not maintained, the default of a typical string inverter applies.</value>
+  </data>
+  <data name="PVM_DLG_ETA10" xml:space="preserve">
+    <value>Efficiency at 10 % load (0 = 0.94):</value>
+  </data>
+  <data name="PVM_DLG_ETA100" xml:space="preserve">
+    <value>Efficiency at 100 % load (0 = 0.97):</value>
+  </data>
+  <data name="PVM_DLG_ETA50" xml:space="preserve">
+    <value>Efficiency at 50 % load (0 = 0.975):</value>
+  </data>
+  <data name="PVM_DLG_KOPF_EINFACH" xml:space="preserve">
+    <value>This array uses the simple model. The fields are therefore disabled - they take effect in the extended model only.</value>
+  </data>
+  <data name="PVM_DLG_KOPF_ERWEITERT" xml:space="preserve">
+    <value>Inverter data of this array. 0 always means: not maintained.</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG" xml:space="preserve">
+    <value>AC rating [kW] (0 = no clipping):</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG_TIP" xml:space="preserve">
+    <value>Continuous AC power of the inverter. It caps the feed-in (clipping) and is the reference of the part-load curve.</value>
+  </data>
+  <data name="PVM_DLG_OK" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PVM_DLG_TITEL" xml:space="preserve">
+    <value>Inverter — {0}</value>
+  </data>
+  <data name="PVM_MODELL_EINFACH" xml:space="preserve">
+    <value>Simple</value>
+  </data>
+  <data name="PVM_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Extended</value>
+  </data>
+  <data name="PVM_MODUL_LABEL_TECHNOLOGIE" xml:space="preserve">
+    <value>Cell technology:</value>
+  </data>
+  <data name="PVM_MODUL_TIP_TECHNOLOGIE" xml:space="preserve">
+    <value>Cell technology of the module. In the extended model it selects the low-light coefficient set; there is none for thin film and other, where the simple module formula applies.</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_A_SI" xml:space="preserve">
+    <value>Thin film / a-Si</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_C_SI" xml:space="preserve">
+    <value>Crystalline silicon (mono/poly)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CDTE" xml:space="preserve">
+    <value>Cadmium telluride (CdTe)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CIS" xml:space="preserve">
+    <value>CIS / CIGS</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_LEER" xml:space="preserve">
+    <value>(not maintained)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_DCAC" xml:space="preserve">
+    <value>Extended model · DC/AC {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Extended model · no AC rating</value>
+  </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Source draw-off height (0…1):</value>
   </data>

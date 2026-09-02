@@ -27,20 +27,37 @@ namespace WindowsFormsApplication1
         // dieselbe Linie wie beim KI-Knopf oben. Die Beschriftungen kommen aus
         // MyResource (de + en), die Masse aus den Konstanten darunter.
 
-        /// <summary>Neue Breite von <c>panel1</c> - Platz fuer eine dritte Spalte.</summary>
+        /// <summary>Breite von <c>panel1</c> - zwei Spalten nebeneinander.</summary>
         private const int PANEL_BREITE = 420;
 
-        /// <summary>Linke Kante der dritten Spalte im Panel.</summary>
-        private const int SPALTE_LINKS = 252;
+        /// <summary>
+        /// Hoehe von <c>panel1</c> (Paket B): vier Zeilen statt zwei. Der Bestand hatte
+        /// 71 px fuer zwei Zeilen; Paket B braucht drei Wertezeilen und eine Knopfzeile.
+        /// </summary>
+        private const int PANEL_HOEHE = 128;
 
-        /// <summary>Feste Beschriftungsbreite - AutoSize koennte unter das Feld laufen.</summary>
-        private const int LABEL_BREITE = 100;
+        /// <summary>Um wie viel alles UNTER dem Panel nach unten rueckt.</summary>
+        private const int VERSATZ_UNTEN = PANEL_HOEHE - 71;
 
-        /// <summary>Breite der beiden neuen Eingabefelder.</summary>
-        private const int FELD_BREITE = 58;
+        // Spalte A (links): Neigung, Azimut, Anzahl Module - die Designer-Felder.
+        private const int SP_A_LABEL = 8;
+        private const int SP_A_LABEL_BREITE = 110;
+        private const int SP_A_FELD = 120;
+        private const int SP_A_FELD_BREITE = 54;
+
+        // Spalte B (rechts): Rechenmodell, Wechselrichter-Wirkungsgrad, Systemverluste.
+        private const int SP_B_LABEL = 186;
+        private const int SP_B_LABEL_BREITE = 132;
+        private const int SP_B_FELD = 322;
+        private const int SP_B_FELD_BREITE = 58;
+        private const int SP_B_COMBO_BREITE = 92;
+
+        private const int ZEILE1 = 8, ZEILE2 = 35, ZEILE3 = 62, ZEILE4 = 90;
 
         private TextBox textBox_WrWirkungsgrad;
         private TextBox textBox_Systemverluste;
+        private ComboBox comboBox_Modell;
+        private Button btn_Wechselrichter;
         private ToolTip _tipPvAnlage;
 
         public Form_PV ()
@@ -59,48 +76,196 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt die dritte Spalte des Panels „PV Anlage Eigenschaften" an:
-        /// Wechselrichter-Wirkungsgrad und Systemverluste (Stufe E1.3).
+        /// Baut das Panel „PV Anlage Eigenschaften" auf zwei Spalten und vier Zeilen um
+        /// und legt die Felder der Stufen E1.3 und E2 an.
         ///
-        /// <para>Das Panel waechst dafuer von 308 auf <see cref="PANEL_BREITE"/> px. Der
-        /// gestrichelte Rahmen in <c>Form_PV_Paint</c> liest Lage und Groesse des Panels
-        /// zur Zeichenzeit und folgt automatisch; rechts daneben beginnt erst bei x = 449
-        /// die Herstellerspalte, die Breite ist also frei.</para>
+        /// <para><b>Warum die Bestandsfelder programmatisch umgesetzt werden.</b> Paket A
+        /// hatte eine DRITTE Spalte bei x = 252 angehaengt; ihre Beschriftung stiess dort
+        /// mit dem AutoSize-Label „Anzahl Module:" zusammen (x 177…282). Paket B braucht
+        /// zusaetzlich eine Modellwahl und den Knopf zum Wechselrichterdialog — in zwei
+        /// Zeilen zu 418 px ist dafuer kein Platz. Statt einer vierten Spalte stehen
+        /// jetzt drei Wertezeilen in zwei sauber getrennten Spalten, darunter die
+        /// Knopfzeile. Die Designer-Datei bleibt unberuehrt (Hausregel): Lage und Groesse
+        /// der sechs Bestandscontrols werden hier gesetzt.</para>
+        ///
+        /// <para><b>Was mitwandert.</b> Das Panel waechst von 71 auf
+        /// <see cref="PANEL_HOEHE"/> px; alles darunter (Beschriftung „Modul", der
+        /// Modulblock <c>panel2</c> und die beiden Knoepfe) rueckt um
+        /// <see cref="VERSATZ_UNTEN"/> px nach unten, die Maske entsprechend hoeher. Im
+        /// Assistenten passt sich der Rahmen selbst an (<c>WizardParent.LoadNewForm</c>
+        /// rechnet mit <c>PreferredSize</c> und schaltet AutoScroll ein). Der
+        /// gestrichelte Rahmen in <c>Form_PV_Paint</c> liest Lage und Groesse zur
+        /// Zeichenzeit und folgt automatisch.</para>
         /// </summary>
         private void PvAnlagenfelderAnlegen()
         {
-            panel1.Width = PANEL_BREITE;
             _tipPvAnlage = new ToolTip();
 
+            panel1.Size = new Size(PANEL_BREITE, PANEL_HOEHE);
+
+            // --- Bestandsfelder in das neue Raster ---------------------------------
+            BestandsfeldSetzen(label3, textBox_Neigung, ZEILE1);
+            BestandsfeldSetzen(label6, textBox_Azimut, ZEILE2);
+            BestandsfeldSetzen(label7, textBox_AnlagenLeistung, ZEILE3);
+
+            // --- Spalte B ----------------------------------------------------------
+            comboBox_Modell = ModellfeldAnlegen(ZEILE1);
+
             textBox_WrWirkungsgrad = PvFeldAnlegen(MyResource.Resource.PV_ANLAGE_LABEL_WRWIRKUNGSGRAD,
-                                                   MyResource.Resource.PV_ANLAGE_TIP_WRWIRKUNGSGRAD, 8);
+                                                   MyResource.Resource.PV_ANLAGE_TIP_WRWIRKUNGSGRAD, ZEILE2);
             textBox_Systemverluste = PvFeldAnlegen(MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE,
-                                                   MyResource.Resource.PV_ANLAGE_TIP_SYSTEMVERLUSTE, 35);
+                                                   MyResource.Resource.PV_ANLAGE_TIP_SYSTEMVERLUSTE, ZEILE3);
+
+            btn_Wechselrichter = new Button();
+            btn_Wechselrichter.Text = MyResource.Resource.PVM_ANLAGE_BTN_WECHSELRICHTER;
+            btn_Wechselrichter.Location = new Point(SP_B_LABEL, ZEILE4);
+            btn_Wechselrichter.Size = new Size(228, 26);
+            btn_Wechselrichter.UseVisualStyleBackColor = true;
+            btn_Wechselrichter.Click += btn_Wechselrichter_Click;
+            panel1.Controls.Add(btn_Wechselrichter);
+            _tipPvAnlage.SetToolTip(btn_Wechselrichter, MyResource.Resource.PVM_ANLAGE_TIP_WECHSELRICHTER);
+
+            // --- alles unter dem Panel nach unten -----------------------------------
+            label4.Top += VERSATZ_UNTEN;
+            panel2.Top += VERSATZ_UNTEN;
+            btn_OK.Top += VERSATZ_UNTEN;
+            btn_Abbrechen.Top += VERSATZ_UNTEN;
+            ClientSize = new Size(ClientSize.Width, ClientSize.Height + VERSATZ_UNTEN);
         }
 
-        /// <summary>Beschriftung + Zahlenfeld in der dritten Spalte des Panels.</summary>
+        /// <summary>
+        /// Ein Designer-Feld in das neue Raster der Spalte A. <c>AutoSize</c> wird
+        /// abgeschaltet, damit die Beschriftung nicht wieder in die Nachbarspalte
+        /// hineinwaechst (genau daran lag die Ueberlappung des Pakets A).
+        /// </summary>
+        private static void BestandsfeldSetzen(Label lbl, TextBox feld, int oben)
+        {
+            lbl.AutoSize = false;
+            lbl.Size = new Size(SP_A_LABEL_BREITE, 20);
+            lbl.Location = new Point(SP_A_LABEL, oben + 3);
+
+            feld.Location = new Point(SP_A_FELD, oben);
+            feld.Size = new Size(SP_A_FELD_BREITE, 25);
+        }
+
+        /// <summary>Beschriftung + Zahlenfeld in der zweiten Spalte des Panels.</summary>
         private TextBox PvFeldAnlegen(string beschriftung, string hilfe, int oben)
         {
-            Label lbl = new Label();
-            lbl.Text = beschriftung;
-            lbl.AutoSize = false;
-            lbl.Size = new Size(LABEL_BREITE, 19);
-            lbl.Location = new Point(SPALTE_LINKS, oben + 5);
-            lbl.Font = new Font("Segoe UI", 8.25f, FontStyle.Bold);
-            lbl.ForeColor = Color.FromArgb(0, 0, 192);   // wie die Bestandsbeschriftungen
-            panel1.Controls.Add(lbl);
+            SpaltenBeschriftung(beschriftung, hilfe, oben);
 
             TextBox tb = new TextBox();
-            tb.Location = new Point(SPALTE_LINKS + LABEL_BREITE + 4, oben);
-            tb.Size = new Size(FELD_BREITE, 25);
+            tb.Location = new Point(SP_B_FELD, oben);
+            tb.Size = new Size(SP_B_FELD_BREITE, 25);
             tb.Font = new Font("Segoe UI", 10f);
             tb.TextAlign = HorizontalAlignment.Right;
             tb.TextChanged += (s, e) => Program.ZahlFaerben(s);
             panel1.Controls.Add(tb);
 
-            _tipPvAnlage.SetToolTip(lbl, hilfe);
             _tipPvAnlage.SetToolTip(tb, hilfe);
             return tb;
+        }
+
+        /// <summary>
+        /// Die Modellwahl (Stufe E2, Konzept N2.1). Die ANZEIGETEXTE stehen in
+        /// MyResource, der PERSISTENZWERT in <c>DbWerte</c> — verbunden sind sie
+        /// ausschliesslich ueber den Index (0 = einfach, 1 = erweitert). Ein
+        /// Anzeigetext darf nie Steuerwert sein (Drei-Schichten-Regel).
+        /// </summary>
+        private ComboBox ModellfeldAnlegen(int oben)
+        {
+            SpaltenBeschriftung(MyResource.Resource.PVM_ANLAGE_LABEL_MODELL,
+                                MyResource.Resource.PVM_ANLAGE_TIP_MODELL, oben);
+
+            ComboBox cb = new ComboBox();
+            cb.DropDownStyle = ComboBoxStyle.DropDownList;
+            cb.Location = new Point(SP_B_FELD, oben);
+            cb.Size = new Size(SP_B_COMBO_BREITE, 25);
+            cb.Items.Add(MyResource.Resource.PVM_MODELL_EINFACH);
+            cb.Items.Add(MyResource.Resource.PVM_MODELL_ERWEITERT);
+            cb.SelectedIndex = 0;
+            cb.SelectedIndexChanged += (s, e) => ModellUmschalten();
+            panel1.Controls.Add(cb);
+
+            _tipPvAnlage.SetToolTip(cb, MyResource.Resource.PVM_ANLAGE_TIP_MODELL);
+            return cb;
+        }
+
+        private void SpaltenBeschriftung(string beschriftung, string hilfe, int oben)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(SP_B_LABEL_BREITE, 19);
+            lbl.Location = new Point(SP_B_LABEL, oben + 5);
+            lbl.Font = new Font("Segoe UI", 8.25f, FontStyle.Bold);
+            lbl.ForeColor = Color.FromArgb(0, 0, 192);   // wie die Bestandsbeschriftungen
+            panel1.Controls.Add(lbl);
+            _tipPvAnlage.SetToolTip(lbl, hilfe);
+        }
+
+        /// <summary>true, wenn die Maske gerade das ERWEITERTE Modell zeigt.</summary>
+        private bool ModellIstErweitert()
+        {
+            return comboBox_Modell != null && comboBox_Modell.SelectedIndex == 1;
+        }
+
+        /// <summary>
+        /// Enabled-Umschaltung nach der Modellwahl (Konzept N2.4: umschalten, nicht
+        /// ausblenden). Der Wechselrichter-Wirkungsgrad wirkt NUR im einfachen Modell —
+        /// im erweiterten ersetzt ihn die Teillastkennlinie. Die Systemverluste gelten
+        /// in beiden.
+        /// </summary>
+        private void ModellUmschalten()
+        {
+            bool erweitert = ModellIstErweitert();
+            if (textBox_WrWirkungsgrad != null) textBox_WrWirkungsgrad.Enabled = !erweitert;
+            if (btn_Wechselrichter != null) btn_Wechselrichter.Enabled = erweitert;
+            if (!m_bLaden) UpdateProerties();
+        }
+
+        /// <summary>
+        /// Sperre gegen das Ereignisfeuer beim BEFUELLEN der Maske: Ohne sie schriebe
+        /// <see cref="ModellUmschalten"/> waehrend des Umschaltens der Anlagenauswahl
+        /// bereits wieder ins Modell zurueck.
+        /// </summary>
+        private bool m_bLaden;
+
+        /// <summary>
+        /// Der Wechselrichterdialog zur AUSGEWAEHLTEN Anlage (Stufe E2.1/E2.2). Die
+        /// Werte gehen unmittelbar in das <c>WErzeugerModel</c> der Liste — derselbe
+        /// Weg wie bei den Feldern des Panels.
+        /// </summary>
+        private void btn_Wechselrichter_Click(object sender, EventArgs e)
+        {
+            int index = -1;
+            for (int i = 0; i < list_pvmodel.Count; i++)
+                if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text &&
+                    list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                { index = i; break; }
+
+            if (index < 0) return;
+
+            // kWp der AUSGEWAEHLTEN Anlage - Modulleistung [W] x Modulanzahl.
+            double kwp = 0;
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_PV_STAMM where Bezeichner='" + list_pvmodel[index].Bezeichner + "'");
+            if (!rs.EOF()) kwp = (double)rs.Read("Leistung") * list_pvmodel[index].PV_Leistung / 1000.0;
+            rs.Close();
+
+            using (Form_PVModell dlg = new Form_PVModell(
+                       list_pvmodel[index].Bezeichner, kwp, ModellIstErweitert(),
+                       list_pvmodel[index].PV_WrNennleistungKw,
+                       list_pvmodel[index].PV_WrEta10,
+                       list_pvmodel[index].PV_WrEta50,
+                       list_pvmodel[index].PV_WrEta100))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+                list_pvmodel[index].PV_WrNennleistungKw = dlg.Nennleistung;
+                list_pvmodel[index].PV_WrEta10 = dlg.Eta10;
+                list_pvmodel[index].PV_WrEta50 = dlg.Eta50;
+                list_pvmodel[index].PV_WrEta100 = dlg.Eta100;
+            }
         }
 
         /// <summary>
@@ -246,6 +411,14 @@ namespace WindowsFormsApplication1
                     list_pvmodel[i].PV_Systemverluste = PvWertAusFeld(textBox_Systemverluste,
                                                                       list_pvmodel[i].PV_Systemverluste);
 
+                    // E2: die Modellwahl. NULL bleibt NULL, solange "Einfach" steht -
+                    // eine nie berührte Anlage bekommt durch das Öffnen der Maske keinen
+                    // Persistenzwert und rechnet weiter den Paket-A-Weg.
+                    list_pvmodel[i].PV_Modell = ModellIstErweitert()
+                        ? DbWerte.PV_MODELL_ERWEITERT
+                        : (SimulationPV.IstErweitert(list_pvmodel[i]) ? DbWerte.PV_MODELL_EINFACH
+                                                                     : list_pvmodel[i].PV_Modell);
+
                     break;
                 }
             }
@@ -278,18 +451,28 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
 
-            for (int i = 0; i < list_pvmodel.Count; i++)
+            m_bLaden = true;
+            try
             {
-                if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                for (int i = 0; i < list_pvmodel.Count; i++)
                 {
-                    textBox_Neigung.Text = list_pvmodel[i].m_Neigung.ToString();
-                    textBox_Azimut.Text = list_pvmodel[i].m_Azimut.ToString();
-                    textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString();
-                    textBox_WrWirkungsgrad.Text = PvWertText(list_pvmodel[i].PV_WrWirkungsgrad);
-                    textBox_Systemverluste.Text = PvWertText(list_pvmodel[i].PV_Systemverluste);
-                    panel1.Visible = true;
+                    if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                    {
+                        textBox_Neigung.Text = list_pvmodel[i].m_Neigung.ToString();
+                        textBox_Azimut.Text = list_pvmodel[i].m_Azimut.ToString();
+                        textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString();
+                        textBox_WrWirkungsgrad.Text = PvWertText(list_pvmodel[i].PV_WrWirkungsgrad);
+                        textBox_Systemverluste.Text = PvWertText(list_pvmodel[i].PV_Systemverluste);
+                        // E2: NULL, leer und PV_MODELL_EINFACH zeigen alle „Einfach".
+                        comboBox_Modell.SelectedIndex =
+                            SimulationPV.IstErweitert(list_pvmodel[i]) ? 1 : 0;
+                        panel1.Visible = true;
+                    }
                 }
             }
+            finally { m_bLaden = false; }
+
+            ModellUmschalten();
             panel1.Visible = true;
         }
 
