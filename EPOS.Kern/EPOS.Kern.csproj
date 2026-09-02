@@ -1,0 +1,225 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EPOS.Kern - der RECHENKERN von EPOS-Plan als plattformfreie Bibliothek
+    (Umsetzungskonzept iOS, Paket iU3; Entscheidungsregister § 2.2).
+
+    Die Dateien werden VERLINKT, nicht verschoben. Es gibt weiterhin genau EINE
+    Quelle je Datei; das Hauptprojekt WindowsFormsApplication1 baut unveraendert
+    weiter, und jede Aenderung am Rechenkern wirkt sofort in beiden Projekten.
+    Ein Umzug haette den Bestand in zwei Haelften geteilt, die auseinanderlaufen
+    koennen - genau das soll dieses Projekt verhindern.
+
+    <EnableWindowsTargeting>false</EnableWindowsTargeting> ist die eigentliche
+    Pruefung: Directory.Build.props schaltet die Eigenschaft auf Nicht-Windows
+    ein, damit die net*-windows-Projekte dort uebersetzbar bleiben. Hier wird sie
+    ausdruecklich wieder abgeschaltet - jede WinForms-Beruehrung in einer
+    verlinkten Datei bricht damit den Build, statt erst auf iOS zur Laufzeit
+    aufzufallen.
+
+    KEIN NoWarn CA1416. Die verbliebenen Windows-APIs (System.Data.OleDb im
+    eingefrorenen Access-Zweig) sollen als Warnung SICHTBAR bleiben; ihre Zahl
+    ist das Restinventar, das die naechsten Pakete abtragen.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <!-- Es wird ausschliesslich verlinkt; ein Glob wuerde nichts finden und
+         zugleich verschleiern, was tatsaechlich zum Kern gehoert. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+    <RootNamespace>WindowsFormsApplication1</RootNamespace>
+    <AssemblyName>EPOS.Kern</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- ================================================================== -->
+  <!-- Rechenbibliotheken                                                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <!-- Nur zur UEBERSETZUNG: OleDbParameter ist Datentraeger in der Bruecke
+         von DbParam, OleDbCommand der Rest in RecordSet (iR8). Auf Nicht-Windows
+         wirft jeder Konstruktor - der Rechenpfad ruft sie seit iU3-3 nicht mehr. -->
+    <PackageReference Include="System.Data.OleDb" />
+    <!-- Properties\Settings.Designer.cs erbt von ApplicationSettingsBase. -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+  </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- ================================================================== -->
+  <!-- DER KERNSATZ - 91 verlinkte Dateien                                -->
+  <!--                                                                    -->
+  <!-- Zusammengestellt vom Ausgangspunkt Referenzlauf\Ergebnisexport.cs   -->
+  <!-- aus und dann so lange ergaenzt, wie der Compiler etwas verlangt hat.-->
+  <!-- Nicht dabei und mit Absicht: SchemaModell.cs (Schema-ANSICHT),      -->
+  <!-- SchemaMigration.cs samt Access-Zweig, WErzeugerCtrl.Aufraeumen.cs   -->
+  <!-- (Projekt-Loeschweg), SimulationControl.Stromspeicher.cs (K8) und    -->
+  <!-- alle *.WinForms.cs.                                                 -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\BhkwPlan.cs" Link="Allgemein\BhkwPlan.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\DataRepository.cs" Link="Allgemein\DataRepository.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\DbParam.cs" Link="Allgemein\DbParam.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\DbVorgang.cs" Link="Allgemein\DbVorgang.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\DbWerte.cs" Link="Allgemein\DbWerte.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Import\AnsiEncoding.cs" Link="Allgemein\Import\AnsiEncoding.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Meldung.cs" Link="Allgemein\Meldung.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\RecordSet.cs" Link="Allgemein\RecordSet.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\ErdreichAuswertung.cs" Link="Allgemein\Simulation\ErdreichAuswertung.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\ErdreichTemperatur.cs" Link="Allgemein\Simulation\ErdreichTemperatur.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\Hydraulikbild.cs" Link="Allgemein\Simulation\Hydraulikbild.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\Init.cs" Link="Allgemein\Simulation\Init.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\Kaskadenschleife.cs" Link="Allgemein\Simulation\Kaskadenschleife.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\Ladeordnung.cs" Link="Allgemein\Simulation\Ladeordnung.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\ProfilBedarf.cs" Link="Allgemein\Simulation\ProfilBedarf.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationBHKW.cs" Link="Allgemein\Simulation\SimulationBHKW.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationControl.cs" Link="Allgemein\Simulation\SimulationControl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationKanaele.cs" Link="Allgemein\Simulation\SimulationKanaele.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationPV.cs" Link="Allgemein\Simulation\SimulationPV.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationProtokoll.cs" Link="Allgemein\Simulation\SimulationProtokoll.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationPufferspeicher.cs" Link="Allgemein\Simulation\SimulationPufferspeicher.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationRunner.cs" Link="Allgemein\Simulation\SimulationRunner.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationSPK.cs" Link="Allgemein\Simulation\SimulationSPK.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationSolarthermie.cs" Link="Allgemein\Simulation\SimulationSolarthermie.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationStrombedarf.cs" Link="Allgemein\Simulation\SimulationStrombedarf.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationWaermebedarf.cs" Link="Allgemein\Simulation\SimulationWaermebedarf.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\SimulationWaermepumpe.cs" Link="Allgemein\Simulation\SimulationWaermepumpe.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\StilleDb.cs" Link="Allgemein\Simulation\StilleDb.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\VDI4640Pruefung.cs" Link="Allgemein\Simulation\VDI4640Pruefung.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\WaermequelleClass.cs" Link="Allgemein\Simulation\WaermequelleClass.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\WaermesenkeClass.cs" Link="Allgemein\Simulation\WaermesenkeClass.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Simulation\Warnkriterien.cs" Link="Allgemein\Simulation\Warnkriterien.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\SolarPVGISCalculator.cs" Link="Allgemein\SolarPVGISCalculator.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Update\Anlagenzeilen.cs" Link="Allgemein\Update\Anlagenzeilen.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Update\ProjektPuffer.cs" Link="Allgemein\Update\ProjektPuffer.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Update\SchemaKatalog.cs" Link="Allgemein\Update\SchemaKatalog.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Update\SchemaStand.cs" Link="Allgemein\Update\SchemaStand.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Wirtschaftlichkeit\HilfsstromRechner.cs" Link="Allgemein\Wirtschaftlichkeit\HilfsstromRechner.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\WizardItemClass.cs" Link="Allgemein\WizardItemClass.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Allgemein\Zeilenumbruch.cs" Link="Allgemein\Zeilenumbruch.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\AnlagePufferVerbundCtrl.cs" Link="Controller\AnlagePufferVerbundCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\AnlagenSql.cs" Link="Controller\AnlagenSql.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\ApplikationCtrl.cs" Link="Controller\ApplikationCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\BHKWCtrl.cs" Link="Controller\BHKWCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\BHKWStammCtrl.cs" Link="Controller\BHKWStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\ErgebnisCtrl.cs" Link="Controller\ErgebnisCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\HeizkesselCtrl.cs" Link="Controller\HeizkesselCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\HeizkesselStammCtrl.cs" Link="Controller\HeizkesselStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\KlimadatenCtrl.cs" Link="Controller\KlimadatenCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\KlimaregionCtrl.cs" Link="Controller\KlimaregionCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\KonfigurationCtrl.cs" Link="Controller\KonfigurationCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\PhotovoltaikCtrl.cs" Link="Controller\PhotovoltaikCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\PhotovoltaikStammCtrl.cs" Link="Controller\PhotovoltaikStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\ProjektCtrl.cs" Link="Controller\ProjektCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\ProjektGebaeudeCtrl.cs" Link="Controller\ProjektGebaeudeCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\PufferSpCtrl.cs" Link="Controller\PufferSpCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\PufferSpStammCtrl.cs" Link="Controller\PufferSpStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\QuellprofilCtrl.cs" Link="Controller\QuellprofilCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\SolardatenCtrl.cs" Link="Controller\SolardatenCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\SolarkollektorenCtrl.cs" Link="Controller\SolarkollektorenCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\SolarkollektorenStammCtrl.cs" Link="Controller\SolarkollektorenStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\WErzeugerCtrl.cs" Link="Controller\WErzeugerCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\WPStammCtrl.cs" Link="Controller\WPStammCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\Z_AnlageSenkeCtrl.cs" Link="Controller\Z_AnlageSenkeCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\Z_ProjektGebGanglinieCtrl.cs" Link="Controller\Z_ProjektGebGanglinieCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Controller\Z_ProjektStromganglinieCtrl.cs" Link="Controller\Z_ProjektStromganglinieCtrl.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\ApplikationModel.cs" Link="Model\ApplikationModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\BHKWKosten.cs" Link="Model\BHKWKosten.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\BHKWModel.cs" Link="Model\BHKWModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\BHKWStammModel.cs" Link="Model\BHKWStammModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\ErgebnisModel.cs" Link="Model\ErgebnisModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\ErgebnisPufferspeicherModel.cs" Link="Model\ErgebnisPufferspeicherModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\HeizkesselModel.cs" Link="Model\HeizkesselModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\KlimadatenModel.cs" Link="Model\KlimadatenModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\KlimaregionModel.cs" Link="Model\KlimaregionModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\KonfigurationModel.cs" Link="Model\KonfigurationModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\PhotovoltaikModel.cs" Link="Model\PhotovoltaikModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\ProjektGebaeudeModel.cs" Link="Model\ProjektGebaeudeModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\ProjektModel.cs" Link="Model\ProjektModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\PufferSpModel.cs" Link="Model\PufferSpModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\SolarkollektorenModel.cs" Link="Model\SolarkollektorenModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\StromspeicherLaufKontext.cs" Link="Model\StromspeicherLaufKontext.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\StromspeicherVarianteModel.cs" Link="Model\StromspeicherVarianteModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\WErzeugerModel.cs" Link="Model\WErzeugerModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\WPModel.cs" Link="Model\WPModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\Z_AnlageSenkeModel.cs" Link="Model\Z_AnlageSenkeModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\Z_ProjektStromganglinieModel.cs" Link="Model\Z_ProjektStromganglinieModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Model\Z_ProjektWaermebedarfModel.cs" Link="Model\Z_ProjektWaermebedarfModel.cs" />
+    <Compile Include="..\WindowsFormsApplication1\MyResource\Resource.Designer.cs" Link="MyResource\Resource.Designer.cs" />
+    <Compile Include="..\WindowsFormsApplication1\Properties\Settings.Designer.cs" Link="Properties\Settings.Designer.cs" />
+    <!-- Generierter Typkatalog aus sql\schema - dieselbe EINE Quelle, die auch
+         das Hauptprojekt verlinkt (Arbeitspaket S2). -->
+    <Compile Include="..\sql\schema\SchemaTypKatalog.g.cs" Link="Allgemein\SchemaTypKatalog.g.cs" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
+  <!--                                                                    -->
+  <!-- Der Basisname steht in MyResource\Resource.Designer.cs:43 als       -->
+  <!-- "WindowsFormsApplication1.MyResource.Resource"; der LogicalName     -->
+  <!-- schreibt ihn fest, damit er nicht am Ordnerpfad dieses Projekts     -->
+  <!-- haengt. Beide .resx fuehren ausschliesslich Zeichenketten.          -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\WindowsFormsApplication1\MyResource\Resource.resx">
+      <Link>MyResource\Resource.resx</Link>
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\WindowsFormsApplication1\MyResource\Resource.en-US.resx">
+      <Link>MyResource\Resource.en-US.resx</Link>
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.en-US.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

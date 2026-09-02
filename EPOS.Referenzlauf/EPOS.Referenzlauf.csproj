@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EPOS.Referenzlauf - der Referenzlauf OHNE Windows (Umsetzungskonzept iOS, iU3).
+
+    Er rechnet dieselben Projekte wie das Werkzeug unter Referenzlauf\ und schreibt
+    dieselben CSV; nur der Weg dorthin ist ein anderer:
+
+      * KEIN Kindprozess je Projekt. Der alte Weg brauchte ihn, um eine haengende
+        MessageBox der Engine abschiessen zu koennen. Seit iU3-2 setzt der Kern
+        keine MessageBox mehr ab (Allgemein\Meldung.cs), damit entfaellt der Grund.
+      * KEIN DialogWaechter - er ist reine WinForms-Vorsorge fuer genau diesen Fall.
+      * KEIN Migrationslauf - der Access-Zweig gehoert nicht in den Kern.
+
+    Verlinkt werden die Bausteine des bestehenden Werkzeugs unveraendert; NUR das
+    Program.cs ist neu. Damit gibt es weiterhin EINE Fassung von Ergebnisexport,
+    Vergleich und Plausibilitaet - Windows-Werkzeug und Kernlauf koennen nicht
+    auseinanderlaufen.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+    <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
+    <AssemblyName>EPOS.Referenzlauf</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Eigener Einstiegspunkt (in DIESEM Projekt, nicht verlinkt). -->
+    <Compile Include="Program.cs" />
+
+    <!-- Die Bausteine des bestehenden Werkzeugs - verlinkt, nicht kopiert. -->
+    <Compile Include="..\Referenzlauf\DbUmgebung.cs" Link="DbUmgebung.cs" />
+    <Compile Include="..\Referenzlauf\Ergebnisexport.cs" Link="Ergebnisexport.cs" />
+    <Compile Include="..\Referenzlauf\Plausibilitaet.cs" Link="Plausibilitaet.cs" />
+    <Compile Include="..\Referenzlauf\Projektauswahl.cs" Link="Projektauswahl.cs" />
+    <Compile Include="..\Referenzlauf\Protokoll.cs" Link="Protokoll.cs" />
+    <Compile Include="..\Referenzlauf\Vergleich.cs" Link="Vergleich.cs" />
+  </ItemGroup>
+
+</Project>
