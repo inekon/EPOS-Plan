@@ -379,7 +379,7 @@ Bleibt INEKON unter den Schwellen, ist der Umstieg **kostenneutral** (→ iF18).
 |---|---|---|
 | 1 | Auf `visualstudio.microsoft.com/downloads` **Community 2026** wählen, Web-Installer herunterladen | kostenfrei, kein Produktschlüssel |
 | 2 | Installer starten — er erkennt die vorhandene VS-2022-Installation und bietet an, **Workloads und Einstellungen zu übernehmen** | annehmen; spart die manuelle Auswahl |
-| 3 | Drei Workloads auswählen — Bezeichner in der Tabelle unten | MAUI und ASP.NET lassen sich später nachinstallieren |
+| 3 | **Nur `.NET-Desktopentwicklung`** auswählen — die beiden anderen Workloads erst, wenn ihre Etappe ansteht (Tabelle unten) | jede Workload kostet mehrere GB; nichts auf Vorrat installieren |
 | 4 | Installieren — VS 2022 bleibt **unangetastet** daneben stehen | Dauer 30–90 Minuten je nach Workloads |
 | 5 | Mit einem Microsoft-Konto anmelden | Community verlangt die Anmeldung nach 30 Tagen |
 | 6 | **ResXManager** aus dem Marketplace nachinstallieren, falls Schritt 2 ihn nicht übernommen hat | VS 2026 ist rückwärtskompatibel zu VS-2022-Erweiterungen |
@@ -391,13 +391,17 @@ Schritt 7 ist der eigentliche Wert dieser Reihenfolge: **IDE-Wechsel und Framewo
 getrennt nachgewiesen.** Bewegt sich danach ein Ergebnis, ist klar, welcher der beiden Schritte es
 war.
 
-**Die drei Workloads (Schritt 3):**
+**Die Workloads — und wann sie wirklich gebraucht werden:**
 
-| Workload in der Oberfläche | Bezeichner für die Kommandozeile | wofür |
-|---|---|---|
-| **.NET-Desktopentwicklung** | `Microsoft.VisualStudio.Workload.ManagedDesktop` | WinForms — die heutige Anwendung. **Pflicht** |
-| **.NET Multi-Platform App UI-Entwicklung** | `Microsoft.VisualStudio.Workload.NetCrossPlat` | MAUI — ab iU2 für die iOS-Hülle |
-| **ASP.NET und Webentwicklung** | `Microsoft.VisualStudio.Workload.NetWeb` | Blazor-Werkzeuge und Razor-Editor — ab iU8 für `EPOS.UI` |
+| Workload in der Oberfläche | Bezeichner | wofür | ab wann |
+|---|---|---|---|
+| **.NET-Desktopentwicklung** | `Microsoft.VisualStudio.Workload.ManagedDesktop` | WinForms — die Anwendung selbst | **sofort**, Pflicht für iU1 |
+| .NET Multi-Platform App UI-Entwicklung | `Microsoft.VisualStudio.Workload.NetCrossPlat` | MAUI-Hülle | **iU10** — und nur zusammen mit dem Mac |
+| ASP.NET und Webentwicklung | `Microsoft.VisualStudio.Workload.NetWeb` | Razor-Editor und IntelliSense für `.razor` | **iU8** — reiner Editorkomfort; eine Razor-Klassenbibliothek baut das SDK auch ohne |
+
+**Nur die erste jetzt installieren.** Die beiden anderen sind mehrere GB groß und werden Monate
+später gebraucht; sie lassen sich mit demselben Befehl jederzeit nachrüsten. Wer sie auf Vorrat
+installiert, pflegt sie ohne Nutzen mit.
 
 Wer die Auswahl reproduzierbar halten will (zweiter Arbeitsplatz, Neuaufsetzen), nimmt statt der
 Oberfläche den Installer auf der Kommandozeile. **PowerShell als Administrator** — passend zur
@@ -412,19 +416,24 @@ Oberfläche den Installer auf der Kommandozeile. **PowerShell als Administrator*
 #     ACHTUNG: Das Verzeichnis heisst 18 (interne Hauptversion), nicht 2026,
 #     und liegt unter Program Files - nicht (x86) wie noch bei VS 2022.
 #     Der Installer selbst bleibt unter Program Files (x86).
-& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify `
-    --installPath "C:\Program Files\Microsoft Visual Studio\18\Community" `
-    --add Microsoft.VisualStudio.Workload.ManagedDesktop `
-    --add Microsoft.VisualStudio.Workload.NetCrossPlat `
-    --add Microsoft.VisualStudio.Workload.NetWeb `
-    --includeRecommended --passive --norestart
+# --passive verlangt Administratorrechte VON ANFANG AN, sonst Exit Code 5007.
+# Start-Process -Verb RunAs loest die UAC-Abfrage aus:
+Start-Process -Verb RunAs `
+    -FilePath "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" `
+    -ArgumentList 'modify', `
+        '--installPath','C:\Program Files\Microsoft Visual Studio\18\Community', `
+        '--add','Microsoft.VisualStudio.Workload.ManagedDesktop', `
+        '--includeRecommended','--passive','--norestart'
 
-# 2b. VS 2026 fehlt noch -> Bootstrapper, ohne modify und ohne installPath
-& "$HOME\Downloads\vs_community.exe" `
-    --add Microsoft.VisualStudio.Workload.ManagedDesktop `
-    --add Microsoft.VisualStudio.Workload.NetCrossPlat `
-    --add Microsoft.VisualStudio.Workload.NetWeb `
-    --includeRecommended --passive --norestart
+# Spaeter, wenn iU8 bzw. iU10 anstehen: derselbe Aufruf mit
+#   '--add','Microsoft.VisualStudio.Workload.NetWeb'        (iU8)
+#   '--add','Microsoft.VisualStudio.Workload.NetCrossPlat'  (iU10)
+
+# 2b. VS 2026 fehlt noch -> Bootstrapper von visualstudio.microsoft.com/downloads,
+#     ohne modify und ohne installPath (Datei muss vorher heruntergeladen sein)
+Start-Process -Verb RunAs -FilePath "$HOME\Downloads\vs_community.exe" `
+    -ArgumentList '--add','Microsoft.VisualStudio.Workload.ManagedDesktop', `
+        '--includeRecommended','--passive','--norestart'
 
 # 3. Kontrolle
 dotnet --list-sdks      # 10.0.x muss erscheinen
