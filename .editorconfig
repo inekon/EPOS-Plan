@@ -22,6 +22,12 @@ insert_final_newline = false
 trim_trailing_whitespace = false
 
 [*.cs]
+# WFO1000 (WinForms-Designer-Serialisierung, seit .NET 9 Standard-Schwere "error"):
+# oeffentliche Properties eigener Controls ohne DesignerSerializationVisibility/
+# DefaultValue. Beim Sprung auf .NET 10 als Warnung sichtbar gelassen statt
+# unterdrueckt - die Annotation je Property ist Fachentscheidung und gehoert zum
+# Maskenumbau (Umsetzungskonzept iOS, iU9), nicht zum Frameworkwechsel (iU1).
+dotnet_diagnostic.WFO1000.severity = warning
 charset = utf-8-bom
 end_of_line = crlf
 indent_style = space

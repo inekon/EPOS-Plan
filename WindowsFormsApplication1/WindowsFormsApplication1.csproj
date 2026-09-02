@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
@@ -30,11 +30,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
 
-    <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
 
     <!-- Tolerant gegenüber Legacy-Warnungen:
-         CA1416  - WinForms-APIs nur unter Windows (wir TARGETEN net8.0-windows, also irrelevant)
+         CA1416  - WinForms-APIs nur unter Windows (wir TARGETEN net10.0-windows, also irrelevant)
          MSB3568 - doppelte Ressourcennamen aus historischem WinForms-Designer (ignoriert, harmlos)
          CS1701/1702/NU1701 - Mixed-Framework-Hinweise
          NETSDK1206 - RID-Hinweise -->
@@ -78,16 +77,16 @@
 
   <!-- Projektreferenzen -->
   <ItemGroup>
-    <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net8.0, AnyCPU).
+    <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net10.0, AnyCPU).
          Die Engine hat selbst keine Referenzen und bindet nichts nach. -->
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
 
     <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
-         (net8.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
+         (net10.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
     <ProjectReference Include="..\KiKern\KiKern.csproj" />
 
     <!-- Erststart-Assistent S8: derselbe Migrationskern, den auch die Konsolenfassung
-         EposSqliteMigrator.exe fuer Kundenbestaende benutzt (net8.0, x64, Schema als
+         EposSqliteMigrator.exe fuer Kundenbestaende benutzt (net10.0, x64, Schema als
          eingebettete Ressource). EINE Migrationslogik fuer beide Wege - eine zweite
          waere die Stelle, an der die Ergebnisse auseinanderlaufen.
          Das Projekt liegt in der EIGENEN Projektmappe EposSqliteMigrator\; es ist
@@ -110,20 +109,19 @@
 
     <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
          EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
 
     <!-- BLEIBT: OleDbParameter ist nach der Umstellung nur noch DATENTRAEGER an den
          ~2.300 Aufrufstellen; DataRepository uebersetzt innen (Konzept 2). -->
-    <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
+    <PackageReference Include="System.Data.OleDb" Version="10.0.11" />
 
     <!-- Konfiguration / Settings -->
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
+    <PackageReference Include="System.Management" Version="10.0.11" />
 
     <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.11" />
 
     <!-- Originalbestand -->
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
@@ -139,8 +137,8 @@
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.1" />
 
     <!-- Microsoft.Extensions.* (Mscc.GenerativeAI 3.1 fordert >= 10.0.3) -->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.11" />
 
     <!-- Semantische Doku-Suche (H10): oertliche Einbettungen, CPU, x64.
          Beide MIT; die Modelldateien liegen NICHT im Repo, sondern werden
