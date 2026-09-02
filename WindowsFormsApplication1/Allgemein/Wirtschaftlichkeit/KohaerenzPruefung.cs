@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -224,7 +223,7 @@ namespace WindowsFormsApplication1
                         "SELECT ID, Bezeichner, [" +
                         SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
                         "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
 
                 if (dt == null ||
                     !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL))
@@ -272,7 +271,7 @@ namespace WindowsFormsApplication1
                         "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                         "ON w.StammID = f.StammID " +
                         "WHERE w.ProjektID = ? AND w.KategorieID = 2",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                 if (dt == null) return treffer;
 
                 foreach (DataRow r in dt.Rows)
@@ -617,8 +616,8 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + StromAufschlagCtrl.TABLE + "] " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@eid", carrierId));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@eid", carrierId));
 
                 if (dt == null || dt.Rows.Count == 0) return null;
                 if (!dt.Columns.Contains(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER)) return null;
@@ -636,7 +635,7 @@ namespace WindowsFormsApplication1
             {
                 object v = DataRepository.ExecuteScalar(
                     "SELECT [name] FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@id", carrierId));
+                    new DbParam("@id", carrierId));
                 string s = (v == null || v == DBNull.Value) ? "" : Convert.ToString(v).Trim();
                 return s.Length > 0 ? s : ("#" + carrierId.ToString(CultureInfo.InvariantCulture));
             }

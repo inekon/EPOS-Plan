@@ -1200,9 +1200,9 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
                 "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
                 "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
-                StilleDb.Par("@proj1", System.Data.OleDb.OleDbType.Integer, idProjekt),
-                StilleDb.Par("@proj2", System.Data.OleDb.OleDbType.Integer, idProjekt),
-                StilleDb.Par("@typ", System.Data.OleDb.OleDbType.Integer, WizardItemClass.KESSEL_TYP));
+                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
 
             if (dt == null) return arten;
 
@@ -6478,7 +6478,7 @@ namespace WindowsFormsApplication1
                                       "@anlage", _speicherVariante.ID_Energieanlage));
                 }
 
-                System.Data.DataTable dt = DataRepository.GetDataTable(sql, parameter.ToArray());
+                System.Data.DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(parameter.ToArray()));
                 if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
                 {
                     kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);

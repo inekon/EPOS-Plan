@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.OleDb;
 using System.IO;
 
 namespace WindowsFormsApplication1
@@ -99,7 +98,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT KonfigJson FROM " + TAB_KONFIG + " WHERE ProjektID = ?",
-                    new OleDbParameter("@p", idStammProjekt));
+                    new DbParam("@p", idStammProjekt));
                 return BerichtsKonfiguration.AusJson(o as string);
             }
             catch { return BerichtsKonfiguration.Standard(); }
@@ -116,18 +115,18 @@ namespace WindowsFormsApplication1
             {
                 int rows = DataRepository.ExecuteNonQuery(
                     "UPDATE " + TAB_KONFIG + " SET KonfigJson = ?, GeaendertAm = ? WHERE ProjektID = ?",
-                    new OleDbParameter("@json", json),
-                    new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now },
-                    new OleDbParameter("@p", idStammProjekt));
+                    new DbParam("@json", json),
+                    new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
+                    new DbParam("@p", idStammProjekt));
                 if (rows > 0) return true;
 
                 int id = DataRepository.GetMaxID(TAB_KONFIG, "ID") + 1;
                 return DataRepository.ExecuteSQL(
                     "INSERT INTO " + TAB_KONFIG + " (ID, ProjektID, KonfigJson, GeaendertAm) VALUES (?,?,?,?)",
-                    new OleDbParameter("@id", id),
-                    new OleDbParameter("@p", idStammProjekt),
-                    new OleDbParameter("@json", json),
-                    new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
+                    new DbParam("@id", id),
+                    new DbParam("@p", idStammProjekt),
+                    new DbParam("@json", json),
+                    new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
         }

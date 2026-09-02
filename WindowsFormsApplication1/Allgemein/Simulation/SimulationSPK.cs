@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -150,7 +149,7 @@ namespace WindowsFormsApplication1
                 Kessel_Leistung_Spk[i] = heizkesselctrl.items[0].Ptherm;
 
                 // Emissionen aus Brennstoff Tabelle laden
-                DataTable dt = DataRepository.GetDataTable("select * from Tab_Brennstoff_Stamm where ID=?", new OleDbParameter("@s1", heizkesselctrl.items[0].Brennstoff));
+                DataTable dt = DataRepository.GetDataTable("select * from Tab_Brennstoff_Stamm where ID=?", new DbParam("@s1", heizkesselctrl.items[0].Brennstoff));
                 if (dt.Rows.Count > 0)
                 {
                     DataRow row = dt.Rows[0];

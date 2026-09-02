@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -35,14 +34,14 @@ namespace WindowsFormsApplication1
                            (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) 
                            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@name", m_szProjektname ?? ""),
-                new OleDbParameter("@bearb", m_szBearbeiter ?? ""),
-                new OleDbParameter("@besch", m_szBeschreibung ?? ""),
-                new OleDbParameter("@kunde", m_szKunde ?? ""),
-                new OleDbParameter("@date", OleDbType.Date) { Value = ValidateDate(m_Aenderungsdatum) },
-                new OleDbParameter("@klima", m_ID_Klimaregion),
-                new OleDbParameter("@edate", OleDbType.Date) { Value = ValidateDate(m_Erstelldatum) }
+            DbParam[] ps = {
+                new DbParam("@name", m_szProjektname ?? ""),
+                new DbParam("@bearb", m_szBearbeiter ?? ""),
+                new DbParam("@besch", m_szBeschreibung ?? ""),
+                new DbParam("@kunde", m_szKunde ?? ""),
+                new DbParam("@date", DbParamTyp.Date) { Wert = ValidateDate(m_Aenderungsdatum) },
+                new DbParam("@klima", m_ID_Klimaregion),
+                new DbParam("@edate", DbParamTyp.Date) { Wert = ValidateDate(m_Erstelldatum) }
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -55,14 +54,14 @@ namespace WindowsFormsApplication1
                             Aenderungsdatum=?, ID_Klimaregion=?, Erstelldatum=? 
                            WHERE Projektname=?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@bearb", (object)m_szBearbeiter ?? ""),
-                new OleDbParameter("@besch", (object)m_szBeschreibung ?? ""),
-                new OleDbParameter("@kunde", (object)m_szKunde ?? ""),
-                new OleDbParameter("@date", OleDbType.Date) { Value = ValidateDate(m_Aenderungsdatum) },
-                new OleDbParameter("@klima", m_ID_Klimaregion),
-                new OleDbParameter("@edate", OleDbType.Date) { Value = ValidateDate(m_Erstelldatum) },
-                new OleDbParameter("@pname", m_szProjektname)
+            DbParam[] ps = {
+                new DbParam("@bearb", (object)m_szBearbeiter ?? ""),
+                new DbParam("@besch", (object)m_szBeschreibung ?? ""),
+                new DbParam("@kunde", (object)m_szKunde ?? ""),
+                new DbParam("@date", DbParamTyp.Date) { Wert = ValidateDate(m_Aenderungsdatum) },
+                new DbParam("@klima", m_ID_Klimaregion),
+                new DbParam("@edate", DbParamTyp.Date) { Wert = ValidateDate(m_Erstelldatum) },
+                new DbParam("@pname", m_szProjektname)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -91,7 +90,7 @@ namespace WindowsFormsApplication1
             VariantenVerknuepfungenEntfernen(szProjekt);
 
             string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
-            OleDbParameter[] ps = { new OleDbParameter("@pname", szProjekt) };
+            DbParam[] ps = { new DbParam("@pname", szProjekt) };
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
@@ -111,7 +110,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new OleDbParameter("@pname", szProjekt ?? ""));
+                    new DbParam("@pname", szProjekt ?? ""));
 
                 if (dt == null) return;
 
@@ -119,7 +118,7 @@ namespace WindowsFormsApplication1
                     if (r[0] != DBNull.Value)
                         StilleDb.NonQuery(
                             "DELETE FROM " + BerichtCtrl.TAB_KONFIG + " WHERE ProjektID = ?",
-                            StilleDb.Par("@proj", OleDbType.Integer, Convert.ToInt32(r[0])));
+                            StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])));
             }
             catch (Exception ex)
             {
@@ -144,7 +143,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new OleDbParameter("@pname", szProjekt ?? ""));
+                    new DbParam("@pname", szProjekt ?? ""));
 
                 if (dt == null) return;
 
@@ -152,8 +151,8 @@ namespace WindowsFormsApplication1
                     if (r[0] != DBNull.Value)
                         StilleDb.NonQuery(
                             "DELETE FROM " + VariantenCtrl.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
-                            StilleDb.Par("@proj", OleDbType.Integer, Convert.ToInt32(r[0])),
-                            StilleDb.Par("@ref", OleDbType.Integer, Convert.ToInt32(r[0])));
+                            StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])),
+                            StilleDb.Par("@ref", DbParamTyp.Integer, Convert.ToInt32(r[0])));
             }
             catch (Exception ex)
             {
@@ -172,7 +171,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new OleDbParameter("@pname", szProjekt ?? ""));
+                    new DbParam("@pname", szProjekt ?? ""));
 
                 if (dt == null) return;
 
@@ -201,7 +200,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(string projektName)
         {
             string sql = "SELECT * FROM Tab_Projekt WHERE Projektname=?";
-            OleDbParameter[] ps = { new OleDbParameter("@pname", projektName) };
+            DbParam[] ps = { new DbParam("@pname", projektName) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             _internalList.Clear(); // Liste leeren, da wir nur einen Datensatz laden
@@ -232,7 +231,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(int IDProjekt)
         {
             string sql = "SELECT * FROM Tab_Projekt WHERE ID=?";
-            OleDbParameter[] ps = { new OleDbParameter("@id", IDProjekt) };
+            DbParam[] ps = { new DbParam("@id", IDProjekt) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             _internalList.Clear(); // Liste leeren, da wir nur einen Datensatz laden

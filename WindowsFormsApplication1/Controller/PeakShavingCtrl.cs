@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner, Zeitinterval FROM " + HeadProjekt +
                     " WHERE ID_Projekt = ? ORDER BY Bezeichner",
-                    new OleDbParameter("@projekt", OleDbType.Integer) { Value = idProjekt });
+                    new DbParam("@projekt", DbParamTyp.Integer) { Wert = idProjekt });
                 Uebernehmen(liste, dt, false);
             }
 
@@ -199,7 +199,7 @@ namespace WindowsFormsApplication1
             string tabelle = eintrag.AusStamm ? DataStamm : DataProjekt;
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Wert FROM " + tabelle + " WHERE ID_Ganglinie = ? ORDER BY ID",
-                new OleDbParameter("@g", OleDbType.Integer) { Value = eintrag.Id });
+                new DbParam("@g", DbParamTyp.Integer) { Wert = eintrag.Id });
 
             if (dt == null || dt.Rows.Count == 0) return null;
 
@@ -253,8 +253,8 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT sp.* FROM Tab_Energieanlagen AS a INNER JOIN Tab_Stromspeicher AS sp " +
                     "ON a.ID_SP = sp.ID WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
-                    new OleDbParameter("@projekt", OleDbType.Integer) { Value = idProjekt },
-                    new OleDbParameter("@typ", OleDbType.Integer) { Value = WizardItemClass.SP_TYP });
+                    new DbParam("@projekt", DbParamTyp.Integer) { Wert = idProjekt },
+                    new DbParam("@typ", DbParamTyp.Integer) { Wert = WizardItemClass.SP_TYP });
 
                 if (dt != null && dt.Rows.Count > 0)
                 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -36,8 +35,8 @@ namespace WindowsFormsApplication1
             {
                 // Standardkonforme DELETE-Syntax ohne "*" und Typkorrektur über Parameter
                 string sql = "DELETE FROM Tab_WaermebedarfDaten WHERE ID_Ganglinie = ?";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@idGang", m_ID_GanglinieDaten)
+                DbParam[] ps = {
+                    new DbParam("@idGang", m_ID_GanglinieDaten)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -59,9 +58,9 @@ namespace WindowsFormsApplication1
                 // Schleife über die dynamische Liste unter Verwendung von foreach statt dem langsameren .ElementAt(i)
                 foreach (var item in list_GanglinieDaten)
                 {
-                    OleDbParameter[] ps = {
-                        new OleDbParameter("@idGang", item.m_ID_GanglinieDaten),
-                        new OleDbParameter("@wert", item.m_Wert) // Regelt Dezimaltrennzeichen (Punkt/Komma) automatisch fehlerfrei
+                    DbParam[] ps = {
+                        new DbParam("@idGang", item.m_ID_GanglinieDaten),
+                        new DbParam("@wert", item.m_Wert) // Regelt Dezimaltrennzeichen (Punkt/Komma) automatisch fehlerfrei
                     };
 
                     bool success = DataRepository.ExecuteSQL(sql, ps);

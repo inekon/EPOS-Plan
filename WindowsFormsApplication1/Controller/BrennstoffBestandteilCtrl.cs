@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -142,8 +141,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@eid", idEnergietraeger));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@eid", idEnergietraeger));
 
             if (dt == null || dt.Rows.Count == 0) return m;
 
@@ -200,20 +199,20 @@ namespace WindowsFormsApplication1
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
                 Wert("@est", m.Energiesteuer),
-                new OleDbParameter("@estA", OleDbType.Boolean) { Value = m.Energiesteuer_Aktiv },
+                new DbParam("@estA", DbParamTyp.Boolean) { Wert = m.Energiesteuer_Aktiv },
                 Wert("@co2", m.CO2),
-                new OleDbParameter("@co2A", OleDbType.Boolean) { Value = m.CO2_Aktiv },
+                new DbParam("@co2A", DbParamTyp.Boolean) { Wert = m.CO2_Aktiv },
                 Wert("@netz", m.Netzentgelt),
-                new OleDbParameter("@netzA", OleDbType.Boolean) { Value = m.Netzentgelt_Aktiv },
+                new DbParam("@netzA", DbParamTyp.Boolean) { Wert = m.Netzentgelt_Aktiv },
                 Wert("@vt", m.Vertrieb),
-                new OleDbParameter("@vtA", OleDbType.Boolean) { Value = m.Vertrieb_Aktiv },
-                new OleDbParameter("@modus", OleDbType.VarWChar)
+                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
+                new DbParam("@modus", DbParamTyp.VarWChar)
                 {
-                    Value = string.IsNullOrEmpty(m.Modus)
+                    Wert = string.IsNullOrEmpty(m.Modus)
                             ? DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT : m.Modus
                 },
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = m.ID_Projekt },
-                new OleDbParameter("@eid", OleDbType.Integer) { Value = m.ID_Energietraeger });
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
+                new DbParam("@eid", DbParamTyp.Integer) { Wert = m.ID_Energietraeger });
 
             if (betroffen > 0) m.AusDatenbank = true;
             return betroffen > 0;
@@ -226,11 +225,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein DOUBLE-Parameter, der <c>null</c> als <c>DBNull</c> weitergibt.</summary>
-        private static OleDbParameter Wert(string name, double? wert)
+        private static DbParam Wert(string name, double? wert)
         {
-            return new OleDbParameter(name, OleDbType.Double)
+            return new DbParam(name, DbParamTyp.Double)
             {
-                Value = wert.HasValue ? (object)wert.Value : DBNull.Value
+                Wert = wert.HasValue ? (object)wert.Value : DBNull.Value
             };
         }
 

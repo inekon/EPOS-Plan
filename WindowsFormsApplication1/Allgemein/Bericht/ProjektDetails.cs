@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -65,7 +64,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID_Projekt = ? LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 d.KlimaregionName = o as string ?? "";
             }
             catch { }
@@ -117,7 +116,7 @@ namespace WindowsFormsApplication1
             {
                 return DataRepository.GetDataTable(
                     "SELECT * FROM " + tabelle + " WHERE ID_Projekt = ? ORDER BY ID",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
             }
             catch { return null; }
         }

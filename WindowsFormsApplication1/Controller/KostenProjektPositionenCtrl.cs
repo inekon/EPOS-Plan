@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -60,16 +59,16 @@ namespace WindowsFormsApplication1
             try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
 
             string filter = "";
-            var parameter = new List<OleDbParameter>
+            var parameter = new List<DbParam>
             {
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@k", komponentenId),
-                new OleDbParameter("@g", kategorieId)
+                new DbParam("@p", projektId),
+                new DbParam("@k", komponentenId),
+                new DbParam("@g", kategorieId)
             };
             if (spalteDa && idAnlage > 0)
             {
                 filter = "AND w.ID_Anlage = ? ";
-                parameter.Add(new OleDbParameter("@a", idAnlage));
+                parameter.Add(new DbParam("@a", idAnlage));
             }
             else if (spalteDa && idAnlage == 0)
             {
@@ -151,8 +150,8 @@ namespace WindowsFormsApplication1
             {
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET StammID = ? WHERE ID = ?",
-                    new OleDbParameter("@s", stammId),
-                    new OleDbParameter("@id", z.Raster.Id));
+                    new DbParam("@s", stammId),
+                    new DbParam("@id", z.Raster.Id));
                 z.Raster.StammId = stammId;
             }
 
@@ -176,7 +175,7 @@ namespace WindowsFormsApplication1
             DataRepository.ExecuteSQL(
                 "UPDATE Tab_ProjektWerte SET Nutzungsdauer = ? WHERE ID = ?",
                 Zahl("@n", z.Raster.Nutzungsdauer),
-                new OleDbParameter("@id", z.Raster.Id));
+                new DbParam("@id", z.Raster.Id));
 
             // ETAPPE H2-1 (Konzept BHKW-Wirtschaftlichkeit § 4.5): für ermittelbare
             // Bemessungsarten weist das Speichern den FRISCHEN Stand der Bezugsgröße
@@ -215,9 +214,9 @@ namespace WindowsFormsApplication1
             if (!spalteDa) return;
             DataRepository.ExecuteSQL(
                 "UPDATE Tab_ProjektWerte SET ID_Anlage = ?, ID_AnlageGeraet = ? WHERE ID = ?",
-                new OleDbParameter("@a", idAnlage),
+                new DbParam("@a", idAnlage),
                 Zahl("@g", GeraetDerAnlage(idAnlage)),
-                new OleDbParameter("@id", idPosition));
+                new DbParam("@id", idPosition));
         }
 
         /// <summary>Ä21: der Gerätewert der Anlagenzeile (erste gesetzte
@@ -229,7 +228,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID_WP, ID_Kessel, ID_BHKW, ID_PV, ID_Solar, ID_SP, ID_PUFFER " +
                     "FROM Tab_Energieanlagen WHERE ID = ?",
-                    new OleDbParameter("@id", idAnlage));
+                    new DbParam("@id", idAnlage));
                 if (dt == null || dt.Rows.Count == 0) return null;
                 foreach (string s in new[] { "ID_WP", "ID_Kessel", "ID_BHKW", "ID_PV",
                                              "ID_Solar", "ID_SP", "ID_PUFFER" })
@@ -365,8 +364,8 @@ namespace WindowsFormsApplication1
                         ziel = DataRepository.ExecuteScalar(
                             "SELECT MIN(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND [" +
                             sp2 + "] = ?",
-                            new OleDbParameter("@p", projektId),
-                            new OleDbParameter("@g", Convert.ToInt32(geraet)));
+                            new DbParam("@p", projektId),
+                            new DbParam("@g", Convert.ToInt32(geraet)));
                     neueAnlage[schluessel] = ziel ?? DBNull.Value;
                 }
 
@@ -376,13 +375,13 @@ namespace WindowsFormsApplication1
                     // die Position erscheint als „ohne Anlagenzuordnung“.
                     DataRepository.ExecuteSQL(
                         "UPDATE Tab_ProjektWerte SET ID_Anlage = NULL WHERE ID = ?",
-                        new OleDbParameter("@id", Convert.ToInt32(r["ID"])));
+                        new DbParam("@id", Convert.ToInt32(r["ID"])));
                 }
                 else
                     DataRepository.ExecuteSQL(
                         "UPDATE Tab_ProjektWerte SET ID_Anlage = ? WHERE ID = ?",
-                        new OleDbParameter("@a", Convert.ToInt32(ziel)),
-                        new OleDbParameter("@id", Convert.ToInt32(r["ID"])));
+                        new DbParam("@a", Convert.ToInt32(ziel)),
+                        new DbParam("@id", Convert.ToInt32(r["ID"])));
             }
         }
 
@@ -455,7 +454,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT [" + SchemaKatalog.SPALTE_PW_IST_PFLICHT +
                     "] FROM Tab_ProjektWerte WHERE ID = ?",
-                    new OleDbParameter("@id", id));
+                    new DbParam("@id", id));
                 return o != null && o != DBNull.Value && Convert.ToBoolean(o);
             }
             catch { return false; }
@@ -473,8 +472,8 @@ namespace WindowsFormsApplication1
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_IST_PFLICHT +
                     "] = ? WHERE ID = ?",
-                    new OleDbParameter("@p", pflicht),
-                    new OleDbParameter("@id", id));
+                    new DbParam("@p", pflicht),
+                    new DbParam("@id", id));
             }
             catch { }
         }
@@ -487,7 +486,7 @@ namespace WindowsFormsApplication1
             if (IstPflicht(id)) return false;
             return id > 0 && DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_ProjektWerte WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
         }
 
         /// <summary>Worst/Best (Betrag + Nutzungsdauer) und Startjahr sichern
@@ -498,11 +497,11 @@ namespace WindowsFormsApplication1
             bool ok = DataRepository.ExecuteSQL(
                 "UPDATE Tab_ProjektWerte SET BestCase = ?, WorstCase = ?, " +
                 "BestCase_Nutzungsdauer = ?, WorstCase_Nutzungsdauer = ? WHERE ID = ?",
-                new OleDbParameter("@b", z.Best),
-                new OleDbParameter("@w", z.Worst),
-                new OleDbParameter("@bn", z.BestNutzung),
-                new OleDbParameter("@wn", z.WorstNutzung),
-                new OleDbParameter("@id", z.Raster.Id));
+                new DbParam("@b", z.Best),
+                new DbParam("@w", z.Worst),
+                new DbParam("@bn", z.BestNutzung),
+                new DbParam("@wn", z.WorstNutzung),
+                new DbParam("@id", z.Raster.Id));
             if (!ok) return false;
 
             if (!KostenPositionCtrl.StelleSpaltenSicher()) return true;
@@ -510,9 +509,9 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_STARTJAHR +
                 "] = ? WHERE ID = ?",
                 z.StartJahr > 1
-                    ? new OleDbParameter("@j", z.StartJahr)
-                    : new OleDbParameter("@j", DBNull.Value),
-                new OleDbParameter("@id", z.Raster.Id));
+                    ? new DbParam("@j", z.StartJahr)
+                    : new DbParam("@j", DBNull.Value),
+                new DbParam("@id", z.Raster.Id));
         }
 
         /// <summary>Kategoriesumme des Projekts über die BERECHNETEN Beträge —
@@ -536,10 +535,10 @@ namespace WindowsFormsApplication1
             try { return Convert.ToDouble(r[spalte]); } catch { return null; }
         }
 
-        private static OleDbParameter Zahl(string name, double? wert)
+        private static DbParam Zahl(string name, double? wert)
         {
-            var p = new OleDbParameter(name, OleDbType.Double);
-            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            var p = new DbParam(name, DbParamTyp.Double);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
             return p;
         }
     }

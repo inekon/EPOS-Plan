@@ -305,7 +305,7 @@ namespace WindowsFormsApplication1
                     {
                         List<OleDbParameter> p = new List<OleDbParameter>();
                         p.Add(new OleDbParameter("?", Listbezeichner));
-                        object result = v.Skalar(sqlSelect, p.ToArray());
+                        object result = v.Skalar(sqlSelect, DbParam.Von(p.ToArray()));
                         if (result != null && result != DBNull.Value) id = Convert.ToInt32(result);
                     }
 

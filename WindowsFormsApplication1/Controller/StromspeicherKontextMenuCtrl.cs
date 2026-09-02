@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -631,14 +630,14 @@ namespace WindowsFormsApplication1
             {
                 object anzahl = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_SP = ?",
-                    new OleDbParameter("@sp", idGeraet));
+                    new DbParam("@sp", idGeraet));
 
                 if (anzahl == null || anzahl == DBNull.Value || Convert.ToInt32(anzahl) > 0) return;
 
                 DataRepository.ExecuteSQL(
                     "DELETE FROM Tab_Stromspeicher WHERE ID = ? AND ID_Projekt = ?",
-                    new OleDbParameter("@id", idGeraet),
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@id", idGeraet),
+                    new DbParam("@proj", idProjekt));
             }
             catch (Exception ex)
             {
@@ -651,8 +650,8 @@ namespace WindowsFormsApplication1
         {
             object anzahl = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND Bezeichner = ?",
-                new OleDbParameter("@proj", m_ID_Projekt),
-                new OleDbParameter("@bez", name ?? ""));
+                new DbParam("@proj", m_ID_Projekt),
+                new DbParam("@bez", name ?? ""));
 
             return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Text;
 using System.Windows.Forms;
 
@@ -77,7 +76,7 @@ namespace WindowsFormsApplication1
     /// <para>
     /// Eine eigene Datenbankverbindung hält die Klasse nicht (und hielt sie nie): Jeder
     /// Zugriff läuft über <see cref="StilleDb"/> und damit über die Zugriffsschicht. Die
-    /// <see cref="OleDbType"/>-Angaben in <c>Spaltentyp</c> und <c>StilleDb.Par</c> sind
+    /// <see cref="DbParamTyp"/>-Angaben in <c>Spaltentyp</c> und <c>StilleDb.Par</c> sind
     /// nur noch Datenträger - siehe die Begründung dort.
     /// </para>
     /// </summary>
@@ -177,8 +176,8 @@ namespace WindowsFormsApplication1
             return StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT COUNT(*) FROM sqlite_master " +
                 "WHERE type = 'index' AND name = ? AND tbl_name = ?",
-                StilleDb.Par("@idx", OleDbType.VarWChar, IndexName(spalte)),
-                StilleDb.Par("@tab", OleDbType.VarWChar, SchemaKatalog.TAB_ENERGIEANLAGEN))) > 0;
+                StilleDb.Par("@idx", DbParamTyp.VarWChar, IndexName(spalte)),
+                StilleDb.Par("@tab", DbParamTyp.VarWChar, SchemaKatalog.TAB_ENERGIEANLAGEN))) > 0;
         }
 
         /// <summary>
@@ -454,8 +453,8 @@ namespace WindowsFormsApplication1
             return StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                 "WHERE ID_Projekt = ? AND [" + spalte + "] = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                StilleDb.Par("@ger", OleDbType.Integer, idGeraet))) > 0;
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@ger", DbParamTyp.Integer, idGeraet))) > 0;
         }
 
         // =================================================================================
@@ -483,9 +482,9 @@ namespace WindowsFormsApplication1
                 int treffer = StilleDb.Zahl(StilleDb.Scalar(
                     "SELECT COUNT(*) FROM [" + tabelle + "] " +
                     "WHERE ID_Projekt = ? AND Bezeichner = ? AND ID <> ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                    StilleDb.Par("@bez", OleDbType.VarWChar, kandidat),
-                    StilleDb.Par("@aus", OleDbType.Integer, idAusnahme)));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@bez", DbParamTyp.VarWChar, kandidat),
+                    StilleDb.Par("@aus", DbParamTyp.Integer, idAusnahme)));
 
                 if (treffer == 0) return kandidat;
             }
@@ -526,7 +525,7 @@ namespace WindowsFormsApplication1
 
             DataTable quelle = StilleDb.Tabelle(
                 "SELECT * FROM [" + sperre.Tabelle + "] WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idQuelle));
+                StilleDb.Par("@id", DbParamTyp.Integer, idQuelle));
 
             if (quelle == null || quelle.Rows.Count == 0)
             {
@@ -574,7 +573,7 @@ namespace WindowsFormsApplication1
         {
             StringBuilder spalten = new StringBuilder();
             StringBuilder platzhalter = new StringBuilder();
-            List<OleDbParameter> ps = new List<OleDbParameter>();
+            List<DbParam> ps = new List<DbParam>();
 
             foreach (DataColumn c in quelle.Table.Columns)
             {
@@ -608,7 +607,7 @@ namespace WindowsFormsApplication1
         {
             DataTable kinder = StilleDb.Tabelle(
                 "SELECT * FROM [" + tabelle + "] WHERE [" + fkSpalte + "] = ? ORDER BY ID",
-                StilleDb.Par("@fk", OleDbType.Integer, idQuelle));
+                StilleDb.Par("@fk", DbParamTyp.Integer, idQuelle));
 
             if (kinder == null || kinder.Rows.Count == 0) return;
 
@@ -632,8 +631,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>ARBEITSPAKET S4d - GEPRÜFT, BEWUSST NICHT UMGEBAUT.</b> Die zurückgegebene
-        /// <see cref="OleDbType"/> wandert über <c>StilleDb.Par</c> in einen
-        /// <see cref="OleDbParameter"/> - und den wertet die Zugriffsschicht nicht mehr
+        /// <see cref="DbParamTyp"/> wandert über <c>StilleDb.Par</c> in einen
+        /// <see cref="DbParam"/> - und den wertet die Zugriffsschicht nicht mehr
         /// aus: <c>DataRepository.UebersetzeParameter</c> baut aus JEDEM Bestandsparameter
         /// einen <c>SqliteParameter</c> allein aus dem WERT (Name und Typangabe werden
         /// verworfen), <c>DataRepository.NormalisiereWert</c> hebt ihn danach auf die
@@ -651,7 +650,7 @@ namespace WindowsFormsApplication1
         /// mehr.
         /// </para>
         /// </summary>
-        private static OleDbType Spaltentyp(DataColumn c, object wert)
+        private static DbParamTyp Spaltentyp(DataColumn c, object wert)
         {
             Type t = c.DataType;
 
@@ -660,18 +659,18 @@ namespace WindowsFormsApplication1
                 // Ein MEMO-Feld über VarWChar zu schreiben schneidet den Text ab; die
                 // Länge des Wertes entscheidet, welche Bindung nötig ist.
                 string s = wert as string;
-                return (s != null && s.Length > 255) ? OleDbType.LongVarWChar : OleDbType.VarWChar;
+                return (s != null && s.Length > 255) ? DbParamTyp.LongVarWChar : DbParamTyp.VarWChar;
             }
-            if (t == typeof(bool)) return OleDbType.Boolean;
-            if (t == typeof(byte) || t == typeof(short) || t == typeof(int)) return OleDbType.Integer;
-            if (t == typeof(long)) return OleDbType.BigInt;
-            if (t == typeof(float) || t == typeof(double)) return OleDbType.Double;
-            if (t == typeof(decimal)) return OleDbType.Decimal;
-            if (t == typeof(DateTime)) return OleDbType.Date;
-            if (t == typeof(Guid)) return OleDbType.Guid;
-            if (t == typeof(byte[])) return OleDbType.VarBinary;
+            if (t == typeof(bool)) return DbParamTyp.Boolean;
+            if (t == typeof(byte) || t == typeof(short) || t == typeof(int)) return DbParamTyp.Integer;
+            if (t == typeof(long)) return DbParamTyp.BigInt;
+            if (t == typeof(float) || t == typeof(double)) return DbParamTyp.Double;
+            if (t == typeof(decimal)) return DbParamTyp.Decimal;
+            if (t == typeof(DateTime)) return DbParamTyp.Date;
+            if (t == typeof(Guid)) return DbParamTyp.Guid;
+            if (t == typeof(byte[])) return DbParamTyp.VarBinary;
 
-            return OleDbType.Variant;
+            return DbParamTyp.Variant;
         }
 
         // =================================================================================

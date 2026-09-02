@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -525,7 +524,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT [ID_Energieträger] FROM [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS +
                     "] WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 if (dt == null) return menge;
                 foreach (DataRow r in dt.Rows)
                 {
@@ -547,7 +546,7 @@ namespace WindowsFormsApplication1
                     "ID_SP, ID_PUFFER, [" + SchemaKatalog.SPALTE_ID_CARRIER + "], Heizstab " +
                     "FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] WHERE ID_Projekt = ? " +
                     "ORDER BY ID",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
             }
             catch { return null; }
         }
@@ -567,7 +566,7 @@ namespace WindowsFormsApplication1
                     "SELECT g.ID, g.Brennstoff FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] AS a " +
                     "INNER JOIN [" + tabelle + "] AS g ON a.[" + verweis + "] = g.ID " +
                     "WHERE a.ID_Projekt = ?",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 if (dt == null) return zuordnung;
                 foreach (DataRow r in dt.Rows)
                 {

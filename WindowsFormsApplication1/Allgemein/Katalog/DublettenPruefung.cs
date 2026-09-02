@@ -307,7 +307,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable bt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ? ORDER BY " + b.Sortierung,
-                    new System.Data.OleDb.OleDbParameter("@fk", id));
+                    new DbParam("@fk", id));
                 if (bt == null || bt.Rows.Count == 0)
                 {
                     hashes.Add("");

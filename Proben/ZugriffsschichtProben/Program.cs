@@ -211,7 +211,7 @@ namespace ZugriffsschichtProben
                 // bevor er die Zeilenzahl prueft.
                 DataTable leer = DataRepository.GetDataTable(
                     "SELECT ID, Projektname, Aenderungsdatum FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("?", -1));
+                    new DbParam("?", -1));
                 fall.Muss(leer.Rows.Count == 0, "leeres Ergebnis lieferte " + leer.Rows.Count + " Zeilen");
                 fall.Muss(leer.Columns.Count == 3, "leeres Ergebnis hat " + leer.Columns.Count + " Spalten statt 3");
                 if (leer.Columns.Count == 3)
@@ -284,7 +284,7 @@ namespace ZugriffsschichtProben
                 fall.Muss(id == 19, "GetIdByName lieferte " + id + " statt 19");
 
                 object leer = DataRepository.ExecuteScalar(
-                    "SELECT Beschreibung FROM Tab_Projekt WHERE ID = ?", new OleDbParameter("?", -1));
+                    "SELECT Beschreibung FROM Tab_Projekt WHERE ID = ?", new DbParam("?", -1));
                 fall.Muss(leer == null, "leeres Ergebnis kam als " + Typname(leer) + " statt null");
             });
         }
@@ -297,13 +297,13 @@ namespace ZugriffsschichtProben
 
                 int neu = DataRepository.ExecuteInsertAndGetId(
                     "INSERT INTO energy_carrier (name, code, group_code, billing_unit, is_active) VALUES (?, ?, ?, ?, ?)",
-                    new OleDbParameter[]
+                    new DbParam[]
                     {
-                        new OleDbParameter("?", PROBE_INSERT),
-                        new OleDbParameter("?", "S4A_INS"),
-                        new OleDbParameter("?", "PROBE"),
-                        new OleDbParameter("?", "kWh"),
-                        new OleDbParameter("?", true),      // bool -> INTEGER 1
+                        new DbParam("?", PROBE_INSERT),
+                        new DbParam("?", "S4A_INS"),
+                        new DbParam("?", "PROBE"),
+                        new DbParam("?", "kWh"),
+                        new DbParam("?", true),      // bool -> INTEGER 1
                     });
 
                 fall.Muss(neu > maxVorher, "neue ID " + neu + " ist nicht groesser als das bisherige MAX(id) " + maxVorher);
@@ -311,7 +311,7 @@ namespace ZugriffsschichtProben
 
                 // is_active war ein bool - er muss als bool zurueckkommen (Typkatalog).
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT id, is_active FROM energy_carrier WHERE name = ?", new OleDbParameter("?", PROBE_INSERT));
+                    "SELECT id, is_active FROM energy_carrier WHERE name = ?", new DbParam("?", PROBE_INSERT));
                 if (dt.Rows.Count == 1)
                 {
                     fall.Muss(dt.Columns["is_active"].DataType == typeof(bool),
@@ -322,7 +322,7 @@ namespace ZugriffsschichtProben
                 }
 
                 bool geloescht = DataRepository.ExecuteSQL(
-                    "DELETE FROM energy_carrier WHERE id = ?", new OleDbParameter("?", neu));
+                    "DELETE FROM energy_carrier WHERE id = ?", new DbParam("?", neu));
                 fall.Muss(geloescht, "ExecuteSQL (DELETE) lieferte false");
                 fall.Muss(TraegerAnzahl(PROBE_INSERT) == 0, "Zeile nach dem Loeschen noch vorhanden");
             });
@@ -336,9 +336,9 @@ namespace ZugriffsschichtProben
                 using (DbVorgang vorgang = DataRepository.Vorgang())
                 {
                     vorgang.Ausfuehren(EinfuegenSql(),
-                                       new OleDbParameter("?", PROBE_ROLLBACK), new OleDbParameter("?", "S4A_RB"));
+                                       new DbParam("?", PROBE_ROLLBACK), new DbParam("?", "S4A_RB"));
                     object innen = vorgang.Skalar("SELECT COUNT(*) FROM energy_carrier WHERE name = ?",
-                                                  new OleDbParameter("?", PROBE_ROLLBACK));
+                                                  new DbParam("?", PROBE_ROLLBACK));
                     fall.Muss(innen != null && Convert.ToInt32(innen) == 1,
                               "Zeile war im laufenden Vorgang nicht sichtbar");
                     vorgang.Rollback();
@@ -349,14 +349,14 @@ namespace ZugriffsschichtProben
                 int neueId;
                 using (DbVorgang vorgang = DataRepository.Vorgang())
                 {
-                    neueId = vorgang.EinfuegenUndId(EinfuegenSql(), new OleDbParameter[]
+                    neueId = vorgang.EinfuegenUndId(EinfuegenSql(), new DbParam[]
                     {
-                        new OleDbParameter("?", PROBE_COMMIT), new OleDbParameter("?", "S4A_CM"),
+                        new DbParam("?", PROBE_COMMIT), new DbParam("?", "S4A_CM"),
                     });
                     fall.Muss(neueId > 0, "EinfuegenUndId lieferte " + neueId);
 
                     DataTable innen = vorgang.Lese("SELECT id, name FROM energy_carrier WHERE name = ?",
-                                                   new OleDbParameter("?", PROBE_COMMIT));
+                                                   new DbParam("?", PROBE_COMMIT));
                     fall.Muss(innen.Rows.Count == 1, "Lese im Vorgang fand " + innen.Rows.Count + " Zeilen statt 1");
                     if (innen.Rows.Count == 1)
                         fall.Muss(Convert.ToInt32(innen.Rows[0]["id"]) == neueId,
@@ -365,14 +365,14 @@ namespace ZugriffsschichtProben
                     vorgang.Commit();
                 }
                 fall.Muss(TraegerAnzahl(PROBE_COMMIT) == 1, "Commit: Zeile fehlt");
-                DataRepository.ExecuteSQL("DELETE FROM energy_carrier WHERE id = ?", new OleDbParameter("?", neueId));
+                DataRepository.ExecuteSQL("DELETE FROM energy_carrier WHERE id = ?", new DbParam("?", neueId));
                 fall.Muss(TraegerAnzahl(PROBE_COMMIT) == 0, "Aufraeumen nach Commit misslungen");
 
                 // --- Dispose ohne Commit ---
                 using (DbVorgang vorgang = DataRepository.Vorgang())
                 {
                     vorgang.Ausfuehren(EinfuegenSql(),
-                                       new OleDbParameter("?", PROBE_DISPOSE), new OleDbParameter("?", "S4A_DP"));
+                                       new DbParam("?", PROBE_DISPOSE), new DbParam("?", "S4A_DP"));
                 }
                 fall.Muss(TraegerAnzahl(PROBE_DISPOSE) == 0, "Dispose ohne Commit: Zeile ist trotzdem da");
             });
@@ -416,10 +416,10 @@ namespace ZugriffsschichtProben
 
                 bool ok = DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_Gebaeude (ID_ProjektGebaeude, ID_Projekt, Gebaeudename, Typ) VALUES (?, ?, ?, ?)",
-                    new OleDbParameter("?", 999999),
-                    new OleDbParameter("?", 999999),
-                    new OleDbParameter("?", PROBE_FK),
-                    new OleDbParameter("?", "Probe"));
+                    new DbParam("?", 999999),
+                    new DbParam("?", 999999),
+                    new DbParam("?", PROBE_FK),
+                    new DbParam("?", "Probe"));
 
                 string[] gesammelt = DataRepository.StilleFehlerAbholen();
                 _stilleMeldungen.AddRange(gesammelt);
@@ -1043,7 +1043,7 @@ namespace ZugriffsschichtProben
         private static void SchemaVersionSetzen(int version)
         {
             DataRepository.ExecuteSQL("UPDATE Tab_Applikation SET SchemaVersion = ?",
-                                      new OleDbParameter("?", version));
+                                      new DbParam("?", version));
         }
 
         /// <summary>Die ersten Zeilen eines Berichts - fuer sprechende Mangelmeldungen.</summary>
@@ -1151,7 +1151,7 @@ namespace ZugriffsschichtProben
         private static int TraegerAnzahl(string name)
         {
             object o = DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM energy_carrier WHERE name = ?", new OleDbParameter("?", name));
+                "SELECT COUNT(*) FROM energy_carrier WHERE name = ?", new DbParam("?", name));
             return o == null ? -1 : Convert.ToInt32(o);
         }
 
@@ -1159,8 +1159,8 @@ namespace ZugriffsschichtProben
         {
             // Reste eines abgebrochenen Vorlaufs entfernen - energy_carrier.name ist eindeutig.
             foreach (string name in new[] { PROBE_INSERT, PROBE_ROLLBACK, PROBE_COMMIT, PROBE_DISPOSE })
-                DataRepository.ExecuteSQL("DELETE FROM energy_carrier WHERE name = ?", new OleDbParameter("?", name));
-            DataRepository.ExecuteSQL("DELETE FROM Tab_Gebaeude WHERE Gebaeudename = ?", new OleDbParameter("?", PROBE_FK));
+                DataRepository.ExecuteSQL("DELETE FROM energy_carrier WHERE name = ?", new DbParam("?", name));
+            DataRepository.ExecuteSQL("DELETE FROM Tab_Gebaeude WHERE Gebaeudename = ?", new DbParam("?", PROBE_FK));
             StilleMeldungenEinsammeln();
         }
 

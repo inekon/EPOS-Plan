@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -168,7 +167,7 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT MIN(StammID) FROM Tab_Kostenfaktor " +
                 "WHERE Bezeichnung = ? AND IsMainComponent = True",
-                new OleDbParameter("@b", komponente ?? ""));
+                new DbParam("@b", komponente ?? ""));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -183,7 +182,7 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT MIN(StammID) FROM Tab_Kostenfaktor " +
                 "WHERE Bezeichnung = ? AND IsMainComponent = False",
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@b", bezeichnung));
             if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
 
             try
@@ -191,15 +190,15 @@ namespace WindowsFormsApplication1
                 // StammID ist ein AutoWert — nur Bezeichnung und Rolle setzen.
                 DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_Kostenfaktor (Bezeichnung, IsMainComponent) VALUES (?, ?)",
-                    new OleDbParameter("@b", bezeichnung),
-                    new OleDbParameter("@m", OleDbType.Boolean) { Value = false });
+                    new DbParam("@b", bezeichnung),
+                    new DbParam("@m", DbParamTyp.Boolean) { Wert = false });
             }
             catch { return 0; }
 
             o = DataRepository.ExecuteScalar(
                 "SELECT MIN(StammID) FROM Tab_Kostenfaktor " +
                 "WHERE Bezeichnung = ? AND IsMainComponent = False",
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@b", bezeichnung));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -227,12 +226,12 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_KostenGruppenKatalog WHERE GruppenName = ?",
-                    new OleDbParameter("@g", gruppe));
+                    new DbParam("@g", gruppe));
                 if (o != null && o != DBNull.Value && Convert.ToInt32(o) > 0) return;
 
                 DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_KostenGruppenKatalog (GruppenName) VALUES (?)",
-                    new OleDbParameter("@g", gruppe));
+                    new DbParam("@g", gruppe));
             }
             catch { }
         }
@@ -258,10 +257,10 @@ namespace WindowsFormsApplication1
                 "     INNER JOIN Tab_Kostenfaktor AS f ON w.StammID = f.StammID " +
                 "WHERE w.ProjektID = ? AND w.KategorieID = ? AND w.KomponentenID = ? " +
                 "      AND f.IsMainComponent = True AND f.Bezeichnung = ?",
-                new OleDbParameter("@p", projektID),
-                new OleDbParameter("@k", kategorieID),
-                new OleDbParameter("@c", komponentenID),
-                new OleDbParameter("@b", komponente ?? ""));
+                new DbParam("@p", projektID),
+                new DbParam("@k", kategorieID),
+                new DbParam("@c", komponentenID),
+                new DbParam("@b", komponente ?? ""));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -271,8 +270,8 @@ namespace WindowsFormsApplication1
             if (positionsID <= 0) return false;
             return DataRepository.ExecuteSQL(
                 "UPDATE Tab_ProjektWerte SET EingegebenerWert = ? WHERE ID = ?",
-                new OleDbParameter("@v", betrag),
-                new OleDbParameter("@id", positionsID));
+                new DbParam("@v", betrag),
+                new DbParam("@id", positionsID));
         }
 
         /// <summary>ID der Projektposition, oder 0.</summary>
@@ -281,10 +280,10 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT MIN(ID) FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KategorieID = ? AND KomponentenID = ? AND StammID = ?",
-                new OleDbParameter("@p", projektID),
-                new OleDbParameter("@k", kategorieID),
-                new OleDbParameter("@c", komponentenID),
-                new OleDbParameter("@s", stammID));
+                new DbParam("@p", projektID),
+                new DbParam("@k", kategorieID),
+                new DbParam("@c", komponentenID),
+                new DbParam("@s", stammID));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -305,11 +304,11 @@ namespace WindowsFormsApplication1
                 "SELECT MIN(ID) FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KategorieID = ? AND KomponentenID = ? " +
                 "AND StammID = ? AND ID_Anlage = ?",
-                new OleDbParameter("@p", projektID),
-                new OleDbParameter("@k", kategorieID),
-                new OleDbParameter("@c", komponentenID),
-                new OleDbParameter("@s", stammID),
-                new OleDbParameter("@a", idAnlage));
+                new DbParam("@p", projektID),
+                new DbParam("@k", kategorieID),
+                new DbParam("@c", komponentenID),
+                new DbParam("@s", stammID),
+                new DbParam("@a", idAnlage));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -319,7 +318,7 @@ namespace WindowsFormsApplication1
             if (positionsID <= 0) return 0;
             object o = DataRepository.ExecuteScalar(
                 "SELECT EingegebenerWert FROM Tab_ProjektWerte WHERE ID = ?",
-                new OleDbParameter("@id", positionsID));
+                new DbParam("@id", positionsID));
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
         }
 
@@ -341,8 +340,8 @@ namespace WindowsFormsApplication1
                 // (mehrere Zeilen desselben Faktors sind im Bestand möglich).
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET EingegebenerWert = ? WHERE ID = ?",
-                    new OleDbParameter("@v", betrag),
-                    new OleDbParameter("@id", id));
+                    new DbParam("@v", betrag),
+                    new DbParam("@id", id));
                 return id;
             }
 
@@ -352,13 +351,13 @@ namespace WindowsFormsApplication1
             DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, " +
                 "EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
-                new OleDbParameter("@p", projektID),
-                new OleDbParameter("@s", stammID),
-                new OleDbParameter("@c", komponentenID),
-                new OleDbParameter("@k", kategorieID),
-                new OleDbParameter("@v", betrag),
-                new OleDbParameter("@e", DbWerte.KOSTEN_EINHEIT_EURO),
-                new OleDbParameter("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN));
+                new DbParam("@p", projektID),
+                new DbParam("@s", stammID),
+                new DbParam("@c", komponentenID),
+                new DbParam("@k", kategorieID),
+                new DbParam("@v", betrag),
+                new DbParam("@e", DbWerte.KOSTEN_EINHEIT_EURO),
+                new DbParam("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN));
 
             return FindePosition(projektID, kategorieID, komponentenID, stammID);
         }
@@ -408,8 +407,8 @@ namespace WindowsFormsApplication1
                 // Aktualisieren über den Primärschlüssel (wie in der Bestandsfassung).
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET EingegebenerWert = ? WHERE ID = ?",
-                    new OleDbParameter("@v", betrag),
-                    new OleDbParameter("@id", id));
+                    new DbParam("@v", betrag),
+                    new DbParam("@id", id));
                 return id;
             }
 
@@ -420,14 +419,14 @@ namespace WindowsFormsApplication1
                 "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, " +
                 "EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, [" +
                 SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)",
-                new OleDbParameter("@p", projektID),
-                new OleDbParameter("@s", stammID),
-                new OleDbParameter("@c", komponentenID),
-                new OleDbParameter("@k", kategorieID),
-                new OleDbParameter("@v", betrag),
-                new OleDbParameter("@e", DbWerte.KOSTEN_EINHEIT_EURO),
-                new OleDbParameter("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN),
-                new OleDbParameter("@a", idAnlage));
+                new DbParam("@p", projektID),
+                new DbParam("@s", stammID),
+                new DbParam("@c", komponentenID),
+                new DbParam("@k", kategorieID),
+                new DbParam("@v", betrag),
+                new DbParam("@e", DbWerte.KOSTEN_EINHEIT_EURO),
+                new DbParam("@g", gruppe ?? DbWerte.KOSTEN_GRUPPE_ALLGEMEIN),
+                new DbParam("@a", idAnlage));
 
             return FindePosition(projektID, kategorieID, komponentenID, stammID, idAnlage);
         }
@@ -677,8 +676,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
                     " WHERE ProjektID = ? AND KategorieID = ?",
-                    new OleDbParameter("@p", projektID),
-                    new OleDbParameter("@k", kategorieID));
+                    new DbParam("@p", projektID),
+                    new DbParam("@k", kategorieID));
 
                 if (dt == null) return map;
                 foreach (DataRow r in dt.Rows)
@@ -707,7 +706,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
                     SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
                     "FROM " + SchemaKatalog.TAB_PROJEKTWERTE + " WHERE ID = ?",
-                    new OleDbParameter("@id", positionsID));
+                    new DbParam("@id", positionsID));
                 if (dt != null && dt.Rows.Count > 0) return AusZeile(dt.Rows[0]);
             }
             catch { }
@@ -776,23 +775,23 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_PW_IST_ERLOES + "] = ?, [" +
                 SchemaKatalog.SPALTE_PW_MENGE + "] = ?, [" +
                 SchemaKatalog.SPALTE_PW_EINHEITPREIS + "] = ? WHERE ID = ?",
-                new OleDbParameter("@v", betrag),
-                new OleDbParameter("@a", (object)(z.Kostenart ?? "") ),
-                new OleDbParameter("@b", (object)(z.Bemessung ?? DbWerte.BEMESSUNG_BETRAG)),
-                new OleDbParameter("@e", OleDbType.Boolean) { Value = z.IstErloes },
+                new DbParam("@v", betrag),
+                new DbParam("@a", (object)(z.Kostenart ?? "") ),
+                new DbParam("@b", (object)(z.Bemessung ?? DbWerte.BEMESSUNG_BETRAG)),
+                new DbParam("@e", DbParamTyp.Boolean) { Wert = z.IstErloes },
                 ZahlOderNull("@m", z.Menge),
                 ZahlOderNull("@p", z.Einheitpreis),
-                new OleDbParameter("@id", positionsID));
+                new DbParam("@id", positionsID));
         }
 
         /// <summary>
         /// <c>DOUBLE</c>-Parameter, der bei <c>null</c> auch NULL schreibt — „nicht
         /// gepflegt" bleibt damit von „gepflegt und null" unterscheidbar.
         /// </summary>
-        private static OleDbParameter ZahlOderNull(string name, double? wert)
+        private static DbParam ZahlOderNull(string name, double? wert)
         {
-            var p = new OleDbParameter(name, OleDbType.Double);
-            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            var p = new DbParam(name, DbParamTyp.Double);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
             return p;
         }
     }

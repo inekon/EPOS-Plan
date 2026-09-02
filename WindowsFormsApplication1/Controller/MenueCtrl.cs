@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -266,7 +265,7 @@ namespace WindowsFormsApplication1
                         {
                             // 2. Statt speicherintensiven CommandBuilder upzudaten, führen wir ein gezieltes UPDATE per Repository aus
                             string updateSql = "UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0";
-                            OleDbParameter pName = new OleDbParameter("?", "");
+                            DbParam pName = new DbParam("?", "");
 
                             DataRepository.ExecuteNonQuery(updateSql, pName);
                         }

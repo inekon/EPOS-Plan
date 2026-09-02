@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -348,7 +347,7 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, Bezeichner, ID_Type, Prioritaet FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return map;
 
             foreach (DataRow r in dt.Rows)
@@ -535,7 +534,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Schwelle_Aus, Schwelle_Aus_Nachrang FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
             if (dt == null || dt.Rows.Count == 0) return;
 
             double aus = StilleDb.Kommazahl(StilleDb.Feld(dt.Rows[0], "Schwelle_Aus"));
@@ -573,12 +572,12 @@ namespace WindowsFormsApplication1
 
             int anlagenprio = StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT Prioritaet FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
             if (anlagenprio <= 0) anlagenprio = ANLAGENPRIO_UNGEPFLEGT;
 
             string bezeichner = StilleDb.Text(StilleDb.Scalar(
                 "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
 
             liste.Add(Eintrag(idAnlage, bezeichner, idType, zweitsenke, ladeprioRoh, ladegrenze,
                               ladeprioPV, kaskadenpos, anlagenprio));
@@ -751,7 +750,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Tool_1, Tool_2, Tool_3, Tool_4 FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null || dt.Rows.Count == 0) return map;
 
             DataRow r = dt.Rows[0];

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -463,7 +462,7 @@ namespace WindowsFormsApplication1
                 int n = StilleDb.NonQuery(
                     "UPDATE Tab_Energieanlagen SET [" + spalte + "] = 0 " +
                     "WHERE ID_Projekt = ? AND [" + spalte + "] IS NULL",
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
                 if (n > 0) summe += n;
             }
 
@@ -514,7 +513,7 @@ namespace WindowsFormsApplication1
                 "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, " +
                 "       Schwelle_Reserve " +
                 "FROM Tab_Pufferspeicher WHERE ID_Projekt = ? ORDER BY Bezeichner, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -552,7 +551,7 @@ namespace WindowsFormsApplication1
                 "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, " +
                 "       Schwelle_Reserve " +
                 "FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
             if (dt == null || dt.Rows.Count == 0) return null;
 
             return AusZeile(dt.Rows[0]);
@@ -625,7 +624,7 @@ namespace WindowsFormsApplication1
                 "FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -756,7 +755,7 @@ namespace WindowsFormsApplication1
                 "SELECT ID FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return listen;
 
             // Eine Abfrage für das GANZE Projekt statt einer je Anlage - dieselbe
@@ -1151,7 +1150,7 @@ namespace WindowsFormsApplication1
 
             return StilleDb.Text(StilleDb.Scalar(
                 "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
         }
 
         // --- Verbundkennzahlen für Dialog und Anzeigen ---------------------------------
@@ -1245,7 +1244,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT WQ_Typ, WQ_ID_Puffer, WQ_Puffer FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
             if (dt == null || dt.Rows.Count == 0) return 0;
 
             DataRow r = dt.Rows[0];
@@ -1262,8 +1261,8 @@ namespace WindowsFormsApplication1
 
             return StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
-                StilleDb.Par("@bez", OleDbType.VarWChar, bezeichner),
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt)));
+                StilleDb.Par("@bez", DbParamTyp.VarWChar, bezeichner),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
         }
 
         // --- Validierung der QUELLENSEITE (Etappe D5b, Konzept Abschnitt 7) -----------
@@ -1445,7 +1444,7 @@ namespace WindowsFormsApplication1
         {
             object v = StilleDb.Scalar(
                 "SELECT COUNT(*) FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             // Ist die Abfrage nicht auswertbar (fehlende Tabelle), NICHT warnen -
             // eine Warnung aus Unkenntnis ist schlechter als keine.
@@ -1489,7 +1488,7 @@ namespace WindowsFormsApplication1
             if (idPuffer <= 0) return "";
             return StilleDb.Text(StilleDb.Scalar(
                 "SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)));
         }
 
         // --- PAKET A1: Übergangsbrücke auf Z_ProjektPufferSp ENTFALLEN ---------------

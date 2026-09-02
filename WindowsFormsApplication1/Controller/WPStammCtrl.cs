@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -62,7 +61,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -70,7 +69,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -100,18 +99,18 @@ namespace WindowsFormsApplication1
                                SET Firma = ?, Beschreibung = ?, Typ = ?, Baujahr = ?, Aufstellung = ?,
                                    Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?, Modulkosten = ?
                                WHERE Bezeichner = ?";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
-                    new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
-                    new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
-                    new OleDbParameter("@bau", Baujahr),
-                    new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
-                    new OleDbParameter("@nen", Nennleistung),
-                    new OleDbParameter("@max", maxPTherm),
-                    new OleDbParameter("@hei", Heizung),
-                    new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
-                    new OleDbParameter("@mod", Modulkosten),
-                    new OleDbParameter("@nam", WPName ?? (object)DBNull.Value)
+                DbParam[] ps = {
+                    new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                    new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
+                    new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                    new DbParam("@bau", Baujahr),
+                    new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                    new DbParam("@nen", Nennleistung),
+                    new DbParam("@max", maxPTherm),
+                    new DbParam("@hei", Heizung),
+                    new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                    new DbParam("@mod", Modulkosten),
+                    new DbParam("@nam", WPName ?? (object)DBNull.Value)
                 };
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -132,11 +131,11 @@ namespace WindowsFormsApplication1
                 int id = DataRepository.GetIdByName(TABLE, "Bezeichner", WPName);
                 if (id > 0)
                 {
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE   + " WHERE ID_WP = ?", new OleDbParameter("@id", id));
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", new OleDbParameter("@id", id));
+                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE   + " WHERE ID_WP = ?", new DbParam("@id", id));
+                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", new DbParam("@id", id));
                 }
                 return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
-                    new OleDbParameter("@nam", WPName ?? (object)DBNull.Value));
+                    new DbParam("@nam", WPName ?? (object)DBNull.Value));
             }
             catch (Exception ex) { Console.WriteLine("Fehler bei Delete (STAMM): " + ex.Message); return false; }
         }
@@ -157,21 +156,21 @@ namespace WindowsFormsApplication1
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
                              maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        OleDbParameter[] ps = {
-                            new OleDbParameter("@nam", WPName ?? (object)DBNull.Value),
-                            new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
-                            new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
-                            new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
-                            new OleDbParameter("@bau", Baujahr),
-                            new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
-                            new OleDbParameter("@nen", Nennleistung),
-                            new OleDbParameter("@max", maxPTherm),
-                            new OleDbParameter("@hei", Heizung),
-                            new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
-                            new OleDbParameter("@mod", Modulkosten),
-                            new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
-                            new OleDbParameter("@kuehl", Kuehlleistung),
-                            new OleDbParameter("@ro", false)
+                        DbParam[] ps = {
+                            new DbParam("@nam", WPName ?? (object)DBNull.Value),
+                            new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                            new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
+                            new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                            new DbParam("@bau", Baujahr),
+                            new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                            new DbParam("@nen", Nennleistung),
+                            new DbParam("@max", maxPTherm),
+                            new DbParam("@hei", Heizung),
+                            new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                            new DbParam("@mod", Modulkosten),
+                            new DbParam("@bart", Bauart ?? (object)DBNull.Value),
+                            new DbParam("@kuehl", Kuehlleistung),
+                            new DbParam("@ro", false)
                         };
 
                         // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
@@ -221,20 +220,20 @@ namespace WindowsFormsApplication1
                       WHERE ID = ?";
         }
 
-        private OleDbParameter[] ImportUpdateParameter(int id)
+        private DbParam[] ImportUpdateParameter(int id)
         {
             return new[] {
-                new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
-                new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
-                new OleDbParameter("@bau", Baujahr),
-                new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
-                new OleDbParameter("@nen", Nennleistung),
-                new OleDbParameter("@max", maxPTherm),
-                new OleDbParameter("@hei", Heizung),
-                new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
-                new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
-                new OleDbParameter("@kuehl", Kuehlleistung),
-                new OleDbParameter("@id", id)
+                new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                new DbParam("@bau", Baujahr),
+                new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                new DbParam("@nen", Nennleistung),
+                new DbParam("@max", maxPTherm),
+                new DbParam("@hei", Heizung),
+                new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                new DbParam("@bart", Bauart ?? (object)DBNull.Value),
+                new DbParam("@kuehl", Kuehlleistung),
+                new DbParam("@id", id)
             };
         }
 
@@ -281,13 +280,13 @@ namespace WindowsFormsApplication1
 
                     // (2) Alte Kennlinien beider Tabellen entfernen
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = id });
                         v.Ausfuehren("DELETE FROM " + CURVE + " WHERE ID_WP = ?", p.ToArray());
                     }
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = id });
                         v.Ausfuehren("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", p.ToArray());
                     }
 
@@ -305,13 +304,13 @@ namespace WindowsFormsApplication1
                         {
                             v.Ausfuehren(
                                 "INSERT INTO " + CURVE + " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                new OleDbParameter("@id", OleDbType.Integer) { Value = naechsteId++ },
-                                new OleDbParameter("@wp", OleDbType.Integer) { Value = id },
-                                new OleDbParameter("@vor", OleDbType.Integer) { Value = k.Vorlauf },
-                                new OleDbParameter("@tem", OleDbType.Integer) { Value = k.Temperatur },
-                                new OleDbParameter("@cop", OleDbType.Double) { Value = k.COP },
-                                new OleDbParameter("@pth", OleDbType.Double) { Value = k.Ptherm },
-                                new OleDbParameter("@ro", OleDbType.Boolean) { Value = false });
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                new DbParam("@wp", DbParamTyp.Integer) { Wert = id },
+                                new DbParam("@vor", DbParamTyp.Integer) { Wert = k.Vorlauf },
+                                new DbParam("@tem", DbParamTyp.Integer) { Wert = k.Temperatur },
+                                new DbParam("@cop", DbParamTyp.Double) { Wert = k.COP },
+                                new DbParam("@pth", DbParamTyp.Double) { Wert = k.Ptherm },
+                                new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
                         }
                     }
 
@@ -329,13 +328,13 @@ namespace WindowsFormsApplication1
                         {
                             v.Ausfuehren(
                                 "INSERT INTO " + CURVE_K + " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                new OleDbParameter("@id", OleDbType.Integer) { Value = naechsteId++ },
-                                new OleDbParameter("@wp", OleDbType.Integer) { Value = id },
-                                new OleDbParameter("@vor", OleDbType.Integer) { Value = k.Vorlauf },
-                                new OleDbParameter("@tem", OleDbType.Integer) { Value = k.Temperatur },
-                                new OleDbParameter("@cop", OleDbType.Double) { Value = k.COP },
-                                new OleDbParameter("@pk", OleDbType.Double) { Value = k.Pkuehl },
-                                new OleDbParameter("@last", OleDbType.Integer) { Value = k.Last });
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                new DbParam("@wp", DbParamTyp.Integer) { Wert = id },
+                                new DbParam("@vor", DbParamTyp.Integer) { Wert = k.Vorlauf },
+                                new DbParam("@tem", DbParamTyp.Integer) { Wert = k.Temperatur },
+                                new DbParam("@cop", DbParamTyp.Double) { Wert = k.COP },
+                                new DbParam("@pk", DbParamTyp.Double) { Wert = k.Pkuehl },
+                                new DbParam("@last", DbParamTyp.Integer) { Wert = k.Last });
                         }
                     }
 

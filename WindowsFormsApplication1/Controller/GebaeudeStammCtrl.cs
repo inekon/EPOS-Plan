@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -45,7 +44,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value));
+                new DbParam("@bez", szBezeichner ?? (object)DBNull.Value));
             _internalList.Clear();
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -58,7 +57,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -72,7 +71,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
         }
 
         #endregion
@@ -147,62 +146,62 @@ namespace WindowsFormsApplication1
         // Wert-Parameter in fester Spaltenreihenfolge (positionsgebunden fuer OleDb "?").
         // WICHTIG: eindeutige, praefixfreie Parameternamen (@b00..), damit der ACE-OLEDB-Provider
         // keine namensaehnlichen Parameter verwechselt (z.B. Wohnflaeche vs. Wohnflaeche_gesamt).
-        private OleDbParameter[] BuildValueParams(GebaeudeModel m)
+        private DbParam[] BuildValueParams(GebaeudeModel m)
         {
-            return new OleDbParameter[]
+            return new DbParam[]
             {
-                new OleDbParameter("@b00", OleDbType.VarWChar) { Value = (object)(m.Gebaeudename ?? "") },
-                new OleDbParameter("@b01", OleDbType.VarWChar) { Value = (object)(m.Typ ?? "") },
-                new OleDbParameter("@b02", OleDbType.VarWChar) { Value = (object)(m.Beschreibung ?? "") },
-                new OleDbParameter("@b03", OleDbType.Double) { Value = m.Wohnflaeche_gesamt },
-                new OleDbParameter("@b04", OleDbType.Double) { Value = m.Bewohner },
-                new OleDbParameter("@b05", OleDbType.Double) { Value = m.Flaeche_Nutzer },
-                new OleDbParameter("@b06", OleDbType.Double) { Value = m.Interne_Waermegewinne },
-                new OleDbParameter("@b07", OleDbType.Double) { Value = m.Bauweise },
-                new OleDbParameter("@b08", OleDbType.Double) { Value = m.Fensterflaeche_Sued },
-                new OleDbParameter("@b09", OleDbType.Double) { Value = m.Fensterflaeche_Ost },
-                new OleDbParameter("@b10", OleDbType.Double) { Value = m.Fensterflaeche_Nord },
-                new OleDbParameter("@b11", OleDbType.Double) { Value = m.Fensterdurchlassgrad },
-                new OleDbParameter("@b12", OleDbType.Double) { Value = m.Raumsolltemperatur_Nachtabsenkung },
-                new OleDbParameter("@b13", OleDbType.Double) { Value = m.Raumsolltemperatur_Tag },
-                new OleDbParameter("@b14", OleDbType.Double) { Value = m.Raumsolltemperatur_Wochenende },
-                new OleDbParameter("@b15", OleDbType.Double) { Value = m.Raumsolltemperatur_Ferien },
-                new OleDbParameter("@b16", OleDbType.Double) { Value = m.Maximaleraumtemperatur },
-                new OleDbParameter("@b17", OleDbType.Double) { Value = m.k_Wert_Außenwand },
-                new OleDbParameter("@b18", OleDbType.Double) { Value = m.k_Wert_Fenster },
-                new OleDbParameter("@b19", OleDbType.Double) { Value = m.k_Wert_Dachflaeche },
-                new OleDbParameter("@b20", OleDbType.Double) { Value = m.k_Wert_Grundflaeche },
-                new OleDbParameter("@b21", OleDbType.Double) { Value = m.k_Wert_Sonstiges },
-                new OleDbParameter("@b22", OleDbType.Double) { Value = m.Flaeche_Außenwand },
-                new OleDbParameter("@b23", OleDbType.Double) { Value = m.gesamte_Fensterflaeche },
-                new OleDbParameter("@b24", OleDbType.Double) { Value = m.Dachflaeche },
-                new OleDbParameter("@b25", OleDbType.Double) { Value = m.Grundflaeche },
-                new OleDbParameter("@b26", OleDbType.Double) { Value = m.Sonstige_Flaechen },
-                new OleDbParameter("@b27", OleDbType.Double) { Value = m.Wohnflaeche },
-                new OleDbParameter("@b28", OleDbType.Double) { Value = m.Raumhoehe },
-                new OleDbParameter("@b29", OleDbType.Double) { Value = m.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand },
-                new OleDbParameter("@b30", OleDbType.Double) { Value = m.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach },
-                new OleDbParameter("@b31", OleDbType.Double) { Value = m.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke },
-                new OleDbParameter("@b32", OleDbType.Double) { Value = m.Abmessung_Anschluß_Fenster_Wand },
-                new OleDbParameter("@b33", OleDbType.Double) { Value = m.Abmessung_Anschluß_Wand_Dach },
-                new OleDbParameter("@b34", OleDbType.Double) { Value = m.Abmessung_Anschluß_Außenwand_Kellerdecke },
-                new OleDbParameter("@b35", OleDbType.Double) { Value = m.Luftwechselrate },
-                new OleDbParameter("@b36", OleDbType.Double) { Value = m.Wochenende },
-                new OleDbParameter("@b37", OleDbType.Double) { Value = m.Ferien },
-                new OleDbParameter("@b38", OleDbType.Double) { Value = m.Ferienbeginn_1 },
-                new OleDbParameter("@b39", OleDbType.Double) { Value = m.Ferienende_1 },
-                new OleDbParameter("@b40", OleDbType.Double) { Value = m.Ferienbeginn_2 },
-                new OleDbParameter("@b41", OleDbType.Double) { Value = m.Ferienende_2 },
-                new OleDbParameter("@b42", OleDbType.Double) { Value = m.Ferienbeginn_3 },
-                new OleDbParameter("@b43", OleDbType.Double) { Value = m.Ferienende_3 },
-                new OleDbParameter("@b44", OleDbType.Double) { Value = m.Ferienbeginn_4 },
-                new OleDbParameter("@b45", OleDbType.Double) { Value = m.Ferienende_4 },
-                new OleDbParameter("@b46", OleDbType.Double) { Value = m.WW_Bedarf },
-                new OleDbParameter("@b47", OleDbType.Double) { Value = m.spez_Waermeverbrauch },
-                new OleDbParameter("@b48", OleDbType.Double) { Value = m.Waermebedarf },
-                new OleDbParameter("@b49", OleDbType.VarWChar) { Value = (object)(m.Baualtersklasse ?? "") },
-                new OleDbParameter("@b50", OleDbType.VarWChar) { Value = (object)(m.Gebaeudeart ?? "") },
-                new OleDbParameter("@b51", OleDbType.VarWChar) { Value = (object)(m.Wohngebaeude_Nicht_Wohngebaeude ?? "") },
+                new DbParam("@b00", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") },
+                new DbParam("@b01", DbParamTyp.VarWChar) { Wert = (object)(m.Typ ?? "") },
+                new DbParam("@b02", DbParamTyp.VarWChar) { Wert = (object)(m.Beschreibung ?? "") },
+                new DbParam("@b03", DbParamTyp.Double) { Wert = m.Wohnflaeche_gesamt },
+                new DbParam("@b04", DbParamTyp.Double) { Wert = m.Bewohner },
+                new DbParam("@b05", DbParamTyp.Double) { Wert = m.Flaeche_Nutzer },
+                new DbParam("@b06", DbParamTyp.Double) { Wert = m.Interne_Waermegewinne },
+                new DbParam("@b07", DbParamTyp.Double) { Wert = m.Bauweise },
+                new DbParam("@b08", DbParamTyp.Double) { Wert = m.Fensterflaeche_Sued },
+                new DbParam("@b09", DbParamTyp.Double) { Wert = m.Fensterflaeche_Ost },
+                new DbParam("@b10", DbParamTyp.Double) { Wert = m.Fensterflaeche_Nord },
+                new DbParam("@b11", DbParamTyp.Double) { Wert = m.Fensterdurchlassgrad },
+                new DbParam("@b12", DbParamTyp.Double) { Wert = m.Raumsolltemperatur_Nachtabsenkung },
+                new DbParam("@b13", DbParamTyp.Double) { Wert = m.Raumsolltemperatur_Tag },
+                new DbParam("@b14", DbParamTyp.Double) { Wert = m.Raumsolltemperatur_Wochenende },
+                new DbParam("@b15", DbParamTyp.Double) { Wert = m.Raumsolltemperatur_Ferien },
+                new DbParam("@b16", DbParamTyp.Double) { Wert = m.Maximaleraumtemperatur },
+                new DbParam("@b17", DbParamTyp.Double) { Wert = m.k_Wert_Außenwand },
+                new DbParam("@b18", DbParamTyp.Double) { Wert = m.k_Wert_Fenster },
+                new DbParam("@b19", DbParamTyp.Double) { Wert = m.k_Wert_Dachflaeche },
+                new DbParam("@b20", DbParamTyp.Double) { Wert = m.k_Wert_Grundflaeche },
+                new DbParam("@b21", DbParamTyp.Double) { Wert = m.k_Wert_Sonstiges },
+                new DbParam("@b22", DbParamTyp.Double) { Wert = m.Flaeche_Außenwand },
+                new DbParam("@b23", DbParamTyp.Double) { Wert = m.gesamte_Fensterflaeche },
+                new DbParam("@b24", DbParamTyp.Double) { Wert = m.Dachflaeche },
+                new DbParam("@b25", DbParamTyp.Double) { Wert = m.Grundflaeche },
+                new DbParam("@b26", DbParamTyp.Double) { Wert = m.Sonstige_Flaechen },
+                new DbParam("@b27", DbParamTyp.Double) { Wert = m.Wohnflaeche },
+                new DbParam("@b28", DbParamTyp.Double) { Wert = m.Raumhoehe },
+                new DbParam("@b29", DbParamTyp.Double) { Wert = m.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand },
+                new DbParam("@b30", DbParamTyp.Double) { Wert = m.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach },
+                new DbParam("@b31", DbParamTyp.Double) { Wert = m.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke },
+                new DbParam("@b32", DbParamTyp.Double) { Wert = m.Abmessung_Anschluß_Fenster_Wand },
+                new DbParam("@b33", DbParamTyp.Double) { Wert = m.Abmessung_Anschluß_Wand_Dach },
+                new DbParam("@b34", DbParamTyp.Double) { Wert = m.Abmessung_Anschluß_Außenwand_Kellerdecke },
+                new DbParam("@b35", DbParamTyp.Double) { Wert = m.Luftwechselrate },
+                new DbParam("@b36", DbParamTyp.Double) { Wert = m.Wochenende },
+                new DbParam("@b37", DbParamTyp.Double) { Wert = m.Ferien },
+                new DbParam("@b38", DbParamTyp.Double) { Wert = m.Ferienbeginn_1 },
+                new DbParam("@b39", DbParamTyp.Double) { Wert = m.Ferienende_1 },
+                new DbParam("@b40", DbParamTyp.Double) { Wert = m.Ferienbeginn_2 },
+                new DbParam("@b41", DbParamTyp.Double) { Wert = m.Ferienende_2 },
+                new DbParam("@b42", DbParamTyp.Double) { Wert = m.Ferienbeginn_3 },
+                new DbParam("@b43", DbParamTyp.Double) { Wert = m.Ferienende_3 },
+                new DbParam("@b44", DbParamTyp.Double) { Wert = m.Ferienbeginn_4 },
+                new DbParam("@b45", DbParamTyp.Double) { Wert = m.Ferienende_4 },
+                new DbParam("@b46", DbParamTyp.Double) { Wert = m.WW_Bedarf },
+                new DbParam("@b47", DbParamTyp.Double) { Wert = m.spez_Waermeverbrauch },
+                new DbParam("@b48", DbParamTyp.Double) { Wert = m.Waermebedarf },
+                new DbParam("@b49", DbParamTyp.VarWChar) { Wert = (object)(m.Baualtersklasse ?? "") },
+                new DbParam("@b50", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudeart ?? "") },
+                new DbParam("@b51", DbParamTyp.VarWChar) { Wert = (object)(m.Wohngebaeude_Nicht_Wohngebaeude ?? "") },
             };
         }
 
@@ -212,10 +211,10 @@ namespace WindowsFormsApplication1
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
             string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Wohnflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            var ps = new List<OleDbParameter>();
-            ps.Add(new OleDbParameter("@bid", OleDbType.Integer) { Value = newId });
+            var ps = new List<DbParam>();
+            ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
-            ps.Add(new OleDbParameter("@bro", OleDbType.Boolean) { Value = false });
+            ps.Add(new DbParam("@bro", DbParamTyp.Boolean) { Wert = false });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
@@ -229,8 +228,8 @@ namespace WindowsFormsApplication1
                 return false;
             }
             string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Wohnflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ? WHERE Bezeichner = ?";
-            var ps = new List<OleDbParameter>(BuildValueParams(m));
-            ps.Add(new OleDbParameter("@bkey", OleDbType.VarWChar) { Value = (object)(m.Gebaeudename ?? "") });
+            var ps = new List<DbParam>(BuildValueParams(m));
+            ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
@@ -245,70 +244,70 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@cbez", szBezeichner ?? (object)DBNull.Value));
+                new DbParam("@cbez", szBezeichner ?? (object)DBNull.Value));
             if (dt == null || dt.Rows.Count == 0) return 0;
             DataRow r = dt.Rows[0];
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
             string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Wohnflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            OleDbParameter[] ps = new OleDbParameter[]
+            DbParam[] ps = new DbParam[]
             {
-                new OleDbParameter("@c00", OleDbType.Integer) { Value = newId },
-                new OleDbParameter("@c01", OleDbType.Integer) { Value = idProjektGebaeude },
-                new OleDbParameter("@c02", OleDbType.Integer) { Value = idProjekt },
-                new OleDbParameter("@c03", OleDbType.VarWChar) { Value = (object)(r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString()) },
-                new OleDbParameter("@c04", OleDbType.VarWChar) { Value = (object)(r["Typ"] == DBNull.Value ? "" : r["Typ"].ToString()) },
-                new OleDbParameter("@c05", OleDbType.VarWChar) { Value = (object)(r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString()) },
-                new OleDbParameter("@c06", OleDbType.Double) { Value = (object)(r["Wohnflaeche_gesamt"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wohnflaeche_gesamt"])) },
-                new OleDbParameter("@c07", OleDbType.Double) { Value = (object)(r["Bewohner"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Bewohner"])) },
-                new OleDbParameter("@c08", OleDbType.Double) { Value = (object)(r["Flaeche_Nutzer"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Flaeche_Nutzer"])) },
-                new OleDbParameter("@c09", OleDbType.Double) { Value = (object)(r["Interne_Waermegewinne"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Interne_Waermegewinne"])) },
-                new OleDbParameter("@c10", OleDbType.Double) { Value = (object)(r["Bauweise"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Bauweise"])) },
-                new OleDbParameter("@c11", OleDbType.Double) { Value = (object)(r["Fensterflaeche_Sued"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Sued"])) },
-                new OleDbParameter("@c12", OleDbType.Double) { Value = (object)(r["Fensterflaeche_Ost_West"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Ost_West"])) },
-                new OleDbParameter("@c13", OleDbType.Double) { Value = (object)(r["Fensterflaeche_Nord"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Nord"])) },
-                new OleDbParameter("@c14", OleDbType.Double) { Value = (object)(r["Fensterdurchlassgrad"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterdurchlassgrad"])) },
-                new OleDbParameter("@c15", OleDbType.Double) { Value = (object)(r["Raumsolltemperatur_Nachtabsenkung"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Nachtabsenkung"])) },
-                new OleDbParameter("@c16", OleDbType.Double) { Value = (object)(r["Raumsolltemperatur_Tag"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Tag"])) },
-                new OleDbParameter("@c17", OleDbType.Double) { Value = (object)(r["Raumsolltemperatur_Wochenende"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Wochenende"])) },
-                new OleDbParameter("@c18", OleDbType.Double) { Value = (object)(r["Raumsolltemperatur_Ferien"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Ferien"])) },
-                new OleDbParameter("@c19", OleDbType.Double) { Value = (object)(r["Maximaleraumtemperatur"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Maximaleraumtemperatur"])) },
-                new OleDbParameter("@c20", OleDbType.Double) { Value = (object)(r["k_Wert_Außenwand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Außenwand"])) },
-                new OleDbParameter("@c21", OleDbType.Double) { Value = (object)(r["k_Wert_Fenster"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Fenster"])) },
-                new OleDbParameter("@c22", OleDbType.Double) { Value = (object)(r["k_Wert_Dachflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Dachflaeche"])) },
-                new OleDbParameter("@c23", OleDbType.Double) { Value = (object)(r["k_Wert_Grundflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Grundflaeche"])) },
-                new OleDbParameter("@c24", OleDbType.Double) { Value = (object)(r["k_Wert_Sonstiges"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Sonstiges"])) },
-                new OleDbParameter("@c25", OleDbType.Double) { Value = (object)(r["Flaeche_Außenwand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Flaeche_Außenwand"])) },
-                new OleDbParameter("@c26", OleDbType.Double) { Value = (object)(r["gesamte_Fensterflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["gesamte_Fensterflaeche"])) },
-                new OleDbParameter("@c27", OleDbType.Double) { Value = (object)(r["Dachflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Dachflaeche"])) },
-                new OleDbParameter("@c28", OleDbType.Double) { Value = (object)(r["Grundflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Grundflaeche"])) },
-                new OleDbParameter("@c29", OleDbType.Double) { Value = (object)(r["Sonstige_Flaechen"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Sonstige_Flaechen"])) },
-                new OleDbParameter("@c30", OleDbType.Double) { Value = (object)(r["Wohnflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wohnflaeche"])) },
-                new OleDbParameter("@c31", OleDbType.Double) { Value = (object)(r["Raumhoehe"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumhoehe"])) },
-                new OleDbParameter("@c32", OleDbType.Double) { Value = (object)(r["WBVK_Anschluß_Fenster_Wand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Fenster_Wand"])) },
-                new OleDbParameter("@c33", OleDbType.Double) { Value = (object)(r["WBVK_Anschluß_Wand_Dach"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Wand_Dach"])) },
-                new OleDbParameter("@c34", OleDbType.Double) { Value = (object)(r["WBVK_Anschluß_Außenwand_Kellerdecke"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Außenwand_Kellerdecke"])) },
-                new OleDbParameter("@c35", OleDbType.Double) { Value = (object)(r["Abmessung_Anschluß_Fenster_Wand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Fenster_Wand"])) },
-                new OleDbParameter("@c36", OleDbType.Double) { Value = (object)(r["Abmessung_Anschluß_Wand_Dach"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Wand_Dach"])) },
-                new OleDbParameter("@c37", OleDbType.Double) { Value = (object)(r["Abmessung_Anschluß_Außenwand_Kellerdecke"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Außenwand_Kellerdecke"])) },
-                new OleDbParameter("@c38", OleDbType.Double) { Value = (object)(r["Luftwechselrate"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Luftwechselrate"])) },
-                new OleDbParameter("@c39", OleDbType.Double) { Value = (object)(r["Wochenende"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wochenende"])) },
-                new OleDbParameter("@c40", OleDbType.Double) { Value = (object)(r["Ferien"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferien"])) },
-                new OleDbParameter("@c41", OleDbType.Double) { Value = (object)(r["Ferienbeginn_1"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_1"])) },
-                new OleDbParameter("@c42", OleDbType.Double) { Value = (object)(r["Ferienende_1"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_1"])) },
-                new OleDbParameter("@c43", OleDbType.Double) { Value = (object)(r["Ferienbeginn_2"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_2"])) },
-                new OleDbParameter("@c44", OleDbType.Double) { Value = (object)(r["Ferienende_2"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_2"])) },
-                new OleDbParameter("@c45", OleDbType.Double) { Value = (object)(r["Ferienbeginn_3"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_3"])) },
-                new OleDbParameter("@c46", OleDbType.Double) { Value = (object)(r["Ferienende_3"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_3"])) },
-                new OleDbParameter("@c47", OleDbType.Double) { Value = (object)(r["Ferienbeginn_4"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_4"])) },
-                new OleDbParameter("@c48", OleDbType.Double) { Value = (object)(r["Ferienende_4"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_4"])) },
-                new OleDbParameter("@c49", OleDbType.Double) { Value = (object)(r["WW_Bedarf"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WW_Bedarf"])) },
-                new OleDbParameter("@c50", OleDbType.Double) { Value = (object)(r["spez_Waermeverbrauch"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["spez_Waermeverbrauch"])) },
-                new OleDbParameter("@c51", OleDbType.Double) { Value = (object)(r["Waermebedarf"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Waermebedarf"])) },
-                new OleDbParameter("@c52", OleDbType.VarWChar) { Value = (object)(r["Baualtersklasse"] == DBNull.Value ? "" : r["Baualtersklasse"].ToString()) },
-                new OleDbParameter("@c53", OleDbType.VarWChar) { Value = (object)(r["Gebaeudeart"] == DBNull.Value ? "" : r["Gebaeudeart"].ToString()) },
-                new OleDbParameter("@c54", OleDbType.VarWChar) { Value = (object)(r["Wohngebaeude_Nicht_Wohngebaeude"] == DBNull.Value ? "" : r["Wohngebaeude_Nicht_Wohngebaeude"].ToString()) },
+                new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
+                new DbParam("@c01", DbParamTyp.Integer) { Wert = idProjektGebaeude },
+                new DbParam("@c02", DbParamTyp.Integer) { Wert = idProjekt },
+                new DbParam("@c03", DbParamTyp.VarWChar) { Wert = (object)(r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString()) },
+                new DbParam("@c04", DbParamTyp.VarWChar) { Wert = (object)(r["Typ"] == DBNull.Value ? "" : r["Typ"].ToString()) },
+                new DbParam("@c05", DbParamTyp.VarWChar) { Wert = (object)(r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString()) },
+                new DbParam("@c06", DbParamTyp.Double) { Wert = (object)(r["Wohnflaeche_gesamt"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wohnflaeche_gesamt"])) },
+                new DbParam("@c07", DbParamTyp.Double) { Wert = (object)(r["Bewohner"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Bewohner"])) },
+                new DbParam("@c08", DbParamTyp.Double) { Wert = (object)(r["Flaeche_Nutzer"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Flaeche_Nutzer"])) },
+                new DbParam("@c09", DbParamTyp.Double) { Wert = (object)(r["Interne_Waermegewinne"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Interne_Waermegewinne"])) },
+                new DbParam("@c10", DbParamTyp.Double) { Wert = (object)(r["Bauweise"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Bauweise"])) },
+                new DbParam("@c11", DbParamTyp.Double) { Wert = (object)(r["Fensterflaeche_Sued"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Sued"])) },
+                new DbParam("@c12", DbParamTyp.Double) { Wert = (object)(r["Fensterflaeche_Ost_West"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Ost_West"])) },
+                new DbParam("@c13", DbParamTyp.Double) { Wert = (object)(r["Fensterflaeche_Nord"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterflaeche_Nord"])) },
+                new DbParam("@c14", DbParamTyp.Double) { Wert = (object)(r["Fensterdurchlassgrad"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Fensterdurchlassgrad"])) },
+                new DbParam("@c15", DbParamTyp.Double) { Wert = (object)(r["Raumsolltemperatur_Nachtabsenkung"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Nachtabsenkung"])) },
+                new DbParam("@c16", DbParamTyp.Double) { Wert = (object)(r["Raumsolltemperatur_Tag"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Tag"])) },
+                new DbParam("@c17", DbParamTyp.Double) { Wert = (object)(r["Raumsolltemperatur_Wochenende"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Wochenende"])) },
+                new DbParam("@c18", DbParamTyp.Double) { Wert = (object)(r["Raumsolltemperatur_Ferien"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumsolltemperatur_Ferien"])) },
+                new DbParam("@c19", DbParamTyp.Double) { Wert = (object)(r["Maximaleraumtemperatur"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Maximaleraumtemperatur"])) },
+                new DbParam("@c20", DbParamTyp.Double) { Wert = (object)(r["k_Wert_Außenwand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Außenwand"])) },
+                new DbParam("@c21", DbParamTyp.Double) { Wert = (object)(r["k_Wert_Fenster"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Fenster"])) },
+                new DbParam("@c22", DbParamTyp.Double) { Wert = (object)(r["k_Wert_Dachflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Dachflaeche"])) },
+                new DbParam("@c23", DbParamTyp.Double) { Wert = (object)(r["k_Wert_Grundflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Grundflaeche"])) },
+                new DbParam("@c24", DbParamTyp.Double) { Wert = (object)(r["k_Wert_Sonstiges"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["k_Wert_Sonstiges"])) },
+                new DbParam("@c25", DbParamTyp.Double) { Wert = (object)(r["Flaeche_Außenwand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Flaeche_Außenwand"])) },
+                new DbParam("@c26", DbParamTyp.Double) { Wert = (object)(r["gesamte_Fensterflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["gesamte_Fensterflaeche"])) },
+                new DbParam("@c27", DbParamTyp.Double) { Wert = (object)(r["Dachflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Dachflaeche"])) },
+                new DbParam("@c28", DbParamTyp.Double) { Wert = (object)(r["Grundflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Grundflaeche"])) },
+                new DbParam("@c29", DbParamTyp.Double) { Wert = (object)(r["Sonstige_Flaechen"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Sonstige_Flaechen"])) },
+                new DbParam("@c30", DbParamTyp.Double) { Wert = (object)(r["Wohnflaeche"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wohnflaeche"])) },
+                new DbParam("@c31", DbParamTyp.Double) { Wert = (object)(r["Raumhoehe"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Raumhoehe"])) },
+                new DbParam("@c32", DbParamTyp.Double) { Wert = (object)(r["WBVK_Anschluß_Fenster_Wand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Fenster_Wand"])) },
+                new DbParam("@c33", DbParamTyp.Double) { Wert = (object)(r["WBVK_Anschluß_Wand_Dach"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Wand_Dach"])) },
+                new DbParam("@c34", DbParamTyp.Double) { Wert = (object)(r["WBVK_Anschluß_Außenwand_Kellerdecke"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WBVK_Anschluß_Außenwand_Kellerdecke"])) },
+                new DbParam("@c35", DbParamTyp.Double) { Wert = (object)(r["Abmessung_Anschluß_Fenster_Wand"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Fenster_Wand"])) },
+                new DbParam("@c36", DbParamTyp.Double) { Wert = (object)(r["Abmessung_Anschluß_Wand_Dach"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Wand_Dach"])) },
+                new DbParam("@c37", DbParamTyp.Double) { Wert = (object)(r["Abmessung_Anschluß_Außenwand_Kellerdecke"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Abmessung_Anschluß_Außenwand_Kellerdecke"])) },
+                new DbParam("@c38", DbParamTyp.Double) { Wert = (object)(r["Luftwechselrate"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Luftwechselrate"])) },
+                new DbParam("@c39", DbParamTyp.Double) { Wert = (object)(r["Wochenende"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Wochenende"])) },
+                new DbParam("@c40", DbParamTyp.Double) { Wert = (object)(r["Ferien"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferien"])) },
+                new DbParam("@c41", DbParamTyp.Double) { Wert = (object)(r["Ferienbeginn_1"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_1"])) },
+                new DbParam("@c42", DbParamTyp.Double) { Wert = (object)(r["Ferienende_1"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_1"])) },
+                new DbParam("@c43", DbParamTyp.Double) { Wert = (object)(r["Ferienbeginn_2"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_2"])) },
+                new DbParam("@c44", DbParamTyp.Double) { Wert = (object)(r["Ferienende_2"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_2"])) },
+                new DbParam("@c45", DbParamTyp.Double) { Wert = (object)(r["Ferienbeginn_3"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_3"])) },
+                new DbParam("@c46", DbParamTyp.Double) { Wert = (object)(r["Ferienende_3"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_3"])) },
+                new DbParam("@c47", DbParamTyp.Double) { Wert = (object)(r["Ferienbeginn_4"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienbeginn_4"])) },
+                new DbParam("@c48", DbParamTyp.Double) { Wert = (object)(r["Ferienende_4"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Ferienende_4"])) },
+                new DbParam("@c49", DbParamTyp.Double) { Wert = (object)(r["WW_Bedarf"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["WW_Bedarf"])) },
+                new DbParam("@c50", DbParamTyp.Double) { Wert = (object)(r["spez_Waermeverbrauch"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["spez_Waermeverbrauch"])) },
+                new DbParam("@c51", DbParamTyp.Double) { Wert = (object)(r["Waermebedarf"] == DBNull.Value ? 0.0 : Convert.ToDouble(r["Waermebedarf"])) },
+                new DbParam("@c52", DbParamTyp.VarWChar) { Wert = (object)(r["Baualtersklasse"] == DBNull.Value ? "" : r["Baualtersklasse"].ToString()) },
+                new DbParam("@c53", DbParamTyp.VarWChar) { Wert = (object)(r["Gebaeudeart"] == DBNull.Value ? "" : r["Gebaeudeart"].ToString()) },
+                new DbParam("@c54", DbParamTyp.VarWChar) { Wert = (object)(r["Wohngebaeude_Nicht_Wohngebaeude"] == DBNull.Value ? "" : r["Wohngebaeude_Nicht_Wohngebaeude"].ToString()) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 
@@ -329,7 +328,7 @@ namespace WindowsFormsApplication1
 
             DataTable head = DataRepository.GetDataTable(
                 "SELECT ID, Bezeichner, Beschreibung FROM [Tab_DBTagV_STAMM] WHERE Bezeichner = ?",
-                new OleDbParameter("@t01", szTyp));
+                new DbParam("@t01", szTyp));
             if (head == null || head.Rows.Count == 0) return; // kein Tagesgang fuer diesen Typ
 
             int stammTagvId = Convert.ToInt32(head.Rows[0]["ID"]);
@@ -339,15 +338,15 @@ namespace WindowsFormsApplication1
             int newTagvId = DataRepository.GetMaxID("Tab_DBTagV") + 1;
             bool ok = DataRepository.ExecuteSQL(
                 "INSERT INTO [Tab_DBTagV] ([ID], [ID_Gebaeude], [Bezeichner], [Beschreibung]) VALUES (?, ?, ?, ?)",
-                new OleDbParameter("@t02", OleDbType.Integer) { Value = newTagvId },
-                new OleDbParameter("@t03", OleDbType.Integer) { Value = idGebaeude },
-                new OleDbParameter("@t04", OleDbType.VarWChar) { Value = (object)bez },
-                new OleDbParameter("@t05", OleDbType.VarWChar) { Value = (object)beschr });
+                new DbParam("@t02", DbParamTyp.Integer) { Wert = newTagvId },
+                new DbParam("@t03", DbParamTyp.Integer) { Wert = idGebaeude },
+                new DbParam("@t04", DbParamTyp.VarWChar) { Wert = (object)bez },
+                new DbParam("@t05", DbParamTyp.VarWChar) { Wert = (object)beschr });
             if (!ok) return;
 
             DataTable daten = DataRepository.GetDataTable(
                 "SELECT Verteilung FROM [Tab_DBTagVDaten_STAMM] WHERE ID_TagV = ? ORDER BY ID",
-                new OleDbParameter("@t06", stammTagvId));
+                new DbParam("@t06", stammTagvId));
             if (daten == null || daten.Rows.Count == 0) return;
 
             int nextId = DataRepository.GetMaxID("Tab_DBTagVDaten") + 1;
@@ -359,10 +358,10 @@ namespace WindowsFormsApplication1
                     {
                         v.Ausfuehren(
                             "INSERT INTO [Tab_DBTagVDaten] ([ID], [ID_TagV], [Verteilung]) VALUES (?, ?, ?)",
-                            new OleDbParameter("@d01", OleDbType.Integer) { Value = nextId++ },
-                            new OleDbParameter("@d02", OleDbType.Integer) { Value = newTagvId },
-                            new OleDbParameter("@d03", OleDbType.Double)
-                            { Value = dr["Verteilung"] == DBNull.Value ? 0.0 : Convert.ToDouble(dr["Verteilung"]) });
+                            new DbParam("@d01", DbParamTyp.Integer) { Wert = nextId++ },
+                            new DbParam("@d02", DbParamTyp.Integer) { Wert = newTagvId },
+                            new DbParam("@d03", DbParamTyp.Double)
+                            { Wert = dr["Verteilung"] == DBNull.Value ? 0.0 : Convert.ToDouble(dr["Verteilung"]) });
                     }
                     v.Commit();
                 }
