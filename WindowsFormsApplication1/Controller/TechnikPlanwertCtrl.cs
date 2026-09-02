@@ -875,7 +875,7 @@ namespace WindowsFormsApplication1
                 double investition = 0;
                 if (komponentenID > 0)
                     investition = KostenPositionCtrl.LiesBetrag(
-                        KostenPositionCtrl.FindeHauptposition(projektID, Form_Kosten.KATEGORIE_INVESTITION,
+                        KostenPositionCtrl.FindeHauptposition(projektID, DbWerte.KOSTEN_KATEGORIE_INVESTITION,
                                                               komponentenID, komponente));
 
                 if (investition <= 0.0)

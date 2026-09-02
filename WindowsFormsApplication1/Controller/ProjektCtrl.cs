@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dt.Rows)
                     if (r[0] != DBNull.Value)
                         StilleDb.NonQuery(
-                            "DELETE FROM " + BerichtCtrl.TAB_KONFIG + " WHERE ProjektID = ?",
+                            "DELETE FROM " + SchemaKatalog.TAB_BERICHTSKONFIGURATION + " WHERE ProjektID = ?",
                             StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])));
             }
             catch (Exception ex)
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dt.Rows)
                     if (r[0] != DBNull.Value)
                         StilleDb.NonQuery(
-                            "DELETE FROM " + VariantenCtrl.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
+                            "DELETE FROM " + SchemaKatalog.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
                             StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])),
                             StilleDb.Par("@ref", DbParamTyp.Integer, Convert.ToInt32(r[0])));
             }

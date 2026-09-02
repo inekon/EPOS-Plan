@@ -456,7 +456,7 @@ namespace WindowsFormsApplication1
             // Fremdschlüssel ID_PUFFER, also genau das, was der Eindeutigkeitsindex
             // sperrt; die Namensprüfung hängt am Bezeichner, der sich ändern kann.
             if (!AnlagenzeileVorhanden(idProjekt, name) &&
-                !AnlagenEindeutigkeit.ZeileVorhanden(AnlagenEindeutigkeit.SPALTE_PUFFER, idProjekt, neueId))
+                !Anlagenzeilen.ZeileVorhanden(Anlagenzeilen.SPALTE_PUFFER, idProjekt, neueId))
                 StilleDb.NonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
                                   ProjektPuffer.AnlagenzeileParameter(idProjekt, name, neueId));
 
@@ -1675,7 +1675,7 @@ namespace WindowsFormsApplication1
             // Wie in ProjektPufferAnlegen: Name UND Geräteverweis prüfen - eine Zeile je
             // Projekt und Gerät (Teil A der Anlagenzeilen-Eindeutigkeit).
             if (!AnlagenzeileVorhanden(idProjekt, ProjektPuffer.BEZ_PENDELSPEICHER) &&
-                !AnlagenEindeutigkeit.ZeileVorhanden(AnlagenEindeutigkeit.SPALTE_PUFFER, idProjekt, neueId))
+                !Anlagenzeilen.ZeileVorhanden(Anlagenzeilen.SPALTE_PUFFER, idProjekt, neueId))
                 StillNonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
                               ProjektPuffer.AnlagenzeileParameter(idProjekt,
                                                                   ProjektPuffer.BEZ_PENDELSPEICHER,

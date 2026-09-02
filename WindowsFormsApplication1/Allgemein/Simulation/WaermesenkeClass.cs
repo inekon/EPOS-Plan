@@ -108,6 +108,27 @@ namespace WindowsFormsApplication1
             return MyResource.Resource.SIM_HEIZKREIS;
         }
 
+        /// <summary>
+        /// Anzeigename eines Ziels — INKLUSIVE der beiden S1-Ziele (Prozesswärme und
+        /// Prozess-Pufferspeicher), die <see cref="ZielAnzeige"/> selbst nicht kennt.
+        ///
+        /// <para><b>Umsetzungskonzept iU3, Views-Kante 2.</b> Die Abbildung stand bis
+        /// dahin als <c>Form_Waermesenke.ZielAnzeige</c> in einem FORMULAR, und
+        /// <see cref="Warnkriterien"/> — Rechenpfad — rief sie von dort. Der Kommentar im
+        /// Formular nannte den Ort ausdrücklich einen Zwischenstand und wies auf genau
+        /// diesen Platz „neben <c>WaermesenkeClass.ZielAnzeige</c>". Das ist hiermit
+        /// eingelöst; <c>Form_Waermesenke.ZielAnzeige</c> leitet hierher weiter, damit die
+        /// Erzeugerkarte (<c>Form_Simulation_Config.Karten</c>) unverändert bleibt.</para>
+        /// </summary>
+        public static string ZielAnzeigeVollstaendig(string ziel)
+        {
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_PROZESS;
+            return ZielAnzeige(ziel);
+        }
+
         // --- Datensatz ----------------------------------------------------------------
 
         /// <summary>Die Senkenfelder einer Anlage (Konzept 5.3).</summary>

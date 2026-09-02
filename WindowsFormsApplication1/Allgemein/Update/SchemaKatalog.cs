@@ -52,6 +52,25 @@ namespace WindowsFormsApplication1
         public const string TAB_APPLIKATION = "Tab_Applikation";
 
         /// <summary>
+        /// Verknüpfung Stammprojekt ↔ Variante. Der Name steht hier und nicht (nur) bei
+        /// <c>VariantenCtrl</c>, weil <c>ProjektCtrl</c> die Zeilen VOR dem
+        /// Projekt-DELETE abräumen muss (Befund B5) — ein Tabellenname im Löschpfad,
+        /// für den der Kern nicht das Variantenmodul mitziehen soll
+        /// (Umsetzungskonzept iU3, Kante K7). <c>VariantenCtrl.TAB_VARIANTE</c> leitet
+        /// hierher weiter.
+        /// </summary>
+        public const string TAB_VARIANTE = "Tab_Variante";
+
+        /// <summary>
+        /// Berichtskonfiguration je Projekt. Gleiche Begründung wie
+        /// <see cref="TAB_VARIANTE"/>: <c>ProjektCtrl</c> räumt die Zeilen vor dem
+        /// Projekt-DELETE ab, damit ein späteres Anlegen nicht am eindeutigen Index
+        /// <c>UQ_BerichtKonfigProj</c> kollidiert. <c>BerichtCtrl.TAB_KONFIG</c> leitet
+        /// hierher weiter.
+        /// </summary>
+        public const string TAB_BERICHTSKONFIGURATION = "Berichtskonfiguration";
+
+        /// <summary>
         /// Die ALT-ZUORDNUNG Projekt ↔ Pufferspeicher — <b>STILLGELEGT ab Schritt 51
         /// (Paket A1, Konzept Brauchwasser/Heizung/Pufferspeicher § 9, Leitentscheidung
         /// L1)</b>.
@@ -1277,19 +1296,19 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// <c>KategorieID = 1</c> (<see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).
+        /// <c>KategorieID = 1</c> (<see cref="DbWerte.KOSTEN_KATEGORIE_INVESTITION"/>).
         /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
         /// </summary>
         public const string KATEGORIE_NAME_INVESTITION = "Investitionskosten";
 
         /// <summary>
-        /// <c>KategorieID = 2</c> (<see cref="Form_Kosten.KATEGORIE_BETRIEB"/>).
+        /// <c>KategorieID = 2</c> (<see cref="DbWerte.KOSTEN_KATEGORIE_BETRIEB"/>).
         /// <inheritdoc cref="KATEGORIE_NAME_INVESTITION" path="/summary/text()[last()]"/>
         /// </summary>
         public const string KATEGORIE_NAME_BETRIEB = "Betriebskosten";
 
         /// <summary>
-        /// <c>KategorieID = 3</c> (<see cref="Form_Kosten.KATEGORIE_ENERGIE"/>). Die
+        /// <c>KategorieID = 3</c> (<see cref="DbWerte.KOSTEN_KATEGORIE_ENERGIE"/>). Die
         /// Kategorie ist seit HF1/L1 stillgelegt und ihre Altzeilen sind in Schritt 29c
         /// geloescht; der Name bleibt trotzdem in der Abbildung, damit eine Datenbank mit
         /// nicht geloeschten Restzeilen keine namenlose Zeile bekommt.
@@ -1428,7 +1447,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_KV_KOMPONENTENID = "KomponentenID";
 
         /// <summary>Spalte <c>Tab_KostenVorlage.KategorieID</c> (1 = Investition, 2 = Betrieb;
-        /// <see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+        /// <see cref="DbWerte.KOSTEN_KATEGORIE_INVESTITION"/>).</summary>
         public const string SPALTE_KV_KATEGORIEID = "KategorieID";
 
         /// <summary>Spalte <c>Tab_KostenVorlage.Name</c> — Variantenname; die
@@ -2280,7 +2299,7 @@ namespace WindowsFormsApplication1
             /// nachgemessene Bestandsnamen, <c>DbWerte.KOSTEN_KOMPONENTE_*</c>).</summary>
             public readonly string Komponente;
 
-            /// <summary>1 = Investition, 2 = Betrieb (<see cref="Form_Kosten.KATEGORIE_INVESTITION"/>).</summary>
+            /// <summary>1 = Investition, 2 = Betrieb (<see cref="DbWerte.KOSTEN_KATEGORIE_INVESTITION"/>).</summary>
             public readonly int KategorieId;
 
             /// <summary>Positionen in Anzeige-Reihenfolge (Sortierung = Index × 10).</summary>
@@ -2324,7 +2343,7 @@ namespace WindowsFormsApplication1
         public static readonly KostenVorlagenSeed[] Schritt39_Vorlagen =
         {
             // ------------------------- Investition (Folien 8/9/14/15/16) ----------------
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("Wärmeerzeuger (Kessel)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG),
                 new VorlagenPositionSeed("Zubehör", ART_KAP, BM_BETRAG),
@@ -2334,7 +2353,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("BHKW-Modul (Kompaktaggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH),
                 new VorlagenPositionSeed("Spitzenlastkessel / Zubehör", ART_KAP, BM_BETRAG),
@@ -2345,7 +2364,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Schallschutz)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("Wärmepumpe (Aggregat)", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG),
                 new VorlagenPositionSeed("Erschließung (Sonden/Kollektor/Luft)", ART_KAP, BM_BETRAG),
@@ -2355,7 +2374,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Fundament/Bohrung)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("Sonnenkollektoren", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR),
                 new VorlagenPositionSeed("Zubehör (Montagesystem/Solarstation)", ART_KAP, BM_BETRAG),
@@ -2365,7 +2384,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("PV-Module", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWP),
                 new VorlagenPositionSeed("Wechselrichter", ART_KAP, BM_BETRAG),
@@ -2376,24 +2395,24 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_BHKW_EINBINDUNG, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZUNGSTECHNIK, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ABGASANLAGE, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_HEIZRAUM, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SCHORNSTEIN, ART_KAP, BM_BETRAG),
@@ -2402,14 +2421,14 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_ERDGASANSCHLUSS, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_INVESTITION, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_STROMEINSPEISUNG, ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
 
             // ------------------------- Betrieb (Folien 19-24) ---------------------------
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BHKW, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 // ETAPPE H1: hiess bis 29.08.2026 "Vollwartung / Wartung BHKW" und stand
                 // damit neben dem Altkatalogeintrag DbWerte.VDI_POS_WARTUNG_BHKW - zwei
@@ -2429,7 +2448,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_HEIZKESSEL, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Vollwartung / Wartung Kessel", ART_BETR, BM_KWH_TH,
                                          null, null, PFLICHT),
@@ -2443,7 +2462,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEPUMPE, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Wartung Wärmepumpe", ART_BETR, BM_JAHR, null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Wärmepumpe", ART_BETR, BM_PINV,
@@ -2457,7 +2476,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_SOLARTHERMIE, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Wartung Solarthermie-Anlage", ART_BETR, BM_JAHR,
                                          null, null, PFLICHT),
@@ -2476,7 +2495,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR,
                                          null, null, PFLICHT),
@@ -2493,7 +2512,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Wartung / Inspektion PV-Anlage", ART_BETR, BM_JAHR,
                                          null, null, PFLICHT),
@@ -2510,7 +2529,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Versicherung, Steuern, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Wartung / Sichtprüfung Speicher", ART_BETR, BM_JAHR,
                                          null, null, PFLICHT),
@@ -2522,17 +2541,17 @@ namespace WindowsFormsApplication1
                                          null, null, PFLICHT),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
             }),
-            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, Form_Kosten.KATEGORIE_BETRIEB, new[]
+            new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG, DbWerte.KOSTEN_KATEGORIE_BETRIEB, new[]
             {
                 new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),

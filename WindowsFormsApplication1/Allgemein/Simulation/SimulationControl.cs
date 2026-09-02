@@ -329,7 +329,7 @@ namespace WindowsFormsApplication1
             Protokoll = SimulationProtokoll.Aktuell;
 
             string sperrgrund;
-            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            if (SchemaStand.SimulationGesperrt(out sperrgrund))
             {
                 Sperrgrund = sperrgrund;
                 Protokoll.Fehlermeldung(string.Format(MyResource.Resource.SIMENG_SIMULATION_ABGEBROCHEN, sperrgrund));

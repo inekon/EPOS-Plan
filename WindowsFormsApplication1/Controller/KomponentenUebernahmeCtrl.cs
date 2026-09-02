@@ -470,7 +470,7 @@ namespace WindowsFormsApplication1
                 if (o == null || o == DBNull.Value) return;
 
                 KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
-                    idZiel, komponente, Form_Kosten.KATEGORIE_INVESTITION, Convert.ToInt32(o));
+                    idZiel, komponente, DbWerte.KOSTEN_KATEGORIE_INVESTITION, Convert.ToInt32(o));
 
                 if (ab != null && ab.Abweichend)
                     warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_KOSTEN, komponente));

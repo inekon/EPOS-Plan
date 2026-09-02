@@ -112,8 +112,8 @@ namespace WindowsFormsApplication1
             // Kein Ergebnis heisst hier "Tabelle fehlt" (StilleDb schluckt den Fehler und
             // liefert null). Ein leerer Tabelleninhalt liefert dagegen 0, nicht null -
             // COUNT(*) hat immer eine Zeile.
-            StilleDb.NonQuery(SchemaMigration.SQL_CREATE_ANLAGEPUFFERVERBUND);
-            StilleDb.NonQuery(SchemaMigration.SQL_INDEX_ANLAGEPUFFERVERBUND);
+            StilleDb.NonQuery(SchemaStand.SQL_CREATE_ANLAGEPUFFERVERBUND);
+            StilleDb.NonQuery(SchemaStand.SQL_INDEX_ANLAGEPUFFERVERBUND);
         }
 
         // =====================================================================

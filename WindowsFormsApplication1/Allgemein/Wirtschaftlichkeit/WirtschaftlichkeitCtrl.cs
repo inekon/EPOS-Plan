@@ -3141,6 +3141,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Bemessungsmenge des § 54 für einen Kessel [MWh/a, heizwertbezogen].
         ///
+        /// <para><b>Umsetzungskonzept iU3, Kante K5:</b> Die Ableitung selbst steht seit
+        /// dem Kappen der Brücken bei <see cref="HilfsstromRechner.KesselBrennstoffMWh"/>
+        /// — <see cref="ErgebnisCtrl"/> braucht sie im Speicherweg und darf dafür nicht
+        /// die gesamte Wirtschaftlichkeit mitziehen. Hier steht die Weiterleitung; der
+        /// begründende Text bleibt stehen, weil er zu dieser Rechnung gehört.</para>
+        ///
         /// <para><b>Warum sie abgeleitet und nicht gelesen wird.</b>
         /// <c>Tab_ErgebnisHeizkesselModul.Verbrauch</c> existiert seit jeher, wird vom
         /// Rechenkern aber NIE gesetzt (<c>SimulationRunner</c> füllt an der Modulzeile
@@ -3176,10 +3182,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double KesselBrennstoffMWh(ErgebnisHeizkesselModulModel m)
         {
-            if (m.Verbrauch > 0) return m.Verbrauch;
-            double waerme = m.Waerme_Gas + m.Waerme_Oel;
-            if (waerme <= 0 || m.Jahresnutzungsgrad <= 0) return 0;
-            return waerme / (m.Jahresnutzungsgrad / 100.0);
+            return HilfsstromRechner.KesselBrennstoffMWh(m);
         }
 
         /// <summary>
@@ -5458,7 +5461,7 @@ namespace WindowsFormsApplication1
 
                 int idProjekt = r["ProjektID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ProjektID"]);
                 int kategorie = r["KategorieID"] == DBNull.Value ? 0 : Convert.ToInt32(r["KategorieID"]);
-                if (kategorie == Form_Kosten.KATEGORIE_INVESTITION &&
+                if (kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION &&
                     string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
                     return false;
 

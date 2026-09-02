@@ -86,10 +86,13 @@ namespace WindowsFormsApplication1
         // Spalten und Sperren
         // =================================================================================
 
-        public const string SPALTE_WP = "ID_WP";
-        public const string SPALTE_KESSEL = "ID_Kessel";
-        public const string SPALTE_BHKW = "ID_BHKW";
-        public const string SPALTE_PUFFER = "ID_PUFFER";
+        // Die vier Spaltennamen stehen seit iU3 bei Anlagenzeilen (Kante K4) - dort
+        // braucht sie der Rechenpfad ohne den Dialogteil dieser Klasse. Hier bleiben sie
+        // als Weiterleitung stehen, damit alle bestehenden Aufrufer gültig bleiben.
+        public const string SPALTE_WP = Anlagenzeilen.SPALTE_WP;
+        public const string SPALTE_KESSEL = Anlagenzeilen.SPALTE_KESSEL;
+        public const string SPALTE_BHKW = Anlagenzeilen.SPALTE_BHKW;
+        public const string SPALTE_PUFFER = Anlagenzeilen.SPALTE_PUFFER;
 
         /// <summary>Die vier gesperrten Geräteverweise - EINE Wahrheit für Dialog, Index und Bericht.</summary>
         public static readonly GeraeteSperre[] SPERREN =
@@ -445,16 +448,13 @@ namespace WindowsFormsApplication1
             return neu;
         }
 
-        /// <summary>Gibt es im Projekt bereits eine Anlagenzeile auf dieses Gerät?</summary>
+        /// <summary>
+        /// Gibt es im Projekt bereits eine Anlagenzeile auf dieses Gerät?
+        /// Weiterleitung auf <see cref="Anlagenzeilen.ZeileVorhanden"/> (Kante K4).
+        /// </summary>
         public static bool ZeileVorhanden(string spalte, int idProjekt, int idGeraet)
         {
-            if (idGeraet <= 0 || idProjekt <= 0) return false;
-
-            return StilleDb.Zahl(StilleDb.Scalar(
-                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
-                "WHERE ID_Projekt = ? AND [" + spalte + "] = ?",
-                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
-                StilleDb.Par("@ger", DbParamTyp.Integer, idGeraet))) > 0;
+            return Anlagenzeilen.ZeileVorhanden(spalte, idProjekt, idGeraet);
         }
 
         // =================================================================================

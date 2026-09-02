@@ -435,7 +435,7 @@ namespace WindowsFormsApplication1
                         {
                             // ETAPPE B3 Paket b: Hilfsenergie des Kessels - dieselbe Formel
                             // wie beim BHKW. Die Endenergie kommt aus
-                            // WirtschaftlichkeitCtrl.KesselBrennstoffMWh: Verbrauch, sofern
+                            // HilfsstromRechner.KesselBrennstoffMWh: Verbrauch, sofern
                             // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad (Paket a
                             // hat begruendet, warum der Rechenkern Verbrauch nie fuellt).
                             //
@@ -451,7 +451,7 @@ namespace WindowsFormsApplication1
                             {
                                 ErgebnisHeizkesselModulModel mx = m.Heizkessel.Module[ix];
                                 hkNamen[ix] = mx.Modul ?? "";
-                                hkBrennstoff[ix] = WirtschaftlichkeitCtrl.KesselBrennstoffMWh(mx);
+                                hkBrennstoff[ix] = HilfsstromRechner.KesselBrennstoffMWh(mx);
                             }
                             double[] hkHilfsenergie = HilfsstromRechner.JeModul(
                                 m.ID_Projekt, WizardItemClass.KESSEL_TYP, hkNamen, hkBrennstoff);

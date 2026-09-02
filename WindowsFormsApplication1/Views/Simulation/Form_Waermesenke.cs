@@ -302,18 +302,17 @@ namespace WindowsFormsApplication1
         /// Anzeigename eines Ziels — inklusive der beiden S1-Ziele.
         ///
         /// ÖFFENTLICH, weil auch die Erzeugerkarte die Senkenkette beschriftet
-        /// (<c>Form_Simulation_Config.Karten</c>). Der Ort ist ein Zwischenstand: Sobald
-        /// <see cref="WaermesenkeClass"/> die beiden neuen Ziele kennt, gehört die
-        /// Abbildung dorthin, neben <c>WaermesenkeClass.ZielAnzeige</c> — bis dahin steht
-        /// sie hier EINMAL statt zweimal in zwei Formularen.
+        /// (<c>Form_Simulation_Config.Karten</c>).
+        ///
+        /// <para><b>Der Zwischenstand ist beendet (iU3, Views-Kante 2).</b> Die Abbildung
+        /// steht jetzt dort, wohin dieser Kommentar sie verwiesen hat: bei
+        /// <see cref="WaermesenkeClass.ZielAnzeigeVollstaendig"/>, neben
+        /// <c>WaermesenkeClass.ZielAnzeige</c>. Hier bleibt die Weiterleitung — der
+        /// Rechenpfad (<c>Warnkriterien</c>) ruft nicht mehr in ein Formular.</para>
         /// </summary>
         public static string ZielAnzeige(string ziel)
         {
-            if (string.Equals(ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
-                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
-            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
-                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_PROZESS;
-            return WaermesenkeClass.ZielAnzeige(ziel);
+            return WaermesenkeClass.ZielAnzeigeVollstaendig(ziel);
         }
 
         /// <summary>

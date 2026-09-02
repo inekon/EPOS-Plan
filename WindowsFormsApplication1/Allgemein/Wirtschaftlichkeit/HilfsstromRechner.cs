@@ -258,5 +258,56 @@ namespace WindowsFormsApplication1
             for (int j = 0; j < modulNamen.Length; j++) treffer[j] = j;
             return treffer;
         }
+
+        /// <summary>
+        /// Bemessungsmenge des § 54 für einen Kessel [MWh/a, heizwertbezogen].
+        ///
+        /// <para><b>Warum sie abgeleitet und nicht gelesen wird.</b>
+        /// <c>Tab_ErgebnisHeizkesselModul.Verbrauch</c> existiert seit jeher, wird vom
+        /// Rechenkern aber NIE gesetzt (<c>SimulationRunner</c> füllt an der Modulzeile
+        /// nur Modul, Waerme_Gas, Waerme_Oel, Jahresnutzungsgrad und carrier_id) — im
+        /// ganzen Bestand steht dort 0. Gelesen wird die Spalte trotzdem zuerst: Sobald
+        /// sie einmal gefüllt wird, ist sie die bessere Quelle, und diese Reihenfolge
+        /// muss dann nicht noch einmal angefasst werden.</para>
+        ///
+        /// <para><b>Die Ableitung ist die exakte Umkehrung der Vorwärtsrechnung.</b>
+        /// <c>SimulationSPK.Bilanz_und_Nutzungsgrad</c> bildet den Nutzungsgrad als
+        /// <c>(Waerme_Gas + Waerme_Oel) / Brennstoffeinsatz × 100</c> — in PROZENT und
+        /// über denselben Zähler. Die Rückrechnung
+        /// <c>(Waerme_Gas + Waerme_Oel) / (Nutzungsgrad / 100)</c> liefert deshalb wieder
+        /// den Brennstoffeinsatz des Laufs, nicht eine Näherung. Einzige Ausnahme sind
+        /// die Plausibilitätsklemmen des Rechenkerns (Nutzungsgrad über 110 % wird auf
+        /// 108 gesetzt, unter 1 % auf 1); in diesen Fällen weicht die Rückrechnung um
+        /// genau den geklemmten Betrag ab — ein Fall, den es nur bei absurden
+        /// Eingangsdaten gibt.</para>
+        ///
+        /// <para><b>Ohne Nutzungsgrad keine Menge:</b> 0, und die Steuerrechnung meldet
+        /// „Menge unklar" mit dem Anlagennamen. Eine geratene Menge wäre hier dasselbe wie
+        /// eine geratene Dichte (Leitentscheidung L3).</para>
+        ///
+        /// <para><b>Der Simulationspfad bleibt unberührt.</b> Die Ableitung steht
+        /// bewusst in der Zuführung und nicht im <c>SimulationRunner</c>: Eine neu
+        /// gefüllte Ergebnisspalte änderte gespeicherte Läufe und damit die
+        /// Referenzlaufvergleiche, ohne dass die Wirtschaftlichkeit davon mehr hätte.</para>
+        ///
+        /// <para><b>ETAPPE B3 Paket b.</b> Der Speicherweg (<see cref="ErgebnisCtrl"/>)
+        /// braucht dieselbe Menge als Bemessungsgrundlage des Hilfsstroms. Eine zweite
+        /// Ableitung daneben wäre die zweite Wahrheit über genau die Frage, die dieser
+        /// Kommentar beantwortet.</para>
+        ///
+        /// <para><b>Umsetzungskonzept iU3, Kante K5:</b> Die Methode stand bis dahin bei
+        /// <see cref="WirtschaftlichkeitCtrl"/> und war die einzige Verbindung von
+        /// <see cref="ErgebnisCtrl"/> dorthin. Sie liegt jetzt bei dem Rechner, der sie
+        /// als Bemessungsgrundlage ohnehin nennt (siehe <see cref="JeModul"/>);
+        /// <see cref="WirtschaftlichkeitCtrl.KesselBrennstoffMWh"/> leitet hierher
+        /// weiter.</para>
+        /// </summary>
+        internal static double KesselBrennstoffMWh(ErgebnisHeizkesselModulModel m)
+        {
+            if (m.Verbrauch > 0) return m.Verbrauch;
+            double waerme = m.Waerme_Gas + m.Waerme_Oel;
+            if (waerme <= 0 || m.Jahresnutzungsgrad <= 0) return 0;
+            return waerme / (m.Jahresnutzungsgrad / 100.0);
+        }
     }
 }
