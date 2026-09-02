@@ -112,6 +112,14 @@ Referenz-CSV selbst sind nach dem Befund oben unkritisch. **Nachtrag: Der Anwend
 Reduzierung am 02.09.2026 selbst durchgeführt — Ergebnis 76 MB** (von 148 MB), unter der
 GitHub-Grenze; kein LFS nötig. Die Datei ist als `Referenzlaeufe/Kenndaten_Test.sqlite` einzuchecken.
 
+**Ist-Stand der eingecheckten Datei (02.09.2026, `db66c95`):** `Referenzlaeufe/Kenndaten_Test.sqlite`,
+73,4 MB, `integrity_check` ok, `foreign_key_check` leer, 114 Tabellen / 14 Sichten, SchemaVersion 61,
+Journal-Modus WAL. **Sie enthält 23 Projekte** (19, 1006–1009, 1017–1019, 1023–1032, 1039–1044),
+davon **11 der 13 Referenzprojekte — 1011 und 1021 fehlen.** Für den Spike (nur 1030) genügt das;
+für den vollen 13/13-Vergleich (iT1/iT3) braucht es eine neue Kopie aus der Produktivdatenbank per
+`VACUUM INTO` und `sql/tools/Reduziere-Testdatenbank.sql`. Die überzähligen Projekte wurden bewusst
+nicht entfernt (Auswahl des Anwenders); größte Tabelle `Tab_StromganglinieDaten` mit 823.441 Zeilen.
+
 ### 2.2 Befund zum Machbarkeits-Spike (iU3), 02.09.2026 — zwei Messungen auf Linux
 
 Vor dem Spike wurde geprüft, was der heutige Bestand außerhalb von Windows *zur Laufzeit* tut.
