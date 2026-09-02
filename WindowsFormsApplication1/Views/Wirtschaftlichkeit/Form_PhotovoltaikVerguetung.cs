@@ -47,9 +47,29 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn „Übernehmen" erfolgreich geschrieben hat.</summary>
         public bool Gespeichert { get; private set; }
 
+        // =====================================================================
+        // Degradation [%/a] (Stufe E2.4, Paket B des PV-Ertragsmodells)
+        // =====================================================================
+        //
+        // PROGRAMMATISCH, obwohl dieser Dialog eine Designer-Datei hat: Die
+        // Hausregel verbietet das Editieren von Designer- und .resx-Dateien der
+        // Formulare von Hand (CLAUDE.md des Hauptprojekts). Das Feld sitzt in der
+        // Gruppe „Anlage" rechts unten - der einzige freie Bereich (die drei
+        // Wertespalten links enden bei x = 305, die Warnzeile oben rechts beginnt
+        // bei y = 26 und wächst nach unten).
+
+        private const int DEG_LINKS = 310;
+        private const int DEG_LABEL_OBEN = 86;
+        private const int DEG_FELD_OBEN = 104;
+        private const int DEG_BREITE = 115;
+
+        private NumericUpDown numDegradation;
+        private ToolTip _tipDegradation;
+
         public Form_PhotovoltaikVerguetung()
         {
             InitializeComponent();
+            DegradationsfeldAnlegen();
             // H7: Infoknopf in das Kopfband (pnlKopf, Dock Top, 48 hoch), aber LINKS
             // von chkAktiv - das steht rechts verankert bei x 756..901 (Panelbreite
             // 914). 175 setzt den Knopf auf x 711..739, hinter lblKopfTitel (bis 193).
@@ -59,6 +79,44 @@ namespace WindowsFormsApplication1
                 { T("PVW_AUTO", "Automatisch"), T("PVW_JA", "Ja"), T("PVW_NEIN", "Nein") });
             cmbKappung.Items.AddRange(new object[]
                 { T("PVW_AUTO", "Automatisch"), T("PVW_JA", "Ja"), T("PVW_NEIN", "Nein") });
+        }
+
+        /// <summary>
+        /// Beschriftung und Zahlenfeld für die Degradation in der Gruppe „Anlage".
+        ///
+        /// <para><b>0 heißt „keine Degradation" und ist zugleich der Wert, den eine
+        /// Bestandszeile mitbringt</b> (Spalte NULL). Erst beim ANLEGEN einer neuen
+        /// Zeile schlägt <c>ProjektPhotovoltaikCtrl</c> 0,5 %/a vor. Damit ändert die
+        /// Migration keine einzige Bestandsrechnung.</para>
+        /// </summary>
+        private void DegradationsfeldAnlegen()
+        {
+            _tipDegradation = new ToolTip();
+
+            Label lbl = new Label();
+            lbl.Text = T("PVM_DEGRADATION", "Degradation [%/a]:");
+            lbl.AutoSize = false;
+            lbl.Size = new System.Drawing.Size(DEG_BREITE, 15);
+            lbl.Location = new System.Drawing.Point(DEG_LINKS, DEG_LABEL_OBEN);
+            grpAnlage.Controls.Add(lbl);
+
+            numDegradation = new NumericUpDown();
+            numDegradation.DecimalPlaces = 2;
+            numDegradation.Minimum = 0;
+            numDegradation.Maximum = 20;
+            numDegradation.Increment = 0.1M;
+            numDegradation.Size = new System.Drawing.Size(80, 23);
+            numDegradation.Location = new System.Drawing.Point(DEG_LINKS, DEG_FELD_OBEN);
+            numDegradation.ValueChanged += EingabeGeaendert;
+            grpAnlage.Controls.Add(numDegradation);
+
+            string hilfe = T("PVM_DEGRADATION_TIP",
+                "Jährlicher Leistungsverlust der Module. Wirkt NUR in der Erlösreihe " +
+                "(Faktor (1 − d/100) hoch (t − 1) je Betrachtungsjahr), nicht in der " +
+                "Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind " +
+                "0,3 bis 0,5 %/a.");
+            _tipDegradation.SetToolTip(lbl, hilfe);
+            _tipDegradation.SetToolTip(numDegradation, hilfe);
         }
 
         /// <summary>Stammprojekt setzen und Werte laden — vor <c>ShowDialog</c>.</summary>
@@ -134,6 +192,9 @@ namespace WindowsFormsApplication1
                 chk51a.Checked = _modell.Par51a_Kompensieren;
                 chkBezugReihe.Checked = _modell.BezugAusPreisreihe;
                 cmbKappung.SelectedIndex = SchalterIndex(_modell.Kappung60_Anwenden);
+                // E2.4: NULL zeigt 0 - "keine Degradation". Nur eine NEUE Zeile bringt
+                // die Vorbelegung 0,5 aus LiesOderVorbelegt mit.
+                numDegradation.Value = (decimal)Math.Max(0, Math.Min(20, _modell.Degradation ?? 0));
             }
             finally { _laden = false; }
 
@@ -227,10 +288,13 @@ namespace WindowsFormsApplication1
                 "Eigenverbrauch aus Anlagen ≤ 2 MW im räumlichen Zusammenhang ist stromsteuerfrei " +
                 "(§ 9 StromStG); bei Lieferung an Dritte gelten andere Regeln.");
 
-            // Vorschau — derselbe Rechenweg wie die Wirtschaftlichkeit.
+            // Vorschau — derselbe Rechenweg wie die Wirtschaftlichkeit, jetzt auch mit
+            // denselben zwei Groessen fuer den degradationsbedingten Mehrbezug (E2.4).
+            double evKwh = Math.Max(0, (_erzeugungMWh - _einspeisungMWh) * 1000.0);
             PvErloesErgebnis pe = PvErloesRechner.Rechne(m, _kwpRechnerisch, _einspeisungMWh,
                 null, null, 20, katalog.Wert,
-                jahr => _ctrl.Jahresmarktwert(jahr, m), CultureInfo.CurrentCulture);
+                jahr => _ctrl.Jahresmarktwert(jahr, m), CultureInfo.CurrentCulture,
+                evKwh, _strompreisEurKwh ?? 0.0);
             lblVorschau.Text = _einspeisungMWh > 0
                 ? string.Format(CultureInfo.CurrentCulture,
                     T("PVW_VORSCHAU",
@@ -350,6 +414,11 @@ namespace WindowsFormsApplication1
             m.Par51a_Kompensieren = chk51a.Checked;
             m.Kappung60_Anwenden = SchalterWert(cmbKappung.SelectedIndex);
             m.BezugAusPreisreihe = chkBezugReihe.Checked;
+            // E2.4: 0 heisst NULL - "nie gepflegt" und "ausdruecklich 0" sind hier
+            // dieselbe Aussage (keine Degradation), und NULL laesst die Bestandszeile
+            // unberuehrt.
+            m.Degradation = numDegradation != null && numDegradation.Value > 0
+                ? (double?)numDegradation.Value : null;
             return m;
         }
 
