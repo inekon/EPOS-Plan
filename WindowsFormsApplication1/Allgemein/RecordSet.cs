@@ -61,13 +61,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Parameter des DBCommand als Datentraeger-Array fuer die Zugriffsschicht.
+        ///
+        /// ARBEITSPAKET iU6: Die Zugriffsschicht nimmt jetzt <see cref="DbParam"/>. Das
+        /// <c>DBCommand</c> selbst BLEIBT ein <c>OleDbCommand</c> (Risiko iR8, eigenes
+        /// Paket) - es ist der Datentraeger, an dem 47 Nutzer haengen. Umgesetzt wird
+        /// deshalb hier, an genau einer Stelle, ueber die Bruecke
+        /// <see cref="DbParam.Von"/>. Reihenfolge und Werte bleiben unveraendert; die
+        /// Bindung laeuft ohnehin nach Position.
         /// </summary>
-        private OleDbParameter[] Parameter()
+        private DbParam[] Parameter()
         {
             if (DBCommand == null || DBCommand.Parameters.Count == 0) return null;
             OleDbParameter[] p = new OleDbParameter[DBCommand.Parameters.Count];
             DBCommand.Parameters.CopyTo(p, 0);
-            return p;
+            return DbParam.Von(p);
         }
 
         public bool Open(string sql)

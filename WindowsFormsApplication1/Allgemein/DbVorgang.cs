@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
@@ -52,7 +51,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>INSERT/UPDATE/DELETE; liefert die Anzahl betroffener Zeilen.</summary>
-        public int Ausfuehren(string sql, params OleDbParameter[] parameter)
+        public int Ausfuehren(string sql, params DbParam[] parameter)
         {
             PruefeOffen();
             using (SqliteCommand cmd = DataRepository.ErzeugeKommando(_verbindung, _transaktion, sql, parameter))
@@ -62,7 +61,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Einzelwert; DBNull wird - wie in ExecuteScalar - zu null.</summary>
-        public object Skalar(string sql, params OleDbParameter[] parameter)
+        public object Skalar(string sql, params DbParam[] parameter)
         {
             PruefeOffen();
             using (SqliteCommand cmd = DataRepository.ErzeugeKommando(_verbindung, _transaktion, sql, parameter))
@@ -78,7 +77,7 @@ namespace WindowsFormsApplication1
         /// DIESER Verbindung und in DIESER Transaktion.
         /// Signatur ohne <c>params</c>, wie <c>DataRepository.ExecuteInsertAndGetId</c>.
         /// </summary>
-        public int EinfuegenUndId(string sql, OleDbParameter[] parameter)
+        public int EinfuegenUndId(string sql, DbParam[] parameter)
         {
             PruefeOffen();
             using (SqliteCommand cmd = DataRepository.ErzeugeKommando(_verbindung, _transaktion, sql, parameter))
@@ -97,7 +96,7 @@ namespace WindowsFormsApplication1
         /// SELECT innerhalb des Vorgangs - sieht also die noch nicht festgeschriebenen
         /// Aenderungen. Typ-Rueckweg wie bei <c>DataRepository.GetDataTable</c>.
         /// </summary>
-        public DataTable Lese(string sql, params OleDbParameter[] parameter)
+        public DataTable Lese(string sql, params DbParam[] parameter)
         {
             PruefeOffen();
             using (SqliteCommand cmd = DataRepository.ErzeugeKommando(_verbindung, _transaktion, sql, parameter))
