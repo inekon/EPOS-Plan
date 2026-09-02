@@ -187,6 +187,30 @@
         /// <summary>WS_Ladegrenze2 - Ladeobergrenze der Zweitsenke [%]; 0 = Puffer-Regel.</summary>
         public double? WS_Ladegrenze2;
 
+        // =============================================================================
+        // PV-Anlagenparameter (Paket A des PV-Ertragsmodells, Stufe E1.3) - 2 Spalten
+        // =============================================================================
+        //
+        // Dieselbe Begruendung, dieselbe NULL-Semantik wie oben: Der Speicherweg ist
+        // Loeschen + Neuanlegen, was das Modell nicht kennt, geht bei jedem Speichern
+        // verloren. Beide Felder sind nullable, weil NULL hier eine eigene Aussage
+        // traegt - "nie gepflegt, es gilt der Vorgabewert" - und sich von einer
+        // ausdruecklich eingetragenen 0 unterscheiden muss. Bei PV_Systemverluste sind
+        // NULL und 0 rechnerisch gleich; der Unterschied bleibt trotzdem erhalten, damit
+        // der Roundtrip aus einer nie gepflegten Zeile keine gepflegte macht.
+
+        /// <summary>
+        /// PV_WrWirkungsgrad - Wechselrichter-Wirkungsgrad der PV-Anlage (0…1).
+        /// <b>NULL = 0,95</b> (der bis Paket A fest verdrahtete Faktor).
+        /// </summary>
+        public double? PV_WrWirkungsgrad;
+
+        /// <summary>
+        /// PV_Systemverluste - Systemverluste der PV-Anlage [%] (Verschmutzung,
+        /// Mismatch, DC-Verkabelung). <b>NULL = 0</b>, also ergebnisneutral.
+        /// </summary>
+        public double? PV_Systemverluste;
+
         public WErzeugerModel()
         {
             ID = 0;

@@ -189,8 +189,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die EINE Einfuegeanweisung fuer <c>Tab_Energieanlagen</c> - 56 der 57 Spalten
+        /// Die EINE Einfuegeanweisung fuer <c>Tab_Energieanlagen</c> - 58 Spalten
         /// (<c>ID</c> ist AutoWert und wird nie gesetzt).
+        ///
+        /// <para>
+        /// PAKET A des PV-Ertragsmodells (Stufe E1.3) hat <c>PV_WrWirkungsgrad</c> und
+        /// <c>PV_Systemverluste</c> ergaenzt - Migrationsschritt 62. Sie stehen hier und
+        /// nicht in einem nachgelagerten UPDATE, weil genau das der Grund des Fehlers ist,
+        /// den der Absatz darunter beschreibt.
+        /// </para>
+        ///
+        /// <para>
+        /// NICHT VOLLSTAENDIG, BEKANNT: Die KWKG-Spalten (Migrationsschritt 22) und die
+        /// drei Spalten der Steuerwahl/Hilfsenergie je Anlage (Schritt 61) fuehrt die
+        /// Anweisung NICHT. Sie gehen beim Loeschen + Neuanlegen still verloren. Das ist
+        /// ein Bestandsbefund des Wirtschaftlichkeitsmoduls und bewusst NICHT Gegenstand
+        /// von Paket A (nur protokolliert) - er zu beheben verlangt eine eigene Abnahme,
+        /// weil dieselbe Anweisung an fuenf Stellen benutzt wird.
+        /// </para>
         ///
         /// <para>
         /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
@@ -220,11 +236,13 @@ namespace WindowsFormsApplication1
                          WQ_Spreizung, WQ_Regeneration, WQ_Unbegrenzt, WQ_Tiefe, WQ_Flaeche, WQ_Anzahl,
                          WQ_Bodentyp, WQ_Quellsystem,
                          WS_Typ, WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV,
-                         WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2)
+                         WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2,
+                         PV_WrWirkungsgrad, PV_Systemverluste)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                                ?,?,?,?,?,?,?,?,?,?)";
+                                ?,?,?,?,?,?,?,?,?,?,
+                                ?,?)";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -320,7 +338,14 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@wsidpuf2",  OleDbType.Integer,
                             PufferFkOderNull(item.WS_ID_Puffer2, "WS_ID_Puffer2", item.Bezeichner, pufferCache)),
                         ProjektPuffer.Par("@wslprio2",  OleDbType.Integer,   Wert(item.WS_Ladeprio2)),
-                        ProjektPuffer.Par("@wslgrenz2", OleDbType.Double,    Wert(item.WS_Ladegrenze2))
+                        ProjektPuffer.Par("@wslgrenz2", OleDbType.Double,    Wert(item.WS_Ladegrenze2)),
+
+                        // --- PV-Anlagenparameter (Paket A, Stufe E1.3) ----------------
+                        // Ausdruecklicher Typ wie bei den 27 Spalten darueber: NULL ist
+                        // hier der Normalfall ("es gilt der Vorgabewert"), und aus DBNull
+                        // allein leitet der Provider keinen Spaltentyp ab.
+                        ProjektPuffer.Par("@pvwreta",   OleDbType.Double,    Wert(item.PV_WrWirkungsgrad)),
+                        ProjektPuffer.Par("@pvsysverl", OleDbType.Double,    Wert(item.PV_Systemverluste))
                     };
         }
 

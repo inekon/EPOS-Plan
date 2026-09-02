@@ -272,6 +272,14 @@ namespace WindowsFormsApplication1
             item.WS_ID_Puffer2 = Zahl(dt, row, "WS_ID_Puffer2");
             item.WS_Ladeprio2 = Zahl(dt, row, "WS_Ladeprio2");
             item.WS_Ladegrenze2 = Kommazahl(dt, row, "WS_Ladegrenze2");
+
+            // --- PV-Anlagenparameter (Paket A, Stufe E1.3) ----------------------------
+            // Ausdruecklich auch mit null - NULL heisst hier "nie gepflegt, es gilt der
+            // Vorgabewert" (0,95 bzw. 0 %) und darf beim Zurueckschreiben nicht zur 0
+            // werden. Belegt() behandelt eine FEHLENDE Spalte wie NULL; eine Datenbank
+            // vor Migrationsschritt 62 laeuft damit unveraendert weiter.
+            item.PV_WrWirkungsgrad = Kommazahl(dt, row, "PV_WrWirkungsgrad");
+            item.PV_Systemverluste = Kommazahl(dt, row, "PV_Systemverluste");
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>
