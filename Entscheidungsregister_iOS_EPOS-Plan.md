@@ -43,7 +43,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF11** | Mac-Hardware sofort beschaffen — oder Spike auf `macos-latest`-CI-Runner? | **CI-Runner** für den Spike, Mac erst mit iU10 | iU3 | offen | | |
 | **iF12** | Vertriebsweg der Auslieferung (Custom Apps / Unlisted / App Store) und Behandlung des Lizenzverkaufs gegenüber Apples Kaufregeln | **Custom Apps** über Apple Business Manager prüfen; Klärung **vor** iU13, nicht im Review | vor iU13 | offen | | |
 | **iF13** | Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenennen? | **nein** — eigener mechanischer Schritt danach | iU4 | offen | | |
-| **iF14** | Anonymisierte `Kenndaten_Test.sqlite` mit den 13 Referenzprojekten versionieren? | **ja** — sonst ist die Kern-CI nur ein Kompilierungstest (iR6). Befund 02.09.: siehe § 2.1 — der Auszug muss vom Anwender kommen | iU3 (Baustein iE6) | offen | | |
+| **iF14** | `Kenndaten_Test.sqlite` mit den 13 Referenzprojekten versionieren? | **ja** — sonst ist die Kern-CI nur ein Kompilierungstest (iR6). Befund 02.09.: siehe § 2.1 | iU3 (Baustein iE6) | **beschieden** | **ja — Anwender bestätigt 02.09.2026: die Datenbank enthält nirgends Kundendaten.** Anonymisierung entfällt; Reduzierung auf die 13 Projekte nur wegen der Dateigröße (GitHub-Grenze 100 MB) | 02.09.2026 |
 | **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | bestehende Toleranz (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten | vor iU3 | offen | | |
 | **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JS-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm | iU7 | offen | | |
 | **iF17** | iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragen? | **ja** — Support-Frist 10.11.2026, einzige Antwort auf iR9 | iU1 | **beschieden** | **ja — iU1 läuft seit 02.09.2026 auf Branch `ios_migration`** | 02.09.2026 |
@@ -101,10 +101,12 @@ Zwei Messungen am Bestand, die die Entscheidung vorbereiten:
 | Enthalten die Referenz-CSV personenbezogene Daten? | **Nein.** Die `aggregate.csv` führen ausschließlich technische Bezeichner — Projektname „Simulation Referenz BHKW-Kaskade (Regressionstest)", Gerätenamen („EC-POWER XRGI 9", „Vitocrossal 200 CM2"), Speicherbezeichner — keine Kunden-, Adress- oder Kontaktfelder. Die 45 MB CSV liegen bereits versioniert im Repo |
 | Liegt die Datenbank mit den 13 Projekten im Repo? | **Nein.** `Kenndaten.sqlite` existiert nur unter `C:\ProgramData\EPOS_PLAN` auf dem Anwenderrechner; `Setup/Vorlage/` ist gitignored und im Checkout leer. Ohne die Datenbank kann kein Runner (CI, Linux, macOS) ein Projekt rechnen — die Kern-CI bleibt ein Kompilierungstest |
 
-**Folge:** iF14 ist keine reine Ja/Nein-Frage, sondern eine Handlung des Anwenders: eine **Kopie**
-der `Kenndaten.sqlite` auf die 13 Referenzprojekte reduzieren (übrige `Tab_Projekt`-Zeilen samt
-Kaskaden löschen, `VACUUM`), auf Kundenbezug prüfen und als `Referenzlaeufe/Kenndaten_Test.sqlite`
-einchecken. Erst damit sind der Spike (iU3) und der Referenzlauf in der CI (iE6) möglich. Die
+**Folge:** iF14 ist eine Handlung des Anwenders: eine **Kopie** der `Kenndaten.sqlite` auf die 13
+Referenzprojekte reduzieren (übrige `Tab_Projekt`-Zeilen samt Kaskaden löschen, `VACUUM`) und als
+`Referenzlaeufe/Kenndaten_Test.sqlite` einchecken. **Nachtrag 02.09.2026, Anwender:** Die Datenbank
+enthält nirgends Kundendaten — die Prüfung auf Kundenbezug entfällt, die Reduzierung dient allein
+der Dateigröße (GitHub lehnt Einzeldateien über 100 MB ab; die `.accdb` hatte 151,9 MB). Das
+Reduzierungsskript liegt unter `sql/tools/`. Erst damit sind der Spike (iU3) und der Referenzlauf in der CI (iE6) möglich. Die
 Referenz-CSV selbst sind nach dem Befund oben unkritisch.
 
 ---
