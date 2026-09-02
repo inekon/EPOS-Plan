@@ -109,8 +109,8 @@ der Dateigröße: **Die produktive `Kenndaten.sqlite` hat 148 MB** (Anwender, 02
 lehnt Einzeldateien über 100 MB ab, die Reduzierung auf die 13 Projekte ist damit Pflicht. Das
 Reduzierungsskript liegt unter `sql/tools/`. Erst damit sind der Spike (iU3) und der Referenzlauf in der CI (iE6) möglich. Die
 Referenz-CSV selbst sind nach dem Befund oben unkritisch. **Nachtrag: Der Anwender hat die
-Reduzierung am 02.09.2026 selbst durchgeführt** — die Datei ist als `Referenzlaeufe/Kenndaten_Test.sqlite`
-einzuchecken.
+Reduzierung am 02.09.2026 selbst durchgeführt — Ergebnis 76 MB** (von 148 MB), unter der
+GitHub-Grenze; kein LFS nötig. Die Datei ist als `Referenzlaeufe/Kenndaten_Test.sqlite` einzuchecken.
 
 ### 2.2 Befund zum Machbarkeits-Spike (iU3), 02.09.2026 — zwei Messungen auf Linux
 
