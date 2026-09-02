@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -176,17 +175,17 @@ namespace WindowsFormsApplication1
 
             if (ids.Count == 0)
             {
-                MessageBox.Show("Der Katalogeintrag \"" + (szName ?? "") + "\" wurde nicht gefunden.",
-                    "Nicht gefunden", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Der Katalogeintrag \"" + (szName ?? "") + "\" wurde nicht gefunden.",
+                    "Nicht gefunden");
                 return 0;
             }
 
             if (ids.Count > 1)
             {
-                MessageBox.Show("Der Name \"" + (szName ?? "") + "\" ist im Katalog " + ids.Count +
+                Meldung.Warnung("Der Name \"" + (szName ?? "") + "\" ist im Katalog " + ids.Count +
                     "-mal vergeben. Es ist deshalb nicht entscheidbar, welcher Eintrag gemeint ist - " +
                     aktion + " wurde nichts.",
-                    "Name mehrdeutig", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Name mehrdeutig");
                 return 0;
             }
 
@@ -216,8 +215,8 @@ namespace WindowsFormsApplication1
 
             if (IsReadOnlyById(id))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
@@ -227,9 +226,9 @@ namespace WindowsFormsApplication1
             List<int> gleicheNamen = IdsMitBezeichner(this.m_szName);
             if (gleicheNamen.Count > 0 && !gleicheNamen.Contains(id))
             {
-                MessageBox.Show("Ein anderer Katalogeintrag trägt bereits den Namen \"" +
+                Meldung.Hinweis("Ein anderer Katalogeintrag trägt bereits den Namen \"" +
                     (this.m_szName ?? "") + "\". Bitte einen eindeutigen Namen vergeben.",
-                    "Name bereits vergeben", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    "Name bereits vergeben");
                 return false;
             }
 
@@ -322,8 +321,8 @@ namespace WindowsFormsApplication1
 
             if (IsReadOnlyById(id))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 

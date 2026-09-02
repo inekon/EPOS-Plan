@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -446,7 +445,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Einfügen der Konfiguration: " + ex.Message);
-                MessageBox.Show("Allgemeiner Fehler: " + ex.Message);
+                DataRepository.FehlerMelden("Allgemeiner Fehler: " + ex.Message);
                 return false;
             }
         }
@@ -517,7 +516,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Aktualisieren der Konfiguration: " + ex.Message);
-                MessageBox.Show("Allgemeiner Fehler beim Speichern: " + ex.Message);
+                DataRepository.FehlerMelden("Allgemeiner Fehler beim Speichern: " + ex.Message);
                 return false;
             }
         }

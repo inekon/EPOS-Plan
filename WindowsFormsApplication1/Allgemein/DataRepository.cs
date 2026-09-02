@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Text;
-using System.Windows.Forms;
 using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1.Allgemein;
 
@@ -171,7 +170,7 @@ namespace WindowsFormsApplication1
 
             if (!still)
             {
-                MessageBox.Show(meldung);
+                Meldung.Zeigen(meldung);
                 return;
             }
 

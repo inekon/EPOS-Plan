@@ -59,6 +59,22 @@ namespace WindowsFormsApplication1
             // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.
             FeldsicherungSchalterAuswerten();
 
+            // MELDEHAKEN VOR ALLEM ANDEREN (Umsetzungskonzept iU3, Schritt 2).
+            //
+            // Die Kerndateien - Zugriffsschicht, Wärmepumpen-Simulation, Stamm-Dialoge -
+            // rufen ihre Meldungen seither über Meldung.*, damit sie ohne
+            // System.Windows.Forms übersetzbar bleiben. Unter Windows soll sich exakt
+            // nichts ändern; deshalb werden die Haken hier wortgleich auf MessageBox
+            // bzw. Cursor gesetzt, und zwar VOR jedem Code, der eine Meldung absetzen
+            // könnte. Stünde das weiter unten, ginge genau die erste Meldung eines
+            // Startfehlers auf die Konsole statt in einen Dialog.
+            Meldung.Zeigen = text => MessageBox.Show(text);
+            Meldung.Hinweis = (text, titel) => MessageBox.Show(text, titel);
+            Meldung.Warnung = (text, titel) =>
+                MessageBox.Show(text, titel, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Meldung.Warten = an =>
+                Cursor.Current = an ? Cursors.WaitCursor : Cursors.Default;
+
             // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
             if (Environment.OSVersion.Version.Major >= 10)
             {

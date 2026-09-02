@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -598,7 +597,7 @@ namespace WindowsFormsApplication1
                 // steht er in "out fehler".
                 if (anz == 0)
                 {
-                    Cursor.Current = Cursors.Default;
+                    Meldung.Warten(false);
                     Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_KEINE_KENNDATEN,
                                                model.Bezeichner, model.Vorlauf);
                     SimulationProtokoll.Aktuell.Fehlermeldung(
@@ -660,7 +659,7 @@ namespace WindowsFormsApplication1
         {
             if (wp_list.Count >= MAX_WP) return false;
 
-            Cursor.Current = Cursors.WaitCursor;
+            Meldung.Warten(true);
 
             if (!ModuleAufbauen()) return false;
 
@@ -1183,7 +1182,7 @@ namespace WindowsFormsApplication1
             waermerestbedarf_gesamt = 0;
             Array.ForEach(waermerestbedarf_stuendlich, value => waermerestbedarf_gesamt += value);
 
-            Cursor.Current = Cursors.Default;
+            Meldung.Warten(false);
 
             // V0-9: Ende des Jahresdurchlaufs im zweikanaligen Weg - Kappungsstunden melden.
             KappungObenMelden();
@@ -1582,7 +1581,7 @@ namespace WindowsFormsApplication1
             WP_Waermeproduktion_gesamt = 0;
             WP_Strombedarf_gesamt = 0;
             Heizstab_gesamt = 0;
-            Cursor.Current = Cursors.Default;
+            Meldung.Warten(false);
         }
 
         // PAKET A1: Hier stand die Durchreichung

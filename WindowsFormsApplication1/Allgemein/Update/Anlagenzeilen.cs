@@ -7,7 +7,7 @@
     /// <para><b>Warum getrennt von <see cref="AnlagenEindeutigkeit"/> (Umsetzungskonzept
     /// iU3, Kante K4).</b> <c>PufferSpCtrl</c> braucht im Rechen- und Speicherpfad genau
     /// diese eine Abfrage. <see cref="AnlagenEindeutigkeit"/> bringt daneben den
-    /// Dialogteil mit (Rückfragen, Meldungen, <c>System.Windows.Forms</c>) und den
+    /// Dialogteil mit (Rückfragen, Meldungen, WinForms) und den
     /// DDL-Teil der Migration; beides gehört nicht in den Kern. Hier steht deshalb nur,
     /// was ohne Oberfläche auskommt: <see cref="StilleDb"/> und
     /// <see cref="SchemaKatalog"/>.</para>

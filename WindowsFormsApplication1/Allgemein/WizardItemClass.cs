@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public class WizardItemClass
+    public partial class WizardItemClass
     {
         public const int KOMPONENTEN_ITEM = 0;
         public const int PROJEKT_ITEM = 1;
@@ -47,20 +46,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int ID_UNGESPEICHERT_START = 100000;
 
-        public Form wizardform;
         public int formtype;
         public bool aktiv;
 
         public WizardItemClass()
         {
 
-        }
-
-        public WizardItemClass(Form frm, int type)
-        {
-            wizardform = frm;
-            formtype = type;
-            aktiv = false;
         }
     
     }
