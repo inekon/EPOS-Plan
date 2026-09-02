@@ -358,7 +358,7 @@ bleibt als Rückfallebene stehen, bis der .NET-10-Sprung (iU1) durch die Referen
 | 2. Im Installer die vorhandene VS-2022-Installation übernehmen lassen | Der Installer erkennt sie und baut Workloads, Toolsets, SDKs, Erweiterungen und Einstellungen nach. Rechne mit 30–90 Minuten |
 | 3. Workloads prüfen: **.NET-Desktop** (vorhanden) + **.NET MAUI** (neu, für iU2 ff.) + ASP.NET (Blazor-Werkzeuge, für iU8) | MAUI kann auch später nachinstalliert werden |
 | 4. Erweiterungen kontrollieren — für dieses Projekt vor allem **ResXManager** (`ResXManager.config.xml` liegt im Repo) | VS 2026 ist erstmals **rückwärtskompatibel** zu VS-2022-Erweiterungen; die meisten laufen unverändert |
-| 5. Buildpfade nachziehen | Alle Skripte und Dokumente zeigen fest auf `…\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe` — betroffen sind `Setup/build-setup.ps1`, `Referenzlaeufe/LIESMICH.md`, `WindowsFormsApplication1/CLAUDE.md`, `Referenzlauf.csproj`. Mit iE3 (COM-Referenzen raus) entfällt die Bindung an das VS-MSBuild ohnehin — bis dahin sind die Pfade zu pflegen |
+| 5. Buildpfade nachziehen | Alt: `C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe` · **Neu: `C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe`** — VS 2026 nutzt die interne Hauptversion `18` als Verzeichnisnamen und liegt unter `Program Files`, nicht `(x86)`. Betroffen: `Setup/build-setup.ps1` (sucht unter `%ProgramFiles%\Microsoft Visual Studio\2022\<Edition>`), `Referenzlaeufe/LIESMICH.md`, `WindowsFormsApplication1/CLAUDE.md`, `Referenzlauf.csproj`. Mit iE3 (COM-Referenzen raus) entfällt die Bindung an das VS-MSBuild ohnehin — bis dahin sind die Pfade zu pflegen |
 | 6. Erst danach Schritt 6 aus iU1 (Hauptprojekt auf `net10.0-windows`) | vorher lässt sich `net10.0` gar nicht targeten |
 
 **Zur Lizenz — Community 2026 ist der vorgesehene Weg.** Der heutige Buildpfad zeigt auf
@@ -409,9 +409,11 @@ Oberfläche den Installer auf der Kommandozeile. **PowerShell als Administrator*
     -all -prerelease -format value -property installationPath
 
 # 2a. VS 2026 ist bereits installiert -> Workloads ergaenzen
-#     installPath aus der Ausgabe von Schritt 1 uebernehmen
+#     ACHTUNG: Das Verzeichnis heisst 18 (interne Hauptversion), nicht 2026,
+#     und liegt unter Program Files - nicht (x86) wie noch bei VS 2022.
+#     Der Installer selbst bleibt unter Program Files (x86).
 & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify `
-    --installPath "C:\Program Files\Microsoft Visual Studio\2026\Community" `
+    --installPath "C:\Program Files\Microsoft Visual Studio\18\Community" `
     --add Microsoft.VisualStudio.Workload.ManagedDesktop `
     --add Microsoft.VisualStudio.Workload.NetCrossPlat `
     --add Microsoft.VisualStudio.Workload.NetWeb `
