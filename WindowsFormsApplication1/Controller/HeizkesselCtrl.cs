@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows;
 
 namespace WindowsFormsApplication1
@@ -59,7 +58,7 @@ namespace WindowsFormsApplication1
             _hasSingleData = false;
 
             string sql = "SELECT * FROM [Tab_Heizkessel] WHERE Bezeichner = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@nam", name));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@nam", name));
 
             ProcessSingleResult(dt);
         }
@@ -141,7 +140,7 @@ namespace WindowsFormsApplication1
         public bool Delete(string name)
         {
             string sql = "DELETE FROM [Tab_Heizkessel] WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@nam", name));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@nam", name));
         }
 
         // --- STAMM -> PROJEKT KOPIE (analog BHKWCtrl) ---
@@ -151,8 +150,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM [Tab_Heizkessel] WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@nam", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@nam", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -172,7 +171,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -201,9 +200,9 @@ namespace WindowsFormsApplication1
                      Vorlauf, Ruecklauf)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@fir", s["Firma"]),
                     P("@bes", s["Beschreibung"]),
@@ -254,14 +253,14 @@ namespace WindowsFormsApplication1
         {
             string sql = "DELETE FROM [Tab_Heizkessel] WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@nam", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@nam", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
-        // Hilfsfunktion: OleDbParameter mit DBNull-Behandlung
-        private static OleDbParameter P(string name, object value)
+        // Hilfsfunktion: DbParam mit DBNull-Behandlung
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         // Hilfsfunktion: Spaltenwert oder DBNull, falls die Spalte nicht existiert
@@ -287,35 +286,35 @@ namespace WindowsFormsApplication1
 
         // --- MAPPING & PARAMETER ---
 
-        private OleDbParameter[] CreateParameters(bool isUpdate)
+        private DbParam[] CreateParameters(bool isUpdate)
         {
-            List<OleDbParameter> p = new List<OleDbParameter>();
+            List<DbParam> p = new List<DbParam>();
 
             // Bei Insert muss der Name am Anfang stehen (gemäß SQL String)
-            if (!isUpdate) p.Add(new OleDbParameter("@nam", this.Name ?? ""));
+            if (!isUpdate) p.Add(new DbParam("@nam", this.Name ?? ""));
 
-            p.Add(new OleDbParameter("@bes", this.Beschreibung ?? ""));
-            p.Add(new OleDbParameter("@fir", this.Firma ?? ""));
-            p.Add(new OleDbParameter("@pth", this.Ptherm));
-            p.Add(new OleDbParameter("@bre", this.Brennstoff));
-            p.Add(new OleDbParameter("@wgg", this.Wirkungsgrad_Gas));
-            p.Add(new OleDbParameter("@wgo", this.Wirkungsgrad_Oel));
-            p.Add(new OleDbParameter("@inv", this.Investitionskosten));
-            p.Add(new OleDbParameter("@rau", this.Raumbedarf));
-            p.Add(new OleDbParameter("@war", this.Wartungskosten));
-            p.Add(new OleDbParameter("@wae", Einheit(this.Wartungskosten_Einheit)));
-            p.Add(new OleDbParameter("@nut", this.Nutzungsdauer));
-            p.Add(new OleDbParameter("@co2", this.CO2));
-            p.Add(new OleDbParameter("@so2", this.SO2));
-            p.Add(new OleDbParameter("@nox", this.NOx));
-            p.Add(new OleDbParameter("@co", this.CO));
-            p.Add(new OleDbParameter("@sta", this.Staub));
-            p.Add(new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust));
-            p.Add(new OleDbParameter("@brn", this.Brennwert));
+            p.Add(new DbParam("@bes", this.Beschreibung ?? ""));
+            p.Add(new DbParam("@fir", this.Firma ?? ""));
+            p.Add(new DbParam("@pth", this.Ptherm));
+            p.Add(new DbParam("@bre", this.Brennstoff));
+            p.Add(new DbParam("@wgg", this.Wirkungsgrad_Gas));
+            p.Add(new DbParam("@wgo", this.Wirkungsgrad_Oel));
+            p.Add(new DbParam("@inv", this.Investitionskosten));
+            p.Add(new DbParam("@rau", this.Raumbedarf));
+            p.Add(new DbParam("@war", this.Wartungskosten));
+            p.Add(new DbParam("@wae", Einheit(this.Wartungskosten_Einheit)));
+            p.Add(new DbParam("@nut", this.Nutzungsdauer));
+            p.Add(new DbParam("@co2", this.CO2));
+            p.Add(new DbParam("@so2", this.SO2));
+            p.Add(new DbParam("@nox", this.NOx));
+            p.Add(new DbParam("@co", this.CO));
+            p.Add(new DbParam("@sta", this.Staub));
+            p.Add(new DbParam("@bbv", this.Betriebsbereitschaftverlust));
+            p.Add(new DbParam("@brn", this.Brennwert));
 
             // Bei Update steht der Schlüssel im WHERE-Teil (am Ende) — seit Befund D6
             // der Primärschlüssel ID statt des projektübergreifend mehrdeutigen Bezeichners.
-            if (isUpdate) p.Add(new OleDbParameter("@id", this.ID));
+            if (isUpdate) p.Add(new DbParam("@id", this.ID));
 
             return p.ToArray();
         }

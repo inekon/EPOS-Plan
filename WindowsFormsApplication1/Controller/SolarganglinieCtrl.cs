@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -27,10 +26,10 @@ namespace WindowsFormsApplication1
                 // Parametrisierte Abfrage ohne fehleranfällige Stringverkettungen
                 string sql = "DELETE FROM Tab_Solarganglinie WHERE Bezeichner = ?";
 
-                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
-                paramBez.Value = szName ?? (object)DBNull.Value;
+                DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
+                paramBez.Wert = szName ?? (object)DBNull.Value;
 
-                OleDbParameter[] ps = { paramBez };
+                DbParam[] ps = { paramBez };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -64,16 +63,16 @@ namespace WindowsFormsApplication1
                 // Umstellung auf das standardkonforme und sichere VALUES-Statement
                 string sql = "INSERT INTO Tab_Solarganglinie (ID, Bezeichner, Beschreibung) VALUES (?, ?, ?)";
 
-                OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
-                paramId.Value = m_ID_Ganglinie;
+                DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
+                paramId.Wert = m_ID_Ganglinie;
 
-                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
-                paramBez.Value = m_szBezeichner ?? (object)DBNull.Value;
+                DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
+                paramBez.Wert = m_szBezeichner ?? (object)DBNull.Value;
 
-                OleDbParameter paramBeschr = new OleDbParameter("@beschr", OleDbType.VarWChar);
-                paramBeschr.Value = m_szBeschreibung ?? (object)DBNull.Value;
+                DbParam paramBeschr = new DbParam("@beschr", DbParamTyp.VarWChar);
+                paramBeschr.Wert = m_szBeschreibung ?? (object)DBNull.Value;
 
-                OleDbParameter[] ps = { paramId, paramBez, paramBeschr };
+                DbParam[] ps = { paramId, paramBez, paramBeschr };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -118,10 +117,10 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Solarganglinie WHERE Bezeichner = ?";
 
-            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
-            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
+            DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
+            paramBez.Wert = szBezeichner ?? (object)DBNull.Value;
 
-            OleDbParameter[] ps = { paramBez };
+            DbParam[] ps = { paramBez };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -994,8 +993,8 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, idType));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, idType));
 
             if (dt == null) return false;
 
@@ -1051,9 +1050,9 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT WQ_ID_Puffer FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
                 "AND WQ_Typ = ? AND WQ_ID_Puffer > 0",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, idType),
-                StilleDb.Par("@wq", OleDbType.VarWChar, WaermequelleClass.TYP_PUFFER));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, idType),
+                StilleDb.Par("@wq", DbParamTyp.VarWChar, WaermequelleClass.TYP_PUFFER));
 
             if (dt == null) return false;
 
@@ -1409,8 +1408,8 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
                 "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.WP_TYP));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
 
             if (dt == null)
             {
@@ -1431,8 +1430,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Bezeichner, ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.KESSEL_TYP));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
 
             if (dt == null)
             {
@@ -1455,8 +1454,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_SOLAR FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.SOLAR_TYP));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.SOLAR_TYP));
 
             if (dt == null)
             {
@@ -1493,8 +1492,8 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_BHKW, ID, Bezeichner, Grenzleistung FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.BHKW_TYP));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.BHKW_TYP));
 
             if (dt == null)
             {
@@ -2229,7 +2228,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.Z_ANLAGESENKE + " s INNER JOIN " +
                     SchemaKatalog.TAB_ENERGIEANLAGEN + " a ON s.ID_Anlage = a.ID " +
                     "WHERE a.ID_Projekt = ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
 
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
@@ -3011,7 +3010,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dt = StilleDb.Tabelle(
                     "SELECT * FROM " + SchemaKatalog.TAB_PUFFERSPEICHER + " WHERE ID_Projekt = ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
 
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
@@ -3269,7 +3268,7 @@ namespace WindowsFormsApplication1
                 "FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
             if (dt == null) return;
 
             foreach (DataRow r in dt.Rows)
@@ -3823,7 +3822,7 @@ namespace WindowsFormsApplication1
             // 1. Die ANLAGE selbst.
             DataTable dtA = StilleDb.Tabelle(
                 "SELECT Vorlauf, [Rücklauf] AS Ruecklauf FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
 
             if (dtA != null && dtA.Rows.Count > 0)
             {
@@ -3836,11 +3835,11 @@ namespace WindowsFormsApplication1
             //    I-K3: über die ID, nicht über den Bezeichner).
             int idKessel = StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT ID_Kessel FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
 
             DataTable dtK = (idKessel > 0)
                 ? StilleDb.Tabelle("SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel WHERE ID = ?",
-                                   StilleDb.Par("@id", OleDbType.Integer, idKessel))
+                                   StilleDb.Par("@id", DbParamTyp.Integer, idKessel))
                 : null;
 
             if (dtK != null && dtK.Rows.Count > 0)
@@ -3875,11 +3874,11 @@ namespace WindowsFormsApplication1
             //    dass ein Dialog den Lauf anhält.
             int idKessel = StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT ID_Kessel FROM Tab_Energieanlagen WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
 
             DataTable dt = (idKessel > 0)
                 ? StilleDb.Tabelle("SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel WHERE ID = ?",
-                                   StilleDb.Par("@id", OleDbType.Integer, idKessel))
+                                   StilleDb.Par("@id", DbParamTyp.Integer, idKessel))
                 : null;
 
             if (dt != null && dt.Rows.Count > 0)
@@ -3973,7 +3972,7 @@ namespace WindowsFormsApplication1
                 "SELECT WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
 
             if (dt != null)
             {

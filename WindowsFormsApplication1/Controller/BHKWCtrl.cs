@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(int ID)
         {
             string sql = "SELECT * FROM Tab_BHKW WHERE ID = ?";
-            OleDbParameter[] ps = { new OleDbParameter("@id", ID) };
+            DbParam[] ps = { new DbParam("@id", ID) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -119,7 +119,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(string szBezeichner)
         {
             string sql = "SELECT * FROM Tab_BHKW WHERE Bezeichner = ?";
-            OleDbParameter[] ps = { new OleDbParameter("@name", szBezeichner) };
+            DbParam[] ps = { new DbParam("@name", szBezeichner) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -170,50 +170,55 @@ namespace WindowsFormsApplication1
 
                 // Nutzt das instanziierte DBCommand als Datenträger für die Parameter
                 DBCommand.CommandText = sql;
+                // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
+                // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
+                // die Zugriffsschicht gegeben. Ein OleDbParameter wuerde dafuer heute
+                // nur noch auf Nicht-Windows scheitern, also sammelt eine Liste die
+                // DbParam direkt. Reihenfolge, Namen und Werte unveraendert; gebunden
+                // wird ohnehin nach Position.
+                List<DbParam> werte = new List<DbParam>();
                 DBCommand.Parameters.Clear();
 
                 // Beachte: Wenn das Control über InitDatensatzUpdate() befüllt wurde,
                 // müssen wir hier auf das zugewiesene 'model' Objekt zugreifen!
-                DBCommand.Parameters.Add(new OleDbParameter("@besch", model.m_szBeschreibung ?? ""));
-                DBCommand.Parameters.Add(new OleDbParameter("@firma", model.m_szFirma ?? ""));
-                DBCommand.Parameters.Add(new OleDbParameter("@motor", model.m_szMotortyp ?? ""));
-                DBCommand.Parameters.Add(new OleDbParameter("@ptherm", model.m_Ptherm));
-                DBCommand.Parameters.Add(new OleDbParameter("@pel", model.m_Pel));
-                DBCommand.Parameters.Add(new OleDbParameter("@brenn", model.m_Brennstoff));
-                DBCommand.Parameters.Add(new OleDbParameter("@wirk", model.m_Wirkungsgrad));
-                DBCommand.Parameters.Add(new OleDbParameter("@inv", model.m_Investition_KWel));
-                DBCommand.Parameters.Add(new OleDbParameter("@raum", model.m_Raumbedarf));
-                DBCommand.Parameters.Add(new OleDbParameter("@wart", model.m_Wartungskosten_kWhel));
-                DBCommand.Parameters.Add(new OleDbParameter("@nutz", model.m_Nutzungsdauer));
-                DBCommand.Parameters.Add(new OleDbParameter("@nox", model.m_NOx));
-                DBCommand.Parameters.Add(new OleDbParameter("@so2", model.m_SO2));
-                DBCommand.Parameters.Add(new OleDbParameter("@co", model.m_CO));
-                DBCommand.Parameters.Add(new OleDbParameter("@co2", model.m_CO2));
-                DBCommand.Parameters.Add(new OleDbParameter("@staub", model.m_Staub));
-                DBCommand.Parameters.Add(new OleDbParameter("@grenz", model.m_Grenzleistung));
-                DBCommand.Parameters.Add(new OleDbParameter("@modul", model.m_Kosten_Modul));
-                DBCommand.Parameters.Add(new OleDbParameter("@mont", model.m_Kosten_Montage));
-                DBCommand.Parameters.Add(new OleDbParameter("@lief", model.m_Kosten_Lieferung));
-                DBCommand.Parameters.Add(new OleDbParameter("@schall", model.m_Kosten_Schallschutzhaube));
-                DBCommand.Parameters.Add(new OleDbParameter("@abgas", model.m_Kosten_Abgasreinigung));
-                DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_ID));
+                werte.Add(new DbParam("@besch", model.m_szBeschreibung ?? ""));
+                werte.Add(new DbParam("@firma", model.m_szFirma ?? ""));
+                werte.Add(new DbParam("@motor", model.m_szMotortyp ?? ""));
+                werte.Add(new DbParam("@ptherm", model.m_Ptherm));
+                werte.Add(new DbParam("@pel", model.m_Pel));
+                werte.Add(new DbParam("@brenn", model.m_Brennstoff));
+                werte.Add(new DbParam("@wirk", model.m_Wirkungsgrad));
+                werte.Add(new DbParam("@inv", model.m_Investition_KWel));
+                werte.Add(new DbParam("@raum", model.m_Raumbedarf));
+                werte.Add(new DbParam("@wart", model.m_Wartungskosten_kWhel));
+                werte.Add(new DbParam("@nutz", model.m_Nutzungsdauer));
+                werte.Add(new DbParam("@nox", model.m_NOx));
+                werte.Add(new DbParam("@so2", model.m_SO2));
+                werte.Add(new DbParam("@co", model.m_CO));
+                werte.Add(new DbParam("@co2", model.m_CO2));
+                werte.Add(new DbParam("@staub", model.m_Staub));
+                werte.Add(new DbParam("@grenz", model.m_Grenzleistung));
+                werte.Add(new DbParam("@modul", model.m_Kosten_Modul));
+                werte.Add(new DbParam("@mont", model.m_Kosten_Montage));
+                werte.Add(new DbParam("@lief", model.m_Kosten_Lieferung));
+                werte.Add(new DbParam("@schall", model.m_Kosten_Schallschutzhaube));
+                werte.Add(new DbParam("@abgas", model.m_Kosten_Abgasreinigung));
+                werte.Add(new DbParam("@key", model.m_ID));
 
                 // ARBEITSPAKET S4b/S4e: Ohne fremden Vorgang läuft der Schreibvorgang
                 // über die Zugriffsschicht - die eigene Standalone-Verbindung entfällt.
                 // MIT Vorgang (Transaktion aus der UI) läuft er auf DESSEN Verbindung
                 // und in DESSEN Transaktion.
-                OleDbParameter[] werte = new OleDbParameter[DBCommand.Parameters.Count];
-                DBCommand.Parameters.CopyTo(werte, 0);
 
                 if (Vorgang == null)
                 {
                     // ExecuteNonQuery statt ExecuteSQL: Diese Methode meldet ihre Fehler
                     // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
-                    if (StilleDb.NonQuery(sql, werte) < 0) return false;
+                    if (StilleDb.NonQuery(sql, werte.ToArray()) < 0) return false;
                     return true;
                 }
 
-                Vorgang.Ausfuehren(sql, werte);
+                Vorgang.Ausfuehren(sql, werte.ToArray());
 
                 return true;
             }
@@ -229,8 +234,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_BHKW WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@name", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@name", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -253,7 +258,7 @@ namespace WindowsFormsApplication1
                 // 1. Stammdatensatz lesen
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM " + BHKWStammCtrl.TABLE + " WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -288,9 +293,9 @@ namespace WindowsFormsApplication1
                      Kosten_Lieferung, Kosten_Schallschutzhaube, Kosten_Abgasreinigung, Vorlauf, Ruecklauf)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@firma", s["Firma"]),
                     P("@besch", s["Beschreibung"]),
@@ -341,14 +346,14 @@ namespace WindowsFormsApplication1
         {
             string sql = "DELETE FROM Tab_BHKW WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@name", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@name", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
-        // Hilfsfunktion: OleDbParameter mit DBNull-Behandlung
-        private static OleDbParameter P(string name, object value)
+        // Hilfsfunktion: DbParam mit DBNull-Behandlung
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         // Hilfsfunktion: Spaltenwert oder DBNull, falls die Spalte nicht existiert

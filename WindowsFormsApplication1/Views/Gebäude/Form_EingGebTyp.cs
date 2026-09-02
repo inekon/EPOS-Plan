@@ -275,7 +275,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@ver", OleDbType.Boolean) { Value = true },
                     new OleDbParameter("@ro", OleDbType.Boolean) { Value = false }
                 };
-                if (!DataRepository.ExecuteSQL(sqlInsertTyp, paramsTyp))
+                if (!DataRepository.ExecuteSQL(sqlInsertTyp, DbParam.Von(paramsTyp)))
                 {
                     MessageBox.Show("Speichern des Gebäudetyps fehlgeschlagen!");
                     return;
@@ -292,7 +292,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@dv", OleDbType.Double) { Value = 0.0 },
                         new OleDbParameter("@dro", OleDbType.Boolean) { Value = false }
                     };
-                    if (!DataRepository.ExecuteSQL(sqlInsertDaten, pd))
+                    if (!DataRepository.ExecuteSQL(sqlInsertDaten, DbParam.Von(pd)))
                     {
                         MessageBox.Show($"Fehler beim Erstellen der Verteilungsdaten im Schritt {i + 1}!");
                         return;

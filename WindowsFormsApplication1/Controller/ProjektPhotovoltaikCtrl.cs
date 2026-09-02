@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -25,7 +24,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + TABELLE + "] WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null || dt.Rows.Count == 0) return null;
                 return AusZeile(dt.Rows[0]);
             }
@@ -185,8 +184,8 @@ namespace WindowsFormsApplication1
                 object kopf = DataRepository.ExecuteScalar(
                     "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                     "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
-                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                    new OleDbParameter("@j", kv.Key));
+                    new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new DbParam("@j", kv.Key));
                 int kopfId;
                 if (kopf != null && kopf != DBNull.Value)
                 {
@@ -201,11 +200,11 @@ namespace WindowsFormsApplication1
                         "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                         "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
                         "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
-                        new OleDbParameter("@id", kopfId),
-                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                        new OleDbParameter("@j", kv.Key),
-                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
-                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH));
+                        new DbParam("@id", kopfId),
+                        new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new DbParam("@j", kv.Key),
+                        new DbParam("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new DbParam("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH));
                 }
 
                 int datenId = DataRepository.GetMaxID("Tab_PreisreiheDaten");
@@ -214,9 +213,9 @@ namespace WindowsFormsApplication1
                     datenId++;
                     DataRepository.ExecuteSQL(
                         "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
-                        new OleDbParameter("@id", datenId),
-                        new OleDbParameter("@k", kopfId),
-                        new OleDbParameter("@w", kv.Value[m].Value));
+                        new DbParam("@id", datenId),
+                        new DbParam("@k", kopfId),
+                        new DbParam("@w", kv.Value[m].Value));
                 }
                 teile.Add(kv.Key + ": " + n + (n == 12 ? " Monate" : " Monate (Jan–" + n + ")"));
             }
@@ -281,8 +280,8 @@ namespace WindowsFormsApplication1
                 object id = DataRepository.ExecuteScalar(
                     "SELECT MAX(ID) FROM [Tab_Preisreihe] " +
                     "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
-                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                    new OleDbParameter("@j", jahr));
+                    new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new DbParam("@j", jahr));
                 if (id == null || id == DBNull.Value) return null;
 
                 double[] werte = new PreisreiheCtrl().ReadWerte(Convert.ToInt32(id));
@@ -353,51 +352,51 @@ namespace WindowsFormsApplication1
             return m;
         }
 
-        private static OleDbParameter[] Parameter(ProjektPhotovoltaikModel m, bool projektAnsEnde)
+        private static DbParam[] Parameter(ProjektPhotovoltaikModel m, bool projektAnsEnde)
         {
-            var p = new System.Collections.Generic.List<OleDbParameter>
+            var p = new System.Collections.Generic.List<DbParam>
             {
-                new OleDbParameter("@akt", m.Aktiv),
-                new OleDbParameter("@ver", m.Vermarktungsform ?? DbWerte.PV_VERMARKTUNG_EV),
-                new OleDbParameter("@art", m.Einspeiseart ?? DbWerte.PV_EINSPEISEART_UEBERSCHUSS),
-                new OleDbParameter("@ibn", OleDbType.Date)
-                    { Value = m.Inbetriebnahme == DateTime.MinValue ? (object)DBNull.Value : m.Inbetriebnahme },
+                new DbParam("@akt", m.Aktiv),
+                new DbParam("@ver", m.Vermarktungsform ?? DbWerte.PV_VERMARKTUNG_EV),
+                new DbParam("@art", m.Einspeiseart ?? DbWerte.PV_EINSPEISEART_UEBERSCHUSS),
+                new DbParam("@ibn", DbParamTyp.Date)
+                    { Wert = m.Inbetriebnahme == DateTime.MinValue ? (object)DBNull.Value : m.Inbetriebnahme },
                 D("@kwp", m.KwpOverride), D("@aw", m.AwOverride), D("@dv", m.DvEntgelt),
                 D("@ppa", m.PpaPreis), D("@spot", m.PpaSpotAufschlag),
-                new OleDbParameter("@p51", m.Par51_Anwenden ?? DbWerte.PV_SCHALTER_AUTO),
+                new DbParam("@p51", m.Par51_Anwenden ?? DbWerte.PV_SCHALTER_AUTO),
                 G("@ims", m.IMSys_Einbaujahr), D("@ausf", m.AusfallanteilProzent),
-                new OleDbParameter("@p51a", m.Par51a_Kompensieren),
-                new OleDbParameter("@kap", m.Kappung60_Anwenden ?? DbWerte.PV_SCHALTER_AUTO),
+                new DbParam("@p51a", m.Par51a_Kompensieren),
+                new DbParam("@kap", m.Kappung60_Anwenden ?? DbWerte.PV_SCHALTER_AUTO),
                 D("@jw", m.MarktwertJahresmittel),
-                new OleDbParameter("@mw", m.MarktwertEntwicklung),
-                new OleDbParameter("@bez", m.BezugAusPreisreihe),
-                new OleDbParameter("@ga", OleDbType.Date) { Value = m.GeaendertAm ?? (object)DBNull.Value }
+                new DbParam("@mw", m.MarktwertEntwicklung),
+                new DbParam("@bez", m.BezugAusPreisreihe),
+                new DbParam("@ga", DbParamTyp.Date) { Wert = m.GeaendertAm ?? (object)DBNull.Value }
             };
-            if (projektAnsEnde) p.Add(new OleDbParameter("@pid", m.ID_Projekt));
+            if (projektAnsEnde) p.Add(new DbParam("@pid", m.ID_Projekt));
             return p.ToArray();
         }
 
-        private static OleDbParameter[] ParameterInsert(ProjektPhotovoltaikModel m)
+        private static DbParam[] ParameterInsert(ProjektPhotovoltaikModel m)
         {
-            var kopf = new System.Collections.Generic.List<OleDbParameter>
+            var kopf = new System.Collections.Generic.List<DbParam>
             {
-                new OleDbParameter("@id", m.ID),
-                new OleDbParameter("@pid", m.ID_Projekt)
+                new DbParam("@id", m.ID),
+                new DbParam("@pid", m.ID_Projekt)
             };
             kopf.AddRange(Parameter(m, projektAnsEnde: false));
             return kopf.ToArray();
         }
 
-        private static OleDbParameter D(string name, double? wert)
+        private static DbParam D(string name, double? wert)
         {
-            return new OleDbParameter(name, OleDbType.Double)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam(name, DbParamTyp.Double)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
-        private static OleDbParameter G(string name, int? wert)
+        private static DbParam G(string name, int? wert)
         {
-            return new OleDbParameter(name, OleDbType.Integer)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam(name, DbParamTyp.Integer)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         private static double? Zahl(DataRow r, string spalte)

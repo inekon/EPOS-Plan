@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -302,7 +301,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT WE FROM Tab_Klimadaten WHERE ID_Klimaregion=? ORDER BY ID",
-                new OleDbParameter("?", idKlimaregion));
+                new DbParam("?", idKlimaregion));
 
             if (dt == null || dt.Rows.Count == 0) return WochentagJan1AusWE(null);
 
@@ -332,7 +331,7 @@ namespace WindowsFormsApplication1
             // Annahme über ihre Spaltenliste, die K1 nicht treffen muss.
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM " + quelle.NamenAbfrage + " WHERE ID_Projekt=?",
-                new OleDbParameter("?", idProjekt));
+                new DbParam("?", idProjekt));
 
             if (dt == null || !dt.Columns.Contains("Bezeichner")) return namen;
             foreach (DataRow row in dt.Rows)
@@ -501,10 +500,10 @@ namespace WindowsFormsApplication1
 
             if (quelle.ProjektfilterAktiv)
                 dt = DataRepository.GetDataTable(sql + " AND ID_Projekt=?",
-                                                 new OleDbParameter("?", name),
-                                                 new OleDbParameter("?", idProjekt));
+                                                 new DbParam("?", name),
+                                                 new DbParam("?", idProjekt));
             else
-                dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", name));
+                dt = DataRepository.GetDataTable(sql, new DbParam("?", name));
 
             return (dt != null && dt.Rows.Count > 0) ? dt.Rows[0] : null;
         }
@@ -519,8 +518,8 @@ namespace WindowsFormsApplication1
             object wert = DataRepository.ExecuteScalar(
                 "SELECT " + quelle.ZuordnungSummeSpalte + " FROM " + quelle.ZuordnungTabelle +
                 " WHERE ID_Projekt=? AND Bezeichner=?",
-                new OleDbParameter("?", idProjekt),
-                new OleDbParameter("?", bezeichner));
+                new DbParam("?", idProjekt),
+                new DbParam("?", bezeichner));
 
             if (wert == null || wert == DBNull.Value) return 0;
             return (float)Convert.ToDouble(wert);
@@ -539,10 +538,10 @@ namespace WindowsFormsApplication1
 
             if (quelle.ProjektfilterAktiv)
                 dt = DataRepository.GetDataTable(sql + " AND ID_Projekt=?",
-                                                 new OleDbParameter("?", typ),
-                                                 new OleDbParameter("?", idProjekt));
+                                                 new DbParam("?", typ),
+                                                 new DbParam("?", idProjekt));
             else
-                dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", typ));
+                dt = DataRepository.GetDataTable(sql, new DbParam("?", typ));
 
             if (dt == null || dt.Rows.Count == 0) return false;
 

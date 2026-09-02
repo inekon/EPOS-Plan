@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Globalization;
 using KiKern;
 
@@ -240,7 +239,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente ?? ""));
+                    new DbParam("@k", komponente ?? ""));
                 return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }

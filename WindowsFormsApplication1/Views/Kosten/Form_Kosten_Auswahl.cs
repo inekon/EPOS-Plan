@@ -62,9 +62,9 @@ namespace WindowsFormsApplication1
                        INNER JOIN Tab_BrennstoffKategorien k ON s.ID_Kategorie = k.ID
                        WHERE s.ID = ?";
 
-            var tb = DataRepository.GetDataTable(sql, new OleDbParameter[] {
+            var tb = DataRepository.GetDataTable(sql, DbParam.Von(new OleDbParameter[] {
                 new OleDbParameter("@id", SelectedBrennstoffID)
-            });
+            }));
             var row = tb.Rows.Count > 0 ? tb.Rows[0] : null;
             if (row != null)
             {
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@fu", conv.FromUnit),
                     new OleDbParameter("@tu", conv.ToUnitCode)
                 };
-                DataTable dt = DataRepository.GetDataTable(sql, ps);
+                DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     return Convert.ToInt32(dt.Rows[0]["ID"]);

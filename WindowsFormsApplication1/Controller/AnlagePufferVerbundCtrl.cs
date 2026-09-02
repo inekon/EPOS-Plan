@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -136,7 +135,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_Puffer FROM [" + TABLE + "] WHERE ID_Anlage = ? ORDER BY ID",
-                StilleDb.Par("@anlage", OleDbType.Integer, idAnlage));
+                StilleDb.Par("@anlage", DbParamTyp.Integer, idAnlage));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -191,7 +190,7 @@ namespace WindowsFormsApplication1
                 "SELECT a.ID AS ID_Anlage, a.WS_ID_Puffer AS ID_Leit, v.ID_Puffer AS ID_Mitglied " +
                 "FROM [" + TABLE + "] v INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE a.ID_Projekt = ? ORDER BY a.ID, v.ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return verbuende;
 
             // Je Anlage die genannte Menge, damit die Abweichung erkennbar bleibt.
@@ -250,7 +249,7 @@ namespace WindowsFormsApplication1
                 "SELECT v.ID_Puffer FROM [" + TABLE + "] v " +
                 "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE a.ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -293,7 +292,7 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT WQ_ID_Puffer FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND WQ_ID_Puffer IS NOT NULL",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows)
@@ -323,7 +322,7 @@ namespace WindowsFormsApplication1
                 "SELECT MIN(a.WS_ID_Puffer) FROM [" + TABLE + "] v " +
                 "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE v.ID_Puffer = ? AND a.WS_ID_Puffer IS NOT NULL",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)));
         }
 
         /// <summary>
@@ -350,7 +349,7 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM [" + TABLE + "] v " +
                 "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE a.WS_ID_Puffer = ? AND v.ID_Puffer <> a.WS_ID_Puffer",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer))) > 0;
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer))) > 0;
         }
 
         /// <summary>
@@ -367,7 +366,7 @@ namespace WindowsFormsApplication1
                 "SELECT a.ID, a.Bezeichner, a.ID_Type FROM [" + TABLE + "] v " +
                 "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE v.ID_Puffer = ? ORDER BY a.Bezeichner",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
             if (dt == null) return treffer;
 
             foreach (DataRow r in dt.Rows)
@@ -405,7 +404,7 @@ namespace WindowsFormsApplication1
             StelleTabelleSicher();
 
             if (StilleDb.NonQuery("DELETE FROM [" + TABLE + "] WHERE ID_Anlage = ?",
-                                  StilleDb.Par("@anlage", OleDbType.Integer, idAnlage)) < 0)
+                                  StilleDb.Par("@anlage", DbParamTyp.Integer, idAnlage)) < 0)
                 return false;
 
             if (idsPuffer == null || idsPuffer.Count == 0) return true;
@@ -425,9 +424,9 @@ namespace WindowsFormsApplication1
 
                 if (StilleDb.NonQuery(
                         "INSERT INTO [" + TABLE + "] (ID, ID_Anlage, ID_Puffer) VALUES (?, ?, ?)",
-                        StilleDb.Par("@id", OleDbType.Integer, naechsteId),
-                        StilleDb.Par("@anlage", OleDbType.Integer, idAnlage),
-                        StilleDb.Par("@puffer", OleDbType.Integer, idPuffer)) <= 0)
+                        StilleDb.Par("@id", DbParamTyp.Integer, naechsteId),
+                        StilleDb.Par("@anlage", DbParamTyp.Integer, idAnlage),
+                        StilleDb.Par("@puffer", DbParamTyp.Integer, idPuffer)) <= 0)
                 {
                     ok = false;
                     continue;
@@ -456,7 +455,7 @@ namespace WindowsFormsApplication1
             {
                 if (idPuffer <= 0) continue;
                 StilleDb.NonQuery("DELETE FROM [" + TABLE + "] WHERE ID_Puffer = ?",
-                                  StilleDb.Par("@puffer", OleDbType.Integer, idPuffer));
+                                  StilleDb.Par("@puffer", DbParamTyp.Integer, idPuffer));
             }
         }
 
@@ -633,10 +632,10 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID <> ? AND (WS_ID_Puffer = ? OR WS_ID_Puffer2 = ?)",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                StilleDb.Par("@selbst", OleDbType.Integer, idAnlage),
-                StilleDb.Par("@a", OleDbType.Integer, idPuffer),
-                StilleDb.Par("@b", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@selbst", DbParamTyp.Integer, idAnlage),
+                StilleDb.Par("@a", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@b", DbParamTyp.Integer, idPuffer));
             if (dt == null || dt.Rows.Count == 0) return null;
 
             DataRow r = dt.Rows[0];
@@ -667,8 +666,8 @@ namespace WindowsFormsApplication1
                 "SELECT a.WS_ID_Puffer FROM [" + TABLE + "] v " +
                 "INNER JOIN Tab_Energieanlagen a ON v.ID_Anlage = a.ID " +
                 "WHERE v.ID_Puffer = ? AND a.ID <> ?",
-                StilleDb.Par("@puffer", OleDbType.Integer, idPuffer),
-                StilleDb.Par("@anlage", OleDbType.Integer, idAnlage));
+                StilleDb.Par("@puffer", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@anlage", DbParamTyp.Integer, idAnlage));
             if (dt == null) return 0;
 
             foreach (DataRow r in dt.Rows)

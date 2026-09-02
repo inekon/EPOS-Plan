@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Threading;
 using SpeicherEngine;
@@ -631,12 +630,12 @@ namespace WindowsFormsApplication1
                     "SELECT a.ID_SP FROM Tab_Energieanlagen AS a " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
 
-                OleDbParameter pProjekt = new OleDbParameter("@projekt", OleDbType.Integer);
-                pProjekt.Value = idProjekt;
-                OleDbParameter pTyp = new OleDbParameter("@typ", OleDbType.Integer);
-                pTyp.Value = WizardItemClass.SP_TYP;
+                DbParam pProjekt = new DbParam("@projekt", DbParamTyp.Integer);
+                pProjekt.Wert = idProjekt;
+                DbParam pTyp = new DbParam("@typ", DbParamTyp.Integer);
+                pTyp.Wert = WizardItemClass.SP_TYP;
 
-                DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter[] { pProjekt, pTyp });
+                DataTable dt = DataRepository.GetDataTable(sql, new DbParam[] { pProjekt, pTyp });
                 if (dt != null)
                 {
                     anzahl = dt.Rows.Count;
@@ -1057,25 +1056,25 @@ namespace WindowsFormsApplication1
                     "FROM Tab_Energieanlagen AS a INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
 
-                OleDbParameter pProjekt = new OleDbParameter("@projekt", OleDbType.Integer);
-                pProjekt.Value = idProjekt;
-                OleDbParameter pTyp = new OleDbParameter("@typ", OleDbType.Integer);
-                pTyp.Value = WizardItemClass.SP_TYP;
+                DbParam pProjekt = new DbParam("@projekt", DbParamTyp.Integer);
+                pProjekt.Wert = idProjekt;
+                DbParam pTyp = new DbParam("@typ", DbParamTyp.Integer);
+                pTyp.Wert = WizardItemClass.SP_TYP;
 
-                OleDbParameter[] parameterliste;
+                DbParam[] parameterliste;
                 if (idEnergieanlage > 0)
                 {
                     // Genau eine Anlagenzeile (AP8/AP9). Die Bedingung hängt hinten an,
                     // weil OleDb die Parameter nach POSITION bindet - die Reihenfolge im
                     // SQL und im Array muss deshalb übereinstimmen.
                     sql += " AND a.ID = ?";
-                    OleDbParameter pAnlage = new OleDbParameter("@anlage", OleDbType.Integer);
-                    pAnlage.Value = idEnergieanlage;
-                    parameterliste = new OleDbParameter[] { pProjekt, pTyp, pAnlage };
+                    DbParam pAnlage = new DbParam("@anlage", DbParamTyp.Integer);
+                    pAnlage.Wert = idEnergieanlage;
+                    parameterliste = new DbParam[] { pProjekt, pTyp, pAnlage };
                 }
                 else
                 {
-                    parameterliste = new OleDbParameter[] { pProjekt, pTyp };
+                    parameterliste = new DbParam[] { pProjekt, pTyp };
                 }
 
                 DataTable dt = DataRepository.GetDataTable(sql, parameterliste);

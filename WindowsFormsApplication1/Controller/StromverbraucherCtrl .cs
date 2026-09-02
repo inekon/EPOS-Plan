@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -66,9 +65,9 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Stromverbraucher WHERE ID = ?";
 
-            OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
-            paramId.Value = ID_Stromverbraucher;
-            OleDbParameter[] ps = { paramId };
+            DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
+            paramId.Wert = ID_Stromverbraucher;
+            DbParam[] ps = { paramId };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
@@ -123,9 +122,9 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
 
-            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
-            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
-            OleDbParameter[] ps = { paramBez };
+            DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
+            paramBez.Wert = szBezeichner ?? (object)DBNull.Value;
+            DbParam[] ps = { paramBez };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 

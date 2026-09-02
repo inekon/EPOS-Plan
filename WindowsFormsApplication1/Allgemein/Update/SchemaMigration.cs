@@ -4678,7 +4678,7 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ? WHERE [" +
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] IS NULL OR [" +
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ''",
-                new OleDbParameter("@b", DbWerte.BEMESSUNG_BETRAG));
+                new DbParam("@b", DbWerte.BEMESSUNG_BETRAG));
 
             if (betroffen < 0)
             {
@@ -4714,8 +4714,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] = ? WHERE KategorieID = ? AND ([" +
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL OR [" +
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] = '')",
-                    new OleDbParameter("@a", z.Art),
-                    new OleDbParameter("@k", z.Kategorie));
+                    new DbParam("@a", z.Art),
+                    new DbParam("@k", z.Kategorie));
 
                 if (n < 0)
                 {
@@ -4785,7 +4785,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -4885,7 +4885,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTTARIF + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -4991,7 +4991,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -5187,7 +5187,7 @@ namespace WindowsFormsApplication1
                 int gas = NonQuery(l,
                     "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE [id_brennstoff] IN (" +
                     gasIds + ")" + leer,
-                    new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                    new DbParam("@n", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
                 if (gas < 0)
                 {
@@ -5208,7 +5208,7 @@ namespace WindowsFormsApplication1
             int rest = NonQuery(l,
                 "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE ([" + sp + "] IS NULL OR [" +
                 sp + "] = '')",
-                new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_STANDARD));
+                new DbParam("@n", DbWerte.UMRECHNUNG_NAME_STANDARD));
 
             if (rest < 0)
             {
@@ -5239,7 +5239,7 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
                 "ORDER BY [ID_Brennstoff]",
-                new OleDbParameter("@pm", CARRIER_GAS));
+                new DbParam("@pm", CARRIER_GAS));
 
             if (dt == null) return null;
 
@@ -5357,9 +5357,9 @@ namespace WindowsFormsApplication1
             int traeger = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.ENERGY_CARRIER + "] SET [billing_unit] = ? " +
                 "WHERE [pricing_model] = ? AND [billing_unit] = ?",
-                new OleDbParameter("@neu", neu),
-                new OleDbParameter("@pm", CARRIER_GAS),
-                new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu),
+                new DbParam("@pm", CARRIER_GAS),
+                new DbParam("@alt", alt));
 
             if (traeger < 0) { l.Notiz("26a: billing_unit-UPDATE fehlgeschlagen"); ok = false; }
             else
@@ -5386,8 +5386,8 @@ namespace WindowsFormsApplication1
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = ? " +
                 "AND [to_unit] <> ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt),
-                new OleDbParameter("@ausnahme", neu));
+                new DbParam("@neu", neu), new DbParam("@alt", alt),
+                new DbParam("@ausnahme", neu));
 
             if (von < 0) { l.Notiz("26a: from_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += von;
@@ -5396,7 +5396,7 @@ namespace WindowsFormsApplication1
                 "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [to_unit] = ? " +
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [to_unit] = ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu), new DbParam("@alt", alt));
 
             if (nach < 0) { l.Notiz("26a: to_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += nach;
@@ -5410,7 +5410,7 @@ namespace WindowsFormsApplication1
                 "UPDATE [energy_price] SET [arbeitspreis_unit] = ? WHERE [arbeitspreis_unit] = ? " +
                 "AND [carrier_id] IN (SELECT [id] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = '" + CARRIER_GAS + "')",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu), new DbParam("@alt", alt));
 
             if (preise < 0) { l.Notiz("26a: arbeitspreis_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += preise;
@@ -5451,7 +5451,7 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
                 "ORDER BY [ID_Brennstoff]",
-                new OleDbParameter("@pm", CARRIER_GAS));
+                new DbParam("@pm", CARRIER_GAS));
 
             if (brennstoffe == null)
             {
@@ -5470,9 +5470,9 @@ namespace WindowsFormsApplication1
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
                     "WHERE [id_brennstoff] = ? AND [from_unit] = ? AND [to_unit] = ?",
-                    new OleDbParameter("@b", brennstoff),
-                    new OleDbParameter("@von", alt),
-                    new OleDbParameter("@nach", neu));
+                    new DbParam("@b", brennstoff),
+                    new DbParam("@von", alt),
+                    new DbParam("@nach", neu));
 
                 if (da == null) { l.Notiz("26b: Prüfung für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
                 if (Zahl(da) > 0) { vorhanden++; continue; }
@@ -5485,11 +5485,11 @@ namespace WindowsFormsApplication1
                     "([ID], [id_brennstoff], [from_unit], [to_unit], [factor], [user_edited], [" +
                     SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" + SchemaKatalog.SPALTE_EC_AKTIV + "]) " +
                     "VALUES (?, ?, ?, ?, 1, FALSE, ?, TRUE)",
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@b", brennstoff),
-                    new OleDbParameter("@von", alt),
-                    new OleDbParameter("@nach", neu),
-                    new OleDbParameter("@name", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                    new DbParam("@id", neueId),
+                    new DbParam("@b", brennstoff),
+                    new DbParam("@von", alt),
+                    new DbParam("@nach", neu),
+                    new DbParam("@name", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
                 if (n <= 0) { l.Notiz("26b: INSERT für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
                 gesaet++;
@@ -5528,8 +5528,8 @@ namespace WindowsFormsApplication1
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = [to_unit] " +
                 "AND [" + SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", DbWerte.UMRECHNUNG_NAME_STANDARD),
-                new OleDbParameter("@alt", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                new DbParam("@neu", DbWerte.UMRECHNUNG_NAME_STANDARD),
+                new DbParam("@alt", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
             if (n < 0)
             {
@@ -5618,7 +5618,7 @@ namespace WindowsFormsApplication1
             object da = Scalar(l,
                 "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                 "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                new OleDbParameter("@k", komponente));
+                new DbParam("@k", komponente));
 
             if (da == null)
             {
@@ -5634,8 +5634,8 @@ namespace WindowsFormsApplication1
             int n = NonQuery(l,
                 "INSERT INTO [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] ([ID], [" +
                 SchemaKatalog.SPALTE_KK_KOMPONENTE + "]) VALUES (?, ?)",
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@k", komponente));
+                new DbParam("@id", neueId),
+                new DbParam("@k", komponente));
 
             if (n <= 0)
             {
@@ -5663,7 +5663,7 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] " +
                 "WHERE [" + SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? AND [" +
                 SchemaKatalog.SPALTE_KF_IST_HAUPT + "] = " + (hauptposition ? "TRUE" : "FALSE"),
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@b", bezeichnung));
 
             if (da == null)
             {
@@ -5682,8 +5682,8 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "], [" +
                 SchemaKatalog.SPALTE_KF_IST_HAUPT + "]) VALUES (?, ?, " +
                 (hauptposition ? "TRUE" : "FALSE") + ")",
-                new OleDbParameter("@sid", neueId),
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@sid", neueId),
+                new DbParam("@b", bezeichnung));
 
             if (n <= 0)
             {
@@ -5780,9 +5780,9 @@ namespace WindowsFormsApplication1
                 "UPDATE [" + TAB + "] SET [Wert] = 80, [Status] = ?, Quelle = ? " +
                 "WHERE Schluessel = ? AND JahrVon = 2028 AND [Wert] = 95 " +
                 "AND Quelle LIKE '%Projektionsbericht%'",
-                new OleDbParameter("@sta", DbWerte.GESETZ_STATUS_PROGNOSE),
-                new OleDbParameter("@que", QUELLE_NEU),
-                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+                new DbParam("@sta", DbWerte.GESETZ_STATUS_PROGNOSE),
+                new DbParam("@que", QUELLE_NEU),
+                new DbParam("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
 
             if (n < 0)
                 l.Notiz("28b: Berichtigung der 2028er-Stuetzstelle fehlgeschlagen - der " +
@@ -5799,7 +5799,7 @@ namespace WindowsFormsApplication1
                 "DELETE FROM [" + TAB + "] " +
                 "WHERE Schluessel = ? AND JahrVon = 2030 AND [Wert] = 125 " +
                 "AND Quelle LIKE '%Projektionsbericht%'",
-                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+                new DbParam("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
 
             if (d < 0)
                 l.Notiz("28b: Die 2030er-Stuetzstelle des mittleren Szenarios liess sich nicht " +
@@ -7265,7 +7265,7 @@ namespace WindowsFormsApplication1
             int n = NonQuery(l,
                 "UPDATE [" + tabelle + "] SET [" + spalte + "]=? WHERE ID=" +
                 id.ToString(CultureInfo.InvariantCulture),
-                new OleDbParameter("@wert", wert));
+                new DbParam("@wert", wert));
 
             if (n == 1) return true;
 
@@ -7494,7 +7494,7 @@ namespace WindowsFormsApplication1
                     DataTable projekte = Abfrage(l,
                         "SELECT DISTINCT ProjektID FROM Tab_ProjektWerte " +
                         "WHERE KomponentenID = ? AND ID_Anlage IS NULL",
-                        new OleDbParameter("@k", kid));
+                        new DbParam("@k", kid));
                     if (projekte == null) continue;
 
                     foreach (DataRow pr in projekte.Rows)
@@ -7504,14 +7504,14 @@ namespace WindowsFormsApplication1
                         object a = Scalar(l,
                             "SELECT MIN(ID) FROM Tab_Energieanlagen " +
                             "WHERE ID_Projekt = ? AND [" + spalte + "] IS NOT NULL",
-                            new OleDbParameter("@p", pid));
+                            new DbParam("@p", pid));
                         if (a == null || a == DBNull.Value) { ohneAnlage++; continue; }
                         zugeordnet += NonQuery(l,
                             "UPDATE Tab_ProjektWerte SET ID_Anlage = ? " +
                             "WHERE ProjektID = ? AND KomponentenID = ? AND ID_Anlage IS NULL",
-                            new OleDbParameter("@a", Convert.ToInt32(a)),
-                            new OleDbParameter("@p", pid),
-                            new OleDbParameter("@k", kid));
+                            new DbParam("@a", Convert.ToInt32(a)),
+                            new DbParam("@p", pid),
+                            new DbParam("@k", kid));
                     }
                 }
 
@@ -8077,7 +8077,7 @@ namespace WindowsFormsApplication1
                 // steht auf oberster Ebene, die ID als ganzzahliges Literal.
                 DataTable dt = Abfrage(l,
                     "SELECT id, co2 FROM energy_carrier WHERE [name] = ?",
-                    new OleDbParameter("@n", name));
+                    new DbParam("@n", name));
                 if (dt == null) return false;
 
                 if (dt.Rows.Count == 0)
@@ -8100,7 +8100,7 @@ namespace WindowsFormsApplication1
                     if (NonQuery(l,
                             "UPDATE energy_carrier SET co2 = ? WHERE id = " +
                             id.ToString(CultureInfo.InvariantCulture),
-                            new OleDbParameter("@c", neu)) < 0)
+                            new DbParam("@c", neu)) < 0)
                         return false;
 
                     l.Notiz(name + " (id " + id + "): co2 " +
@@ -8489,7 +8489,7 @@ namespace WindowsFormsApplication1
             {
                 object vorhanden = Scalar(l,
                     "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSART + " WHERE kuerzel = ?",
-                    new OleDbParameter("@k", a.Kuerzel));
+                    new DbParam("@k", a.Kuerzel));
                 if (vorhanden != null && Convert.ToInt32(vorhanden) > 0) { artenDa++; continue; }
 
                 if (NonQuery(l,
@@ -8580,36 +8580,36 @@ namespace WindowsFormsApplication1
 
         /// <summary>Parameter mit ausdrücklichem Typ — <c>DBNull</c> braucht ihn, weil
         /// OleDb den Typ sonst aus dem Wert ableitet und bei NULL nichts ableiten kann.</summary>
-        private static OleDbParameter EwText(string wert, int laenge)
+        private static DbParam EwText(string wert, int laenge)
         {
-            return new OleDbParameter("@t", OleDbType.VarWChar, laenge)
-            { Value = (object)wert ?? DBNull.Value };
+            return new DbParam("@t", DbParamTyp.VarWChar, laenge)
+            { Wert = (object)wert ?? DBNull.Value };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwGanz(int? wert)
+        private static DbParam EwGanz(int? wert)
         {
-            return new OleDbParameter("@i", OleDbType.Integer)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam("@i", DbParamTyp.Integer)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwKomma(double wert)
+        private static DbParam EwKomma(double wert)
         {
-            return new OleDbParameter("@d", OleDbType.Double) { Value = wert };
+            return new DbParam("@d", DbParamTyp.Double) { Wert = wert };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwJaNein(bool wert)
+        private static DbParam EwJaNein(bool wert)
         {
-            return new OleDbParameter("@b", OleDbType.Boolean) { Value = wert };
+            return new DbParam("@b", DbParamTyp.Boolean) { Wert = wert };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwDatum(DateTime? wert)
+        private static DbParam EwDatum(DateTime? wert)
         {
-            return new OleDbParameter("@dt", OleDbType.Date)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam("@dt", DbParamTyp.Date)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         /// <summary>Kürzel → ID des Artenkatalogs; null, wenn nicht lesbar.</summary>
@@ -9356,7 +9356,7 @@ namespace WindowsFormsApplication1
                 object kidObj = Scalar(l,
                     "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                     "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                    new OleDbParameter("@k", v.Komponente));
+                    new DbParam("@k", v.Komponente));
                 if (kidObj == null || kidObj == DBNull.Value) continue;   // Komponente fehlt
                 int komponentenId = Zahl(kidObj);
 
@@ -9366,9 +9366,9 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_NAME + "] = ?",
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
                 if (vidObj == null || vidObj == DBNull.Value) continue;   // Vorlage fehlt
                 int vorlageId = Zahl(vidObj);
 
@@ -9381,8 +9381,8 @@ namespace WindowsFormsApplication1
                         "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                         "] WHERE [" + SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung));
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung));
                     if (daObj == null) { ok = false; continue; }
 
                     if (Zahl(daObj) == 0)
@@ -9401,10 +9401,10 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "] <> ?",
-                        new OleDbParameter("@f", p.IstPflicht),
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@f2", p.IstPflicht));
+                        new DbParam("@f", p.IstPflicht),
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@f2", p.IstPflicht));
 
                     // Bemessung auf den Sollwert (Hilfsenergie an der Endenergie;
                     // Instandhaltung Heizkessel als Prozentsatz der Investition).
@@ -9414,10 +9414,10 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEMESSUNG + "] <> ?",
-                        new OleDbParameter("@bm", p.Bemessung),
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@bm2", p.Bemessung));
+                        new DbParam("@bm", p.Bemessung),
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@bm2", p.Bemessung));
 
                     // Empfehlungsbereich nur NACHTRAGEN, wo keiner steht - ein vom
                     // Anwender gepflegter Bereich der Standardvariante bleibt.
@@ -9429,10 +9429,10 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                             SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                             SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] IS NULL",
-                            new OleDbParameter("@ev", p.EmpfehlungVon.Value),
-                            new OleDbParameter("@eb", p.EmpfehlungBis.Value),
-                            new OleDbParameter("@vid", vorlageId),
-                            new OleDbParameter("@b", p.Bezeichnung));
+                            new DbParam("@ev", p.EmpfehlungVon.Value),
+                            new DbParam("@eb", p.EmpfehlungBis.Value),
+                            new DbParam("@vid", vorlageId),
+                            new DbParam("@b", p.Bezeichnung));
 
                     // Projektzeilen derselben Komponente und Kategorie kennzeichnen.
                     // NUR IstPflicht - die Bemessung der Projektzeile bleibt, wie sie ist
@@ -9450,16 +9450,16 @@ namespace WindowsFormsApplication1
                             "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                             SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                             SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                            new OleDbParameter("@b", p.Bezeichnung));
+                            new DbParam("@b", p.Bezeichnung));
                         if (sidObj != null && sidObj != DBNull.Value)
                             projektzeilen += NonQuery(l,
                                 "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [" +
                                 SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = TRUE " +
                                 "WHERE [KomponentenID] = ? AND [KategorieID] = ? AND [" +
                                 SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = FALSE AND [StammID] = ?",
-                                new OleDbParameter("@kid", komponentenId),
-                                new OleDbParameter("@kat", v.KategorieId),
-                                new OleDbParameter("@sid", Zahl(sidObj)));
+                                new DbParam("@kid", komponentenId),
+                                new DbParam("@kat", v.KategorieId),
+                                new DbParam("@sid", Zahl(sidObj)));
                     }
                 }
             }
@@ -9500,7 +9500,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", WARTUNG_BHKW_ALT));
+                new DbParam("@b", WARTUNG_BHKW_ALT));
             if (altObj == null || altObj == DBNull.Value)
             {
                 // Kein Alteintrag - nichts zu tun (frische Datenbank oder schon gelaufen).
@@ -9512,7 +9512,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", DbWerte.VDI_POS_WARTUNG_BHKW));
+                new DbParam("@b", DbWerte.VDI_POS_WARTUNG_BHKW));
 
             if (zielObj == null || zielObj == DBNull.Value)
             {
@@ -9521,14 +9521,14 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] SET [" +
                     SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KF_STAMMID + "] = ?",
-                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                    new OleDbParameter("@sid", altId));
+                    new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new DbParam("@sid", altId));
                 int v = NonQuery(l,
                     "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
                     SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                    new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+                    new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new DbParam("@alt", WARTUNG_BHKW_ALT));
                 l.Notiz("59d: Katalogeintrag \"" + WARTUNG_BHKW_ALT + "\" in \"" +
                         DbWerte.VDI_POS_WARTUNG_BHKW + "\" umbenannt (" + n +
                         " Katalogzeile, " + v + " Vorlagenposition[en]); StammID " + altId +
@@ -9542,16 +9542,16 @@ namespace WindowsFormsApplication1
             int pw = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [StammID] = ? " +
                 "WHERE [StammID] = ?",
-                new OleDbParameter("@z", zielId),
-                new OleDbParameter("@a", altId));
+                new DbParam("@z", zielId),
+                new DbParam("@a", altId));
             int vp = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
                 SchemaKatalog.SPALTE_KVP_STAMMID + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@z", zielId),
-                new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+                new DbParam("@z", zielId),
+                new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                new DbParam("@alt", WARTUNG_BHKW_ALT));
             l.Notiz("59d: Beide Wortlaute vorhanden - " + pw + " Projekt- und " + vp +
                     " Vorlagenposition(en) von StammID " + altId + " auf " + zielId +
                     " umgehaengt. Der Katalogeintrag \"" + WARTUNG_BHKW_ALT +
@@ -9586,7 +9586,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", p.Bezeichnung));
+                new DbParam("@b", p.Bezeichnung));
 
             int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
                                        SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
@@ -9604,19 +9604,19 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "], [" +
                 SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "]) " +
                 "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?)",
-                new OleDbParameter("@id", posId),
-                new OleDbParameter("@vid", vorlageId),
-                ParamOderNull("@sid", OleDbType.Integer,
+                new DbParam("@id", posId),
+                new DbParam("@vid", vorlageId),
+                ParamOderNull("@sid", DbParamTyp.Integer,
                               sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
-                new OleDbParameter("@b", p.Bezeichnung),
-                new OleDbParameter("@ka", p.Kostenart),
-                new OleDbParameter("@bm", p.Bemessung),
-                ParamOderNull("@ev", OleDbType.Double,
+                new DbParam("@b", p.Bezeichnung),
+                new DbParam("@ka", p.Kostenart),
+                new DbParam("@bm", p.Bemessung),
+                ParamOderNull("@ev", DbParamTyp.Double,
                               p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
-                ParamOderNull("@eb", OleDbType.Double,
+                ParamOderNull("@eb", DbParamTyp.Double,
                               p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
-                new OleDbParameter("@so", sort),
-                new OleDbParameter("@pf", p.IstPflicht));
+                new DbParam("@so", sort),
+                new DbParam("@pf", p.IstPflicht));
 
             if (n > 0) return true;
             l.Notiz("59: Position \"" + p.Bezeichnung + "\" konnte in Vorlage " + vorlageId +
@@ -10449,9 +10449,9 @@ namespace WindowsFormsApplication1
                 // das Ergebnis, statt es zu erhalten. Uebernommen wird, was die Engine
                 // liest.
                 if (NonQuery(l, ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
-                             new OleDbParameter("@v", vorlauf),
-                             new OleDbParameter("@r", ruecklauf),
-                             new OleDbParameter("@id", idPuffer)) < 0)
+                             new DbParam("@v", vorlauf),
+                             new DbParam("@r", ruecklauf),
+                             new DbParam("@id", idPuffer)) < 0)
                     return false;
 
                 uebernommen++;
@@ -10558,7 +10558,7 @@ namespace WindowsFormsApplication1
         {
             object da = Scalar(l,
                 "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
-                new OleDbParameter("@n", "Flüssiggas"));
+                new DbParam("@n", "Flüssiggas"));
             if (da != null && Convert.ToInt32(da) > 0)
             {
                 l.Zeile("Fluessiggas (Schritt 42): bereits vorhanden - nichts zu tun.");
@@ -10576,8 +10576,8 @@ namespace WindowsFormsApplication1
                     " co2, so2, nox, is_active) " +
                     "VALUES (?, ?, 'Flüssiggas', 'Fluessiggas', 'Gas', 'GASEOUS_FUEL', 'kg', " +
                     " 12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)",
-                    new OleDbParameter("@id", id),
-                    new OleDbParameter("@b", idBrennstoff)) < 0)
+                    new DbParam("@id", id),
+                    new DbParam("@b", idBrennstoff)) < 0)
                 return false;
 
             l.Zeile("Fluessiggas (Schritt 42): als Katalogtraeger " + id + " gesaet" +
@@ -10602,7 +10602,7 @@ namespace WindowsFormsApplication1
                 DataRepository.StilleFehlerAbholen();
                 object b = DataRepository.ExecuteScalar(
                     "SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?",
-                    new OleDbParameter("@n", namensanfang + "%"));
+                    new DbParam("@n", namensanfang + "%"));
                 DataRepository.StilleFehlerAbholen();
                 return (b == null || b == DBNull.Value) ? 0 : Convert.ToInt32(b);
             }
@@ -10649,7 +10649,7 @@ namespace WindowsFormsApplication1
                 string name = (string)t[0];
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
-                    new OleDbParameter("@n", name));
+                    new DbParam("@n", name));
                 if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
 
                 object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
@@ -10660,15 +10660,15 @@ namespace WindowsFormsApplication1
                         " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
                         " co2, so2, nox, is_active) " +
                         "VALUES (?, ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)",
-                        new OleDbParameter("@id", id),
-                        new OleDbParameter("@b", BrennstoffStammId(name)),
-                        new OleDbParameter("@n", name),
-                        new OleDbParameter("@c", name),
-                        new OleDbParameter("@g", (string)t[1]),
-                        new OleDbParameter("@m", modell),
-                        new OleDbParameter("@hi", (double)t[2]),
-                        new OleDbParameter("@hs", (double)t[3]),
-                        new OleDbParameter("@co2", (double)t[4])) < 0)
+                        new DbParam("@id", id),
+                        new DbParam("@b", BrennstoffStammId(name)),
+                        new DbParam("@n", name),
+                        new DbParam("@c", name),
+                        new DbParam("@g", (string)t[1]),
+                        new DbParam("@m", modell),
+                        new DbParam("@hi", (double)t[2]),
+                        new DbParam("@hs", (double)t[3]),
+                        new DbParam("@co2", (double)t[4])) < 0)
                     return false;
                 neu++;
             }
@@ -10680,7 +10680,7 @@ namespace WindowsFormsApplication1
                 NonQuery(l,
                     "UPDATE energy_carrier SET ID_Brennstoff = ? " +
                     "WHERE [name] = 'Flüssiggas' AND ID_Brennstoff = 0",
-                    new OleDbParameter("@b", flgStamm));
+                    new DbParam("@b", flgStamm));
 
             l.Zeile("VDI-3805-Traeger (Schritt 43): " + neu + " gesät, " + vorhanden +
                     " bereits vorhanden (Steinkohle, Braunkohlebrikett, Scheitholz, " +
@@ -10715,8 +10715,8 @@ namespace WindowsFormsApplication1
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                     "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
-                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                    new OleDbParameter("@j", jahrVon[j]));
+                    new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new DbParam("@j", jahrVon[j]));
                 if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
 
                 object maxKopf = Scalar(l, "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "]");
@@ -10725,11 +10725,11 @@ namespace WindowsFormsApplication1
                         "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                         "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
                         "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
-                        new OleDbParameter("@id", kopfId),
-                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                        new OleDbParameter("@j", jahrVon[j]),
-                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
-                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
+                        new DbParam("@id", kopfId),
+                        new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new DbParam("@j", jahrVon[j]),
+                        new DbParam("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new DbParam("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
                     return false;
 
                 object maxDaten = Scalar(l, "SELECT MAX(ID) FROM [Tab_PreisreiheDaten]");
@@ -10739,9 +10739,9 @@ namespace WindowsFormsApplication1
                     datenId++;
                     if (NonQuery(l,
                             "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
-                            new OleDbParameter("@id", datenId),
-                            new OleDbParameter("@k", kopfId),
-                            new OleDbParameter("@w", wert)) < 0)
+                            new DbParam("@id", datenId),
+                            new DbParam("@k", kopfId),
+                            new DbParam("@w", wert)) < 0)
                         return false;
                 }
                 neu++;
@@ -10755,10 +10755,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
         /// Typ kann der Provider nicht binden.</summary>
-        private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
+        private static DbParam ParamOderNull(string name, DbParamTyp typ, object wert)
         {
-            var p = new OleDbParameter(name, typ);
-            p.Value = wert ?? DBNull.Value;
+            var p = new DbParam(name, typ);
+            p.Wert = wert ?? DBNull.Value;
             return p;
         }
 
@@ -10789,7 +10789,7 @@ namespace WindowsFormsApplication1
                 object idObj = Scalar(l,
                     "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                     "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                    new OleDbParameter("@k", v.Komponente));
+                    new DbParam("@k", v.Komponente));
                 if (idObj == null || idObj == DBNull.Value)
                 {
                     l.Notiz("39: Komponente \"" + v.Komponente + "\" ist nicht aufloesbar.");
@@ -10805,9 +10805,9 @@ namespace WindowsFormsApplication1
                     "WHERE [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_NAME + "] = ?",
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
                 if (da == null) { ok = false; continue; }
                 if (Zahl(da) > 0) { vorhanden++; continue; }
 
@@ -10824,11 +10824,11 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KV_READONLY + "], [" +
                     SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) " +
                     "VALUES (?, ?, ?, ?, TRUE, TRUE, ?)",
-                    new OleDbParameter("@id", vorlageId),
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
-                    ParamOderNull("@am", OleDbType.Date, DateTime.Now));
+                    new DbParam("@id", vorlageId),
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
+                    ParamOderNull("@am", DbParamTyp.Date, DateTime.Now));
                 if (kopf <= 0)
                 {
                     l.Notiz("39: INSERT der Vorlage \"" + v.Komponente + "\" (Kategorie " +
@@ -10850,7 +10850,7 @@ namespace WindowsFormsApplication1
                         "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                         SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                         SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                        new OleDbParameter("@b", p.Bezeichnung));
+                        new DbParam("@b", p.Bezeichnung));
 
                     int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
                                                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
@@ -10867,18 +10867,18 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
                         SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
                         "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)",
-                        new OleDbParameter("@id", posId),
-                        new OleDbParameter("@vid", vorlageId),
-                        ParamOderNull("@sid", OleDbType.Integer,
+                        new DbParam("@id", posId),
+                        new DbParam("@vid", vorlageId),
+                        ParamOderNull("@sid", DbParamTyp.Integer,
                                       sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@ka", p.Kostenart),
-                        new OleDbParameter("@bm", p.Bemessung),
-                        ParamOderNull("@ev", OleDbType.Double,
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@ka", p.Kostenart),
+                        new DbParam("@bm", p.Bemessung),
+                        ParamOderNull("@ev", DbParamTyp.Double,
                                       p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
-                        ParamOderNull("@eb", OleDbType.Double,
+                        ParamOderNull("@eb", DbParamTyp.Double,
                                       p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
-                        new OleDbParameter("@so", sort));
+                        new DbParam("@so", sort));
                     if (pn <= 0) { posOk = false; break; }
                     positionen++;
                 }
@@ -10976,8 +10976,8 @@ namespace WindowsFormsApplication1
                 "SELECT ID, Bezeichner, WQ_Puffer FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND WQ_Typ = ? AND WQ_Puffer IS NOT NULL " +
                 "  AND (WQ_ID_Puffer IS NULL OR WQ_ID_Puffer = 0) ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", WaermequelleClass.TYP_PUFFER));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", WaermequelleClass.TYP_PUFFER));
 
             if (q == null) return false;
 
@@ -10993,8 +10993,8 @@ namespace WindowsFormsApplication1
                 // und die Anzahl entscheidet hier über das Verhalten.
                 int treffer = Zahl(Scalar(l,
                     "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer)));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer)));
 
                 if (treffer == 0)
                 {
@@ -11020,13 +11020,13 @@ namespace WindowsFormsApplication1
 
                 int idPuffer = Zahl(Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer)));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer)));
                 if (idPuffer <= 0) { DatenQuellPufferOffen++; continue; }
 
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET WQ_ID_Puffer = ? WHERE ID = ?",
-                             new OleDbParameter("@puf", idPuffer),
-                             new OleDbParameter("@id", idAnlage)) < 0)
+                             new DbParam("@puf", idPuffer),
+                             new DbParam("@id", idAnlage)) < 0)
                 {
                     ok = false;
                     continue;
@@ -11300,7 +11300,7 @@ namespace WindowsFormsApplication1
                 "WHERE ID_Projekt = ? AND ID_Type IN (" +
                 WizardItemClass.SP_TYP.ToString(CultureInfo.InvariantCulture) + ", " +
                 WizardItemClass.REF_SP_TYP.ToString(CultureInfo.InvariantCulture) + ") ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (anlagen == null) return false;
             if (anlagen.Rows.Count == 0) return true;   // Projekt ohne Speicher - nichts zu tun
@@ -11315,7 +11315,7 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM Tab_StromspeicherVariante AS v " +
                 "INNER JOIN Tab_Energieanlagen AS a ON v.ID_Energieanlage = a.ID " +
                 "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE",
-                new OleDbParameter("@proj", idProjekt))) > 0;
+                new DbParam("@proj", idProjekt))) > 0;
 
             bool ok = true;
             foreach (DataRow r in anlagen.Rows)
@@ -11325,31 +11325,31 @@ namespace WindowsFormsApplication1
 
                 // IDEMPOTENZ: eine bestehende Variante wird nie überschrieben.
                 if (Zahl(Scalar(l, "SELECT COUNT(*) FROM Tab_StromspeicherVariante WHERE ID_Energieanlage = ?",
-                                new OleDbParameter("@anl", idAnlage))) > 0)
+                                new DbParam("@anl", idAnlage))) > 0)
                     continue;
 
                 bool aktiv = !aktivVergeben;
                 int neueId = Zahl(Scalar(l, "SELECT MAX(ID) FROM Tab_StromspeicherVariante")) + 1;
 
                 int betroffen = NonQuery(l, SQL_INSERT_SPVARIANTE,
-                    Par("@id", OleDbType.Integer, neueId),
-                    Par("@anl", OleDbType.Integer, idAnlage),
-                    Par("@bart", OleDbType.VarWChar, DbWerte.SP_BETRIEBSART_GRUENSTROM),
-                    Par("@pv", OleDbType.Boolean, true),      // Grünstrom-Vorbelegung: PV
-                    Par("@bhkw", OleDbType.Boolean, true),    //   und BHKW-Überschuss an
-                    Par("@bhkwstrom", OleDbType.Boolean, false),
-                    Par("@netzent", OleDbType.Boolean, false),
-                    Par("@socmin", OleDbType.Double, socMin),
-                    Par("@socmax", OleDbType.Double, socMax),
-                    Par("@rart", OleDbType.VarWChar, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
-                    Par("@pquelle", OleDbType.VarWChar, DbWerte.SP_PREISQUELLE_FIXPREIS),
-                    Par("@kompat", OleDbType.Boolean, false),
-                    Par("@zins", OleDbType.Double, StromspeicherVarianteModel.KAPITALZINS_VORGABE),
-                    Par("@nutz", OleDbType.Double, StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE),
-                    Par("@lp", OleDbType.Double, 0.0),
-                    Par("@anetz", OleDbType.Double, 0.0),
-                    Par("@aktiv", OleDbType.Boolean, aktiv),
-                    Par("@schwelle", OleDbType.Double, schwelle));
+                    Par("@id", DbParamTyp.Integer, neueId),
+                    Par("@anl", DbParamTyp.Integer, idAnlage),
+                    Par("@bart", DbParamTyp.VarWChar, DbWerte.SP_BETRIEBSART_GRUENSTROM),
+                    Par("@pv", DbParamTyp.Boolean, true),      // Grünstrom-Vorbelegung: PV
+                    Par("@bhkw", DbParamTyp.Boolean, true),    //   und BHKW-Überschuss an
+                    Par("@bhkwstrom", DbParamTyp.Boolean, false),
+                    Par("@netzent", DbParamTyp.Boolean, false),
+                    Par("@socmin", DbParamTyp.Double, socMin),
+                    Par("@socmax", DbParamTyp.Double, socMax),
+                    Par("@rart", DbParamTyp.VarWChar, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
+                    Par("@pquelle", DbParamTyp.VarWChar, DbWerte.SP_PREISQUELLE_FIXPREIS),
+                    Par("@kompat", DbParamTyp.Boolean, false),
+                    Par("@zins", DbParamTyp.Double, StromspeicherVarianteModel.KAPITALZINS_VORGABE),
+                    Par("@nutz", DbParamTyp.Double, StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE),
+                    Par("@lp", DbParamTyp.Double, 0.0),
+                    Par("@anetz", DbParamTyp.Double, 0.0),
+                    Par("@aktiv", DbParamTyp.Boolean, aktiv),
+                    Par("@schwelle", DbParamTyp.Double, schwelle));
 
                 if (betroffen < 0) { ok = false; continue; }
 
@@ -11395,7 +11395,7 @@ namespace WindowsFormsApplication1
                 "SELECT Ladefuellstand_Min, Ladefuellstand_Min_Auswahl, Ladefuellstand_Max, " +
                 "Ladefuellstand_Max_Auswahl, Ladeleistung_Max, Ladeschwellwert " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (dt == null || dt.Rows.Count == 0)
             {
@@ -11713,7 +11713,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] IS NULL OR [" +
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ''",
-                    new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
+                    new DbParam("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
 
                 if (betroffen < 0)
                 {
@@ -11972,8 +11972,8 @@ namespace WindowsFormsApplication1
             DataTable zeilen = Abfrage(l,
                 "SELECT ID, Bezeichner FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                 "WHERE ID_Projekt = ? AND [" + sperre.Spalte + "] = ? ORDER BY ID",
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt },
-                new OleDbParameter("@ger", OleDbType.Integer) { Value = idGeraet });
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt },
+                new DbParam("@ger", DbParamTyp.Integer) { Wert = idGeraet });
 
             if (zeilen == null || zeilen.Rows.Count < 2) return;
 
@@ -11991,7 +11991,7 @@ namespace WindowsFormsApplication1
 
             string geraetName = Txt(Scalar(l,
                 "SELECT Bezeichner FROM [" + sperre.Tabelle + "] WHERE ID = ?",
-                new OleDbParameter("@id", OleDbType.Integer) { Value = idGeraet }));
+                new DbParam("@id", DbParamTyp.Integer) { Wert = idGeraet }));
 
             for (int i = 1; i < zeilen.Rows.Count; i++)
             {
@@ -12021,9 +12021,9 @@ namespace WindowsFormsApplication1
                 int n = NonQuery(l,
                     "UPDATE [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] SET [" + sperre.Spalte +
                     "] = ?, Bezeichner = ? WHERE ID = ?",
-                    new OleDbParameter("@ger", OleDbType.Integer) { Value = neu },
-                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = name },
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = idZeile });
+                    new DbParam("@ger", DbParamTyp.Integer) { Wert = neu },
+                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = name },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = idZeile });
 
                 if (n < 0)
                 {
@@ -12057,11 +12057,11 @@ namespace WindowsFormsApplication1
             {
                 if (kind == null || kind.Length < 2) continue;
                 NonQuery(l, "DELETE FROM [" + kind[0] + "] WHERE [" + kind[1] + "] = ?",
-                         new OleDbParameter("@fk", OleDbType.Integer) { Value = idNeu });
+                         new DbParam("@fk", DbParamTyp.Integer) { Wert = idNeu });
             }
 
             NonQuery(l, "DELETE FROM [" + sperre.Tabelle + "] WHERE ID = ?",
-                     new OleDbParameter("@id", OleDbType.Integer) { Value = idNeu });
+                     new DbParam("@id", DbParamTyp.Integer) { Wert = idNeu });
         }
 
         // =================================================================================
@@ -12181,7 +12181,7 @@ namespace WindowsFormsApplication1
                     }
 
                     int n = NonQuery(l, "DELETE FROM [" + tabelle + "] WHERE ID = ?",
-                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                                     new DbParam("@id", DbParamTyp.Integer) { Wert = idDub });
                     if (n < 0)
                     {
                         l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key +
@@ -12406,7 +12406,7 @@ namespace WindowsFormsApplication1
                     if (!DatenbloeckeLoeschen(l, k, idDub, g.Key, ref offen)) continue;
 
                     int n = NonQuery(l, "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
-                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                                     new DbParam("@id", DbParamTyp.Integer) { Wert = idDub });
                     if (n < 0)
                     {
                         l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
@@ -12458,7 +12458,7 @@ namespace WindowsFormsApplication1
             foreach (KatalogDatenblock b in k.Datenbloecke)
             {
                 int n = NonQuery(l, "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
-                                 new OleDbParameter("@fk", OleDbType.Integer) { Value = idDub });
+                                 new DbParam("@fk", DbParamTyp.Integer) { Wert = idDub });
                 if (n < 0)
                 {
                     l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + name +
@@ -12793,7 +12793,7 @@ namespace WindowsFormsApplication1
         {
             DataTable traeger = Abfrage(l,
                 "SELECT id, name FROM energy_carrier WHERE pricing_model = ? ORDER BY id",
-                Par("@pm", OleDbType.VarWChar, CARRIER_STROM));
+                Par("@pm", DbParamTyp.VarWChar, CARRIER_STROM));
 
             if (traeger == null)
             {
@@ -12826,16 +12826,16 @@ namespace WindowsFormsApplication1
                 if (idTraeger <= 0) continue;
 
                 int betroffen = NonQuery(l, sql,
-                    Par("@netz", OleDbType.Double, StromAufschlagModel.NETZENTGELT_VORGABE),
-                    Par("@uml", OleDbType.Double, StromAufschlagModel.UMLAGEN_VORGABE),
-                    Par("@steuer", OleDbType.Double, StromAufschlagModel.STROMSTEUER_REGELFALL),
-                    Par("@konz", OleDbType.Double, StromAufschlagModel.KONZESSION_VORGABE),
-                    Par("@vertr", OleDbType.Double, StromAufschlagModel.VERTRIEB_VORGABE),
-                    Par("@modus", OleDbType.VarWChar, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT),
-                    Par("@over", OleDbType.Double, 0.0),
-                    Par("@vpv", OleDbType.Double, StromAufschlagModel.VERGUETUNG_PV_VORGABE),
-                    Par("@vbhkw", OleDbType.Double, StromAufschlagModel.VERGUETUNG_BHKW_VORGABE),
-                    Par("@eid", OleDbType.Integer, idTraeger));
+                    Par("@netz", DbParamTyp.Double, StromAufschlagModel.NETZENTGELT_VORGABE),
+                    Par("@uml", DbParamTyp.Double, StromAufschlagModel.UMLAGEN_VORGABE),
+                    Par("@steuer", DbParamTyp.Double, StromAufschlagModel.STROMSTEUER_REGELFALL),
+                    Par("@konz", DbParamTyp.Double, StromAufschlagModel.KONZESSION_VORGABE),
+                    Par("@vertr", DbParamTyp.Double, StromAufschlagModel.VERTRIEB_VORGABE),
+                    Par("@modus", DbParamTyp.VarWChar, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT),
+                    Par("@over", DbParamTyp.Double, 0.0),
+                    Par("@vpv", DbParamTyp.Double, StromAufschlagModel.VERGUETUNG_PV_VORGABE),
+                    Par("@vbhkw", DbParamTyp.Double, StromAufschlagModel.VERGUETUNG_BHKW_VORGABE),
+                    Par("@eid", DbParamTyp.Integer, idTraeger));
 
                 if (betroffen < 0) { ok = false; continue; }
                 if (betroffen == 0) continue;
@@ -13078,8 +13078,8 @@ namespace WindowsFormsApplication1
                 {
                     DataTable treffer = Abfrage(l,
                         "SELECT ID FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@bez", bezeichner));
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@bez", bezeichner));
                     if (treffer != null && treffer.Rows.Count == 1) ziel = Zahl(treffer.Rows[0][0]);
                 }
 
@@ -13266,8 +13266,8 @@ namespace WindowsFormsApplication1
                 "SELECT ID, ID_Pufferspeicher, Pufferspeicher, Vorlauf, Ruecklauf, Prioritaet, " +
                 "       Schwelle_Ein, Schwelle_Aus " +
                 "FROM Z_ProjektPufferSp WHERE ID_Projekt = ? AND Erzeuger = ? ORDER BY Prioritaet, ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@erz", ERZEUGER_WAERMEPUMPE));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@erz", ERZEUGER_WAERMEPUMPE));
 
             if (z == null) return false;
             if (z.Rows.Count == 0) return true;
@@ -13301,15 +13301,15 @@ namespace WindowsFormsApplication1
                 int n = NonQuery(l,
                     "UPDATE Tab_Pufferspeicher SET Verwendung = ?, Vorlauf = ?, Ruecklauf = ?, " +
                     "Schwelle_Ein = ?, Schwelle_Aus = ?, Schwelle_Aus_Nachrang = ? WHERE ID = ?",
-                    new OleDbParameter("@verw", VERWENDUNG_HEIZUNG),
-                    Par("@vor", OleDbType.Integer, paar ? (object)zVor.Value : DBNull.Value),
-                    Par("@rue", OleDbType.Integer, paar ? (object)zRue.Value : DBNull.Value),
-                    Par("@sEin", OleDbType.Double, Wert(erste, "Schwelle_Ein")),
-                    Par("@sAus", OleDbType.Double, sAus),
+                    new DbParam("@verw", VERWENDUNG_HEIZUNG),
+                    Par("@vor", DbParamTyp.Integer, paar ? (object)zVor.Value : DBNull.Value),
+                    Par("@rue", DbParamTyp.Integer, paar ? (object)zRue.Value : DBNull.Value),
+                    Par("@sEin", DbParamTyp.Double, Wert(erste, "Schwelle_Ein")),
+                    Par("@sAus", DbParamTyp.Double, sAus),
                     // Ohne Reservezone: nachrangige Erzeuger schalten bei derselben
                     // Schwelle ab wie der vorrangige -> verhaltensneutral (Konzept 3.4).
-                    Par("@sNach", OleDbType.Double, sAus),
-                    new OleDbParameter("@id", idPuffer));
+                    Par("@sNach", DbParamTyp.Double, sAus),
+                    new DbParam("@id", idPuffer));
 
                 if (n >= 0 && !paar)
                     Hinweis(l, "Projekt " + idProjekt + " R1: Zuordnung " + idZuordnung +
@@ -13328,10 +13328,10 @@ namespace WindowsFormsApplication1
                     int nAnlagen = NonQuery(l,
                         "UPDATE Tab_Energieanlagen SET WS_Ziel = ?, WS_ID_Puffer = ? " +
                         "WHERE ID_Projekt = ? AND ID_Type = ?",
-                        new OleDbParameter("@ziel", WS_ZIEL_PUFFER_HEIZUNG),
-                        new OleDbParameter("@puf", idPuffer),
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@typ", TYP_WP));
+                        new DbParam("@ziel", WS_ZIEL_PUFFER_HEIZUNG),
+                        new DbParam("@puf", idPuffer),
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@typ", TYP_WP));
 
                     if (nAnlagen < 0) ok = false;
                     else
@@ -13375,8 +13375,8 @@ namespace WindowsFormsApplication1
             {
                 object treffer = Scalar(l,
                     "SELECT ID FROM Tab_Pufferspeicher WHERE ID = ? AND ID_Projekt = ?",
-                    new OleDbParameter("@id", idPuffer),
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@id", idPuffer),
+                    new DbParam("@proj", idProjekt));
                 if (treffer != null) return Zahl(treffer);
             }
 
@@ -13384,8 +13384,8 @@ namespace WindowsFormsApplication1
             {
                 object ueberNamen = Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezeichner));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezeichner));
                 if (ueberNamen != null) return Zahl(ueberNamen);
             }
 
@@ -13406,8 +13406,8 @@ namespace WindowsFormsApplication1
             DataTable z = Abfrage(l,
                 "SELECT ID, Erzeuger, Pufferspeicher FROM Z_ProjektPufferSp " +
                 "WHERE ID_Projekt = ? AND (Erzeuger IS NULL OR Erzeuger <> ?) ORDER BY Prioritaet, ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@erz", ERZEUGER_WAERMEPUMPE));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@erz", ERZEUGER_WAERMEPUMPE));
 
             if (z == null) return;
 
@@ -13429,8 +13429,8 @@ namespace WindowsFormsApplication1
             DataTable q = Abfrage(l,
                 "SELECT ID, Bezeichner, WQ_Puffer FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND WQ_Typ = ? AND WQ_Puffer IS NOT NULL ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", WaermequelleClass.TYP_PUFFER));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", WaermequelleClass.TYP_PUFFER));
 
             if (q == null) return false;
 
@@ -13443,8 +13443,8 @@ namespace WindowsFormsApplication1
 
                 object treffer = Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer));
 
                 int idPuffer = Zahl(treffer);
                 if (idPuffer <= 0)
@@ -13458,8 +13458,8 @@ namespace WindowsFormsApplication1
                 }
 
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET WQ_ID_Puffer = ? WHERE ID = ?",
-                             new OleDbParameter("@puf", idPuffer),
-                             new OleDbParameter("@id", idAnlage)) < 0)
+                             new DbParam("@puf", idPuffer),
+                             new DbParam("@id", idAnlage)) < 0)
                 {
                     ok = false;
                     continue;
@@ -13500,7 +13500,7 @@ namespace WindowsFormsApplication1
             DataTable puffer = Abfrage(l,
                 "SELECT Bezeichner, MIN(ID) AS ErsteID FROM Tab_Pufferspeicher " +
                 "WHERE ID_Projekt = ? GROUP BY Bezeichner",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (puffer == null) return false;
 
@@ -13519,9 +13519,9 @@ namespace WindowsFormsApplication1
                 object vorhanden = Scalar(l,
                     "SELECT COUNT(*) FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@typ", TYP_PUFFER),
-                    new OleDbParameter("@bez", bez));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", TYP_PUFFER),
+                    new DbParam("@bez", bez));
 
                 if (Zahl(vorhanden) > 0)
                 {
@@ -13541,10 +13541,10 @@ namespace WindowsFormsApplication1
                         "UPDATE Tab_Energieanlagen SET ID_PUFFER = ? " +
                         "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? " +
                         "  AND (ID_PUFFER IS NULL OR ID_PUFFER = 0)",
-                        new OleDbParameter("@puf", idPuffer),
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@typ", TYP_PUFFER),
-                        new OleDbParameter("@bez", bez));
+                        new DbParam("@puf", idPuffer),
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@typ", TYP_PUFFER),
+                        new DbParam("@bez", bez));
 
                     if (n < 0) { ok = false; continue; }
                     if (n > 0)
@@ -13604,8 +13604,8 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_Energieanlagen SET WS_Ziel = ? WHERE ID_Projekt = ? " +
                 "AND ID_Type IN (" + TYP_WP + "," + TYP_SOLARTHERMIE + "," + TYP_KESSEL + "," + TYP_BHKW + ") " +
                 "AND (WS_Ziel IS NULL OR WS_Ziel = '')",
-                new OleDbParameter("@ziel", WS_ZIEL_HEIZKREIS),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@ziel", WS_ZIEL_HEIZKREIS),
+                new DbParam("@proj", idProjekt));
 
             if (nHeizkreis < 0) ok = false; else DatenAnlagenHeizkreis += nHeizkreis;
 
@@ -13614,17 +13614,17 @@ namespace WindowsFormsApplication1
             {
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET [" + spalte + "] = 0 " +
                                 "WHERE ID_Projekt = ? AND [" + spalte + "] IS NULL",
-                             new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                             new DbParam("@proj", idProjekt)) < 0) ok = false;
             }
 
             if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Entladeprio = 0 " +
                             "WHERE ID_Projekt = ? AND Entladeprio IS NULL",
-                         new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                         new DbParam("@proj", idProjekt)) < 0) ok = false;
 
             if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Schwelle_Aus_Nachrang = Schwelle_Aus " +
                             "WHERE ID_Projekt = ? AND Schwelle_Aus_Nachrang IS NULL " +
                             "AND Schwelle_Aus IS NOT NULL",
-                         new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                         new DbParam("@proj", idProjekt)) < 0) ok = false;
 
             return ok;
         }
@@ -13648,14 +13648,14 @@ namespace WindowsFormsApplication1
         private static bool Regel6_BhkwPendelspeicher(Lauf l, int idProjekt)
         {
             object roh = Scalar(l, "SELECT TOP 1 Pendelspeicher FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                                new OleDbParameter("@proj", idProjekt));
+                                new DbParam("@proj", idProjekt));
             double volumenM3 = Kommazahl(roh);
             if (volumenM3 <= 0) return true;
 
             int anzahlBhkw = Zahl(Scalar(l,
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", TYP_BHKW)));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", TYP_BHKW)));
 
             if (anzahlBhkw == 0)
             {
@@ -13669,8 +13669,8 @@ namespace WindowsFormsApplication1
 
             int idPuffer = Zahl(Scalar(l,
                 "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@bez", BEZ_PENDELSPEICHER)));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@bez", BEZ_PENDELSPEICHER)));
 
             if (idPuffer > 0)
             {
@@ -13678,8 +13678,8 @@ namespace WindowsFormsApplication1
                 // vorhandenen Speichers bleibt stehen - es ist die jüngere Angabe.
                 if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Verwendung = ? " +
                                 "WHERE ID = ? AND (Verwendung IS NULL OR Verwendung = '')",
-                             new OleDbParameter("@verw", VERWENDUNG_HEIZUNG),
-                             new OleDbParameter("@id", idPuffer)) < 0) return false;
+                             new DbParam("@verw", VERWENDUNG_HEIZUNG),
+                             new DbParam("@id", idPuffer)) < 0) return false;
 
                 l.Notiz("Projekt " + idProjekt + " R6: vorhandener Puffer '" + BEZ_PENDELSPEICHER +
                         "' (ID " + idPuffer + ") wiederverwendet.");
@@ -13765,9 +13765,9 @@ namespace WindowsFormsApplication1
         /// <see cref="DBNull"/> sein kann: aus DBNull allein kann der OLE-DB-Provider
         /// den Spaltentyp nicht ableiten.
         /// </summary>
-        private static OleDbParameter Par(string name, OleDbType typ, object wert)
+        private static DbParam Par(string name, DbParamTyp typ, object wert)
         {
-            return new OleDbParameter(name, typ) { Value = wert ?? DBNull.Value };
+            return new DbParam(name, typ) { Wert = wert ?? DBNull.Value };
         }
 
         // =================================================================================
@@ -13939,13 +13939,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static int NonQuery(Lauf l, string sql, params OleDbParameter[] p)
+        private static int NonQuery(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
                     return cmd.ExecuteNonQuery();
                 }
             }
@@ -13957,13 +13959,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static object Scalar(Lauf l, string sql, params OleDbParameter[] p)
+        private static object Scalar(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
                     object v = cmd.ExecuteScalar();
                     return v == DBNull.Value ? null : v;
                 }
@@ -13975,14 +13979,16 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static DataTable Abfrage(Lauf l, string sql, params OleDbParameter[] p)
+        private static DataTable Abfrage(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 var dt = new DataTable();
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
                     using (var adapter = new OleDbDataAdapter(cmd)) adapter.Fill(dt);
                 }
                 return dt;

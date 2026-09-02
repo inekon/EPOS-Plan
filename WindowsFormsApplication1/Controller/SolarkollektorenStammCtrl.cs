@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -44,7 +43,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(string szName)
         {
             string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", szName ?? (object)DBNull.Value));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@bez", szName ?? (object)DBNull.Value));
 
             rows = 0;
             if (dt != null && dt.Rows.Count > 0)
@@ -60,7 +59,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -68,7 +67,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -83,23 +82,23 @@ namespace WindowsFormsApplication1
                              h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf, ReadOnly)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@bez", this.m_szKollektorname ?? ""),
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@bes", (object)(this.m_szBeschreibung ?? "")),
-                new OleDbParameter("@typ", (object)(this.m_szKollektortyp ?? "")),
-                new OleDbParameter("@mfl", this.m_Modulfläche),
-                new OleDbParameter("@afl", this.m_Aperturfläche),
-                new OleDbParameter("@h0", this.m_h0),
-                new OleDbParameter("@k1", this.m_k1),
-                new OleDbParameter("@k2", this.m_k2),
-                new OleDbParameter("@kdir", this.m_Kdir),
-                new OleDbParameter("@kdfu", this.m_Kdfu),
-                new OleDbParameter("@inv", this.m_Kosten),
-                new OleDbParameter("@vor", (int)this.m_Vorlauf),
-                new OleDbParameter("@rue", (int)this.m_Ruecklauf),
-                new OleDbParameter("@ro", false)
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@bez", this.m_szKollektorname ?? ""),
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@bes", (object)(this.m_szBeschreibung ?? "")),
+                new DbParam("@typ", (object)(this.m_szKollektortyp ?? "")),
+                new DbParam("@mfl", this.m_Modulfläche),
+                new DbParam("@afl", this.m_Aperturfläche),
+                new DbParam("@h0", this.m_h0),
+                new DbParam("@k1", this.m_k1),
+                new DbParam("@k2", this.m_k2),
+                new DbParam("@kdir", this.m_Kdir),
+                new DbParam("@kdfu", this.m_Kdfu),
+                new DbParam("@inv", this.m_Kosten),
+                new DbParam("@vor", (int)this.m_Vorlauf),
+                new DbParam("@rue", (int)this.m_Ruecklauf),
+                new DbParam("@ro", false)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -126,21 +125,21 @@ namespace WindowsFormsApplication1
                             Vorlauf = ?, Ruecklauf = ?
                           WHERE Bezeichner = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@bes", (object)(this.m_szBeschreibung ?? "")),
-                new OleDbParameter("@typ", (object)(this.m_szKollektortyp ?? "")),
-                new OleDbParameter("@mfl", this.m_Modulfläche),
-                new OleDbParameter("@afl", this.m_Aperturfläche),
-                new OleDbParameter("@h0", this.m_h0),
-                new OleDbParameter("@k1", this.m_k1),
-                new OleDbParameter("@k2", this.m_k2),
-                new OleDbParameter("@kdir", this.m_Kdir),
-                new OleDbParameter("@kdfu", this.m_Kdfu),
-                new OleDbParameter("@inv", this.m_Kosten),
-                new OleDbParameter("vl", this.m_Vorlauf),
-                new OleDbParameter("rl", this.m_Ruecklauf),
-                new OleDbParameter("@bez", this.m_szKollektorname ?? "")
+            DbParam[] ps = {
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@bes", (object)(this.m_szBeschreibung ?? "")),
+                new DbParam("@typ", (object)(this.m_szKollektortyp ?? "")),
+                new DbParam("@mfl", this.m_Modulfläche),
+                new DbParam("@afl", this.m_Aperturfläche),
+                new DbParam("@h0", this.m_h0),
+                new DbParam("@k1", this.m_k1),
+                new DbParam("@k2", this.m_k2),
+                new DbParam("@kdir", this.m_Kdir),
+                new DbParam("@kdfu", this.m_Kdfu),
+                new DbParam("@inv", this.m_Kosten),
+                new DbParam("vl", this.m_Vorlauf),
+                new DbParam("rl", this.m_Ruecklauf),
+                new DbParam("@bez", this.m_szKollektorname ?? "")
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -166,19 +165,19 @@ namespace WindowsFormsApplication1
                             Vorlauf = ?, Ruecklauf = ?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@typ", (object)(this.m_szKollektortyp ?? "")),
-                new OleDbParameter("@mfl", this.m_Modulfläche),
-                new OleDbParameter("@afl", this.m_Aperturfläche),
-                new OleDbParameter("@h0", this.m_h0),
-                new OleDbParameter("@k1", this.m_k1),
-                new OleDbParameter("@k2", this.m_k2),
-                new OleDbParameter("@kdir", this.m_Kdir),
-                new OleDbParameter("@kdfu", this.m_Kdfu),
-                new OleDbParameter("@vor", (int)this.m_Vorlauf),
-                new OleDbParameter("@rue", (int)this.m_Ruecklauf),
-                new OleDbParameter("@id", id)
+            DbParam[] ps = {
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@typ", (object)(this.m_szKollektortyp ?? "")),
+                new DbParam("@mfl", this.m_Modulfläche),
+                new DbParam("@afl", this.m_Aperturfläche),
+                new DbParam("@h0", this.m_h0),
+                new DbParam("@k1", this.m_k1),
+                new DbParam("@k2", this.m_k2),
+                new DbParam("@kdir", this.m_Kdir),
+                new DbParam("@kdfu", this.m_Kdfu),
+                new DbParam("@vor", (int)this.m_Vorlauf),
+                new DbParam("@rue", (int)this.m_Ruecklauf),
+                new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -194,7 +193,7 @@ namespace WindowsFormsApplication1
             }
 
             string sql = "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", szName ?? ""));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@bez", szName ?? ""));
         }
 
         // --- MAPPING ---

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -33,10 +32,10 @@ namespace WindowsFormsApplication1
                 // Standardkonformes DELETE ohne "*" und typsichere Parameterübergabe
                 string sql = "DELETE FROM Tab_SolarganglinieDaten WHERE ID_Ganglinie = ?";
 
-                OleDbParameter paramId = new OleDbParameter("@idGang", OleDbType.Integer);
-                paramId.Value = m_ID_GanglinieDaten;
+                DbParam paramId = new DbParam("@idGang", DbParamTyp.Integer);
+                paramId.Wert = m_ID_GanglinieDaten;
 
-                OleDbParameter[] ps = { paramId };
+                DbParam[] ps = { paramId };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -64,8 +63,8 @@ namespace WindowsFormsApplication1
                         foreach (var item in list_GanglinieDaten)
                         {
                             v.Ausfuehren(sqlInsert,
-                                new OleDbParameter("@id", OleDbType.Integer) { Value = item.m_ID_GanglinieDaten },
-                                new OleDbParameter("@wert", OleDbType.Double) { Value = item.m_Wert });
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = item.m_ID_GanglinieDaten },
+                                new DbParam("@wert", DbParamTyp.Double) { Wert = item.m_Wert });
                         }
 
                         // Erst jetzt wird die Änderung physikalisch gespeichert

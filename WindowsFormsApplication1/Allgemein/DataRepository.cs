@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
@@ -14,14 +13,20 @@ namespace WindowsFormsApplication1
     // =====================================================================================
     // ARBEITSPAKET S4a (Implementierungskonzept DB-Migration SQLite, Abschnitt 2):
     // Die Zugriffsschicht spricht ab hier Microsoft.Data.Sqlite. Uebersetzt wird INNEN -
-    // die oeffentlichen Signaturen bleiben, insbesondere bleibt OleDbParameter der reine
-    // DATENTRAEGER an den ~2.300 Aufrufstellen im Bestand. OleDb bindet rein nach
-    // POSITION; die Parameternamen im Bestand sind beliebig ("?", "@p", "@id"). Der
-    // Uebersetzer wertet die Namen deshalb NICHT aus, sondern nummeriert strikt nach
-    // Reihenfolge (? -> @p0 ... @pN, Parameterarray -> @p0 ... @pN).
+    // die oeffentlichen Signaturen bleiben, und der reine DATENTRAEGER an den ~2.300
+    // Aufrufstellen im Bestand bleibt es auch. OleDb band rein nach POSITION; die
+    // Parameternamen im Bestand sind beliebig ("?", "@p", "@id"). Der Uebersetzer wertet
+    // die Namen deshalb NICHT aus, sondern nummeriert strikt nach Reihenfolge
+    // (? -> @p0 ... @pN, Parameterarray -> @p0 ... @pN).
     //
     // NICHT geaendert wurden: Engine-Modus, FehlerMelden, StilleFehlerAbholen, KurzSql,
     // saemtliche Fehlermeldungs-Wortlaute und die Rueckgabewerte im Fehlerfall.
+    //
+    // ARBEITSPAKET iU6 (Umsetzungskonzept iOS 1.4, iF10): Der Datentraeger ist nicht mehr
+    // OleDbParameter, sondern DbParam - "new OleDbParameter(...)" wirft auf Linux/macOS
+    // schon im Konstruktor (Entscheidungsregister 2.2, Messung B). Der Uebersetzer
+    // arbeitet unveraendert: dieselbe Positionsnummerierung, dieselbe Normalisierung.
+    // Altaufrufe mit OleDbParameter kompilieren ueber die Bruecke in DbParam weiter.
     // =====================================================================================
 
     public static class DataRepository
@@ -323,14 +328,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Uebersetzt die Datentraeger-Parameter des Bestands. Die NAMEN der
         /// Quellparameter werden bewusst IGNORIERT - OleDb band rein positionsweise,
-        /// und der Bestand nutzt beliebige Namen fuer dieselbe Stelle.
+        /// und der Bestand nutzt beliebige Namen fuer dieselbe Stelle. Unveraendert
+        /// gueltig fuer <see cref="DbParam"/> (iU6).
         /// </summary>
-        private static SqliteParameter[] UebersetzeParameter(OleDbParameter[] quelle)
+        private static SqliteParameter[] UebersetzeParameter(DbParam[] quelle)
         {
             if (quelle == null || quelle.Length == 0) return Array.Empty<SqliteParameter>();
             SqliteParameter[] ziel = new SqliteParameter[quelle.Length];
             for (int i = 0; i < quelle.Length; i++)
-                ziel[i] = new SqliteParameter("@p" + i, NormalisiereWert(quelle[i] == null ? null : quelle[i].Value));
+                ziel[i] = new SqliteParameter("@p" + i, NormalisiereWert(quelle[i] == null ? null : quelle[i].Wert));
             return ziel;
         }
 
@@ -340,7 +346,7 @@ namespace WindowsFormsApplication1
         /// Uebersetzung nutzt und nicht eine zweite Fassung davon entsteht.
         /// </summary>
         internal static SqliteCommand ErzeugeKommando(SqliteConnection verbindung, SqliteTransaction transaktion,
-                                                      string sql, OleDbParameter[] parameter)
+                                                      string sql, DbParam[] parameter)
         {
             SqliteCommand cmd = verbindung.CreateCommand();
             cmd.CommandText = UebersetzeParameterzeichen(sql);
@@ -509,7 +515,7 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         // Für SELECT-Abfragen: Liefert Daten in den Arbeitsspeicher
-        public static DataTable GetDataTable(string sql, params OleDbParameter[] parameters)
+        public static DataTable GetDataTable(string sql, params DbParam[] parameters)
         {
             try
             {
@@ -542,7 +548,7 @@ namespace WindowsFormsApplication1
         }
 
         // Für INSERT, UPDATE, DELETE
-        public static bool ExecuteSQL(string sql, params OleDbParameter[] parameters)
+        public static bool ExecuteSQL(string sql, params DbParam[] parameters)
         {
             try
             {
@@ -561,7 +567,7 @@ namespace WindowsFormsApplication1
         }
 
         // Für INSERT, UPDATE, DELETE – gibt die Anzahl der betroffenen Zeilen zurück
-        public static int ExecuteNonQuery(string sql, params OleDbParameter[] parameters)
+        public static int ExecuteNonQuery(string sql, params DbParam[] parameters)
         {
             try
             {
@@ -581,7 +587,7 @@ namespace WindowsFormsApplication1
         }
 
         // Signatur bewusst OHNE params - 7 Aufrufstellen verlassen sich darauf.
-        public static int ExecuteInsertAndGetId(string insertSql, OleDbParameter[] parameters)
+        public static int ExecuteInsertAndGetId(string insertSql, DbParam[] parameters)
         {
             try
             {
@@ -609,7 +615,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public static object ExecuteScalar(string sql, params OleDbParameter[] parameters)
+        public static object ExecuteScalar(string sql, params DbParam[] parameters)
         {
             try
             {
@@ -711,7 +717,7 @@ namespace WindowsFormsApplication1
         {
             object treffer = ExecuteScalar(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type IN ('table','view') AND name = ?",
-                new OleDbParameter("?", name ?? string.Empty));
+                new DbParam("?", name ?? string.Empty));
             return treffer != null && Convert.ToInt32(treffer) > 0;
         }
 
@@ -730,7 +736,7 @@ namespace WindowsFormsApplication1
             List<string> spalten = new List<string>();
             DataTable dt = GetDataTable(
                 "SELECT name FROM pragma_table_info(?) ORDER BY cid",
-                new OleDbParameter("?", tabelle ?? string.Empty));
+                new DbParam("?", tabelle ?? string.Empty));
             foreach (DataRow zeile in dt.Rows)
             {
                 if (zeile["name"] == DBNull.Value) continue;
@@ -752,7 +758,7 @@ namespace WindowsFormsApplication1
                 "FROM pragma_index_list(?) AS il " +
                 "LEFT JOIN pragma_index_info(il.name) AS ii " +
                 "ORDER BY il.seq, ii.seqno",
-                new OleDbParameter("?", tabelle ?? string.Empty));
+                new DbParam("?", tabelle ?? string.Empty));
         }
 
         /// <summary>
@@ -766,7 +772,7 @@ namespace WindowsFormsApplication1
                 "       on_update AS BeiAenderung, on_delete AS BeiLoeschung " +
                 "FROM pragma_foreign_key_list(?) " +
                 "ORDER BY id, seq",
-                new OleDbParameter("?", tabelle ?? string.Empty));
+                new DbParam("?", tabelle ?? string.Empty));
         }
 
 
@@ -797,11 +803,11 @@ namespace WindowsFormsApplication1
                 {
                     // 1. Details löschen (z.B. project_settings)
                     vorgang.Ausfuehren($"DELETE FROM {detailTable} WHERE {detailForeignKey} = ?",
-                                       new OleDbParameter("?", masterId));
+                                       new DbParam("?", masterId));
 
                     // 2. Master löschen (z.B. energy_carrier)
                     vorgang.Ausfuehren($"DELETE FROM {masterTable} WHERE ID = ?",
-                                       new OleDbParameter("?", masterId));
+                                       new DbParam("?", masterId));
 
                     vorgang.Commit();
                     return true;
@@ -820,14 +826,14 @@ namespace WindowsFormsApplication1
         public static int GetIdByName(string tableName, string nameField, string nameValue)
         {
             string sql = $"SELECT ID FROM {tableName} WHERE {nameField} = ?";
-            object result = ExecuteScalar(sql, new OleDbParameter("?", nameValue));
+            object result = ExecuteScalar(sql, new DbParam("?", nameValue));
             return result != null ? Convert.ToInt32(result) : -1;
         }
 
         public static object GetValueById(string tableName, string nameField, int id)
         {
             string sql = $"SELECT {nameField} FROM {tableName} WHERE id = ?";
-            object result = ExecuteScalar(sql, new OleDbParameter("?", id));
+            object result = ExecuteScalar(sql, new DbParam("?", id));
             return result;
         }
     }

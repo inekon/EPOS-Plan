@@ -82,9 +82,13 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
 `PRAGMA foreign_keys = ON` je Verbindung); den Verbindungsstring baut zentral `GetConnectionString()`.
-Die öffentliche Fläche ist bewusst unverändert geblieben: Die Ausführungsmethoden nehmen weiterhin
-`params OleDbParameter[]` als reinen **Datenträger** (Paket `System.Data.OleDb` bleibt deshalb
-referenziert), übersetzt wird innen (`?` → `@pN`, `UebersetzeParameterzeichen`). Transaktionen
+Die Ausführungsmethoden nehmen seit 02.09.2026 `params DbParam[]` (`Allgemein/DbParam.cs`, eigener
+Parametertyp mit `DbParamTyp`-Enum) — **nicht mehr `OleDbParameter`**, das auf Nicht-Windows schon im
+Konstruktor `PlatformNotSupportedException` wirft. Übersetzt wird innen (`?` → `@pN`,
+`UebersetzeParameterzeichen`). Eine implizite Brücke `OleDbParameter → DbParam` (und `DbParam.Von(…)`
+für Arrays) hält die 432 Altaufrufe unter `Views/` lauffähig, bis sie mit ihren Masken umgestellt
+werden (iU9); **neuer Code nutzt ausschließlich `new DbParam(…)`**. `System.Data.OleDb` bleibt nur
+noch wegen der Brücke, `RecordSet.DBCommand` (iR8) und des `.accdb`-Migrationspfads referenziert. Transaktionen
 laufen über `DbVorgang`. `RecordSet.cs` (string-konkateniertes SQL, 47 echte Nutzer) ist Altbestand,
 innen ebenfalls auf SQLite, die Property `DBCommand` bleibt `OleDbCommand`. Neuer Code
 ausschließlich über `DataRepository`; das Ziel `IDatenzugriff`/`DbParam` steht im
@@ -136,10 +140,11 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
 - Die früheren Altkopien `..\WindowsFormsApplication1 - Kopie` und
   `..\mit_Puffer_KI_Lösungsversuch` (alte Vollkopien mit fast identischen Dateinamen) wurden am
   29.08.2026 entsorgt — die Verwechslungsgefahr beim Suchen/Greppen besteht nicht mehr.
-- **Alle `.cs`-Dateien sind seit dem 02.09.2026 UTF-8 mit BOM** (Paket iU1-P1.12: 68 cp1252-Dateien
-  einmalig umkodiert; Vorgabe steht in `..\.editorconfig`, `charset = utf-8-bom`). Die frühere
-  Kodierungsfalle beim Bearbeiten — vorhandene Kodierung erraten und beibehalten — ist damit
-  Geschichte. Neue Dateien in derselben Kodierung anlegen.
+- **Alle `.cs`-Dateien sind seit dem 02.09.2026 UTF-8** (Paket iU1-P1.12: 68 cp1252-Dateien
+  umkodiert). Die `.editorconfig` verlangt für neue `.cs` UTF-8 **mit** BOM; im Bestand tragen
+  455 von 573 Dateien eine BOM, 118 nicht — das ist unschädlich (UTF-8 ohne BOM ist eindeutig),
+  beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
+  (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
 - **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
   in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch.
 - **`app.config`** enthält einen toten absoluten Beispielpfad zur `.accdb`; der echte Pfad wird zur

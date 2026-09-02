@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -51,7 +50,7 @@ namespace WindowsFormsApplication1
         {
             _internalList.Clear();
             string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", szName ?? (object)DBNull.Value));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@bez", szName ?? (object)DBNull.Value));
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -65,7 +64,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -73,7 +72,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -85,7 +84,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -110,25 +109,25 @@ namespace WindowsFormsApplication1
                              I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten, ReadOnly)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@bez", this.m_szName ?? ""),
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@bes", (object)(this.m_szBeschreibung ?? "")),
-                new OleDbParameter("@lei", this.m_Leistung),
-                new OleDbParameter("@wir", this.m_Wirkungsgrad),
-                new OleDbParameter("@ump", this.m_U_Mpp),
-                new OleDbParameter("@ule", this.m_U_Leerlauf),
-                new OleDbParameter("@imp", this.m_I_Mpp),
-                new OleDbParameter("@iks", this.m_I_Kurzschluss),
-                new OleDbParameter("@asc", this.m_alpha_SC),
-                new OleDbParameter("@boc", this.m_beta_OC),
-                new OleDbParameter("@gam", this.m_Temp_Coeff_Pmax),
-                new OleDbParameter("@noc", this.m_T_NOCT),
-                new OleDbParameter("@lae", this.m_Laenge),
-                new OleDbParameter("@bre", this.m_Breite),
-                new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@ro", false)
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@bez", this.m_szName ?? ""),
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@bes", (object)(this.m_szBeschreibung ?? "")),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@wir", this.m_Wirkungsgrad),
+                new DbParam("@ump", this.m_U_Mpp),
+                new DbParam("@ule", this.m_U_Leerlauf),
+                new DbParam("@imp", this.m_I_Mpp),
+                new DbParam("@iks", this.m_I_Kurzschluss),
+                new DbParam("@asc", this.m_alpha_SC),
+                new DbParam("@boc", this.m_beta_OC),
+                new DbParam("@gam", this.m_Temp_Coeff_Pmax),
+                new DbParam("@noc", this.m_T_NOCT),
+                new DbParam("@lae", this.m_Laenge),
+                new DbParam("@bre", this.m_Breite),
+                new DbParam("@mod", this.m_Modulkosten),
+                new DbParam("@ro", false)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -152,7 +151,7 @@ namespace WindowsFormsApplication1
             List<int> ids = new List<int>();
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
 
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
@@ -241,24 +240,24 @@ namespace WindowsFormsApplication1
                             Laenge = ?, Breite = ?, Modulkosten = ?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@bez", this.m_szName ?? ""),
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@bes", (object)(this.m_szBeschreibung ?? "")),
-                new OleDbParameter("@lei", this.m_Leistung),
-                new OleDbParameter("@wir", this.m_Wirkungsgrad),
-                new OleDbParameter("@ump", this.m_U_Mpp),
-                new OleDbParameter("@ule", this.m_U_Leerlauf),
-                new OleDbParameter("@imp", this.m_I_Mpp),
-                new OleDbParameter("@iks", this.m_I_Kurzschluss),
-                new OleDbParameter("@asc", this.m_alpha_SC),
-                new OleDbParameter("@boc", this.m_beta_OC),
-                new OleDbParameter("@gam", this.m_Temp_Coeff_Pmax),
-                new OleDbParameter("@noc", this.m_T_NOCT),
-                new OleDbParameter("@lae", this.m_Laenge),
-                new OleDbParameter("@bre", this.m_Breite),
-                new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@id", id)
+            DbParam[] ps = {
+                new DbParam("@bez", this.m_szName ?? ""),
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@bes", (object)(this.m_szBeschreibung ?? "")),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@wir", this.m_Wirkungsgrad),
+                new DbParam("@ump", this.m_U_Mpp),
+                new DbParam("@ule", this.m_U_Leerlauf),
+                new DbParam("@imp", this.m_I_Mpp),
+                new DbParam("@iks", this.m_I_Kurzschluss),
+                new DbParam("@asc", this.m_alpha_SC),
+                new DbParam("@boc", this.m_beta_OC),
+                new DbParam("@gam", this.m_Temp_Coeff_Pmax),
+                new DbParam("@noc", this.m_T_NOCT),
+                new DbParam("@lae", this.m_Laenge),
+                new DbParam("@bre", this.m_Breite),
+                new DbParam("@mod", this.m_Modulkosten),
+                new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -285,21 +284,21 @@ namespace WindowsFormsApplication1
                             Laenge = ?, Breite = ?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@fir", (object)(this.m_szFirma ?? "")),
-                new OleDbParameter("@lei", this.m_Leistung),
-                new OleDbParameter("@wir", this.m_Wirkungsgrad),
-                new OleDbParameter("@ump", this.m_U_Mpp),
-                new OleDbParameter("@ule", this.m_U_Leerlauf),
-                new OleDbParameter("@imp", this.m_I_Mpp),
-                new OleDbParameter("@iks", this.m_I_Kurzschluss),
-                new OleDbParameter("@asc", this.m_alpha_SC),
-                new OleDbParameter("@boc", this.m_beta_OC),
-                new OleDbParameter("@gam", this.m_Temp_Coeff_Pmax),
-                new OleDbParameter("@noc", this.m_T_NOCT),
-                new OleDbParameter("@lae", this.m_Laenge),
-                new OleDbParameter("@bre", this.m_Breite),
-                new OleDbParameter("@id", id)
+            DbParam[] ps = {
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@wir", this.m_Wirkungsgrad),
+                new DbParam("@ump", this.m_U_Mpp),
+                new DbParam("@ule", this.m_U_Leerlauf),
+                new DbParam("@imp", this.m_I_Mpp),
+                new DbParam("@iks", this.m_I_Kurzschluss),
+                new DbParam("@asc", this.m_alpha_SC),
+                new DbParam("@boc", this.m_beta_OC),
+                new DbParam("@gam", this.m_Temp_Coeff_Pmax),
+                new DbParam("@noc", this.m_T_NOCT),
+                new DbParam("@lae", this.m_Laenge),
+                new DbParam("@bre", this.m_Breite),
+                new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -329,7 +328,7 @@ namespace WindowsFormsApplication1
             }
 
             string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", id));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
         }
 
         // --- MAPPING ---

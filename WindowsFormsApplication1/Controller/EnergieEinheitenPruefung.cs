@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -242,7 +241,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
                     SchemaKatalog.SPALTE_EC_AKTIV + "] FROM [" +
                     SchemaKatalog.ENERGY_CONVERSION + "] WHERE id_brennstoff = ? ORDER BY ID",
-                    new OleDbParameter("@b", idBrennstoff));
+                    new DbParam("@b", idBrennstoff));
 
                 if (dt == null) return liste;
 
@@ -606,8 +605,8 @@ namespace WindowsFormsApplication1
                 "WHERE ea.ID_Projekt = ?";
 
             DataTable dt = Abfrage( sql,
-                new OleDbParameter("@p1", idProjekt),
-                new OleDbParameter("@p2", idProjekt));
+                new DbParam("@p1", idProjekt),
+                new DbParam("@p2", idProjekt));
 
             // Eine Datenbank ohne ID_Carrier (vor Migrationsschritt 8) lässt den zweiten
             // Zweig scheitern und mit ihm die ganze UNION. Dann bleibt die gepflegte
@@ -618,7 +617,7 @@ namespace WindowsFormsApplication1
                     "FROM [" + SchemaKatalog.ENERGY_CARRIER + "] AS ec " +
                     "INNER JOIN [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS + "] AS eps " +
                     "ON eps.[ID_Energieträger] = ec.id WHERE eps.ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
 
             return dt;
         }
@@ -633,7 +632,7 @@ namespace WindowsFormsApplication1
             DataTable dt = Abfrage(
                 "SELECT to_unit FROM [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
                 "WHERE ID = ? AND [" + SchemaKatalog.SPALTE_EC_AKTIV + "] = TRUE AND factor > 0",
-                new OleDbParameter("@id", idUmrechnung));
+                new DbParam("@id", idUmrechnung));
 
             if (dt == null || dt.Rows.Count == 0) return "";
             return Text(dt.Rows[0], "to_unit");
@@ -769,7 +768,7 @@ namespace WindowsFormsApplication1
         /// Ausnahme nach außen — ARBEITSPAKET S4b: genau der Vertrag von
         /// <see cref="StilleDb.Tabelle"/>.</summary>
         private static DataTable Abfrage(string sql,
-                                         params OleDbParameter[] p)
+                                         params DbParam[] p)
         {
             return StilleDb.Tabelle(sql, p);
         }

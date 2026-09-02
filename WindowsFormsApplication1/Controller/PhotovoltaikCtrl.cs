@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
             _internalList.Clear();
 
             string sql = "SELECT * FROM Tab_PV WHERE ID = ?";
-            OleDbParameter parameter = new OleDbParameter("?", ID);
+            DbParam parameter = new DbParam("?", ID);
 
             DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
@@ -143,26 +143,26 @@ namespace WindowsFormsApplication1
                     WHERE 
                         Bezeichner = ?";
 
-                OleDbParameter[] parameters = new OleDbParameter[]
+                DbParam[] parameters = new DbParam[]
                 {
-                    new OleDbParameter("?", model.m_szFirma ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_szBeschreibung ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Leistung),
-                    new OleDbParameter("?", model.m_Wirkungsgrad),
-                    new OleDbParameter("?", model.m_U_Mpp),
-                    new OleDbParameter("?", model.m_U_Leerlauf),
-                    new OleDbParameter("?", model.m_I_Mpp),
-                    new OleDbParameter("?", model.m_I_Kurzschluss),
+                    new DbParam("?", model.m_szFirma ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_szBeschreibung ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Leistung),
+                    new DbParam("?", model.m_Wirkungsgrad),
+                    new DbParam("?", model.m_U_Mpp),
+                    new DbParam("?", model.m_U_Leerlauf),
+                    new DbParam("?", model.m_I_Mpp),
+                    new DbParam("?", model.m_I_Kurzschluss),
 
-                    new OleDbParameter("?", model.m_alpha_SC == 0 ? DBNull.Value : (object)model.m_alpha_SC),
-                    new OleDbParameter("?", model.m_beta_OC == 0 ? DBNull.Value : (object)model.m_beta_OC),
-                    new OleDbParameter("?", model.m_Temp_Coeff_Pmax == 0 ? DBNull.Value : (object)model.m_Temp_Coeff_Pmax),
-                    new OleDbParameter("?", model.m_T_NOCT == 0 ? DBNull.Value : (object)model.m_T_NOCT),
+                    new DbParam("?", model.m_alpha_SC == 0 ? DBNull.Value : (object)model.m_alpha_SC),
+                    new DbParam("?", model.m_beta_OC == 0 ? DBNull.Value : (object)model.m_beta_OC),
+                    new DbParam("?", model.m_Temp_Coeff_Pmax == 0 ? DBNull.Value : (object)model.m_Temp_Coeff_Pmax),
+                    new DbParam("?", model.m_T_NOCT == 0 ? DBNull.Value : (object)model.m_T_NOCT),
 
-                    new OleDbParameter("?", model.m_Laenge),
-                    new OleDbParameter("?", model.m_Breite),
-                    new OleDbParameter("?", model.m_Modulkosten),
-                    new OleDbParameter("?", model.m_szName ?? (object)DBNull.Value)
+                    new DbParam("?", model.m_Laenge),
+                    new DbParam("?", model.m_Breite),
+                    new DbParam("?", model.m_Modulkosten),
+                    new DbParam("?", model.m_szName ?? (object)DBNull.Value)
                 };
 
                 DataRepository.ExecuteNonQuery(sql, parameters);
@@ -217,6 +217,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
+<<<<<<< HEAD
                 string sql = "SELECT SUM(p.Leistung * a.PV_Leistung) " +
                              "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
                              "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
@@ -231,6 +232,14 @@ namespace WindowsFormsApplication1
                     ps.Add(new OleDbParameter("@a", idAnlage));
                 }
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
+=======
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT SUM(p.Leistung * a.PV_Leistung) " +
+                    "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                    new DbParam("@p", idProjekt),
+                    new DbParam("@t", WizardItemClass.PV_TYP));
+>>>>>>> 981cb84469444a37a96d6473b969ac40be717a51
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o) / 1000.0;
             }
             catch { return 0; }
@@ -241,8 +250,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_PV WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -261,7 +270,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + PhotovoltaikStammCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -286,9 +295,9 @@ namespace WindowsFormsApplication1
                      I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@fir", ColOrNull(s, "Firma")),
                     P("@bes", ColOrNull(s, "Beschreibung")),
@@ -328,13 +337,13 @@ namespace WindowsFormsApplication1
         {
             string sql = "DELETE FROM Tab_PV WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
-        private static OleDbParameter P(string name, object value)
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         private static object ColOrNull(DataRow row, string col)

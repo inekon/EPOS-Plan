@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -115,8 +114,8 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Prozesswaerme WHERE ID = ?";
 
-            OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
-            paramId.Value = ID_Prozesswaerme;
+            DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
+            paramId.Wert = ID_Prozesswaerme;
 
             DataTable dt = DataRepository.GetDataTable(sql, new[] { paramId });
 
@@ -141,8 +140,8 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Prozesswaerme WHERE Bezeichner = ?";
 
-            OleDbParameter paramName = new OleDbParameter("@name", OleDbType.VarWChar);
-            paramName.Value = szProzessname ?? (object)DBNull.Value;
+            DbParam paramName = new DbParam("@name", DbParamTyp.VarWChar);
+            paramName.Wert = szProzessname ?? (object)DBNull.Value;
 
             DataTable dt = DataRepository.GetDataTable(sql, new[] { paramName });
 

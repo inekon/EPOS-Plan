@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -203,7 +202,7 @@ namespace WindowsFormsApplication1
                 object n = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND [" + plan.Verweis + "] IS NOT NULL",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 return n != null && n != DBNull.Value && Convert.ToInt32(n) > 0;
             }
             catch { return false; }
@@ -248,7 +247,7 @@ namespace WindowsFormsApplication1
                     "      WHERE ID_Projekt = ? AND [" + plan.Verweis + "] IS NOT NULL " +
                     "      GROUP BY [" + plan.Verweis + "]) AS a " +
                     "     INNER JOIN [" + plan.Tabelle + "] AS g ON a.Geraet = g.ID",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
             }
             catch { return liste; }
 
@@ -577,7 +576,12 @@ namespace WindowsFormsApplication1
 
             try
             {
+<<<<<<< HEAD
                 var ps = new List<OleDbParameter> { new OleDbParameter("@p", projektID) };
+=======
+                string sql;
+                var ps = new List<DbParam> { new DbParam("@p", projektID) };
+>>>>>>> 981cb84469444a37a96d6473b969ac40be717a51
 
                 string wert = malModulanzahl
                     ? "g.[" + geraetespalte + "] * a.[" + plan.Mengenspalte + "]"
@@ -588,7 +592,7 @@ namespace WindowsFormsApplication1
                 if (idAnlage > 0)
                 {
                     sql += " AND a.ID = ?";
-                    ps.Add(new OleDbParameter("@a", idAnlage));
+                    ps.Add(new DbParam("@a", idAnlage));
                 }
 
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
@@ -682,7 +686,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable k = DataRepository.GetDataTable(
                     "SELECT ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 if (k != null && k.Rows.Count > 0)
                 {
                     idErgebnis = Ganz(k.Rows[0], "ID");
@@ -707,7 +711,7 @@ namespace WindowsFormsApplication1
                     "SELECT a.Bezeichner AS Anlage, b.Wartungskosten_kwhel AS Satz " +
                     "FROM Tab_Energieanlagen AS a INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_BHKW IS NOT NULL",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 if (g != null)
                     foreach (DataRow r in g.Rows)
                     {
@@ -730,7 +734,7 @@ namespace WindowsFormsApplication1
                     "FROM Tab_ErgebnisBHKW AS e INNER JOIN Tab_ErgebnisBHKWModul AS m " +
                     "     ON e.ID = m.ID_ErgebnisBHKW " +
                     "WHERE e.ID_Ergebnis = ?",
-                    new OleDbParameter("@e", (Int32)idErgebnis));
+                    new DbParam("@e", (Int32)idErgebnis));
             }
             catch { }
 
@@ -825,7 +829,7 @@ namespace WindowsFormsApplication1
                     "FROM (SELECT DISTINCT [ID_Kessel] FROM Tab_Energieanlagen " +
                     "      WHERE ID_Projekt = ? AND [ID_Kessel] IS NOT NULL) AS a " +
                     "     INNER JOIN [Tab_Heizkessel] AS k ON a.[ID_Kessel] = k.ID",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
             }
             catch { dt = null; }
 
@@ -895,7 +899,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable k = DataRepository.GetDataTable(
                     "SELECT ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", (Int32)projektID));
+                    new DbParam("@p", (Int32)projektID));
                 if (k != null && k.Rows.Count > 0)
                 {
                     idErgebnis = Ganz(k.Rows[0], "ID");
@@ -917,7 +921,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable w = DataRepository.GetDataTable(
                     "SELECT Waermeproduktion FROM Tab_ErgebnisHeizkessel WHERE ID_Ergebnis = ?",
-                    new OleDbParameter("@e", (Int32)idErgebnis));
+                    new DbParam("@e", (Int32)idErgebnis));
                 if (w != null && w.Rows.Count > 0)
                 {
                     gefunden = true;

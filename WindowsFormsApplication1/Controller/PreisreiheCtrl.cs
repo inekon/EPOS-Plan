@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -117,7 +116,7 @@ namespace WindowsFormsApplication1
                 "AND (Aufloesung = '" + DbWerte.PREISREIHE_AUFLOESUNG_STUNDE + "' " +
                 "OR Aufloesung = '" + DbWerte.PREISREIHE_AUFLOESUNG_VIERTELSTUNDE + "') " +
                 "ORDER BY Jahr DESC, Bezeichner",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (dt == null) return _internalList;
 
@@ -144,8 +143,8 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + TABLE_KOPF + "] " +
                 "WHERE ID_Energietraeger = ? AND (ID_Projekt IS NULL OR ID_Projekt = ?) " +
                 "ORDER BY Jahr DESC",
-                new OleDbParameter("@traeger", idEnergietraeger),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@traeger", idEnergietraeger),
+                new DbParam("@proj", idProjekt));
 
             if (dt == null || dt.Rows.Count == 0) return null;
 
@@ -169,7 +168,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE_KOPF + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
 
             if (dt == null || dt.Rows.Count == 0) return null;
 
@@ -218,7 +217,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Wert FROM [" + TABLE_DATEN + "] WHERE ID_Preisreihe = ? ORDER BY ID",
-                new OleDbParameter("@id", idPreisreihe));
+                new DbParam("@id", idPreisreihe));
 
             if (dt == null) return new double[0];
 
@@ -236,7 +235,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE_DATEN + "] WHERE ID_Preisreihe = ?",
-                new OleDbParameter("@id", idPreisreihe));
+                new DbParam("@id", idPreisreihe));
 
             return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
         }
@@ -289,14 +288,14 @@ namespace WindowsFormsApplication1
                     int neueId = MaxId(v, TABLE_KOPF) + 1;
 
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
-                        p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = kopf.ID_Projekt > 0 ? (object)kopf.ID_Projekt : DBNull.Value });
-                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = kopf.Bezeichner ?? "" });
-                        p.Add(new OleDbParameter("@jahr", OleDbType.Integer) { Value = kopf.Jahr });
-                        p.Add(new OleDbParameter("@aufl", OleDbType.VarWChar) { Value = kopf.Aufloesung ?? DbWerte.PREISREIHE_AUFLOESUNG_STUNDE });
-                        p.Add(new OleDbParameter("@einh", OleDbType.VarWChar) { Value = kopf.Einheit ?? DbWerte.PREISREIHE_EINHEIT_CT_KWH });
-                        p.Add(new OleDbParameter("@traeger", OleDbType.Integer) { Value = kopf.ID_Energietraeger > 0 ? (object)kopf.ID_Energietraeger : DBNull.Value });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
+                        p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = kopf.ID_Projekt > 0 ? (object)kopf.ID_Projekt : DBNull.Value });
+                        p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = kopf.Bezeichner ?? "" });
+                        p.Add(new DbParam("@jahr", DbParamTyp.Integer) { Wert = kopf.Jahr });
+                        p.Add(new DbParam("@aufl", DbParamTyp.VarWChar) { Wert = kopf.Aufloesung ?? DbWerte.PREISREIHE_AUFLOESUNG_STUNDE });
+                        p.Add(new DbParam("@einh", DbParamTyp.VarWChar) { Wert = kopf.Einheit ?? DbWerte.PREISREIHE_EINHEIT_CT_KWH });
+                        p.Add(new DbParam("@traeger", DbParamTyp.Integer) { Wert = kopf.ID_Energietraeger > 0 ? (object)kopf.ID_Energietraeger : DBNull.Value });
                         v.Ausfuehren("INSERT INTO [" + TABLE_KOPF + "] (ID, ID_Projekt, Bezeichner, Jahr, " +
                         "Aufloesung, Einheit, ID_Energietraeger) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?)", p.ToArray());
@@ -308,9 +307,9 @@ namespace WindowsFormsApplication1
                     {
                         v.Ausfuehren(
                             "INSERT INTO [" + TABLE_DATEN + "] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
-                            new OleDbParameter("@id", OleDbType.Integer) { Value = ++datenId },
-                            new OleDbParameter("@kopf", OleDbType.Integer) { Value = neueId },
-                            new OleDbParameter("@wert", OleDbType.Double) { Value = werte[i] });
+                            new DbParam("@id", DbParamTyp.Integer) { Wert = ++datenId },
+                            new DbParam("@kopf", DbParamTyp.Integer) { Wert = neueId },
+                            new DbParam("@wert", DbParamTyp.Double) { Wert = werte[i] });
 
                         if (fortschritt != null && (i + 1) % FORTSCHRITT_SCHRITT == 0) fortschritt(i + 1);
                     }
@@ -343,11 +342,11 @@ namespace WindowsFormsApplication1
 
             DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE_DATEN + "] WHERE ID_Preisreihe = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
 
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE_KOPF + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
         }
 
         // =====================================================================

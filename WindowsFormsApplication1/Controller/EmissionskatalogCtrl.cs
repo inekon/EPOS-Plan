@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -534,25 +533,25 @@ namespace WindowsFormsApplication1
             return wert.ToString(CultureInfo.InvariantCulture);
         }
 
-        internal static OleDbParameter Text(string wert)
+        internal static DbParam Text(string wert)
         {
-            return new OleDbParameter("@t", OleDbType.VarWChar, 255)
-            { Value = (object)wert ?? DBNull.Value };
+            return new DbParam("@t", DbParamTyp.VarWChar, 255)
+            { Wert = (object)wert ?? DBNull.Value };
         }
 
-        internal static OleDbParameter Komma(double wert)
+        internal static DbParam Komma(double wert)
         {
-            return new OleDbParameter("@d", OleDbType.Double) { Value = wert };
+            return new DbParam("@d", DbParamTyp.Double) { Wert = wert };
         }
 
-        internal static OleDbParameter JaNein(bool wert)
+        internal static DbParam JaNein(bool wert)
         {
-            return new OleDbParameter("@b", OleDbType.Boolean) { Value = wert };
+            return new DbParam("@b", DbParamTyp.Boolean) { Wert = wert };
         }
 
-        internal static OleDbParameter Datum(DateTime wert)
+        internal static DbParam Datum(DateTime wert)
         {
-            return new OleDbParameter("@dt", OleDbType.Date) { Value = wert };
+            return new DbParam("@dt", DbParamTyp.Date) { Wert = wert };
         }
 
         internal static string Txt(object o)

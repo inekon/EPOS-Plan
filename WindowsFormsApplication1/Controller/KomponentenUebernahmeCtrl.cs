@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Text;
 
@@ -336,29 +335,29 @@ namespace WindowsFormsApplication1
                 // --- 4) Alten Bestand entfernen (Anlagen vor Geräten vor Kindern) ------
                 Ausfuehren(v,
                     "DELETE FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " + TypFilter(plan),
-                    new OleDbParameter("@p", idZiel));
+                    new DbParam("@p", idZiel));
 
                 foreach (int alt in zielGeraeteIds)
                 {
                     foreach (string kind in plan.Kindtabellen)
                         VersucheAusfuehren(v,
                             "DELETE FROM [" + kind + "] WHERE [" + plan.KindFk + "] = ?",
-                            new OleDbParameter("@fk", alt));
+                            new DbParam("@fk", alt));
 
                     if (IstPuffer(plan))
                     {
                         VersucheAusfuehren(v,
                             "DELETE FROM [Z_ProjektPufferSp] WHERE ID_Pufferspeicher = ?",
-                            new OleDbParameter("@fk", alt));
+                            new DbParam("@fk", alt));
                         VersucheAusfuehren(v,
                             "DELETE FROM [Z_AnlagePufferVerbund] WHERE ID_Puffer = ?",
-                            new OleDbParameter("@fk", alt));
+                            new DbParam("@fk", alt));
                     }
                 }
 
                 Ausfuehren(v,
                     "DELETE FROM [" + plan.Geraetetabelle + "] WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idZiel));
+                    new DbParam("@p", idZiel));
 
                 // --- 5) Gerätezeilen der Quelle als Projektkopie anlegen ---------------
                 int naechsteId = MaxId(v, plan.Geraetetabelle) + 1;
@@ -467,7 +466,7 @@ namespace WindowsFormsApplication1
 
                 object o = DataRepository.ExecuteScalar(
                     "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente ?? ""));
+                    new DbParam("@k", komponente ?? ""));
                 if (o == null || o == DBNull.Value) return;
 
                 KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
@@ -521,7 +520,7 @@ namespace WindowsFormsApplication1
             {
                 return DataRepository.GetDataTable(
                     "SELECT * FROM [" + tabelle + "] WHERE ID_Projekt = ? ORDER BY ID",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
             }
             catch { return null; }
         }
@@ -559,7 +558,7 @@ namespace WindowsFormsApplication1
                     "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +
                     "WHERE [" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan) + ") " +
                     "ORDER BY [" + SPALTE_ID + "]",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
             }
             catch { return null; }
         }
@@ -581,7 +580,7 @@ namespace WindowsFormsApplication1
                     "INNER JOIN [" + TAB_ANLAGEN + "] a ON g.[" + SPALTE_ID + "] = a.[" + plan.AnlagenFk + "] " +
                     "WHERE a.[" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan, "a") + " " +
                     "ORDER BY a.[" + SPALTE_ID + "]",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
             }
             catch { return null; }
         }
@@ -592,7 +591,7 @@ namespace WindowsFormsApplication1
             var plan = new GewerkPlan { AnlagenTypen = typen };
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " + TypFilter(plan) + " ORDER BY ID",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             if (dt != null) foreach (DataRow r in dt.Rows) liste.Add(Convert.ToInt32(r[0]));
             return liste;
         }
@@ -658,7 +657,7 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID_Type, Bezeichner FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " +
                 TypFilter(plan) + " ORDER BY ID",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
                     liste.Add(Ganz(r, "ID_Type").ToString(CultureInfo.InvariantCulture) + "|" +
@@ -689,7 +688,7 @@ namespace WindowsFormsApplication1
         {
             var spalten = new List<string>();
             var platzhalter = new List<string>();
-            var ps = new List<OleDbParameter>();
+            var ps = new List<DbParam>();
 
             foreach (DataColumn c in quelle.Table.Columns)
             {
@@ -698,12 +697,12 @@ namespace WindowsFormsApplication1
                 platzhalter.Add("?");
 
                 if (string.Equals(name, SPALTE_ID, StringComparison.OrdinalIgnoreCase))
-                    ps.Add(new OleDbParameter("@p" + ps.Count, OleDbType.Integer) { Value = neueId });
+                    ps.Add(new DbParam("@p" + ps.Count, DbParamTyp.Integer) { Wert = neueId });
                 else if (string.Equals(name, SPALTE_ID_PROJEKT, StringComparison.OrdinalIgnoreCase))
-                    ps.Add(new OleDbParameter("@p" + ps.Count, OleDbType.Integer) { Value = idZiel });
+                    ps.Add(new DbParam("@p" + ps.Count, DbParamTyp.Integer) { Wert = idZiel });
                 else if (fkSpalte != null && string.Equals(name, fkSpalte, StringComparison.OrdinalIgnoreCase))
-                    ps.Add(new OleDbParameter("@p" + ps.Count, OleDbType.Integer)
-                    { Value = fkWert.HasValue ? (object)fkWert.Value : DBNull.Value });
+                    ps.Add(new DbParam("@p" + ps.Count, DbParamTyp.Integer)
+                    { Wert = fkWert.HasValue ? (object)fkWert.Value : DBNull.Value });
                 else
                     ps.Add(Wert("@p" + ps.Count, c.DataType, quelle[name]));
             }
@@ -727,7 +726,7 @@ namespace WindowsFormsApplication1
             {
                 dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + tabelle + "] WHERE [" + fkSpalte + "] = ? ORDER BY ID",
-                    new OleDbParameter("@fk", quellGeraetId));
+                    new DbParam("@fk", quellGeraetId));
             }
             catch { warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_KINDTABELLE, tabelle)); return; }
 
@@ -760,7 +759,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable puffer = DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 var nachId = new Dictionary<int, string>();
                 if (puffer != null)
                     foreach (DataRow r in puffer.Rows) nachId[Ganz(r, SPALTE_ID)] = Text(r, SPALTE_BEZEICHNER);
@@ -768,7 +767,7 @@ namespace WindowsFormsApplication1
 
                 DataTable anlagen = DataRepository.GetDataTable(
                     "SELECT * FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (anlagen == null) return liste;
 
                 foreach (DataRow a in anlagen.Rows)
@@ -794,7 +793,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + TAB_ANLAGEN + "] SET [" + sp + "] = NULL " +
                     "WHERE ID_Projekt = ? AND [" + sp + "] IN " +
                     "(SELECT ID FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?)",
-                    new OleDbParameter("@p1", idProjekt), new OleDbParameter("@p2", idProjekt));
+                    new DbParam("@p1", idProjekt), new DbParam("@p2", idProjekt));
         }
 
         private static void PufferverweiseWiederherstellen(DbVorgang v,
@@ -810,7 +809,7 @@ namespace WindowsFormsApplication1
 
                 VersucheAusfuehren(v,
                     "UPDATE [" + TAB_ANLAGEN + "] SET [" + b.Spalte + "] = ? WHERE ID = ?",
-                    new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdAnlage));
+                    new DbParam("@neu", neu), new DbParam("@id", b.IdAnlage));
             }
             if (verloren > 0)
                 warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
@@ -842,7 +841,7 @@ namespace WindowsFormsApplication1
                     "SELECT s.ID, p.Bezeichner FROM [" + Z_AnlageSenkeCtrl.TABLE + "] s " +
                     "INNER JOIN [" + TAB_PUFFER + "] p ON s.ID_Puffer = p.ID " +
                     "WHERE p.ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null) return liste;
 
                 foreach (DataRow r in dt.Rows)
@@ -861,7 +860,7 @@ namespace WindowsFormsApplication1
             VersucheAusfuehren(v,
                 "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = NULL " +
                 "WHERE ID_Puffer IN (SELECT ID FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?)",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
         }
 
         private static void SenkenverweiseWiederherstellen(DbVorgang v,
@@ -877,7 +876,7 @@ namespace WindowsFormsApplication1
 
                 VersucheAusfuehren(v,
                     "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = ? WHERE ID = ?",
-                    new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdSenke));
+                    new DbParam("@neu", neu), new DbParam("@id", b.IdSenke));
             }
             if (verloren > 0)
                 warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
@@ -1103,7 +1102,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
                     "WHERE ID_Projekt = ? AND " + TypFilter(plan) + " ORDER BY ID",
-                    new OleDbParameter("@p", idZiel));
+                    new DbParam("@p", idZiel));
                 if (dt != null)
                     foreach (DataRow r in dt.Rows) liste.Add(Ganz(r, SPALTE_ID));
             }
@@ -1158,9 +1157,9 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
                 "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? ORDER BY ID DESC LIMIT 1",
-                new OleDbParameter("@p", idProjekt),
-                new OleDbParameter("@t", idType),
-                new OleDbParameter("@b", bezeichner ?? ""));
+                new DbParam("@p", idProjekt),
+                new DbParam("@t", idType),
+                new DbParam("@b", bezeichner ?? ""));
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
@@ -1193,7 +1192,7 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Helfer
 
-        private static void Ausfuehren(DbVorgang v, string sql, params OleDbParameter[] ps)
+        private static void Ausfuehren(DbVorgang v, string sql, params DbParam[] ps)
         {
             v.Ausfuehren(sql, ps);
         }
@@ -1202,7 +1201,7 @@ namespace WindowsFormsApplication1
         /// Wie <see cref="Ausfuehren"/>, aber ein Fehlschlag bricht den Vorgang nicht ab —
         /// für Tabellen und Spalten, die auf einer älteren Datenbank fehlen können.
         /// </summary>
-        private static void VersucheAusfuehren(DbVorgang v, string sql, params OleDbParameter[] ps)
+        private static void VersucheAusfuehren(DbVorgang v, string sql, params DbParam[] ps)
         {
             try { Ausfuehren(v, sql, ps); }
             catch (Exception ex) { Console.WriteLine("Komponenten-Übernahme (übergangen): " + ex.Message); }
@@ -1214,18 +1213,18 @@ namespace WindowsFormsApplication1
             return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
-        private static OleDbParameter Wert(string name, Type t, object v)
+        private static DbParam Wert(string name, Type t, object v)
         {
-            OleDbType typ = OleDbType.Variant;
-            if (t == typeof(string)) typ = OleDbType.VarWChar;
-            else if (t == typeof(bool)) typ = OleDbType.Boolean;
+            DbParamTyp typ = DbParamTyp.Variant;
+            if (t == typeof(string)) typ = DbParamTyp.VarWChar;
+            else if (t == typeof(bool)) typ = DbParamTyp.Boolean;
             else if (t == typeof(byte) || t == typeof(short) || t == typeof(int) || t == typeof(long))
-                typ = OleDbType.Integer;
+                typ = DbParamTyp.Integer;
             else if (t == typeof(float) || t == typeof(double) || t == typeof(decimal))
-                typ = OleDbType.Double;
-            else if (t == typeof(DateTime)) typ = OleDbType.Date;
+                typ = DbParamTyp.Double;
+            else if (t == typeof(DateTime)) typ = DbParamTyp.Date;
 
-            return new OleDbParameter(name, typ) { Value = (v == null) ? DBNull.Value : v };
+            return new DbParam(name, typ) { Wert = (v == null) ? DBNull.Value : v };
         }
 
         private static int Ganz(DataRow r, string spalte)

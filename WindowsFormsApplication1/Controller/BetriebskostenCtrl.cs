@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -273,13 +272,31 @@ namespace WindowsFormsApplication1
                 // fiele er unten in die "nicht gepflegt = 0"-Klammer.
                 wert = eingegeben;
             }
+            else if (!menge.HasValue || !satz.HasValue)
+            {
+                // ANWENDERENTSCHEID I-2 (30.08.2026, Paket FX2): „Wenn eine Bemessungsart
+                // 0 ergibt, nimm den erfassten Wert > 0."
+                //
+                // Fehlt eine der beiden Zahlen, ist die Ableitung NICHT RECHENBAR. Bis
+                // hierher galt dann 0 — eine abgeleitete Zeile mit erfasstem Betrag fiel
+                // also still aus der Rechnung (Befund I-2 der Rechenwege-Formelkarte).
+                // Sie verhält sich jetzt wie BETRAG: der erfasste Wert gilt. Das ist
+                // dieselbe Klammer, die der „unbekannte Wert"-Zweig unten schon immer
+                // hatte, und dieselbe Vorsicht — ein Betrag verschwindet nicht wortlos.
+                //
+                // NUR dieser Zweig ändert sich. Eine ECHTE Ableitung mit Menge 0 (die
+                // Baugröße ist wirklich 0) läuft weiter unten durch und ergibt 0 — der
+                // Unterschied ist „nicht ermittelbar" gegen „ermittelt und null", und
+                // genau den unterscheidet das Datenmodell mit NULL.
+                //
+                // FOLGE für die Endenergie-Arten (Konzept BHKW-Wirtschaftlichkeit § 4.5,
+                // „ohne Lauf keine Menge, kein Betrag"): Liefert der Auflöser null, greift
+                // ab jetzt der erfasste Wert statt der 0. Das ist vom Anwenderentscheid
+                // ausdrücklich gedeckt und mit ihm gemessen.
+                wert = eingegeben;
+            }
             else
             {
-                // Fehlt eine der beiden Zahlen, ist die Position NICHT GEPFLEGT — dann
-                // gilt 0 und nicht etwa der zuletzt gespeicherte Betrag; sonst bliebe ein
-                // Wert stehen, dessen Herleitung niemand mehr nachvollziehen kann.
-                if (!menge.HasValue || !satz.HasValue) return 0.0;
-
                 double m = menge.Value, s = satz.Value;
 
                 // ETAPPE H1 — die beiden Endenergie-Bemessungen rechnen wie jede andere
@@ -470,20 +487,20 @@ namespace WindowsFormsApplication1
             {
                 string sql = "SELECT SUM(EingegebenerWert) FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
                              " WHERE ProjektID = ? AND KategorieID = ?";
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@p", projektID),
-                    new OleDbParameter("@k", Form_Kosten.KATEGORIE_INVESTITION)
+                    new DbParam("@p", projektID),
+                    new DbParam("@k", Form_Kosten.KATEGORIE_INVESTITION)
                 };
                 if (komponentenID > 0)
                 {
                     sql += " AND KomponentenID = ?";
-                    ps.Add(new OleDbParameter("@c", komponentenID));
+                    ps.Add(new DbParam("@c", komponentenID));
                 }
                 if (idAnlage > 0 && AnlagenSpalteVorhanden())
                 {
                     sql += " AND [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] = ?";
-                    ps.Add(new OleDbParameter("@a", idAnlage));
+                    ps.Add(new DbParam("@a", idAnlage));
                 }
                 if (mitKostenart)
                 {
@@ -491,7 +508,7 @@ namespace WindowsFormsApplication1
                     // die, die Schritt 19b nicht erreicht hat), und sie sind Investitionen.
                     sql += " AND (([" + SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL) OR ([" +
                            SchemaKatalog.SPALTE_PW_KOSTENART + "] <> ?))";
-                    ps.Add(new OleDbParameter("@art", DbWerte.KOSTENART_ZUSCHUSS));
+                    ps.Add(new DbParam("@art", DbWerte.KOSTENART_ZUSCHUSS));
                 }
 
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
@@ -544,7 +561,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
                     " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", projektID));
+                    new DbParam("@p", projektID));
                 if (dt == null || dt.Rows.Count == 0) return 0;
 
                 if (dt.Rows[0]["Zeitstempel"] != DBNull.Value)
@@ -567,7 +584,7 @@ namespace WindowsFormsApplication1
                     "SELECT SUM(m.[" + spalte + "]) FROM " + ErgebnisCtrl.TAB_BHKW + " AS e " +
                     "INNER JOIN " + ErgebnisCtrl.TAB_BHKW_MODUL + " AS m ON e.ID = m.ID_ErgebnisBHKW " +
                     "WHERE e.ID_Ergebnis = ?",
-                    new OleDbParameter("@e", idErgebnis));
+                    new DbParam("@e", idErgebnis));
                 if (o == null || o == DBNull.Value) return null;
                 return Convert.ToDouble(o) * faktor;
             }

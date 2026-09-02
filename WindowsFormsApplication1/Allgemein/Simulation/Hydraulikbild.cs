@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -176,7 +175,7 @@ namespace WindowsFormsApplication1
                 "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt = ? AND a.ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY " + Ladeordnung.SqlAnlagenprio("a") + ", a.ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return null;
 
             Hydraulikbild bild = new Hydraulikbild();

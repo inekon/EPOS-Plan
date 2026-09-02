@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -44,7 +43,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -52,7 +51,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -68,7 +67,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -110,15 +109,15 @@ namespace WindowsFormsApplication1
                             (ID, Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen, Investitionskosten, ReadOnly)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@bez", this.Name ?? ""),
-                new OleDbParameter("@her", (object)(this.Firma ?? "")),
-                new OleDbParameter("@typ", (object)(this.Speichertyp ?? "")),
-                new OleDbParameter("@ver", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@vol", this.Gesamtvolumen),
-                new OleDbParameter("@inv", this.Investitionskosten),
-                new OleDbParameter("@ro", false)
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@bez", this.Name ?? ""),
+                new DbParam("@her", (object)(this.Firma ?? "")),
+                new DbParam("@typ", (object)(this.Speichertyp ?? "")),
+                new DbParam("@ver", this.Betriebsbereitschaftverlust),
+                new DbParam("@vol", this.Gesamtvolumen),
+                new DbParam("@inv", this.Investitionskosten),
+                new DbParam("@ro", false)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -140,13 +139,13 @@ namespace WindowsFormsApplication1
                             Investitionskosten = ?, Gesamtvolumen = ?
                           WHERE Bezeichner = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@her", (object)(this.Firma ?? "")),
-                new OleDbParameter("@typ", (object)(this.Speichertyp ?? "")),
-                new OleDbParameter("@ver", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@inv", this.Investitionskosten),
-                new OleDbParameter("@vol", this.Gesamtvolumen),
-                new OleDbParameter("@bez", this.Name ?? "")
+            DbParam[] ps = {
+                new DbParam("@her", (object)(this.Firma ?? "")),
+                new DbParam("@typ", (object)(this.Speichertyp ?? "")),
+                new DbParam("@ver", this.Betriebsbereitschaftverlust),
+                new DbParam("@inv", this.Investitionskosten),
+                new DbParam("@vol", this.Gesamtvolumen),
+                new DbParam("@bez", this.Name ?? "")
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -170,12 +169,12 @@ namespace WindowsFormsApplication1
                             Hersteller = ?, Speichertyp = ?, Bereitschaftsverluste = ?, Gesamtvolumen = ?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@her", (object)(this.Firma ?? "")),
-                new OleDbParameter("@typ", (object)(this.Speichertyp ?? "")),
-                new OleDbParameter("@ver", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@vol", this.Gesamtvolumen),
-                new OleDbParameter("@id", id)
+            DbParam[] ps = {
+                new DbParam("@her", (object)(this.Firma ?? "")),
+                new DbParam("@typ", (object)(this.Speichertyp ?? "")),
+                new DbParam("@ver", this.Betriebsbereitschaftverlust),
+                new DbParam("@vol", this.Gesamtvolumen),
+                new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -204,7 +203,7 @@ namespace WindowsFormsApplication1
             }
 
             string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", id));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
         }
 
         /// <summary>

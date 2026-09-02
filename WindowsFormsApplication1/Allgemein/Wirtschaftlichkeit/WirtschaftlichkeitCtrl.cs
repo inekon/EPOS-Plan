@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Text;
 
 namespace WindowsFormsApplication1
@@ -543,7 +542,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_PARAMETER + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idStamm));
+                    new DbParam("@p", idStamm));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     DataRow r = dt.Rows[0];
@@ -722,14 +721,14 @@ namespace WindowsFormsApplication1
                     "SELECT g.Bezeichner, g.Brennstoff, g.Wirkungsgrad_Gas, g.[Wirkungsgrad_Öl] " +
                     "FROM Tab_Heizkessel AS g INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.ID_Kessel " +
                     "WHERE a.ID_Projekt = ? ORDER BY g.Ptherm DESC, g.ID LIMIT 1",
-                    new OleDbParameter("@p", idStamm));
+                    new DbParam("@p", idStamm));
 
                 // 2. Rückfall: die Gerätezeilen (der Weg bis zu diesem Nachtrag).
                 if (dt == null || dt.Rows.Count == 0)
                     dt = DataRepository.GetDataTable(
                         "SELECT Bezeichner, Brennstoff, Wirkungsgrad_Gas, [Wirkungsgrad_Öl] " +
                         "FROM Tab_Heizkessel WHERE ID_Projekt = ? ORDER BY Ptherm DESC, ID LIMIT 1",
-                        new OleDbParameter("@p", idStamm));
+                        new DbParam("@p", idStamm));
 
                 if (dt == null || dt.Rows.Count == 0) { _refKesselCache[idStamm] = info; return info; }
                 DataRow r = dt.Rows[0];
@@ -743,7 +742,7 @@ namespace WindowsFormsApplication1
                 {
                     DataTable bs = DataRepository.GetDataTable(
                         "SELECT ID_Kategorie, Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                        new OleDbParameter("@b", idBrennstoff));
+                        new DbParam("@b", idBrennstoff));
                     if (bs == null || bs.Rows.Count == 0)
                     {
                         // FK zeigt ins Leere (Träger gelöscht) — kein stiller Gas-Default
@@ -806,57 +805,57 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
-                    new OleDbParameter("@z", p.Zinssatz),
-                    new OleDbParameter("@t", p.Betrachtungszeitraum),
-                    new OleDbParameter("@pe", p.PreissteigerungEnergie),
-                    new OleDbParameter("@pb", p.PreissteigerungBetrieb),
-                    new OleDbParameter("@ev", p.Einspeiseverguetung),
-                    new OleDbParameter("@co2", p.CO2Preis),
-                    new OleDbParameter("@kwkg", p.KwkgBonus),
-                    new OleDbParameter("@vbhj", p.KwkgVbhJahresdeckel),
-                    new OleDbParameter("@vbhk", p.KwkgVbhKontingent),
-                    new OleDbParameter("@kwkgE", p.KwkgBonusEinspeisung),
-                    new OleDbParameter("@park", p.IdKraftwerkspark),
-                    new OleDbParameter("@refEta", p.RefKesselWirkungsgrad),
-                    new OleDbParameter("@refBs", p.RefKesselIdBrennstoff),
-                    new OleDbParameter("@st", OleDbType.Date) { Value = (object)p.KwkgStichtag ?? DBNull.Value },
-                    new OleDbParameter("@ibn", OleDbType.Date) { Value = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
-                    new OleDbParameter("@neg", p.KwkgAbschlagNegativ),
-                    new OleDbParameter("@art", OleDbType.VarWChar, 24)
-                    { Value = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
-                    new OleDbParameter("@raum", OleDbType.Boolean) { Value = p.RaeumlicherZusammenhang },
-                    new OleDbParameter("@heff", OleDbType.Boolean) { Value = p.HocheffizienzNachweis },
-                    new OleDbParameter("@ng", OleDbType.Double)
-                    { Value = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
-                    new OleDbParameter("@wahl", OleDbType.VarWChar, 20)
-                    { Value = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
-                    new OleDbParameter("@auf", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
-                    new OleDbParameter("@aufs", OleDbType.Boolean) { Value = p.AufschlaegeAnwenden },
-                    new OleDbParameter("@vkwk", OleDbType.Double)
-                    { Value = p.EinspeiseverguetungKWK.HasValue
+                    new DbParam("@z", p.Zinssatz),
+                    new DbParam("@t", p.Betrachtungszeitraum),
+                    new DbParam("@pe", p.PreissteigerungEnergie),
+                    new DbParam("@pb", p.PreissteigerungBetrieb),
+                    new DbParam("@ev", p.Einspeiseverguetung),
+                    new DbParam("@co2", p.CO2Preis),
+                    new DbParam("@kwkg", p.KwkgBonus),
+                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
+                    new DbParam("@vbhk", p.KwkgVbhKontingent),
+                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
+                    new DbParam("@park", p.IdKraftwerkspark),
+                    new DbParam("@refEta", p.RefKesselWirkungsgrad),
+                    new DbParam("@refBs", p.RefKesselIdBrennstoff),
+                    new DbParam("@st", DbParamTyp.Date) { Wert = (object)p.KwkgStichtag ?? DBNull.Value },
+                    new DbParam("@ibn", DbParamTyp.Date) { Wert = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
+                    new DbParam("@neg", p.KwkgAbschlagNegativ),
+                    new DbParam("@art", DbParamTyp.VarWChar, 24)
+                    { Wert = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
+                    new DbParam("@raum", DbParamTyp.Boolean) { Wert = p.RaeumlicherZusammenhang },
+                    new DbParam("@heff", DbParamTyp.Boolean) { Wert = p.HocheffizienzNachweis },
+                    new DbParam("@ng", DbParamTyp.Double)
+                    { Wert = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
+                    new DbParam("@wahl", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
+                    new DbParam("@auf", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    new DbParam("@aufs", DbParamTyp.Boolean) { Wert = p.AufschlaegeAnwenden },
+                    new DbParam("@vkwk", DbParamTyp.Double)
+                    { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
-                    new OleDbParameter("@bjahr", OleDbType.Integer)
-                    { Value = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
-                    new OleDbParameter("@meth", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
-                    new OleDbParameter("@bkon", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
-                    new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
-                    { Value = p.NachhaltigkeitsnachweisBiomasse
+                    new DbParam("@bjahr", DbParamTyp.Integer)
+                    { Wert = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
+                    new DbParam("@meth", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
+                    new DbParam("@bkon", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
+                    new DbParam("@bnw", DbParamTyp.VarWChar, 30)
+                    { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
                     // ETAPPE K6 — die leere Angabe muss LEER in die Datenbank: Sie ist die
                     // Aussage „nicht angegeben" und damit etwas anderes als KEINER bzw.
                     // NEUANLAGE. Deshalb hier bewusst KEIN Steuerwert(...)-Rückfall.
-                    new OleDbParameter("@ktb", OleDbType.VarWChar, 30)
-                    { Value = LeerAlsNull(p.KwkgTatbestand) },
-                    new OleDbParameter("@kart", OleDbType.VarWChar, 20)
-                    { Value = LeerAlsNull(p.KwkgAnlagenart) },
-                    new OleDbParameter("@kant", OleDbType.Double)
-                    { Value = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
-                    new OleDbParameter("@kpau", OleDbType.Boolean) { Value = p.KwkgPauschalmodus },
-                    new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now },
-                    new OleDbParameter("@p", p.IdStamm));
+                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
+                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
+                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
+                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
+                    new DbParam("@kant", DbParamTyp.Double)
+                    { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
+                    new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
+                    new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
+                    new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
 
                 int id = DataRepository.GetMaxID(TAB_PARAMETER, "ID") + 1;
@@ -885,55 +884,55 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    new OleDbParameter("@id", id),
-                    new OleDbParameter("@p", p.IdStamm),
-                    new OleDbParameter("@z", p.Zinssatz),
-                    new OleDbParameter("@t", p.Betrachtungszeitraum),
-                    new OleDbParameter("@pe", p.PreissteigerungEnergie),
-                    new OleDbParameter("@pb", p.PreissteigerungBetrieb),
-                    new OleDbParameter("@ev", p.Einspeiseverguetung),
-                    new OleDbParameter("@co2", p.CO2Preis),
-                    new OleDbParameter("@kwkg", p.KwkgBonus),
-                    new OleDbParameter("@vbhj", p.KwkgVbhJahresdeckel),
-                    new OleDbParameter("@vbhk", p.KwkgVbhKontingent),
-                    new OleDbParameter("@kwkgE", p.KwkgBonusEinspeisung),
-                    new OleDbParameter("@park", p.IdKraftwerkspark),
-                    new OleDbParameter("@refEta", p.RefKesselWirkungsgrad),
-                    new OleDbParameter("@refBs", p.RefKesselIdBrennstoff),
-                    new OleDbParameter("@st", OleDbType.Date) { Value = (object)p.KwkgStichtag ?? DBNull.Value },
-                    new OleDbParameter("@ibn", OleDbType.Date) { Value = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
-                    new OleDbParameter("@neg", p.KwkgAbschlagNegativ),
-                    new OleDbParameter("@art", OleDbType.VarWChar, 24)
-                    { Value = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
-                    new OleDbParameter("@raum", OleDbType.Boolean) { Value = p.RaeumlicherZusammenhang },
-                    new OleDbParameter("@heff", OleDbType.Boolean) { Value = p.HocheffizienzNachweis },
-                    new OleDbParameter("@ng", OleDbType.Double)
-                    { Value = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
-                    new OleDbParameter("@wahl", OleDbType.VarWChar, 20)
-                    { Value = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
-                    new OleDbParameter("@auf", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
-                    new OleDbParameter("@aufs", OleDbType.Boolean) { Value = p.AufschlaegeAnwenden },
-                    new OleDbParameter("@vkwk", OleDbType.Double)
-                    { Value = p.EinspeiseverguetungKWK.HasValue
+                    new DbParam("@id", id),
+                    new DbParam("@p", p.IdStamm),
+                    new DbParam("@z", p.Zinssatz),
+                    new DbParam("@t", p.Betrachtungszeitraum),
+                    new DbParam("@pe", p.PreissteigerungEnergie),
+                    new DbParam("@pb", p.PreissteigerungBetrieb),
+                    new DbParam("@ev", p.Einspeiseverguetung),
+                    new DbParam("@co2", p.CO2Preis),
+                    new DbParam("@kwkg", p.KwkgBonus),
+                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
+                    new DbParam("@vbhk", p.KwkgVbhKontingent),
+                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
+                    new DbParam("@park", p.IdKraftwerkspark),
+                    new DbParam("@refEta", p.RefKesselWirkungsgrad),
+                    new DbParam("@refBs", p.RefKesselIdBrennstoff),
+                    new DbParam("@st", DbParamTyp.Date) { Wert = (object)p.KwkgStichtag ?? DBNull.Value },
+                    new DbParam("@ibn", DbParamTyp.Date) { Wert = (object)p.KwkgInbetriebnahme ?? DBNull.Value },
+                    new DbParam("@neg", p.KwkgAbschlagNegativ),
+                    new DbParam("@art", DbParamTyp.VarWChar, 24)
+                    { Wert = Steuerwert(p.Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE) },
+                    new DbParam("@raum", DbParamTyp.Boolean) { Wert = p.RaeumlicherZusammenhang },
+                    new DbParam("@heff", DbParamTyp.Boolean) { Wert = p.HocheffizienzNachweis },
+                    new DbParam("@ng", DbParamTyp.Double)
+                    { Wert = p.Jahresnutzungsgrad.HasValue ? (object)p.Jahresnutzungsgrad.Value : DBNull.Value },
+                    new DbParam("@wahl", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
+                    new DbParam("@auf", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    new DbParam("@aufs", DbParamTyp.Boolean) { Wert = p.AufschlaegeAnwenden },
+                    new DbParam("@vkwk", DbParamTyp.Double)
+                    { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
-                    new OleDbParameter("@bjahr", OleDbType.Integer)
-                    { Value = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
-                    new OleDbParameter("@meth", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
-                    new OleDbParameter("@bkon", OleDbType.VarWChar, 30)
-                    { Value = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
-                    new OleDbParameter("@bnw", OleDbType.VarWChar, 30)
-                    { Value = p.NachhaltigkeitsnachweisBiomasse
+                    new DbParam("@bjahr", DbParamTyp.Integer)
+                    { Wert = p.BilanzJahr > 0 ? (object)p.BilanzJahr : DBNull.Value },
+                    new DbParam("@meth", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.EmissionsMethode, DbWerte.EMISSIONSMETHODE_KATALOG) },
+                    new DbParam("@bkon", DbParamTyp.VarWChar, 30)
+                    { Wert = Steuerwert(p.BiomasseKonvention, DbWerte.BIOMASSE_KONVENTION_NULL) },
+                    new DbParam("@bnw", DbParamTyp.VarWChar, 30)
+                    { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    new OleDbParameter("@ktb", OleDbType.VarWChar, 30)
-                    { Value = LeerAlsNull(p.KwkgTatbestand) },
-                    new OleDbParameter("@kart", OleDbType.VarWChar, 20)
-                    { Value = LeerAlsNull(p.KwkgAnlagenart) },
-                    new OleDbParameter("@kant", OleDbType.Double)
-                    { Value = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
-                    new OleDbParameter("@kpau", OleDbType.Boolean) { Value = p.KwkgPauschalmodus },
-                    new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
+                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
+                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
+                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
+                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
+                    new DbParam("@kant", DbParamTyp.Double)
+                    { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
+                    new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
+                    new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
         }
@@ -987,7 +986,7 @@ namespace WindowsFormsApplication1
                 new VariantenCtrl().StelleVariantentabelleSicher();
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID_Projekt FROM " + VariantenCtrl.TAB_VARIANTE + " WHERE ID_ProjektRef = ?",
-                    new OleDbParameter("@p", idStamm));
+                    new DbParam("@p", idStamm));
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
                         if (r["ID_Projekt"] != DBNull.Value) ids.Add(Convert.ToInt32(r["ID_Projekt"]));
@@ -1031,7 +1030,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_TARIF + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idStamm));
+                    new DbParam("@p", idStamm));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     DataRow r = dt.Rows[0];
@@ -1097,10 +1096,10 @@ namespace WindowsFormsApplication1
                 // Spaltenliste und Werte entstehen aus EINER Quelle — bei 52 Spalten
                 // wäre eine von Hand gepflegte Fragezeichenkette die klassische
                 // Fehlerquelle (ETAPPE E5; bis dahin waren es 17 Spalten).
-                // OleDbParameter dürfen nur EINER Parameters-Collection angehören,
+                // DbParam dürfen nur EINER Parameters-Collection angehören,
                 // deshalb je Kommando ein frischer Satz.
                 List<string> spalten = TarifSpalten();
-                Func<List<OleDbParameter>> werte = () => TarifWerte(t);
+                Func<List<DbParam>> werte = () => TarifWerte(t);
 
                 var setzt = new StringBuilder();
                 foreach (string s in spalten)
@@ -1109,18 +1108,18 @@ namespace WindowsFormsApplication1
                     setzt.Append('[').Append(s).Append("] = ?");
                 }
 
-                List<OleDbParameter> update = werte();
-                update.Add(new OleDbParameter("@p", t.IdStamm));
+                List<DbParam> update = werte();
+                update.Add(new DbParam("@p", t.IdStamm));
                 int rows = DataRepository.ExecuteNonQuery(
                     "UPDATE " + TAB_TARIF + " SET " + setzt + " WHERE ID_Projekt = ?",
                     update.ToArray());
                 if (rows > 0) return true;
 
                 int id = DataRepository.GetMaxID(TAB_TARIF, "ID") + 1;
-                var insert = new List<OleDbParameter>
+                var insert = new List<DbParam>
                 {
-                    new OleDbParameter("@id", id),
-                    new OleDbParameter("@p", t.IdStamm)
+                    new DbParam("@id", id),
+                    new DbParam("@p", t.IdStamm)
                 };
                 insert.AddRange(werte());
 
@@ -1163,56 +1162,56 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Werte in der Reihenfolge von <see cref="TarifSpalten"/>.</summary>
-        private static List<OleDbParameter> TarifWerte(TarifParameter t)
+        private static List<DbParam> TarifWerte(TarifParameter t)
         {
-            var w = new List<OleDbParameter>
+            var w = new List<DbParam>
             {
-                new OleDbParameter("@a", OleDbType.Boolean) { Value = t.Aktiv },
-                new OleDbParameter("@wv", t.WinterVonMonat),
-                new OleDbParameter("@wb", t.WinterBisMonat),
-                new OleDbParameter("@hv", t.HtVonStunde),
-                new OleDbParameter("@hb", t.HtBisStunde),
-                new OleDbParameter("@b1", t.PreisBezugWinterHT),
-                new OleDbParameter("@b2", t.PreisBezugWinterNT),
-                new OleDbParameter("@b3", t.PreisBezugSommerHT),
-                new OleDbParameter("@b4", t.PreisBezugSommerNT),
-                new OleDbParameter("@e1", t.PreisEinspWinterHT),
-                new OleDbParameter("@e2", t.PreisEinspWinterNT),
-                new OleDbParameter("@e3", t.PreisEinspSommerHT),
-                new OleDbParameter("@e4", t.PreisEinspSommerNT),
-                new OleDbParameter("@sg", t.StaffelGrenzeKW),
-                new OleDbParameter("@s1", t.StaffelPreis1EurKW),
-                new OleDbParameter("@s2", t.StaffelPreis2EurKW),
+                new DbParam("@a", DbParamTyp.Boolean) { Wert = t.Aktiv },
+                new DbParam("@wv", t.WinterVonMonat),
+                new DbParam("@wb", t.WinterBisMonat),
+                new DbParam("@hv", t.HtVonStunde),
+                new DbParam("@hb", t.HtBisStunde),
+                new DbParam("@b1", t.PreisBezugWinterHT),
+                new DbParam("@b2", t.PreisBezugWinterNT),
+                new DbParam("@b3", t.PreisBezugSommerHT),
+                new DbParam("@b4", t.PreisBezugSommerNT),
+                new DbParam("@e1", t.PreisEinspWinterHT),
+                new DbParam("@e2", t.PreisEinspWinterNT),
+                new DbParam("@e3", t.PreisEinspSommerHT),
+                new DbParam("@e4", t.PreisEinspSommerNT),
+                new DbParam("@sg", t.StaffelGrenzeKW),
+                new DbParam("@s1", t.StaffelPreis1EurKW),
+                new DbParam("@s2", t.StaffelPreis2EurKW),
                 // ETAPPE E5: TEXT(12) — der längste Steuerwert ROLLEN hat 6 Zeichen.
-                new OleDbParameter("@mod", OleDbType.VarWChar, 12)
-                { Value = Steuerwert(t.Modus, DbWerte.TARIF_MODUS_ZONEN) },
-                new OleDbParameter("@gab", OleDbType.Date)
-                { Value = (object)t.GueltigAb ?? DBNull.Value }
+                new DbParam("@mod", DbParamTyp.VarWChar, 12)
+                { Wert = Steuerwert(t.Modus, DbWerte.TARIF_MODUS_ZONEN) },
+                new DbParam("@gab", DbParamTyp.Date)
+                { Wert = (object)t.GueltigAb ?? DBNull.Value }
             };
             RolleWerte(w, t.Bezug);
             RolleWerte(w, t.Reststrom);
-            w.Add(new OleDbParameter("@ea", t.Einspeisung.ArbeitspreisEurKWh));
-            w.Add(new OleDbParameter("@eg", t.Einspeisung.GrundpreisEurJahr));
-            w.Add(new OleDbParameter("@am", OleDbType.Date) { Value = DateTime.Now });
+            w.Add(new DbParam("@ea", t.Einspeisung.ArbeitspreisEurKWh));
+            w.Add(new DbParam("@eg", t.Einspeisung.GrundpreisEurJahr));
+            w.Add(new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             return w;
         }
 
         /// <summary>Die 16 Werte einer Rolle in der Reihenfolge von <see cref="TarifSpalten"/>.</summary>
-        private static void RolleWerte(List<OleDbParameter> w, TarifRolle r)
+        private static void RolleWerte(List<DbParam> w, TarifRolle r)
         {
-            w.Add(new OleDbParameter("@ra", r.ArbeitspreisEurKWh));
-            w.Add(new OleDbParameter("@rg", r.GrundpreisEurJahr));
+            w.Add(new DbParam("@ra", r.ArbeitspreisEurKWh));
+            w.Add(new DbParam("@rg", r.GrundpreisEurJahr));
             // TEXT(24): der längste Steuerwert JAHRESHOECHSTLAST hat 17 Zeichen. Ein zu
             // kurzes Feld ließe das UPDATE STILL scheitern (Lehre aus Etappe E3).
-            w.Add(new OleDbParameter("@rm", OleDbType.VarWChar, 24)
-            { Value = Steuerwert(r.Leistungsmodell, DbWerte.LEISTUNGSMODELL_MONATLICH) });
-            w.Add(new OleDbParameter("@rp", r.MonatspreisEurKWMonat));
+            w.Add(new DbParam("@rm", DbParamTyp.VarWChar, 24)
+            { Wert = Steuerwert(r.Leistungsmodell, DbWerte.LEISTUNGSMODELL_MONATLICH) });
+            w.Add(new DbParam("@rp", r.MonatspreisEurKWMonat));
             for (int i = 0; i < 4; i++)
             {
                 LeistungsStufe s = i < r.Stufen.Count ? r.Stufen[i] : new LeistungsStufe();
-                w.Add(new OleDbParameter("@sk" + i, s.ObergrenzeKW));
-                w.Add(new OleDbParameter("@ss" + i, s.PreisSommer));
-                w.Add(new OleDbParameter("@sw" + i, s.PreisWinter));
+                w.Add(new DbParam("@sk" + i, s.ObergrenzeKW));
+                w.Add(new DbParam("@ss" + i, s.PreisSommer));
+                w.Add(new DbParam("@sw" + i, s.PreisWinter));
             }
         }
 
@@ -3259,7 +3258,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT billing_unit, eff_hi, eff_hs FROM Abfrage_Energietraeger_Effektiv " +
                     "WHERE ID_Projekt = ? AND carrier_id = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     DataRow r = dt.Rows[0];
@@ -3276,7 +3275,7 @@ namespace WindowsFormsApplication1
                 {
                     DataTable dt = DataRepository.GetDataTable(
                         "SELECT billing_unit, hi_kwh_per_unit, hs_kwh_per_unit FROM energy_carrier WHERE id = ?",
-                        new OleDbParameter("@c", carrierId));
+                        new DbParam("@c", carrierId));
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         DataRow r = dt.Rows[0];
@@ -3509,7 +3508,7 @@ namespace WindowsFormsApplication1
                     "SELECT SUM(b.Pel) FROM Tab_Energieanlagen AS a " +
                     "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value)
                 {
                     double summe = Convert.ToDouble(o);
@@ -3523,7 +3522,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT SUM(Pel) FROM Tab_BHKW WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDouble(o);
             }
             catch { }
@@ -4219,7 +4218,7 @@ namespace WindowsFormsApplication1
                         // könnte beide auseinanderlaufen lassen.
                         "WHERE a.ID_Projekt = ? AND a.ID_Type = " +
                         idType.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
             }
             catch { return null; }
         }
@@ -4381,7 +4380,7 @@ namespace WindowsFormsApplication1
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
                     "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
             catch { }
@@ -4571,7 +4570,7 @@ namespace WindowsFormsApplication1
                     "FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
                     "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null || dt.Rows.Count == 0) return null;
                 DataRow r = dt.Rows[0];
                 double? projektwert = D2(r, "Projektpreis");
@@ -4804,7 +4803,7 @@ namespace WindowsFormsApplication1
                     " FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                     "ON w.StammID = f.StammID " +
                     "WHERE w.ProjektID = ? AND w.KategorieID = 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null) return liste;
 
                 // ETAPPE H4b: erst puffern, dann in DREI Runden ableiten — die
@@ -4857,17 +4856,32 @@ namespace WindowsFormsApplication1
                     z.Abgeleitet = true;
                 }
 
-                // Runde 3 — „% der Investition": Basis ist die Summe aller bereits
-                // abgeleiteten Beträge (ohne Zuschüsse), stufig Anlage → Komponente
+                // Runde 3 — „% der Investition": Basis ist die Summe der in den Runden 1
+                // und 2 abgeleiteten Beträge (ohne Zuschüsse), stufig Anlage → Komponente
                 // → Projekt (dieselbe Semantik wie InvestSummeFuer der H4a).
+                //
+                // ANWENDERENTSCHEID I-3 (30.08.2026, Paket FX2) — ZWEI PHASEN.
+                // Die Basiszeilen werden VOR der Zuweisungsschleife eingefroren. Bis
+                // hierher setzte die Schleife jede fertige Zeile sofort auf
+                // Abgeleitet = true; eine ZWEITE „% der Investition"-Zeile rechnete
+                // deshalb die ERSTE in ihre Basis ein, und weil die Leseabfrage kein
+                // ORDER BY trägt, entschied die Datenbank über das Ergebnis (Befund I-3).
+                //
+                // Der Entscheid: Jede Investition ist eine eigene Position mit eigener
+                // Nutzungsdauer — das bleibt. %-Zeilen bemessen sich aber ausschließlich
+                // an den DIREKTEN Zeilen der Runden 1 und 2 und zählen einander nie mit.
+                // Damit ist das Ergebnis deterministisch und reihenfolgeunabhängig.
+                var basisZeilen = new List<InvestZeile>();
+                foreach (InvestZeile h in puffer)
+                    if (h.Abgeleitet && !h.Zuschuss) basisZeilen.Add(h);
+
                 foreach (InvestZeile z in puffer)
                 {
                     if (z.Abgeleitet) continue;
                     double sAnlage = 0, sKomponente = 0, sProjekt = 0;
                     bool aDa = false, kDa = false;
-                    foreach (InvestZeile h in puffer)
+                    foreach (InvestZeile h in basisZeilen)
                     {
-                        if (!h.Abgeleitet || h.Zuschuss) continue;
                         sProjekt += h.Betrag;
                         if (z.Komponente > 0 && h.Komponente == z.Komponente)
                         {
@@ -5121,7 +5135,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT " + felder +
                     " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null) return 0;
 
                 // ETAPPE H2: der Endenergie-Auflöser wird je Aufruf höchstens einmal
@@ -5235,7 +5249,7 @@ namespace WindowsFormsApplication1
                     "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                     "ON w.StammID = f.StammID " +
                     "WHERE w.ProjektID = ? AND w.KategorieID = 2",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (dt == null) return liste;
 
                 // ETAPPE H2: gleiche Frisch-Regel wie in der Summenschleife — die
@@ -5434,7 +5448,7 @@ namespace WindowsFormsApplication1
                         ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
                         : " ") +
                     "FROM Tab_ProjektWerte AS w WHERE w.ID = ?",
-                    new OleDbParameter("@id", positionsId));
+                    new DbParam("@id", positionsId));
                 if (dt == null || dt.Rows.Count == 0) return false;
                 DataRow r = dt.Rows[0];
 
@@ -5454,12 +5468,12 @@ namespace WindowsFormsApplication1
                     ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
                     : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht);
 
-                var p = new OleDbParameter("@m", OleDbType.Double);
-                p.Value = menge.HasValue ? (object)menge.Value : DBNull.Value;
+                var p = new DbParam("@m", DbParamTyp.Double);
+                p.Wert = menge.HasValue ? (object)menge.Value : DBNull.Value;
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_MENGE +
                     "] = ? WHERE ID = ?",
-                    p, new OleDbParameter("@id", positionsId));
+                    p, new DbParam("@id", positionsId));
                 return true;
             }
             catch { menge = null; return false; }
@@ -5473,7 +5487,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT ID FROM " + ErgebnisCtrl.TAB_KOPF +
                     " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
             catch { }
@@ -5504,18 +5518,18 @@ namespace WindowsFormsApplication1
                         foreach (int id in projektIds)
                         {
                             {
-                                List<OleDbParameter> pl = new List<OleDbParameter>();
-                                pl.Add(new OleDbParameter("@p", id));
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@p", id));
                                 v.Ausfuehren("DELETE FROM " + TAB_ERGEBNIS + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
                             {
-                                List<OleDbParameter> pl = new List<OleDbParameter>();
-                                pl.Add(new OleDbParameter("@p", id));
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@p", id));
                                 v.Ausfuehren("DELETE FROM " + TAB_SENS + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
                             {
-                                List<OleDbParameter> pl = new List<OleDbParameter>();
-                                pl.Add(new OleDbParameter("@p", id));
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@p", id));
                                 v.Ausfuehren("DELETE FROM " + TAB_MATRIX + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
                         }
@@ -5529,57 +5543,57 @@ namespace WindowsFormsApplication1
                         foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
                         {
                             {
-                                List<OleDbParameter> pl = new List<OleDbParameter>();
-                                pl.Add(new OleDbParameter("@id", naechsteId));
-                                pl.Add(new OleDbParameter("@proj", e.IdProjekt));
-                                pl.Add(new OleDbParameter("@erg", e.IdErgebnis));
-                                pl.Add(new OleDbParameter("@sz", e.Szenario ?? ""));
-                                pl.Add(new OleDbParameter("@stamm", e.IstStamm));
-                                pl.Add(new OleDbParameter("@anz", e.Anzeige ?? ""));
-                                pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = e.Zeitstempel });
-                                pl.Add(new OleDbParameter("@z", p.Zinssatz));
-                                pl.Add(new OleDbParameter("@t", p.Betrachtungszeitraum));
-                                pl.Add(new OleDbParameter("@pe", p.PreissteigerungEnergie));
-                                pl.Add(new OleDbParameter("@pb", p.PreissteigerungBetrieb));
-                                pl.Add(new OleDbParameter("@ev", p.Einspeiseverguetung));
-                                pl.Add(new OleDbParameter("@inv", R(e.Investition)));
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@id", naechsteId));
+                                pl.Add(new DbParam("@proj", e.IdProjekt));
+                                pl.Add(new DbParam("@erg", e.IdErgebnis));
+                                pl.Add(new DbParam("@sz", e.Szenario ?? ""));
+                                pl.Add(new DbParam("@stamm", e.IstStamm));
+                                pl.Add(new DbParam("@anz", e.Anzeige ?? ""));
+                                pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = e.Zeitstempel });
+                                pl.Add(new DbParam("@z", p.Zinssatz));
+                                pl.Add(new DbParam("@t", p.Betrachtungszeitraum));
+                                pl.Add(new DbParam("@pe", p.PreissteigerungEnergie));
+                                pl.Add(new DbParam("@pb", p.PreissteigerungBetrieb));
+                                pl.Add(new DbParam("@ev", p.Einspeiseverguetung));
+                                pl.Add(new DbParam("@inv", R(e.Investition)));
                                 pl.Add(DbWert(e.BetriebskostenJahr));
                                 pl.Add(DbWert(e.EnergiekostenJahr));
-                                pl.Add(new OleDbParameter("@einsp", R(e.EinspeiseerloesJahr)));
+                                pl.Add(new DbParam("@einsp", R(e.EinspeiseerloesJahr)));
                                 pl.Add(DbWert(e.BarwertAusgaben));
                                 pl.Add(DbWert(e.BarwertEinnahmen));
-                                pl.Add(new OleDbParameter("@rw", R(e.RestwertBarwert)));
+                                pl.Add(new DbParam("@rw", R(e.RestwertBarwert)));
                                 pl.Add(DbWert(e.Kapitalwert));
                                 pl.Add(DbWert(e.KapitalwertDiff));
                                 pl.Add(DbWert(e.AnnuitaetKW));
                                 pl.Add(DbWert(e.AmortisationJahre));
                                 pl.Add(DbWert(e.Gestehungskosten, 6));
                                 pl.Add(DbWert(e.IRR));
-                                pl.Add(new OleDbParameter("@behg", R(e.CO2AbgabeJahr)));
-                                pl.Add(new OleDbParameter("@kwkg", R(e.KwkgErloesJahr1)));
-                                pl.Add(new OleDbParameter("@vbhel", R(e.KwkgVbhElektrisch)));   // E2 (L6)
-                                pl.Add(new OleDbParameter("@enst", R(e.EnergiesteuerJahr1)));   // E4
-                                pl.Add(new OleDbParameter("@stbe", R(e.StromsteuerBefreiungJahr1)));
-                                pl.Add(new OleDbParameter("@sten", R(e.StromsteuerEntlastungJahr1)));
-                                pl.Add(new OleDbParameter("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value));
-                                pl.Add(new OleDbParameter("@vmar", R(e.VermiedenArbeitJahr)));   // E5
-                                pl.Add(new OleDbParameter("@vmle", R(e.VermiedenLeistungJahr)));
-                                pl.Add(new OleDbParameter("@vmge", R(e.VermiedenGesamtJahr)));
-                                pl.Add(new OleDbParameter("@aufs", R(e.AufschlagJahr)));
-                                pl.Add(new OleDbParameter("@epv", R(e.EinspeiseerloesPvJahr)));   // E7
-                                pl.Add(new OleDbParameter("@ekwk", R(e.EinspeiseerloesKwkJahr)));
-                                pl.Add(new OleDbParameter("@zusch", R(e.Zuschuss)));              // K5
-                                pl.Add(new OleDbParameter("@pvf", e.PvVerguetungsform ?? ""));    // P6
+                                pl.Add(new DbParam("@behg", R(e.CO2AbgabeJahr)));
+                                pl.Add(new DbParam("@kwkg", R(e.KwkgErloesJahr1)));
+                                pl.Add(new DbParam("@vbhel", R(e.KwkgVbhElektrisch)));   // E2 (L6)
+                                pl.Add(new DbParam("@enst", R(e.EnergiesteuerJahr1)));   // E4
+                                pl.Add(new DbParam("@stbe", R(e.StromsteuerBefreiungJahr1)));
+                                pl.Add(new DbParam("@sten", R(e.StromsteuerEntlastungJahr1)));
+                                pl.Add(new DbParam("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value));
+                                pl.Add(new DbParam("@vmar", R(e.VermiedenArbeitJahr)));   // E5
+                                pl.Add(new DbParam("@vmle", R(e.VermiedenLeistungJahr)));
+                                pl.Add(new DbParam("@vmge", R(e.VermiedenGesamtJahr)));
+                                pl.Add(new DbParam("@aufs", R(e.AufschlagJahr)));
+                                pl.Add(new DbParam("@epv", R(e.EinspeiseerloesPvJahr)));   // E7
+                                pl.Add(new DbParam("@ekwk", R(e.EinspeiseerloesKwkJahr)));
+                                pl.Add(new DbParam("@zusch", R(e.Zuschuss)));              // K5
+                                pl.Add(new DbParam("@pvf", e.PvVerguetungsform ?? ""));    // P6
                                 pl.Add(DbWert(e.PvAnzulegenderWert));
-                                pl.Add(new OleDbParameter("@pvmp", R(e.PvMarktpraemie)));
-                                pl.Add(new OleDbParameter("@pvak", R(e.PvVerguetungsausfallKwh)));
-                                pl.Add(new OleDbParameter("@pvae", R(e.PvVerguetungsausfall)));
-                                pl.Add(new OleDbParameter("@pv51", R(e.PvKompensation51a)));
-                                pl.Add(new OleDbParameter("@pvkw", R(e.PvKappungsverlustKwh)));
+                                pl.Add(new DbParam("@pvmp", R(e.PvMarktpraemie)));
+                                pl.Add(new DbParam("@pvak", R(e.PvVerguetungsausfallKwh)));
+                                pl.Add(new DbParam("@pvae", R(e.PvVerguetungsausfall)));
+                                pl.Add(new DbParam("@pv51", R(e.PvKompensation51a)));
+                                pl.Add(new DbParam("@pvkw", R(e.PvKappungsverlustKwh)));
                                 pl.Add(DbWert(e.PvVermiedenerBezug));
                                 pl.Add(DbWert(e.StromkostenTarif));
-                                pl.Add(new OleDbParameter("@hw", (object)e.Hinweis ?? DBNull.Value));
-                                pl.Add(new OleDbParameter("@fg", (object)e.Fehlgrund ?? DBNull.Value));
+                                pl.Add(new DbParam("@hw", (object)e.Hinweis ?? DBNull.Value));
+                                pl.Add(new DbParam("@fg", (object)e.Fehlgrund ?? DBNull.Value));
                                 v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
                                 "IstStamm, Anzeige, Zeitstempel, " +
                                 "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
@@ -5614,14 +5628,14 @@ namespace WindowsFormsApplication1
                             foreach (SensitivitaetZeile z in sensitivitaet)
                             {
                                 {
-                                    List<OleDbParameter> pl = new List<OleDbParameter>();
-                                    pl.Add(new OleDbParameter("@id", sensId));
-                                    pl.Add(new OleDbParameter("@p", z.IdProjekt));
-                                    pl.Add(new OleDbParameter("@par", z.Parameter ?? ""));
+                                    List<DbParam> pl = new List<DbParam>();
+                                    pl.Add(new DbParam("@id", sensId));
+                                    pl.Add(new DbParam("@p", z.IdProjekt));
+                                    pl.Add(new DbParam("@par", z.Parameter ?? ""));
                                     pl.Add(DbWert(z.KwMinus));
                                     pl.Add(DbWert(z.KwBasis));
                                     pl.Add(DbWert(z.KwPlus));
-                                    pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
+                                    pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = DateTime.Now });
                                     v.Ausfuehren("INSERT INTO " + TAB_SENS + " (ID, ID_Projekt, [Parameter], " +
                                     "KwMinus, KwBasis, KwPlus, Zeitstempel) VALUES (?,?,?,?,?,?,?)", pl.ToArray());
                                 }
@@ -5644,17 +5658,17 @@ namespace WindowsFormsApplication1
                                     StromMatrix.Zone z = kv.Value.Hole(zone);
                                     if (z == null) continue;
                                     {
-                                        List<OleDbParameter> pl = new List<OleDbParameter>();
-                                        pl.Add(new OleDbParameter("@id", mxId));
-                                        pl.Add(new OleDbParameter("@p", kv.Key));
-                                        pl.Add(new OleDbParameter("@z", zone));
-                                        pl.Add(new OleDbParameter("@b", Math.Round(z.BezugMWh, 3)));
-                                        pl.Add(new OleDbParameter("@pv", Math.Round(z.EinspeisungPvMWh, 3)));
-                                        pl.Add(new OleDbParameter("@ke", Math.Round(z.KwkEigenMWh, 3)));
-                                        pl.Add(new OleDbParameter("@ki", Math.Round(z.KwkEinspeisungMWh, 3)));
-                                        pl.Add(new OleDbParameter("@mx", Math.Round(kv.Value.MaxBezugKW, 1)));
-                                        pl.Add(new OleDbParameter("@bd", Math.Round(z.BedarfMWh, 3)));   // E5
-                                        pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
+                                        List<DbParam> pl = new List<DbParam>();
+                                        pl.Add(new DbParam("@id", mxId));
+                                        pl.Add(new DbParam("@p", kv.Key));
+                                        pl.Add(new DbParam("@z", zone));
+                                        pl.Add(new DbParam("@b", Math.Round(z.BezugMWh, 3)));
+                                        pl.Add(new DbParam("@pv", Math.Round(z.EinspeisungPvMWh, 3)));
+                                        pl.Add(new DbParam("@ke", Math.Round(z.KwkEigenMWh, 3)));
+                                        pl.Add(new DbParam("@ki", Math.Round(z.KwkEinspeisungMWh, 3)));
+                                        pl.Add(new DbParam("@mx", Math.Round(kv.Value.MaxBezugKW, 1)));
+                                        pl.Add(new DbParam("@bd", Math.Round(z.BedarfMWh, 3)));   // E5
+                                        pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = DateTime.Now });
                                         v.Ausfuehren("INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
                                         "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
                                         "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
@@ -5687,7 +5701,7 @@ namespace WindowsFormsApplication1
                 {
                     DataTable dt = DataRepository.GetDataTable(
                         "SELECT * FROM " + TAB_ERGEBNIS + " WHERE ID_Projekt = ?",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                     if (dt == null) continue;
                     foreach (DataRow r in dt.Rows)
                     {
@@ -5762,7 +5776,7 @@ namespace WindowsFormsApplication1
                 {
                     DataTable dt = DataRepository.GetDataTable(
                         "SELECT * FROM " + TAB_SENS + " WHERE ID_Projekt = ? ORDER BY ID",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                     if (dt == null) continue;
                     foreach (DataRow r in dt.Rows)
                         liste.Add(new SensitivitaetZeile
@@ -5791,7 +5805,7 @@ namespace WindowsFormsApplication1
                 {
                     DataTable dt = DataRepository.GetDataTable(
                         "SELECT * FROM " + TAB_MATRIX + " WHERE ID_Projekt = ? ORDER BY ID",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                     if (dt == null || dt.Rows.Count == 0) continue;
 
                     var m = new StromMatrix();
@@ -5848,10 +5862,10 @@ namespace WindowsFormsApplication1
 
         private static double R(double v, int dez = 2) { return Math.Round(v, dez); }
 
-        private static OleDbParameter DbWert(double? v, int dez = 2)
+        private static DbParam DbWert(double? v, int dez = 2)
         {
-            return new OleDbParameter("@w", OleDbType.Double)
-            { Value = v.HasValue ? (object)Math.Round(v.Value, dez) : DBNull.Value };
+            return new DbParam("@w", DbParamTyp.Double)
+            { Wert = v.HasValue ? (object)Math.Round(v.Value, dez) : DBNull.Value };
         }
     }
 }

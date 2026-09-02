@@ -1900,7 +1900,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Hersteller, Speichertyp, Investitionskosten FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", System.Data.OleDb.OleDbType.Integer, _bearbeiteteId));
+                StilleDb.Par("@id", DbParamTyp.Integer, _bearbeiteteId));
             if (dt == null || dt.Rows.Count == 0) return;
 
             hersteller = StilleDb.Text(StilleDb.Feld(dt.Rows[0], "Hersteller"));

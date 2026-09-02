@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -107,7 +106,7 @@ namespace WindowsFormsApplication1
                         "FROM Tab_Energieanlagen AS a " +
                         "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                         "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                 if (dt == null || !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG)) return;
 
                 foreach (DataRow r in dt.Rows)
@@ -162,7 +161,7 @@ namespace WindowsFormsApplication1
                     Zahlwert(g.SatzEigenCt),
                     Zahlwert(g.VbhKontingent),
                     Zahlwert(g.VbhDeckel),
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = g.IdAnlage });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = g.IdAnlage });
             }
             catch { return false; }
         }
@@ -178,7 +177,7 @@ namespace WindowsFormsApplication1
                 {
                     object o = DataRepository.ExecuteScalar(
                         "SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
                     if (o != null && o != DBNull.Value) return Convert.ToString(o).Trim();
                 }
             }
@@ -196,21 +195,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>NULL statt 0 — „kein eigener Wert" ist etwas anderes als der Wert 0.</summary>
-        private static OleDbParameter Zahlwert(double? v)
+        private static DbParam Zahlwert(double? v)
         {
-            return new OleDbParameter("@d", OleDbType.Double)
-            { Value = v.HasValue ? (object)v.Value : DBNull.Value };
+            return new DbParam("@d", DbParamTyp.Double)
+            { Wert = v.HasValue ? (object)v.Value : DBNull.Value };
         }
 
-        private static OleDbParameter Datumswert(DateTime? v)
+        private static DbParam Datumswert(DateTime? v)
         {
-            return new OleDbParameter("@t", OleDbType.Date)
-            { Value = v.HasValue ? (object)v.Value.Date : DBNull.Value };
+            return new DbParam("@t", DbParamTyp.Date)
+            { Wert = v.HasValue ? (object)v.Value.Date : DBNull.Value };
         }
 
         /// <summary>Steuerwert gekürzt auf die Spaltenbreite — ein zu langer Wert ließe das
         /// UPDATE STILL scheitern (die Lehre aus Etappe E3, Probe C2).</summary>
-        private static OleDbParameter Textwert(string s, int laenge)
+        private static DbParam Textwert(string s, int laenge)
         {
             object wert = DBNull.Value;
             if (!string.IsNullOrEmpty(s))
@@ -218,7 +217,7 @@ namespace WindowsFormsApplication1
                 string t = s.Trim();
                 if (t.Length > 0) wert = t.Length > laenge ? t.Substring(0, laenge) : t;
             }
-            return new OleDbParameter("@s", OleDbType.VarWChar, laenge) { Value = wert };
+            return new DbParam("@s", DbParamTyp.VarWChar, laenge) { Wert = wert };
         }
 
         private static int Ganzzahl(DataRow r, string spalte)

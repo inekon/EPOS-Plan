@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
 
             string sql = "SELECT * FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?";
             OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -253,7 +253,7 @@ namespace WindowsFormsApplication1
             string sql = "DELETE FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?";
             OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
 
-            if (DataRepository.ExecuteSQL(sql, ps))
+            if (DataRepository.ExecuteSQL(sql, DbParam.Von(ps)))
             {
                 MessageBox.Show("Datensatz gelöscht.");
                 SetControls();
@@ -288,7 +288,7 @@ namespace WindowsFormsApplication1
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
             OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName), new OleDbParameter("@ro", false) };
 
-            if (DataRepository.ExecuteSQL(insertSql, ps))
+            if (DataRepository.ExecuteSQL(insertSql, DbParam.Von(ps)))
             {
                 // Alle Stundenwerte über den Transaktions-Speicherer initialisieren
                 try
@@ -330,7 +330,7 @@ namespace WindowsFormsApplication1
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
             OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName), new OleDbParameter("@ro", false) };
 
-            if (DataRepository.ExecuteSQL(insertSql, ps))
+            if (DataRepository.ExecuteSQL(insertSql, DbParam.Von(ps)))
             {
                 try
                 {

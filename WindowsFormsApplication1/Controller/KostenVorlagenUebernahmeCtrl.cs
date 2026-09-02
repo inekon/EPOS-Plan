@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -57,9 +56,9 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KomponentenID = ? AND KategorieID = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", komponentenId),
-                new OleDbParameter("@k", kategorieId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", komponentenId),
+                new DbParam("@k", kategorieId));
             return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
         }
 
@@ -75,11 +74,11 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT MIN(ID) FROM Tab_ProjektWerte WHERE ProjektID = ? AND " +
                 "KategorieID = ? AND KomponentenID = ? AND StammID = ? AND ID_Anlage = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@g", kategorieId),
-                new OleDbParameter("@k", komponentenId),
-                new OleDbParameter("@s", stammId),
-                new OleDbParameter("@a", idAnlage));
+                new DbParam("@p", projektId),
+                new DbParam("@g", kategorieId),
+                new DbParam("@k", komponentenId),
+                new DbParam("@s", stammId),
+                new DbParam("@a", idAnlage));
             return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
         }
 
@@ -218,7 +217,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID, ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                new OleDbParameter("@p", projektId));
+                new DbParam("@p", projektId));
             if (dt == null) return 0;
 
             foreach (DataRow r in dt.Rows)
@@ -307,16 +306,16 @@ namespace WindowsFormsApplication1
             try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
 
             string quellFilter = "";
-            var quellParameter = new List<OleDbParameter>
+            var quellParameter = new List<DbParam>
             {
-                new OleDbParameter("@p", quellProjektId),
-                new OleDbParameter("@c", komponentenId),
-                new OleDbParameter("@k", kategorieId)
+                new DbParam("@p", quellProjektId),
+                new DbParam("@c", komponentenId),
+                new DbParam("@k", kategorieId)
             };
             if (spalteDa && quellAnlage > 0)
             {
                 quellFilter = " AND ID_Anlage = ?";
-                quellParameter.Add(new OleDbParameter("@a", quellAnlage));
+                quellParameter.Add(new DbParam("@a", quellAnlage));
             }
             else if (spalteDa && quellAnlage == 0)
             {
@@ -368,25 +367,25 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
                     SchemaKatalog.SPALTE_PW_STARTJAHR + "]) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    new OleDbParameter("@p", zielProjektId),
-                    new OleDbParameter("@s", stammId),
-                    new OleDbParameter("@c", komponentenId),
-                    new OleDbParameter("@k", kategorieId),
-                    Roh(r, "EingegebenerWert", OleDbType.Double),
-                    Roh(r, "BestCase", OleDbType.Double),
-                    Roh(r, "WorstCase", OleDbType.Double),
-                    Roh(r, "Nutzungsdauer", OleDbType.Double),
-                    Roh(r, "BestCase_Nutzungsdauer", OleDbType.Double),
-                    Roh(r, "WorstCase_Nutzungsdauer", OleDbType.Double),
-                    Roh(r, "Einheit", OleDbType.VarWChar),
-                    Roh(r, "Gruppe", OleDbType.VarWChar),
-                    Roh(r, SchemaKatalog.SPALTE_PW_KOSTENART, OleDbType.VarWChar),
-                    Roh(r, SchemaKatalog.SPALTE_PW_BEMESSUNG, OleDbType.VarWChar),
-                    Roh(r, SchemaKatalog.SPALTE_PW_IST_ERLOES, OleDbType.Boolean),
-                    Roh(r, SchemaKatalog.SPALTE_PW_MENGE, OleDbType.Double),
-                    Roh(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS, OleDbType.Double),
-                    Roh(r, SchemaKatalog.SPALTE_PW_VORLAGEID, OleDbType.Integer),
-                    Roh(r, SchemaKatalog.SPALTE_PW_STARTJAHR, OleDbType.Integer));
+                    new DbParam("@p", zielProjektId),
+                    new DbParam("@s", stammId),
+                    new DbParam("@c", komponentenId),
+                    new DbParam("@k", kategorieId),
+                    Roh(r, "EingegebenerWert", DbParamTyp.Double),
+                    Roh(r, "BestCase", DbParamTyp.Double),
+                    Roh(r, "WorstCase", DbParamTyp.Double),
+                    Roh(r, "Nutzungsdauer", DbParamTyp.Double),
+                    Roh(r, "BestCase_Nutzungsdauer", DbParamTyp.Double),
+                    Roh(r, "WorstCase_Nutzungsdauer", DbParamTyp.Double),
+                    Roh(r, "Einheit", DbParamTyp.VarWChar),
+                    Roh(r, "Gruppe", DbParamTyp.VarWChar),
+                    Roh(r, SchemaKatalog.SPALTE_PW_KOSTENART, DbParamTyp.VarWChar),
+                    Roh(r, SchemaKatalog.SPALTE_PW_BEMESSUNG, DbParamTyp.VarWChar),
+                    Roh(r, SchemaKatalog.SPALTE_PW_IST_ERLOES, DbParamTyp.Boolean),
+                    Roh(r, SchemaKatalog.SPALTE_PW_MENGE, DbParamTyp.Double),
+                    Roh(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS, DbParamTyp.Double),
+                    Roh(r, SchemaKatalog.SPALTE_PW_VORLAGEID, DbParamTyp.Integer),
+                    Roh(r, SchemaKatalog.SPALTE_PW_STARTJAHR, DbParamTyp.Integer));
 
                 if (n == 1)
                 {
@@ -398,10 +397,10 @@ namespace WindowsFormsApplication1
                         object neuId = DataRepository.ExecuteScalar(
                             "SELECT MAX(ID) FROM Tab_ProjektWerte WHERE ProjektID = ? AND " +
                             "KomponentenID = ? AND KategorieID = ? AND StammID = ?",
-                            new OleDbParameter("@p", zielProjektId),
-                            new OleDbParameter("@c", komponentenId),
-                            new OleDbParameter("@k", kategorieId),
-                            new OleDbParameter("@s", stammId));
+                            new DbParam("@p", zielProjektId),
+                            new DbParam("@c", komponentenId),
+                            new DbParam("@k", kategorieId),
+                            new DbParam("@s", stammId));
                         if (neuId != null && neuId != DBNull.Value)
                             KostenProjektPositionenCtrl.AnlageZuordnen(
                                 Convert.ToInt32(neuId), zielAnlage);
@@ -429,16 +428,16 @@ namespace WindowsFormsApplication1
             if (!spalteDa || idAnlage < 0)
                 return VorhandeneImProjekt(projektId, komponentenId, kategorieId);
 
-            string filter; var ps = new List<OleDbParameter>
+            string filter; var ps = new List<DbParam>
             {
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", komponentenId),
-                new OleDbParameter("@k", kategorieId)
+                new DbParam("@p", projektId),
+                new DbParam("@c", komponentenId),
+                new DbParam("@k", kategorieId)
             };
             if (idAnlage > 0)
             {
                 filter = " AND ID_Anlage = ?";
-                ps.Add(new OleDbParameter("@a", idAnlage));
+                ps.Add(new DbParam("@a", idAnlage));
             }
             else
             {
@@ -467,7 +466,7 @@ namespace WindowsFormsApplication1
 
             object o = DataRepository.ExecuteScalar(
                 "SELECT MAX(StammID) FROM Tab_Kostenfaktor WHERE Bezeichnung = ?",
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@b", bezeichnung));
             if (o != null && o != DBNull.Value && Convert.ToInt32(o) > 0)
                 return Convert.ToInt32(o);
 
@@ -478,8 +477,8 @@ namespace WindowsFormsApplication1
             int n = DataRepository.ExecuteNonQuery(
                 "INSERT INTO Tab_Kostenfaktor (StammID, Bezeichnung, IsMainComponent) " +
                 "VALUES (?, ?, FALSE)",
-                new OleDbParameter("@s", neu),
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@s", neu),
+                new DbParam("@b", bezeichnung));
             return n == 1 ? neu : 0;
         }
 
@@ -491,25 +490,25 @@ namespace WindowsFormsApplication1
             DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_VORLAGEID + "] = ? " +
                 "WHERE ID = ?",
-                new OleDbParameter("@v", vorlageId),
-                new OleDbParameter("@id", positionsId));
+                new DbParam("@v", vorlageId),
+                new DbParam("@id", positionsId));
 
             if (nutzungsdauer.HasValue)
                 DataRepository.ExecuteNonQuery(
                     "UPDATE Tab_ProjektWerte SET Nutzungsdauer = ?, " +
                     "BestCase_Nutzungsdauer = ?, WorstCase_Nutzungsdauer = ? WHERE ID = ?",
-                    new OleDbParameter("@n1", nutzungsdauer.Value),
-                    new OleDbParameter("@n2", nutzungsdauer.Value),
-                    new OleDbParameter("@n3", nutzungsdauer.Value),
-                    new OleDbParameter("@id", positionsId));
+                    new DbParam("@n1", nutzungsdauer.Value),
+                    new DbParam("@n2", nutzungsdauer.Value),
+                    new DbParam("@n3", nutzungsdauer.Value),
+                    new DbParam("@id", positionsId));
         }
 
         /// <summary>Feldwert 1:1 als typisierter Parameter (NULL bleibt NULL).</summary>
-        private static OleDbParameter Roh(DataRow r, string spalte, OleDbType typ)
+        private static DbParam Roh(DataRow r, string spalte, DbParamTyp typ)
         {
-            var p = new OleDbParameter("@" + spalte, typ);
+            var p = new DbParam("@" + spalte, typ);
             object w = r[spalte];
-            p.Value = (w == null || w == DBNull.Value) ? DBNull.Value : w;
+            p.Wert = (w == null || w == DBNull.Value) ? DBNull.Value : w;
             return p;
         }
     }

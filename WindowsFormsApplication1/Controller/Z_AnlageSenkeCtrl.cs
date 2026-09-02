@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -131,7 +130,7 @@ namespace WindowsFormsApplication1
                 "INNER JOIN [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] a ON a.ID = s.ID_Anlage " +
                 "WHERE a.ID_Projekt = ? " +
                 "ORDER BY s.ID_Anlage, s.Rang",
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
 
             AusTabelle(dt, liste);
             return liste;
@@ -157,7 +156,7 @@ namespace WindowsFormsApplication1
                 "SELECT ID, ID_Anlage, Rang, Ziel, Bedarfsart, ID_Puffer, " +
                 "       Ladeprio, Ladeprio_PV, Ladegrenze, Anschlusshoehe " +
                 "FROM [" + TABLE + "] WHERE ID_Anlage = ? ORDER BY Rang",
-                new OleDbParameter("@anl", OleDbType.Integer) { Value = idAnlage });
+                new DbParam("@anl", DbParamTyp.Integer) { Wert = idAnlage });
 
             AusTabelle(dt, liste);
             return liste;
@@ -211,7 +210,7 @@ namespace WindowsFormsApplication1
                 v = DataRepository.Vorgang();
 
                 v.Ausfuehren("DELETE FROM [" + TABLE + "] WHERE ID_Anlage = ?",
-                             new OleDbParameter("@anl", OleDbType.Integer) { Value = idAnlage });
+                             new DbParam("@anl", DbParamTyp.Integer) { Wert = idAnlage });
 
                 int rang = 0;
                 if (zeilen != null)
@@ -228,22 +227,22 @@ namespace WindowsFormsApplication1
                             "(ID_Anlage, Rang, Ziel, Bedarfsart, ID_Puffer, Ladeprio, " +
                             " Ladeprio_PV, Ladegrenze, Anschlusshoehe) " +
                             "VALUES (?,?,?,?,?,?,?,?,?)",
-                            Par("@anl", OleDbType.Integer, idAnlage),
-                            Par("@rang", OleDbType.Integer, rang),
-                            Par("@ziel", OleDbType.VarWChar,
+                            Par("@anl", DbParamTyp.Integer, idAnlage),
+                            Par("@rang", DbParamTyp.Integer, rang),
+                            Par("@ziel", DbParamTyp.VarWChar,
                                 string.IsNullOrEmpty(z.Ziel) ? DbWerte.WS_ZIEL_HEIZKREIS : z.Ziel),
-                            Par("@art", OleDbType.VarWChar,
+                            Par("@art", DbParamTyp.VarWChar,
                                 string.IsNullOrEmpty(z.Bedarfsart) ? DbWerte.WS_TYP_BEIDES : z.Bedarfsart),
                             // 0 wird NIE geschrieben - die Beziehung auf
                             // Tab_Pufferspeicher.ID ist erzwungen, "kein Puffer" ist NULL.
-                            Par("@puf", OleDbType.Integer,
+                            Par("@puf", DbParamTyp.Integer,
                                 z.ID_Puffer > 0 ? (object)z.ID_Puffer : null),
-                            Par("@prio", OleDbType.Integer, z.Ladeprio),
-                            Par("@prioPv", OleDbType.Integer, z.Ladeprio_PV),
-                            Par("@grenze", OleDbType.Double, z.Ladegrenze),
+                            Par("@prio", DbParamTyp.Integer, z.Ladeprio),
+                            Par("@prioPv", DbParamTyp.Integer, z.Ladeprio_PV),
+                            Par("@grenze", DbParamTyp.Double, z.Ladegrenze),
                             // -1 heisst "nicht gesetzt" -> NULL; 0 ist eine GUELTIGE
                             // Hoehe (ganz unten) und muss geschrieben werden.
-                            Par("@hoehe", OleDbType.Double,
+                            Par("@hoehe", DbParamTyp.Double,
                                 z.Anschlusshoehe >= 0 ? (object)z.Anschlusshoehe : null));
                     }
                 }
@@ -297,11 +296,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static OleDbParameter Par(string name, OleDbType typ, object wert)
+        private static DbParam Par(string name, DbParamTyp typ, object wert)
         {
             // AUSDRUECKLICHER Spaltentyp, auch bei NULL: Aus DBNull allein leitet der
             // Provider keinen Typ ab - dieselbe Regel wie in ProjektPuffer.Par.
-            return new OleDbParameter(name, typ) { Value = wert ?? DBNull.Value };
+            return new DbParam(name, typ) { Wert = wert ?? DBNull.Value };
         }
 
         private static int Zahl(DataTable dt, DataRow r, string spalte)

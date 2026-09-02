@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -41,7 +40,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(string szBezeichner)
         {
             string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@bez", szBezeichner ?? (object)DBNull.Value));
 
             Reset();
             _internalList.Clear();
@@ -58,7 +57,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -66,7 +65,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -82,22 +81,22 @@ namespace WindowsFormsApplication1
                              Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@bez", this.m_szBezeichner ?? ""),
-                new OleDbParameter("@typ", (object)(this.m_szTyp ?? "") ),
-                new OleDbParameter("@lei", this.m_Leistung),
-                new OleDbParameter("@ene", this.m_Energie),
-                new OleDbParameter("@deg", this.m_Degradation),
-                new OleDbParameter("@lad", this.m_Ladezustand),
-                new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@ro", false),
-                new OleDbParameter("@eta", this.m_WirkungsgradRT),
-                new OleDbParameter("@nzyk", this.m_ZyklenZugesichert),
-                new OleDbParameter("@cver", this.m_Verschleisskosten),
-                new OleDbParameter("@cpow", this.m_Leistungskosten),
-                new OleDbParameter("@ifix", this.m_InvestitionFix),
-                new OleDbParameter("@stby", this.m_StandbyVerbrauch)
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@bez", this.m_szBezeichner ?? ""),
+                new DbParam("@typ", (object)(this.m_szTyp ?? "") ),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@ene", this.m_Energie),
+                new DbParam("@deg", this.m_Degradation),
+                new DbParam("@lad", this.m_Ladezustand),
+                new DbParam("@mod", this.m_Modulkosten),
+                new DbParam("@ro", false),
+                new DbParam("@eta", this.m_WirkungsgradRT),
+                new DbParam("@nzyk", this.m_ZyklenZugesichert),
+                new DbParam("@cver", this.m_Verschleisskosten),
+                new DbParam("@cpow", this.m_Leistungskosten),
+                new DbParam("@ifix", this.m_InvestitionFix),
+                new DbParam("@stby", this.m_StandbyVerbrauch)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -125,21 +124,21 @@ namespace WindowsFormsApplication1
                             Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
                           WHERE Bezeichner = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@bez", this.m_szBezeichner ?? ""),
-                new OleDbParameter("@typ", (object)(this.m_szTyp ?? "") ),
-                new OleDbParameter("@lei", this.m_Leistung),
-                new OleDbParameter("@ene", this.m_Energie),
-                new OleDbParameter("@deg", this.m_Degradation),
-                new OleDbParameter("@lad", this.m_Ladezustand),
-                new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@eta", this.m_WirkungsgradRT),
-                new OleDbParameter("@nzyk", this.m_ZyklenZugesichert),
-                new OleDbParameter("@cver", this.m_Verschleisskosten),
-                new OleDbParameter("@cpow", this.m_Leistungskosten),
-                new OleDbParameter("@ifix", this.m_InvestitionFix),
-                new OleDbParameter("@stby", this.m_StandbyVerbrauch),
-                new OleDbParameter("@key", szKey ?? "")
+            DbParam[] ps = {
+                new DbParam("@bez", this.m_szBezeichner ?? ""),
+                new DbParam("@typ", (object)(this.m_szTyp ?? "") ),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@ene", this.m_Energie),
+                new DbParam("@deg", this.m_Degradation),
+                new DbParam("@lad", this.m_Ladezustand),
+                new DbParam("@mod", this.m_Modulkosten),
+                new DbParam("@eta", this.m_WirkungsgradRT),
+                new DbParam("@nzyk", this.m_ZyklenZugesichert),
+                new DbParam("@cver", this.m_Verschleisskosten),
+                new DbParam("@cpow", this.m_Leistungskosten),
+                new DbParam("@ifix", this.m_InvestitionFix),
+                new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@key", szKey ?? "")
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -155,7 +154,7 @@ namespace WindowsFormsApplication1
             }
 
             string sql = "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", szBezeichner ?? ""));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@bez", szBezeichner ?? ""));
         }
 
         // --- MAPPING ---
