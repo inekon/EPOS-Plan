@@ -805,7 +805,8 @@ und liefert ein gerechnetes Ergebnis auf den Bildschirm.
 > gegen `2026-08-30_B3-Kaskade`: **PASS, 22 Dateien byte-identisch.** Vorbedingungen, die das
 > Konzept nicht kannte: `DbParam` statt `OleDbParameter` (Test B) und der Kern in einer Assembly
 > ohne `UseWindowsForms` (Test A) — beides erledigt. Der Spike lief ohne Mac; die ARM64-Frage (iF15)
-> beantwortet der `macos-latest`-Schritt der CI. Einzelheiten: Entscheidungsregister § 2.2/2.3.
+> hat der `macos-latest`-Schritt der CI beantwortet: **auf Apple Silicon (`macos-26-arm64`) ebenfalls PASS
+> und byte-gleich** (Lauf `edefbef`). Einzelheiten: Entscheidungsregister § 2.2/2.3.
 
 **Voraussetzung:** iU1, iU2. **Entspricht Grundlagen-S0.** **Baustein:** iE6.
 
@@ -1058,7 +1059,7 @@ Kein Paket gilt als fertig, weil es gebaut ist. Es gilt als fertig, wenn sein Na
 |---|---|---|---|
 | **iT1** | **Byte-Gleichheit** | Referenzlauf gegen `2026-08-30_B3-Kaskade`, 332/332 Dateien byte-/MD5-gleich. Der Maßstab für alles, was sich **nicht** ändern darf | iU1, iU4, iU5 |
 | **iT2** | **Wertgleichheit in Toleranz** | rel. 1e-4 / abs. 0,01 wie heute; nichtnumerische Werte exakt. Der Maßstab für Plattform- und Backendwechsel | iU3, iU6, iU10 |
-| **iT3** | **Plattformvergleich** | derselbe Kern-Referenzlauf auf x64-Windows und ARM64-macOS/iOS; Abweichungen nach dem FMA-Muster des x64-Umstiegs erklärt | iU3, iU4, iU10 |
+| **iT3** | **Plattformvergleich** | derselbe Kern-Referenzlauf auf x64-Windows, x64-Linux und arm64-macOS. **Geführt 02.09.2026 für Projekt 1030: byte-gleich auf allen drei** | iU3, iU4, iU10 |
 | **iT4** | **Build-Matrix** | § 3.6 vollständig erfüllt; CI grün auf allen drei Runnern | iU1, iU2, iU4 |
 | **iT5** | **Berichtsvergleich** | Word-/Excel-Bericht zeilengleich, Chartbilder sichtgeprüft | iU7, iU10 |
 | **iT6** | **Feldkartenabnahme** | je Maske das generierte Inventar vollständig abgehakt — bei 730 Textfeldern ist das vergessene Feld der typische Migrationsfehler | iU8, iU9 |
