@@ -140,6 +140,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool CO2StrommixRueckfall;
 
+        /// <summary>
+        /// <b>Mindestens ein Heizkessel hat im Simulationsergebnis KEINEN
+        /// Brennstoffverbrauch</b>, obwohl er Wärme erzeugt hat (Befunde B-1/N1,
+        /// Anwenderentscheid 30.08.2026). Gesetzt von
+        /// <see cref="KostenEmissionRechner"/>, wenn eine Kessel-Modulzeile
+        /// <c>Waerme_Gas + Waerme_Oel &gt; 0</c>, aber <c>Verbrauch ≤ 0</c> trägt.
+        ///
+        /// <para><b>Warum das gemeldet gehört.</b> Der Rechenkern setzt
+        /// <c>ErgebnisHeizkesselModulModel.Verbrauch</c> nie (Befund B-1) — im
+        /// gesamten Bestand steht dort 0. Die Mengensammlung des Rechners verwirft
+        /// Zeilen mit Verbrauch ≤ 0, bevor sie überhaupt nach dem Energieträger
+        /// fragt. Der Kesselbrennstoff fehlt dadurch STILL in den Energiekosten, in
+        /// der CO₂-Bilanz und in der BEHG-Abgabemenge, und
+        /// <see cref="Energiekosten"/> bleibt trotzdem bestimmbar — die Zahl sieht
+        /// vollständig aus, ist es aber nicht.</para>
+        ///
+        /// <para><b>Nur Meldung, keine Ableitung</b> (Anwenderentscheid): Die
+        /// Kennzahlen bleiben Zahl für Zahl unverändert. Es entsteht ausschließlich
+        /// ein Hinweis — in den Berichtswarnungen
+        /// (<see cref="BerichtsDatenSammler"/>) und in der Hinweiszeile der
+        /// Wirtschaftlichkeit. Insbesondere wird <c>kostenVollstaendig</c> NICHT
+        /// gekippt: Das nähme jedem Kesselprojekt den Kapitalwert.</para>
+        /// </summary>
+        public bool KesselVerbrauchFehlt;
+
+        /// <summary>Namen der betroffenen Kessel-Module (<c>Tab_ErgebnisHeizkesselModul.Modul</c>)
+        /// zu <see cref="KesselVerbrauchFehlt"/> — die Meldung nennt sie beim Namen,
+        /// damit der Anwender weiß, welche Anlage gemeint ist. Leer, solange die Fahne
+        /// nicht steht.</summary>
+        public List<string> KesselOhneVerbrauch = new List<string>();
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides

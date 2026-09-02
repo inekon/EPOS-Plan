@@ -520,10 +520,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Spaltenlage (29.08.2026 gegen die Produktivdatenbank erhoben):
         /// WP <c>Nennleistung</c> [kW Heizleistung] · Kessel <c>Ptherm</c> [kW] ·
-        /// BHKW <c>Pel</c> [kW el] · PV <c>Tab_Energieanlagen.PV_Leistung</c> [kWp]
-        /// (Anlagenspalte, Nutzerentscheidung 18.08.2026) · Stromspeicher
-        /// <c>Energie</c> [kWh] · Solar <c>Aperturflaeche</c> [m² je Modul] ×
-        /// <c>Kollektormodulanzahl</c> der Anlagenzeile. Der PUFFERSPEICHER hat
+        /// BHKW <c>Pel</c> [kW el] · PV <b>rechnerisch</b> Σ (<c>Tab_PV.Leistung</c>
+        /// [W je Modul] × <c>Tab_Energieanlagen.PV_Leistung</c> [Modulanzahl]) / 1000
+        /// [kWp] über <see cref="PhotovoltaikCtrl.KwpSumme"/> (Anwenderentscheid
+        /// 30.08.2026, Befund I-1) · Stromspeicher <c>Energie</c> [kWh] · Solar
+        /// <c>Aperturflaeche</c> [m² je Modul] × <c>Kollektormodulanzahl</c> der
+        /// Anlagenzeile. Der PUFFERSPEICHER hat
         /// bewusst KEINE kWh-Kapazität hier: Ohne Temperaturpaar gibt es keine
         /// belastbare Umrechnung des Volumens (Speicher-Registry-Warnung) — die
         /// Definition gehört zur Speicherrechnung, nicht in eine Kostenformel.</para>
@@ -536,8 +538,29 @@ namespace WindowsFormsApplication1
             Plan plan;
             if (!Plaene.TryGetValue(komponente, out plan)) return null;
 
+            // ---------------------------------------------------- Befund I-1
+            // ANWENDERENTSCHEID 30.08.2026: „je kWp" bemisst die INSTALLIERTE
+            // LEISTUNG (Modulanzahl × Modulleistung), nicht die Modulanzahl.
+            // Bis hierher summierte diese Methode die Anlagenspalte
+            // Tab_Energieanlagen.PV_Leistung — dieselbe Spalte, die die Landkarte
+            // ein paar Zeilen weiter oben ausdrücklich als MODULANZAHL führt
+            // (Mengenspalte des Stückpreises). Ein €/kWp-Satz wurde damit faktisch
+            // mit der Modulzahl multipliziert.
+            //
+            // EINE kWp-WAHRHEIT: gerechnet wird über denselben Kern wie Simulation,
+            // Vergütungsdialog und EEG-Größenklassen (PhotovoltaikCtrl.KwpSumme,
+            // PV-Konzept § 2.3 / Befund V3) — hier nur zusätzlich auf die
+            // Anlagenzeile eingegrenzt. Die Art↔Gewerk-Kreuzprüfung bleibt: „je kWp"
+            // an einem anderen Gewerk fällt weiter unten durch die Kette auf null,
+            // und Summe ≤ 0 liefert wie überall null statt einer Fantasiezahl.
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal)
+                && komponentenID == 3)
+            {
+                double kwp = PhotovoltaikCtrl.KwpSumme(projektID, idAnlage);
+                return kwp > 0 ? kwp : (double?)null;
+            }
+
             string geraetespalte = null;
-            bool anlagenspalte = false;   // Baugröße steht an Tab_Energieanlagen
             bool malModulanzahl = false;  // Gerätewert × Stückzahl der Anlagenzeile
 
             if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal)
@@ -546,8 +569,6 @@ namespace WindowsFormsApplication1
                 && komponentenID == 2) geraetespalte = "Ptherm";
             else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal)
                 && komponentenID == 7) geraetespalte = "Pel";
-            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal)
-                && komponentenID == 3) { geraetespalte = "PV_Leistung"; anlagenspalte = true; }
             else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal)
                 && komponentenID == 5) geraetespalte = "Energie";
             else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal)
@@ -556,23 +577,14 @@ namespace WindowsFormsApplication1
 
             try
             {
-                string sql;
                 var ps = new List<OleDbParameter> { new OleDbParameter("@p", projektID) };
 
-                if (anlagenspalte)
-                {
-                    sql = "SELECT SUM(a.[" + geraetespalte + "]) FROM Tab_Energieanlagen AS a " +
-                          "WHERE a.ID_Projekt = ? AND a.[" + plan.Verweis + "] > 0";
-                }
-                else
-                {
-                    string wert = malModulanzahl
-                        ? "g.[" + geraetespalte + "] * a.[" + plan.Mengenspalte + "]"
-                        : "g.[" + geraetespalte + "]";
-                    sql = "SELECT SUM(" + wert + ") FROM [" + plan.Tabelle + "] AS g " +
-                          "INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.[" + plan.Verweis + "] " +
-                          "WHERE a.ID_Projekt = ?";
-                }
+                string wert = malModulanzahl
+                    ? "g.[" + geraetespalte + "] * a.[" + plan.Mengenspalte + "]"
+                    : "g.[" + geraetespalte + "]";
+                string sql = "SELECT SUM(" + wert + ") FROM [" + plan.Tabelle + "] AS g " +
+                             "INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.[" + plan.Verweis + "] " +
+                             "WHERE a.ID_Projekt = ?";
                 if (idAnlage > 0)
                 {
                     sql += " AND a.ID = ?";

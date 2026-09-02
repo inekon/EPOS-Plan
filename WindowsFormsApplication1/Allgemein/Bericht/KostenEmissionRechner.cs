@@ -71,6 +71,8 @@ namespace WindowsFormsApplication1
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
                 v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
                 v.CO2StrommixRueckfall = false;
+                v.KesselVerbrauchFehlt = false;                  // B-1/N1
+                v.KesselOhneVerbrauch = new List<string>();
             }
         }
 
@@ -99,8 +101,42 @@ namespace WindowsFormsApplication1
 
             if (m.BHKW != null && m.BHKW.Module != null)
                 foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) add(mo.CarrierId, mo.Verbrauch);
+
+            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): NUR MELDEN, NICHT ABLEITEN.
+            //
+            // Ein Kessel, der Wärme erzeugt hat (Waerme_Gas + Waerme_Oel > 0), aber
+            // keinen Brennstoffverbrauch ausweist, fällt unten in `add` durch die
+            // Klemme „mwh <= 0" — und zwar BEVOR die Trägerprüfung greift. Sein
+            // Brennstoff fehlt danach still in Energiekosten, CO₂-Bilanz und
+            // BEHG-Menge, ohne dass irgendeine Fahne stünde: Der Rechenkern setzt
+            // `Verbrauch` an der Kessel-Modulzeile nie (Befund B-1), im gesamten
+            // Bestand steht dort 0.
+            //
+            // Festgehalten wird deshalb genau diese Lage — mehr nicht. Es wird
+            // WEDER eine Ersatzmenge abgeleitet (die Steuerseite tut das seit B3a
+            // über den Jahresnutzungsgrad; das ist eine Rechtsvorschrift und keine
+            // Vorlage für die Kostenkette) NOCH `kostenVollstaendig` gekippt — das
+            // nähme jedem Kesselprojekt den Kapitalwert. Die Zahlen bleiben Zahl für
+            // Zahl, was sie waren; neu ist allein der Hinweis.
+            var kesselOhneVerbrauch = new List<string>();
             if (m.Heizkessel != null && m.Heizkessel.Module != null)
-                foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module) add(mo.CarrierId, mo.Verbrauch);
+                foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
+                {
+                    add(mo.CarrierId, mo.Verbrauch);
+                    // Der Modulname ist der Anlagen-Bezeichner des Anwenders (Datenwert,
+                    // kein Anzeigetext); ohne Namen bleibt das sprachneutrale "?" —
+                    // dafür lohnt kein Ressourcenschlüssel. JE NAME EINMAL: Eine
+                    // Kaskade aus sechs baugleichen Kesseln führt sechs Modulzeilen
+                    // desselben Namens; die Meldung nennt den Kessel dann einmal
+                    // statt sechsmal (die Reihenfolge des Ergebnisses bleibt).
+                    if (mo.Verbrauch <= 0 && (mo.Waerme_Gas + mo.Waerme_Oel) > 0)
+                    {
+                        string name = string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul;
+                        if (!kesselOhneVerbrauch.Contains(name)) kesselOhneVerbrauch.Add(name);
+                    }
+                }
+            v.KesselOhneVerbrauch = kesselOhneVerbrauch;
+            v.KesselVerbrauchFehlt = kesselOhneVerbrauch.Count > 0;
 
             // ---------------- Brennstoffe: Kosten + CO₂ ----------------
             double brennstoffKosten = 0, brennstoffCO2t = 0, behgCO2t = 0;
