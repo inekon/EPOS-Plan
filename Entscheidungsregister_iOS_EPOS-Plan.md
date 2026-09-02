@@ -120,6 +120,13 @@ für den vollen 13/13-Vergleich (iT1/iT3) braucht es eine neue Kopie aus der Pro
 `VACUUM INTO` und `sql/tools/Reduziere-Testdatenbank.sql`. Die überzähligen Projekte wurden bewusst
 nicht entfernt (Auswahl des Anwenders); größte Tabelle `Tab_StromganglinieDaten` mit 823.441 Zeilen.
 
+**Echtlauf des Reduzierungsskripts** (02.09.2026, auf einer Kopie dieser Datei, nicht eingecheckt):
+`sql/tools/Reduziere-Testdatenbank.sql` per `executescript` — 1,1 s; 23 → **11** Projekte (die
+vorhandenen der 13), `Tab_Applikation.ID_Projekt` → 1030, `Tab_StromganglinieDaten` 823.441 → 473.040
+Zeilen, **73,4 → 46,2 MB**, `integrity_check` ok, `foreign_key_check` leer. Das Skript ist damit
+auf dem echten Bestand belegt; die Probe gegen die Schema-DB hatte den Größengewinn nicht zeigen
+können.
+
 ### 2.2 Befund zum Machbarkeits-Spike (iU3), 02.09.2026 — zwei Messungen auf Linux
 
 Vor dem Spike wurde geprüft, was der heutige Bestand außerhalb von Windows *zur Laufzeit* tut.
