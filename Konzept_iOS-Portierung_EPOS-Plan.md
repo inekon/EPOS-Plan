@@ -8,6 +8,13 @@ werden kann, was neu entsteht, und in welcher Reihenfolge — **nur Konzept, kei
 
 Vermessungsbasis: Repo-Stand `Pufferspeicher` vom 30.08.2026, Zählungen mit Fundstellen in § 2.
 
+> **Nachfolgedokument (02.09.2026):**
+> [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) führt dieses Konzept in
+> Arbeitspakete (iU0–iU13), Meilensteine und Nachweise über, behandelt die **Anpassung der
+> Entwicklungsumgebung** als eigenes Kapitel und korrigiert einzelne Zählungen dieses Dokuments
+> (dort § 1.5). Die Leitentscheidungen iL1–iL8 und die Migrationsregeln M1–M10 bleiben gültig;
+> **iL2 ist präzisiert** (kein ACE-Parallelbetrieb — siehe iF9) und **M3 entfällt**.
+
 ---
 
 ## 1 Die Kernaussage vorweg
