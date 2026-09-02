@@ -379,7 +379,7 @@ Bleibt INEKON unter den Schwellen, ist der Umstieg **kostenneutral** (→ iF18).
 |---|---|---|
 | 1 | Auf `visualstudio.microsoft.com/downloads` **Community 2026** wählen, Web-Installer herunterladen | kostenfrei, kein Produktschlüssel |
 | 2 | Installer starten — er erkennt die vorhandene VS-2022-Installation und bietet an, **Workloads und Einstellungen zu übernehmen** | annehmen; spart die manuelle Auswahl |
-| 3 | Workloads: **.NET-Desktopentwicklung** (Pflicht), **.NET MAUI** (für iU2 ff.), **ASP.NET und Webentwicklung** (Blazor-Werkzeuge für iU8) | MAUI und ASP.NET lassen sich später nachinstallieren |
+| 3 | Drei Workloads auswählen — Bezeichner in der Tabelle unten | MAUI und ASP.NET lassen sich später nachinstallieren |
 | 4 | Installieren — VS 2022 bleibt **unangetastet** daneben stehen | Dauer 30–90 Minuten je nach Workloads |
 | 5 | Mit einem Microsoft-Konto anmelden | Community verlangt die Anmeldung nach 30 Tagen |
 | 6 | **ResXManager** aus dem Marketplace nachinstallieren, falls Schritt 2 ihn nicht übernommen hat | VS 2026 ist rückwärtskompatibel zu VS-2022-Erweiterungen |
@@ -390,6 +390,30 @@ Bleibt INEKON unter den Schwellen, ist der Umstieg **kostenneutral** (→ iF18).
 Schritt 7 ist der eigentliche Wert dieser Reihenfolge: **IDE-Wechsel und Frameworkwechsel werden
 getrennt nachgewiesen.** Bewegt sich danach ein Ergebnis, ist klar, welcher der beiden Schritte es
 war.
+
+**Die drei Workloads (Schritt 3):**
+
+| Workload in der Oberfläche | Bezeichner für die Kommandozeile | wofür |
+|---|---|---|
+| **.NET-Desktopentwicklung** | `Microsoft.VisualStudio.Workload.ManagedDesktop` | WinForms — die heutige Anwendung. **Pflicht** |
+| **.NET Multi-Platform App UI-Entwicklung** | `Microsoft.VisualStudio.Workload.NetCrossPlat` | MAUI — ab iU2 für die iOS-Hülle |
+| **ASP.NET und Webentwicklung** | `Microsoft.VisualStudio.Workload.NetWeb` | Blazor-Werkzeuge und Razor-Editor — ab iU8 für `EPOS.UI` |
+
+Wer die Auswahl reproduzierbar halten will (zweiter Arbeitsplatz, Neuaufsetzen), nimmt statt der
+Oberfläche den Installer auf der Kommandozeile:
+
+```
+"C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify ^
+  --installPath "C:\Program Files\Microsoft Visual Studio\2026\Community" ^
+  --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+  --add Microsoft.VisualStudio.Workload.NetCrossPlat ^
+  --add Microsoft.VisualStudio.Workload.NetWeb ^
+  --includeRecommended --passive --norestart
+```
+
+Bei einer Neuinstallation tritt der Bootstrapper `vs_community.exe` an die Stelle von
+`setup.exe modify`, ohne `--installPath`. Kontrolle danach: `dotnet --list-sdks` zeigt 10.0.x,
+`dotnet workload list` führt die MAUI-Workloads.
 
 ### 3.3 Mac-Arbeitsplatz
 
