@@ -1,10 +1,7 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Windows.Forms;
-using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 
 namespace WindowsFormsApplication1
@@ -12,12 +9,6 @@ namespace WindowsFormsApplication1
   
     public class ToolsClass
     {
-        private Microsoft.Office.Interop.Excel.Application oExcelApp;
-        private Microsoft.Office.Interop.Excel.Workbook oWorkbook = null;
-        private Microsoft.Office.Interop.Excel.Worksheet oWorksheet = null;
-
-        public List<KlimadatenModel> excelList = new List<KlimadatenModel>();
-        public List<SolardatenModel> excelListSolar = new List<SolardatenModel>();
         public List<string> textList = new List<string>();
 
         public bool Exist(string szName)
@@ -27,69 +18,6 @@ namespace WindowsFormsApplication1
             if (!rs.EOF()) { rs.Close(); return true; }
             rs.Close();
             return false;
-        }
-
-        public System.Data.DataTable ReadExcel(string file, string szSheet, int startZeile, int stopZeile, int startSpalte, int stopSpalte, ProgressBar pBar_Import)
-        {
-            System.Data.DataTable dt;
-
-            try
-            {
-                if (!File.Exists(file)) { MessageBox.Show("Datei " + file + " existiert nicht!"); return null; }
-
-                // Datei öffnen und aktives Blatt und benutzten Bereich auswählen
-                oExcelApp = new Microsoft.Office.Interop.Excel.Application();
-
-                oWorkbook = oExcelApp.Workbooks.Open(file);
-                oWorksheet = (Worksheet)oWorkbook.Sheets[szSheet];
-    
-                dt = new System.Data.DataTable(oWorksheet.Name);
-                DataColumn[] xco = new DataColumn[stopSpalte - startSpalte + 1];
-
-                for (int c = startSpalte; c <= stopSpalte; c++)
-                {
-                   xco[c - startSpalte] = new DataColumn(c.ToString(), typeof(Object));
-                }
-
-                dt.Columns.AddRange(xco);
-               
-                var headerOffset = startZeile; //have to skip header row
-                var width = dt.Columns.Count;
-                var depth = stopZeile - startZeile;
-                
-                for (var i = 0; i <= depth; i++)
-                {
-                    var row = dt.NewRow();
-                    for (var j = 0; j < width; j++)
-                    {
-                        var currentValue = oWorksheet.Cells[i + headerOffset, j + startSpalte].Value;
-                        row[j] = currentValue == null ? null : currentValue.ToString();
-                    }
-
-                    dt.Rows.Add(row);
-                    pBar_Import.Value += 1;
-                    Application.DoEvents();
-                }
-
-            }
-            catch(SystemException ex)
-            {
-                MessageBox.Show(ex.Message);
-                return null;
-            }
-            
-            oWorkbook.Close(false);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(oWorkbook);
-            oWorkbook = null;
-     
-            oExcelApp.Quit();
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(oExcelApp);
-            oExcelApp = null;
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            return dt;
         }
 
         public bool OpenText(string file)
