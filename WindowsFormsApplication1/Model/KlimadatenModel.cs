@@ -46,6 +46,29 @@
         public double Diffusstrahlung;
         public double Sonnenwinkel;
 
+        // =====================================================================
+        // Herkunft der Zeile im UTC-Raster (Befund B1, Paket A des
+        // PV-Ertragsmodell-Konzepts)
+        // =====================================================================
+        //
+        // Tab_Solar(_STAMM) hat KEINE Zeitspalte; der Zeitbezug ist allein die
+        // Zeilenreihenfolge (ORDER BY ID) und die ist UTC. Sortiert
+        // SolardatenCtrl.ReadOrtszeit die Reihe auf Ortszeit um, geht diese
+        // Position verloren - der Sonnenstand braucht sie aber weiterhin:
+        // SolarCalculator.CalculateHourly rechnet ausdruecklich auf UTC-Basis
+        // (Solarzeit = Stunde + (EoT + 4*Lon)/60). Beide Felder tragen sie
+        // deshalb an der Zeile mit.
+        //
+        // 0 bedeutet "nicht gesetzt": Wer die Reihe ueber ReadAll/ReadAllStamm
+        // liest, bekommt weiterhin die rohe UTC-Reihenfolge, und dort ist die
+        // Position der Index selbst.
+
+        /// <summary>Tag im UTC-Raster, 1-BASIERT (1…365) = utcIndex / 24 + 1.</summary>
+        public int TagUtc;
+
+        /// <summary>Stunde im UTC-Raster (0…23) = utcIndex % 24.</summary>
+        public int StundeUtc;
+
         public SolardatenModel()
         {
             m_ID = 0;
@@ -59,6 +82,8 @@
             Direktstrahlung = 0;
             Diffusstrahlung = 0;
             Sonnenwinkel = 0;
+            TagUtc = 0;
+            StundeUtc = 0;
         }
     }
 }

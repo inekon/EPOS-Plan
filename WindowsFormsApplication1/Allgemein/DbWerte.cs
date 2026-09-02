@@ -1971,6 +1971,26 @@ namespace WindowsFormsApplication1
         /// (dasselbe Muster wie <c>energy_conversion.faktor_name</c>).</summary>
         public const string PV_MARKTWERT_BEZEICHNER = "Marktwert Solar";
 
+        /// <summary>
+        /// Referenzjahr für die Zeitbasis der Klimadatenreihe (Befund B1, Paket A des
+        /// PV-Ertragsmodell-Konzepts). Es bestimmt AUSSCHLIESSLICH die beiden
+        /// Sommerzeit-Umstelltage — der letzte Sonntag im März und im Oktober —, sonst
+        /// nichts.
+        ///
+        /// <para><b>Eine Konstante, kein <c>DateTime.Today</c>.</b> Der Lauf muss
+        /// reproduzierbar bleiben: Mit dem laufenden Kalenderjahr rechnete derselbe
+        /// Referenzlauf am Jahreswechsel andere Zahlen, weil die Umstelltage um ein bis
+        /// zwei Tage wandern. Aus demselben Grund kommt
+        /// <c>StromPreisCtrl.Stichtag</c> nicht in Frage — es liefert praktisch immer das
+        /// heutige Jahr.</para>
+        ///
+        /// <para><b>Nur der Rückfall.</b> Führt das Projekt eine Spotpreisreihe (aktive
+        /// Speichervariante → <c>Tab_StromspeicherVariante.ID_Preisreihe</c> →
+        /// <c>Tab_Preisreihe.Jahr</c>), gilt DEREN Jahr: Dann liegen Erzeugung und
+        /// Preisreihe auf denselben Umstelltagen. Erst ohne Reihe gilt dieser Wert.</para>
+        /// </summary>
+        public const int SOLAR_REFERENZJAHR_STANDARD = 2025;
+
         // --------------------------------------------------------------- Status
 
         /// <summary>Aus einer Primaerquelle belegt und in Kraft.</summary>
