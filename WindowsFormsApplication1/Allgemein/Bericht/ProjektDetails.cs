@@ -64,7 +64,7 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 Bezeichner FROM Tab_Klimaregion WHERE ID_Projekt = ?",
+                    "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID_Projekt = ? LIMIT 1",
                     new OleDbParameter("@p", idProjekt));
                 d.KlimaregionName = o as string ?? "";
             }

@@ -24,7 +24,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="DBName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Kenndaten.accdb</Value>
+      <Value Profile="(Default)">Kenndaten.sqlite</Value>
     </Setting>
     <Setting Name="WordPressUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://wiki.epos-plan.de</Value>

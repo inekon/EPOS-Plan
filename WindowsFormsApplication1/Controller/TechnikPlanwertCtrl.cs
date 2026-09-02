@@ -669,7 +669,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable k = DataRepository.GetDataTable(
-                    "SELECT TOP 1 ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    "SELECT ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                     new OleDbParameter("@p", (Int32)projektID));
                 if (k != null && k.Rows.Count > 0)
                 {
@@ -882,7 +882,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable k = DataRepository.GetDataTable(
-                    "SELECT TOP 1 ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    "SELECT ID, Zeitstempel FROM Tab_Ergebnis WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                     new OleDbParameter("@p", (Int32)projektID));
                 if (k != null && k.Rows.Count > 0)
                 {

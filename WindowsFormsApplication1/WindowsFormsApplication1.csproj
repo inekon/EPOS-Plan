@@ -70,6 +70,16 @@
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
   </ItemGroup>
 
+  <!-- Generierter Typkatalog aus sql\schema (Arbeitspaket S2, Konzept 2.4).
+       EINGEBUNDEN PER LINK, nicht kopiert: Es gibt genau EINE Quelle, eine
+       Neuerzeugung durch sql\tools\Erzeuge-Schema.ps1 wirkt damit unmittelbar
+       im naechsten Build. Der namespace der erzeugten Datei ist
+       WindowsFormsApplication1.Allgemein - der Link legt sie folgerichtig
+       neben die uebrigen Dateien in Allgemein\. -->
+  <ItemGroup>
+    <Compile Include="..\sql\schema\SchemaTypKatalog.g.cs" Link="Allgemein\SchemaTypKatalog.g.cs" />
+  </ItemGroup>
+
   <!-- Projektreferenzen -->
   <ItemGroup>
     <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net8.0, AnyCPU).
@@ -79,6 +89,15 @@
     <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
          (net8.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
     <ProjectReference Include="..\KiKern\KiKern.csproj" />
+
+    <!-- Erststart-Assistent S8: derselbe Migrationskern, den auch die Konsolenfassung
+         EposSqliteMigrator.exe fuer Kundenbestaende benutzt (net8.0, x64, Schema als
+         eingebettete Ressource). EINE Migrationslogik fuer beide Wege - eine zweite
+         waere die Stelle, an der die Ergebnisse auseinanderlaufen.
+         Das Projekt liegt in der EIGENEN Projektmappe EposSqliteMigrator\; es ist
+         seit S8 zusaetzlich in WP-Plan.sln eingetragen, damit Visual Studio die
+         Referenz aufloest (MSBuild baut sie ueber diese ProjectReference ohnehin). -->
+    <ProjectReference Include="..\EposSqliteMigrator\Kern\EposSqliteMigrator.Kern.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->
@@ -93,7 +112,12 @@
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.1" />
 
-    <!-- Datenzugriff (Access via ACE OLEDB) -->
+    <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
+         EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+
+    <!-- BLEIBT: OleDbParameter ist nach der Umstellung nur noch DATENTRAEGER an den
+         ~2.300 Aufrufstellen; DataRepository uebersetzt innen (Konzept 2). -->
     <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
 
     <!-- Konfiguration / Settings -->

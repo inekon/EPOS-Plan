@@ -43,23 +43,19 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // Provider-String zentral aus DataRepository (x64-Umstellung P1.2)
-                string connString = DataRepository.GetConnectionString();
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht. Bewusst die
+                // STILLE Fassung: Der umschliessende catch-Zweig verschluckte einen
+                // Lesefehler bisher wortlos; DataRepository.GetDataTable wuerde ihn als
+                // MessageBox zeigen und damit am catch vorbei.
+                string sql = "SELECT GruppenName FROM Tab_KostenGruppenKatalog ORDER BY GruppenName";
+                DataTable dt = StilleDb.Tabelle(sql);
 
-                using (OleDbConnection conn = new OleDbConnection(connString))
-                {
-                    conn.Open();
-
-                    string sql = "SELECT GruppenName FROM Tab_KostenGruppenKatalog ORDER BY GruppenName";
-                    OleDbCommand cmd = new OleDbCommand(sql, conn);
-                    OleDbDataReader reader = cmd.ExecuteReader();
-
-                    comboBox_Gruppe.Items.Clear();
-                    while (reader.Read())
+                comboBox_Gruppe.Items.Clear();
+                if (dt != null)
+                    foreach (DataRow zeile in dt.Rows)
                     {
-                        comboBox_Gruppe.Items.Add(reader["GruppenName"].ToString());
+                        comboBox_Gruppe.Items.Add(zeile["GruppenName"].ToString());
                     }
-                }
 
                 // Komfort-Einstellungen
                 comboBox_Gruppe.AutoCompleteMode = AutoCompleteMode.SuggestAppend;

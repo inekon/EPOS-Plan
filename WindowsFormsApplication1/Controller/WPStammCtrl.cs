@@ -141,46 +141,46 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { Console.WriteLine("Fehler bei Delete (STAMM): " + ex.Message); return false; }
         }
 
-        // Legt einen neuen Stammdatensatz an (Import). ReadOnly = false. Setzt ID (AutoWert) via @@IDENTITY.
+        // Legt einen neuen Stammdatensatz an (Import). ReadOnly = false. Die ID ist ein
+        // AutoWert und wird vom Einfuegeaufruf des Vorgangs zurueckgeliefert (S4e).
         public bool Insert()
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    // Der innere Block haelt nur den Einzug: das INSERT-SQL steht als
+                    // @"…"-Literal, dessen Zeilenumbrueche und Einrueckungen INHALT der
+                    // Zeichenkette sind. Sie bleiben mit S4e Zeichen fuer Zeichen stehen.
                     {
                         string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
                              maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        using (OleDbCommand cmd = conn.CreateCommand())
-                        {
-                            cmd.Transaction = trans;
-                            cmd.CommandText = sql;
-                            cmd.Parameters.Add(new OleDbParameter("@nam", WPName ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@fir", Firma ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@typ", Typ ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@bau", Baujahr));
-                            cmd.Parameters.Add(new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@nen", Nennleistung));
-                            cmd.Parameters.Add(new OleDbParameter("@max", maxPTherm));
-                            cmd.Parameters.Add(new OleDbParameter("@hei", Heizung));
-                            cmd.Parameters.Add(new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@mod", Modulkosten));
-                            cmd.Parameters.Add(new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value));
-                            cmd.Parameters.Add(new OleDbParameter("@kuehl", Kuehlleistung));
-                            cmd.Parameters.Add(new OleDbParameter("@ro", false));
-                            cmd.ExecuteNonQuery();
-                        }
-                        trans.Commit();
-                        using (var cmdId = new OleDbCommand("SELECT @@IDENTITY", conn))
-                        {
-                            object r = cmdId.ExecuteScalar();
-                            if (r != null && r != DBNull.Value) ID = Convert.ToInt32(r);
-                        }
+                        OleDbParameter[] ps = {
+                            new OleDbParameter("@nam", WPName ?? (object)DBNull.Value),
+                            new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
+                            new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
+                            new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
+                            new OleDbParameter("@bau", Baujahr),
+                            new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
+                            new OleDbParameter("@nen", Nennleistung),
+                            new OleDbParameter("@max", maxPTherm),
+                            new OleDbParameter("@hei", Heizung),
+                            new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
+                            new OleDbParameter("@mod", Modulkosten),
+                            new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
+                            new OleDbParameter("@kuehl", Kuehlleistung),
+                            new OleDbParameter("@ro", false)
+                        };
+
+                        // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
+                        // Verbindung des Vorgangs (frueher SELECT @@IDENTITY nach dem Commit
+                        // auf derselben Verbindung - gleicher Wert, nur eine Anweisung frueher).
+                        int neueId = v.EinfuegenUndId(sql, ps);
+
+                        v.Commit();
+                        if (neueId > 0) ID = neueId;
                     }
                     return true;
                 }
@@ -272,108 +272,83 @@ namespace WindowsFormsApplication1
         {
             if (id <= 0) return false;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                // (1) Stammsatz aktualisieren - identisches UPDATE wie UpdateImport
-                using (OleDbCommand c = new OleDbCommand(ImportUpdateSql(), conn, trans))
+                try
                 {
-                    c.Parameters.AddRange(ImportUpdateParameter(id));
-                    c.ExecuteNonQuery();
-                }
+                    // (1) Stammsatz aktualisieren - identisches UPDATE wie UpdateImport
+                    v.Ausfuehren(ImportUpdateSql(), ImportUpdateParameter(id));
 
-                // (2) Alte Kennlinien beider Tabellen entfernen
-                using (OleDbCommand c = new OleDbCommand("DELETE FROM " + CURVE + " WHERE ID_WP = ?", conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                    c.ExecuteNonQuery();
-                }
-                using (OleDbCommand c = new OleDbCommand("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                    c.ExecuteNonQuery();
-                }
-
-                // (3) Neue Kennlinien einfuegen. Die ID wird je Tabelle EINMAL als MAX+1
-                //     innerhalb der Transaktion ermittelt und fortlaufend hochgezaehlt.
-                if (kenndaten != null && kenndaten.Count > 0)
-                {
-                    int naechsteId;
-                    using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + CURVE, conn, trans))
+                    // (2) Alte Kennlinien beider Tabellen entfernen
                     {
-                        object m = c.ExecuteScalar();
-                        naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        v.Ausfuehren("DELETE FROM " + CURVE + " WHERE ID_WP = ?", p.ToArray());
+                    }
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        v.Ausfuehren("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", p.ToArray());
                     }
 
-                    using (OleDbCommand c = new OleDbCommand(
-                        "INSERT INTO " + CURVE + " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                    // (3) Neue Kennlinien einfuegen. Die ID wird je Tabelle EINMAL als MAX+1
+                    //     innerhalb der Transaktion ermittelt und fortlaufend hochgezaehlt.
+                    if (kenndaten != null && kenndaten.Count > 0)
                     {
-                        var pId = c.Parameters.Add("@id", OleDbType.Integer);
-                        var pWp = c.Parameters.Add("@wp", OleDbType.Integer);
-                        var pVo = c.Parameters.Add("@vor", OleDbType.Integer);
-                        var pTe = c.Parameters.Add("@tem", OleDbType.Integer);
-                        var pCo = c.Parameters.Add("@cop", OleDbType.Double);
-                        var pPt = c.Parameters.Add("@pth", OleDbType.Double);
-                        var pRo = c.Parameters.Add("@ro", OleDbType.Boolean);
+                        int naechsteId;
+                        {
+                            object m = v.Skalar("SELECT MAX(ID) FROM " + CURVE);
+                            naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
+
                         foreach (var k in kenndaten)
                         {
-                            pId.Value = naechsteId++;
-                            pWp.Value = id;
-                            pVo.Value = k.Vorlauf;
-                            pTe.Value = k.Temperatur;
-                            pCo.Value = k.COP;
-                            pPt.Value = k.Ptherm;
-                            pRo.Value = false;
-                            c.ExecuteNonQuery();
+                            v.Ausfuehren(
+                                "INSERT INTO " + CURVE + " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                new OleDbParameter("@id", OleDbType.Integer) { Value = naechsteId++ },
+                                new OleDbParameter("@wp", OleDbType.Integer) { Value = id },
+                                new OleDbParameter("@vor", OleDbType.Integer) { Value = k.Vorlauf },
+                                new OleDbParameter("@tem", OleDbType.Integer) { Value = k.Temperatur },
+                                new OleDbParameter("@cop", OleDbType.Double) { Value = k.COP },
+                                new OleDbParameter("@pth", OleDbType.Double) { Value = k.Ptherm },
+                                new OleDbParameter("@ro", OleDbType.Boolean) { Value = false });
                         }
                     }
-                }
 
-                // Kuehlung: Tabelle hat KEIN ReadOnly, dafuer ID_Projekt - das bleibt
-                // beim Stamm-Import bewusst leer.
-                if (kuehlung != null && kuehlung.Count > 0)
-                {
-                    int naechsteId;
-                    using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + CURVE_K, conn, trans))
+                    // Kuehlung: Tabelle hat KEIN ReadOnly, dafuer ID_Projekt - das bleibt
+                    // beim Stamm-Import bewusst leer.
+                    if (kuehlung != null && kuehlung.Count > 0)
                     {
-                        object m = c.ExecuteScalar();
-                        naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                    }
+                        int naechsteId;
+                        {
+                            object m = v.Skalar("SELECT MAX(ID) FROM " + CURVE_K);
+                            naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
 
-                    using (OleDbCommand c = new OleDbCommand(
-                        "INSERT INTO " + CURVE_K + " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
-                    {
-                        var pId = c.Parameters.Add("@id", OleDbType.Integer);
-                        var pWp = c.Parameters.Add("@wp", OleDbType.Integer);
-                        var pVo = c.Parameters.Add("@vor", OleDbType.Integer);
-                        var pTe = c.Parameters.Add("@tem", OleDbType.Integer);
-                        var pCo = c.Parameters.Add("@cop", OleDbType.Double);
-                        var pPk = c.Parameters.Add("@pk", OleDbType.Double);
-                        var pLa = c.Parameters.Add("@last", OleDbType.Integer);
                         foreach (var k in kuehlung)
                         {
-                            pId.Value = naechsteId++;
-                            pWp.Value = id;
-                            pVo.Value = k.Vorlauf;
-                            pTe.Value = k.Temperatur;
-                            pCo.Value = k.COP;
-                            pPk.Value = k.Pkuehl;
-                            pLa.Value = k.Last;
-                            c.ExecuteNonQuery();
+                            v.Ausfuehren(
+                                "INSERT INTO " + CURVE_K + " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                new OleDbParameter("@id", OleDbType.Integer) { Value = naechsteId++ },
+                                new OleDbParameter("@wp", OleDbType.Integer) { Value = id },
+                                new OleDbParameter("@vor", OleDbType.Integer) { Value = k.Vorlauf },
+                                new OleDbParameter("@tem", OleDbType.Integer) { Value = k.Temperatur },
+                                new OleDbParameter("@cop", OleDbType.Double) { Value = k.COP },
+                                new OleDbParameter("@pk", OleDbType.Double) { Value = k.Pkuehl },
+                                new OleDbParameter("@last", OleDbType.Integer) { Value = k.Last });
                         }
                     }
-                }
 
-                trans.Commit();
-                return true;
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Überschreiben der Wärmepumpe (Stammdaten): " + ex.Message);
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Überschreiben der Wärmepumpe (Stammdaten): " + ex.Message);
-                return false;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         #endregion

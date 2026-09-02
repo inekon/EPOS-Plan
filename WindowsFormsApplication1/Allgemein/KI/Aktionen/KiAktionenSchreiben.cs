@@ -479,8 +479,8 @@ namespace WindowsFormsApplication1
             try
             {
                 dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 ID, ProjektID, KomponentenID, StammID, EingegebenerWert " +
-                    "FROM Tab_ProjektWerte WHERE ID = ?",
+                    "SELECT ID, ProjektID, KomponentenID, StammID, EingegebenerWert " +
+                    "FROM Tab_ProjektWerte WHERE ID = ? LIMIT 1",
                     new OleDbParameter("@id", (Int32)idPosition));
             }
             catch { return null; }

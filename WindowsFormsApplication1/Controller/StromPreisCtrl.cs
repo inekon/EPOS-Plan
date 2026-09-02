@@ -375,9 +375,9 @@ namespace WindowsFormsApplication1
 
             // (1) und (2): die Preishistorie
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT TOP 1 valid_from, arbeitspreis FROM energy_price " +
+                "SELECT valid_from, arbeitspreis FROM energy_price " +
                 "WHERE carrier_id = ? AND id_projekt = ? AND valid_from <= ? " +
-                "ORDER BY valid_from DESC",
+                "ORDER BY valid_from DESC LIMIT 1",
                 new OleDbParameter("@cid", OleDbType.Integer) { Value = carrierId },
                 new OleDbParameter("@pid", OleDbType.Integer) { Value = idProjekt },
                 new OleDbParameter("@date", OleDbType.Date) { Value = stichtag });
@@ -385,8 +385,8 @@ namespace WindowsFormsApplication1
             if (dt == null || dt.Rows.Count == 0)
             {
                 dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 valid_from, arbeitspreis FROM energy_price " +
-                    "WHERE carrier_id = ? AND id_projekt = ? ORDER BY valid_from ASC",
+                    "SELECT valid_from, arbeitspreis FROM energy_price " +
+                    "WHERE carrier_id = ? AND id_projekt = ? ORDER BY valid_from ASC LIMIT 1",
                     new OleDbParameter("@cid", OleDbType.Integer) { Value = carrierId },
                     new OleDbParameter("@pid", OleDbType.Integer) { Value = idProjekt });
 

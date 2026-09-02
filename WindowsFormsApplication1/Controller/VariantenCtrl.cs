@@ -270,25 +270,29 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------- Schema
 
         /// <summary>Legt Tab_Variante an, falls sie noch nicht existiert (tolerant).</summary>
+        /// <remarks>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-DDL nach dem Muster von
+        /// <c>sql\schema\001_grundschema.sql</c> (S4d vorgezogen). Der UNIQUE-Index auf
+        /// ID_Projekt steht in SQLite nicht in der Spaltenzeile, sondern getrennt
+        /// (003_indizes_fk.sql, "UQ_VarProj"). Still über <see cref="StilleDb"/>, damit
+        /// die Zusage des <c>catch</c>-Zweigs (kein Dialog) erhalten bleibt.
+        /// </remarks>
         public void StelleVariantentabelleSicher()
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                        new object[] { null, null, TAB_VARIANTE, "TABLE" });
-                    if (schema != null && schema.Rows.Count > 0) return;
+                if (StilleDb.TabelleVorhanden(TAB_VARIANTE)) return;
 
-                    string ddl = "CREATE TABLE " + TAB_VARIANTE + " (" +
-                                 "ID LONG CONSTRAINT PK_Variante PRIMARY KEY, " +
-                                 "ID_Projekt LONG CONSTRAINT UQ_VarProj UNIQUE, " +
-                                 "ID_ProjektRef LONG, " +
-                                 "Variantenname TEXT(255))";
-                    using (OleDbCommand cmd = new OleDbCommand(ddl, conn))
-                        cmd.ExecuteNonQuery();
-                }
+                string ddl = "CREATE TABLE IF NOT EXISTS [" + TAB_VARIANTE + "] (" +
+                             "\"ID\" INTEGER PRIMARY KEY, " +
+                             "\"ID_Projekt\" INTEGER, " +
+                             "\"ID_ProjektRef\" INTEGER, " +
+                             "\"Variantenname\" TEXT CHECK (length(\"Variantenname\") <= 255))";
+                if (StilleDb.NonQuery(ddl) < 0) return;
+
+                StilleDb.NonQuery("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_VarProj\" " +
+                                  "ON [" + TAB_VARIANTE + "] (\"ID_Projekt\")");
             }
             catch { /* best effort — existiert dann ggf. schon */ }
         }

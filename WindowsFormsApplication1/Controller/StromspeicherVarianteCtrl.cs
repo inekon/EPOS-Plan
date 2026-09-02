@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
             if (idEnergieanlage <= 0) return null;
 
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM [" + TABLE + "] WHERE ID_Energieanlage = ? ORDER BY ID",
+                "SELECT * FROM [" + TABLE + "] WHERE ID_Energieanlage = ? ORDER BY ID LIMIT 1",
                 new OleDbParameter("@anl", idEnergieanlage));
 
             _internalList.Clear();
@@ -71,9 +71,9 @@ namespace WindowsFormsApplication1
             if (idProjekt <= 0) return null;
 
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT TOP 1 v.* FROM [" + TABLE + "] AS v " +
+                "SELECT v.* FROM [" + TABLE + "] AS v " +
                 "INNER JOIN " + TAB_ANLAGEN + " AS a ON v.ID_Energieanlage = a.ID " +
-                "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE ORDER BY v.ID",
+                "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE ORDER BY v.ID LIMIT 1",
                 new OleDbParameter("@proj", idProjekt));
 
             _internalList.Clear();
@@ -313,8 +313,20 @@ namespace WindowsFormsApplication1
         /// jeder Schritt einzeln abgesichert, damit ein Fehlschlag die uebrigen nicht
         /// mitreisst.
         ///
-        /// Die Anweisungen kommen aus <see cref="SchemaMigration"/>; Migration und
-        /// Rueckfallebene fuehren KEINEN zweiten Spaltensatz.
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen); SQLite-DDL statt der
+        /// Access-Konstanten aus <see cref="SchemaMigration"/> (S4d vorgezogen).
+        ///
+        /// ZWEI UNVERMEIDBARE ABWEICHUNGEN GEGENUEBER DER ACCESS-FASSUNG:
+        ///   - Die Anweisungen kommen NICHT mehr aus <see cref="SchemaMigration"/>. Die
+        ///     Konstanten dort sind Access-DDL (LONG/YESNO/TEXT(n)) und gehoeren zum
+        ///     eingefrorenen Alt-Zweig (Arbeitspaket S6). Massgeblich ist hier
+        ///     <c>sql\schema\001_grundschema.sql</c>; ein zweiter Spaltensatz entsteht
+        ///     dadurch nicht - beide beschreiben dieselbe Tabelle.
+        ///   - SQLite kann einen Fremdschluessel nach dem CREATE TABLE nicht nachruesten.
+        ///     Die Loeschweitergabe steht deshalb IM CREATE TABLE statt in einem eigenen
+        ///     ALTER; scheitert das CREATE, gibt es auch keine Beziehung - genau wie
+        ///     bisher.
         /// </summary>
         public static void StelleTabelleSicher()
         {
@@ -323,27 +335,37 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
+                if (StilleDb.TabelleVorhanden(TABLE)) return;   // vorhanden
 
-                    DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                        new object[] { null, null, TABLE, "TABLE" });
-                    if (schema != null && schema.Rows.Count > 0) return;   // vorhanden
+                string ddl =
+                    "CREATE TABLE IF NOT EXISTS [" + TABLE + "] (" +
+                    "\"ID\" INTEGER PRIMARY KEY, " +
+                    "\"ID_Energieanlage\" INTEGER, " +
+                    "\"Betriebsart\" TEXT CHECK (length(\"Betriebsart\") <= 50), " +
+                    "\"PV_Zulaessig\" INTEGER NOT NULL DEFAULT 0 CHECK (\"PV_Zulaessig\" IN (0,1)), " +
+                    "\"BHKW_Ueberschuss_Zulaessig\" INTEGER NOT NULL DEFAULT 0 CHECK (\"BHKW_Ueberschuss_Zulaessig\" IN (0,1)), " +
+                    "\"BHKW_Stromgefuehrt\" INTEGER NOT NULL DEFAULT 0 CHECK (\"BHKW_Stromgefuehrt\" IN (0,1)), " +
+                    "\"Netzentladung\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Netzentladung\" IN (0,1)), " +
+                    "\"SoC_Min_Prozent\" REAL, " +
+                    "\"SoC_Max_Prozent\" REAL, " +
+                    "\"Berechnungsart\" TEXT CHECK (length(\"Berechnungsart\") <= 50), " +
+                    "\"Preisquelle\" TEXT CHECK (length(\"Preisquelle\") <= 50), " +
+                    "\"Kompatibilitaetsmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Kompatibilitaetsmodus\" IN (0,1)), " +
+                    "\"Kapitalzins\" REAL, " +
+                    "\"Nutzungsdauer\" REAL, " +
+                    "\"L_P\" REAL, " +
+                    "\"A_Netzlade\" REAL, " +
+                    "\"Aktiv\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Aktiv\" IN (0,1)), " +
+                    "\"Ladeschwellwert\" REAL, " +
+                    "FOREIGN KEY (\"ID_Energieanlage\") REFERENCES \"Tab_Energieanlagen\" (\"ID\") ON DELETE CASCADE)";
 
-                    try { Ddl(conn, SchemaMigration.SQL_CREATE_SPVARIANTE); }
-                    catch { return; /* ohne Tabelle sind Index und Beziehung sinnlos */ }
+                // ohne Tabelle sind Index und Beziehung sinnlos
+                if (StilleDb.NonQuery(ddl) < 0) return;
 
-                    try { Ddl(conn, SchemaMigration.SQL_INDEX_SPVARIANTE); } catch { }
-                    try { Ddl(conn, SchemaMigration.SQL_FK_SPVARIANTE); } catch { }
-                }
+                StilleDb.NonQuery("CREATE INDEX IF NOT EXISTS \"idx_SpVariante\" " +
+                                  "ON [" + TABLE + "] (\"ID_Energieanlage\")");
             }
             catch { /* best effort - ein echter Fehler faellt beim naechsten Zugriff auf */ }
-        }
-
-        private static void Ddl(OleDbConnection conn, string sql)
-        {
-            using (OleDbCommand cmd = new OleDbCommand(sql, conn)) cmd.ExecuteNonQuery();
         }
 
         /// <summary>Textparameter mit Rueckfall auf den Vorgabewert statt auf NULL.</summary>

@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
             // ETAPPE K6 (HF1, Migrationsschritt 29): "Tab_KostenKategorie" und
             // "energy_unit" sind hier entfallen — beide Tabellen gibt es nicht mehr.
             // Die Liste ist eine AUSSCHLUSSliste gegen den schema-getriebenen Kopierlauf
-            // (GetOleDbSchemaTable, :225-262); ein Eintrag für eine gedroppte Tabelle
+            // (Tabellenliste in ErmittlePlan); ein Eintrag für eine gedroppte Tabelle
             // wäre ab jetzt nur noch irreführend: Er behauptete, es gäbe einen Katalog,
             // der vor dem Duplizieren geschützt werden muss.
         };
@@ -230,16 +230,17 @@ namespace WindowsFormsApplication1
             if (srcId <= 0) { MessageBox.Show("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
             if (GetProjektId(neuerName) > 0) { MessageBox.Show("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
 
-            OleDbConnection conn = null;
-            OleDbTransaction trans = null;
+            // ARBEITSPAKET S4e: Der Vorgang (Verbindung + Transaktion) wird bewusst
+            // INNERHALB des try geoeffnet - genau dort stand bisher der Aufruf, der das
+            // Verbindungstupel holte. Ein Fehler beim Verbindungsaufbau soll in denselben
+            // catch laufen; deshalb kein using, sondern Dispose im finally.
+            DbVorgang v = null;
             try
             {
-                var tx = DataRepository.BeginTransaction();
-                conn = tx.Item1;
-                trans = tx.Item2;
+                v = DataRepository.Vorgang();
 
                 // 1) Tabellen generisch ermitteln.
-                List<Spec> specs = ErmittlePlan(conn, trans);
+                List<Spec> specs = ErmittlePlan();
                 var copySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (Spec s in specs) copySet.Add(s.Tabelle);
 
@@ -248,10 +249,10 @@ namespace WindowsFormsApplication1
                 foreach (Spec s in specs)
                 {
                     long o;
-                    if (BerechneOffset(conn, trans, s, srcId, out o)) offset[s.Tabelle] = o;
+                    if (BerechneOffset(v, s, srcId, out o)) offset[s.Tabelle] = o;
                 }
                 if (!offset.ContainsKey("Tab_Projekt"))
-                { try { trans.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
+                { try { v.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
 
                 // 2b) DIE NEUE PROJEKT-ID MUSS IN JEDER PROJEKTTABELLE FREI SEIN, nicht nur in
                 //     Tab_Projekt (Befund 27.08.2026, Fehler D-a).
@@ -277,7 +278,7 @@ namespace WindowsFormsApplication1
                 //
                 //     KEIN LOESCHEN: Der Rueckstand bleibt unangetastet, die Kopie weicht ihm nur
                 //     aus. Die ID kann dadurch nur STEIGEN, nie sinken.
-                long freieId = FreieProjektId(conn, trans, specs, srcId + offset["Tab_Projekt"]);
+                long freieId = FreieProjektId(v, specs, srcId + offset["Tab_Projekt"]);
                 offset["Tab_Projekt"] = freieId - srcId;
 
                 // 3) Kopieren. Nur Tabellen mit Quellzeilen (offset vorhanden) werden gezaehlt/gemeldet.
@@ -294,16 +295,15 @@ namespace WindowsFormsApplication1
 
                     string sql = BaueInsertSql(s, srcId, offset, copySet);
                     if (sql == null) continue;
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
-                    {
-                        if (s.NameSpalte != null) c.Parameters.Add(new OleDbParameter("@name", neuerName));
-                        c.ExecuteNonQuery();
-                    }
+                    if (s.NameSpalte != null)
+                        v.Ausfuehren(sql, new OleDbParameter("@name", neuerName));
+                    else
+                        v.Ausfuehren(sql);
                 }
                 if (fortschritt != null)
                     fortschritt.Report(new Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
-                trans.Commit();
+                v.Commit();
 
                 // Ä24: Geräteanker der kopierten Kostenpositionen auf die
                 // KOPIERTEN Geräte umstellen. Der generische Lauf versetzt
@@ -318,16 +318,15 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                if (trans != null) { try { trans.Rollback(); } catch { } }
+                if (v != null) { try { v.Rollback(); } catch { } }
                 MessageBox.Show("Fehler beim Duplizieren des Projekts: " + ex.Message);
                 return -1;
             }
             finally
             {
-                // Deterministische Freigabe: Transaktion und Verbindung immer schliessen/entsorgen,
-                // auch im Fehlerfall. (BeginTransaction kann selbst werfen -> dann sind beide null.)
-                if (trans != null) { try { trans.Dispose(); } catch { } }
-                if (conn != null) { try { conn.Close(); } catch { } try { conn.Dispose(); } catch { } }
+                // Deterministische Freigabe: der Vorgang wird immer entsorgt, auch im
+                // Fehlerfall. (Vorgang() kann selbst werfen -> dann ist v null.)
+                if (v != null) { try { v.Dispose(); } catch { } }
             }
         }
 
@@ -341,16 +340,16 @@ namespace WindowsFormsApplication1
         /// -> Tab_Ergebnis) blieb unversetzt — der Nutzerbefund
         /// „Tab_Ergebnis[ID] FEHLT" beim Import eines fremden Pakets.
         /// </summary>
-        internal void BeziehungenLaden(OleDbConnection conn, OleDbTransaction trans)
+        internal void BeziehungenLaden()
         {
-            _echteFks = LiesEchteFks(conn, trans);
+            _echteFks = LiesEchteFks();
         }
 
         // Ermittelt die zu kopierenden Tabellen generisch aus dem Schema.
-        internal List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
+        internal List<Spec> ErmittlePlan()
         {
             // Zuerst die deklarierten Beziehungen einlesen (fuer Reihenfolge + Offset-Ziel).
-            BeziehungenLaden(conn, trans);
+            BeziehungenLaden();
 
             var plan = new Dictionary<string, Spec>(StringComparer.OrdinalIgnoreCase);
             var uebrig = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase); // Tabellen ohne eigenen Projektbezug -> evtl. FK-gebundene Kinder
@@ -358,10 +357,20 @@ namespace WindowsFormsApplication1
             // Tab_Projekt als Wurzel (Name wird ersetzt).
             plan["Tab_Projekt"] = new Spec { Tabelle = "Tab_Projekt", Pk = "ID", Filter = "ID = {0}", NameSpalte = "Projektname", Cols = Spalten("Tab_Projekt") };
 
-            DataTable tabs = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+            // ARBEITSPAKET S4c: Zugriffsschicht statt
+            // GetOleDbSchemaTable(Tables, …, "TABLE"). sqlite_master mit
+            // type = 'table' liefert dieselbe Menge wie die Access-Einschraenkung
+            // "TABLE" - Basistabellen, keine Sichten; die 'sqlite_%'-Ablagen der
+            // Bibliothek sind das Gegenstueck zu den ausgeblendeten MSys*-Tabellen.
+            // Die Auskunft laeuft (wie schon Spalten()) ueber eine EIGENE Verbindung
+            // der Zugriffsschicht, nicht ueber die Transaktionsverbindung: Das Schema
+            // aendert sich waehrend des Kopierlaufs nicht.
+            DataTable tabs = DataRepository.GetDataTable(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
             foreach (DataRow row in tabs.Rows)
             {
-                string name = row["TABLE_NAME"].ToString();
+                string name = Convert.ToString(row["name"]);
+                if (string.IsNullOrEmpty(name)) continue;
                 if (Ausgeschlossen(name)) continue;
                 if (string.Equals(name, "Tab_Projekt", StringComparison.OrdinalIgnoreCase)) continue;
 
@@ -429,58 +438,67 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Liest die in Access deklarierten Fremdschluessel (erzwungene Beziehungen) aus dem Schema.
+        /// Liest die deklarierten Fremdschluessel (erzwungene Beziehungen) aus dem Schema.
         /// Rueckgabe: "FK_Tabelle||FK_Spalte" -> PK_Tabelle (referenzierte Tabelle).
-        /// Faellt bei nicht unterstuetztem Schema-Rowset auf eine leere Map zurueck.
+        /// Faellt bei nicht lesbarem Schema auf eine leere Map zurueck.
+        ///
+        /// ARBEITSPAKET S4e: ohne Parameter - die Schema-Auskunft der Zugriffsschicht
+        /// bringt ihre eigene (stille) Verbindung mit, und der Access-Altpfad ueber
+        /// MSysRelationships auf der Transaktionsverbindung ist entfallen.
         /// </summary>
-        private Dictionary<string, string> LiesEchteFks(OleDbConnection conn, OleDbTransaction trans)
+        private Dictionary<string, string> LiesEchteFks()
         {
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // 1) Bevorzugt ueber das Standard-Schema-Rowset.
+            // 1) Bevorzugt ueber die Schema-Auskunft der Zugriffsschicht.
+            //
+            // ARBEITSPAKET S4c: Tritt an die Stelle von
+            // GetOleDbSchemaTable(Foreign_Keys, null). SQLite kennt kein GLOBALES
+            // Beziehungs-Rowset - pragma_foreign_key_list antwortet JE TABELLE, also
+            // laeuft die Schleife ueber die Tabellenliste (gleiche Bauform wie
+            // ProjektExportImportCtrl.LiesFremdschluessel).
+            //
+            // ABBILDUNG DER SPALTEN. Aus dem alten Rowset wurden nur drei gelesen:
+            //   FK_TABLE_NAME  -> die gerade abgefragte Tabelle selbst,
+            //   FK_COLUMN_NAME -> "Quellspalte" ([from]),
+            //   PK_TABLE_NAME  -> "Zieltabelle" ([table]).
+            // PK_COLUMN_NAME wurde hier nie konsumiert (die Zielspalte ist immer der
+            // Primaerschluessel) und entfaellt deshalb - der Inhalt der Map ist
+            // unveraendert.
             try
             {
-                DataTable fk = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Foreign_Keys, null);
-                if (fk != null)
+                DataTable tabellen = StilleDb.Tabelle(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+
+                if (tabellen != null)
                 {
-                    foreach (DataRow r in fk.Rows)
+                    foreach (DataRow t in tabellen.Rows)
                     {
-                        string fkT = r["FK_TABLE_NAME"] != DBNull.Value ? r["FK_TABLE_NAME"].ToString() : null;
-                        string fkC = r["FK_COLUMN_NAME"] != DBNull.Value ? r["FK_COLUMN_NAME"].ToString() : null;
-                        string pkT = r["PK_TABLE_NAME"] != DBNull.Value ? r["PK_TABLE_NAME"].ToString() : null;
-                        if (!string.IsNullOrEmpty(fkT) && !string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
-                            map[fkT + "||" + fkC] = pkT;
+                        string fkT = Convert.ToString(t["name"]);
+                        if (string.IsNullOrEmpty(fkT)) continue;
+
+                        DataTable fk = DataRepository.FremdschluesselListe(fkT);
+                        if (fk == null) continue;
+
+                        foreach (DataRow r in fk.Rows)
+                        {
+                            string fkC = r["Quellspalte"] != DBNull.Value ? r["Quellspalte"].ToString() : null;
+                            string pkT = r["Zieltabelle"] != DBNull.Value ? r["Zieltabelle"].ToString() : null;
+                            if (!string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
+                                map[fkT + "||" + fkC] = pkT;
+                        }
                     }
                 }
             }
-            catch { /* Provider unterstuetzt das Rowset nicht */ }
+            catch { /* Schema nicht lesbar -> leere Map, dann greift die FK_MAP-Heuristik */ }
 
-            if (map.Count > 0) return map;
-
-            // 2) Fallback: Access-Systemtabelle MSysRelationships direkt lesen (dieselben Beziehungen).
-            //    szObject = FK-Tabelle, szColumn = FK-Spalte, szReferencedObject = PK-Tabelle,
-            //    grbit & 2 (dbRelationDontEnforce) gesetzt = NICHT erzwungen -> ueberspringen.
-            //    (Erfordert Leserecht auf Systemobjekte; schlaegt es fehl, greift die FK_MAP-Heuristik.)
-            try
-            {
-                using (var cmd = new OleDbCommand(
-                    "SELECT szObject, szColumn, szReferencedObject, grbit FROM MSysRelationships", conn, trans))
-                using (OleDbDataReader rd = cmd.ExecuteReader())
-                {
-                    while (rd.Read())
-                    {
-                        string fkT = rd["szObject"] != DBNull.Value ? rd["szObject"].ToString() : null;
-                        string fkC = rd["szColumn"] != DBNull.Value ? rd["szColumn"].ToString() : null;
-                        string pkT = rd["szReferencedObject"] != DBNull.Value ? rd["szReferencedObject"].ToString() : null;
-                        int grbit = rd["grbit"] != DBNull.Value ? Convert.ToInt32(rd["grbit"]) : 0;
-                        if ((grbit & 2) != 0) continue; // nicht erzwungen
-                        if (!string.IsNullOrEmpty(fkT) && !string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
-                            map[fkT + "||" + fkC] = pkT;
-                    }
-                }
-            }
-            catch { /* kein Zugriff auf MSysRelationships -> Fallback auf FK_MAP/FK_OVERRIDE */ }
-
+            // 2) Access-Altpfad, mit S4e entfallen: Bis hierher stand ein zweiter Weg
+            //    ueber die Access-Systemtabelle MSysRelationships auf der
+            //    TRANSAKTIONSVERBINDUNG. Auf einer SQLite-Datenbank gibt es diese
+            //    Tabelle nicht; der Zweig lief dort ausnahmslos in seinen eigenen catch
+            //    und lieferte nie einen Eintrag. Er ist damit wirkungslos und faellt
+            //    ersatzlos weg. Bleibt die Map leer (Schema nicht lesbar), greift wie
+            //    bisher die FK_MAP-/FK_OVERRIDE-Heuristik der Aufrufer.
             return map;
         }
 
@@ -632,17 +650,15 @@ namespace WindowsFormsApplication1
         }
 
         // offset(T) = MAX(T.pk) - MIN(pk der Quellzeilen) + 1.
-        private bool BerechneOffset(OleDbConnection conn, OleDbTransaction trans, Spec s, int srcId, out long offset)
+        private bool BerechneOffset(DbVorgang v, Spec s, int srcId, out long offset)
         {
             offset = 0;
             string where = string.Format(s.Filter, srcId);
             object oMax, oMin;
             try
             {
-                using (var cMax = new OleDbCommand("SELECT MAX([" + s.Pk + "]) FROM [" + s.Tabelle + "]", conn, trans))
-                    oMax = cMax.ExecuteScalar();
-                using (var cMin = new OleDbCommand("SELECT MIN([" + s.Pk + "]) FROM [" + s.Tabelle + "] WHERE " + where, conn, trans))
-                    oMin = cMin.ExecuteScalar();
+                oMax = v.Skalar("SELECT MAX([" + s.Pk + "]) FROM [" + s.Tabelle + "]");
+                oMin = v.Skalar("SELECT MIN([" + s.Pk + "]) FROM [" + s.Tabelle + "] WHERE " + where);
             }
             catch { return false; }
 
@@ -674,7 +690,7 @@ namespace WindowsFormsApplication1
         /// so wie vorher, nie schlechter.
         /// </para>
         /// </summary>
-        private long FreieProjektId(OleDbConnection conn, OleDbTransaction trans, List<Spec> specs, long vorschlag)
+        private long FreieProjektId(DbVorgang v, List<Spec> specs, long vorschlag)
         {
             long hoechste = vorschlag - 1;
 
@@ -690,14 +706,10 @@ namespace WindowsFormsApplication1
 
                 try
                 {
-                    using (var c = new OleDbCommand(
-                        "SELECT MAX([" + spalte + "]) FROM [" + s.Tabelle + "]", conn, trans))
-                    {
-                        object v = c.ExecuteScalar();
-                        if (v == null || v == DBNull.Value) continue;
-                        long max = Convert.ToInt64(v);
-                        if (max > hoechste) hoechste = max;
-                    }
+                    object wert = v.Skalar("SELECT MAX([" + spalte + "]) FROM [" + s.Tabelle + "]");
+                    if (wert == null || wert == DBNull.Value) continue;
+                    long max = Convert.ToInt64(wert);
+                    if (max > hoechste) hoechste = max;
                 }
                 catch { /* Tabelle nicht lesbar -> ueberspringen, nie nach unten korrigieren */ }
             }

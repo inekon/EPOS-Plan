@@ -63,6 +63,23 @@ namespace WindowsFormsApplication1
     /// ebenfalls frei - dort ist eine zweite Zeile eine VARIANTE desselben Speichers, kein
     /// zweiter Speicher (Fachkonzept Stromspeicher 7.3).
     /// </para>
+    ///
+    /// <para>
+    /// <b>ARBEITSPAKET S4c/S4d - WER RUFT DIESE KLASSE.</b> Sie ist NICHT nur Zubehör der
+    /// Migration, sondern zur SQLite-LAUFZEIT erreichbar: <c>WizardCtrl</c> ruft
+    /// <see cref="Aufnehmen"/> (und darüber <see cref="ProjektkopieAnlegen"/>),
+    /// <c>PufferSpCtrl</c> ruft <see cref="ZeileVorhanden"/>, <c>Form_PufferSp</c> ruft
+    /// <see cref="BereitsInListe"/> und <see cref="ZweitesGeraetBestaetigen"/>. Nur der
+    /// DDL-Teil - <see cref="SqlIndex"/> und <see cref="IndexName"/> - hat allein die
+    /// eingefrorene <c>SchemaMigration</c> als Aufrufer.
+    /// </para>
+    ///
+    /// <para>
+    /// Eine eigene Datenbankverbindung hält die Klasse nicht (und hielt sie nie): Jeder
+    /// Zugriff läuft über <see cref="StilleDb"/> und damit über die Zugriffsschicht. Die
+    /// <see cref="OleDbType"/>-Angaben in <c>Spaltentyp</c> und <c>StilleDb.Par</c> sind
+    /// nur noch Datenträger - siehe die Begründung dort.
+    /// </para>
     /// </summary>
     public static class AnlagenEindeutigkeit
     {
@@ -114,13 +131,54 @@ namespace WindowsFormsApplication1
         /// ACE/Jet lässt in einem eindeutigen Index MEHRERE NULL zu; die Sperre greift
         /// deshalb nur für Zeilen, die den Verweis tatsächlich führen. Genau darauf ist
         /// <c>WizardCtrl.AnlagenParameter</c> ausgelegt - für nicht passende Anlagentypen
-        /// schreibt es durchgehend <see cref="DBNull"/>, nie 0.
+        /// schreibt es durchgehend <see cref="DBNull"/>, nie 0. SQLite verhält sich hier
+        /// GLEICH (NULL gilt in einem UNIQUE-Index als von jedem anderen NULL verschieden)
+        /// - die Aussage oben bleibt nach der Migration also unverändert gültig.
+        /// </para>
+        ///
+        /// <para>
+        /// ARBEITSPAKET S4d - <c>IF NOT EXISTS</c>: Ein zweiter Anlauf auf einen bereits
+        /// vorhandenen Index ist damit KEIN Fehler mehr, sondern wirkungslos. Das ist für
+        /// diesen Index wesentlich, weil er ausdrücklich NACHZIEHEN können soll, sobald
+        /// der Bestand dublettenfrei ist (siehe <c>SchemaMigration.EindeutigkeitAbschluss</c>)
+        /// - die Anweisung läuft also an jedem Programmstart erneut. Wer unterscheiden
+        /// muss, ob der Index NEU entstanden ist oder schon stand, fragt vorher
+        /// <see cref="IndexVorhanden"/>.
         /// </para>
         /// </summary>
         public static string SqlIndex(string spalte)
         {
-            return "CREATE UNIQUE INDEX " + IndexName(spalte) +
+            return "CREATE UNIQUE INDEX IF NOT EXISTS [" + IndexName(spalte) + "]" +
                    " ON [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] (ID_Projekt, [" + spalte + "])";
+        }
+
+        /// <summary>
+        /// Vorabprobe zu <see cref="SqlIndex"/>: Steht der Eindeutigkeitsindex dieser
+        /// Spalte bereits in der Datenbank?
+        ///
+        /// <para>
+        /// STILL wie der Rest der Klasse: über <see cref="StilleDb"/>, nicht über
+        /// <c>DataRepository.IndexListe</c>. Die Probe läuft im Migrationslauf beim
+        /// Programmstart; eine MessageBox aus der Auskunft heraus wäre dort genau der
+        /// hängende Lauf, den die stille Fassung verhindert.
+        /// </para>
+        ///
+        /// <para>
+        /// Ein Aufrufer fehlt heute noch: Angelegt wird der Index ausschließlich von
+        /// <c>SchemaMigration.EindeutigkeitAbschluss</c>, und die SchemaMigration ist der
+        /// eingefrorene Access-Zweig (Umbau erst mit S6/S8). Bis dahin trägt
+        /// <c>IF NOT EXISTS</c> die Idempotenz allein.
+        /// </para>
+        /// </summary>
+        public static bool IndexVorhanden(string spalte)
+        {
+            if (string.IsNullOrWhiteSpace(spalte)) return false;
+
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM sqlite_master " +
+                "WHERE type = 'index' AND name = ? AND tbl_name = ?",
+                StilleDb.Par("@idx", OleDbType.VarWChar, IndexName(spalte)),
+                StilleDb.Par("@tab", OleDbType.VarWChar, SchemaKatalog.TAB_ENERGIEANLAGEN))) > 0;
         }
 
         /// <summary>
@@ -571,6 +629,27 @@ namespace WindowsFormsApplication1
         /// Spaltentyp für den Parameter. Aus <see cref="DBNull"/> allein leitet der
         /// OLE-DB-Provider keinen Typ ab - dieselbe Begründung wie bei
         /// <c>ProjektPuffer.Par</c>.
+        ///
+        /// <para>
+        /// <b>ARBEITSPAKET S4d - GEPRÜFT, BEWUSST NICHT UMGEBAUT.</b> Die zurückgegebene
+        /// <see cref="OleDbType"/> wandert über <c>StilleDb.Par</c> in einen
+        /// <see cref="OleDbParameter"/> - und den wertet die Zugriffsschicht nicht mehr
+        /// aus: <c>DataRepository.UebersetzeParameter</c> baut aus JEDEM Bestandsparameter
+        /// einen <c>SqliteParameter</c> allein aus dem WERT (Name und Typangabe werden
+        /// verworfen), <c>DataRepository.NormalisiereWert</c> hebt ihn danach auf die
+        /// Speicherform der Datei (bool -&gt; 0/1, DateTime -&gt; ISO-Text, Guid -&gt; Text,
+        /// decimal -&gt; double). Die Zeilen unten sind damit WIRKUNGSLOS, aber auch
+        /// harmlos.
+        /// </para>
+        ///
+        /// <para>
+        /// Sie bleiben trotzdem stehen: Der Mapper ist die einzige Stelle, die den
+        /// CLR-Typ einer Spalte überhaupt noch benennt, und ein Rückbau brächte nichts
+        /// als ein zweites Muster für dieselbe Parameterübergabe. Der Fall MEMO
+        /// (&gt; 255 Zeichen -&gt; <c>LongVarWChar</c>) ist unter SQLite ohnehin
+        /// gegenstandslos: TEXT kennt keine Längengrenze, ein Abschneiden gibt es nicht
+        /// mehr.
+        /// </para>
         /// </summary>
         private static OleDbType Spaltentyp(DataColumn c, object wert)
         {

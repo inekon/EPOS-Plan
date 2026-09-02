@@ -86,8 +86,8 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
-                    " WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    "SELECT Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
+                    " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                     new OleDbParameter("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }

@@ -286,62 +286,60 @@ namespace WindowsFormsApplication1
 
             // 4. Datenbank-Schreibvorgänge (Atomare Transaktion)
             AccessRepository repo = new AccessRepository(); // Pfad wird intern aus DataRepository gezogen
-            var (connection, transaction) = DataRepository.BeginTransaction();
-
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                // Schritt A: Klimaregion anlegen
-                if (!ctrlklimareg.Add(Listbezeichner, Lon, Lat, DisplayName, connection, transaction))
+
+                try
                 {
-                    transaction.Rollback();
+                    // Schritt A: Klimaregion anlegen
+                    if (!ctrlklimareg.Add(Listbezeichner, Lon, Lat, DisplayName, v))
+                    {
+                        v.Rollback();
+                        pBar_Import.Visible = false;
+                        return;
+                    }
+
+                    // Schritt B: ID ermitteln
+                    int id = 0;
+                    string sqlSelect = "SELECT ID_Klimaregion FROM Tab_Klimaregion_STAMM WHERE Name = ?";
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("?", Listbezeichner));
+                        object result = v.Skalar(sqlSelect, p.ToArray());
+                        if (result != null && result != DBNull.Value) id = Convert.ToInt32(result);
+                    }
+
+                    if (id == 0) throw new Exception("Die ID der neu angelegten Klimaregion konnte nicht ermittelt werden.");
+
+                    UpdateProgress(4);
+
+                    // Schritt C: Stundenwerte schreiben
+                    repo.SaveTmyData(tmyHourlyList, Listbezeichner, "Tab_Solar_STAMM", id, v);
+
+                    // Schritt D: Tagesdurchschnitte berechnen
+                    var daylist = SolarCalculator.GetDailyAverages(tmyHourlyList);
+                    for (int i = 0; i < daylist.Count; i++)
+                    {
+                        DateTime date = DateTime.ParseExact(daylist[i].TimeString, "dd.MM.yyyy", culture);
+                        daylist[i].TagTyp_NW = GetSeasonalValue(date);
+                        daylist[i].WE = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+                        daylist[i].TagTyp_W = (daylist[i].DiffuseIrradiance > (0.5 * daylist[i].GlobalIrradiance)) ? 2 : 1;
+                    }
+
+                    // Schritt E: Tageswerte schreiben
+                    repo.SaveTmyData(daylist, comboBox_Ort.Text, "Tab_Klimadaten_STAMM", id, v);
+
+                    // Alles fehlerfrei? Verbindlich wegspeichern!
+                    v.Commit();
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    MessageBox.Show($"Der Import wurde abgebrochen. Alle Änderungen wurden rückgängig gemacht.\nFehler: {ex.Message}",
+                                    "Import-Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     pBar_Import.Visible = false;
                     return;
                 }
-
-                // Schritt B: ID ermitteln
-                int id = 0;
-                string sqlSelect = "SELECT ID_Klimaregion FROM Tab_Klimaregion_STAMM WHERE Name = ?";
-                using (OleDbCommand cmdGetId = new OleDbCommand(sqlSelect, connection, transaction))
-                {
-                    cmdGetId.Parameters.Add(new OleDbParameter("?", Listbezeichner));
-                    object result = cmdGetId.ExecuteScalar();
-                    if (result != null && result != DBNull.Value) id = Convert.ToInt32(result);
-                }
-
-                if (id == 0) throw new Exception("Die ID der neu angelegten Klimaregion konnte nicht ermittelt werden.");
-
-                UpdateProgress(4);
-
-                // Schritt C: Stundenwerte schreiben
-                repo.SaveTmyData(tmyHourlyList, Listbezeichner, "Tab_Solar_STAMM", id, connection, transaction);
-
-                // Schritt D: Tagesdurchschnitte berechnen
-                var daylist = SolarCalculator.GetDailyAverages(tmyHourlyList);
-                for (int i = 0; i < daylist.Count; i++)
-                {
-                    DateTime date = DateTime.ParseExact(daylist[i].TimeString, "dd.MM.yyyy", culture);
-                    daylist[i].TagTyp_NW = GetSeasonalValue(date);
-                    daylist[i].WE = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
-                    daylist[i].TagTyp_W = (daylist[i].DiffuseIrradiance > (0.5 * daylist[i].GlobalIrradiance)) ? 2 : 1;
-                }
-
-                // Schritt E: Tageswerte schreiben
-                repo.SaveTmyData(daylist, comboBox_Ort.Text, "Tab_Klimadaten_STAMM", id, connection, transaction);
-
-                // Alles fehlerfrei? Verbindlich wegspeichern!
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-                MessageBox.Show($"Der Import wurde abgebrochen. Alle Änderungen wurden rückgängig gemacht.\nFehler: {ex.Message}",
-                                "Import-Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                pBar_Import.Visible = false;
-                return;
-            }
-            finally
-            {
-                if (connection != null && connection.State == ConnectionState.Open) connection.Close();
             }
 
             UpdateProgress(5);

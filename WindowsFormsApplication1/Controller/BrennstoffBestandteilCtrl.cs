@@ -62,12 +62,18 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Ohne Dialog.</b> Eine Vorsorge ist kein Bedienschritt. Das DDL läuft
-        /// deshalb über eine eigene <see cref="OleDbConnection"/> statt über
+        /// deshalb über <see cref="StilleDb"/> statt über
         /// <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog zeigt und
         /// damit am umschliessenden <c>try/catch</c> vorbeikäme. Echte Fehler bleiben
         /// sichtbar: Scheitert das Anlegen wirklich (Datei schreibgeschützt, Datenbank
         /// exklusiv geöffnet), meldet der nachfolgende Lese- bzw. Schreibzugriff über
         /// <see cref="DataRepository"/> ganz regulär.
+        /// </para>
+        /// <para>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
+        /// Access-Typen (S4d vorgezogen, Übersetzung in
+        /// <c>StilleDb.SqliteSpaltenTyp</c>).
         /// </para>
         /// <para>
         /// Der Katalog führt hier nur EINE Tabelle; das Schema wird deshalb einmal
@@ -80,33 +86,21 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(TABLE);
+
+                // null = Tabelle gibt es (noch) nicht. Sie hier anzulegen ist nicht
+                // Aufgabe dieser Vorsorge - das erledigt das Kostenmodul.
+                if (vorhanden == null) return;
+
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt60_BrennstoffBestandteile)
                 {
-                    conn.Open();
+                    if (vorhanden.Contains(s.Name)) continue;
 
-                    HashSet<string> vorhanden = SpaltenNamen(conn, TABLE);
-
-                    // null = Tabelle gibt es (noch) nicht. Sie hier anzulegen ist nicht
-                    // Aufgabe dieser Vorsorge - das erledigt das Kostenmodul.
-                    if (vorhanden == null) return;
-
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt60_BrennstoffBestandteile)
-                    {
-                        if (vorhanden.Contains(s.Name)) continue;
-
-                        try
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
-                                s.TypDefinition, conn))
-                                cmd.ExecuteNonQuery();
-                        }
-                        catch (Exception ex)
-                        {
-                            // Protokoll statt Dialog - siehe <remarks>.
-                            Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
-                        }
-                    }
+                    // Protokoll statt Dialog - siehe <remarks>. StilleDb.NonQuery
+                    // liefert -1 statt zu werfen.
+                    if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                            s.Tabelle, s.Name, s.TypDefinition)) < 0)
+                        Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
                 }
             }
             catch (Exception ex)
@@ -114,27 +108,6 @@ namespace WindowsFormsApplication1
                 // Keine Verbindung, kein Schema - der eigentliche Zugriff meldet es.
                 Protokoll(ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
-        /// gibt bzw. das Schema nicht lesbar ist. Eine Tabelle ohne Spalten kennt Access
-        /// nicht — „keine Zeilen" heisst deshalb zuverlässig „keine Tabelle".
-        /// </summary>
-        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
-        {
-            try
-            {
-                DataTable cols = conn.GetOleDbSchemaTable(
-                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
-
-                if (cols == null || cols.Rows.Count == 0) return null;
-
-                HashSet<string> namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
-                return namen;
-            }
-            catch { return null; }
         }
 
         /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>

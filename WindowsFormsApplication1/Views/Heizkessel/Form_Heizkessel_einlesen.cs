@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.IO;
@@ -334,8 +335,6 @@ namespace WindowsFormsApplication1
         // Bezeichner (Konzept 4.3).
         private VdiUebernahmeErgebnis UebernehmeEintrag(string nameOverride = null)
         {
-            OleDbTransaction transaction = null;
-
             try
             {
                 // 1. Model aus den Detailfeldern initialisieren; beim Umbenennen
@@ -345,40 +344,31 @@ namespace WindowsFormsApplication1
                 if (nameOverride != null) model.Name = nameOverride;
 
                 // 2. Saubere Verbindung über das DataRepository öffnen
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // 3. Verbindung UND Transaktion sind ab S4e EIN Datenbankvorgang;
+                //    ohne Commit rollt sein Dispose beim Verlassen zurueck - das
+                //    ersetzt den frueheren Rollback im catch.
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-
-                    // 3. Transaktion auf der neuen OleDbConnection starten
-                    transaction = conn.BeginTransaction();
-
                     // 4. Existenzprüfung via COUNT (Ersetzt die alte rs.Open-Logik) -
                     //    nach der Vorpruefung des Konfliktdialogs die zweite
                     //    Verteidigungslinie, sie prueft auch den Umbenennen-Namen
                     string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel_STAMM] WHERE Bezeichner = ?";
-                    using (OleDbCommand checkCmd = conn.CreateCommand())
+                    int count = Convert.ToInt32(v.Skalar(checkSql, new OleDbParameter("?", model.Name)));
+                    if (count > 0)
                     {
-                        checkCmd.Transaction = transaction;
-                        checkCmd.CommandText = checkSql;
-                        checkCmd.Parameters.Add(new OleDbParameter("?", model.Name));
-
-                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
-                        if (count > 0)
-                        {
-                            transaction.Rollback();
-                            return VdiUebernahmeErgebnis.Duplikat;
-                        }
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
                     }
 
                     // 5. Datensatz in einem Rutsch transaktionssicher speichern
-                    if (Insert(model, conn, transaction))
+                    if (Insert(model, v))
                     {
                         // Nur wenn das Insert mitsamt allen Feldern erfolgreich war, festschreiben
-                        transaction.Commit();
+                        v.Commit();
                         return VdiUebernahmeErgebnis.Gespeichert;
                     }
 
-                    transaction.Rollback();
+                    v.Rollback();
                     return VdiUebernahmeErgebnis.Fehler;
                 }
             }
@@ -386,11 +376,8 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Fehler bei Heizkessel Übernehmen: " + ex.Message);
 
-                if (transaction != null && transaction.Connection != null)
-                {
-                    try { transaction.Rollback(); } catch { }
-                }
-
+                // Der Rueckrollvorgang ist bereits gelaufen: DbVorgang.Dispose rollt
+                // beim Verlassen des using zurueck, wenn kein Commit gesehen wurde.
                 return VdiUebernahmeErgebnis.Fehler;
             }
         }
@@ -414,52 +401,41 @@ namespace WindowsFormsApplication1
         }
 
         // Überladene Insert-Methode, die voll in der aktiven Transaktion arbeitet
-        public bool Insert(HeizkesselModel model, OleDbConnection conn, OleDbTransaction transaction)
+        public bool Insert(HeizkesselModel model, DbVorgang v)
         {
             try
             {
-                int newId;
-                using (OleDbCommand idCmd = conn.CreateCommand())
-                {
-                    idCmd.Transaction = transaction;
-                    idCmd.CommandText = "SELECT MAX(ID) FROM [Tab_Heizkessel_STAMM]";
-                    object mx = idCmd.ExecuteScalar();
-                    newId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
-                }
+                object mx = v.Skalar("SELECT MAX(ID) FROM [Tab_Heizkessel_STAMM]");
+                int newId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
                 string sql = @"INSERT INTO [Tab_Heizkessel_STAMM] 
                        (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl, 
                         Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, ReadOnly) 
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                using (OleDbCommand cmd = conn.CreateCommand())
-                {
-                    cmd.Transaction = transaction;
-                    cmd.CommandText = sql;
+                List<OleDbParameter> ps = new List<OleDbParameter>();
+                ps.Add(new OleDbParameter("@id", newId));
+                ps.Add(new OleDbParameter("@nam", model.Name ?? (object)DBNull.Value));
+                ps.Add(new OleDbParameter("@bes", model.Beschreibung ?? (object)DBNull.Value));
+                ps.Add(new OleDbParameter("@fir", model.Firma ?? (object)DBNull.Value));
+                ps.Add(new OleDbParameter("@pth", model.Ptherm));
+                ps.Add(new OleDbParameter("@bre", model.Brennstoff));
+                ps.Add(new OleDbParameter("@wgg", model.Wirkungsgrad_Gas));
+                ps.Add(new OleDbParameter("@wgo", model.Wirkungsgrad_Oel));
+                ps.Add(new OleDbParameter("@inv", model.Investitionskosten));
+                ps.Add(new OleDbParameter("@rau", model.Raumbedarf));
+                ps.Add(new OleDbParameter("@war", model.Wartungskosten));
+                ps.Add(new OleDbParameter("@nut", model.Nutzungsdauer));
+                ps.Add(new OleDbParameter("@co2", model.CO2));
+                ps.Add(new OleDbParameter("@so2", model.SO2));
+                ps.Add(new OleDbParameter("@nox", model.NOx));
+                ps.Add(new OleDbParameter("@co", model.CO));
+                ps.Add(new OleDbParameter("@sta", model.Staub));
+                ps.Add(new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust));
+                ps.Add(new OleDbParameter("@ro", false));
 
-                    cmd.Parameters.Add(new OleDbParameter("@id", newId));
-                    cmd.Parameters.Add(new OleDbParameter("@nam", model.Name ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new OleDbParameter("@bes", model.Beschreibung ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new OleDbParameter("@fir", model.Firma ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new OleDbParameter("@pth", model.Ptherm));
-                    cmd.Parameters.Add(new OleDbParameter("@bre", model.Brennstoff));
-                    cmd.Parameters.Add(new OleDbParameter("@wgg", model.Wirkungsgrad_Gas));
-                    cmd.Parameters.Add(new OleDbParameter("@wgo", model.Wirkungsgrad_Oel));
-                    cmd.Parameters.Add(new OleDbParameter("@inv", model.Investitionskosten));
-                    cmd.Parameters.Add(new OleDbParameter("@rau", model.Raumbedarf));
-                    cmd.Parameters.Add(new OleDbParameter("@war", model.Wartungskosten));
-                    cmd.Parameters.Add(new OleDbParameter("@nut", model.Nutzungsdauer));
-                    cmd.Parameters.Add(new OleDbParameter("@co2", model.CO2));
-                    cmd.Parameters.Add(new OleDbParameter("@so2", model.SO2));
-                    cmd.Parameters.Add(new OleDbParameter("@nox", model.NOx));
-                    cmd.Parameters.Add(new OleDbParameter("@co", model.CO));
-                    cmd.Parameters.Add(new OleDbParameter("@sta", model.Staub));
-                    cmd.Parameters.Add(new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust));
-                    cmd.Parameters.Add(new OleDbParameter("@ro", false));
-
-                    cmd.ExecuteNonQuery();
-                    return true;
-                }
+                v.Ausfuehren(sql, ps.ToArray());
+                return true;
             }
             catch (Exception ex)
             {

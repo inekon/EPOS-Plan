@@ -88,19 +88,29 @@ namespace WindowsFormsApplication1
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
 
-            // Startprüfung x64-Umstellung P1.3: Ohne registrierten ACE-Provider ist jede
-            // DB-Operation unmöglich — sprechende Meldung statt später einer nackten
-            // InvalidOperationException tief im Startpfad (erste Fundstelle wäre
-            // SchemaMigration.Ausfuehren). NACH der Sprachwahl, damit die Meldung in der
-            // eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
-            if (!DataRepository.ProviderVorhanden())
+            // Startprüfung (vormals x64-Umstellung P1.3, jetzt DB-Migration SQLite 2.8):
+            // Ohne lesbare Datenbankdatei ist jede DB-Operation unmöglich — sprechende
+            // Meldung statt später einer nackten Ausnahme tief im Startpfad (erste
+            // Fundstelle wäre SchemaMigration.Ausfuehren). NACH der Sprachwahl, damit die
+            // Meldung in der eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
+            // Einen registrierungspflichtigen Provider gibt es nach der Umstellung nicht
+            // mehr; geprüft wird jetzt die Datei selbst.
+            // Der Meldungstext steht bewusst noch als Literal hier: Die Ressourcenschlüssel
+            // START_ACE_FEHLT_* beschreiben die Access-Engine und werden mit dem übrigen
+            // Textbestand in Arbeitspaket S8 nachgezogen.
+            //
+            // ERSTSTART-ASSISTENT (S8, Implementierungskonzept Abschnitt 8): Auf einem
+            // Bestandsrechner gibt es die SQLite-Datei beim allerersten Start dieser
+            // Fassung noch gar nicht - DatenbankVorhanden() prüft aber genau sie. Der
+            // Assistent muss deshalb INNERHALB dieser Prüfung greifen, und zwar bevor
+            // ihre Fehlermeldung erscheint: Nur wenn die Datei fehlt, wird das Lagebild
+            // des Ordners erhoben; liegt dort ein Access-Altbestand, wird er einmalig
+            // umgestellt. Alles Weitere (Lizenz, Schemapflege, Oberfläche) läuft danach
+            // unverändert - insbesondere SchemaMigration.Ausfuehren, das dann auf der
+            // frischen SQLite-Datei aufsetzt.
+            if (!DataRepository.DatenbankVorhanden())
             {
-                string bitness = Environment.Is64BitProcess ? "64 Bit" : "32 Bit";
-                MessageBox.Show(
-                    string.Format(MyResource.Resource.START_ACE_FEHLT_TEXT, bitness),
-                    MyResource.Resource.START_ACE_FEHLT_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                if (!ErststartAnbieten()) return;
             }
 
             // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
@@ -186,8 +196,74 @@ namespace WindowsFormsApplication1
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
-           
+
             Application.Exit();
+        }
+
+        /// <summary>
+        /// Die Gabelung des Erststarts (Arbeitspaket S8): Es gibt keine lesbare
+        /// SQLite-Datei — liegt daneben ein Access-Altbestand, wird er einmalig
+        /// umgestellt; sonst bleibt es bei der bisherigen Meldung.
+        /// </summary>
+        /// <returns><c>true</c> = weiterstarten, <c>false</c> = Programm beenden.</returns>
+        /// <remarks>
+        /// <para>
+        /// Der Settings-Fixup (N7) läuft hier mit <c>true</c>: Im Programmbetrieb soll der
+        /// gespeicherte <c>DBName</c> nach der Umstellung auf <c>Kenndaten.sqlite</c>
+        /// zeigen. Der Vorgriff in <see cref="DataRepository.GetDBPath"/> bleibt als Netz
+        /// bestehen, falls der Fixup nicht durchkommt.
+        /// </para>
+        /// <para>
+        /// Nach erfolgreicher Umstellung wird die Startprüfung WIEDERHOLT — erst ein
+        /// zweites <c>DatenbankVorhanden()</c> beweist, dass die neue Datei auch wirklich
+        /// zu öffnen ist. Nur dann geht es weiter.
+        /// </para>
+        /// </remarks>
+        private static bool ErststartAnbieten()
+        {
+            string ordner = ErststartMigration.StandardOrdner();
+
+            if (ErststartMigration.Pruefe(ordner) != ErststartLage.NurAccdbVorhanden)
+            {
+                // Unverändert der bisherige Fall: keine Datenbank, kein Altbestand.
+                MessageBox.Show(
+                    "Datenbankdatei nicht gefunden/lesbar: " + DataRepository.GetDBPath(),
+                    "Datenbank nicht verfügbar",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            string berichtPfad;
+            bool umgestellt = Form_Erststart.Zeigen(ordner, true, out berichtPfad);
+
+            if (!umgestellt)
+            {
+                MessageBox.Show(
+                    "Die Datenbank wurde nicht umgestellt — das Programm kann nicht starten." +
+                    Environment.NewLine + Environment.NewLine +
+                    ErststartMigration.LetzteMeldung +
+                    (string.IsNullOrEmpty(berichtPfad)
+                        ? ""
+                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
+                    "Datenbankumstellung",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (!DataRepository.DatenbankVorhanden())
+            {
+                MessageBox.Show(
+                    "Die Umstellung meldet Erfolg, die neue Datenbankdatei lässt sich aber nicht " +
+                    "öffnen: " + DataRepository.GetDBPath() +
+                    (string.IsNullOrEmpty(berichtPfad)
+                        ? ""
+                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
+                    "Datenbank nicht verfügbar",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

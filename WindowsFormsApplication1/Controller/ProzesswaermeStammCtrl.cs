@@ -130,86 +130,83 @@ namespace WindowsFormsApplication1
                     new[] { new OleDbParameter("@bez", typName) });
             }
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neuProzId;
-                using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM " + TABLE_PROJ, conn, trans))
+                try
                 {
-                    object m = c.ExecuteScalar();
-                    neuProzId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                }
-
-                // Kopf ins Projekt (Monatswerte per Name)
-                StringBuilder cols = new StringBuilder("ID, ID_Projekt, Bezeichner, Typ, Beschreibung");
-                StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
-                for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
-                cols.Append(", ReadOnly"); vals.Append(", ?");
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", conn, trans))
-                {
-                    c.Parameters.Add(new OleDbParameter("@hid", neuProzId));
-                    c.Parameters.Add(new OleDbParameter("@hproj", idProjekt));
-                    c.Parameters.Add(new OleDbParameter("@hbez", szBezeichner));
-                    c.Parameters.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
-                    c.Parameters.Add(new OleDbParameter("@hbeschr", ColOrNull(h, "Beschreibung")));
-                    for (int i = 1; i <= 12; i++)
-                        c.Parameters.Add(new OleDbParameter("@hmon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
-                    c.Parameters.Add(new OleDbParameter("@hro", false));
-                    c.ExecuteNonQuery();
-                }
-
-                // Typ-Profil ins Projekt (dynamische Spaltenliste inkl. der Zahlen-Spalten [1]..[N])
-                if (dtTyp != null && dtTyp.Rows.Count > 0)
-                {
-                    int neuTypId;
-                    using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM " + TYP_PROJ, conn, trans))
+                    int neuProzId;
                     {
-                        object m = c.ExecuteScalar();
-                        neuTypId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        object m = v.Skalar("SELECT Max(ID) FROM " + TABLE_PROJ);
+                        neuProzId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
-                    // Zahlen-Spalten des Stamm-Typs ermitteln (z.B. [1]..[168])
-                    List<string> profil = new List<string>();
-                    foreach (DataColumn dc in dtTyp.Columns)
-                        if (int.TryParse(dc.ColumnName, out _)) profil.Add(dc.ColumnName);
-
-                    foreach (DataRow tr in dtTyp.Rows)
+                    // Kopf ins Projekt (Monatswerte per Name)
+                    StringBuilder cols = new StringBuilder("ID, ID_Projekt, Bezeichner, Typ, Beschreibung");
+                    StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
+                    for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
+                    cols.Append(", ReadOnly"); vals.Append(", ?");
                     {
-                        StringBuilder tc = new StringBuilder("ID, ID_Prozesswaerme, ID_Projekt, Typname, Beschreibung, ReadOnly");
-                        StringBuilder tv = new StringBuilder("?, ?, ?, ?, ?, ?");
-                        foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@hid", neuProzId));
+                        p.Add(new OleDbParameter("@hproj", idProjekt));
+                        p.Add(new OleDbParameter("@hbez", szBezeichner));
+                        p.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
+                        p.Add(new OleDbParameter("@hbeschr", ColOrNull(h, "Beschreibung")));
+                        for (int i = 1; i <= 12; i++)
+                            p.Add(new OleDbParameter("@hmon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
+                        p.Add(new OleDbParameter("@hro", false));
+                        v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
+                    }
 
-                        using (OleDbCommand c = new OleDbCommand(
-                            "INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")", conn, trans))
+                    // Typ-Profil ins Projekt (dynamische Spaltenliste inkl. der Zahlen-Spalten [1]..[N])
+                    if (dtTyp != null && dtTyp.Rows.Count > 0)
+                    {
+                        int neuTypId;
                         {
-                            c.Parameters.Add(new OleDbParameter("@tid", neuTypId++));
-                            c.Parameters.Add(new OleDbParameter("@tpw", neuProzId));
-                            c.Parameters.Add(new OleDbParameter("@tproj", idProjekt));
-                            c.Parameters.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
-                            c.Parameters.Add(new OleDbParameter("@tbeschr", ColOrNull(tr, "Beschreibung")));
-                            c.Parameters.Add(new OleDbParameter("@tro", false));
-                            int k = 0;
-                            foreach (string col in profil)
+                            object m = v.Skalar("SELECT Max(ID) FROM " + TYP_PROJ);
+                            neuTypId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
+
+                        // Zahlen-Spalten des Stamm-Typs ermitteln (z.B. [1]..[168])
+                        List<string> profil = new List<string>();
+                        foreach (DataColumn dc in dtTyp.Columns)
+                            if (int.TryParse(dc.ColumnName, out _)) profil.Add(dc.ColumnName);
+
+                        foreach (DataRow tr in dtTyp.Rows)
+                        {
+                            StringBuilder tc = new StringBuilder("ID, ID_Prozesswaerme, ID_Projekt, Typname, Beschreibung, ReadOnly");
+                            StringBuilder tv = new StringBuilder("?, ?, ?, ?, ?, ?");
+                            foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
+
                             {
-                                object v = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
-                                c.Parameters.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), v));
+                                List<OleDbParameter> p = new List<OleDbParameter>();
+                                p.Add(new OleDbParameter("@tid", neuTypId++));
+                                p.Add(new OleDbParameter("@tpw", neuProzId));
+                                p.Add(new OleDbParameter("@tproj", idProjekt));
+                                p.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
+                                p.Add(new OleDbParameter("@tbeschr", ColOrNull(tr, "Beschreibung")));
+                                p.Add(new OleDbParameter("@tro", false));
+                                int k = 0;
+                                foreach (string col in profil)
+                                {
+                                    object wert = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
+                                    p.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), wert));
+                                }
+                                v.Ausfuehren("INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")", p.ToArray());
                             }
-                            c.ExecuteNonQuery();
                         }
                     }
-                }
 
-                trans.Commit();
-                return neuProzId;
+                    v.Commit();
+                    return neuProzId;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Console.WriteLine("Fehler beim Kopieren der Prozesswaerme aus den Stammdaten: " + ex.Message);
+                    return -1;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                Console.WriteLine("Fehler beim Kopieren der Prozesswaerme aus den Stammdaten: " + ex.Message);
-                return -1;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         private static object ColOrNull(DataRow row, string col)

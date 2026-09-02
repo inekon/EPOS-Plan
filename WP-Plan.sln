@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiKern", "KiKern\KiKern.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KiKern.Tests", "KiKern.Tests\KiKern.Tests.csproj", "{E0A3B5FD-4326-42D3-8338-0630027C663A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EposSqliteMigrator.Kern", "EposSqliteMigrator\Kern\EposSqliteMigrator.Kern.csproj", "{5B2C1F41-9A34-4D6E-8F21-1C0E7A3B4D01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +41,10 @@ Global
 		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Debug|x64.Build.0 = Debug|Any CPU
 		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x64.ActiveCfg = Release|Any CPU
 		{E0A3B5FD-4326-42D3-8338-0630027C663A}.Release|x64.Build.0 = Release|Any CPU
+		{5B2C1F41-9A34-4D6E-8F21-1C0E7A3B4D01}.Debug|x64.ActiveCfg = Debug|x64
+		{5B2C1F41-9A34-4D6E-8F21-1C0E7A3B4D01}.Debug|x64.Build.0 = Debug|x64
+		{5B2C1F41-9A34-4D6E-8F21-1C0E7A3B4D01}.Release|x64.ActiveCfg = Release|x64
+		{5B2C1F41-9A34-4D6E-8F21-1C0E7A3B4D01}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

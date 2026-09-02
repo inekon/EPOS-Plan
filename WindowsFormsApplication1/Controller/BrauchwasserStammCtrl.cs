@@ -131,83 +131,72 @@ namespace WindowsFormsApplication1
                     new[] { new OleDbParameter("@bez", typName) });
             }
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neuBwId;
-                using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM " + TABLE_PROJ, conn, trans))
+                try
                 {
-                    object m = c.ExecuteScalar();
-                    neuBwId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                }
+                    object m = v.Skalar("SELECT Max(ID) FROM " + TABLE_PROJ);
+                    int neuBwId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
 
-                // Kopf ins Projekt (Monatswerte per Name). KEIN ReadOnly (Projekttabelle hat es nicht).
-                StringBuilder cols = new StringBuilder("ID, ID_Projekt, Bezeichner, Typ, Beschreibung");
-                StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
-                for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", conn, trans))
-                {
-                    c.Parameters.Add(new OleDbParameter("@hid", neuBwId));
-                    c.Parameters.Add(new OleDbParameter("@hproj", idProjekt));
-                    c.Parameters.Add(new OleDbParameter("@hbez", szBezeichner));
-                    c.Parameters.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
-                    c.Parameters.Add(new OleDbParameter("@hbesch", ColOrNull(h, "Beschreibung")));
+                    // Kopf ins Projekt (Monatswerte per Name). KEIN ReadOnly (Projekttabelle hat es nicht).
+                    StringBuilder cols = new StringBuilder("ID, ID_Projekt, Bezeichner, Typ, Beschreibung");
+                    StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
+                    for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
+                    List<OleDbParameter> pKopf = new List<OleDbParameter>();
+                    pKopf.Add(new OleDbParameter("@hid", neuBwId));
+                    pKopf.Add(new OleDbParameter("@hproj", idProjekt));
+                    pKopf.Add(new OleDbParameter("@hbez", szBezeichner));
+                    pKopf.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
+                    pKopf.Add(new OleDbParameter("@hbesch", ColOrNull(h, "Beschreibung")));
                     for (int i = 1; i <= 12; i++)
-                        c.Parameters.Add(new OleDbParameter("@mon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
-                    c.ExecuteNonQuery();
-                }
+                        pKopf.Add(new OleDbParameter("@mon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
+                    v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")",
+                                 pKopf.ToArray());
 
-                // Typ-Profil ins Projekt (dynamische Spaltenliste inkl. der Zahlen-Spalten [1]..[N]). KEIN ReadOnly.
-                if (dtTyp != null && dtTyp.Rows.Count > 0)
-                {
-                    int neuTypId;
-                    using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM " + TYP_PROJ, conn, trans))
+                    // Typ-Profil ins Projekt (dynamische Spaltenliste inkl. der Zahlen-Spalten [1]..[N]). KEIN ReadOnly.
+                    if (dtTyp != null && dtTyp.Rows.Count > 0)
                     {
-                        object m = c.ExecuteScalar();
-                        neuTypId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                    }
+                        object mTyp = v.Skalar("SELECT Max(ID) FROM " + TYP_PROJ);
+                        int neuTypId = ((mTyp != null && mTyp != DBNull.Value) ? Convert.ToInt32(mTyp) : 0) + 1;
 
-                    // Zahlen-Spalten des Stamm-Typs ermitteln (z.B. [1]..[168])
-                    List<string> profil = new List<string>();
-                    foreach (DataColumn dc in dtTyp.Columns)
-                        if (int.TryParse(dc.ColumnName, out _)) profil.Add(dc.ColumnName);
+                        // Zahlen-Spalten des Stamm-Typs ermitteln (z.B. [1]..[168])
+                        List<string> profil = new List<string>();
+                        foreach (DataColumn dc in dtTyp.Columns)
+                            if (int.TryParse(dc.ColumnName, out _)) profil.Add(dc.ColumnName);
 
-                    foreach (DataRow tr in dtTyp.Rows)
-                    {
-                        StringBuilder tc = new StringBuilder("ID, ID_Brauchwasser, ID_Projekt, Typname, Beschreibung");
-                        StringBuilder tv = new StringBuilder("?, ?, ?, ?, ?");
-                        foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
-
-                        using (OleDbCommand c = new OleDbCommand(
-                            "INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")", conn, trans))
+                        foreach (DataRow tr in dtTyp.Rows)
                         {
-                            c.Parameters.Add(new OleDbParameter("@tid", neuTypId++));
-                            c.Parameters.Add(new OleDbParameter("@tbw", neuBwId));
-                            c.Parameters.Add(new OleDbParameter("@tproj", idProjekt));
-                            c.Parameters.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
-                            c.Parameters.Add(new OleDbParameter("@tbesch", ColOrNull(tr, "Beschreibung")));
+                            StringBuilder tc = new StringBuilder("ID, ID_Brauchwasser, ID_Projekt, Typname, Beschreibung");
+                            StringBuilder tv = new StringBuilder("?, ?, ?, ?, ?");
+                            foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
+
+                            List<OleDbParameter> pTyp = new List<OleDbParameter>();
+                            pTyp.Add(new OleDbParameter("@tid", neuTypId++));
+                            pTyp.Add(new OleDbParameter("@tbw", neuBwId));
+                            pTyp.Add(new OleDbParameter("@tproj", idProjekt));
+                            pTyp.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
+                            pTyp.Add(new OleDbParameter("@tbesch", ColOrNull(tr, "Beschreibung")));
                             int k = 0;
                             foreach (string col in profil)
                             {
-                                object v = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
-                                c.Parameters.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), v));
+                                object wert = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
+                                pTyp.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), wert));
                             }
-                            c.ExecuteNonQuery();
+                            v.Ausfuehren("INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")",
+                                         pTyp.ToArray());
                         }
                     }
-                }
 
-                trans.Commit();
-                return neuBwId;
+                    v.Commit();
+                    return neuBwId;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Console.WriteLine("Fehler beim Kopieren des Brauchwassers aus den Stammdaten: " + ex.Message);
+                    return -1;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                Console.WriteLine("Fehler beim Kopieren des Brauchwassers aus den Stammdaten: " + ex.Message);
-                return -1;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         private static object ColOrNull(DataRow row, string col)

@@ -93,12 +93,14 @@ namespace WindowsFormsApplication1
                             Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            bool success = DataRepository.ExecuteSQL(sql, CreateParameters(false));
-            if (success)
-            {
-                DataTable dt = DataRepository.GetDataTable("SELECT @@IDENTITY");
-                if (dt.Rows.Count > 0) this.ID = Convert.ToInt32(dt.Rows[0][0]);
-            }
+            // ARBEITSPAKET S4b, ALTFEHLER BEHOBEN: dieselbe Stelle wie in
+            // BrauchwasserCtrl.Insert - @@IDENTITY wurde auf einer FRISCHEN Verbindung
+            // abgefragt und konnte den Wert des INSERT gar nicht sehen.
+            // ExecuteInsertAndGetId macht beides auf DERSELBEN Verbindung.
+            int neueId = DataRepository.ExecuteInsertAndGetId(sql, CreateParameters(false));
+            bool success = neueId > 0;
+
+            if (success) this.ID = neueId;
             return success;
         }
 

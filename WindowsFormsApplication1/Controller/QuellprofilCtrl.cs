@@ -274,93 +274,70 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    int id = kopf.ID;
+
+                    if (id > 0)
                     {
-                        int id = kopf.ID;
+                        List<OleDbParameter> pKopf = new List<OleDbParameter>();
+                        KopfParameter(pKopf, kopf);
+                        pKopf.Add(StilleDb.Par("@id", OleDbType.Integer, id));
+                        v.Ausfuehren(
+                            "UPDATE [" + SchemaKatalog.TAB_QUELLPROFIL + "] SET " +
+                            "[" + SchemaKatalog.SPALTE_QP_ID_PROJEKT + "] = ?, " +
+                            "[" + SchemaKatalog.SPALTE_QP_BEZEICHNER + "] = ?, " +
+                            "[" + SchemaKatalog.SPALTE_QP_BETRIEBSART + "] = ?, " +
+                            "[" + SchemaKatalog.SPALTE_QP_EINHEIT + "] = ?, " +
+                            "[" + SchemaKatalog.SPALTE_QP_BESCHREIBUNG + "] = ? WHERE ID = ?",
+                            pKopf.ToArray());
 
-                        if (id > 0)
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "UPDATE [" + SchemaKatalog.TAB_QUELLPROFIL + "] SET " +
-                                "[" + SchemaKatalog.SPALTE_QP_ID_PROJEKT + "] = ?, " +
-                                "[" + SchemaKatalog.SPALTE_QP_BEZEICHNER + "] = ?, " +
-                                "[" + SchemaKatalog.SPALTE_QP_BETRIEBSART + "] = ?, " +
-                                "[" + SchemaKatalog.SPALTE_QP_EINHEIT + "] = ?, " +
-                                "[" + SchemaKatalog.SPALTE_QP_BESCHREIBUNG + "] = ? WHERE ID = ?",
-                                conn, trans))
-                            {
-                                KopfParameter(cmd, kopf);
-                                cmd.Parameters.Add(StilleDb.Par("@id", OleDbType.Integer, id));
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            using (OleDbCommand del = new OleDbCommand(
-                                "DELETE FROM [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] " +
-                                "WHERE ID_Quellprofil = ?", conn, trans))
-                            {
-                                del.Parameters.Add(StilleDb.Par("@id", OleDbType.Integer, id));
-                                del.ExecuteNonQuery();
-                            }
-                        }
-                        else
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "INSERT INTO [" + SchemaKatalog.TAB_QUELLPROFIL + "] " +
-                                "([" + SchemaKatalog.SPALTE_QP_ID_PROJEKT + "], " +
-                                " [" + SchemaKatalog.SPALTE_QP_BEZEICHNER + "], " +
-                                " [" + SchemaKatalog.SPALTE_QP_BETRIEBSART + "], " +
-                                " [" + SchemaKatalog.SPALTE_QP_EINHEIT + "], " +
-                                " [" + SchemaKatalog.SPALTE_QP_BESCHREIBUNG + "]) VALUES (?,?,?,?,?)",
-                                conn, trans))
-                            {
-                                KopfParameter(cmd, kopf);
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            // AUTOINCREMENT: Die vergebene ID kommt über @@IDENTITY - und
-                            // zwar auf DERSELBEN Verbindung und in derselben Transaktion,
-                            // sonst gehoerte sie einem fremden Vorgang.
-                            using (OleDbCommand ident = new OleDbCommand("SELECT @@IDENTITY", conn, trans))
-                            {
-                                object v = ident.ExecuteScalar();
-                                id = (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
-                            }
-
-                            if (id <= 0)
-                            {
-                                trans.Rollback();
-                                Console.WriteLine("QuellprofilCtrl.Speichern: keine ID aus @@IDENTITY.");
-                                return 0;
-                            }
-                        }
-
-                        using (OleDbCommand ins = new OleDbCommand(
-                            "INSERT INTO [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] " +
-                            "([" + SchemaKatalog.SPALTE_QPD_ID_QUELLPROFIL + "], " +
-                            " [" + SchemaKatalog.SPALTE_QPD_INDEX + "], " +
-                            " [" + SchemaKatalog.SPALTE_QPD_WERT + "]) VALUES (?,?,?)",
-                            conn, trans))
-                        {
-                            ins.Parameters.Add(new OleDbParameter("@p", OleDbType.Integer));
-                            ins.Parameters.Add(new OleDbParameter("@i", OleDbType.Integer));
-                            ins.Parameters.Add(new OleDbParameter("@w", OleDbType.Double));
-
-                            for (int i = 0; i < werte.Length; i++)
-                            {
-                                ins.Parameters[0].Value = id;
-                                ins.Parameters[1].Value = i;
-                                ins.Parameters[2].Value = werte[i];
-                                ins.ExecuteNonQuery();
-                            }
-                        }
-
-                        trans.Commit();
-                        kopf.ID = id;
-                        return id;
+                        v.Ausfuehren(
+                            "DELETE FROM [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] " +
+                            "WHERE ID_Quellprofil = ?",
+                            StilleDb.Par("@id", OleDbType.Integer, id));
                     }
+                    else
+                    {
+                        List<OleDbParameter> pKopf = new List<OleDbParameter>();
+                        KopfParameter(pKopf, kopf);
+
+                        // AUTOINCREMENT: Die vergebene ID liefert derselbe Aufruf zurueck -
+                        // auf DERSELBEN Verbindung und in derselben Transaktion, sonst
+                        // gehoerte sie einem fremden Vorgang. (Bis S4e: SELECT @@IDENTITY.)
+                        id = v.EinfuegenUndId(
+                            "INSERT INTO [" + SchemaKatalog.TAB_QUELLPROFIL + "] " +
+                            "([" + SchemaKatalog.SPALTE_QP_ID_PROJEKT + "], " +
+                            " [" + SchemaKatalog.SPALTE_QP_BEZEICHNER + "], " +
+                            " [" + SchemaKatalog.SPALTE_QP_BETRIEBSART + "], " +
+                            " [" + SchemaKatalog.SPALTE_QP_EINHEIT + "], " +
+                            " [" + SchemaKatalog.SPALTE_QP_BESCHREIBUNG + "]) VALUES (?,?,?,?,?)",
+                            pKopf.ToArray());
+
+                        if (id <= 0)
+                        {
+                            v.Rollback();
+                            Console.WriteLine("QuellprofilCtrl.Speichern: keine ID aus dem Einfügen.");
+                            return 0;
+                        }
+                    }
+
+                    string sqlDaten =
+                        "INSERT INTO [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] " +
+                        "([" + SchemaKatalog.SPALTE_QPD_ID_QUELLPROFIL + "], " +
+                        " [" + SchemaKatalog.SPALTE_QPD_INDEX + "], " +
+                        " [" + SchemaKatalog.SPALTE_QPD_WERT + "]) VALUES (?,?,?)";
+                    for (int i = 0; i < werte.Length; i++)
+                    {
+                        v.Ausfuehren(sqlDaten,
+                            new OleDbParameter("@p", OleDbType.Integer) { Value = id },
+                            new OleDbParameter("@i", OleDbType.Integer) { Value = i },
+                            new OleDbParameter("@w", OleDbType.Double) { Value = werte[i] });
+                    }
+
+                    v.Commit();
+                    kopf.ID = id;
+                    return id;
                 }
             }
             catch (Exception ex)
@@ -370,14 +347,14 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void KopfParameter(OleDbCommand cmd, Kopf k)
+        private static void KopfParameter(List<OleDbParameter> p, Kopf k)
         {
-            cmd.Parameters.Add(StilleDb.Par("@proj", OleDbType.Integer,
+            p.Add(StilleDb.Par("@proj", OleDbType.Integer,
                 k.ID_Projekt > 0 ? (object)k.ID_Projekt : null));
-            cmd.Parameters.Add(StilleDb.Par("@bez", OleDbType.VarWChar, k.Bezeichner ?? ""));
-            cmd.Parameters.Add(StilleDb.Par("@art", OleDbType.VarWChar, k.Betriebsart ?? ""));
-            cmd.Parameters.Add(StilleDb.Par("@einh", OleDbType.VarWChar, k.Einheit ?? ""));
-            cmd.Parameters.Add(StilleDb.Par("@besch", OleDbType.VarWChar, k.Beschreibung ?? ""));
+            p.Add(StilleDb.Par("@bez", OleDbType.VarWChar, k.Bezeichner ?? ""));
+            p.Add(StilleDb.Par("@art", OleDbType.VarWChar, k.Betriebsart ?? ""));
+            p.Add(StilleDb.Par("@einh", OleDbType.VarWChar, k.Einheit ?? ""));
+            p.Add(StilleDb.Par("@besch", OleDbType.VarWChar, k.Beschreibung ?? ""));
         }
 
         /// <summary>

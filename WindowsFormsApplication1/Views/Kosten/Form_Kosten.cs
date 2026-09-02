@@ -2223,42 +2223,37 @@ namespace WindowsFormsApplication1
             if (id == 0) return false;
 
             // 1. Details löschen (z.B. project_settings)
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                string sqlDetail = $"DELETE FROM energy_project_settings WHERE ID_Energieträger=? AND ID_Projekt=?";
-                using (OleDbCommand cmd = new OleDbCommand(sqlDetail, conn, trans))
+                try
                 {
-                    cmd.Parameters.AddWithValue("?", id);
-                    cmd.Parameters.AddWithValue("?", ID_Projekt);
-                    cmd.ExecuteNonQuery();
-                }
+                    string sqlDetail = $"DELETE FROM energy_project_settings WHERE ID_Energieträger=? AND ID_Projekt=?";
+                    v.Ausfuehren(sqlDetail,
+                        new OleDbParameter("?", id),
+                        new OleDbParameter("?", ID_Projekt));
 
-                sqlDetail = $"DELETE FROM energy_price WHERE carrier_id=? AND ID_Projekt=?";
-                using (OleDbCommand cmd = new OleDbCommand(sqlDetail, conn, trans))
+                    sqlDetail = $"DELETE FROM energy_price WHERE carrier_id=? AND ID_Projekt=?";
+                    v.Ausfuehren(sqlDetail,
+                        new OleDbParameter("?", id),
+                        new OleDbParameter("?", ID_Projekt));
+
+                    v.Commit();
+
+                    // Review-Befund (Phase 7): das offene ucFuelSettings des gelöschten
+                    // Trägers muss aus dem Panel, sonst legt das Speichern beim
+                    // Schließen (B6) die Projektzuordnung wieder an.
+                    flpContainer_Energiekosten.Controls.Clear();
+                    FillCarrierComboBox();
+
+                    return true;
+                }
+                catch (Exception ex)
                 {
-                    cmd.Parameters.AddWithValue("?", id);
-                    cmd.Parameters.AddWithValue("?", ID_Projekt);
-                    cmd.ExecuteNonQuery();
+                    v.Rollback();
+                    MessageBox.Show($"Fehler beim Löschen in energy_project_settings: " + ex.Message);
+                    return false;
                 }
-
-                trans.Commit();
-
-                // Review-Befund (Phase 7): das offene ucFuelSettings des gelöschten
-                // Trägers muss aus dem Panel, sonst legt das Speichern beim
-                // Schließen (B6) die Projektzuordnung wieder an.
-                flpContainer_Energiekosten.Controls.Clear();
-                FillCarrierComboBox();
-
-                return true;
             }
-            catch (Exception ex)
-            {
-                trans.Rollback();
-                MessageBox.Show($"Fehler beim Löschen in energy_project_settings: " + ex.Message);
-                return false;
-            }
-            finally { conn.Close(); }
         }
 
     }

@@ -79,14 +79,16 @@ namespace WindowsFormsApplication1
             string sql = @"INSERT INTO Tab_Brauchwasser (Bezeichner, Typ, Beschreibung, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12) 
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            bool success = DataRepository.ExecuteSQL(sql, CreateParameters(false));
+            // ARBEITSPAKET S4b, ALTFEHLER BEHOBEN: Bisher lief das INSERT über
+            // ExecuteSQL und die ID-Rückgabe über ein zweites, EIGENES
+            // GetDataTable("SELECT @@IDENTITY"). @@IDENTITY gilt aber je VERBINDUNG -
+            // die zweite Abfrage lief auf einer FRISCHEN Verbindung und lieferte
+            // deshalb den Wert eines fremden oder gar keines Vorgangs. ExecuteInsertAndGetId
+            // macht beides auf DERSELBEN Verbindung (last_insert_rowid()).
+            int neueId = DataRepository.ExecuteInsertAndGetId(sql, CreateParameters(false));
+            bool success = neueId > 0;
 
-            if (success)
-            {
-                // Die neue Auto-Wert ID aus Access zurückholen
-                DataTable dt = DataRepository.GetDataTable("SELECT @@IDENTITY");
-                if (dt.Rows.Count > 0) this.m_ID = Convert.ToInt32(dt.Rows[0][0]);
-            }
+            if (success) this.m_ID = neueId;
             return success;
         }
 

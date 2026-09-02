@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
 {
@@ -1013,31 +1014,25 @@ namespace WindowsFormsApplication1
             bool ok = false;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht. Statt blind zu
+                // ALTERn und den Fehler zu schlucken, entscheidet eine VORABPROBE ueber
+                // die Schema-Auskunft (S4c/S4d vorgezogen); der Spaltentyp YESNO wird
+                // dabei nach SQLite uebersetzt.
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(SchemaKatalog.TAB_PUFFERSPEICHER);
+
+                foreach (string spalte in new[] { sH, sB, sP })
                 {
-                    conn.Open();
-
-                    foreach (string spalte in new[] { sH, sB, sP })
-                    {
-                        try
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "ALTER TABLE [" + SchemaKatalog.TAB_PUFFERSPEICHER +
-                                "] ADD COLUMN [" + spalte + "] YESNO", conn))
-                                cmd.ExecuteNonQuery();
-                        }
-                        catch { /* Spalte existiert bereits - der Regelfall nach Schritt 49 */ }
-                    }
-
-                    using (OleDbCommand probe = new OleDbCommand(
-                        "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER +
-                        "] WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE " +
-                        "AND [" + sP + "] = FALSE", conn))
-                    {
-                        probe.ExecuteScalar();
-                        ok = true;
-                    }
+                    if (vorhanden != null && vorhanden.Contains(spalte)) continue;
+                    StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                        SchemaKatalog.TAB_PUFFERSPEICHER, spalte, "YESNO"));
                 }
+
+                // Nachweis statt Annahme - erst diese Leseprobe belegt, dass alle drei
+                // Spalten da sind.
+                ok = StillProbe(
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER +
+                    "] WHERE [" + sH + "] = FALSE AND [" + sB + "] = FALSE " +
+                    "AND [" + sP + "] = FALSE");
             }
             catch (Exception ex)
             {
@@ -1319,11 +1314,8 @@ namespace WindowsFormsApplication1
             bool ok = false;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    ok = SchichtSpaltenProbe(conn);
-                }
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht.
+                ok = SchichtSpaltenProbe();
             }
             catch (Exception ex)
             {
@@ -1361,25 +1353,18 @@ namespace WindowsFormsApplication1
             bool ok = false;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Vorabprobe
+                // statt geschlucktem ALTER-Fehler (S4c/S4d vorgezogen).
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(SchemaKatalog.TAB_PUFFERSPEICHER);
+
+                foreach (KeyValuePair<string, string> spalte in SchichtSpaltenTypen())
                 {
-                    conn.Open();
-
-                    foreach (KeyValuePair<string, string> spalte in SchichtSpaltenTypen())
-                    {
-                        try
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "ALTER TABLE [" + SchemaKatalog.TAB_PUFFERSPEICHER +
-                                "] ADD COLUMN [" +
-                                spalte.Key + "] " + spalte.Value, conn))
-                                cmd.ExecuteNonQuery();
-                        }
-                        catch { /* Spalte existiert bereits - der Regelfall nach Schritt 53 */ }
-                    }
-
-                    ok = SchichtSpaltenProbe(conn);
+                    if (vorhanden != null && vorhanden.Contains(spalte.Key)) continue;
+                    StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                        SchemaKatalog.TAB_PUFFERSPEICHER, spalte.Key, spalte.Value));
                 }
+
+                ok = SchichtSpaltenProbe();
             }
             catch (Exception ex)
             {
@@ -1413,25 +1398,42 @@ namespace WindowsFormsApplication1
         /// fehl, fehlt mindestens eine — dann bleibt der Schreibweg aus, und die Leseseite
         /// arbeitet mit der Vorbelegung weiter.
         /// </summary>
-        private static bool SchichtSpaltenProbe(OleDbConnection conn)
+        private static bool SchichtSpaltenProbe()
         {
             List<string> namen = new List<string>();
             foreach (KeyValuePair<string, string> s in SchichtSpaltenTypen())
                 namen.Add("[" + s.Key + "]");
 
+            // ARBEITSPAKET S4b: SELECT TOP 1 -> LIMIT 1 (S5 vorgezogen).
+            if (!StillProbe("SELECT " + string.Join(", ", namen.ToArray()) +
+                            " FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER + "] LIMIT 1"))
+            {
+                Console.WriteLine("Schichtspalten-Leseprobe fehlgeschlagen.");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Leseprobe: true, wenn die Abfrage AUSFUEHRBAR ist - unabhaengig davon, ob sie
+        /// eine Zeile oder einen Wert liefert. ARBEITSPAKET S4b: Genau diese
+        /// Unterscheidung leistet <c>StilleDb.Scalar</c> NICHT (dort ist null sowohl
+        /// "Fehler" als auch "kein Wert"), deshalb steht sie hier.
+        /// </summary>
+        private static bool StillProbe(string sql, params OleDbParameter[] parameter)
+        {
             try
             {
-                using (OleDbCommand probe = new OleDbCommand(
-                    "SELECT TOP 1 " + string.Join(", ", namen.ToArray()) +
-                    " FROM [" + SchemaKatalog.TAB_PUFFERSPEICHER + "]", conn))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
                 {
-                    probe.ExecuteScalar();
+                    cmd.ExecuteScalar();
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Schichtspalten-Leseprobe fehlgeschlagen: " + ex.Message);
+                Console.WriteLine("Pufferspeicher-Leseprobe fehlgeschlagen: " + ex.Message);
                 return false;
             }
         }
@@ -1524,21 +1526,20 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht. Der Leser
+                // bleibt ein Leser (zwei Spalten einer Zeile), die Meldung bleibt
+                // dieselbe - deshalb innen umgestellt statt ueber StilleDb.
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(
+                           conn, null, ProjektPuffer.SQL_PUFFER_TEMPERATUREN,
+                           new[] { new OleDbParameter("@id", idPuffer) }))
+                using (SqliteDataReader r = cmd.ExecuteReader())
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(ProjektPuffer.SQL_PUFFER_TEMPERATUREN, conn))
-                    {
-                        cmd.Parameters.Add(new OleDbParameter("@id", idPuffer));
-                        using (OleDbDataReader r = cmd.ExecuteReader())
-                        {
-                            if (!r.Read()) return false;
-                            if (r.IsDBNull(0) || r.IsDBNull(1)) return false;
+                    if (!r.Read()) return false;
+                    if (r.IsDBNull(0) || r.IsDBNull(1)) return false;
 
-                            vorlauf = Convert.ToInt32(r.GetValue(0));
-                            ruecklauf = Convert.ToInt32(r.GetValue(1));
-                        }
-                    }
+                    vorlauf = Convert.ToInt32(r.GetValue(0));
+                    ruecklauf = Convert.ToInt32(r.GetValue(1));
                 }
             }
             catch (Exception ex)
@@ -1588,9 +1589,10 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0) return 0;
 
+            // ARBEITSPAKET S4b: SELECT TOP 1 -> LIMIT 1 (S5 vorgezogen).
             object v = StillScalar(
-                "SELECT TOP 1 Gesamtvolumen FROM Tab_Pufferspeicher " +
-                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID",
+                "SELECT Gesamtvolumen FROM Tab_Pufferspeicher " +
+                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID LIMIT 1",
                 new OleDbParameter("@idProj", idProjekt),
                 new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
 
@@ -1688,9 +1690,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int PendelspeicherId(int idProjekt)
         {
+            // ARBEITSPAKET S4b: SELECT TOP 1 -> LIMIT 1 (S5 vorgezogen).
             object v = StillScalar(
-                "SELECT TOP 1 ID FROM Tab_Pufferspeicher " +
-                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID",
+                "SELECT ID FROM Tab_Pufferspeicher " +
+                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID LIMIT 1",
                 new OleDbParameter("@idProj", idProjekt),
                 new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
 
@@ -1714,22 +1717,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Skalare Abfrage auf eigener Verbindung, OHNE Dialog. DataRepository zeigt im
-        /// Fehlerfall eine MessageBox - im Engine-Pfad waere das ein haengender Lauf
-        /// (der Referenzlauf braucht dafuer eigens einen Dialogwaechter).
+        /// Skalare Abfrage OHNE Dialog. DataRepository zeigt im Fehlerfall eine
+        /// MessageBox - im Engine-Pfad waere das ein haengender Lauf (der Referenzlauf
+        /// braucht dafuer eigens einen Dialogwaechter).
+        ///
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht. Innen umgestellt und
+        /// NICHT auf <see cref="StilleDb.Scalar"/> zurueckgefuehrt, aus zwei Gruenden:
+        /// der eigene Meldungstext, und die Rueckgabe - diese Fassung reicht
+        /// <c>DBNull</c> DURCH (die Aufrufer pruefen darauf), StilleDb macht null daraus.
         /// </summary>
         private static object StillScalar(string sql, params OleDbParameter[] parameter)
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                    {
-                        if (parameter != null) cmd.Parameters.AddRange(parameter);
-                        return cmd.ExecuteScalar();
-                    }
+                    return cmd.ExecuteScalar();
                 }
             }
             catch (Exception ex)
@@ -1739,19 +1743,16 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Schreibende Anweisung ohne Dialog; -1 bei Fehler.</summary>
+        /// <summary>Schreibende Anweisung ohne Dialog; -1 bei Fehler.
+        /// ARBEITSPAKET S4b: innen umgestellt - eigener Meldungstext wie oben.</summary>
         private static int StillNonQuery(string sql, params OleDbParameter[] parameter)
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                    {
-                        if (parameter != null) cmd.Parameters.AddRange(parameter);
-                        return cmd.ExecuteNonQuery();
-                    }
+                    return cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -1801,18 +1802,14 @@ namespace WindowsFormsApplication1
             List<int> ids = new List<int>();
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Meldungstext
+                // und Rueckgabe (leere Liste im Fehlerfall) bleiben.
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (SqliteDataReader r = cmd.ExecuteReader())
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                    {
-                        if (parameter != null) cmd.Parameters.AddRange(parameter);
-                        using (OleDbDataReader r = cmd.ExecuteReader())
-                        {
-                            while (r.Read())
-                                if (!r.IsDBNull(0)) ids.Add(Convert.ToInt32(r.GetValue(0)));
-                        }
-                    }
+                    while (r.Read())
+                        if (!r.IsDBNull(0)) ids.Add(Convert.ToInt32(r.GetValue(0)));
                 }
             }
             catch (Exception ex)
@@ -1879,26 +1876,17 @@ namespace WindowsFormsApplication1
             }
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, je Spalte ein
+                // eigener Aufruf (KEINE Transaktion darum - auch bisher stand hier
+                // keine). Der Ausnahmetext steht in StillNonQuery, die Zuordnung zur
+                // Spalte in der Zeile darunter.
+                foreach (string spalte in PUFFER_REFERENZEN)
                 {
-                    conn.Open();
-                    foreach (string spalte in PUFFER_REFERENZEN)
-                    {
-                        try
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "UPDATE Tab_Energieanlagen SET [" + spalte + "] = NULL " +
-                                "WHERE [" + spalte + "] IN (" + liste + ")", conn))
-                            {
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // z. B. Spalte noch nicht angelegt - kein Grund, das Loeschen zu stoppen
-                            Console.WriteLine("Referenz " + spalte + " nicht geloest: " + ex.Message);
-                        }
-                    }
+                    // z. B. Spalte noch nicht angelegt - kein Grund, das Loeschen zu stoppen
+                    if (StillNonQuery(
+                            "UPDATE Tab_Energieanlagen SET [" + spalte + "] = NULL " +
+                            "WHERE [" + spalte + "] IN (" + liste + ")") < 0)
+                        Console.WriteLine("Referenz " + spalte + " nicht geloest.");
                 }
             }
             catch (Exception ex)

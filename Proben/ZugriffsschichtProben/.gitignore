@@ -1,0 +1,9 @@
+# Bauartefakte der Proben - nie ins Repo.
+bin/
+obj/
+
+# Arbeitskopien der Probendatenbank (werden je Lauf neu angelegt).
+Arbeitskopie/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

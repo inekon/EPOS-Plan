@@ -113,6 +113,32 @@ ORDER BY f.IsMainComponent,
                             WHEN 3 THEN 'Energiekosten' ELSE '' END,
          k.Komponente, w.Gruppe, f.Bezeichnung;
 '@
+    # ---- Kuration Befund B1 (Arbeitspaket S7, 02.09.2026) -------------------
+    # Diese drei Access-Abfragen waehlen die Spalte ID BEIDER verbundener Tabellen.
+    # SQLite entdoppelt das selbsttaetig zu "ID" und "ID:1" - der zweite Name ist fuer
+    # Konsumenten unbrauchbar. Die zweite ID (immer die der *Daten-Tabelle) heisst
+    # deshalb ID_Daten; alle uebrigen Ausgabespalten behalten ihren Namen, damit
+    # bestehende Konsumenten unveraendert weiterlaufen.
+    # Die Texte stehen hier WOERTLICH, weil der Generator die QueryDefs sonst
+    # unveraendert uebernimmt und die Kuration bei der naechsten Generierung
+    # verloren ginge. Aufrufer: SimulationWaermebedarf.cs:305/:602,
+    # SimulationStrombedarf.cs:121, StromTestClass.cs:48.
+    'Abfrage_ProjektGebaeudeGanglinie' = @'
+CREATE VIEW [Abfrage_ProjektGebaeudeGanglinie] AS
+SELECT Tab_Waermebedarf.ID, Tab_WaermebedarfDaten.ID AS ID_Daten, Tab_WaermebedarfDaten.Wert
+FROM Tab_Waermebedarf INNER JOIN Tab_WaermebedarfDaten ON Tab_Waermebedarf.ID = Tab_WaermebedarfDaten.ID_Ganglinie;
+'@
+    'Abfrage_ProjektStromGanglinie' = @'
+CREATE VIEW [Abfrage_ProjektStromGanglinie] AS
+SELECT Tab_Stromganglinie.ID, Tab_StromganglinieDaten.ID AS ID_Daten, Tab_StromganglinieDaten.Wert, Tab_Stromganglinie.Zeitinterval
+FROM Tab_Stromganglinie INNER JOIN Tab_StromganglinieDaten ON Tab_Stromganglinie.ID = Tab_StromganglinieDaten.ID_Ganglinie;
+'@
+    'Abfrage_Tagverteilung' = @'
+CREATE VIEW [Abfrage_Tagverteilung] AS
+SELECT Tab_DBTagV.ID, Tab_DBTagV.Bezeichner, Tab_DBTagVDaten.ID AS ID_Daten, Tab_DBTagVDaten.Verteilung
+FROM Tab_DBTagV INNER JOIN Tab_DBTagVDaten ON Tab_DBTagV.ID = Tab_DBTagVDaten.ID_TagV
+ORDER BY Tab_DBTagVDaten.ID;
+'@
 }
 $VIEW_KOMMENTAR = @{
     'Abfrage_Energietraeger_Effektiv' =
@@ -120,6 +146,12 @@ $VIEW_KOMMENTAR = @{
     'Abfrage_Kostenfaktoren' =
         "-- uebersetzt, Original IIf/PROCEDURE (ACE laesst kein ORDER BY in Views zu, SQLite schon).`n" +
         '-- Der IIf-Ausdruck steht im ORDER BY ausgeschrieben, damit der Text dem Original entspricht.'
+    'Abfrage_ProjektGebaeudeGanglinie' =
+        '-- kuriert (Befund B1, S7): zweite ID als ID_Daten benannt - siehe Kopfhinweis.'
+    'Abfrage_ProjektStromGanglinie' =
+        '-- kuriert (Befund B1, S7): zweite ID als ID_Daten benannt - siehe Kopfhinweis.'
+    'Abfrage_Tagverteilung' =
+        '-- kuriert (Befund B1, S7): zweite ID als ID_Daten benannt - siehe Kopfhinweis.'
 }
 
 # ---------------------------------------------------------------------------
@@ -141,6 +173,16 @@ function Q {
 }
 
 function Neue-Liste { , (New-Object System.Collections.Generic.List[object]) }
+
+# PowerShell 7.6.5 wirft bei @($liste) auf einer List[object] mit PSCustomObject-Inhalt
+# "Argument types do not match". ToArray() ist der verlaessliche Weg.
+# Das Komma haelt auch leere Arrays am Leben (sonst gibt PowerShell $null zurueck).
+function Als-Array {
+    param($Liste)
+    if ($null -eq $Liste) { return , @() }
+    if ($Liste -is [System.Collections.Generic.List[object]]) { return , $Liste.ToArray() }
+    return , @($Liste)
+}
 
 $script:Fehler = New-Object System.Collections.Generic.List[string]
 function Melde-Fehler { param([string] $Text) $script:Fehler.Add($Text) | Out-Null }
@@ -349,8 +391,10 @@ $zusatzUnique = Neue-Liste   # UNIQUE-Indizes, die einen aufgegebenen Access-PK 
 foreach ($t in $tabellen) {
     $primIndizes = @($t.Indizes | Where-Object { $_.Primary })
     if ($primIndizes.Count -gt 1) { Melde-Fehler "Mehr als ein Primaerindex: $($t.Name)" }
-    $accessPk = if ($primIndizes.Count -ge 1) { @($primIndizes[0].Spalten) } else { $null }
-    $autos    = @($t.Spalten | Where-Object { $_.Autowert } | ForEach-Object { $_.Name })
+    # ACHTUNG: 'if' als Ausdruck entrollt einelementige Arrays - deshalb getrennte Zuweisung.
+    $accessPk = $null
+    if ($primIndizes.Count -ge 1) { $accessPk = [string[]]@($primIndizes[0].Spalten) }
+    $autos    = [string[]]@($t.Spalten | Where-Object { $_.Autowert } | ForEach-Object { $_.Name })
     if ($autos.Count -gt 1) { Melde-Fehler "Mehr als eine Autowertspalte: $($t.Name) ($($autos -join ', '))" }
 
     $effektivPk = $accessPk
@@ -358,7 +402,6 @@ foreach ($t in $tabellen) {
 
     if ($autos.Count -eq 1) {
         $a = $autos[0]
-        Write-Host "DIAG $($t.Name): accessPk-Typ=$(if($null -eq $accessPk){'NULL'}else{$accessPk.GetType().FullName})"
         $istAlleinPk = ($null -ne $accessPk) -and ($accessPk.Count -eq 1) -and ($accessPk[0] -eq $a)
         if (-not $istAlleinPk) {
             if ($null -eq $accessPk) {
@@ -420,10 +463,12 @@ foreach ($rel in $relationen) {
     $fkNachKind[$rel.Kind].Add($rel) | Out-Null
 }
 
-$stand = Get-Date -Format 'yyyy-MM-dd HH:mm'
+# Deterministisch: der Zeitstempel im Kopf ist der Stand der QUELLE, nicht die Laufzeit.
+# So sind Wiederholungslaeufe gegen dieselbe Quelle byte-identisch (saubere Git-Diffs).
+$stand = $quellDatei.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
 $kopf001 = @"
 -- 001_grundschema.sql - EPOS-Plan, Zielschema SQLite (Arbeitspaket S2)
--- Erzeugt von sql/tools/Erzeuge-Schema.ps1 am $stand
+-- Erzeugt von sql/tools/Erzeuge-Schema.ps1, Quellenstand $stand
 -- Quelle: $($quellDatei.FullName) (Schemastand $ErwarteSchemaVersion, nach S0)
 -- NICHT VON HAND AENDERN - neu erzeugen. Ab S4-Beginn eingefroren.
 --
@@ -511,8 +556,10 @@ foreach ($t in $tabellen) {
         }
     }
 
-    $alle = @($spaltenText) + @($tabellenKlauseln)
-    $block = "CREATE TABLE $(Q $t.Name) (`n" + ($alle -join ",`n") + "`n) STRICT;`n"
+    $alle = New-Object System.Collections.Generic.List[string]
+    foreach ($z in $spaltenText)      { $alle.Add([string]$z) | Out-Null }
+    foreach ($z in $tabellenKlauseln) { $alle.Add([string]$z) | Out-Null }
+    $block = "CREATE TABLE $(Q $t.Name) (`n" + ((Als-Array $alle) -join ",`n") + "`n) STRICT;`n"
     $zeilen001.Add($block) | Out-Null
 }
 
@@ -546,13 +593,28 @@ $views = @(Sortiere-Ordinal -Objekte $views.ToArray() -Eigenschaft 'Name')
 $zeilen002 = Neue-Liste
 $zeilen002.Add(@"
 -- 002_views.sql - EPOS-Plan, Zielschema SQLite (Arbeitspaket S2)
--- Erzeugt von sql/tools/Erzeuge-Schema.ps1 am $stand
+-- Erzeugt von sql/tools/Erzeuge-Schema.ps1, Quellenstand $stand
 -- $($views.Count) Views aus $($abfragen.Count) gespeicherten Access-Abfragen.
 -- Entfallen (Ergebnis der Schemapflege, kein Migrationsgegenstand):
 --   $($VIEWS_ENTFALLEN -join ' . ')
 -- Access-Schreibweisen ([eckige Bezeichner], Klammer-Joins) bleiben unveraendert.
 -- Hinweis: Abfrage_KenndatenKuehlung_Max baut auf Abfrage_Kuehlung_MaxLast auf;
 -- SQLite loest Viewrumpfe erst beim SELECT auf, die alphabetische Reihenfolge stoert nicht.
+--
+-- Kuriert (Befund B1, Arbeitspaket S7, 02.09.2026):
+--   Abfrage_ProjektGebaeudeGanglinie . Abfrage_ProjektStromGanglinie . Abfrage_Tagverteilung
+-- Diese drei Abfragen waehlen die Spalte ID BEIDER verbundener Tabellen. SQLite entdoppelt
+-- das selbsttaetig zu "ID" und "ID:1"; der zweite Name ist fuer Konsumenten unbrauchbar
+-- (er laesst sich in WHERE/ORDER BY nur gequotet ansprechen und traegt keine Bedeutung).
+-- Die zweite ID - immer die des Datensatzes der *Daten-Tabelle - heisst deshalb ID_Daten.
+-- ALLE uebrigen Ausgabespalten behalten ihren Namen (ID, Bezeichner, Wert, Verteilung,
+-- Zeitinterval), damit bestehende Konsumenten unveraendert weiterlaufen.
+-- Aufrufer (angepasst im selben Zug): SimulationWaermebedarf.cs:305/:602,
+-- SimulationStrombedarf.cs:121, StromTestClass.cs:48 - sie sprachen die Sichtspalten
+-- ueber den Namen der zugrunde liegenden TABELLE an (Tab_Waermebedarf.ID usw.). Jet loest
+-- das auf, SQLite nicht: eine Sicht hat nur ihre eigenen Ausgabespalten.
+-- Der Generator Erzeuge-Schema.ps1 fuehrt die drei Texte als feste Ueberschreibung
+-- (`$VIEWS_UEBERSETZT), sonst wuerde die naechste Generierung die Kuration verwerfen.
 
 "@) | Out-Null
 foreach ($v in $views) {
@@ -616,7 +678,7 @@ foreach ($ix in $indexKandidaten) {
 $zeilen003 = Neue-Liste
 $zeilen003.Add(@"
 -- 003_indizes_fk.sql - EPOS-Plan, Zielschema SQLite (Arbeitspaket S2)
--- Erzeugt von sql/tools/Erzeuge-Schema.ps1 am $stand
+-- Erzeugt von sql/tools/Erzeuge-Schema.ps1, Quellenstand $stand
 --
 -- ACHTUNG zum Dateinamen: hier stehen NUR INDIZES. Die Fremdschluessel stehen in
 -- 001_grundschema.sql, weil SQLite eine FOREIGN-KEY-Klausel nach dem CREATE TABLE
@@ -676,9 +738,11 @@ function Sammle-Katalog {
             }
         }
     }
-    $sortiert = [string[]]@($namen)
-    [Array]::Sort($sortiert, [System.StringComparer]::Ordinal)
-    return [pscustomobject]@{ Namen = $sortiert; Zuordnung = $zuordnung; Mehrdeutig = @($mehrdeutig) }
+    $liste = [System.Collections.Generic.List[string]]::new([string[]]@($namen))
+    $liste.Sort([System.StringComparer]::Ordinal)
+    return [pscustomobject]@{
+        Namen = $liste.ToArray(); Zuordnung = $zuordnung; Mehrdeutig = (Als-Array $mehrdeutig)
+    }
 }
 $boolKat  = Sammle-Katalog -DaoTyp $TYP_BOOLEAN
 $datumKat = Sammle-Katalog -DaoTyp $TYP_DATE
@@ -690,7 +754,7 @@ function Csharp-Block {
 }
 $csharp = @"
 // <auto-generated />
-// Erzeugt von sql/tools/Erzeuge-Schema.ps1 am $stand
+// Erzeugt von sql/tools/Erzeuge-Schema.ps1, Quellenstand $stand
 // Quelle: $($quellDatei.Name) (Schemastand $ErwarteSchemaVersion)
 // NICHT VON HAND AENDERN - neu erzeugen.
 //
@@ -786,13 +850,13 @@ foreach ($t in $tabellen) {
         $invIx.Add([ordered]@{ Name = $ix.ZielName; AccessName = $ix.Name; Unique = $ix.Unique; Spalten = @($ix.Spalten) }) | Out-Null
     }
     $invTabellen[$t.Name] = [ordered]@{
-        Spalten        = @($invSpalten)
+        Spalten        = (Als-Array $invSpalten)
         AccessPk       = $pk.AccessPk
         PrimaerSchluessel = $pk.EffektivPk
         PkVermerk      = $pk.Vermerk
         Autowert       = $pk.Autowert
-        Fremdschluessel= @($invFk)
-        Indizes        = @($invIx)
+        Fremdschluessel= (Als-Array $invFk)
+        Indizes        = (Als-Array $invIx)
     }
 }
 
@@ -828,14 +892,14 @@ $inventar = [ordered]@{
         OnUpdateCascade    = @($relationen | Where-Object { ($_.Attribute -band $REL_UPDATECASCADE) -ne 0 }).Count
         OnDeleteCascade    = @($relationen | Where-Object { ($_.Attribute -band $REL_DELETECASCADE) -ne 0 }).Count
     }
-    PkErgaenzt        = @($pkErgaenzt)
-    PkGewechselt      = @($pkGeaendert)
-    AutowertKonflikte = @($autowertKonflikte)
-    ZusatzUnique      = @($zusatzUnique)
-    NotNullAusAccessPk= @($notNullAusPk)
-    IndexKollisionen  = @($kollisionen)
-    SpaltenlistenDubletten = @($spaltenlistenDubletten)
-    SystemBeziehungen = @($relSystem | ForEach-Object { $_.Name })
+    PkErgaenzt        = (Als-Array $pkErgaenzt)
+    PkGewechselt      = (Als-Array $pkGeaendert)
+    AutowertKonflikte = (Als-Array $autowertKonflikte)
+    ZusatzUnique      = (Als-Array $zusatzUnique)
+    NotNullAusAccessPk= (Als-Array $notNullAusPk)
+    IndexKollisionen  = (Als-Array $kollisionen)
+    SpaltenlistenDubletten = (Als-Array $spaltenlistenDubletten)
+    SystemBeziehungen = @(Als-Array $relSystem | ForEach-Object { $_.Name })
     ViewsEntfallen    = $VIEWS_ENTFALLEN
     ViewsUebersetzt   = @($VIEWS_UEBERSETZT.Keys)
     Nachschlagefelder = @($tabellen | ForEach-Object { $tn = $_.Name; $_.Spalten | Where-Object { $_.DisplayControl -in @(110, 111) } | ForEach-Object {
@@ -854,9 +918,9 @@ if ($script:Fehler.Count -gt 0) {
 # ---------------------------------------------------------------------------
 $ziel = (New-Item -ItemType Directory -Force -Path $Ausgabe).FullName
 $geschrieben = @()
-$geschrieben += Schreibe-Datei (Join-Path $ziel '001_grundschema.sql')   (($zeilen001 -join "`n"))
-$geschrieben += Schreibe-Datei (Join-Path $ziel '002_views.sql')         (($zeilen002 -join "`n"))
-$geschrieben += Schreibe-Datei (Join-Path $ziel '003_indizes_fk.sql')    (($zeilen003 -join "`n"))
+$geschrieben += Schreibe-Datei (Join-Path $ziel '001_grundschema.sql')   (((Als-Array $zeilen001) -join "`n"))
+$geschrieben += Schreibe-Datei (Join-Path $ziel '002_views.sql')         (((Als-Array $zeilen002) -join "`n"))
+$geschrieben += Schreibe-Datei (Join-Path $ziel '003_indizes_fk.sql')    (((Als-Array $zeilen003) -join "`n"))
 $geschrieben += Schreibe-Datei (Join-Path $ziel 'SchemaTypKatalog.g.cs') ($csharp + "`n")
 $geschrieben += Schreibe-Json  (Join-Path $ziel 'typkatalog.json')       $typkatalogJson
 $geschrieben += Schreibe-Json  (Join-Path $ziel 'inventar.json')         $inventar

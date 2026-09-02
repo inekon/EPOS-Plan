@@ -234,33 +234,30 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    if (!SchemaBereit(conn)) return liste;
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht (still).
+                if (!SchemaBereit()) return liste;
 
-                    DataTable dt = Abfrage(conn,
-                        "SELECT ID, id_brennstoff, from_unit, to_unit, factor, user_edited, [" +
-                        SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
-                        SchemaKatalog.SPALTE_EC_AKTIV + "] FROM [" +
-                        SchemaKatalog.ENERGY_CONVERSION + "] WHERE id_brennstoff = ? ORDER BY ID",
-                        new OleDbParameter("@b", idBrennstoff));
+                DataTable dt = Abfrage(
+                    "SELECT ID, id_brennstoff, from_unit, to_unit, factor, user_edited, [" +
+                    SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
+                    SchemaKatalog.SPALTE_EC_AKTIV + "] FROM [" +
+                    SchemaKatalog.ENERGY_CONVERSION + "] WHERE id_brennstoff = ? ORDER BY ID",
+                    new OleDbParameter("@b", idBrennstoff));
 
-                    if (dt == null) return liste;
+                if (dt == null) return liste;
 
-                    foreach (DataRow r in dt.Rows)
-                        liste.Add(new UmrechnungsRegel
-                        {
-                            Id = Ganzzahl(r, "ID"),
-                            IdBrennstoff = Ganzzahl(r, "id_brennstoff"),
-                            Name = Text(r, SchemaKatalog.SPALTE_EC_FAKTOR_NAME),
-                            Von = Text(r, "from_unit"),
-                            Nach = Text(r, "to_unit"),
-                            Faktor = Kommazahl(r, "factor"),
-                            UserEdited = Wahr(r, "user_edited"),
-                            Aktiv = Wahr(r, SchemaKatalog.SPALTE_EC_AKTIV)
-                        });
-                }
+                foreach (DataRow r in dt.Rows)
+                    liste.Add(new UmrechnungsRegel
+                    {
+                        Id = Ganzzahl(r, "ID"),
+                        IdBrennstoff = Ganzzahl(r, "id_brennstoff"),
+                        Name = Text(r, SchemaKatalog.SPALTE_EC_FAKTOR_NAME),
+                        Von = Text(r, "from_unit"),
+                        Nach = Text(r, "to_unit"),
+                        Faktor = Kommazahl(r, "factor"),
+                        UserEdited = Wahr(r, "user_edited"),
+                        Aktiv = Wahr(r, SchemaKatalog.SPALTE_EC_AKTIV)
+                    });
             }
             catch { return new List<UmrechnungsRegel>(); }
 
@@ -358,14 +355,12 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht (still).
                 {
-                    conn.Open();
-
                     // Ohne Tabelle bzw. ohne die zwei Spalten aus Schritt 25 ist jede
                     // Aussage über die Regelkette unbelegt: Der Prüfer wüsste nicht,
                     // welche Regel gilt und welche abgeschaltet ist.
-                    if (!SchemaBereit(conn))
+                    if (!SchemaBereit())
                     {
                         befunde.Add(new EinheitenBefund(0, "",
                             CODE_MIGRATION_AUSSTEHEND,
@@ -377,8 +372,8 @@ namespace WindowsFormsApplication1
                         return befunde;
                     }
 
-                    Dictionary<int, List<Regel>> regeln = LiesRegeln(conn);
-                    List<Traeger> traeger = LiesTraeger(conn, idProjekt);
+                    Dictionary<int, List<Regel>> regeln = LiesRegeln();
+                    List<Traeger> traeger = LiesTraeger(idProjekt);
 
                     foreach (Traeger t in traeger)
                     {
@@ -414,20 +409,22 @@ namespace WindowsFormsApplication1
         /// <c>DataRepository</c> ein Dialog, und auf eigener Verbindung eine Ausnahme,
         /// die man erst wieder von einer echten Störung unterscheiden müsste. Dasselbe
         /// Vorgehen wie in <c>WirtschaftlichkeitCtrl.SpalteSicher</c>.
+        ///
+        /// ARBEITSPAKET S4b: Schema-Auskunft der Zugriffsschicht statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), still wie bisher.
         /// </summary>
-        private static bool SchemaBereit(OleDbConnection conn)
+        private static bool SchemaBereit()
         {
-            return SpalteDa(conn, SchemaKatalog.ENERGY_CONVERSION, SchemaKatalog.SPALTE_EC_FAKTOR_NAME)
-                && SpalteDa(conn, SchemaKatalog.ENERGY_CONVERSION, SchemaKatalog.SPALTE_EC_AKTIV);
+            return SpalteDa(SchemaKatalog.ENERGY_CONVERSION, SchemaKatalog.SPALTE_EC_FAKTOR_NAME)
+                && SpalteDa(SchemaKatalog.ENERGY_CONVERSION, SchemaKatalog.SPALTE_EC_AKTIV);
         }
 
-        private static bool SpalteDa(OleDbConnection conn, string tabelle, string spalte)
+        private static bool SpalteDa(string tabelle, string spalte)
         {
             try
             {
-                DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-                    new object[] { null, null, tabelle, spalte });
-                return schema != null && schema.Rows.Count > 0;
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(tabelle);
+                return vorhanden != null && vorhanden.Contains(spalte);
             }
             catch { return false; }
         }
@@ -485,11 +482,11 @@ namespace WindowsFormsApplication1
         /// Abgeschaltete Regeln und Faktor 0 werden schon hier ausgesiebt — für die
         /// Kettensuche gibt es sie nicht (L3: abschaltbar statt löschbar).
         /// </summary>
-        private static Dictionary<int, List<Regel>> LiesRegeln(OleDbConnection conn)
+        private static Dictionary<int, List<Regel>> LiesRegeln()
         {
             var nach = new Dictionary<int, List<Regel>>();
 
-            DataTable dt = Abfrage(conn,
+            DataTable dt = Abfrage(
                 "SELECT id_brennstoff, from_unit, to_unit, factor FROM [" +
                 SchemaKatalog.ENERGY_CONVERSION + "] WHERE [" +
                 SchemaKatalog.SPALTE_EC_AKTIV + "] = TRUE AND factor > 0");
@@ -526,11 +523,11 @@ namespace WindowsFormsApplication1
         /// Katalog (alle <c>is_active</c>-Zeilen mit Katalogwerten), sonst die im
         /// Projekt verwendeten Träger mit ihren Überschreibungen.
         /// </summary>
-        private static List<Traeger> LiesTraeger(OleDbConnection conn, int idProjekt)
+        private static List<Traeger> LiesTraeger(int idProjekt)
         {
             var liste = new List<Traeger>();
 
-            DataTable dt = idProjekt > 0 ? ProjektTraeger(conn, idProjekt) : KatalogTraeger(conn);
+            DataTable dt = idProjekt > 0 ? ProjektTraeger(idProjekt) : KatalogTraeger();
             if (dt == null) return liste;
 
             // Ein Träger kann über beide Quellen kommen (gepflegt UND von einer Anlage
@@ -563,7 +560,7 @@ namespace WindowsFormsApplication1
                     int idUmrechnung = Ganzzahl(r, "ID_Umrechnung");
                     if (idUmrechnung > 0)
                     {
-                        string ziel = GewaehlteZieleinheit(conn, idUmrechnung);
+                        string ziel = GewaehlteZieleinheit(idUmrechnung);
                         if (ziel.Length > 0) t.StartEinheit = ziel;
                     }
                 }
@@ -575,9 +572,9 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private static DataTable KatalogTraeger(OleDbConnection conn)
+        private static DataTable KatalogTraeger()
         {
-            return Abfrage(conn,
+            return Abfrage(
                 "SELECT id, ID_Brennstoff, name, billing_unit, hi_kwh_per_unit, hs_kwh_per_unit " +
                 "FROM [" + SchemaKatalog.ENERGY_CARRIER + "] WHERE is_active = TRUE ORDER BY id");
         }
@@ -590,7 +587,7 @@ namespace WindowsFormsApplication1
         /// vier Überschreibungsspalten sind für ihn NULL, und genau das soll die
         /// Abfrage auch liefern.
         /// </summary>
-        private static DataTable ProjektTraeger(OleDbConnection conn, int idProjekt)
+        private static DataTable ProjektTraeger(int idProjekt)
         {
             const string felder = "ec.id, ec.ID_Brennstoff, ec.name, ec.billing_unit, " +
                                   "ec.hi_kwh_per_unit, ec.hs_kwh_per_unit";
@@ -608,7 +605,7 @@ namespace WindowsFormsApplication1
                 "ON ea.[" + SchemaKatalog.SPALTE_ID_CARRIER + "] = ec.id " +
                 "WHERE ea.ID_Projekt = ?";
 
-            DataTable dt = Abfrage(conn, sql,
+            DataTable dt = Abfrage( sql,
                 new OleDbParameter("@p1", idProjekt),
                 new OleDbParameter("@p2", idProjekt));
 
@@ -616,7 +613,7 @@ namespace WindowsFormsApplication1
             // Zweig scheitern und mit ihm die ganze UNION. Dann bleibt die gepflegte
             // Trägermenge - eine kleinere, aber richtige Aussage.
             if (dt == null)
-                dt = Abfrage(conn,
+                dt = Abfrage(
                     "SELECT " + felder + ", eps.custom_hi, eps.custom_hs, eps.ID_Umrechnung " +
                     "FROM [" + SchemaKatalog.ENERGY_CARRIER + "] AS ec " +
                     "INNER JOIN [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS + "] AS eps " +
@@ -631,9 +628,9 @@ namespace WindowsFormsApplication1
         /// Leere zeigt oder die Regel abgeschaltet ist. Dann gilt wieder
         /// <c>billing_unit</c>.
         /// </summary>
-        private static string GewaehlteZieleinheit(OleDbConnection conn, int idUmrechnung)
+        private static string GewaehlteZieleinheit(int idUmrechnung)
         {
-            DataTable dt = Abfrage(conn,
+            DataTable dt = Abfrage(
                 "SELECT to_unit FROM [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
                 "WHERE ID = ? AND [" + SchemaKatalog.SPALTE_EC_AKTIV + "] = TRUE AND factor > 0",
                 new OleDbParameter("@id", idUmrechnung));
@@ -767,23 +764,14 @@ namespace WindowsFormsApplication1
         // Kleinkram
         // =====================================================================
 
-        /// <summary>Abfrage auf der eigenen Verbindung; <c>null</c> = gescheitert
+        /// <summary>Abfrage über die Zugriffsschicht; <c>null</c> = gescheitert
         /// (fehlende Spalte, fehlende Tabelle, gesperrte Datei). Kein Dialog, keine
-        /// Ausnahme nach außen.</summary>
-        private static DataTable Abfrage(OleDbConnection conn, string sql,
+        /// Ausnahme nach außen — ARBEITSPAKET S4b: genau der Vertrag von
+        /// <see cref="StilleDb.Tabelle"/>.</summary>
+        private static DataTable Abfrage(string sql,
                                          params OleDbParameter[] p)
         {
-            try
-            {
-                var dt = new DataTable();
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
-                    using (var adapter = new OleDbDataAdapter(cmd)) adapter.Fill(dt);
-                }
-                return dt;
-            }
-            catch { return null; }
+            return StilleDb.Tabelle(sql, p);
         }
 
         private static string Text(DataRow r, string spalte)

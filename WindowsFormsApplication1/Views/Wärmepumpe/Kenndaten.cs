@@ -104,7 +104,9 @@ namespace WindowsFormsApplication1
         public void FillVorlaufCombo()
         {
             DataRow dr = dt.Rows[0];
-            model.m_ID_WP = (int)dr[1];
+            // ARBEITSPAKET S5: harter Cast -> Convert (Typ-Vereinheitlichung).
+            // D9 liefert bereits Int32; Convert traegt zusaetzlich Int64 aus SQLite.
+            model.m_ID_WP = Convert.ToInt32(dr[1]);
             KenndatenCtrl ctrl = new KenndatenCtrl();
             ctrl.ReadVorlauf("SELECT Vorlauf, ID_WP FROM Tab_Kenndaten_STAMM GROUP BY Vorlauf, ID_WP HAVING ID_WP=" + model.m_ID_WP);
             listBox1.Items.Clear();

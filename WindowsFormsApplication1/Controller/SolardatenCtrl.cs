@@ -136,43 +136,30 @@ namespace WindowsFormsApplication1
                     currentID = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
 
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+
+                    try
                     {
-                        using (OleDbCommand cmd = new OleDbCommand())
+                        foreach (var item in list)
                         {
-                            cmd.Connection = conn;
-                            cmd.Transaction = trans;
-                            cmd.CommandText = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+                            v.Ausfuehren(sqlInsert,
+                                new OleDbParameter("@id", OleDbType.Integer) { Value = currentID },
+                                new OleDbParameter("@regId", OleDbType.Integer) { Value = ID_Klimaregion },
+                                new OleDbParameter("@temp", OleDbType.Double) { Value = item.Außen_Temp });
 
-                            cmd.Parameters.Add("@id", OleDbType.Integer);
-                            cmd.Parameters.Add("@regId", OleDbType.Integer);
-                            cmd.Parameters.Add("@temp", OleDbType.Double);
-
-                            try
-                            {
-                                foreach (var item in list)
-                                {
-                                    cmd.Parameters[0].Value = currentID;
-                                    cmd.Parameters[1].Value = ID_Klimaregion;
-                                    cmd.Parameters[2].Value = item.Außen_Temp;
-
-                                    cmd.ExecuteNonQuery();
-                                    currentID++;
-                                }
-
-                                trans.Commit();
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                trans.Rollback();
-                                Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
-                                return false;
-                            }
+                            currentID++;
                         }
+
+                        v.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        v.Rollback();
+                        Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
+                        return false;
                     }
                 }
             }
@@ -183,51 +170,35 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool WriteDataTable(DataTable dt, string szName, OleDbTransaction transaction)
+        public bool WriteDataTable(DataTable dt, string szName, DbVorgang v)
         {
             if (dt == null) return false;
 
             try
             {
-                OleDbConnection conn = transaction.Connection;
-
                 int nextID = 1;
-                using (OleDbCommand cmdMax = new OleDbCommand("SELECT MAX(ID) FROM Tab_Solar", conn, transaction))
-                {
-                    object maxRes = cmdMax.ExecuteScalar();
-                    nextID = (maxRes != DBNull.Value && maxRes != null ? Convert.ToInt32(maxRes) : 0) + 1;
-                }
+                object maxRes = v.Skalar("SELECT MAX(ID) FROM Tab_Solar");
+                nextID = (maxRes != DBNull.Value && maxRes != null ? Convert.ToInt32(maxRes) : 0) + 1;
 
                 int refID = 0;
                 string sqlRef = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
-                using (OleDbCommand cmdRef = new OleDbCommand(sqlRef, conn, transaction))
+                object refRes = v.Skalar(sqlRef,
+                    new OleDbParameter("@name", OleDbType.VarWChar) { Value = szName ?? (object)DBNull.Value });
+                if (refRes != null && refRes != DBNull.Value)
                 {
-                    cmdRef.Parameters.Add("@name", OleDbType.VarWChar).Value = szName ?? (object)DBNull.Value;
-                    object refRes = cmdRef.ExecuteScalar();
-                    if (refRes != null && refRes != DBNull.Value)
-                    {
-                        refID = Convert.ToInt32(refRes);
-                    }
+                    refID = Convert.ToInt32(refRes);
                 }
 
-                // Typsicheres, hocheffizientes zeilenweises Schreiben über ein Command-Objekt
+                // Zeilenweises Schreiben in der Transaktion des Vorgangs
                 string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
-                using (OleDbCommand cmdInsert = new OleDbCommand(sqlInsert, conn, transaction))
+                foreach (DataRow row in dt.Rows)
                 {
-                    cmdInsert.Parameters.Add("@id", OleDbType.Integer);
-                    cmdInsert.Parameters.Add("@regId", OleDbType.Integer);
-                    cmdInsert.Parameters.Add("@temp", OleDbType.Double);
-
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        cmdInsert.Parameters[0].Value = nextID++;
-                        cmdInsert.Parameters[1].Value = refID;
-
+                    v.Ausfuehren(sqlInsert,
+                        new OleDbParameter("@id", OleDbType.Integer) { Value = nextID++ },
+                        new OleDbParameter("@regId", OleDbType.Integer) { Value = refID },
                         // Dynamische Typprüfung für die übergebene DataTable
-                        cmdInsert.Parameters[2].Value = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0;
-
-                        cmdInsert.ExecuteNonQuery();
-                    }
+                        new OleDbParameter("@temp", OleDbType.Double)
+                        { Value = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0 });
                 }
 
                 return true;

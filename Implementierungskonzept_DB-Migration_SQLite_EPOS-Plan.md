@@ -48,6 +48,8 @@ werden in S5 als `sql/tools/` eingecheckt und sind damit die wiederholbaren Prü
 | DDL-Inventur „17 CREATE / 35 ALTER (alle ADD Spalte) / 13 INDEX / 5 DROP" | Rohzeilen inkl. Kommentaren. In Literalen: 16 CREATE TABLE, **25 ALTER TABLE — davon 14 × `ADD CONSTRAINT … FOREIGN KEY` und 1 × `DROP CONSTRAINT`**, 17 CREATE INDEX, 1 DROP-TABLE-Schleife. Folge für die Schemapflege: Abschnitt 5 |
 | „nur die beiden Views zu übersetzen" | Die Schemapflege schreibt **5** Abfragen (zusätzlich `Abfrage_SST`, `Abfrage_Kuehlung_MaxLast`, `Abfrage_KenndatenKuehlung_Max`) und löscht 5. Und: **`Abfrage_Kostenfaktoren` ist in Access eine PROCEDURE, keine View** — ACE erlaubt kein `ORDER BY` in `CREATE VIEW`. SQLite erlaubt es; dort wird sie eine normale View (3.2). Die Zeilenangaben in Rev. 2 Abschnitt 3.3 sind zudem vertauscht (Kostenfaktoren ≈ 5513, Energieträger ≈ 6344) |
 | D7: „BHKW-Wirtschaftlichkeit ab Schritt 63 offen" | **Bereits gelandet** als Schritte 60/61 (`SCHRITT_60_BRENNSTOFF_BESTANDTEILE`, `SCHRITT_61_STEUER_JE_ANLAGE`). Offen ist nur noch der Einheitenbruch (künftig 62). Die Schema-Beruhigung ist näher als gedacht |
+| „90 Beziehungen, 61 Update-/79 Delete-Kaskaden" | Unter den 90 DAO-Relations sind **2 Access-Systembeziehungen** (`MSysNavPaneGroup*`). Echte Fremdschlüssel zwischen echten Tabellen: **88** (59 Update-, 77 Delete-Kaskaden) — S2-Messung 01.09. |
+| implizit in 5.2/5.3: „Autowert = PK" | **50 Autowert-Spalten sind in Access nicht alleiniger PK**: 49 Verbund-PKs, die den Autowert enthalten (z. B. `Tab_Energieanlagen (ID, ID_Projekt)`, `Tab_Heizkessel (ID, ID_Projekt, Bezeichner)`), dazu `Tab_Projekt` mit PK auf `Projektname` (`ID` nur UNIQUE). Auflösung: **D10** |
 | „verwaiste ODBC-Verknüpfungen entfernt, 118 → 114" | Gilt für den **Messbestand von Rev. 2 (Rechner 2)**. Die Live-DB **dieses** Rechners hat die 4 Verknüpfungen (`ar_internal_metadata`, `products`, `schema_migrations`, `sqlite_sequence` → DSN `testsqlite2`) **noch**, dazu andere Zeilenzahlen (26 statt 30 Projekte, 648.241 statt 823.441 Ganglinienzeilen). Siehe 1.3 |
 | „Referenzläufe unter `..\Referenzlaeufe\`" | liegen **im Repo**: `Referenzlaeufe\` (11 Läufe, Basis `2026-08-29_Booster` mit 13 Projekten; jüngster `2026-08-30_B3-Kaskade`) |
 | „276 SQL-Zeilen mit Parametern" → Rev. 2: „974" | Auch 974 ist zu niedrig: je nach Definition **1.013–1.563 Zeilen** mit `?` im Literal. Für den Umbau egal (alles läuft zentral durch), für die Aufwandsschätzung nicht |
@@ -158,6 +160,13 @@ private static SqliteConnection OeffneVerbindung()
 Verbindungspooling von Microsoft.Data.Sqlite bleibt an; die PRAGMAs je `Open()` sind billig und
 idempotent. Vorbereitete Statements cachet Microsoft.Data.Sqlite je Verbindung selbst — die
 Einfügeschleifen der Ganglinien bleiben ohne weiteres Zutun schnell.
+
+**Befund aus S3 (02.09.):** Microsoft.Data.Sqlite schaltet Fremdschlüssel beim Öffnen **von sich
+aus EIN** — anders als SQLite nativ (Standard AUS). Die explizite `PRAGMA foreign_keys = ON`-Zeile
+bleibt trotzdem stehen (dokumentiert die Absicht und schützt gegen Verhaltensänderungen der
+Bibliothek); wer FKs bewusst AUS braucht (nur der Migrator beim Laden), muss `Foreign Keys=false`
+in den Verbindungsstring schreiben **und** per `PRAGMA foreign_keys`-Rückfrage verifizieren — so
+implementiert im EposSqliteMigrator.
 
 ### 2.2 Die ?→@pN-Übersetzung
 
@@ -349,14 +358,19 @@ Rev. 2 Abschnitt 2.2):
 - Boolean: `INTEGER NOT NULL DEFAULT 0 CHECK (x IN (0,1))` (D3-a; der CHECK lässt eine
   vergessene −1→1-Wandlung sofort auffliegen — in `sqlite-probe\` Übung 2 vorgeführt)
 - Textlängen < 255: `CHECK (length(x) <= n)` (D2, 90 Spalten); die 171 × `TEXT(255)` ohne CHECK
-- 90 Relationen als `FOREIGN KEY` mit `ON UPDATE/DELETE CASCADE` nach DAO-Attributen
-- Indizes: PK-deckungsgleiche überspringen (Entdoppelung der 232), Rest als
-  `CREATE [UNIQUE] INDEX` unter Originalnamen
+- Relationen als `FOREIGN KEY` mit `ON UPDATE/DELETE CASCADE` nach DAO-Attributen —
+  **88 echte** (2 der 90 DAO-Relations sind `MSysNavPaneGroup*`-Systembeziehungen und entfallen)
+- Indizes: Entdoppelung nach **Spaltenliste** (identische Spaltenfolge = ein Index, UNIQUE
+  gewinnt; zusätzlich PK-deckungsgleiche überspringen), Rest als `CREATE [UNIQUE] INDEX` unter
+  Originalnamen; bei globaler Namenskollision `tabelle_name` (SQLite-Indexnamen sind DB-weit)
+- PK-Politik **D10 (AutowertBevorzugen):** der Autowert wird alleiniger
+  `INTEGER PRIMARY KEY AUTOINCREMENT`; übrige Alt-PK-Spalten behalten `NOT NULL`
 - 3 PK-Ergänzungen: `Tab_BHKW`, `Tab_DBTagVDaten_STAMM`, `Tab_Stromverbrauchertyp_STAMM`
   (vorhandene Autowert-`ID` wird PK)
 - Nachschlagefelder: DAO-Lookup-Eigenschaften mit ausgeben → Rest-S1-Sichtung nebenbei erledigt
-- zusätzlich generiert: **`SchemaTypKatalog`** (C#-Datei — die 97 Boolean- und 20
-  Datumsspaltennamen) für die zentrale Typangleichung in `GetDataTable` (2.4)
+- zusätzlich generiert: **`SchemaTypKatalog`** (C#-Datei — die Namen der 97 Boolean- und 20
+  Datumsspalten, dedupliziert 61/11; typmehrdeutige Namen wie `Heizstab` bewusst ausgenommen)
+  für die zentrale Typangleichung in `GetDataTable` (2.4)
 
 Ausgabe `sql/schema/001_grundschema.sql` · `002_views.sql` · `003_indizes_fk.sql` — generiert,
 von Hand kuratiert, ab S4-Beginn eingefroren. Nach dem Einheitenbruch (Schritt 62) ist der
@@ -589,6 +603,7 @@ Form_DBBHKW (2), Form_Heizkessel, Form_Heizkessel_einlesen, Form_EingProzTyp (3)
 | **D7** | Zeitpunkt | **aktualisiert:** BHKW-Wirtschaftlichkeit ist bereits Schritt 60/61; offen nur der Einheitenbruch (62). S0–S3 sofort; ob 62 vor dem Cutover als letzter Access-Schritt oder danach als erster SQLite-Schritt kommt, wird bei S4-Start entschieden — beides trägt (Generator ist wiederholbar) |
 | D8 | verwaiste Verknüpfungen | auf Rechner 2 erledigt; **auf diesem Rechner offen → S0**; strukturell entschärft durch die Whitelist des Migrators |
 | **D9 (neu)** | Typ-Rückweg | **entschieden 01.09.: zentrale Wiederherstellung** in `GetDataTable` (INTEGER→Int32 typgetrieben; Boolean/Datum über generierten `SchemaTypKatalog`) + begrenzter Sweep (4 Cast-Stellen, 3 Dispatch-Cluster). Beleg und Begründung in 2.4 — ein reiner Sweep müsste 675 Stellen anfassen und fände die 46 stillen Dispatch-Brüche nicht |
+| **D10 (neu, aus S2)** | Verbund-PKs mit Autowert | **AutowertBevorzugen** (entschieden 01.09.): Bei den 50 Tabellen, deren Access-PK den Autowert nur enthält bzw. daneben liegt, wird der Autowert alleiniger `INTEGER PRIMARY KEY AUTOINCREMENT`; die übrigen Alt-PK-Spalten behalten `NOT NULL`. Verlustfrei: 49 Verbund-PKs sind durch den Autowert impliziert; bei `Tab_Projekt` sichert der bestehende UNIQUE-Index auf `Projektname` die Eindeutigkeit (in 003 nachgewiesen). Der Wegfall der case-insensitiven Text-PK-Schärfe geht in dieselbe permissive Richtung wie D5 |
 
 ---
 

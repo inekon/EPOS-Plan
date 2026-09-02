@@ -68,84 +68,57 @@ namespace WindowsFormsApplication1
         /// <b>Ohne Dialog, Schema je Tabelle.</b> Beides übernommen aus der korrigierten
         /// Fassung von <c>StromAufschlagCtrl.StelleSpaltenSicher</c> (Commit 87483b4):
         /// Eine Vorsorge ist kein Bedienschritt und darf keine MessageBox zeigen, deshalb
-        /// eigene <see cref="OleDbConnection"/> statt <c>DataRepository.ExecuteSQL</c>;
+        /// <see cref="StilleDb"/> statt <c>DataRepository.ExecuteSQL</c>;
         /// und das Schema wird je Tabelle gelesen, sonst greift die Existenzprüfung für
         /// die zweite Tabelle nie und das <c>ALTER TABLE</c> läuft bei jedem Aufruf erneut.
         /// Echte Fehler bleiben sichtbar — sie melden sich beim folgenden Schreibzugriff.
+        /// </para>
+        /// <para>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
+        /// Access-Typen (S4d vorgezogen).
         /// </para>
         /// </remarks>
         public static void StelleSpaltenSicher()
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                Dictionary<string, HashSet<string>> schemaJeTabelle =
+                    new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt15_KesselWartungseinheit)
                 {
-                    conn.Open();
-
-                    Dictionary<string, HashSet<string>> schemaJeTabelle =
-                        new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt15_KesselWartungseinheit)
+                    HashSet<string> vorhanden;
+                    if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
                     {
-                        HashSet<string> vorhanden;
-                        if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
-                        {
-                            vorhanden = SpaltenNamen(conn, s.Tabelle);
-                            schemaJeTabelle[s.Tabelle] = vorhanden;
-                        }
-
-                        if (vorhanden == null) continue;          // Tabelle fehlt - nicht unsere Aufgabe
-                        if (vorhanden.Contains(s.Name)) continue;
-
-                        try
-                        {
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
-                                s.TypDefinition, conn))
-                                cmd.ExecuteNonQuery();
-
-                            // Frisch angelegte Spalte ist NULL. Dieselbe Vorbelegung wie
-                            // Migrationsschritt 15b - sonst haetten die Bestandszeilen
-                            // einen Betrag ohne Einheit.
-                            using (OleDbCommand cmd = new OleDbCommand(
-                                "UPDATE [" + s.Tabelle + "] SET [" + s.Name + "] = ? " +
-                                "WHERE [" + s.Name + "] IS NULL OR [" + s.Name + "] = ''", conn))
-                            {
-                                cmd.Parameters.Add(new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
-                        }
+                        vorhanden = StilleDb.SpaltenNamen(s.Tabelle);
+                        schemaJeTabelle[s.Tabelle] = vorhanden;
                     }
+
+                    if (vorhanden == null) continue;          // Tabelle fehlt - nicht unsere Aufgabe
+                    if (vorhanden.Contains(s.Name)) continue;
+
+                    if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                            s.Tabelle, s.Name, s.TypDefinition)) < 0)
+                    {
+                        Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
+                        continue;
+                    }
+
+                    // Frisch angelegte Spalte ist NULL. Dieselbe Vorbelegung wie
+                    // Migrationsschritt 15b - sonst haetten die Bestandszeilen
+                    // einen Betrag ohne Einheit.
+                    if (StilleDb.NonQuery(
+                            "UPDATE [" + s.Tabelle + "] SET [" + s.Name + "] = ? " +
+                            "WHERE [" + s.Name + "] IS NULL OR [" + s.Name + "] = ''",
+                            new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR)) < 0)
+                        Protokoll(s.Tabelle + "." + s.Name + ": Vorbelegung fehlgeschlagen.");
                 }
             }
             catch (Exception ex)
             {
                 Protokoll(ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
-        /// gibt bzw. das Schema nicht lesbar ist.
-        /// </summary>
-        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
-        {
-            try
-            {
-                DataTable cols = conn.GetOleDbSchemaTable(
-                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
-
-                if (cols == null || cols.Rows.Count == 0) return null;
-
-                HashSet<string> namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
-                return namen;
-            }
-            catch { return null; }
         }
 
         /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>

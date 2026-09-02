@@ -409,7 +409,6 @@ namespace WindowsFormsApplication1
 
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             RecordSet rs = new RecordSet();
-            OleDbTransaction transaction = null;
 
             System.Drawing.Point p1 = btn_Speichern_Unter.Location;
             p1 = this.PointToScreen(p1);
@@ -427,25 +426,19 @@ namespace WindowsFormsApplication1
 
                 try
                 {
-                    // 1. Eine saubere OleDb-Verbindung über das DataRepository öffnen
-                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    // 1./2. ARBEITSPAKET S4e: Verbindung UND Transaktion sind EIN
+                    // Datenbankvorgang. Ohne Commit rollt sein Dispose beim Verlassen
+                    // zurueck - das ersetzt den frueheren Rollback im catch.
+                    using (DbVorgang v = DataRepository.Vorgang())
                     {
-                        conn.Open();
-
-                        // 2. Transaktion auf der OleDbConnection starten
-                        transaction = conn.BeginTransaction();
-
-                        // 3. Dem RecordSet mitteilen, welche Connection und welche Transaktion es nutzen soll
-                        rs.DBCommand.Connection = conn;
-                        rs.DBCommand.Transaction = transaction;
-
-                        // Existenzprüfung in der STAMM-Tabelle
-                        rs.Open("select Bezeichner from Tab_BHKW_STAMM where Bezeichner='" + frmLabel.m_szName + "'");
+                        // Existenzprüfung in der STAMM-Tabelle - im Vorgang, damit sie
+                        // die noch nicht festgeschriebenen Zeilen sieht
+                        rs.Open("select Bezeichner from Tab_BHKW_STAMM where Bezeichner='" + frmLabel.m_szName + "'", v);
                         if (!rs.EOF())
                         {
                             MessageBox.Show("Name existiert bereits!");
                             rs.Close();
-                            transaction.Rollback();
+                            v.Rollback();
                             return;
                         }
                         rs.Close();
@@ -454,26 +447,25 @@ namespace WindowsFormsApplication1
                         comboBox_Name.Items.Add(frmLabel.m_szName);
 
                         // INSERT in die STAMM-Tabelle inkl. ReadOnly=false (Feld ist NOT NULL)
-                        rs.Insert("INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES ('" + frmLabel.m_szName + "', False)");
+                        rs.Insert("INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES ('" + frmLabel.m_szName + "', False)", v);
                         rs.Close();
 
                         // 4. Controller verarbeiten (Stammdaten)
                         BHKWStammCtrl ctrl = new BHKWStammCtrl();
                         ctrl.model = InitDatensatzUpdate(werte);
 
-                        // Dem Controller die aktive Verbindung und Transaktion übergeben
-                        ctrl.DBCommand.Connection = conn;
-                        ctrl.DBCommand.Transaction = transaction;
+                        // Dem Controller den aktiven Vorgang übergeben
+                        ctrl.Vorgang = v;
 
                         if (ctrl.Update())
                         {
-                            transaction.Commit();
+                            v.Commit();
                             this.DialogResult = DialogResult.OK;
                             MessageBox.Show("Datensatz gespeichert");
                         }
                         else
                         {
-                            transaction.Rollback();
+                            v.Rollback();
                             this.DialogResult = DialogResult.Cancel;
                             MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                         }
@@ -485,10 +477,8 @@ namespace WindowsFormsApplication1
                     Console.WriteLine("Fehler bei BHKW Speichern Unter: " + ex.Message);
                     MessageBox.Show("Fehler beim Speichern des Datensatzes!");
 
-                    if (transaction != null && transaction.Connection != null)
-                    {
-                        try { transaction.Rollback(); } catch { }
-                    }
+                    // Zurueckgerollt hat bereits DbVorgang.Dispose beim Verlassen des
+                    // using - ohne gesehenes Commit gilt der Vorgang als gescheitert.
                 }
             }
         }
@@ -499,8 +489,6 @@ namespace WindowsFormsApplication1
             Eingabewerte werte;
             if (!EingabenPruefen(out werte)) return;
 
-            OleDbTransaction transaction = null;
-
             if (string.IsNullOrEmpty(comboBox_Name.Text))
             {
                 MessageBox.Show("Bitte einen gültigen Namen eingeben!");
@@ -509,54 +497,39 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    transaction = conn.BeginTransaction();
-
                     // 1. Existenzprüfung via COUNT in der STAMM-Tabelle
                     string checkSql = "SELECT COUNT(*) FROM Tab_BHKW_STAMM WHERE Bezeichner = ?";
-                    using (OleDbCommand checkCmd = conn.CreateCommand())
+                    int count = Convert.ToInt32(v.Skalar(checkSql,
+                        new OleDbParameter("?", comboBox_Name.Text)));
+                    if (count > 0)
                     {
-                        checkCmd.Transaction = transaction;
-                        checkCmd.CommandText = checkSql;
-                        checkCmd.Parameters.Add(new OleDbParameter("?", comboBox_Name.Text));
-
-                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
-                        if (count > 0)
-                        {
-                            MessageBox.Show("Name existiert bereits!");
-                            transaction.Rollback();
-                            return;
-                        }
+                        MessageBox.Show("Name existiert bereits!");
+                        v.Rollback();
+                        return;
                     }
 
                     // 2. Parametrisierter INSERT in die STAMM-Tabelle inkl. ReadOnly=false (NOT NULL)
                     string insertSql = "INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES (?, ?)";
-                    using (OleDbCommand insertCmd = conn.CreateCommand())
-                    {
-                        insertCmd.Transaction = transaction;
-                        insertCmd.CommandText = insertSql;
-                        insertCmd.Parameters.Add(new OleDbParameter("?", comboBox_Name.Text));
-                        insertCmd.Parameters.Add(new OleDbParameter("?", false));
-                        insertCmd.ExecuteNonQuery();
-                    }
+                    v.Ausfuehren(insertSql,
+                        new OleDbParameter("?", comboBox_Name.Text),
+                        new OleDbParameter("?", false));
 
                     // 3. Controller verarbeiten (Stammdaten)
                     BHKWStammCtrl ctrl = new BHKWStammCtrl();
                     ctrl.model = InitDatensatzUpdate(werte);
-                    ctrl.DBCommand.Connection = conn;
-                    ctrl.DBCommand.Transaction = transaction;
+                    ctrl.Vorgang = v;
 
                     if (ctrl.Update())
                     {
-                        transaction.Commit();
+                        v.Commit();
                         this.DialogResult = DialogResult.OK;
                         MessageBox.Show("Datensatz gespeichert");
                     }
                     else
                     {
-                        transaction.Rollback();
+                        v.Rollback();
                         this.DialogResult = DialogResult.Cancel;
                         MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                     }
@@ -567,10 +540,7 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Fehler bei BHKW Speichern: " + ex.Message);
                 MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                if (transaction != null && transaction.Connection != null)
-                {
-                    try { transaction.Rollback(); } catch { }
-                }
+                // Zurueckgerollt hat bereits DbVorgang.Dispose beim Verlassen des using.
             }
         }
         // TextChanged faerbt nur noch (Folgepaket zu ab5bf32): kein modales Melden,

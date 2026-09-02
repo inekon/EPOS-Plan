@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>
     /// TRANSAKTION. Löschen und Anlegen laufen in EINER Transaktion
-    /// (<see cref="DataRepository.BeginTransaction"/>): ein Abbruch in der Mitte ließe
+    /// (<see cref="DataRepository.Vorgang"/>): ein Abbruch in der Mitte ließe
     /// sonst ein Projekt ohne Gewerk zurück. Die Betriebsführung des Stromspeichers
     /// entsteht bewusst NACH dem Commit über
     /// <see cref="StromspeicherVarianteCtrl.Insert"/> und
@@ -308,8 +308,11 @@ namespace WindowsFormsApplication1
             List<Senkenbezug> zielSenkenbezuege = SenkenbezuegeSichern(idZiel);
 
             var warnungen = new List<string>();
-            OleDbConnection conn = null;
-            OleDbTransaction trans = null;
+            // ARBEITSPAKET S4e: Der Vorgang (Verbindung + Transaktion) wird bewusst
+            // INNERHALB des try geoeffnet - genau dort stand bisher der Aufruf, der das
+            // Verbindungstupel holte. Ein Fehler beim Verbindungsaufbau soll in denselben
+            // catch laufen; deshalb kein using, sondern Dispose im finally.
+            DbVorgang v = null;
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -319,50 +322,49 @@ namespace WindowsFormsApplication1
 
             try
             {
-                var tx = DataRepository.BeginTransaction();
-                conn = tx.Item1; trans = tx.Item2;
+                v = DataRepository.Vorgang();
 
                 // --- 3) Verweise auf die zu löschenden Zielspeicher lösen --------------
                 // Nur nötig, wenn genau dieses Gewerk der Pufferspeicher ist: sonst
                 // bleibt der Speicherbestand des Ziels unangetastet.
                 if (IstPuffer(plan))
                 {
-                    PufferverweiseLoesen(conn, trans, idZiel);
-                    SenkenverweiseLoesen(conn, trans, idZiel);        // L-B1
+                    PufferverweiseLoesen(v, idZiel);
+                    SenkenverweiseLoesen(v, idZiel);        // L-B1
                 }
 
                 // --- 4) Alten Bestand entfernen (Anlagen vor Geräten vor Kindern) ------
-                Ausfuehren(conn, trans,
+                Ausfuehren(v,
                     "DELETE FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " + TypFilter(plan),
                     new OleDbParameter("@p", idZiel));
 
                 foreach (int alt in zielGeraeteIds)
                 {
                     foreach (string kind in plan.Kindtabellen)
-                        VersucheAusfuehren(conn, trans,
+                        VersucheAusfuehren(v,
                             "DELETE FROM [" + kind + "] WHERE [" + plan.KindFk + "] = ?",
                             new OleDbParameter("@fk", alt));
 
                     if (IstPuffer(plan))
                     {
-                        VersucheAusfuehren(conn, trans,
+                        VersucheAusfuehren(v,
                             "DELETE FROM [Z_ProjektPufferSp] WHERE ID_Pufferspeicher = ?",
                             new OleDbParameter("@fk", alt));
-                        VersucheAusfuehren(conn, trans,
+                        VersucheAusfuehren(v,
                             "DELETE FROM [Z_AnlagePufferVerbund] WHERE ID_Puffer = ?",
                             new OleDbParameter("@fk", alt));
                     }
                 }
 
-                Ausfuehren(conn, trans,
+                Ausfuehren(v,
                     "DELETE FROM [" + plan.Geraetetabelle + "] WHERE ID_Projekt = ?",
                     new OleDbParameter("@p", idZiel));
 
                 // --- 5) Gerätezeilen der Quelle als Projektkopie anlegen ---------------
-                int naechsteId = MaxId(conn, trans, plan.Geraetetabelle) + 1;
+                int naechsteId = MaxId(v, plan.Geraetetabelle) + 1;
                 foreach (DataRow q in quellGeraete.Rows)
                 {
-                    ZeileKopieren(conn, trans, plan.Geraetetabelle, q, naechsteId, idZiel, null, null);
+                    ZeileKopieren(v, plan.Geraetetabelle, q, naechsteId, idZiel, null, null);
                     neueGeraeteIds.Add(naechsteId);
 
                     if (IstPuffer(plan))
@@ -371,7 +373,7 @@ namespace WindowsFormsApplication1
                     // Kindtabellen der Gerätezeile mit dem neuen Fremdschlüssel.
                     int quellGeraetId = Ganz(q, SPALTE_ID);
                     foreach (string kind in plan.Kindtabellen)
-                        KindtabelleKopieren(conn, trans, kind, plan.KindFk,
+                        KindtabelleKopieren(v, kind, plan.KindFk,
                                             quellGeraetId, naechsteId, idZiel, warnungen);
 
                     naechsteId++;
@@ -380,8 +382,8 @@ namespace WindowsFormsApplication1
                 // --- 6) Gelöste Pufferverweise wiederherstellen ------------------------
                 if (IstPuffer(plan))
                 {
-                    PufferverweiseWiederherstellen(conn, trans, zielPufferbezuege, neuePufferNachName, warnungen);
-                    SenkenverweiseWiederherstellen(conn, trans, zielSenkenbezuege, neuePufferNachName, warnungen);   // L-B1
+                    PufferverweiseWiederherstellen(v, zielPufferbezuege, neuePufferNachName, warnungen);
+                    SenkenverweiseWiederherstellen(v, zielSenkenbezuege, neuePufferNachName, warnungen);   // L-B1
                 }
 
                 // --- 7) Anlagenzeilen anlegen — dieselbe Anweisung wie überall ---------
@@ -406,22 +408,21 @@ namespace WindowsFormsApplication1
                     PufferverweiseUmschreiben(a, pufferAbbildung, warnungen);
                     GeraetefkSetzen(plan, a, fkZiel);
 
-                    Ausfuehren(conn, trans, WizardCtrl.SQL_ANLAGE_INSERT,
+                    Ausfuehren(v, WizardCtrl.SQL_ANLAGE_INSERT,
                                WizardCtrl.AnlagenParameter(idZiel, a, pufferCache));
                 }
 
-                trans.Commit();
+                v.Commit();
             }
             catch (Exception ex)
             {
-                if (trans != null) { try { trans.Rollback(); } catch { } }
+                if (v != null) { try { v.Rollback(); } catch { } }
                 fehler = ex.Message;
                 return false;
             }
             finally
             {
-                if (trans != null) { try { trans.Dispose(); } catch { } }
-                if (conn != null) { try { conn.Close(); } catch { } try { conn.Dispose(); } catch { } }
+                if (v != null) { try { v.Dispose(); } catch { } }
             }
 
             // --- 8) Senkenlisten der Quelle nachziehen (nach dem Commit) --------------
@@ -682,7 +683,7 @@ namespace WindowsFormsApplication1
         /// Zeile, es gibt hier also keine zweite, pflegebedürftige Spaltenliste je Gewerk.
         /// Quell-IDs werden nie übernommen.
         /// </summary>
-        private static void ZeileKopieren(OleDbConnection conn, OleDbTransaction trans, string tabelle,
+        private static void ZeileKopieren(DbVorgang v, string tabelle,
                                           DataRow quelle, int neueId, int idZiel,
                                           string fkSpalte, int? fkWert)
         {
@@ -707,7 +708,7 @@ namespace WindowsFormsApplication1
                     ps.Add(Wert("@p" + ps.Count, c.DataType, quelle[name]));
             }
 
-            Ausfuehren(conn, trans,
+            Ausfuehren(v,
                 "INSERT INTO [" + tabelle + "] (" + string.Join(", ", spalten.ToArray()) + ") VALUES (" +
                 string.Join(", ", platzhalter.ToArray()) + ")",
                 ps.ToArray());
@@ -716,7 +717,7 @@ namespace WindowsFormsApplication1
         // Alle Zeilen einer Kindtabelle eines Geraets kopieren (z. B. 165 Kennlinienpunkte
         // einer Waermepumpe). Fehlt die Tabelle auf einer aelteren Datenbank, wird das
         // vermerkt statt den ganzen Vorgang abzubrechen.
-        private static void KindtabelleKopieren(OleDbConnection conn, OleDbTransaction trans,
+        private static void KindtabelleKopieren(DbVorgang v,
                                                 string tabelle, string fkSpalte,
                                                 int quellGeraetId, int neuesGeraet, int idZiel,
                                                 List<string> warnungen)
@@ -732,10 +733,10 @@ namespace WindowsFormsApplication1
 
             if (dt == null || dt.Rows.Count == 0) return;
 
-            int naechste = MaxId(conn, trans, tabelle) + 1;
+            int naechste = MaxId(v, tabelle) + 1;
             foreach (DataRow r in dt.Rows)
             {
-                ZeileKopieren(conn, trans, tabelle, r, naechste, idZiel, fkSpalte, neuesGeraet);
+                ZeileKopieren(v, tabelle, r, naechste, idZiel, fkSpalte, neuesGeraet);
                 naechste++;
             }
         }
@@ -786,17 +787,17 @@ namespace WindowsFormsApplication1
 
         // Verweise auf die Projektspeicher leeren, damit die Speicherzeilen ueberhaupt
         // geloescht werden koennen (erzwungene Beziehung, kein CASCADE).
-        private static void PufferverweiseLoesen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
+        private static void PufferverweiseLoesen(DbVorgang v, int idProjekt)
         {
             foreach (string sp in PUFFER_VERWEISE)
-                VersucheAusfuehren(conn, trans,
+                VersucheAusfuehren(v,
                     "UPDATE [" + TAB_ANLAGEN + "] SET [" + sp + "] = NULL " +
                     "WHERE ID_Projekt = ? AND [" + sp + "] IN " +
                     "(SELECT ID FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?)",
                     new OleDbParameter("@p1", idProjekt), new OleDbParameter("@p2", idProjekt));
         }
 
-        private static void PufferverweiseWiederherstellen(OleDbConnection conn, OleDbTransaction trans,
+        private static void PufferverweiseWiederherstellen(DbVorgang v,
                                                            List<Pufferbezug> bezuege,
                                                            Dictionary<string, int> neueNachName,
                                                            List<string> warnungen)
@@ -807,7 +808,7 @@ namespace WindowsFormsApplication1
                 int neu;
                 if (!neueNachName.TryGetValue(b.Bezeichner ?? "", out neu)) { verloren++; continue; }
 
-                VersucheAusfuehren(conn, trans,
+                VersucheAusfuehren(v,
                     "UPDATE [" + TAB_ANLAGEN + "] SET [" + b.Spalte + "] = ? WHERE ID = ?",
                     new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdAnlage));
             }
@@ -855,15 +856,15 @@ namespace WindowsFormsApplication1
         // Senken-Verweise auf die Projektspeicher leeren (Gegenstueck zu
         // PufferverweiseLoesen). VersucheAusfuehren, weil die Tabelle auf einer
         // Datenbank vor Schritt 50 fehlen kann.
-        private static void SenkenverweiseLoesen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
+        private static void SenkenverweiseLoesen(DbVorgang v, int idProjekt)
         {
-            VersucheAusfuehren(conn, trans,
+            VersucheAusfuehren(v,
                 "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = NULL " +
                 "WHERE ID_Puffer IN (SELECT ID FROM [" + TAB_PUFFER + "] WHERE ID_Projekt = ?)",
                 new OleDbParameter("@p", idProjekt));
         }
 
-        private static void SenkenverweiseWiederherstellen(OleDbConnection conn, OleDbTransaction trans,
+        private static void SenkenverweiseWiederherstellen(DbVorgang v,
                                                            List<Senkenbezug> bezuege,
                                                            Dictionary<string, int> neueNachName,
                                                            List<string> warnungen)
@@ -874,7 +875,7 @@ namespace WindowsFormsApplication1
                 int neu;
                 if (!neueNachName.TryGetValue(b.Bezeichner ?? "", out neu)) { verloren++; continue; }
 
-                VersucheAusfuehren(conn, trans,
+                VersucheAusfuehren(v,
                     "UPDATE [" + Z_AnlageSenkeCtrl.TABLE + "] SET ID_Puffer = ? WHERE ID = ?",
                     new OleDbParameter("@neu", neu), new OleDbParameter("@id", b.IdSenke));
             }
@@ -1155,8 +1156,8 @@ namespace WindowsFormsApplication1
         private static int AnlageFinden(int idProjekt, int idType, string bezeichner)
         {
             object o = DataRepository.ExecuteScalar(
-                "SELECT TOP 1 ID FROM [" + TAB_ANLAGEN + "] " +
-                "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? ORDER BY ID DESC",
+                "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
+                "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? ORDER BY ID DESC LIMIT 1",
                 new OleDbParameter("@p", idProjekt),
                 new OleDbParameter("@t", idType),
                 new OleDbParameter("@b", bezeichner ?? ""));
@@ -1192,34 +1193,25 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Helfer
 
-        private static void Ausfuehren(OleDbConnection conn, OleDbTransaction trans,
-                                       string sql, params OleDbParameter[] ps)
+        private static void Ausfuehren(DbVorgang v, string sql, params OleDbParameter[] ps)
         {
-            using (var cmd = new OleDbCommand(sql, conn, trans))
-            {
-                if (ps != null) cmd.Parameters.AddRange(ps);
-                cmd.ExecuteNonQuery();
-            }
+            v.Ausfuehren(sql, ps);
         }
 
         /// <summary>
         /// Wie <see cref="Ausfuehren"/>, aber ein Fehlschlag bricht den Vorgang nicht ab —
         /// für Tabellen und Spalten, die auf einer älteren Datenbank fehlen können.
         /// </summary>
-        private static void VersucheAusfuehren(OleDbConnection conn, OleDbTransaction trans,
-                                               string sql, params OleDbParameter[] ps)
+        private static void VersucheAusfuehren(DbVorgang v, string sql, params OleDbParameter[] ps)
         {
-            try { Ausfuehren(conn, trans, sql, ps); }
+            try { Ausfuehren(v, sql, ps); }
             catch (Exception ex) { Console.WriteLine("Komponenten-Übernahme (übergangen): " + ex.Message); }
         }
 
-        private static int MaxId(OleDbConnection conn, OleDbTransaction trans, string tabelle)
+        private static int MaxId(DbVorgang v, string tabelle)
         {
-            using (var cmd = new OleDbCommand("SELECT MAX(ID) FROM [" + tabelle + "]", conn, trans))
-            {
-                object o = cmd.ExecuteScalar();
-                return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
-            }
+            object o = v.Skalar("SELECT MAX(ID) FROM [" + tabelle + "]");
+            return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
         private static OleDbParameter Wert(string name, Type t, object v)

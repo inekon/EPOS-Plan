@@ -485,16 +485,14 @@ namespace WindowsFormsApplication1
 
             DataSet ds = new DataSet();
 
-            // 2. Wir nutzen OleDb und holen uns den zentralen Connection-String aus dem Repository
-            using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+            // 2. ARBEITSPAKET S4b: Die eigene Verbindung samt OleDbDataAdapter ist der
+            //    Zugriffsschicht gewichen. GetDataTable liefert die Zeilen im Zustand
+            //    "Unchanged" - genau wie Adapter.Fill; der Dialog erzeugt daraus
+            //    Added/Modified/Deleted, und die Auswertung unten bleibt unveraendert.
             {
-                using (OleDbDataAdapter adapter = new OleDbDataAdapter(sql, conn))
                 {
-                    // Parameter dem Adapter übergeben
-                    adapter.SelectCommand.Parameters.Add(new OleDbParameter("?", OleDbType.Integer) { Value = item.ID });
-
-                    // DataSet befüllen
-                    adapter.Fill(ds);
+                    ds.Tables.Add(DataRepository.GetDataTable(sql,
+                        new OleDbParameter("?", OleDbType.Integer) { Value = item.ID }));
 
                     // Das Formular aufrufen (es bekommt das DataSet per ref wie im Original)
                     Kenndaten frm = new Kenndaten(ref ds);
@@ -504,8 +502,10 @@ namespace WindowsFormsApplication1
 
                     if (ret == DialogResult.OK && !roKenn)
                     {
-                        // Änderungen explizit und typisiert zurückschreiben – der OleDbCommandBuilder
-                        // wirft bei Access/ACE einen Prepare-Fehler ("... explicitly set type").
+                        // Änderungen explizit und typisiert zurückschreiben – ein
+                        // CommandBuilder kommt hier bewusst nicht zum Einsatz (er warf
+                        // bei Access/ACE einen Prepare-Fehler, und die Zugriffsschicht
+                        // fuehrt ohnehin keinen mit).
                         DataTable dtK = ds.Tables[0];
 
                         int nextId = 1;

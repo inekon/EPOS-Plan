@@ -10,9 +10,22 @@ using System.Text;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Versionierte In-Code-Migration der Access-Datenbank nach ADR-001.
+    /// Versionierte In-Code-Migration nach ADR-001.
     ///
-    /// Ablauf (einmalig beim Programmstart, aus <c>Program.Main</c> vor dem MDI-Fenster):
+    /// <para><b>ARBEITSPAKET S6 - ZWEI ZWEIGE.</b> Bis S5 gab es nur den Access-Zweig;
+    /// seither ist die Klasse gegabelt (die ausführliche Begründung steht beim Abschnitt
+    /// „Einstiegspunkte"):</para>
+    /// <list type="bullet">
+    ///   <item><description><see cref="Ausfuehren"/> - NORMALSTART auf der
+    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus und arbeitet die (heute leere)
+    ///     Liste der Schritte ab 62 ab. Keine OleDb-Verbindung.</description></item>
+    ///   <item><description><see cref="HebeAltbestand"/> - EINGEFROREN. Fährt die
+    ///     Schritte 1-61 auf einer Access-Datei; einziger Zweck ist die einmalige Hebung
+    ///     eines Kundenbestands vor der Erstmigration (Implementierungskonzept 5.1 und
+    ///     8).</description></item>
+    /// </list>
+    ///
+    /// Ablauf im Access-Zweig (unverändert):
     ///   1. Bootstrap: <c>Tab_Applikation.SchemaVersion</c> anlegen und die Einzelzeile
     ///      der Statustabelle sicherstellen.
     ///   2. Alle registrierten Schritte mit Nummer &gt; gespeicherter Version in
@@ -20,17 +33,22 @@ namespace WindowsFormsApplication1
     ///   3. Den Marker NACH jedem nachgewiesen erfolgreichen Schritt anheben.
     ///   4. Beim ersten Fehlschlag anhalten - der Marker bleibt stehen, damit ein halb
     ///      migriertes Schema nie als fertig gilt.
+    /// Der SQLite-Zweig teilt die Punkte 2 bis 4; Punkt 1 entfällt dort (die
+    /// Markerspalte bringt die Erstmigration mit).
     ///
     /// Fehler werden gesammelt und EINMAL gemeldet. <see cref="MigrationOk"/> und
     /// <see cref="Fehlerbericht"/> tragen das Ergebnis; der Simulationsbereich fragt sie
     /// über <see cref="SimulationGesperrt"/> ab.
     ///
-    /// Bewusst NICHT über <see cref="DataRepository"/>: dessen Methoden zeigen bei
-    /// Fehlern MessageBoxen und schlucken den Fehlertext, womit sich "Spalte existiert
-    /// schon" nicht von "Datei schreibgeschützt" unterscheiden ließe. Der Verbindungs-
-    /// string kommt trotzdem von dort, also läuft alles über
-    /// <see cref="DataRepository.GetDBPath"/> - der offene Punkt O6 des Konzepts ist
-    /// damit gegenstandslos.
+    /// Der ACCESS-ZWEIG arbeitet bewusst NICHT über <see cref="DataRepository"/>: dessen
+    /// Methoden zeigen bei Fehlern MessageBoxen und schlucken den Fehlertext, womit sich
+    /// "Spalte existiert schon" nicht von "Datei schreibgeschützt" unterscheiden ließe.
+    /// Seinen Verbindungsstring baut er seit S6 selbst aus dem übergebenen
+    /// <c>.accdb</c>-Pfad - <see cref="DataRepository.GetConnectionString"/> liefert seit
+    /// S4a den SQLite-String und wäre dort schlicht falsch.
+    /// Der SQLITE-ZWEIG geht umgekehrt ausschließlich über die Zugriffsschicht, aber
+    /// durchgängig im <c>EngineModus</c>: kein Dialog, und der Fehlertext landet trotzdem
+    /// im Bericht (siehe den Abschnitt „SQLite-Werkzeugkasten").
     ///
     /// ETAPPE 1 deckt die Schritte 1-4 ab (Schema), ETAPPE 2 den Schritt 5 - die
     /// einmalige Projektdatenmigration nach Konzept 5.5. Schritt 6 kommt mit Paket 4
@@ -3354,12 +3372,83 @@ namespace WindowsFormsApplication1
         };
 
         // =================================================================================
-        // Einstiegspunkt
+        // Einstiegspunkte - die Gabelung des ARBEITSPAKETS S6
         // =================================================================================
+        //
+        // Bis S5 gab es GENAU EINEN Einstieg: Ausfuehren() fuhr die Schritte 1-61 ueber
+        // eine eigene OleDb-Verbindung, deren Verbindungsstring aus
+        // DataRepository.GetConnectionString() kam. Seit S4a liefert der aber den
+        // SQLITE-String - der Access-Zweig wuerde also eine ACE-Verbindung auf eine
+        // SQLite-Datei aufbauen. Genau das ist der Grund, warum die Anwendung nach S5
+        // noch nicht startete.
+        //
+        // Die Gabelung trennt die beiden Aufgaben, die bis dahin in einer Methode staken:
+        //
+        //   Ausfuehren(out bericht)          NORMALSTART. Fährt AUSSCHLIESSLICH den
+        //                                    SQLite-Zweig: Stand lesen, Freeze-Stand 61
+        //                                    voraussetzen, die (heute leere) Liste
+        //                                    SCHRITTE_SQLITE abarbeiten. Kein Bootstrap,
+        //                                    kein OleDb, keine Abschlusspruefungen des
+        //                                    Altzweigs - die arbeiten allesamt auf
+        //                                    l.Conn und traegen unter SQLite nicht.
+        //
+        //   HebeAltbestand(accdbPfad, out)   EINGEFRORENER ACCESS-ZWEIG. Fährt die
+        //                                    unveraenderte Logik der Schritte 1-61 auf
+        //                                    einer AUSDRUECKLICH benannten
+        //                                    ACE-Verbindung. Einziger kuenftiger Aufrufer
+        //                                    ist der Erststart-Assistent aus S8, der
+        //                                    einen Kundenbestand vor der Erstmigration
+        //                                    auf Stand 61 hebt (Implementierungskonzept
+        //                                    Abschnitt 5.1 und 8).
+        //
+        // WARUM ZWEI SCHLEIFEN STATT EINER MIT WEICHE: Die beiden Zweige teilen zwar die
+        // Marker-Semantik ("Nr <= Version -> bereits erledigt", Marker einzeln nach
+        // Erfolg, Abbruch beim ersten Fehler), aber SONST nichts: andere DDL-Sprache,
+        // andere Vorhandenseinsprobe, andere Versionsleser, andere Abschlusspruefungen.
+        // Eine gemeinsame Schleife mit Weichen darin waere die Stelle, an der der
+        // eingefrorene Zweig doch wieder angefasst werden muss.
+        //
+        // KEIN Aufrufer von Ausfuehren musste geaendert werden (Program.cs:138).
+        //
+        // ---------------------------------------------------------------------------
+        // BEFUND S6 - ZWEI SCHRITTKOERPER GREIFEN AN DER VERBINDUNG VORBEI
+        // ---------------------------------------------------------------------------
+        // Die Schritte 1-61 arbeiten mit einer Ausnahme durchgaengig ueber Lauf.Conn,
+        // also ueber die Verbindung, die HebeAltbestand aufbaut. Die Ausnahme sind zwei
+        // Stellen, die statt dessen DataRepository rufen - und das ist seit S4a die
+        // SQLITE-Datei, nicht die gerade gehobene .accdb:
+        //
+        //   * BrennstoffStammId(...)      SELECT MAX(ID) FROM Tab_Brennstoff_Stamm ...
+        //                                 gerufen aus Schritt 42 und (zweimal) 43
+        //   * Schritt_43_VdiTraeger(...)  SELECT pricing_model FROM energy_carrier
+        //                                 WHERE [name] = 'Koks'
+        //
+        // WIRKUNG. Beide sind reine LESEPROBEN mit gutmuetigem Rueckfall (0 bzw.
+        // "GASEOUS_FUEL"); geschrieben wird ausschliesslich ueber NonQuery(l, ...), also
+        // in die richtige Datei. Ein Altbestand unterhalb Stand 43 bekaeme dort im
+        // schlimmsten Fall einen fehlenden Brennstoff-Stammverweis (ID_Brennstoff = 0)
+        // und das Rueckfall-Preismodell. Ist die SQLite-Datei noch gar nicht angelegt -
+        // der Normalfall der Erstmigration -, laufen beide Proben in den stillen
+        // Fehlerpfad und liefern eben diesen Rueckfall.
+        //
+        // NICHT UMGEBAUT, WEIL EINGEFROREN. Die Schrittkoerper 1-61 bleiben Zeichen fuer
+        // Zeichen unberuehrt; das ist die Zusage dieses Arbeitspakets. Fuer die
+        // Alt-Hebung eines Bestands UNTERHALB Stand 43 ist der Punkt vor S8 gesondert zu
+        // entscheiden (die naheliegende Loesung waere, beide Proben auf Scalar(l, ...)
+        // zu ziehen - eine Zeile je Stelle, aber eben eine Aenderung an einem
+        // eingefrorenen Koerper). Auf einem Bestand ab Stand 43 - dem gemessenen
+        // Regelfall, auch dem der Live-Datenbank - werden beide Schritte uebersprungen
+        // und der Punkt ist gegenstandslos.
 
         /// <summary>
-        /// Führt alle noch ausstehenden Migrationsschritte aus.
+        /// Führt alle noch ausstehenden Migrationsschritte des SQLITE-Zweigs aus
+        /// (Normalstart aus <c>Program.Main</c>).
         /// Rückgabe true, wenn die Datenbank danach auf <see cref="ZIEL_VERSION"/> steht.
+        ///
+        /// <para>Die Datei selbst ist zu diesem Zeitpunkt bereits geprüft:
+        /// <c>Program.Main</c> bricht vor diesem Aufruf mit eigener Meldung ab, wenn
+        /// <see cref="DataRepository.DatenbankVorhanden"/> false liefert
+        /// (Program.cs:101).</para>
         /// </summary>
         /// <param name="fehlerbericht">
         /// Immer gefüllt. Erste Zeile ist der tatsächlich verwendete Datenbankpfad,
@@ -3368,6 +3457,100 @@ namespace WindowsFormsApplication1
         public static bool Ausfuehren(out string fehlerbericht)
         {
             Ausgefuehrt = true;
+            ZaehlerZuruecksetzen();
+
+            var l = new Lauf();
+            string dbPfad;
+            try { dbPfad = DataRepository.GetDBPath(); }
+            catch (Exception ex) { dbPfad = "(Pfad nicht ermittelbar: " + ex.Message + ")"; }
+
+            l.DbPfad = dbPfad;
+            l.Kopf(dbPfad);
+            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+
+            bool erfolg = false;
+            try
+            {
+                erfolg = SchritteAbarbeitenSqlite(l);
+            }
+            catch (Exception ex)
+            {
+                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
+                erfolg = false;
+            }
+
+            MigrationOk = erfolg;
+            Fehlerbericht = l.Text();
+            fehlerbericht = Fehlerbericht;
+
+            ProtokollSchreiben(dbPfad, Fehlerbericht);
+            return erfolg;
+        }
+
+        /// <summary>
+        /// EINGEFRORENER ACCESS-ZWEIG: hebt einen Altbestand (<c>.accdb</c>) über die
+        /// Schritte 1-61 auf den Freeze-Stand <see cref="ZIEL_VERSION"/>. Der einzige
+        /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1); aufgerufen
+        /// wird er künftig aus dem Erststart-Assistenten (S8), VOR dem Lauf des
+        /// <c>EposSqliteMigrator</c>.
+        ///
+        /// <para><b>Die Verbindung kommt ausdrücklich NICHT aus
+        /// <see cref="DataRepository.GetConnectionString"/></b> - der liefert seit S4a den
+        /// SQLite-String. Statt dessen wird ein ACE-Verbindungsstring auf
+        /// <paramref name="accdbPfad"/> gebaut; ebenso lesen und schreiben Versionsmarker
+        /// hier über <c>ApplikationCtrl.GetSchemaVersionOleDb</c> /
+        /// <c>SetSchemaVersionOleDb</c> auf genau dieser Verbindung.</para>
+        ///
+        /// <para><b>Rührt <see cref="MigrationOk"/>, <see cref="Ausgefuehrt"/> und damit
+        /// <see cref="SimulationGesperrt"/> bewusst NICHT an:</b> Diese drei beantworten
+        /// die Frage „ist die Datenbank in Ordnung, mit der das Programm gerade
+        /// arbeitet". Der gehobene Altbestand ist das gerade nicht - er wird im nächsten
+        /// Schritt erst nach SQLite migriert. Der Bericht kommt deshalb nur über den
+        /// out-Parameter zurück.</para>
+        ///
+        /// <para><see cref="StandVorher"/>/<see cref="StandNachher"/> werden hingegen
+        /// beschrieben (sie stecken in der eingefrorenen Schleife). Das ist unschädlich:
+        /// Sie werden nur innerhalb dieser Klasse gelesen, und im Ablauf des
+        /// Erststart-Assistenten läuft <see cref="Ausfuehren"/> hinterher und setzt sie
+        /// auf den Stand der SQLite-Datei.</para>
+        /// </summary>
+        /// <param name="accdbPfad">Vollständiger Pfad der zu hebenden Access-Datenbank.</param>
+        /// <param name="bericht">Immer gefüllt - gleiche Form wie bei <see cref="Ausfuehren"/>.</param>
+        public static bool HebeAltbestand(string accdbPfad, out string bericht)
+        {
+            ZaehlerZuruecksetzen();
+
+            var l = new Lauf();
+            string pfad = accdbPfad ?? "";
+            l.DbPfad = pfad;
+            l.Kopf(pfad);
+            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+            l.Kopf("Alt-Hebung des Access-Bestands (eingefrorener Zweig, Schritte 1-" +
+                   ZIEL_VERSION + ")");
+
+            bool erfolg = false;
+            try
+            {
+                erfolg = DurchfuehrenAltbestand(l, pfad);
+            }
+            catch (Exception ex)
+            {
+                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
+                erfolg = false;
+            }
+
+            bericht = l.Text();
+            ProtokollSchreiben(pfad, bericht);
+            return erfolg;
+        }
+
+        /// <summary>
+        /// Setzt das gesamte Zählwerk zurück. Bis S6 stand dieser Block am Anfang von
+        /// <see cref="Ausfuehren"/>; seit der Gabelung brauchen ihn BEIDE Einstiege -
+        /// deshalb genau einmal hier, damit nicht zwei Listen auseinanderlaufen.
+        /// </summary>
+        private static void ZaehlerZuruecksetzen()
+        {
             IdPufferGemappt = 0;
             IdPufferGenullt = 0;
             DatenPufferVerwendung = 0;
@@ -3443,36 +3626,30 @@ namespace WindowsFormsApplication1
             _bhkwPostenGeprueft = false;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
-
-            var l = new Lauf();
-            string dbPfad;
-            try { dbPfad = DataRepository.GetDBPath(); }
-            catch (Exception ex) { dbPfad = "(Pfad nicht ermittelbar: " + ex.Message + ")"; }
-
-            l.DbPfad = dbPfad;
-            l.Kopf(dbPfad);
-            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
-
-            bool erfolg = false;
-            try
-            {
-                erfolg = Durchfuehren(l, dbPfad);
-            }
-            catch (Exception ex)
-            {
-                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
-                erfolg = false;
-            }
-
-            MigrationOk = erfolg;
-            Fehlerbericht = l.Text();
-            fehlerbericht = Fehlerbericht;
-
-            ProtokollSchreiben(dbPfad, Fehlerbericht);
-            return erfolg;
         }
 
-        private static bool Durchfuehren(Lauf l, string dbPfad)
+        /// <summary>
+        /// Verbindungsstring auf einen ACCESS-Altbestand. Wortgleich mit dem, den
+        /// <c>EposSqliteMigrator.Kern.Migrator</c> und die Referenzlauf-Suite benutzen -
+        /// es gibt keinen zweiten Weg in eine <c>.accdb</c>.
+        ///
+        /// <para>Er wird ausdrücklich HIER gebaut und nicht aus
+        /// <see cref="DataRepository.GetConnectionString"/> gezogen: Die eine Wahrheit der
+        /// Zugriffsschicht ist seit S4a die SQLite-Datei. Der Access-Zweig hat seine
+        /// eigene Wahrheit, und die ist der übergebene Pfad.</para>
+        /// </summary>
+        private static string AccessVerbindungsstring(string accdbPfad)
+        {
+            return "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + accdbPfad + ";";
+        }
+
+        /// <summary>
+        /// Der eingefrorene Access-Durchlauf. Bis S6 hieß diese Methode
+        /// <c>Durchfuehren</c> und war der einzige; geändert wurde an ihr ausschließlich
+        /// die Herkunft des Verbindungsstrings (siehe
+        /// <see cref="AccessVerbindungsstring"/>).
+        /// </summary>
+        private static bool DurchfuehrenAltbestand(Lauf l, string dbPfad)
         {
             // --- Datei überhaupt vorhanden? ------------------------------------------
             bool dateiDa;
@@ -3489,7 +3666,7 @@ namespace WindowsFormsApplication1
             // --- Verbindung ------------------------------------------------------------
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (var conn = new OleDbConnection(AccessVerbindungsstring(dbPfad)))
                 {
                     conn.Open();
                     l.Conn = conn;
@@ -3506,6 +3683,16 @@ namespace WindowsFormsApplication1
             finally { l.Conn = null; }
         }
 
+        /// <summary>
+        /// Die eingefrorene Schleife über die Schritte 1-61 (ACCESS-ZWEIG).
+        ///
+        /// <para>Geändert wurde in S6 ausschließlich der Weg zum Versionsmarker: Er lief
+        /// über <c>ApplikationCtrl.GetSchemaVersion</c>/<c>SetSchemaVersion</c>, und die
+        /// zeigen seit S4b auf die SQLITE-Datei. Hier stehen jetzt die
+        /// OleDb-Geschwisterfassungen, die die Verbindung dieses Laufs bekommen. Alles
+        /// andere - Bootstrap, Schrittkörper, Abschlussprüfungen, Berichtsform - ist
+        /// Zeichen für Zeichen unverändert.</para>
+        /// </summary>
         private static bool SchritteAbarbeiten(Lauf l)
         {
             // --- Bootstrap: Versionsmarker --------------------------------------------
@@ -3525,7 +3712,7 @@ namespace WindowsFormsApplication1
             l.Zeile("Bootstrap Schemamarker Tab_Applikation.SchemaVersion: OK");
             l.Detail();
 
-            int version = ApplikationCtrl.GetSchemaVersion();
+            int version = ApplikationCtrl.GetSchemaVersionOleDb(l.Conn);
             StandVorher = version;
             StandNachher = version;
             l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
@@ -3561,7 +3748,7 @@ namespace WindowsFormsApplication1
                 }
 
                 // Marker erst NACH nachgewiesenem Erfolg anheben.
-                if (!ApplikationCtrl.SetSchemaVersion(s.Nr))
+                if (!ApplikationCtrl.SetSchemaVersionOleDb(l.Conn, s.Nr))
                 {
                     l.Zeile("Schritt " + s.Nr + "  " + s.Name +
                             ": ausgeführt, aber der Schemamarker konnte nicht fortgeschrieben werden.");
@@ -3892,6 +4079,337 @@ namespace WindowsFormsApplication1
                               "Einzelposten, aus denen TechnikPlanwertCtrl.BasenFuellen sie liest."));
 
             return alleOk && StandNachher >= ZIEL_VERSION;
+        }
+
+        // =================================================================================
+        // SQLITE-ZWEIG (ARBEITSPAKET S6) - der Normalstart
+        // =================================================================================
+
+        /// <summary>
+        /// Die Schritte des SQLite-Zweigs, also alles ab Nummer 62.
+        ///
+        /// <para><b>Heute bewusst LEER.</b> Der Freeze-Stand 61 kommt fertig aus dem
+        /// <c>EposSqliteMigrator</c>; es gibt schlicht noch nichts nachzuziehen. Die Liste
+        /// steht trotzdem schon da, weil sonst der erste künftige Schritt zwischen zwei
+        /// Bauformen wählen müsste - und die naheliegende falsche Wahl wäre ein Eintrag in
+        /// <see cref="SCHRITTE"/>, also im eingefrorenen Access-Zweig.</para>
+        ///
+        /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
+        /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
+        /// Eintrag, DANN <see cref="ZIEL_VERSION"/>):</para>
+        /// <list type="number">
+        ///   <item><description>Nummer ab 62, lückenlos aufsteigend.</description></item>
+        ///   <item><description>Der Schrittkörper benutzt AUSSCHLIESSLICH
+        ///     <see cref="SqliteDdl"/>, <see cref="SqliteSpalteAnlegen"/>,
+        ///     <see cref="SqliteSpalteVorhanden"/> und
+        ///     <see cref="SqliteTabelleVorhanden"/> - NIE <c>Ddl</c>,
+        ///     <c>TabellenSchema</c>, <c>StillAusfuehren</c>, <c>NonQuery</c>,
+        ///     <c>Scalar</c> oder <c>Abfrage</c>: die arbeiten alle auf
+        ///     <c>Lauf.Conn</c>, und die ist im SQLite-Zweig <c>null</c>.</description></item>
+        ///   <item><description>Nach dem Eintrag <see cref="ZIEL_VERSION"/> anheben -
+        ///     sonst meldet jeder Programmstart einen unerreichten Zielstand und sperrt
+        ///     den Simulationsbereich.</description></item>
+        /// </list>
+        /// </summary>
+        private static readonly Schritt[] SCHRITTE_SQLITE =
+        {
+            // Ab 62. Muster:
+            // new Schritt(SCHRITT_62_..., "Kurzbeschreibung", "Folge, wenn er scheitert",
+            //             Schritt_62_...),
+        };
+
+        /// <summary>
+        /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
+        /// plus - falls gesetzt - der über den Test-Seam registrierte Wegwerf-Schritt.
+        ///
+        /// <para>Der Seam bekommt den DDL-Helfer als Rückruf hereingereicht, statt dass
+        /// der <c>Lauf</c> nach außen sichtbar würde. So bleibt bewiesen, was die Probe
+        /// beweisen soll: dass ein Schritt ≥ 62 mit <see cref="SqliteDdl"/> allein
+        /// auskommt.</para>
+        /// </summary>
+        private static IEnumerable<Schritt> SchritteSqlite()
+        {
+            foreach (Schritt s in SCHRITTE_SQLITE) yield return s;
+
+            Func<Func<string, string, bool>, bool> probe = ProbeSchrittAktion;
+            if (probe == null) yield break;
+
+            yield return new Schritt(
+                ProbeSchrittNr,
+                ProbeSchrittName ?? "Probe-Schritt (Test-Seam)",
+                "Der über den Test-Seam registrierte Wegwerf-Schritt schlug fehl.",
+                lauf => probe((sql, bezeichnung) => SqliteDdl(lauf, sql, bezeichnung)));
+        }
+
+        // --- Test-Seam (nur Proben; per Reflexion befüllt, Muster wie Probe 11) --------
+        //
+        // Solange SCHRITTE_SQLITE leer ist, gibt es keinen einzigen echten SQLite-Schritt,
+        // an dem sich Marker-Semantik und Idempotenz nachweisen ließen. Der Seam schließt
+        // genau diese Lücke: Die Probe hängt einen Wegwerf-Schritt 62 ein, lässt ihn
+        // zweimal laufen und räumt ihn danach wieder ab. Im Programmbetrieb sind die drei
+        // Felder unbesetzt, die Schleife sieht dann nur SCHRITTE_SQLITE.
+
+        // Die drei sind AUSDRUECKLICH vorbelegt, obwohl das die Vorgabewerte sind: Ohne
+        // Initialisierer meldet der Compiler CS0649 ("wird nie zugewiesen") - im Bestand
+        // wird ihnen ja tatsaechlich nirgends etwas zugewiesen, das tut nur die Probe von
+        // aussen per Reflexion.
+
+        /// <summary>Nummer des Probe-Schritts (nur Proben).</summary>
+        internal static int ProbeSchrittNr = 0;
+
+        /// <summary>Anzeigename des Probe-Schritts (nur Proben).</summary>
+        internal static string ProbeSchrittName = null;
+
+        /// <summary>
+        /// Körper des Probe-Schritts (nur Proben). Bekommt den DDL-Rückruf
+        /// <c>(sql, bezeichnung) =&gt; bool</c> und liefert Erfolg/Misserfolg.
+        /// <c>null</c> = kein Probe-Schritt.
+        /// </summary>
+        internal static Func<Func<string, string, bool>, bool> ProbeSchrittAktion = null;
+
+        /// <summary>
+        /// Die Schleife des SQLite-Zweigs. Gleiche Marker-Semantik und gleiche
+        /// Berichtsform wie <see cref="SchritteAbarbeiten"/> - aber ohne Bootstrap, ohne
+        /// OleDb und ohne die Abschlussprüfungen des Altzweigs.
+        ///
+        /// <para><b>Kein Bootstrap.</b> Die Markerspalte anzulegen ist Sache der
+        /// Erstmigration; fehlt sie, liefert <c>GetSchemaVersion</c> 0 und dieser Lauf
+        /// sagt genau das - statt an einer halb aufgebauten Datenbank herumzureparieren,
+        /// von der niemand weiß, wo sie herkommt.</para>
+        /// </summary>
+        private static bool SchritteAbarbeitenSqlite(Lauf l)
+        {
+            int version = ApplikationCtrl.GetSchemaVersion();
+            StandVorher = version;
+            StandNachher = version;
+            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Leerzeile();
+
+            // --- Zwei Abbruchgründe, die KEINE Migration sind, sondern eine falsche Datei -
+            if (version <= 0)
+            {
+                l.Zeile("Die Datenbank führt keine Schemaversion - Erstmigration nötig.");
+                l.Zeile("        In Tab_Applikation fehlt der Schemamarker (Spalte, Zeile oder " +
+                        "die Tabelle selbst). Eine so beschaffene Datei ist kein migrierter " +
+                        "Bestand; sie ist mit dem EposSqliteMigrator aus der Access-Datenbank " +
+                        "zu erzeugen.");
+                return false;
+            }
+
+            if (version < ZIEL_VERSION)
+            {
+                l.Zeile("Bestand ist nicht auf Freeze-Stand " + ZIEL_VERSION +
+                        " - bitte Erstmigration mit EposSqliteMigrator fahren.");
+                l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
+                        ZIEL_VERSION + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +
+                        "auf einer SQLite-Datei nicht nachspielen. Der Weg führt über den " +
+                        "Altbestand: erst SchemaMigration.HebeAltbestand auf der .accdb, " +
+                        "dann der EposSqliteMigrator.");
+                return false;
+            }
+
+            // --- Die Schritte ab 62 ----------------------------------------------------
+            bool alleOk = true;
+
+            foreach (Schritt s in SchritteSqlite())
+            {
+                if (s.Nr <= version)
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": bereits erledigt");
+                    continue;
+                }
+
+                l.LetzterFehler = null;
+                bool ok;
+                try { ok = s.Aktion(l); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = Kurzmeldung(ex);
+                    ok = false;
+                }
+
+                if (!ok)
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": FEHLGESCHLAGEN");
+                    l.Zeile("        " + s.Fehlertext);
+                    if (l.LetzterFehler != null) l.Zeile("        Meldung der Datenbank: " + l.LetzterFehler);
+                    l.Detail();
+                    alleOk = false;
+                    break; // beim ersten Fehler anhalten - kein halb migriertes Schema fortschreiben
+                }
+
+                // Marker erst NACH nachgewiesenem Erfolg anheben.
+                if (!ApplikationCtrl.SetSchemaVersion(s.Nr))
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name +
+                            ": ausgeführt, aber der Schemamarker konnte nicht fortgeschrieben werden.");
+                    l.Detail();
+                    alleOk = false;
+                    break;
+                }
+
+                version = s.Nr;
+                StandNachher = version;
+                l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": OK");
+                l.Detail();
+            }
+
+            l.Leerzeile();
+            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
+            return alleOk && StandNachher >= ZIEL_VERSION;
+        }
+
+        // =================================================================================
+        // SQLITE-WERKZEUGKASTEN (ARBEITSPAKET S6)
+        // =================================================================================
+        //
+        // Das Gegenstück zu Ddl / TabellenSchema / SpalteVorhanden / AbfrageVorhanden -
+        // fuer Schritte AB 62. Die alten Helfer bleiben unangetastet neben diesen stehen;
+        // sie gehoeren zum eingefrorenen Access-Zweig und arbeiten auf Lauf.Conn.
+        //
+        // DER EINE UNTERSCHIED, AUF DEN ES ANKOMMT: VORABPROBE STATT FEHLERTEXT-DEUTUNG.
+        // Der alte Ddl-Helfer laesst "existiert schon" als Erfolg durchgehen, indem er die
+        // Ausnahme liest - ueber IstBereitsVorhanden, das DEUTSCHE ACE-Meldungstexte
+        // vergleicht (die Jet-Fehlernummern laufen unter .NET 8 ins Leere, weil
+        // OleDbException.Errors dort leer ist; gemessen 22.08.2026). Unter SQLite traegt
+        // das nicht: andere Bibliothek, andere Codes, englische Texte. Es waere schon
+        // immer der zerbrechlichste Punkt der Migration gewesen - hier faellt er weg.
+        //
+        //   CREATE TABLE ... IF NOT EXISTS      kann SQLite selbst
+        //   CREATE INDEX ... IF NOT EXISTS      kann SQLite selbst
+        //   ALTER TABLE ... ADD COLUMN          kann SQLite NICHT bedingt
+        //                                       -> vorher PRAGMA table_info fragen
+        //                                          (SqliteSpalteAnlegen)
+        //
+        // GRENZE DES MUSTERS, EHRLICH BENANNT (Implementierungskonzept 5.5): Ein
+        // NACHTRAEGLICHER FREMDSCHLUESSEL und eine SPALTENAENDERUNG (Typ, NOT NULL,
+        // DEFAULT, Umbenennung vor SQLite 3.25, Loeschen vor 3.35) sind per ALTER TABLE
+        // NICHT moeglich. Die 14 x "ADD CONSTRAINT ... FOREIGN KEY" und das eine
+        // "DROP CONSTRAINT" aus der Historie stecken deshalb kuenftig im Grundschema
+        // (sql\schema\*.sql). Braucht ein Schritt ab 62 so etwas doch, gilt das
+        // TABELLENNEUBAU-REZEPT des SQLite-Handbuchs (12 Schritte, "Making Other Kinds Of
+        // Table Schema Changes"): foreign_keys AUS -> Transaktion -> neue Tabelle mit dem
+        // Zielschema unter Hilfsnamen -> INSERT INTO ... SELECT -> alte Tabelle loeschen
+        // -> umbenennen -> Indizes/Trigger/Views neu -> foreign_key_check -> Commit ->
+        // foreign_keys AN. Ein Helfer dafuer entsteht ERST, wenn der erste Schritt ihn
+        // wirklich braucht - vorher waere er ungeprueftes Geruest.
+        //
+        // ALLE DREI SIND STILL. Sie laufen ueber DataRepository, und das zeigt bei Fehlern
+        // MessageBoxen - beim Programmstart vor dem ersten Fenster ist das nicht
+        // hinnehmbar (derselbe Grund wie bei ApplikationCtrl.GetSchemaVersion). Deshalb
+        // durchgaengig EngineModus + StilleFehlerAbholen, das Muster von
+        // BrennstoffStammId. Der Unterschied zum alten Ddl bleibt damit gewahrt: Der
+        // Fehlertext geht NICHT verloren, er landet im Bericht.
+
+        /// <summary>
+        /// Führt eine DDL-Anweisung des SQLite-Zweigs aus und notiert das Ergebnis im
+        /// Bericht. Für Schritte ab 62.
+        ///
+        /// <para>Anders als <c>Ddl</c> deutet diese Fassung KEINE Fehlertexte: Was
+        /// idempotent sein soll, muss es über <c>IF NOT EXISTS</c> oder eine Vorabprobe
+        /// selbst sein (siehe <see cref="SqliteSpalteAnlegen"/>). Ein Fehler ist hier
+        /// immer ein Fehler.</para>
+        /// </summary>
+        /// <param name="l">Der laufende Bericht.</param>
+        /// <param name="sql">Die Anweisung - vollständig, ohne Parameter.</param>
+        /// <param name="objektName">Was angelegt wird; erscheint so im Bericht.</param>
+        private static bool SqliteDdl(Lauf l, string sql, string objektName)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                bool ok = DataRepository.ExecuteSQL(sql);
+                string[] meldungen = DataRepository.StilleFehlerAbholen();
+
+                if (ok)
+                {
+                    if (l != null) l.Notiz(objektName + ": angelegt");
+                    return true;
+                }
+
+                string text = meldungen.Length > 0
+                    ? string.Join(" | ", meldungen)
+                    : "(die Zugriffsschicht meldete einen Fehler ohne Text)";
+                text = text.Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+
+                if (l != null)
+                {
+                    l.LetzterFehler = text;
+                    l.Notiz(objektName + ": FEHLER - " + text);
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gibt es diese Tabelle (oder Sicht) in der SQLite-Datei? Ersetzt im
+        /// SQLite-Zweig sowohl <c>TabellenSchema(l, …) != null</c> als auch
+        /// <c>AbfrageVorhanden</c> - <c>sqlite_master</c> führt beide Arten.
+        /// </summary>
+        private static bool SqliteTabelleVorhanden(string tabelle)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                bool da = DataRepository.TabelleVorhanden(tabelle);
+                DataRepository.StilleFehlerAbholen();
+                return da;
+            }
+        }
+
+        /// <summary>
+        /// Gibt es diese Spalte? Antwort aus <c>PRAGMA table_info</c> (über
+        /// <see cref="DataRepository.SpalteVorhanden"/>), nicht aus einem
+        /// <c>FillSchema</c> - Ersatz für <c>SpalteVorhanden(Lauf, …)</c> im
+        /// SQLite-Zweig.
+        /// </summary>
+        private static bool SqliteSpalteVorhanden(string tabelle, string spalte)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                bool da = DataRepository.SpalteVorhanden(tabelle, spalte);
+                DataRepository.StilleFehlerAbholen();
+                return da;
+            }
+        }
+
+        /// <summary>
+        /// Legt eine Spalte an, WENN es sie noch nicht gibt - der Regelfall eines
+        /// Schritts ab 62. Vorhandene Spalte = Erfolg, ohne dass eine Ausnahme entsteht,
+        /// die jemand deuten müsste (SQLite kennt kein
+        /// <c>ADD COLUMN IF NOT EXISTS</c>).
+        ///
+        /// <para><paramref name="typDefinition"/> ist alles hinter dem Spaltennamen, also
+        /// z. B. <c>"INTEGER"</c>, <c>"REAL"</c>, <c>"TEXT"</c> oder
+        /// <c>"INTEGER DEFAULT 0"</c>. Zu beachten: SQLite lässt beim nachträglichen
+        /// <c>ADD COLUMN</c> weder <c>PRIMARY KEY</c> noch <c>UNIQUE</c> zu, und ein
+        /// <c>NOT NULL</c> nur mit <c>DEFAULT</c>.</para>
+        /// </summary>
+        private static bool SqliteSpalteAnlegen(Lauf l, string tabelle, string spalte, string typDefinition)
+        {
+            string bezeichnung = tabelle + "." + spalte;
+
+            if (!SqliteTabelleVorhanden(tabelle))
+            {
+                if (l != null)
+                {
+                    l.LetzterFehler = "Tabelle " + tabelle + " ist nicht vorhanden.";
+                    l.Notiz(bezeichnung + ": FEHLER - die Tabelle gibt es nicht.");
+                }
+                return false;
+            }
+
+            if (SqliteSpalteVorhanden(tabelle, spalte))
+            {
+                if (l != null) l.Notiz(bezeichnung + ": bereits vorhanden");
+                return true;
+            }
+
+            return SqliteDdl(l,
+                             "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition,
+                             bezeichnung);
         }
 
         /// <summary>
@@ -13259,6 +13777,21 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// true, wenn die Migration gelaufen ist und NICHT durchkam. Der Simulationsbereich
         /// verweigert dann den Start, statt auf halb migriertem Schema zu rechnen.
+        ///
+        /// <para><b>Unverändert seit ARBEITSPAKET S6 - und das ist geprüft, nicht
+        /// unterlassen.</b> Verlangt ist die Semantik „Stand &lt; <see cref="ZIEL_VERSION"/>
+        /// ⇒ gesperrt". Sie kommt im SQLite-Zweig genauso zustande wie vorher im
+        /// Access-Zweig, nämlich über <see cref="MigrationOk"/>: <see cref="Ausfuehren"/>
+        /// liefert <c>alleOk &amp;&amp; StandNachher &gt;= ZIEL_VERSION</c>, und
+        /// <c>SchritteAbarbeitenSqlite</c> bricht bei Stand 0 und bei Stand &lt; 61 mit
+        /// <c>false</c> ab. Ein Stand unter 61 kann daher gar nicht als „ok" durchgehen.
+        /// Eine zweite Prüfung auf <see cref="StandNachher"/> stünde hier nur als
+        /// Wiederholung - und würde die Sperre an einen Zähler koppeln, den auch
+        /// <see cref="HebeAltbestand"/> beschreibt (siehe die Begründung dort).</para>
+        ///
+        /// <para><see cref="HebeAltbestand"/> rührt <see cref="Ausgefuehrt"/> und
+        /// <see cref="MigrationOk"/> nicht an; eine Alt-Hebung kann diese Sperre also
+        /// weder setzen noch aufheben.</para>
         /// </summary>
         public static bool SimulationGesperrt(out string grund)
         {

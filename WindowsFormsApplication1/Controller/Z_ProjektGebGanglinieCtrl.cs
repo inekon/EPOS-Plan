@@ -72,8 +72,14 @@ namespace WindowsFormsApplication1
         /// die Spalte ausgeschrieben; fehlte sie, scheiterte das INSERT und mit ihm das
         /// Speichern der ganzen Zuordnung. Dasselbe Muster wie
         /// <c>KostenPositionCtrl.StelleSpaltenSicher</c> für die Schritte 19/38/45/46:
-        /// eigene Verbindung statt <c>DataRepository</c>, weil eine Vorsorge kein
+        /// <see cref="StilleDb"/> statt <c>DataRepository</c>, weil eine Vorsorge kein
         /// Bedienschritt ist und keine MessageBox zeigen darf. Einmal je Prozess.</para>
+        ///
+        /// <para>ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, SQLite-Spaltentyp
+        /// statt Access-Typ (S4d vorgezogen). Das blinde <c>ALTER TABLE</c> mit
+        /// geschlucktem Fehler wird zur VORABPROBE über die Schema-Auskunft — dieselbe
+        /// Aussage, aber ohne eine Fehlermeldung deuten zu müssen. Die anschliessende
+        /// Leseprobe bleibt der Nachweis.</para>
         /// </summary>
         internal static bool StelleKanalSpalteSicher()
         {
@@ -82,28 +88,21 @@ namespace WindowsFormsApplication1
             bool ok = false;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    try
-                    {
-                        using (OleDbCommand cmd = new OleDbCommand(
-                            "ALTER TABLE [" + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
-                            "] ADD COLUMN [" + SchemaKatalog.SPALTE_ZPW_KANAL + "] TEXT(50)", conn))
-                            cmd.ExecuteNonQuery();
-                    }
-                    catch { /* Spalte existiert bereits - der Regelfall nach Schritt 48 */ }
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(SchemaKatalog.Z_PROJEKTWAERMEBEDARF);
 
-                    // Nachweis statt Annahme: erst diese Leseprobe belegt, dass die
-                    // Spalte da ist (das ALTER schluckt jeden Fehler, auch einen echten).
-                    using (OleDbCommand probe = new OleDbCommand(
-                        "SELECT COUNT(*) FROM [" + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
-                        "] WHERE [" + SchemaKatalog.SPALTE_ZPW_KANAL + "] IS NULL", conn))
-                    {
-                        probe.ExecuteScalar();
-                        ok = true;
-                    }
+                // Spalte fehlt -> anlegen. Fehlt die TABELLE (null), ist das nicht
+                // Aufgabe dieser Vorsorge; die Leseprobe unten faellt dann ohnehin durch.
+                if (vorhanden != null && !vorhanden.Contains(SchemaKatalog.SPALTE_ZPW_KANAL))
+                {
+                    StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                        SchemaKatalog.Z_PROJEKTWAERMEBEDARF, SchemaKatalog.SPALTE_ZPW_KANAL, "TEXT(50)"));
                 }
+
+                // Nachweis statt Annahme: erst diese Leseprobe belegt, dass die
+                // Spalte da ist.
+                ok = StilleDb.Scalar(
+                        "SELECT COUNT(*) FROM [" + SchemaKatalog.Z_PROJEKTWAERMEBEDARF +
+                        "] WHERE [" + SchemaKatalog.SPALTE_ZPW_KANAL + "] IS NULL") != null;
             }
             catch { ok = false; }
 

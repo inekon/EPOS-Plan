@@ -302,7 +302,12 @@ namespace WindowsFormsApplication1
 
             for (int n = 0; n < waectrl.rows; n++)
             {
-                rs.Open("select * from Abfrage_ProjektGebaeudeGanglinie where Tab_Waermebedarf.ID=" + waectrl.items[n].m_ID_Ganglinie + " order by Tab_WaermebedarfDaten.ID");
+                // BEFUND B1 (S7): Die Spalten wurden bis 02.09.2026 ueber den Namen der
+                // zugrunde liegenden TABELLE angesprochen (Tab_Waermebedarf.ID,
+                // Tab_WaermebedarfDaten.ID). Jet loest das auf, SQLite nicht - eine Sicht hat
+                // nur ihre eigenen Ausgabespalten ("no such column: Tab_Waermebedarf.ID").
+                // Die Sicht heisst die zweite ID jetzt ID_Daten (002_views.sql).
+                rs.Open("select * from Abfrage_ProjektGebaeudeGanglinie where ID=" + waectrl.items[n].m_ID_Ganglinie + " order by ID_Daten");
 
                 int index = 0;
                 double wert = 0;
@@ -599,7 +604,12 @@ namespace WindowsFormsApplication1
 
             try
             {
-                rs.Open("select * from Abfrage_Tagverteilung where Bezeichner='" + TagV_Type + "' and Tab_DBTagV.ID=" + ID_Gebaeude);
+                // BEFUND B1 (S7): "Tab_DBTagV.ID" war der Tabellen-, nicht der Sichtname -
+                // in SQLite "no such column". Der Ausfall war STILL (nur die Warnung
+                // "keine Daten hinterlegt"), die Tagesverteilung blieb leer. Die Sortierung
+                // steht im Rumpf der Sicht (ORDER BY Tab_DBTagVDaten.ID) und traegt auch
+                // durch dieses aeussere WHERE - an der migrierten Datenbank nachgemessen.
+                rs.Open("select * from Abfrage_Tagverteilung where Bezeichner='" + TagV_Type + "' and ID=" + ID_Gebaeude);
                 int n = 0;
                 while (rs.Next())
                 {
