@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -19,8 +19,8 @@ namespace WindowsFormsApplication1
         public BHKWStammModel model;
 
         // --- Statische Texte (aus BHKWCtrl uebernommen) ---
-        public static string[] BrennstoffartText = { "Öl", "Gas", "Biogas", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
-        public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "größer 1200 kW" };
+        public static string[] BrennstoffartText = { "Ã–l", "Gas", "Biogas", "RapsÃ¶l", "Holz/Pellet", "Sonstiges", "", "", "FlÃ¼ssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
+        public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "grÃ¶ÃŸer 1200 kW" };
         public static string[] LeistungFilterText = { "Ptherm LIKE '%'", "Ptherm<20", "Ptherm>=20 and Ptherm<40", "Ptherm>=40 and Ptherm<80", "Ptherm>=80 and Ptherm<200",
                                                       "Ptherm>=200 and Ptherm<500", "Ptherm>=500 and Ptherm<800", "Ptherm>=800 and Ptherm<1200", "Ptherm>=1200" };
 
@@ -174,8 +174,8 @@ namespace WindowsFormsApplication1
             // transaktionalen Neuanlagen ist der Datensatz ohnehin frisch (ReadOnly = false).
             if (!SchreibschutzUebergehen && Vorgang == null && IsReadOnly(model.m_szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gespeichert werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 
@@ -266,8 +266,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
 

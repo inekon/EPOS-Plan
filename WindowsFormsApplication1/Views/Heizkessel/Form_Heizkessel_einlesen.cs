@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -185,7 +185,7 @@ namespace WindowsFormsApplication1
                 kand.Werte["Ptherm"] = probe.Ptherm;
                 kand.Werte["Brennstoff"] = probe.Brennstoff;
                 kand.Werte["Wirkungsgrad_Gas"] = probe.Wirkungsgrad_Gas;
-                kand.Werte["Wirkungsgrad_Öl"] = probe.Wirkungsgrad_Oel;
+                kand.Werte["Wirkungsgrad_Ã–l"] = probe.Wirkungsgrad_Oel;
                 kand.Werte["Raumbedarf"] = probe.Raumbedarf;
                 kand.Werte["CO2"] = probe.CO2;
                 kand.Werte["SO2"] = probe.SO2;
@@ -343,13 +343,13 @@ namespace WindowsFormsApplication1
                 FuelleModellwerte(model);
                 if (nameOverride != null) model.Name = nameOverride;
 
-                // 2. Saubere Verbindung über das DataRepository öffnen
+                // 2. Saubere Verbindung Ã¼ber das DataRepository Ã¶ffnen
                 // 3. Verbindung UND Transaktion sind ab S4e EIN Datenbankvorgang;
                 //    ohne Commit rollt sein Dispose beim Verlassen zurueck - das
                 //    ersetzt den frueheren Rollback im catch.
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    // 4. Existenzprüfung via COUNT (Ersetzt die alte rs.Open-Logik) -
+                    // 4. ExistenzprÃ¼fung via COUNT (Ersetzt die alte rs.Open-Logik) -
                     //    nach der Vorpruefung des Konfliktdialogs die zweite
                     //    Verteidigungslinie, sie prueft auch den Umbenennen-Namen
                     string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel_STAMM] WHERE Bezeichner = ?";
@@ -374,7 +374,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler bei Heizkessel Übernehmen: " + ex.Message);
+                Console.WriteLine("Fehler bei Heizkessel Ãœbernehmen: " + ex.Message);
 
                 // Der Rueckrollvorgang ist bereits gelaufen: DbVorgang.Dispose rollt
                 // beim Verlassen des using zurueck, wenn kein Commit gesehen wurde.
@@ -400,7 +400,7 @@ namespace WindowsFormsApplication1
                 : VdiUebernahmeErgebnis.Fehler;
         }
 
-        // Überladene Insert-Methode, die voll in der aktiven Transaktion arbeitet
+        // Ãœberladene Insert-Methode, die voll in der aktiven Transaktion arbeitet
         public bool Insert(HeizkesselModel model, DbVorgang v)
         {
             try
@@ -409,7 +409,7 @@ namespace WindowsFormsApplication1
                 int newId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
                 string sql = @"INSERT INTO [Tab_Heizkessel_STAMM] 
-                       (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl, 
+                       (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Ã–l, 
                         Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, ReadOnly) 
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

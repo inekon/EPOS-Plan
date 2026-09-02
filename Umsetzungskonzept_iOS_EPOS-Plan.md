@@ -1,6 +1,6 @@
 # Umsetzungskonzept: EPOS-Plan auf iOS
 
-**Rev. 2 — 02.09.2026 — zur Abnahme durch Philipp**
+**Rev. 2.1 — 02.09.2026 — Revalidierung nach iU0/iU1**
 
 Basis: Branch `sqlite`, Stand `6486c36` (02.09.2026) — **die Access-Ablösung ist vollzogen**.
 Rev. 1 war gegen `main` (`7d41833`) vermessen, als die Datenschicht noch Access trug; die daraus
@@ -109,7 +109,8 @@ gibt es keine Sicherheitsaktualisierungen mehr. Der Bestand steht heute auf:
 | `SpeicherEngine`, `KiKern` | `net8.0` | ohne Support |
 | `SpeicherEngine.Tests`, `KiKern.Tests` | `net9.0` | ohne Support |
 | `CSExeCOMServer` | .NET Framework 4.0 | (Framework-Lebenszyklus, hier ohne Belang — totes Altgut) |
-| `EposSqliteMigrator.Kern` (neu) | `net8.0` | ohne Support |
+| `EposSqliteMigrator.Kern` und `EposSqliteMigrator` (Konsole) | `net8.0` | ohne Support |
+| `ZugriffsschichtProben` | `net8.0-windows` | ohne Support |
 
 Dazu kommt seit `6486c36` **`Microsoft.Data.Sqlite 8.0.11`** — eine 8.x-Fassung, die beim Sprung
 auf .NET 10 auf 10.x mitzuziehen ist.
@@ -192,7 +193,7 @@ Dokument.
 | Registry-Zugriffe | 3 Dateien | **9** | hinzugekommen: KI-Modul (`KiEinwilligung`, `KiChatService`), CSV-Export, Variantentest, Lizenzdialog |
 | DPAPI | 2 Dateien | **2**, aber andere | nicht mehr nur die Lizenz — `KiChatService` legt den API-Schlüssel ebenso ab |
 | `MessageBox.Show` / `ShowDialog` / `DialogResult` | 99 / 74 / 131 | **127 / 115 / 149** projektweit (99 / 94 / 131 nur unter `Views/`) | das Grundlagenkonzept zählte den View-Anteil; für die Dienst-Shims (A3/M4) gelten die Projektsummen |
-| Chart- und Grid-Masken | 16 / 16 | nicht reproduzierbar: **9** bzw. **7** Designer-Instanzen, **18** bzw. **36** Dateien mit Typnutzung | vor iU9 durch Einzeldurchsicht zu klären (→ iU0) |
+| Chart- und Grid-Masken | 16 / 16 | **18 Chart-Masken (32 Steuerelemente)** und **19 Grid-Masken (22 Steuerelemente)** im Build | mit iU0 durch Einzeldurchsicht geklärt (Entscheidungsregister § 3). Die in Rev. 2 genannten **9** bzw. **7** waren ein Grep-Artefakt: das Muster traf nur `*.Designer.cs` und übersah die Schreibweise `*.designer.cs`. Die Konzeptzahl 16/16 war damit nahezu richtig |
 
 **Unverändert bestätigt:** 569 `.cs` im Hauptprojekt · 204 View-Dateien (118 mit Designer, 42 rein
 programmatisch) · 61 `RecordSet`-Dateien (60 nach engerer Zählung) · 40 Dateien an den
@@ -213,6 +214,14 @@ Dieses Kapitel wird bei jeder Revision neu ausgeführt: Zählungen aus § 1.5 na
 § 1.3 prüfen, Paketstände gegen die Build-Matrix (§ 3.6) halten. Stand Rev. 2: Messdatum
 02.09.2026, Branch `sqlite` @ `6486c36`. Die Datenschichtangaben der Rev. 1 sind überholt und in
 § 1.4 ersetzt.
+
+**Rev. 2.1 — Revalidierung nach iU0 und iU1**, Branch `ios_migration` @ `0ddc417` (02.09.2026).
+Nachgeführt sind: die Chart-/Grid-Zeile in § 1.5 (a), die Build-Matrix in § 3.6 (b), der
+Umsetzungsstand von iU1 samt zweier Befunde, die diese Planung nicht kannte (c), die Bausteine
+iE1–iE4 in § 3.10 (d), der Stichtag .NET 10 in § 5.3 (e) und der Meilenstein iZ1 in § 4.1 (f).
+Alles Übrige der Rev. 2 bleibt unverändert gültig. **Sämtliche Nachweise sind hier — auf
+Linux — geführt; die Windows-Abnahme steht aus** und ist je Commit abhakbar in
+[`Umsetzung_iU0_iU1_Nachweise.md`](Umsetzung_iU0_iU1_Nachweise.md) aufgelistet.
 
 ---
 
@@ -338,12 +347,110 @@ baut.
 
 | Baustein | heute | künftig | Anmerkung |
 |---|---|---|---|
-| Visual Studio | 2022 (17.14) | **2026** | MAUI 10 wird von VS 2022 nicht mehr getragen. Der Wechsel ist unabhängig von iOS fällig, sobald .NET 10 kommt |
+| Visual Studio | 2022 (17.14) | **2026 — zwingend** | VS 2022 kann das .NET-10-SDK zwar laden (ab 17.14), aber **nur .NET 9 und niedriger targeten**. Für `net10.0-windows` führt kein Weg an VS 2026 vorbei. **Kostenfolge:** eine VS-2022-Pro-Standalone-Lizenz deckt VS 2026 nicht ab — es ist eine neue Lizenz nötig (→ iF18) |
 | Workloads | .NET-Desktop | + **.NET MAUI**, + ASP.NET (für Blazor-Werkzeuge) | Der Windows-Rechner baut die MAUI-**Windows**-Ziele und redigiert Blazor-Komponenten; iOS-Ziele nicht |
 | .NET SDK | 9.0.315 (unfestgeschrieben) | **10.0.x, festgeschrieben in `global.json`** | Heute ist die SDK-Version nirgends fixiert — auf einem zweiten Rechner baut also potenziell etwas anderes |
 | WebView2-Laufzeit | nicht gefordert | **Voraussetzung** (auf Windows 11 vorhanden, im Installer prüfen) | trägt `BlazorWebView` in der WinForms-Hülle (M9) |
 | Access Database Engine | x64-Redist erforderlich | **entfällt — seit `6486c36` erledigt** | `Microsoft.Data.Sqlite` bringt die native Bibliothek mit. Damit ist auch der offene Punkt (d) der x64-Umstellung (Beschaffung `AccessDatabaseEngine_X64.exe`) gegenstandslos |
 | SQLite-Werkzeug | — | **SQLiteStudio/Letos 4.0.3** oder DBeaver | Ersatz für den Access-Direktzugriff (M3a). Der dokumentierte Rückschritt ist konkret: SQLiteStudio 3.4 hat **keinen QBE-Abfrageentwurf** und **kein ER-Diagramm**; Letos 4.0.3 bringt einen ERD-Editor mit |
+
+#### 3.2.1 Umstieg auf Visual Studio 2026
+
+Der Wechsel ist unkritisch, weil er kein Wechsel sein muss: **VS 2026 installiert sich neben
+VS 2022**, in eigenem Verzeichnis, beide laufen parallel. Das ist der empfohlene Weg — VS 2022
+bleibt als Rückfallebene stehen, bis der .NET-10-Sprung (iU1) durch die Referenzläufe abgenommen ist.
+
+| Schritt | Anmerkung |
+|---|---|
+| 1. VS 2026 herunterladen und **parallel** installieren | keine Deinstallation von VS 2022 nötig |
+| 2. Im Installer die vorhandene VS-2022-Installation übernehmen lassen | Der Installer erkennt sie und baut Workloads, Toolsets, SDKs, Erweiterungen und Einstellungen nach. Rechne mit 30–90 Minuten |
+| 3. Workloads prüfen: **.NET-Desktop** (vorhanden) + **.NET MAUI** (neu, für iU2 ff.) + ASP.NET (Blazor-Werkzeuge, für iU8) | MAUI kann auch später nachinstalliert werden |
+| 4. Erweiterungen kontrollieren — für dieses Projekt vor allem **ResXManager** (`ResXManager.config.xml` liegt im Repo) | VS 2026 ist erstmals **rückwärtskompatibel** zu VS-2022-Erweiterungen; die meisten laufen unverändert |
+| 5. Buildpfade nachziehen | Alt: `C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe` · **Neu: `C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe`** — VS 2026 nutzt die interne Hauptversion `18` als Verzeichnisnamen und liegt unter `Program Files`, nicht `(x86)`. Betroffen: `Setup/build-setup.ps1` (sucht unter `%ProgramFiles%\Microsoft Visual Studio\2022\<Edition>`), `Referenzlaeufe/LIESMICH.md`, `WindowsFormsApplication1/CLAUDE.md`, `Referenzlauf.csproj`. Mit iE3 (COM-Referenzen raus) entfällt die Bindung an das VS-MSBuild ohnehin — bis dahin sind die Pfade zu pflegen |
+| 6. Erst danach Schritt 6 aus iU1 (Hauptprojekt auf `net10.0-windows`) | vorher lässt sich `net10.0` gar nicht targeten |
+
+**Zur Lizenz — Community 2026 ist der vorgesehene Weg.** Der heutige Buildpfad zeigt auf
+`2022\Community`, es läuft also bereits die kostenfreie Edition. **VS 2026 gibt es ebenfalls als
+Community**, mit gegenüber 2022 unveränderten Bedingungen. Der Versionssprung ändert an der
+Rechtslage damit nichts; er ist nur der Anlass, die Einordnung einmal festzuhalten:
+
+| Edition | Bedingung |
+|---|---|
+| **Community 2026** | In einer Organisation bis zu **5 Nutzer**, sofern es **keine „Enterprise"-Organisation** ist. Als Enterprise gilt: **mehr als 250 PCs/Nutzer oder mehr als 1 Mio. USD Jahresumsatz**. Unterhalb dieser Schwellen ist auch kommerzielle Entwicklung gedeckt |
+| **Professional 2026** | nötig, sobald eine Schwelle überschritten wird oder mehr als 5 Entwickler arbeiten. Eine gekaufte **VS-2022-Dauerlizenz gilt nicht** für 2026 — dann Abonnement oder neue Standalone-Lizenz |
+
+Bleibt INEKON unter den Schwellen, ist der Umstieg **kostenneutral** (→ iF18).
+
+**Ablauf für Community 2026 im Einzelnen:**
+
+| # | Schritt | Anmerkung |
+|---|---|---|
+| 1 | Auf `visualstudio.microsoft.com/downloads` **Community 2026** wählen, Web-Installer herunterladen | kostenfrei, kein Produktschlüssel |
+| 2 | Installer starten — er erkennt die vorhandene VS-2022-Installation und bietet an, **Workloads und Einstellungen zu übernehmen** | annehmen; spart die manuelle Auswahl |
+| 3 | **Nur `.NET-Desktopentwicklung`** auswählen — die beiden anderen Workloads erst, wenn ihre Etappe ansteht (Tabelle unten) | jede Workload kostet mehrere GB; nichts auf Vorrat installieren |
+| 4 | Installieren — VS 2022 bleibt **unangetastet** daneben stehen | Dauer 30–90 Minuten je nach Workloads |
+| 5 | Mit einem Microsoft-Konto anmelden | Community verlangt die Anmeldung nach 30 Tagen |
+| 6 | **ResXManager** aus dem Marketplace nachinstallieren, falls Schritt 2 ihn nicht übernommen hat | VS 2026 ist rückwärtskompatibel zu VS-2022-Erweiterungen |
+| 7 | Erste Gegenprobe **ohne** Frameworkwechsel: Solution in VS 2026 öffnen, `Debug|x64` bauen, Referenzlauf fahren | **332/332 byte-gleich** — beweist, dass allein der IDE-Wechsel nichts bewegt |
+| 8 | MSBuild-Pfade nachziehen (Schritt 5 der Tabelle oben) | die 2026er-Installation liegt in einem anderen Verzeichnis |
+| 9 | Erst danach iU1 Schritt 6: Projekte auf `net10.0` | vorher lässt sich `net10.0` nicht targeten |
+
+Schritt 7 ist der eigentliche Wert dieser Reihenfolge: **IDE-Wechsel und Frameworkwechsel werden
+getrennt nachgewiesen.** Bewegt sich danach ein Ergebnis, ist klar, welcher der beiden Schritte es
+war.
+
+**Die Workloads — und wann sie wirklich gebraucht werden:**
+
+| Workload in der Oberfläche | Bezeichner | wofür | ab wann |
+|---|---|---|---|
+| **.NET-Desktopentwicklung** | `Microsoft.VisualStudio.Workload.ManagedDesktop` | WinForms — die Anwendung selbst | **sofort**, Pflicht für iU1 |
+| .NET Multi-Platform App UI-Entwicklung | `Microsoft.VisualStudio.Workload.NetCrossPlat` | MAUI-Hülle | **iU10** — und nur zusammen mit dem Mac |
+| ASP.NET und Webentwicklung | `Microsoft.VisualStudio.Workload.NetWeb` | Razor-Editor und IntelliSense für `.razor` | **iU8** — reiner Editorkomfort; eine Razor-Klassenbibliothek baut das SDK auch ohne |
+
+**Nur die erste jetzt installieren.** Die beiden anderen sind mehrere GB groß und werden Monate
+später gebraucht; sie lassen sich mit demselben Befehl jederzeit nachrüsten. Wer sie auf Vorrat
+installiert, pflegt sie ohne Nutzen mit.
+
+Wer die Auswahl reproduzierbar halten will (zweiter Arbeitsplatz, Neuaufsetzen), nimmt statt der
+Oberfläche den Installer auf der Kommandozeile. **PowerShell als Administrator** — passend zur
+übrigen Werkzeugkette des Hauses (`build-setup.ps1`, Referenzlauf-Anleitung):
+
+```powershell
+# 1. Ist-Stand: welche Installationen gibt es?
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+    -all -prerelease -format value -property installationPath
+
+# 2a. VS 2026 ist bereits installiert -> Workloads ergaenzen
+#     ACHTUNG: Das Verzeichnis heisst 18 (interne Hauptversion), nicht 2026,
+#     und liegt unter Program Files - nicht (x86) wie noch bei VS 2022.
+#     Der Installer selbst bleibt unter Program Files (x86).
+# --passive verlangt Administratorrechte VON ANFANG AN, sonst Exit Code 5007.
+# Start-Process -Verb RunAs loest die UAC-Abfrage aus:
+Start-Process -Verb RunAs `
+    -FilePath "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" `
+    -ArgumentList 'modify', `
+        '--installPath','C:\Program Files\Microsoft Visual Studio\18\Community', `
+        '--add','Microsoft.VisualStudio.Workload.ManagedDesktop', `
+        '--includeRecommended','--passive','--norestart'
+
+# Spaeter, wenn iU8 bzw. iU10 anstehen: derselbe Aufruf mit
+#   '--add','Microsoft.VisualStudio.Workload.NetWeb'        (iU8)
+#   '--add','Microsoft.VisualStudio.Workload.NetCrossPlat'  (iU10)
+
+# 2b. VS 2026 fehlt noch -> Bootstrapper von visualstudio.microsoft.com/downloads,
+#     ohne modify und ohne installPath (Datei muss vorher heruntergeladen sein)
+Start-Process -Verb RunAs -FilePath "$HOME\Downloads\vs_community.exe" `
+    -ArgumentList '--add','Microsoft.VisualStudio.Workload.ManagedDesktop', `
+        '--includeRecommended','--passive','--norestart'
+
+# 3. Kontrolle
+dotnet --list-sdks      # 10.0.x muss erscheinen
+dotnet workload list    # die MAUI-Workloads erscheinen
+```
+
+**Der Call-Operator `&` und der Backtick als Zeilenfortsetzung sind in PowerShell zwingend** — ein
+Pfad in Anführungszeichen ohne `&` gilt dort als Zeichenkette, und `^` ist die
+CMD-Fortsetzung und führt zu `Unerwartetes Token`.
 
 ### 3.3 Mac-Arbeitsplatz
 
@@ -451,6 +558,25 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 Die beiden ❌ in der macOS-Spalte sind gewollt und dauerhaft: WinForms läuft dort nicht. Alles
 darüber ist der portable Teil — und er umfasst den gesamten Rechenkern.
 
+**Empirisch bestätigt am 02.09.2026 auf einem Linux-Rechner** (Ubuntu 24.04, .NET SDK 10.0.400
+über `dotnet-install.sh`, kein Visual Studio):
+
+| Projekt | `dotnet build` | `dotnet test` |
+|---|---|---|
+| `SpeicherEngine`, `KiKern`, `EposSqliteMigrator.Kern` | ✅ | — |
+| `SpeicherEngine.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **337/337** |
+| `KiKern.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **450/450** |
+| `WindowsFormsApplication1` und `Referenzlauf` (`-p:EnableWindowsTargeting=true`) | ✅ `dotnet build` auf Windows **und** auf Linux/macOS — **0 Fehler, seit `0ddc417`** (übersetzen, nicht ausführen). Vor iU1 stand hier ❌ **genau 2 × MSB4803**, die COM-Referenzen, sonst nichts | — |
+
+Das ist der Beweis für § 1.1 in Zahlen: Der gesamte Bestand außer den zwei `COMReference`-Zeilen
+war schon vor iU1 plattformfrei übersetzbar. **Mit iE3 (P1.1) und der vorgezogenen
+Kodierungsnormalisierung (P1.12) kompiliert seit `0ddc417` auch das Hauptprojekt auf Linux und
+macOS** — `dotnet build WP-Plan.sln -c Release -p:Platform=x64` übersetzt dort alle 7 Projekte
+fehlerfrei, `dotnet test WP-Plan.Kern.slnf` meldet 787/787. Ausführen lässt sich die App dort
+nicht (WinForms), aber jeder Übersetzungsfehler fällt ohne Windows-Rechner auf. Für die CI
+(§ 3.7) hieß das: Der `kern.yml`-Lauf war sofort möglich, nicht erst nach iU4 — er läuft seit
+`b4fd34d` grün auf ubuntu und macos.
+
 ### 3.7 Continuous Integration
 
 Es gibt heute **keine**. Das ist bei einem Einzelplatz-Windows-Projekt vertretbar; bei zwei
@@ -522,10 +648,10 @@ weiterhin für den Windows-internen Umzugsnachweis (iT2), wo sich nichts ändern
 
 | Nr. | Baustein | Paket | Nachweis |
 |---|---|---|---|
-| **iE1** | `global.json`, `Directory.Build.props`, `Directory.Packages.props` | iU1 | zwei Rechner bauen nachweislich dasselbe |
-| **iE2** | Alle Projekte auf .NET 10 | iU1 | Solution baut, Referenzläufe unverändert PASS |
-| **iE3** | COM-Referenzen entfernen (2 Dateien auf ClosedXML) | iU1 | **`dotnet build WP-Plan.sln` läuft durch** |
-| **iE4** | GitHub Actions: `kern.yml` (ubuntu + macOS), `windows.yml` | iU1 | erste grüne Läufe |
+| ~~**iE1**~~ | `global.json`, `Directory.Build.props` (`Directory.Packages.props` noch offen) | iU1 | ✔ erledigt (`e0df744`) — SDK auf 10.0.400 gepinnt, `LangVersion` und `EnableWindowsTargeting` zentral |
+| ~~**iE2**~~ | Alle Projekte auf .NET 10 | iU1 | ✔ erledigt (`577701c`, `a81fc1b`, `0ddc417`) — 7 Projekte, 0 Fehler; Referenzlauf-PASS steht als Windows-Nachweis noch aus |
+| ~~**iE3**~~ | COM-Referenzen entfernen (2 Dateien auf ClosedXML) | iU1 | ✔ erledigt (`d4b72c8`) — **`dotnet build WP-Plan.sln` läuft durch**. `ToolsClass.ReadExcel` hatte keinen Aufrufer — **gelöscht statt portiert**; portiert wurde nur `GanglinienDatei` |
+| ~~**iE4**~~ | GitHub Actions: `kern.yml` (ubuntu + macOS), `windows.yml` | iU1 | ✔ erledigt (`b4fd34d`) — `kern.yml` grün auf ubuntu und macos (787 Tests); `windows.yml` wartet auf den ersten Lauf |
 | **iE5** | Portabilitätssperre: `net10.0` ohne `-windows`, macOS-Build in der CI | iU4 | eine Windows-API im Kern bricht den Build |
 | **iE6** | Testdatenbank für die CI (13 Referenzprojekte, SQLite) | iU3 | Kern-Referenzlauf läuft in der CI |
 | **iE7** | Mac-Arbeitsplatz: Hardware, Xcode, `maui-ios`, Simulator | iU2 | Hallo-Welt-MAUI mit `EPOS.Kern`-Referenz im Simulator |
@@ -554,28 +680,105 @@ und das Grundlagenkonzept § 6 sagt dazu das Nötige.
 | Entscheidungen bestätigen | iF1 (Spike), iF3 (Blazor Hybrid), iF7 (Generator), **iF8 (Modell C)**, **iF9 (SQLite auf Windows)** — iU4 ff. setzen sie voraus |
 | Neue Entscheidungen einholen | iF10–iF16 (§ 8) |
 | Referenzbasis einfrieren | `2026-08-30_B3-Kaskade` als Bezugspunkt aller Umzugsnachweise festschreiben |
-| Chart- und Grid-Masken auszählen | Einzeldurchsicht der 18 Chart- und 36 Grid-Dateien; die Konzeptzahl 16/16 ist nicht reproduzierbar (§ 1.5) und Aufwandstreiber für iU9 |
+| Chart- und Grid-Masken auszählen | ✔ erledigt (`1ab062d`): **18 Chart-Masken (32 Steuerelemente), 19 Grid-Masken (22 Steuerelemente)** im Build — Aufwandsgrundlage für iU9, Einzeldurchsicht im Entscheidungsregister § 3 (§ 1.5) |
 | Rückbau | `CSExeCOMServer` aus dem Repo, `WindowsFormsApplication1.csproj.netfx-backup` entfernen |
 | Offene x64-Punkte | (a)–(c) und (e) aus `Konzept_Umstellung_64Bit_EPOS-Plan.md` § 10 terminieren; (d) entfällt mit SQLite |
 
 **Abnahme:** Entscheidungsregister vollständig, keine offene Vorbedingung für iU1.
 
-### iU1 — Entwicklungsumgebung Stufe 1: Windows und CI · M · Windows
+### iU1 — Entwicklungsumgebung Stufe 1: .NET 10, Windows und CI · M · Windows
+
+> **Umgesetzt 02.09.2026 auf Branch `ios_migration`, Commits `c3a8233`..`0ddc417`
+> P1.8 `dab063a`, P1.10 `ce2dc9e`, P1.11 folgt; Nachweis hier geführt, CI Kern + Windows grün, Nachweis Windows-Ausführung offen (iZ1).**
+> Die Abnahmeliste je Commit steht in
+> [`Umsetzung_iU0_iU1_Nachweise.md`](Umsetzung_iU0_iU1_Nachweise.md).
 
 **Voraussetzung:** iU0. **Bausteine:** iE1, iE2, iE3, iE4. **Grundlagen:** A1 (teilweise), D2.
+**Frist:** vor dem 10.11.2026 (§ 1.3).
 
-| Inhalt | Detail |
+**Ausgangslage (gemessen 02.09.2026):** sechs Projekte auf `net8.0`/`net8.0-windows`, zwei
+Testprojekte bereits auf `net9.0`, `CSExeCOMServer` auf .NET Framework 4.0. Keine zentrale
+Versionssteuerung.
+
+**Schrittfolge — jeder Schritt einzeln nachweisbar:**
+
+| # | Schritt | Nachweis |
+|---|---|---|
+| 1 | **Visual Studio 2026** installieren (parallel zu 2022 möglich), .NET-10-SDK | `dotnet --list-sdks` zeigt 10.0.x |
+| 2 | `global.json` mit gepinnter SDK-Version, `Directory.Build.props` (LangVersion, Nullable, gemeinsame Eigenschaften), `Directory.Packages.props` (zentrale Paketversionen) | zwei Rechner bauen nachweislich dasselbe |
+| 3 | **`UseWPF` entfernen** — siehe Befund unten | Build unverändert grün |
+| 4 | Bibliotheken zuerst anheben: `SpeicherEngine`, `KiKern`, `EposSqliteMigrator.Kern`, `EposSqliteMigrator` (Konsole) auf `net10.0` | `dotnet build` grün, Tests grün |
+| 5 | Testprojekte auf `net10.0` (heute `net9.0`) | `dotnet test` grün |
+| 6 | Hauptprojekt, `Referenzlauf` und `ZugriffsschichtProben` auf `net10.0-windows` | Solution baut in VS 2026 |
+| 7 | **Pakete nachziehen — siehe eigene Tabelle unten** | `dotnet list package --outdated` sauber, Proben 16/16 |
+| 8 | **Referenzlauf** gegen die eingefrorene Basis | **332/332 byte-gleich** — der Frameworkwechsel darf kein Ergebnis bewegen |
+| 9 | COM-Referenzen entfernen (iE3, zwei Dateien auf ClosedXML), `VBIDE` löschen | **`dotnet build WP-Plan.sln` läuft durch** |
+| 10 | CI aufsetzen: `kern.yml` (ubuntu + macOS), `windows.yml` | erste grüne Läufe |
+| 11 | Setup nachziehen: `EPOS-Plan.iss:29` auf `EPOS_Plan.exe`; `build-setup.ps1` von VS-MSBuild auf `dotnet publish` umstellen, sobald 9 erledigt ist | Setup baut wieder |
+
+**Die Pakete, die mit dem Framework mitziehen müssen (Schritt 7):**
+
+| Paket | heute | Ziel | Fundstellen |
+|---|---|---|---|
+| **`Microsoft.Data.Sqlite`** | **8.0.11** | **10.x** | `WindowsFormsApplication1.csproj:117` **und** `EposSqliteMigrator/Kern/EposSqliteMigrator.Kern.csproj:19` — beide anheben, sonst laufen zwei Fassungen der Datenschicht nebeneinander |
+| `System.Data.OleDb` | 8.0.1 | 10.x | Hauptprojekt, Migrator-Kern (nur noch Datenträgertyp bzw. `.accdb`-Lesen) |
+| `System.Configuration.ConfigurationManager` | 8.0.1 | 10.x | Hauptprojekt |
+| `Microsoft.Extensions.Http` / `.Logging` | bereits 10.0.3 | — | schon auf .NET-10-Stand |
+| `SixLabors.Fonts` | 1.0.1 | **bleibt gepinnt** | Lizenzgrund (ab 2.x Six-Labors-Split-Lizenz) |
+
+`SQLitePCLRaw` steht in keiner Projektdatei — es kommt **transitiv** über
+`Microsoft.Data.Sqlite` und zieht standardmäßig `bundle_e_sqlite3`. Für Windows ist das richtig;
+für iOS ist dort später `bundle_green` zu erzwingen (iU6). Der Sprung auf 10.x ändert daran nichts,
+macht die Frage aber sichtbar, weil das Bundle dann ebenfalls eine neue Hauptversion trägt.
+
+**Empfehlung:** Beide `Microsoft.Data.Sqlite`-Fundstellen über `Directory.Packages.props`
+(Schritt 2) zentral führen. Dann ist die Version künftig an **einer** Stelle gepflegt — heute steht
+sie zweimal im Repo und kann auseinanderlaufen.
+
+**Nachweis für dieses Paket:** Die Datenschicht hat mit `6486c36` eine eigene Probensuite bekommen
+(`Proben/ZugriffsschichtProben`, 16 Proben). Sie ist nach dem Versionssprung erneut zu fahren —
+zusammen mit dem Referenzlauf ist das der Beleg, dass die neue Sqlite-Fassung sich identisch verhält.
+
+**Der projektspezifische Fallstrick — und er ist entschärfbar:** `.NET 10` macht
+`System.Windows.Forms.ContextMenu` und `System.Windows.Controls.ContextMenu` mehrdeutig, was einen
+Compilerfehler erzeugt — **aber nur, wenn beide Welten im Projekt aktiv sind**. Genau das ist hier
+formal der Fall (`UseWindowsForms=true` **und** `UseWPF=true`). Die Messung zeigt jedoch:
+
+| Prüfung | Ergebnis |
 |---|---|
-| Zentrale Buildsteuerung | `global.json` (SDK 10 gepinnt), `Directory.Build.props` (Sprachversion, Nullable, gemeinsame Eigenschaften), `Directory.Packages.props` (zentrale Paketversionen) |
-| .NET 10 | alle sieben Projekte anheben; Testprojekte von `net9.0` auf `net10.0` — sie liegen heute **vor** dem Hauptprojekt, was auf Dauer nicht tragfähig ist |
-| **COM-Referenzen entfernen** | `Allgemein/ToolsClass.cs` und `Allgemein/Import/GanglinienDatei.cs` von Excel-Interop auf ClosedXML; `VBIDE`-Referenz löschen; `NoWarn`-Liste um `MSB3568`/`NU1701` bereinigen, soweit dadurch gegenstandslos |
-| Solution bereinigen | `Referenzlauf` aufnehmen, `CSExeCOMServer` entfernen |
-| CI aufsetzen | `kern.yml` (ubuntu + macOS) und `windows.yml`; `.github/copilot-instructions.md` durch etwas Projektbezogenes ersetzen oder löschen |
-| Setup nachziehen | `EPOS-Plan.iss:29` auf `EPOS_Plan.exe`; `build-setup.ps1` von VS-MSBuild auf `dotnet publish` umstellen, sobald die COM-Referenzen weg sind |
+| XAML-Dateien im Projekt | **0** |
+| Dateien mit `System.Windows.Media/Controls/Data/Documents/Shapes/Threading` | **0** |
+| Alle `ContextMenu`-Fundstellen | Variablennamen vom Typ `ToolStripMenuItem`, kein WPF-Typ |
+
+**`UseWPF=true` ist ein Relikt ohne jede Nutzung.** Es zu entfernen (Schritt 3) beseitigt das
+Hauptrisiko des Sprungs, verkleinert die Ausgabe und ist für sich genommen risikoarm — die
+Referenzläufe weisen es nach.
+
+**Weitere Punkte, die zu beobachten sind:** WinForms-Obsoletions in .NET 10 erzeugen
+Compilerwarnungen mit eigenen Diagnose-IDs (keine Fehler); die `NoWarn`-Liste ist bei der Gelegenheit
+zu durchforsten. Die DPI-Vorgabe bleibt unverändert `DpiUnaware` (`app.manifest`) — daran wird
+**nicht** gerührt, das wäre ein eigenes Vorhaben mit Layoutwirkung auf 204 Masken.
+`SixLabors.Fonts` bleibt auf **1.0.1 gepinnt** (ab 2.x gilt die Six-Labors-Split-Lizenz).
+
+**Zwei Befunde aus der Umsetzung, die diese Planung nicht kannte:**
+
+1. **Die Kodierungsnormalisierung musste vor den Frameworksprung.** M10 (68 nicht-UTF-8-Dateien)
+   war für iU4 vorgesehen. Sobald die COM-Referenzen weg sind (P1.1), übersetzt `csc` das
+   Hauptprojekt aber auch auf Linux und macOS — und stolpert dort über **14 der 68 Dateien**, die
+   seine 1252-Rückfallkodierung nicht abfängt (252 × `CS1056`/`CS1002`). Unter Windows-MSBuild
+   tritt das nicht auf. Ohne die Normalisierung wären weder der hiesige Nachweis für Schritt 6 noch
+   der `kern.yml`-Lauf für das Hauptprojekt führbar gewesen. **Vorgezogen und als P1.12 erledigt**
+   (`3ba7d54`, reine Umkodierung, kein Inhalt); die `.editorconfig` schreibt `utf-8-bom` für `*.cs`
+   fest.
+2. **`WFO1000` ist in .NET 10 ein Fehler, nicht nur eine Warnung.** Die Planung erwartete unter
+   „Weitere Punkte" nur Obsoletions-*Warnungen*. Die WinForms-Analyse zur
+   Designer-Serialisierung hat seit .NET 9 die Standardschwere `error` und bricht den Bestandsbau
+   an **60 Fundstellen** (Schwerpunkt `Form_Gesetzesparameter`, `Form_Kosten_VarAuswahl`, die
+   Karten-Controls des Kostenmoduls). In `0ddc417` per `.editorconfig` auf `warning` **herabgestuft
+   und sichtbar gelassen**; die Annotation je Property ist Fachentscheidung und **gehört zu iU9**.
 
 **Abnahme (iZ1):** `dotnet build WP-Plan.sln` und `dotnet test` laufen auf einem Rechner ohne Visual
-Studio durch. Referenzlauf gegen `2026-08-30_B3-Kaskade`: **13/13 PASS, 332/332 byte-gleich** — der
-Frameworkwechsel darf kein einziges Ergebnis bewegen.
+Studio durch; Referenzlauf **332/332 byte-gleich**.
 
 > **Dieses Paket ist auch ohne iOS-Beschluss vollständig gerechtfertigt.** Es beseitigt die
 > Support-Frist, schafft die erste Testautomatik der Projektgeschichte und macht den Setup-Bau
@@ -765,7 +968,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 
 | Nr. | Meilenstein | nach | Nachweis |
 |---|---|---|---|
-| **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich |
+| **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
 | **iZ3** | **Go/No-Go** | iU3 | Projekt 1030 im Simulator wertgleich zur Referenzbasis |
 | **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS |
@@ -834,7 +1037,7 @@ dem Go/No-Go-Gate.
 
 | Stichtag | Bindung | Stand |
 |---|---|---|
-| **.NET 10** | 10.11.2026 (Support-Ende 8/9) — von außen gesetzt | **fix**, Paket iU1 |
+| ~~**.NET 10**~~ | 10.11.2026 (Support-Ende 8/9) — von außen gesetzt | **erledigt 02.09.2026** (`0ddc417`), Windows-Abnahme offen |
 | **Modell C (M1)** | mit iZ5 — ab dann kein Dialog mehr doppelt | folgt aus iU8 |
 | ~~**SQLite auf Windows (M3/iF9)**~~ | **erledigt am 02.09.2026** mit `6486c36` | ✔ Die einzige Terminlücke der Kette ist geschlossen |
 
@@ -910,6 +1113,7 @@ setzen sie voraus:**
 | **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | **Bestehende Toleranz** (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten |
 | **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JavaScript-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm; Interaktivität nur dort nachrüsten, wo sie fachlich gebraucht wird |
 | **iF17** | Wird iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragt? | **Ja.** Die Support-Frist läuft am 10.11.2026 ab; das Paket ist auch ohne iOS vollständig gerechtfertigt und die einzige Antwort auf iR9 |
+| **iF18** | **Welche VS-2026-Edition?** VS 2022 kann `net10.0` nicht targeten, der Umstieg ist zwingend. Heute läuft **Community 2022** | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt (≤ 250 PCs/Nutzer **und** ≤ 1 Mio. USD Umsatz) und höchstens 5 Entwickler daran arbeiten — dann kostenneutral. Sonst Professional (Abo oder neue Standalone-Lizenz; die 2022er-Dauerlizenz gilt nicht weiter). Vor iU1 einordnen |
 
 ---
 

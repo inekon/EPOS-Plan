@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_SolarDB 
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,14 +23,14 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_SolarDB));
             btn_Abbrechen = new System.Windows.Forms.Button();
-            btn_Überschreiben = new System.Windows.Forms.Button();
+            btn_Ãœberschreiben = new System.Windows.Forms.Button();
             btn_Speichern_Unter = new System.Windows.Forms.Button();
             btn_Speichern = new System.Windows.Forms.Button();
             Label7 = new System.Windows.Forms.Label();
@@ -78,12 +78,12 @@ namespace WindowsFormsApplication1
             btn_Abbrechen.UseVisualStyleBackColor = true;
             btn_Abbrechen.Click += btn_Abbrechen_Click;
             // 
-            // btn_Überschreiben
+            // btn_Ãœberschreiben
             // 
-            resources.ApplyResources(btn_Überschreiben, "btn_Überschreiben");
-            btn_Überschreiben.Name = "btn_Überschreiben";
-            btn_Überschreiben.UseVisualStyleBackColor = true;
-            btn_Überschreiben.Click += btn_Überschreiben_Click;
+            resources.ApplyResources(btn_Ãœberschreiben, "btn_Ãœberschreiben");
+            btn_Ãœberschreiben.Name = "btn_Ãœberschreiben";
+            btn_Ãœberschreiben.UseVisualStyleBackColor = true;
+            btn_Ãœberschreiben.Click += btn_Ãœberschreiben_Click;
             // 
             // btn_Speichern_Unter
             // 
@@ -319,7 +319,7 @@ namespace WindowsFormsApplication1
             Controls.Add(label10);
             Controls.Add(label13);
             Controls.Add(btn_Abbrechen);
-            Controls.Add(btn_Überschreiben);
+            Controls.Add(btn_Ãœberschreiben);
             Controls.Add(btn_Speichern_Unter);
             Controls.Add(btn_Speichern);
             Controls.Add(Label7);
@@ -361,7 +361,7 @@ namespace WindowsFormsApplication1
         #endregion
 
         private System.Windows.Forms.Button btn_Abbrechen;
-private System.Windows.Forms.Button btn_Überschreiben;
+private System.Windows.Forms.Button btn_Ãœberschreiben;
 private System.Windows.Forms.Button btn_Speichern_Unter;
 private System.Windows.Forms.Button btn_Speichern;
 private System.Windows.Forms.Label Label7;

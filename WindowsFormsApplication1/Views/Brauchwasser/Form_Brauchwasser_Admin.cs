@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_DB.Text + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             BrauchwasserStammCtrl ctrl_del = new BrauchwasserStammCtrl();

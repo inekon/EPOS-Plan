@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Data;
 using System.Linq;
 using System.Data.OleDb;
@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
                     listBox_Typname.Items.Add(row["Bezeichner"]?.ToString());
                 }
 
-                // Daten des ersten Elements temporär einlesen
+                // Daten des ersten Elements temporÃ¤r einlesen
                 DatenEinlesenVonRow(dt.Rows[0]);
                 listBox_Typname.SelectedIndex = 0; // loest SelectedIndexChanged -> ChartAktualisieren()
             }
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
             {
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    // 1. Alle Stundenwerte aktualisieren (Gebündelt in einer Transaktion für max. Performance)
+                    // 1. Alle Stundenwerte aktualisieren (GebÃ¼ndelt in einer Transaktion fÃ¼r max. Performance)
                     for (int Tag = 0; Tag < 7; Tag++)
                     {
                         for (int stunde = 0; stunde < 24; stunde++)
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             string sql = "DELETE FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?";
@@ -255,12 +255,12 @@ namespace WindowsFormsApplication1
 
             if (DataRepository.ExecuteSQL(sql, ps))
             {
-                MessageBox.Show("Datensatz gelöscht.");
+                MessageBox.Show("Datensatz gelÃ¶scht.");
                 SetControls();
             }
             else
             {
-                MessageBox.Show("Löschen nicht möglich!");
+                MessageBox.Show("LÃ¶schen nicht mÃ¶glich!");
             }
         }
 
@@ -274,7 +274,7 @@ namespace WindowsFormsApplication1
             // BUGFIX: frm.ShowDialog() darf hier nur einmal ausgewertet werden
             if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
 
-            // Arrays zurücksetzen
+            // Arrays zurÃ¼cksetzen
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
@@ -290,7 +290,7 @@ namespace WindowsFormsApplication1
 
             if (DataRepository.ExecuteSQL(insertSql, ps))
             {
-                // Alle Stundenwerte über den Transaktions-Speicherer initialisieren
+                // Alle Stundenwerte Ã¼ber den Transaktions-Speicherer initialisieren
                 try
                 {
                     using (DbVorgang v = DataRepository.Vorgang())

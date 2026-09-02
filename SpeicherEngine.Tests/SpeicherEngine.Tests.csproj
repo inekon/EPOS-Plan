@@ -3,15 +3,15 @@
   <!--
     Testprojekt der SpeicherEngine.
 
-    TargetFramework net9.0: das installierte SDK ist 9.0.315, die Runtimes 8.0.x
-    und 9.0.17 sind vorhanden. net9.0 darf die net8.0-Engine referenzieren.
+    TargetFramework net10.0 - dasselbe Ziel wie die SpeicherEngine. Das SDK legt
+    global.json auf 10.0.400 fest; zwischen Engine und Tests besteht damit keine
+    Versionsdifferenz mehr, DOTNET_ROLL_FORWARD wird nicht mehr gebraucht.
     Das Hauptprojekt WindowsFormsApplication1 wird hier bewusst NICHT
     referenziert (COM-Referenzen, MSB4803 unter dotnet build).
   -->
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -21,9 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="xunit" Version="2.6.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

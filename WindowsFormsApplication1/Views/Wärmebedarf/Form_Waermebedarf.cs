@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -304,7 +304,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll("Select * from Z_ProjektWaermebedarf where Bezeichner ='" + listBox_Extern.Text + "'");
             if (ctrl.rows > 0)
             {
-                MessageBox.Show("Es existiert eine Projektzuordnung, Löschen nicht möglich!");
+                MessageBox.Show("Es existiert eine Projektzuordnung, LÃ¶schen nicht mÃ¶glich!");
                 return;
             }
 

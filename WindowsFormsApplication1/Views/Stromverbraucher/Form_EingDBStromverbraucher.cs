@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
         // Beschriftung der Felder Wert1..Wert12 (Monat_1..Monat_12) fuer die Pruefmeldung.
         private static readonly string[] m_szMonate =
         {
-            "Januar", "Februar", "M‰rz", "April", "Mai", "Juni",
+            "Januar", "Februar", "M√§rz", "April", "Mai", "Juni",
             "Juli", "August", "September", "Oktober", "November", "Dezember"
         };
 
@@ -130,7 +130,7 @@ namespace WindowsFormsApplication1
         {
             if (comboBox_Stromtyp.Text == "")
             {
-                MessageBox.Show("Verbrauchertyp ausw‰hlen!");
+                MessageBox.Show("Verbrauchertyp ausw√§hlen!");
                 return;
             }
 

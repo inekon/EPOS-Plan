@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -112,14 +112,14 @@ namespace WindowsFormsApplication1
             textBox_FFSued.Text = model.Fensterflaeche_Sued.ToString("F2");
             textBox_FFNord.Text = model.Fensterflaeche_Nord.ToString("F2");
             textBox_FFOstWest.Text = model.Fensterflaeche_Ost.ToString("F2");
-            textBox_Flaeche_Aussenwand.Text = model.Flaeche_Auﬂenwand.ToString("F2");
+            textBox_Flaeche_Aussenwand.Text = model.Flaeche_Au√üenwand.ToString("F2");
             textBox_Gebaeude_Dachflaeche.Text = model.Dachflaeche.ToString("F2");
             textBox_Gebaeude_Grundflaeche.Text = model.Grundflaeche.ToString("F2");
             textBox_Sonstige_Flaechen.Text = model.Sonstige_Flaechen.ToString("F2");
             textBox_UWert_Dachflaeche.Text = model.k_Wert_Dachflaeche.ToString("F2");
             textBox_UWert_Fenster.Text = model.k_Wert_Fenster.ToString("F2");
             textBox_UWert_Sonstige.Text = model.k_Wert_Sonstiges.ToString("F2");
-            textBox_UWert_Aussenwand.Text = model.k_Wert_Auﬂenwand.ToString("F2");
+            textBox_UWert_Aussenwand.Text = model.k_Wert_Au√üenwand.ToString("F2");
             textBox_UWert_Grundflaeche.Text = model.k_Wert_Grundflaeche.ToString("F2");
             comboBox_Verwendung.Text = model.Wohngebaeude_Nicht_Wohngebaeude;
         }
@@ -136,14 +136,14 @@ namespace WindowsFormsApplication1
             GebaeudeStammCtrl ctrl = new GebaeudeStammCtrl();
             // Overwrite prueft selbst auf ReadOnly und meldet ggf. selbst.
             if (ctrl.Overwrite(model))
-                MessageBox.Show("Geb‰ude Datensatz ist ¸berschrieben!");
+                MessageBox.Show("Geb√§ude Datensatz ist √ºberschrieben!");
         }
 
         // Uebertraegt die Eingaben aus den Steuerelementen in das model.
         // Nicht editierte Felder (Raumsolltemperaturen, Waermebruecken, Ferien, ...) bleiben aus dem geladenen model erhalten.
         private bool InitModelFromControls()
         {
-            // Zahlenfelder zuerst pr¸fen: Program.ZahlPruefen meldet sprechend, setzt den
+            // Zahlenfelder zuerst pr√ºfen: Program.ZahlPruefen meldet sprechend, setzt den
             // Fokus und liefert false - der Dialog bleibt dann offen. Leer gilt weiterhin
             // als Fehler, denn double.Parse lief bisher genauso in die Sammelmeldung.
             double wfl, dWfNutzer, dWaermegewinne, dFensterdurchlassgrad, dRaumhoehe;
@@ -151,24 +151,24 @@ namespace WindowsFormsApplication1
             double dFlaecheAussenwand, dDachflaeche, dGrundflaeche, dSonstigeFlaechen;
             double dUAussenwand, dUFenster, dUDachflaeche, dUGrundflaeche, dUSonstiges;
 
-            if (!Program.ZahlPruefen(textBox_WohnflaecheGesamt, "Wohn-/Nutzfl‰che", out wfl)) return false;
-            if (!Program.ZahlPruefen(textBox_FlaecheNutzer, "Fl‰che / Nutzer", out dWfNutzer)) return false;
-            if (!Program.ZahlPruefen(textBox_Waermegewinne, "Interne W‰rmegewinne", out dWaermegewinne)) return false;
-            if (!Program.ZahlPruefen(textBox_Fensterdurchlassgrad, "Fensterdurchlaﬂgrad", out dFensterdurchlassgrad)) return false;
-            if (!Program.ZahlPruefen(textBox_Raumhoehe, "Raumhˆhe", out dRaumhoehe)) return false;
+            if (!Program.ZahlPruefen(textBox_WohnflaecheGesamt, "Wohn-/Nutzfl√§che", out wfl)) return false;
+            if (!Program.ZahlPruefen(textBox_FlaecheNutzer, "Fl√§che / Nutzer", out dWfNutzer)) return false;
+            if (!Program.ZahlPruefen(textBox_Waermegewinne, "Interne W√§rmegewinne", out dWaermegewinne)) return false;
+            if (!Program.ZahlPruefen(textBox_Fensterdurchlassgrad, "Fensterdurchla√ügrad", out dFensterdurchlassgrad)) return false;
+            if (!Program.ZahlPruefen(textBox_Raumhoehe, "Raumh√∂he", out dRaumhoehe)) return false;
 
-            if (!Program.ZahlPruefen(textBox_FFSued, "Fensterfl‰che S¸d", out dFFSued)) return false;
-            if (!Program.ZahlPruefen(textBox_FFOstWest, "Fensterfl‰che Ost + West", out dFFOstWest)) return false;
-            if (!Program.ZahlPruefen(textBox_FFNord, "Fensterfl‰che Nord", out dFFNord)) return false;
-            if (!Program.ZahlPruefen(textBox_Flaeche_Aussenwand, "Fl‰che Auﬂenwand", out dFlaecheAussenwand)) return false;
-            if (!Program.ZahlPruefen(textBox_Gebaeude_Dachflaeche, "Geb‰ude Dachfl‰che", out dDachflaeche)) return false;
-            if (!Program.ZahlPruefen(textBox_Gebaeude_Grundflaeche, "Geb‰ude Grundfl‰che", out dGrundflaeche)) return false;
-            if (!Program.ZahlPruefen(textBox_Sonstige_Flaechen, "sonstige Fl‰chen", out dSonstigeFlaechen)) return false;
+            if (!Program.ZahlPruefen(textBox_FFSued, "Fensterfl√§che S√ºd", out dFFSued)) return false;
+            if (!Program.ZahlPruefen(textBox_FFOstWest, "Fensterfl√§che Ost + West", out dFFOstWest)) return false;
+            if (!Program.ZahlPruefen(textBox_FFNord, "Fensterfl√§che Nord", out dFFNord)) return false;
+            if (!Program.ZahlPruefen(textBox_Flaeche_Aussenwand, "Fl√§che Au√üenwand", out dFlaecheAussenwand)) return false;
+            if (!Program.ZahlPruefen(textBox_Gebaeude_Dachflaeche, "Geb√§ude Dachfl√§che", out dDachflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_Gebaeude_Grundflaeche, "Geb√§ude Grundfl√§che", out dGrundflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_Sonstige_Flaechen, "sonstige Fl√§chen", out dSonstigeFlaechen)) return false;
 
-            if (!Program.ZahlPruefen(textBox_UWert_Aussenwand, "U-Wert Auﬂenwand", out dUAussenwand)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Aussenwand, "U-Wert Au√üenwand", out dUAussenwand)) return false;
             if (!Program.ZahlPruefen(textBox_UWert_Fenster, "U-Wert Fenster", out dUFenster)) return false;
-            if (!Program.ZahlPruefen(textBox_UWert_Dachflaeche, "U-Wert Dachfl‰che", out dUDachflaeche)) return false;
-            if (!Program.ZahlPruefen(textBox_UWert_Grundflaeche, "U-Wert Grundfl‰che", out dUGrundflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Dachflaeche, "U-Wert Dachfl√§che", out dUDachflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Grundflaeche, "U-Wert Grundfl√§che", out dUGrundflaeche)) return false;
             if (!Program.ZahlPruefen(textBox_UWert_Sonstige, "U-Wert Sonstiges", out dUSonstiges)) return false;
 
             try
@@ -181,7 +181,7 @@ namespace WindowsFormsApplication1
 
                 model.Flaeche_Nutzer = dWfNutzer;
                 if (dWfNutzer == 0) { model.Flaeche_Nutzer = 35; dWfNutzer = 35; }
-                model.Bewohner = wfl / dWfNutzer; // Wohnfl‰che pro Nutzer
+                model.Bewohner = wfl / dWfNutzer; // Wohnfl√§che pro Nutzer
 
                 model.Interne_Waermegewinne = dWaermegewinne;
 
@@ -195,13 +195,13 @@ namespace WindowsFormsApplication1
                 model.Fensterflaeche_Nord = dFFNord;
                 model.Fensterdurchlassgrad = dFensterdurchlassgrad;
 
-                model.k_Wert_Auﬂenwand = dUAussenwand;
+                model.k_Wert_Au√üenwand = dUAussenwand;
                 model.k_Wert_Fenster = dUFenster;
                 model.k_Wert_Dachflaeche = dUDachflaeche;
                 model.k_Wert_Grundflaeche = dUGrundflaeche;
                 model.k_Wert_Sonstiges = dUSonstiges;
-                model.Flaeche_Auﬂenwand = dFlaecheAussenwand;
-                model.gesamte_Fensterflaeche = dFFSued + dFFOstWest + dFFNord; // gesamte Fensterfl‰che
+                model.Flaeche_Au√üenwand = dFlaecheAussenwand;
+                model.gesamte_Fensterflaeche = dFFSued + dFFOstWest + dFFNord; // gesamte Fensterfl√§che
                 model.Dachflaeche = dDachflaeche;
                 model.Grundflaeche = dGrundflaeche;
                 model.Sonstige_Flaechen = dSonstigeFlaechen;
@@ -217,7 +217,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Fehler beim Speichern!\nAlle Eingaben ¸berpr¸fen!");
+                MessageBox.Show("Fehler beim Speichern!\nAlle Eingaben √ºberpr√ºfen!");
                 Console.WriteLine("Fehler beim Speichern der Daten: " + ex.Message);
                 return false;
             }
@@ -225,13 +225,13 @@ namespace WindowsFormsApplication1
 
         private void btn_NeuerDatensatz_Click(object sender, EventArgs e)
         {
-            if (comboBox_Name.Text == "") { MessageBox.Show("Geb‰udenamen eingeben!"); return; }
+            if (comboBox_Name.Text == "") { MessageBox.Show("Geb√§udenamen eingeben!"); return; }
 
             if (!InitModelFromControls()) return;
 
             GebaeudeStammCtrl ctrl = new GebaeudeStammCtrl();
             if (ctrl.Insert(model))
-                MessageBox.Show("Geb‰ude ist gespeichert!");
+                MessageBox.Show("Geb√§ude ist gespeichert!");
         }
 
         private void comboBox_Name_SelectedIndexChanged(object sender, EventArgs e)
@@ -247,9 +247,9 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
-        // TextChanged f‰rbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
-        // wird erst beim Speichern in InitModelFromControls; das fr¸here Melden mit
-        // tb.Undo() konnte sich aufschaukeln. Begr¸ndung ausf¸hrlich in Program.cs.
+        // TextChanged f√§rbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
+        // wird erst beim Speichern in InitModelFromControls; das fr√ºhere Melden mit
+        // tb.Undo() konnte sich aufschaukeln. Begr√ºndung ausf√ºhrlich in Program.cs.
         private void textBox_WohnflaecheGesamt_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);
