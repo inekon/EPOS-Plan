@@ -53,3 +53,25 @@ jobs:
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
           --projekte 1030 --ziel artifacts/reflauf/${{ matrix.os }}_1030
+
+      # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
+      # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
+      # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
+      # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
+      # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
+      - name: Vergleich mit Referenzbasis 2026-08-30_B3-Kaskade
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          mkdir -p artifacts/reflauf/ref
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_1030
+          echo "--- Byte-Diff (nur Information) ---"
+          if diff -rq artifacts/reflauf/ref/Projekt_1030 artifacts/reflauf/${{ matrix.os }}_1030/Projekt_1030; then echo "BYTE-GLEICH: alle Dateien identisch"; else echo "byte-verschieden (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
+
+      - name: Ergebnis-CSV als Artefakt
+        if: always() && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: reflauf-1030-${{ matrix.os }}
+          path: artifacts/reflauf/${{ matrix.os }}_1030
+          retention-days: 14
