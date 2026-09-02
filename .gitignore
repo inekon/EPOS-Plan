@@ -392,3 +392,8 @@ Setup/Voraussetzungen/*.exe
 # Zugangsdaten - niemals versionieren (Schluessel gehoert per DPAPI in %AppData%\wp-plan)
 api_gemini.txt
 *.apikey
+
+# SQLite-Beidateien (entstehen beim Oeffnen einer Datenbank im WAL-Modus, nie einchecken)
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
