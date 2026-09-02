@@ -149,8 +149,11 @@ namespace WindowsFormsApplication1
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
         /// Konzept 13.4). Die SPALTE entsteht bereits in Schritt 2; dieser Schritt setzt
         /// ihren WERT einmalig auf WAHR und ist damit das zweite DML des Vorhabens.
+        ///
+        /// <para>Der Wert steht seit iU3 bei <see cref="SchemaStand"/> (Kante K2), damit
+        /// <c>KonfigurationCtrl</c> ihn ohne die Migration prüfen kann.</para>
         /// </summary>
-        public const int SCHRITT_7_EXTRAPOLATION = 7;
+        public const int SCHRITT_7_EXTRAPOLATION = SchemaStand.SCHRITT_7_EXTRAPOLATION;
 
         /// <summary>
         /// Nummer des Energieträger-Verweises <c>Tab_Energieanlagen.ID_Carrier</c>.
@@ -2242,14 +2245,35 @@ namespace WindowsFormsApplication1
         /// false, sobald ein Lauf einen Schritt nicht abschließen konnte. Vor dem ersten
         /// Lauf true - Werkzeuge, die die Migration gar nicht anstoßen (Referenzlauf-Suite),
         /// sollen dadurch nicht blockiert werden.
+        ///
+        /// <para>Der Wert liegt seit iU3 bei <see cref="SchemaStand"/>; hier steht nur noch
+        /// die Weiterleitung, damit alle bestehenden Aufrufer gültig bleiben.</para>
         /// </summary>
-        public static bool MigrationOk { get; private set; }
+        public static bool MigrationOk
+        {
+            get { return SchemaStand.MigrationOk; }
+            private set { SchemaStand.MigrationOk = value; }
+        }
 
-        /// <summary>Vollständiger Bericht des letzten Laufs; erste Zeile ist der DB-Pfad.</summary>
-        public static string Fehlerbericht { get; private set; }
+        /// <summary>
+        /// Vollständiger Bericht des letzten Laufs; erste Zeile ist der DB-Pfad.
+        /// Weiterleitung auf <see cref="SchemaStand.Fehlerbericht"/>.
+        /// </summary>
+        public static string Fehlerbericht
+        {
+            get { return SchemaStand.Fehlerbericht; }
+            private set { SchemaStand.Fehlerbericht = value; }
+        }
 
-        /// <summary>true, sobald <see cref="Ausfuehren"/> mindestens einmal gelaufen ist.</summary>
-        public static bool Ausgefuehrt { get; private set; }
+        /// <summary>
+        /// true, sobald <see cref="Ausfuehren"/> mindestens einmal gelaufen ist.
+        /// Weiterleitung auf <see cref="SchemaStand.Ausgefuehrt"/>.
+        /// </summary>
+        public static bool Ausgefuehrt
+        {
+            get { return SchemaStand.Ausgefuehrt; }
+            private set { SchemaStand.Ausgefuehrt = value; }
+        }
 
         /// <summary>Schemastand vor bzw. nach dem letzten Lauf.</summary>
         public static int StandVorher { get; private set; }
@@ -2710,11 +2734,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenQuellPufferOffen { get; private set; }
 
-        static SchemaMigration()
-        {
-            MigrationOk = true;
-            Fehlerbericht = "";
-        }
+        // Die Vorbelegung (MigrationOk = true, Fehlerbericht = "") steht seit iU3 bei
+        // SchemaStand als Feldinitialisierung. Ein statischer Konstruktor hier hätte sie
+        // beim ERSTEN Zugriff auf diese Klasse erneut gesetzt und damit ein zuvor von
+        // SchemaStand gesetztes Ergebnis überschrieben; deshalb ist er entfallen.
 
         // =================================================================================
         // Schrittregister
@@ -4702,9 +4725,9 @@ namespace WindowsFormsApplication1
             int summeArt = 0;
             var zuordnung = new[]
             {
-                new { Kategorie = Form_Kosten.KATEGORIE_INVESTITION, Art = DbWerte.KOSTENART_KAPITALGEBUNDEN },
-                new { Kategorie = Form_Kosten.KATEGORIE_BETRIEB,     Art = DbWerte.KOSTENART_BETRIEBSGEBUNDEN },
-                new { Kategorie = Form_Kosten.KATEGORIE_ENERGIE,     Art = DbWerte.KOSTENART_BEDARFSGEBUNDEN }
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_INVESTITION, Art = DbWerte.KOSTENART_KAPITALGEBUNDEN },
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_BETRIEB,     Art = DbWerte.KOSTENART_BETRIEBSGEBUNDEN },
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_ENERGIE,     Art = DbWerte.KOSTENART_BEDARFSGEBUNDEN }
             };
 
             foreach (var z in zuordnung)
@@ -12632,18 +12655,22 @@ namespace WindowsFormsApplication1
         /// durch NULL ausgedrückt. Fachlich kommt das hier gar nicht vor: Eine Zeile ohne
         /// Anlage oder ohne Puffer hat keine Bedeutung, und <c>AnlagePufferVerbundCtrl</c>
         /// schreibt nur vollständige Paare.
+        ///
+        /// <para>Der SQL-Text steht seit iU3 bei <see cref="SchemaStand"/> (Kante K3) —
+        /// <c>AnlagePufferVerbundCtrl</c> braucht ihn im Rechenpfad, die Migration
+        /// nicht.</para>
         /// </summary>
         public const string SQL_CREATE_ANLAGEPUFFERVERBUND =
-            "CREATE TABLE Z_AnlagePufferVerbund (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Anlage LONG, ID_Puffer LONG)";
+            SchemaStand.SQL_CREATE_ANLAGEPUFFERVERBUND;
 
         /// <summary>
         /// Index über den Anlagenverweis — der Suchweg des Dialogs (Mitglieder EINER
         /// Anlage). Die Registry-Speisung liest projektweit über einen Verbund zu
         /// <c>Tab_Energieanlagen</c> und profitiert davon ebenfalls.
+        /// Weiterleitung auf <see cref="SchemaStand.SQL_INDEX_ANLAGEPUFFERVERBUND"/>.
         /// </summary>
         public const string SQL_INDEX_ANLAGEPUFFERVERBUND =
-            "CREATE INDEX idx_AnlagePufferVerbund ON Z_AnlagePufferVerbund (ID_Anlage)";
+            SchemaStand.SQL_INDEX_ANLAGEPUFFERVERBUND;
 
         /// <summary>
         /// Löschweitergabe von der ANLAGE auf ihre Verbundzeilen, Muster
@@ -13792,39 +13819,25 @@ namespace WindowsFormsApplication1
         /// <para><see cref="HebeAltbestand"/> rührt <see cref="Ausgefuehrt"/> und
         /// <see cref="MigrationOk"/> nicht an; eine Alt-Hebung kann diese Sperre also
         /// weder setzen noch aufheben.</para>
+        ///
+        /// <para>Die Entscheidung selbst liegt seit iU3 bei
+        /// <see cref="SchemaStand.SimulationGesperrt"/> — der Rechenkern fragt dort,
+        /// ohne die Migration zu kennen. Hier steht die Weiterleitung für die
+        /// Oberfläche.</para>
         /// </summary>
         public static bool SimulationGesperrt(out string grund)
         {
-            if (!Ausgefuehrt || MigrationOk)
-            {
-                grund = null;
-                return false;
-            }
-
-            grund = "Die Datenbank ist nicht auf dem für die Simulation benötigten Stand." +
-                    Environment.NewLine + Environment.NewLine +
-                    FehlerKopf() + Environment.NewLine + Environment.NewLine +
-                    "Der Simulationsbereich bleibt gesperrt, bis die Aktualisierung der " +
-                    "Datenbank erfolgreich war.";
-            return true;
+            return SchemaStand.SimulationGesperrt(out grund);
         }
 
         /// <summary>
         /// Die ersten Zeilen des Berichts - genug für eine verständliche Meldung,
         /// ohne den Anwender mit dem vollständigen Protokoll zu erschlagen.
+        /// Weiterleitung auf <see cref="SchemaStand.FehlerKopf"/>.
         /// </summary>
         public static string FehlerKopf()
         {
-            if (string.IsNullOrEmpty(Fehlerbericht)) return "(kein Bericht vorhanden)";
-
-            string[] zeilen = Fehlerbericht.Replace("\r\n", "\n").Split('\n');
-            var kopf = new List<string>();
-            foreach (string z in zeilen)
-            {
-                kopf.Add(z);
-                if (kopf.Count >= 12) break;
-            }
-            return string.Join(Environment.NewLine, kopf).TrimEnd();
+            return SchemaStand.FehlerKopf();
         }
 
         /// <summary>Vollständiger Pfad der Protokolldatei neben der Datenbank.</summary>

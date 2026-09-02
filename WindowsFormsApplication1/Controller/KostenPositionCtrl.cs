@@ -536,7 +536,7 @@ namespace WindowsFormsApplication1
                                           int komponentenID)
         {
             var a = new Abweichung();
-            if (kategorieID != Form_Kosten.KATEGORIE_INVESTITION) return a;
+            if (kategorieID != DbWerte.KOSTEN_KATEGORIE_INVESTITION) return a;
             if (!TechnikPlanwertCtrl.Bekannt(komponente)) return a;
 
             List<TechnikPlanwertCtrl.Anlage> anlagen =

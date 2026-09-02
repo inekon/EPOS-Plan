@@ -13,7 +13,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class BerichtCtrl
     {
-        public const string TAB_KONFIG = "Berichtskonfiguration";
+        /// <summary>
+        /// Tabelle der Berichtskonfiguration. Der Name steht seit iU3 (Kante K7) bei
+        /// <see cref="SchemaKatalog.TAB_BERICHTSKONFIGURATION"/>; hier bleibt die
+        /// Weiterleitung.
+        /// </summary>
+        public const string TAB_KONFIG = SchemaKatalog.TAB_BERICHTSKONFIGURATION;
 
         /// <summary>
         /// Erzeugt den Word-Bericht (Konzept Kap. 3.1: Dateiname

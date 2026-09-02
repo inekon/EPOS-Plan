@@ -490,7 +490,7 @@ namespace WindowsFormsApplication1
                 var ps = new List<DbParam>
                 {
                     new DbParam("@p", projektID),
-                    new DbParam("@k", Form_Kosten.KATEGORIE_INVESTITION)
+                    new DbParam("@k", DbWerte.KOSTEN_KATEGORIE_INVESTITION)
                 };
                 if (komponentenID > 0)
                 {
@@ -666,7 +666,7 @@ namespace WindowsFormsApplication1
         {
             var liste = new List<Zeile>();
             Dictionary<int, KostenPositionCtrl.Zusatz> zusatz =
-                KostenPositionCtrl.LiesZusatz(projektID, Form_Kosten.KATEGORIE_BETRIEB);
+                KostenPositionCtrl.LiesZusatz(projektID, DbWerte.KOSTEN_KATEGORIE_BETRIEB);
 
             foreach (Position p in Katalog)
             {
@@ -674,7 +674,7 @@ namespace WindowsFormsApplication1
 
                 int stammID = KostenPositionCtrl.StammIdNeben(p.Bezeichnung);
                 if (stammID > 0)
-                    z.Id = KostenPositionCtrl.FindePosition(projektID, Form_Kosten.KATEGORIE_BETRIEB,
+                    z.Id = KostenPositionCtrl.FindePosition(projektID, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
                                                             KOMPONENTE_BHKW, stammID);
 
                 if (z.Id > 0)
@@ -727,7 +727,7 @@ namespace WindowsFormsApplication1
 
                 int id = z.Id;
                 if (id <= 0)
-                    id = KostenPositionCtrl.SetzeBetrag(projektID, Form_Kosten.KATEGORIE_BETRIEB,
+                    id = KostenPositionCtrl.SetzeBetrag(projektID, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
                                                         KOMPONENTE_BHKW, stammID, 0.0,
                                                         DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI, true);
                 if (id <= 0) continue;

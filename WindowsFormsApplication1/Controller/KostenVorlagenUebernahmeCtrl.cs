@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
                 return e;
             }
 
-            string gruppe = vorlage.KategorieId == Form_Kosten.KATEGORIE_BETRIEB
+            string gruppe = vorlage.KategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB
                 ? DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI
                 : DbWerte.KOSTEN_GRUPPE_ALLGEMEIN;
 
@@ -230,7 +230,7 @@ namespace WindowsFormsApplication1
                 KostenVorlageKopf vorlage;
                 if (!vorlageJeKomponente.TryGetValue(komponentenId, out vorlage))
                 {
-                    vorlage = StandardVorlage(komponentenId, Form_Kosten.KATEGORIE_BETRIEB);
+                    vorlage = StandardVorlage(komponentenId, DbWerte.KOSTEN_KATEGORIE_BETRIEB);
                     vorlageJeKomponente[komponentenId] = vorlage;   // auch „keine" merken
                 }
                 if (vorlage == null) continue;

@@ -202,7 +202,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                if (ApplikationCtrl.GetSchemaVersion() >= SchemaMigration.SCHRITT_7_EXTRAPOLATION)
+                if (ApplikationCtrl.GetSchemaVersion() >= SchemaStand.SCHRITT_7_EXTRAPOLATION)
                 {
                     _schemastand7Erreicht = true;
                     return false;

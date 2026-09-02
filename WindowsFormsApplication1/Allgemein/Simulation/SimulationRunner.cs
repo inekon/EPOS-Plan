@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
             // (ADR-001, Aufgabe 6). Auf einem halb migrierten Schema zu rechnen liefert
             // stillschweigend falsche Ergebnisse - lieber sauber abbrechen.
             string sperrgrund;
-            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            if (SchemaStand.SimulationGesperrt(out sperrgrund))
             {
                 fehler = sperrgrund;
                 return false;

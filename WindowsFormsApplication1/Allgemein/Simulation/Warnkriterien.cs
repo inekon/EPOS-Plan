@@ -521,7 +521,7 @@ namespace WindowsFormsApplication1
                 befunde.Add(Befund(W1_ZIEL_AUSSERHALB_SET, false, idAnlage, p.ID,
                     string.Format(MyResource.Resource.SIMWARN_W1_ZIEL_AUSSERHALB_SET,
                                   bild.Anlagenname(idAnlage), RangText(rang),
-                                  p.Anzeigename, Form_Waermesenke.ZielAnzeige(senke.Ziel),
+                                  p.Anzeigename, WaermesenkeClass.ZielAnzeigeVollstaendig(senke.Ziel),
                                   KlassenSetAnzeige(p.Set), Verbinden(fehlend))));
 
             // --- W3: Erzeuger-Vorlauf unter VL_eff ------------------------------------

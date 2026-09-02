@@ -125,6 +125,35 @@ namespace WindowsFormsApplication1
         public const string KOSTEN_KOMPONENTE_STROMEINSPEISUNG = "Stromeinspeisung";
 
         // =====================================================================
+        // KOSTENKATEGORIEN — Tab_KostenKategorie.ID bzw. Tab_Kosten*.KategorieID
+        //   Umsetzungskonzept iU3, Views-Kante 1: Die drei Nummern standen bis
+        //   dahin bei Form_Kosten und zogen damit ein FORMULAR in Migration,
+        //   Wirtschaftlichkeit und sämtliche Kosten-Controller. Sie sind aber
+        //   reine PERSISTENZWERTE — genau das, was laut Drei-Schichten-Regel
+        //   hierher gehört. Form_Kosten leitet auf diese Konstanten weiter.
+        // =====================================================================
+
+        /// <summary>
+        /// Kostenkategorie „Investition" (<c>Tab_KostenKategorie.ID = 1</c>).
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const int KOSTEN_KATEGORIE_INVESTITION = 1;
+
+        /// <summary>
+        /// Kostenkategorie „Betrieb" (<c>ID = 2</c>).
+        /// <inheritdoc cref="KOSTEN_KATEGORIE_INVESTITION" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const int KOSTEN_KATEGORIE_BETRIEB = 2;
+
+        /// <summary>
+        /// Kostenkategorie „Energie" (<c>ID = 3</c>) — STILLGELEGT
+        /// (Konzept Kosten/Energieträger HF1/L1, 19.08.2026): Kategorie 3 wird nicht mehr
+        /// geschrieben; die Konstante bleibt für den Migrationsschritt 19b.
+        /// <inheritdoc cref="KOSTEN_KATEGORIE_INVESTITION" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const int KOSTEN_KATEGORIE_ENERGIE = 3;
+
+        // =====================================================================
         // ETAPPE KD1 — die sechs BESTANDS-Techniknamen als Konstanten
         //   Tab_KostenKomponente.Komponente, IDs 1..5 und 7 der Auslieferung
         //   (an der Produktiv-DB nachgemessen, 25.08.2026). Bisher standen sie

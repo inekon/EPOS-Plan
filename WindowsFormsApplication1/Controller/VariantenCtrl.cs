@@ -17,7 +17,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class VariantenCtrl
     {
-        public const string TAB_VARIANTE = "Tab_Variante";
+        /// <summary>
+        /// Verknüpfungstabelle Stammprojekt ↔ Variante. Der Name steht seit iU3
+        /// (Kante K7) bei <see cref="SchemaKatalog.TAB_VARIANTE"/>; hier bleibt die
+        /// Weiterleitung.
+        /// </summary>
+        public const string TAB_VARIANTE = SchemaKatalog.TAB_VARIANTE;
 
         /// <summary>Eine Zeile der Vergleichsgruppe (Stamm oder Variante).</summary>
         public class VarianteInfo

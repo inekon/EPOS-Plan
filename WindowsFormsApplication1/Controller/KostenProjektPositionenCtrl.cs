@@ -393,8 +393,8 @@ namespace WindowsFormsApplication1
         internal static int LoseLoeschen(int projektId, int komponentenId)
         {
             int geloescht = 0;
-            foreach (int kategorie in new[] { Form_Kosten.KATEGORIE_INVESTITION,
-                                              Form_Kosten.KATEGORIE_BETRIEB })
+            foreach (int kategorie in new[] { DbWerte.KOSTEN_KATEGORIE_INVESTITION,
+                                              DbWerte.KOSTEN_KATEGORIE_BETRIEB })
                 foreach (Zeile z in Lies(projektId, komponentenId, kategorie, 0))
                     if (Loeschen(z.Raster.Id)) geloescht++;
             return geloescht;
@@ -408,7 +408,7 @@ namespace WindowsFormsApplication1
             int stammId = KostenVorlagenUebernahmeCtrl.StammIdSicher(name);
             if (stammId <= 0) return 0;
 
-            string gruppe = kategorieId == Form_Kosten.KATEGORIE_BETRIEB
+            string gruppe = kategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB
                 ? DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI
                 : DbWerte.KOSTEN_GRUPPE_ALLGEMEIN;
             // Ä25: MIT Anlagenbezug anlegen. Die anlagenblinde Bestandssignatur fand

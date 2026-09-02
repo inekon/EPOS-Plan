@@ -23,10 +23,15 @@ namespace WindowsFormsApplication1
         // darf deshalb nirgends mehr roh stehen — jede Stelle, die eine Kategorie
         // braucht, geht über AktuelleKategorieOderNull() und behandelt den Fall
         // „keine Kategorie" ausdrücklich.
-        internal const int KATEGORIE_INVESTITION = 1;
-        internal const int KATEGORIE_BETRIEB = 2;
+        //
+        // Die drei Nummern selbst stehen seit iU3 (Views-Kante 1) bei DbWerte: Es sind
+        // Persistenzwerte (KategorieID), und alle Nicht-View-Nutzer — Migration,
+        // Wirtschaftlichkeit, Kosten-Controller — holen sie von dort. Hier bleiben sie
+        // als Weiterleitung, weil die Kostenmasken sie unter diesen Namen benutzen.
+        internal const int KATEGORIE_INVESTITION = DbWerte.KOSTEN_KATEGORIE_INVESTITION;
+        internal const int KATEGORIE_BETRIEB = DbWerte.KOSTEN_KATEGORIE_BETRIEB;
         // stillgelegt (Konzept Kosten/Energieträger HF1/L1, 19.08.2026): Kategorie 3 wird nicht mehr geschrieben; Konstante bleibt für Migrationsschritt 19b
-        internal const int KATEGORIE_ENERGIE = 3;
+        internal const int KATEGORIE_ENERGIE = DbWerte.KOSTEN_KATEGORIE_ENERGIE;
 
         public Dictionary<string, NumericUpDown> _Inputs = new Dictionary<string, NumericUpDown>();
         public int m_ID_Projekt = 0;
