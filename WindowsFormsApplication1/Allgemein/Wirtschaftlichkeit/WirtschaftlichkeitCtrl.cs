@@ -1380,7 +1380,22 @@ namespace WindowsFormsApplication1
             /// Mindert I₀ einmalig; siehe <see cref="LiesInvestitionen(int,string,out double)"/>.</summary>
             public double Zuschuss;
 
-            public double Betrieb;          // €/a (Kategorie 2, Szenariowert)
+            public double Betrieb;          // €/a (Kategorie 2, Szenariowert) — Topf p_B
+
+            /// <summary>
+            /// PAKET FX3 (Anwenderentscheid R-2): der Endenergie-Topf der
+            /// Betriebskosten [€/a] — Positionen mit
+            /// <c>PROZENT_ENDENERGIEKOSTEN</c>/<c>PROZENT_ENDENERGIEBEDARF</c>. Er
+            /// eskaliert in der Jahresreihe mit p_E statt mit p_B (Begründung an
+            /// <see cref="BetriebsTopfe"/>). <see cref="Betrieb"/> trägt ihn NICHT
+            /// mehr mit; die Summe beider ist die ausgewiesene Betriebskostenzahl.
+            /// </summary>
+            public double Endenergie;
+
+            /// <summary>PAKET FX3 (R-2) × KD6: Endenergie-Positionen mit Startjahr ≥ 2.</summary>
+            public List<KeyValuePair<double, int>> EndenergieAbJahr =
+                new List<KeyValuePair<double, int>>();
+
             public double? Energie;         // €/a (null = nicht bestimmbar)
             public double Erloes;           // €/a Einspeisevergütung (konstant)
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
@@ -1471,16 +1486,21 @@ namespace WindowsFormsApplication1
             double zuschuss;
             e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, out zuschuss);
             e.Zuschuss = zuschuss;
-            List<KeyValuePair<double, int>> betriebAbJahr;
-            e.Betrieb = LiesBetriebskosten(v.IdProjekt, szenario, out betriebAbJahr);
-            e.BetriebAbJahr = betriebAbJahr;
+            // PAKET FX3 (R-2): zwei Töpfe statt einem — der Endenergie-Anteil wächst in
+            // der Jahresreihe mit p_E (Begründung an BetriebsTopfe).
+            BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario);
+            e.Betrieb = topfe.BetriebSofort;
+            e.BetriebAbJahr = topfe.BetriebAbJahr;
+            e.Endenergie = topfe.EndenergieSofort;
+            e.EndenergieAbJahr = topfe.EndenergieAbJahr;
+            List<KeyValuePair<double, int>> betriebAbJahr = topfe.BetriebAbJahr;
 
             // ETAPPE KD6 (§ 11, FK10): Sind Startjahre gesetzt, laufen Investition
             // (samt Ersatz/Restwert) und Betriebskosten der Position erst ab ihrem
             // Jahr. Die ENERGIEKOSTEN bleiben die Gesamtrechnung des Simulationslaufs
             // — die Simulation kennt keine Startjahre je Komponente; der Hinweis
             // macht die dokumentierte Vereinfachung sichtbar statt still.
-            bool startjahre = betriebAbJahr.Count > 0;
+            bool startjahre = betriebAbJahr.Count > 0 || e.EndenergieAbJahr.Count > 0;
             if (!startjahre)
                 foreach (KapitalwertRechner.InvestPosition ip in e.Investitionen)
                     if (ip.StartJahr > 1) { startjahre = true; break; }
@@ -4419,12 +4439,19 @@ namespace WindowsFormsApplication1
                     behgReihe[t] = e.BehgJeJahr[t] * energieFaktor;
             }
 
+            // PAKET FX3 (R-2): Der Endenergie-Topf geht als EIGENER Term hinein und
+            // eskaliert mit preisstEnergie. Er wird vom energieFaktor der Sensitivität
+            // NICHT skaliert: Der Ausschlag „Energiekosten ±10 %" fragt nach den
+            // Energiekosten des Simulationslaufs, nicht nach den Betriebskosten — und
+            // die Bezugsgröße der %-Zeile ist ein Ergebniswert des Laufs, kein
+            // Preisparameter. Die Sensitivität „Energiepreissteigerung ±" wirkt dagegen
+            // sehr wohl, denn sie kommt über preisstEnergie herein.
             return KapitalwertRechner.Rechne(invest, e.Betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
                 e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
-                e.BetriebAbJahr);
+                e.BetriebAbJahr, e.Endenergie, e.EndenergieAbJahr);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -4512,6 +4539,12 @@ namespace WindowsFormsApplication1
                 // weggefallenen KWKG-Bonus.
                 Zuschuss = e.Zuschuss,
                 Betrieb = e.Betrieb,
+                // PAKET FX3 (R-2): Der Endenergie-Topf MUSS mitkopiert werden —
+                // dieselbe Begründung wie beim Zuschuss und bei der CO₂-Reihe: Sonst
+                // rechnete das Novellen-Szenario gegen andere Betriebskosten als die
+                // Basis, und die ausgewiesene Differenz enthielte sie.
+                Endenergie = e.Endenergie,
+                EndenergieAbJahr = e.EndenergieAbJahr,
                 Energie = e.Energie,
                 Erloes = e.Erloes,
                 Behg = e.Behg,
@@ -4607,7 +4640,11 @@ namespace WindowsFormsApplication1
             { erg.Fehlgrund = v.Fehler ?? "Kein Simulationsergebnis vorhanden."; return erg; }
 
             // ---------------- Zahlungsgerüst (BaueEingabe) ----------------
-            erg.BetriebskostenJahr = eingabe.Betrieb;
+            // PAKET FX3 (R-2): AUSGEWIESEN werden weiterhin die Betriebskosten p. a. als
+            // GANZES — beide Preissteigerungstöpfe zusammen. Die Trennung ist eine Frage
+            // der Fortschreibung über die Jahre, keine Frage der Jahr-1-Zahl; sie darf
+            // die Betriebskostenzeile der Berichte nicht schrumpfen lassen.
+            erg.BetriebskostenJahr = eingabe.Betrieb + eingabe.Endenergie;
             erg.EnergiekostenJahr = eingabe.Energie;
             erg.EinspeiseerloesJahr = eingabe.Erloes;
             erg.CO2AbgabeJahr = eingabe.Behg;                 // W2: BEHG
@@ -5091,12 +5128,11 @@ namespace WindowsFormsApplication1
         /// </remarks>
         internal static double LiesBetriebskosten(int idProjekt, string szenario)
         {
-            List<KeyValuePair<double, int>> abJahrEgal;
-            double sofort = LiesBetriebskosten(idProjekt, szenario, out abJahrEgal);
+            BetriebsTopfe t = LiesBetriebskostenTopfe(idProjekt, szenario);
             // Bestandssicht: die GESAMTsumme p. a. (Anzeigen/Berichte) — Startjahre
-            // betreffen nur die zeitliche Verteilung in der Kapitalwertreihe.
-            foreach (KeyValuePair<double, int> vb in abJahrEgal) sofort += vb.Key;
-            return sofort;
+            // betreffen nur die zeitliche Verteilung in der Kapitalwertreihe, und die
+            // Aufteilung auf die beiden Preissteigerungstöpfe (FX3) erst recht nicht.
+            return t.Gesamt;
         }
 
         /// <summary>
@@ -5104,12 +5140,94 @@ namespace WindowsFormsApplication1
         /// <c>StartJahr ≥ 2</c> GETRENNT — sie gehen als (Betrag, Startjahr)-Paare
         /// in <paramref name="abJahr"/> und laufen in der Kapitalwertreihe erst ab
         /// ihrem Jahr; der Rückgabewert ist nur noch der Sofort-Anteil (t0).
+        /// <para><b>PAKET FX3:</b> Diese Überladung fasst beide Preissteigerungstöpfe
+        /// wieder zu EINEM zusammen (Sicht vor FX3). Wer die Jahresreihe rechnet, nimmt
+        /// <see cref="LiesBetriebskostenTopfe"/> — sonst wüchse der Endenergie-Anteil
+        /// wieder mit p_B statt mit p_E.</para>
         /// </summary>
         internal static double LiesBetriebskosten(int idProjekt, string szenario,
                                                   out List<KeyValuePair<double, int>> abJahr)
         {
+            BetriebsTopfe t = LiesBetriebskostenTopfe(idProjekt, szenario);
+            abJahr = new List<KeyValuePair<double, int>>(t.BetriebAbJahr);
+            abJahr.AddRange(t.EndenergieAbJahr);
+            return t.BetriebSofort + t.EndenergieSofort;
+        }
+
+        /// <summary>
+        /// PAKET FX3 (Anwenderentscheid R-2, 02.09.2026) — die Kategorie-2-Positionen in
+        /// ZWEI Töpfen: dem Betriebs-Topf (Preissteigerung p_B, alles Bisherige) und dem
+        /// Endenergie-Topf (p_E).
+        ///
+        /// <para><b>Warum zwei Töpfe.</b> Eine Position mit
+        /// <see cref="DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN"/> oder
+        /// <see cref="DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF"/> IST ein Anteil der
+        /// Energiekosten der Anlage (Hilfsenergie, Konzept § 4.5, Wege A und B). Sie mit
+        /// der Betriebspreissteigerung fortzuschreiben widerspricht ihrer eigenen
+        /// Bemessung; VDI 2067 und DIN EN 17463 ordnen bedarfsgebundene Kosten der
+        /// Energiepreisentwicklung zu. Der Kapitalwertrechner bekommt deshalb beide
+        /// Töpfe getrennt (Befund R-2 der Rechenwege-Formelkarte).</para>
+        ///
+        /// <para><b>Die Zuordnung entscheidet die BEMESSUNGSART, nicht der Betrag.</b>
+        /// Auch eine Zeile, deren Ableitung von einem gepflegten Best-/Worst-Case-Wert
+        /// geschlagen wurde (VALERI-Vorfahrt), bleibt eine Endenergie-Position und
+        /// eskaliert mit p_E — sonst führe dasselbe Projekt in BEST und in ERWARTET mit
+        /// verschiedenen Preisraten.</para>
+        ///
+        /// <para><b>Dokumentierte Grenzen.</b> Die Alt-Arten
+        /// <see cref="DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN"/> und
+        /// <see cref="DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN"/> (die projektweiten
+        /// Vorläufer von Weg A) bleiben im Betriebs-Topf, ebenso der „Weg C" der
+        /// Hilfsenergie — der feste Jahresbetrag
+        /// (<see cref="DbWerte.BEMESSUNG_JAHRESBETRAG"/>/<see cref="DbWerte.BEMESSUNG_BETRAG"/>).
+        /// Beides ist eine Fachentscheidung des Anwenders vom 02.09.2026 und keine
+        /// Vergesslichkeit: Ein fester Betrag trägt keine Endenergie-Bemessung, und die
+        /// Alt-Arten sollen sich nicht ändern, während sie auslaufen.</para>
+        /// </summary>
+        internal sealed class BetriebsTopfe
+        {
+            /// <summary>Betriebskosten p. a. mit Preissteigerung p_B, Zahlung ab t0 [€/a].</summary>
+            public double BetriebSofort;
+
+            /// <summary>Betriebs-Topf-Positionen mit Startjahr ≥ 2 (KD6).</summary>
+            public List<KeyValuePair<double, int>> BetriebAbJahr =
+                new List<KeyValuePair<double, int>>();
+
+            /// <summary>Endenergie-bemessene Betriebskosten p. a. mit Preissteigerung
+            /// p_E, Zahlung ab t0 [€/a].</summary>
+            public double EndenergieSofort;
+
+            /// <summary>Endenergie-Topf-Positionen mit Startjahr ≥ 2 (KD6).</summary>
+            public List<KeyValuePair<double, int>> EndenergieAbJahr =
+                new List<KeyValuePair<double, int>>();
+
+            /// <summary>Betriebskosten p. a. GESAMT [€/a] — beide Töpfe, Sofort- und
+            /// Startjahr-Anteil. Das ist die Zahl, die Anzeigen und Berichte als
+            /// „Betriebskosten p. a." ausweisen; sie ist von FX3 unberührt.</summary>
+            public double Gesamt
+            {
+                get
+                {
+                    double s = BetriebSofort + EndenergieSofort;
+                    foreach (KeyValuePair<double, int> vb in BetriebAbJahr) s += vb.Key;
+                    foreach (KeyValuePair<double, int> ve in EndenergieAbJahr) s += ve.Key;
+                    return s;
+                }
+            }
+        }
+
+        /// <summary>
+        /// PAKET FX3 (R-2): die Leseschleife der Kategorie-2-Positionen, aufgeteilt auf
+        /// die beiden Preissteigerungstöpfe (Begründung an <see cref="BetriebsTopfe"/>).
+        /// Ohne Endenergie-Position im Projekt bleibt der zweite Topf leer, und jede
+        /// Zahl ist bitgenau die von vor FX3.
+        /// </summary>
+        internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario)
+        {
+            var topfe = new BetriebsTopfe();
             double summe = 0;
-            abJahr = new List<KeyValuePair<double, int>>();
+            double summeEnde = 0;
+            List<KeyValuePair<double, int>> abJahr = topfe.BetriebAbJahr;
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
             catch { }
@@ -5136,7 +5254,7 @@ namespace WindowsFormsApplication1
                     "SELECT " + felder +
                     " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
                     new DbParam("@p", idProjekt));
-                if (dt == null) return 0;
+                if (dt == null) return topfe;
 
                 // ETAPPE H2: der Endenergie-Auflöser wird je Aufruf höchstens einmal
                 // gebaut — und nur, wenn eine Position ihn wirklich braucht.
@@ -5148,12 +5266,18 @@ namespace WindowsFormsApplication1
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     int start = StartJahrDerZeile(r);
                     double beitrag;
+                    // PAKET FX3 (R-2): Diese Zeile gehört in den Endenergie-Topf (p_E),
+                    // sobald ihre BEMESSUNGSART eine Endenergie-Art ist — unabhängig
+                    // davon, ob der Betrag abgeleitet wurde oder aus einem gepflegten
+                    // Szenariowert stammt.
+                    bool ausEndenergie = false;
 
                     if (!mitBemessung) beitrag = wert;
                     else
                     {
                         string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                         bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
+                        ausEndenergie = IstEndenergieArt(bem);
 
                         if (string.IsNullOrEmpty(bem) ||
                             string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
@@ -5194,12 +5318,24 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    if (start > 1) abJahr.Add(new KeyValuePair<double, int>(beitrag, start));
+                    // PAKET FX3 (R-2): Der Endenergie-Anteil wird in einem EIGENEN
+                    // Akkumulator geführt. Ohne solche Zeile bleibt summeEnde eine echte
+                    // 0 und der Betriebstopf sammelt Zeile für Zeile wie vor FX3 —
+                    // deshalb bleiben Bestandsprojekte bitgenau.
+                    if (ausEndenergie)
+                    {
+                        if (start > 1)
+                            topfe.EndenergieAbJahr.Add(new KeyValuePair<double, int>(beitrag, start));
+                        else summeEnde += beitrag;
+                    }
+                    else if (start > 1) abJahr.Add(new KeyValuePair<double, int>(beitrag, start));
                     else summe += beitrag;
                 }
             }
             catch { }
-            return summe;
+            topfe.BetriebSofort = summe;
+            topfe.EndenergieSofort = summeEnde;
+            return topfe;
         }
 
         /// <summary>

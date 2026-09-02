@@ -589,6 +589,23 @@ namespace WindowsFormsApplication1
         //
         //   LAENGE: beide Werte haben 24 Zeichen wie PROZENT_BRENNSTOFFKOSTEN - die
         //   Spaltenbreite TEXT(30) reicht weiterhin.
+        //
+        //   PAKET FX3 (Anwenderentscheid R-2, 02.09.2026): DIESE BEIDEN ARTEN
+        //   ESKALIEREN IN DER MEHRJAHRESRECHNUNG MIT DER ENERGIEPREISSTEIGERUNG p_E,
+        //   nicht mit der Betriebspreissteigerung p_B. Eine Position "x % der
+        //   Endenergiekosten" ist der Sache nach ein Anteil der Energiekosten und
+        //   waechst mit den Energiepreisen (VDI 2067 / DIN EN 17463: bedarfsgebundene
+        //   Kosten). Umgesetzt ueber den ZWEITEN Betriebstopf in
+        //   WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe und den Parameter
+        //   endenergieJahr von KapitalwertRechner.Rechne.
+        //
+        //   AUSDRUECKLICH NICHT umgestellt (Grenzen des Anwenderentscheids):
+        //     - PROZENT_BRENNSTOFFKOSTEN und PROZENT_STROMKOSTEN (die Alt-Vorlaeufer
+        //       von Weg A) bleiben bei p_B - sie laufen aus und sollen sich nicht
+        //       mehr aendern;
+        //     - "Weg C" der Hilfsenergie, also der feste Jahresbetrag
+        //       (JAHRESBETRAG/BETRAG), bleibt bei p_B - ein fester Betrag traegt
+        //       keine Endenergie-Bemessung.
         // =====================================================================
 
         /// <summary>
