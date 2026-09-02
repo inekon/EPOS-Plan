@@ -4,7 +4,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
     <RootNamespace>WindowsFormsApplication1</RootNamespace>
@@ -50,9 +49,6 @@
   <Compile Remove=".claude\**" />
   <EmbeddedResource Remove=".claude\**" />
   <None Remove=".claude\**" />
-  <Page Remove=".claude\**" />
-  <Resource Remove=".claude\**" />
-  <ApplicationDefinition Remove=".claude\**" />
 </ItemGroup>
 
   <!-- Dateien auf der Platte, die nie ins alte Projekt aufgenommen waren -->
