@@ -8533,4 +8533,7 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>The rank refers to the generator type. This project has {0} units of this type — each has its own card.</value>
   </data>
+  <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
+    <value>Energy costs/CO₂ balance incomplete: the fuel consumption of boiler {0} is not available in the simulation result — boiler fuel is missing from energy costs, CO₂ balance and the BEHG levy.</value>
+  </data>
 </root>

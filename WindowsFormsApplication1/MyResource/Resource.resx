@@ -8540,4 +8540,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte.</value>
   </data>
+  <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
+    <value>Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe.</value>
+  </data>
 </root>
