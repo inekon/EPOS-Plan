@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -50,9 +50,9 @@ namespace WindowsFormsApplication1
             //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
             //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
 			
-			// Grundfarbe für alle Zeilen
+			// Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
         }
 
@@ -81,7 +81,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < list_werzmodel.Count; i++)
             {
                 ctrl.ReadSingle(list_werzmodel[i].ID_Solar);
-                summe += ctrl.m_Modulfläche;
+                summe += ctrl.m_ModulflÃ¤che;
             }
             return summe;
         }*/
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll(szFilter);
             for (int i = 0; i < ctrl.rows; i++)
             {
-                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nAperturfläche: " + ctrl.items[i].m_Aperturfläche + " m²");
+                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nAperturflÃ¤che: " + ctrl.items[i].m_AperturflÃ¤che + " mÂ²");
                 dgv.Rows[i].DividerHeight = 5;
             }
         }
@@ -131,9 +131,9 @@ namespace WindowsFormsApplication1
         private void btn_Kollektor_DB_loeschen_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswÃ¤hlen!"); return; }
 
-            var result = MessageBox.Show("Wollen Sie wirklich den Solarkollektor löschen?", "Löschen", MessageBoxButtons.YesNo);
+            var result = MessageBox.Show("Wollen Sie wirklich den Solarkollektor lÃ¶schen?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
                 if (!ctrl.Delete((string)dataGridView1.SelectedRows[0].Cells[0].Value)) return;
@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
             Form_SolarDB frm = new Form_SolarDB();
             frm.m_mode = Form_DBBHKW.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswÃ¤hlen!"); return; }
 
             frm.SetControls((string)dataGridView1.CurrentRow.Cells[0].Value);
             System.Drawing.Point p1 = btn_Kollektor_DB_Edit.Location;

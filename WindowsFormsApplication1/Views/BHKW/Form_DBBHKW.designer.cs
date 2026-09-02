@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_DBBHKW
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,15 +23,15 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
             toolTip_Hinweis = new System.Windows.Forms.ToolTip(components);
             btn_Abbrechen = new System.Windows.Forms.Button();
-            btn_Überschreiben = new System.Windows.Forms.Button();
+            btn_Ãœberschreiben = new System.Windows.Forms.Button();
             btn_Speichern_Unter = new System.Windows.Forms.Button();
             btn_Speichern = new System.Windows.Forms.Button();
             groupBox1 = new System.Windows.Forms.GroupBox();
@@ -139,17 +139,17 @@ namespace WindowsFormsApplication1
             btn_Abbrechen.UseVisualStyleBackColor = true;
             btn_Abbrechen.Click += btn_Abbrechen_Click;
             // 
-            // btn_Überschreiben
+            // btn_Ãœberschreiben
             // 
-            btn_Überschreiben.Font = new System.Drawing.Font("Segoe UI", 8F);
-            btn_Überschreiben.Location = new System.Drawing.Point(659, 62);
-            btn_Überschreiben.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            btn_Überschreiben.Name = "btn_Überschreiben";
-            btn_Überschreiben.Size = new System.Drawing.Size(105, 32);
-            btn_Überschreiben.TabIndex = 1;
-            btn_Überschreiben.Text = "Überschreiben";
-            btn_Überschreiben.UseVisualStyleBackColor = true;
-            btn_Überschreiben.Click += btn_Überschreiben_Click;
+            btn_Ãœberschreiben.Font = new System.Drawing.Font("Segoe UI", 8F);
+            btn_Ãœberschreiben.Location = new System.Drawing.Point(659, 62);
+            btn_Ãœberschreiben.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            btn_Ãœberschreiben.Name = "btn_Ãœberschreiben";
+            btn_Ãœberschreiben.Size = new System.Drawing.Size(105, 32);
+            btn_Ãœberschreiben.TabIndex = 1;
+            btn_Ãœberschreiben.Text = "Ãœberschreiben";
+            btn_Ãœberschreiben.UseVisualStyleBackColor = true;
+            btn_Ãœberschreiben.Click += btn_Ãœberschreiben_Click;
             // 
             // btn_Speichern_Unter
             // 
@@ -314,7 +314,7 @@ namespace WindowsFormsApplication1
             label45.Name = "label45";
             label45.Size = new System.Drawing.Size(91, 17);
             label45.TabIndex = 80;
-            label45.Text = "Energieträger:";
+            label45.Text = "EnergietrÃ¤ger:";
             label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // Label5
@@ -595,7 +595,7 @@ namespace WindowsFormsApplication1
             Label17.Name = "Label17";
             Label17.Size = new System.Drawing.Size(55, 17);
             Label17.TabIndex = 52;
-            Label17.Text = "€ / kWel";
+            Label17.Text = "â‚¬ / kWel";
             Label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label18
@@ -606,7 +606,7 @@ namespace WindowsFormsApplication1
             Label18.Name = "Label18";
             Label18.Size = new System.Drawing.Size(24, 17);
             Label18.TabIndex = 53;
-            Label18.Text = "m³";
+            Label18.Text = "mÂ³";
             Label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label19
@@ -617,7 +617,7 @@ namespace WindowsFormsApplication1
             Label19.Name = "Label19";
             Label19.Size = new System.Drawing.Size(63, 17);
             Label19.TabIndex = 54;
-            Label19.Text = "€ / kWhel";
+            Label19.Text = "â‚¬ / kWhel";
             Label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label20
@@ -727,7 +727,7 @@ namespace WindowsFormsApplication1
             Label25.Name = "Label25";
             Label25.Size = new System.Drawing.Size(13, 13);
             Label25.TabIndex = 64;
-            Label25.Text = "€";
+            Label25.Text = "â‚¬";
             Label25.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label26
@@ -738,7 +738,7 @@ namespace WindowsFormsApplication1
             Label26.Name = "Label26";
             Label26.Size = new System.Drawing.Size(13, 13);
             Label26.TabIndex = 65;
-            Label26.Text = "€";
+            Label26.Text = "â‚¬";
             Label26.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label27
@@ -749,7 +749,7 @@ namespace WindowsFormsApplication1
             Label27.Name = "Label27";
             Label27.Size = new System.Drawing.Size(13, 13);
             Label27.TabIndex = 66;
-            Label27.Text = "€";
+            Label27.Text = "â‚¬";
             Label27.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label28
@@ -760,7 +760,7 @@ namespace WindowsFormsApplication1
             Label28.Name = "Label28";
             Label28.Size = new System.Drawing.Size(13, 13);
             Label28.TabIndex = 67;
-            Label28.Text = "€";
+            Label28.Text = "â‚¬";
             Label28.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label39
@@ -771,7 +771,7 @@ namespace WindowsFormsApplication1
             Label39.Name = "Label39";
             Label39.Size = new System.Drawing.Size(13, 13);
             Label39.TabIndex = 68;
-            Label39.Text = "€";
+            Label39.Text = "â‚¬";
             Label39.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBox_Schallschutzhaube
@@ -1077,7 +1077,7 @@ namespace WindowsFormsApplication1
             Label41.Name = "Label41";
             Label41.Size = new System.Drawing.Size(176, 17);
             Label41.TabIndex = 66;
-            Label41.Text = " für Heizzwecke in t CO2 / GJ";
+            Label41.Text = " fÃ¼r Heizzwecke in t CO2 / GJ";
             Label41.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label42
@@ -1088,7 +1088,7 @@ namespace WindowsFormsApplication1
             Label42.Name = "Label42";
             Label42.Size = new System.Drawing.Size(89, 17);
             Label42.TabIndex = 67;
-            Label42.Text = "Heizöl: 0,0808";
+            Label42.Text = "HeizÃ¶l: 0,0808";
             Label42.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label43
@@ -1099,7 +1099,7 @@ namespace WindowsFormsApplication1
             Label43.Name = "Label43";
             Label43.Size = new System.Drawing.Size(113, 17);
             Label43.TabIndex = 68;
-            Label43.Text = "Flüssiggas: 0,0663";
+            Label43.Text = "FlÃ¼ssiggas: 0,0663";
             Label43.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label44
@@ -1158,7 +1158,7 @@ namespace WindowsFormsApplication1
             label46.Name = "label46";
             label46.Size = new System.Drawing.Size(27, 22);
             label46.TabIndex = 91;
-            label46.Text = "°C";
+            label46.Text = "Â°C";
             label46.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label47
@@ -1172,7 +1172,7 @@ namespace WindowsFormsApplication1
             label47.Name = "label47";
             label47.Size = new System.Drawing.Size(27, 22);
             label47.TabIndex = 89;
-            label47.Text = "°C";
+            label47.Text = "Â°C";
             label47.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label48
@@ -1184,7 +1184,7 @@ namespace WindowsFormsApplication1
             label48.Name = "label48";
             label48.Size = new System.Drawing.Size(59, 17);
             label48.TabIndex = 90;
-            label48.Text = "Rücklauf:";
+            label48.Text = "RÃ¼cklauf:";
             // 
             // label49
             // 
@@ -1208,7 +1208,7 @@ namespace WindowsFormsApplication1
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(btn_Abbrechen);
-            Controls.Add(btn_Überschreiben);
+            Controls.Add(btn_Ãœberschreiben);
             Controls.Add(btn_Speichern_Unter);
             Controls.Add(btn_Speichern);
             Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
@@ -1233,7 +1233,7 @@ namespace WindowsFormsApplication1
         #endregion
 
         private System.Windows.Forms.Button btn_Abbrechen;
-private System.Windows.Forms.Button btn_Überschreiben;
+private System.Windows.Forms.Button btn_Ãœberschreiben;
 private System.Windows.Forms.Button btn_Speichern_Unter;
 private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.GroupBox groupBox1;

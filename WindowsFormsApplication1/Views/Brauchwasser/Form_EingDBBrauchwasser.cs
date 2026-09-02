@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -123,7 +123,7 @@ namespace WindowsFormsApplication1
         {
             if(comboBox_Brauchwassertyp.Text == "" )
             {
-                MessageBox.Show("Brauchwassertyp ausw�hlen!");
+                MessageBox.Show("Brauchwassertyp auswählen!");
                 return;
             }
             // Leer- und Zahlpruefung jetzt zentral mit sprechender Meldung; der

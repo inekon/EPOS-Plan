@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,10 +16,10 @@ namespace WindowsFormsApplication1
         int AnzalTagV = 0;
         int ID_TagV = 0; 
 
-        private List<string> list_TagVName_0 = new List<string>() { "Winter-heiter", "Winter-trübe", "Übergang-heiter", "Übergang-trübe", "Sommertag" };
-        private List<string> list_TagVName = new List<string>() { "Winter-Wochentag", "Winter-Wochenende", "Übergang1-Wochentag", 
-                                          "Übergang1-Wochenende", "Sommer-Wochentag","Sommer-Wochenende",
-                                          "Übergang2-Wochentag", "Übergang2-Wochenende"};
+        private List<string> list_TagVName_0 = new List<string>() { "Winter-heiter", "Winter-trÃ¼be", "Ãœbergang-heiter", "Ãœbergang-trÃ¼be", "Sommertag" };
+        private List<string> list_TagVName = new List<string>() { "Winter-Wochentag", "Winter-Wochenende", "Ãœbergang1-Wochentag", 
+                                          "Ãœbergang1-Wochenende", "Sommer-Wochentag","Sommer-Wochenende",
+                                          "Ãœbergang2-Wochentag", "Ãœbergang2-Wochenende"};
         ToolTip tt = new ToolTip();
 
         public Form_EingGebTyp()
@@ -95,7 +95,7 @@ namespace WindowsFormsApplication1
             else
             {
                 btn_Speichern.Enabled = false;
-                tt.Show("Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden", listBox_Typename, 0, 0, 1000);
+                tt.Show("Die vom Softwarehersteller gelieferten GebÃ¤udetypen kÃ¶nnen nicht geÃ¤ndert werden", listBox_Typename, 0, 0, 1000);
             }
         }
 
@@ -277,7 +277,7 @@ namespace WindowsFormsApplication1
                 };
                 if (!DataRepository.ExecuteSQL(sqlInsertTyp, paramsTyp))
                 {
-                    MessageBox.Show("Speichern des Gebäudetyps fehlgeschlagen!");
+                    MessageBox.Show("Speichern des GebÃ¤udetyps fehlgeschlagen!");
                     return;
                 }
 
@@ -311,18 +311,18 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            if (listBox_Typename.SelectedIndex == -1) { MessageBox.Show("Gebäudetyp auswählen!"); return; }
+            if (listBox_Typename.SelectedIndex == -1) { MessageBox.Show("GebÃ¤udetyp auswÃ¤hlen!"); return; }
 
-            // Schutz: schreibgeschützte / vom Hersteller gelieferte Typen nicht löschen
+            // Schutz: schreibgeschÃ¼tzte / vom Hersteller gelieferte Typen nicht lÃ¶schen
             TagVCtrl chk = new TagVCtrl();
             chk.ReadAll("select * from Tab_DBTagV_STAMM where Bezeichner='" + listBox_Typename.Text + "'");
             if (chk.rows > 0 && (chk.items[0].ReadOnly || !chk.items[0].Veraenderbar))
             {
-                MessageBox.Show("Dieser Gebäudetyp ist schreibgeschützt und kann nicht gelöscht werden.", "Hinweis");
+                MessageBox.Show("Dieser GebÃ¤udetyp ist schreibgeschÃ¼tzt und kann nicht gelÃ¶scht werden.", "Hinweis");
                 return;
             }
 
-            // Detail vor Kopf löschen (typisiert statt fehlerhaftem DELETE-Statement)
+            // Detail vor Kopf lÃ¶schen (typisiert statt fehlerhaftem DELETE-Statement)
             DataRepository.ExecuteSQL("DELETE FROM Tab_DBTagVDaten_STAMM WHERE ID_TagV = ?",
                 new OleDbParameter("@idt", ID_TagV));
             DataRepository.ExecuteSQL("DELETE FROM Tab_DBTagV_STAMM WHERE ID = ?",

@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_BHKWAdmin
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,8 +23,8 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
             comboBox_Leistung = new System.Windows.Forms.ComboBox();
             btn_DBBHKW_Edit = new System.Windows.Forms.Button();
             btn_DBBHKW_Neu = new System.Windows.Forms.Button();
-            btn_DBBHKW_Löschen = new System.Windows.Forms.Button();
+            btn_DBBHKW_LÃ¶schen = new System.Windows.Forms.Button();
             btn_OK = new System.Windows.Forms.Button();
             groupBox2 = new System.Windows.Forms.GroupBox();
             label2 = new System.Windows.Forms.Label();
@@ -84,7 +84,7 @@ namespace WindowsFormsApplication1
             Label4.Name = "Label4";
             Label4.Size = new System.Drawing.Size(134, 63);
             Label4.TabIndex = 4;
-            Label4.Text = "Untere Grenzleistung des ausgewählten Moduls:";
+            Label4.Text = "Untere Grenzleistung des ausgewÃ¤hlten Moduls:";
             Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBox_M_GrenzL
@@ -164,17 +164,17 @@ namespace WindowsFormsApplication1
             btn_DBBHKW_Neu.UseVisualStyleBackColor = true;
             btn_DBBHKW_Neu.Click += btn_DBBHKW_Neu_Click;
             // 
-            // btn_DBBHKW_Löschen
+            // btn_DBBHKW_LÃ¶schen
             // 
-            btn_DBBHKW_Löschen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-            btn_DBBHKW_Löschen.Location = new System.Drawing.Point(251, 435);
-            btn_DBBHKW_Löschen.Margin = new System.Windows.Forms.Padding(4);
-            btn_DBBHKW_Löschen.Name = "btn_DBBHKW_Löschen";
-            btn_DBBHKW_Löschen.Size = new System.Drawing.Size(164, 31);
-            btn_DBBHKW_Löschen.TabIndex = 18;
-            btn_DBBHKW_Löschen.Text = "Löschen";
-            btn_DBBHKW_Löschen.UseVisualStyleBackColor = true;
-            btn_DBBHKW_Löschen.Click += btn_DBBHKW_Löschen_Click;
+            btn_DBBHKW_LÃ¶schen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            btn_DBBHKW_LÃ¶schen.Location = new System.Drawing.Point(251, 435);
+            btn_DBBHKW_LÃ¶schen.Margin = new System.Windows.Forms.Padding(4);
+            btn_DBBHKW_LÃ¶schen.Name = "btn_DBBHKW_LÃ¶schen";
+            btn_DBBHKW_LÃ¶schen.Size = new System.Drawing.Size(164, 31);
+            btn_DBBHKW_LÃ¶schen.TabIndex = 18;
+            btn_DBBHKW_LÃ¶schen.Text = "LÃ¶schen";
+            btn_DBBHKW_LÃ¶schen.UseVisualStyleBackColor = true;
+            btn_DBBHKW_LÃ¶schen.Click += btn_DBBHKW_LÃ¶schen_Click;
             // 
             // btn_OK
             // 
@@ -412,7 +412,7 @@ namespace WindowsFormsApplication1
             label46.Name = "label46";
             label46.Size = new System.Drawing.Size(27, 21);
             label46.TabIndex = 97;
-            label46.Text = "°C";
+            label46.Text = "Â°C";
             label46.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label47
@@ -426,7 +426,7 @@ namespace WindowsFormsApplication1
             label47.Name = "label47";
             label47.Size = new System.Drawing.Size(27, 21);
             label47.TabIndex = 95;
-            label47.Text = "°C";
+            label47.Text = "Â°C";
             label47.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label48
@@ -438,7 +438,7 @@ namespace WindowsFormsApplication1
             label48.Name = "label48";
             label48.Size = new System.Drawing.Size(59, 17);
             label48.TabIndex = 96;
-            label48.Text = "Rücklauf:";
+            label48.Text = "RÃ¼cklauf:";
             // 
             // label49
             // 
@@ -466,7 +466,7 @@ namespace WindowsFormsApplication1
             Controls.Add(comboBox_Leistung);
             Controls.Add(btn_DBBHKW_Edit);
             Controls.Add(btn_DBBHKW_Neu);
-            Controls.Add(btn_DBBHKW_Löschen);
+            Controls.Add(btn_DBBHKW_LÃ¶schen);
             Controls.Add(btn_OK);
             Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             Margin = new System.Windows.Forms.Padding(4);
@@ -491,7 +491,7 @@ private System.Windows.Forms.ComboBox comboBox_Brennstoff;
 private System.Windows.Forms.ComboBox comboBox_Leistung;
 private System.Windows.Forms.Button btn_DBBHKW_Edit;
 private System.Windows.Forms.Button btn_DBBHKW_Neu;
-private System.Windows.Forms.Button btn_DBBHKW_Löschen;
+private System.Windows.Forms.Button btn_DBBHKW_LÃ¶schen;
 private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label Label12;

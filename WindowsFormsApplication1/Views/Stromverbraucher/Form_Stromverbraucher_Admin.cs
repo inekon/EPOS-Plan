@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
@@ -137,16 +137,16 @@ namespace WindowsFormsApplication1
 
         private void btn_Prozess_loeschen_Click(object sender, EventArgs e)
         {
-            // Sicherheitsabfrage, ob überhaupt etwas selektiert ist
+            // Sicherheitsabfrage, ob Ã¼berhaupt etwas selektiert ist
             if (string.IsNullOrEmpty(listBox_Verbraucher_DB.Text))
             {
-                MessageBox.Show("Bitte wählen Sie zuerst einen Verbraucher aus!");
+                MessageBox.Show("Bitte wÃ¤hlen Sie zuerst einen Verbraucher aus!");
                 return;
             }
 
             DialogResult dialogResult = MessageBox.Show(
-                $"Soll {listBox_Verbraucher_DB.Text} wirklich gelöscht werden ?",
-                "Löschen",
+                $"Soll {listBox_Verbraucher_DB.Text} wirklich gelÃ¶scht werden ?",
+                "LÃ¶schen",
                 MessageBoxButtons.YesNo
             );
 

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -57,9 +57,9 @@ namespace WindowsFormsApplication1
             //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
             //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
 			
-	        // Grundfarbe für alle Zeilen
+	        // Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
         }
 
@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
                     DataGridViewCellMouseEventArgs dgvme = new DataGridViewCellMouseEventArgs(columnIndex, rowIndex, 100, 100, me);
 
                     // Rufe den CellMouseClick-Ereignis-Handler auf
-                    // Ersetzen Sie dataGridView1_CellMouseClick durch den Namen Ihres tatsächlichen Event-Handlers
+                    // Ersetzen Sie dataGridView1_CellMouseClick durch den Namen Ihres tatsÃ¤chlichen Event-Handlers
                     listBox_Prozess_DB_SelectedIndexChanged(this.dataGridView1, dgvme);
                 }
                 else
@@ -278,7 +278,7 @@ namespace WindowsFormsApplication1
 
             if (textBox_Name.Text == "")
             {
-                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen!");
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswÃ¤hlen!");
                 return;
             }
     
@@ -360,11 +360,11 @@ namespace WindowsFormsApplication1
 
             if (dgv.CurrentCell.RowIndex < 0)
             {
-                MessageBox.Show("Prozesswärme auswählen!");
+                MessageBox.Show("ProzesswÃ¤rme auswÃ¤hlen!");
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + (string)dataGridView1.CurrentRow.Cells[0].Value + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + (string)dataGridView1.CurrentRow.Cells[0].Value + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             BrauchwasserStammCtrl ctrl_del = new BrauchwasserStammCtrl();
@@ -385,7 +385,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Auswahl.SelectedIndices;
             if (indexes.Count == 0 || textBox_Verbrauch.Text.Trim() == "")
             {
-                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswÃ¤hlen und einen Wert eingeben!");
                 return;
             }
 
@@ -396,9 +396,9 @@ namespace WindowsFormsApplication1
             double dVerbrauch;
             if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dVerbrauch) || dVerbrauch < 0)
             {
-                MessageBox.Show("Eingaben überprüfen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
+                MessageBox.Show("Eingaben Ã¼berprÃ¼fen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
                                 "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
-                                "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                "UngÃ¼ltige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 textBox_Verbrauch.Focus();
                 textBox_Verbrauch.SelectAll();
                 return;

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -122,8 +122,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(m_szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gespeichert werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             string sql = "UPDATE " + TAB_REGION_STAMM + " SET Name = ?, Longitude = ?, Latitude = ?, Details = ? WHERE ID_Klimaregion = ?";
@@ -142,8 +142,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             string sql = "DELETE FROM " + TAB_REGION_STAMM + " WHERE Name = ?";
@@ -240,7 +240,7 @@ namespace WindowsFormsApplication1
         // Laeuft in der uebergebenen Transaktion. Rueckgabe: Projekt-Region-ID, 0 bei Fehler.
         public static int CopyRegionToProjekt(int stammRegionId, int idProjekt, DbVorgang v)
         {
-            // 1. Stammdaten (Referenz) lesen – ausserhalb der Transaktion, nur lesend.
+            // 1. Stammdaten (Referenz) lesen â€“ ausserhalb der Transaktion, nur lesend.
             DataTable dtRegion = DataRepository.GetDataTable(
                 "SELECT * FROM " + TAB_REGION_STAMM + " WHERE ID_Klimaregion = ?",
                 new OleDbParameter("@id", stammRegionId));

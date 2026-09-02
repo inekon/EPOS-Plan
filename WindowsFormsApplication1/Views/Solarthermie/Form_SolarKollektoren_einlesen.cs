@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Data.OleDb;
 using System.IO;
 using System.Windows.Forms;
@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
             textBox_Firma.Text = ctrl._list[i].m_szFirma;
             textBox_Bauart.Text = ctrl._list[i].m_szBauart;
             textBox_Leistung.Text = ctrl._list[i].m_Leistung.ToString();
-            textBox_Aperturflaeche.Text = ctrl._list[i].m_Aperturfl‰che.ToString();
+            textBox_Aperturflaeche.Text = ctrl._list[i].m_Aperturfl√§che.ToString();
             textBox_a1.Text = ctrl._list[i].m_a1.ToString();
             textBox_a2.Text = ctrl._list[i].m_a2.ToString();
             textBox_h0.Text = ctrl._list[i].m_h0.ToString();
@@ -108,7 +108,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < ctrl._list.Count; i++)
             {
                 if (!VdiAuswahlFilter.Passt(suche, ctrl._list[i].m_szName, ctrl._list[i].m_szFirma)) continue;
-                double apertur = ctrl._list[i].m_Aperturfl‰che;
+                double apertur = ctrl._list[i].m_Aperturfl√§che;
                 double leistung = ctrl._list[i].m_Leistung;
                 if (apertur < aMin || apertur > aMax) continue;
                 Liste_Kollektoren.Items.Add(ctrl._list[i].m_szName);
@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler bei der ‹bernahme des Solarkollektors: " + ex.Message);
+                Console.WriteLine("Fehler bei der √úbernahme des Solarkollektors: " + ex.Message);
                 fehlertext = ex.Message;
                 return VdiUebernahmeErgebnis.Fehler;
             }
@@ -256,8 +256,8 @@ namespace WindowsFormsApplication1
             model.m_k2 = ctrl._list[index].m_a2;
             model.m_Kdir = ctrl._list[index].m_kdir;
             model.m_Kdfu = ctrl._list[index].m_kdiff;
-            model.m_Modulfl‰che = ctrl._list[index].m_Modulfl‰che;
-            model.m_Aperturfl‰che = ctrl._list[index].m_Aperturfl‰che;
+            model.m_Modulfl√§che = ctrl._list[index].m_Modulfl√§che;
+            model.m_Aperturfl√§che = ctrl._list[index].m_Aperturfl√§che;
 
             return model;
         }

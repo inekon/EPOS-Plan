@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -35,12 +35,12 @@ namespace WindowsFormsApplication1
             textBox_MaxTemperatur.Text = model.Maximaleraumtemperatur.ToString("F2");
             textBox_WEAbsenkung.Text = model.Raumsolltemperatur_Wochenende.ToString("F2");
             textBox_SollFerien.Text = model.Raumsolltemperatur_Ferien.ToString("F2");
-            textBox_WBVK_Fenster.Text = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Fenster_Wand.ToString("F2");
-            textBox_WBVK_Keller.Text = model.Waermebruckenverlustkoeffizient_Anschluﬂ_Auﬂenwand_Kellerdecke.ToString("F2");
-            textBox_WBVK_Dach.Text = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Wand_Dach.ToString("F2");
-            textBox_AnschussFenster.Text = model.Abmessung_Anschluﬂ_Fenster_Wand.ToString("F2");
-            textBox_AnschussDach.Text = model.Abmessung_Anschluﬂ_Wand_Dach.ToString("F2");
-            textBox_AnschussKeller.Text = model.Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke.ToString("F2");
+            textBox_WBVK_Fenster.Text = model.Waermebrueckenverlustkoeffizient_Anschlu√ü_Fenster_Wand.ToString("F2");
+            textBox_WBVK_Keller.Text = model.Waermebruckenverlustkoeffizient_Anschlu√ü_Au√üenwand_Kellerdecke.ToString("F2");
+            textBox_WBVK_Dach.Text = model.Waermebrueckenverlustkoeffizient_Anschlu√ü_Wand_Dach.ToString("F2");
+            textBox_AnschussFenster.Text = model.Abmessung_Anschlu√ü_Fenster_Wand.ToString("F2");
+            textBox_AnschussDach.Text = model.Abmessung_Anschlu√ü_Wand_Dach.ToString("F2");
+            textBox_AnschussKeller.Text = model.Abmessung_Anschlu√ü_Au√üenwand_Kellerdecke.ToString("F2");
 
             Winter_Tag_A.Text = model.Ferienbeginn_1.ToString();
             Ostern_Tag_A.Text = model.Ferienbeginn_1.ToString();
@@ -121,9 +121,9 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            // Alle TextBoxen der Gruppen auf g¸ltiges Zahlenformat ¸berpr¸fen.
+            // Alle TextBoxen der Gruppen auf g√ºltiges Zahlenformat √ºberpr√ºfen.
             // Gemeldet wird erst hier statt bei jedem Tastendruck; leere Felder
-            // gelten wie bisher als 0 und werden ¸bersprungen.
+            // gelten wie bisher als 0 und werden √ºbersprungen.
             for (int i = 0; i < Controls.Count; i++)
             {
                 var allControls = Controls[i].Controls;
@@ -134,9 +134,9 @@ namespace WindowsFormsApplication1
                         double dPruefwert;
                         if (!Program.ZahlParsen(tb.Text, out dPruefwert))
                         {
-                            MessageBox.Show("Eingaben ¸berpr¸fen: \"" + tb.Text + "\"" + Environment.NewLine +
+                            MessageBox.Show("Eingaben √ºberpr√ºfen: \"" + tb.Text + "\"" + Environment.NewLine +
                                             "Bitte eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).",
-                                            "Ung¸ltige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                            "Ung√ºltige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             tb.Focus();
                             ((TextBox)tb).SelectAll();
                             return;
@@ -157,12 +157,12 @@ namespace WindowsFormsApplication1
             if (model.Raumsolltemperatur_Ferien > 0) model.Ferien = 1;
             else model.Ferien = 0;
 
-            model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Fenster_Wand = Text2Wert(textBox_WBVK_Fenster.Text);
-            model.Waermebruckenverlustkoeffizient_Anschluﬂ_Auﬂenwand_Kellerdecke = Text2Wert(textBox_WBVK_Keller.Text);
-            model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Wand_Dach = Text2Wert(textBox_WBVK_Dach.Text);
-            model.Abmessung_Anschluﬂ_Fenster_Wand = Text2Wert(textBox_AnschussFenster.Text);
-            model.Abmessung_Anschluﬂ_Wand_Dach = Text2Wert(textBox_AnschussDach.Text);
-            model.Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke = Text2Wert(textBox_AnschussKeller.Text);
+            model.Waermebrueckenverlustkoeffizient_Anschlu√ü_Fenster_Wand = Text2Wert(textBox_WBVK_Fenster.Text);
+            model.Waermebruckenverlustkoeffizient_Anschlu√ü_Au√üenwand_Kellerdecke = Text2Wert(textBox_WBVK_Keller.Text);
+            model.Waermebrueckenverlustkoeffizient_Anschlu√ü_Wand_Dach = Text2Wert(textBox_WBVK_Dach.Text);
+            model.Abmessung_Anschlu√ü_Fenster_Wand = Text2Wert(textBox_AnschussFenster.Text);
+            model.Abmessung_Anschlu√ü_Wand_Dach = Text2Wert(textBox_AnschussDach.Text);
+            model.Abmessung_Anschlu√ü_Au√üenwand_Kellerdecke = Text2Wert(textBox_AnschussKeller.Text);
 
             model.Ferienbeginn_1 = BerechneJahrestag(Winter_Monat_A.Text, Winter_Tag_A.Text);
             model.Ferienbeginn_2 = BerechneJahrestag(Ostern_Monat_A.Text, Ostern_Tag_A.Text);
@@ -176,7 +176,7 @@ namespace WindowsFormsApplication1
 
             if (model.Ferienbeginn_1 < model.Ferienende_1)
             {
-                MessageBox.Show("Die Ferien m¸ssen ¸ber die Jahresgrenze gehen!");
+                MessageBox.Show("Die Ferien m√ºssen √ºber die Jahresgrenze gehen!");
                 return;
             }
             if (model.Ferienbeginn_2 > model.Ferienende_2)
@@ -254,9 +254,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // TextChanged f‰rbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
-        // wird erst in btn_Speichern_Click; das fr¸here Melden mit tb.Undo() konnte
-        // sich aufschaukeln. Begr¸ndung ausf¸hrlich in Program.cs.
+        // TextChanged f√§rbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
+        // wird erst in btn_Speichern_Click; das fr√ºhere Melden mit tb.Undo() konnte
+        // sich aufschaukeln. Begr√ºndung ausf√ºhrlich in Program.cs.
         private void textBox_SollTag_TextChanged(object sender, EventArgs e)
         {
             Program.ZahlFaerben(sender);

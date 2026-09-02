@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Diese Stromganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.", "Hinweis");
+                MessageBox.Show("Diese Stromganglinie ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.", "Hinweis");
                 return false;
             }
             int id = GetStammId(szName);

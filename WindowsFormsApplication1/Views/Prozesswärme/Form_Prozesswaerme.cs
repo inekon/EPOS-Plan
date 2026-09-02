@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -59,9 +59,9 @@ namespace WindowsFormsApplication1
             //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
             //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
 			
-			// Grundfarbe für alle Zeilen
+			// Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
 
             // D2 (28.08.2026): Fusszeile auf die Norm - bisher Abbrechen links von OK,
@@ -301,7 +301,7 @@ namespace WindowsFormsApplication1
                     DataGridViewCellMouseEventArgs dgvme = new DataGridViewCellMouseEventArgs(columnIndex, rowIndex, 100, 100, me);
 
                     // Rufe den CellMouseClick-Ereignis-Handler auf
-                    // Ersetzen Sie dataGridView1_CellMouseClick durch den Namen Ihres tatsächlichen Event-Handlers
+                    // Ersetzen Sie dataGridView1_CellMouseClick durch den Namen Ihres tatsÃ¤chlichen Event-Handlers
                     listBox_Prozess_DB_SelectedIndexChanged(this.dataGridView1, dgvme);
                 }
                 else
@@ -402,7 +402,7 @@ namespace WindowsFormsApplication1
 
             if (textBox_Prozess_Name.Text == "")
             {
-                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen!");
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswÃ¤hlen!");
                 return;
             }
     
@@ -470,10 +470,10 @@ namespace WindowsFormsApplication1
         {
             DataGridView dgv = dataGridView1;
 
-            // Absicherung: Prüfen, ob überhaupt eine gültige Zelle/Zeile ausgewählt ist
+            // Absicherung: PrÃ¼fen, ob Ã¼berhaupt eine gÃ¼ltige Zelle/Zeile ausgewÃ¤hlt ist
             if (dgv.CurrentCell == null || dgv.CurrentCell.RowIndex < 0 || dgv.CurrentRow == null)
             {
-                MessageBox.Show("Bitte wählen Sie eine Prozesswärme aus der Liste aus!");
+                MessageBox.Show("Bitte wÃ¤hlen Sie eine ProzesswÃ¤rme aus der Liste aus!");
                 return;
             }
 
@@ -482,11 +482,11 @@ namespace WindowsFormsApplication1
 
             if (string.IsNullOrEmpty(szProzessName))
             {
-                MessageBox.Show("Der ausgewählte Datensatz enthält keinen gültigen Prozessnamen!");
+                MessageBox.Show("Der ausgewÃ¤hlte Datensatz enthÃ¤lt keinen gÃ¼ltigen Prozessnamen!");
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + szProzessName + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + szProzessName + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             try
@@ -494,22 +494,22 @@ namespace WindowsFormsApplication1
                 // Standardkonformes, parametrisiertes SQL-Statement
                 ProzesswaermeStammCtrl ctrlDel = new ProzesswaermeStammCtrl();
 
-                // Löschbefehl über das DataRepository ausführen
+                // LÃ¶schbefehl Ã¼ber das DataRepository ausfÃ¼hren
                 if (ctrlDel.Delete(szProzessName))
                 {
-                    // Erst wenn das Löschen in der Datenbank erfolgreich war, die Zeile aus der UI entfernen
+                    // Erst wenn das LÃ¶schen in der Datenbank erfolgreich war, die Zeile aus der UI entfernen
                     dgv.Rows.RemoveAt(dgv.CurrentRow.Index);
-                    MessageBox.Show("Prozess erfolgreich gelöscht.");
+                    MessageBox.Show("Prozess erfolgreich gelÃ¶scht.");
                 }
                 else
                 {
-                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelöscht werden.");
+                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelÃ¶scht werden.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler beim Löschen des Prozesses aus dem DataGridView: " + ex.Message);
-                MessageBox.Show("Fehler beim Löschvorgang!");
+                Console.WriteLine("Fehler beim LÃ¶schen des Prozesses aus dem DataGridView: " + ex.Message);
+                MessageBox.Show("Fehler beim LÃ¶schvorgang!");
             }
         }
 
@@ -525,7 +525,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
             if (indexes.Count == 0 || textBox_Verbrauch.Text.Trim() == "")
             {
-                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswÃ¤hlen und einen Wert eingeben!");
                 return;
             }
 
@@ -536,9 +536,9 @@ namespace WindowsFormsApplication1
             double dVerbrauch;
             if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dVerbrauch) || dVerbrauch < 0)
             {
-                MessageBox.Show("Eingaben überprüfen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
+                MessageBox.Show("Eingaben Ã¼berprÃ¼fen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
                                 "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
-                                "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                "UngÃ¼ltige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 textBox_Verbrauch.Focus();
                 textBox_Verbrauch.SelectAll();
                 return;
