@@ -4655,6 +4655,21 @@ namespace WindowsFormsApplication1
                     "CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit " +
                     "Strommix-Vorgabewert gerechnet."));
 
+            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
+            // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
+            // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus
+            // KostenEmissionRechner). GEMELDET, nicht abgeleitet: Die Zahlen dieses
+            // Ergebnisses bleiben unverändert — hier kommt allein die Hinweiszeile
+            // dazu, nach demselben Muster wie der Strommix-Rückfall darüber.
+            if (v.KesselVerbrauchFehlt)
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(
+                    T("WIRT_KESSELBRENNSTOFF_FEHLT",
+                      "Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des " +
+                      "Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff " +
+                      "fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe."),
+                    (v.KesselOhneVerbrauch == null || v.KesselOhneVerbrauch.Count == 0)
+                        ? "?" : string.Join(", ", v.KesselOhneVerbrauch)));
+
             // ETAPPE B2 (BW2/BF2) — Kohärenzprüfung als REINE Warnzeile. Sie liest die
             // Preiszerlegung und vergleicht sie mit den bereits gebuchten Gutschriften;
             // sie rechnet nichts nach und ändert nichts. Ein Fehlschlag darf den Lauf
