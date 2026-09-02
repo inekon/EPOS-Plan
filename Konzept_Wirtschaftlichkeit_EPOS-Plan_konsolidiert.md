@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 30.08.2026** · Codestand `b2ad3e3` (Branch `Pufferspeicher`) · `SchemaMigration.ZIEL_VERSION` = 61
+**Stand 02.09.2026** · Codestand `922228a` (Branch `ios_migration`) · `SchemaMigration.ZIEL_VERSION` = 61 · Schemaschritt 62 vergeben (U-1), neue ab 63 · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -13,10 +13,14 @@ Umsetzung zu klären sind:
 
 ## Geltung und Abgrenzung
 
-> **Dieses Dokument ändert nichts.** Es ist eine Zusammenführung, kein Etappenkonzept. Die laufende
-> B5-Session führt `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` je Etappe fort — **das bleibt das
-> verbindliche Umsetzungskonzept**, dieses hier ist die Gesamtsicht darüber. Bei Widerspruch gilt
-> das Etappenkonzept.
+> **Dieses Dokument ändert nichts am Code.** Seit der Konsolidierung vom **02.09.2026** ist es die
+> **führende Fassung** des Wirtschaftlichkeitskonzepts: Es führt
+> `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` (Etappenkonzept, letzter Stand 30.08.2026 mit B4),
+> `KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` und `Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`
+> zusammen. Die drei Quellen bleiben als Historie und Herleitung stehen; **bei Widerspruch gilt
+> dieses Dokument.** Was sie an Stoff enthielten, der hier bislang fehlte, ist mit der Konsolidierung
+> nachgezogen: § 2.12 (Kategorien-Mockups), § 3.4 (Vorrangregel), § 3.11 (Emissionsfaktoren und
+> CO₂-Preispfad), § 5 (rechtliche Unsicherheiten), § 6.5 (doppelte Wahrheiten).
 
 > **Arbeitsregel (Anwender, 30.08.2026): erst das Konzept, keine Umsetzung.** Sämtliche hier
 > beschriebenen Vorhaben — die Erlösrubrik (§ 2.6), die Emissionsspalte (§ 2.5), die Befunde aus
@@ -45,6 +49,7 @@ Dokument** — bei Abweichung gilt der Text hier.
 | [**Erlösrubrik BHKW**](https://claude.ai/code/artifact/d924b2ec-9c41-4e84-a670-88e83bae7ff9) | Entwurf der eigenen Erlösrubrik, zwei Blöcke mit getrennten Summen; die beiden geprüften Befunde zur Stromsteuer-Reduktion und zur Unternehmensart | § 2.6 |
 | [**Pflichtpositionen je Komponente**](https://claude.ai/code/artifact/236c8a8a-a2e0-47f4-a099-aa1456de883a) |  Kostendialoge, Bezugsgrößen und die Hilfsenergie-Definition; **Entwurf B ist als § 2.8 übernommen** | § 3.4, Etappe H1 |
 | [**ValERI-Bewertung Höfingen**](https://claude.ai/code/artifact/f8968739-df34-4892-9d7d-9c07e6858a4f) | die fünf ValERI-Blöcke in der Wirtschaftlichkeitsseite, reale Höfingen-Zahlen, Cashflow über Nutzungsdauer, Sensitivität mit Steigung €/%, XLSX-Formelblatt nach Anhang A | § 2.9–2.11 |
+| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform | § 2.12 |
 
 ---
 
@@ -606,6 +611,65 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   Parametereinstellungen vollständig — die Szenariospalten der Rahmenzeile erscheinen im
   Parameterblock des XLSX-Blatts.
 
+## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026)
+
+*Ausgelagert in den Ordner [`Wirtschaftlichkeit_Kosten/`](Wirtschaftlichkeit_Kosten/LIESMICH.md):
+`Beispielprojekt.md` (die eine Zahlenquelle), `Mockups/Dialog_Formel_Zahlenprobe.html` (alle acht
+Kategorien als Seite, zugleich Artifact
+[Dialog, Formel, Zahlenprobe](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f))
+und `Rechenweg/01…08` — je Kategorie Dialog → Berechnungsgrundlage → Berechnungserläuterung →
+Befunde. Der Auftrag: je Kostenkategorie ein Mockup mit Berechnungsgrundlage und
+Berechnungserläuterung, Schwerpunkt Vergütungen BHKW und PV. Dieser Abschnitt ist die Kurzfassung;
+bei Abweichung gilt der Ordner für die Zahlen und dieses Dokument für die Regeln.*
+
+**Die Dialogform der Komponentenkosten ist abgenommen** (Anwender, 02.09.2026): Kopfband, Reiter
+Investition / Betrieb / Ertrag, Raster mit Position · Kostenart · Bemessung · Satz · Menge mit
+Herleitungszeile · Betrag · Runde, Warnband, Fußleiste. Für **PV** dieselbe Form mit eigenen
+Anordnungen: Spalte *Nutzungsdauer* im Investitionsraster, Herleitung der kWp-Menge aus
+Modulanzahl × Modulleistung (Befund I-1 sichtbar), Gruppe *Ersatz und Restwert* mit Barwerten,
+Kennzahl €/kWp, Betriebsseite ohne Endenergie-Bemessung, Gruppe *Ertrag und Degradation* (V-G2).
+
+**Beispielprojekt** (durchgängig): BHKW 300 kW_el, Erdgas, η 38 / 45 / 83 %, 5.500 h/a → Brennstoff
+4.342,1 MWh/a, Strom brutto 1.650,0, netto 1.563,2 MWh/a · PV 300 kWp (750 × 400 Wp), 285,0 MWh/a ·
+Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegzahlen des Bestands
+(Kaskadenprobe 1042, Mischsatz 300 kW, AW 300 kWp, Höfingen) sind als solche gekennzeichnet.
+
+| # | Kategorie | Rechenweg | Kernaussage der Zahlenprobe |
+|---|---|---|---|
+| 1 | Investitionskosten BHKW | `01` | Kaskadenfaktor 1,155; I₀ = 33.927,61 − 6.000 = 27.927,61 € |
+| 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); B-1 am Kessel sichtbar als „× 0 kWh" |
+| 3 | Kosten der Photovoltaik | `03` | 192.150 € = 640,50 €/kWp; Wechselrichter-Ersatz Jahr 12 (24.000 €, Barwert 16.833), Restwert 39.800 € (Barwert 22.036); Degradation 0,5 %/a → Jahr 20: 259,1 MWh |
+| 4 | Energiekosten | `04` | Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
+| 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 31.531 €; **Reihe endet nach zwölf Jahren** (286.644 €); § 53a 21.203 €/a |
+| 6 | **Vergütungen PV** | `06` | AW 6,04 ct; Spot 8.977,50 + Prämie 3.072,30 − § 51 614,46 − DV 798,00 − Kappung 241,00 = 10.396,34 €/a; § 51a 1.204,98 € |
+| 7 | Erlösrubrik | `07` | Block A 91.330,5 €/a; vermieden brutto 339.753,6 − entgangene § 9b 23.594,0 = effektiv 316.159,6 €/a |
+| 8 | Wirtschaftlichkeit über Nutzungsdauer | `08` | Höfingen: Näherung 65.073 €, jahresscharf 65.259 €; IZF/Amortisation nachrichtlich |
+
+**Drei Darstellungen, die über den bisherigen Stand hinausgehen und in die Umsetzung gehören:**
+
+1. **Mengentafel im BHKW-Dialog** — Brutto, Hilfsstrom, Netto, Eigen/Einspeisung und der brutto
+   bleibende § 9-Eigenverbrauch untereinander, mit der Spalte „verwendet von". Sie macht das
+   Netting (§ 3.6) erklärbar, statt es zu verstecken.
+2. **Jahresreihe des Zuschlags als Diagramm** — Deckelstaffel und Kontingent auf einen Blick; die
+   Vorschau „Zuschlag p. a." allein suggeriert eine Dauerförderung.
+3. **Ersatz- und Restwerttafel bei PV** — Wechselrichtertausch und Modulrestwert sind der
+   Regelfall; die Nutzungsdauer-Spalte gehört bei PV ins Investitionsraster, die Abweichung V-G4
+   wird dort deklariert.
+
+**Fachliche Klarstellungen, die beim Durchrechnen entstanden sind:**
+
+- Der Emissionsfaktor Erdgas in der BEHG-Reihe ist der EBeV-Wert **200,9 g/kWh (H_i)** (§ 3.11);
+  CO₂-Preisbestandteil im Arbeitspreis und BEHG-Reihe beschreiben denselben Betrag — **im
+  Kapitalwert darf nur einer von beiden stehen**; die Kohärenzprüfung (§ 3.9) bekommt dafür eine
+  Zeile.
+- Die vermiedene Strommenge der Differenzmethode ist die **physisch** vermiedene (netto
+  Eigenverbrauch BHKW + PV-Eigenverbrauch), nicht die brutto bemessene § 9-Menge.
+- Der KWKG-Eigenstromsatz braucht einen Tatbestand des § 6 Abs. 3; ohne ihn ist der Satz 0 und
+  Bonus_voll halbiert.
+
+**Namensvorsicht:** „Befund K-1" (§ 3.6, Abwärmeabfuhr) und „Entscheidung K1" (§ 5, Deckung je
+Modul) sind verschiedene Dinge — im Ordner steht der Befund mit Bindestrich.
+
 ---
 
 # 3 Die Rechenwege
@@ -794,6 +858,12 @@ Die Sätze von A und B sind **nicht austauschbar** — Faktor ≈ 3,4, das Preis
 Brennstoff.
 
 **Erlöse:** `IstErloes && wert > 0 → wert = −wert`, an drei Stellen identisch geklemmt.
+
+**Vorrangregel Prozent vor Absolut** (aus KONTEXT § 5.3): Eine gepflegte Satzangabe schlägt den
+Absolutbetrag; das unterlegene Feld wird **gesperrt, nicht geleert** (KL4) — anders als in der
+Altanwendung, die beim Speichern die Absolutfelder leerte (stiller Datenverlust, Altbefund 6). Die
+„oder"-Doppelfelder der Wartung (€/kWh_el neben €/h, dort tatsächlich **addiert**, Altbefund 7)
+gibt es nicht mehr: **eine** Position mit sichtbarer Bemessungswahl.
 
 **Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
 Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug — abgeleitete
@@ -1065,6 +1135,57 @@ Die Ordnung ist zwingend — Prozentbezüge und fortgeschriebene Restkontingente
 12. Kohärenzprüfung         zuletzt, liest gebuchte Jahr-1-Werte
 ```
 
+## 3.11 Emissionsfaktoren, Primärenergie und CO₂-Preispfad
+
+*Aus `Grundlagen_KWKG_Energiesteuer_Stromsteuer.md` § 7 und § 8 (Rechtsstand 18.08.2026) — bislang
+nicht im konsolidierten Dokument. Rechenwirkung über die BEHG-Reihe (§ 3.5) und den
+`EmissionsBilanzRechner`; Anzeige über die Emissionsspalte der Trägertabelle (§ 2.5).*
+
+**Zwei Faktorensätze, die im Code nie dieselbe Variable belegen dürfen:**
+
+| Satz | Zweck | Quelle | Strom netzbezogen |
+|---|---|---|---|
+| **Nachweis** | Energieausweis, gesetzliche Nachweisführung | GEG/GModG Anlage 9, stichtagsabhängig | 560 g CO₂e/kWh bis 2026, **100** ab 01.01.2027 — politisch gesetzt, nicht physikalisch |
+| **Reale Bilanz** | Wirtschaftlichkeit, CO₂-Kosten, Klimabilanz | UBA-Strommix (CLIMATE CHANGE 16/2026), jährlich im März, jüngstes Jahr geschätzt und im Folgejahr revidiert | 2025: 344 direkt · 352 ohne · **406 mit Vorkette** |
+
+EPOS-Plan rechnet Wirtschaftlichkeit und Emissionsbilanz mit der **realen Bilanz**; der
+Strommix-Rückfall 435 g/kWh (§ 3.5) ist der BAFA-EEW-Wert (Version 3.4, 01.06.2026). Die
+Emissionsspalte zeigt den im Projekt gewählten Satz und benennt im Tooltip, ob eine Vorkette
+enthalten ist (E-1). Schadstoffe außer CO₂ sind amtlich nur bis Datenjahr 2021 verfügbar — mit
+Datenstand kennzeichnen.
+
+**Stichtag 01.01.2027 (GModG, BGBl. 2026 I Nr. 226):** neue Anlagen 4 und 9 — Strom PEF 1,8 → 1,5,
+Holz 0,2 → 0,7, Strom 560 → 100 g, Verdrängungsstrommix KWK (2,8 · 860 g) **entfällt ersatzlos**;
+KWK-Wärme wird stattdessen nach DIN EN 15316-4-5 bewertet. Das ist ein **Methodenwechsel**, kein
+Parameterwechsel: Beide Faktorensätze müssen mit Gültig-ab-Datum parallel vorliegen, und ein 2026
+gerechneter Vergleich muss 2029 dieselben Zahlen liefern. Eine KWK-Stromgutschrift ab 2027 ist eine
+**methodische Wahl** (UBA-Substitutionsfaktoren sind für erneuerbaren Strom hergeleitet) und gehört
+als Auswahlparameter in den Bericht. *Korrektur zu den Altwerten der Excel-Anwendung: „Nahwärme
+2,8" war der Verdrängungsstrommix, „Bio-Erdgas 0,5" gehört auf 0,3 (§ 22 Abs. 1 Satz 2).*
+
+**Brennstoff-Emissionsfaktoren, rechtsverbindlich für die CO₂-Bepreisung** (EBeV 2030, Anlage 2
+Teil 4, g CO₂/kWh H_i): Erdgas **200,9** (brennwertbezogen **181,4**) · Heizöl EL 266,4 · Heizöl S
+286,9 · Flüssiggas 235,8 · Pflanzenöl und Biodiesel 266,4. **Hi/Ho-Falle:** Erdgas wird
+brennwertbezogen abgerechnet — der Heizwertfaktor auf die Abrechnungsmenge angewandt liefert rund
+10 % zu viel CO₂ (Umrechnung 3,2508 GJ/MWh). Für Träger ohne gesetzliche Festlegung gilt das
+BAFA-Infoblatt (Biogas 152 · Pellets 36 · Holz 27 · Fernwärme 280 · Strom 435 g/kWh).
+
+**Biomasse-Nullregel** (§ 8 EBeV 2030): null nur mit anerkanntem Nachhaltigkeitsnachweis, sonst
+voller fossiler Standardwert — das ist die `BehgOhneNachweis`-Logik in § 3.5. Die Konvention für
+biogenes CO₂ widerspricht sich zwischen EBeV, GEG, UBA-Bilanz, BAFA und UBA-CO₂-Rechner; sie gehört
+deshalb als **ausgewiesene Einstellung** in den Bericht (`Biomasse-Konvention`, § 2.4), nie als
+stille Annahme in den Code.
+
+**CO₂-Preispfad:** 2021–2025 Festpreise 25 / 30 / 30 / 45 / 55 €/t · **2026: 65 €/t** — alle
+sieben Versteigerungen 07–08/2026 endeten am Korridorhöchstpreis, deshalb kein Korridormittel ·
+2027: Korridor 55–65 €/t politisch gesetzt, Gesetz im Verfahren (Kabinett 12.08.2026, Bundestag und
+Bundesrat stehen aus) · **EU-ETS 2 ab 2028, nicht 2027** (VO (EU) 2026/667 vom 11.03.2026; erste
+Abgabepflicht 31.05.2029). Ab 2028 gibt es keinen Rechtspreis mehr — Vorbelegung 80 €/t konservativ,
+95 → 125 €/t mittel (Projektionsbericht 2026, nur sekundär belegt), Ø 150 €/t hoch (Agora). Der
+Pfad gehört als editierbare Stützstellenreihe mit Status GESICHERT / VORLÄUFIG / PROGNOSE in den
+Katalog; der Katalogpfad in § 3.5 („2026/27: 65 · ab 2028: 80") bildet die konservative Vorbelegung
+ab. Die EEX-Auktionsdatei `nEHS_Auction_Reporting.csv` eignet sich zum automatisierten Nachpflegen.
+
 ---
 
 # 4 Befunde
@@ -1159,6 +1280,17 @@ nicht freigegeben** (Konzept-vor-Code) und gehört auf den Pufferspeicher-Strang
 `Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md` — liegt derzeit **nur** auf Zweig
 `claude/lucid-cori-a9a425` (`37bd068` Konzept, `8e34222` Entscheidungseintrag), noch nicht gemergt.
 
+**Rechtliche Unsicherheiten** (aus Grundlagen § 6, weiterhin offen — vor produktivem Einsatz mit
+dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, sondern des Rechts):
+
+| # | Punkt | Stand im Konzept |
+|---|---|---|
+| R-U1 | § 53 neben § 53a: der Wortlaut „vorbehaltlich" spricht für anteilige Anwendung, Kommentarliteratur und Dienstvorschrift für ein Entweder-oder | als **Auswahl** modelliert (`KEINE` / `PARAGRAF_53` / `PARAGRAF_53A`), nie Kombination; entschärft, weil § 53 den gesamten BHKW-Brennstoff erfasst (§ 3.7) |
+| R-U2 | § 53a Abs. 3, Erdgassatz 4,96 €/MWh für das produzierende Gewerbe über dem allgemeinen 4,42 €/MWh | nicht umgesetzt; in § 2.6 (Klarstellung 2) als Kesselseite eingeordnet |
+| R-U3 | Ausschluss fossiler flüssiger Brennstoffe aus der KWKG-Förderung — nur Sekundärquelle | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt (§ 3.6) |
+| R-U4 | EuGH-Urteil 09.07.2026 zur Beihilfeeigenschaft des KWKG | kein Primärbeleg |
+| R-U5 | keine Nachfolgeregelung nach 2030 | Förderzeitraum als Datumsparameter im Katalog, nicht als Konstante |
+
 ---
 
 # 6 Umsetzungsstand
@@ -1243,6 +1375,21 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 - Visual Studio regeneriert `Resource.Designer.cs`; Handeinträge erzeugen CS0102.
 - Keine `.cs` unterhalb von `WindowsFormsApplication1\` (CS0017); Harnesse nach `dev\`.
 - Build nur über das MSBuild von Visual Studio, x64 — `dotnet build` scheitert an COM.
+
+## 6.5 Doppelte Wahrheiten
+
+*Aus KONTEXT § 9 — jede benannt und begründet. Neue Spalten und Novellen müssen beide Orte treffen.*
+
+| Doppelung | Stand |
+|---|---|
+| Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` gegen `const double` in `StromAufschlagModel` | wertgleich, ohne Kopplung: eine gepflegte Novelle erreicht den Aufschlagsblock nicht |
+| „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; gekoppelt ist weiterhin nichts |
+| BHKW-Einspeisevergütung an vier Orten | Vorrang eindeutig (aktiver Tarif schlägt Parameterwert), drei Felder zu viel |
+| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | vier Tabellen; neue Spalten gehören an beide Stellen |
+| Zwei Lesewege auf die Kostenposition — die gespeicherte Access-Abfrage kennt die neuen Spalten nicht | der direkte Zugriff ist der Normalfall |
+| Komponenten-IDs hart verdrahtet gegen dynamisch gelesen | `Form_Kosten` gegen `UcBkKosten` |
+| Vorrang Projekt vor Katalog in drei Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`, eine Access-Abfrage |
+| ~~Kennzahlenliste dreifach~~ | aufgelöst mit E7 — `WirtschaftlichkeitZeilen` führt sie einmal |
 
 ---
 

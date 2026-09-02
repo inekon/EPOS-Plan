@@ -1,0 +1,1808 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dialog, Formel, Zahlenprobe</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --papier:#F5F7FA;
+  --karte:#FFFFFF;
+  --tinte:#16202F;
+  --tinte-weich:#4A5769;
+  --tinte-blass:#7C8798;
+  --linie:#DDE3EC;
+  --linie-stark:#C3CCDA;
+  --marine:#0F1F3D;
+  --marine-hell:#1A3261;
+  --erloes:#0B6B5B;
+  --erloes-grund:#E6F2EF;
+  --kosten:#B22222;
+  --kosten-grund:#FBEAEA;
+  --warn:#8A6100;
+  --warn-grund:#FFF6E0;
+  --warn-kante:#C88A00;
+  --ausweis:#5A6B85;
+  --ausweis-grund:#EDF1F7;
+  --code-grund:#F0F3F8;
+  --schatten:0 1px 2px rgba(15,31,61,.06), 0 8px 24px rgba(15,31,61,.08);
+  --schatten-fenster:0 2px 4px rgba(15,31,61,.12), 0 18px 44px rgba(15,31,61,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papier:#10151E;
+    --karte:#171E2A;
+    --tinte:#E4E9F1;
+    --tinte-weich:#A7B2C3;
+    --tinte-blass:#78849A;
+    --linie:#2A3444;
+    --linie-stark:#3B4759;
+    --marine:#0F1F3D;
+    --marine-hell:#1A3261;
+    --erloes:#4FBFA6;
+    --erloes-grund:#12302B;
+    --kosten:#E77373;
+    --kosten-grund:#331A1A;
+    --warn:#E0AE3E;
+    --warn-grund:#33290F;
+    --warn-kante:#C88A00;
+    --ausweis:#93A2BA;
+    --ausweis-grund:#1D2532;
+    --code-grund:#121926;
+    --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --papier:#10151E;
+  --karte:#171E2A;
+  --tinte:#E4E9F1;
+  --tinte-weich:#A7B2C3;
+  --tinte-blass:#78849A;
+  --linie:#2A3444;
+  --linie-stark:#3B4759;
+  --marine:#0F1F3D;
+  --marine-hell:#1A3261;
+  --erloes:#4FBFA6;
+  --erloes-grund:#12302B;
+  --kosten:#E77373;
+  --kosten-grund:#331A1A;
+  --warn:#E0AE3E;
+  --warn-grund:#33290F;
+  --warn-kante:#C88A00;
+  --ausweis:#93A2BA;
+  --ausweis-grund:#1D2532;
+  --code-grund:#121926;
+  --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--papier);
+  color:var(--tinte);
+  font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;text-wrap:balance;margin:0}
+code,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Gerüst ---------- */
+.huelle{max-width:1180px;margin:0 auto;padding:0 24px 96px}
+.kopf{padding:56px 0 34px;border-bottom:2px solid var(--tinte);margin-bottom:0}
+.kopf .augenbraue{
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tinte-blass);margin-bottom:14px;
+}
+.kopf h1{font-size:clamp(34px,5vw,52px);font-weight:700;line-height:1.04;letter-spacing:-.015em}
+.kopf .unter{margin-top:16px;max-width:62ch;color:var(--tinte-weich);font-size:16.5px}
+.stand{
+  margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+}
+.stand span{
+  background:var(--karte);border:1px solid var(--linie);border-radius:4px;
+  padding:4px 9px;color:var(--tinte-weich);
+}
+.stand span b{color:var(--tinte);font-weight:600}
+
+.hinweisband{
+  margin:28px 0 0;padding:14px 18px;border-left:3px solid var(--warn-kante);
+  background:var(--warn-grund);color:var(--warn);border-radius:0 6px 6px 0;font-size:14px;
+}
+.hinweisband b{color:var(--warn)}
+
+/* ---------- Navigation ---------- */
+.rumpf{display:grid;grid-template-columns:196px 1fr;gap:52px;align-items:start;margin-top:44px}
+nav{position:sticky;top:20px;font-size:13.5px}
+nav .navtitel{
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--tinte-blass);
+  padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--linie);
+}
+nav a{
+  display:block;padding:6px 0 6px 12px;color:var(--tinte-weich);text-decoration:none;
+  border-left:2px solid var(--linie);line-height:1.35;
+}
+nav a:hover{color:var(--tinte);border-left-color:var(--marine-hell);background:linear-gradient(90deg,var(--code-grund),transparent)}
+nav a:focus-visible{outline:2px solid var(--marine-hell);outline-offset:2px}
+nav a.schwer{color:var(--tinte);font-weight:600}
+nav a.schwer::after{content:"Schwerpunkt";display:block;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--erloes)}
+@media (max-width:900px){
+  .rumpf{grid-template-columns:1fr;gap:0}
+  nav{position:static;margin-bottom:36px}
+  nav .navliste{columns:2;gap:20px}
+}
+
+/* ---------- Kategorie ---------- */
+section.kat{padding-top:56px;scroll-margin-top:20px}
+section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
+.kat-kopf{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.kat-kopf h2{font-size:29px;font-weight:700;letter-spacing:-.01em}
+.kat-marke{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;
+  color:var(--tinte-blass);border:1px solid var(--linie-stark);border-radius:3px;padding:2px 7px;
+}
+.kat-lead{color:var(--tinte-weich);max-width:74ch;margin:8px 0 26px}
+
+/* Zonenüberschrift */
+.zone{
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11.5px;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--tinte-blass);
+  display:flex;align-items:center;gap:10px;margin:34px 0 14px;
+}
+.zone::after{content:"";flex:1;height:1px;background:var(--linie)}
+
+/* ---------- Fenster-Mockup ---------- */
+.fenster{
+  --f-grund:#FAFBFC; --f-tinte:#1B1B1B; --f-weich:#5A5A5A; --f-linie:#D6DBE2;
+  --f-feld:#FFFFFF; --f-gesperrt:#EFF1F4;
+  font-family:"Segoe UI",Tahoma,sans-serif;font-size:12.5px;line-height:1.45;
+  background:var(--f-grund);color:var(--f-tinte);
+  border:1px solid #9AA6B8;border-radius:7px;overflow:hidden;
+  box-shadow:var(--schatten-fenster);
+}
+.fenster *{border-color:var(--f-linie)}
+.f-band{
+  background:var(--marine);color:#fff;padding:9px 14px;display:flex;align-items:center;gap:10px;
+  font-size:13.5px;font-weight:600;
+}
+.f-band .f-sub{margin-left:auto;font-weight:400;font-size:11.5px;color:#A9BDDF}
+.f-leib{padding:14px}
+.f-spalten{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:820px){.f-spalten{grid-template-columns:1fr}}
+.f-gruppe{border:1px solid var(--f-linie);border-radius:6px;background:var(--f-feld);padding:11px 12px 12px}
+.f-gruppe > .f-titel{font-weight:600;font-size:12.5px;margin:-2px 0 9px;color:var(--f-tinte)}
+.f-zeile{display:flex;align-items:center;gap:9px;padding:3px 0;flex-wrap:wrap}
+.f-zeile label,.f-lab{color:var(--f-tinte);min-width:186px;flex:0 0 auto}
+.f-zeile.eng label,.f-zeile.eng .f-lab{min-width:150px}
+.f-eingabe{
+  background:var(--f-feld);border:1px solid #8C97A8;border-radius:2px;padding:2px 7px;
+  min-width:82px;text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px;
+}
+.f-eingabe.links{text-align:left}
+.f-eingabe.gesperrt{background:var(--f-gesperrt);color:var(--f-weich);border-color:#B9C1CD}
+.f-combo{
+  background:var(--f-feld);border:1px solid #8C97A8;border-radius:2px;padding:2px 24px 2px 7px;
+  position:relative;font-size:12.5px;min-width:150px;
+}
+.f-combo::after{content:"▾";position:absolute;right:6px;top:1px;color:var(--f-weich);font-size:11px}
+.f-einheit{color:var(--f-weich);font-size:11.5px}
+.f-check{display:inline-flex;align-items:center;gap:6px}
+.f-check i{
+  width:13px;height:13px;border:1px solid #8C97A8;border-radius:2px;background:var(--f-feld);
+  display:inline-block;position:relative;flex:0 0 auto;
+}
+.f-check.an i{background:var(--marine-hell);border-color:var(--marine-hell)}
+.f-check.an i::after{content:"";position:absolute;left:4px;top:1px;width:3px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.f-radio{display:inline-flex;align-items:center;gap:6px}
+.f-radio i{width:12px;height:12px;border:1px solid #8C97A8;border-radius:50%;background:var(--f-feld);display:inline-block;flex:0 0 auto;position:relative}
+.f-radio.an i::after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--marine-hell)}
+.f-herleitung{
+  font-family:"IBM Plex Mono",Consolas,monospace;font-size:11px;color:var(--f-weich);
+  padding:2px 0 4px 0;line-height:1.5;
+}
+.f-herleitung b{color:var(--marine-hell);font-weight:600}
+.f-warn{
+  background:#FFF6E0;border:1px solid #E8CF95;border-left:3px solid #C88A00;color:#8A6100;
+  border-radius:0 4px 4px 0;padding:7px 10px;margin-top:9px;font-size:11.5px;
+}
+.f-fehler{
+  background:#FBEAEA;border:1px solid #E8B4B4;border-left:3px solid #B22222;color:#8E1B1B;
+  border-radius:0 4px 4px 0;padding:7px 10px;margin-top:9px;font-size:11.5px;
+}
+.f-info{color:var(--f-weich);font-size:11.5px;margin-top:8px}
+.f-vorschau{
+  background:var(--marine-hell);color:#fff;border-radius:6px;padding:12px 14px;margin-top:14px;
+}
+.f-vorschau .f-vtitel{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#A9BDDF;margin-bottom:9px;font-weight:600}
+.f-vzeile{display:flex;justify-content:space-between;gap:16px;padding:3px 0;font-variant-numeric:tabular-nums;border-bottom:1px solid rgba(255,255,255,.11)}
+.f-vzeile:last-child{border-bottom:0}
+.f-vzeile.summe{margin-top:6px;padding-top:8px;border-top:1.5px solid rgba(255,255,255,.42);border-bottom:0;font-weight:700;font-size:13.5px}
+.f-vzeile .f-vwert{font-weight:600}
+.f-vzeile .f-tag{font-size:10.5px;color:#A9BDDF;font-weight:400;margin-left:6px}
+.f-fuss{
+  border-top:1px solid var(--f-linie);background:#F0F2F6;padding:9px 14px;
+  display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;
+}
+.f-fuss .f-status{margin-right:auto;color:var(--f-weich);font-size:11.5px}
+.f-knopf{
+  border:1px solid #8C97A8;background:linear-gradient(#FDFDFE,#EEF1F5);border-radius:4px;
+  padding:5px 15px;font-size:12.5px;color:var(--f-tinte);
+}
+.f-knopf.primaer{background:var(--marine-hell);border-color:var(--marine);color:#fff;font-weight:600}
+.f-tab{display:flex;gap:2px;padding:9px 14px 0;background:#E8ECF2;border-bottom:1px solid var(--f-linie)}
+.f-tab span{
+  padding:6px 15px;border:1px solid var(--f-linie);border-bottom:0;border-radius:5px 5px 0 0;
+  background:#DCE2EA;color:var(--f-weich);font-size:12.5px;
+}
+.f-tab span.an{background:var(--f-grund);color:var(--f-tinte);font-weight:600;position:relative;top:1px}
+
+/* Raster im Fenster */
+.f-raster{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.f-raster th{
+  background:#E8ECF2;text-align:left;font-weight:600;padding:6px 9px;
+  border:1px solid var(--f-linie);white-space:nowrap;
+}
+.f-raster td{border:1px solid var(--f-linie);padding:5px 9px;background:var(--f-feld)}
+.f-raster td.r,.f-raster th.r{text-align:right}
+.f-raster tr.pflicht td{background:#F4F6FA}
+.f-raster tr.summe td{background:#E8ECF2;font-weight:700;border-top:1.5px solid #9AA6B8}
+.f-raster .schloss{color:#7A8698}
+.f-raster .klein{display:block;color:var(--f-weich);font-size:10.5px;font-family:"IBM Plex Mono",monospace;margin-top:2px}
+.f-raster .strich{color:#B22222;font-weight:600}
+.f-scroll{overflow-x:auto}
+
+/* ---------- Formelkarte ---------- */
+.formel{
+  background:var(--code-grund);border:1px solid var(--linie);border-left:3px solid var(--marine-hell);
+  border-radius:0 7px 7px 0;padding:16px 18px;margin:0 0 14px;
+}
+.formel pre{
+  margin:0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.72;
+  white-space:pre;overflow-x:auto;color:var(--tinte);
+}
+.formel pre .kom{color:var(--tinte-blass)}
+.formel pre .hin{color:var(--erloes);font-weight:500}
+.normzeile{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.norm{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:12px;
+  background:var(--karte);border:1px solid var(--linie-stark);color:var(--tinte-weich);
+}
+.norm.gesetz{border-color:var(--marine-hell);color:var(--marine-hell);font-weight:500}
+:root[data-theme="dark"] .norm.gesetz,
+:root:not([data-theme="light"]) .norm.gesetz{}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .norm.gesetz{border-color:#5C7FBF;color:#9FBAE6}}
+:root[data-theme="dark"] .norm.gesetz{border-color:#5C7FBF;color:#9FBAE6}
+.norm.code{border-style:dashed}
+
+/* ---------- Rechentafel ---------- */
+.tafel-huelle{overflow-x:auto;border:1px solid var(--linie);border-radius:7px;background:var(--karte);box-shadow:var(--schatten)}
+table.tafel{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tafel th{
+  text-align:left;font-family:"IBM Plex Sans Condensed",sans-serif;font-size:11.5px;font-weight:600;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--tinte-blass);
+  padding:11px 14px;border-bottom:1px solid var(--linie-stark);white-space:nowrap;
+}
+table.tafel td{padding:9px 14px;border-bottom:1px solid var(--linie);vertical-align:top}
+table.tafel tr:last-child td{border-bottom:0}
+table.tafel td.r,table.tafel th.r{text-align:right;white-space:nowrap}
+table.tafel td.formelzelle{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--tinte-weich);white-space:nowrap}
+table.tafel tr.zwischen td{background:var(--code-grund);font-weight:600}
+table.tafel tr.ergebnis td{
+  background:var(--erloes-grund);font-weight:700;color:var(--erloes);
+  border-top:1.5px solid var(--erloes);font-size:14.5px;
+}
+table.tafel tr.ergebnis td.formelzelle{color:var(--erloes);font-weight:500}
+table.tafel .schritt{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tinte-blass);
+  display:inline-block;min-width:26px;
+}
+table.tafel .qz{display:block;font-size:11.5px;color:var(--tinte-blass);margin-top:3px}
+.plusminus{font-weight:600}
+.plus{color:var(--erloes)}
+.minus{color:var(--kosten)}
+
+/* Markierungen */
+.marke{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;
+  letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;vertical-align:2px;
+}
+.marke.kw{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes)}
+.marke.aus{background:var(--ausweis-grund);color:var(--ausweis);border:1px solid var(--ausweis)}
+.marke.neu{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante)}
+.marke.luecke{background:var(--kosten-grund);color:var(--kosten);border:1px solid var(--kosten)}
+
+/* Befund */
+.befund{
+  border:1px solid var(--linie);border-left:3px solid var(--kosten);background:var(--karte);
+  border-radius:0 7px 7px 0;padding:14px 18px;margin:16px 0;box-shadow:var(--schatten);
+}
+.befund h4{font-size:15px;font-weight:600;color:var(--kosten);margin-bottom:5px}
+.befund p{margin:0;font-size:14px;color:var(--tinte-weich)}
+.befund p + p{margin-top:8px}
+.befund.frage{border-left-color:var(--warn-kante)}
+.befund.frage h4{color:var(--warn)}
+
+/* Zweispaltig */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media (max-width:860px){.duo{grid-template-columns:1fr}}
+
+/* Diagramm */
+.chart-karte{
+  border:1px solid var(--linie);border-radius:7px;background:var(--karte);padding:18px 20px 14px;
+  box-shadow:var(--schatten);overflow-x:auto;
+}
+.chart-titel{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:14px;margin-bottom:2px}
+.chart-unter{font-size:12.5px;color:var(--tinte-blass);margin-bottom:14px}
+.legende{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--tinte-weich);margin-top:10px}
+.legende i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+p{margin:0 0 14px}
+p.eng{max-width:74ch}
+ul.liste{margin:0 0 16px;padding-left:20px;max-width:74ch}
+ul.liste li{margin-bottom:7px}
+ul.liste li::marker{color:var(--tinte-blass)}
+a{color:var(--marine-hell)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) a{color:#9FBAE6}}
+:root[data-theme="dark"] a{color:#9FBAE6}
+
+.abschluss{margin-top:64px;padding-top:26px;border-top:2px solid var(--tinte)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="huelle">
+
+<header class="kopf">
+  <div class="augenbraue">EPOS-Plan · Wirtschaftlichkeit · Konzeptstand</div>
+  <h1>Dialog, Formel, Zahlenprobe</h1>
+  <p class="unter">Acht Kostenkategorien, je dreifach dargestellt: wie der Dialog aussieht, nach welcher
+  Formel er rechnet und was die Formel an einem durchgerechneten Projekt ergibt. Schwerpunkt sind die
+  beiden Vergütungsseiten — KWKG und Steuerentlastungen beim BHKW, EEG und Direktvermarktung bei der
+  Photovoltaik — und die Komponentenkosten beider Anlagen in derselben Dialogform.</p>
+  <div class="stand">
+    <span>Stand <b>02.09.2026</b></span>
+    <span>Quelle <b>Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md</b></span>
+    <span>Rechtsstand <b>KWKG 2025 · EnergieStG · StromStG · EEG 2023</b></span>
+    <span>Schema <b>ZIEL_VERSION 61</b></span>
+  </div>
+  <div class="hinweisband">
+    <b>Entwurf, keine Umsetzung.</b> Alle Dialoge auf dieser Seite sind Vorschläge zur Abnahme.
+    Umgesetzt ist bislang nur die Pflichtpositionen-Etappe H1. Wo eine Zeile <span class="marke neu">neu</span>
+    trägt, existiert das Feld heute nicht; <span class="marke luecke">Lücke</span> markiert einen offenen
+    Befund, der vor der Umsetzung zu entscheiden ist.
+  </div>
+</header>
+
+<div class="rumpf">
+
+<nav>
+  <div class="navtitel">Kategorien</div>
+  <div class="navliste">
+    <a href="#projekt">Beispielprojekt</a>
+    <a href="#invest">1 Investitionskosten</a>
+    <a href="#betrieb">2 Betriebskosten</a>
+    <a href="#pvkosten">3 Kosten Photovoltaik</a>
+    <a href="#energie">4 Energiekosten</a>
+    <a href="#bhkw" class="schwer">5 Vergütungen BHKW</a>
+    <a href="#pv" class="schwer">6 Vergütungen PV</a>
+    <a href="#erloese">7 Erlösrubrik</a>
+    <a href="#valeri">8 Nutzungsdauer</a>
+    <a href="#offen">Offene Punkte</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ======================= BEISPIELPROJEKT ======================= -->
+<section class="kat" id="projekt">
+  <div class="kat-kopf"><h2>Das durchgerechnete Beispiel</h2><span class="kat-marke">Musterprojekt Gewerbepark</span></div>
+  <p class="kat-lead">Alle Zahlenproben auf dieser Seite stammen aus <em>einem</em> Projekt, damit sie
+  untereinander aufgehen. Wo eine Zahl aus einem realen Beleg des Bestands stammt — Kaskadenprobe,
+  Staffelsatz, Höfingen-Kapitalwert — ist sie als Beleg gekennzeichnet.</p>
+
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Größe</th><th class="r">Wert</th><th>Herkunft</th></tr></thead>
+      <tbody>
+        <tr><td>BHKW, elektrisch / thermisch</td><td class="r num">300 / 355 kW</td><td>Tab_BHKW.Pel · Ptherm</td></tr>
+        <tr><td>Wirkungsgrade el / th / gesamt</td><td class="r num">38 / 45 / 83 %</td><td>Katalog</td></tr>
+        <tr><td>Betriebsstunden</td><td class="r num">5.500 h/a</td><td>Simulationslauf</td></tr>
+        <tr class="zwischen"><td>Brennstoffeinsatz BHKW</td><td class="r num">4.342,1 MWh/a</td><td class="formelzelle">1.650,0 ÷ 0,38</td></tr>
+        <tr class="zwischen"><td>Stromerzeugung brutto</td><td class="r num">1.650,0 MWh/a</td><td class="formelzelle">300 kW × 5.500 h</td></tr>
+        <tr class="zwischen"><td>Nutzwärme</td><td class="r num">1.953,9 MWh/a</td><td class="formelzelle">4.342,1 × 0,45</td></tr>
+        <tr><td>Photovoltaik</td><td class="r num">300 kWp</td><td>IBN 08/2026, Überschusseinspeisung</td></tr>
+        <tr><td>PV-Ertrag</td><td class="r num">285,0 MWh/a</td><td class="formelzelle">300 kWp × 950 kWh/kWp</td></tr>
+        <tr><td>Reststrombezug Netz</td><td class="r num">250,0 MWh/a</td><td>Simulationslauf</td></tr>
+        <tr><td>Energieträger BHKW</td><td class="r">Erdgas</td><td>H<sub>i</sub> 10,5 · H<sub>s</sub> 11,6 kWh/m³</td></tr>
+        <tr><td>Unternehmensart</td><td class="r">produzierendes Gewerbe</td><td>Projektangabe — wirkt auf § 54 und § 9b</td></tr>
+        <tr><td>Kalkulationszins / Zeitraum</td><td class="r num">3,0 % · 20 a</td><td>Tab_ProjektWirtschaftlichkeit</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================= 1 INVESTITION ======================= -->
+<section class="kat" id="invest">
+  <div class="kat-kopf"><h2>1 · Investitionskosten</h2><span class="kat-marke">Tab_ProjektWerte · Kategorie 1</span></div>
+  <p class="kat-lead">Die Investitionsseite rechnet in drei Runden, weil Prozentpositionen sich auf
+  Ergebnisse vorheriger Runden beziehen. Die Reihenfolge ist deshalb nicht Geschmackssache, sondern
+  Voraussetzung dafür, dass „10 % der Investition" überhaupt eine Basis hat.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">Kosten der Komponente — BHKW 1<span class="f-sub">Investition · netto</span></div>
+    <div class="f-tab"><span class="an">Investition</span><span>Betrieb</span><span>Ertrag / Bonus</span></div>
+    <div class="f-leib">
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr>
+          <th>Position</th><th>Kostenart</th><th>Bemessung</th><th class="r">Satz</th>
+          <th class="r">Menge</th><th class="r">Betrag</th><th>Runde</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>BHKW-Modul<span class="klein">Hauptposition der Komponente</span></td>
+            <td>ANSCHAFFUNG</td><td>€ / kW elektrisch</td><td class="r num">653,60</td>
+            <td class="r num">26,00 kW<span class="klein">Baugrößensumme</span></td>
+            <td class="r num">16.993,60</td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Montage und Inbetriebnahme</td><td>ANSCHAFFUNG</td><td>% der Erzeugerkosten</td>
+            <td class="r num">5,00</td>
+            <td class="r num">16.993,60 €<span class="klein">Basis: Hauptpositionen</span></td>
+            <td class="r num">849,68</td><td class="num">2</td><td></td>
+          </tr>
+          <tr>
+            <td>Hydraulik und Einbindung</td><td>ANSCHAFFUNG</td><td>Betrag</td>
+            <td class="r">—</td><td class="r">—</td><td class="r num">13.000,00</td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Planung und Genehmigung</td><td>ANSCHAFFUNG</td><td>% der Investition</td>
+            <td class="r num">10,00</td>
+            <td class="r num">30.843,28 €<span class="klein">Stufe: Anlage BHKW 1</span></td>
+            <td class="r num">3.084,33</td><td class="num">3</td><td></td>
+          </tr>
+          <tr>
+            <td>Zuschuss BAFA</td><td>ZUSCHUSS</td><td>Betrag</td>
+            <td class="r">—</td><td class="r">—</td><td class="r num">6.000,00</td><td class="num">—</td><td></td>
+          </tr>
+          <tr class="summe">
+            <td colspan="5">Investition brutto 33.927,61 € · abzüglich Zuschuss 6.000,00 €</td>
+            <td class="r num">27.927,61</td><td colspan="2">I₀</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="f-warn">Der Zuschuss mindert I₀, nicht die Basis der Prozentpositionen. Ersatzbeschaffung
+      und Restwert rechnen weiter mit dem Bruttobetrag — so ist es gewollt, aber es erklärt, warum die
+      Summenzeile zwei Beträge nennt.</div>
+      <div class="f-info">Reihenfolge der Mengenermittlung: gepflegter Szenariowert → Baugröße aus der
+      Gerätewelt → gespeicherte Menge. Passt die Kostenart nicht zum Gewerk, bleibt die Zeile leer —
+      es wird nie eine Ersatzzahl gebildet.</div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">Zuletzt gespeichert 14:18</span>
+      <span class="f-knopf">Aus Vorlage übernehmen…</span>
+      <span class="f-knopf">+ Position</span>
+      <span class="f-knopf primaer">Speichern</span>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm code">BetriebskostenCtrl.Betrag</span>
+    <span class="norm code">InvestSummeFuer</span>
+    <span class="norm gesetz">DIN EN 17463, 6.1</span>
+  </div>
+  <div class="formel"><pre>Runde 1 — direkte Arten (Mengenkette)
+  Betrag = Menge × Satz          <span class="kom">Menge: Szenariowert → Baugröße → Konserve</span>
+
+Runde 2 — % der Erzeugerkosten
+  Basis  = Σ Betrag der Runde-1-Zeilen mit IsMainComponent = TRUE
+           UND Kostenart ≠ ZUSCHUSS UND gleiche KomponentenID
+  Betrag = Basis × Satz / 100
+
+Runde 3 — % der Investition (stufig, erste nicht-leere Stufe gewinnt)
+  1. Anlage → 2. Komponente → 3. Projekt → 4. Rückfall Mengenkette
+  Betrag = Basis × Satz / 100
+
+Zuschuss (nach der Positionsschleife)
+  I₀_brutto = Σ Nicht-Zuschuss-Positionen mit StartJahr = 0
+  Zuschuss  = min( Σ Zuschusszeilen , I₀_brutto )   <span class="kom">Klemme, Überhang nur Ausweis</span>
+  I₀        = I₀_brutto − Zuschuss</pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <p class="eng">Die Kaskade wirkt multiplikativ: Jede Runde vergrößert die Basis der nächsten. Das ist der
+  Grund, warum eine scheinbar kleine Prozentposition am Ende einen fünfstelligen Betrag bewegt.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">R1</span> BHKW-Modul</td><td class="formelzelle">26,00 × 653,60</td>
+            <td class="r num">16.993,60 €</td><td>Hauptposition — bildet die Basis für Runde 2</td></tr>
+        <tr><td><span class="schritt">R1</span> Hydraulik</td><td class="formelzelle">Betrag, fest</td>
+            <td class="r num">13.000,00 €</td><td>zählt nicht zur Erzeugerkosten-Basis (keine Hauptposition)</td></tr>
+        <tr><td><span class="schritt">R2</span> Montage 5 %</td><td class="formelzelle">16.993,60 × 5 / 100</td>
+            <td class="r num">849,68 €</td><td>Basis nur die Hauptposition</td></tr>
+        <tr class="zwischen"><td>Basis für Runde 3</td><td class="formelzelle">16.993,60 + 849,68 + 13.000,00</td>
+            <td class="r num">30.843,28 €</td><td>alle Zeilen der Anlage, ohne Zuschuss</td></tr>
+        <tr><td><span class="schritt">R3</span> Planung 10 %</td><td class="formelzelle">30.843,28 × 10 / 100</td>
+            <td class="r num">3.084,33 €</td><td>Stufe „Anlage" greift</td></tr>
+        <tr class="zwischen"><td>Investition brutto</td><td class="formelzelle">16.993,60 + 849,68 + 13.000,00 + 3.084,33</td>
+            <td class="r num">33.927,61 €</td><td>Ausweis, Basis für Ersatz und Restwert</td></tr>
+        <tr><td>Zuschuss</td><td class="formelzelle">min(6.000,00 ; 33.927,61)</td>
+            <td class="r num minus">− 6.000,00 €</td><td>Klemme greift nicht</td></tr>
+        <tr class="ergebnis"><td>I₀ — kapitalwertwirksam</td><td class="formelzelle">33.927,61 − 6.000,00</td>
+            <td class="r num">27.927,61 €</td><td>geht mit negativem Vorzeichen in Periode 0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="eng" style="margin-top:16px">Der Kaskadenfaktor der beiden Prozentpositionen beträgt
+  <span class="mono">1 + 0,05 + 0,10 × 1,05 = 1,155</span>. Gemessen an Projekt 1042 des Bestands ergab
+  dieselbe Kette ein Delta von genau <span class="mono num">+20.927,61 €</span> — die Formel ist damit
+  am realen Datenbestand belegt.</p>
+</section>
+
+<!-- ======================= 2 BETRIEB ======================= -->
+<section class="kat" id="betrieb">
+  <div class="kat-kopf"><h2>2 · Betriebskosten</h2><span class="kat-marke">Tab_ProjektWerte · Kategorie 2</span></div>
+  <p class="kat-lead">Wartung, Instandhaltung und Hilfsenergie entstehen mit der Komponente, nicht aus einer
+  Vorlage. Die drei Zeilen sind Pflicht nach VDI 2067 und tragen deshalb ein Schloss statt eines
+  Papierkorbs — löschen führt zum Angebot „Satz auf 0 setzen".</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">Kosten der Komponente — BHKW 1<span class="f-sub">Betrieb · netto</span></div>
+    <div class="f-tab"><span>Investition</span><span class="an">Betrieb</span><span>Ertrag / Bonus</span></div>
+    <div class="f-leib">
+      <div class="f-info" style="margin:0 0 10px">Alle Beträge und Bezugsgrößen sind <b>netto</b>.
+      Mengen stammen aus dem Simulationslauf vom <b>02.09.2026, 09:14</b>.</div>
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr>
+          <th>Position</th><th>Bemessung</th><th class="r">Satz</th><th class="r">Betrag</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr class="pflicht">
+            <td>Wartung BHKW<span class="klein">Pflicht nach VDI 2067 · üblich 2,0–4,0 ct/kWh</span></td>
+            <td>€ / kWh elektrisch</td>
+            <td class="r num">0,0280<span class="klein">× 1.650.000 kWh el · BHKW 1</span></td>
+            <td class="r num">46.200,00<span class="klein">berechnet</span></td>
+            <td class="schloss">🔒</td>
+          </tr>
+          <tr class="pflicht">
+            <td>Instandhaltung<span class="klein">Pflicht nach VDI 2067 · üblich 1,0–2,0 %</span></td>
+            <td>% der Investition</td>
+            <td class="r num">1,50<span class="klein">× 33.927,61 € · Investition BHKW 1</span></td>
+            <td class="r num">508,91<span class="klein">berechnet</span></td>
+            <td class="schloss">🔒</td>
+          </tr>
+          <tr class="pflicht">
+            <td>Hilfsenergie<span class="klein">Pflicht · üblich 2,0–4,0 % (BHKW)</span></td>
+            <td>% der Endenergiekosten</td>
+            <td class="r num">2,00<span class="klein">× 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom</span></td>
+            <td class="r num">6.252,62<span class="klein">berechnet</span></td>
+            <td class="schloss">🔒</td>
+          </tr>
+          <tr>
+            <td>Versicherung</td><td>Jahresbetrag</td>
+            <td class="r gesperrt">—</td><td class="r num">1.100,00</td><td>🗑</td>
+          </tr>
+          <tr class="summe">
+            <td colspan="3">Betriebskosten BHKW 1 &nbsp;&nbsp;<span style="font-weight:400;color:#5A5A5A">brutto 64.333,22 €/a</span></td>
+            <td class="r num">54.061,53</td><td></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="f-warn">Die Hilfsenergie ist zugleich als Anlagenanteil im BHKW-Dialog gepflegt
+      (2,0 %). Doppelpflege — es zählt die Kostenposition, der Anlagenanteil wirkt nur auf die
+      KWKG-Nettostrommenge.</div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">✓ Gespeichert 14:22</span>
+      <span class="f-knopf">Aus Vorlage übernehmen…</span>
+      <span class="f-knopf">+ Position</span>
+      <span class="f-knopf primaer">Speichern</span>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm gesetz">VDI 2067</span>
+    <span class="norm code">EndenergieAufloeser</span>
+    <span class="norm code">DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN</span>
+  </div>
+  <div class="formel"><pre>Sperre zuerst: fehlt Menge ODER Satz  ⇒  Betrag = 0   <span class="kom">nicht der gespeicherte Wert</span>
+
+  A  absolut   BETRAG, JAHRESBETRAG   Betrag = eingegebener Wert
+  B  Prozent   PROZENT_*              Betrag = Menge × Satz / 100
+  C  Produkt   EUR_PRO_*              Betrag = Menge × Satz
+
+Hilfsenergie — Endenergie je Komponente (immer frisch aus dem jüngsten Lauf):
+  BHKW, Kessel   Bedarf = Σ Verbrauch × 1000        Kosten = Bedarf × Arbeitspreis
+  Wärmepumpe     Bedarf = Σ (Strom + Heizstab)×1000 Kosten = Bedarf × Strompreis
+  PV · Solar · Speicher                             <span class="hin">nur Jahresbetrag zulässig</span>
+
+  Arbeitspreis = PreisArbeit / EffHi     <span class="kom">ohne Grund- und Leistungspreis</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <p class="eng">Die Hilfsenergie ist immer <em>Strom</em>, wird aber an der Endenergie der Anlage bemessen —
+  beim BHKW also am Erdgas. Deshalb ist der Prozentsatz nicht mit dem eines Wärmepumpen-Satzes
+  vergleichbar: Zwischen beiden liegt das Preisverhältnis Strom zu Brennstoff, Faktor rund 3,4.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">1</span> Endenergiemenge</td>
+            <td class="formelzelle">4.342,1 MWh × 1000</td><td class="r num">4.342.100 kWh</td>
+            <td>Brennstoff des BHKW aus dem jüngsten Lauf</td></tr>
+        <tr><td><span class="schritt">2</span> Arbeitspreis</td>
+            <td class="formelzelle">0,7560 €/m³ ÷ 10,5 kWh/m³</td><td class="r num">0,0720 €/kWh</td>
+            <td>Heizwert als Umrechnung, keine Wirkungsgrad-Division</td></tr>
+        <tr class="zwischen"><td>Endenergiekosten</td>
+            <td class="formelzelle">4.342.100 × 0,0720</td><td class="r num">312.631,20 €/a</td>
+            <td>die Bezugsgröße der Prozentzeile</td></tr>
+        <tr><td><span class="schritt">3</span> Hilfsenergie 2 %</td>
+            <td class="formelzelle">312.631,20 × 2,00 / 100</td><td class="r num">6.252,62 €/a</td>
+            <td>Dialog zeigt zusätzlich die rückgerechnete Strommenge</td></tr>
+        <tr><td><span class="schritt">4</span> Rückrechnung Strom</td>
+            <td class="formelzelle">6.252,62 € ÷ 0,288 €/kWh</td><td class="r num">21.710 kWh/a</td>
+            <td>zur Plausibilitätsprüfung, ohne Rechenwirkung</td></tr>
+        <tr class="ergebnis"><td>Betriebskosten Jahr 1</td>
+            <td class="formelzelle">46.200,00 + 508,91 + 6.252,62 + 1.100,00</td>
+            <td class="r num">54.061,53 €/a</td><td>steigt mit p<sub>B</sub> ab Jahr 2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="befund">
+    <h4>Befund B-1 — der Kessel liefert strukturell null</h4>
+    <p>Beim Heizkessel steht <span class="mono">Verbrauch</span> im Bestand auf 0. Eine Hilfsenergiezeile
+    „% der Endenergiekosten" rechnet dort <span class="mono">0 × Satz = 0 €/a</span> — dauerhaft und ohne
+    Fehlermeldung. Der Dialogentwurf versteckt das nicht, sondern zeigt in der Herleitungszeile
+    <span class="mono">× 0 kWh</span> und macht den Befund damit erstmals sichtbar.</p>
+  </div>
+</section>
+
+<!-- ======================= 3 KOSTEN PHOTOVOLTAIK ======================= -->
+<section class="kat" id="pvkosten">
+  <div class="kat-kopf"><h2>3 · Kosten der Photovoltaik</h2><span class="kat-marke">Form_KostenKomponente — PV-Anordnung</span></div>
+  <p class="kat-lead">Dieselbe Dialogform wie beim BHKW, aber mit dem, was PV anders macht: Die Menge ist
+  die Spitzenleistung in kWp und muss aus Modulanzahl und Modulleistung hergeleitet werden; der
+  Wechselrichter lebt nur halb so lang wie die Module und wird im Jahr 12 ersetzt; die Module haben am
+  Ende des Betrachtungszeitraums noch Restwert; Hilfsenergie gibt es nur als Jahresbetrag, weil PV
+  keine Endenergie hat; und der Ertrag altert — Degradation ist ein eigenes Attribut.</p>
+
+  <div class="zone">Dialog — Reiter Investition</div>
+  <div class="fenster">
+    <div class="f-band">Kosten der Komponente — PV-Feld Dach Halle 2<span class="f-sub">Investition · netto</span></div>
+    <div class="f-tab"><span class="an">Investition</span><span>Betrieb</span><span>Ertrag / Bonus</span></div>
+    <div class="f-leib">
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr>
+          <th>Position</th><th>Kostenart</th><th>Bemessung</th><th class="r">Satz</th>
+          <th class="r">Menge</th><th class="r">Betrag</th><th class="r">Nutzungsdauer</th><th>Runde</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>PV-Module<span class="klein">Hauptposition der Komponente</span></td>
+            <td>ANSCHAFFUNG</td><td>€ / kWp</td><td class="r num">320,00</td>
+            <td class="r num">300,00 kWp<span class="klein">750 Module × 400 Wp</span></td>
+            <td class="r num">96.000,00</td><td class="r num">25 a</td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Wechselrichter</td>
+            <td>ANSCHAFFUNG</td><td>€ / kWp</td><td class="r num">80,00</td>
+            <td class="r num">300,00 kWp</td>
+            <td class="r num">24.000,00</td><td class="r num">12 a<span class="klein">Ersatz im Jahr 12</span></td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Unterkonstruktion und Montage</td>
+            <td>ANSCHAFFUNG</td><td>€ / kWp</td><td class="r num">150,00</td>
+            <td class="r num">300,00 kWp</td>
+            <td class="r num">45.000,00</td><td class="r num">25 a</td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Elektroinstallation, Netzanschluss, Messkonzept</td>
+            <td>ANSCHAFFUNG</td><td>Betrag</td><td class="r">—</td><td class="r">—</td>
+            <td class="r num">18.000,00</td><td class="r num">25 a</td><td class="num">1</td><td></td>
+          </tr>
+          <tr>
+            <td>Planung und Genehmigung</td>
+            <td>ANSCHAFFUNG</td><td>% der Investition</td><td class="r num">5,00</td>
+            <td class="r num">183.000,00 €<span class="klein">Stufe: Anlage PV-Feld</span></td>
+            <td class="r num">9.150,00</td><td class="r">—<span class="klein">= Zeitraum</span></td><td class="num">3</td><td></td>
+          </tr>
+          <tr class="summe">
+            <td colspan="5">Investition 192.150,00 € · kein Zuschuss · <span style="font-weight:400">spezifisch</span> 640,50 €/kWp</td>
+            <td class="r num">192.150,00</td><td colspan="3">I₀</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="f-warn"><b>Befund I-1 — Mengenquelle.</b> <span class="mono" style="font-size:11px">Tab_Energieanlagen.PV_Leistung</span>
+      heißt andernorts ausdrücklich Modulanzahl. Der Dialog zeigt deshalb beide Größen — 750 Module
+      × 400 Wp = 300,00 kWp — damit ein €/kWp-Satz nie mit der Modulzahl multipliziert wird. Ohne
+      diese Herleitung stünde hier 240.000 € statt 96.000 € (Faktor 2,5).</div>
+
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Ersatz und Restwert <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— aus der Nutzungsdauer, i = 3,0 %, T = 20 a</span></div>
+        <div class="f-scroll">
+        <table class="f-raster">
+          <thead><tr><th>Position</th><th class="r">n</th><th>Ersatzbeschaffung</th><th class="r">Restwert Jahr 20</th><th>Herleitung</th></tr></thead>
+          <tbody>
+            <tr><td>PV-Module</td><td class="r num">25 a</td><td>—</td><td class="r num">19.200,00</td><td class="klein" style="display:table-cell">96.000 × 5 / 25 · Restdauer 5 a</td></tr>
+            <tr><td>Wechselrichter</td><td class="r num">12 a</td><td class="num">Jahr 12 · 24.000,00 € <span class="klein" style="display:inline">brutto, nicht indexiert</span></td><td class="r num">8.000,00</td><td class="klein" style="display:table-cell">24.000 × 4 / 12 · Alter 8 a nach Ersatz</td></tr>
+            <tr><td>Unterkonstruktion und Montage</td><td class="r num">25 a</td><td>—</td><td class="r num">9.000,00</td><td class="klein" style="display:table-cell">45.000 × 5 / 25</td></tr>
+            <tr><td>Elektroinstallation</td><td class="r num">25 a</td><td>—</td><td class="r num">3.600,00</td><td class="klein" style="display:table-cell">18.000 × 5 / 25</td></tr>
+            <tr><td>Planung und Genehmigung</td><td class="r">= T</td><td>—</td><td class="r">—</td><td class="klein" style="display:table-cell">ohne Nutzungsdauer: kein Ersatz, kein Restwert</td></tr>
+            <tr class="summe"><td colspan="2">Summe</td><td class="num">24.000,00 € · Barwert 16.833</td><td class="r num">39.800,00</td><td class="klein" style="display:table-cell">Barwert 22.036 € · 1,03<sup>−20</sup></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="f-info">Der Restwert ist eine <b>dokumentierte Abweichung</b> von DIN EN 17463, 6.4
+        (V-G4). Bei PV wiegt sie: Die Module haben am Ende der zwanzig Jahre noch fünf Jahre
+        Restdauer, und der Barwert des Restwerts (22.036 €) übersteigt den des Wechselrichtertauschs
+        (16.833 €). Der Bericht deklariert das als Modellannahme.</div>
+      </div>
+
+      <div class="f-info">Kein Zuschuss: Die EEG-Vergütung schließt eine Investitionsförderung in der
+      Regel aus (Kumulierungsregel). Ein Zuschuss wäre wie beim BHKW als ZUSCHUSS-Zeile erfassbar und
+      würde I₀ mindern, nicht die Basis der Prozentpositionen.</div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">Zuletzt gespeichert 15:02</span>
+      <span class="f-knopf">Aus Vorlage übernehmen…</span>
+      <span class="f-knopf">+ Position</span>
+      <span class="f-knopf primaer">Speichern</span>
+    </div>
+  </div>
+
+  <div class="zone">Dialog — Reiter Betrieb</div>
+  <div class="fenster">
+    <div class="f-band">Kosten der Komponente — PV-Feld Dach Halle 2<span class="f-sub">Betrieb · netto</span></div>
+    <div class="f-tab"><span>Investition</span><span class="an">Betrieb</span><span>Ertrag / Bonus</span></div>
+    <div class="f-leib">
+      <div class="f-info" style="margin:0 0 10px">Alle Beträge und Bezugsgrößen sind <b>netto</b>.
+      Mengen stammen aus dem Simulationslauf vom <b>02.09.2026, 09:14</b>.</div>
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr>
+          <th>Position</th><th>Bemessung</th><th class="r">Satz</th><th class="r">Betrag</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr class="pflicht">
+            <td>Wartung und Reinigung<span class="klein">Pflicht nach VDI 2067 · üblich 10–15 €/kWp·a</span></td>
+            <td>€ / kWp · a</td>
+            <td class="r num">12,00<span class="klein">× 300,00 kWp · PV-Feld</span></td>
+            <td class="r num">3.600,00<span class="klein">berechnet</span></td>
+            <td class="schloss">🔒</td>
+          </tr>
+          <tr class="pflicht">
+            <td>Instandhaltung<span class="klein">Pflicht nach VDI 2067 · üblich 0,5–1,0 %</span></td>
+            <td>% der Investition</td>
+            <td class="r num">0,50<span class="klein">× 192.150,00 € · Investition PV-Feld</span></td>
+            <td class="r num">960,75<span class="klein">berechnet</span></td>
+            <td class="schloss">🔒</td>
+          </tr>
+          <tr>
+            <td>Versicherung (Allgefahren)</td><td>% der Investition</td>
+            <td class="r num">0,25<span class="klein">× 192.150,00 € · Investition PV-Feld</span></td>
+            <td class="r num">480,38<span class="klein">berechnet</span></td>
+            <td>🗑</td>
+          </tr>
+          <tr>
+            <td>Monitoring und Direktvermarkter-Grundgebühr</td><td>Jahresbetrag</td>
+            <td class="r gesperrt">—</td><td class="r num">600,00</td><td>🗑</td>
+          </tr>
+          <tr>
+            <td>Hilfsenergie<span class="klein">Standby Wechselrichter, Monitoring · keine Pflicht bei PV</span></td>
+            <td>Jahresbetrag</td>
+            <td class="r gesperrt">—</td><td class="r num">90,00</td><td>🗑</td>
+          </tr>
+          <tr class="summe">
+            <td colspan="3">Betriebskosten PV-Feld &nbsp;&nbsp;<span style="font-weight:400;color:#5A5A5A">brutto 6.820,04 €/a</span></td>
+            <td class="r num">5.731,13</td><td></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="f-info">Hilfsenergie bei PV <b>nur als Jahresbetrag</b>: Eine Prozentposition hätte keine
+      Bezugsgröße — der Endenergie-Auflöser liefert für PV, Solarthermie und Speicher null. Das
+      Feld ist deshalb keine Pflichtzeile und trägt kein Schloss.</div>
+
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Ertrag und Degradation <span class="marke neu">neu · V-G2</span></div>
+        <div class="f-zeile eng"><label>Ertrag Jahr 1</label><span style="font-weight:700" class="num">285,0 MWh/a</span><span class="f-einheit">Simulationslauf · 950 kWh/kWp</span></div>
+        <div class="f-zeile eng"><label>Degradation</label><span class="f-eingabe num">0,50</span><span class="f-einheit">% / a — 0 = keine (Vorgabe)</span></div>
+        <div class="f-zeile eng"><label>Quelle</label><span class="f-eingabe links" style="min-width:260px">Herstellerdatenblatt, lineare Leistungsgarantie</span></div>
+        <div class="f-herleitung">Jahr 20: 285,0 × (1 − 0,005)<sup>19</sup> = <b>259,1 MWh</b> · Ertragsverlust über 20 Jahre <b>4,7 %</b> — wirkt auf Einspeisung, Eigenverbrauch und damit auf die Vergütungsreihe</div>
+        <div class="f-info">DIN EN 17463, 6.3.3 verlangt die Degradation je Position <b>mit Quellenangabe</b>.
+        Das Attribut ist neu; die Vorgabe 0 %/a hält den Bestand ergebnisneutral.</div>
+      </div>
+
+      <div class="f-vorschau">
+        <div class="f-vtitel">Vorschau Kosten PV-Feld</div>
+        <div class="f-vzeile"><span>Betriebskosten p. a. <span class="f-tag">steigt mit p<sub>B</sub></span></span><span class="f-vwert num">5.731,13 €</span></div>
+        <div class="f-vzeile"><span>Ersatz Wechselrichter <span class="f-tag">Jahr 12 · brutto</span></span><span class="f-vwert num">24.000,00 €</span></div>
+        <div class="f-vzeile"><span>Restwert Jahr 20 <span class="f-tag">linear, deklariert</span></span><span class="f-vwert num">39.800,00 €</span></div>
+        <div class="f-vzeile summe"><span>Spezifische Investition</span><span class="num">640,50 €/kWp</span></div>
+      </div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">✓ Gespeichert 15:06</span>
+      <span class="f-knopf">Aus Vorlage übernehmen…</span>
+      <span class="f-knopf">+ Position</span>
+      <span class="f-knopf primaer">Speichern</span>
+    </div>
+  </div>
+  <p class="eng" style="margin-top:14px;color:var(--tinte-blass);font-size:13.5px">Der dritte Reiter „Ertrag / Bonus" öffnet
+  denselben Vergütungsdialog wie Kategorie 6 — kein zweiter Rechenweg.</p>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm code">EUR_PRO_KWP</span>
+    <span class="norm code">BaugroesseSumme</span>
+    <span class="norm gesetz">DIN EN 17463, 6.3.3 · 6.4</span>
+    <span class="norm gesetz">VDI 2067</span>
+  </div>
+  <div class="formel"><pre>Investition — Mengenkette € / kWp
+  Menge [kWp] = Modulanzahl × Modulleistung [Wp] / 1000
+  Betrag      = Menge × Satz
+  <span class="hin">Befund I-1: die heutige Quelle Tab_Energieanlagen.PV_Leistung ist andernorts
+  die Modulanzahl — die Herleitung muss beide Größen zeigen, nie nur eine.</span>
+Runde 3 wie beim BHKW: Basis = alle Zeilen der Anlage ohne Zuschuss
+
+Ersatz und Restwert (aus der Nutzungsdauer n je Position)
+  Ersatz:   t_j = round(start + k·n)  für k = 1, 2, …  solange 1 ≤ t_j &lt; T
+            → Wechselrichter n = 12, T = 20: t = 12 ; Module n = 25: kein Ersatz
+  Restwert: Alter = T − letzte Beschaffung ;  Restdauer = n − Alter
+            RW_T = Betrag × Restdauer / n            <span class="kom">nur bei Restdauer &gt; 0, linear</span>
+  Barwert:  Ersatz_t / (1 + i)^t ;  RW_T / (1 + i)^T  <span class="kom">Ersatz nicht indexiert</span>
+
+Betrieb — Gruppen A und C, keine Endenergie-Arten
+  Wartung   Betrag = kWp × Satz [€/kWp·a]
+  Prozent   Betrag = Investition(Anlage) × Satz / 100
+  Hilfsenergie:  JAHRESBETRAG — der EndenergieAufloeser liefert für PV null
+
+Degradation (neu, V-G2)   Menge_t = Menge_1 × (1 − d)^(t−1)     <span class="kom">Vorgabe d = 0</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">R1</span> Menge</td><td class="formelzelle">750 × 400 / 1000</td>
+            <td class="r num">300,00 kWp</td><td>beide Größen sichtbar (I-1)</td></tr>
+        <tr><td><span class="schritt">R1</span> Module</td><td class="formelzelle">300,00 × 320,00</td>
+            <td class="r num">96.000,00 €</td><td>Hauptposition</td></tr>
+        <tr><td><span class="schritt">R1</span> Wechselrichter</td><td class="formelzelle">300,00 × 80,00</td>
+            <td class="r num">24.000,00 €</td><td>n = 12 a</td></tr>
+        <tr><td><span class="schritt">R1</span> Unterkonstruktion</td><td class="formelzelle">300,00 × 150,00</td>
+            <td class="r num">45.000,00 €</td><td></td></tr>
+        <tr><td><span class="schritt">R1</span> Elektro</td><td class="formelzelle">Betrag, fest</td>
+            <td class="r num">18.000,00 €</td><td></td></tr>
+        <tr class="zwischen"><td>Basis für Runde 3</td><td class="formelzelle">96.000 + 24.000 + 45.000 + 18.000</td>
+            <td class="r num">183.000,00 €</td><td>alle Zeilen der Anlage</td></tr>
+        <tr><td><span class="schritt">R3</span> Planung 5 %</td><td class="formelzelle">183.000,00 × 5 / 100</td>
+            <td class="r num">9.150,00 €</td><td>Stufe „Anlage"</td></tr>
+        <tr class="ergebnis"><td>I₀ — kapitalwertwirksam</td><td class="formelzelle">183.000,00 + 9.150,00</td>
+            <td class="r num">192.150,00 €</td><td>640,50 €/kWp</td></tr>
+        <tr><td><span class="schritt">E</span> Ersatz Wechselrichter</td><td class="formelzelle">24.000 ÷ 1,03<sup>12</sup></td>
+            <td class="r num minus">− 16.833 €</td><td>Barwert, Jahr 12</td></tr>
+        <tr><td><span class="schritt">RW</span> Restwert gesamt</td><td class="formelzelle">39.800 ÷ 1,03<sup>20</sup></td>
+            <td class="r num plus">+ 22.036 €</td><td>Barwert, Jahr 20 — deklarierte Modellannahme</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================= 4 ENERGIEKOSTEN ======================= -->
+<section class="kat" id="energie">
+  <div class="kat-kopf"><h2>4 · Energiekosten</h2><span class="kat-marke">energy_carrier · energy_project_settings</span></div>
+  <p class="kat-lead">Der Auftrag an diese Kategorie war Transparenz: Energiesteuer und Stromsteuer stecken im
+  Arbeitspreis, ohne dass man sie sieht. Der Bestandteil-Block macht sie sichtbar — ohne den Preis zu
+  verändern, denn er ist die Grundlage der Kohärenzprüfung gegen die Steuerentlastungen.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">Energieträger — Erdgas<span class="f-sub">Projekt 1042 · Preise netto</span></div>
+    <div class="f-leib">
+      <div class="f-spalten">
+        <div class="f-gruppe">
+          <div class="f-titel">Preis und Heizwert</div>
+          <div class="f-zeile"><label>Arbeitspreis</label><span class="f-eingabe num">0,7560</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-zeile"><label>Grundpreis</label><span class="f-eingabe num">180,00</span><span class="f-einheit">€ / a</span></div>
+          <div class="f-zeile"><label>Leistungspreis</label><span class="f-eingabe num">0,00</span><span class="f-einheit">€ / kW · a</span></div>
+          <div class="f-zeile"><label>Heizwert H<sub>i</sub></label><span class="f-eingabe num">10,50</span><span class="f-einheit">kWh / m³</span></div>
+          <div class="f-zeile"><label>Brennwert H<sub>s</sub></label><span class="f-eingabe num">11,60</span><span class="f-einheit">kWh / m³</span></div>
+          <div class="f-herleitung">→ <b>0,0720 €/kWh</b> · Umrechnungsfaktor H<sub>s</sub>/H<sub>i</sub> = <b>1,1048</b></div>
+        </div>
+        <div class="f-gruppe">
+          <div class="f-titel">Preisbestandteile <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— Transparenz, ohne Preiswirkung</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Energiesteuer</span><span class="f-eingabe num">0,0638</span><span class="f-einheit">€ / m³ — 5,50 €/MWh (H<sub>s</sub>)</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">CO₂-Bestandteil (BEHG)</span><span class="f-eingabe num">0,1371</span><span class="f-einheit">€ / m³ — 65 €/t × 2,109 kg/m³</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Netz- und Messentgelt</span><span class="f-eingabe num">0,1180</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Beschaffung und Vertrieb</span><span class="f-eingabe num">0,4371</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-herleitung">Summe der Bestandteile <b>0,7560 €/m³</b> — deckungsgleich mit dem Arbeitspreis ✓</div>
+          <div class="f-zeile" style="margin-top:6px"><span class="f-knopf">Schnellwahl aus Katalog…</span><span class="f-knopf">In Arbeitspreis übernehmen</span></div>
+        </div>
+      </div>
+
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Emissionen <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— Anzeige folgt der Bilanzierungsvorgabe des Projekts</span></div>
+        <div class="f-zeile"><label>Bilanzierungsmethode</label><span class="f-combo">CO₂ direkt — reale Bilanz, heizwertbezogen</span></div>
+        <div class="f-scroll" style="margin-top:8px">
+          <table class="f-raster">
+            <thead><tr><th>Träger</th><th class="r">CO₂-Äquivalent</th><th class="r">Primärenergiefaktor</th><th>Quelle</th></tr></thead>
+            <tbody>
+              <tr><td>Erdgas</td><td class="r num">200,9 g/kWh</td><td class="r num">1,10</td><td>EBeV 2030 Anl. 2 (H<sub>i</sub>) · GEG Anlage 4</td></tr>
+              <tr><td>Heizöl EL</td><td class="r num">266,4 g/kWh</td><td class="r num">1,10</td><td>EBeV 2030 Anl. 2</td></tr>
+              <tr><td>Strommix Netzbezug</td><td class="r num">435,0 g/kWh</td><td class="r num">1,80</td><td>BAFA EEW 3.4 — Rückfall, reale Bilanz</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="f-info">Angezeigt wird nur die im Projekt gewählte Größe — CO₂ <em>oder</em> CO₂-Äquivalent.
+        SO₂ und NO<sub>x</sub> werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. Der gewählte
+        Faktorensatz weist <b>keine Vorkette</b> aus; der Tooltip benennt das an jedem Wert. Der
+        <b>Nachweissatz</b> nach GEG Anlage 9 (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für
+        einen anderen Zweck und belegt im Code nie dieselbe Variable.</div>
+      </div>
+
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Aufschläge Netzbezug Strom</div>
+        <div class="f-zeile"><span class="f-check"><i></i></span><span class="f-lab">Aufschläge anwenden</span>
+          <span class="f-einheit">— aus, Vorgabe</span></div>
+        <div class="f-herleitung">Netzentgelt 6,440 + Umlagen 2,946 + Stromsteuer 2,050 + Konzession 0,110 + Vertrieb 0,200 = <b>11,746 ct/kWh</b></div>
+        <div class="f-warn"><b>Vorsicht bei ungepflegten Trägern.</b> Leere Spalten lesen sich als
+        Vorschlagswerte, nicht als Null. Ein ungepflegter Stromträger liefert deshalb die vollen
+        11,746 ct/kWh. Gemessen an Projekt 1030: <b>+360.603 €/a (+32 %)</b>, Kapitalwert <b>−29,8 %</b>.</div>
+      </div>
+    </div>
+    <div class="f-fuss"><span class="f-knopf">Abbrechen</span><span class="f-knopf primaer">Übernehmen</span></div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm gesetz">BEHG · EU-ETS 2</span>
+    <span class="norm gesetz">GEG Anlage 4 und 9</span>
+    <span class="norm code">StromMatrix</span>
+  </div>
+  <div class="formel"><pre>Arbeitspreis
+  [A] eff_hi &gt; 0   Menge = MWh × 1000 / eff_hi ;  Arbeit = Menge × PreisArbeit
+  [B] sonst        Arbeit = MWh × 1000 × PreisArbeit          <span class="kom">Preis bereits €/kWh</span>
+
+  <span class="hin">eff_hi ist der Heizwert je Abrechnungseinheit, kein Wirkungsgrad.
+  In der Kostenkette wird nie durch η geteilt — der Verbrauch ist schon Endenergie.</span>
+
+Leistungspreis — die einzige η-Division der Kette
+  kw = BHKW: (P_el + P_therm) / η_gesamt      Kessel: P_therm / η
+  Modus JAHR: Satz × kw          Modus MONAT: Satz × kw × 12
+
+Netzbezug Strom
+  Kosten = Restbedarf × 1000 × Preis + Grundpreis + Aufschlagbetrag
+  Aufschlagbetrag = NetzbezugMWh × 1000 × WirksamCtKwh / 100
+
+CO₂ / BEHG als eigene Reihe
+  behgBasis [t/a] = CO2Brennstoff + BiogenBehgMenge × BehgOhneNachweis / 1000
+  BEHG_t [€]      = behgBasis × CO2-Preis(Kalenderjahr)
+  Preispfad 2026 = 65 €/t realisiert ; 2027 Korridor 55–65 (Gesetz im Verfahren)
+           ab 2028 = 80 €/t Prognose — EU-ETS 2 startet 2028, nicht 2027
+  <span class="hin">Hi/Ho-Falle: Erdgas 200,9 g/kWh gilt heizwertbezogen; auf die brennwert-
+  bezogene Abrechnungsmenge gehört 181,4 — sonst rund 10 % zu viel CO₂.</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">1</span> Gasmenge</td>
+            <td class="formelzelle">4.342,1 MWh × 1000 ÷ 10,5</td><td class="r num">413.533 m³/a</td>
+            <td>Abrechnungseinheit des Trägers</td></tr>
+        <tr><td><span class="schritt">2</span> Arbeitspreis</td>
+            <td class="formelzelle">413.533 × 0,7560</td><td class="r num">312.631,2 €/a</td>
+            <td>identisch zur kWh-Rechnung der Betriebsseite</td></tr>
+        <tr><td><span class="schritt">3</span> Grundpreis</td>
+            <td class="formelzelle">einmal p. a.</td><td class="r num">180,00 €/a</td>
+            <td>nur, wenn ein Arbeitspreis existiert</td></tr>
+        <tr><td><span class="schritt">4</span> Netzbezug Strom</td>
+            <td class="formelzelle">250,0 MWh × 1000 × 0,2880</td><td class="r num">72.000,00 €/a</td>
+            <td>Aufschläge aus — sonst zusätzlich 29.365 €/a</td></tr>
+        <tr class="zwischen"><td>Energiekosten Jahr 1</td>
+            <td class="formelzelle">312.631,2 + 180,00 + 72.000,00</td><td class="r num">384.811,20 €/a</td>
+            <td>steigt mit p<sub>E</sub> ab Jahr 2</td></tr>
+        <tr><td><span class="schritt">5</span> CO₂-Menge</td>
+            <td class="formelzelle">4.342,1 MWh × 0,2009 t/MWh</td><td class="r num">872,3 t/a</td>
+            <td>Emissionsfaktor Erdgas</td></tr>
+        <tr class="ergebnis"><td>BEHG Jahr 1 (2026)</td>
+            <td class="formelzelle">872,3 × 65,00 €/t</td><td class="r num">56.699,50 €/a</td>
+            <td>eigene Reihe, folgt dem Preispfad je Kalenderjahr</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================= 4 VERGÜTUNGEN BHKW ======================= -->
+<section class="kat" id="bhkw">
+  <div class="kat-kopf"><h2>5 · Vergütungen BHKW</h2><span class="kat-marke">Form_BhkwWirtschaftlichkeit — neu</span></div>
+  <p class="kat-lead">Die dichteste Kategorie: vier Rechtsgrundlagen, drei verschiedene Strommengen und eine
+  Staffel, die marginal rechnet statt klassenweise. Der neue Dialog bringt zusammen, was heute auf drei
+  Formulare verteilt ist, und zeigt zu jedem Satz, woher er kommt.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">BHKW-Wirtschaftlichkeit<span class="f-sub">Projekt 1042 · Musterprojekt Gewerbepark</span></div>
+    <div class="f-leib">
+
+      <!-- Gruppe 1: Anlagen -->
+      <div class="f-gruppe">
+        <div class="f-titel">Anlagen</div>
+        <div class="f-scroll">
+        <table class="f-raster">
+          <thead><tr><th>Anlage</th><th class="r">P<sub>el</sub></th><th>Brennstoff</th><th>Stichtag</th><th>Inbetriebnahme</th><th>Anlagenart</th></tr></thead>
+          <tbody>
+            <tr><td>BHKW 1</td><td class="r num">300 kW</td><td>Erdgas</td><td class="num">14.03.2026</td><td class="num">01.10.2026</td><td>neu (§ 8 Abs. 1)</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div style="margin-top:11px;padding:10px 12px;border:1px dashed #B9C1CD;border-radius:5px;background:#F7F9FC">
+          <div style="font-weight:600;margin-bottom:7px">▾ BHKW 1 — Aufklappzeile</div>
+          <div class="f-spalten">
+            <div>
+              <div class="f-zeile eng"><label>Eigenstrom nach § 6 Abs. 3</label><span class="f-combo">Nr. 2 Kundenanlage</span></div>
+              <div class="f-zeile eng"><label>Satz Einspeisung</label><span class="f-eingabe num">0,00</span><span class="f-einheit">ct/kWh — 0 = Vorschlag</span></div>
+              <div class="f-zeile eng"><label>Satz Eigenstrom</label><span class="f-eingabe num">0,00</span><span class="f-einheit">ct/kWh — 0 = Vorschlag</span></div>
+              <div class="f-zeile eng"><label>Vbh-Kontingent</label><span class="f-eingabe num">0</span><span class="f-einheit">h — 0 = Staffel § 8</span></div>
+              <div class="f-zeile eng"><label>Vbh-Jahresdeckel</label><span class="f-eingabe num">0</span><span class="f-einheit">h/a — 0 = Staffel</span></div>
+            </div>
+            <div>
+              <div class="f-zeile eng"><label>Energiesteuerentlastung <span class="marke neu">neu</span></label><span class="f-combo">§ 53a Abs. 5</span></div>
+              <div class="f-zeile eng"><label>Brennstoff auf Strom/Wärme <span class="marke neu">neu</span></label><span class="f-combo">voller Brennstoff</span></div>
+              <div class="f-zeile eng"><label>Hilfsenergieanteil <span class="marke neu">neu</span></label><span class="f-eingabe num">2,00</span><span class="f-einheit">% des Brennstoffs</span></div>
+              <div class="f-herleitung">Vorschlag BHKW 2–4 % · wirkt nur auf die KWKG-Nettostrommenge</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mengentafel -->
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Strommengen — welche Vorschrift rechnet mit welcher Menge</div>
+        <div class="f-scroll">
+        <table class="f-raster">
+          <thead><tr><th>Menge</th><th class="r">MWh/a</th><th>verwendet von</th><th>Grund</th></tr></thead>
+          <tbody>
+            <tr><td>Stromerzeugung brutto</td><td class="r num">1.650,0</td>
+                <td>§ 9 Abs. 1 Nr. 3 · CO₂-Grenzwert · Vollbenutzungsstunden</td>
+                <td class="klein" style="display:table-cell">an den Generatorklemmen gemessen</td></tr>
+            <tr><td>− Hilfsstrom (2,0 % × 4.342,1)</td><td class="r num">− 86,8</td><td>—</td>
+                <td class="klein" style="display:table-cell">Neben- und Hilfsanlagen, § 2 Nr. 20 KWKG</td></tr>
+            <tr class="summe"><td>= Nettostromerzeugung</td><td class="r num">1.563,2</td>
+                <td>KWKG-Zuschlag § 7</td>
+                <td class="klein" style="display:table-cell">= KWK-Strom, § 2 Nr. 16 Fall 1</td></tr>
+            <tr><td>&nbsp;&nbsp;davon Eigenverbrauch (70 %)</td><td class="r num">1.094,2</td><td>Zuschlag Abs. 2</td><td></td></tr>
+            <tr><td>&nbsp;&nbsp;davon Einspeisung (30 %)</td><td class="r num">469,0</td><td>Zuschlag Abs. 1 · Einspeiseerlös</td><td></td></tr>
+            <tr><td>&nbsp;&nbsp;Eigenverbrauch brutto (70 %)</td><td class="r num">1.155,0</td><td>§ 9 Abs. 1 Nr. 3 StromStG</td>
+                <td class="klein" style="display:table-cell">kein Netting — andere Vorschrift</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="f-info">Das Netting wirkt <b>ausschließlich</b> auf die KWKG-Zuschlagsmengen.
+        Stromsteuer, CO₂-Grenzwert und Vollbenutzungsstunden bleiben brutto — das ist keine
+        Inkonsistenz, sondern folgt daraus, dass nur § 7 KWKG auf „KWK-Strom" im Sinne des § 2 Nr. 16 zahlt.</div>
+      </div>
+
+      <div class="f-spalten" style="margin-top:14px">
+        <!-- KWK-Zuschlag -->
+        <div class="f-gruppe">
+          <div class="f-titel">KWK-Zuschlag (§ 7 KWKG)</div>
+          <div class="f-herleitung">
+            Einspeisung <b>5,5667 ct/kWh</b><br>
+            &nbsp;&nbsp;50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40<br>
+            &nbsp;&nbsp;= 1.670 ÷ 300 kW<br><br>
+            Eigenstrom <b>2,4167 ct/kWh</b> · Tatbestand Nr. 2<br>
+            &nbsp;&nbsp;50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50<br>
+            &nbsp;&nbsp;= 725 ÷ 300 kW
+          </div>
+          <div class="f-zeile" style="margin-top:4px"><span class="f-knopf">Vorschlag in die Satzfelder übernehmen</span></div>
+          <div class="f-zeile eng" style="margin-top:8px"><label>Vbh-Kontingent</label><span class="f-eingabe gesperrt num">30.000</span><span class="f-einheit">h — neu, § 8 Abs. 1</span></div>
+          <div class="f-zeile eng"><label>Jahresdeckel 2026</label><span class="f-eingabe gesperrt num">3.300</span><span class="f-einheit">h/a — Staffel § 8 Abs. 4</span></div>
+          <div class="f-zeile eng"><label>Abschlag Negativstunden</label><span class="f-eingabe num">0,0</span><span class="f-einheit">%</span></div>
+          <div class="f-warn">Die Anlage läuft 5.500 h/a, vergütet werden 2026 aber nur 3.300 h —
+          <b>60 % der Erzeugung</b>. Das Kontingent reicht dadurch über 12 Kalenderjahre.</div>
+        </div>
+
+        <!-- Energiesteuer -->
+        <div class="f-gruppe">
+          <div class="f-titel">Energiesteuer (EnergieStG)</div>
+          <div class="f-zeile eng"><label>Entlastung Projekt</label><span class="f-combo">§ 53a Abs. 5 · Formular 1135</span></div>
+          <div class="f-zeile eng"><label>Brennstoffaufteilung</label><span class="f-combo">voller Brennstoff</span></div>
+          <div class="f-zeile eng"><label>Jahresnutzungsgrad</label><span class="f-eingabe num">83,0</span><span class="f-einheit">% — Schwelle 70 %</span></div>
+          <div class="f-herleitung">
+            § 53a Abs. 5 · Erdgas <b>4,42 €/MWh</b><br>
+            4.342,1 MWh (H<sub>i</sub>) × 1,1048 = <b>4.797,2 MWh</b> (H<sub>s</sub>)<br>
+            × 4,42 = <b>21.203,4 €/a</b>
+          </div>
+          <div class="f-info"><b>Alternative § 53:</b> voller Satz 5,50 €/MWh → 26.384,3 €/a.
+          Nicht kumulierbar — je Anlage genau eine Wahl.</div>
+          <div class="f-info" style="margin-top:6px">Die Unternehmensart spielt hier <b>keine</b> Rolle:
+          §§ 53 und 53a Abs. 5 differenzieren nicht danach. Sie wirkt nur auf § 54 (Kessel) und § 9b (Netzbezug).</div>
+        </div>
+      </div>
+
+      <div class="f-spalten" style="margin-top:14px">
+        <!-- Stromsteuer -->
+        <div class="f-gruppe">
+          <div class="f-titel">Stromsteuer (StromStG)</div>
+          <div class="f-zeile eng"><label>Unternehmensart</label><span class="f-combo">produzierendes Gewerbe</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Hocheffizienz nachgewiesen</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Räumlicher Zusammenhang ≤ 4,5 km</span></div>
+          <div class="f-zeile eng"><label>Modus § 9 Abs. 1 Nr. 3 <span class="marke luecke">Lücke K3</span></label><span class="f-combo">Ausweis</span></div>
+          <div class="f-herleitung">
+            <b>§ 9 Abs. 1 Nr. 3</b> — Befreiung Eigenverbrauch<br>
+            P<sub>el</sub> 300 kW ≤ 2 MW ✓ · CO₂ 242,1 &lt; 270 g/kWh ✓<br>
+            1.155,0 MWh × 20,50 €/MWh = <b>23.677,5 €/a</b><br><br>
+            <b>§ 9b</b> — Entlastung Netzbezug<br>
+            250,0 MWh × 20,00 − 250 = <b>4.750,0 €/a</b>
+          </div>
+          <div class="f-warn">Auf selbst erzeugten und selbst verbrauchten Strom entsteht gar keine
+          Stromsteuer — der Vorteil steckt bereits in der kleineren Bezugsrechnung. Deshalb Ausweis
+          statt Erlös (Befund B-1).</div>
+        </div>
+
+        <!-- Kohärenz -->
+        <div class="f-gruppe">
+          <div class="f-titel">Kohärenzprüfung</div>
+          <div class="f-info" style="margin-top:0">Vergleicht die gewählten Entlastungen mit den
+          Preisbestandteilen des Trägers. Ohne Rechenwirkung — sie deckt Widersprüche auf, die sonst
+          erst der Steuerberater findet.</div>
+          <div class="f-scroll" style="margin-top:8px">
+          <table class="f-raster">
+            <thead><tr><th>Prüfung</th><th>Befund</th></tr></thead>
+            <tbody>
+              <tr><td>Energiesteuer im Gaspreis</td><td>0,0638 €/m³ ausgewiesen · § 53a gewählt ✓</td></tr>
+              <tr><td>Satz gegen Katalog</td><td>5,50 €/MWh × 11,6 kWh/m³ ÷ 1000 = 0,0638 €/m³ · deckungsgleich ✓</td></tr>
+              <tr><td>§ 9b bei produzierendem Gewerbe</td><td>gewählt ✓</td></tr>
+              <tr><td>Doppelpflege Hilfsenergie</td><td class="strich">Anlagenanteil 2,0 % <em>und</em> Kostenposition aktiv</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vorschau -->
+      <div class="f-vorschau">
+        <div class="f-vtitel">Vorschau Jahr 1 (2026)</div>
+        <div class="f-vzeile"><span>KWK-Zuschlag Einspeisung <span class="f-tag">§ 7 Abs. 1 · 469,0 MWh</span></span><span class="f-vwert num">15.664,7 €</span></div>
+        <div class="f-vzeile"><span>KWK-Zuschlag Eigenstrom <span class="f-tag">§ 7 Abs. 2 · 1.094,2 MWh</span></span><span class="f-vwert num">15.866,1 €</span></div>
+        <div class="f-vzeile"><span>Energiesteuer-Gutschrift <span class="f-tag">§ 53a Abs. 5</span></span><span class="f-vwert num">21.203,4 €</span></div>
+        <div class="f-vzeile"><span>Stromsteuer-Entlastung Netzbezug <span class="f-tag">§ 9b</span></span><span class="f-vwert num">4.750,0 €</span></div>
+        <div class="f-vzeile"><span>Einspeiseerlös Strom <span class="f-tag">469,0 MWh × 5,0 ct</span></span><span class="f-vwert num">23.450,0 €</span></div>
+        <div class="f-vzeile summe"><span>Summe zahlungswirksam</span><span class="num">80.934,2 €</span></div>
+        <div class="f-vzeile" style="margin-top:9px;opacity:.78"><span>Stromsteuer-Befreiung Eigenverbrauch <span class="f-tag">§ 9 Abs. 1 Nr. 3 — Ausweis</span></span><span class="num">23.677,5 €</span></div>
+      </div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">Vorschau rechnet über denselben Weg wie der Wirtschaftlichkeitslauf</span>
+      <span class="f-knopf">Strombezug…</span><span class="f-knopf">Abbrechen</span>
+      <span class="f-knopf primaer">Übernehmen</span>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm gesetz">§ 2 Nr. 16, Nr. 20 KWKG</span>
+    <span class="norm gesetz">§ 6 Abs. 3 KWKG</span>
+    <span class="norm gesetz">§ 7 KWKG</span>
+    <span class="norm gesetz">§ 8 KWKG</span>
+    <span class="norm gesetz">§§ 53, 53a, 54 EnergieStG</span>
+    <span class="norm gesetz">§ 9 Abs. 1 Nr. 3, § 9b StromStG</span>
+  </div>
+  <div class="formel"><pre>Mischsatz — marginal über die Leistungsanteile, NICHT klassenweise
+  Satz [ct/kWh] = Σ_k Breite_k × Satz_k / P_el
+  Breite_k      = min(Obergrenze_k, P_el) − Obergrenze_(k−1)
+
+  <span class="hin">Eine Klassenlogik hätte bei 300 kW nur 4,40 ct/kWh ergeben — 21 % zu wenig.</span>
+
+Mengenkette (§ 2 Nr. 20 KWKG)
+  Hilfsstrom(A) = Hilfsenergie_Anteil / 100 × Brennstoff(A)
+  Netto(A)      = Brutto(A) − Hilfsstrom(A)
+  Eigen zuerst: Eigen' = max(0, E − H) ; Einsp' = max(0, F − max(0, H − E))
+
+Jahresreihe mit Kontingent und Deckel
+  Bonus_voll = Eigen × 10 × SatzEigen + Einsp × 10 × SatzEinsp      <span class="kom">MWh und ct/kWh</span>
+  je Jahr:  Vergütet  = min(Vbh, Deckel(Jahr), Restkontingent) × (1 − Abschlag)
+            Reihe[t] += Bonus_voll × Vergütet / Vbh
+            Rest     −= Vergütet
+
+Energiesteuer, anlagenscharf
+  § 53   Gutschrift = Satz_voll × Menge         <span class="kom">VOLLER_BRENNSTOFF: ungeteilt, Abs. 2</span>
+  § 53a  Gutschrift = Teilsatz × Brennstoff     <span class="kom">Nutzungsgradschwelle 70 %</span>
+  § 54   netto = max(0, Σ Teilsatz × Menge − 250 €)   <span class="kom">nur produzierendes Gewerbe</span>
+  Einheitenkette €/MWh:  MWh_Hi × (eff_hs / eff_hi)   <span class="kom">Erdgas 11,6/10,5 = 1,1048</span>
+
+Stromsteuer
+  § 9 Abs.1 Nr.3  = 20,50 €/MWh × KwkEigen_BRUTTO × Anteil bestandener Anlagen
+                    CO₂-Grenzwert: Faktor_EBeV × Brennstoff / (Strom + Wärme) &lt; 270 g/kWh
+  § 9b            = max(0, 20,00 €/MWh × Netzbezug − 250 €/a)</pre></div>
+
+  <div class="zone">Berechnungserläuterung — der Mischsatz</div>
+  <p class="eng">Die Staffel des § 7 Abs. 1 arbeitet wie ein Einkommensteuertarif: Jeder Leistungsanteil
+  wird mit seinem eigenen Satz vergütet, nicht die ganze Anlage mit dem Satz ihrer Klasse.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Leistungsanteil</th><th class="r">Breite</th><th class="r">Satz</th><th class="r">Beitrag</th><th>Rechtsgrundlage</th></tr></thead>
+      <tbody>
+        <tr><td>bis 50 kW</td><td class="r num">50 kW</td><td class="r num">8,00 ct</td><td class="r num">400</td><td>§ 7 Abs. 1 Nr. 1</td></tr>
+        <tr><td>&gt; 50 bis 100 kW</td><td class="r num">50 kW</td><td class="r num">6,00 ct</td><td class="r num">300</td><td>Nr. 2</td></tr>
+        <tr><td>&gt; 100 bis 250 kW</td><td class="r num">150 kW</td><td class="r num">5,00 ct</td><td class="r num">750</td><td>Nr. 3</td></tr>
+        <tr><td>&gt; 250 kW bis 2 MW</td><td class="r num">50 kW</td><td class="r num">4,40 ct</td><td class="r num">220</td><td>Nr. 4</td></tr>
+        <tr class="ergebnis"><td>Mischsatz Einspeisung</td><td class="r num">300 kW</td><td class="r">—</td>
+            <td class="r num">1.670 ÷ 300 = 5,5667 ct/kWh</td><td>belegt am Bestand</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="zone">Berechnungserläuterung — die Jahresreihe</div>
+  <p class="eng">Der volle Jahresbonus wird nie ausgezahlt: Der Jahresdeckel des § 8 Abs. 4 sinkt bis 2030
+  auf 2.500 h, und das Gesamtkontingent von 30.000 h ist danach erschöpft. Aus einer scheinbaren
+  Dauerförderung wird eine Reihe über zwölf Jahre mit fallendem Anfang.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">1</span> Bonus Einspeisung</td>
+            <td class="formelzelle">469,0 × 10 × 5,5667</td><td class="r num">26.107,8 €</td><td>volle Menge, ungedeckelt</td></tr>
+        <tr><td><span class="schritt">2</span> Bonus Eigenstrom</td>
+            <td class="formelzelle">1.094,2 × 10 × 2,4167</td><td class="r num">26.443,5 €</td><td>nur wegen Tatbestand Nr. 2</td></tr>
+        <tr class="zwischen"><td>Bonus_voll</td><td class="formelzelle">26.107,8 + 26.443,5</td>
+            <td class="r num">52.551,3 €</td><td>Bezugsgröße der Jahresreihe</td></tr>
+        <tr><td><span class="schritt">3</span> Deckelanteil 2026</td>
+            <td class="formelzelle">min(5.500 ; 3.300 ; 30.000) ÷ 5.500</td><td class="r num">0,600</td><td>Deckel greift, nicht das Kontingent</td></tr>
+        <tr class="ergebnis"><td>Zuschlag Jahr 1</td><td class="formelzelle">52.551,3 × 0,600</td>
+            <td class="r num">31.530,8 €</td><td>davon 15.664,7 € Einspeisung, 15.866,1 € Eigenstrom</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-karte" style="margin-top:22px">
+    <div class="chart-titel">KWK-Zuschlag über den Betrachtungszeitraum</div>
+    <div class="chart-unter">Jahresdeckel nach § 8 Abs. 4 · Kontingent 30.000 Vbh · Förderbeginn 2026 · Summe 286.644 €</div>
+    <svg viewBox="0 0 560 200" width="560" height="200" role="img" aria-label="Balkendiagramm des KWK-Zuschlags über 20 Jahre: 31.531 Euro im Jahr 2026, fallend auf 23.887 Euro ab 2030, 4.777 Euro im Jahr 2037, danach null.">
+      <line x1="34" y1="160" x2="556" y2="160" stroke="var(--linie-stark)" stroke-width="1"/>
+      <line x1="34" y1="30" x2="556" y2="30" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="34" y1="95" x2="556" y2="95" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="30" y="34" text-anchor="end" font-size="9" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">32k</text>
+      <text x="30" y="99" text-anchor="end" font-size="9" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">16k</text>
+      <text x="30" y="163" text-anchor="end" font-size="9" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">0</text>
+      <g>
+        <rect x="38"  y="30.0"  width="18" height="130.0" fill="#0B6B5B"/>
+        <rect x="64"  y="37.9"  width="18" height="122.1" fill="#0B6B5B"/>
+        <rect x="90"  y="45.8"  width="18" height="114.2" fill="#0B6B5B"/>
+        <rect x="116" y="53.6"  width="18" height="106.4" fill="#0B6B5B"/>
+        <rect x="142" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="168" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="194" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="220" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="246" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="272" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="298" y="61.5"  width="18" height="98.5"  fill="#158472"/>
+        <rect x="324" y="140.3" width="18" height="19.7"  fill="#C88A00"/>
+        <rect x="350" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="376" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="402" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="428" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="454" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="480" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="506" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+        <rect x="532" y="157.0" width="18" height="3"     fill="var(--linie-stark)"/>
+      </g>
+      <text x="47"  y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">26</text>
+      <text x="151" y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">30</text>
+      <text x="255" y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">34</text>
+      <text x="333" y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">37</text>
+      <text x="437" y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">41</text>
+      <text x="541" y="174" text-anchor="middle" font-size="8.5" fill="var(--tinte-blass)" font-family="IBM Plex Mono, monospace">45</text>
+      <text x="333" y="134" text-anchor="middle" font-size="9" fill="#8A6100" font-family="IBM Plex Mono, monospace">Rest 500 h</text>
+      <text x="450" y="150" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" font-family="IBM Plex Sans, sans-serif">Kontingent erschöpft — acht Jahre ohne Zuschlag</text>
+    </svg>
+    <div class="legende">
+      <span><i style="background:#0B6B5B"></i>Deckel fällt jährlich (3.300 → 2.500 h)</span>
+      <span><i style="background:#158472"></i>Deckel konstant 2.500 h ab 2030</span>
+      <span><i style="background:#C88A00"></i>Restkontingent, Teiljahr</span>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Befund K-1 — der zweite Fall des § 2 Nr. 16 fehlt</h4>
+    <p>Verfügt eine Anlage über eine <b>Vorrichtung zur Abwärmeabfuhr</b> — beim Notkühler größerer BHKW
+    der Regelfall —, ist KWK-Strom nicht die Nettostromerzeugung, sondern
+    <span class="mono">Nutzwärme × Stromkennzahl</span>. Das ist eine andere Größe: Sie hängt an der
+    genutzten Wärme und kann bei Wärmeüberschuss deutlich darunter liegen.</p>
+    <p>EPOS-Plan führt weder ein Kennzeichen „Abwärmeabfuhr vorhanden" noch eine Stromkennzahl und rechnet
+    immer den ersten Fall. Für Anlagen mit Notkühler fällt der Zuschlag damit <b>zu hoch</b> aus. Zu
+    entscheiden, nicht stillschweigend zu lassen.</p>
+  </div>
+</section>
+
+<!-- ======================= 5 VERGÜTUNGEN PV ======================= -->
+<section class="kat" id="pv">
+  <div class="kat-kopf"><h2>6 · Vergütungen Photovoltaik</h2><span class="kat-marke">Form_PhotovoltaikVerguetung — Bestand</span></div>
+  <p class="kat-lead">Die PV-Seite ist der Gegenentwurf zum BHKW: keine Staffel über Leistungsanteile im
+  Zuschlag, dafür ein anzulegender Wert, der degressiv altert, eine Marktprämie als Differenzgröße und
+  zwei Kürzungstatbestände — negative Preise und die 60-%-Kappung.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">
+      <span class="f-check an" style="margin-right:2px"><i style="border-color:#fff"></i></span>
+      Photovoltaik-Vergütung<span class="f-sub">PV-Feld Dach Halle 2 · 914 × 724</span>
+    </div>
+    <div class="f-leib">
+      <div class="f-spalten">
+        <div>
+          <div class="f-gruppe">
+            <div class="f-titel">Anlage</div>
+            <div class="f-zeile eng"><label>Installierte Leistung</label><span style="font-weight:700" class="num">300,00 kWp</span><span class="f-einheit">rechnerisch</span></div>
+            <div class="f-zeile eng"><label>Override</label><span class="f-eingabe num">0,00</span><span class="f-einheit">kWp — 0 = keiner</span></div>
+            <div class="f-zeile eng"><label>Inbetriebnahme</label><span class="f-eingabe links num">01.08.2026</span></div>
+            <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Überschusseinspeisung</span>
+              <span class="f-radio"><i></i></span><span class="f-lab" style="min-width:0">Volleinspeisung</span></div>
+            <div class="f-herleitung">Ertrag <b>285,0 MWh/a</b> · Eigenverbrauch 85,5 · Einspeisung <b>199,5 MWh/a</b></div>
+          </div>
+
+          <div class="f-gruppe" style="margin-top:12px">
+            <div class="f-titel">Vermarktung</div>
+            <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">Feste Einspeisevergütung</span><span class="f-einheit">nur ≤ 100 kW</span></div>
+            <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Direktvermarktung mit Marktprämie</span></div>
+            <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">Sonstige Direktvermarktung / PPA</span></div>
+            <div class="f-zeile eng"><label>DV-Entgelt</label><span class="f-eingabe num">0,40</span><span class="f-einheit">ct/kWh</span></div>
+            <div class="f-zeile eng"><label>Jahresmarktwert Solar</label><span class="f-eingabe num">4,50</span><span class="f-einheit">ct/kWh</span></div>
+            <div class="f-info">Ab 100 kW ist die Direktvermarktung Pflicht (§ 21 EEG) — die feste
+            Vergütung steht deshalb nicht zur Wahl.</div>
+          </div>
+
+          <div class="f-gruppe" style="margin-top:12px">
+            <div class="f-titel">Anzulegender Wert</div>
+            <div class="f-zeile eng"><label>AW gemischt</label><span style="font-weight:700;font-size:14px" class="num">6,04 ct/kWh</span></div>
+            <div class="f-herleitung">
+              marginale Klassen, Katalogwerte zum Stichtag 08/2026<br>
+              100 kWp × 7,94 + 200 kWp × 5,09 = 1.812 ÷ 300 = <b>6,04 ct/kWh</b><br>
+              Degression 0,99 je Halbjahresstichtag seit 01.02.2024
+            </div>
+            <div class="f-zeile eng"><label>AW-Override</label><span class="f-eingabe num">0,00</span><span class="f-einheit">ct/kWh — 0 = Katalog</span></div>
+            <div class="f-zeile eng"><label>abgeleitete feste EV</label><span class="f-eingabe gesperrt num">5,64</span><span class="f-einheit">ct/kWh — nur ≤ 100 kW</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="f-gruppe">
+            <div class="f-titel">§ 51 — negative Preise</div>
+            <div class="f-zeile eng"><label>Anwenden</label><span class="f-combo">Automatisch</span></div>
+            <div class="f-herleitung">Status: <b>ja</b> — Anlage ≥ 100 kWp, Inbetriebnahme nach 25.02.2025</div>
+            <div class="f-zeile eng"><label>iMSys-Einbaujahr</label><span class="f-eingabe num">0</span><span class="f-einheit">0 = keins</span></div>
+            <div class="f-zeile eng"><label>Ausfallanteil</label><span class="f-eingabe num">20,0</span><span class="f-einheit">% — Pauschale</span></div>
+            <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">§ 51a-Kompensation ansetzen</span></div>
+            <div class="f-info">Alternativ stundenscharf aus der Spotpreis-Zeitreihe:
+            <span class="mono">a = Σ Einsp(Spot &lt; 0) ÷ Σ Einsp</span></div>
+          </div>
+
+          <div class="f-gruppe" style="margin-top:12px">
+            <div class="f-titel">60-%-Begrenzung</div>
+            <div class="f-zeile eng"><label>Anwenden</label><span class="f-combo">Automatisch</span></div>
+            <div class="f-herleitung">Kappungsgrenze 0,6 × 300 kWp = <b>180 kW</b><br>
+            Verlust = Σ max(0 ; Einsp<sub>h</sub> − 180) = <b>3.990 kWh/a</b> (1,4 %)</div>
+          </div>
+
+          <div class="f-gruppe" style="margin-top:12px">
+            <div class="f-titel">Bezugsbewertung</div>
+            <div class="f-zeile eng"><span class="f-check"><i></i></span><span class="f-lab">Netzbezug stundenscharf bewerten</span></div>
+            <div class="f-info">Bei &gt; 2 MW ist die Stromsteuer gesondert zu prüfen (§ 9 StromStG).
+            Bei &gt; 1 MW greift die Ausschreibung — dann ist ein AW-Override nötig.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="f-vorschau">
+        <div class="f-vtitel">Vorschau Jahr 1 (2027, erstes volles Jahr)</div>
+        <div class="f-vzeile"><span>Spoterlös <span class="f-tag">199,5 MWh × 4,50 ct</span></span><span class="f-vwert num">8.977,50 €</span></div>
+        <div class="f-vzeile"><span>Marktprämie <span class="f-tag">× (6,04 − 4,50) ct</span></span><span class="f-vwert num">3.072,30 €</span></div>
+        <div class="f-vzeile"><span>Prämienausfall § 51 <span class="f-tag">20 % der Einspeisung</span></span><span class="f-vwert num">− 614,46 €</span></div>
+        <div class="f-vzeile"><span>DV-Entgelt <span class="f-tag">× 0,40 ct</span></span><span class="f-vwert num">− 798,00 €</span></div>
+        <div class="f-vzeile"><span>Kappungsverlust 60 % <span class="f-tag">3.990 kWh</span></span><span class="f-vwert num">− 241,00 €</span></div>
+        <div class="f-vzeile summe"><span>Vergütung PV</span><span class="num">10.396,34 €</span></div>
+        <div class="f-vzeile" style="margin-top:9px;opacity:.78"><span>Vermiedener Netzbezug <span class="f-tag">85,5 MWh × 28,80 ct — Ausweis</span></span><span class="num">24.624,00 €</span></div>
+      </div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">Reihe über 20 Jahre + Inbetriebnahmemonate</span>
+      <span class="f-knopf">Marktwerte importieren…</span><span class="f-knopf">Einspeise-Tarif…</span>
+      <span class="f-knopf">Abbrechen</span><span class="f-knopf primaer">Übernehmen</span>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm gesetz">§ 21 EEG — Direktvermarktung</span>
+    <span class="norm gesetz">§ 21c EEG</span>
+    <span class="norm gesetz">§ 51 EEG — negative Preise</span>
+    <span class="norm gesetz">§ 51a EEG</span>
+    <span class="norm gesetz">§ 100 EEG — Degression</span>
+    <span class="norm code">PvErloesRechner</span>
+  </div>
+  <div class="formel"><pre>Anzulegender Wert
+  Degression   Faktor 0,99^n     <span class="kom">Halbjahresstichtage 1.2. / 1.8. ab 01.02.2024</span>
+  AW_mix     = round( Σ Anteil_k × AW_Klasse_k / Σ Anteil_k , 2 )
+               <span class="kom">marginale Klassen 10 / 40 / 100 / 400 / 1000 kWp</span>
+  EV_fest    = max(0, AW_mix − 0,40)              <span class="kom">nur ≤ 100 kW</span>
+
+Marktprämie (Direktvermarktung)
+  Erlös = Spot€
+        + Arbeit × max(0, AW − Jahresmarktwert) / 100
+        − Arbeit × DV-Entgelt / 100
+
+§ 51 — negative Preise
+  Ausfallanteil a = 20 % pauschal   ODER   Σ Einsp(Spot &lt; 0) / Σ Einsp
+  Prämienausfall  = Arbeit × a × (AW − Jahresmarktwert) / 100
+  <span class="hin">Der Spoterlös bleibt — es entfällt nur die Prämie.</span>
+
+§ 51a — Kompensation im letzten Vergütungsjahr
+  Gutschrift = Ausfallarbeit(Jahr 1) × 0,5 × AW / 100
+
+60-%-Kappung
+  Verlust [kWh] = Σ_h max(0, Einsp_h − 0,6 × kWp)
+
+Ausfallvergütung   AW × (1 − 20 %)                <span class="kom">nur &gt; 100 kW</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung — anzulegender Wert</div>
+  <p class="eng">Der AW wird wie der KWKG-Satz marginal gemischt, aber über andere Klassen — und er altert:
+  Jeder Halbjahresstichtag seit Februar 2024 kürzt ihn um 1 %.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">1</span> Degression</td>
+            <td class="formelzelle">0,99 je Halbjahresstichtag ab 01.02.2024</td><td class="r">Katalog</td>
+            <td>Stichtage 1.2. und 1.8. bis zur Inbetriebnahme; Beleg: 8,60 → 8,10 ct/kWh trifft 16 von 16 BNetzA-Werten</td></tr>
+        <tr><td><span class="schritt">2</span> Klassenanteile</td>
+            <td class="formelzelle">100 kWp × 7,94 + 200 kWp × 5,09</td><td class="r num">1.812 ct·kWp</td>
+            <td>marginale Klassen, Katalogwerte zum Stichtag</td></tr>
+        <tr class="zwischen"><td>AW gemischt</td><td class="formelzelle">1.812 ÷ 300</td>
+            <td class="r num">6,04 ct/kWh</td><td>Belegwert des Bestands für 300 kWp</td></tr>
+        <tr><td><span class="schritt">3</span> Spoterlös</td>
+            <td class="formelzelle">199.500 kWh × 4,50 ÷ 100</td><td class="r num">8.977,50 €</td>
+            <td>Jahresmarktwert Solar</td></tr>
+        <tr><td><span class="schritt">4</span> Marktprämie</td>
+            <td class="formelzelle">199.500 × (6,04 − 4,50) ÷ 100</td><td class="r num">3.072,30 €</td>
+            <td>Differenz AW zu Marktwert</td></tr>
+        <tr><td><span class="schritt">5</span> Ausfall § 51</td>
+            <td class="formelzelle">199.500 × 20 % × 1,54 ÷ 100</td><td class="r num minus">− 614,46 €</td>
+            <td>nur die Prämie entfällt, nicht der Spoterlös</td></tr>
+        <tr><td><span class="schritt">6</span> DV-Entgelt</td>
+            <td class="formelzelle">199.500 × 0,40 ÷ 100</td><td class="r num minus">− 798,00 €</td>
+            <td>Kosten des Direktvermarkters</td></tr>
+        <tr><td><span class="schritt">7</span> Kappung 60 %</td>
+            <td class="formelzelle">3.990 kWh × 6,04 ÷ 100</td><td class="r num minus">− 241,00 €</td>
+            <td>Mengenverlust, mit AW bewertet</td></tr>
+        <tr class="ergebnis"><td>PV-Vergütung Jahr 1</td>
+            <td class="formelzelle">8.977,50 + 3.072,30 − 614,46 − 798,00 − 241,00</td>
+            <td class="r num">10.396,34 €</td><td>eigene Reihe, 20 Jahre + IBN-Monate</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="eng" style="margin-top:16px">Im letzten Vergütungsjahr kommt die § 51a-Kompensation hinzu:
+  <span class="mono">39.900 kWh × 0,5 × 6,04 / 100 = 1.204,98 €</span>. Sie ist eine Einmalzahlung und
+  wird auf ihr Jahr abgezinst, nicht auf Periode 0 gezogen.</p>
+
+  <div class="befund frage">
+    <h4>Warum die PV-Reihe nicht mit p<sub>E</sub> steigt</h4>
+    <p>Der anzulegende Wert ist ein <em>gesetzlich fixierter</em> Betrag in ct/kWh — er wächst nicht mit der
+    Energiepreissteigerung. Nominal konstant zu rechnen ist deshalb richtig und entspricht der
+    Nominalrechnung nach DIN EN 17463, 6.3.2. Was sehr wohl schwankt, ist der <em>Jahresmarktwert</em>:
+    Steigt er über den AW, entfällt die Prämie ganz, der Spoterlös steigt aber. Diese Größe gehört
+    deshalb in die Szenarienpflege (Best/Worst), nicht in eine Preissteigerungsrate.</p>
+  </div>
+</section>
+
+<!-- ======================= 6 ERLÖSE ======================= -->
+<section class="kat" id="erloese">
+  <div class="kat-kopf"><h2>7 · Erlösrubrik</h2><span class="kat-marke">Ergebnisreiter · Bericht · BHKW-Vorschau</span></div>
+  <p class="kat-lead">Alle Erlöse an einem Ort — mit einer Trennung, die keine Kosmetik ist: Block B darf
+  nicht addiert werden. Wer vermiedene Stromkosten neben den Reststrombetrag stellt und beides summiert,
+  zählt dieselbe Ersparnis zweimal.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">Erlöse und Vorteile<span class="f-sub">Jahr 1 · 2026 · netto</span></div>
+    <div class="f-leib">
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr>
+          <th>Position</th><th>Rechtsgrundlage</th><th class="r">Menge</th><th class="r">Satz</th>
+          <th class="r">Betrag €/a</th><th>Laufzeit</th>
+        </tr></thead>
+        <tbody>
+          <tr><td colspan="6" style="background:#E6F2EF;font-weight:600;color:#0B5A4C">Block A — zahlungswirksam, geht in den Kapitalwert</td></tr>
+          <tr><td>KWK-Bonus Einspeisung</td><td>§ 7 Abs. 1 KWKG</td><td class="r num">469,0 MWh</td>
+              <td class="r num">5,5667 ct</td><td class="r num">15.664,7</td><td>Vbh-Kontingent · Deckel</td></tr>
+          <tr><td>KWK-Bonus Eigenstrom</td><td>§ 7 Abs. 2 KWKG</td><td class="r num">1.094,2 MWh</td>
+              <td class="r num">2,4167 ct</td><td class="r num">15.866,1</td><td>zusätzlich Tatbestand § 6 Abs. 3</td></tr>
+          <tr><td>Energiesteuer BHKW-Brennstoff</td><td>§ 53a Abs. 5 EnergieStG</td><td class="r num">4.797,2 MWh</td>
+              <td class="r num">4,42 €/MWh</td><td class="r num">21.203,4</td><td>dauerhaft · jährlicher Antrag</td></tr>
+          <tr><td>Stromsteuer-Entlastung Netzbezug</td><td>§ 9b StromStG</td><td class="r num">250,0 MWh</td>
+              <td class="r num">20,00 €/MWh</td><td class="r num">4.750,0</td><td>nur produzierendes Gewerbe</td></tr>
+          <tr><td>Einspeiseerlös Strom</td><td>Tarif / Projektwert</td><td class="r num">469,0 MWh</td>
+              <td class="r num">5,00 ct</td><td class="r num">23.450,0</td><td>nominal konstant</td></tr>
+          <tr><td>PV-Vergütung</td><td>§ 21 · § 51 EEG</td><td class="r num">199,5 MWh</td>
+              <td class="r">Reihe</td><td class="r num">10.396,3</td><td>20 a + IBN-Monate</td></tr>
+          <tr class="summe"><td colspan="4">Summe Block A</td><td class="r num">91.330,5</td><td></td></tr>
+
+          <tr><td colspan="6" style="background:#EDF1F7;font-weight:600;color:#41506B">Block B — Ausweis, <b>nicht addieren</b></td></tr>
+          <tr><td>Stromsteuer-Befreiung Eigenverbrauch <span class="klein">wandert mit B6 aus Block A hierher</span></td>
+              <td>§ 9 Abs. 1 Nr. 3 StromStG</td><td class="r num">1.155,0 MWh</td>
+              <td class="r num">20,50 €/MWh</td><td class="r num">23.677,5</td><td>ohne Rechenwirkung</td></tr>
+          <tr><td>Vermiedene Stromkosten — Arbeit</td><td>Differenzmethode</td><td class="r num">1.179,7 MWh</td>
+              <td class="r num">28,80 ct</td><td class="r num">339.753,6</td><td>steckt im Reststrombetrag</td></tr>
+          <tr><td>&nbsp;&nbsp;abzüglich entgangener § 9b-Entlastung</td><td>§ 9b StromStG</td><td class="r num">1.179,7 MWh</td>
+              <td class="r num">20,00 €/MWh</td><td class="r num">− 23.594,0</td><td>bei produzierendem Gewerbe</td></tr>
+          <tr><td>&nbsp;&nbsp;<b>vermiedene Kosten effektiv</b></td><td></td><td class="r"></td>
+              <td class="r"></td><td class="r num"><b>316.159,6</b></td><td></td></tr>
+          <tr><td>Vermiedene Stromkosten — Leistung</td><td>Differenzmethode</td><td class="r">—</td>
+              <td class="r">—</td><td class="r num strich">− 4.180,0</td><td>regelmäßig negativ</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="f-info">In der <b>Differenzsicht</b> gegen ein Vergleichsprojekt sind vermiedene Bezüge
+      reguläre Differenz-Cashflows — die Referenzkosten laufen dort als Gegenposition. Die
+      Block-B-Kennzeichnung gilt für die <b>Absolutsicht</b>.</div>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="formel"><pre>Vermiedene Stromkosten — Differenzmethode
+  Bezug     = Rollenkosten(Bezugstarif,    Bedarf OHNE Anlage)
+  Reststrom = Rollenkosten(Reststromtarif, Restbezug MIT Anlage)
+  Vermieden = Bezug − Reststrom            <span class="kom">je Arbeit / Leistung / Gesamt</span>
+
+  <span class="hin">In den Kapitalwert geht der Reststrombetrag. Die Differenz zusätzlich zu
+  buchen wäre Doppelzählung — fünffach belegt (E5).</span>
+
+Korrektur um die entgangene Entlastung
+  Vermieden_effektiv = Vermieden_brutto − Entlastungssatz(§ 9b) × vermiedene Menge
+                       <span class="kom">nur produzierendes Gewerbe / Land- und Forstwirtschaft</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <p class="eng">Die Differenzmethode rechnet beide Seiten mit demselben Arbeitspreis — und der enthält die
+  Stromsteuer mit 20,50 €/MWh. Ein Unternehmen des produzierenden Gewerbes bekommt davon nach § 9b
+  20,00 €/MWh zurück. Tatsächlich vermieden werden also nur <b>0,50 €/MWh</b> Stromsteuer, nicht 20,50.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Größe</th><th class="r">Menge</th><th class="r">Satz</th><th class="r">Betrag</th><th>Wirkung</th></tr></thead>
+      <tbody>
+        <tr><td>Strombedarf ohne Anlage</td><td class="r num">1.429,7 MWh</td><td class="r num">28,80 ct</td>
+            <td class="r num">411.753,6 €/a</td><td>hypothetisch</td></tr>
+        <tr><td>Restbezug mit Anlage</td><td class="r num">250,0 MWh</td><td class="r num">28,80 ct</td>
+            <td class="r num">72.000,0 €/a</td><td><span class="marke kw">Kapitalwert</span></td></tr>
+        <tr class="zwischen"><td>Vermieden brutto</td><td class="r num">1.179,7 MWh</td><td class="r">—</td>
+            <td class="r num">339.753,6 €/a</td><td><span class="marke aus">Ausweis</span></td></tr>
+        <tr><td>entgangene § 9b-Entlastung</td><td class="r num">1.179,7 MWh</td><td class="r num">20,00 €/MWh</td>
+            <td class="r num minus">− 23.594,0 €/a</td><td>im Ausweis heute nicht abgezogen</td></tr>
+        <tr class="ergebnis"><td>Vermieden effektiv</td><td class="r">—</td><td class="r">—</td>
+            <td class="r num">316.159,6 €/a</td><td><span class="marke aus">Ausweis</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="eng" style="margin-top:16px">Im Kapitalwert ist das bereits korrekt: Die § 9b-Reihe rechnet auf
+  den kleineren Netzbezug und fällt dadurch automatisch geringer aus. Falsch war bisher nur der
+  <em>Ausweis</em> — er zeigte den Vorteil um 2,00 ct/kWh zu hoch.</p>
+</section>
+
+<!-- ======================= 7 VALERI ======================= -->
+<section class="kat" id="valeri">
+  <div class="kat-kopf"><h2>8 · Wirtschaftlichkeit über die Nutzungsdauer</h2><span class="kat-marke">DIN EN 17463 — ValERI</span></div>
+  <p class="kat-lead">Die Norm verlangt weniger eine andere Rechnung als eine andere Darstellung: Der
+  Kapitalwert ist das <em>einzige</em> Entscheidungskriterium, interner Zinsfuß und Amortisation sind
+  ausdrücklich nachrichtlich. Die Zahlen dieses Blocks stammen aus der realen Höfingen-Mappe.</p>
+
+  <div class="zone">Dialog</div>
+  <div class="fenster">
+    <div class="f-band">Wirtschaftlichkeit<span class="f-sub">BHKW Höfingen 20 kW<sub>el</sub> gegen Vergleichsheizung</span></div>
+    <div class="f-tab"><span>Kennzahlen</span><span class="an">ValERI-Bewertung</span></div>
+    <div class="f-leib">
+      <div class="f-zeile" style="margin-bottom:10px">
+        <label>Vergleichsprojekt</label><span class="f-combo">Variante 2 — Gas-Brennwertkessel (Bestand)</span>
+        <span class="f-einheit">Referenz der Differenzrechnung</span>
+      </div>
+
+      <div class="f-scroll">
+      <table class="f-raster">
+        <thead><tr><th>Block</th><th class="r">Anlage</th><th class="r">Referenz</th><th class="r">Differenz</th><th>Normbezug</th></tr></thead>
+        <tbody>
+          <tr><td>Investitionskosten</td><td class="r num">78.245</td><td class="r num">22.500</td>
+              <td class="r num">55.745</td><td>6.1 · 7.3</td></tr>
+          <tr><td>Betriebskosten p. a.</td><td class="r num">3.466</td><td class="r num">518</td>
+              <td class="r num">2.948</td><td>6.3.1</td></tr>
+          <tr><td>Energiekosten p. a.</td><td class="r num">13.746</td><td class="r num">11.498</td>
+              <td class="r num">2.248</td><td>6.3.2</td></tr>
+          <tr><td>Erlöse p. a.</td><td class="r num">15.632</td><td class="r num">0</td>
+              <td class="r num">− 15.632</td><td>6.1</td></tr>
+          <tr class="summe"><td>Jahresüberschuss der Differenz</td><td class="r">—</td><td class="r">—</td>
+              <td class="r num">10.436</td><td>7</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="f-spalten" style="margin-top:14px">
+        <div class="f-gruppe">
+          <div class="f-titel">Kennzahlen</div>
+          <div class="f-zeile eng"><label>Kapitalwert</label><span style="font-weight:700;font-size:15px;color:#0B6B5B" class="num">65.259 €</span>
+            <span class="f-einheit">Entscheidungskriterium</span></div>
+          <div class="f-zeile eng"><label>Interner Zinsfuß</label><span class="num" style="color:#5A5A5A">20,4 %</span>
+            <span class="f-einheit">nachrichtlich (Anhang C)</span></div>
+          <div class="f-zeile eng"><label>Dyn. Amortisation</label><span class="num" style="color:#5A5A5A">4,33 a</span>
+            <span class="f-einheit">nachrichtlich (Anhang C)</span></div>
+          <div class="f-zeile eng"><label>Kalkulationszins</label><span class="num">2,0 %</span></div>
+          <div class="f-zeile eng"><label>Nutzungsdauer</label><span class="num">13,3 a</span></div>
+          <div class="f-warn">Der interne Zinsfuß ist bei dieser Reihe <b>mehrdeutig</b>: Ersatzbeschaffung
+          und KWKG-Auslauf erzeugen mehr als einen Vorzeichenwechsel. Die Norm verwirft ihn als
+          Entscheidungsgrundlage.</div>
+        </div>
+        <div class="f-gruppe">
+          <div class="f-titel">Deklarationen (Abschnitt 7 und 9)</div>
+          <div class="f-info" style="margin-top:0">Rechnung <b>nominal</b> — Realwerte sind nach 6.3.2 unzulässig.</div>
+          <div class="f-info">Energie- und Stromsteuerentlastungen: <b>berücksichtigt</b> · Ertragsteuern: <b>nicht berücksichtigt</b> · keine Abschreibungen als Cashflow.</div>
+          <div class="f-info">Restwert linear — <b>dokumentierte Abweichung</b> von 6.4, die Endzahlungen statt eines Restwertverfahrens verlangt.</div>
+          <div class="f-info">Risikozuschlag: <b>nicht angesetzt</b> (6.5 optional).</div>
+          <div class="f-info">Szenariopflege: <b>12 von 31 Parametern</b> tragen gepflegte Abweichungen.</div>
+          <div class="f-zeile" style="margin-top:8px"><span class="f-knopf">Anhang-E-Checkliste…</span><span class="f-knopf">XLSX mit Formeln exportieren…</span></div>
+        </div>
+      </div>
+
+      <div class="f-vorschau">
+        <div class="f-vtitel">Szenarien — alle Parameter gleichzeitig variiert (7.3) · Best/Worst hier Beispielwerte</div>
+        <div class="f-vzeile"><span>Best Case</span><span class="f-vwert num">+ 118.430 €</span></div>
+        <div class="f-vzeile"><span>Erwartet</span><span class="f-vwert num">+ 65.259 €</span></div>
+        <div class="f-vzeile"><span>Worst Case</span><span class="f-vwert num">− 12.870 €</span></div>
+        <div class="f-vzeile" style="border-bottom:0;padding-top:8px"><span style="font-size:11.5px;color:#A9BDDF">Ein negativer Worst Case ist nach 8.1.3 <b>kein Ausschlusskriterium</b> — er beziffert das Risiko.</span><span></span></div>
+      </div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">Kapitalwert &gt; 0 ⇒ vorteilhaft (8.1.2)</span>
+      <span class="f-knopf">Sensitivität…</span><span class="f-knopf primaer">Bericht erzeugen</span>
+    </div>
+  </div>
+
+  <div class="zone">Berechnungsgrundlage</div>
+  <div class="normzeile">
+    <span class="norm gesetz">DIN EN 17463:2021-12</span>
+    <span class="norm gesetz">Anhang A — Berichtsraster</span>
+    <span class="norm gesetz">Anhang C — Kennzahlen</span>
+    <span class="norm code">KapitalwertRechner</span>
+  </div>
+  <div class="formel"><pre>KW [€] = − I₀
+         + Σ_{t=1..T} ( E_t − A_t ) / (1 + i)^t
+         + RW_T / (1 + i)^T
+         + Einmalzahlung_t0                       <span class="kom">Index 0 wird nicht abgezinst</span>
+
+A_t = Betrieb_t × (1 + p_B)^(t−1)
+    + Energie_1 × (1 + p_E)^(t−1)
+    + CO2_t + Ersatz_t
+
+E_t = Einspeiseerlös_1                            <span class="kom">nominal KONSTANT</span>
+    + Σ Erlösreihen: KWKG_ZUSCHLAG · KWKG_PAUSCHALE
+                     ENERGIESTEUER_GUTSCHRIFT
+                     STROMSTEUER_BEFREIUNG · STROMSTEUER_ENTLASTUNG
+                     PV_VERGUETUNG
+
+Restwert   RW_T = Betrag × Restdauer / n          <span class="kom">linear, nur bei Restdauer &gt; 0</span>
+Annuität   a(i,n) = i(1+i)^n / ((1+i)^n − 1)      <span class="kom">a = 1/n bei i ≈ 0</span>
+
+Szenarien — VALERI-Vorrang
+  Szenariowert = Szenariospalte, falls ≠ 0 ; sonst eingegebener Wert
+  gepflegt ⇔ |Szenariowert − Erwartet| &gt; 1e−9   <span class="hin">dann wird JEDE Ableitung übersprungen</span></pre></div>
+
+  <div class="zone">Berechnungserläuterung</div>
+  <p class="eng">Die Höfingen-Mappe ist die externe Gegenprobe: Ihre Zahlen entstanden ohne EPOS-Plan. Die
+  jahresscharfe Nachrechnung mit der obigen Formel trifft ihren Kapitalwert von 65.259 € exakt; die
+  Tafel zeigt die Näherung über eine konstante Reihe, damit der Weg mit dem Taschenrechner
+  nachvollziehbar bleibt.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td><span class="schritt">1</span> Mehrinvestition</td>
+            <td class="formelzelle">78.245 − 22.500</td><td class="r num minus">− 55.745 €</td>
+            <td>Periode 0, nicht abgezinst</td></tr>
+        <tr><td><span class="schritt">2</span> Mehrbetriebskosten</td>
+            <td class="formelzelle">3.466 − 518</td><td class="r num minus">− 2.948 €/a</td>
+            <td>Wartung des Motors gegen den Kessel</td></tr>
+        <tr><td><span class="schritt">3</span> Mehrbrennstoff</td>
+            <td class="formelzelle">13.746 − 11.498</td><td class="r num minus">− 2.248 €/a</td>
+            <td>das BHKW verbrennt mehr, erzeugt aber Strom</td></tr>
+        <tr><td><span class="schritt">4</span> Erlöse</td>
+            <td class="formelzelle">15.632 − 0</td><td class="r num plus">+ 15.632 €/a</td>
+            <td>KWKG, Energiesteuer, vermiedener Bezug</td></tr>
+        <tr class="zwischen"><td>Jahresüberschuss</td>
+            <td class="formelzelle">15.632 − 2.948 − 2.248</td><td class="r num">10.436 €/a</td>
+            <td>konstante Reihe über 13,3 Jahre</td></tr>
+        <tr><td><span class="schritt">5</span> Barwertfaktor</td>
+            <td class="formelzelle">(1 − 1,02<sup>−13,3</sup>) ÷ 0,02</td><td class="r num">11,577</td>
+            <td>Rentenbarwert bei i = 2,0 %</td></tr>
+        <tr><td><span class="schritt">6</span> Näherung</td>
+            <td class="formelzelle">10.436 × 11,577 − 55.745</td><td class="r num">65.073 €</td>
+            <td>konstante Reihe, ohne Jahresschärfe</td></tr>
+        <tr class="ergebnis"><td>Kapitalwert der Mappe</td>
+            <td class="formelzelle">jahresscharf, Tab_kurz_KWKG2020</td><td class="r num">65.259 €</td>
+            <td>Abweichung der Näherung 0,3 % — Rundung der Jahreswerte</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======================= OFFEN ======================= -->
+<section class="kat" id="offen">
+  <div class="kat-kopf"><h2>Was vor der Umsetzung zu entscheiden ist</h2></div>
+  <p class="kat-lead">Sieben Punkte, die kein Entwurf für den Anwender entscheiden kann, weil sie Fachfragen
+  sind — nicht Fragen der Oberfläche.</p>
+
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Nr.</th><th>Frage</th><th>Empfehlung</th><th>Wirkung</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">K-1</td>
+            <td>Anlagen mit Abwärmeabfuhr: KWK-Strom nach § 2 Nr. 16 Fall 2 rechnen (Nutzwärme × Stromkennzahl)?
+              <span class="qz">Betrifft jedes BHKW mit Notkühler.</span></td>
+            <td>Kennzeichen und Stromkennzahl je Anlage aufnehmen, Fall 2 rechnen</td>
+            <td><span class="marke luecke">Zuschlag heute zu hoch</span></td></tr>
+        <tr><td class="mono">K-3</td>
+            <td>Modus für § 9 Abs. 1 Nr. 3 — Erlösreihe oder Ausweis?</td>
+            <td>Ausweis (Vorgabe), Spalte <span class="mono">Stromst_Befreiung_Modus</span></td>
+            <td>heute in keinem Lauf wirksam</td></tr>
+        <tr><td class="mono">B-1</td>
+            <td>Kessel-Endenergie ist strukturell 0 — Verbrauch nachziehen oder Bemessung sperren?</td>
+            <td>Verbrauch aus dem Lauf nachziehen; bis dahin Herleitungszeile „× 0 kWh" zeigen</td>
+            <td>Hilfsenergie am Kessel rechnet nicht</td></tr>
+        <tr><td class="mono">N-3</td>
+            <td>Aufschläge: ungepflegte Spalten als Vorschlagswerte oder als 0 lesen?</td>
+            <td>als 0 lesen, Vorschlag nur auf Knopfdruck übernehmen</td>
+            <td><span class="marke luecke">bis −29,8 % Kapitalwert</span></td></tr>
+        <tr><td class="mono">V-4</td>
+            <td>Szenarien für alle Parameter — vor oder nach der Darstellungsetappe?</td>
+            <td>danach; einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis</td>
+            <td>ergebnisneutral bis zur ersten Pflege</td></tr>
+        <tr><td class="mono">K-8</td>
+            <td>Die Fußleiste von <span class="mono">UcWirtschaftlichkeit</span> ist voll — ein achter Knopf läge bei x = −50.</td>
+            <td>Umschalter „Kennzahlen / ValERI-Bewertung" statt weiterem Knopf</td>
+            <td>reine Oberfläche</td></tr>
+        <tr><td class="mono">V-G10</td>
+            <td>XLSX mit sichtbaren Formeln — nur das ValERI-Blatt oder der ganze Bericht?</td>
+            <td>nur das ValERI-Blatt; harte Muss-Anforderung der Norm (Abschnitt 9)</td>
+            <td>Ausgabe</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="abschluss">
+  <p style="color:var(--tinte-blass);font-size:13.5px;max-width:74ch">
+  Maßgeblich ist <span class="mono">Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md</span> —
+  bei Abweichung gilt der Text dort. Diese Seite ist die visuelle Fassung der Kategorien 1 bis 8 und
+  ersetzt keine Etappenspezifikation. Rechtsstand der zitierten Sätze: KWKG 2025, EnergieStG und
+  StromStG in der Fassung 2026, EEG 2023 mit den Änderungen des Solarspitzengesetzes.</p>
+</footer>
+
+</main>
+</div>
+</div>
+
+</body>
+</html>
