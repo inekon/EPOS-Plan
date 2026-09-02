@@ -3,8 +3,10 @@
   <!--
     Testprojekt des KiKern.
 
-    Vorbild ist SpeicherEngine.Tests: TargetFramework net9.0 (installiertes SDK 9.0.315),
-    xunit 2.6.2. Das Hauptprojekt WindowsFormsApplication1 wird hier bewusst NICHT
+    Vorbild ist SpeicherEngine.Tests: TargetFramework net10.0 - dasselbe Ziel wie der
+    KiKern, das SDK legt global.json auf 10.0.400 fest. Zwischen Kern und Tests besteht
+    keine Versionsdifferenz mehr, DOTNET_ROLL_FORWARD wird nicht mehr gebraucht.
+    Das Hauptprojekt WindowsFormsApplication1 wird hier bewusst NICHT
     referenziert (COM-Referenzen, MSB4803 unter dotnet build) - der Kern ist genau so
     geschnitten, dass er ohne die Anwendung prueffaehig ist (Fachkonzept 3.7).
 
@@ -14,8 +16,7 @@
   -->
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -25,9 +26,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="xunit" Version="2.6.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
