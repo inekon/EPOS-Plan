@@ -8533,4 +8533,28 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>The rank refers to the generator type. This project has {0} units of this type — each has its own card.</value>
   </data>
+  <data name="PV_ANLAGE_LABEL_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>System losses [%]:</value>
+  </data>
+  <data name="PV_ANLAGE_LABEL_WRWIRKUNGSGRAD" xml:space="preserve">
+    <value>Inverter efficiency:</value>
+  </data>
+  <data name="PV_ANLAGE_TIP_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>Losses of the plant outside the module (soiling, mismatch, DC wiring) in percent.
+Empty means 0 % and does not change the result.</value>
+  </data>
+  <data name="PV_ANLAGE_TIP_WRWIRKUNGSGRAD" xml:space="preserve">
+    <value>Inverter efficiency as a factor between 0 and 1.
+Empty means 0.95 — the value the simulation used as a fixed constant until now.</value>
+  </data>
+  <data name="PV_MODUL_FELD_TNOCT" xml:space="preserve">
+    <value>NOCT cell temperature</value>
+  </data>
+  <data name="PV_MODUL_LABEL_TNOCT" xml:space="preserve">
+    <value>NOCT cell temperature:</value>
+  </data>
+  <data name="PV_MODUL_TIP_TNOCT" xml:space="preserve">
+    <value>Nominal operating cell temperature from the data sheet, typically 42 to 48 °C.
+Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
+  </data>
 </root>
