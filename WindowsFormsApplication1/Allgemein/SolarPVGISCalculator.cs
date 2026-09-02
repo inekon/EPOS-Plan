@@ -282,11 +282,58 @@ namespace WindowsFormsApplication1
         public static double sonnen_azimut;
         public static double lastCosTheta;
 
-        /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
-        /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
-        /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>
-        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour)
+        /// <summary>
+        /// Bodenalbedo beider Transpositionsmodelle. Der Wert stand als Literal 0,2 in
+        /// <see cref="CalculateHourly"/>; die Konstante benennt ihn, ohne die
+        /// Bestandszeile anzufassen (PAKET B, Stufe E2.5).
+        /// </summary>
+        public const double ALBEDO_BODEN = 0.2;
+
+        /// <summary>
+        /// Klemme des Geometriefaktors R_b: <c>cos 85°</c>. Ohne sie liefe
+        /// <c>cosTheta / cos(theta_z)</c> bei Sonnenhoehen nahe 0 gegen unendlich
+        /// (PAKET B, Stufe E2.5).
+        /// </summary>
+        private static readonly double COS_85 = Math.Cos(85.0 * Deg2Rad);
+
+        /// <summary>
+        /// Sonnenstand und Einfallswinkel einer Stunde — die GEMEINSAME Geometrie von
+        /// <see cref="CalculateHourly"/> (isotrop, Bestand) und
+        /// <see cref="CalculateHourlyHayDavies"/> (anisotrop, Paket B).
+        ///
+        /// <para><b>Warum ausgelagert und nicht zweimal geschrieben:</b> Die beiden
+        /// Transpositionsmodelle unterscheiden sich AUSSCHLIESSLICH in der Behandlung
+        /// des Diffusanteils. Zwei Kopien der Sonnengeometrie waeren zwei Wahrheiten
+        /// ueber denselben Sonnenstand — und die Pruefzusage „bei DNI = 0 liefert
+        /// Hay-Davies exakt das isotrope Ergebnis" liesse sich dann nicht mehr
+        /// halten.</para>
+        ///
+        /// <para><b>Die Rechenschritte sind Zeichen fuer Zeichen die des Bestands</b>
+        /// (Reihenfolge, Klammerung, <see cref="Clamp"/>-Aufruf) — nur so bleibt das
+        /// Ergebnis von <see cref="CalculateHourly"/> bitgleich zum Stand vor Paket B.
+        /// Die drei statischen Seitenwirkungen (<see cref="sonnenwinkel"/>,
+        /// <see cref="sonnen_azimut"/>, <see cref="lastCosTheta"/>) bleiben bewusst
+        /// DRAUSSEN: Sie gehoeren zum Vertrag von <see cref="CalculateHourly"/>, den
+        /// <c>SimulationSolarthermie</c> nutzt, und duerfen von einem zweiten Modell
+        /// nicht mitgeschrieben werden.</para>
+        /// </summary>
+        private struct Sonnenstand
         {
+            /// <summary>Sonnenhoehe alpha [rad].</summary>
+            public double Alpha;
+            /// <summary>Sonnenazimut gammaS [rad], negativ vormittags.</summary>
+            public double GammaS;
+            /// <summary>Kosinus des Einfallswinkels auf das Modul, auf 0 geklemmt.</summary>
+            public double CosTheta;
+            /// <summary>true = Sonne unter dem Horizont; GammaS und CosTheta sind dann unbesetzt.</summary>
+            public bool Nacht;
+        }
+
+        private static Sonnenstand Sonnengeometrie(double Lon, double Lat, int Tilt, int Azimuth,
+                                                   int dayOfYear, double hour)
+        {
+            Sonnenstand s = new Sonnenstand();
+
             // 1. Wahre Solarzeit (inkl. Längengrad & Zeitgleichung)
             double b = (360.0 / 365.0) * (dayOfYear - 81) * Deg2Rad;
             double eot = 9.87 * Math.Sin(2 * b) - 7.53 * Math.Cos(b) - 1.5 * Math.Sin(b);
@@ -299,21 +346,39 @@ namespace WindowsFormsApplication1
                               Math.Cos(Lat * Deg2Rad) * Math.Cos(delta * Deg2Rad) * Math.Cos(omega * Deg2Rad);
             double alpha = Math.Asin(sinAlpha);
 
-            sonnenwinkel = alpha * Rad2Deg;
-
-            if (alpha <= 0) return 0; // Nacht
+            s.Alpha = alpha;
+            if (alpha <= 0) { s.Nacht = true; return s; } // Nacht
 
             double cosGammaS = (Math.Sin(alpha) * Math.Sin(Lat * Deg2Rad) - Math.Sin(delta * Deg2Rad)) /
                                (Math.Cos(alpha) * Math.Cos(Lat * Deg2Rad));
             double gammaS = Math.Acos(Clamp(cosGammaS, -1.0, 1.0));
             if (omega < 0) gammaS = -gammaS;
-            sonnen_azimut = gammaS;
+            s.GammaS = gammaS;
 
             // 3. Einfallswinkel auf Modul
             double cosTheta = Math.Sin(alpha) * Math.Cos(Tilt * Deg2Rad) +
                               Math.Cos(alpha) * Math.Sin(Tilt * Deg2Rad) * Math.Cos(gammaS - (Azimuth * Deg2Rad));
-            lastCosTheta = Math.Max(0, cosTheta);
-            cosTheta = Math.Max(0, cosTheta);
+            s.CosTheta = Math.Max(0, cosTheta);
+            return s;
+        }
+
+        /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
+        /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
+        /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>
+        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour)
+        {
+            // 1.-3. Sonnenstand und Einfallswinkel - seit Paket B in Sonnengeometrie,
+            // Rechenschritt fuer Rechenschritt unveraendert (siehe dort).
+            Sonnenstand s = Sonnengeometrie(Lon, Lat, Tilt, Azimuth, dayOfYear, hour);
+
+            sonnenwinkel = s.Alpha * Rad2Deg;
+
+            if (s.Nacht) return 0; // Nacht
+
+            sonnen_azimut = s.GammaS;
+
+            lastCosTheta = s.CosTheta;
+            double cosTheta = s.CosTheta;
 
             // 4. Einstrahlung auf geneigte Fläche (G_GTI)
             double direct = dni * cosTheta;
@@ -329,6 +394,70 @@ namespace WindowsFormsApplication1
 
             //return gTotal * Area * Efficiency * tempFactor * PR;
             return gTotal;
+        }
+
+        /// <summary>
+        /// Einstrahlung auf die geneigte Ebene nach <b>HAY-DAVIES</b> [W/m²] — die
+        /// anisotrope Transposition des ERWEITERTEN PV-Modells (Stufe E2.5, Konzept
+        /// N2.3).
+        ///
+        /// <para>Der Unterschied zum isotropen Bestand steckt allein im Diffusanteil:
+        /// Ein Teil der Diffusstrahlung kommt nicht gleichmaessig vom ganzen Himmel,
+        /// sondern aus der Sonnenumgebung („circumsolar") und folgt deshalb derselben
+        /// Geometrie wie die Direktstrahlung. Wie gross dieser Teil ist, sagt der
+        /// Anisotropieindex <c>A_i = DNI / I_0n</c>.</para>
+        ///
+        /// <code>
+        /// I_0n = 1367 · (1 + 0,033 · cos(360° · n / 365))     extraterrestrische Normalstrahlung
+        /// A_i  = DNI / I_0n                                    geklemmt auf 0…1
+        /// R_b  = cosTheta / max(cosTheta_z, cos 85°)           Geometriefaktor mit Horizontklemme
+        /// G_t  = DNI·cosTheta
+        ///      + DHI·[A_i·R_b + (1 − A_i)·(1 + cos beta)/2]
+        ///      + GHI·rho·(1 − cos beta)/2                      rho = 0,2 wie im Bestand
+        /// </code>
+        ///
+        /// <para><b>Pruefkriterium (Konzept N2.5): bei DNI = 0 ist das Ergebnis EXAKT
+        /// das isotrope.</b> Mit <c>DNI = 0</c> wird <c>A_i = 0</c>, der
+        /// circumsolare Summand faellt weg (<c>0 · R_b</c> ist 0, weil <c>R_b</c> durch
+        /// die Horizontklemme endlich bleibt), und uebrig bleibt Zeichen fuer Zeichen
+        /// die Summe aus <see cref="CalculateHourly"/>.</para>
+        ///
+        /// <para><b>Ohne statische Seitenwirkung.</b> Anders als
+        /// <see cref="CalculateHourly"/> schreibt diese Methode weder
+        /// <see cref="sonnenwinkel"/> noch <see cref="sonnen_azimut"/> oder
+        /// <see cref="lastCosTheta"/>. Die drei gehoeren zum Vertrag der
+        /// Bestandsfunktion (<c>SimulationSolarthermie</c> liest
+        /// <see cref="lastCosTheta"/> unmittelbar nach ihrem Aufruf); ein zweites
+        /// Modell, das sie mitschreibt, koennte diese Kette nur stoeren.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        public static double CalculateHourlyHayDavies(double Lon, double Lat, int Tilt, int Azimuth,
+                                                      double ghi, double dni, double dhi,
+                                                      int dayOfYear, double hour)
+        {
+            Sonnenstand s = Sonnengeometrie(Lon, Lat, Tilt, Azimuth, dayOfYear, hour);
+            if (s.Nacht) return 0;
+
+            double cosTheta = s.CosTheta;
+
+            // Zenitwinkel: cos(theta_z) = sin(alpha). Die Klemme auf cos 85 Grad haelt
+            // R_b bei Sonnenaufgang/-untergang endlich.
+            double cosZenit = Math.Sin(s.Alpha);
+            double rB = cosTheta / Math.Max(cosZenit, COS_85);
+
+            // Anisotropieindex aus der extraterrestrischen Normalstrahlung.
+            double i0n = 1367.0 * (1.0 + 0.033 * Math.Cos(360.0 * dayOfYear / 365.0 * Deg2Rad));
+            double ai = i0n > 0.0 ? dni / i0n : 0.0;
+            ai = Clamp(ai, 0.0, 1.0);
+
+            double skyView = (1.0 + Math.Cos(Tilt * Deg2Rad)) / 2.0;
+            double groundView = (1.0 - Math.Cos(Tilt * Deg2Rad)) / 2.0;
+
+            double direct = dni * cosTheta;
+            double diffus = dhi * (ai * rB + (1.0 - ai) * skyView);
+            double reflex = ghi * ALBEDO_BODEN * groundView;
+
+            return direct + diffus + reflex;
         }
 
         public static List<TmyHourlyData> GetDailyAverages(List<TmyHourlyData> hourlyData)
