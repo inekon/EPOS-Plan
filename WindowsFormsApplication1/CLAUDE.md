@@ -12,11 +12,16 @@ Ausgabename; Stufe 1 = Namespace-Umstellung bräuchte ein eigenes Konzept).
 Solution: `..\WP-Plan.sln` (Debug/Release × x64).
 
 ```powershell
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ..\WP-Plan.sln -p:Configuration=Debug -p:Platform=x64
+# MSBuild versionsunabhaengig ueber vswhere finden (VS 2026 liegt unter ...\18\, nicht ...\2022\)
+$msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+        -latest -prerelease -products * -requires Microsoft.Component.MSBuild `
+        -find 'MSBuild\**\Bin\MSBuild.exe' | Where-Object { $_ -notmatch '\\amd64\\' } | Select-Object -First 1
+& $msb ..\WP-Plan.sln -p:Configuration=Debug -p:Platform=x64
 ```
 
 `dotnet build` scheitert an den COM-Referenzen (MSB4803) — bauen nur über das MSBuild von
-Visual Studio.
+Visual Studio. Fester Pfad je Fassung, falls `vswhere` nicht greift:
+`…\Microsoft Visual Studio\18\Community\…` (VS 2026) bzw. `…\2022\Community\…` (VS 2022).
 
 Build seit 22.08.2026 **x64** (Paket P2; davor x86). Ist-Stand, Entscheidungen und offene
 Pakete (P3–P5) in
