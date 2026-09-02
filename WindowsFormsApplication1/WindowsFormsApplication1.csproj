@@ -98,53 +98,53 @@
   <!-- NuGet-Pakete -->
   <ItemGroup>
     <!-- Chart-Ersatz: Port mit identischem Namespace System.Windows.Forms.DataVisualization.Charting -->
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
-    <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="WinForms.DataVisualization" />
 
     <!-- Berichtsmodul Phase 4: Excel-Ausgabe ohne Office (MIT-Lizenz).
          SixLabors.Fonts bewusst auf 1.0.x gepinnt — ab 2.x gilt die Six Labors
          Split License (Release-Checkliste: dotnet list package - -include-transitive). -->
-    <PackageReference Include="ClosedXML" Version="0.105.1" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.1" />
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="SixLabors.Fonts" />
 
     <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
          EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
 
     <!-- BLEIBT: OleDbParameter ist nach der Umstellung nur noch DATENTRAEGER an den
          ~2.300 Aufrufstellen; DataRepository uebersetzt innen (Konzept 2). -->
-    <PackageReference Include="System.Data.OleDb" Version="10.0.11" />
+    <PackageReference Include="System.Data.OleDb" />
 
     <!-- Konfiguration / Settings -->
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
-    <PackageReference Include="System.Management" Version="10.0.11" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+    <PackageReference Include="System.Management" />
 
     <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.11" />
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
 
     <!-- Originalbestand -->
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="JsonSchema.Net" Version="7.3.4" />
-    <PackageReference Include="JsonSchema.Net.Generation" Version="5.0.4" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="Mscc.GenerativeAI" Version="3.1.0" />
-    <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
-    <PackageReference Include="SkiaSharp" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.1" />
+    <PackageReference Include="Humanizer.Core" />
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="JsonSchema.Net.Generation" />
+    <PackageReference Include="MathNet.Numerics" />
+    <PackageReference Include="Mscc.GenerativeAI" />
+    <PackageReference Include="ScottPlot.WinForms" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="SkiaSharp.Views.WindowsForms" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
 
     <!-- Microsoft.Extensions.* (Mscc.GenerativeAI 3.1 fordert >= 10.0.3) -->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <!-- Semantische Doku-Suche (H10): oertliche Einbettungen, CPU, x64.
          Beide MIT; die Modelldateien liegen NICHT im Repo, sondern werden
          einmalig nach %APPDATA%\wp-plan\semantik\ geholt (SemantikModell). -->
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
-    <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
   </ItemGroup>
 
   <!-- Settings (klassisches Properties\Settings.settings) -->
