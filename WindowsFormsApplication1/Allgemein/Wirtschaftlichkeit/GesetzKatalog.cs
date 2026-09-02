@@ -453,55 +453,54 @@ namespace WindowsFormsApplication1
         /// Generation und legt nichts an (<see cref="ZuletztNachgesaet"/> = 0).
         /// </para>
         /// </summary>
+        /// <remarks>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-DDL nach dem Muster von
+        /// <c>sql\schema\001_grundschema.sql</c> (S4d vorgezogen). Durchgaengig still
+        /// über <see cref="StilleDb"/> — die leeren <c>catch</c>-Zweige sagen eine
+        /// dialogfreie Vorsorge zu.
+        /// </remarks>
         public static void StelleKatalogSicher()
         {
             ZuletztNachgesaet = 0;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                try
                 {
-                    conn.Open();
-
-                    try
-                    {
-                        DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                            new object[] { null, null, TAB_GESETZESPARAMETER, "TABLE" });
-                        if (schema == null || schema.Rows.Count == 0)
-                            using (var cmd = new OleDbCommand(
-                                "CREATE TABLE " + TAB_GESETZESPARAMETER + " (" +
-                                "ID LONG NOT NULL CONSTRAINT PK_Gesetzesparameter PRIMARY KEY, " +
-                                "Schluessel TEXT(60), " +
-                                "Klasse TEXT(40), " +
-                                "JahrVon LONG, " +
-                                "[Wert] DOUBLE, " +
-                                "Einheit TEXT(20), " +
-                                "[Status] TEXT(12), " +
-                                "Quelle TEXT(120))", conn))
-                                cmd.ExecuteNonQuery();
-                    }
-                    catch { }
-
-                    try
-                    {
-                        int gesaet = GesaeteGeneration(conn);
-                        int ziel = AktuelleGeneration;
-                        if (gesaet >= ziel) return;
-
-                        int id = MaxId(conn);
-                        int neu = 0;
-                        foreach (GesetzParameter p in Vorbelegung())
-                        {
-                            if (p.Generation <= gesaet) continue;
-                            id++;
-                            Einfuegen(conn, id, p.Schluessel, p.Klasse, p.JahrVon, p.Wert,
-                                      p.Einheit, p.Status, p.Quelle);
-                            neu++;
-                        }
-                        MarkerSetzen(conn, ziel, ref id);
-                        ZuletztNachgesaet = neu;
-                    }
-                    catch { }
+                    if (!StilleDb.TabelleVorhanden(TAB_GESETZESPARAMETER))
+                        StilleDb.NonQuery(
+                            "CREATE TABLE IF NOT EXISTS [" + TAB_GESETZESPARAMETER + "] (" +
+                            "\"ID\" INTEGER NOT NULL PRIMARY KEY, " +
+                            "\"Schluessel\" TEXT CHECK (length(\"Schluessel\") <= 60), " +
+                            "\"Klasse\" TEXT CHECK (length(\"Klasse\") <= 40), " +
+                            "\"JahrVon\" INTEGER, " +
+                            "\"Wert\" REAL, " +
+                            "\"Einheit\" TEXT CHECK (length(\"Einheit\") <= 20), " +
+                            "\"Status\" TEXT CHECK (length(\"Status\") <= 12), " +
+                            "\"Quelle\" TEXT CHECK (length(\"Quelle\") <= 120))");
                 }
+                catch { }
+
+                try
+                {
+                    int gesaet = GesaeteGeneration();
+                    int ziel = AktuelleGeneration;
+                    if (gesaet >= ziel) return;
+
+                    int id = MaxId();
+                    int neu = 0;
+                    foreach (GesetzParameter p in Vorbelegung())
+                    {
+                        if (p.Generation <= gesaet) continue;
+                        id++;
+                        Einfuegen(id, p.Schluessel, p.Klasse, p.JahrVon, p.Wert,
+                                  p.Einheit, p.Status, p.Quelle);
+                        neu++;
+                    }
+                    MarkerSetzen(ziel, ref id);
+                    ZuletztNachgesaet = neu;
+                }
+                catch { }
             }
             catch { /* ohne Tabelle greift die Code-Rückfallebene */ }
         }
@@ -511,90 +510,89 @@ namespace WindowsFormsApplication1
         /// (dann wird alles gesät, wie vor Etappe E6). Eine gefüllte Tabelle <b>ohne</b>
         /// Markerzeile ist der E1-Bestand und zählt als Generation 1.
         /// </summary>
-        private static int GesaeteGeneration(OleDbConnection conn)
+        private static int GesaeteGeneration()
         {
-            object marker = null;
-            try
-            {
-                using (var cmd = new OleDbCommand(
-                    "SELECT MAX([Wert]) FROM " + TAB_GESETZESPARAMETER + " WHERE Schluessel = ?", conn))
-                {
-                    cmd.Parameters.Add("@s", OleDbType.VarWChar, 60).Value = DbWerte.GESETZ_KATALOG_GENERATION;
-                    marker = cmd.ExecuteScalar();
-                }
-            }
-            catch { }
+            object marker = StilleDb.Scalar(
+                "SELECT MAX([Wert]) FROM " + TAB_GESETZESPARAMETER + " WHERE Schluessel = ?",
+                StilleDb.Par("@s", OleDbType.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
+
             if (marker != null && marker != DBNull.Value)
             {
                 try { return (int)Math.Round(Convert.ToDouble(marker)); } catch { }
             }
 
-            object anz;
-            using (var cmd = new OleDbCommand("SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER, conn))
-                anz = cmd.ExecuteScalar();
-            int zeilen = anz == null || anz == DBNull.Value ? 0 : Convert.ToInt32(anz);
+            object anz = StilleDb.Scalar("SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER);
+
+            // ARBEITSPAKET S4b, Verhaltenstreue: Diese Zaehlung stand FRUEHER NICHT in
+            // einem try/catch - ein Lesefehler brach die Nachsaat ab. StilleDb wirft
+            // nicht, also wird der Abbruch hier von Hand ausgeloest. COUNT(*) liefert nie
+            // NULL; null heisst deshalb zuverlaessig "nicht lesbar".
+            if (anz == null)
+                throw new InvalidOperationException(
+                    "Tab_Gesetzesparameter ist nicht lesbar - Nachsaat abgebrochen.");
+
+            int zeilen = anz == DBNull.Value ? 0 : Convert.ToInt32(anz);
             return zeilen == 0 ? 0 : 1;
         }
 
         /// <summary>Höchste vergebene ID der Tabelle (0 bei leerer Tabelle) — kein AutoWert.</summary>
-        private static int MaxId(OleDbConnection conn)
+        private static int MaxId()
         {
             try
             {
-                using (var cmd = new OleDbCommand("SELECT MAX(ID) FROM " + TAB_GESETZESPARAMETER, conn))
-                {
-                    object o = cmd.ExecuteScalar();
-                    if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
-                }
+                object o = StilleDb.Scalar("SELECT MAX(ID) FROM " + TAB_GESETZESPARAMETER);
+                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
             catch { }
             return 0;
         }
 
         /// <summary>Legt die Markerzeile an oder hebt sie auf die erreichte Generation.</summary>
-        private static void MarkerSetzen(OleDbConnection conn, int generation, ref int id)
+        private static void MarkerSetzen(int generation, ref int id)
         {
             const string quelle = "EPOS-Plan — Verwaltungszeile der generationsweisen Nachsaat (Etappe E6)";
-            int betroffen = 0;
-            try
-            {
-                using (var cmd = new OleDbCommand(
-                    "UPDATE " + TAB_GESETZESPARAMETER + " SET [Wert] = ?, Quelle = ? WHERE Schluessel = ?", conn))
-                {
-                    cmd.Parameters.Add("@w", OleDbType.Double).Value = (double)generation;
-                    cmd.Parameters.Add("@q", OleDbType.VarWChar, 120).Value = quelle;
-                    cmd.Parameters.Add("@s", OleDbType.VarWChar, 60).Value = DbWerte.GESETZ_KATALOG_GENERATION;
-                    betroffen = cmd.ExecuteNonQuery();
-                }
-            }
-            catch { }
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE " + TAB_GESETZESPARAMETER + " SET [Wert] = ?, Quelle = ? WHERE Schluessel = ?",
+                StilleDb.Par("@w", OleDbType.Double, (double)generation),
+                StilleDb.Par("@q", OleDbType.VarWChar, quelle),
+                StilleDb.Par("@s", OleDbType.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
+
             if (betroffen > 0) return;
 
             id++;
-            Einfuegen(conn, id, DbWerte.GESETZ_KATALOG_GENERATION, DbWerte.GESETZ_KLASSE_SYSTEM, 0,
+            Einfuegen(id, DbWerte.GESETZ_KATALOG_GENERATION, DbWerte.GESETZ_KLASSE_SYSTEM, 0,
                       generation, DbWerte.GESETZ_EINHEIT_OHNE, DbWerte.GESETZ_STATUS_GESICHERT, quelle);
         }
 
-        /// <summary>Eine Zeile schreiben — derselbe Weg für Seed, Nachsaat und Marker.</summary>
-        private static void Einfuegen(OleDbConnection conn, int id, string schluessel, string klasse,
+        /// <summary>
+        /// Eine Zeile schreiben — derselbe Weg für Seed, Nachsaat und Marker.
+        ///
+        /// ARBEITSPAKET S4b, Verhaltenstreue: Der frühere Weg WARF bei einem Fehlschlag
+        /// und brach damit die Nachsaatschleife ab (der Zähler blieb auf 0).
+        /// <see cref="StilleDb"/> wirft nicht, also wird der Abbruch hier von Hand
+        /// ausgelöst. Nach aussen ändert sich nichts: Der Aufrufer fing die Ausnahme
+        /// schon bisher wortlos ab.
+        /// </summary>
+        private static void Einfuegen(int id, string schluessel, string klasse,
                                       int jahrVon, double? wert, string einheit, string status, string quelle)
         {
-            using (var cmd = new OleDbCommand(
+            int betroffen = StilleDb.NonQuery(
                 "INSERT INTO " + TAB_GESETZESPARAMETER +
                 " (ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle) " +
-                "VALUES (?,?,?,?,?,?,?,?)", conn))
-            {
-                cmd.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                cmd.Parameters.Add("@sch", OleDbType.VarWChar, 60).Value = schluessel;
-                cmd.Parameters.Add("@kla", OleDbType.VarWChar, 40).Value = klasse;
-                cmd.Parameters.Add("@jv", OleDbType.Integer).Value = jahrVon;
-                cmd.Parameters.Add("@wert", OleDbType.Double).Value =
-                    wert.HasValue ? (object)wert.Value : DBNull.Value;
-                cmd.Parameters.Add("@einh", OleDbType.VarWChar, 20).Value = einheit;
-                cmd.Parameters.Add("@sta", OleDbType.VarWChar, 12).Value = status;
-                cmd.Parameters.Add("@que", OleDbType.VarWChar, 120).Value = quelle;
-                cmd.ExecuteNonQuery();
-            }
+                "VALUES (?,?,?,?,?,?,?,?)",
+                StilleDb.Par("@id", OleDbType.Integer, id),
+                StilleDb.Par("@sch", OleDbType.VarWChar, schluessel),
+                StilleDb.Par("@kla", OleDbType.VarWChar, klasse),
+                StilleDb.Par("@jv", OleDbType.Integer, jahrVon),
+                StilleDb.Par("@wert", OleDbType.Double, wert.HasValue ? (object)wert.Value : DBNull.Value),
+                StilleDb.Par("@einh", OleDbType.VarWChar, einheit),
+                StilleDb.Par("@sta", OleDbType.VarWChar, status),
+                StilleDb.Par("@que", OleDbType.VarWChar, quelle));
+
+            if (betroffen < 0)
+                throw new InvalidOperationException(
+                    "Zeile " + id + " in Tab_Gesetzesparameter konnte nicht angelegt werden.");
         }
 
         // ---------------------------------------------------------------------

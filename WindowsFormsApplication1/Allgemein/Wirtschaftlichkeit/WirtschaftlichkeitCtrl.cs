@@ -208,165 +208,185 @@ namespace WindowsFormsApplication1
 
         /// <summary>Legt Parameter- und Ergebnistabelle an, falls sie fehlen
         /// (Muster BerichtCtrl.StelleKonfigTabelleSicher).</summary>
+        /// <remarks>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht (still, damit die
+        /// leeren <c>catch</c>-Zweige weiter halten, was sie zusagen); Schemaproben statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen); SQLite-DDL statt Access-DDL
+        /// (S4d vorgezogen).
+        ///
+        /// <para>Die Spaltenlisten sind unveraendert - uebersetzt sind nur die TYPEN
+        /// (LONG->INTEGER, DOUBLE->REAL, TEXT(n)/LONGTEXT->TEXT, YESNO->INTEGER 0/1,
+        /// DATETIME->TEXT) und die beiden Access-Inline-Nebenbedingungen: SQLite kennt
+        /// kein <c>CONSTRAINT … UNIQUE</c> in der Spaltenzeile, der eindeutige Index auf
+        /// ID_Projekt wird deshalb - wie im Grundschema - getrennt angelegt.</para>
+        /// </remarks>
         public void StelleTabellenSicher()
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // Der Block hielt bis S4b die eigene OleDbConnection; er bleibt als
+                // Klammer stehen, damit der Diff auf den Umbau beschraenkt bleibt.
                 {
-                    conn.Open();
                     // Jeder CREATE einzeln abgesichert: ein Fehlschlag (z. B. reserviertes
                     // Wort) darf weder die anderen Tabellen noch die Spalten-Nachrüstung
                     // darunter verhindern (Review-Befund Phase 7).
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_PARAMETER))
-                        Ddl(conn, "CREATE TABLE " + TAB_PARAMETER + " (" +
-                                  "ID LONG CONSTRAINT PK_ProjWirt PRIMARY KEY, " +
-                                  "ID_Projekt LONG CONSTRAINT UQ_ProjWirtProj UNIQUE, " +
-                                  "Zinssatz DOUBLE, " +
-                                  "Betrachtungszeitraum LONG, " +
-                                  "Preissteigerung_Energie DOUBLE, " +
-                                  "Preissteigerung_Betrieb DOUBLE, " +
-                                  "Einspeiseverguetung DOUBLE, " +
-                                  "CO2_Preis DOUBLE, " +
-                                  "KWKG_Bonus DOUBLE, " +
-                                  "KWKG_Vbh_Jahresdeckel DOUBLE, " +
-                                  "KWKG_Vbh_Kontingent DOUBLE, " +
+                    if (!TabelleVorhanden(TAB_PARAMETER))
+                    {
+                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_PARAMETER + "] (" +
+                                  "\"ID\" INTEGER PRIMARY KEY, " +
+                                  "\"ID_Projekt\" INTEGER, " +
+                                  "\"Zinssatz\" REAL, " +
+                                  "\"Betrachtungszeitraum\" INTEGER, " +
+                                  "\"Preissteigerung_Energie\" REAL, " +
+                                  "\"Preissteigerung_Betrieb\" REAL, " +
+                                  "\"Einspeiseverguetung\" REAL, " +
+                                  "\"CO2_Preis\" REAL, " +
+                                  "\"KWKG_Bonus\" REAL, " +
+                                  "\"KWKG_Vbh_Jahresdeckel\" REAL, " +
+                                  "\"KWKG_Vbh_Kontingent\" REAL, " +
                                   // ETAPPE K6 (HF6/M-D): die vier KWKG-Projektangaben auch im
                                   // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
                                   // nach dem SpalteSicher-Nachzug weiter unten.
-                                  "KWKG_Tatbestand TEXT(30), " +
-                                  "KWKG_Anlagenart TEXT(20), " +
-                                  "KWKG_Kostenanteil DOUBLE, " +
-                                  "KWKG_Pauschalmodus YESNO, " +
-                                  "GeaendertAm DATETIME)");
+                                  "\"KWKG_Tatbestand\" TEXT CHECK (length(\"KWKG_Tatbestand\") <= 30), " +
+                                  "\"KWKG_Anlagenart\" TEXT CHECK (length(\"KWKG_Anlagenart\") <= 20), " +
+                                  "\"KWKG_Kostenanteil\" REAL, " +
+                                  "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
+                                  "\"GeaendertAm\" TEXT)");
+                        Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
+                            "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
+                    }
                     }
                     catch { }
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_ERGEBNIS))
-                        Ddl(conn, "CREATE TABLE " + TAB_ERGEBNIS + " (" +
-                                  "ID LONG CONSTRAINT PK_ErgWirt PRIMARY KEY, " +
-                                  "ID_Projekt LONG, " +
-                                  "ID_Ergebnis LONG, " +          // FK auf Tab_Ergebnis.ID (Simulationslauf)
-                                  "Szenario TEXT(20), " +
-                                  "IstStamm YESNO, " +
-                                  "Anzeige TEXT(255), " +
-                                  "Zeitstempel DATETIME, " +
-                                  "Zinssatz DOUBLE, " +
-                                  "Betrachtungszeitraum LONG, " +
-                                  "Preissteigerung_Energie DOUBLE, " +
-                                  "Preissteigerung_Betrieb DOUBLE, " +
-                                  "Einspeiseverguetung DOUBLE, " +
-                                  "Investition DOUBLE, " +
-                                  "Betriebskosten DOUBLE, " +
-                                  "Energiekosten DOUBLE, " +
-                                  "Einspeiseerloes DOUBLE, " +
-                                  "BarwertAusgaben DOUBLE, " +
-                                  "BarwertEinnahmen DOUBLE, " +
-                                  "Restwert DOUBLE, " +
-                                  "Kapitalwert DOUBLE, " +
-                                  "KapitalwertDiff DOUBLE, " +
-                                  "AnnuitaetKW DOUBLE, " +
-                                  "AmortisationJahre DOUBLE, " +
-                                  "Gestehungskosten DOUBLE, " +
-                                  "IRR DOUBLE, " +
-                                  "CO2Abgabe DOUBLE, " +
-                                  "KWKGErloes DOUBLE, " +
-                                  "Fehlgrund LONGTEXT)");
+                    if (!TabelleVorhanden(TAB_ERGEBNIS))
+                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_ERGEBNIS + "] (" +
+                                  "\"ID\" INTEGER PRIMARY KEY, " +
+                                  "\"ID_Projekt\" INTEGER, " +
+                                  "\"ID_Ergebnis\" INTEGER, " +          // FK auf Tab_Ergebnis.ID (Simulationslauf)
+                                  "\"Szenario\" TEXT CHECK (length(\"Szenario\") <= 20), " +
+                                  "\"IstStamm\" INTEGER NOT NULL DEFAULT 0 CHECK (\"IstStamm\" IN (0,1)), " +
+                                  "\"Anzeige\" TEXT CHECK (length(\"Anzeige\") <= 255), " +
+                                  "\"Zeitstempel\" TEXT, " +
+                                  "\"Zinssatz\" REAL, " +
+                                  "\"Betrachtungszeitraum\" INTEGER, " +
+                                  "\"Preissteigerung_Energie\" REAL, " +
+                                  "\"Preissteigerung_Betrieb\" REAL, " +
+                                  "\"Einspeiseverguetung\" REAL, " +
+                                  "\"Investition\" REAL, " +
+                                  "\"Betriebskosten\" REAL, " +
+                                  "\"Energiekosten\" REAL, " +
+                                  "\"Einspeiseerloes\" REAL, " +
+                                  "\"BarwertAusgaben\" REAL, " +
+                                  "\"BarwertEinnahmen\" REAL, " +
+                                  "\"Restwert\" REAL, " +
+                                  "\"Kapitalwert\" REAL, " +
+                                  "\"KapitalwertDiff\" REAL, " +
+                                  "\"AnnuitaetKW\" REAL, " +
+                                  "\"AmortisationJahre\" REAL, " +
+                                  "\"Gestehungskosten\" REAL, " +
+                                  "\"IRR\" REAL, " +
+                                  "\"CO2Abgabe\" REAL, " +
+                                  "\"KWKGErloes\" REAL, " +
+                                  "\"Fehlgrund\" TEXT)");
                     }
                     catch { }
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_SENS))
-                        Ddl(conn, "CREATE TABLE " + TAB_SENS + " (" +
-                                  "ID LONG CONSTRAINT PK_ErgWirtSens PRIMARY KEY, " +
-                                  "ID_Projekt LONG, " +
-                                  "[Parameter] TEXT(60), " +
-                                  "KwMinus DOUBLE, " +
-                                  "KwBasis DOUBLE, " +
-                                  "KwPlus DOUBLE, " +
-                                  "Zeitstempel DATETIME)");
+                    if (!TabelleVorhanden(TAB_SENS))
+                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_SENS + "] (" +
+                                  "\"ID\" INTEGER PRIMARY KEY, " +
+                                  "\"ID_Projekt\" INTEGER, " +
+                                  "\"Parameter\" TEXT CHECK (length(\"Parameter\") <= 60), " +
+                                  "\"KwMinus\" REAL, " +
+                                  "\"KwBasis\" REAL, " +
+                                  "\"KwPlus\" REAL, " +
+                                  "\"Zeitstempel\" TEXT)");
                     }
                     catch { }
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_TARIF))
-                        Ddl(conn, "CREATE TABLE " + TAB_TARIF + " (" +
-                                  "ID LONG CONSTRAINT PK_ProjTarif PRIMARY KEY, " +
-                                  "ID_Projekt LONG CONSTRAINT UQ_ProjTarifProj UNIQUE, " +
-                                  "Aktiv YESNO, " +
-                                  "Winter_Von LONG, " +
-                                  "Winter_Bis LONG, " +
-                                  "HT_Von LONG, " +
-                                  "HT_Bis LONG, " +
-                                  "Bezug_W_HT DOUBLE, Bezug_W_NT DOUBLE, Bezug_S_HT DOUBLE, Bezug_S_NT DOUBLE, " +
-                                  "Einsp_W_HT DOUBLE, Einsp_W_NT DOUBLE, Einsp_S_HT DOUBLE, Einsp_S_NT DOUBLE, " +
-                                  "Staffel_Grenze DOUBLE, Staffel_Preis1 DOUBLE, Staffel_Preis2 DOUBLE, " +
-                                  "GeaendertAm DATETIME)");
+                    if (!TabelleVorhanden(TAB_TARIF))
+                    {
+                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_TARIF + "] (" +
+                                  "\"ID\" INTEGER PRIMARY KEY, " +
+                                  "\"ID_Projekt\" INTEGER, " +
+                                  "\"Aktiv\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Aktiv\" IN (0,1)), " +
+                                  "\"Winter_Von\" INTEGER, " +
+                                  "\"Winter_Bis\" INTEGER, " +
+                                  "\"HT_Von\" INTEGER, " +
+                                  "\"HT_Bis\" INTEGER, " +
+                                  "\"Bezug_W_HT\" REAL, \"Bezug_W_NT\" REAL, \"Bezug_S_HT\" REAL, \"Bezug_S_NT\" REAL, " +
+                                  "\"Einsp_W_HT\" REAL, \"Einsp_W_NT\" REAL, \"Einsp_S_HT\" REAL, \"Einsp_S_NT\" REAL, " +
+                                  "\"Staffel_Grenze\" REAL, \"Staffel_Preis1\" REAL, \"Staffel_Preis2\" REAL, " +
+                                  "\"GeaendertAm\" TEXT)");
+                        Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjTarifProj\" " +
+                            "ON [" + TAB_TARIF + "] (\"ID_Projekt\")");
+                    }
                     }
                     catch { }
                     try
                     {
-                    if (!TabelleVorhanden(conn, TAB_MATRIX))
-                        Ddl(conn, "CREATE TABLE " + TAB_MATRIX + " (" +
-                                  "ID LONG CONSTRAINT PK_ErgMatrix PRIMARY KEY, " +
-                                  "ID_Projekt LONG, " +
-                                  "[Zone] TEXT(20), " +
-                                  "BezugMWh DOUBLE, " +
-                                  "EinspPvMWh DOUBLE, " +
-                                  "KwkEigenMWh DOUBLE, " +
-                                  "KwkEinspMWh DOUBLE, " +
-                                  "MaxBezugKW DOUBLE, " +
-                                  "Zeitstempel DATETIME)");
+                    if (!TabelleVorhanden(TAB_MATRIX))
+                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_MATRIX + "] (" +
+                                  "\"ID\" INTEGER PRIMARY KEY, " +
+                                  "\"ID_Projekt\" INTEGER, " +
+                                  "\"Zone\" TEXT CHECK (length(\"Zone\") <= 20), " +
+                                  "\"BezugMWh\" REAL, " +
+                                  "\"EinspPvMWh\" REAL, " +
+                                  "\"KwkEigenMWh\" REAL, " +
+                                  "\"KwkEinspMWh\" REAL, " +
+                                  "\"MaxBezugKW\" REAL, " +
+                                  "\"Zeitstempel\" TEXT)");
                     }
                     catch { }
 
                     // Ältere Tabellenstände additiv nachrüsten (Muster
                     // ErgebnisCtrl.StelleModulSpaltenSicher) — CREATE erfasst nur Neuanlagen.
-                    SpalteSicher(conn, TAB_ERGEBNIS, "IstStamm", "YESNO");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "Anzeige", "TEXT(255)");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "IRR", "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "CO2Abgabe", "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "KWKGErloes", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "CO2_Preis", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Bonus", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Vbh_Jahresdeckel", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
+                    SpalteSicher(TAB_ERGEBNIS, "IstStamm", "YESNO");
+                    SpalteSicher(TAB_ERGEBNIS, "Anzeige", "TEXT(255)");
+                    SpalteSicher(TAB_ERGEBNIS, "IRR", "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, "CO2Abgabe", "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, "KWKGErloes", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "CO2_Preis", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Jahresdeckel", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
                     // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
                     // mitgeschrieben, damit ein gespeichertes Ergebnis nachvollziehbar
                     // bleibt. Additiv über denselben Weg wie die Spalten darüber — dieses
                     // Modul führt seine Tabellen seit jeher selbst (bekannte doppelte
                     // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
                     // ein Migrationsschritt dafür wäre der dritte Mechanismus.
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
-                    SpalteSicher(conn, TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, "RefKessel_ID_Brennstoff", "LONG");
-                    bool phase9Neu = SpalteSicher(conn, TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Inbetriebnahme", "DATETIME");
-                    SpalteSicher(conn, TAB_PARAMETER, "KWKG_Abschlag_Negativ", "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
+                    SpalteSicher(TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, "RefKessel_ID_Brennstoff", "LONG");
+                    bool phase9Neu = SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Inbetriebnahme", "DATETIME");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Abschlag_Negativ", "DOUBLE");
 
                     // Einmalige Migration (Phase 9): der bisherige Vorgabewert 3500 des
                     // Deckels bedeutete „KWKG-2020-Standard" — in der neuen Override-
                     // Semantik (0 = degressive Staffel) würde er die Staffel dauerhaft
                     // aushebeln. Beim ersten Phase-9-Start auf 0 umstellen.
                     if (phase9Neu)
-                        try { Ddl(conn, "UPDATE " + TAB_PARAMETER +
+                        try { Ddl("UPDATE " + TAB_PARAMETER +
                                         " SET KWKG_Vbh_Jahresdeckel = 0 WHERE KWKG_Vbh_Jahresdeckel = 3500"); }
                         catch { }
 
                     // ETAPPE E4 — die drei Steuergutschriften und die Herkunft ihrer
                     // Sätze im ERGEBNIS. Additiv über denselben Weg wie die Spalten
                     // darüber (Begründung bei SPALTE_ENERGIESTEUER).
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
 
                     // ETAPPE E4 — die sechs Projektangaben der Steuerprüfung. Sie
                     // entstehen regulär über Migrationsschritt 20; das hier ist die
@@ -376,52 +396,52 @@ namespace WindowsFormsApplication1
                     // Die WERTE-Vorbelegung bleibt allein bei Schritt 20b: Die Leseseite
                     // behandelt leer/NULL ohnehin wie „keine Gutschrift", und ein zweiter
                     // schreibender Weg auf Anwenderdaten wäre eine Wahrheit zu viel.
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_UNTERNEHMENSART, "TEXT(24)");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_RAEUMLICH, "YESNO");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_UNTERNEHMENSART, "TEXT(24)");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_RAEUMLICH, "YESNO");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
                     // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
                     // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
                     // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND, "TEXT(30)");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART, "TEXT(20)");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
-                    SpalteSicher(conn, TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND, "TEXT(30)");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART, "TEXT(20)");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
 
                     // ETAPPE E5 — der Bedarf OHNE Anlage je Zone: die Bezugsgröße der
                     // Differenzmethode. Sie fehlte im Modell vollständig.
-                    SpalteSicher(conn, TAB_MATRIX, "BedarfMWh", "DOUBLE");
+                    SpalteSicher(TAB_MATRIX, "BedarfMWh", "DOUBLE");
 
                     // ETAPPE E5 — vermiedene Kosten und Aufschlagsbetrag im ERGEBNIS.
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_ARBEIT, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_LEISTUNG, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_VERMIEDEN_GESAMT, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_AUFSCHLAG_BETRAG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_ARBEIT, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_LEISTUNG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_GESAMT, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_AUFSCHLAG_BETRAG, "DOUBLE");
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
                     // Summe der beiden Spalten ist der bereits vorhandene Gesamtbetrag.
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_EINSPEISUNG_KWK, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_EINSPEISUNG_KWK, "DOUBLE");
 
                     // ETAPPE K5 — der angesetzte Investitionszuschuss. Additiv über
                     // denselben Weg; die doppelte Schema-Wahrheit dieses Moduls (§ 9.2
                     // des Konzepts) wird damit nicht um einen dritten Mechanismus
                     // erweitert: Ergebnisspalten führt der Controller, Eingabespalten
                     // der Migrationskatalog.
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_ZUSCHUSS, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_FORM, "TEXT(50)");   // P6
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AW, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_MARKTPRAEMIE, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AUSFALL_KWH, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_AUSFALL_EUR, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_51A, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_KAPPUNG_KWH, "DOUBLE");
-                    SpalteSicher(conn, TAB_ERGEBNIS, SPALTE_PV_VERMIEDEN, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ZUSCHUSS, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_FORM, "TEXT(50)");   // P6
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AW, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_MARKTPRAEMIE, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AUSFALL_KWH, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AUSFALL_EUR, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_51A, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_KAPPUNG_KWH, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_VERMIEDEN, "DOUBLE");
 
                     // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
                     // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
@@ -431,7 +451,7 @@ namespace WindowsFormsApplication1
                     // WERTE-Vorbelegung bleibt allein bei Schritt 21b: Die Leseseite
                     // behandelt leer/NULL ohnehin wie ZONEN.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt21_Tarifmodell)
-                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E6 — die acht KWKG-Spalten JE ANLAGE an Tab_Energieanlagen.
                     // Sie entstehen regulär über Migrationsschritt 22; das hier ist die
@@ -440,7 +460,7 @@ namespace WindowsFormsApplication1
                     // in Schritt 22: NULL heißt „kein eigener Wert", und dann gilt der
                     // Projektwert.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt22_KwkgJeAnlage)
-                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE B3 Paket a — die drei Angaben JE ANLAGE (Steuerwahl,
                     // Aufteilungsmethode, Hilfsenergieanteil) an Tab_Energieanlagen. Sie
@@ -450,7 +470,7 @@ namespace WindowsFormsApplication1
                     // noch in Schritt 61: NULL heißt „kein eigener Wert", und dann gilt
                     // der Projektwert bzw. „keine Hilfsenergie".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt61_SteuerJeAnlage)
-                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
                     // entstehen regulär über Migrationsschritt 23; das hier ist die
@@ -459,7 +479,7 @@ namespace WindowsFormsApplication1
                     // Schritt 23b; die Leseseite behandelt leer/NULL ohnehin wie den
                     // Vorgabewert, und ein leeres Bilanzjahr wie 2026.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt23_Bilanzkonvention)
-                        SpalteSicher(conn, s.Tabelle, s.Name, s.TypDefinition);
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
                 }
             }
             catch { /* ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge */ }
@@ -471,30 +491,46 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
-        /// Liefert true, wenn die Spalte JETZT neu angelegt wurde (Migrations-Anker).</summary>
-        private static bool SpalteSicher(OleDbConnection conn, string tabelle, string spalte, string typ)
+        /// Liefert true, wenn die Spalte JETZT neu angelegt wurde (Migrations-Anker).
+        ///
+        /// ARBEITSPAKET S4b: Schemaprobe über <see cref="StilleDb.SpaltenNamen"/> statt
+        /// <c>GetOleDbSchemaTable(Columns, …)</c>; die Access-Typangabe wird beim
+        /// Verbrauch nach SQLite übersetzt.</summary>
+        private static bool SpalteSicher(string tabelle, string spalte, string typ)
         {
             try
             {
-                DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-                    new object[] { null, null, tabelle, spalte });
-                if (schema != null && schema.Rows.Count > 0) return false;
-                Ddl(conn, "ALTER TABLE " + tabelle + " ADD COLUMN [" + spalte + "] " + typ);
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(tabelle);
+
+                // Wie bisher: Nur ein NACHWEISLICHES Fehlen loest das ALTER aus. null
+                // hiess frueher "Schema nicht lesbar / Tabelle fehlt" - dann meldete
+                // GetOleDbSchemaTable keine Zeile und das ALTER lief in seinen catch.
+                if (vorhanden != null && vorhanden.Contains(spalte)) return false;
+
+                Ddl(StilleDb.AlterTableAddColumn(tabelle, spalte, typ));
                 return true;
             }
             catch { return false; }
         }
 
-        private static bool TabelleVorhanden(OleDbConnection conn, string name)
+        private static bool TabelleVorhanden(string name)
         {
-            DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                new object[] { null, null, name, "TABLE" });
-            return schema != null && schema.Rows.Count > 0;
+            return StilleDb.TabelleVorhanden(name);
         }
 
-        private static void Ddl(OleDbConnection conn, string sql)
+        /// <summary>
+        /// Eine DDL-/Verwaltungsanweisung, still. ARBEITSPAKET S4b, Verhaltenstreue:
+        /// Der frühere Weg WARF bei einem Fehlschlag, und genau darauf bauen die
+        /// umschliessenden <c>try/catch</c>-Klammern (ein misslungenes CREATE darf den
+        /// zugehörigen Index nicht mehr anlegen, ein misslungenes ALTER meldet "nicht
+        /// neu angelegt"). <see cref="StilleDb"/> wirft nicht, also wird hier von Hand
+        /// geworfen. Nach aussen bleibt alles gleich - gefangen wurde die Ausnahme
+        /// schon bisher wortlos.
+        /// </summary>
+        private static void Ddl(string sql)
         {
-            using (OleDbCommand cmd = new OleDbCommand(sql, conn)) cmd.ExecuteNonQuery();
+            if (StilleDb.NonQuery(sql) < 0)
+                throw new InvalidOperationException("Anweisung fehlgeschlagen: " + sql);
         }
 
         // ------------------------------------------------------------- Parameter
@@ -683,16 +719,16 @@ namespace WindowsFormsApplication1
                 // 1. Größter Kessel über die ANLAGENZEILEN — dieselbe Menge, die die
                 //    Engine rechnet und die Verwaltungsdialoge anzeigen.
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 g.Bezeichner, g.Brennstoff, g.Wirkungsgrad_Gas, g.[Wirkungsgrad_Öl] " +
+                    "SELECT g.Bezeichner, g.Brennstoff, g.Wirkungsgrad_Gas, g.[Wirkungsgrad_Öl] " +
                     "FROM Tab_Heizkessel AS g INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.ID_Kessel " +
-                    "WHERE a.ID_Projekt = ? ORDER BY g.Ptherm DESC, g.ID",
+                    "WHERE a.ID_Projekt = ? ORDER BY g.Ptherm DESC, g.ID LIMIT 1",
                     new OleDbParameter("@p", idStamm));
 
                 // 2. Rückfall: die Gerätezeilen (der Weg bis zu diesem Nachtrag).
                 if (dt == null || dt.Rows.Count == 0)
                     dt = DataRepository.GetDataTable(
-                        "SELECT TOP 1 Bezeichner, Brennstoff, Wirkungsgrad_Gas, [Wirkungsgrad_Öl] " +
-                        "FROM Tab_Heizkessel WHERE ID_Projekt = ? ORDER BY Ptherm DESC, ID",
+                        "SELECT Bezeichner, Brennstoff, Wirkungsgrad_Gas, [Wirkungsgrad_Öl] " +
+                        "FROM Tab_Heizkessel WHERE ID_Projekt = ? ORDER BY Ptherm DESC, ID LIMIT 1",
                         new OleDbParameter("@p", idStamm));
 
                 if (dt == null || dt.Rows.Count == 0) { _refKesselCache[idStamm] = info; return info; }
@@ -4531,10 +4567,10 @@ namespace WindowsFormsApplication1
                 // 26.08.2026: diese Namen existieren nur auf der Testkopie, der
                 // Produktivbestand kennt sie nicht -> ACE-Parameterfehler).
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 s.custom_price_work AS Projektpreis, ec.price_work AS price " +
+                    "SELECT s.custom_price_work AS Projektpreis, ec.price_work AS price " +
                     "FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
-                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY'",
+                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
                     new OleDbParameter("@p", idProjekt));
                 if (dt == null || dt.Rows.Count == 0) return null;
                 DataRow r = dt.Rows[0];
@@ -5420,8 +5456,8 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 ID FROM " + ErgebnisCtrl.TAB_KOPF +
-                    " WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    "SELECT ID FROM " + ErgebnisCtrl.TAB_KOPF +
+                    " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                     new OleDbParameter("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
@@ -5446,197 +5482,178 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction tx = conn.BeginTransaction())
+                    try
                     {
-                        try
+                        foreach (int id in projektIds)
                         {
-                            foreach (int id in projektIds)
                             {
-                                using (var cmd = new OleDbCommand(
-                                    "DELETE FROM " + TAB_ERGEBNIS + " WHERE ID_Projekt = ?", conn, tx))
-                                {
-                                    cmd.Parameters.AddWithValue("@p", id);
-                                    cmd.ExecuteNonQuery();
-                                }
-                                using (var cmd = new OleDbCommand(
-                                    "DELETE FROM " + TAB_SENS + " WHERE ID_Projekt = ?", conn, tx))
-                                {
-                                    cmd.Parameters.AddWithValue("@p", id);
-                                    cmd.ExecuteNonQuery();
-                                }
-                                using (var cmd = new OleDbCommand(
-                                    "DELETE FROM " + TAB_MATRIX + " WHERE ID_Projekt = ?", conn, tx))
-                                {
-                                    cmd.Parameters.AddWithValue("@p", id);
-                                    cmd.ExecuteNonQuery();
-                                }
+                                List<OleDbParameter> pl = new List<OleDbParameter>();
+                                pl.Add(new OleDbParameter("@p", id));
+                                v.Ausfuehren("DELETE FROM " + TAB_ERGEBNIS + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
-
-                            int naechsteId;
-                            using (var cmd = new OleDbCommand(
-                                "SELECT MAX(ID) FROM " + TAB_ERGEBNIS, conn, tx))
                             {
-                                object o = cmd.ExecuteScalar();
-                                naechsteId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
+                                List<OleDbParameter> pl = new List<OleDbParameter>();
+                                pl.Add(new OleDbParameter("@p", id));
+                                v.Ausfuehren("DELETE FROM " + TAB_SENS + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
-
-                            foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
                             {
-                                using (var cmd = new OleDbCommand(
-                                    "INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
-                                    "IstStamm, Anzeige, Zeitstempel, " +
-                                    "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
-                                    "Einspeiseverguetung, Investition, Betriebskosten, Energiekosten, Einspeiseerloes, " +
-                                    "BarwertAusgaben, BarwertEinnahmen, Restwert, Kapitalwert, KapitalwertDiff, " +
-                                    "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
-                                    "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
-                                    SPALTE_ENERGIESTEUER + ", " + SPALTE_STROMST_BEFREIUNG + ", " +
-                                    SPALTE_STROMST_ENTLASTUNG + ", " + SPALTE_STEUER_HERKUNFT + ", " +
-                                    SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
-                                    SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
-                                    SPALTE_EINSPEISUNG_PV + ", " + SPALTE_EINSPEISUNG_KWK + ", " +
-                                    SPALTE_ZUSCHUSS + ", " +
-                                    SPALTE_PV_FORM + ", " + SPALTE_PV_AW + ", " +
-                                    SPALTE_PV_MARKTPRAEMIE + ", " + SPALTE_PV_AUSFALL_KWH + ", " +
-                                    SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
-                                    SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
-                                    "StromkostenTarif, HinweisText, Fehlgrund) " +
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", conn, tx))
-                                {
-                                    OleDbParameterCollection ps = cmd.Parameters;
-                                    ps.AddWithValue("@id", naechsteId);
-                                    ps.AddWithValue("@proj", e.IdProjekt);
-                                    ps.AddWithValue("@erg", e.IdErgebnis);
-                                    ps.AddWithValue("@sz", e.Szenario ?? "");
-                                    ps.AddWithValue("@stamm", e.IstStamm);
-                                    ps.AddWithValue("@anz", e.Anzeige ?? "");
-                                    ps.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = e.Zeitstempel });
-                                    ps.AddWithValue("@z", p.Zinssatz);
-                                    ps.AddWithValue("@t", p.Betrachtungszeitraum);
-                                    ps.AddWithValue("@pe", p.PreissteigerungEnergie);
-                                    ps.AddWithValue("@pb", p.PreissteigerungBetrieb);
-                                    ps.AddWithValue("@ev", p.Einspeiseverguetung);
-                                    ps.AddWithValue("@inv", R(e.Investition));
-                                    ps.Add(DbWert(e.BetriebskostenJahr));
-                                    ps.Add(DbWert(e.EnergiekostenJahr));
-                                    ps.AddWithValue("@einsp", R(e.EinspeiseerloesJahr));
-                                    ps.Add(DbWert(e.BarwertAusgaben));
-                                    ps.Add(DbWert(e.BarwertEinnahmen));
-                                    ps.AddWithValue("@rw", R(e.RestwertBarwert));
-                                    ps.Add(DbWert(e.Kapitalwert));
-                                    ps.Add(DbWert(e.KapitalwertDiff));
-                                    ps.Add(DbWert(e.AnnuitaetKW));
-                                    ps.Add(DbWert(e.AmortisationJahre));
-                                    ps.Add(DbWert(e.Gestehungskosten, 6));
-                                    ps.Add(DbWert(e.IRR));
-                                    ps.AddWithValue("@behg", R(e.CO2AbgabeJahr));
-                                    ps.AddWithValue("@kwkg", R(e.KwkgErloesJahr1));
-                                    ps.AddWithValue("@vbhel", R(e.KwkgVbhElektrisch));   // E2 (L6)
-                                    ps.AddWithValue("@enst", R(e.EnergiesteuerJahr1));   // E4
-                                    ps.AddWithValue("@stbe", R(e.StromsteuerBefreiungJahr1));
-                                    ps.AddWithValue("@sten", R(e.StromsteuerEntlastungJahr1));
-                                    ps.AddWithValue("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value);
-                                    ps.AddWithValue("@vmar", R(e.VermiedenArbeitJahr));   // E5
-                                    ps.AddWithValue("@vmle", R(e.VermiedenLeistungJahr));
-                                    ps.AddWithValue("@vmge", R(e.VermiedenGesamtJahr));
-                                    ps.AddWithValue("@aufs", R(e.AufschlagJahr));
-                                    ps.AddWithValue("@epv", R(e.EinspeiseerloesPvJahr));   // E7
-                                    ps.AddWithValue("@ekwk", R(e.EinspeiseerloesKwkJahr));
-                                    ps.AddWithValue("@zusch", R(e.Zuschuss));              // K5
-                                    ps.AddWithValue("@pvf", e.PvVerguetungsform ?? "");    // P6
-                                    ps.Add(DbWert(e.PvAnzulegenderWert));
-                                    ps.AddWithValue("@pvmp", R(e.PvMarktpraemie));
-                                    ps.AddWithValue("@pvak", R(e.PvVerguetungsausfallKwh));
-                                    ps.AddWithValue("@pvae", R(e.PvVerguetungsausfall));
-                                    ps.AddWithValue("@pv51", R(e.PvKompensation51a));
-                                    ps.AddWithValue("@pvkw", R(e.PvKappungsverlustKwh));
-                                    ps.Add(DbWert(e.PvVermiedenerBezug));
-                                    ps.Add(DbWert(e.StromkostenTarif));
-                                    ps.AddWithValue("@hw", (object)e.Hinweis ?? DBNull.Value);
-                                    ps.AddWithValue("@fg", (object)e.Fehlgrund ?? DBNull.Value);
-                                    cmd.ExecuteNonQuery();
-                                }
-                                naechsteId++;
+                                List<OleDbParameter> pl = new List<OleDbParameter>();
+                                pl.Add(new OleDbParameter("@p", id));
+                                v.Ausfuehren("DELETE FROM " + TAB_MATRIX + " WHERE ID_Projekt = ?", pl.ToArray());
                             }
-
-                            // Sensitivitätszeilen (W2, Szenario Erwartet).
-                            if (sensitivitaet != null && sensitivitaet.Count > 0)
-                            {
-                                int sensId;
-                                using (var cmd = new OleDbCommand(
-                                    "SELECT MAX(ID) FROM " + TAB_SENS, conn, tx))
-                                {
-                                    object o = cmd.ExecuteScalar();
-                                    sensId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
-                                }
-                                foreach (SensitivitaetZeile z in sensitivitaet)
-                                {
-                                    using (var cmd = new OleDbCommand(
-                                        "INSERT INTO " + TAB_SENS + " (ID, ID_Projekt, [Parameter], " +
-                                        "KwMinus, KwBasis, KwPlus, Zeitstempel) VALUES (?,?,?,?,?,?,?)", conn, tx))
-                                    {
-                                        OleDbParameterCollection ps = cmd.Parameters;
-                                        ps.AddWithValue("@id", sensId);
-                                        ps.AddWithValue("@p", z.IdProjekt);
-                                        ps.AddWithValue("@par", z.Parameter ?? "");
-                                        ps.Add(DbWert(z.KwMinus));
-                                        ps.Add(DbWert(z.KwBasis));
-                                        ps.Add(DbWert(z.KwPlus));
-                                        ps.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                    sensId++;
-                                }
-                            }
-
-                            // Strommengen-Matrix (W3) — eine Zeile je Projekt und Zone.
-                            if (matrizen != null && matrizen.Count > 0)
-                            {
-                                int mxId;
-                                using (var cmd = new OleDbCommand(
-                                    "SELECT MAX(ID) FROM " + TAB_MATRIX, conn, tx))
-                                {
-                                    object o = cmd.ExecuteScalar();
-                                    mxId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
-                                }
-                                foreach (KeyValuePair<int, StromMatrix> kv in matrizen)
-                                {
-                                    foreach (string zone in StromMatrix.Zonen)
-                                    {
-                                        StromMatrix.Zone z = kv.Value.Hole(zone);
-                                        if (z == null) continue;
-                                        using (var cmd = new OleDbCommand(
-                                            "INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
-                                            "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
-                                            "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", conn, tx))
-                                        {
-                                            OleDbParameterCollection ps = cmd.Parameters;
-                                            ps.AddWithValue("@id", mxId);
-                                            ps.AddWithValue("@p", kv.Key);
-                                            ps.AddWithValue("@z", zone);
-                                            ps.AddWithValue("@b", Math.Round(z.BezugMWh, 3));
-                                            ps.AddWithValue("@pv", Math.Round(z.EinspeisungPvMWh, 3));
-                                            ps.AddWithValue("@ke", Math.Round(z.KwkEigenMWh, 3));
-                                            ps.AddWithValue("@ki", Math.Round(z.KwkEinspeisungMWh, 3));
-                                            ps.AddWithValue("@mx", Math.Round(kv.Value.MaxBezugKW, 1));
-                                            ps.AddWithValue("@bd", Math.Round(z.BedarfMWh, 3));   // E5
-                                            ps.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
-                                            cmd.ExecuteNonQuery();
-                                        }
-                                        mxId++;
-                                    }
-                                }
-                            }
-                            tx.Commit();
                         }
-                        catch
+
+                        int naechsteId;
                         {
-                            try { tx.Rollback(); } catch { }
-                            throw;
+                            object o = v.Skalar("SELECT MAX(ID) FROM " + TAB_ERGEBNIS);
+                            naechsteId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
                         }
+
+                        foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
+                        {
+                            {
+                                List<OleDbParameter> pl = new List<OleDbParameter>();
+                                pl.Add(new OleDbParameter("@id", naechsteId));
+                                pl.Add(new OleDbParameter("@proj", e.IdProjekt));
+                                pl.Add(new OleDbParameter("@erg", e.IdErgebnis));
+                                pl.Add(new OleDbParameter("@sz", e.Szenario ?? ""));
+                                pl.Add(new OleDbParameter("@stamm", e.IstStamm));
+                                pl.Add(new OleDbParameter("@anz", e.Anzeige ?? ""));
+                                pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = e.Zeitstempel });
+                                pl.Add(new OleDbParameter("@z", p.Zinssatz));
+                                pl.Add(new OleDbParameter("@t", p.Betrachtungszeitraum));
+                                pl.Add(new OleDbParameter("@pe", p.PreissteigerungEnergie));
+                                pl.Add(new OleDbParameter("@pb", p.PreissteigerungBetrieb));
+                                pl.Add(new OleDbParameter("@ev", p.Einspeiseverguetung));
+                                pl.Add(new OleDbParameter("@inv", R(e.Investition)));
+                                pl.Add(DbWert(e.BetriebskostenJahr));
+                                pl.Add(DbWert(e.EnergiekostenJahr));
+                                pl.Add(new OleDbParameter("@einsp", R(e.EinspeiseerloesJahr)));
+                                pl.Add(DbWert(e.BarwertAusgaben));
+                                pl.Add(DbWert(e.BarwertEinnahmen));
+                                pl.Add(new OleDbParameter("@rw", R(e.RestwertBarwert)));
+                                pl.Add(DbWert(e.Kapitalwert));
+                                pl.Add(DbWert(e.KapitalwertDiff));
+                                pl.Add(DbWert(e.AnnuitaetKW));
+                                pl.Add(DbWert(e.AmortisationJahre));
+                                pl.Add(DbWert(e.Gestehungskosten, 6));
+                                pl.Add(DbWert(e.IRR));
+                                pl.Add(new OleDbParameter("@behg", R(e.CO2AbgabeJahr)));
+                                pl.Add(new OleDbParameter("@kwkg", R(e.KwkgErloesJahr1)));
+                                pl.Add(new OleDbParameter("@vbhel", R(e.KwkgVbhElektrisch)));   // E2 (L6)
+                                pl.Add(new OleDbParameter("@enst", R(e.EnergiesteuerJahr1)));   // E4
+                                pl.Add(new OleDbParameter("@stbe", R(e.StromsteuerBefreiungJahr1)));
+                                pl.Add(new OleDbParameter("@sten", R(e.StromsteuerEntlastungJahr1)));
+                                pl.Add(new OleDbParameter("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value));
+                                pl.Add(new OleDbParameter("@vmar", R(e.VermiedenArbeitJahr)));   // E5
+                                pl.Add(new OleDbParameter("@vmle", R(e.VermiedenLeistungJahr)));
+                                pl.Add(new OleDbParameter("@vmge", R(e.VermiedenGesamtJahr)));
+                                pl.Add(new OleDbParameter("@aufs", R(e.AufschlagJahr)));
+                                pl.Add(new OleDbParameter("@epv", R(e.EinspeiseerloesPvJahr)));   // E7
+                                pl.Add(new OleDbParameter("@ekwk", R(e.EinspeiseerloesKwkJahr)));
+                                pl.Add(new OleDbParameter("@zusch", R(e.Zuschuss)));              // K5
+                                pl.Add(new OleDbParameter("@pvf", e.PvVerguetungsform ?? ""));    // P6
+                                pl.Add(DbWert(e.PvAnzulegenderWert));
+                                pl.Add(new OleDbParameter("@pvmp", R(e.PvMarktpraemie)));
+                                pl.Add(new OleDbParameter("@pvak", R(e.PvVerguetungsausfallKwh)));
+                                pl.Add(new OleDbParameter("@pvae", R(e.PvVerguetungsausfall)));
+                                pl.Add(new OleDbParameter("@pv51", R(e.PvKompensation51a)));
+                                pl.Add(new OleDbParameter("@pvkw", R(e.PvKappungsverlustKwh)));
+                                pl.Add(DbWert(e.PvVermiedenerBezug));
+                                pl.Add(DbWert(e.StromkostenTarif));
+                                pl.Add(new OleDbParameter("@hw", (object)e.Hinweis ?? DBNull.Value));
+                                pl.Add(new OleDbParameter("@fg", (object)e.Fehlgrund ?? DBNull.Value));
+                                v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
+                                "IstStamm, Anzeige, Zeitstempel, " +
+                                "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
+                                "Einspeiseverguetung, Investition, Betriebskosten, Energiekosten, Einspeiseerloes, " +
+                                "BarwertAusgaben, BarwertEinnahmen, Restwert, Kapitalwert, KapitalwertDiff, " +
+                                "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
+                                "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
+                                SPALTE_ENERGIESTEUER + ", " + SPALTE_STROMST_BEFREIUNG + ", " +
+                                SPALTE_STROMST_ENTLASTUNG + ", " + SPALTE_STEUER_HERKUNFT + ", " +
+                                SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
+                                SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
+                                SPALTE_EINSPEISUNG_PV + ", " + SPALTE_EINSPEISUNG_KWK + ", " +
+                                SPALTE_ZUSCHUSS + ", " +
+                                SPALTE_PV_FORM + ", " + SPALTE_PV_AW + ", " +
+                                SPALTE_PV_MARKTPRAEMIE + ", " + SPALTE_PV_AUSFALL_KWH + ", " +
+                                SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
+                                SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
+                                "StromkostenTarif, HinweisText, Fehlgrund) " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                            }
+                            naechsteId++;
+                        }
+
+                        // Sensitivitätszeilen (W2, Szenario Erwartet).
+                        if (sensitivitaet != null && sensitivitaet.Count > 0)
+                        {
+                            int sensId;
+                            {
+                                object o = v.Skalar("SELECT MAX(ID) FROM " + TAB_SENS);
+                                sensId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
+                            }
+                            foreach (SensitivitaetZeile z in sensitivitaet)
+                            {
+                                {
+                                    List<OleDbParameter> pl = new List<OleDbParameter>();
+                                    pl.Add(new OleDbParameter("@id", sensId));
+                                    pl.Add(new OleDbParameter("@p", z.IdProjekt));
+                                    pl.Add(new OleDbParameter("@par", z.Parameter ?? ""));
+                                    pl.Add(DbWert(z.KwMinus));
+                                    pl.Add(DbWert(z.KwBasis));
+                                    pl.Add(DbWert(z.KwPlus));
+                                    pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
+                                    v.Ausfuehren("INSERT INTO " + TAB_SENS + " (ID, ID_Projekt, [Parameter], " +
+                                    "KwMinus, KwBasis, KwPlus, Zeitstempel) VALUES (?,?,?,?,?,?,?)", pl.ToArray());
+                                }
+                                sensId++;
+                            }
+                        }
+
+                        // Strommengen-Matrix (W3) — eine Zeile je Projekt und Zone.
+                        if (matrizen != null && matrizen.Count > 0)
+                        {
+                            int mxId;
+                            {
+                                object o = v.Skalar("SELECT MAX(ID) FROM " + TAB_MATRIX);
+                                mxId = (o != null && o != DBNull.Value ? Convert.ToInt32(o) : 0) + 1;
+                            }
+                            foreach (KeyValuePair<int, StromMatrix> kv in matrizen)
+                            {
+                                foreach (string zone in StromMatrix.Zonen)
+                                {
+                                    StromMatrix.Zone z = kv.Value.Hole(zone);
+                                    if (z == null) continue;
+                                    {
+                                        List<OleDbParameter> pl = new List<OleDbParameter>();
+                                        pl.Add(new OleDbParameter("@id", mxId));
+                                        pl.Add(new OleDbParameter("@p", kv.Key));
+                                        pl.Add(new OleDbParameter("@z", zone));
+                                        pl.Add(new OleDbParameter("@b", Math.Round(z.BezugMWh, 3)));
+                                        pl.Add(new OleDbParameter("@pv", Math.Round(z.EinspeisungPvMWh, 3)));
+                                        pl.Add(new OleDbParameter("@ke", Math.Round(z.KwkEigenMWh, 3)));
+                                        pl.Add(new OleDbParameter("@ki", Math.Round(z.KwkEinspeisungMWh, 3)));
+                                        pl.Add(new OleDbParameter("@mx", Math.Round(kv.Value.MaxBezugKW, 1)));
+                                        pl.Add(new OleDbParameter("@bd", Math.Round(z.BedarfMWh, 3)));   // E5
+                                        pl.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = DateTime.Now });
+                                        v.Ausfuehren("INSERT INTO " + TAB_MATRIX + " (ID, ID_Projekt, [Zone], " +
+                                        "BezugMWh, EinspPvMWh, KwkEigenMWh, KwkEinspMWh, MaxBezugKW, " +
+                                        "BedarfMWh, Zeitstempel) VALUES (?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                    }
+                                    mxId++;
+                                }
+                            }
+                        }
+                        v.Commit();
+                    }
+                    catch
+                    {
+                        try { v.Rollback(); } catch { }
+                        throw;
                     }
                 }
             }

@@ -542,8 +542,8 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 ID, Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
-                    " WHERE ID_Projekt = ? ORDER BY ID DESC",
+                    "SELECT ID, Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
+                    " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                     new OleDbParameter("@p", projektID));
                 if (dt == null || dt.Rows.Count == 0) return 0;
 

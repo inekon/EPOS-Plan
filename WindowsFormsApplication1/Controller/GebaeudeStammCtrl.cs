@@ -351,32 +351,25 @@ namespace WindowsFormsApplication1
             if (daten == null || daten.Rows.Count == 0) return;
 
             int nextId = DataRepository.GetMaxID("Tab_DBTagVDaten") + 1;
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                using (var cmd = new OleDbCommand(
-                    "INSERT INTO [Tab_DBTagVDaten] ([ID], [ID_TagV], [Verteilung]) VALUES (?, ?, ?)", conn, trans))
+                try
                 {
-                    var pId = cmd.Parameters.Add("@d01", OleDbType.Integer);
-                    var pTagv = cmd.Parameters.Add("@d02", OleDbType.Integer);
-                    var pVert = cmd.Parameters.Add("@d03", OleDbType.Double);
                     foreach (DataRow dr in daten.Rows)
                     {
-                        pId.Value = nextId++;
-                        pTagv.Value = newTagvId;
-                        pVert.Value = dr["Verteilung"] == DBNull.Value ? 0.0 : Convert.ToDouble(dr["Verteilung"]);
-                        cmd.ExecuteNonQuery();
+                        v.Ausfuehren(
+                            "INSERT INTO [Tab_DBTagVDaten] ([ID], [ID_TagV], [Verteilung]) VALUES (?, ?, ?)",
+                            new OleDbParameter("@d01", OleDbType.Integer) { Value = nextId++ },
+                            new OleDbParameter("@d02", OleDbType.Integer) { Value = newTagvId },
+                            new OleDbParameter("@d03", OleDbType.Double)
+                            { Value = dr["Verteilung"] == DBNull.Value ? 0.0 : Convert.ToDouble(dr["Verteilung"]) });
                     }
+                    v.Commit();
                 }
-                trans.Commit();
-            }
-            catch
-            {
-                trans.Rollback();
-            }
-            finally
-            {
-                conn.Close();
+                catch
+                {
+                    v.Rollback();
+                }
             }
         }
 

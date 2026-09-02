@@ -33,6 +33,16 @@ namespace WindowsFormsApplication1
 
         public OleDbCommand DBCommand;
 
+        /// <summary>
+        /// ARBEITSPAKET S4e: Laeuft der Schreibvorgang innerhalb einer FREMDEN
+        /// Transaktion (Form_DBBHKW), setzt der Aufrufer hier den Vorgang. Bis dahin
+        /// wurden dafuer Verbindung und Transaktion am <c>DBCommand</c> gesetzt; das
+        /// OleDbCommand bleibt reiner Datentraeger fuer CommandText und Parameter.
+        /// <c>null</c> = eigenstaendiger Aufruf ueber die Zugriffsschicht.
+        /// </summary>
+        public DbVorgang Vorgang { get; set; }
+
+
         // Stammdaten-Listen (Dropdowns)
         public List<string> Brennstoffart = new List<string>();
         public List<string> Brennstoffart_Gruppe = new List<string>();
@@ -162,7 +172,7 @@ namespace WindowsFormsApplication1
             // Nur bei Standalone-Aufruf pruefen (kein externer Transaktions-Connection gesetzt),
             // um Sperrkonflikte mit einer bereits laufenden Transaktion zu vermeiden. Bei
             // transaktionalen Neuanlagen ist der Datensatz ohnehin frisch (ReadOnly = false).
-            if (!SchreibschutzUebergehen && DBCommand.Connection == null && IsReadOnly(model.m_szBezeichner))
+            if (!SchreibschutzUebergehen && Vorgang == null && IsReadOnly(model.m_szBezeichner))
             {
                 MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
                     "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -225,22 +235,22 @@ namespace WindowsFormsApplication1
                 DBCommand.Parameters.Add(new OleDbParameter("@rl", model.m_Ruecklauf));
                 DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_szBezeichner ?? ""));
 
-                bool connectionOpenedInternally = false;
-                if (DBCommand.Connection == null)
+                // ARBEITSPAKET S4b/S4e: Ohne fremden Vorgang laeuft der Schreibvorgang
+                // ueber die Zugriffsschicht - die eigene Standalone-Verbindung entfaellt.
+                // MIT Vorgang (Transaktion aus Form_DBBHKW) laeuft er auf DESSEN
+                // Verbindung und in DESSEN Transaktion.
+                OleDbParameter[] werte = new OleDbParameter[DBCommand.Parameters.Count];
+                DBCommand.Parameters.CopyTo(werte, 0);
+
+                if (Vorgang == null)
                 {
-                    DBCommand.Connection = new OleDbConnection(DataRepository.GetConnectionString());
-                    DBCommand.Connection.Open();
-                    connectionOpenedInternally = true;
+                    // StilleDb statt DataRepository: Diese Methode meldet ihre Fehler
+                    // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
+                    if (StilleDb.NonQuery(sql, werte) < 0) return false;
+                    return true;
                 }
 
-                DBCommand.ExecuteNonQuery();
-
-                if (connectionOpenedInternally)
-                {
-                    DBCommand.Connection.Close();
-                    DBCommand.Connection.Dispose();
-                    DBCommand.Connection = null;
-                }
+                Vorgang.Ausfuehren(sql, werte);
 
                 return true;
             }

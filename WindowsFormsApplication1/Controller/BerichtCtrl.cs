@@ -134,27 +134,34 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt die Konfigurationstabelle an, falls sie fehlt (tolerant, Muster
-        /// Tab_Variante). LONGTEXT = Access-Memo, ausreichend für das Konfig-JSON.
+        /// Tab_Variante). Das JSON steht in einer TEXT-Spalte (frueher Access-Memo).
         /// </summary>
+        /// <remarks>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-DDL statt Access-DDL
+        /// (S4d vorgezogen). Der Aufbau folgt <c>sql\schema\001_grundschema.sql</c>.
+        /// Die stille Fassung (<see cref="StilleDb"/>) haelt die Zusage des
+        /// <c>catch</c>-Zweigs ein: eine Vorsorge zeigt keinen Dialog.
+        ///
+        /// Der UNIQUE-Index auf ProjektID kann in SQLite nicht in der Spaltenzeile
+        /// stehen wie in Access - er wird wie im Grundschema getrennt angelegt
+        /// (003_indizes_fk.sql, "UQ_BerichtKonfigProj").
+        /// </remarks>
         public void StelleKonfigTabelleSicher()
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                        new object[] { null, null, TAB_KONFIG, "TABLE" });
-                    if (schema != null && schema.Rows.Count > 0) return;
+                if (StilleDb.TabelleVorhanden(TAB_KONFIG)) return;
 
-                    string ddl = "CREATE TABLE " + TAB_KONFIG + " (" +
-                                 "ID LONG CONSTRAINT PK_BerichtKonfig PRIMARY KEY, " +
-                                 "ProjektID LONG CONSTRAINT UQ_BerichtKonfigProj UNIQUE, " +
-                                 "KonfigJson LONGTEXT, " +
-                                 "GeaendertAm DATETIME)";
-                    using (OleDbCommand cmd = new OleDbCommand(ddl, conn))
-                        cmd.ExecuteNonQuery();
-                }
+                string ddl = "CREATE TABLE IF NOT EXISTS [" + TAB_KONFIG + "] (" +
+                             "\"ID\" INTEGER PRIMARY KEY, " +
+                             "\"ProjektID\" INTEGER, " +
+                             "\"KonfigJson\" TEXT, " +
+                             "\"GeaendertAm\" TEXT)";
+                if (StilleDb.NonQuery(ddl) < 0) return;
+
+                StilleDb.NonQuery("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_BerichtKonfigProj\" " +
+                                  "ON [" + TAB_KONFIG + "] (\"ProjektID\")");
             }
             catch { /* best effort — existiert dann ggf. schon */ }
         }

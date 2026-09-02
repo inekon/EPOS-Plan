@@ -118,7 +118,11 @@ namespace WindowsFormsApplication1
             
             for (int n = 0; n < waectrl.rows; n++)
             {
-                rs.Open("select * from Abfrage_ProjektStromGanglinie where Tab_Stromganglinie.ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by Tab_StromganglinieDaten.ID");
+                // BEFUND B1 (S7): Sichtspalten ueber den Tabellennamen angesprochen
+                // (Tab_Stromganglinie.ID, Tab_StromganglinieDaten.ID). SQLite kennt an einer
+                // Sicht nur deren eigene Ausgabespalten; der Fehler kam LAUT heraus
+                // ("Stromganglinie ... hat 0 Werte"). Zweite ID heisst jetzt ID_Daten.
+                rs.Open("select * from Abfrage_ProjektStromGanglinie where ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by ID_Daten");
 
                 index = 0;
                 wert = 0;

@@ -76,10 +76,11 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    // Der innere Block haelt nur den Einzug: das INSERT-SQL steht als
+                    // @"…"-Literal, dessen Zeilenumbrueche und Einrueckungen INHALT der
+                    // Zeichenkette sind. Sie bleiben mit S4e Zeichen fuer Zeichen stehen.
                     {
                         // Parametrisierter INSERT-Befehl
                         string insertSql = @"INSERT INTO Tab_WP 
@@ -90,40 +91,36 @@ namespace WindowsFormsApplication1
                                             ) 
                                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        using (OleDbCommand cmdInsert = conn.CreateCommand())
+                        OleDbParameter[] ps = {
+                            new OleDbParameter("@nam", WPName ?? (object)DBNull.Value),
+                            new OleDbParameter("@proj", ID_Projekt),
+                            new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
+                            new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
+                            new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
+                            new OleDbParameter("@bau", Baujahr),
+                            new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
+                            new OleDbParameter("@nen", Nennleistung),
+                            new OleDbParameter("@max", maxPTherm),
+                            new OleDbParameter("@hei", Heizung),
+                            new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
+                            new OleDbParameter("@mod", Modulkosten),
+                            new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
+                            new OleDbParameter("@kuehl", Kuehlleistung)
+                        };
+
+                        // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
+                        // Verbindung des Vorgangs. Frueher stand SELECT @@IDENTITY NACH dem
+                        // Commit auf derselben, noch offenen Verbindung; jetzt liefert der
+                        // Einfuegeaufruf die ID unmittelbar VOR dem Commit. Verbindung und
+                        // Wert sind dieselben, nur der Lesezeitpunkt liegt eine Anweisung
+                        // frueher - anders ist die ID nach dem Commit nicht mehr zu haben.
+                        int neueId = v.EinfuegenUndId(insertSql, ps);
+
+                        v.Commit(); // Schreibt die Daten jetzt unwiderruflich in die Datenbank
+
+                        if (neueId > 0)
                         {
-                            cmdInsert.Transaction = trans;
-                            cmdInsert.CommandText = insertSql;
-
-                            cmdInsert.Parameters.Add(new OleDbParameter("@nam", WPName ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@proj", ID_Projekt));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@fir", Firma ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@typ", Typ ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@bau", Baujahr));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@nen", Nennleistung));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@max", maxPTherm));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@hei", Heizung));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@mod", Modulkosten));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value));
-                            cmdInsert.Parameters.Add(new OleDbParameter("@kuehl", Kuehlleistung));
-
-                            cmdInsert.ExecuteNonQuery();
-                        }
-
-                        trans.Commit(); // Schreibt die Daten jetzt unwiderruflich in die Datenbank
-
-                        // 3. JETZT die ID abfragen (Die Verbindung 'conn' ist ja noch offen!)
-                        using (var cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn))
-                        {
-                            // Hier KEINE Transaktion mehr zuweisen, da trans bereits geschlossen ist!
-                            object result = cmdIdentity.ExecuteScalar();
-                            if (result != null && result != DBNull.Value)
-                            {
-                                ID = Convert.ToInt32(result);
-                            }
+                            ID = neueId;
                         }
                     }
 
@@ -249,101 +246,97 @@ namespace WindowsFormsApplication1
                 DataTable ck = DataRepository.GetDataTable(
                     "SELECT * FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ? ORDER BY ID", new OleDbParameter("@id", stammId));
 
-                var (conn, trans) = DataRepository.BeginTransaction();
-                try
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    int neueId;
-                    using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM Tab_WP", conn, trans))
+                    try
                     {
-                        object m = c.ExecuteScalar();
-                        neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                    }
+                        int neueId;
+                        {
+                            object m = v.Skalar("SELECT Max(ID) FROM Tab_WP");
+                            neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
 
-                    string hsql = @"INSERT INTO Tab_WP
+                        string hsql = @"INSERT INTO Tab_WP
                         (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung,
                          Nennleistung, maxPtherm, Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe,
                          Gewicht, Raum, Kuehlleistung, Bauart)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    using (OleDbCommand c = new OleDbCommand(hsql, conn, trans))
-                    {
-                        c.Parameters.Add(new OleDbParameter("@id", neueId));
-                        c.Parameters.Add(new OleDbParameter("@proj", idProjekt));
-                        c.Parameters.Add(P(sHead, "Bezeichner"));
-                        c.Parameters.Add(P(sHead, "Firma"));
-                        c.Parameters.Add(P(sHead, "Beschreibung"));
-                        c.Parameters.Add(P(sHead, "Typ"));
-                        c.Parameters.Add(P(sHead, "Baujahr"));
-                        c.Parameters.Add(P(sHead, "Aufstellung"));
-                        c.Parameters.Add(P(sHead, "Nennleistung"));
-                        c.Parameters.Add(P(sHead, "maxPtherm"));
-                        c.Parameters.Add(P(sHead, "Heizung"));
-                        c.Parameters.Add(P(sHead, "Regelung"));
-                        c.Parameters.Add(P(sHead, "Modulkosten"));
-                        c.Parameters.Add(P(sHead, "Laenge"));
-                        c.Parameters.Add(P(sHead, "Breite"));
-                        c.Parameters.Add(P(sHead, "Hoehe"));
-                        c.Parameters.Add(P(sHead, "Gewicht"));
-                        c.Parameters.Add(P(sHead, "Raum"));
-                        c.Parameters.Add(P(sHead, "Kuehlleistung"));
-                        c.Parameters.Add(P(sHead, "Bauart"));
-                        c.ExecuteNonQuery();
-                    }
-
-                    // Kennlinien Waerme (ID explizit MAX+1, ID_WP = neue Projekt-WP-ID)
-                    if (cw != null && cw.Rows.Count > 0)
-                    {
-                        int cid;
-                        using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM Tab_Kenndaten", conn, trans))
-                        { object m = c.ExecuteScalar(); cid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
-                        foreach (DataRow r in cw.Rows)
                         {
-                            using (OleDbCommand c = new OleDbCommand(
-                                "INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)", conn, trans))
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", neueId));
+                            p.Add(new OleDbParameter("@proj", idProjekt));
+                            p.Add(P(sHead, "Bezeichner"));
+                            p.Add(P(sHead, "Firma"));
+                            p.Add(P(sHead, "Beschreibung"));
+                            p.Add(P(sHead, "Typ"));
+                            p.Add(P(sHead, "Baujahr"));
+                            p.Add(P(sHead, "Aufstellung"));
+                            p.Add(P(sHead, "Nennleistung"));
+                            p.Add(P(sHead, "maxPtherm"));
+                            p.Add(P(sHead, "Heizung"));
+                            p.Add(P(sHead, "Regelung"));
+                            p.Add(P(sHead, "Modulkosten"));
+                            p.Add(P(sHead, "Laenge"));
+                            p.Add(P(sHead, "Breite"));
+                            p.Add(P(sHead, "Hoehe"));
+                            p.Add(P(sHead, "Gewicht"));
+                            p.Add(P(sHead, "Raum"));
+                            p.Add(P(sHead, "Kuehlleistung"));
+                            p.Add(P(sHead, "Bauart"));
+                            v.Ausfuehren(hsql, p.ToArray());
+                        }
+
+                        // Kennlinien Waerme (ID explizit MAX+1, ID_WP = neue Projekt-WP-ID)
+                        if (cw != null && cw.Rows.Count > 0)
+                        {
+                            int cid;
+                            { object m = v.Skalar("SELECT Max(ID) FROM Tab_Kenndaten"); cid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
+                            foreach (DataRow r in cw.Rows)
                             {
-                                c.Parameters.Add(new OleDbParameter("@id", cid++));
-                                c.Parameters.Add(new OleDbParameter("@wp", neueId));
-                                c.Parameters.Add(P(r, "Vorlauf"));
-                                c.Parameters.Add(P(r, "Temperatur"));
-                                c.Parameters.Add(P(r, "COP"));
-                                c.Parameters.Add(P(r, "Ptherm"));
-                                c.ExecuteNonQuery();
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", cid++));
+                                    p.Add(new OleDbParameter("@wp", neueId));
+                                    p.Add(P(r, "Vorlauf"));
+                                    p.Add(P(r, "Temperatur"));
+                                    p.Add(P(r, "COP"));
+                                    p.Add(P(r, "Ptherm"));
+                                    v.Ausfuehren("INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)", p.ToArray());
+                                }
                             }
                         }
-                    }
 
-                    // Kennlinien Kuehlung
-                    if (ck != null && ck.Rows.Count > 0)
-                    {
-                        int ckid;
-                        using (OleDbCommand c = new OleDbCommand("SELECT Max(ID) FROM Tab_Kenndaten_Kuehlung", conn, trans))
-                        { object m = c.ExecuteScalar(); ckid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
-                        foreach (DataRow r in ck.Rows)
+                        // Kennlinien Kuehlung
+                        if (ck != null && ck.Rows.Count > 0)
                         {
-                            using (OleDbCommand c = new OleDbCommand(
-                                "INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                            int ckid;
+                            { object m = v.Skalar("SELECT Max(ID) FROM Tab_Kenndaten_Kuehlung"); ckid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
+                            foreach (DataRow r in ck.Rows)
                             {
-                                c.Parameters.Add(new OleDbParameter("@id", ckid++));
-                                c.Parameters.Add(new OleDbParameter("@wp", neueId));
-                                c.Parameters.Add(P(r, "Vorlauf"));
-                                c.Parameters.Add(P(r, "Temperatur"));
-                                c.Parameters.Add(P(r, "COP"));
-                                c.Parameters.Add(P(r, "Pkuehl"));
-                                c.Parameters.Add(P(r, "Last"));
-                                c.ExecuteNonQuery();
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", ckid++));
+                                    p.Add(new OleDbParameter("@wp", neueId));
+                                    p.Add(P(r, "Vorlauf"));
+                                    p.Add(P(r, "Temperatur"));
+                                    p.Add(P(r, "COP"));
+                                    p.Add(P(r, "Pkuehl"));
+                                    p.Add(P(r, "Last"));
+                                    v.Ausfuehren("INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", p.ToArray());
+                                }
                             }
                         }
-                    }
 
-                    trans.Commit();
-                    return neueId;
+                        v.Commit();
+                        return neueId;
+                    }
+                    catch (Exception ex)
+                    {
+                        try { v.Rollback(); } catch { }
+                        Console.WriteLine("Fehler beim Kopieren des WP aus den Stammdaten: " + ex.Message);
+                        return -1;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    try { trans.Rollback(); } catch { }
-                    Console.WriteLine("Fehler beim Kopieren des WP aus den Stammdaten: " + ex.Message);
-                    return -1;
-                }
-                finally { try { conn.Close(); } catch { } }
             }
             catch (Exception ex)
             {

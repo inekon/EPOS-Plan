@@ -57,46 +57,29 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // Direktzugriff auf die Verbindung, um Massendaten (z.B. 8760 Stundenwerte) performant zu schreiben
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // Ein Vorgang bündelt alle Schreibvorgänge in EINER Transaktion
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
+                    string sqlInsert = "INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
 
-                    // Eine Transaction bündelt alle Schreibvorgänge in einen einzigen Festplatten-Zugriff
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    try
                     {
-                        using (OleDbCommand cmd = new OleDbCommand())
+                        foreach (var item in list_GanglinieDaten)
                         {
-                            cmd.Connection = conn;
-                            cmd.Transaction = trans;
-                            cmd.CommandText = "INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
-
-                            // Parameter einmalig mit expliziten OleDbTypes initialisieren, um Laufzeitfehler zu verhindern
-                            cmd.Parameters.Add("@id", OleDbType.Integer);
-                            cmd.Parameters.Add("@wert", OleDbType.Double);
-
-                            try
-                            {
-                                foreach (var item in list_GanglinieDaten)
-                                {
-                                    // Nur die Werte der Parameter aktualisieren (sehr schnell)
-                                    cmd.Parameters[0].Value = item.m_ID_GanglinieDaten;
-                                    cmd.Parameters[1].Value = item.m_Wert;
-
-                                    cmd.ExecuteNonQuery();
-                                }
-
-                                // Erst jetzt wird alles physisch auf die Platte geschrieben
-                                trans.Commit();
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                trans.Rollback();
-                                Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
-                                return false;
-                            }
+                            v.Ausfuehren(sqlInsert,
+                                new OleDbParameter("@id", OleDbType.Integer) { Value = item.m_ID_GanglinieDaten },
+                                new OleDbParameter("@wert", OleDbType.Double) { Value = item.m_Wert });
                         }
+
+                        // Erst jetzt wird alles physisch auf die Platte geschrieben
+                        v.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        v.Rollback();
+                        Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
+                        return false;
                     }
                 }
             }
@@ -113,93 +96,69 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // 1. Eine einzige, gemeinsame Verbindung für beide Tabellen öffnen
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // 1./2. EIN Vorgang (Verbindung + Transaktion) für beide Tabellen
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
+                    // ======================================================================
+                    // VORGANG 1: Der Kopfdatensatz (Tab_Stromganglinie)
+                    // ======================================================================
 
-                    // 2. Die gemeinsame Transaktion starten
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    // Zuerst die ID ermitteln
+                    int neueGanglinieID = 1;
+                    int count = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM Tab_Stromganglinie") ?? 0);
+                    if (count > 0)
                     {
-                        // ======================================================================
-                        // VORGANG 1: Der Kopfdatensatz (Tab_Stromganglinie)
-                        // ======================================================================
+                        neueGanglinieID = Convert.ToInt32(v.Skalar("SELECT MAX(ID) FROM Tab_Stromganglinie") ?? 0) + 1;
+                    }
 
-                        // Zuerst die ID ermitteln
-                        int neueGanglinieID = 1;
-                        using (OleDbCommand cmdCount = new OleDbCommand("SELECT COUNT(*) FROM Tab_Stromganglinie", conn, trans))
+                    // ID an das Kopf-Objekt zurückgeben, damit die UI sie nach dem Erfolg kennt
+                    kopfCtrl.m_ID_Ganglinie = neueGanglinieID;
+
+                    // Kopfdatensatz über die geteilte Verbindung einfügen
+                    string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+                    v.Ausfuehren(sqlKopf,
+                        new OleDbParameter("@id", OleDbType.Integer) { Value = neueGanglinieID },
+                        new OleDbParameter("@bez", OleDbType.VarWChar) { Value = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value },
+                        new OleDbParameter("@interval", OleDbType.Integer) { Value = kopfCtrl.m_Zeitinterval });
+
+                    // ======================================================================
+                    // VORGANG 2: Die 8760 Datenpunkte (Tab_StromganglinieDaten)
+                    // ======================================================================
+                    string sqlDaten = "INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
+
+                    try
+                    {
+                        // Die Liste leeren und neu befüllen für interne Kompatibilität
+                        this.list_GanglinieDaten.Clear();
+
+                        foreach (string roherWert in roheWerte)
                         {
-                            int count = Convert.ToInt32(cmdCount.ExecuteScalar() ?? 0);
-                            if (count > 0)
-                            {
-                                using (OleDbCommand cmdMax = new OleDbCommand("SELECT MAX(ID) FROM Tab_Stromganglinie", conn, trans))
-                                {
-                                    neueGanglinieID = Convert.ToInt32(cmdMax.ExecuteScalar() ?? 0) + 1;
-                                }
-                            }
+                            // Konvertierung mit InvariantCulture fängt Punkt/Komma-Probleme ab
+                            double parsedWert = double.Parse(roherWert, System.Globalization.CultureInfo.InvariantCulture);
+
+                            v.Ausfuehren(sqlDaten,
+                                new OleDbParameter("@idGang", OleDbType.Integer) { Value = neueGanglinieID },
+                                new OleDbParameter("@wert", OleDbType.Double) { Value = parsedWert });
+
+                            // Optional: Das lokale Modell befüllen, falls du die Liste 'list_GanglinieDaten' danach noch im Code brauchst
+                            StromganglinieDatenModel model = new StromganglinieDatenModel();
+                            model.m_ID_GanglinieDaten = neueGanglinieID;
+                            model.m_Wert = parsedWert;
+                            this.list_GanglinieDaten.Add(model);
                         }
 
-                        // ID an das Kopf-Objekt zurückgeben, damit die UI sie nach dem Erfolg kennt
-                        kopfCtrl.m_ID_Ganglinie = neueGanglinieID;
-
-                        // Kopfdatensatz über die geteilte Verbindung einfügen
-                        string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
-                        using (OleDbCommand cmdKopf = new OleDbCommand(sqlKopf, conn, trans))
-                        {
-                            cmdKopf.Parameters.Add("@id", OleDbType.Integer).Value = neueGanglinieID;
-                            cmdKopf.Parameters.Add("@bez", OleDbType.VarWChar).Value = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value;
-                            cmdKopf.Parameters.Add("@interval", OleDbType.Integer).Value = kopfCtrl.m_Zeitinterval;
-
-                            cmdKopf.ExecuteNonQuery();
-                        }
-
                         // ======================================================================
-                        // VORGANG 2: Die 8760 Datenpunkte (Tab_StromganglinieDaten)
+                        // ERFOLG: Erst jetzt wird ALLES permanent geschrieben
                         // ======================================================================
-                        string sqlDaten = "INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
-                        using (OleDbCommand cmdDaten = new OleDbCommand(sqlDaten, conn, trans))
-                        {
-                            // Parameter vorbereiten
-                            cmdDaten.Parameters.Add("@idGang", OleDbType.Integer);
-                            cmdDaten.Parameters.Add("@wert", OleDbType.Double);
-
-                            try
-                            {
-                                // Die Liste leeren und neu befüllen für interne Kompatibilität
-                                this.list_GanglinieDaten.Clear();
-
-                                foreach (string roherWert in roheWerte)
-                                {
-                                    // Konvertierung mit InvariantCulture fängt Punkt/Komma-Probleme ab
-                                    double parsedWert = double.Parse(roherWert, System.Globalization.CultureInfo.InvariantCulture);
-
-                                    // Werte den Parametern zuweisen
-                                    cmdDaten.Parameters[0].Value = neueGanglinieID;
-                                    cmdDaten.Parameters[1].Value = parsedWert;
-
-                                    cmdDaten.ExecuteNonQuery();
-
-                                    // Optional: Das lokale Modell befüllen, falls du die Liste 'list_GanglinieDaten' danach noch im Code brauchst
-                                    StromganglinieDatenModel model = new StromganglinieDatenModel();
-                                    model.m_ID_GanglinieDaten = neueGanglinieID;
-                                    model.m_Wert = parsedWert;
-                                    this.list_GanglinieDaten.Add(model);
-                                }
-
-                                // ======================================================================
-                                // ERFOLG: Erst jetzt wird ALLES permanent in die Access-Datei geschrieben
-                                // ======================================================================
-                                trans.Commit();
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                // Wird aufgerufen, wenn beim double.Parse ODER beim Schleifen-Insert ein Fehler auftritt
-                                trans.Rollback();
-                                Console.WriteLine("Schleifen-Fehler. Transaktion zurückgerollt: " + ex.Message);
-                                return false;
-                            }
-                        }
+                        v.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Wird aufgerufen, wenn beim double.Parse ODER beim Schleifen-Insert ein Fehler auftritt
+                        v.Rollback();
+                        Console.WriteLine("Schleifen-Fehler. Transaktion zurückgerollt: " + ex.Message);
+                        return false;
                     }
                 }
             }

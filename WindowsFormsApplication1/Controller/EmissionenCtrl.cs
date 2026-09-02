@@ -405,8 +405,8 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 [" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] " +
-                    "FROM [" + SchemaKatalog.TAB_APPLIKATION + "]");
+                    "SELECT [" + SchemaKatalog.SPALTE_EMISSION_BERECHNUNGSMODUS + "] " +
+                    "FROM [" + SchemaKatalog.TAB_APPLIKATION + "] LIMIT 1");
                 return Normiert(o);
             }
             catch { return DbWerte.EMISSION_MODUS_CO2; }

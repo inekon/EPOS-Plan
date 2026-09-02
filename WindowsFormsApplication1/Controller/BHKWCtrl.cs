@@ -29,6 +29,16 @@ namespace WindowsFormsApplication1
         // HIER ERGÄNZT: Das OleDbCommand für transaktionale Aufrufe aus dem UI-Code
         public OleDbCommand DBCommand;
 
+        /// <summary>
+        /// ARBEITSPAKET S4e: Laeuft der Schreibvorgang innerhalb einer FREMDEN
+        /// Transaktion (Form_DBBHKW), setzt der Aufrufer hier den Vorgang. Bis dahin
+        /// wurden dafuer Verbindung und Transaktion am <c>DBCommand</c> gesetzt; das
+        /// OleDbCommand bleibt reiner Datentraeger fuer CommandText und Parameter.
+        /// <c>null</c> = eigenstaendiger Aufruf ueber die Zugriffsschicht.
+        /// </summary>
+        public DbVorgang Vorgang { get; set; }
+
+
         // Stammdaten-Listen (Bleiben erhalten für Dropdowns)
         public List<string> Brennstoffart = new List<string>();
         public List<string> Brennstoffart_Gruppe = new List<string>();
@@ -158,7 +168,7 @@ namespace WindowsFormsApplication1
                                      model.m_Kosten_Abgasreinigung),
                     model.m_Pel);
 
-                // Nutzt das instanziierte DBCommand (wichtig für die Transaktion aus der UI)
+                // Nutzt das instanziierte DBCommand als Datenträger für die Parameter
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();
 
@@ -188,24 +198,22 @@ namespace WindowsFormsApplication1
                 DBCommand.Parameters.Add(new OleDbParameter("@abgas", model.m_Kosten_Abgasreinigung));
                 DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_ID));
 
-                // Falls das Command noch keine Connection von außen hat, holen wir eine kurze Standalone-Verbindung
-                bool connectionOpenedInternally = false;
-                if (DBCommand.Connection == null)
+                // ARBEITSPAKET S4b/S4e: Ohne fremden Vorgang läuft der Schreibvorgang
+                // über die Zugriffsschicht - die eigene Standalone-Verbindung entfällt.
+                // MIT Vorgang (Transaktion aus der UI) läuft er auf DESSEN Verbindung
+                // und in DESSEN Transaktion.
+                OleDbParameter[] werte = new OleDbParameter[DBCommand.Parameters.Count];
+                DBCommand.Parameters.CopyTo(werte, 0);
+
+                if (Vorgang == null)
                 {
-                    DBCommand.Connection = new OleDbConnection(DataRepository.GetConnectionString());
-                    DBCommand.Connection.Open();
-                    connectionOpenedInternally = true;
+                    // ExecuteNonQuery statt ExecuteSQL: Diese Methode meldet ihre Fehler
+                    // selbst auf die Konsole (catch unten) und darf keinen Dialog zeigen.
+                    if (StilleDb.NonQuery(sql, werte) < 0) return false;
+                    return true;
                 }
 
-                DBCommand.ExecuteNonQuery();
-
-                // Wenn wir die Verbindung intern geöffnet haben, schließen wir sie auch wieder sauber
-                if (connectionOpenedInternally)
-                {
-                    DBCommand.Connection.Close();
-                    DBCommand.Connection.Dispose();
-                    DBCommand.Connection = null;
-                }
+                Vorgang.Ausfuehren(sql, werte);
 
                 return true;
             }

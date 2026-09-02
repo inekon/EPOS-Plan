@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Globalization;
 using System.IO;
+using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
 {
@@ -307,10 +309,11 @@ namespace WindowsFormsApplication1
         /// Verhalten unverändert: still (keine Dialoge, Fehler nur auf die Konsole),
         /// idempotent, ohne Rückgabewert.
         ///
-        /// WICHTIG: bewusst über eine eigene, stille OleDb-Verbindung - die
-        /// DataRepository-Methoden zeigen bei Fehlern MessageBoxen an und liefern
-        /// leere Ergebnisse statt null, damit ließe sich das Fehlen einer Spalte
-        /// nicht sauber erkennen.
+        /// WICHTIG: bewusst STILL - die DataRepository-Methoden zeigen bei Fehlern
+        /// MessageBoxen an und liefern leere Ergebnisse statt null, damit ließe sich das
+        /// Fehlen einer Spalte nicht sauber erkennen. ARBEITSPAKET S4b: die eigene
+        /// OleDb-Verbindung ist der Zugriffsschicht gewichen, die Stille bleibt
+        /// (<see cref="StilleDb"/>).
         ///
         /// PROTOKOLLKANAL-NACHZUG, KATEGORIE (c): Diese Methode und ihre Helfer
         /// (<see cref="TabellenSchemaLesen"/>, die beiden <c>SpalteSicherstellen</c>,
@@ -327,12 +330,9 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    conn.Open();
-
                     string aktuelleTabelle = null;
-                    DataTable dt = null;
+                    HashSet<string> spalten = null;
 
                     // Der Katalog ist nach Tabellen gruppiert abgelegt; das Schema wird
                     // deshalb je Tabelle nur einmal gelesen.
@@ -341,11 +341,11 @@ namespace WindowsFormsApplication1
                         if (!string.Equals(aktuelleTabelle, s.Tabelle, StringComparison.OrdinalIgnoreCase))
                         {
                             aktuelleTabelle = s.Tabelle;
-                            dt = TabellenSchemaLesen(conn, s.Tabelle);
+                            spalten = TabellenSchemaLesen(s.Tabelle);
                         }
 
-                        if (dt == null) continue;          // Tabelle nicht lesbar - still übergehen
-                        SpalteSicherstellen(conn, dt, s.Tabelle, s.Name, s.TypDefinition);
+                        if (spalten == null) continue;     // Tabelle nicht lesbar - still übergehen
+                        SpalteSicherstellen(spalten, s.Tabelle, s.Name, s.TypDefinition);
                     }
                 }
 
@@ -359,24 +359,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Spaltenliste einer Tabelle; null, wenn die Tabelle nicht lesbar ist.
+        ///
+        /// ARBEITSPAKET S4b: Schema-Auskunft statt <c>SELECT TOP 1 *</c> mit
+        /// <c>FillSchema</c> (S4c vorgezogen). Die Aussage ist dieselbe und braucht
+        /// keine Zeile mehr zu lesen.
         /// </summary>
-        private static DataTable TabellenSchemaLesen(OleDbConnection conn, string tabelle)
+        private static HashSet<string> TabellenSchemaLesen(string tabelle)
         {
-            try
-            {
-                DataTable dt = new DataTable();
-                using (OleDbCommand cmd = new OleDbCommand("SELECT TOP 1 * FROM [" + tabelle + "]", conn))
-                using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
-                {
-                    adapter.FillSchema(dt, SchemaType.Source);
-                }
-                return dt;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Schema von " + tabelle + " nicht lesbar: " + ex.Message);
-                return null;
-            }
+            HashSet<string> spalten = StilleDb.SpaltenNamen(tabelle);
+            if (spalten == null)
+                Console.WriteLine("Schema von " + tabelle + " nicht lesbar: Tabelle fehlt oder ist nicht lesbar.");
+            return spalten;
         }
 
         /// <summary>
@@ -387,25 +380,9 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-
-                    DataTable dt = new DataTable();
-                    using (OleDbCommand cmd = new OleDbCommand("SELECT TOP 1 * FROM [" + tabelle + "]", conn))
-                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
-                    {
-                        adapter.FillSchema(dt, SchemaType.Source);
-                    }
-
-                    if (dt.Columns.Contains(spalte)) return;
-
-                    using (OleDbCommand cmd = new OleDbCommand(
-                        "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition, conn))
-                    {
-                        cmd.ExecuteNonQuery();
-                    }
-                }
+                HashSet<string> spalten = StilleDb.SpaltenNamen(tabelle);
+                if (spalten == null) return;               // Tabelle nicht lesbar
+                SpalteSicherstellen(spalten, tabelle, spalte, typDefinition);
             }
             catch (Exception ex)
             {
@@ -414,48 +391,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt eine Spalte auf einer bereits offenen Verbindung an. Die Tabelle wird
-        /// übergeben - die frühere Fassung hatte Tab_Energieanlagen hartkodiert und war
-        /// damit für Tab_Pufferspeicher, Tab_Klimaregion und Tab_Einstellungen unbrauchbar
-        /// (Konzept 5.6).
+        /// Legt eine Spalte an, wenn die schon gelesene Spaltenliste sie nicht führt. Die
+        /// Tabelle wird übergeben - die frühere Fassung hatte Tab_Energieanlagen
+        /// hartkodiert und war damit für Tab_Pufferspeicher, Tab_Klimaregion und
+        /// Tab_Einstellungen unbrauchbar (Konzept 5.6).
+        ///
+        /// ARBEITSPAKET S4b: Die Access-Typangabe des Katalogs wird beim Verbrauch nach
+        /// SQLite übersetzt (S4d vorgezogen); <see cref="SchemaKatalog"/> selbst bleibt
+        /// unangetastet.
         /// </summary>
-        private static void SpalteSicherstellen(OleDbConnection conn, DataTable schema,
+        private static void SpalteSicherstellen(HashSet<string> schema,
                                                 string tabelle, string spalte, string typDefinition)
         {
-            if (schema.Columns.Contains(spalte)) return; // Spalte existiert bereits
+            if (schema.Contains(spalte)) return; // Spalte existiert bereits
 
-            try
-            {
-                using (OleDbCommand cmd = new OleDbCommand(
-                    "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition, conn))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Spalte " + tabelle + "." + spalte + " konnte nicht angelegt werden: " + ex.Message);
-            }
+            if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(tabelle, spalte, typDefinition)) < 0)
+                Console.WriteLine("Spalte " + tabelle + "." + spalte + " konnte nicht angelegt werden.");
         }
 
         /// <summary>
         /// Liest einen Einzelwert aus einer beliebigen Tabelle - still, ohne
-        /// Fehlerdialoge (fehlende Spalte/Datensatz liefert null). Bewusst mit
-        /// eigener Verbindung, da DataRepository bei Fehlern MessageBoxen zeigt.
+        /// Fehlerdialoge (fehlende Spalte/Datensatz liefert null).
+        ///
+        /// ARBEITSPAKET S4b: Der Zugriff läuft über die Zugriffsschicht, aber NICHT über
+        /// <see cref="StilleDb.Scalar"/>: Diese Methode war bisher VOLLSTÄNDIG stumm
+        /// (leerer catch), StilleDb schreibt eine Zeile auf die Konsole. Sie läuft im
+        /// Engine-Pfad je Anlage und Feld — die Stummheit bleibt deshalb erhalten. Die
+        /// Übersetzung (? -&gt; @pN) und der Verbindungsaufbau kommen trotzdem aus
+        /// derselben einen Quelle.
         /// </summary>
         public static object WertLesenStill(string tabelle, string spalte, int id)
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null,
+                           "SELECT [" + spalte + "] FROM [" + tabelle + "] WHERE ID = " + id, null))
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(
-                        "SELECT [" + spalte + "] FROM [" + tabelle + "] WHERE ID = " + id, conn))
-                    {
-                        object v = cmd.ExecuteScalar();
-                        return (v == DBNull.Value) ? null : v;
-                    }
+                    object v = cmd.ExecuteScalar();
+                    return (v == DBNull.Value) ? null : v;
                 }
             }
             catch
@@ -468,19 +442,19 @@ namespace WindowsFormsApplication1
         /// Beliebige skalare Abfrage - still, ohne Fehlerdialoge (Etappe 4). Eine noch
         /// nicht migrierte Datenbank liefert hier null statt einer MessageBox mitten im
         /// Engine-Lauf; genau dafür ist der Rückfallweg da.
+        ///
+        /// ARBEITSPAKET S4b: stumm wie bisher, Begründung siehe
+        /// <see cref="WertLesenStill(string,string,int)"/>.
         /// </summary>
         private static object SkalarStill(string sql)
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, null))
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                    {
-                        object v = cmd.ExecuteScalar();
-                        return (v == DBNull.Value) ? null : v;
-                    }
+                    object v = cmd.ExecuteScalar();
+                    return (v == DBNull.Value) ? null : v;
                 }
             }
             catch
@@ -492,25 +466,21 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Tabellenabfrage ohne Dialog (Paket 2, Konzept 13.4) - Gegenstück zu
         /// <see cref="SkalarStill"/> für den Quellspeicher-Aufbau im Engine-Pfad.
+        ///
+        /// ARBEITSPAKET S4b: innen umgestellt statt auf <see cref="StilleDb.Tabelle"/>
+        /// zurückgeführt — allein wegen des Meldungstexts, den diese Methode seit jeher
+        /// schreibt ("Stille Tabellenabfrage fehlgeschlagen: …").
         /// </summary>
         private static DataTable TabelleStill(string sql, params OleDbParameter[] parameter)
         {
             try
             {
-                DataTable dt = new DataTable();
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                    {
-                        if (parameter != null) cmd.Parameters.AddRange(parameter);
-                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd))
-                        {
-                            ad.Fill(dt);
-                        }
-                    }
+                    return DataRepository.LadeTabelle(leser);
                 }
-                return dt;
             }
             catch (Exception ex)
             {
@@ -914,10 +884,12 @@ namespace WindowsFormsApplication1
                 "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = " + idEnergieanlage));
             if (idProjekt > 0)
             {
+                // ARBEITSPAKET S4b: SELECT TOP 1 -> LIMIT 1 (S5 vorgezogen) - diese
+                // Abfrage laeuft ab hier ueber die SQLite-Zugriffsschicht.
                 DataTable dt = TabelleStill(
-                    "SELECT TOP 1 ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
+                    "SELECT ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
                     "FROM [" + PufferSpCtrl.TABLE + "] WHERE Bezeichner = ? AND ID_Projekt = ? " +
-                    "ORDER BY ID",
+                    "ORDER BY ID LIMIT 1",
                     new OleDbParameter("@bez", bezeichner),
                     new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
                 if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];

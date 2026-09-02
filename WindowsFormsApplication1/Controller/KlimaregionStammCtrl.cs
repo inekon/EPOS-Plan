@@ -101,24 +101,20 @@ namespace WindowsFormsApplication1
 
         // Legt eine neue Klimaregion in der STAMM-Tabelle an (Import im Admin-Dialog).
         // ID_Klimaregion ist AutoWert; ReadOnly wird mit false gesetzt (Feld ist NOT NULL).
-        public bool Add(string szName, double Longitude, double Latitude, string Details, OleDbConnection conn, OleDbTransaction trans)
+        public bool Add(string szName, double Longitude, double Latitude, string Details, DbVorgang v)
         {
             string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly) VALUES (?, ?, ?, ?, ?)";
-            using (OleDbCommand cmd = new OleDbCommand(sql, conn, trans))
-            {
-                cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName));
-                cmd.Parameters.Add(new OleDbParameter("?", Longitude));
-                cmd.Parameters.Add(new OleDbParameter("?", Latitude));
-                cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details));
-                cmd.Parameters.Add(new OleDbParameter("?", false));
-                cmd.ExecuteNonQuery();
-            }
-            using (OleDbCommand cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn, trans))
-            {
-                object result = cmdIdentity.ExecuteScalar();
-                if (result != null && result != DBNull.Value)
-                    m_ID_Klimaregion = Convert.ToInt32(result);
-            }
+            OleDbParameter[] ps = {
+                new OleDbParameter("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
+                new OleDbParameter("?", Longitude),
+                new OleDbParameter("?", Latitude),
+                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new OleDbParameter("?", false)
+            };
+            // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
+            // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
+            int neueId = v.EinfuegenUndId(sql, ps);
+            if (neueId > 0) m_ID_Klimaregion = neueId;
             return true;
         }
 
@@ -220,20 +216,21 @@ namespace WindowsFormsApplication1
         // Rueckgabe: die (neue oder bereits vorhandene) Projekt-Region-ID (Tab_Klimaregion.ID), 0 bei Fehler.
         public static int CopyRegionToProjekt(int stammRegionId, int idProjekt)
         {
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neu = CopyRegionToProjekt(stammRegionId, idProjekt, conn, trans);
-                if (neu > 0) trans.Commit(); else trans.Rollback();
-                return neu;
+                try
+                {
+                    int neu = CopyRegionToProjekt(stammRegionId, idProjekt, v);
+                    if (neu > 0) v.Commit(); else v.Rollback();
+                    return neu;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
+                    return 0;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
-                return 0;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Kopiert eine Klimaregion samt Klimadaten und Solar aus den STAMM-Tabellen in die
@@ -241,7 +238,7 @@ namespace WindowsFormsApplication1
         // bildet die Beziehung neu ab: die kopierten Klimadaten/Solar erhalten als ID_Klimaregion
         // die NEUE Projekt-Region-ID (Tab_Klimaregion.ID), nicht die Stamm-ID_Klimaregion.
         // Laeuft in der uebergebenen Transaktion. Rueckgabe: Projekt-Region-ID, 0 bei Fehler.
-        public static int CopyRegionToProjekt(int stammRegionId, int idProjekt, OleDbConnection conn, OleDbTransaction trans)
+        public static int CopyRegionToProjekt(int stammRegionId, int idProjekt, DbVorgang v)
         {
             // 1. Stammdaten (Referenz) lesen – ausserhalb der Transaktion, nur lesend.
             DataTable dtRegion = DataRepository.GetDataTable(
@@ -252,31 +249,27 @@ namespace WindowsFormsApplication1
             string szName = reg["Name"].ToString();
 
             // 2. Bereits im Projekt vorhanden? -> vorhandene Projekt-Region-ID zurueckgeben.
-            using (OleDbCommand cmdExist = new OleDbCommand(
-                "SELECT ID FROM " + TAB_REGION_PROJEKT + " WHERE Bezeichner = ? AND ID_Projekt = ?", conn, trans))
             {
-                cmdExist.Parameters.Add(new OleDbParameter("@name", szName));
-                cmdExist.Parameters.Add(new OleDbParameter("@idProj", idProjekt));
-                object ex = cmdExist.ExecuteScalar();
+                List<OleDbParameter> p = new List<OleDbParameter>();
+                p.Add(new OleDbParameter("@name", szName));
+                p.Add(new OleDbParameter("@idProj", idProjekt));
+                object ex = v.Skalar("SELECT ID FROM " + TAB_REGION_PROJEKT + " WHERE Bezeichner = ? AND ID_Projekt = ?", p.ToArray());
                 if (ex != null && ex != DBNull.Value) return Convert.ToInt32(ex);
             }
 
             // 3. Region in Projekt-Tabelle anlegen (ID ist AutoWert), neue Region-ID holen.
-            using (OleDbCommand cmd = new OleDbCommand(
-                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)", conn, trans))
-            {
-                cmd.Parameters.Add(new OleDbParameter("@idProj", idProjekt));
-                cmd.Parameters.Add(new OleDbParameter("@bez", szName));
-                cmd.Parameters.Add(Val("@lon", reg["Longitude"]));
-                cmd.Parameters.Add(Val("@lat", reg["Latitude"]));
-                cmd.Parameters.Add(Val("@det", reg["Details"]));
-                cmd.ExecuteNonQuery();
-            }
-            int neueRegionId;
-            using (OleDbCommand cmdId = new OleDbCommand("SELECT @@IDENTITY", conn, trans))
-            {
-                neueRegionId = Convert.ToInt32(cmdId.ExecuteScalar());
-            }
+            //    ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
+            //    Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
+            OleDbParameter[] psRegion = {
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@bez", szName),
+                Val("@lon", reg["Longitude"]),
+                Val("@lat", reg["Latitude"]),
+                Val("@det", reg["Details"])
+            };
+            int neueRegionId = v.EinfuegenUndId(
+                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)",
+                psRegion);
 
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).
             DataTable dtKlima = DataRepository.GetDataTable(
@@ -287,23 +280,23 @@ namespace WindowsFormsApplication1
                 string ins = "INSERT INTO " + TAB_KLIMADATEN_PROJEKT + " (ID_Projekt, ID_Klimaregion, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Temperatur, WE, TagTyp_W, TagTyp_NW, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 foreach (DataRow r in dtKlima.Rows)
                 {
-                    using (OleDbCommand cmd = new OleDbCommand(ins, conn, trans))
                     {
-                        cmd.Parameters.Add(new OleDbParameter("@idProj", idProjekt));
-                        cmd.Parameters.Add(new OleDbParameter("@reg", neueRegionId));
-                        cmd.Parameters.Add(Val("@sn", r["Sol_Nord"]));
-                        cmd.Parameters.Add(Val("@so", r["Sol_Ost"]));
-                        cmd.Parameters.Add(Val("@ss", r["Sol_Sued"]));
-                        cmd.Parameters.Add(Val("@sw", r["Sol_West"]));
-                        cmd.Parameters.Add(Val("@temp", r["Temperatur"]));
-                        cmd.Parameters.Add(new OleDbParameter("@we", (r["WE"] != DBNull.Value) && Convert.ToBoolean(r["WE"])));
-                        cmd.Parameters.Add(Val("@tw", r["TagTyp_W"]));
-                        cmd.Parameters.Add(Val("@tnw", r["TagTyp_NW"]));
-                        cmd.Parameters.Add(Val("@glob", ColOrNull(r, "Globalstrahlung")));
-                        cmd.Parameters.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
-                        cmd.Parameters.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
-                        cmd.Parameters.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
-                        cmd.ExecuteNonQuery();
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@idProj", idProjekt));
+                        p.Add(new OleDbParameter("@reg", neueRegionId));
+                        p.Add(Val("@sn", r["Sol_Nord"]));
+                        p.Add(Val("@so", r["Sol_Ost"]));
+                        p.Add(Val("@ss", r["Sol_Sued"]));
+                        p.Add(Val("@sw", r["Sol_West"]));
+                        p.Add(Val("@temp", r["Temperatur"]));
+                        p.Add(new OleDbParameter("@we", (r["WE"] != DBNull.Value) && Convert.ToBoolean(r["WE"])));
+                        p.Add(Val("@tw", r["TagTyp_W"]));
+                        p.Add(Val("@tnw", r["TagTyp_NW"]));
+                        p.Add(Val("@glob", ColOrNull(r, "Globalstrahlung")));
+                        p.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
+                        p.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
+                        p.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
+                        v.Ausfuehren(ins, p.ToArray());
                     }
                 }
             }
@@ -316,29 +309,28 @@ namespace WindowsFormsApplication1
             if (dtSolar != null && dtSolar.Rows.Count > 0)
             {
                 int nextId;
-                using (OleDbCommand cmdMax = new OleDbCommand("SELECT MAX(ID) FROM " + TAB_SOLAR_PROJEKT, conn, trans))
                 {
-                    object m = cmdMax.ExecuteScalar();
+                    object m = v.Skalar("SELECT MAX(ID) FROM " + TAB_SOLAR_PROJEKT);
                     nextId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                 }
                 string ins = "INSERT INTO " + TAB_SOLAR_PROJEKT + " (ID, ID_Projekt, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
                 foreach (DataRow r in dtSolar.Rows)
                 {
-                    using (OleDbCommand cmd = new OleDbCommand(ins, conn, trans))
                     {
-                        cmd.Parameters.Add(new OleDbParameter("@id", nextId++));
-                        cmd.Parameters.Add(new OleDbParameter("@idProj", idProjekt));
-                        cmd.Parameters.Add(new OleDbParameter("@reg", neueRegionId));
-                        cmd.Parameters.Add(Val("@temp", r["Temperatur"]));
-                        cmd.Parameters.Add(Val("@sn", r["Sol_Nord"]));
-                        cmd.Parameters.Add(Val("@so", r["Sol_Ost"]));
-                        cmd.Parameters.Add(Val("@ss", r["Sol_Sued"]));
-                        cmd.Parameters.Add(Val("@sw", r["Sol_West"]));
-                        cmd.Parameters.Add(Val("@glob", ColOrNull(r, "Globalstrahlung")));
-                        cmd.Parameters.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
-                        cmd.Parameters.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
-                        cmd.Parameters.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
-                        cmd.ExecuteNonQuery();
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", nextId++));
+                        p.Add(new OleDbParameter("@idProj", idProjekt));
+                        p.Add(new OleDbParameter("@reg", neueRegionId));
+                        p.Add(Val("@temp", r["Temperatur"]));
+                        p.Add(Val("@sn", r["Sol_Nord"]));
+                        p.Add(Val("@so", r["Sol_Ost"]));
+                        p.Add(Val("@ss", r["Sol_Sued"]));
+                        p.Add(Val("@sw", r["Sol_West"]));
+                        p.Add(Val("@glob", ColOrNull(r, "Globalstrahlung")));
+                        p.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
+                        p.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
+                        p.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
+                        v.Ausfuehren(ins, p.ToArray());
                     }
                 }
             }

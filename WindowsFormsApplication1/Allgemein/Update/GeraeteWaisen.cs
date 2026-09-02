@@ -4,9 +4,27 @@ using System.Data;
 using System.Data.OleDb;
 using System.Globalization;
 using System.Text;
+using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
 {
+    // =====================================================================================
+    // ARBEITSPAKET S4b: ZWEI WEGE, WEIL ES ZWEI DATENBANKEN GIBT.
+    //
+    // Diese Klasse hat ZWEI Aufruferkreise: den regulaeren Programmpfad (WErzeugerCtrl,
+    // WizardCtrl) OHNE Verbindung - der laeuft ab hier auf SQLite - und
+    // SchemaMigration (Schritt "Geraetewaisen"), der seine EIGENE, bereits offene
+    // OleDbConnection auf die Alt-.accdb hereinreicht. SchemaMigration ist der
+    // eingefrorene Access-Zweig (Arbeitspaket S6); seine oeffentlichen Signaturen
+    // - Aufraeumen(int, OleDbConnection) und ProjekteMitGeraetezeilen(OleDbConnection) -
+    // bleiben deshalb unveraendert stehen.
+    //
+    // Der Unterschied steckt ausschliesslich in den DREI Zugriffsprimitiven ganz unten
+    // (Spalte, SpalteOhneTabelle, Loeschen): conn == null heisst "Zugriffsschicht",
+    // conn != null heisst "auf DIESER Verbindung, wie bisher". Alles dazwischen -
+    // Waisenermittlung, Referenzmengen, Berichtstexte - ist unveraendert.
+    // =====================================================================================
+
     /// <summary>
     /// Räumt VERWAISTE GERÄTEZEILEN eines Projekts weg - Zeilen in <c>Tab_WP</c>,
     /// <c>Tab_Heizkessel</c>, <c>Tab_BHKW</c>, <c>Tab_Pufferspeicher</c>, <c>Tab_PV</c>,
@@ -116,11 +134,9 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (var eigene = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    eigene.Open();
-                    AufraeumenIntern(b, idProjekt, eigene);
-                }
+                // ARBEITSPAKET S4b: keine eigene Verbindung mehr - die Zugriffsprimitiven
+                // holen sich je Abfrage eine aus dem Pool (conn == null).
+                AufraeumenIntern(b, idProjekt, null);
             }
             catch (Exception ex)
             {
@@ -146,11 +162,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (var eigene = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    eigene.Open();
-                    ProjekteSammeln(ids, eigene);
-                }
+                // ARBEITSPAKET S4b: siehe Aufraeumen - conn == null heisst Zugriffsschicht.
+                ProjekteSammeln(ids, null);
             }
             catch (Exception ex)
             {
@@ -316,13 +329,13 @@ namespace WindowsFormsApplication1
             // Projekt-ID gar nicht, und ein Verweis von außerhalb wäre erst recht ein
             // Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer Datenbank vor
             // Migrationsschritt 14, gilt sie als leer - jeder andere Fehler bleibt einer.
-            List<int> verbund = SpalteOhneTabelle(conn,
+            List<int> verbund = SpalteOhneTabelle(conn, SchemaKatalog.Z_ANLAGEPUFFERVERBUND,
                 "SELECT [ID_Puffer] FROM [" + SchemaKatalog.Z_ANLAGEPUFFERVERBUND + "] " +
                 "WHERE [ID_Puffer] IS NOT NULL");
             if (verbund == null) return null;
             foreach (int id in verbund) menge.Add(id);
 
-            List<int> altZuordnung = SpalteOhneTabelle(conn,
+            List<int> altZuordnung = SpalteOhneTabelle(conn, SchemaKatalog.Z_PROJEKTPUFFERSP,
                 "SELECT [ID_Pufferspeicher] FROM [" + SchemaKatalog.Z_PROJEKTPUFFERSP + "] " +
                 "WHERE [ID_Pufferspeicher] IS NOT NULL");
             if (altZuordnung == null) return null;
@@ -338,7 +351,7 @@ namespace WindowsFormsApplication1
             // fuehrt kein ID_Projekt, und ein Verweis von ausserhalb waere erst recht
             // ein Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer
             // Datenbank vor Schritt 50, gilt sie als leer.
-            List<int> senken = SpalteOhneTabelle(conn,
+            List<int> senken = SpalteOhneTabelle(conn, SchemaKatalog.Z_ANLAGESENKE,
                 "SELECT [ID_Puffer] FROM [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
                 "WHERE [ID_Puffer] IS NOT NULL");
             if (senken == null) return null;
@@ -369,12 +382,31 @@ namespace WindowsFormsApplication1
         // Datenbankzugriff - dialogfrei, Fehler werden GEMELDET, nicht verschluckt
         // =================================================================================
 
-        /// <summary>Erste Spalte einer Abfrage als Ganzzahlliste; <c>null</c> bei jedem Fehler.</summary>
+        /// <summary>
+        /// Erste Spalte einer Abfrage als Ganzzahlliste; <c>null</c> bei jedem Fehler.
+        ///
+        /// ARBEITSPAKET S4b: <paramref name="conn"/> == null laeuft ueber die
+        /// Zugriffsschicht, sonst wie bisher auf der hereingereichten Verbindung
+        /// (Alt-Zweig SchemaMigration, S6). Der Fehlerpfad ist fuer beide DERSELBE -
+        /// gleicher Wortlaut, gleiche Rueckgabe.
+        /// </summary>
         private static List<int> Spalte(OleDbConnection conn, string sql, params OleDbParameter[] ps)
         {
             try
             {
                 var liste = new List<int>();
+
+                if (conn == null)
+                {
+                    using (SqliteConnection eigene = StilleDb.OeffneVerbindung())
+                    using (SqliteCommand cmd = DataRepository.ErzeugeKommando(eigene, null, sql, ps))
+                    using (SqliteDataReader r = cmd.ExecuteReader())
+                        while (r.Read())
+                            if (!r.IsDBNull(0))
+                                liste.Add(Convert.ToInt32(r.GetValue(0), CultureInfo.InvariantCulture));
+                    return liste;
+                }
+
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
                     if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(ps);
@@ -398,9 +430,21 @@ namespace WindowsFormsApplication1
         /// gibt es <c>Z_AnlagePufferVerbund</c> noch nicht, und "die Tabelle ist nicht da"
         /// heißt zweifelsfrei "sie enthält keinen Verweis". Jeder ANDERE Fehler bleibt ein
         /// Fehler und führt weiterhin zu <c>null</c>.
+        ///
+        /// <para>ARBEITSPAKET S4b: Auf dem SQLite-Weg entscheidet eine VORABPROBE über die
+        /// Schema-Auskunft, ob es die Tabelle gibt - keine Deutung einer Fehlermeldung
+        /// mehr. Der Alt-Zweig (Verbindung von aussen, Arbeitspaket S6) behält seine
+        /// Textdeutung über <see cref="IstTabelleFehlt"/>; darum wird der Tabellenname
+        /// jetzt mitgegeben.</para>
         /// </summary>
-        private static List<int> SpalteOhneTabelle(OleDbConnection conn, string sql)
+        private static List<int> SpalteOhneTabelle(OleDbConnection conn, string tabelle, string sql)
         {
+            if (conn == null)
+            {
+                if (!StilleDb.TabelleVorhanden(tabelle)) return new List<int>();
+                return Spalte(null, sql);
+            }
+
             try
             {
                 var liste = new List<int>();
@@ -424,6 +468,8 @@ namespace WindowsFormsApplication1
         /// 3078, ersatzweise am Text erkannt. <c>OleDbException.Errors</c> ist unter .NET 8
         /// bei ACE-Fehlern leer (nachgewiesen in <c>SchemaMigration.IstBereitsVorhanden</c>),
         /// tragend ist deshalb auch hier der Textvergleich.
+        ///
+        /// NUR NOCH FUER DEN ALT-ZWEIG (Verbindung von aussen). Der SQLite-Weg probt vorab.
         /// </summary>
         private static bool IstTabelleFehlt(Exception ex)
         {
@@ -454,7 +500,19 @@ namespace WindowsFormsApplication1
                              IdListe(ids, von, BLOCK) + ")";
                 try
                 {
-                    using (var cmd = new OleDbCommand(sql, conn)) summe += cmd.ExecuteNonQuery();
+                    // ARBEITSPAKET S4b: conn == null -> Zugriffsschicht, je Block eine
+                    // Verbindung aus dem Pool. KEINE Transaktion darum: Auch bisher stand
+                    // hier keine, und der Bericht zaehlt blockweise weiter.
+                    if (conn == null)
+                    {
+                        using (SqliteConnection eigene = StilleDb.OeffneVerbindung())
+                        using (SqliteCommand cmd = DataRepository.ErzeugeKommando(eigene, null, sql, null))
+                            summe += cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        using (var cmd = new OleDbCommand(sql, conn)) summe += cmd.ExecuteNonQuery();
+                    }
                 }
                 catch (Exception ex)
                 {

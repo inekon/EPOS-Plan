@@ -69,7 +69,7 @@ namespace WindowsFormsApplication1
             try
             {
                 dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 * FROM [" + tabelle + "] WHERE [" + idSpalte + "] = ?",
+                    "SELECT * FROM [" + tabelle + "] WHERE [" + idSpalte + "] = ? LIMIT 1",
                     new OleDbParameter("@id", (Int32)id));
             }
             catch (Exception ex)
@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(tabelle)) return false;
             try
             {
-                DataTable dt = DataRepository.GetDataTable("SELECT TOP 1 * FROM [" + tabelle + "]");
+                DataTable dt = DataRepository.GetDataTable("SELECT * FROM [" + tabelle + "] LIMIT 1");
                 return dt != null && dt.Columns.Contains("ReadOnly");
             }
             catch { return false; }

@@ -45,7 +45,12 @@ namespace WindowsFormsApplication1
             // da der Bezeichner eindeutig ist, ist das Ergenis 1 Datensatz, ist nur expemplarisch
             for (int n = 0; n < waectrl.rows; n++)
             {
-                rs.Open("select * from Abfrage_ProjektStromGanglinie where Tab_Stromganglinie.ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by ID");
+                // BEFUND B1 (S7): wie SimulationStrombedarf.Berechnung - Sichtspalten ueber den
+                // Tabellennamen angesprochen, in SQLite "no such column". Das alte
+                // "order by ID" sortierte nach der Ganglinien-ID, die das WHERE ohnehin
+                // festnagelt, war also wirkungslos; sortiert wird jetzt wie im Simulationszweig
+                // nach der Datensatz-ID (ID_Daten).
+                rs.Open("select * from Abfrage_ProjektStromGanglinie where ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by ID_Daten");
 
                 int index = 0;
                 double wert = 0;

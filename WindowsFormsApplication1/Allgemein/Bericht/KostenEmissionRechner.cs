@@ -511,9 +511,9 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 ec.id FROM energy_project_settings AS s " +
+                    "SELECT ec.id FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
-                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY'",
+                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
                     new OleDbParameter("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }

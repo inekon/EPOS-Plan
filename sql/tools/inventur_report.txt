@@ -1,0 +1,345 @@
+### Basis
+Dateien (.cs, ohne bin/obj): 570   Encodings: {'utf-8-bom': 384, 'utf-8': 118, 'cp1252': 68}
+Extrahierte String-Literale: 39350
+Literaltypen: {'"': 39103, '$"': 118, '@"': 123, '$@"': 6}
+
+### a) '?' im Literalinhalt
+distinkte Quelltextzeilen mit '?' in Literal : 1583
+Literale mit mindestens einem '?'           : 1444
+'?'-Zeichen gesamt in Literalen              : 3644
+distinkte Zeilen, Literal SQL-verdaechtig    : 1112
+Top-Dateien (Zeilen mit '?'):
+     141  WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs
+      78  WindowsFormsApplication1/Controller/KonfigurationCtrl.cs
+      57  WindowsFormsApplication1/Controller/PufferSpCtrl.cs
+      57  WindowsFormsApplication1/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitCtrl.cs
+      50  WindowsFormsApplication1/Controller/WizardCtrl.cs
+      39  WindowsFormsApplication1/Controller/PhotovoltaikCtrl.cs
+      36  WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs
+      33  WindowsFormsApplication1/Controller/ErgebnisCtrl.cs
+      30  WindowsFormsApplication1/Controller/SolarkollektorenCtrl.cs
+      26  WindowsFormsApplication1/Views/Kosten/ucFuelSettings.cs
+      25  WindowsFormsApplication1/Controller/KostenPositionCtrl.cs
+      25  WindowsFormsApplication1/Controller/KlimaregionStammCtrl.cs
+      24  WindowsFormsApplication1/Controller/KostenVorlagenCtrl.cs
+      23  WindowsFormsApplication1/Controller/HeizkesselStammCtrl.cs
+      23  WindowsFormsApplication1/Controller/WPCtrl.cs
+
+### b) '?' innerhalb eines SQL-Hochkomma-Textliterals
+Treffer (naiver Toggle-Scan je Literal): 2
+   WindowsFormsApplication1/Views/Kosten/Form_KostenAdmin.cs:112  ...' wirklich löschen?...
+   WindowsFormsApplication1/Views/Varianten/Form_Variantentest.cs:281  ...' und alle zugehörigen Projektdaten unwiderruflich löschen?...
+
+### c) new OleDbParameter
+Vorkommen gesamt: 2711  in 131 Dateien
+Vorkommen ohne offensichtliche Kommentarzeilen: 2711
+Top-Dateien:
+     211  WindowsFormsApplication1/Controller/ErgebnisCtrl.cs
+     206  WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs
+     179  WindowsFormsApplication1/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitCtrl.cs
+     165  WindowsFormsApplication1/Controller/WizardCtrl.cs
+     125  WindowsFormsApplication1/Controller/GebaeudeStammCtrl.cs
+      84  WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs
+      80  WindowsFormsApplication1/Views/Kosten/ucFuelSettings.cs
+      70  WindowsFormsApplication1/Controller/HeizkesselStammCtrl.cs
+      57  WindowsFormsApplication1/Controller/WPStammCtrl.cs
+      55  WindowsFormsApplication1/Controller/PhotovoltaikStammCtrl.cs
+      53  WindowsFormsApplication1/Views/BHKW/Form_BHKWEing.cs
+      51  WindowsFormsApplication1/Controller/KostenPositionCtrl.cs
+
+### d) SELECT TOP / TOP <n>
+Treffer 'TOP <n>': 4  (Zeilen distinkt: 4)
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6182  SELECT TOP 1 * FROM [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:13650  SELECT TOP 1 Pendelspeicher FROM Tab_Einstellungen WHERE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:13897  SELECT TOP 1 * FROM [
+   WindowsFormsApplication1/Controller/ApplikationCtrl.cs:179  SELECT TOP 1 * FROM Tab_Applikation
+davon 'SELECT TOP': 4
+alle 'TOP'-Woerter in Literalen: 8
+   TOP ohne folgende Zahl (Verkettungsgrenze/Fremdtext):
+      WindowsFormsApplication1/Allgemein/Bericht/BerichtTexte.cs:182  T top mean [°C]
+      WindowsFormsApplication1/Allgemein/Bericht/BerichtTexte.cs:183  T top minimum [°C]
+      WindowsFormsApplication1/Allgemein/Bericht/KennzahlenKatalog.cs:298  Storage top temperature (mean)
+      WindowsFormsApplication1/Allgemein/Bericht/KennzahlenKatalog.cs:300  Storage top temperature (minimum)
+
+### e) @@IDENTITY
+Vorkommen: 0   distinkte Zeilen: 0   Dateien: 0
+
+### f) = TRUE / = FALSE / <> TRUE / <> FALSE
+Vorkommen: 53   distinkte Zeilen: 46
+   WindowsFormsApplication1/Allgemein/DataRepository.cs:191  Data Source={};Foreign Keys=True
+   WindowsFormsApplication1/Allgemein/DataRepository.cs:217  Data Source={};Foreign Keys=True
+   WindowsFormsApplication1/Allgemein/Simulation/Warnkriterien.cs:713  AND WQ_Unbegrenzt = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:4564  ] = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5102  ] = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5388  AND ([user_edited] = FALSE OR [user_edited] IS NULL)
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5398  AND ([user_edited] = FALSE OR [user_edited] IS NULL)
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5530  AND ([user_edited] = FALSE OR [user_edited] IS NULL)
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7606  ] = FALSE AND [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7606  ] = FALSE AND [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7606  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7662  ] = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7663  ] = FALSE AND [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7663  ] = FALSE AND [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7663  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7669  ] = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7670  ] = FALSE AND [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7670  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9334  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9336  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9457  ] = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9459  ] = FALSE AND [StammID] = ?
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10525  ] = TRUE WHERE [
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10526  ] = FALSE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10551  UPDATE pricing_model SET has_powerprice = true WHERE code = 'ELECTRICITY'
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:11317  WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12813  Netzentgelt = ?, Aufschlag_Netzentgelt_Aktiv = TRUE,
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12814  fschlag_Umlagen = ?, Aufschlag_Umlagen_Aktiv = TRUE,
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12815  Stromsteuer = ?, Aufschlag_Stromsteuer_Aktiv = TRUE,
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12816  g_Konzession = ?, Aufschlag_Konzession_Aktiv = TRUE,
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12817  chlag_Vertrieb = ?, Aufschlag_Vertrieb_Aktiv = TRUE,
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:12874  ] = TRUE
+   WindowsFormsApplication1/Controller/EmissionenCtrl.cs:641  , ist_aktiv = TRUE, gueltig_ab = ? WHERE id =
+   WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:67  WHERE ausgewaehlt = TRUE OR ist_pflicht = TRUE
+   WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:67  WHERE ausgewaehlt = TRUE OR ist_pflicht = TRUE
+   WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:289  AND ist_aktiv = TRUE
+   WindowsFormsApplication1/Controller/EnergieEinheitenPruefung.cs:492  ] = TRUE AND factor > 0
+   WindowsFormsApplication1/Controller/EnergieEinheitenPruefung.cs:579  ] WHERE is_active = TRUE ORDER BY id
+   WindowsFormsApplication1/Controller/EnergieEinheitenPruefung.cs:635  ] = TRUE AND factor > 0
+   WindowsFormsApplication1/Controller/KostenPositionCtrl.cs:170  WHERE Bezeichnung = ? AND IsMainComponent = True
+   WindowsFormsApplication1/Controller/KostenPositionCtrl.cs:185  WHERE Bezeichnung = ? AND IsMainComponent = False
+   WindowsFormsApplication1/Controller/KostenPositionCtrl.cs:201  WHERE Bezeichnung = ? AND IsMainComponent = False
+   WindowsFormsApplication1/Controller/KostenPositionCtrl.cs:260  AND f.IsMainComponent = True AND f.Bezeichnung = ?
+   WindowsFormsApplication1/Controller/PufferSpCtrl.cs:1034  ] = FALSE AND [
+   WindowsFormsApplication1/Controller/PufferSpCtrl.cs:1034  ] = FALSE
+   WindowsFormsApplication1/Controller/PufferSpCtrl.cs:1035  ] = FALSE
+   WindowsFormsApplication1/Controller/StromspeicherVarianteCtrl.cs:76  WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE ORDER BY v.ID LIMIT 1
+   WindowsFormsApplication1/Controller/StromspeicherVarianteCtrl.cs:234  ] SET Aktiv = FALSE WHERE ID_Energieanlage IN
+   WindowsFormsApplication1/Controller/StromspeicherVarianteCtrl.cs:239  ] SET Aktiv = TRUE WHERE ID = ?
+   WindowsFormsApplication1/Views/Kosten/Form_KostenAdmin.cs:35  WHERE IsMainComponent = False ORDER BY Bezeichnung
+   WindowsFormsApplication1/Views/Kosten/Form_KostenAdmin.cs:119  or WHERE Bezeichnung = ? AND IsMainComponent = False
+   WindowsFormsApplication1/Views/Kosten/Form_KostenfaktorItem.cs:29  * from Tab_Kostenfaktor where IsMainComponent=false
+   WindowsFormsApplication1/Views/Kosten/ucFuelSettings.cs:888  [factor] = ?, [user_edited] = TRUE, [
+alle TRUE/FALSE-Woerter in Literalen: 93 (distinkte Zeilen 78)
+   davon ohne unmittelbar vorangehendes =/<> : 40
+      WindowsFormsApplication1/Allgemein/DbWerte.cs:341  true
+      WindowsFormsApplication1/Allgemein/Import/CEC/CECDataService.cs:276  true
+      WindowsFormsApplication1/Allgemein/Import/CEC/CECDataService.cs:277  true
+      WindowsFormsApplication1/Allgemein/Import/CEC/UnifiedModule.cs:52  true
+      WindowsFormsApplication1/Allgemein/KI/KiDialogZugriff.cs:470  true
+      WindowsFormsApplication1/Allgemein/KI/KiDialogZugriff.cs:475  false
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5487  VALUES (?, ?, ?, ?, 1, FALSE, ?, TRUE)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5487  VALUES (?, ?, ?, ?, 1, FALSE, ?, TRUE)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5665  TRUE
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5665  FALSE
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5684  TRUE
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5684  FALSE
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9606  VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10578  12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10662  ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10826  VALUES (?, ?, ?, ?, TRUE, TRUE, ?)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10826  VALUES (?, ?, ?, ?, TRUE, TRUE, ?)
+      WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10869  VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)
+      WindowsFormsApplication1/Controller/EmissionenCtrl.cs:615  , ?, ?, ?, ?, TRUE,
+      WindowsFormsApplication1/Controller/EmissionenCtrl.cs:618  , FALSE, ?)
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:121  VALUES (?, ?, ?, ?, ?, FALSE, ?, FALSE,
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:121  VALUES (?, ?, ?, ?, ?, FALSE, ?, FALSE,
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:318  TRUE
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:318  FALSE
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:319  , FALSE, ?)
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:415  , ?, ?, ?, ?, TRUE,
+      WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:415  , FALSE, ?)
+      WindowsFormsApplication1/Controller/EnergietraegerKatalogCtrl.cs:71  ASEOUS_FUEL', 'kWh', 1, 1, 0, 0, 0, 0, 0, 0, TRUE)
+      WindowsFormsApplication1/Controller/KostenVorlagenCtrl.cs:248  ]) VALUES (?, ?, ?, ?, FALSE, FALSE, ?)
+      WindowsFormsApplication1/Controller/KostenVorlagenCtrl.cs:248  ]) VALUES (?, ?, ?, ?, FALSE, FALSE, ?)
+      WindowsFormsApplication1/Controller/KostenVorlagenUebernahmeCtrl.cs:480  VALUES (?, ?, FALSE)
+      WindowsFormsApplication1/Controller/WPStammCtrl.cs:198  VALUES ({}, {}, {}, {}, {}, {}, FALSE)
+      WindowsFormsApplication1/Views/BHKW/Form_DBBHKW.cs:450  ', False)
+      WindowsFormsApplication1/Views/Help/Form_KiChat.cs:1341  true
+      WindowsFormsApplication1/Views/Help/Form_KiChat.cs:1342  false
+      WindowsFormsApplication1/Views/Kosten/ucFuelSettings.cs:911  ]) VALUES (?, ?, ?, ?, ?, TRUE, ?, ?)
+      WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail - Kopie.cs:237  true
+      WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail - Kopie.cs:245  true
+      WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.cs:2954  true
+      WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.cs:2962  true
+
+### g) ' LIKE '
+Vorkommen ' LIKE ': 27
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5782  AND Quelle LIKE '%Projektionsbericht%'
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:5801  AND Quelle LIKE '%Projektionsbericht%'
+   WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10604  SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?
+   WindowsFormsApplication1/Controller/BHKWCtrl.cs:16  Ptherm LIKE '%'
+   WindowsFormsApplication1/Controller/BHKWStammCtrl.cs:24  Ptherm LIKE '%'
+   WindowsFormsApplication1/Controller/ProjektDuplizierenCtrl.cs:369  SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name
+   WindowsFormsApplication1/Controller/ProjektDuplizierenCtrl.cs:471  SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name
+   WindowsFormsApplication1/Controller/ProjektExportImportCtrl.cs:706  WHERE m.type = 'table' AND m.name NOT LIKE 'sqlite_%'
+   WindowsFormsApplication1/Controller/ProjektExportImportCtrl.cs:707  AND ti.pk = 1 AND upper(m.sql) LIKE '%AUTOINCREMENT%'
+   WindowsFormsApplication1/Controller/ProjektExportImportCtrl.cs:1242  SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.cs:154  Ptherm Like '%'
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.cs:177  Brennstoff Like '%'
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.cs:179  Ptherm Like '%'
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWEing.cs:156  Ptherm Like '%'
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWEing.cs:179  Brennstoff Like '%'
+   WindowsFormsApplication1/Views/BHKW/Form_BHKWEing.cs:181  Ptherm Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel.cs:592  Ptherm Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel.cs:593  Ptherm Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel.cs:611  Brennstoff Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.cs:100  Ptherm Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.cs:101  Ptherm Like '%'
+   WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.cs:121  Brennstoff Like '%'
+   WindowsFormsApplication1/Views/Photovoltaik/Form_PV.cs:221  Bezeichner Like '%'
+   WindowsFormsApplication1/Views/Pufferspeicher/PufferSpFilter.cs:47  (Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')
+   WindowsFormsApplication1/Views/Pufferspeicher/PufferSpFilter.cs:136  Hersteller Like '%'
+   WindowsFormsApplication1/Views/Wärmepumpe/Kenndaten.cs:40  Convert([{0}], 'System.String') LIKE '%{1}%'
+   WindowsFormsApplication1/Views/Wärmepumpe/Kenndaten.cs:47  Convert([{0}], 'System.String') LIKE '{1}'
+alle LIKE-Woerter: 27
+
+### h) Access-Funktionen (Wortgrenze + '(')
+IIf            17   {'WindowsFormsApplication1/Allgemein/Simulation/Ladeordnung.cs': 1, 'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 14, 'WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs': 1, 'WindowsFormsApplication1/Controller/ProjektDuplizierenCtrl.cs': 1}
+UCase           3   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 3}
+LCase           0   {}
+Trim           15   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 15}
+Nz              0   {}
+Format          0   {}
+Switch          0   {}
+Choose          0   {}
+Val             0   {}
+Str             0   {}
+CStr            0   {}
+CInt            0   {}
+CDbl            0   {}
+CDate           0   {}
+CLng            0   {}
+CBool           0   {}
+DLookup         0   {}
+DCount          0   {}
+DSum            0   {}
+DMax            0   {}
+DMin            0   {}
+DAvg            0   {}
+DateAdd         0   {}
+DateDiff        0   {}
+DatePart        0   {}
+DateSerial      0   {}
+InStr           0   {}
+InStrRev        0   {}
+StrComp         0   {}
+IsNumeric       0   {}
+IsDate          0   {}
+Environ         0   {}
+CurrentUser     0   {}
+Eval            0   {}
+Partition       0   {}
+Mid             0   {}
+Left            0   {}
+Right           0   {}
+Len             0   {}
+Replace         0   {}
+Round           0   {}
+Asc             0   {}
+Chr             0   {}
+
+Fundorte fuer die kleinen Zaehler:
+  -- IIf (17)
+     WindowsFormsApplication1/Allgemein/Simulation/Ladeordnung.cs:77  IIF(
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6032  IIf(w.KategorieID = 1, '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6033  IIf(w.KategorieID = 2, '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6034  IIf(w.KategorieID = 3, '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6865  IIf(s.custom_hi Is Null Or s.custom_hi=0,ec.hi_kw
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:6866  IIf(s.custom_hs Is Null Or s.custom_hs=0,ec.hs_kw
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10152  IIf(a.WS_Ziel IS NULL OR Trim(a.WS_Ziel) = '', '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10155  IIf(a.WS_Typ IS NULL OR Trim(a.WS_Typ) = '', '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10165  IIf(a.WS_Ladeprio IS NULL, 0, a.WS_Ladeprio),
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10166  IIf(a.WS_Ladeprio_PV IS NULL, 0, a.WS_Ladeprio_PV
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10167  IIf(a.WS_Ladegrenze IS NULL, 0, a.WS_Ladegrenze)
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10189  IIf(a.WS_Ladeprio2 IS NULL, 0, a.WS_Ladeprio2), 0
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10190  IIf(a.WS_Ladegrenze2 IS NULL, 0, a.WS_Ladegrenze2
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10398  WHERE IIf(Vorlauf IS NULL, 0, Vorlauf) - IIf(Ruecklauf
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10398  WHERE IIf(Vorlauf IS NULL, 0, Vorlauf) - IIf(Ruecklauf IS NULL, 0, Ruecklauf) > 0
+     WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs:266  ) ORDER BY IIF(ist_aktiv, 0, 1), quelle, wert
+     WindowsFormsApplication1/Controller/ProjektDuplizierenCtrl.cs:740  IIF([
+  -- UCase (3)
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7664  AND (Verwendung IS NULL OR UCase(Trim(Verwendung)) <> '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7671  AND (UCase(Trim(Verwendung)) = '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7672  OR UCase(Trim(Verwendung)) = '
+  -- Trim (15)
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7664  AND (Verwendung IS NULL OR UCase(Trim(Verwendung)) <> '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7671  AND (UCase(Trim(Verwendung)) = '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7672  OR UCase(Trim(Verwendung)) = '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7924  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7950  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7972  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:7986  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:8557  OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:8564  OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9647  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:9682  ] IS NULL OR Trim([
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10076  OR (a.WS_Ziel IS NOT NULL AND Trim(a.WS_Ziel) <> ''))
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10152  IIf(a.WS_Ziel IS NULL OR Trim(a.WS_Ziel) = '', '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10155  IIf(a.WS_Typ IS NULL OR Trim(a.WS_Typ) = '', '
+     WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:10192  WHERE a.WS_Ziel2 IS NOT NULL AND Trim(a.WS_Ziel2) <> ''
+
+### i) #Datum#, &-Verkettung, DISTINCTROW, TRANSFORM, PARAMETERS
+#Datum#-Literale: 0
+alle '#' in Literalen: 526   davon in SQL-verdaechtigen Literalen: 0
+DISTINCTROW  0
+TRANSFORM    0
+PIVOT        0
+PARAMETERS   1
+   WindowsFormsApplication1/Allgemein/Bericht/BerichtTexte.cs:153  for this report — check cost items and parameters.
+'&' in SQL-verdaechtigen Literalen: 0
+
+### j) Abfrage_-Namen in Literalen
+Abfrage_Energietraeger_Effektiv                  8   {'WindowsFormsApplication1/Allgemein/Bericht/KostenEmissionRechner.cs': 1, 'WindowsFormsApplication1/Allgemein/Update/SchemaKatalog.cs': 1, 'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2, 'WindowsFormsApplication1/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitCtrl.cs': 1, 'WindowsFormsApplication1/Views/BerichteKosten/UcBkKosten.cs': 1, 'WindowsFormsApplication1/Views/Kosten/ucBrennstoffBestandteile.cs': 1, 'WindowsFormsApplication1/Views/Varianten/EnergieMengen.cs': 1}
+Abfrage_Kostenfaktoren                           8   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 7, 'WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs': 1}
+Abfrage_Kuehlung_MaxLast                         6   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 6}
+Abfrage_Gebaeudearten                            4   {'WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude.cs': 3, 'WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude1.cs': 1}
+Abfrage_Heizkessel_Kosten                        2   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2}
+Abfrage_KenndatenKuehlung_Max                    2   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2}
+Abfrage_Neues_Kosten_Model                       2   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2}
+Abfrage_ProjektKostenInvestBetrieb               2   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2}
+Abfrage_ProjektStromGanglinie                    2   {'WindowsFormsApplication1/Allgemein/Simulation/SimulationStrombedarf.cs': 1, 'WindowsFormsApplication1/Allgemein/StromTestClass.cs': 1}
+Abfrage_SST                                      2   {'WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs': 2}
+Abfrage_Gebaeudetypen                            1   {'WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude1.cs': 1}
+Abfrage_Monatsstrom                              1   {'WindowsFormsApplication1/Allgemein/Simulation/ProfilBedarf.cs': 1}
+Abfrage_Monatswaerme_Brauchwasser                1   {'WindowsFormsApplication1/Allgemein/Simulation/ProfilBedarf.cs': 1}
+Abfrage_Monatswaerme_Prozesse                    1   {'WindowsFormsApplication1/Allgemein/Simulation/ProfilBedarf.cs': 1}
+Abfrage_ProjektGebaeudeGanglinie                 1   {'WindowsFormsApplication1/Allgemein/Simulation/SimulationWaermebedarf.cs': 1}
+Abfrage_Projektgebaeude                          1   {'WindowsFormsApplication1/Controller/ProjektGebaeudeCtrl.cs': 1}
+Abfrage_Tagverteilung                            1   {'WindowsFormsApplication1/Allgemein/Simulation/SimulationWaermebedarf.cs': 1}
+
+Fundorte der Phantom-/Erwartet-0-Namen:
+  Abfrage_Heizkessel_Kosten                  2  [('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 3060), ('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 6401)]
+  Abfrage_KostenKomponenten                  0  
+  Abfrage_Neues_Kosten_Model                 2  [('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 3061), ('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 6402)]
+  Abfrage_ProjektKostenInvestBetrieb         2  [('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 3016), ('WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs', 6079)]
+  Abfrage_Erzeuger_Vorlauftemperaturen       0  
+  Abfrage_Max_Vorlauf                        0  
+  Abfrage_Min_Vorlauf                        0  
+  Abfrage_MaxMin_Vorlauf                     0  
+
+### j-Gegenprobe: Abfrage_-Namen im gesamten Quelltext (auch ausserhalb Literale)
+Abfrage_Energietraeger_Effektiv               roh   30  literal    8  diff 22
+Abfrage_Kostenfaktoren                        roh   27  literal    8  diff 19
+Abfrage_Kuehlung_MaxLast                      roh    7  literal    6  diff 1
+Abfrage_ProjektKostenInvestBetrieb            roh    6  literal    2  diff 4
+Abfrage_Gebaeudearten                         roh    4  literal    4  diff 0
+Abfrage_Heizkessel_Kosten                     roh    4  literal    2  diff 2
+Abfrage_KostenKomponenten                     roh    4  literal    0  diff 4
+Abfrage_Neues_Kosten_Model                    roh    4  literal    2  diff 2
+Abfrage_KenndatenKuehlung_Max                 roh    3  literal    2  diff 1
+Abfrage_SST                                   roh    3  literal    2  diff 1
+Abfrage_ProjektStromGanglinie                 roh    2  literal    2  diff 0
+Abfrage_Erzeuger_Vorlauftemperaturen          roh    1  literal    0  diff 1
+Abfrage_Gebaeudetypen                         roh    1  literal    1  diff 0
+Abfrage_Monatsstrom                           roh    1  literal    1  diff 0
+Abfrage_Monatswaerme_Brauchwasser             roh    1  literal    1  diff 0
+Abfrage_Monatswaerme_Prozesse                 roh    1  literal    1  diff 0
+Abfrage_ProjektGebaeudeGanglinie              roh    1  literal    1  diff 0
+Abfrage_Projektgebaeude                       roh    1  literal    1  diff 0
+Abfrage_Tagverteilung                         roh    1  literal    1  diff 0
+
+### k) DELETE <Spalte> FROM  (Jet-Idiom, Befund B2/S7)
+Vorkommen: 0   distinkte Zeilen: 0   davon ausserhalb der Ausnahmebereiche: 0  (SOLL 0)
+
+### l) tabellenqualifizierte Spalten an einer Sicht (Befund B1/S7)
+Literale mit 'FROM Abfrage_*' UND einem Tabellen-Qualifizierer: 0   distinkte Zeilen: 0  (SOLL 0)

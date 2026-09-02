@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
@@ -41,42 +42,42 @@ namespace WindowsFormsApplication1
         public int Delete(int idProjekt)
         {
             if (idProjekt <= 0) return -1;
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                // Defensiv VOR dem Kopf-Delete - dieselbe Begruendung wie in Save:
-                // auf einer Datenbank ohne FK_ErgPuffer gibt es keine Loeschweitergabe,
-                // die Pufferzeilen blieben als Waisen stehen und zeigten wegen der
-                // MAX(ID)+1-Vergabe spaeter auf fremde Laeufe (Konzept 6.6).
-                PufferzeilenLoeschen(conn, trans, idProjekt);
-                DetailzeilenLoeschen(conn, trans, TAB_SP, idProjekt);
-
-                //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
-                using (OleDbCommand c = new OleDbCommand(
-                    "DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
+                try
                 {
-                    c.Parameters.Add("@p", OleDbType.Integer).Value = idProjekt;
-                    c.ExecuteNonQuery();
+                    // Defensiv VOR dem Kopf-Delete - dieselbe Begruendung wie in Save:
+                    // auf einer Datenbank ohne FK_ErgPuffer gibt es keine Loeschweitergabe,
+                    // die Pufferzeilen blieben als Waisen stehen und zeigten wegen der
+                    // MAX(ID)+1-Vergabe spaeter auf fremde Laeufe (Konzept 6.6).
+                    PufferzeilenLoeschen(v, idProjekt);
+                    DetailzeilenLoeschen(v, TAB_SP, idProjekt);
+
+                    //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@p", OleDbType.Integer) { Value = idProjekt });
+                        v.Ausfuehren("DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", p.ToArray());
+                    }
+                    v.Commit();
+                    return 0;
                 }
-                trans.Commit();
-                return 0;
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    // PAKET 8 (Konzept 13.4): Dieselbe Entscheidungsstelle wie in
+                    // DataRepository - im Engine-Modus ein Protokolleintrag, sonst der Dialog
+                    // wie bisher.
+                    //
+                    // BERICHTIGT (Nacharbeit, Befund N14a): Diese Methode wird NICHT aus
+                    // Save() gerufen - Save() löscht in seiner eigenen Transaktion inline.
+                    // Delete(int) hat im Anwendungsprojekt derzeit überhaupt keinen Aufrufer
+                    // und ist ein Sicherheitsnetz; die Umstellung steht hier, damit ein
+                    // künftiger Aufruf aus dem Rechenpfad nicht wieder einen Dialog öffnet.
+                    DataRepository.FehlerMelden("Fehler beim Löschen des Simulationsergebnisses: " + ex.Message);
+                    return -1;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                // PAKET 8 (Konzept 13.4): Dieselbe Entscheidungsstelle wie in
-                // DataRepository - im Engine-Modus ein Protokolleintrag, sonst der Dialog
-                // wie bisher.
-                //
-                // BERICHTIGT (Nacharbeit, Befund N14a): Diese Methode wird NICHT aus
-                // Save() gerufen - Save() löscht in seiner eigenen Transaktion inline.
-                // Delete(int) hat im Anwendungsprojekt derzeit überhaupt keinen Aufrufer
-                // und ist ein Sicherheitsnetz; die Umstellung steht hier, damit ein
-                // künftiger Aufruf aus dem Rechenpfad nicht wieder einen Dialog öffnet.
-                DataRepository.FehlerMelden("Fehler beim Löschen des Simulationsergebnisses: " + ex.Message);
-                return -1;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Speichert ein Ergebnis (loescht zuvor vorhandene des Projekts).
@@ -107,643 +108,637 @@ namespace WindowsFormsApplication1
             // = false). Die Rückfallebene gehört auf die Leseseite — dort steht sie bereits
             // (WirtschaftlichkeitCtrl.BaueSteuerAnlage: Modulträger vor Anlagenträger).
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                // 1. "letztes Ergebnis je Projekt": vorhandene Ergebnisse entfernen.
-                //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
-
-                //    Defensiv VOR dem Kopf-Delete: Die Puffer-Zeilen haengen zwar per
-                //    FK_ErgPuffer mit DEL-CASCADE am Kopf (Migration Schritt 3), auf einer
-                //    Datenbank, deren Tabelle von StellePufferTabelleSicher() ohne
-                //    Constraint entstanden ist, gaebe es die Weitergabe aber nicht.
-                //    Ohne dieses Delete blieben Waisenzeilen stehen, die wegen der
-                //    MAX(ID)+1-Vergabe spaeter auf fremde Laeufe zeigen wuerden (6.6).
-                PufferzeilenLoeschen(conn, trans, m.ID_Projekt);
-                DetailzeilenLoeschen(conn, trans, TAB_SP, m.ID_Projekt);
-
-                //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
-                //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
-                //    Zeilen hinterlassen haben kann: die Kopf-ID wird per MAX(ID)+1
-                //    wiederverwendet, die alte Zeile haengt danach an einem FREMDEN
-                //    Projekt und faelscht dessen Ergebnisausweis (Konzept 6.6).
                 try
                 {
-                    using (OleDbCommand c = new OleDbCommand(
-                        "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
-                        "(SELECT ID FROM " + TAB_KOPF + ")", conn, trans))
-                        c.ExecuteNonQuery();
-                }
-                catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+                    // 1. "letztes Ergebnis je Projekt": vorhandene Ergebnisse entfernen.
+                    //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
 
-                //    Dieselbe Waisenpruefung fuer die Stromspeicherzeilen (AP3).
-                try
-                {
-                    using (OleDbCommand c = new OleDbCommand(
-                        "DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
-                        "(SELECT ID FROM " + TAB_KOPF + ")", conn, trans))
-                        c.ExecuteNonQuery();
-                }
-                catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+                    //    Defensiv VOR dem Kopf-Delete: Die Puffer-Zeilen haengen zwar per
+                    //    FK_ErgPuffer mit DEL-CASCADE am Kopf (Migration Schritt 3), auf einer
+                    //    Datenbank, deren Tabelle von StellePufferTabelleSicher() ohne
+                    //    Constraint entstanden ist, gaebe es die Weitergabe aber nicht.
+                    //    Ohne dieses Delete blieben Waisenzeilen stehen, die wegen der
+                    //    MAX(ID)+1-Vergabe spaeter auf fremde Laeufe zeigen wuerden (6.6).
+                    PufferzeilenLoeschen(v, m.ID_Projekt);
+                    DetailzeilenLoeschen(v, TAB_SP, m.ID_Projekt);
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "DELETE ID_Projekt FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
-                {
-                    c.Parameters.Add("@p", OleDbType.Integer).Value = m.ID_Projekt;
-                    c.ExecuteNonQuery();
-                }
-
-                // 2. Kopf schreiben.
-                int kopfId = NextId(conn, trans, TAB_KOPF);
-                string sqlKopf = "INSERT INTO " + TAB_KOPF + " (" +
-                    "ID, ID_Projekt, Bezeichner, Zeitstempel, ID_Klimaregion, " +
-                    "Sim_Energiebedarf, Sim_Waermepumpe, Sim_Heizkessel, Sim_Solarthermie, Sim_BHKW, Sim_PV, Sim_Stromspeicher) " +
-                    "VALUES (?,?,?,?,?, ?,?,?,?,?,?,?)";
-                using (OleDbCommand c = new OleDbCommand(sqlKopf, conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = kopfId;
-                    c.Parameters.Add("@proj", OleDbType.Integer).Value = m.ID_Projekt;
-                    c.Parameters.Add("@bez", OleDbType.VarWChar).Value = (object)(m.Bezeichner ?? "");
-                    c.Parameters.Add("@zeit", OleDbType.Date).Value = m.Zeitstempel;
-                    c.Parameters.Add("@klima", OleDbType.Integer).Value = m.ID_Klimaregion;
-                    c.Parameters.Add("@s1", OleDbType.Boolean).Value = m.Sim_Energiebedarf;
-                    c.Parameters.Add("@s2", OleDbType.Boolean).Value = m.Sim_Waermepumpe;
-                    c.Parameters.Add("@s3", OleDbType.Boolean).Value = m.Sim_Heizkessel;
-                    c.Parameters.Add("@s4", OleDbType.Boolean).Value = m.Sim_Solarthermie;
-                    c.Parameters.Add("@s5", OleDbType.Boolean).Value = m.Sim_BHKW;
-                    c.Parameters.Add("@s6", OleDbType.Boolean).Value = m.Sim_PV;
-                    c.Parameters.Add("@s7", OleDbType.Boolean).Value = m.Sim_Stromspeicher;
-                    c.ExecuteNonQuery();
-                }
-
-                // 3. Detail: Energiebedarf.
-                if (m.Energiebedarf != null)
-                {
-                    int eId = NextId(conn, trans, TAB_ENERGIE);
-                    // PAKET E1: die drei Kanalspalten stehen als LETZTE - ALTER TABLE
-                    // haengt sie in Access hinten an, und die Parameterreihenfolge folgt
-                    // der Spaltenliste (dasselbe Muster wie Quellwaerme in Etappe D4).
-                    string sql = "INSERT INTO " + TAB_ENERGIE + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf_Gesamt, Waermelast_Max, Strombedarf_Gesamt, Strombedarf_Max, " +
-                        "Waermerestbedarf, Stromrestbedarf, " +
-                        SchemaKatalog.SPALTE_BEDARF_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_BEDARF_PROZESS + ") " +
-                        "VALUES (?,?,?,?,?,?,?,?, ?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
+                    //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
+                    //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
+                    //    Zeilen hinterlassen haben kann: die Kopf-ID wird per MAX(ID)+1
+                    //    wiederverwendet, die alte Zeile haengt danach an einem FREMDEN
+                    //    Projekt und faelscht dessen Ergebnisausweis (Konzept 6.6).
+                    try
                     {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = eId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.Energiebedarf.Waermebedarf_Gesamt);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Energiebedarf.Waermelast_Max);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Energiebedarf.Strombedarf_Gesamt);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Energiebedarf.Strombedarf_Max);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Energiebedarf.Waermerestbedarf);
-                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Energiebedarf.Stromrestbedarf);
-                        KanalParameter(c, m.Energiebedarf.Waermebedarf_Kanal);
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren("DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
+                            "(SELECT ID FROM " + TAB_KOPF + ")");
                     }
-                }
+                    catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
 
-                // 4. Detail: Waermepumpe (+ Modulliste).
-                if (m.Waermepumpe != null)
-                {
-                    int wpId = NextId(conn, trans, TAB_WP);
-                    string sql = "INSERT INTO " + TAB_WP + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion_WP, Stromverbrauch_WP, " +
-                        "Stromverbrauch_Heizstab, Kapazitaet_Pufferspeicher, Min_Spitzenkesselleistung, " +
-                        "Waermebedarfsdeckung, Vollbenutzungsstunden, Bivalenzpunkt, " +
-                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
+                    //    Dieselbe Waisenpruefung fuer die Stromspeicherzeilen (AP3).
+                    try
                     {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = wpId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.Waermepumpe.Waermebedarf);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Waermepumpe.Restwaermebedarf);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Waermepumpe.Waermeproduktion_WP);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Waermepumpe.Stromverbrauch_WP);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Waermepumpe.Stromverbrauch_Heizstab);
-                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Waermepumpe.Kapazitaet_Pufferspeicher);
-                        c.Parameters.Add("@a7", OleDbType.Double).Value = R(m.Waermepumpe.Min_Spitzenkesselleistung);
-                        c.Parameters.Add("@a8", OleDbType.Double).Value = R(m.Waermepumpe.Waermebedarfsdeckung);
-                        c.Parameters.Add("@a9", OleDbType.Double).Value = R(m.Waermepumpe.Vollbenutzungsstunden);
-                        c.Parameters.Add("@a10", OleDbType.Double).Value =
-                            m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value;
-                        KanalParameter(c, m.Waermepumpe.Deckung_Kanal);
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren("DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
+                            "(SELECT ID FROM " + TAB_KOPF + ")");
+                    }
+                    catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@p", OleDbType.Integer) { Value = m.ID_Projekt });
+                        // BEFUND B2 (S7): Hier stand bis 02.09.2026 das Jet-Idiom
+                        // "DELETE <feld> FROM <tabelle>". ACE hat den Feldnamen stillschweigend
+                        // verworfen, SQLite meldet 'near "ID_Projekt": syntax error' - der Fehler
+                        // fiel in die Transaktion von Save(), rollte sie zurueck und liess jeden
+                        // Referenzlauf ohne Ergebnis enden. Richtige Form steht zwei Bloecke
+                        // weiter oben (Delete(int), Zeile 60) und in KenndatenCtrl/WErzeugerCtrl.
+                        v.Ausfuehren("DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", p.ToArray());
                     }
 
-                    if (m.Waermepumpe.Module != null && m.Waermepumpe.Module.Count > 0)
+                    // 2. Kopf schreiben.
+                    int kopfId = NextId(v, TAB_KOPF);
+                    string sqlKopf = "INSERT INTO " + TAB_KOPF + " (" +
+                        "ID, ID_Projekt, Bezeichner, Zeitstempel, ID_Klimaregion, " +
+                        "Sim_Energiebedarf, Sim_Waermepumpe, Sim_Heizkessel, Sim_Solarthermie, Sim_BHKW, Sim_PV, Sim_Stromspeicher) " +
+                        "VALUES (?,?,?,?,?, ?,?,?,?,?,?,?)";
                     {
-                        int modId = NextId(conn, trans, TAB_WP_MODUL);
-                        string sqlM = "INSERT INTO " + TAB_WP_MODUL + " (" +
-                            "ID, ID_ErgebnisWaermepumpe, Modul, Leistung, Waermeproduktion, Stromverbrauch, Heizstab, Betriebsstunden) " +
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = kopfId });
+                        p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = m.ID_Projekt });
+                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(m.Bezeichner ?? "") });
+                        p.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = m.Zeitstempel });
+                        p.Add(new OleDbParameter("@klima", OleDbType.Integer) { Value = m.ID_Klimaregion });
+                        p.Add(new OleDbParameter("@s1", OleDbType.Boolean) { Value = m.Sim_Energiebedarf });
+                        p.Add(new OleDbParameter("@s2", OleDbType.Boolean) { Value = m.Sim_Waermepumpe });
+                        p.Add(new OleDbParameter("@s3", OleDbType.Boolean) { Value = m.Sim_Heizkessel });
+                        p.Add(new OleDbParameter("@s4", OleDbType.Boolean) { Value = m.Sim_Solarthermie });
+                        p.Add(new OleDbParameter("@s5", OleDbType.Boolean) { Value = m.Sim_BHKW });
+                        p.Add(new OleDbParameter("@s6", OleDbType.Boolean) { Value = m.Sim_PV });
+                        p.Add(new OleDbParameter("@s7", OleDbType.Boolean) { Value = m.Sim_Stromspeicher });
+                        v.Ausfuehren(sqlKopf, p.ToArray());
+                    }
+
+                    // 3. Detail: Energiebedarf.
+                    if (m.Energiebedarf != null)
+                    {
+                        int eId = NextId(v, TAB_ENERGIE);
+                        // PAKET E1: die drei Kanalspalten stehen als LETZTE - ALTER TABLE
+                        // haengt sie in Access hinten an, und die Parameterreihenfolge folgt
+                        // der Spaltenliste (dasselbe Muster wie Quellwaerme in Etappe D4).
+                        string sql = "INSERT INTO " + TAB_ENERGIE + " (" +
+                            "ID, ID_Ergebnis, Waermebedarf_Gesamt, Waermelast_Max, Strombedarf_Gesamt, Strombedarf_Max, " +
+                            "Waermerestbedarf, Stromrestbedarf, " +
+                            SchemaKatalog.SPALTE_BEDARF_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_BEDARF_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_BEDARF_PROZESS + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?)";
+                        {
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = eId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Energiebedarf.Waermebedarf_Gesamt) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Energiebedarf.Waermelast_Max) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Energiebedarf.Strombedarf_Gesamt) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Energiebedarf.Strombedarf_Max) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Energiebedarf.Waermerestbedarf) });
+                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Energiebedarf.Stromrestbedarf) });
+                            KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal);
+                            v.Ausfuehren(sql, p.ToArray());
+                        }
+                    }
+
+                    // 4. Detail: Waermepumpe (+ Modulliste).
+                    if (m.Waermepumpe != null)
+                    {
+                        int wpId = NextId(v, TAB_WP);
+                        string sql = "INSERT INTO " + TAB_WP + " (" +
+                            "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion_WP, Stromverbrauch_WP, " +
+                            "Stromverbrauch_Heizstab, Kapazitaet_Pufferspeicher, Min_Spitzenkesselleistung, " +
+                            "Waermebedarfsdeckung, Vollbenutzungsstunden, Bivalenzpunkt, " +
+                            SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)";
+                        {
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = wpId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Waermepumpe.Waermebedarf) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Waermepumpe.Restwaermebedarf) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Waermepumpe.Waermeproduktion_WP) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Waermepumpe.Stromverbrauch_WP) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Waermepumpe.Stromverbrauch_Heizstab) });
+                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Waermepumpe.Kapazitaet_Pufferspeicher) });
+                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.Waermepumpe.Min_Spitzenkesselleistung) });
+                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.Waermepumpe.Waermebedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.Waermepumpe.Vollbenutzungsstunden) });
+                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
+                            KanalParameter(p, m.Waermepumpe.Deckung_Kanal);
+                            v.Ausfuehren(sql, p.ToArray());
+                        }
+
+                        if (m.Waermepumpe.Module != null && m.Waermepumpe.Module.Count > 0)
+                        {
+                            int modId = NextId(v, TAB_WP_MODUL);
+                            string sqlM = "INSERT INTO " + TAB_WP_MODUL + " (" +
+                                "ID, ID_ErgebnisWaermepumpe, Modul, Leistung, Waermeproduktion, Stromverbrauch, Heizstab, Betriebsstunden) " +
+                                "VALUES (?,?,?,?,?,?,?,?)";
+                            foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
+                            {
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
+                                    p.Add(new OleDbParameter("@wp", OleDbType.Integer) { Value = wpId });
+                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
+                                    p.Add(new OleDbParameter("@l", OleDbType.Double) { Value = R(mo.Leistung) });
+                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
+                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromverbrauch) });
+                                    p.Add(new OleDbParameter("@h", OleDbType.Double) { Value = R(mo.Heizstab) });
+                                    p.Add(new OleDbParameter("@b", OleDbType.Double) { Value = R(mo.Betriebsstunden) });
+                                    v.Ausfuehren(sqlM, p.ToArray());
+                                }
+                            }
+                        }
+                    }
+
+                    // 5. Detail: BHKW (+ Modulliste).
+                    if (m.BHKW != null)
+                    {
+                        int bId = NextId(v, TAB_BHKW);
+                        string sql = "INSERT INTO " + TAB_BHKW + " (" +
+                            "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Strombedarf, Reststrombedarf, " +
+                            "Waermeproduktion, Waermeueberschuss, Stromproduktion, Betriebsstunden_Gesamt, " +
+                            "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, " +
+                            "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
+                            "Sonstigverbrauch, Pellets, TierischeFette, " +
+                            SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
+                        {
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = bId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.BHKW.Waermebedarf) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.BHKW.Restwaermebedarf) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.BHKW.Strombedarf) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.BHKW.Reststrombedarf) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.BHKW.Waermeproduktion) });
+                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.BHKW.Waermeueberschuss) });
+                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.BHKW.Stromproduktion) });
+                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.BHKW.Betriebsstunden_Gesamt) });
+                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.BHKW.Betriebsstunden_Durchschnitt) });
+                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = R(m.BHKW.Waermebedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a11", OleDbType.Double) { Value = R(m.BHKW.Strombedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a12", OleDbType.Double) { Value = R(m.BHKW.Gasverbrauch) });
+                            p.Add(new OleDbParameter("@a13", OleDbType.Double) { Value = R(m.BHKW.Oelverbrauch) });
+                            p.Add(new OleDbParameter("@a14", OleDbType.Double) { Value = R(m.BHKW.Koks) });
+                            p.Add(new OleDbParameter("@a15", OleDbType.Double) { Value = R(m.BHKW.Rapsoelverbrauch) });
+                            p.Add(new OleDbParameter("@a16", OleDbType.Double) { Value = R(m.BHKW.Holzverbrauch) });
+                            p.Add(new OleDbParameter("@a17", OleDbType.Double) { Value = R(m.BHKW.Kohle) });
+                            p.Add(new OleDbParameter("@a18", OleDbType.Double) { Value = R(m.BHKW.Sonstigverbrauch) });
+                            p.Add(new OleDbParameter("@a19", OleDbType.Double) { Value = R(m.BHKW.Pellets) });
+                            p.Add(new OleDbParameter("@a20", OleDbType.Double) { Value = R(m.BHKW.TierischeFette) });
+                            // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
+                            p.Add(new OleDbParameter("@a21", OleDbType.Double) { Value = R(m.BHKW.VbhElektrisch) });
+                            KanalParameter(p, m.BHKW.Deckung_Kanal);
+                            v.Ausfuehren(sql, p.ToArray());
+                        }
+
+                        if (m.BHKW.Module != null && m.BHKW.Module.Count > 0)
+                        {
+                            // Dominanten Brennstoff + Gesamtverbrauch einmal bestimmen; der Verbrauch
+                            // wird anteilig nach Waermeproduktion auf die Module verteilt (Summe = Gesamt).
+                            string bhArt; double bhVerbrauch;
+                            BHKWBrennstoff(m.BHKW, out bhArt, out bhVerbrauch);
+                            double basis = 0;
+                            foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) basis += mo.Waermeproduktion;
+
+                            // ETAPPE B3 Paket b: Hilfsenergie je Modulzeile [MWh/a] aus
+                            // Hilfsenergie_Anteil der Anlage x Brennstoff DIESER Zeile
+                            // (HilfsstromRechner - die eine Formel, die auch die
+                            // Wirtschaftlichkeit fuer die KWKG-Nettomenge verwendet). Die
+                            // Bemessungsgroesse ist derselbe anteilig verteilte Brennstoff,
+                            // der unten als Verbrauch geschrieben wird; mo.Verbrauch ist an
+                            // dieser Stelle noch leer (es fuellt ihn erst der Leseweg).
+                            var bhNamen = new string[m.BHKW.Module.Count];
+                            var bhBrennstoff = new double[m.BHKW.Module.Count];
+                            for (int ix = 0; ix < m.BHKW.Module.Count; ix++)
+                            {
+                                ErgebnisBHKWModulModel mx = m.BHKW.Module[ix];
+                                double anteilX = basis > 0 ? mx.Waermeproduktion / basis
+                                                           : 1.0 / m.BHKW.Module.Count;
+                                bhNamen[ix] = mx.Modul ?? "";
+                                bhBrennstoff[ix] = bhArt != null ? bhVerbrauch * anteilX : 0;
+                            }
+                            double[] bhHilfsenergie = HilfsstromRechner.JeModul(
+                                m.ID_Projekt, WizardItemClass.BHKW_TYP, bhNamen, bhBrennstoff);
+                            int bhIndex = 0;
+
+                            int modId = NextId(v, TAB_BHKW_MODUL);
+                            string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
+                                "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id, " +
+                                SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH + ", " +
+                                SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH + ", " +
+                                SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                            foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
+                            {
+                                double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
+                                    p.Add(new OleDbParameter("@bh", OleDbType.Integer) { Value = bId });
+                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
+                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
+                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromproduktion) });
+                                    if (bhArt != null)
+                                    {
+                                        p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = bhArt });
+                                        p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = R(bhVerbrauch * anteil) });
+                                    }
+                                    else
+                                    {
+                                        p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = DBNull.Value });
+                                        p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = DBNull.Value });
+                                    }
+                                    p.Add(new OleDbParameter("@ca", OleDbType.Integer) { Value = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
+                                    // ETAPPE E2 (L6): thermische und elektrische Vbh je Modul.
+                                    // Beide werden IMMER geschrieben - auch die 0. Sonst waere
+                                    // "nicht erhoben" (NULL) von "erhoben und null" nicht mehr
+                                    // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
+                                    p.Add(new OleDbParameter("@vth", OleDbType.Double) { Value = R(mo.VbhThermisch) });
+                                    p.Add(new OleDbParameter("@vel", OleDbType.Double) { Value = R(mo.VbhElektrisch) });
+                                    // ETAPPE B3 Paket a/b: Hilfsenergie [MWh/a]. Paket b
+                                    // bildet den Wert (Anteil der Anlage x Brennstoff dieser
+                                    // Zeile); ohne gepflegten Anteil bleibt es bei 0.
+                                    // Geschrieben wird sie IMMER - auch die 0, aus derselben
+                                    // Begruendung wie bei den Vbh: sonst waere "erhoben und
+                                    // null" von "nicht erhoben" (NULL) nicht unterscheidbar.
+                                    // Das Modell traegt den Wert mit, damit ein Ergebnis im
+                                    // Speicher dieselbe Auskunft gibt wie die Zeile in der DB.
+                                    mo.Hilfsenergie = bhIndex < bhHilfsenergie.Length
+                                                    ? bhHilfsenergie[bhIndex] : 0;
+                                    bhIndex++;
+                                    p.Add(new OleDbParameter("@hen", OleDbType.Double) { Value = R(mo.Hilfsenergie) });
+                                    v.Ausfuehren(sqlM, p.ToArray());
+                                }
+                            }
+                        }
+                    }
+
+                    // 6. Detail: Heizkessel (+ Modulliste).
+                    if (m.Heizkessel != null)
+                    {
+                        int hId = NextId(v, TAB_KESSEL);
+                        // ETAPPE D4: Quellwaerme als LETZTE Spalte - ALTER TABLE haengt sie in
+                        // Access hinten an, und die Parameterreihenfolge folgt der Spaltenliste.
+                        string sql = "INSERT INTO " + TAB_KESSEL + " (" +
+                            "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Strombedarf, " +
+                            "Reststrombedarf, Waermebedarfsdeckung, Stromverbrauch, Maximale_Kesselleistung, Gasspitze, " +
+                            "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
+                            "Sonstigverbrauch, Pellets, TierischeFette, " +
+                            SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)";
+                        {
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = hId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Heizkessel.Waermebedarf) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Heizkessel.Restwaermebedarf) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Heizkessel.Waermeproduktion) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Heizkessel.Strombedarf) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Heizkessel.Reststrombedarf) });
+                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Heizkessel.Waermebedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.Heizkessel.Stromverbrauch) });
+                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.Heizkessel.Maximale_Kesselleistung) });
+                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.Heizkessel.Gasspitze) });
+                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = R(m.Heizkessel.Gasverbrauch) });
+                            p.Add(new OleDbParameter("@a11", OleDbType.Double) { Value = R(m.Heizkessel.Oelverbrauch) });
+                            p.Add(new OleDbParameter("@a12", OleDbType.Double) { Value = R(m.Heizkessel.Koks) });
+                            p.Add(new OleDbParameter("@a13", OleDbType.Double) { Value = R(m.Heizkessel.Rapsoelverbrauch) });
+                            p.Add(new OleDbParameter("@a14", OleDbType.Double) { Value = R(m.Heizkessel.Holzverbrauch) });
+                            p.Add(new OleDbParameter("@a15", OleDbType.Double) { Value = R(m.Heizkessel.Kohle) });
+                            p.Add(new OleDbParameter("@a16", OleDbType.Double) { Value = R(m.Heizkessel.Sonstigverbrauch) });
+                            p.Add(new OleDbParameter("@a17", OleDbType.Double) { Value = R(m.Heizkessel.Pellets) });
+                            p.Add(new OleDbParameter("@a18", OleDbType.Double) { Value = R(m.Heizkessel.TierischeFette) });
+                            p.Add(new OleDbParameter("@a19", OleDbType.Double) { Value = R(m.Heizkessel.Quellwaerme) });
+                            KanalParameter(p, m.Heizkessel.Deckung_Kanal);
+                            v.Ausfuehren(sql, p.ToArray());
+                        }
+
+                        if (m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
+                        {
+                            // ETAPPE B3 Paket b: Hilfsenergie des Kessels - dieselbe Formel
+                            // wie beim BHKW. Die Endenergie kommt aus
+                            // WirtschaftlichkeitCtrl.KesselBrennstoffMWh: Verbrauch, sofern
+                            // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad (Paket a
+                            // hat begruendet, warum der Rechenkern Verbrauch nie fuellt).
+                            //
+                            // KEINE Strommengenwirkung: Ein Kessel erzeugt keinen Strom, sein
+                            // Hilfsstrom mindert also weder eine KWKG-Nettoerzeugung noch eine
+                            // Steuerbemessung. Der Wert ist hier reiner Ausweis fuer Bericht
+                            // und Konzept 5.2 - die Kostenwirkung laeuft ueber die
+                            // Betriebskostenposition, die Mengenwirkung kaeme erst mit einer
+                            // spaeteren Etappe (Strombilanz der Hilfsantriebe).
+                            var hkNamen = new string[m.Heizkessel.Module.Count];
+                            var hkBrennstoff = new double[m.Heizkessel.Module.Count];
+                            for (int ix = 0; ix < m.Heizkessel.Module.Count; ix++)
+                            {
+                                ErgebnisHeizkesselModulModel mx = m.Heizkessel.Module[ix];
+                                hkNamen[ix] = mx.Modul ?? "";
+                                hkBrennstoff[ix] = WirtschaftlichkeitCtrl.KesselBrennstoffMWh(mx);
+                            }
+                            double[] hkHilfsenergie = HilfsstromRechner.JeModul(
+                                m.ID_Projekt, WizardItemClass.KESSEL_TYP, hkNamen, hkBrennstoff);
+                            int hkIndex = 0;
+
+                            int modId = NextId(v, TAB_KESSEL_MODUL);
+                            // Befund B3 behoben: Waermeproduktion wird persistiert; Verbrauch gerundet;
+                            // Parametername @g war doppelt vergeben.
+                            string sqlM = "INSERT INTO " + TAB_KESSEL_MODUL + " (" +
+                                "ID, ID_ErgebnisHeizkessel, Modul, Waerme_Gas, Waerme_Oel, Waermeproduktion, " +
+                                "Brennstoff, Verbrauch, Jahresnutzungsgrad, carrier_id, " +
+                                SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                            foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
+                            {
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
+                                    p.Add(new OleDbParameter("@hk", OleDbType.Integer) { Value = hId });
+                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
+                                    p.Add(new OleDbParameter("@g", OleDbType.Double) { Value = R(mo.Waerme_Gas) });
+                                    p.Add(new OleDbParameter("@o", OleDbType.Double) { Value = R(mo.Waerme_Oel) });
+                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
+                                    p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = (object)(mo.Brennstoff ?? "") });
+                                    p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = R(mo.Verbrauch) });
+                                    p.Add(new OleDbParameter("@j", OleDbType.Double) { Value = R(mo.Jahresnutzungsgrad) });
+                                    p.Add(new OleDbParameter("@ca", OleDbType.Integer) { Value = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
+                                    // ETAPPE B3 Paket a/b: Hilfsenergie des Kessels -
+                                    // Begruendung wortgleich zur BHKW-Modulzeile weiter oben.
+                                    mo.Hilfsenergie = hkIndex < hkHilfsenergie.Length
+                                                    ? hkHilfsenergie[hkIndex] : 0;
+                                    hkIndex++;
+                                    p.Add(new OleDbParameter("@hen", OleDbType.Double) { Value = R(mo.Hilfsenergie) });
+                                    v.Ausfuehren(sqlM, p.ToArray());
+                                }
+                            }
+                        }
+                    }
+
+                    // 7. Detail: Solarthermie (+ Kollektorliste).
+                    if (m.Solarthermie != null)
+                    {
+                        int sId = NextId(v, TAB_SOLAR);
+                        string sql = "INSERT INTO " + TAB_SOLAR + " (" +
+                            "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Waermebedarfsdeckung, Ueberschuss, " +
+                            SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
+                            "VALUES (?,?,?,?,?,?,?, ?,?,?)";
+                        {
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = sId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Solarthermie.Waermebedarf) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Solarthermie.Restwaermebedarf) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Solarthermie.Waermeproduktion) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Solarthermie.Waermebedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Solarthermie.Ueberschuss) });
+                            KanalParameter(p, m.Solarthermie.Deckung_Kanal);
+                            v.Ausfuehren(sql, p.ToArray());
+                        }
+
+                        if (m.Solarthermie.Module != null && m.Solarthermie.Module.Count > 0)
+                        {
+                            int modId = NextId(v, TAB_SOLAR_MODUL);
+                            string sqlM = "INSERT INTO " + TAB_SOLAR_MODUL + " (" +
+                                "ID, ID_ErgebnisSolarthermie, Modul, Flaeche, Anzahl, Waermeproduktion, Ueberschuss) " +
+                                "VALUES (?,?,?,?,?,?,?)";
+                            foreach (ErgebnisSolarthermieModulModel mo in m.Solarthermie.Module)
+                            {
+                                {
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
+                                    p.Add(new OleDbParameter("@so", OleDbType.Integer) { Value = sId });
+                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
+                                    p.Add(new OleDbParameter("@fl", OleDbType.Double) { Value = R(mo.Flaeche) });
+                                    p.Add(new OleDbParameter("@an", OleDbType.Integer) { Value = (int)mo.Anzahl });
+                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
+                                    p.Add(new OleDbParameter("@u", OleDbType.Double) { Value = R(mo.Ueberschuss) });
+                                    v.Ausfuehren(sqlM, p.ToArray());
+                                }
+                            }
+                        }
+                    }
+
+                    // 8. Detail: Photovoltaik (+ Modulliste).
+                    if (m.Photovoltaik != null)
+                    {
+                        int pId = NextId(v, TAB_PV);
+                        string sql = "INSERT INTO " + TAB_PV + " (" +
+                            "ID, ID_Ergebnis, Strombedarf, Reststrombedarf, Stromproduktion, Strombedarfsdeckung, Ueberschuss, MaxSolareLeistung) " +
                             "VALUES (?,?,?,?,?,?,?,?)";
-                        foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                         {
-                            using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
-                            {
-                                c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
-                                c.Parameters.Add("@wp", OleDbType.Integer).Value = wpId;
-                                c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
-                                c.Parameters.Add("@l", OleDbType.Double).Value = R(mo.Leistung);
-                                c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
-                                c.Parameters.Add("@s", OleDbType.Double).Value = R(mo.Stromverbrauch);
-                                c.Parameters.Add("@h", OleDbType.Double).Value = R(mo.Heizstab);
-                                c.Parameters.Add("@b", OleDbType.Double).Value = R(mo.Betriebsstunden);
-                                c.ExecuteNonQuery();
-                            }
+                            List<OleDbParameter> p = new List<OleDbParameter>();
+                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = pId });
+                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Photovoltaik.Strombedarf) });
+                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Photovoltaik.Reststrombedarf) });
+                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Photovoltaik.Stromproduktion) });
+                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Photovoltaik.Strombedarfsdeckung) });
+                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Photovoltaik.Ueberschuss) });
+                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Photovoltaik.MaxSolareLeistung) });
+                            v.Ausfuehren(sql, p.ToArray());
                         }
-                    }
-                }
 
-                // 5. Detail: BHKW (+ Modulliste).
-                if (m.BHKW != null)
-                {
-                    int bId = NextId(conn, trans, TAB_BHKW);
-                    string sql = "INSERT INTO " + TAB_BHKW + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Strombedarf, Reststrombedarf, " +
-                        "Waermeproduktion, Waermeueberschuss, Stromproduktion, Betriebsstunden_Gesamt, " +
-                        "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, " +
-                        "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
-                        "Sonstigverbrauch, Pellets, TierischeFette, " +
-                        SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
-                    {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = bId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.BHKW.Waermebedarf);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.BHKW.Restwaermebedarf);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.BHKW.Strombedarf);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.BHKW.Reststrombedarf);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.BHKW.Waermeproduktion);
-                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.BHKW.Waermeueberschuss);
-                        c.Parameters.Add("@a7", OleDbType.Double).Value = R(m.BHKW.Stromproduktion);
-                        c.Parameters.Add("@a8", OleDbType.Double).Value = R(m.BHKW.Betriebsstunden_Gesamt);
-                        c.Parameters.Add("@a9", OleDbType.Double).Value = R(m.BHKW.Betriebsstunden_Durchschnitt);
-                        c.Parameters.Add("@a10", OleDbType.Double).Value = R(m.BHKW.Waermebedarfsdeckung);
-                        c.Parameters.Add("@a11", OleDbType.Double).Value = R(m.BHKW.Strombedarfsdeckung);
-                        c.Parameters.Add("@a12", OleDbType.Double).Value = R(m.BHKW.Gasverbrauch);
-                        c.Parameters.Add("@a13", OleDbType.Double).Value = R(m.BHKW.Oelverbrauch);
-                        c.Parameters.Add("@a14", OleDbType.Double).Value = R(m.BHKW.Koks);
-                        c.Parameters.Add("@a15", OleDbType.Double).Value = R(m.BHKW.Rapsoelverbrauch);
-                        c.Parameters.Add("@a16", OleDbType.Double).Value = R(m.BHKW.Holzverbrauch);
-                        c.Parameters.Add("@a17", OleDbType.Double).Value = R(m.BHKW.Kohle);
-                        c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.BHKW.Sonstigverbrauch);
-                        c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.BHKW.Pellets);
-                        c.Parameters.Add("@a20", OleDbType.Double).Value = R(m.BHKW.TierischeFette);
-                        // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
-                        c.Parameters.Add("@a21", OleDbType.Double).Value = R(m.BHKW.VbhElektrisch);
-                        KanalParameter(c, m.BHKW.Deckung_Kanal);
-                        c.ExecuteNonQuery();
-                    }
-
-                    if (m.BHKW.Module != null && m.BHKW.Module.Count > 0)
-                    {
-                        // Dominanten Brennstoff + Gesamtverbrauch einmal bestimmen; der Verbrauch
-                        // wird anteilig nach Waermeproduktion auf die Module verteilt (Summe = Gesamt).
-                        string bhArt; double bhVerbrauch;
-                        BHKWBrennstoff(m.BHKW, out bhArt, out bhVerbrauch);
-                        double basis = 0;
-                        foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) basis += mo.Waermeproduktion;
-
-                        // ETAPPE B3 Paket b: Hilfsenergie je Modulzeile [MWh/a] aus
-                        // Hilfsenergie_Anteil der Anlage x Brennstoff DIESER Zeile
-                        // (HilfsstromRechner - die eine Formel, die auch die
-                        // Wirtschaftlichkeit fuer die KWKG-Nettomenge verwendet). Die
-                        // Bemessungsgroesse ist derselbe anteilig verteilte Brennstoff,
-                        // der unten als Verbrauch geschrieben wird; mo.Verbrauch ist an
-                        // dieser Stelle noch leer (es fuellt ihn erst der Leseweg).
-                        var bhNamen = new string[m.BHKW.Module.Count];
-                        var bhBrennstoff = new double[m.BHKW.Module.Count];
-                        for (int ix = 0; ix < m.BHKW.Module.Count; ix++)
+                        if (m.Photovoltaik.Module != null && m.Photovoltaik.Module.Count > 0)
                         {
-                            ErgebnisBHKWModulModel mx = m.BHKW.Module[ix];
-                            double anteilX = basis > 0 ? mx.Waermeproduktion / basis
-                                                       : 1.0 / m.BHKW.Module.Count;
-                            bhNamen[ix] = mx.Modul ?? "";
-                            bhBrennstoff[ix] = bhArt != null ? bhVerbrauch * anteilX : 0;
-                        }
-                        double[] bhHilfsenergie = HilfsstromRechner.JeModul(
-                            m.ID_Projekt, WizardItemClass.BHKW_TYP, bhNamen, bhBrennstoff);
-                        int bhIndex = 0;
-
-                        int modId = NextId(conn, trans, TAB_BHKW_MODUL);
-                        string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
-                            "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id, " +
-                            SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH + ", " +
-                            SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH + ", " +
-                            SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-                        foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
-                        {
-                            double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
-                            using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
+                            int modId = NextId(v, TAB_PV_MODUL);
+                            string sqlM = "INSERT INTO " + TAB_PV_MODUL + " (" +
+                                "ID, ID_ErgebnisPhotovoltaik, Modul, Flaeche, Anzahl, Stromproduktion) " +
+                                "VALUES (?,?,?,?,?,?)";
+                            foreach (ErgebnisPhotovoltaikModulModel mo in m.Photovoltaik.Module)
                             {
-                                c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
-                                c.Parameters.Add("@bh", OleDbType.Integer).Value = bId;
-                                c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
-                                c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
-                                c.Parameters.Add("@s", OleDbType.Double).Value = R(mo.Stromproduktion);
-                                if (bhArt != null)
                                 {
-                                    c.Parameters.Add("@b", OleDbType.VarWChar).Value = bhArt;
-                                    c.Parameters.Add("@v", OleDbType.Double).Value = R(bhVerbrauch * anteil);
+                                    List<OleDbParameter> p = new List<OleDbParameter>();
+                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
+                                    p.Add(new OleDbParameter("@pv", OleDbType.Integer) { Value = pId });
+                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
+                                    p.Add(new OleDbParameter("@fl", OleDbType.Double) { Value = R(mo.Flaeche) });
+                                    p.Add(new OleDbParameter("@an", OleDbType.Integer) { Value = (int)mo.Anzahl });
+                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromproduktion) });
+                                    v.Ausfuehren(sqlM, p.ToArray());
                                 }
-                                else
-                                {
-                                    c.Parameters.Add("@b", OleDbType.VarWChar).Value = DBNull.Value;
-                                    c.Parameters.Add("@v", OleDbType.Double).Value = DBNull.Value;
-                                }
-                                c.Parameters.Add("@ca", OleDbType.Integer).Value =
-                                    mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
-                                // ETAPPE E2 (L6): thermische und elektrische Vbh je Modul.
-                                // Beide werden IMMER geschrieben - auch die 0. Sonst waere
-                                // "nicht erhoben" (NULL) von "erhoben und null" nicht mehr
-                                // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
-                                c.Parameters.Add("@vth", OleDbType.Double).Value = R(mo.VbhThermisch);
-                                c.Parameters.Add("@vel", OleDbType.Double).Value = R(mo.VbhElektrisch);
-                                // ETAPPE B3 Paket a/b: Hilfsenergie [MWh/a]. Paket b
-                                // bildet den Wert (Anteil der Anlage x Brennstoff dieser
-                                // Zeile); ohne gepflegten Anteil bleibt es bei 0.
-                                // Geschrieben wird sie IMMER - auch die 0, aus derselben
-                                // Begruendung wie bei den Vbh: sonst waere "erhoben und
-                                // null" von "nicht erhoben" (NULL) nicht unterscheidbar.
-                                // Das Modell traegt den Wert mit, damit ein Ergebnis im
-                                // Speicher dieselbe Auskunft gibt wie die Zeile in der DB.
-                                mo.Hilfsenergie = bhIndex < bhHilfsenergie.Length
-                                                ? bhHilfsenergie[bhIndex] : 0;
-                                bhIndex++;
-                                c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
-                                c.ExecuteNonQuery();
                             }
                         }
                     }
-                }
 
-                // 6. Detail: Heizkessel (+ Modulliste).
-                if (m.Heizkessel != null)
-                {
-                    int hId = NextId(conn, trans, TAB_KESSEL);
-                    // ETAPPE D4: Quellwaerme als LETZTE Spalte - ALTER TABLE haengt sie in
-                    // Access hinten an, und die Parameterreihenfolge folgt der Spaltenliste.
-                    string sql = "INSERT INTO " + TAB_KESSEL + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Strombedarf, " +
-                        "Reststrombedarf, Waermebedarfsdeckung, Stromverbrauch, Maximale_Kesselleistung, Gasspitze, " +
-                        "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
-                        "Sonstigverbrauch, Pellets, TierischeFette, " +
-                        SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
+                    // 9. Detail: Pufferspeicher (Konzept 6.6) - eine Zeile je beteiligtem
+                    //    Speicher, Senken- wie Quellspeicher. IDs wie bei den
+                    //    Geschwistertabellen ueber MAX(ID)+1 und dann hochzaehlend.
+                    if (m.Pufferspeicher != null && m.Pufferspeicher.Count > 0)
                     {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = hId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.Heizkessel.Waermebedarf);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Heizkessel.Restwaermebedarf);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Heizkessel.Waermeproduktion);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Heizkessel.Strombedarf);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Heizkessel.Reststrombedarf);
-                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Heizkessel.Waermebedarfsdeckung);
-                        c.Parameters.Add("@a7", OleDbType.Double).Value = R(m.Heizkessel.Stromverbrauch);
-                        c.Parameters.Add("@a8", OleDbType.Double).Value = R(m.Heizkessel.Maximale_Kesselleistung);
-                        c.Parameters.Add("@a9", OleDbType.Double).Value = R(m.Heizkessel.Gasspitze);
-                        c.Parameters.Add("@a10", OleDbType.Double).Value = R(m.Heizkessel.Gasverbrauch);
-                        c.Parameters.Add("@a11", OleDbType.Double).Value = R(m.Heizkessel.Oelverbrauch);
-                        c.Parameters.Add("@a12", OleDbType.Double).Value = R(m.Heizkessel.Koks);
-                        c.Parameters.Add("@a13", OleDbType.Double).Value = R(m.Heizkessel.Rapsoelverbrauch);
-                        c.Parameters.Add("@a14", OleDbType.Double).Value = R(m.Heizkessel.Holzverbrauch);
-                        c.Parameters.Add("@a15", OleDbType.Double).Value = R(m.Heizkessel.Kohle);
-                        c.Parameters.Add("@a16", OleDbType.Double).Value = R(m.Heizkessel.Sonstigverbrauch);
-                        c.Parameters.Add("@a17", OleDbType.Double).Value = R(m.Heizkessel.Pellets);
-                        c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.Heizkessel.TierischeFette);
-                        c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.Heizkessel.Quellwaerme);
-                        KanalParameter(c, m.Heizkessel.Deckung_Kanal);
-                        c.ExecuteNonQuery();
-                    }
-
-                    if (m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
-                    {
-                        // ETAPPE B3 Paket b: Hilfsenergie des Kessels - dieselbe Formel
-                        // wie beim BHKW. Die Endenergie kommt aus
-                        // WirtschaftlichkeitCtrl.KesselBrennstoffMWh: Verbrauch, sofern
-                        // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad (Paket a
-                        // hat begruendet, warum der Rechenkern Verbrauch nie fuellt).
-                        //
-                        // KEINE Strommengenwirkung: Ein Kessel erzeugt keinen Strom, sein
-                        // Hilfsstrom mindert also weder eine KWKG-Nettoerzeugung noch eine
-                        // Steuerbemessung. Der Wert ist hier reiner Ausweis fuer Bericht
-                        // und Konzept 5.2 - die Kostenwirkung laeuft ueber die
-                        // Betriebskostenposition, die Mengenwirkung kaeme erst mit einer
-                        // spaeteren Etappe (Strombilanz der Hilfsantriebe).
-                        var hkNamen = new string[m.Heizkessel.Module.Count];
-                        var hkBrennstoff = new double[m.Heizkessel.Module.Count];
-                        for (int ix = 0; ix < m.Heizkessel.Module.Count; ix++)
+                        int pufId = NextId(v, TAB_PUFFER);
+                        // PAKET E1 (Schritt 52): acht neue Spalten am Ende - Kanalaufteilung
+                        // der Entladung, die beiden Durchsatzsummen, der Anlagenbezug der
+                        // Quellspeicherzeilen und die beiden P1-Vorgriffsspalten. Sie stehen
+                        // hinten, weil ALTER TABLE in Access hinten anhaengt und die
+                        // Parameterreihenfolge der Spaltenliste folgt.
+                        string sqlP = "INSERT INTO " + TAB_PUFFER + " (" +
+                            "ID, ID_Ergebnis, ID_Pufferspeicher, Bezeichner, Verwendung, Q_max, " +
+                            "Ladung_gesamt, Entladung_gesamt, Verluste_gesamt, SOC_Ende, SOC_Mittel, " +
+                            "SOC_Max, Vollzyklen, " +
+                            SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_HEIZUNG + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_PROZESS + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_GELADEN + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
+                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
+                        foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                         {
-                            ErgebnisHeizkesselModulModel mx = m.Heizkessel.Module[ix];
-                            hkNamen[ix] = mx.Modul ?? "";
-                            hkBrennstoff[ix] = WirtschaftlichkeitCtrl.KesselBrennstoffMWh(mx);
-                        }
-                        double[] hkHilfsenergie = HilfsstromRechner.JeModul(
-                            m.ID_Projekt, WizardItemClass.KESSEL_TYP, hkNamen, hkBrennstoff);
-                        int hkIndex = 0;
-
-                        int modId = NextId(conn, trans, TAB_KESSEL_MODUL);
-                        // Befund B3 behoben: Waermeproduktion wird persistiert; Verbrauch gerundet;
-                        // Parametername @g war doppelt vergeben.
-                        string sqlM = "INSERT INTO " + TAB_KESSEL_MODUL + " (" +
-                            "ID, ID_ErgebnisHeizkessel, Modul, Waerme_Gas, Waerme_Oel, Waermeproduktion, " +
-                            "Brennstoff, Verbrauch, Jahresnutzungsgrad, carrier_id, " +
-                            SchemaKatalog.SPALTE_MODUL_HILFSENERGIE + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-                        foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
-                        {
-                            using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
                             {
-                                c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
-                                c.Parameters.Add("@hk", OleDbType.Integer).Value = hId;
-                                c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
-                                c.Parameters.Add("@g", OleDbType.Double).Value = R(mo.Waerme_Gas);
-                                c.Parameters.Add("@o", OleDbType.Double).Value = R(mo.Waerme_Oel);
-                                c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
-                                c.Parameters.Add("@b", OleDbType.VarWChar).Value = (object)(mo.Brennstoff ?? "");
-                                c.Parameters.Add("@v", OleDbType.Double).Value = R(mo.Verbrauch);
-                                c.Parameters.Add("@j", OleDbType.Double).Value = R(mo.Jahresnutzungsgrad);
-                                c.Parameters.Add("@ca", OleDbType.Integer).Value =
-                                    mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
-                                // ETAPPE B3 Paket a/b: Hilfsenergie des Kessels -
-                                // Begruendung wortgleich zur BHKW-Modulzeile weiter oben.
-                                mo.Hilfsenergie = hkIndex < hkHilfsenergie.Length
-                                                ? hkHilfsenergie[hkIndex] : 0;
-                                hkIndex++;
-                                c.Parameters.Add("@hen", OleDbType.Double).Value = R(mo.Hilfsenergie);
-                                c.ExecuteNonQuery();
+                                List<OleDbParameter> p = new List<OleDbParameter>();
+                                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = pufId++ });
+                                p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                                p.Add(new OleDbParameter("@sp", OleDbType.Integer) { Value = sp.ID_Pufferspeicher > 0 ? (object)sp.ID_Pufferspeicher : DBNull.Value });
+                                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(sp.Bezeichner ?? "") });
+                                p.Add(new OleDbParameter("@ver", OleDbType.VarWChar) { Value = (object)(sp.Verwendung ?? "") });
+                                p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(sp.Q_max) });
+                                p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(sp.Ladung_gesamt) });
+                                p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(sp.Entladung_gesamt) });
+                                p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(sp.Verluste_gesamt) });
+                                p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(sp.SOC_Ende) });
+                                p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(sp.SOC_Mittel) });
+                                p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(sp.SOC_Max) });
+                                p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(sp.Vollzyklen) });
+
+                                // PAKET E1
+                                KanalParameter(p, sp.Entladung_Kanal);
+                                p.Add(new OleDbParameter("@d1", OleDbType.Double) { Value = R(sp.Durchsatz_Geladen) });
+                                p.Add(new OleDbParameter("@d2", OleDbType.Double) { Value = R(sp.Durchsatz_Entladen) });
+                                p.Add(new OleDbParameter("@anl", OleDbType.Integer) { Value = sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value });
+                                // Seit Paket P1 GEFUELLT (bis dahin P1-Vorgriff und immer
+                                // NULL). NULL heisst weiterhin "nicht erhoben" - eine 0
+                                // behauptete 0 Grad C; so bleibt eine Quellspeicherzeile
+                                // ohne Speichertemperatur ehrlich leer.
+                                p.Add(new OleDbParameter("@t1", OleDbType.Double) { Value = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
+                                p.Add(new OleDbParameter("@t2", OleDbType.Double) { Value = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
+
+                                v.Ausfuehren(sqlP, p.ToArray());
                             }
                         }
                     }
-                }
 
-                // 7. Detail: Solarthermie (+ Kollektorliste).
-                if (m.Solarthermie != null)
-                {
-                    int sId = NextId(conn, trans, TAB_SOLAR);
-                    string sql = "INSERT INTO " + TAB_SOLAR + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Waermebedarfsdeckung, Ueberschuss, " +
-                        SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
-                        "VALUES (?,?,?,?,?,?,?, ?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
+                    // 10. Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1) - eine Zeile
+                    //     je gerechneter Speicheranlage. Aufbau wie Block 8 (Photovoltaik):
+                    //     NextId einmal holen und hochzaehlen, Werte kaufmaennisch runden,
+                    //     alles in DERSELBEN Transaktion wie der Kopf.
+                    //
+                    //     Das Flag m.Sim_Stromspeicher entscheidet ueber den Block: Es sagt
+                    //     "die Speicherrechnung lief" und wird ab AP3b nur noch nach einem
+                    //     echten Engine-Lauf gesetzt (heute: SimulationRunner). Ohne Flag
+                    //     wird nichts geschrieben, auch wenn die Liste versehentlich gefuellt
+                    //     waere - Kopf und Detail sollen nie widersprechen.
+                    if (m.Sim_Stromspeicher && m.Stromspeicher != null && m.Stromspeicher.Count > 0)
                     {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = sId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.Solarthermie.Waermebedarf);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Solarthermie.Restwaermebedarf);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Solarthermie.Waermeproduktion);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Solarthermie.Waermebedarfsdeckung);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Solarthermie.Ueberschuss);
-                        KanalParameter(c, m.Solarthermie.Deckung_Kanal);
-                        c.ExecuteNonQuery();
-                    }
-
-                    if (m.Solarthermie.Module != null && m.Solarthermie.Module.Count > 0)
-                    {
-                        int modId = NextId(conn, trans, TAB_SOLAR_MODUL);
-                        string sqlM = "INSERT INTO " + TAB_SOLAR_MODUL + " (" +
-                            "ID, ID_ErgebnisSolarthermie, Modul, Flaeche, Anzahl, Waermeproduktion, Ueberschuss) " +
-                            "VALUES (?,?,?,?,?,?,?)";
-                        foreach (ErgebnisSolarthermieModulModel mo in m.Solarthermie.Module)
+                        int spId = NextId(v, TAB_SP);
+                        string sqlS = "INSERT INTO " + TAB_SP + " (" +
+                            "ID, ID_Ergebnis, ID_Energieanlage, Bezeichner, Betriebsart, Berechnungsart, " +
+                            "Ladung_PV, Ladung_BHKW, Ladung_Netz, Ladung_Gesamt, Entladung_Gesamt, Verluste_Gesamt, " +
+                            "Netzbezug_Mit, Netzbezug_Ohne, Einspeisung_Mit, Einspeisung_Ohne, " +
+                            "Eigenverbrauchsquote, Autarkiegrad, " +
+                            "Vollzyklen, SoC_Min, SoC_Mittel, SoC_Max, " +
+                            "Zeitanteil_Untergrenze, Zeitanteil_Obergrenze, Zyklen_Hochrechnung, " +
+                            "Ertrag_Bezugsersparnis, Ertrag_Verguetung_Entgangen, Ertrag_Netzerloes, " +
+                            "Kosten_Ladung, Ertrag_Leistungspreis, Verschleisskosten, " +
+                            "Investition, Annuitaet, Jahresueberschuss, Ertrag_Jahr1, Ertrag_Aequivalent, " +
+                            "Amortisation_Statisch, Amortisation_Dynamisch, Kapitalwert, Preisversion) " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?, ?,?,?, " +
+                            "?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
+                        foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
                         {
-                            using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
                             {
-                                c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
-                                c.Parameters.Add("@so", OleDbType.Integer).Value = sId;
-                                c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
-                                c.Parameters.Add("@fl", OleDbType.Double).Value = R(mo.Flaeche);
-                                c.Parameters.Add("@an", OleDbType.Integer).Value = (int)mo.Anzahl;
-                                c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
-                                c.Parameters.Add("@u", OleDbType.Double).Value = R(mo.Ueberschuss);
-                                c.ExecuteNonQuery();
+                                List<OleDbParameter> p = new List<OleDbParameter>();
+                                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = spId++ });
+                                p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
+                                p.Add(new OleDbParameter("@anl", OleDbType.Integer) { Value = es.ID_Energieanlage > 0 ? (object)es.ID_Energieanlage : DBNull.Value });
+                                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(es.Bezeichner ?? "") });
+                                p.Add(new OleDbParameter("@bart", OleDbType.VarWChar) { Value = (object)(es.Betriebsart ?? "") });
+                                p.Add(new OleDbParameter("@rart", OleDbType.VarWChar) { Value = (object)(es.Berechnungsart ?? "") });
+
+                                p.Add(new OleDbParameter("@e1", OleDbType.Double) { Value = R(es.Ladung_PV) });
+                                p.Add(new OleDbParameter("@e2", OleDbType.Double) { Value = R(es.Ladung_BHKW) });
+                                p.Add(new OleDbParameter("@e3", OleDbType.Double) { Value = R(es.Ladung_Netz) });
+                                p.Add(new OleDbParameter("@e4", OleDbType.Double) { Value = R(es.Ladung_Gesamt) });
+                                p.Add(new OleDbParameter("@e5", OleDbType.Double) { Value = R(es.Entladung_Gesamt) });
+                                p.Add(new OleDbParameter("@e6", OleDbType.Double) { Value = R(es.Verluste_Gesamt) });
+                                p.Add(new OleDbParameter("@e7", OleDbType.Double) { Value = R(es.Netzbezug_Mit) });
+                                p.Add(new OleDbParameter("@e8", OleDbType.Double) { Value = R(es.Netzbezug_Ohne) });
+                                p.Add(new OleDbParameter("@e9", OleDbType.Double) { Value = R(es.Einspeisung_Mit) });
+                                p.Add(new OleDbParameter("@e10", OleDbType.Double) { Value = R(es.Einspeisung_Ohne) });
+                                p.Add(new OleDbParameter("@e11", OleDbType.Double) { Value = R(es.Eigenverbrauchsquote) });
+                                p.Add(new OleDbParameter("@e12", OleDbType.Double) { Value = R(es.Autarkiegrad) });
+
+                                p.Add(new OleDbParameter("@s1", OleDbType.Double) { Value = R(es.Vollzyklen) });
+                                p.Add(new OleDbParameter("@s2", OleDbType.Double) { Value = R(es.SoC_Min) });
+                                p.Add(new OleDbParameter("@s3", OleDbType.Double) { Value = R(es.SoC_Mittel) });
+                                p.Add(new OleDbParameter("@s4", OleDbType.Double) { Value = R(es.SoC_Max) });
+                                p.Add(new OleDbParameter("@s5", OleDbType.Double) { Value = R(es.Zeitanteil_Untergrenze) });
+                                p.Add(new OleDbParameter("@s6", OleDbType.Double) { Value = R(es.Zeitanteil_Obergrenze) });
+                                p.Add(new OleDbParameter("@s7", OleDbType.Double) { Value = R(es.Zyklen_Hochrechnung) });
+
+                                p.Add(new OleDbParameter("@w1", OleDbType.Double) { Value = R(es.Ertrag_Bezugsersparnis) });
+                                p.Add(new OleDbParameter("@w2", OleDbType.Double) { Value = R(es.Ertrag_Verguetung_Entgangen) });
+                                p.Add(new OleDbParameter("@w3", OleDbType.Double) { Value = R(es.Ertrag_Netzerloes) });
+                                p.Add(new OleDbParameter("@w4", OleDbType.Double) { Value = R(es.Kosten_Ladung) });
+                                p.Add(new OleDbParameter("@w5", OleDbType.Double) { Value = R(es.Ertrag_Leistungspreis) });
+                                p.Add(new OleDbParameter("@w6", OleDbType.Double) { Value = R(es.Verschleisskosten) });
+                                p.Add(new OleDbParameter("@w7", OleDbType.Double) { Value = R(es.Investition) });
+                                p.Add(new OleDbParameter("@w8", OleDbType.Double) { Value = R(es.Annuitaet) });
+                                p.Add(new OleDbParameter("@w9", OleDbType.Double) { Value = R(es.Jahresueberschuss) });
+                                p.Add(new OleDbParameter("@w10", OleDbType.Double) { Value = R(es.Ertrag_Jahr1) });
+                                p.Add(new OleDbParameter("@w11", OleDbType.Double) { Value = R(es.Ertrag_Aequivalent) });
+                                p.Add(new OleDbParameter("@w12", OleDbType.Double) { Value = R(es.Amortisation_Statisch) });
+                                p.Add(new OleDbParameter("@w13", OleDbType.Double) { Value = R(es.Amortisation_Dynamisch) });
+                                p.Add(new OleDbParameter("@w14", OleDbType.Double) { Value = R(es.Kapitalwert) });
+                                p.Add(new OleDbParameter("@w15", OleDbType.VarWChar) { Value = (object)(es.Preisversion ?? "") });
+                                v.Ausfuehren(sqlS, p.ToArray());
                             }
                         }
                     }
-                }
 
-                // 8. Detail: Photovoltaik (+ Modulliste).
-                if (m.Photovoltaik != null)
+                    v.Commit();
+                    m.ID = kopfId;
+                    return kopfId;
+                }
+                catch (Exception ex)
                 {
-                    int pId = NextId(conn, trans, TAB_PV);
-                    string sql = "INSERT INTO " + TAB_PV + " (" +
-                        "ID, ID_Ergebnis, Strombedarf, Reststrombedarf, Stromproduktion, Strombedarfsdeckung, Ueberschuss, MaxSolareLeistung) " +
-                        "VALUES (?,?,?,?,?,?,?,?)";
-                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
-                    {
-                        c.Parameters.Add("@id", OleDbType.Integer).Value = pId;
-                        c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                        c.Parameters.Add("@a1", OleDbType.Double).Value = R(m.Photovoltaik.Strombedarf);
-                        c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Photovoltaik.Reststrombedarf);
-                        c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Photovoltaik.Stromproduktion);
-                        c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Photovoltaik.Strombedarfsdeckung);
-                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Photovoltaik.Ueberschuss);
-                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Photovoltaik.MaxSolareLeistung);
-                        c.ExecuteNonQuery();
-                    }
-
-                    if (m.Photovoltaik.Module != null && m.Photovoltaik.Module.Count > 0)
-                    {
-                        int modId = NextId(conn, trans, TAB_PV_MODUL);
-                        string sqlM = "INSERT INTO " + TAB_PV_MODUL + " (" +
-                            "ID, ID_ErgebnisPhotovoltaik, Modul, Flaeche, Anzahl, Stromproduktion) " +
-                            "VALUES (?,?,?,?,?,?)";
-                        foreach (ErgebnisPhotovoltaikModulModel mo in m.Photovoltaik.Module)
-                        {
-                            using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
-                            {
-                                c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
-                                c.Parameters.Add("@pv", OleDbType.Integer).Value = pId;
-                                c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
-                                c.Parameters.Add("@fl", OleDbType.Double).Value = R(mo.Flaeche);
-                                c.Parameters.Add("@an", OleDbType.Integer).Value = (int)mo.Anzahl;
-                                c.Parameters.Add("@s", OleDbType.Double).Value = R(mo.Stromproduktion);
-                                c.ExecuteNonQuery();
-                            }
-                        }
-                    }
+                    try { v.Rollback(); } catch { }
+                    // PAKET 8 (Konzept 13.4): Save() ist die letzte Station des headless-Laufs
+                    // (SimulationRunner.SimuliereUndSpeichere) und damit die Stelle, an der
+                    // eine MessageBox einen unbeaufsichtigten Lauf noch NACH der Rechnung
+                    // hätte blockieren können.
+                    DataRepository.FehlerMelden("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
+                    return -1;
                 }
-
-                // 9. Detail: Pufferspeicher (Konzept 6.6) - eine Zeile je beteiligtem
-                //    Speicher, Senken- wie Quellspeicher. IDs wie bei den
-                //    Geschwistertabellen ueber MAX(ID)+1 und dann hochzaehlend.
-                if (m.Pufferspeicher != null && m.Pufferspeicher.Count > 0)
-                {
-                    int pufId = NextId(conn, trans, TAB_PUFFER);
-                    // PAKET E1 (Schritt 52): acht neue Spalten am Ende - Kanalaufteilung
-                    // der Entladung, die beiden Durchsatzsummen, der Anlagenbezug der
-                    // Quellspeicherzeilen und die beiden P1-Vorgriffsspalten. Sie stehen
-                    // hinten, weil ALTER TABLE in Access hinten anhaengt und die
-                    // Parameterreihenfolge der Spaltenliste folgt.
-                    string sqlP = "INSERT INTO " + TAB_PUFFER + " (" +
-                        "ID, ID_Ergebnis, ID_Pufferspeicher, Bezeichner, Verwendung, Q_max, " +
-                        "Ladung_gesamt, Entladung_gesamt, Verluste_gesamt, SOC_Ende, SOC_Mittel, " +
-                        "SOC_Max, Vollzyklen, " +
-                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_HEIZUNG + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_BRAUCHWASSER + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_ENTLADUNG_PROZESS + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_GELADEN + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
-                        SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
-                    foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
-                    {
-                        using (OleDbCommand c = new OleDbCommand(sqlP, conn, trans))
-                        {
-                            c.Parameters.Add("@id", OleDbType.Integer).Value = pufId++;
-                            c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                            c.Parameters.Add("@sp", OleDbType.Integer).Value =
-                                sp.ID_Pufferspeicher > 0 ? (object)sp.ID_Pufferspeicher : DBNull.Value;
-                            c.Parameters.Add("@bez", OleDbType.VarWChar).Value = (object)(sp.Bezeichner ?? "");
-                            c.Parameters.Add("@ver", OleDbType.VarWChar).Value = (object)(sp.Verwendung ?? "");
-                            c.Parameters.Add("@a1", OleDbType.Double).Value = R(sp.Q_max);
-                            c.Parameters.Add("@a2", OleDbType.Double).Value = R(sp.Ladung_gesamt);
-                            c.Parameters.Add("@a3", OleDbType.Double).Value = R(sp.Entladung_gesamt);
-                            c.Parameters.Add("@a4", OleDbType.Double).Value = R(sp.Verluste_gesamt);
-                            c.Parameters.Add("@a5", OleDbType.Double).Value = R(sp.SOC_Ende);
-                            c.Parameters.Add("@a6", OleDbType.Double).Value = R(sp.SOC_Mittel);
-                            c.Parameters.Add("@a7", OleDbType.Double).Value = R(sp.SOC_Max);
-                            c.Parameters.Add("@a8", OleDbType.Double).Value = R(sp.Vollzyklen);
-
-                            // PAKET E1
-                            KanalParameter(c, sp.Entladung_Kanal);
-                            c.Parameters.Add("@d1", OleDbType.Double).Value = R(sp.Durchsatz_Geladen);
-                            c.Parameters.Add("@d2", OleDbType.Double).Value = R(sp.Durchsatz_Entladen);
-                            c.Parameters.Add("@anl", OleDbType.Integer).Value =
-                                sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value;
-                            // Seit Paket P1 GEFUELLT (bis dahin P1-Vorgriff und immer
-                            // NULL). NULL heisst weiterhin "nicht erhoben" - eine 0
-                            // behauptete 0 Grad C; so bleibt eine Quellspeicherzeile
-                            // ohne Speichertemperatur ehrlich leer.
-                            c.Parameters.Add("@t1", OleDbType.Double).Value =
-                                sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value;
-                            c.Parameters.Add("@t2", OleDbType.Double).Value =
-                                sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value;
-
-                            c.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                // 10. Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1) - eine Zeile
-                //     je gerechneter Speicheranlage. Aufbau wie Block 8 (Photovoltaik):
-                //     NextId einmal holen und hochzaehlen, Werte kaufmaennisch runden,
-                //     alles in DERSELBEN Transaktion wie der Kopf.
-                //
-                //     Das Flag m.Sim_Stromspeicher entscheidet ueber den Block: Es sagt
-                //     "die Speicherrechnung lief" und wird ab AP3b nur noch nach einem
-                //     echten Engine-Lauf gesetzt (heute: SimulationRunner). Ohne Flag
-                //     wird nichts geschrieben, auch wenn die Liste versehentlich gefuellt
-                //     waere - Kopf und Detail sollen nie widersprechen.
-                if (m.Sim_Stromspeicher && m.Stromspeicher != null && m.Stromspeicher.Count > 0)
-                {
-                    int spId = NextId(conn, trans, TAB_SP);
-                    string sqlS = "INSERT INTO " + TAB_SP + " (" +
-                        "ID, ID_Ergebnis, ID_Energieanlage, Bezeichner, Betriebsart, Berechnungsart, " +
-                        "Ladung_PV, Ladung_BHKW, Ladung_Netz, Ladung_Gesamt, Entladung_Gesamt, Verluste_Gesamt, " +
-                        "Netzbezug_Mit, Netzbezug_Ohne, Einspeisung_Mit, Einspeisung_Ohne, " +
-                        "Eigenverbrauchsquote, Autarkiegrad, " +
-                        "Vollzyklen, SoC_Min, SoC_Mittel, SoC_Max, " +
-                        "Zeitanteil_Untergrenze, Zeitanteil_Obergrenze, Zyklen_Hochrechnung, " +
-                        "Ertrag_Bezugsersparnis, Ertrag_Verguetung_Entgangen, Ertrag_Netzerloes, " +
-                        "Kosten_Ladung, Ertrag_Leistungspreis, Verschleisskosten, " +
-                        "Investition, Annuitaet, Jahresueberschuss, Ertrag_Jahr1, Ertrag_Aequivalent, " +
-                        "Amortisation_Statisch, Amortisation_Dynamisch, Kapitalwert, Preisversion) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?, ?,?,?, " +
-                        "?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
-                    foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
-                    {
-                        using (OleDbCommand c = new OleDbCommand(sqlS, conn, trans))
-                        {
-                            c.Parameters.Add("@id", OleDbType.Integer).Value = spId++;
-                            c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
-                            c.Parameters.Add("@anl", OleDbType.Integer).Value =
-                                es.ID_Energieanlage > 0 ? (object)es.ID_Energieanlage : DBNull.Value;
-                            c.Parameters.Add("@bez", OleDbType.VarWChar).Value = (object)(es.Bezeichner ?? "");
-                            c.Parameters.Add("@bart", OleDbType.VarWChar).Value = (object)(es.Betriebsart ?? "");
-                            c.Parameters.Add("@rart", OleDbType.VarWChar).Value = (object)(es.Berechnungsart ?? "");
-
-                            c.Parameters.Add("@e1", OleDbType.Double).Value = R(es.Ladung_PV);
-                            c.Parameters.Add("@e2", OleDbType.Double).Value = R(es.Ladung_BHKW);
-                            c.Parameters.Add("@e3", OleDbType.Double).Value = R(es.Ladung_Netz);
-                            c.Parameters.Add("@e4", OleDbType.Double).Value = R(es.Ladung_Gesamt);
-                            c.Parameters.Add("@e5", OleDbType.Double).Value = R(es.Entladung_Gesamt);
-                            c.Parameters.Add("@e6", OleDbType.Double).Value = R(es.Verluste_Gesamt);
-                            c.Parameters.Add("@e7", OleDbType.Double).Value = R(es.Netzbezug_Mit);
-                            c.Parameters.Add("@e8", OleDbType.Double).Value = R(es.Netzbezug_Ohne);
-                            c.Parameters.Add("@e9", OleDbType.Double).Value = R(es.Einspeisung_Mit);
-                            c.Parameters.Add("@e10", OleDbType.Double).Value = R(es.Einspeisung_Ohne);
-                            c.Parameters.Add("@e11", OleDbType.Double).Value = R(es.Eigenverbrauchsquote);
-                            c.Parameters.Add("@e12", OleDbType.Double).Value = R(es.Autarkiegrad);
-
-                            c.Parameters.Add("@s1", OleDbType.Double).Value = R(es.Vollzyklen);
-                            c.Parameters.Add("@s2", OleDbType.Double).Value = R(es.SoC_Min);
-                            c.Parameters.Add("@s3", OleDbType.Double).Value = R(es.SoC_Mittel);
-                            c.Parameters.Add("@s4", OleDbType.Double).Value = R(es.SoC_Max);
-                            c.Parameters.Add("@s5", OleDbType.Double).Value = R(es.Zeitanteil_Untergrenze);
-                            c.Parameters.Add("@s6", OleDbType.Double).Value = R(es.Zeitanteil_Obergrenze);
-                            c.Parameters.Add("@s7", OleDbType.Double).Value = R(es.Zyklen_Hochrechnung);
-
-                            c.Parameters.Add("@w1", OleDbType.Double).Value = R(es.Ertrag_Bezugsersparnis);
-                            c.Parameters.Add("@w2", OleDbType.Double).Value = R(es.Ertrag_Verguetung_Entgangen);
-                            c.Parameters.Add("@w3", OleDbType.Double).Value = R(es.Ertrag_Netzerloes);
-                            c.Parameters.Add("@w4", OleDbType.Double).Value = R(es.Kosten_Ladung);
-                            c.Parameters.Add("@w5", OleDbType.Double).Value = R(es.Ertrag_Leistungspreis);
-                            c.Parameters.Add("@w6", OleDbType.Double).Value = R(es.Verschleisskosten);
-                            c.Parameters.Add("@w7", OleDbType.Double).Value = R(es.Investition);
-                            c.Parameters.Add("@w8", OleDbType.Double).Value = R(es.Annuitaet);
-                            c.Parameters.Add("@w9", OleDbType.Double).Value = R(es.Jahresueberschuss);
-                            c.Parameters.Add("@w10", OleDbType.Double).Value = R(es.Ertrag_Jahr1);
-                            c.Parameters.Add("@w11", OleDbType.Double).Value = R(es.Ertrag_Aequivalent);
-                            c.Parameters.Add("@w12", OleDbType.Double).Value = R(es.Amortisation_Statisch);
-                            c.Parameters.Add("@w13", OleDbType.Double).Value = R(es.Amortisation_Dynamisch);
-                            c.Parameters.Add("@w14", OleDbType.Double).Value = R(es.Kapitalwert);
-                            c.Parameters.Add("@w15", OleDbType.VarWChar).Value = (object)(es.Preisversion ?? "");
-                            c.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                trans.Commit();
-                m.ID = kopfId;
-                return kopfId;
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                // PAKET 8 (Konzept 13.4): Save() ist die letzte Station des headless-Laufs
-                // (SimulationRunner.SimuliereUndSpeichere) und damit die Stelle, an der
-                // eine MessageBox einen unbeaufsichtigten Lauf noch NACH der Rechnung
-                // hätte blockieren können.
-                DataRepository.FehlerMelden("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
-                return -1;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Laedt das zuletzt gespeicherte Ergebnis eines Projekts (oder null).
         public ErgebnisModel Load(int idProjekt)
         {
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_KOPF + " WHERE ID_Projekt = ? ORDER BY ID DESC",
+                "SELECT * FROM " + TAB_KOPF + " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
                 new OleDbParameter("@p", idProjekt));
             if (dt == null || dt.Rows.Count == 0) return null;
 
@@ -765,7 +760,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Energiebedarf.
             DataTable de = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_ENERGIE + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_ENERGIE + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (de != null && de.Rows.Count > 0)
             {
                 DataRow re = de.Rows[0];
@@ -786,7 +781,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Waermepumpe (+ Module).
             DataTable dw = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_WP + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_WP + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (dw != null && dw.Rows.Count > 0)
             {
                 DataRow rw = dw.Rows[0];
@@ -826,7 +821,7 @@ namespace WindowsFormsApplication1
 
             // Detail: BHKW (+ Module).
             DataTable dbk = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_BHKW + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_BHKW + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (dbk != null && dbk.Rows.Count > 0)
             {
                 DataRow rb = dbk.Rows[0];
@@ -885,7 +880,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Heizkessel (+ Module).
             DataTable dhk = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_KESSEL + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_KESSEL + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (dhk != null && dhk.Rows.Count > 0)
             {
                 DataRow rh = dhk.Rows[0];
@@ -939,7 +934,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Solarthermie (+ Kollektoren).
             DataTable dst = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_SOLAR + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_SOLAR + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (dst != null && dst.Rows.Count > 0)
             {
                 DataRow rs2 = dst.Rows[0];
@@ -972,7 +967,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Photovoltaik (+ Module).
             DataTable dpv = DataRepository.GetDataTable(
-                "SELECT TOP 1 * FROM " + TAB_PV + " WHERE ID_Ergebnis = ?", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_PV + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
             if (dpv != null && dpv.Rows.Count > 0)
             {
                 DataRow rp = dpv.Rows[0];
@@ -1125,24 +1120,11 @@ namespace WindowsFormsApplication1
         private static void StelleEnergieSpaltenSicher()
         {
             string[] spalten = { "Waermerestbedarf", "Stromrestbedarf" };
+            // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
+            // GetOleDbSchemaTable (S4c vorgezogen), SQLite-Spaltentyp (S4d vorgezogen).
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-                        new object[] { null, null, TAB_ENERGIE, null });
-                    var vorhanden = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    if (cols != null)
-                        foreach (DataRow rc in cols.Rows) vorhanden.Add(rc["COLUMN_NAME"].ToString());
-                    foreach (string sp in spalten)
-                    {
-                        if (vorhanden.Contains(sp)) continue;
-                        using (OleDbCommand c = new OleDbCommand(
-                            "ALTER TABLE " + TAB_ENERGIE + " ADD COLUMN " + sp + " DOUBLE", conn))
-                            c.ExecuteNonQuery();
-                    }
-                }
+                foreach (string sp in spalten) ErgaenzeSpalte(TAB_ENERGIE, sp, "DOUBLE");
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
         }
@@ -1155,24 +1137,10 @@ namespace WindowsFormsApplication1
             string[] spalten = { "Oelverbrauch", "Koks", "Rapsoelverbrauch", "Holzverbrauch", "Kohle",
                                  "Sonstigverbrauch", "Pellets", "TierischeFette",
                                  SchemaKatalog.SPALTE_BHKW_VBH_ELEKTRISCH };
+            // ARBEITSPAKET S4b: wie StelleEnergieSpaltenSicher.
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-                        new object[] { null, null, TAB_BHKW, null });
-                    var vorhanden = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    if (cols != null)
-                        foreach (DataRow rc in cols.Rows) vorhanden.Add(rc["COLUMN_NAME"].ToString());
-                    foreach (string sp in spalten)
-                    {
-                        if (vorhanden.Contains(sp)) continue;
-                        using (OleDbCommand c = new OleDbCommand(
-                            "ALTER TABLE " + TAB_BHKW + " ADD COLUMN " + sp + " DOUBLE", conn))
-                            c.ExecuteNonQuery();
-                    }
-                }
+                foreach (string sp in spalten) ErgaenzeSpalte(TAB_BHKW, sp, "DOUBLE");
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
         }
@@ -1184,12 +1152,10 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    conn.Open();
-                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, "carrier_id", "LONG");
-                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "carrier_id", "LONG");
-                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "Waermeproduktion", "DOUBLE");
+                    ErgaenzeSpalte(TAB_BHKW_MODUL, "carrier_id", "LONG");
+                    ErgaenzeSpalte(TAB_KESSEL_MODUL, "carrier_id", "LONG");
+                    ErgaenzeSpalte(TAB_KESSEL_MODUL, "Waermeproduktion", "DOUBLE");
 
                     // ETAPPE E2 — Rückfallebene zu Migrationsschritt 18. Dieselbe
                     // Begründung wie bei Quellwaerme: Das INSERT der Modulzeile führt die
@@ -1197,8 +1163,8 @@ namespace WindowsFormsApplication1
                     // neue Größe, sondern die ganze Modulzeile — und mit ihr der Lauf.
                     // Die Namen kommen aus SchemaKatalog, Migration und Rückfallebene
                     // führen keine zweite Liste.
-                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH, "DOUBLE");
-                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH, "DOUBLE");
+                    ErgaenzeSpalte(TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_THERMISCH, "DOUBLE");
+                    ErgaenzeSpalte(TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_VBH_ELEKTRISCH, "DOUBLE");
 
                     // ETAPPE B3 Paket a - Rueckfallebene zu Migrationsschritt 61b, aus
                     // derselben Not wie eine Zeile darueber: Beide Modul-INSERTs fuehren
@@ -1206,8 +1172,8 @@ namespace WindowsFormsApplication1
                     // nur die neue Groesse, sondern die ganze Modulzeile - und mit ihr
                     // der Lauf. Die Namen kommen aus SchemaKatalog, Migration und
                     // Rueckfallebene fuehren keine zweite Liste.
-                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
-                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
+                    ErgaenzeSpalte(TAB_BHKW_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
+                    ErgaenzeSpalte(TAB_KESSEL_MODUL, SchemaKatalog.SPALTE_MODUL_HILFSENERGIE, "DOUBLE");
                 }
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
@@ -1231,11 +1197,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    ErgaenzeSpalte(conn, TAB_KESSEL, SchemaKatalog.SPALTE_KESSEL_QUELLWAERME, "DOUBLE");
-                }
+                ErgaenzeSpalte(TAB_KESSEL, SchemaKatalog.SPALTE_KESSEL_QUELLWAERME, "DOUBLE");
             }
             catch { /* best effort - Spalte existiert dann ggf. schon */ }
         }
@@ -1261,20 +1223,30 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schema-Auskunft
+                // statt GetOleDbSchemaTable (S4c vorgezogen); SQLite-DDL nach dem Muster
+                // von sql\schema\001_grundschema.sql (S4d vorgezogen).
+                //
+                // ABWEICHUNG, DIE SQLITE ERZWINGT: Die Loeschweitergabe kann nach dem
+                // CREATE TABLE nicht mehr nachgeruestet werden (kein ADD CONSTRAINT).
+                // Sie steht deshalb IM CREATE - und der Nachruest-Zweig unten entfaellt
+                // fuer eine Tabelle, die es schon gibt. Wo er bisher half (Tabelle aus
+                // einem abgebrochenen Lauf ohne Beziehung), traegt weiterhin das
+                // ausdrueckliche DELETE in Save, auf das der Kommentar oben verweist.
                 {
-                    conn.Open();
-
-                    if (!PufferTabelleVorhanden(conn))
+                    if (!PufferTabelleVorhanden())
                     {
                         // Spaltensatz identisch zu SchemaMigration.SQL_CREATE_ERGEBNISPUFFER.
                         try
                         {
-                            Ddl(conn, "CREATE TABLE " + TAB_PUFFER + " (ID LONG NOT NULL PRIMARY KEY, " +
-                                      "ID_Ergebnis LONG, ID_Pufferspeicher LONG, Bezeichner TEXT(255), " +
-                                      "Verwendung TEXT(50), Q_max DOUBLE, Ladung_gesamt DOUBLE, " +
-                                      "Entladung_gesamt DOUBLE, Verluste_gesamt DOUBLE, SOC_Ende DOUBLE, " +
-                                      "SOC_Mittel DOUBLE, SOC_Max DOUBLE, Vollzyklen DOUBLE)");
+                            Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_PUFFER + "] (" +
+                                "\"ID\" INTEGER NOT NULL PRIMARY KEY, " +
+                                "\"ID_Ergebnis\" INTEGER, \"ID_Pufferspeicher\" INTEGER, \"Bezeichner\" TEXT, " +
+                                "\"Verwendung\" TEXT CHECK (length(\"Verwendung\") <= 50), " +
+                                "\"Q_max\" REAL, \"Ladung_gesamt\" REAL, " +
+                                "\"Entladung_gesamt\" REAL, \"Verluste_gesamt\" REAL, \"SOC_Ende\" REAL, " +
+                                "\"SOC_Mittel\" REAL, \"SOC_Max\" REAL, \"Vollzyklen\" REAL, " +
+                                "FOREIGN KEY (\"ID_Ergebnis\") REFERENCES [" + TAB_KOPF + "] (\"ID\") ON DELETE CASCADE)");
                         }
                         catch { return; /* ohne Tabelle sind Index und Constraint sinnlos */ }
                     }
@@ -1286,30 +1258,22 @@ namespace WindowsFormsApplication1
                     // gibt es keine Loeschweitergabe - genau der Waisenfall aus 6.6.
                     // Duplikat-tolerant: auf migrierten Datenbanken sind beide vorhanden,
                     // die Pruefung stellt das fest und es passiert nichts.
-                    if (!IndexVorhanden(conn, TAB_PUFFER, "idx_ErgPuffer"))
+                    if (!IndexVorhanden(TAB_PUFFER, "idx_ErgPuffer", "FK_ErgPuffer"))
                     {
-                        try { Ddl(conn, "CREATE INDEX idx_ErgPuffer ON " + TAB_PUFFER + " (ID_Ergebnis)"); }
+                        try { Ddl("CREATE INDEX IF NOT EXISTS \"idx_ErgPuffer\" ON [" + TAB_PUFFER + "] (\"ID_Ergebnis\")"); }
                         catch { }
                     }
 
                     // Dieselbe Löschweitergabe wie bei allen Geschwistertabellen (13.7).
-                    if (!FremdschluesselVorhanden(conn, TAB_PUFFER, "ID_Ergebnis"))
+                    // Nachruesten kann SQLite sie nicht; fehlt sie auf einer alten
+                    // Tabelle, raeumen wir wenigstens die Waisen weg - denselben Zweck
+                    // erfuellt danach das ausdrueckliche DELETE in Save.
+                    if (!FremdschluesselVorhanden(TAB_PUFFER, "ID_Ergebnis"))
                     {
-                        // Waisen zuerst: Access weist ADD CONSTRAINT zurueck, solange
-                        // Zeilen ohne gueltigen Kopf existieren. Genau die entstehen
-                        // aber, wenn die Beziehung bisher fehlte - ohne dieses Delete
-                        // liesse sich die Loeschweitergabe nie mehr nachziehen.
                         try
                         {
-                            Ddl(conn, "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
-                                      "(SELECT ID FROM " + TAB_KOPF + ")");
-                        }
-                        catch { }
-
-                        try
-                        {
-                            Ddl(conn, "ALTER TABLE " + TAB_PUFFER + " ADD CONSTRAINT FK_ErgPuffer " +
-                                      "FOREIGN KEY (ID_Ergebnis) REFERENCES " + TAB_KOPF + " (ID) ON DELETE CASCADE");
+                            Ddl("DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
+                                "(SELECT ID FROM " + TAB_KOPF + ")");
                         }
                         catch { }
                     }
@@ -1329,35 +1293,35 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // ARBEITSPAKET S4b: wie StellePufferTabelleSicher - Zugriffsschicht,
+                // Schema-Auskunft, SQLite-DDL. Die Anweisungen kommen NICHT mehr aus
+                // SchemaMigration: Die dortigen Konstanten sind Access-DDL und gehoeren
+                // zum eingefrorenen Alt-Zweig (S6). Massgeblich ist
+                // sql\schema\001_grundschema.sql; ein zweiter Spaltensatz entsteht
+                // nicht - beide beschreiben dieselbe Tabelle.
                 {
-                    conn.Open();
-
-                    if (!TabelleVorhanden(conn, TAB_SP))
+                    if (!TabelleVorhanden(TAB_SP))
                     {
-                        try { Ddl(conn, SchemaMigration.SQL_CREATE_ERGEBNISSTROMSPEICHER); }
+                        try { Ddl(SQL_CREATE_ERGEBNISSTROMSPEICHER_SQLITE); }
                         catch { return; /* ohne Tabelle sind Index und Constraint sinnlos */ }
                     }
 
-                    if (!IndexVorhanden(conn, TAB_SP, "idx_ErgStromspeicher"))
+                    if (!IndexVorhanden(TAB_SP, "idx_ErgStromspeicher", "FK_ErgStromspeicher"))
                     {
-                        try { Ddl(conn, SchemaMigration.SQL_INDEX_ERGSTROMSPEICHER); }
+                        try { Ddl("CREATE INDEX IF NOT EXISTS \"idx_ErgStromspeicher\" ON [" + TAB_SP + "] (\"ID_Ergebnis\")"); }
                         catch { }
                     }
 
-                    if (!FremdschluesselVorhanden(conn, TAB_SP, "ID_Ergebnis"))
+                    if (!FremdschluesselVorhanden(TAB_SP, "ID_Ergebnis"))
                     {
                         // Waisen zuerst - dieselbe Reihenfolge und derselbe Grund wie
-                        // beim Pufferspeicher: Access weist ADD CONSTRAINT zurueck,
-                        // solange Zeilen ohne gueltigen Kopf existieren.
+                        // beim Pufferspeicher. Nachruesten laesst sich die Beziehung in
+                        // SQLite nicht; sie steht im CREATE TABLE.
                         try
                         {
-                            Ddl(conn, "DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
-                                      "(SELECT ID FROM " + TAB_KOPF + ")");
+                            Ddl("DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
+                                "(SELECT ID FROM " + TAB_KOPF + ")");
                         }
-                        catch { }
-
-                        try { Ddl(conn, SchemaMigration.SQL_FK_ERGSTROMSPEICHER); }
                         catch { }
                     }
                 }
@@ -1365,30 +1329,69 @@ namespace WindowsFormsApplication1
             catch { /* best effort - Save faengt einen echten Fehler ohnehin ab */ }
         }
 
-        private static bool PufferTabelleVorhanden(OleDbConnection conn)
+        /// <summary>
+        /// SQLite-Fassung von <c>SchemaMigration.SQL_CREATE_ERGEBNISSTROMSPEICHER</c>
+        /// (Fachkonzept Stromspeicher 7.1). Gleiche Spalten, gleiche Reihenfolge; die
+        /// Loeschweitergabe steht im CREATE, weil SQLite sie nicht nachruesten kann.
+        /// </summary>
+        private const string SQL_CREATE_ERGEBNISSTROMSPEICHER_SQLITE =
+            "CREATE TABLE IF NOT EXISTS \"Tab_ErgebnisStromspeicher\" (" +
+            "\"ID\" INTEGER NOT NULL PRIMARY KEY, " +
+            "\"ID_Ergebnis\" INTEGER, \"ID_Energieanlage\" INTEGER, \"Bezeichner\" TEXT, " +
+            "\"Betriebsart\" TEXT CHECK (length(\"Betriebsart\") <= 50), " +
+            "\"Berechnungsart\" TEXT CHECK (length(\"Berechnungsart\") <= 50), " +
+            // Energie (7.1, Block 1)
+            "\"Ladung_PV\" REAL, \"Ladung_BHKW\" REAL, \"Ladung_Netz\" REAL, \"Ladung_Gesamt\" REAL, " +
+            "\"Entladung_Gesamt\" REAL, \"Verluste_Gesamt\" REAL, " +
+            "\"Netzbezug_Mit\" REAL, \"Netzbezug_Ohne\" REAL, " +
+            "\"Einspeisung_Mit\" REAL, \"Einspeisung_Ohne\" REAL, " +
+            "\"Eigenverbrauchsquote\" REAL, \"Autarkiegrad\" REAL, " +
+            // Speicher (7.1, Block 2)
+            "\"Vollzyklen\" REAL, \"SoC_Min\" REAL, \"SoC_Mittel\" REAL, \"SoC_Max\" REAL, " +
+            "\"Zeitanteil_Untergrenze\" REAL, \"Zeitanteil_Obergrenze\" REAL, " +
+            "\"Zyklen_Hochrechnung\" REAL, " +
+            // Wirtschaft (7.1, Block 3)
+            "\"Ertrag_Bezugsersparnis\" REAL, \"Ertrag_Verguetung_Entgangen\" REAL, " +
+            "\"Ertrag_Netzerloes\" REAL, \"Kosten_Ladung\" REAL, \"Ertrag_Leistungspreis\" REAL, " +
+            "\"Verschleisskosten\" REAL, \"Investition\" REAL, \"Annuitaet\" REAL, " +
+            "\"Jahresueberschuss\" REAL, \"Ertrag_Jahr1\" REAL, \"Ertrag_Aequivalent\" REAL, " +
+            "\"Amortisation_Statisch\" REAL, \"Amortisation_Dynamisch\" REAL, " +
+            "\"Kapitalwert\" REAL, \"Preisversion\" TEXT CHECK (length(\"Preisversion\") <= 50), " +
+            "FOREIGN KEY (\"ID_Ergebnis\") REFERENCES \"Tab_Ergebnis\" (\"ID\") ON DELETE CASCADE)";
+
+        private static bool PufferTabelleVorhanden()
         {
-            return TabelleVorhanden(conn, TAB_PUFFER);
+            return TabelleVorhanden(TAB_PUFFER);
         }
 
-        /// <summary>Gibt es die Tabelle? (Muster PufferTabelleVorhanden, nur mit Tabellennamen)</summary>
-        private static bool TabelleVorhanden(OleDbConnection conn, string tabelle)
+        /// <summary>Gibt es die Tabelle? ARBEITSPAKET S4b: Schema-Auskunft der
+        /// Zugriffsschicht statt <c>GetOleDbSchemaTable</c> (S4c vorgezogen).</summary>
+        private static bool TabelleVorhanden(string tabelle)
         {
-            DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                new object[] { null, null, tabelle, "TABLE" });
-            return schema != null && schema.Rows.Count > 0;
+            return StilleDb.TabelleVorhanden(tabelle);
         }
 
-        /// <summary>Gibt es den benannten Index auf der Tabelle? (Muster Migrationslauf.IndexVorhanden)</summary>
-        private static bool IndexVorhanden(OleDbConnection conn, string tabelle, string index)
+        /// <summary>
+        /// Gibt es EINEN der genannten Indizes auf der Tabelle?
+        /// ARBEITSPAKET S4b: ueber <c>DataRepository.IndexListe</c> (S4c vorgezogen).
+        ///
+        /// MEHRERE NAMEN, WEIL DAS ZIELSCHEMA ANDERS BENENNT: In der Access-Datenbank
+        /// hiess der Lese-Index "idx_ErgPuffer" bzw. "idx_ErgStromspeicher"; im
+        /// SQLite-Grundschema (003_indizes_fk.sql) traegt derselbe Index den Namen der
+        /// Beziehung ("FK_ErgPuffer" / "FK_ErgStromspeicher"). Ohne diesen Abgleich
+        /// legte die Rueckfallebene bei JEDEM Start einen zweiten, ueberfluessigen Index
+        /// unter dem Alt-Namen an.
+        /// </summary>
+        private static bool IndexVorhanden(string tabelle, params string[] namen)
         {
             try
             {
-                DataTable dt = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Indexes,
-                    new object[] { null, null, null, null, tabelle });
+                DataTable dt = DataRepository.IndexListe(tabelle);
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
-                        if (string.Equals(r["INDEX_NAME"].ToString(), index, StringComparison.OrdinalIgnoreCase))
-                            return true;
+                        foreach (string index in namen)
+                            if (string.Equals(Txt(r, "Indexname"), index, StringComparison.OrdinalIgnoreCase))
+                                return true;
             }
             catch { }
             return false;
@@ -1400,15 +1403,17 @@ namespace WindowsFormsApplication1
         /// von der Migration angelegte Beziehung kann anders heissen, erfuellt aber
         /// denselben Zweck; ein zweites ADD CONSTRAINT wuerde nur scheitern.
         /// </summary>
-        private static bool FremdschluesselVorhanden(OleDbConnection conn, string tabelle, string spalte)
+        private static bool FremdschluesselVorhanden(string tabelle, string spalte)
         {
             try
             {
-                DataTable dt = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Foreign_Keys, null);
+                // ARBEITSPAKET S4b: DataRepository.FremdschluesselListe liefert die
+                // Beziehungen EINER Tabelle (SQLite kennt kein globales Rowset), der
+                // Tabellenvergleich entfaellt deshalb.
+                DataTable dt = DataRepository.FremdschluesselListe(tabelle);
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
-                        if (string.Equals(Txt(r, "FK_TABLE_NAME"), tabelle, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(Txt(r, "FK_COLUMN_NAME"), spalte, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(Txt(r, "Quellspalte"), spalte, StringComparison.OrdinalIgnoreCase))
                             return true;
             }
             catch { }
@@ -1425,27 +1430,22 @@ namespace WindowsFormsApplication1
         /// laufenden Transaktion. Fehlt die Tabelle, gibt es auch keine Zeilen -
         /// der Aufrufer soll deswegen nicht abbrechen.
         /// </summary>
-        private static void PufferzeilenLoeschen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
+        private static void PufferzeilenLoeschen(DbVorgang v, int idProjekt)
         {
-            DetailzeilenLoeschen(conn, trans, TAB_PUFFER, idProjekt);
+            DetailzeilenLoeschen(v, TAB_PUFFER, idProjekt);
         }
 
         /// <summary>
         /// Wie <see cref="PufferzeilenLoeschen"/>, nur mit dem Tabellennamen als
         /// Parameter - AP3 braucht denselben Vorablauf fuer Tab_ErgebnisStromspeicher.
         /// </summary>
-        private static void DetailzeilenLoeschen(OleDbConnection conn, OleDbTransaction trans,
-                                                 string tabelle, int idProjekt)
+        private static void DetailzeilenLoeschen(DbVorgang v, string tabelle, int idProjekt)
         {
             try
             {
-                using (OleDbCommand c = new OleDbCommand(
-                    "DELETE FROM " + tabelle + " WHERE ID_Ergebnis IN " +
-                    "(SELECT ID FROM " + TAB_KOPF + " WHERE ID_Projekt = ?)", conn, trans))
-                {
-                    c.Parameters.Add("@p", OleDbType.Integer).Value = idProjekt;
-                    c.ExecuteNonQuery();
-                }
+                v.Ausfuehren("DELETE FROM " + tabelle + " WHERE ID_Ergebnis IN " +
+                             "(SELECT ID FROM " + TAB_KOPF + " WHERE ID_Projekt = ?)",
+                             new OleDbParameter("@p", OleDbType.Integer) { Value = idProjekt });
             }
             catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
         }
@@ -1464,20 +1464,12 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    if (!PufferTabelleVorhanden(conn)) return null;
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, still wie bisher.
+                if (!PufferTabelleVorhanden()) return null;
 
-                    DataTable dt = new DataTable();
-                    using (OleDbCommand cmd = new OleDbCommand(
-                        "SELECT * FROM " + TAB_PUFFER + " WHERE ID_Ergebnis = ? ORDER BY ID", conn))
-                    {
-                        cmd.Parameters.Add("@e", OleDbType.Integer).Value = idErgebnis;
-                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd)) ad.Fill(dt);
-                    }
-                    return dt;
-                }
+                return StilleDb.Tabelle(
+                    "SELECT * FROM " + TAB_PUFFER + " WHERE ID_Ergebnis = ? ORDER BY ID",
+                    StilleDb.Par("@e", OleDbType.Integer, idErgebnis));
             }
             catch { return null; }
         }
@@ -1492,51 +1484,48 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    if (!TabelleVorhanden(conn, TAB_SP)) return null;
+                // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, still wie bisher.
+                if (!TabelleVorhanden(TAB_SP)) return null;
 
-                    DataTable dt = new DataTable();
-                    using (OleDbCommand cmd = new OleDbCommand(
-                        "SELECT * FROM " + TAB_SP + " WHERE ID_Ergebnis = ? ORDER BY ID", conn))
-                    {
-                        cmd.Parameters.Add("@e", OleDbType.Integer).Value = idErgebnis;
-                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd)) ad.Fill(dt);
-                    }
-                    return dt;
-                }
+                return StilleDb.Tabelle(
+                    "SELECT * FROM " + TAB_SP + " WHERE ID_Ergebnis = ? ORDER BY ID",
+                    StilleDb.Par("@e", OleDbType.Integer, idErgebnis));
             }
             catch { return null; }
         }
 
-        private static void Ddl(OleDbConnection conn, string sql)
+        /// <summary>
+        /// Eine DDL-/Verwaltungsanweisung, still. ARBEITSPAKET S4b, Verhaltenstreue:
+        /// Der frueherer Weg WARF bei einem Fehlschlag - darauf bauen die
+        /// try/catch-Klammern der Aufrufer (ein misslungenes CREATE bricht ab, ein
+        /// misslungenes DELETE nicht). StilleDb wirft nicht, also wird hier von Hand
+        /// geworfen; gefangen wurde die Ausnahme schon bisher wortlos.
+        /// </summary>
+        private static void Ddl(string sql)
         {
-            using (OleDbCommand cmd = new OleDbCommand(sql, conn)) cmd.ExecuteNonQuery();
+            if (StilleDb.NonQuery(sql) < 0)
+                throw new InvalidOperationException("Anweisung fehlgeschlagen: " + sql);
         }
 
-        private static void ErgaenzeSpalte(OleDbConnection conn, string tabelle, string spalte, string typ)
+        /// <summary>
+        /// Legt eine Spalte an, falls sie fehlt. ARBEITSPAKET S4b: Schema-Auskunft statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), Access-Typ -&gt; SQLite beim
+        /// Verbrauch (S4d vorgezogen). Wirft wie bisher, wenn das ALTER scheitert.
+        /// </summary>
+        private static void ErgaenzeSpalte(string tabelle, string spalte, string typ)
         {
-            DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-                new object[] { null, null, tabelle, null });
-            if (cols != null)
-                foreach (DataRow rc in cols.Rows)
-                    if (string.Equals(rc["COLUMN_NAME"].ToString(), spalte, StringComparison.OrdinalIgnoreCase))
-                        return;   // vorhanden
-            using (OleDbCommand c = new OleDbCommand(
-                "ALTER TABLE " + tabelle + " ADD COLUMN " + spalte + " " + typ, conn))
-                c.ExecuteNonQuery();
+            System.Collections.Generic.HashSet<string> vorhanden = StilleDb.SpaltenNamen(tabelle);
+            if (vorhanden != null && vorhanden.Contains(spalte)) return;   // vorhanden
+
+            Ddl(StilleDb.AlterTableAddColumn(tabelle, spalte, typ));
         }
 
         // --- Helpers ---
 
-        private static int NextId(OleDbConnection conn, OleDbTransaction trans, string table)
+        private static int NextId(DbVorgang v, string table)
         {
-            using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + table, conn, trans))
-            {
-                object m = c.ExecuteScalar();
-                return ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-            }
+            object m = v.Skalar("SELECT MAX(ID) FROM " + table);
+            return ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
         }
 
         // Rundet Ergebniswerte auf max. 2 Nachkommastellen (kaufmaennisch).
@@ -1560,12 +1549,12 @@ namespace WindowsFormsApplication1
         /// Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben; dieselbe
         /// Begruendung wie bei Quellwaerme und den Vbh-Spalten.
         /// </summary>
-        private static void KanalParameter(OleDbCommand c, double[] werte)
+        private static void KanalParameter(List<OleDbParameter> p, double[] werte)
         {
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
-                double v = (werte != null && k < werte.Length) ? werte[k] : 0.0;
-                c.Parameters.Add("@k" + k, OleDbType.Double).Value = R(v);
+                double wert = (werte != null && k < werte.Length) ? werte[k] : 0.0;
+                p.Add(new OleDbParameter("@k" + k, OleDbType.Double) { Value = R(wert) });
             }
         }
 
@@ -1604,12 +1593,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt52_ErgebnisJeKanal)
-                        ErgaenzeSpalte(conn, s.Tabelle, s.Name, s.TypDefinition);
-                }
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt52_ErgebnisJeKanal)
+                    ErgaenzeSpalte(s.Tabelle, s.Name, s.TypDefinition);
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
         }

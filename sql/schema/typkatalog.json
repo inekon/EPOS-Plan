@@ -1,0 +1,348 @@
+{
+  "Erzeugt": "2026-09-01 15:16",
+  "Quelle": "C:\\ProgramData\\EPOS_PLAN\\Kenndaten.accdb",
+  "SchemaVersion": 61,
+  "Bool": {
+    "SpaltenGesamt": 97,
+    "NamenEindeutig": 61,
+    "Namen": [
+      "Aktiv",
+      "Anteil_CO2_Aktiv",
+      "Anteil_Energiesteuer_Aktiv",
+      "Anteil_Netzentgelt_Aktiv",
+      "Anteil_Vertrieb_Aktiv",
+      "Aufschlaege_Anwenden",
+      "Aufschlag_Anwenden",
+      "Aufschlag_Konzession_Aktiv",
+      "Aufschlag_Netzentgelt_Aktiv",
+      "Aufschlag_Stromsteuer_Aktiv",
+      "Aufschlag_Umlagen_Aktiv",
+      "Aufschlag_Vertrieb_Aktiv",
+      "BHKW_Stromgefuehrt",
+      "BHKW_Ueberschuss_Zulaessig",
+      "BezugAusPreisreihe",
+      "Bivalenter_Betrieb",
+      "Brennwert",
+      "Extrapolation_erlaubt",
+      "Hocheffizienz_Nachweis",
+      "IsMainComponent",
+      "IstErloes",
+      "IstPflicht",
+      "IstStamm",
+      "IstStandard",
+      "KWKG_Pauschalmodus",
+      "Kaskade_Zweikanalig",
+      "Kompatibilitaetsmodus",
+      "Netzentladung",
+      "Nutzung_Brauchwasser",
+      "Nutzung_Heizung",
+      "Nutzung_Prozess",
+      "PV_Zulaessig",
+      "Par51a_Kompensieren",
+      "Raeumlicher_Zusammenhang",
+      "ReadOnly",
+      "Sim_BHKW",
+      "Sim_Energiebedarf",
+      "Sim_Heizkessel",
+      "Sim_PV",
+      "Sim_Solarthermie",
+      "Sim_Stromspeicher",
+      "Sim_Waermepumpe",
+      "Sperrung",
+      "Veraenderbar",
+      "WE",
+      "WP_Heizstab",
+      "WQ_Unbegrenzt",
+      "aktiv",
+      "ausgewaehlt",
+      "dezWarmwasserbereitung",
+      "has_density",
+      "has_hi",
+      "has_hs",
+      "has_powerprice",
+      "is_active",
+      "ist_aktiv",
+      "ist_auslieferung",
+      "ist_co2e",
+      "ist_pflicht",
+      "rendeMix",
+      "user_edited"
+    ],
+    "JeTabelle": {
+      "emissionsart": [
+        "ist_pflicht",
+        "ausgewaehlt",
+        "ist_auslieferung"
+      ],
+      "emissionswert": [
+        "ist_co2e",
+        "ist_aktiv",
+        "ist_auslieferung"
+      ],
+      "energy_carrier": [
+        "is_active"
+      ],
+      "energy_conversion": [
+        "user_edited",
+        "aktiv"
+      ],
+      "energy_project_settings": [
+        "Aufschlag_Netzentgelt_Aktiv",
+        "Aufschlag_Umlagen_Aktiv",
+        "Aufschlag_Stromsteuer_Aktiv",
+        "Aufschlag_Konzession_Aktiv",
+        "Aufschlag_Vertrieb_Aktiv",
+        "Anteil_Energiesteuer_Aktiv",
+        "Anteil_CO2_Aktiv",
+        "Anteil_Netzentgelt_Aktiv",
+        "Anteil_Vertrieb_Aktiv"
+      ],
+      "pricing_model": [
+        "has_hi",
+        "has_hs",
+        "has_powerprice",
+        "has_density"
+      ],
+      "Tab_BHKW_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Brauchwasser_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Brauchwassertyp_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Brennstoff_Stamm": [
+        "ReadOnly"
+      ],
+      "Tab_DBTagV_STAMM": [
+        "Veraenderbar",
+        "ReadOnly"
+      ],
+      "Tab_DBTagVDaten_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Einstellungen": [
+        "WP_Heizstab",
+        "Extrapolation_erlaubt",
+        "Kaskade_Zweikanalig"
+      ],
+      "Tab_Energieanlagen": [
+        "Sperrung",
+        "Bivalenter_Betrieb",
+        "Heizstab",
+        "rendeMix",
+        "WQ_Unbegrenzt"
+      ],
+      "Tab_Ergebnis": [
+        "Sim_Energiebedarf",
+        "Sim_Waermepumpe",
+        "Sim_Heizkessel",
+        "Sim_Solarthermie",
+        "Sim_BHKW",
+        "Sim_PV",
+        "Sim_Stromspeicher"
+      ],
+      "Tab_ErgebnisWirtschaftlichkeit": [
+        "IstStamm"
+      ],
+      "Tab_Gebaeude_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Heizkessel": [
+        "Brennwert"
+      ],
+      "Tab_Heizkessel_STAMM": [
+        "Brennwert",
+        "ReadOnly"
+      ],
+      "Tab_Kenndaten_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Klimadaten": [
+        "WE"
+      ],
+      "Tab_Klimadaten_STAMM": [
+        "WE"
+      ],
+      "Tab_Klimaregion_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Kostenfaktor": [
+        "IsMainComponent"
+      ],
+      "Tab_KostenVorlage": [
+        "IstStandard",
+        "ReadOnly"
+      ],
+      "Tab_KostenVorlagePosition": [
+        "IstErloes",
+        "IstPflicht"
+      ],
+      "Tab_ProjektPhotovoltaik": [
+        "Aktiv",
+        "Par51a_Kompensieren",
+        "BezugAusPreisreihe"
+      ],
+      "Tab_ProjektTarif": [
+        "Aktiv"
+      ],
+      "Tab_ProjektWerte": [
+        "IstErloes",
+        "IstPflicht"
+      ],
+      "Tab_ProjektWirtschaftlichkeit": [
+        "Raeumlicher_Zusammenhang",
+        "Hocheffizienz_Nachweis",
+        "Aufschlaege_Anwenden",
+        "KWKG_Pauschalmodus"
+      ],
+      "Tab_Prozesstyp": [
+        "ReadOnly"
+      ],
+      "Tab_Prozesstyp_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Prozesswaerme": [
+        "ReadOnly"
+      ],
+      "Tab_Prozesswaerme_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Pufferspeicher": [
+        "Nutzung_Heizung",
+        "Nutzung_Brauchwasser",
+        "Nutzung_Prozess"
+      ],
+      "Tab_Pufferspeicher_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_PV_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Solarganglinie_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_SolarganglinieDaten_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Solarkollektoren_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Stromganglinie_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_StromganglinieDaten_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Stromspeicher_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_StromspeicherVariante": [
+        "PV_Zulaessig",
+        "BHKW_Ueberschuss_Zulaessig",
+        "BHKW_Stromgefuehrt",
+        "Netzentladung",
+        "Kompatibilitaetsmodus",
+        "Aktiv",
+        "Aufschlag_Anwenden"
+      ],
+      "Tab_Stromverbraucher_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Stromverbrauchertyp_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_Waermebedarf": [
+        "ReadOnly"
+      ],
+      "Tab_Waermebedarf_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_WaermebedarfDaten_STAMM": [
+        "ReadOnly"
+      ],
+      "Tab_WP_STAMM": [
+        "ReadOnly"
+      ],
+      "Z_ProjektGebaeude": [
+        "dezWarmwasserbereitung"
+      ]
+    },
+    "MehrdeutigeNamen": [
+      {
+        "Spalte": "Heizstab",
+        "Vorkommen": [
+          "Tab_Energieanlagen=dbBoolean",
+          "Tab_ErgebnisWaermepumpeModul=dbDouble"
+        ]
+      }
+    ]
+  },
+  "Datum": {
+    "SpaltenGesamt": 20,
+    "NamenEindeutig": 11,
+    "Namen": [
+      "Aenderungsdatum",
+      "Erstelldatum",
+      "GeaendertAm",
+      "Inbetriebnahme",
+      "KWKG_Inbetriebnahme",
+      "KWKG_Stichtag",
+      "Tarif_GueltigAb",
+      "Zeitstempel",
+      "gueltig_ab",
+      "valid_from",
+      "valid_to"
+    ],
+    "JeTabelle": {
+      "Berichtskonfiguration": [
+        "GeaendertAm"
+      ],
+      "emissionswert": [
+        "gueltig_ab"
+      ],
+      "energy_price": [
+        "valid_from",
+        "valid_to"
+      ],
+      "Tab_Energieanlagen": [
+        "KWKG_Stichtag",
+        "KWKG_Inbetriebnahme"
+      ],
+      "Tab_Ergebnis": [
+        "Zeitstempel"
+      ],
+      "Tab_ErgebnisStromMatrix": [
+        "Zeitstempel"
+      ],
+      "Tab_ErgebnisWirtschaftlichkeit": [
+        "Zeitstempel"
+      ],
+      "Tab_ErgebnisWirtSensitivitaet": [
+        "Zeitstempel"
+      ],
+      "Tab_KostenVorlage": [
+        "GeaendertAm"
+      ],
+      "Tab_Projekt": [
+        "Aenderungsdatum",
+        "Erstelldatum"
+      ],
+      "Tab_ProjektPhotovoltaik": [
+        "Inbetriebnahme",
+        "GeaendertAm"
+      ],
+      "Tab_ProjektTarif": [
+        "GeaendertAm",
+        "Tarif_GueltigAb"
+      ],
+      "Tab_ProjektWirtschaftlichkeit": [
+        "GeaendertAm",
+        "KWKG_Stichtag",
+        "KWKG_Inbetriebnahme"
+      ]
+    },
+    "MehrdeutigeNamen": []
+  }
+}

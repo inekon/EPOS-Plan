@@ -100,14 +100,17 @@ namespace WindowsFormsApplication1
             {
                 DataRow dr = dt.Rows[i];
                 item = new Z_ProjGebModel();
-                item.ID_Z = (int)dr["ID"];
+                // ARBEITSPAKET S5: harte Casts -> Convert (Typ-Vereinheitlichung).
+                // Der Typ-Rueckweg D9 liefert bereits Int32/Boolean; Convert ist die
+                // robuste Form, die auch bei Int64/0-1 aus SQLite traegt. Verhalten gleich.
+                item.ID_Z = Convert.ToInt32(dr["ID"]);
                 item.ID_Projekt = m_ID_Projekt;
-                item.ID_Gebaeude = (int)dr["ID_ProjektGebaeude"];
+                item.ID_Gebaeude = Convert.ToInt32(dr["ID_ProjektGebaeude"]);
                 item.Gebaeudename = (string)dr["Gebaeudename"];
                 item.Wohnflaeche = (double)dr["Wohnflaeche_Waermebedarf"];
                 item.Einheit = (string)dr["Einheit_Waermebedarf_Wohnflaeche"];
                 item.Jahresnutzungsgrad = (double)dr["Jahresnutzungsgrad"];
-                item.DezentralWarmwasser = (bool)dr["dezWarmwasserbereitung"];
+                item.DezentralWarmwasser = Convert.ToBoolean(dr["dezWarmwasserbereitung"]);
                 item.Gebaeudeart = (string)dr["Gebaeudeart"];  
                 item.Beschreibung = (string)dr["Beschreibung"];
                 item.Baualtersklasse = (string)dr["Baualtersklasse"];

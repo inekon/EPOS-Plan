@@ -65,9 +65,14 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Ohne Dialog, Schema je Tabelle.</b> Eine Vorsorge ist kein Bedienschritt
-        /// und darf keine MessageBox zeigen — deshalb eigene <see cref="OleDbConnection"/>
+        /// und darf keine MessageBox zeigen — deshalb <see cref="StilleDb"/>
         /// statt <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog
         /// zeigt.
+        /// </para>
+        /// <para>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
+        /// Access-Typen (S4d vorgezogen).
         /// </para>
         /// <para>
         /// <b>Keine Vorbelegung nötig.</b> Anders als bei Schritt 15 muss eine frisch
@@ -84,77 +89,53 @@ namespace WindowsFormsApplication1
             bool ok = false;
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                HashSet<string> vorhanden = StilleDb.SpaltenNamen(SchemaKatalog.TAB_PROJEKTWERTE);
+                if (vorhanden != null)
                 {
-                    conn.Open();
-
-                    HashSet<string> vorhanden = SpaltenNamen(conn, SchemaKatalog.TAB_PROJEKTWERTE);
-                    if (vorhanden != null)
+                    ok = true;
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt19_Kostenarten)
                     {
-                        ok = true;
-                        foreach (SchemaSpalte s in SchemaKatalog.Schritt19_Kostenarten)
+                        if (vorhanden.Contains(s.Name)) continue;
+                        if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                                s.Tabelle, s.Name, s.TypDefinition)) < 0)
                         {
-                            if (vorhanden.Contains(s.Name)) continue;
-                            try
-                            {
-                                using (OleDbCommand cmd = new OleDbCommand(
-                                    "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
-                                    s.TypDefinition, conn))
-                                    cmd.ExecuteNonQuery();
-                            }
-                            catch (Exception ex)
-                            {
-                                Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
-                                ok = false;
-                            }
+                            Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
+                            ok = false;
                         }
+                    }
 
-                        // ETAPPE KD6 (§ 11, FK10): dieselbe Vorsorge für die
-                        // Tab_ProjektWerte-Spalten des Schritts 38 (VorlageID,
-                        // StartJahr) — die Leser fragen sie fest an. Nur die
-                        // PW-Spalten; die energy_carrier-Spalten des Schritts
-                        // gehören nicht in diese Vorsorge.
-                        foreach (SchemaSpalte s in SchemaKatalog.Schritt38_Spalten)
+                    // ETAPPE KD6 (§ 11, FK10): dieselbe Vorsorge für die
+                    // Tab_ProjektWerte-Spalten des Schritts 38 (VorlageID,
+                    // StartJahr) — die Leser fragen sie fest an. Nur die
+                    // PW-Spalten; die energy_carrier-Spalten des Schritts
+                    // gehören nicht in diese Vorsorge.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt38_Spalten)
+                    {
+                        if (!string.Equals(s.Tabelle, SchemaKatalog.TAB_PROJEKTWERTE,
+                                           StringComparison.Ordinal)) continue;
+                        if (vorhanden.Contains(s.Name)) continue;
+                        if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                                s.Tabelle, s.Name, s.TypDefinition)) < 0)
                         {
-                            if (!string.Equals(s.Tabelle, SchemaKatalog.TAB_PROJEKTWERTE,
-                                               StringComparison.Ordinal)) continue;
-                            if (vorhanden.Contains(s.Name)) continue;
-                            try
-                            {
-                                using (OleDbCommand cmd = new OleDbCommand(
-                                    "ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
-                                    s.TypDefinition, conn))
-                                    cmd.ExecuteNonQuery();
-                            }
-                            catch (Exception ex)
-                            {
-                                Protokoll(s.Tabelle + "." + s.Name + ": " + ex.Message);
-                                ok = false;
-                            }
+                            Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
+                            ok = false;
                         }
-                        // Ä20/Ä21 (Migrationsschritte 45/46): Anlagenbezug der
-                        // Positionen samt Geräteanker — die Lese-/Schreibwege
-                        // filtern fest nach ID_Anlage, die Reparatur braucht
-                        // ID_AnlageGeraet.
-                        foreach (string spalte in new[]
-                                 { SchemaKatalog.SPALTE_PW_ID_ANLAGE,
-                                   SchemaKatalog.SPALTE_PW_ID_ANLAGE_GERAET })
+                    }
+                    // Ä20/Ä21 (Migrationsschritte 45/46): Anlagenbezug der
+                    // Positionen samt Geräteanker — die Lese-/Schreibwege
+                    // filtern fest nach ID_Anlage, die Reparatur braucht
+                    // ID_AnlageGeraet.
+                    foreach (string spalte in new[]
+                             { SchemaKatalog.SPALTE_PW_ID_ANLAGE,
+                               SchemaKatalog.SPALTE_PW_ID_ANLAGE_GERAET })
+                    {
+                        if (vorhanden.Contains(spalte)) continue;
+                        if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
+                                SchemaKatalog.TAB_PROJEKTWERTE, spalte, "LONG")) < 0)
                         {
-                            if (vorhanden.Contains(spalte)) continue;
-                            try
-                            {
-                                using (OleDbCommand cmd = new OleDbCommand(
-                                    "ALTER TABLE [" + SchemaKatalog.TAB_PROJEKTWERTE +
-                                    "] ADD COLUMN [" + spalte + "] LONG",
-                                    conn))
-                                    cmd.ExecuteNonQuery();
-                            }
-                            catch (Exception ex)
-                            {
-                                Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
-                                          spalte + ": " + ex.Message);
-                                ok = false;
-                            }
+                            Protokoll(SchemaKatalog.TAB_PROJEKTWERTE + "." +
+                                      spalte + ": Spalte konnte nicht angelegt werden.");
+                            ok = false;
                         }
                     }
                 }
@@ -163,26 +144,6 @@ namespace WindowsFormsApplication1
 
             _spaltenBereit = ok;
             return ok;
-        }
-
-        /// <summary>
-        /// Die Spaltennamen einer Tabelle, oder <c>null</c>, wenn es die Tabelle nicht
-        /// gibt bzw. das Schema nicht lesbar ist.
-        /// </summary>
-        private static HashSet<string> SpaltenNamen(OleDbConnection conn, string tabelle)
-        {
-            try
-            {
-                DataTable cols = conn.GetOleDbSchemaTable(
-                    OleDbSchemaGuid.Columns, new object[] { null, null, tabelle, null });
-
-                if (cols == null || cols.Rows.Count == 0) return null;
-
-                var namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (DataRow r in cols.Rows) namen.Add(Convert.ToString(r["COLUMN_NAME"]));
-                return namen;
-            }
-            catch { return null; }
         }
 
         /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>

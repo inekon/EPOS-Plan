@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
     /// <b>Über <see cref="DataRepository"/> mit <c>?</c>-Parametern</b>, nicht über
     /// <c>RecordSet</c> — Vorgabe für neuen Code. Ein Sonderfall bleibt: Das
     /// <c>INSERT</c> und das <c>DELETE</c> einer Anlage laufen auf EINER Verbindung
-    /// in EINER Transaktion (<c>DataRepository.BeginTransaction</c>), damit ein
+    /// in EINER Transaktion (<c>DataRepository.Vorgang</c>), damit ein
     /// gescheitertes Insert nicht eine Anlage ohne jede Senke hinterlässt — und Rang 1
     /// ist Pflicht.
     /// </para>
@@ -200,21 +200,18 @@ namespace WindowsFormsApplication1
         {
             if (idAnlage <= 0 || !SpalteVorhanden()) return false;
 
-            OleDbConnection conn = null;
-            OleDbTransaction trans = null;
+            // ARBEITSPAKET S4e: Der Vorgang wird bewusst INNERHALB des try geoeffnet -
+            // genau dort stand bisher der Aufruf, der das Verbindungstupel holte. Ein
+            // Fehler beim Verbindungsaufbau soll in denselben catch laufen; deshalb hier
+            // kein using, sondern Dispose im finally.
+            DbVorgang v = null;
 
             try
             {
-                var tx = DataRepository.BeginTransaction();
-                conn = tx.Item1;
-                trans = tx.Item2;
+                v = DataRepository.Vorgang();
 
-                using (OleDbCommand del = new OleDbCommand(
-                    "DELETE FROM [" + TABLE + "] WHERE ID_Anlage = ?", conn, trans))
-                {
-                    del.Parameters.Add(new OleDbParameter("@anl", OleDbType.Integer) { Value = idAnlage });
-                    del.ExecuteNonQuery();
-                }
+                v.Ausfuehren("DELETE FROM [" + TABLE + "] WHERE ID_Anlage = ?",
+                             new OleDbParameter("@anl", OleDbType.Integer) { Value = idAnlage });
 
                 int rang = 0;
                 if (zeilen != null)
@@ -224,51 +221,46 @@ namespace WindowsFormsApplication1
                         if (z == null) continue;
                         rang++;
 
-                        using (OleDbCommand ins = new OleDbCommand(
+                        // Reihenfolge der Parameter = Reihenfolge der Spalten:
+                        // OleDb bindet nach POSITION, nicht nach Namen.
+                        v.Ausfuehren(
                             "INSERT INTO [" + TABLE + "] " +
                             "(ID_Anlage, Rang, Ziel, Bedarfsart, ID_Puffer, Ladeprio, " +
                             " Ladeprio_PV, Ladegrenze, Anschlusshoehe) " +
-                            "VALUES (?,?,?,?,?,?,?,?,?)", conn, trans))
-                        {
-                            // Reihenfolge der Parameter = Reihenfolge der Spalten:
-                            // OleDb bindet nach POSITION, nicht nach Namen.
-                            ins.Parameters.Add(Par("@anl", OleDbType.Integer, idAnlage));
-                            ins.Parameters.Add(Par("@rang", OleDbType.Integer, rang));
-                            ins.Parameters.Add(Par("@ziel", OleDbType.VarWChar,
-                                string.IsNullOrEmpty(z.Ziel) ? DbWerte.WS_ZIEL_HEIZKREIS : z.Ziel));
-                            ins.Parameters.Add(Par("@art", OleDbType.VarWChar,
-                                string.IsNullOrEmpty(z.Bedarfsart) ? DbWerte.WS_TYP_BEIDES : z.Bedarfsart));
+                            "VALUES (?,?,?,?,?,?,?,?,?)",
+                            Par("@anl", OleDbType.Integer, idAnlage),
+                            Par("@rang", OleDbType.Integer, rang),
+                            Par("@ziel", OleDbType.VarWChar,
+                                string.IsNullOrEmpty(z.Ziel) ? DbWerte.WS_ZIEL_HEIZKREIS : z.Ziel),
+                            Par("@art", OleDbType.VarWChar,
+                                string.IsNullOrEmpty(z.Bedarfsart) ? DbWerte.WS_TYP_BEIDES : z.Bedarfsart),
                             // 0 wird NIE geschrieben - die Beziehung auf
                             // Tab_Pufferspeicher.ID ist erzwungen, "kein Puffer" ist NULL.
-                            ins.Parameters.Add(Par("@puf", OleDbType.Integer,
-                                z.ID_Puffer > 0 ? (object)z.ID_Puffer : null));
-                            ins.Parameters.Add(Par("@prio", OleDbType.Integer, z.Ladeprio));
-                            ins.Parameters.Add(Par("@prioPv", OleDbType.Integer, z.Ladeprio_PV));
-                            ins.Parameters.Add(Par("@grenze", OleDbType.Double, z.Ladegrenze));
+                            Par("@puf", OleDbType.Integer,
+                                z.ID_Puffer > 0 ? (object)z.ID_Puffer : null),
+                            Par("@prio", OleDbType.Integer, z.Ladeprio),
+                            Par("@prioPv", OleDbType.Integer, z.Ladeprio_PV),
+                            Par("@grenze", OleDbType.Double, z.Ladegrenze),
                             // -1 heisst "nicht gesetzt" -> NULL; 0 ist eine GUELTIGE
                             // Hoehe (ganz unten) und muss geschrieben werden.
-                            ins.Parameters.Add(Par("@hoehe", OleDbType.Double,
+                            Par("@hoehe", OleDbType.Double,
                                 z.Anschlusshoehe >= 0 ? (object)z.Anschlusshoehe : null));
-
-                            ins.ExecuteNonQuery();
-                        }
                     }
                 }
 
-                trans.Commit();
+                v.Commit();
                 return true;
             }
             catch (Exception ex)
             {
-                if (trans != null) { try { trans.Rollback(); } catch { } }
+                if (v != null) { try { v.Rollback(); } catch { } }
                 Console.WriteLine("Die Senkenliste der Anlage " + idAnlage +
                                   " konnte nicht gespeichert werden: " + ex.Message);
                 return false;
             }
             finally
             {
-                if (trans != null) { try { trans.Dispose(); } catch { } }
-                if (conn != null) { try { conn.Close(); } catch { } try { conn.Dispose(); } catch { } }
+                if (v != null) { try { v.Dispose(); } catch { } }
             }
         }
 

@@ -53,47 +53,31 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // Verbindung explizit öffnen, um Massendaten gebündelt zu verarbeiten
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                // Der Vorgang bündelt alle Schreibvorgänge in EINER Transaktion und
+                // schreibt sie erst am Ende auf die Platte
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
+                    string sqlInsert = "INSERT INTO Tab_SolarganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
 
-                    // Die Transaktion bündelt alle Schreibvorgänge im RAM und schreibt sie erst am Ende auf die Platte
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    try
                     {
-                        using (OleDbCommand cmd = new OleDbCommand())
+                        foreach (var item in list_GanglinieDaten)
                         {
-                            cmd.Connection = conn;
-                            cmd.Transaction = trans;
-                            cmd.CommandText = "INSERT INTO Tab_SolarganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
-
-                            // Parameter vorab mit expliziten OleDbTypes definieren (verhindert den Laufzeitfehler)
-                            cmd.Parameters.Add("@id", OleDbType.Integer);
-                            cmd.Parameters.Add("@wert", OleDbType.Double);
-
-                            try
-                            {
-                                foreach (var item in list_GanglinieDaten)
-                                {
-                                    // In der Schleife werden hocheffizient nur die Werte ausgetauscht
-                                    cmd.Parameters[0].Value = item.m_ID_GanglinieDaten;
-                                    cmd.Parameters[1].Value = item.m_Wert;
-
-                                    cmd.ExecuteNonQuery();
-                                }
-
-                                // Erst jetzt wird die Änderung physikalisch in der *.accdb gespeichert
-                                trans.Commit();
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                // Bei einem Fehler in der Schleife (z.B. Verletzung von DB-Regeln) wird alles zurückgerollt
-                                trans.Rollback();
-                                Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
-                                return false;
-                            }
+                            v.Ausfuehren(sqlInsert,
+                                new OleDbParameter("@id", OleDbType.Integer) { Value = item.m_ID_GanglinieDaten },
+                                new OleDbParameter("@wert", OleDbType.Double) { Value = item.m_Wert });
                         }
+
+                        // Erst jetzt wird die Änderung physikalisch gespeichert
+                        v.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Bei einem Fehler in der Schleife (z.B. Verletzung von DB-Regeln) wird alles zurückgerollt
+                        v.Rollback();
+                        Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
+                        return false;
                     }
                 }
             }

@@ -81,59 +81,51 @@ namespace WindowsFormsApplication1
         {
             if (roheWerte == null || roheWerte.Count == 0) return false;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neueId;
-                using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + HEAD_STAMM, conn, trans))
+                try
                 {
-                    object m = c.ExecuteScalar();
-                    neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                }
+                    int neueId;
+                    {
+                        object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
+                        neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, ReadOnly) VALUES (?, ?, ?)", conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
-                    c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                    c.Parameters.Add("@ro", OleDbType.Boolean).Value = false;
-                    c.ExecuteNonQuery();
-                }
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
+                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                        p.Add(new OleDbParameter("@ro", OleDbType.Boolean) { Value = false });
+                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, ReadOnly) VALUES (?, ?, ?)", p.ToArray());
+                    }
 
-                int neueDatenId;
-                using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + DATA_STAMM, conn, trans))
-                {
-                    object m = c.ExecuteScalar();
-                    neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                }
+                    int neueDatenId;
+                    {
+                        object m = v.Skalar("SELECT MAX(ID) FROM " + DATA_STAMM);
+                        neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)", conn, trans))
-                {
-                    var pId = c.Parameters.Add("@did", OleDbType.Integer);
-                    var pG = c.Parameters.Add("@dg", OleDbType.Integer);
-                    var pW = c.Parameters.Add("@dw", OleDbType.Double);
-                    var pR = c.Parameters.Add("@dr", OleDbType.Boolean);
                     foreach (string s in roheWerte)
                     {
-                        pId.Value = neueDatenId++;
-                        pG.Value = neueId;
-                        pW.Value = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
-                        pR.Value = false;
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren(
+                            "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
+                            new OleDbParameter("@did", OleDbType.Integer) { Value = neueDatenId++ },
+                            new OleDbParameter("@dg", OleDbType.Integer) { Value = neueId },
+                            new OleDbParameter("@dw", OleDbType.Double)
+                            { Value = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
+                            new OleDbParameter("@dr", OleDbType.Boolean) { Value = false });
                     }
-                }
 
-                trans.Commit();
-                return true;
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
-                return false;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Projekt-Ganglinie-ID (Tab_Waermebedarf.ID) zu einem Bezeichner im Projekt, oder 0.
@@ -154,86 +146,74 @@ namespace WindowsFormsApplication1
             int existing = GetProjektGanglinieId(szBezeichner, idProjekt);
             if (existing > 0) return existing;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, conn, trans);
-                if (neu > 0) trans.Commit(); else trans.Rollback();
-                return neu;
+                try
+                {
+                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v);
+                    if (neu > 0) v.Commit(); else v.Rollback();
+                    return neu;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Kopieren der Waermebedarf-Ganglinie ins Projekt: " + ex.Message);
+                    return 0;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Kopieren der Waermebedarf-Ganglinie ins Projekt: " + ex.Message);
-                return 0;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Kopiert eine Stamm-Ganglinie (per Bezeichner) samt Daten in die Projekt-Tabellen.
         // Kopf-ID und Daten-IDs im Projekt explizit (MAX+1); ID_Ganglinie = neue Kopf-ID.
-        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, OleDbConnection conn, OleDbTransaction trans)
+        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v)
         {
             int stammId;
-            using (OleDbCommand c = new OleDbCommand(
-                "SELECT ID FROM " + HEAD_STAMM + " WHERE Bezeichner = ?", conn, trans))
             {
-                c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                using (OleDbDataReader r = c.ExecuteReader())
-                {
-                    if (!r.Read()) return 0;
-                    stammId = Convert.ToInt32(r["ID"]);
-                }
+                DataTable dtKopf = v.Lese(
+                    "SELECT ID FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                if (dtKopf.Rows.Count == 0) return 0;
+                stammId = Convert.ToInt32(dtKopf.Rows[0]["ID"]);
             }
 
             int neueId;
-            using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + HEAD_PROJ, conn, trans))
             {
-                object m = c.ExecuteScalar();
+                object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_PROJ);
                 neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
             }
 
             // Projekt-Kopf (Tab_Waermebedarf) ohne ReadOnly.
-            using (OleDbCommand c = new OleDbCommand(
-                "INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner) VALUES (?, ?, ?)", conn, trans))
             {
-                c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
-                c.Parameters.Add("@proj", OleDbType.Integer).Value = idProjekt;
-                c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                c.ExecuteNonQuery();
+                List<OleDbParameter> p = new List<OleDbParameter>();
+                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
+                p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
+                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner) VALUES (?, ?, ?)", p.ToArray());
             }
 
             // Daten der Stamm-Ganglinie in Reihenfolge lesen ...
             List<double> werte = new List<double>();
-            using (OleDbCommand c = new OleDbCommand(
-                "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID", conn, trans))
             {
-                c.Parameters.Add("@g", OleDbType.Integer).Value = stammId;
-                using (OleDbDataReader r = c.ExecuteReader())
-                    while (r.Read())
-                        werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
+                DataTable dtWerte = v.Lese(
+                    "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID",
+                    new OleDbParameter("@g", OleDbType.Integer) { Value = stammId });
+                foreach (DataRow r in dtWerte.Rows)
+                    werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
             }
 
             int neueDatenId;
-            using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + DATA_PROJ, conn, trans))
             {
-                object m = c.ExecuteScalar();
+                object m = v.Skalar("SELECT MAX(ID) FROM " + DATA_PROJ);
                 neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
             }
 
-            using (OleDbCommand c = new OleDbCommand(
-                "INSERT INTO " + DATA_PROJ + " (ID, ID_Ganglinie, Wert) VALUES (?, ?, ?)", conn, trans))
+            foreach (double w in werte)
             {
-                var pId = c.Parameters.Add("@did", OleDbType.Integer);
-                var pG = c.Parameters.Add("@dg", OleDbType.Integer);
-                var pW = c.Parameters.Add("@dw", OleDbType.Double);
-                foreach (double w in werte)
-                {
-                    pId.Value = neueDatenId++;
-                    pG.Value = neueId;
-                    pW.Value = w;
-                    c.ExecuteNonQuery();
-                }
+                v.Ausfuehren(
+                    "INSERT INTO " + DATA_PROJ + " (ID, ID_Ganglinie, Wert) VALUES (?, ?, ?)",
+                    new OleDbParameter("@did", OleDbType.Integer) { Value = neueDatenId++ },
+                    new OleDbParameter("@dg", OleDbType.Integer) { Value = neueId },
+                    new OleDbParameter("@dw", OleDbType.Double) { Value = w });
             }
 
             return neueId;

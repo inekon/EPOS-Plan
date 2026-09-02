@@ -88,51 +88,44 @@ namespace WindowsFormsApplication1
         {
             if (werte == null || werte.Count == 0) return false;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neueId = 1;
-                using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + HEAD_STAMM, conn, trans))
+                try
                 {
-                    object m = c.ExecuteScalar();
-                    neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                }
+                    int neueId = 1;
+                    {
+                        object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
+                        neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Zeitinterval, ReadOnly) VALUES (?, ?, ?, ?)", conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
-                    c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                    c.Parameters.Add("@int", OleDbType.Integer).Value = zeitinterval;
-                    c.Parameters.Add("@ro", OleDbType.Boolean).Value = false;
-                    c.ExecuteNonQuery();
-                }
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
+                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                        p.Add(new OleDbParameter("@int", OleDbType.Integer) { Value = zeitinterval });
+                        p.Add(new OleDbParameter("@ro", OleDbType.Boolean) { Value = false });
+                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Zeitinterval, ReadOnly) VALUES (?, ?, ?, ?)", p.ToArray());
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)", conn, trans))
-                {
-                    var pG = c.Parameters.Add("@g", OleDbType.Integer);
-                    var pW = c.Parameters.Add("@w", OleDbType.Double);
-                    var pR = c.Parameters.Add("@r", OleDbType.Boolean);
                     foreach (double w in werte)
                     {
-                        pG.Value = neueId;
-                        pW.Value = w;
-                        pR.Value = false;
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren(
+                            "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)",
+                            new OleDbParameter("@g", OleDbType.Integer) { Value = neueId },
+                            new OleDbParameter("@w", OleDbType.Double) { Value = w },
+                            new OleDbParameter("@r", OleDbType.Boolean) { Value = false });
                     }
-                }
 
-                trans.Commit();
-                return true;
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
-                return false;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         /// <summary>
@@ -152,49 +145,42 @@ namespace WindowsFormsApplication1
             int id = GetStammId(szBezeichner);
             if (id <= 0) return false;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                using (OleDbCommand c = new OleDbCommand(
-                    "UPDATE " + HEAD_STAMM + " SET Zeitinterval = ? WHERE ID = ?", conn, trans))
+                try
                 {
-                    c.Parameters.Add("@int", OleDbType.Integer).Value = zeitinterval;
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                    c.ExecuteNonQuery();
-                }
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@int", OleDbType.Integer) { Value = zeitinterval });
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        v.Ausfuehren("UPDATE " + HEAD_STAMM + " SET Zeitinterval = ? WHERE ID = ?", p.ToArray());
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "DELETE FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ?", conn, trans))
-                {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = id;
-                    c.ExecuteNonQuery();
-                }
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                        v.Ausfuehren("DELETE FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ?", p.ToArray());
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)", conn, trans))
-                {
-                    var pG = c.Parameters.Add("@g", OleDbType.Integer);
-                    var pW = c.Parameters.Add("@w", OleDbType.Double);
-                    var pR = c.Parameters.Add("@r", OleDbType.Boolean);
                     foreach (double w in werte)
                     {
-                        pG.Value = id;
-                        pW.Value = w;
-                        pR.Value = false;
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren(
+                            "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)",
+                            new OleDbParameter("@g", OleDbType.Integer) { Value = id },
+                            new OleDbParameter("@w", OleDbType.Double) { Value = w },
+                            new OleDbParameter("@r", OleDbType.Boolean) { Value = false });
                     }
-                }
 
-                trans.Commit();
-                return true;
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Ersetzen der Ganglinie (Stammdaten): " + ex.Message);
+                    return false;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Ersetzen der Ganglinie (Stammdaten): " + ex.Message);
-                return false;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Projekt-Ganglinie-ID (Tab_Stromganglinie.ID) zu einem Bezeichner im Projekt, oder 0.
@@ -216,82 +202,73 @@ namespace WindowsFormsApplication1
             int existing = GetProjektGanglinieId(szBezeichner, idProjekt);
             if (existing > 0) return existing;
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, conn, trans);
-                if (neu > 0) trans.Commit(); else trans.Rollback();
-                return neu;
+                try
+                {
+                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v);
+                    if (neu > 0) v.Commit(); else v.Rollback();
+                    return neu;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    MessageBox.Show("Fehler beim Kopieren der Stromganglinie ins Projekt: " + ex.Message);
+                    return 0;
+                }
             }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Kopieren der Stromganglinie ins Projekt: " + ex.Message);
-                return 0;
-            }
-            finally { try { conn.Close(); } catch { } }
         }
 
         // Kopiert eine Stamm-Ganglinie (per Bezeichner) samt Daten in die Projekt-Tabellen.
         // Kopf-ID im Projekt explizit (MAX+1); Daten-ID ist AutoWert; ID_Ganglinie = neue Kopf-ID.
         // Die Daten werden in Stamm-Reihenfolge (nach ID) kopiert, damit die Zeitreihe erhalten bleibt.
-        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, OleDbConnection conn, OleDbTransaction trans)
+        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v)
         {
             int stammId;
             int zeitinterval;
-            using (OleDbCommand c = new OleDbCommand(
-                "SELECT ID, Zeitinterval FROM " + HEAD_STAMM + " WHERE Bezeichner = ?", conn, trans))
             {
-                c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                using (OleDbDataReader r = c.ExecuteReader())
-                {
-                    if (!r.Read()) return 0;
-                    stammId = Convert.ToInt32(r["ID"]);
-                    zeitinterval = r["Zeitinterval"] != DBNull.Value ? Convert.ToInt32(r["Zeitinterval"]) : 0;
-                }
+                DataTable dtKopf = v.Lese(
+                    "SELECT ID, Zeitinterval FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                if (dtKopf.Rows.Count == 0) return 0;
+                DataRow r = dtKopf.Rows[0];
+                stammId = Convert.ToInt32(r["ID"]);
+                zeitinterval = r["Zeitinterval"] != DBNull.Value ? Convert.ToInt32(r["Zeitinterval"]) : 0;
             }
 
             // Neue Projekt-Kopf-ID
             int neueId;
-            using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM " + HEAD_PROJ, conn, trans))
             {
-                object m = c.ExecuteScalar();
+                object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_PROJ);
                 neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
             }
 
-            using (OleDbCommand c = new OleDbCommand(
-                "INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, ?, ?, ?)", conn, trans))
             {
-                c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
-                c.Parameters.Add("@proj", OleDbType.Integer).Value = idProjekt;
-                c.Parameters.Add("@bez", OleDbType.VarWChar).Value = szBezeichner ?? (object)DBNull.Value;
-                c.Parameters.Add("@int", OleDbType.Integer).Value = zeitinterval;
-                c.ExecuteNonQuery();
+                List<OleDbParameter> p = new List<OleDbParameter>();
+                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
+                p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
+                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                p.Add(new OleDbParameter("@int", OleDbType.Integer) { Value = zeitinterval });
+                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, ?, ?, ?)", p.ToArray());
             }
 
             // Daten der Stamm-Ganglinie einlesen (in Reihenfolge) ...
             List<double> werte = new List<double>();
-            using (OleDbCommand c = new OleDbCommand(
-                "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID", conn, trans))
             {
-                c.Parameters.Add("@g", OleDbType.Integer).Value = stammId;
-                using (OleDbDataReader r = c.ExecuteReader())
-                    while (r.Read())
-                        werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
+                DataTable dtWerte = v.Lese(
+                    "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID",
+                    new OleDbParameter("@g", OleDbType.Integer) { Value = stammId });
+                foreach (DataRow r in dtWerte.Rows)
+                    werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
             }
 
             // ... und in die Projekt-Datentabelle schreiben (ID = AutoWert, Reihenfolge = Einfuegereihenfolge).
-            using (OleDbCommand c = new OleDbCommand(
-                "INSERT INTO " + DATA_PROJ + " (ID_Ganglinie, Wert) VALUES (?, ?)", conn, trans))
+            foreach (double w in werte)
             {
-                var pG = c.Parameters.Add("@g", OleDbType.Integer);
-                var pW = c.Parameters.Add("@w", OleDbType.Double);
-                foreach (double w in werte)
-                {
-                    pG.Value = neueId;
-                    pW.Value = w;
-                    c.ExecuteNonQuery();
-                }
+                v.Ausfuehren(
+                    "INSERT INTO " + DATA_PROJ + " (ID_Ganglinie, Wert) VALUES (?, ?)",
+                    new OleDbParameter("@g", OleDbType.Integer) { Value = neueId },
+                    new OleDbParameter("@w", OleDbType.Double) { Value = w });
             }
 
             return neueId;

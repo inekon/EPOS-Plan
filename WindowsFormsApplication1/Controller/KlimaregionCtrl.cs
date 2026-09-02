@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <returns>false, wenn kein gültiges Projekt angegeben wurde.</returns>
         public bool Add(string szName, double Longitude, double Latitude, string Details,
-                        OleDbConnection conn, OleDbTransaction trans, int idProjekt = 0)
+                        DbVorgang v, int idProjekt = 0)
         {
             if (idProjekt <= 0)
             {
@@ -175,28 +175,22 @@ namespace WindowsFormsApplication1
             string sql = "INSERT INTO Tab_Klimaregion (ID_Projekt, Bezeichner, Longitude, Latitude, Details, Klimazone_DIN4710) " +
                          "VALUES (?, ?, ?, ?, ?, ?)";
 
-            using (OleDbCommand cmd = new OleDbCommand(sql, conn, trans))
-            {
-                // WICHTIG: Die Reihenfolge der Parameter MUSS exakt mit dem SQL übereinstimmen!
-                cmd.Parameters.Add(new OleDbParameter("?", idProjekt));
-                cmd.Parameters.Add(new OleDbParameter("?", szName ?? ""));   // NOT NULL
-                cmd.Parameters.Add(new OleDbParameter("?", Longitude));
-                cmd.Parameters.Add(new OleDbParameter("?", Latitude));
-                cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details));
-                cmd.Parameters.Add(new OleDbParameter("?", Klimazone_DIN4710));
+            // WICHTIG: Die Reihenfolge der Parameter MUSS exakt mit dem SQL übereinstimmen!
+            OleDbParameter[] ps = {
+                new OleDbParameter("?", idProjekt),
+                new OleDbParameter("?", szName ?? ""),   // NOT NULL
+                new OleDbParameter("?", Longitude),
+                new OleDbParameter("?", Latitude),
+                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new OleDbParameter("?", Klimazone_DIN4710)
+            };
 
-                cmd.ExecuteNonQuery();
-            }
-
-            // 2. Da es ein Autowert ist, fragen wir Access nach der ID, 
-            // die gerade eben automatisch für diesen Datensatz generiert wurde:
-            using (OleDbCommand cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn, trans))
+            // 2. Da die ID ein AutoWert ist, liefert der Vorgang sie im selben Aufruf
+            // zurueck - auf DERSELBEN Verbindung (frueher SELECT @@IDENTITY).
+            int neueId = v.EinfuegenUndId(sql, ps);
+            if (neueId > 0)
             {
-                object result = cmdIdentity.ExecuteScalar();
-                if (result != null && result != DBNull.Value)
-                {
-                    m_ID_Klimaregion = Convert.ToInt32(result);
-                }
+                m_ID_Klimaregion = neueId;
             }
 
             return true;

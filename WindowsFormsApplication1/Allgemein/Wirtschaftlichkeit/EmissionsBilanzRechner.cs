@@ -53,60 +53,57 @@ namespace WindowsFormsApplication1
 
         /// <summary>Legt den Kraftwerkspark-Katalog an und befüllt ihn beim ersten
         /// Mal (Deutscher Strommix, Erdgas-GuD, Steinkohle) — in den Kenndaten pflegbar.</summary>
+        /// <remarks>
+        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
+        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-DDL nach dem Muster von
+        /// <c>sql\schema\001_grundschema.sql</c> (S4d vorgezogen). Still über
+        /// <see cref="StilleDb"/>, weil der leere <c>catch</c>-Zweig eine Vorsorge ohne
+        /// Dialog zusagt.
+        /// </remarks>
         public static void StelleKatalogSicher()
         {
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
-                {
-                    conn.Open();
-                    DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                        new object[] { null, null, TAB_PARK, "TABLE" });
-                    bool neu = schema == null || schema.Rows.Count == 0;
-                    if (neu)
-                    {
-                        using (var cmd = new OleDbCommand(
-                            "CREATE TABLE " + TAB_PARK + " (" +
-                            "ID LONG CONSTRAINT PK_KwPark PRIMARY KEY, " +
-                            "Bezeichner TEXT(100), " +
-                            "Wirkungsgrad DOUBLE, " +      // el. Wirkungsgrad [%]; 100 = Faktoren je kWh Strom
-                            "CO2 DOUBLE, " +               // g/kWh Brennstoff
-                            "SO2 DOUBLE, " +               // mg/kWh Brennstoff
-                            "NOx DOUBLE, " +               // mg/kWh Brennstoff
-                            "Netzverluste DOUBLE)", conn))
-                            cmd.ExecuteNonQuery();
+                if (StilleDb.TabelleVorhanden(TAB_PARK)) return;
 
-                        // Vorbefüllung (Vorgabewerte, im Katalog änderbar):
-                        //  - Strommix: Faktoren je kWh STROM (η = 100 %, Netzverluste 0 —
-                        //    im Mixfaktor bereits enthalten), CO₂ analog Katalogträger
-                        //    „Elektrische Energie" (560 g/kWh).
-                        //  - GuD/Steinkohle: Brennstoff-Faktoren aus Tab_Brennstoff_Stamm
-                        //    (Erdgas 240 / Kohle 400 g/kWh) + typischer el. Wirkungsgrad.
-                        Seed(conn, 1, "Deutscher Strommix (Katalogwert Strom)", 100, 560, 200, 280, 0);
-                        Seed(conn, 2, "Erdgas-GuD-Kraftwerk", 58, 240, 0.3, 110, 5);
-                        Seed(conn, 3, "Steinkohle-Kraftwerk", 42, 400, 600, 220, 5);
-                    }
-                }
+                if (StilleDb.NonQuery(
+                        "CREATE TABLE IF NOT EXISTS [" + TAB_PARK + "] (" +
+                        "\"ID\" INTEGER PRIMARY KEY, " +
+                        "\"Bezeichner\" TEXT CHECK (length(\"Bezeichner\") <= 100), " +
+                        "\"Wirkungsgrad\" REAL, " +      // el. Wirkungsgrad [%]; 100 = Faktoren je kWh Strom
+                        "\"CO2\" REAL, " +               // g/kWh Brennstoff
+                        "\"SO2\" REAL, " +               // mg/kWh Brennstoff
+                        "\"NOx\" REAL, " +               // mg/kWh Brennstoff
+                        "\"Netzverluste\" REAL)") < 0) return;
+
+                // Vorbefüllung (Vorgabewerte, im Katalog änderbar):
+                //  - Strommix: Faktoren je kWh STROM (η = 100 %, Netzverluste 0 —
+                //    im Mixfaktor bereits enthalten), CO₂ analog Katalogträger
+                //    „Elektrische Energie" (560 g/kWh).
+                //  - GuD/Steinkohle: Brennstoff-Faktoren aus Tab_Brennstoff_Stamm
+                //    (Erdgas 240 / Kohle 400 g/kWh) + typischer el. Wirkungsgrad.
+                // Reihenfolge wie bisher, und wie bisher bricht der erste Fehlschlag die
+                // Saat ab (frueher: Seed warf, der aeussere catch fing).
+                if (!Seed(1, "Deutscher Strommix (Katalogwert Strom)", 100, 560, 200, 280, 0)) return;
+                if (!Seed(2, "Erdgas-GuD-Kraftwerk", 58, 240, 0.3, 110, 5)) return;
+                Seed(3, "Steinkohle-Kraftwerk", 42, 400, 600, 220, 5);
             }
             catch { }
         }
 
-        private static void Seed(OleDbConnection conn, int id, string name,
+        private static bool Seed(int id, string name,
                                  double eta, double co2, double so2, double nox, double verluste)
         {
-            using (var cmd = new OleDbCommand(
+            return 0 <= StilleDb.NonQuery(
                 "INSERT INTO " + TAB_PARK + " (ID, Bezeichner, Wirkungsgrad, CO2, SO2, NOx, Netzverluste) " +
-                "VALUES (?,?,?,?,?,?,?)", conn))
-            {
-                cmd.Parameters.AddWithValue("@id", id);
-                cmd.Parameters.AddWithValue("@n", name);
-                cmd.Parameters.AddWithValue("@w", eta);
-                cmd.Parameters.AddWithValue("@c", co2);
-                cmd.Parameters.AddWithValue("@s", so2);
-                cmd.Parameters.AddWithValue("@x", nox);
-                cmd.Parameters.AddWithValue("@v", verluste);
-                cmd.ExecuteNonQuery();
-            }
+                "VALUES (?,?,?,?,?,?,?)",
+                new OleDbParameter("@id", id),
+                new OleDbParameter("@n", name),
+                new OleDbParameter("@w", eta),
+                new OleDbParameter("@c", co2),
+                new OleDbParameter("@s", so2),
+                new OleDbParameter("@x", nox),
+                new OleDbParameter("@v", verluste));
         }
 
         /// <summary>Alle Katalogeinträge (für die Auswahl im Parameterdialog).</summary>

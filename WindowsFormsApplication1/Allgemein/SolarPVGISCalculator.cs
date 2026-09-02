@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
         public AccessRepository() { }
 
         public void SaveTmyData(List<TmyHourlyData> dataList, string szOrt, string tabelle, int ID_Klimaregion,
-                                        OleDbConnection connection, OleDbTransaction transaction)
+                                        DbVorgang v)
         {
             if (dataList == null || dataList.Count == 0) return;
 
@@ -452,62 +452,39 @@ namespace WindowsFormsApplication1
                     ? "INSERT INTO " + tabelle + " (" + fkCol + ", Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     : "INSERT INTO " + tabelle + " (" + fkCol + ", Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-                using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
+                // 2. ARBEITSPAKET S4e: Der Vorgang uebersetzt und bindet je Aufruf; die
+                // frueher EINMAL typisierten Parameter werden deshalb je Zeile neu
+                // aufgebaut. Reihenfolge und Typen bleiben unveraendert - gebunden wurde
+                // schon immer nach POSITION, nicht nach Namen.
+                foreach (var data in dataList)
                 {
-                    // 2. Typisierte Parameter vorab definieren (Zwingend nötig für Speed bei 8760 Schleifendurchläufen!)
-                    // HIER WURDE DER ERSTE ID-PARAMETER ENTFERNT!
-                    command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
-                    command.Parameters.Add("?", OleDbType.Double);       // Temperatur
-                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
-                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
-                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
-                    command.Parameters.Add("?", OleDbType.Double);       // Sol_West
-                    command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
-                    command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
-                    command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
+                    List<OleDbParameter> ps = new List<OleDbParameter>();
+
+                    // HIER WURDE DER SEITENEFFEKT 'nextId++' KOMPLETT ENTFERNT!
+                    ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = ID_Klimaregion });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Temperature });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_nord });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_sued });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_ost });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_west });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.GlobalIrradiance });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.DirectIrradiance });
+                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.DiffuseIrradiance });
 
                     if (istKlimadaten)
                     {
-                        command.Parameters.Add("?", OleDbType.Boolean);      // WE
-                        command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_W
-                        command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_NW
-                        command.Parameters.Add("?", OleDbType.Double);       // Sonnenwinkel
+                        ps.Add(new OleDbParameter("?", OleDbType.Boolean) { Value = data.WE });
+                        ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = data.TagTyp_W });
+                        ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = data.TagTyp_NW });
+                        ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = Math.Round(data.Sonnenwinkel, 1) });
                     }
                     else
                     {
-                        command.Parameters.Add("?", OleDbType.Double);       // Sonnenwinkel
+                        ps.Add(new OleDbParameter("?", OleDbType.Double)
+                        { Value = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0 });
                     }
 
-                    // 3. Die Schleife befüllt jetzt blitzschnell nur noch die Werte (.Value)
-                    foreach (var data in dataList)
-                    {
-                        int pIdx = 0;
-
-                        // HIER WURDE DER SEITENEFFEKT 'nextId++' KOMPLETT ENTFERNT!
-                        command.Parameters[pIdx++].Value = ID_Klimaregion;
-                        command.Parameters[pIdx++].Value = data.Temperature;
-                        command.Parameters[pIdx++].Value = data.Sol_nord;
-                        command.Parameters[pIdx++].Value = data.Sol_sued;
-                        command.Parameters[pIdx++].Value = data.Sol_ost;
-                        command.Parameters[pIdx++].Value = data.Sol_west;
-                        command.Parameters[pIdx++].Value = data.GlobalIrradiance;
-                        command.Parameters[pIdx++].Value = data.DirectIrradiance;
-                        command.Parameters[pIdx++].Value = data.DiffuseIrradiance;
-
-                        if (istKlimadaten)
-                        {
-                            command.Parameters[pIdx++].Value = data.WE;
-                            command.Parameters[pIdx++].Value = data.TagTyp_W;
-                            command.Parameters[pIdx++].Value = data.TagTyp_NW;
-                            command.Parameters[pIdx++].Value = Math.Round(data.Sonnenwinkel, 1);
-                        }
-                        else
-                        {
-                            command.Parameters[pIdx++].Value = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0;
-                        }
-
-                        command.ExecuteNonQuery();
-                    }
+                    v.Ausfuehren(query, ps.ToArray());
                 }
             }
             catch (Exception ex)

@@ -177,35 +177,31 @@ namespace WindowsFormsApplication1
 
             try
             {
-                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    conn.Open();
-                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    // 1. Alle Stundenwerte aktualisieren (Gebündelt in einer Transaktion für max. Performance)
+                    for (int Tag = 0; Tag < 7; Tag++)
                     {
-                        // 1. Alle Stundenwerte aktualisieren (Gebündelt in einer Transaktion für max. Performance)
-                        for (int Tag = 0; Tag < 7; Tag++)
+                        for (int stunde = 0; stunde < 24; stunde++)
                         {
-                            for (int stunde = 0; stunde < 24; stunde++)
+                            string feldName = (Tag * 24 + stunde + 1).ToString();
+                            if (!UpdateWert(v, listBox_Typname.Text, feldName, arr[Tag, stunde]))
                             {
-                                string feldName = (Tag * 24 + stunde + 1).ToString();
-                                if (!UpdateWert(conn, trans, listBox_Typname.Text, feldName, arr[Tag, stunde]))
-                                {
-                                    trans.Rollback();
-                                    return;
-                                }
+                                v.Rollback();
+                                return;
                             }
                         }
-
-                        // 2. Beschreibung aktualisieren
-                        if (!UpdateBeschreibung(conn, trans, textBox_Beschreibung.Text, listBox_Typname.Text))
-                        {
-                            trans.Rollback();
-                            return;
-                        }
-
-                        trans.Commit();
-                        MessageBox.Show("Daten erfolgreich gespeichert.");
                     }
+
+                    // 2. Beschreibung aktualisieren
+                    if (!UpdateBeschreibung(v, textBox_Beschreibung.Text, listBox_Typname.Text))
+                    {
+                        v.Rollback();
+                        return;
+                    }
+
+                    v.Commit();
+                    MessageBox.Show("Daten erfolgreich gespeichert.");
                 }
             }
             catch (Exception ex)
@@ -217,32 +213,22 @@ namespace WindowsFormsApplication1
             ChartAktualisieren();
         }
 
-        private bool UpdateBeschreibung(OleDbConnection conn, OleDbTransaction trans, string szBeschreibung, string szTyp)
+        private bool UpdateBeschreibung(DbVorgang v, string szBeschreibung, string szTyp)
         {
             string sql = "UPDATE Tab_Prozesstyp_STAMM SET Beschreibung = ? WHERE Bezeichner = ?";
-            using (OleDbCommand cmd = conn.CreateCommand())
-            {
-                cmd.Transaction = trans;
-                cmd.CommandText = sql;
-                cmd.Parameters.Add(new OleDbParameter("@bes", szBeschreibung ?? (object)DBNull.Value));
-                cmd.Parameters.Add(new OleDbParameter("@typ", szTyp));
-                cmd.ExecuteNonQuery();
-            }
+            v.Ausfuehren(sql,
+                new OleDbParameter("@bes", szBeschreibung ?? (object)DBNull.Value),
+                new OleDbParameter("@typ", szTyp));
             return true;
         }
 
-        private bool UpdateWert(OleDbConnection conn, OleDbTransaction trans, string typ, string feld, double value)
+        private bool UpdateWert(DbVorgang v, string typ, string feld, double value)
         {
             // Feldnamen in eckige Klammern setzen, da reine Nummern (z.B. [1]) sonst SQL-Syntaxfehler erzeugen
             string sql = $"UPDATE Tab_Prozesstyp_STAMM SET [{feld}] = ? WHERE Bezeichner = ?";
-            using (OleDbCommand cmd = conn.CreateCommand())
-            {
-                cmd.Transaction = trans;
-                cmd.CommandText = sql;
-                cmd.Parameters.Add(new OleDbParameter("@val", value));
-                cmd.Parameters.Add(new OleDbParameter("@typ", typ));
-                cmd.ExecuteNonQuery();
-            }
+            v.Ausfuehren(sql,
+                new OleDbParameter("@val", value),
+                new OleDbParameter("@typ", typ));
             return true;
         }
 
@@ -307,22 +293,18 @@ namespace WindowsFormsApplication1
                 // Alle Stundenwerte über den Transaktions-Speicherer initialisieren
                 try
                 {
-                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    using (DbVorgang v = DataRepository.Vorgang())
                     {
-                        conn.Open();
-                        using (OleDbTransaction trans = conn.BeginTransaction())
+                        for (int Tag = 0; Tag < 7; Tag++)
                         {
-                            for (int Tag = 0; Tag < 7; Tag++)
+                            for (int stunde = 0; stunde < 24; stunde++)
                             {
-                                for (int stunde = 0; stunde < 24; stunde++)
-                                {
-                                    string feldName = (Tag * 24 + stunde + 1).ToString();
-                                    UpdateWert(conn, trans, frm.m_szName, feldName, 0);
-                                }
+                                string feldName = (Tag * 24 + stunde + 1).ToString();
+                                UpdateWert(v, frm.m_szName, feldName, 0);
                             }
-                            UpdateBeschreibung(conn, trans, "", frm.m_szName);
-                            trans.Commit();
                         }
+                        UpdateBeschreibung(v, "", frm.m_szName);
+                        v.Commit();
                     }
                 }
                 catch (Exception ex)
@@ -352,22 +334,18 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    using (DbVorgang v = DataRepository.Vorgang())
                     {
-                        conn.Open();
-                        using (OleDbTransaction trans = conn.BeginTransaction())
+                        for (int Tag = 0; Tag < 7; Tag++)
                         {
-                            for (int Tag = 0; Tag < 7; Tag++)
+                            for (int stunde = 0; stunde < 24; stunde++)
                             {
-                                for (int stunde = 0; stunde < 24; stunde++)
-                                {
-                                    string feldName = (Tag * 24 + stunde + 1).ToString();
-                                    UpdateWert(conn, trans, frm.m_szName, feldName, arr[Tag, stunde]);
-                                }
+                                string feldName = (Tag * 24 + stunde + 1).ToString();
+                                UpdateWert(v, frm.m_szName, feldName, arr[Tag, stunde]);
                             }
-                            UpdateBeschreibung(conn, trans, textBox_Beschreibung.Text, frm.m_szName);
-                            trans.Commit();
                         }
+                        UpdateBeschreibung(v, textBox_Beschreibung.Text, frm.m_szName);
+                        v.Commit();
                     }
                 }
                 catch (Exception ex)

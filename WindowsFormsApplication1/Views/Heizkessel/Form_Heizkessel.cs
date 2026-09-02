@@ -295,139 +295,128 @@ namespace WindowsFormsApplication1
                 // Punkt 1: Katalog-Träger, Preishistorie und Projekt-Einstellungen in EINER
                 // Transaktion schreiben. Schlägt ein Insert fehl, macht Rollback alles rückgängig
                 // – kein halbfertiger Zustand (Träger/Preis ohne zugehörige Settings).
-                using (OleDbConnection con = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    con.Open();
-                    using (OleDbTransaction tx = con.BeginTransaction())
+                    try
                     {
-                        try
+                        // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet.
+                        carrierId = -1;
                         {
-                            // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet.
-                            carrierId = -1;
-                            using (var cmd = new OleDbCommand("SELECT id FROM energy_carrier WHERE name = ?", con, tx))
-                            {
-                                cmd.Parameters.Add(new OleDbParameter("@name", dlg.SelectedName));
-                                object existing = cmd.ExecuteScalar();
-                                if (existing != null && existing != DBNull.Value)
-                                    carrierId = Convert.ToInt32(existing);
-                            }
+                            List<OleDbParameter> ps = new List<OleDbParameter>();
+                            ps.Add(new OleDbParameter("@name", dlg.SelectedName));
+                            object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", ps.ToArray());
+                            if (existing != null && existing != DBNull.Value)
+                                carrierId = Convert.ToInt32(existing);
+                        }
 
-                            // Katalog-Datensatz nur anlegen, wenn wirklich neu.
-                            if (carrierId < 0)
-                            {
-                                using (var cmd = new OleDbCommand(
-                                    @"INSERT INTO energy_carrier
+                        // Katalog-Datensatz nur anlegen, wenn wirklich neu.
+                        if (carrierId < 0)
+                        {
+                            List<OleDbParameter> pTraeger = new List<OleDbParameter>();
+                            pTraeger.Add(new OleDbParameter("@idB", dlg.SelectedBrennstoffID));
+                            pTraeger.Add(new OleDbParameter("@code", dlg.SelectedCode));
+                            pTraeger.Add(new OleDbParameter("@name", dlg.SelectedName));
+                            pTraeger.Add(new OleDbParameter("@gc", dlg.SelectedGroupCode));
+                            pTraeger.Add(new OleDbParameter("@pm", dlg.SelectedBrennstoffCode));
+                            pTraeger.Add(new OleDbParameter("@unit", dlg.SelectedBillingUnit));
+                            pTraeger.Add(new OleDbParameter("@shi", dlg.SelectedHi));
+                            pTraeger.Add(new OleDbParameter("@shs", dlg.SelectedHs));
+                            pTraeger.Add(new OleDbParameter("@defap", default_arbeitspreis));
+                            pTraeger.Add(new OleDbParameter("@defgp", default_grundpreis));
+                            pTraeger.Add(new OleDbParameter("@co2", default_co2));
+                            pTraeger.Add(new OleDbParameter("@so2", default_so2));
+                            pTraeger.Add(new OleDbParameter("@nox", default_nox));
+                            pTraeger.Add(new OleDbParameter("@active", OleDbType.Boolean) { Value = true });
+                            // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
+                            // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf con/tx).
+                            carrierId = v.EinfuegenUndId(
+                                @"INSERT INTO energy_carrier
                                          (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
                                           hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
-                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", con, tx))
-                                {
-                                    cmd.Parameters.Add(new OleDbParameter("@idB", dlg.SelectedBrennstoffID));
-                                    cmd.Parameters.Add(new OleDbParameter("@code", dlg.SelectedCode));
-                                    cmd.Parameters.Add(new OleDbParameter("@name", dlg.SelectedName));
-                                    cmd.Parameters.Add(new OleDbParameter("@gc", dlg.SelectedGroupCode));
-                                    cmd.Parameters.Add(new OleDbParameter("@pm", dlg.SelectedBrennstoffCode));
-                                    cmd.Parameters.Add(new OleDbParameter("@unit", dlg.SelectedBillingUnit));
-                                    cmd.Parameters.Add(new OleDbParameter("@shi", dlg.SelectedHi));
-                                    cmd.Parameters.Add(new OleDbParameter("@shs", dlg.SelectedHs));
-                                    cmd.Parameters.Add(new OleDbParameter("@defap", default_arbeitspreis));
-                                    cmd.Parameters.Add(new OleDbParameter("@defgp", default_grundpreis));
-                                    cmd.Parameters.Add(new OleDbParameter("@co2", default_co2));
-                                    cmd.Parameters.Add(new OleDbParameter("@so2", default_so2));
-                                    cmd.Parameters.Add(new OleDbParameter("@nox", default_nox));
-                                    cmd.Parameters.Add(new OleDbParameter("@active", OleDbType.Boolean) { Value = true });
-                                    cmd.ExecuteNonQuery();
-                                }
-                                using (var cmd = new OleDbCommand("SELECT @@IDENTITY", con, tx))
-                                {
-                                    object ido = cmd.ExecuteScalar();
-                                    carrierId = (ido != null && ido != DBNull.Value) ? Convert.ToInt32(ido) : 0;
-                                }
-                            }
+                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                pTraeger.ToArray());
+                        }
 
-                            if (carrierId <= 0)
-                            {
-                                tx.Rollback();
-                                carrierId = 0;
-                                MessageBox.Show("Der Energieträger konnte nicht angelegt werden.");
-                                return "";
-                            }
+                        if (carrierId <= 0)
+                        {
+                            v.Rollback();
+                            carrierId = 0;
+                            MessageBox.Show("Der Energieträger konnte nicht angelegt werden.");
+                            return "";
+                        }
 
-                            // 1b) Wizard / kein echtes Projekt: nur der Katalog-Träger. energy_price
-                            // und energy_Project_settings haben eine Beziehung auf Tab_Projekt.ID, die
-                            // im Wizard noch nicht existiert -> die trägt WizardCtrl beim Speichern nach.
-                            if (m_bWizard || m_ID_Projekt <= 0)
-                            {
-                                tx.Commit();
-                                MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
-                                                "werden beim Speichern des Projekts angelegt.");
-                                return dlg.SelectedName;
-                            }
-
-                            // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
-                            int vorhanden;
-                            using (var cmd = new OleDbCommand(
-                                "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", con, tx))
-                            {
-                                cmd.Parameters.Add(new OleDbParameter("@pid", m_ID_Projekt));
-                                cmd.Parameters.Add(new OleDbParameter("@eid", carrierId));
-                                vorhanden = Convert.ToInt32(cmd.ExecuteScalar());
-                            }
-                            if (vorhanden > 0)
-                            {
-                                // Träger existierte bereits und ist zugeordnet: nichts Neues
-                                // geschrieben -> Transaktion sauber beenden, carrierId bleibt gültig.
-                                tx.Commit();
-                                MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
-                                return dlg.SelectedName;
-                            }
-
-                            // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen).
-                            using (var cmd = new OleDbCommand(
-                                @"INSERT INTO energy_price
-                                     (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", con, tx))
-                            {
-                                cmd.Parameters.Add(new OleDbParameter("@cid", carrierId));
-                                cmd.Parameters.Add(new OleDbParameter("@prid", m_ID_Projekt));
-                                cmd.Parameters.Add(new OleDbParameter("@ap", Math.Round(default_arbeitspreis, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@hi", Math.Round(dlg.SelectedHi, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@gp", Math.Round(default_grundpreis, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now });
-                                cmd.Parameters.Add(new OleDbParameter("@au", dlg.SelectedBillingUnit));
-                                cmd.Parameters.Add(new OleDbParameter("@lp", Math.Round(default_leistungspreis, 4)));
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            using (var cmd = new OleDbCommand(
-                                @"INSERT INTO energy_Project_settings
-                                     (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
-                                      custom_price_base, ID_Umrechnung, co2, so2, nox)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", con, tx))
-                            {
-                                cmd.Parameters.Add(new OleDbParameter("@pid", m_ID_Projekt));
-                                cmd.Parameters.Add(new OleDbParameter("@eid", carrierId));
-                                cmd.Parameters.Add(new OleDbParameter("@p", Math.Round(default_arbeitspreis, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@pl", Math.Round(default_leistungspreis, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@h", Math.Round(dlg.SelectedHi, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@hs", Math.Round(dlg.SelectedHs, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@b", Math.Round(default_grundpreis, 4)));
-                                cmd.Parameters.Add(new OleDbParameter("@convid", dlg.SelectedConvID));
-                                cmd.Parameters.Add(new OleDbParameter("@co2", default_co2));
-                                cmd.Parameters.Add(new OleDbParameter("@so2", default_so2));
-                                cmd.Parameters.Add(new OleDbParameter("@nox", default_nox));
-                                cmd.ExecuteNonQuery();
-                            }
-
-                            tx.Commit();
-                            MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
+                        // 1b) Wizard / kein echtes Projekt: nur der Katalog-Träger. energy_price
+                        // und energy_Project_settings haben eine Beziehung auf Tab_Projekt.ID, die
+                        // im Wizard noch nicht existiert -> die trägt WizardCtrl beim Speichern nach.
+                        if (m_bWizard || m_ID_Projekt <= 0)
+                        {
+                            v.Commit();
+                            MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
+                                            "werden beim Speichern des Projekts angelegt.");
                             return dlg.SelectedName;
                         }
-                        catch (Exception ex)
+
+                        // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
+                        int vorhanden;
                         {
-                            try { tx.Rollback(); } catch { /* Rollback darf den Originalfehler nicht verdecken */ }
-                            carrierId = 0;   // Signal an den Aufrufer: nichts angelegt -> kein Kessel hinzufügen
-                            MessageBox.Show("Fehler beim Speichern: " + ex.Message);
+                            List<OleDbParameter> ps = new List<OleDbParameter>();
+                            ps.Add(new OleDbParameter("@pid", m_ID_Projekt));
+                            ps.Add(new OleDbParameter("@eid", carrierId));
+                            vorhanden = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", ps.ToArray()));
                         }
+                        if (vorhanden > 0)
+                        {
+                            // Träger existierte bereits und ist zugeordnet: nichts Neues
+                            // geschrieben -> Transaktion sauber beenden, carrierId bleibt gültig.
+                            v.Commit();
+                            MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
+                            return dlg.SelectedName;
+                        }
+
+                        // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen).
+                        {
+                            List<OleDbParameter> ps = new List<OleDbParameter>();
+                            ps.Add(new OleDbParameter("@cid", carrierId));
+                            ps.Add(new OleDbParameter("@prid", m_ID_Projekt));
+                            ps.Add(new OleDbParameter("@ap", Math.Round(default_arbeitspreis, 4)));
+                            ps.Add(new OleDbParameter("@hi", Math.Round(dlg.SelectedHi, 4)));
+                            ps.Add(new OleDbParameter("@gp", Math.Round(default_grundpreis, 4)));
+                            ps.Add(new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now });
+                            ps.Add(new OleDbParameter("@au", dlg.SelectedBillingUnit));
+                            ps.Add(new OleDbParameter("@lp", Math.Round(default_leistungspreis, 4)));
+                            v.Ausfuehren(@"INSERT INTO energy_price
+                                     (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
+                        }
+
+                        {
+                            List<OleDbParameter> ps = new List<OleDbParameter>();
+                            ps.Add(new OleDbParameter("@pid", m_ID_Projekt));
+                            ps.Add(new OleDbParameter("@eid", carrierId));
+                            ps.Add(new OleDbParameter("@p", Math.Round(default_arbeitspreis, 4)));
+                            ps.Add(new OleDbParameter("@pl", Math.Round(default_leistungspreis, 4)));
+                            ps.Add(new OleDbParameter("@h", Math.Round(dlg.SelectedHi, 4)));
+                            ps.Add(new OleDbParameter("@hs", Math.Round(dlg.SelectedHs, 4)));
+                            ps.Add(new OleDbParameter("@b", Math.Round(default_grundpreis, 4)));
+                            ps.Add(new OleDbParameter("@convid", dlg.SelectedConvID));
+                            ps.Add(new OleDbParameter("@co2", default_co2));
+                            ps.Add(new OleDbParameter("@so2", default_so2));
+                            ps.Add(new OleDbParameter("@nox", default_nox));
+                            v.Ausfuehren(@"INSERT INTO energy_Project_settings
+                                     (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
+                                      custom_price_base, ID_Umrechnung, co2, so2, nox)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
+                        }
+
+                        v.Commit();
+                        MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
+                        return dlg.SelectedName;
+                    }
+                    catch (Exception ex)
+                    {
+                        try { v.Rollback(); } catch { /* Rollback darf den Originalfehler nicht verdecken */ }
+                        carrierId = 0;   // Signal an den Aufrufer: nichts angelegt -> kein Kessel hinzufügen
+                        MessageBox.Show("Fehler beim Speichern: " + ex.Message);
                     }
                 }
             }

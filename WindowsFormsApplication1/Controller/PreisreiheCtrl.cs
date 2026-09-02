@@ -282,68 +282,52 @@ namespace WindowsFormsApplication1
 
             StelleTabellenSicher();
 
-            var (conn, trans) = DataRepository.BeginTransaction();
-            try
+            using (DbVorgang v = DataRepository.Vorgang())
             {
-                int neueId = MaxId(conn, trans, TABLE_KOPF) + 1;
-
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO [" + TABLE_KOPF + "] (ID, ID_Projekt, Bezeichner, Jahr, " +
-                    "Aufloesung, Einheit, ID_Energietraeger) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)", conn, trans))
+                try
                 {
-                    c.Parameters.Add("@id", OleDbType.Integer).Value = neueId;
-                    c.Parameters.Add("@proj", OleDbType.Integer).Value =
-                        kopf.ID_Projekt > 0 ? (object)kopf.ID_Projekt : DBNull.Value;
-                    c.Parameters.Add("@bez", OleDbType.VarWChar).Value = kopf.Bezeichner ?? "";
-                    c.Parameters.Add("@jahr", OleDbType.Integer).Value = kopf.Jahr;
-                    c.Parameters.Add("@aufl", OleDbType.VarWChar).Value =
-                        kopf.Aufloesung ?? DbWerte.PREISREIHE_AUFLOESUNG_STUNDE;
-                    c.Parameters.Add("@einh", OleDbType.VarWChar).Value =
-                        kopf.Einheit ?? DbWerte.PREISREIHE_EINHEIT_CT_KWH;
-                    c.Parameters.Add("@traeger", OleDbType.Integer).Value =
-                        kopf.ID_Energietraeger > 0 ? (object)kopf.ID_Energietraeger : DBNull.Value;
-                    c.ExecuteNonQuery();
-                }
+                    int neueId = MaxId(v, TABLE_KOPF) + 1;
 
-                int datenId = MaxId(conn, trans, TABLE_DATEN);
+                    {
+                        List<OleDbParameter> p = new List<OleDbParameter>();
+                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
+                        p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = kopf.ID_Projekt > 0 ? (object)kopf.ID_Projekt : DBNull.Value });
+                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = kopf.Bezeichner ?? "" });
+                        p.Add(new OleDbParameter("@jahr", OleDbType.Integer) { Value = kopf.Jahr });
+                        p.Add(new OleDbParameter("@aufl", OleDbType.VarWChar) { Value = kopf.Aufloesung ?? DbWerte.PREISREIHE_AUFLOESUNG_STUNDE });
+                        p.Add(new OleDbParameter("@einh", OleDbType.VarWChar) { Value = kopf.Einheit ?? DbWerte.PREISREIHE_EINHEIT_CT_KWH });
+                        p.Add(new OleDbParameter("@traeger", OleDbType.Integer) { Value = kopf.ID_Energietraeger > 0 ? (object)kopf.ID_Energietraeger : DBNull.Value });
+                        v.Ausfuehren("INSERT INTO [" + TABLE_KOPF + "] (ID, ID_Projekt, Bezeichner, Jahr, " +
+                        "Aufloesung, Einheit, ID_Energietraeger) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)", p.ToArray());
+                    }
 
-                using (OleDbCommand c = new OleDbCommand(
-                    "INSERT INTO [" + TABLE_DATEN + "] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
-                    conn, trans))
-                {
-                    OleDbParameter pId = c.Parameters.Add("@id", OleDbType.Integer);
-                    OleDbParameter pKopf = c.Parameters.Add("@kopf", OleDbType.Integer);
-                    OleDbParameter pWert = c.Parameters.Add("@wert", OleDbType.Double);
-
-                    pKopf.Value = neueId;
+                    int datenId = MaxId(v, TABLE_DATEN);
 
                     for (int i = 0; i < werte.Length; i++)
                     {
-                        pId.Value = ++datenId;
-                        pWert.Value = werte[i];
-                        c.ExecuteNonQuery();
+                        v.Ausfuehren(
+                            "INSERT INTO [" + TABLE_DATEN + "] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
+                            new OleDbParameter("@id", OleDbType.Integer) { Value = ++datenId },
+                            new OleDbParameter("@kopf", OleDbType.Integer) { Value = neueId },
+                            new OleDbParameter("@wert", OleDbType.Double) { Value = werte[i] });
 
                         if (fortschritt != null && (i + 1) % FORTSCHRITT_SCHRITT == 0) fortschritt(i + 1);
                     }
+
+                    v.Commit();
+                    kopf.ID = neueId;
+                    kopf.Werteanzahl = werte.Length;
+
+                    if (fortschritt != null) fortschritt(werte.Length);
+                    return neueId;
                 }
-
-                trans.Commit();
-                kopf.ID = neueId;
-                kopf.Werteanzahl = werte.Length;
-
-                if (fortschritt != null) fortschritt(werte.Length);
-                return neueId;
-            }
-            catch (Exception ex)
-            {
-                try { trans.Rollback(); } catch { }
-                DataRepository.FehlerMelden("Die Preisreihe konnte nicht gespeichert werden: " + ex.Message);
-                return -1;
-            }
-            finally
-            {
-                try { conn.Close(); } catch { }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    DataRepository.FehlerMelden("Die Preisreihe konnte nicht gespeichert werden: " + ex.Message);
+                    return -1;
+                }
             }
         }
 
@@ -370,13 +354,10 @@ namespace WindowsFormsApplication1
         // Kleinigkeiten
         // =====================================================================
 
-        private static int MaxId(OleDbConnection conn, OleDbTransaction trans, string tabelle)
+        private static int MaxId(DbVorgang v, string tabelle)
         {
-            using (OleDbCommand c = new OleDbCommand("SELECT MAX(ID) FROM [" + tabelle + "]", conn, trans))
-            {
-                object m = c.ExecuteScalar();
-                return (m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0;
-            }
+            object m = v.Skalar("SELECT MAX(ID) FROM [" + tabelle + "]");
+            return (m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0;
         }
 
         /// <summary>Namensbasierte Abbildung mit <c>Columns.Contains</c>-Wache.</summary>

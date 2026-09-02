@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Kenndaten.accdb")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Kenndaten.sqlite")]
         public string DBName {
             get {
                 return ((string)(this["DBName"]));
