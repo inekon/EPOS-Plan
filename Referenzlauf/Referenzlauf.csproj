@@ -6,9 +6,13 @@
     Eigenstaendiges Konsolenwerkzeug: friert die Ergebnisvektoren mehrerer Realprojekte
     als CSV ein und vergleicht spaetere Laeufe mit Toleranz dagegen.
 
-    BEWUSST NICHT IN WP-Plan.sln aufgenommen - das Werkzeug wird separat gebaut:
-      "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
-        Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x64
+    BEWUSST NICHT IN WP-Plan.sln aufgenommen - das Werkzeug wird separat gebaut. MSBuild-Pfad
+    je nach Fassung: ...\Microsoft Visual Studio\18\Community\... (VS 2026) oder ...\2022\...
+    Sicherer ueber vswhere, siehe WindowsFormsApplication1\CLAUDE.md:
+      $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest ^
+             -prerelease -products * -requires Microsoft.Component.MSBuild ^
+             -find MSBuild\**\Bin\MSBuild.exe
+      & $msb Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x64
     Seit Paket P2 wird ausschliesslich x64 gebaut; dazu muss Microsoft.ACE.OLEDB.12.0 als
     64-Bit-Engine installiert sein. Fehlt sie, laesst sich die Kenndaten.accdb zur Laufzeit
     nicht oeffnen.
