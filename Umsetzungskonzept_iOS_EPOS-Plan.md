@@ -1,6 +1,6 @@
 # Umsetzungskonzept: EPOS-Plan auf iOS
 
-**Rev. 2 — 02.09.2026 — zur Abnahme durch Philipp**
+**Rev. 2.1 — 02.09.2026 — Revalidierung nach iU0/iU1**
 
 Basis: Branch `sqlite`, Stand `6486c36` (02.09.2026) — **die Access-Ablösung ist vollzogen**.
 Rev. 1 war gegen `main` (`7d41833`) vermessen, als die Datenschicht noch Access trug; die daraus
@@ -193,7 +193,7 @@ Dokument.
 | Registry-Zugriffe | 3 Dateien | **9** | hinzugekommen: KI-Modul (`KiEinwilligung`, `KiChatService`), CSV-Export, Variantentest, Lizenzdialog |
 | DPAPI | 2 Dateien | **2**, aber andere | nicht mehr nur die Lizenz — `KiChatService` legt den API-Schlüssel ebenso ab |
 | `MessageBox.Show` / `ShowDialog` / `DialogResult` | 99 / 74 / 131 | **127 / 115 / 149** projektweit (99 / 94 / 131 nur unter `Views/`) | das Grundlagenkonzept zählte den View-Anteil; für die Dienst-Shims (A3/M4) gelten die Projektsummen |
-| Chart- und Grid-Masken | 16 / 16 | nicht reproduzierbar: **9** bzw. **7** Designer-Instanzen, **18** bzw. **36** Dateien mit Typnutzung | vor iU9 durch Einzeldurchsicht zu klären (→ iU0) |
+| Chart- und Grid-Masken | 16 / 16 | **18 Chart-Masken (32 Steuerelemente)** und **19 Grid-Masken (22 Steuerelemente)** im Build | mit iU0 durch Einzeldurchsicht geklärt (Entscheidungsregister § 3). Die in Rev. 2 genannten **9** bzw. **7** waren ein Grep-Artefakt: das Muster traf nur `*.Designer.cs` und übersah die Schreibweise `*.designer.cs`. Die Konzeptzahl 16/16 war damit nahezu richtig |
 
 **Unverändert bestätigt:** 569 `.cs` im Hauptprojekt · 204 View-Dateien (118 mit Designer, 42 rein
 programmatisch) · 61 `RecordSet`-Dateien (60 nach engerer Zählung) · 40 Dateien an den
@@ -214,6 +214,14 @@ Dieses Kapitel wird bei jeder Revision neu ausgeführt: Zählungen aus § 1.5 na
 § 1.3 prüfen, Paketstände gegen die Build-Matrix (§ 3.6) halten. Stand Rev. 2: Messdatum
 02.09.2026, Branch `sqlite` @ `6486c36`. Die Datenschichtangaben der Rev. 1 sind überholt und in
 § 1.4 ersetzt.
+
+**Rev. 2.1 — Revalidierung nach iU0 und iU1**, Branch `ios_migration` @ `0ddc417` (02.09.2026).
+Nachgeführt sind: die Chart-/Grid-Zeile in § 1.5 (a), die Build-Matrix in § 3.6 (b), der
+Umsetzungsstand von iU1 samt zweier Befunde, die diese Planung nicht kannte (c), die Bausteine
+iE1–iE4 in § 3.10 (d), der Stichtag .NET 10 in § 5.3 (e) und der Meilenstein iZ1 in § 4.1 (f).
+Alles Übrige der Rev. 2 bleibt unverändert gültig. **Sämtliche Nachweise sind hier — auf
+Linux — geführt; die Windows-Abnahme steht aus** und ist je Commit abhakbar in
+[`Umsetzung_iU0_iU1_Nachweise.md`](Umsetzung_iU0_iU1_Nachweise.md) aufgelistet.
 
 ---
 
@@ -558,13 +566,16 @@ darüber ist der portable Teil — und er umfasst den gesamten Rechenkern.
 | `SpeicherEngine`, `KiKern`, `EposSqliteMigrator.Kern` | ✅ | — |
 | `SpeicherEngine.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **337/337** |
 | `KiKern.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **450/450** |
-| `WindowsFormsApplication1` mit `-p:EnableWindowsTargeting=true` | ❌ **genau 2 × MSB4803** — die COM-Referenzen, sonst nichts | — |
+| `WindowsFormsApplication1` und `Referenzlauf` (`-p:EnableWindowsTargeting=true`) | ✅ `dotnet build` auf Windows **und** auf Linux/macOS — **0 Fehler, seit `0ddc417`** (übersetzen, nicht ausführen). Vor iU1 stand hier ❌ **genau 2 × MSB4803**, die COM-Referenzen, sonst nichts | — |
 
 Das ist der Beweis für § 1.1 in Zahlen: Der gesamte Bestand außer den zwei `COMReference`-Zeilen
-ist bereits heute plattformfrei übersetzbar. Nach iE3 kompiliert auch das Hauptprojekt auf Linux
-und macOS — ausführen lässt es sich dort nicht (WinForms), aber jeder Übersetzungsfehler fällt
-ohne Windows-Rechner auf. Für die CI (§ 3.7) heißt das: Der `kern.yml`-Lauf ist sofort möglich,
-nicht erst nach iU4.
+war schon vor iU1 plattformfrei übersetzbar. **Mit iE3 (P1.1) und der vorgezogenen
+Kodierungsnormalisierung (P1.12) kompiliert seit `0ddc417` auch das Hauptprojekt auf Linux und
+macOS** — `dotnet build WP-Plan.sln -c Release -p:Platform=x64` übersetzt dort alle 7 Projekte
+fehlerfrei, `dotnet test WP-Plan.Kern.slnf` meldet 787/787. Ausführen lässt sich die App dort
+nicht (WinForms), aber jeder Übersetzungsfehler fällt ohne Windows-Rechner auf. Für die CI
+(§ 3.7) hieß das: Der `kern.yml`-Lauf war sofort möglich, nicht erst nach iU4 — er läuft seit
+`b4fd34d` grün auf ubuntu und macos.
 
 ### 3.7 Continuous Integration
 
@@ -637,10 +648,10 @@ weiterhin für den Windows-internen Umzugsnachweis (iT2), wo sich nichts ändern
 
 | Nr. | Baustein | Paket | Nachweis |
 |---|---|---|---|
-| **iE1** | `global.json`, `Directory.Build.props`, `Directory.Packages.props` | iU1 | zwei Rechner bauen nachweislich dasselbe |
-| **iE2** | Alle Projekte auf .NET 10 | iU1 | Solution baut, Referenzläufe unverändert PASS |
-| **iE3** | COM-Referenzen entfernen (2 Dateien auf ClosedXML) | iU1 | **`dotnet build WP-Plan.sln` läuft durch** |
-| **iE4** | GitHub Actions: `kern.yml` (ubuntu + macOS), `windows.yml` | iU1 | erste grüne Läufe |
+| ~~**iE1**~~ | `global.json`, `Directory.Build.props` (`Directory.Packages.props` noch offen) | iU1 | ✔ erledigt (`e0df744`) — SDK auf 10.0.400 gepinnt, `LangVersion` und `EnableWindowsTargeting` zentral |
+| ~~**iE2**~~ | Alle Projekte auf .NET 10 | iU1 | ✔ erledigt (`577701c`, `a81fc1b`, `0ddc417`) — 7 Projekte, 0 Fehler; Referenzlauf-PASS steht als Windows-Nachweis noch aus |
+| ~~**iE3**~~ | COM-Referenzen entfernen (2 Dateien auf ClosedXML) | iU1 | ✔ erledigt (`d4b72c8`) — **`dotnet build WP-Plan.sln` läuft durch**. `ToolsClass.ReadExcel` hatte keinen Aufrufer — **gelöscht statt portiert**; portiert wurde nur `GanglinienDatei` |
+| ~~**iE4**~~ | GitHub Actions: `kern.yml` (ubuntu + macOS), `windows.yml` | iU1 | ✔ erledigt (`b4fd34d`) — `kern.yml` grün auf ubuntu und macos (787 Tests); `windows.yml` wartet auf den ersten Lauf |
 | **iE5** | Portabilitätssperre: `net10.0` ohne `-windows`, macOS-Build in der CI | iU4 | eine Windows-API im Kern bricht den Build |
 | **iE6** | Testdatenbank für die CI (13 Referenzprojekte, SQLite) | iU3 | Kern-Referenzlauf läuft in der CI |
 | **iE7** | Mac-Arbeitsplatz: Hardware, Xcode, `maui-ios`, Simulator | iU2 | Hallo-Welt-MAUI mit `EPOS.Kern`-Referenz im Simulator |
@@ -669,13 +680,18 @@ und das Grundlagenkonzept § 6 sagt dazu das Nötige.
 | Entscheidungen bestätigen | iF1 (Spike), iF3 (Blazor Hybrid), iF7 (Generator), **iF8 (Modell C)**, **iF9 (SQLite auf Windows)** — iU4 ff. setzen sie voraus |
 | Neue Entscheidungen einholen | iF10–iF16 (§ 8) |
 | Referenzbasis einfrieren | `2026-08-30_B3-Kaskade` als Bezugspunkt aller Umzugsnachweise festschreiben |
-| Chart- und Grid-Masken auszählen | Einzeldurchsicht der 18 Chart- und 36 Grid-Dateien; die Konzeptzahl 16/16 ist nicht reproduzierbar (§ 1.5) und Aufwandstreiber für iU9 |
+| Chart- und Grid-Masken auszählen | ✔ erledigt (`1ab062d`): **18 Chart-Masken (32 Steuerelemente), 19 Grid-Masken (22 Steuerelemente)** im Build — Aufwandsgrundlage für iU9, Einzeldurchsicht im Entscheidungsregister § 3 (§ 1.5) |
 | Rückbau | `CSExeCOMServer` aus dem Repo, `WindowsFormsApplication1.csproj.netfx-backup` entfernen |
 | Offene x64-Punkte | (a)–(c) und (e) aus `Konzept_Umstellung_64Bit_EPOS-Plan.md` § 10 terminieren; (d) entfällt mit SQLite |
 
 **Abnahme:** Entscheidungsregister vollständig, keine offene Vorbedingung für iU1.
 
 ### iU1 — Entwicklungsumgebung Stufe 1: .NET 10, Windows und CI · M · Windows
+
+> **Umgesetzt 02.09.2026 auf Branch `ios_migration`, Commits `c3a8233`..`0ddc417`
+> P1.8 `dab063a`, P1.10 `ce2dc9e`, P1.11 folgt; Nachweis hier geführt, CI Kern + Windows grün, Nachweis Windows-Ausführung offen (iZ1).**
+> Die Abnahmeliste je Commit steht in
+> [`Umsetzung_iU0_iU1_Nachweise.md`](Umsetzung_iU0_iU1_Nachweise.md).
 
 **Voraussetzung:** iU0. **Bausteine:** iE1, iE2, iE3, iE4. **Grundlagen:** A1 (teilweise), D2.
 **Frist:** vor dem 10.11.2026 (§ 1.3).
@@ -743,6 +759,23 @@ Compilerwarnungen mit eigenen Diagnose-IDs (keine Fehler); die `NoWarn`-Liste is
 zu durchforsten. Die DPI-Vorgabe bleibt unverändert `DpiUnaware` (`app.manifest`) — daran wird
 **nicht** gerührt, das wäre ein eigenes Vorhaben mit Layoutwirkung auf 204 Masken.
 `SixLabors.Fonts` bleibt auf **1.0.1 gepinnt** (ab 2.x gilt die Six-Labors-Split-Lizenz).
+
+**Zwei Befunde aus der Umsetzung, die diese Planung nicht kannte:**
+
+1. **Die Kodierungsnormalisierung musste vor den Frameworksprung.** M10 (68 nicht-UTF-8-Dateien)
+   war für iU4 vorgesehen. Sobald die COM-Referenzen weg sind (P1.1), übersetzt `csc` das
+   Hauptprojekt aber auch auf Linux und macOS — und stolpert dort über **14 der 68 Dateien**, die
+   seine 1252-Rückfallkodierung nicht abfängt (252 × `CS1056`/`CS1002`). Unter Windows-MSBuild
+   tritt das nicht auf. Ohne die Normalisierung wären weder der hiesige Nachweis für Schritt 6 noch
+   der `kern.yml`-Lauf für das Hauptprojekt führbar gewesen. **Vorgezogen und als P1.12 erledigt**
+   (`3ba7d54`, reine Umkodierung, kein Inhalt); die `.editorconfig` schreibt `utf-8-bom` für `*.cs`
+   fest.
+2. **`WFO1000` ist in .NET 10 ein Fehler, nicht nur eine Warnung.** Die Planung erwartete unter
+   „Weitere Punkte" nur Obsoletions-*Warnungen*. Die WinForms-Analyse zur
+   Designer-Serialisierung hat seit .NET 9 die Standardschwere `error` und bricht den Bestandsbau
+   an **60 Fundstellen** (Schwerpunkt `Form_Gesetzesparameter`, `Form_Kosten_VarAuswahl`, die
+   Karten-Controls des Kostenmoduls). In `0ddc417` per `.editorconfig` auf `warning` **herabgestuft
+   und sichtbar gelassen**; die Annotation je Property ist Fachentscheidung und **gehört zu iU9**.
 
 **Abnahme (iZ1):** `dotnet build WP-Plan.sln` und `dotnet test` laufen auf einem Rechner ohne Visual
 Studio durch; Referenzlauf **332/332 byte-gleich**.
@@ -935,7 +968,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 
 | Nr. | Meilenstein | nach | Nachweis |
 |---|---|---|---|
-| **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich |
+| **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
 | **iZ3** | **Go/No-Go** | iU3 | Projekt 1030 im Simulator wertgleich zur Referenzbasis |
 | **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS |
@@ -1004,7 +1037,7 @@ dem Go/No-Go-Gate.
 
 | Stichtag | Bindung | Stand |
 |---|---|---|
-| **.NET 10** | 10.11.2026 (Support-Ende 8/9) — von außen gesetzt | **fix**, Paket iU1 |
+| ~~**.NET 10**~~ | 10.11.2026 (Support-Ende 8/9) — von außen gesetzt | **erledigt 02.09.2026** (`0ddc417`), Windows-Abnahme offen |
 | **Modell C (M1)** | mit iZ5 — ab dann kein Dialog mehr doppelt | folgt aus iU8 |
 | ~~**SQLite auf Windows (M3/iF9)**~~ | **erledigt am 02.09.2026** mit `6486c36` | ✔ Die einzige Terminlücke der Kette ist geschlossen |
 

@@ -6,10 +6,23 @@ Antworten und Code-Kommentare auf Deutsch.
 
 ## Build
 
-`net8.0-windows`, WinForms + WPF, `WinExe`. Namespace `WindowsFormsApplication1`;
+`net10.0-windows`, WinForms, `WinExe`. Namespace `WindowsFormsApplication1`;
 **Assembly/EXE/Prozess `EPOS_Plan`** (Umbenennung Stufe 0 am 29.08.2026 — nur der
 Ausgabename; Stufe 1 = Namespace-Umstellung bräuchte ein eigenes Konzept).
 Solution: `..\WP-Plan.sln` (Debug/Release × x64).
+
+```powershell
+dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x64
+```
+
+**Das ist seit dem 02.09.2026 der Standardbefehl** — er funktioniert in VS 2026, auf der
+Kommandozeile und in der CI. Die beiden COM-Referenzen (`Microsoft.Office.Interop.Excel`,
+`VBIDE`), an denen der Bau bis dahin in `ResolveComReference` abbrach und deshalb das MSBuild von
+Visual Studio verlangte, wurden am 02.09.2026 mit Paket iU1-P1.1 **entfernt**; der Excel-Import
+läuft seither über ClosedXML. Die SDK-Fassung ist in `..\global.json` gepinnt (10.0.400),
+gemeinsame Buildeigenschaften stehen in `..\Directory.Build.props`.
+
+Alternative, falls doch einmal das MSBuild von Visual Studio gebraucht wird:
 
 ```powershell
 # MSBuild versionsunabhaengig ueber vswhere finden (VS 2026 liegt unter ...\18\, nicht ...\2022\)
@@ -19,14 +32,22 @@ $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe
 & $msb ..\WP-Plan.sln -p:Configuration=Debug -p:Platform=x64
 ```
 
-`dotnet build` scheitert an den COM-Referenzen (MSB4803) — bauen nur über das MSBuild von
-Visual Studio. Fester Pfad je Fassung, falls `vswhere` nicht greift:
+Fester Pfad je Fassung, falls `vswhere` nicht greift:
 `…\Microsoft Visual Studio\18\Community\…` (VS 2026) bzw. `…\2022\Community\…` (VS 2022).
 
 Build seit 22.08.2026 **x64** (Paket P2; davor x86). Ist-Stand, Entscheidungen und offene
 Pakete (P3–P5) in
 [`../Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md);
 Rückweg: Git-Tag `letzter-x86-stand`.
+
+**WFO1000 ist in .NET 10 standardmäßig ein *Fehler*** (WinForms-Designer-Serialisierung). Die
+`..\.editorconfig` stuft ihn auf `warning` herab, damit der Bestand baut, lässt ihn aber sichtbar:
+**60 Fundstellen**, Schwerpunkt `Form_Gesetzesparameter` (10), `Form_Kosten_VarAuswahl` (8) und die
+Karten-Controls des Kostenmoduls. Die Annotation je Property ist eine Fachentscheidung und gehört
+zu Paket iU9 — nicht nebenbei miterledigen.
+
+Das Setup (`..\Setup\build-setup.ps1`) wird derzeit von VS-MSBuild auf `dotnet publish`
+umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
 
 
 ## Architektur
@@ -58,19 +79,22 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
-**Datenzugriff:** `DataRepository.cs` (OLE DB, `?`-Parameter) — Standard, in ~140 Dateien; den
-ConnectionString (`Provider=Microsoft.ACE.OLEDB.12.0`) baut zentral `GetConnectionString()` — die
-einzige Stelle im Code, an der der Provider-String steht. `RecordSet.cs` (string-konkateniertes SQL,
-~60 Dateien) ist Altbestand, läuft aber ebenfalls über OLE DB — ODBC ist vollständig entfernt:
-`Program.DBConnection` existiert nicht mehr, `Controller/WPTestCtrl.cs` ist gelöscht und das Paket
-`System.Data.Odbc` aus dem Projekt genommen (P1 der x64-Umstellung). Neuer Code ausschließlich über
-`DataRepository`.
+**Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien. Seit 02.09.2026 (`6486c36`)
+spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
+`PRAGMA foreign_keys = ON` je Verbindung); den Verbindungsstring baut zentral `GetConnectionString()`.
+Die öffentliche Fläche ist bewusst unverändert geblieben: Die Ausführungsmethoden nehmen weiterhin
+`params OleDbParameter[]` als reinen **Datenträger** (Paket `System.Data.OleDb` bleibt deshalb
+referenziert), übersetzt wird innen (`?` → `@pN`, `UebersetzeParameterzeichen`). Transaktionen
+laufen über `DbVorgang`. `RecordSet.cs` (string-konkateniertes SQL, 47 echte Nutzer) ist Altbestand,
+innen ebenfalls auf SQLite, die Property `DBCommand` bleibt `OleDbCommand`. Neuer Code
+ausschließlich über `DataRepository`; das Ziel `IDatenzugriff`/`DbParam` steht im
+`Umsetzungskonzept_iOS_EPOS-Plan.md` (iU6). Betrieb: `BETRIEB_SQLITE.md`.
 
 **Rechenkern:** vollständig verwaltet in `Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`), aufgerufen
 aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
-`DllImport` — der frühere Weg über `..\CSExeCOMServer` ist abgelöst, die verbliebenen
-`CSExeCOMServer.SimpleObject`-Zeilen in den Simulationsklassen sind auskommentierter Altbestand und
-können weg.
+`DllImport`. Der frühere Weg über `..\CSExeCOMServer` ist abgelöst; das Projekt wurde am
+02.09.2026 aus dem Repo **entfernt** (Paket iU0-P0.1). Historie:
+`git show 922228a:CSExeCOMServer/`.
 
 Der Port bildet das Verhalten des Vorgängers bewusst genau nach: Feldgrößen fest auf 8760 Stunden,
 168 Wochenwerte, 365 Tage, 12 Monate, 24 Tagesstunden; Vektoren `float` mit Zwischenrechnung in
@@ -107,15 +131,15 @@ Diese Konventionen beim Erweitern beibehalten.
 **`SixLabors.Fonts` ist bewusst auf 1.0.1 gepinnt** — ab 2.x gilt die Six Labors Split License.
 Vor Releases `dotnet list package --include-transitive` prüfen.
 
-COM-Referenzen: `Microsoft.Office.Interop.Excel`, `VBIDE` (`EmbedInteropTypes=True`).
-
 ## Fallstricke
 
 - Die früheren Altkopien `..\WindowsFormsApplication1 - Kopie` und
   `..\mit_Puffer_KI_Lösungsversuch` (alte Vollkopien mit fast identischen Dateinamen) wurden am
   29.08.2026 entsorgt — die Verwechslungsgefahr beim Suchen/Greppen besteht nicht mehr.
-- **93 von 372 `.cs`-Dateien sind nicht UTF-8** kodiert (Umlaute als Ersatzzeichen). Beim Bearbeiten
-  die vorhandene Kodierung beibehalten, sonst zerschießt der Diff die Datei.
+- **Alle `.cs`-Dateien sind seit dem 02.09.2026 UTF-8 mit BOM** (Paket iU1-P1.12: 68 cp1252-Dateien
+  einmalig umkodiert; Vorgabe steht in `..\.editorconfig`, `charset = utf-8-bom`). Die frühere
+  Kodierungsfalle beim Bearbeiten — vorhandene Kodierung erraten und beibehalten — ist damit
+  Geschichte. Neue Dateien in derselben Kodierung anlegen.
 - **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
   in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch.
 - **`app.config`** enthält einen toten absoluten Beispielpfad zur `.accdb`; der echte Pfad wird zur
@@ -129,6 +153,10 @@ COM-Referenzen: `Microsoft.Office.Interop.Excel`, `VBIDE` (`EmbedInteropTypes=Tr
 - **Wegwerf-Harnesse nur unter `..\dev\` (Repo-Wurzel, gitignored).** Die `.csproj` sammelt
   `**\*.cs` ein — eine `.cs`-Datei unterhalb von `WindowsFormsApplication1\` (auch in einem
   eigenen Unterordner) bricht den Build sofort (CS0017, zweites `Main`).
+  Ein Harness unter `..\dev\` erbt `..\Directory.Build.props` (und künftig
+  `..\Directory.Packages.props`) — dort deshalb
+  `<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>` setzen, sonst scheitert
+  der Restore an Paketreferenzen mit eigener Version (NU1008).
 - **Läuft die Anwendung, ist `bin\` gesperrt** (EXE + DLL geladen) — Verifikations-Builds dann
   mit `-p:OutDir=<Ordner außerhalb>` umleiten; der Compile-Beweis bleibt vollwertig.
 - **Assembly heißt `EPOS_Plan`, der Namespace weiter `WindowsFormsApplication1`**
