@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -25,10 +24,10 @@ namespace WindowsFormsApplication1
                                WHERE Bezeichner = ? 
                                  AND ID_Projekt = ?";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@summe", dSumme),
-                    new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value),
-                    new OleDbParameter("@idProj", IDProjekt)
+                DbParam[] ps = {
+                    new DbParam("@summe", dSumme),
+                    new DbParam("@bez", szBezeichner ?? (object)DBNull.Value),
+                    new DbParam("@idProj", IDProjekt)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);

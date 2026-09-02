@@ -58,11 +58,11 @@ namespace WindowsFormsApplication1
                             Icon = ? 
                            WHERE ID = 1;";
 
-            OleDbParameter[] parameters = {
-                new OleDbParameter("@pname", m_szProjektname ?? ""),
-                new OleDbParameter("@pID", m_ID_Projekt),
-                new OleDbParameter("@desc", m_szBeschreibung ?? ""),
-                new OleDbParameter("@icon", m_icon ?? "")
+            DbParam[] parameters = {
+                new DbParam("@pname", m_szProjektname ?? ""),
+                new DbParam("@pID", m_ID_Projekt),
+                new DbParam("@desc", m_szBeschreibung ?? ""),
+                new DbParam("@icon", m_icon ?? "")
             };
 
             return DataRepository.ExecuteSQL(sql, parameters);
@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
             {
                 return StilleDb.NonQuery(
                     "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?",
-                    new OleDbParameter("@v", version)) > 0;
+                    new DbParam("@v", version)) > 0;
             }
             catch
             {
@@ -208,6 +208,8 @@ namespace WindowsFormsApplication1
                 using (OleDbCommand cmd = new OleDbCommand(
                            "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?", verbindung))
                 {
+                    // iU6: KEIN DbParam - hier wird eine echte OleDbCommand-Sammlung
+                    // auf einer Access-Verbindung gefuellt (Altbestand-Zweig).
                     cmd.Parameters.Add(new OleDbParameter("@v", version));
                     return cmd.ExecuteNonQuery() > 0;
                 }

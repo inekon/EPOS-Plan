@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -88,7 +87,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
                     " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }
@@ -101,7 +100,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Aenderungsdatum FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }

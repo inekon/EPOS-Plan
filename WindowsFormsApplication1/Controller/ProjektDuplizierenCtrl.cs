@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -201,7 +200,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_Projekt WHERE Projektname = ?",
-                new OleDbParameter("@n", projektname ?? ""));
+                new DbParam("@n", projektname ?? ""));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -296,7 +295,7 @@ namespace WindowsFormsApplication1
                     string sql = BaueInsertSql(s, srcId, offset, copySet);
                     if (sql == null) continue;
                     if (s.NameSpalte != null)
-                        v.Ausfuehren(sql, new OleDbParameter("@name", neuerName));
+                        v.Ausfuehren(sql, new DbParam("@name", neuerName));
                     else
                         v.Ausfuehren(sql);
                 }

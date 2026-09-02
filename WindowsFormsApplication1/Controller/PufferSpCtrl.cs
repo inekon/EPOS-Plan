@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
         {
             ReferenzenLoesen(BetroffeneIds(
                 "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? (object)DBNull.Value)));
+                new DbParam("@bez", szName ?? (object)DBNull.Value)));
 
             try
             {
@@ -112,6 +112,10 @@ namespace WindowsFormsApplication1
 
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();
+                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
+                // OleDbParameterCollection, die unmittelbar darunter mit
+                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
+                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
                 DBCommand.Parameters.Add(new OleDbParameter("?", szName ?? (object)DBNull.Value));
 
                 DBCommand.ExecuteNonQuery();
@@ -139,6 +143,10 @@ namespace WindowsFormsApplication1
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();
 
+                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
+                // OleDbParameterCollection, die unmittelbar darunter mit
+                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
+                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
                 DBCommand.Parameters.Add(new OleDbParameter("?", model.Firma ?? (object)DBNull.Value));
                 DBCommand.Parameters.Add(new OleDbParameter("?", model.Speichertyp ?? (object)DBNull.Value));
                 DBCommand.Parameters.Add(new OleDbParameter("?", model.Betriebsbereitschaftverlust));
@@ -179,8 +187,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -200,7 +208,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + PufferSpStammCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -228,9 +236,9 @@ namespace WindowsFormsApplication1
                     (ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen, Investitionskosten)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@her", ColOrNull(s, "Hersteller")),
                     P("@typ", ColOrNull(s, "Speichertyp")),
@@ -281,13 +289,13 @@ namespace WindowsFormsApplication1
             // vorherige Loesen der Referenzen wuerde Access das DELETE ablehnen.
             ReferenzenLoesen(BetroffeneIds(
                 "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt)));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt)));
 
             string sql = "DELETE FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
         /// <summary>
@@ -311,13 +319,13 @@ namespace WindowsFormsApplication1
             // WS_*/WQ_*-Spalten; das Nullen ist deshalb verhaltensneutral.
             ReferenzenLoesen(BetroffeneIds(
                 "SELECT ID FROM Tab_Pufferspeicher WHERE " + filter,
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@idProj2", idProjekt)));
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@idProj2", idProjekt)));
 
             return DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_Pufferspeicher WHERE " + filter,
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@idProj2", idProjekt));
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@idProj2", idProjekt));
         }
 
         // --- Projekt-Puffer-Verwaltung (Paket 2, Konzept 4.3 / 5.2) ------------------
@@ -343,7 +351,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + PufferSpStammCtrl.TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", stammId));
+                new DbParam("@id", stammId));
 
             if (dt == null || dt.Rows.Count == 0)
             {
@@ -482,7 +490,7 @@ namespace WindowsFormsApplication1
 
             string alterName = StilleDb.Text(StilleDb.Scalar(
                 "SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)));
 
             string name = string.Equals(alterName, bezeichner, StringComparison.Ordinal)
                 ? bezeichner
@@ -518,10 +526,10 @@ namespace WindowsFormsApplication1
                 StilleDb.NonQuery(
                     "UPDATE Tab_Energieanlagen SET Bezeichner = ? " +
                     "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
-                    StilleDb.Par("@neu", OleDbType.VarWChar, name),
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                    StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_PUFFER),
-                    StilleDb.Par("@alt", OleDbType.VarWChar, alterName));
+                    StilleDb.Par("@neu", DbParamTyp.VarWChar, name),
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@typ", DbParamTyp.Integer, ProjektPuffer.TYP_PUFFER),
+                    StilleDb.Par("@alt", DbParamTyp.VarWChar, alterName));
 
                 // Und die Alt-Zuordnung: Z_ProjektPufferSp.Pufferspeicher ist eine
                 // TEXTreferenz. Sie wird HIER weiter nachgeführt, obwohl die Tabelle seit
@@ -542,8 +550,8 @@ namespace WindowsFormsApplication1
                 // unangetastet.
                 StilleDb.NonQuery(
                     "UPDATE Z_ProjektPufferSp SET Pufferspeicher = ? WHERE ID_Pufferspeicher = ?",
-                    StilleDb.Par("@neu", OleDbType.VarWChar, name),
-                    StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                    StilleDb.Par("@neu", DbParamTyp.VarWChar, name),
+                    StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
             }
 
             return true;
@@ -571,9 +579,9 @@ namespace WindowsFormsApplication1
                 int treffer = StilleDb.Zahl(StilleDb.Scalar(
                     "SELECT COUNT(*) FROM Tab_Pufferspeicher " +
                     "WHERE ID_Projekt = ? AND Bezeichner = ? AND ID <> ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                    StilleDb.Par("@bez", OleDbType.VarWChar, kandidat),
-                    StilleDb.Par("@aus", OleDbType.Integer, idAusnahme)));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@bez", DbParamTyp.VarWChar, kandidat),
+                    StilleDb.Par("@aus", DbParamTyp.Integer, idAusnahme)));
 
                 if (treffer == 0) return kandidat;
             }
@@ -603,9 +611,9 @@ namespace WindowsFormsApplication1
                 "FROM Tab_Energieanlagen " +
                 "WHERE WS_ID_Puffer = ? OR WS_ID_Puffer2 = ? OR WQ_ID_Puffer = ? " +
                 "ORDER BY Bezeichner",
-                StilleDb.Par("@a", OleDbType.Integer, idPuffer),
-                StilleDb.Par("@b", OleDbType.Integer, idPuffer),
-                StilleDb.Par("@c", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@a", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@b", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@c", DbParamTyp.Integer, idPuffer));
             if (dt == null) return treffer;
 
             foreach (DataRow r in dt.Rows)
@@ -652,7 +660,7 @@ namespace WindowsFormsApplication1
                 "FROM [" + Z_AnlageSenkeCtrl.TABLE + "] s " +
                 "INNER JOIN Tab_Energieanlagen a ON a.ID = s.ID_Anlage " +
                 "WHERE s.ID_Puffer = ? ORDER BY a.Bezeichner, s.Rang",
-                StilleDb.Par("@s", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@s", DbParamTyp.Integer, idPuffer));
 
             if (senken != null)
             {
@@ -685,25 +693,25 @@ namespace WindowsFormsApplication1
 
             string bezeichner = StilleDb.Text(StilleDb.Scalar(
                 "SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)));
 
             // Alt-Zuordnungen dieses Speichers zuerst - sie hängen über
             // Z_ProjektPufferSp.ID_Pufferspeicher am Puffer.
             StilleDb.NonQuery("DELETE FROM Z_ProjektPufferSp WHERE ID_Pufferspeicher = ?",
-                              StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                              StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
 
             // Anlagenzeile (ID_Type = 12) des Speichers
             if (bezeichner.Length > 0)
                 StilleDb.NonQuery(
                     "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
-                    StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_PUFFER),
-                    StilleDb.Par("@bez", OleDbType.VarWChar, bezeichner));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@typ", DbParamTyp.Integer, ProjektPuffer.TYP_PUFFER),
+                    StilleDb.Par("@bez", DbParamTyp.VarWChar, bezeichner));
 
             ReferenzenLoesen(new List<int> { idPuffer });
 
             bool ok = StilleDb.NonQuery("DELETE FROM Tab_Pufferspeicher WHERE ID = ?",
-                                        StilleDb.Par("@id", OleDbType.Integer, idPuffer)) >= 0;
+                                        StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) >= 0;
 
             // Waisen aufräumen (B0-6a) - Projektkopien ohne Anlagenzeile
             new PufferSpCtrl().ProjektWaisenEntfernen(idProjekt);
@@ -878,7 +886,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT * FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
 
             if (dt == null || dt.Rows.Count == 0) return new KlassenSet(true, false, false);
 
@@ -907,7 +915,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return sets;
 
             foreach (DataRow r in dt.Rows)
@@ -969,10 +977,10 @@ namespace WindowsFormsApplication1
                 "[" + SchemaKatalog.SPALTE_PSP_NUTZUNG_BRAUCHWASSER + "] = ?, " +
                 "[" + SchemaKatalog.SPALTE_PSP_NUTZUNG_PROZESS + "] = ? " +
                 "WHERE ID = ?",
-                StilleDb.Par("@h", OleDbType.Boolean, set.Heizung),
-                StilleDb.Par("@b", OleDbType.Boolean, set.Brauchwasser),
-                StilleDb.Par("@p", OleDbType.Boolean, set.Prozess),
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)) > 0;
+                StilleDb.Par("@h", DbParamTyp.Boolean, set.Heizung),
+                StilleDb.Par("@b", DbParamTyp.Boolean, set.Brauchwasser),
+                StilleDb.Par("@p", DbParamTyp.Boolean, set.Prozess),
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
         }
 
         /// <summary>Bequemlichkeitsfassung von <see cref="KlassenSetSchreiben(int,KlassenSet)"/>.</summary>
@@ -1199,7 +1207,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT * FROM Tab_Pufferspeicher WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
 
             if (dt == null || dt.Rows.Count == 0) return new Schichtdaten();
 
@@ -1225,7 +1233,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             if (dt == null) return schichten;
 
             foreach (DataRow r in dt.Rows)
@@ -1273,23 +1281,23 @@ namespace WindowsFormsApplication1
                 "[" + SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX + "] = ?, " +
                 "[" + SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX + "] = ? " +
                 "WHERE ID = ?",
-                StilleDb.Par("@n", OleDbType.Integer, SchichtenKlemmen(daten.Schichten)),
+                StilleDb.Par("@n", DbParamTyp.Integer, SchichtenKlemmen(daten.Schichten)),
                 Zahlpar("@h", daten.Hoehe),
                 Zahlpar("@l", daten.LambdaEff),
                 Zahlpar("@t", daten.TNutzBW),
                 Zahlpar("@eh", daten.EntnahmeHeizung),
                 Zahlpar("@eb", daten.EntnahmeBW),
                 Zahlpar("@ep", daten.EntnahmeProzess),
-                StilleDb.Par("@lp", OleDbType.Double, daten.LadeleistungMax),
-                StilleDb.Par("@ep2", OleDbType.Double, daten.EntladeleistungMax),
-                StilleDb.Par("@id", OleDbType.Integer, idPuffer)) > 0;
+                StilleDb.Par("@lp", DbParamTyp.Double, daten.LadeleistungMax),
+                StilleDb.Par("@ep2", DbParamTyp.Double, daten.EntladeleistungMax),
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
         }
 
         /// <summary>Ein nullbarer Kommazahl-Parameter; <c>null</c> geht als DBNull.</summary>
-        private static OleDbParameter Zahlpar(string name, double? wert)
+        private static DbParam Zahlpar(string name, double? wert)
         {
-            OleDbParameter p = new OleDbParameter(name, OleDbType.Double);
-            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            DbParam p = new DbParam(name, DbParamTyp.Double);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
             return p;
         }
 
@@ -1420,7 +1428,7 @@ namespace WindowsFormsApplication1
         /// Unterscheidung leistet <c>StilleDb.Scalar</c> NICHT (dort ist null sowohl
         /// "Fehler" als auch "kein Wert"), deshalb steht sie hier.
         /// </summary>
-        private static bool StillProbe(string sql, params OleDbParameter[] parameter)
+        private static bool StillProbe(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -1532,7 +1540,7 @@ namespace WindowsFormsApplication1
                 using (SqliteConnection conn = StilleDb.OeffneVerbindung())
                 using (SqliteCommand cmd = DataRepository.ErzeugeKommando(
                            conn, null, ProjektPuffer.SQL_PUFFER_TEMPERATUREN,
-                           new[] { new OleDbParameter("@id", idPuffer) }))
+                           new[] { new DbParam("@id", idPuffer) }))
                 using (SqliteDataReader r = cmd.ExecuteReader())
                 {
                     if (!r.Read()) return false;
@@ -1593,8 +1601,8 @@ namespace WindowsFormsApplication1
             object v = StillScalar(
                 "SELECT Gesamtvolumen FROM Tab_Pufferspeicher " +
                 "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID LIMIT 1",
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
 
             if (v == null || v == DBNull.Value) return 0;
             try { return Convert.ToInt32(v); }
@@ -1626,8 +1634,8 @@ namespace WindowsFormsApplication1
             {
                 return StillNonQuery(
                     "UPDATE Tab_Pufferspeicher SET Gesamtvolumen = ? WHERE ID = ?",
-                    new OleDbParameter("@vol", liter),
-                    new OleDbParameter("@id", idPuffer)) >= 0;
+                    new DbParam("@vol", liter),
+                    new DbParam("@id", idPuffer)) >= 0;
             }
 
             if (liter == 0) return true;
@@ -1694,8 +1702,8 @@ namespace WindowsFormsApplication1
             object v = StillScalar(
                 "SELECT ID FROM Tab_Pufferspeicher " +
                 "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID LIMIT 1",
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
 
             if (v == null || v == DBNull.Value) return 0;
             try { return Convert.ToInt32(v); }
@@ -1707,9 +1715,9 @@ namespace WindowsFormsApplication1
             object v = StillScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@typ", ProjektPuffer.TYP_PUFFER),
-                new OleDbParameter("@bez", bezeichner ?? ""));
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@typ", ProjektPuffer.TYP_PUFFER),
+                new DbParam("@bez", bezeichner ?? ""));
 
             if (v == null || v == DBNull.Value) return false;
             try { return Convert.ToInt32(v) > 0; }
@@ -1726,7 +1734,7 @@ namespace WindowsFormsApplication1
         /// der eigene Meldungstext, und die Rueckgabe - diese Fassung reicht
         /// <c>DBNull</c> DURCH (die Aufrufer pruefen darauf), StilleDb macht null daraus.
         /// </summary>
-        private static object StillScalar(string sql, params OleDbParameter[] parameter)
+        private static object StillScalar(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -1745,7 +1753,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Schreibende Anweisung ohne Dialog; -1 bei Fehler.
         /// ARBEITSPAKET S4b: innen umgestellt - eigener Meldungstext wie oben.</summary>
-        private static int StillNonQuery(string sql, params OleDbParameter[] parameter)
+        private static int StillNonQuery(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -1793,11 +1801,11 @@ namespace WindowsFormsApplication1
 
             ReferenzenLoesen(BetroffeneIds(
                 "SELECT ID FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
-                new OleDbParameter("@idProj", idProjekt)));
+                new DbParam("@idProj", idProjekt)));
         }
 
         /// <summary>Liefert die IDs der Puffer-Zeilen, die ein Filter trifft.</summary>
-        private static List<int> BetroffeneIds(string sql, params OleDbParameter[] parameter)
+        private static List<int> BetroffeneIds(string sql, params DbParam[] parameter)
         {
             List<int> ids = new List<int>();
             try
@@ -1895,9 +1903,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static OleDbParameter P(string name, object value)
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         private static object ColOrNull(DataRow row, string col)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -137,7 +136,7 @@ namespace WindowsFormsApplication1
                 string regSql = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
                 int id_ref;
 
-                object regId = v.Skalar(regSql, new OleDbParameter("?", szName ?? (object)DBNull.Value));
+                object regId = v.Skalar(regSql, new DbParam("?", szName ?? (object)DBNull.Value));
                 if (regId == DBNull.Value || regId == null) return false;
                 id_ref = Convert.ToInt32(regId);
 
@@ -196,12 +195,12 @@ namespace WindowsFormsApplication1
             {
                 if (r.RowState == DataRowState.Unchanged || r.RowState == DataRowState.Detached) continue;
 
-                List<OleDbParameter> p = new List<OleDbParameter>();
+                List<DbParam> p = new List<DbParam>();
 
                 if (r.RowState == DataRowState.Deleted)
                 {
                     if (!mitSchluessel) continue;   // ohne Schluessel gab es auch beim Adapter kein DELETE
-                    p.Add(new OleDbParameter("@k", r[SCHLUESSEL, DataRowVersion.Original]));
+                    p.Add(new DbParam("@k", r[SCHLUESSEL, DataRowVersion.Original]));
                     v.Ausfuehren("DELETE FROM " + TABELLE + " WHERE [" + SCHLUESSEL + "] = ?", p.ToArray());
                     continue;
                 }
@@ -213,9 +212,9 @@ namespace WindowsFormsApplication1
                     {
                         if (satz.Length > 0) satz.Append(", ");
                         satz.Append("[").Append(s).Append("] = ?");
-                        p.Add(new OleDbParameter("@p" + p.Count, r[s]));
+                        p.Add(new DbParam("@p" + p.Count, r[s]));
                     }
-                    p.Add(new OleDbParameter("@k", r[SCHLUESSEL, DataRowVersion.Original]));
+                    p.Add(new DbParam("@k", r[SCHLUESSEL, DataRowVersion.Original]));
                     v.Ausfuehren("UPDATE " + TABELLE + " SET " + satz + " WHERE [" + SCHLUESSEL + "] = ?",
                                  p.ToArray());
                     continue;
@@ -228,7 +227,7 @@ namespace WindowsFormsApplication1
                     if (namen.Length > 0) { namen.Append(", "); platz.Append(", "); }
                     namen.Append("[").Append(s).Append("]");
                     platz.Append("?");
-                    p.Add(new OleDbParameter("@p" + p.Count, r[s]));
+                    p.Add(new DbParam("@p" + p.Count, r[s]));
                 }
                 v.Ausfuehren("INSERT INTO " + TABELLE + " (" + namen + ") VALUES (" + platz + ")",
                              p.ToArray());

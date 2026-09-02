@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite;
@@ -67,7 +66,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Skalare Abfrage; <c>null</c> bei Fehler, fehlender Zeile oder NULL.</summary>
-        public static object Scalar(string sql, params OleDbParameter[] parameter)
+        public static object Scalar(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -86,7 +85,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Tabellenabfrage; <c>null</c> bei Fehler (z. B. fehlende Spalte).</summary>
-        public static DataTable Tabelle(string sql, params OleDbParameter[] parameter)
+        public static DataTable Tabelle(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -107,7 +106,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Schreibende Anweisung; Anzahl betroffener Zeilen, -1 bei Fehler.</summary>
-        public static int NonQuery(string sql, params OleDbParameter[] parameter)
+        public static int NonQuery(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -159,9 +158,9 @@ namespace WindowsFormsApplication1
         /// <see cref="DBNull"/> sein kann (aus DBNull allein leitet der OLE-DB-Provider
         /// keinen Spaltentyp ab). Gleiche Bauart wie <c>ProjektPuffer.Par</c>.
         /// </summary>
-        public static OleDbParameter Par(string name, OleDbType typ, object wert)
+        public static DbParam Par(string name, DbParamTyp typ, object wert)
         {
-            return new OleDbParameter(name, typ) { Value = wert ?? DBNull.Value };
+            return new DbParam(name, typ) { Wert = wert ?? DBNull.Value };
         }
 
 
@@ -189,7 +188,7 @@ namespace WindowsFormsApplication1
         public static HashSet<string> SpaltenNamen(string tabelle)
         {
             DataTable cols = Tabelle("SELECT name FROM pragma_table_info(?) ORDER BY cid",
-                                     new OleDbParameter("?", tabelle ?? string.Empty));
+                                     new DbParam("?", tabelle ?? string.Empty));
 
             // Wie bisher: keine Zeilen = keine Tabelle (eine Tabelle ohne Spalten gibt es
             // nicht). null = Schema nicht lesbar. Beides ergibt null.
@@ -208,7 +207,7 @@ namespace WindowsFormsApplication1
         {
             object treffer = Scalar(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type IN ('table','view') AND name = ?",
-                new OleDbParameter("?", tabelle ?? string.Empty));
+                new DbParam("?", tabelle ?? string.Empty));
             return treffer != null && Convert.ToInt32(treffer) > 0;
         }
 

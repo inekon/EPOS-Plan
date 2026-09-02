@@ -492,19 +492,19 @@ namespace WindowsFormsApplication1
 
                 object br = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
+                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) }));
                 if (br != null && br != DBNull.Value)
                     szBrennstoff = br.ToString();
 
                 object brkatid = DataRepository.ExecuteScalar(
                     "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
+                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) }));
                 if (brkatid != null && brkatid != DBNull.Value)
                     nKategorie = Convert.ToInt32(brkatid);
 
                 object brkat = DataRepository.ExecuteScalar(
                     "SELECT Gruppe FROM Tab_BrennstoffKategorien WHERE ID = ?",
-                    new OleDbParameter[] { new OleDbParameter("@id", nKategorie) });
+                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nKategorie) }));
                 if (brkat != null && brkat != DBNull.Value)
                     szKategorie = brkat.ToString();
 
@@ -535,7 +535,7 @@ namespace WindowsFormsApplication1
                         {
                             List<OleDbParameter> ps = new List<OleDbParameter>();
                             ps.Add(new OleDbParameter("@name", dlg.SelectedName));
-                            object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", ps.ToArray());
+                            object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", DbParam.Von(ps.ToArray()));
                             if (existing != null && existing != DBNull.Value)
                                 carrierId = Convert.ToInt32(existing);
                         }
@@ -564,7 +564,7 @@ namespace WindowsFormsApplication1
                                          (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
                                           hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
                                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                pTraeger.ToArray());
+                                DbParam.Von(pTraeger.ToArray()));
                         }
 
                         if (carrierId <= 0)
@@ -592,7 +592,7 @@ namespace WindowsFormsApplication1
                             List<OleDbParameter> ps = new List<OleDbParameter>();
                             ps.Add(new OleDbParameter("@pid", m_ID_Projekt));
                             ps.Add(new OleDbParameter("@eid", carrierId));
-                            vorhanden = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", ps.ToArray()));
+                            vorhanden = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", DbParam.Von(ps.ToArray())));
                         }
                         if (vorhanden > 0)
                         {
@@ -614,7 +614,7 @@ namespace WindowsFormsApplication1
                             ps.Add(new OleDbParameter("@lp", Math.Round(default_leistungspreis, 4)));
                             v.Ausfuehren(@"INSERT INTO energy_price
                                      (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", DbParam.Von(ps.ToArray()));
                         }
 
                         {
@@ -633,7 +633,7 @@ namespace WindowsFormsApplication1
                             v.Ausfuehren(@"INSERT INTO energy_Project_settings
                                      (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                                       custom_price_base, ID_Umrechnung, co2, so2, nox)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", DbParam.Von(ps.ToArray()));
                         }
 
                         v.Commit();
@@ -867,11 +867,11 @@ namespace WindowsFormsApplication1
                 "SET ID_Energieträger = ? " +
                 "WHERE ID_Projekt = ? AND ID_Energieträger = ?";
 
-            DataRepository.ExecuteSQL(sqlUpdate, new OleDbParameter[] {
+            DataRepository.ExecuteSQL(sqlUpdate, DbParam.Von(new OleDbParameter[] {
                 new OleDbParameter("@neu", m.ID_Carrier),   // SET-Wert
                 new OleDbParameter("@pid", m_ID_Projekt),    // Filter Projekt
                 new OleDbParameter("@alt", idcarrier_alt)    // Filter bisheriger Träger
-            });
+            }));
         }
 
     }

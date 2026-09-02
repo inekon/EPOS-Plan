@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Text;
 using System.Windows.Forms;
 
@@ -58,7 +57,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
-                new[] { new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value) });
+                new[] { new DbParam("@bez", szBezeichner ?? (object)DBNull.Value) });
             _internalList.Clear();
             m_ID = 0; m_szProzessname = ""; m_szTyp = ""; m_szBeschreibung = ""; m_bReadOnly = false;
             for (int i = 0; i < 12; i++) m_Monat[i] = 0.0;
@@ -73,7 +72,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -87,7 +86,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
         }
 
         #endregion
@@ -99,8 +98,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM " + TABLE_PROJ + " WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@proj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -116,7 +115,7 @@ namespace WindowsFormsApplication1
             // Kopf-Stammsatz lesen
             DataTable head = DataRepository.GetDataTable(
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
-                new[] { new OleDbParameter("@bez", szBezeichner) });
+                new[] { new DbParam("@bez", szBezeichner) });
             if (head == null || head.Rows.Count == 0) return -1;
             DataRow h = head.Rows[0];
             string typName = h.Table.Columns.Contains("Typ") && h["Typ"] != DBNull.Value ? h["Typ"].ToString() : "";
@@ -127,7 +126,7 @@ namespace WindowsFormsApplication1
             {
                 dtTyp = DataRepository.GetDataTable(
                     "SELECT * FROM " + TYP_STAMM + " WHERE Bezeichner = ?",
-                    new[] { new OleDbParameter("@bez", typName) });
+                    new[] { new DbParam("@bez", typName) });
             }
 
             using (DbVorgang v = DataRepository.Vorgang())
@@ -146,15 +145,15 @@ namespace WindowsFormsApplication1
                     for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
                     cols.Append(", ReadOnly"); vals.Append(", ?");
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@hid", neuProzId));
-                        p.Add(new OleDbParameter("@hproj", idProjekt));
-                        p.Add(new OleDbParameter("@hbez", szBezeichner));
-                        p.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
-                        p.Add(new OleDbParameter("@hbeschr", ColOrNull(h, "Beschreibung")));
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@hid", neuProzId));
+                        p.Add(new DbParam("@hproj", idProjekt));
+                        p.Add(new DbParam("@hbez", szBezeichner));
+                        p.Add(new DbParam("@htyp", (object)typName ?? DBNull.Value));
+                        p.Add(new DbParam("@hbeschr", ColOrNull(h, "Beschreibung")));
                         for (int i = 1; i <= 12; i++)
-                            p.Add(new OleDbParameter("@hmon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
-                        p.Add(new OleDbParameter("@hro", false));
+                            p.Add(new DbParam("@hmon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
+                        p.Add(new DbParam("@hro", false));
                         v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
                     }
 
@@ -179,18 +178,18 @@ namespace WindowsFormsApplication1
                             foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
 
                             {
-                                List<OleDbParameter> p = new List<OleDbParameter>();
-                                p.Add(new OleDbParameter("@tid", neuTypId++));
-                                p.Add(new OleDbParameter("@tpw", neuProzId));
-                                p.Add(new OleDbParameter("@tproj", idProjekt));
-                                p.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
-                                p.Add(new OleDbParameter("@tbeschr", ColOrNull(tr, "Beschreibung")));
-                                p.Add(new OleDbParameter("@tro", false));
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@tid", neuTypId++));
+                                p.Add(new DbParam("@tpw", neuProzId));
+                                p.Add(new DbParam("@tproj", idProjekt));
+                                p.Add(new DbParam("@ttypn", (object)typName ?? DBNull.Value));
+                                p.Add(new DbParam("@tbeschr", ColOrNull(tr, "Beschreibung")));
+                                p.Add(new DbParam("@tro", false));
                                 int k = 0;
                                 foreach (string col in profil)
                                 {
                                     object wert = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
-                                    p.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), wert));
+                                    p.Add(new DbParam("@cp" + (k++).ToString("D3"), wert));
                                 }
                                 v.Ausfuehren("INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")", p.ToArray());
                             }

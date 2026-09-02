@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -226,7 +225,7 @@ namespace WindowsFormsApplication1
         {
             return Lies("SELECT co2, so2, nox FROM energy_project_settings " +
                         "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                        new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                        new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
         }
 
         private static Dictionary<string, double?> AltwerteStamm(int carrierId)
@@ -235,16 +234,16 @@ namespace WindowsFormsApplication1
                         "FROM energy_carrier AS ec " +
                         "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                         "WHERE ec.id = ?",
-                        new OleDbParameter("@c", carrierId));
+                        new DbParam("@c", carrierId));
         }
 
         private static Dictionary<string, double?> AltwerteCarrier(int carrierId)
         {
             return Lies("SELECT co2, so2, nox FROM energy_carrier WHERE id = ?",
-                        new OleDbParameter("@c", carrierId));
+                        new DbParam("@c", carrierId));
         }
 
-        private static Dictionary<string, double?> Lies(string sql, params OleDbParameter[] p)
+        private static Dictionary<string, double?> Lies(string sql, params DbParam[] p)
         {
             var d = new Dictionary<string, double?>(StringComparer.OrdinalIgnoreCase);
             try

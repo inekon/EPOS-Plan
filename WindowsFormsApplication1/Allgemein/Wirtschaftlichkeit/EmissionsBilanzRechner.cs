@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -97,13 +96,13 @@ namespace WindowsFormsApplication1
             return 0 <= StilleDb.NonQuery(
                 "INSERT INTO " + TAB_PARK + " (ID, Bezeichner, Wirkungsgrad, CO2, SO2, NOx, Netzverluste) " +
                 "VALUES (?,?,?,?,?,?,?)",
-                new OleDbParameter("@id", id),
-                new OleDbParameter("@n", name),
-                new OleDbParameter("@w", eta),
-                new OleDbParameter("@c", co2),
-                new OleDbParameter("@s", so2),
-                new OleDbParameter("@x", nox),
-                new OleDbParameter("@v", verluste));
+                new DbParam("@id", id),
+                new DbParam("@n", name),
+                new DbParam("@w", eta),
+                new DbParam("@c", co2),
+                new DbParam("@s", so2),
+                new DbParam("@x", nox),
+                new DbParam("@v", verluste));
         }
 
         /// <summary>Alle Katalogeinträge (für die Auswahl im Parameterdialog).</summary>
@@ -348,7 +347,7 @@ namespace WindowsFormsApplication1
                     "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
-                    new OleDbParameter("@c", carrierId));
+                    new DbParam("@c", carrierId));
                 if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Kategorie"] != DBNull.Value)
                     treffer = BilanzKonvention.IstBiogen(
                         Convert.ToInt32(dt.Rows[0]["ID_Kategorie"]),
@@ -387,7 +386,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT CO2, SO2, NOx FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new OleDbParameter("@id", idBrennstoff));
+                    new DbParam("@id", idBrennstoff));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     f.CO2 = D(dt.Rows[0], "CO2");

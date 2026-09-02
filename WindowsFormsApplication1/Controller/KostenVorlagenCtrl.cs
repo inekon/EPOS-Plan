@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -116,8 +115,8 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? ORDER BY [" +
                 SchemaKatalog.SPALTE_KV_IST_STANDARD + "] DESC, [" +
                 SchemaKatalog.SPALTE_KV_NAME + "]",
-                new OleDbParameter("@kid", komponentenId),
-                new OleDbParameter("@kat", kategorieId));
+                new DbParam("@kid", komponentenId),
+                new DbParam("@kat", kategorieId));
             foreach (DataRow r in dt.Rows)
                 liste.Add(new KostenVorlageKopf
                 {
@@ -156,7 +155,7 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [" +
                 SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? ORDER BY [" +
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "], [ID]",
-                new OleDbParameter("@vid", vorlageId));
+                new DbParam("@vid", vorlageId));
             foreach (DataRow r in dt.Rows)
                 liste.Add(new KostenVorlagenPosition
                 {
@@ -213,7 +212,7 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT [" + SchemaKatalog.SPALTE_KV_IST_STANDARD + "] FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
-                new OleDbParameter("@id", vorlageId));
+                new DbParam("@id", vorlageId));
             return o != null && o != DBNull.Value && Convert.ToBoolean(o);
         }
 
@@ -246,10 +245,10 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KV_IST_STANDARD + "], [" +
                 SchemaKatalog.SPALTE_KV_READONLY + "], [" +
                 SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) VALUES (?, ?, ?, ?, FALSE, FALSE, ?)",
-                new OleDbParameter("@id", id),
-                new OleDbParameter("@kid", komponentenId),
-                new OleDbParameter("@kat", kategorieId),
-                new OleDbParameter("@n", name.Trim()),
+                new DbParam("@id", id),
+                new DbParam("@kid", komponentenId),
+                new DbParam("@kat", kategorieId),
+                new DbParam("@n", name.Trim()),
                 Datum("@am", DateTime.Now));
             return n == 1 ? id : 0;
         }
@@ -265,7 +264,7 @@ namespace WindowsFormsApplication1
                 "SELECT [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "], [" +
                 SchemaKatalog.SPALTE_KV_KATEGORIEID + "] FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
-                new OleDbParameter("@id", quellVorlageId));
+                new DbParam("@id", quellVorlageId));
             if (kopf.Rows.Count != 1) return 0;
 
             int neueId = VorlageNeu(Convert.ToInt32(kopf.Rows[0][0]),
@@ -293,7 +292,7 @@ namespace WindowsFormsApplication1
             if (IstStandard(vorlageId)) return false;   // Ä8-Restschutz (s. IstNurLesen)
             return DataRepository.ExecuteNonQuery(
                 "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
-                new OleDbParameter("@id", vorlageId)) == 1;
+                new DbParam("@id", vorlageId)) == 1;
         }
 
         /// <summary>Neue Position ans Rasterende (FK2: „+ Position hinzufügen").
@@ -332,16 +331,16 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_NUTZUNGSDAUER + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "] = ? WHERE [ID] = ?",
-                new OleDbParameter("@b", p.Bezeichnung ?? ""),
-                new OleDbParameter("@ka", p.Kostenart ?? ""),
-                new OleDbParameter("@bm", p.Bemessung ?? ""),
+                new DbParam("@b", p.Bezeichnung ?? ""),
+                new DbParam("@ka", p.Kostenart ?? ""),
+                new DbParam("@bm", p.Bemessung ?? ""),
                 Wert("@satz", p.Satz),
                 Wert("@betrag", p.BetragNetto),
-                new OleDbParameter("@erl", p.IstErloes),
+                new DbParam("@erl", p.IstErloes),
                 Wert("@nd", p.Nutzungsdauer),
                 Wert("@ev", p.EmpfehlungVon),
                 Wert("@eb", p.EmpfehlungBis),
-                new OleDbParameter("@id", p.Id));
+                new DbParam("@id", p.Id));
             if (n == 1) KopfBeruehren(p.VorlageId);
             return n == 1;
         }
@@ -352,14 +351,14 @@ namespace WindowsFormsApplication1
             object vid = DataRepository.ExecuteScalar(
                 "SELECT [" + SchemaKatalog.SPALTE_KVP_VORLAGEID + "] FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [ID] = ?",
-                new OleDbParameter("@id", positionId));
+                new DbParam("@id", positionId));
             if (vid == null || vid == DBNull.Value) return false;
             int vorlageId = Convert.ToInt32(vid);
             if (IstNurLesen(vorlageId)) return false;
 
             bool ok = DataRepository.ExecuteNonQuery(
                 "DELETE FROM [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [ID] = ?",
-                new OleDbParameter("@id", positionId)) == 1;
+                new DbParam("@id", positionId)) == 1;
             if (ok) KopfBeruehren(vorlageId);
             return ok;
         }
@@ -373,9 +372,9 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
                 SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
                 SchemaKatalog.SPALTE_KV_NAME + "] = ?",
-                new OleDbParameter("@kid", komponentenId),
-                new OleDbParameter("@kat", kategorieId),
-                new OleDbParameter("@n", name.Trim()));
+                new DbParam("@kid", komponentenId),
+                new DbParam("@kat", kategorieId),
+                new DbParam("@n", name.Trim()));
             return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
         }
 
@@ -397,19 +396,19 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                new OleDbParameter("@id", id),
-                new OleDbParameter("@vid", p.VorlageId),
+                new DbParam("@id", id),
+                new DbParam("@vid", p.VorlageId),
                 Ganz("@sid", p.StammId),
-                new OleDbParameter("@b", p.Bezeichnung ?? ""),
-                new OleDbParameter("@ka", p.Kostenart ?? ""),
-                new OleDbParameter("@bm", p.Bemessung ?? ""),
+                new DbParam("@b", p.Bezeichnung ?? ""),
+                new DbParam("@ka", p.Kostenart ?? ""),
+                new DbParam("@bm", p.Bemessung ?? ""),
                 Wert("@satz", p.Satz),
                 Wert("@betrag", p.BetragNetto),
-                new OleDbParameter("@erl", p.IstErloes),
+                new DbParam("@erl", p.IstErloes),
                 Wert("@nd", p.Nutzungsdauer),
                 Wert("@ev", p.EmpfehlungVon),
                 Wert("@eb", p.EmpfehlungBis),
-                new OleDbParameter("@so", p.Sortierung));
+                new DbParam("@so", p.Sortierung));
             return n == 1 ? id : 0;
         }
 
@@ -419,7 +418,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [" +
                 SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ?",
-                new OleDbParameter("@vid", vorlageId));
+                new DbParam("@vid", vorlageId));
             int max = (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
             return max + 10;
         }
@@ -431,7 +430,7 @@ namespace WindowsFormsApplication1
                 "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGE + "] SET [" +
                 SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "] = ? WHERE [ID] = ?",
                 Datum("@am", DateTime.Now),
-                new OleDbParameter("@id", vorlageId));
+                new DbParam("@id", vorlageId));
         }
 
         private static int MaxId(string tabelle)
@@ -452,26 +451,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nullbarer DOUBLE-Parameter mit ausdrücklichem Typ (ein DBNull ohne
         /// Typ kann der Provider nicht binden — Muster <c>SchemaMigration.ParamOderNull</c>).</summary>
-        private static OleDbParameter Wert(string name, double? wert)
+        private static DbParam Wert(string name, double? wert)
         {
-            var p = new OleDbParameter(name, OleDbType.Double);
-            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            var p = new DbParam(name, DbParamTyp.Double);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
             return p;
         }
 
         /// <summary>Nullbarer LONG-Parameter.</summary>
-        private static OleDbParameter Ganz(string name, int? wert)
+        private static DbParam Ganz(string name, int? wert)
         {
-            var p = new OleDbParameter(name, OleDbType.Integer);
-            p.Value = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            var p = new DbParam(name, DbParamTyp.Integer);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
             return p;
         }
 
         /// <summary>DATETIME-Parameter.</summary>
-        private static OleDbParameter Datum(string name, DateTime wert)
+        private static DbParam Datum(string name, DateTime wert)
         {
-            var p = new OleDbParameter(name, OleDbType.Date);
-            p.Value = wert;
+            var p = new DbParam(name, DbParamTyp.Date);
+            p.Wert = wert;
             return p;
         }
     }

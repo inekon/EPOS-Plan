@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -21,8 +20,8 @@ namespace WindowsFormsApplication1
             {
                 // Parametrisierte Abfrage ohne unsaubere Stringverkettungen
                 string sql = "DELETE FROM Tab_Waermebedarf WHERE Bezeichner = ?";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@bez", szName ?? (object)DBNull.Value)
+                DbParam[] ps = {
+                    new DbParam("@bez", szName ?? (object)DBNull.Value)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -56,9 +55,9 @@ namespace WindowsFormsApplication1
 
                 // Standardkonformes INSERT INTO ... VALUES-Statement
                 string sql = "INSERT INTO Tab_Waermebedarf (ID, Bezeichner) VALUES (?, ?)";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", m_ID_Ganglinie),
-                    new OleDbParameter("@bez", m_szBezeichner ?? (object)DBNull.Value)
+                DbParam[] ps = {
+                    new DbParam("@id", m_ID_Ganglinie),
+                    new DbParam("@bez", m_szBezeichner ?? (object)DBNull.Value)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -100,8 +99,8 @@ namespace WindowsFormsApplication1
         public void ReadSingle(string szBezeichner)
         {
             string sql = "SELECT * FROM Tab_Waermebedarf WHERE Bezeichner = ?";
-            OleDbParameter[] ps = {
-                new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value)
+            DbParam[] ps = {
+                new DbParam("@bez", szBezeichner ?? (object)DBNull.Value)
             };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);

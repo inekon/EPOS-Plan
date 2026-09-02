@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -191,7 +190,7 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
                         "FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = " +
                         idType.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        new OleDbParameter("@p", idProjekt));
+                        new DbParam("@p", idProjekt));
 
                 // DataRepository liefert bei einem SQL-Fehler eine LEERE DataTable statt
                 // zu werfen. Ob die Spalte da ist, verrät deshalb nur die Spaltenliste —

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -38,24 +37,24 @@ namespace WindowsFormsApplication1
                                    Bivalenter_Betrieb = ?, Abschaltpunkt = ?, Nutzungszeit = ?, ID_SP = ?, ID_PV = ?, ID_Solar = ?
                                WHERE ID = ?";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@idProj", ID_Projekt),
-                    new OleDbParameter("@bez", Bezeichner ?? (object)DBNull.Value),
-                    new OleDbParameter("@idType", ID_Type),
-                    new OleDbParameter("@idWp", ID_WP),
-                    new OleDbParameter("@betr", Betriebsart ?? (object)DBNull.Value),
-                    new OleDbParameter("@sperr", Sperrung),
-                    new OleDbParameter("@von", Sperrzeit_von),
-                    new OleDbParameter("@bis", Sperrzeit_bis),
-                    new OleDbParameter("@vor", Vorlauf),
-                    new OleDbParameter("@rue", Ruecklauf),
-                    new OleDbParameter("@biv", Bivalenter_Betrieb),
-                    new OleDbParameter("@absch", Abschaltpunkt),
-                    new OleDbParameter("@nutz", Nutzungszeit),
-                    new OleDbParameter("@idSp", ID_SP),
-                    new OleDbParameter("@idPv", ID_PV),
-                    new OleDbParameter("@idSol", ID_Solar),
-                    new OleDbParameter("@id", ID) // Die ID am Ende bestimmt die WHERE-Klausel
+                DbParam[] ps = {
+                    new DbParam("@idProj", ID_Projekt),
+                    new DbParam("@bez", Bezeichner ?? (object)DBNull.Value),
+                    new DbParam("@idType", ID_Type),
+                    new DbParam("@idWp", ID_WP),
+                    new DbParam("@betr", Betriebsart ?? (object)DBNull.Value),
+                    new DbParam("@sperr", Sperrung),
+                    new DbParam("@von", Sperrzeit_von),
+                    new DbParam("@bis", Sperrzeit_bis),
+                    new DbParam("@vor", Vorlauf),
+                    new DbParam("@rue", Ruecklauf),
+                    new DbParam("@biv", Bivalenter_Betrieb),
+                    new DbParam("@absch", Abschaltpunkt),
+                    new DbParam("@nutz", Nutzungszeit),
+                    new DbParam("@idSp", ID_SP),
+                    new DbParam("@idPv", ID_PV),
+                    new DbParam("@idSol", ID_Solar),
+                    new DbParam("@id", ID) // Die ID am Ende bestimmt die WHERE-Klausel
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -102,7 +101,7 @@ namespace WindowsFormsApplication1
             {
                 // Korrektur: DELETE * FROM bzw. DELETE FROM statt der alten fehlerhaften Syntax "DELETE ID_Projekt FROM..."
                 string sql = "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?";
-                OleDbParameter[] ps = { new OleDbParameter("@idProj", ID_Projekt) };
+                DbParam[] ps = { new DbParam("@idProj", ID_Projekt) };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -154,8 +153,8 @@ namespace WindowsFormsApplication1
                 "SELECT MIN(ec.id) FROM [" + TABLE + "] AS eps " +
                 "INNER JOIN energy_carrier AS ec ON eps.[ID_Energieträger] = ec.id " +
                 "WHERE eps.ID_Projekt = ? AND ec.pricing_model = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@pm", PRICING_MODEL_STROM));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@pm", PRICING_MODEL_STROM));
 
             return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
         }
@@ -179,8 +178,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@eid", idEnergietraeger));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@eid", idEnergietraeger));
 
             if (dt == null || dt.Rows.Count == 0) return m;
 
@@ -250,22 +249,22 @@ namespace WindowsFormsApplication1
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?";
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
-                new OleDbParameter("@netz", OleDbType.Double) { Value = m.Netzentgelt },
-                new OleDbParameter("@netzA", OleDbType.Boolean) { Value = m.Netzentgelt_Aktiv },
-                new OleDbParameter("@uml", OleDbType.Double) { Value = m.Umlagen },
-                new OleDbParameter("@umlA", OleDbType.Boolean) { Value = m.Umlagen_Aktiv },
-                new OleDbParameter("@st", OleDbType.Double) { Value = m.Stromsteuer },
-                new OleDbParameter("@stA", OleDbType.Boolean) { Value = m.Stromsteuer_Aktiv },
-                new OleDbParameter("@kz", OleDbType.Double) { Value = m.Konzession },
-                new OleDbParameter("@kzA", OleDbType.Boolean) { Value = m.Konzession_Aktiv },
-                new OleDbParameter("@vt", OleDbType.Double) { Value = m.Vertrieb },
-                new OleDbParameter("@vtA", OleDbType.Boolean) { Value = m.Vertrieb_Aktiv },
-                new OleDbParameter("@modus", OleDbType.VarWChar) { Value = m.Modus ?? DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT },
-                new OleDbParameter("@over", OleDbType.Double) { Value = m.Override },
-                new OleDbParameter("@vpv", OleDbType.Double) { Value = m.Verguetung_PV },
-                new OleDbParameter("@vbhkw", OleDbType.Double) { Value = m.Verguetung_BHKW },
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = m.ID_Projekt },
-                new OleDbParameter("@eid", OleDbType.Integer) { Value = m.ID_Energietraeger });
+                new DbParam("@netz", DbParamTyp.Double) { Wert = m.Netzentgelt },
+                new DbParam("@netzA", DbParamTyp.Boolean) { Wert = m.Netzentgelt_Aktiv },
+                new DbParam("@uml", DbParamTyp.Double) { Wert = m.Umlagen },
+                new DbParam("@umlA", DbParamTyp.Boolean) { Wert = m.Umlagen_Aktiv },
+                new DbParam("@st", DbParamTyp.Double) { Wert = m.Stromsteuer },
+                new DbParam("@stA", DbParamTyp.Boolean) { Wert = m.Stromsteuer_Aktiv },
+                new DbParam("@kz", DbParamTyp.Double) { Wert = m.Konzession },
+                new DbParam("@kzA", DbParamTyp.Boolean) { Wert = m.Konzession_Aktiv },
+                new DbParam("@vt", DbParamTyp.Double) { Wert = m.Vertrieb },
+                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
+                new DbParam("@modus", DbParamTyp.VarWChar) { Wert = m.Modus ?? DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT },
+                new DbParam("@over", DbParamTyp.Double) { Wert = m.Override },
+                new DbParam("@vpv", DbParamTyp.Double) { Wert = m.Verguetung_PV },
+                new DbParam("@vbhkw", DbParamTyp.Double) { Wert = m.Verguetung_BHKW },
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
+                new DbParam("@eid", DbParamTyp.Integer) { Wert = m.ID_Energietraeger });
 
             if (betroffen > 0) m.AusDatenbank = true;
             return betroffen > 0;

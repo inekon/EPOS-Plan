@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -96,7 +95,7 @@ namespace WindowsFormsApplication1
                 "SELECT ID, ID_Projekt, Bezeichner, Betriebsart, Einheit, Beschreibung " +
                 "FROM [" + SchemaKatalog.TAB_QUELLPROFIL + "] WHERE ID_Projekt = ? " +
                 "ORDER BY Bezeichner, ID",
-                StilleDb.Par("@p", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@p", DbParamTyp.Integer, idProjekt));
             if (dt == null) return liste;
 
             foreach (DataRow r in dt.Rows) liste.Add(AusZeile(r));
@@ -111,7 +110,7 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, ID_Projekt, Bezeichner, Betriebsart, Einheit, Beschreibung " +
                 "FROM [" + SchemaKatalog.TAB_QUELLPROFIL + "] WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idProfil));
+                StilleDb.Par("@id", DbParamTyp.Integer, idProfil));
 
             return (dt != null && dt.Rows.Count > 0) ? AusZeile(dt.Rows[0]) : null;
         }
@@ -153,7 +152,7 @@ namespace WindowsFormsApplication1
                 "SELECT [" + SchemaKatalog.SPALTE_QPD_INDEX + "], [" + SchemaKatalog.SPALTE_QPD_WERT + "] " +
                 "FROM [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] WHERE ID_Quellprofil = ? " +
                 "ORDER BY [" + SchemaKatalog.SPALTE_QPD_INDEX + "]",
-                StilleDb.Par("@id", OleDbType.Integer, idProfil));
+                StilleDb.Par("@id", DbParamTyp.Integer, idProfil));
             if (dt == null || dt.Rows.Count == 0) return null;
 
             int hoechster = -1;
@@ -280,9 +279,9 @@ namespace WindowsFormsApplication1
 
                     if (id > 0)
                     {
-                        List<OleDbParameter> pKopf = new List<OleDbParameter>();
+                        List<DbParam> pKopf = new List<DbParam>();
                         KopfParameter(pKopf, kopf);
-                        pKopf.Add(StilleDb.Par("@id", OleDbType.Integer, id));
+                        pKopf.Add(StilleDb.Par("@id", DbParamTyp.Integer, id));
                         v.Ausfuehren(
                             "UPDATE [" + SchemaKatalog.TAB_QUELLPROFIL + "] SET " +
                             "[" + SchemaKatalog.SPALTE_QP_ID_PROJEKT + "] = ?, " +
@@ -295,11 +294,11 @@ namespace WindowsFormsApplication1
                         v.Ausfuehren(
                             "DELETE FROM [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] " +
                             "WHERE ID_Quellprofil = ?",
-                            StilleDb.Par("@id", OleDbType.Integer, id));
+                            StilleDb.Par("@id", DbParamTyp.Integer, id));
                     }
                     else
                     {
-                        List<OleDbParameter> pKopf = new List<OleDbParameter>();
+                        List<DbParam> pKopf = new List<DbParam>();
                         KopfParameter(pKopf, kopf);
 
                         // AUTOINCREMENT: Die vergebene ID liefert derselbe Aufruf zurueck -
@@ -330,9 +329,9 @@ namespace WindowsFormsApplication1
                     for (int i = 0; i < werte.Length; i++)
                     {
                         v.Ausfuehren(sqlDaten,
-                            new OleDbParameter("@p", OleDbType.Integer) { Value = id },
-                            new OleDbParameter("@i", OleDbType.Integer) { Value = i },
-                            new OleDbParameter("@w", OleDbType.Double) { Value = werte[i] });
+                            new DbParam("@p", DbParamTyp.Integer) { Wert = id },
+                            new DbParam("@i", DbParamTyp.Integer) { Wert = i },
+                            new DbParam("@w", DbParamTyp.Double) { Wert = werte[i] });
                     }
 
                     v.Commit();
@@ -347,14 +346,14 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void KopfParameter(List<OleDbParameter> p, Kopf k)
+        private static void KopfParameter(List<DbParam> p, Kopf k)
         {
-            p.Add(StilleDb.Par("@proj", OleDbType.Integer,
+            p.Add(StilleDb.Par("@proj", DbParamTyp.Integer,
                 k.ID_Projekt > 0 ? (object)k.ID_Projekt : null));
-            p.Add(StilleDb.Par("@bez", OleDbType.VarWChar, k.Bezeichner ?? ""));
-            p.Add(StilleDb.Par("@art", OleDbType.VarWChar, k.Betriebsart ?? ""));
-            p.Add(StilleDb.Par("@einh", OleDbType.VarWChar, k.Einheit ?? ""));
-            p.Add(StilleDb.Par("@besch", OleDbType.VarWChar, k.Beschreibung ?? ""));
+            p.Add(StilleDb.Par("@bez", DbParamTyp.VarWChar, k.Bezeichner ?? ""));
+            p.Add(StilleDb.Par("@art", DbParamTyp.VarWChar, k.Betriebsart ?? ""));
+            p.Add(StilleDb.Par("@einh", DbParamTyp.VarWChar, k.Einheit ?? ""));
+            p.Add(StilleDb.Par("@besch", DbParamTyp.VarWChar, k.Beschreibung ?? ""));
         }
 
         /// <summary>
@@ -373,11 +372,11 @@ namespace WindowsFormsApplication1
 
             StilleDb.NonQuery(
                 "DELETE FROM [" + SchemaKatalog.TAB_QUELLPROFILDATEN + "] WHERE ID_Quellprofil = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idProfil));
+                StilleDb.Par("@id", DbParamTyp.Integer, idProfil));
 
             return StilleDb.NonQuery(
                 "DELETE FROM [" + SchemaKatalog.TAB_QUELLPROFIL + "] WHERE ID = ?",
-                StilleDb.Par("@id", OleDbType.Integer, idProfil)) > 0;
+                StilleDb.Par("@id", DbParamTyp.Integer, idProfil)) > 0;
         }
 
         /// <summary>
@@ -392,7 +391,7 @@ namespace WindowsFormsApplication1
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Bezeichner FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                 "WHERE [" + SchemaKatalog.SPALTE_ANLAGE_WQ_ID_QUELLPROFIL + "] = ? ORDER BY Bezeichner",
-                StilleDb.Par("@id", OleDbType.Integer, idProfil));
+                StilleDb.Par("@id", DbParamTyp.Integer, idProfil));
             if (dt == null) return namen;
 
             foreach (DataRow r in dt.Rows) namen.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));

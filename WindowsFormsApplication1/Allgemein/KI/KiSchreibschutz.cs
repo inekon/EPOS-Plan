@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -70,7 +69,7 @@ namespace WindowsFormsApplication1
             {
                 dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + tabelle + "] WHERE [" + idSpalte + "] = ? LIMIT 1",
-                    new OleDbParameter("@id", (Int32)id));
+                    new DbParam("@id", (Int32)id));
             }
             catch (Exception ex)
             {

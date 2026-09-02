@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -43,7 +42,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID_Energieanlage = ? ORDER BY ID LIMIT 1",
-                new OleDbParameter("@anl", idEnergieanlage));
+                new DbParam("@anl", idEnergieanlage));
 
             _internalList.Clear();
             if (dt == null || dt.Rows.Count == 0) return null;
@@ -74,7 +73,7 @@ namespace WindowsFormsApplication1
                 "SELECT v.* FROM [" + TABLE + "] AS v " +
                 "INNER JOIN " + TAB_ANLAGEN + " AS a ON v.ID_Energieanlage = a.ID " +
                 "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE ORDER BY v.ID LIMIT 1",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             _internalList.Clear();
             if (dt == null || dt.Rows.Count == 0) return null;
@@ -98,7 +97,7 @@ namespace WindowsFormsApplication1
                 "SELECT v.* FROM [" + TABLE + "] AS v " +
                 "INNER JOIN " + TAB_ANLAGEN + " AS a ON v.ID_Energieanlage = a.ID " +
                 "WHERE a.ID_Projekt = ? ORDER BY a.ID, v.ID",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (dt == null) return _internalList;
 
@@ -137,32 +136,32 @@ namespace WindowsFormsApplication1
                 "Aktiv, Ladeschwellwert, ID_Preisreihe, ID_Kostenprofil, Aufschlag_Anwenden) " +
                 "VALUES (?,?,?, ?,?,?,?, ?,?, ?,?, ?,?,?,?,?, ?,?, ?,?,?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@anl", m.ID_Energieanlage),
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@anl", m.ID_Energieanlage),
                 Txt("@bart", m.Betriebsart, DbWerte.SP_BETRIEBSART_GRUENSTROM),
-                new OleDbParameter("@pv", m.PV_Zulaessig),
-                new OleDbParameter("@bhkw", m.BHKW_Ueberschuss_Zulaessig),
-                new OleDbParameter("@bhkwstrom", m.BHKW_Stromgefuehrt),
-                new OleDbParameter("@netzent", m.Netzentladung),
-                new OleDbParameter("@socmin", m.SoC_Min_Prozent),
-                new OleDbParameter("@socmax", m.SoC_Max_Prozent),
+                new DbParam("@pv", m.PV_Zulaessig),
+                new DbParam("@bhkw", m.BHKW_Ueberschuss_Zulaessig),
+                new DbParam("@bhkwstrom", m.BHKW_Stromgefuehrt),
+                new DbParam("@netzent", m.Netzentladung),
+                new DbParam("@socmin", m.SoC_Min_Prozent),
+                new DbParam("@socmax", m.SoC_Max_Prozent),
                 Txt("@rart", m.Berechnungsart, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
                 Txt("@pquelle", m.Preisquelle, DbWerte.SP_PREISQUELLE_FIXPREIS),
-                new OleDbParameter("@kompat", m.Kompatibilitaetsmodus),
-                new OleDbParameter("@zins", m.Kapitalzins),
-                new OleDbParameter("@nutz", m.Nutzungsdauer),
-                new OleDbParameter("@lp", m.L_P),
-                new OleDbParameter("@anetz", m.A_Netzlade),
-                new OleDbParameter("@aktiv", m.Aktiv),
-                new OleDbParameter("@schwelle", m.Ladeschwellwert),
+                new DbParam("@kompat", m.Kompatibilitaetsmodus),
+                new DbParam("@zins", m.Kapitalzins),
+                new DbParam("@nutz", m.Nutzungsdauer),
+                new DbParam("@lp", m.L_P),
+                new DbParam("@anetz", m.A_Netzlade),
+                new DbParam("@aktiv", m.Aktiv),
+                new DbParam("@schwelle", m.Ladeschwellwert),
                 // AP4: Preisquellen-Verweise. 0 heisst "nicht gewaehlt" und wird als
                 // NULL abgelegt - dieselbe FK-Regel wie im Spaltenkatalog.
-                new OleDbParameter("@preisreihe", OleDbType.Integer)
-                    { Value = m.ID_Preisreihe > 0 ? (object)m.ID_Preisreihe : DBNull.Value },
-                new OleDbParameter("@kostenprofil", OleDbType.Integer)
-                    { Value = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
-                new OleDbParameter("@aufschlag", m.Aufschlag_Anwenden)
+                new DbParam("@preisreihe", DbParamTyp.Integer)
+                    { Wert = m.ID_Preisreihe > 0 ? (object)m.ID_Preisreihe : DBNull.Value },
+                new DbParam("@kostenprofil", DbParamTyp.Integer)
+                    { Wert = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
+                new DbParam("@aufschlag", m.Aufschlag_Anwenden)
             };
 
             if (!DataRepository.ExecuteSQL(sql, ps)) return -1;
@@ -191,29 +190,29 @@ namespace WindowsFormsApplication1
                 "Ladeschwellwert = ?, ID_Preisreihe = ?, ID_Kostenprofil = ?, " +
                 "Aufschlag_Anwenden = ? WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@anl", m.ID_Energieanlage),
+            DbParam[] ps = {
+                new DbParam("@anl", m.ID_Energieanlage),
                 Txt("@bart", m.Betriebsart, DbWerte.SP_BETRIEBSART_GRUENSTROM),
-                new OleDbParameter("@pv", m.PV_Zulaessig),
-                new OleDbParameter("@bhkw", m.BHKW_Ueberschuss_Zulaessig),
-                new OleDbParameter("@bhkwstrom", m.BHKW_Stromgefuehrt),
-                new OleDbParameter("@netzent", m.Netzentladung),
-                new OleDbParameter("@socmin", m.SoC_Min_Prozent),
-                new OleDbParameter("@socmax", m.SoC_Max_Prozent),
+                new DbParam("@pv", m.PV_Zulaessig),
+                new DbParam("@bhkw", m.BHKW_Ueberschuss_Zulaessig),
+                new DbParam("@bhkwstrom", m.BHKW_Stromgefuehrt),
+                new DbParam("@netzent", m.Netzentladung),
+                new DbParam("@socmin", m.SoC_Min_Prozent),
+                new DbParam("@socmax", m.SoC_Max_Prozent),
                 Txt("@rart", m.Berechnungsart, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
                 Txt("@pquelle", m.Preisquelle, DbWerte.SP_PREISQUELLE_FIXPREIS),
-                new OleDbParameter("@kompat", m.Kompatibilitaetsmodus),
-                new OleDbParameter("@zins", m.Kapitalzins),
-                new OleDbParameter("@nutz", m.Nutzungsdauer),
-                new OleDbParameter("@lp", m.L_P),
-                new OleDbParameter("@anetz", m.A_Netzlade),
-                new OleDbParameter("@schwelle", m.Ladeschwellwert),
-                new OleDbParameter("@preisreihe", OleDbType.Integer)
-                    { Value = m.ID_Preisreihe > 0 ? (object)m.ID_Preisreihe : DBNull.Value },
-                new OleDbParameter("@kostenprofil", OleDbType.Integer)
-                    { Value = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
-                new OleDbParameter("@aufschlag", m.Aufschlag_Anwenden),
-                new OleDbParameter("@id", m.ID)
+                new DbParam("@kompat", m.Kompatibilitaetsmodus),
+                new DbParam("@zins", m.Kapitalzins),
+                new DbParam("@nutz", m.Nutzungsdauer),
+                new DbParam("@lp", m.L_P),
+                new DbParam("@anetz", m.A_Netzlade),
+                new DbParam("@schwelle", m.Ladeschwellwert),
+                new DbParam("@preisreihe", DbParamTyp.Integer)
+                    { Wert = m.ID_Preisreihe > 0 ? (object)m.ID_Preisreihe : DBNull.Value },
+                new DbParam("@kostenprofil", DbParamTyp.Integer)
+                    { Wert = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
+                new DbParam("@aufschlag", m.Aufschlag_Anwenden),
+                new DbParam("@id", m.ID)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -233,18 +232,18 @@ namespace WindowsFormsApplication1
             DataRepository.ExecuteSQL(
                 "UPDATE [" + TABLE + "] SET Aktiv = FALSE WHERE ID_Energieanlage IN " +
                 "(SELECT ID FROM " + TAB_ANLAGEN + " WHERE ID_Projekt = ?)",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             return DataRepository.ExecuteSQL(
                 "UPDATE [" + TABLE + "] SET Aktiv = TRUE WHERE ID = ?",
-                new OleDbParameter("@id", idVariante));
+                new DbParam("@id", idVariante));
         }
 
         public bool Delete(int idVariante)
         {
             if (idVariante <= 0) return false;
             return DataRepository.ExecuteSQL("DELETE FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", idVariante));
+                new DbParam("@id", idVariante));
         }
 
         /// <summary>
@@ -258,7 +257,7 @@ namespace WindowsFormsApplication1
         {
             if (idEnergieanlage <= 0) return false;
             return DataRepository.ExecuteSQL("DELETE FROM [" + TABLE + "] WHERE ID_Energieanlage = ?",
-                new OleDbParameter("@anl", idEnergieanlage));
+                new DbParam("@anl", idEnergieanlage));
         }
 
         // =====================================================================
@@ -369,9 +368,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Textparameter mit Rueckfall auf den Vorgabewert statt auf NULL.</summary>
-        private static OleDbParameter Txt(string name, string wert, string vorgabe)
+        private static DbParam Txt(string name, string wert, string vorgabe)
         {
-            return new OleDbParameter(name, string.IsNullOrEmpty(wert) ? vorgabe : wert);
+            return new DbParam(name, string.IsNullOrEmpty(wert) ? vorgabe : wert);
         }
 
         private static int I(DataRow r, string col)

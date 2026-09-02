@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -36,7 +35,7 @@ namespace WindowsFormsApplication1
             _hasSingleData = false;
 
             string sql = "SELECT * FROM Tab_Brauchwasser WHERE ID = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@id", id));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", id));
 
             ProcessSingleResult(dt);
         }
@@ -47,7 +46,7 @@ namespace WindowsFormsApplication1
             _hasSingleData = false;
 
             string sql = "SELECT * FROM Tab_Brauchwasser WHERE Bezeichner = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", bezeichner));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@bez", bezeichner));
 
             ProcessSingleResult(dt);
         }
@@ -108,33 +107,33 @@ namespace WindowsFormsApplication1
         {
             if (this.m_ID <= 0) return false;
             string sql = "DELETE FROM Tab_Brauchwasser WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", this.m_ID));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@id", this.m_ID));
         }
 
         public bool Delete(string bezeichner)
         {
             string sql = "DELETE FROM Tab_Brauchwasser WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", bezeichner));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@bez", bezeichner));
         }
 
         // --- MAPPING & PARAMETER (Die "Maschinenräume") ---
 
-        private OleDbParameter[] CreateParameters(bool includeId)
+        private DbParam[] CreateParameters(bool includeId)
         {
-            List<OleDbParameter> p = new List<OleDbParameter>
+            List<DbParam> p = new List<DbParam>
             {
-                new OleDbParameter("@bez", this.m_szBezeichner ?? ""),
-                new OleDbParameter("@typ", this.m_szTyp ?? ""),
-                new OleDbParameter("@desc", this.m_szBeschreibung ?? "")
+                new DbParam("@bez", this.m_szBezeichner ?? ""),
+                new DbParam("@typ", this.m_szTyp ?? ""),
+                new DbParam("@desc", this.m_szBeschreibung ?? "")
             };
 
             for (int i = 0; i < 12; i++)
             {
-                p.Add(new OleDbParameter("@m" + (i + 1), this.m_Monat[i]));
+                p.Add(new DbParam("@m" + (i + 1), this.m_Monat[i]));
             }
 
             if (includeId)
-                p.Add(new OleDbParameter("@id", this.m_ID));
+                p.Add(new DbParam("@id", this.m_ID));
 
             return p.ToArray();
         }

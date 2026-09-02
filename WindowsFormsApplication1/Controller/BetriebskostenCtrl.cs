@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -470,20 +469,20 @@ namespace WindowsFormsApplication1
             {
                 string sql = "SELECT SUM(EingegebenerWert) FROM " + SchemaKatalog.TAB_PROJEKTWERTE +
                              " WHERE ProjektID = ? AND KategorieID = ?";
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@p", projektID),
-                    new OleDbParameter("@k", Form_Kosten.KATEGORIE_INVESTITION)
+                    new DbParam("@p", projektID),
+                    new DbParam("@k", Form_Kosten.KATEGORIE_INVESTITION)
                 };
                 if (komponentenID > 0)
                 {
                     sql += " AND KomponentenID = ?";
-                    ps.Add(new OleDbParameter("@c", komponentenID));
+                    ps.Add(new DbParam("@c", komponentenID));
                 }
                 if (idAnlage > 0 && AnlagenSpalteVorhanden())
                 {
                     sql += " AND [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] = ?";
-                    ps.Add(new OleDbParameter("@a", idAnlage));
+                    ps.Add(new DbParam("@a", idAnlage));
                 }
                 if (mitKostenart)
                 {
@@ -491,7 +490,7 @@ namespace WindowsFormsApplication1
                     // die, die Schritt 19b nicht erreicht hat), und sie sind Investitionen.
                     sql += " AND (([" + SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL) OR ([" +
                            SchemaKatalog.SPALTE_PW_KOSTENART + "] <> ?))";
-                    ps.Add(new OleDbParameter("@art", DbWerte.KOSTENART_ZUSCHUSS));
+                    ps.Add(new DbParam("@art", DbWerte.KOSTENART_ZUSCHUSS));
                 }
 
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
@@ -544,7 +543,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
                     " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", projektID));
+                    new DbParam("@p", projektID));
                 if (dt == null || dt.Rows.Count == 0) return 0;
 
                 if (dt.Rows[0]["Zeitstempel"] != DBNull.Value)
@@ -567,7 +566,7 @@ namespace WindowsFormsApplication1
                     "SELECT SUM(m.[" + spalte + "]) FROM " + ErgebnisCtrl.TAB_BHKW + " AS e " +
                     "INNER JOIN " + ErgebnisCtrl.TAB_BHKW_MODUL + " AS m ON e.ID = m.ID_ErgebnisBHKW " +
                     "WHERE e.ID_Ergebnis = ?",
-                    new OleDbParameter("@e", idErgebnis));
+                    new DbParam("@e", idErgebnis));
                 if (o == null || o == DBNull.Value) return null;
                 return Convert.ToDouble(o) * faktor;
             }

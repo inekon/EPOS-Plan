@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -59,9 +58,9 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Stromspeicher WHERE ID = ?";
 
-            OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
-            paramId.Value = ID;
-            OleDbParameter[] ps = { paramId };
+            DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
+            paramId.Wert = ID;
+            DbParam[] ps = { paramId };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
@@ -120,9 +119,9 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Stromspeicher WHERE Bezeichner = ?";
 
-            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
-            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
-            OleDbParameter[] ps = { paramBez };
+            DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
+            paramBez.Wert = szBezeichner ?? (object)DBNull.Value;
+            DbParam[] ps = { paramBez };
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
@@ -226,8 +225,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_Stromspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -249,7 +248,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + StromspeicherStammCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -277,9 +276,9 @@ namespace WindowsFormsApplication1
                      Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@typ", ColOrNull(s, "Typ")),
                     P("@lei", ColOrNull(s, "Leistung")),
@@ -316,8 +315,8 @@ namespace WindowsFormsApplication1
         {
             string sql = "DELETE FROM Tab_Stromspeicher WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
         /// <summary>
@@ -351,14 +350,14 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE Tab_Stromspeicher SET Energie = ?, Leistung = ? WHERE ID = ?";
 
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@ene", energieKwh),
-                new OleDbParameter("@lei", leistungKw),
-                new OleDbParameter("@id", id));
+                new DbParam("@ene", energieKwh),
+                new DbParam("@lei", leistungKw),
+                new DbParam("@id", id));
         }
 
-        private static OleDbParameter P(string name, object value)
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         private static bool _geraetespaltenGeprueft;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -93,7 +92,7 @@ namespace WindowsFormsApplication1
                          INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID
                          WHERE Z_ProjektGebaeude.ID_Projekt=?";
 
-            OleDbParameter[] p = { new OleDbParameter("@id",m_ID_Projekt) };
+            DbParam[] p = { new DbParam("@id",m_ID_Projekt) };
             DataTable dt = DataRepository.GetDataTable(sql, p);
 
             for(int i=0; i<dt.Rows.Count; i++)

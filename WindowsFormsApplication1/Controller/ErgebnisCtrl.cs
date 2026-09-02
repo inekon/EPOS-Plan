@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -55,8 +54,8 @@ namespace WindowsFormsApplication1
 
                     //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@p", OleDbType.Integer) { Value = idProjekt });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@p", DbParamTyp.Integer) { Wert = idProjekt });
                         v.Ausfuehren("DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", p.ToArray());
                     }
                     v.Commit();
@@ -145,8 +144,8 @@ namespace WindowsFormsApplication1
                     catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
 
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@p", OleDbType.Integer) { Value = m.ID_Projekt });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@p", DbParamTyp.Integer) { Wert = m.ID_Projekt });
                         // BEFUND B2 (S7): Hier stand bis 02.09.2026 das Jet-Idiom
                         // "DELETE <feld> FROM <tabelle>". ACE hat den Feldnamen stillschweigend
                         // verworfen, SQLite meldet 'near "ID_Projekt": syntax error' - der Fehler
@@ -163,19 +162,19 @@ namespace WindowsFormsApplication1
                         "Sim_Energiebedarf, Sim_Waermepumpe, Sim_Heizkessel, Sim_Solarthermie, Sim_BHKW, Sim_PV, Sim_Stromspeicher) " +
                         "VALUES (?,?,?,?,?, ?,?,?,?,?,?,?)";
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = kopfId });
-                        p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = m.ID_Projekt });
-                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(m.Bezeichner ?? "") });
-                        p.Add(new OleDbParameter("@zeit", OleDbType.Date) { Value = m.Zeitstempel });
-                        p.Add(new OleDbParameter("@klima", OleDbType.Integer) { Value = m.ID_Klimaregion });
-                        p.Add(new OleDbParameter("@s1", OleDbType.Boolean) { Value = m.Sim_Energiebedarf });
-                        p.Add(new OleDbParameter("@s2", OleDbType.Boolean) { Value = m.Sim_Waermepumpe });
-                        p.Add(new OleDbParameter("@s3", OleDbType.Boolean) { Value = m.Sim_Heizkessel });
-                        p.Add(new OleDbParameter("@s4", OleDbType.Boolean) { Value = m.Sim_Solarthermie });
-                        p.Add(new OleDbParameter("@s5", OleDbType.Boolean) { Value = m.Sim_BHKW });
-                        p.Add(new OleDbParameter("@s6", OleDbType.Boolean) { Value = m.Sim_PV });
-                        p.Add(new OleDbParameter("@s7", OleDbType.Boolean) { Value = m.Sim_Stromspeicher });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = kopfId });
+                        p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt });
+                        p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)(m.Bezeichner ?? "") });
+                        p.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = m.Zeitstempel });
+                        p.Add(new DbParam("@klima", DbParamTyp.Integer) { Wert = m.ID_Klimaregion });
+                        p.Add(new DbParam("@s1", DbParamTyp.Boolean) { Wert = m.Sim_Energiebedarf });
+                        p.Add(new DbParam("@s2", DbParamTyp.Boolean) { Wert = m.Sim_Waermepumpe });
+                        p.Add(new DbParam("@s3", DbParamTyp.Boolean) { Wert = m.Sim_Heizkessel });
+                        p.Add(new DbParam("@s4", DbParamTyp.Boolean) { Wert = m.Sim_Solarthermie });
+                        p.Add(new DbParam("@s5", DbParamTyp.Boolean) { Wert = m.Sim_BHKW });
+                        p.Add(new DbParam("@s6", DbParamTyp.Boolean) { Wert = m.Sim_PV });
+                        p.Add(new DbParam("@s7", DbParamTyp.Boolean) { Wert = m.Sim_Stromspeicher });
                         v.Ausfuehren(sqlKopf, p.ToArray());
                     }
 
@@ -194,15 +193,15 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_BEDARF_PROZESS + ") " +
                             "VALUES (?,?,?,?,?,?,?,?, ?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = eId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Energiebedarf.Waermebedarf_Gesamt) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Energiebedarf.Waermelast_Max) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Energiebedarf.Strombedarf_Gesamt) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Energiebedarf.Strombedarf_Max) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Energiebedarf.Waermerestbedarf) });
-                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Energiebedarf.Stromrestbedarf) });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Waermebedarf_Gesamt) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Waermelast_Max) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Strombedarf_Gesamt) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Strombedarf_Max) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Waermerestbedarf) });
+                            p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Stromrestbedarf) });
                             KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal);
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -221,19 +220,19 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = wpId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Waermepumpe.Waermebedarf) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Waermepumpe.Restwaermebedarf) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Waermepumpe.Waermeproduktion_WP) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Waermepumpe.Stromverbrauch_WP) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Waermepumpe.Stromverbrauch_Heizstab) });
-                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Waermepumpe.Kapazitaet_Pufferspeicher) });
-                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.Waermepumpe.Min_Spitzenkesselleistung) });
-                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.Waermepumpe.Waermebedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.Waermepumpe.Vollbenutzungsstunden) });
-                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Waermebedarf) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Restwaermebedarf) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Waermeproduktion_WP) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Stromverbrauch_WP) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Stromverbrauch_Heizstab) });
+                            p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Kapazitaet_Pufferspeicher) });
+                            p.Add(new DbParam("@a7", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Min_Spitzenkesselleistung) });
+                            p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Waermebedarfsdeckung) });
+                            p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Vollbenutzungsstunden) });
+                            p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
                             KanalParameter(p, m.Waermepumpe.Deckung_Kanal);
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -247,15 +246,15 @@ namespace WindowsFormsApplication1
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
-                                    p.Add(new OleDbParameter("@wp", OleDbType.Integer) { Value = wpId });
-                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
-                                    p.Add(new OleDbParameter("@l", OleDbType.Double) { Value = R(mo.Leistung) });
-                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
-                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromverbrauch) });
-                                    p.Add(new OleDbParameter("@h", OleDbType.Double) { Value = R(mo.Heizstab) });
-                                    p.Add(new OleDbParameter("@b", OleDbType.Double) { Value = R(mo.Betriebsstunden) });
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = modId++ });
+                                    p.Add(new DbParam("@wp", DbParamTyp.Integer) { Wert = wpId });
+                                    p.Add(new DbParam("@mod", DbParamTyp.VarWChar) { Wert = (object)(mo.Modul ?? "") });
+                                    p.Add(new DbParam("@l", DbParamTyp.Double) { Wert = R(mo.Leistung) });
+                                    p.Add(new DbParam("@w", DbParamTyp.Double) { Wert = R(mo.Waermeproduktion) });
+                                    p.Add(new DbParam("@s", DbParamTyp.Double) { Wert = R(mo.Stromverbrauch) });
+                                    p.Add(new DbParam("@h", DbParamTyp.Double) { Wert = R(mo.Heizstab) });
+                                    p.Add(new DbParam("@b", DbParamTyp.Double) { Wert = R(mo.Betriebsstunden) });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -278,31 +277,31 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = bId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.BHKW.Waermebedarf) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.BHKW.Restwaermebedarf) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.BHKW.Strombedarf) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.BHKW.Reststrombedarf) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.BHKW.Waermeproduktion) });
-                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.BHKW.Waermeueberschuss) });
-                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.BHKW.Stromproduktion) });
-                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.BHKW.Betriebsstunden_Gesamt) });
-                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.BHKW.Betriebsstunden_Durchschnitt) });
-                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = R(m.BHKW.Waermebedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a11", OleDbType.Double) { Value = R(m.BHKW.Strombedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a12", OleDbType.Double) { Value = R(m.BHKW.Gasverbrauch) });
-                            p.Add(new OleDbParameter("@a13", OleDbType.Double) { Value = R(m.BHKW.Oelverbrauch) });
-                            p.Add(new OleDbParameter("@a14", OleDbType.Double) { Value = R(m.BHKW.Koks) });
-                            p.Add(new OleDbParameter("@a15", OleDbType.Double) { Value = R(m.BHKW.Rapsoelverbrauch) });
-                            p.Add(new OleDbParameter("@a16", OleDbType.Double) { Value = R(m.BHKW.Holzverbrauch) });
-                            p.Add(new OleDbParameter("@a17", OleDbType.Double) { Value = R(m.BHKW.Kohle) });
-                            p.Add(new OleDbParameter("@a18", OleDbType.Double) { Value = R(m.BHKW.Sonstigverbrauch) });
-                            p.Add(new OleDbParameter("@a19", OleDbType.Double) { Value = R(m.BHKW.Pellets) });
-                            p.Add(new OleDbParameter("@a20", OleDbType.Double) { Value = R(m.BHKW.TierischeFette) });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = bId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.BHKW.Waermebedarf) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.BHKW.Restwaermebedarf) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.BHKW.Strombedarf) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.BHKW.Reststrombedarf) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.BHKW.Waermeproduktion) });
+                            p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.BHKW.Waermeueberschuss) });
+                            p.Add(new DbParam("@a7", DbParamTyp.Double) { Wert = R(m.BHKW.Stromproduktion) });
+                            p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(m.BHKW.Betriebsstunden_Gesamt) });
+                            p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.BHKW.Betriebsstunden_Durchschnitt) });
+                            p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = R(m.BHKW.Waermebedarfsdeckung) });
+                            p.Add(new DbParam("@a11", DbParamTyp.Double) { Wert = R(m.BHKW.Strombedarfsdeckung) });
+                            p.Add(new DbParam("@a12", DbParamTyp.Double) { Wert = R(m.BHKW.Gasverbrauch) });
+                            p.Add(new DbParam("@a13", DbParamTyp.Double) { Wert = R(m.BHKW.Oelverbrauch) });
+                            p.Add(new DbParam("@a14", DbParamTyp.Double) { Wert = R(m.BHKW.Koks) });
+                            p.Add(new DbParam("@a15", DbParamTyp.Double) { Wert = R(m.BHKW.Rapsoelverbrauch) });
+                            p.Add(new DbParam("@a16", DbParamTyp.Double) { Wert = R(m.BHKW.Holzverbrauch) });
+                            p.Add(new DbParam("@a17", DbParamTyp.Double) { Wert = R(m.BHKW.Kohle) });
+                            p.Add(new DbParam("@a18", DbParamTyp.Double) { Wert = R(m.BHKW.Sonstigverbrauch) });
+                            p.Add(new DbParam("@a19", DbParamTyp.Double) { Wert = R(m.BHKW.Pellets) });
+                            p.Add(new DbParam("@a20", DbParamTyp.Double) { Wert = R(m.BHKW.TierischeFette) });
                             // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
-                            p.Add(new OleDbParameter("@a21", OleDbType.Double) { Value = R(m.BHKW.VbhElektrisch) });
+                            p.Add(new DbParam("@a21", DbParamTyp.Double) { Wert = R(m.BHKW.VbhElektrisch) });
                             KanalParameter(p, m.BHKW.Deckung_Kanal);
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -348,29 +347,29 @@ namespace WindowsFormsApplication1
                             {
                                 double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
-                                    p.Add(new OleDbParameter("@bh", OleDbType.Integer) { Value = bId });
-                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
-                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
-                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromproduktion) });
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = modId++ });
+                                    p.Add(new DbParam("@bh", DbParamTyp.Integer) { Wert = bId });
+                                    p.Add(new DbParam("@mod", DbParamTyp.VarWChar) { Wert = (object)(mo.Modul ?? "") });
+                                    p.Add(new DbParam("@w", DbParamTyp.Double) { Wert = R(mo.Waermeproduktion) });
+                                    p.Add(new DbParam("@s", DbParamTyp.Double) { Wert = R(mo.Stromproduktion) });
                                     if (bhArt != null)
                                     {
-                                        p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = bhArt });
-                                        p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = R(bhVerbrauch * anteil) });
+                                        p.Add(new DbParam("@b", DbParamTyp.VarWChar) { Wert = bhArt });
+                                        p.Add(new DbParam("@v", DbParamTyp.Double) { Wert = R(bhVerbrauch * anteil) });
                                     }
                                     else
                                     {
-                                        p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = DBNull.Value });
-                                        p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = DBNull.Value });
+                                        p.Add(new DbParam("@b", DbParamTyp.VarWChar) { Wert = DBNull.Value });
+                                        p.Add(new DbParam("@v", DbParamTyp.Double) { Wert = DBNull.Value });
                                     }
-                                    p.Add(new OleDbParameter("@ca", OleDbType.Integer) { Value = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
+                                    p.Add(new DbParam("@ca", DbParamTyp.Integer) { Wert = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
                                     // ETAPPE E2 (L6): thermische und elektrische Vbh je Modul.
                                     // Beide werden IMMER geschrieben - auch die 0. Sonst waere
                                     // "nicht erhoben" (NULL) von "erhoben und null" nicht mehr
                                     // unterscheidbar; dieselbe Begruendung wie bei Quellwaerme.
-                                    p.Add(new OleDbParameter("@vth", OleDbType.Double) { Value = R(mo.VbhThermisch) });
-                                    p.Add(new OleDbParameter("@vel", OleDbType.Double) { Value = R(mo.VbhElektrisch) });
+                                    p.Add(new DbParam("@vth", DbParamTyp.Double) { Wert = R(mo.VbhThermisch) });
+                                    p.Add(new DbParam("@vel", DbParamTyp.Double) { Wert = R(mo.VbhElektrisch) });
                                     // ETAPPE B3 Paket a/b: Hilfsenergie [MWh/a]. Paket b
                                     // bildet den Wert (Anteil der Anlage x Brennstoff dieser
                                     // Zeile); ohne gepflegten Anteil bleibt es bei 0.
@@ -382,7 +381,7 @@ namespace WindowsFormsApplication1
                                     mo.Hilfsenergie = bhIndex < bhHilfsenergie.Length
                                                     ? bhHilfsenergie[bhIndex] : 0;
                                     bhIndex++;
-                                    p.Add(new OleDbParameter("@hen", OleDbType.Double) { Value = R(mo.Hilfsenergie) });
+                                    p.Add(new DbParam("@hen", DbParamTyp.Double) { Wert = R(mo.Hilfsenergie) });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -406,28 +405,28 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = hId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Heizkessel.Waermebedarf) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Heizkessel.Restwaermebedarf) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Heizkessel.Waermeproduktion) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Heizkessel.Strombedarf) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Heizkessel.Reststrombedarf) });
-                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Heizkessel.Waermebedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(m.Heizkessel.Stromverbrauch) });
-                            p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(m.Heizkessel.Maximale_Kesselleistung) });
-                            p.Add(new OleDbParameter("@a9", OleDbType.Double) { Value = R(m.Heizkessel.Gasspitze) });
-                            p.Add(new OleDbParameter("@a10", OleDbType.Double) { Value = R(m.Heizkessel.Gasverbrauch) });
-                            p.Add(new OleDbParameter("@a11", OleDbType.Double) { Value = R(m.Heizkessel.Oelverbrauch) });
-                            p.Add(new OleDbParameter("@a12", OleDbType.Double) { Value = R(m.Heizkessel.Koks) });
-                            p.Add(new OleDbParameter("@a13", OleDbType.Double) { Value = R(m.Heizkessel.Rapsoelverbrauch) });
-                            p.Add(new OleDbParameter("@a14", OleDbType.Double) { Value = R(m.Heizkessel.Holzverbrauch) });
-                            p.Add(new OleDbParameter("@a15", OleDbType.Double) { Value = R(m.Heizkessel.Kohle) });
-                            p.Add(new OleDbParameter("@a16", OleDbType.Double) { Value = R(m.Heizkessel.Sonstigverbrauch) });
-                            p.Add(new OleDbParameter("@a17", OleDbType.Double) { Value = R(m.Heizkessel.Pellets) });
-                            p.Add(new OleDbParameter("@a18", OleDbType.Double) { Value = R(m.Heizkessel.TierischeFette) });
-                            p.Add(new OleDbParameter("@a19", OleDbType.Double) { Value = R(m.Heizkessel.Quellwaerme) });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = hId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.Heizkessel.Waermebedarf) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.Heizkessel.Restwaermebedarf) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Heizkessel.Waermeproduktion) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Heizkessel.Strombedarf) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Heizkessel.Reststrombedarf) });
+                            p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Heizkessel.Waermebedarfsdeckung) });
+                            p.Add(new DbParam("@a7", DbParamTyp.Double) { Wert = R(m.Heizkessel.Stromverbrauch) });
+                            p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(m.Heizkessel.Maximale_Kesselleistung) });
+                            p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.Heizkessel.Gasspitze) });
+                            p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = R(m.Heizkessel.Gasverbrauch) });
+                            p.Add(new DbParam("@a11", DbParamTyp.Double) { Wert = R(m.Heizkessel.Oelverbrauch) });
+                            p.Add(new DbParam("@a12", DbParamTyp.Double) { Wert = R(m.Heizkessel.Koks) });
+                            p.Add(new DbParam("@a13", DbParamTyp.Double) { Wert = R(m.Heizkessel.Rapsoelverbrauch) });
+                            p.Add(new DbParam("@a14", DbParamTyp.Double) { Wert = R(m.Heizkessel.Holzverbrauch) });
+                            p.Add(new DbParam("@a15", DbParamTyp.Double) { Wert = R(m.Heizkessel.Kohle) });
+                            p.Add(new DbParam("@a16", DbParamTyp.Double) { Wert = R(m.Heizkessel.Sonstigverbrauch) });
+                            p.Add(new DbParam("@a17", DbParamTyp.Double) { Wert = R(m.Heizkessel.Pellets) });
+                            p.Add(new DbParam("@a18", DbParamTyp.Double) { Wert = R(m.Heizkessel.TierischeFette) });
+                            p.Add(new DbParam("@a19", DbParamTyp.Double) { Wert = R(m.Heizkessel.Quellwaerme) });
                             KanalParameter(p, m.Heizkessel.Deckung_Kanal);
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -469,23 +468,23 @@ namespace WindowsFormsApplication1
                             foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
-                                    p.Add(new OleDbParameter("@hk", OleDbType.Integer) { Value = hId });
-                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
-                                    p.Add(new OleDbParameter("@g", OleDbType.Double) { Value = R(mo.Waerme_Gas) });
-                                    p.Add(new OleDbParameter("@o", OleDbType.Double) { Value = R(mo.Waerme_Oel) });
-                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
-                                    p.Add(new OleDbParameter("@b", OleDbType.VarWChar) { Value = (object)(mo.Brennstoff ?? "") });
-                                    p.Add(new OleDbParameter("@v", OleDbType.Double) { Value = R(mo.Verbrauch) });
-                                    p.Add(new OleDbParameter("@j", OleDbType.Double) { Value = R(mo.Jahresnutzungsgrad) });
-                                    p.Add(new OleDbParameter("@ca", OleDbType.Integer) { Value = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = modId++ });
+                                    p.Add(new DbParam("@hk", DbParamTyp.Integer) { Wert = hId });
+                                    p.Add(new DbParam("@mod", DbParamTyp.VarWChar) { Wert = (object)(mo.Modul ?? "") });
+                                    p.Add(new DbParam("@g", DbParamTyp.Double) { Wert = R(mo.Waerme_Gas) });
+                                    p.Add(new DbParam("@o", DbParamTyp.Double) { Wert = R(mo.Waerme_Oel) });
+                                    p.Add(new DbParam("@w", DbParamTyp.Double) { Wert = R(mo.Waermeproduktion) });
+                                    p.Add(new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(mo.Brennstoff ?? "") });
+                                    p.Add(new DbParam("@v", DbParamTyp.Double) { Wert = R(mo.Verbrauch) });
+                                    p.Add(new DbParam("@j", DbParamTyp.Double) { Wert = R(mo.Jahresnutzungsgrad) });
+                                    p.Add(new DbParam("@ca", DbParamTyp.Integer) { Wert = mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value });
                                     // ETAPPE B3 Paket a/b: Hilfsenergie des Kessels -
                                     // Begruendung wortgleich zur BHKW-Modulzeile weiter oben.
                                     mo.Hilfsenergie = hkIndex < hkHilfsenergie.Length
                                                     ? hkHilfsenergie[hkIndex] : 0;
                                     hkIndex++;
-                                    p.Add(new OleDbParameter("@hen", OleDbType.Double) { Value = R(mo.Hilfsenergie) });
+                                    p.Add(new DbParam("@hen", DbParamTyp.Double) { Wert = R(mo.Hilfsenergie) });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -503,14 +502,14 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ") " +
                             "VALUES (?,?,?,?,?,?,?, ?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = sId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Solarthermie.Waermebedarf) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Solarthermie.Restwaermebedarf) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Solarthermie.Waermeproduktion) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Solarthermie.Waermebedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Solarthermie.Ueberschuss) });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = sId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.Solarthermie.Waermebedarf) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.Solarthermie.Restwaermebedarf) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Solarthermie.Waermeproduktion) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Solarthermie.Waermebedarfsdeckung) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Solarthermie.Ueberschuss) });
                             KanalParameter(p, m.Solarthermie.Deckung_Kanal);
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -524,14 +523,14 @@ namespace WindowsFormsApplication1
                             foreach (ErgebnisSolarthermieModulModel mo in m.Solarthermie.Module)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
-                                    p.Add(new OleDbParameter("@so", OleDbType.Integer) { Value = sId });
-                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
-                                    p.Add(new OleDbParameter("@fl", OleDbType.Double) { Value = R(mo.Flaeche) });
-                                    p.Add(new OleDbParameter("@an", OleDbType.Integer) { Value = (int)mo.Anzahl });
-                                    p.Add(new OleDbParameter("@w", OleDbType.Double) { Value = R(mo.Waermeproduktion) });
-                                    p.Add(new OleDbParameter("@u", OleDbType.Double) { Value = R(mo.Ueberschuss) });
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = modId++ });
+                                    p.Add(new DbParam("@so", DbParamTyp.Integer) { Wert = sId });
+                                    p.Add(new DbParam("@mod", DbParamTyp.VarWChar) { Wert = (object)(mo.Modul ?? "") });
+                                    p.Add(new DbParam("@fl", DbParamTyp.Double) { Wert = R(mo.Flaeche) });
+                                    p.Add(new DbParam("@an", DbParamTyp.Integer) { Wert = (int)mo.Anzahl });
+                                    p.Add(new DbParam("@w", DbParamTyp.Double) { Wert = R(mo.Waermeproduktion) });
+                                    p.Add(new DbParam("@u", DbParamTyp.Double) { Wert = R(mo.Ueberschuss) });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -546,15 +545,15 @@ namespace WindowsFormsApplication1
                             "ID, ID_Ergebnis, Strombedarf, Reststrombedarf, Stromproduktion, Strombedarfsdeckung, Ueberschuss, MaxSolareLeistung) " +
                             "VALUES (?,?,?,?,?,?,?,?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = pId });
-                            p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                            p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(m.Photovoltaik.Strombedarf) });
-                            p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(m.Photovoltaik.Reststrombedarf) });
-                            p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(m.Photovoltaik.Stromproduktion) });
-                            p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(m.Photovoltaik.Strombedarfsdeckung) });
-                            p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(m.Photovoltaik.Ueberschuss) });
-                            p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(m.Photovoltaik.MaxSolareLeistung) });
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = pId });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Strombedarf) });
+                            p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Reststrombedarf) });
+                            p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Stromproduktion) });
+                            p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Strombedarfsdeckung) });
+                            p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Ueberschuss) });
+                            p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Photovoltaik.MaxSolareLeistung) });
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -567,13 +566,13 @@ namespace WindowsFormsApplication1
                             foreach (ErgebnisPhotovoltaikModulModel mo in m.Photovoltaik.Module)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = modId++ });
-                                    p.Add(new OleDbParameter("@pv", OleDbType.Integer) { Value = pId });
-                                    p.Add(new OleDbParameter("@mod", OleDbType.VarWChar) { Value = (object)(mo.Modul ?? "") });
-                                    p.Add(new OleDbParameter("@fl", OleDbType.Double) { Value = R(mo.Flaeche) });
-                                    p.Add(new OleDbParameter("@an", OleDbType.Integer) { Value = (int)mo.Anzahl });
-                                    p.Add(new OleDbParameter("@s", OleDbType.Double) { Value = R(mo.Stromproduktion) });
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = modId++ });
+                                    p.Add(new DbParam("@pv", DbParamTyp.Integer) { Wert = pId });
+                                    p.Add(new DbParam("@mod", DbParamTyp.VarWChar) { Wert = (object)(mo.Modul ?? "") });
+                                    p.Add(new DbParam("@fl", DbParamTyp.Double) { Wert = R(mo.Flaeche) });
+                                    p.Add(new DbParam("@an", DbParamTyp.Integer) { Wert = (int)mo.Anzahl });
+                                    p.Add(new DbParam("@s", DbParamTyp.Double) { Wert = R(mo.Stromproduktion) });
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -607,32 +606,32 @@ namespace WindowsFormsApplication1
                         foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                         {
                             {
-                                List<OleDbParameter> p = new List<OleDbParameter>();
-                                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = pufId++ });
-                                p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                                p.Add(new OleDbParameter("@sp", OleDbType.Integer) { Value = sp.ID_Pufferspeicher > 0 ? (object)sp.ID_Pufferspeicher : DBNull.Value });
-                                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(sp.Bezeichner ?? "") });
-                                p.Add(new OleDbParameter("@ver", OleDbType.VarWChar) { Value = (object)(sp.Verwendung ?? "") });
-                                p.Add(new OleDbParameter("@a1", OleDbType.Double) { Value = R(sp.Q_max) });
-                                p.Add(new OleDbParameter("@a2", OleDbType.Double) { Value = R(sp.Ladung_gesamt) });
-                                p.Add(new OleDbParameter("@a3", OleDbType.Double) { Value = R(sp.Entladung_gesamt) });
-                                p.Add(new OleDbParameter("@a4", OleDbType.Double) { Value = R(sp.Verluste_gesamt) });
-                                p.Add(new OleDbParameter("@a5", OleDbType.Double) { Value = R(sp.SOC_Ende) });
-                                p.Add(new OleDbParameter("@a6", OleDbType.Double) { Value = R(sp.SOC_Mittel) });
-                                p.Add(new OleDbParameter("@a7", OleDbType.Double) { Value = R(sp.SOC_Max) });
-                                p.Add(new OleDbParameter("@a8", OleDbType.Double) { Value = R(sp.Vollzyklen) });
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = pufId++ });
+                                p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                                p.Add(new DbParam("@sp", DbParamTyp.Integer) { Wert = sp.ID_Pufferspeicher > 0 ? (object)sp.ID_Pufferspeicher : DBNull.Value });
+                                p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)(sp.Bezeichner ?? "") });
+                                p.Add(new DbParam("@ver", DbParamTyp.VarWChar) { Wert = (object)(sp.Verwendung ?? "") });
+                                p.Add(new DbParam("@a1", DbParamTyp.Double) { Wert = R(sp.Q_max) });
+                                p.Add(new DbParam("@a2", DbParamTyp.Double) { Wert = R(sp.Ladung_gesamt) });
+                                p.Add(new DbParam("@a3", DbParamTyp.Double) { Wert = R(sp.Entladung_gesamt) });
+                                p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(sp.Verluste_gesamt) });
+                                p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(sp.SOC_Ende) });
+                                p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(sp.SOC_Mittel) });
+                                p.Add(new DbParam("@a7", DbParamTyp.Double) { Wert = R(sp.SOC_Max) });
+                                p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(sp.Vollzyklen) });
 
                                 // PAKET E1
                                 KanalParameter(p, sp.Entladung_Kanal);
-                                p.Add(new OleDbParameter("@d1", OleDbType.Double) { Value = R(sp.Durchsatz_Geladen) });
-                                p.Add(new OleDbParameter("@d2", OleDbType.Double) { Value = R(sp.Durchsatz_Entladen) });
-                                p.Add(new OleDbParameter("@anl", OleDbType.Integer) { Value = sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value });
+                                p.Add(new DbParam("@d1", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Geladen) });
+                                p.Add(new DbParam("@d2", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Entladen) });
+                                p.Add(new DbParam("@anl", DbParamTyp.Integer) { Wert = sp.ID_Anlage > 0 ? (object)sp.ID_Anlage : DBNull.Value });
                                 // Seit Paket P1 GEFUELLT (bis dahin P1-Vorgriff und immer
                                 // NULL). NULL heisst weiterhin "nicht erhoben" - eine 0
                                 // behauptete 0 Grad C; so bleibt eine Quellspeicherzeile
                                 // ohne Speichertemperatur ehrlich leer.
-                                p.Add(new OleDbParameter("@t1", OleDbType.Double) { Value = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
-                                p.Add(new OleDbParameter("@t2", OleDbType.Double) { Value = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
+                                p.Add(new DbParam("@t1", DbParamTyp.Double) { Wert = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
+                                p.Add(new DbParam("@t2", DbParamTyp.Double) { Wert = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
 
                                 v.Ausfuehren(sqlP, p.ToArray());
                             }
@@ -668,50 +667,50 @@ namespace WindowsFormsApplication1
                         foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
                         {
                             {
-                                List<OleDbParameter> p = new List<OleDbParameter>();
-                                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = spId++ });
-                                p.Add(new OleDbParameter("@erg", OleDbType.Integer) { Value = kopfId });
-                                p.Add(new OleDbParameter("@anl", OleDbType.Integer) { Value = es.ID_Energieanlage > 0 ? (object)es.ID_Energieanlage : DBNull.Value });
-                                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(es.Bezeichner ?? "") });
-                                p.Add(new OleDbParameter("@bart", OleDbType.VarWChar) { Value = (object)(es.Betriebsart ?? "") });
-                                p.Add(new OleDbParameter("@rart", OleDbType.VarWChar) { Value = (object)(es.Berechnungsart ?? "") });
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = spId++ });
+                                p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                                p.Add(new DbParam("@anl", DbParamTyp.Integer) { Wert = es.ID_Energieanlage > 0 ? (object)es.ID_Energieanlage : DBNull.Value });
+                                p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)(es.Bezeichner ?? "") });
+                                p.Add(new DbParam("@bart", DbParamTyp.VarWChar) { Wert = (object)(es.Betriebsart ?? "") });
+                                p.Add(new DbParam("@rart", DbParamTyp.VarWChar) { Wert = (object)(es.Berechnungsart ?? "") });
 
-                                p.Add(new OleDbParameter("@e1", OleDbType.Double) { Value = R(es.Ladung_PV) });
-                                p.Add(new OleDbParameter("@e2", OleDbType.Double) { Value = R(es.Ladung_BHKW) });
-                                p.Add(new OleDbParameter("@e3", OleDbType.Double) { Value = R(es.Ladung_Netz) });
-                                p.Add(new OleDbParameter("@e4", OleDbType.Double) { Value = R(es.Ladung_Gesamt) });
-                                p.Add(new OleDbParameter("@e5", OleDbType.Double) { Value = R(es.Entladung_Gesamt) });
-                                p.Add(new OleDbParameter("@e6", OleDbType.Double) { Value = R(es.Verluste_Gesamt) });
-                                p.Add(new OleDbParameter("@e7", OleDbType.Double) { Value = R(es.Netzbezug_Mit) });
-                                p.Add(new OleDbParameter("@e8", OleDbType.Double) { Value = R(es.Netzbezug_Ohne) });
-                                p.Add(new OleDbParameter("@e9", OleDbType.Double) { Value = R(es.Einspeisung_Mit) });
-                                p.Add(new OleDbParameter("@e10", OleDbType.Double) { Value = R(es.Einspeisung_Ohne) });
-                                p.Add(new OleDbParameter("@e11", OleDbType.Double) { Value = R(es.Eigenverbrauchsquote) });
-                                p.Add(new OleDbParameter("@e12", OleDbType.Double) { Value = R(es.Autarkiegrad) });
+                                p.Add(new DbParam("@e1", DbParamTyp.Double) { Wert = R(es.Ladung_PV) });
+                                p.Add(new DbParam("@e2", DbParamTyp.Double) { Wert = R(es.Ladung_BHKW) });
+                                p.Add(new DbParam("@e3", DbParamTyp.Double) { Wert = R(es.Ladung_Netz) });
+                                p.Add(new DbParam("@e4", DbParamTyp.Double) { Wert = R(es.Ladung_Gesamt) });
+                                p.Add(new DbParam("@e5", DbParamTyp.Double) { Wert = R(es.Entladung_Gesamt) });
+                                p.Add(new DbParam("@e6", DbParamTyp.Double) { Wert = R(es.Verluste_Gesamt) });
+                                p.Add(new DbParam("@e7", DbParamTyp.Double) { Wert = R(es.Netzbezug_Mit) });
+                                p.Add(new DbParam("@e8", DbParamTyp.Double) { Wert = R(es.Netzbezug_Ohne) });
+                                p.Add(new DbParam("@e9", DbParamTyp.Double) { Wert = R(es.Einspeisung_Mit) });
+                                p.Add(new DbParam("@e10", DbParamTyp.Double) { Wert = R(es.Einspeisung_Ohne) });
+                                p.Add(new DbParam("@e11", DbParamTyp.Double) { Wert = R(es.Eigenverbrauchsquote) });
+                                p.Add(new DbParam("@e12", DbParamTyp.Double) { Wert = R(es.Autarkiegrad) });
 
-                                p.Add(new OleDbParameter("@s1", OleDbType.Double) { Value = R(es.Vollzyklen) });
-                                p.Add(new OleDbParameter("@s2", OleDbType.Double) { Value = R(es.SoC_Min) });
-                                p.Add(new OleDbParameter("@s3", OleDbType.Double) { Value = R(es.SoC_Mittel) });
-                                p.Add(new OleDbParameter("@s4", OleDbType.Double) { Value = R(es.SoC_Max) });
-                                p.Add(new OleDbParameter("@s5", OleDbType.Double) { Value = R(es.Zeitanteil_Untergrenze) });
-                                p.Add(new OleDbParameter("@s6", OleDbType.Double) { Value = R(es.Zeitanteil_Obergrenze) });
-                                p.Add(new OleDbParameter("@s7", OleDbType.Double) { Value = R(es.Zyklen_Hochrechnung) });
+                                p.Add(new DbParam("@s1", DbParamTyp.Double) { Wert = R(es.Vollzyklen) });
+                                p.Add(new DbParam("@s2", DbParamTyp.Double) { Wert = R(es.SoC_Min) });
+                                p.Add(new DbParam("@s3", DbParamTyp.Double) { Wert = R(es.SoC_Mittel) });
+                                p.Add(new DbParam("@s4", DbParamTyp.Double) { Wert = R(es.SoC_Max) });
+                                p.Add(new DbParam("@s5", DbParamTyp.Double) { Wert = R(es.Zeitanteil_Untergrenze) });
+                                p.Add(new DbParam("@s6", DbParamTyp.Double) { Wert = R(es.Zeitanteil_Obergrenze) });
+                                p.Add(new DbParam("@s7", DbParamTyp.Double) { Wert = R(es.Zyklen_Hochrechnung) });
 
-                                p.Add(new OleDbParameter("@w1", OleDbType.Double) { Value = R(es.Ertrag_Bezugsersparnis) });
-                                p.Add(new OleDbParameter("@w2", OleDbType.Double) { Value = R(es.Ertrag_Verguetung_Entgangen) });
-                                p.Add(new OleDbParameter("@w3", OleDbType.Double) { Value = R(es.Ertrag_Netzerloes) });
-                                p.Add(new OleDbParameter("@w4", OleDbType.Double) { Value = R(es.Kosten_Ladung) });
-                                p.Add(new OleDbParameter("@w5", OleDbType.Double) { Value = R(es.Ertrag_Leistungspreis) });
-                                p.Add(new OleDbParameter("@w6", OleDbType.Double) { Value = R(es.Verschleisskosten) });
-                                p.Add(new OleDbParameter("@w7", OleDbType.Double) { Value = R(es.Investition) });
-                                p.Add(new OleDbParameter("@w8", OleDbType.Double) { Value = R(es.Annuitaet) });
-                                p.Add(new OleDbParameter("@w9", OleDbType.Double) { Value = R(es.Jahresueberschuss) });
-                                p.Add(new OleDbParameter("@w10", OleDbType.Double) { Value = R(es.Ertrag_Jahr1) });
-                                p.Add(new OleDbParameter("@w11", OleDbType.Double) { Value = R(es.Ertrag_Aequivalent) });
-                                p.Add(new OleDbParameter("@w12", OleDbType.Double) { Value = R(es.Amortisation_Statisch) });
-                                p.Add(new OleDbParameter("@w13", OleDbType.Double) { Value = R(es.Amortisation_Dynamisch) });
-                                p.Add(new OleDbParameter("@w14", OleDbType.Double) { Value = R(es.Kapitalwert) });
-                                p.Add(new OleDbParameter("@w15", OleDbType.VarWChar) { Value = (object)(es.Preisversion ?? "") });
+                                p.Add(new DbParam("@w1", DbParamTyp.Double) { Wert = R(es.Ertrag_Bezugsersparnis) });
+                                p.Add(new DbParam("@w2", DbParamTyp.Double) { Wert = R(es.Ertrag_Verguetung_Entgangen) });
+                                p.Add(new DbParam("@w3", DbParamTyp.Double) { Wert = R(es.Ertrag_Netzerloes) });
+                                p.Add(new DbParam("@w4", DbParamTyp.Double) { Wert = R(es.Kosten_Ladung) });
+                                p.Add(new DbParam("@w5", DbParamTyp.Double) { Wert = R(es.Ertrag_Leistungspreis) });
+                                p.Add(new DbParam("@w6", DbParamTyp.Double) { Wert = R(es.Verschleisskosten) });
+                                p.Add(new DbParam("@w7", DbParamTyp.Double) { Wert = R(es.Investition) });
+                                p.Add(new DbParam("@w8", DbParamTyp.Double) { Wert = R(es.Annuitaet) });
+                                p.Add(new DbParam("@w9", DbParamTyp.Double) { Wert = R(es.Jahresueberschuss) });
+                                p.Add(new DbParam("@w10", DbParamTyp.Double) { Wert = R(es.Ertrag_Jahr1) });
+                                p.Add(new DbParam("@w11", DbParamTyp.Double) { Wert = R(es.Ertrag_Aequivalent) });
+                                p.Add(new DbParam("@w12", DbParamTyp.Double) { Wert = R(es.Amortisation_Statisch) });
+                                p.Add(new DbParam("@w13", DbParamTyp.Double) { Wert = R(es.Amortisation_Dynamisch) });
+                                p.Add(new DbParam("@w14", DbParamTyp.Double) { Wert = R(es.Kapitalwert) });
+                                p.Add(new DbParam("@w15", DbParamTyp.VarWChar) { Wert = (object)(es.Preisversion ?? "") });
                                 v.Ausfuehren(sqlS, p.ToArray());
                             }
                         }
@@ -739,7 +738,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM " + TAB_KOPF + " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             if (dt == null || dt.Rows.Count == 0) return null;
 
             DataRow r = dt.Rows[0];
@@ -760,7 +759,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Energiebedarf.
             DataTable de = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_ENERGIE + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_ENERGIE + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (de != null && de.Rows.Count > 0)
             {
                 DataRow re = de.Rows[0];
@@ -781,7 +780,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Waermepumpe (+ Module).
             DataTable dw = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_WP + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_WP + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (dw != null && dw.Rows.Count > 0)
             {
                 DataRow rw = dw.Rows[0];
@@ -802,7 +801,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
-                    new OleDbParameter("@w", wpId));
+                    new DbParam("@w", wpId));
                 if (dmod != null)
                     foreach (DataRow rm in dmod.Rows)
                     {
@@ -821,7 +820,7 @@ namespace WindowsFormsApplication1
 
             // Detail: BHKW (+ Module).
             DataTable dbk = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_BHKW + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_BHKW + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (dbk != null && dbk.Rows.Count > 0)
             {
                 DataRow rb = dbk.Rows[0];
@@ -855,7 +854,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_BHKW_MODUL + " WHERE ID_ErgebnisBHKW = ? ORDER BY ID",
-                    new OleDbParameter("@b", bId));
+                    new DbParam("@b", bId));
                 if (dmod != null)
                     foreach (DataRow rm in dmod.Rows)
                     {
@@ -880,7 +879,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Heizkessel (+ Module).
             DataTable dhk = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_KESSEL + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_KESSEL + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (dhk != null && dhk.Rows.Count > 0)
             {
                 DataRow rh = dhk.Rows[0];
@@ -911,7 +910,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_KESSEL_MODUL + " WHERE ID_ErgebnisHeizkessel = ? ORDER BY ID",
-                    new OleDbParameter("@h", hId));
+                    new DbParam("@h", hId));
                 if (dmod != null)
                     foreach (DataRow rm in dmod.Rows)
                     {
@@ -934,7 +933,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Solarthermie (+ Kollektoren).
             DataTable dst = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_SOLAR + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_SOLAR + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (dst != null && dst.Rows.Count > 0)
             {
                 DataRow rs2 = dst.Rows[0];
@@ -949,7 +948,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_SOLAR_MODUL + " WHERE ID_ErgebnisSolarthermie = ? ORDER BY ID",
-                    new OleDbParameter("@s", sId));
+                    new DbParam("@s", sId));
                 if (dmod != null)
                     foreach (DataRow rm in dmod.Rows)
                     {
@@ -967,7 +966,7 @@ namespace WindowsFormsApplication1
 
             // Detail: Photovoltaik (+ Module).
             DataTable dpv = DataRepository.GetDataTable(
-                "SELECT * FROM " + TAB_PV + " WHERE ID_Ergebnis = ? LIMIT 1", new OleDbParameter("@e", m.ID));
+                "SELECT * FROM " + TAB_PV + " WHERE ID_Ergebnis = ? LIMIT 1", new DbParam("@e", m.ID));
             if (dpv != null && dpv.Rows.Count > 0)
             {
                 DataRow rp = dpv.Rows[0];
@@ -982,7 +981,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dmodp = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_PV_MODUL + " WHERE ID_ErgebnisPhotovoltaik = ? ORDER BY ID",
-                    new OleDbParameter("@p", pId));
+                    new DbParam("@p", pId));
                 if (dmodp != null)
                     foreach (DataRow rm in dmodp.Rows)
                     {
@@ -1100,7 +1099,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM " + TAB_KOPF + " WHERE ID_Projekt = ?",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -1445,7 +1444,7 @@ namespace WindowsFormsApplication1
             {
                 v.Ausfuehren("DELETE FROM " + tabelle + " WHERE ID_Ergebnis IN " +
                              "(SELECT ID FROM " + TAB_KOPF + " WHERE ID_Projekt = ?)",
-                             new OleDbParameter("@p", OleDbType.Integer) { Value = idProjekt });
+                             new DbParam("@p", DbParamTyp.Integer) { Wert = idProjekt });
             }
             catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
         }
@@ -1469,7 +1468,7 @@ namespace WindowsFormsApplication1
 
                 return StilleDb.Tabelle(
                     "SELECT * FROM " + TAB_PUFFER + " WHERE ID_Ergebnis = ? ORDER BY ID",
-                    StilleDb.Par("@e", OleDbType.Integer, idErgebnis));
+                    StilleDb.Par("@e", DbParamTyp.Integer, idErgebnis));
             }
             catch { return null; }
         }
@@ -1489,7 +1488,7 @@ namespace WindowsFormsApplication1
 
                 return StilleDb.Tabelle(
                     "SELECT * FROM " + TAB_SP + " WHERE ID_Ergebnis = ? ORDER BY ID",
-                    StilleDb.Par("@e", OleDbType.Integer, idErgebnis));
+                    StilleDb.Par("@e", DbParamTyp.Integer, idErgebnis));
             }
             catch { return null; }
         }
@@ -1549,12 +1548,12 @@ namespace WindowsFormsApplication1
         /// Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben; dieselbe
         /// Begruendung wie bei Quellwaerme und den Vbh-Spalten.
         /// </summary>
-        private static void KanalParameter(List<OleDbParameter> p, double[] werte)
+        private static void KanalParameter(List<DbParam> p, double[] werte)
         {
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
                 double wert = (werte != null && k < werte.Length) ? werte[k] : 0.0;
-                p.Add(new OleDbParameter("@k" + k, OleDbType.Double) { Value = R(wert) });
+                p.Add(new DbParam("@k" + k, DbParamTyp.Double) { Wert = R(wert) });
             }
         }
 

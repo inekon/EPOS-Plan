@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -159,7 +158,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", _idProjekt));
+                    new DbParam("@p", _idProjekt));
                 if (dt == null) return;
                 foreach (DataRow r in dt.Rows)
                 {

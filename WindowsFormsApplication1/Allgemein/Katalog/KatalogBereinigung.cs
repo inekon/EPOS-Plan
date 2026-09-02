@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -131,11 +130,11 @@ namespace WindowsFormsApplication1
             foreach (KatalogDatenblock b in k.Datenbloecke)
                 DataRepository.ExecuteSQL(
                     "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
-                    new OleDbParameter("@fk", id));
+                    new DbParam("@fk", id));
 
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
         }
 
         /// <summary>

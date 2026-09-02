@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -49,7 +48,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -57,7 +56,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szName ?? ""));
+                new DbParam("@bez", szName ?? ""));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -73,9 +72,9 @@ namespace WindowsFormsApplication1
             if (id <= 0) return false;
 
             DataRepository.ExecuteSQL("DELETE FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
             return DataRepository.ExecuteSQL("DELETE FROM " + HEAD_STAMM + " WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
         }
 
         // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
@@ -95,11 +94,11 @@ namespace WindowsFormsApplication1
                     }
 
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
-                        p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
-                        p.Add(new OleDbParameter("@beschr", OleDbType.VarWChar) { Value = szBeschreibung ?? (object)DBNull.Value });
-                        p.Add(new OleDbParameter("@ro", OleDbType.Boolean) { Value = false });
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
+                        p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
+                        p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = szBeschreibung ?? (object)DBNull.Value });
+                        p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
                         v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Beschreibung, ReadOnly) VALUES (?, ?, ?, ?)", p.ToArray());
                     }
 
@@ -113,11 +112,11 @@ namespace WindowsFormsApplication1
                     {
                         v.Ausfuehren(
                             "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
-                            new OleDbParameter("@id", OleDbType.Integer) { Value = datenId++ },
-                            new OleDbParameter("@g", OleDbType.Integer) { Value = neueId },
-                            new OleDbParameter("@w", OleDbType.Double)
-                            { Value = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
-                            new OleDbParameter("@r", OleDbType.Boolean) { Value = false });
+                            new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
+                            new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
+                            new DbParam("@w", DbParamTyp.Double)
+                            { Wert = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
+                            new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
                     }
 
                     v.Commit();
@@ -137,8 +136,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM " + HEAD_PROJ + " WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szName ?? ""),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@bez", szName ?? ""),
+                new DbParam("@proj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -178,7 +177,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dtKopf = v.Lese(
                     "SELECT ID, Beschreibung FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
-                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
+                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 if (dtKopf.Rows.Count == 0) return 0;
                 DataRow r = dtKopf.Rows[0];
                 stammId = Convert.ToInt32(r["ID"]);
@@ -193,11 +192,11 @@ namespace WindowsFormsApplication1
             }
 
             {
-                List<OleDbParameter> p = new List<OleDbParameter>();
-                p.Add(new OleDbParameter("@id", OleDbType.Integer) { Value = neueId });
-                p.Add(new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
-                p.Add(new OleDbParameter("@bez", OleDbType.VarWChar) { Value = szBezeichner ?? (object)DBNull.Value });
-                p.Add(new OleDbParameter("@beschr", OleDbType.VarWChar) { Value = (object)(beschreibung ?? "") });
+                List<DbParam> p = new List<DbParam>();
+                p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
+                p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
+                p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
+                p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") });
                 v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, ?, ?, ?)", p.ToArray());
             }
 
@@ -206,7 +205,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dtWerte = v.Lese(
                     "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID",
-                    new OleDbParameter("@g", OleDbType.Integer) { Value = stammId });
+                    new DbParam("@g", DbParamTyp.Integer) { Wert = stammId });
                 foreach (DataRow r in dtWerte.Rows)
                     werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
             }
@@ -223,9 +222,9 @@ namespace WindowsFormsApplication1
             {
                 v.Ausfuehren(
                     "INSERT INTO " + DATA_PROJ + " (ID, ID_Ganglinie, Wert) VALUES (?, ?, ?)",
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = datenId++ },
-                    new OleDbParameter("@g", OleDbType.Integer) { Value = neueId },
-                    new OleDbParameter("@w", OleDbType.Double) { Value = w });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
+                    new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
+                    new DbParam("@w", DbParamTyp.Double) { Wert = w });
             }
 
             return neueId;

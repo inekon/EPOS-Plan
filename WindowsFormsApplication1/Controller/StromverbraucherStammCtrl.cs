@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Text;
 using System.Windows.Forms;
 
@@ -59,7 +58,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
-                new[] { new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value) });
+                new[] { new DbParam("@bez", szBezeichner ?? (object)DBNull.Value) });
             _internalList.Clear();
             m_ID = 0; m_szBezeichner = ""; m_szTyp = ""; m_szBeschreibung = ""; m_bReadOnly = false;
             for (int i = 0; i < 12; i++) m_Monat[i] = 0.0;
@@ -74,7 +73,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -88,7 +87,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
         }
 
         #endregion
@@ -99,8 +98,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM " + TABLE_PROJ + " WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@proj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -116,7 +115,7 @@ namespace WindowsFormsApplication1
             // Kopf-Stammsatz lesen
             DataTable head = DataRepository.GetDataTable(
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
-                new[] { new OleDbParameter("@bez", szBezeichner) });
+                new[] { new DbParam("@bez", szBezeichner) });
             if (head == null || head.Rows.Count == 0) return -1;
             DataRow h = head.Rows[0];
             string typName = h.Table.Columns.Contains("Typ") && h["Typ"] != DBNull.Value ? h["Typ"].ToString() : "";
@@ -127,7 +126,7 @@ namespace WindowsFormsApplication1
             {
                 dtTyp = DataRepository.GetDataTable(
                     "SELECT * FROM " + TYP_STAMM + " WHERE Typname = ?",
-                    new[] { new OleDbParameter("@typn", typName) });
+                    new[] { new DbParam("@typn", typName) });
             }
 
             using (DbVorgang v = DataRepository.Vorgang())
@@ -145,14 +144,14 @@ namespace WindowsFormsApplication1
                     StringBuilder vals = new StringBuilder("?, ?, ?, ?, ?");
                     for (int i = 1; i <= 12; i++) { cols.Append(", Monat_" + i); vals.Append(", ?"); }
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@hid", neuSvId));
-                        p.Add(new OleDbParameter("@hproj", idProjekt));
-                        p.Add(new OleDbParameter("@hbez", szBezeichner));
-                        p.Add(new OleDbParameter("@htyp", (object)typName ?? DBNull.Value));
-                        p.Add(new OleDbParameter("@hbesch", ColOrNull(h, "Beschreibung")));
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@hid", neuSvId));
+                        p.Add(new DbParam("@hproj", idProjekt));
+                        p.Add(new DbParam("@hbez", szBezeichner));
+                        p.Add(new DbParam("@htyp", (object)typName ?? DBNull.Value));
+                        p.Add(new DbParam("@hbesch", ColOrNull(h, "Beschreibung")));
                         for (int i = 1; i <= 12; i++)
-                            p.Add(new OleDbParameter("@mon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
+                            p.Add(new DbParam("@mon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
                         v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
                     }
 
@@ -177,16 +176,16 @@ namespace WindowsFormsApplication1
                             foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
 
                             {
-                                List<OleDbParameter> p = new List<OleDbParameter>();
-                                p.Add(new OleDbParameter("@tid", neuTypId++));
-                                p.Add(new OleDbParameter("@tsv", neuSvId));
-                                p.Add(new OleDbParameter("@ttypn", (object)typName ?? DBNull.Value));
-                                p.Add(new OleDbParameter("@tbesch", ColOrNull(tr, "Beschreibung")));
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@tid", neuTypId++));
+                                p.Add(new DbParam("@tsv", neuSvId));
+                                p.Add(new DbParam("@ttypn", (object)typName ?? DBNull.Value));
+                                p.Add(new DbParam("@tbesch", ColOrNull(tr, "Beschreibung")));
                                 int k = 0;
                                 foreach (string col in profil)
                                 {
                                     object wert = tr[col] != DBNull.Value ? tr[col] : (object)DBNull.Value;
-                                    p.Add(new OleDbParameter("@cp" + (k++).ToString("D3"), wert));
+                                    p.Add(new DbParam("@cp" + (k++).ToString("D3"), wert));
                                 }
                                 v.Ausfuehren("INSERT INTO " + TYP_PROJ + " (" + tc + ") VALUES (" + tv + ")", p.ToArray());
                             }
@@ -217,7 +216,7 @@ namespace WindowsFormsApplication1
         public bool Exists(string szBezeichner)
         {
             object v = DataRepository.ExecuteScalar("SELECT ID FROM " + TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value;
         }
 
@@ -230,20 +229,20 @@ namespace WindowsFormsApplication1
                 int newId = DataRepository.GetMaxID(TABLE) + 1;
                 var cols = new StringBuilder("ID, Bezeichner, Typ, Beschreibung");
                 var vals = new StringBuilder("?, ?, ?, ?");
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@hid", OleDbType.Integer) { Value = newId },
-                    new OleDbParameter("@hbez", OleDbType.VarWChar) { Value = (object)(bez ?? "") },
-                    new OleDbParameter("@htyp", OleDbType.VarWChar) { Value = (object)(typ ?? "") },
-                    new OleDbParameter("@hbeschr", OleDbType.VarWChar) { Value = (object)(beschr ?? "") }
+                    new DbParam("@hid", DbParamTyp.Integer) { Wert = newId },
+                    new DbParam("@hbez", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") },
+                    new DbParam("@htyp", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
+                    new DbParam("@hbeschr", DbParamTyp.VarWChar) { Wert = (object)(beschr ?? "") }
                 };
                 for (int i = 0; i < 12; i++)
                 {
                     cols.Append(", Monat_" + (i + 1)); vals.Append(", ?");
-                    ps.Add(new OleDbParameter("@mon" + (i + 1).ToString("D2"), OleDbType.Double) { Value = monat[i] });
+                    ps.Add(new DbParam("@mon" + (i + 1).ToString("D2"), DbParamTyp.Double) { Wert = monat[i] });
                 }
                 cols.Append(", ReadOnly"); vals.Append(", ?");
-                ps.Add(new OleDbParameter("@hro", OleDbType.Boolean) { Value = false });
+                ps.Add(new DbParam("@hro", DbParamTyp.Boolean) { Wert = false });
                 return DataRepository.ExecuteSQL("INSERT INTO " + TABLE + " (" + cols + ") VALUES (" + vals + ")", ps.ToArray());
             }
             else
@@ -255,17 +254,17 @@ namespace WindowsFormsApplication1
                     return false;
                 }
                 var set = new StringBuilder("Typ = ?, Beschreibung = ?");
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@utyp", OleDbType.VarWChar) { Value = (object)(typ ?? "") },
-                    new OleDbParameter("@ubeschr", OleDbType.VarWChar) { Value = (object)(beschr ?? "") }
+                    new DbParam("@utyp", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
+                    new DbParam("@ubeschr", DbParamTyp.VarWChar) { Wert = (object)(beschr ?? "") }
                 };
                 for (int i = 0; i < 12; i++)
                 {
                     set.Append(", Monat_" + (i + 1) + " = ?");
-                    ps.Add(new OleDbParameter("@umon" + (i + 1).ToString("D2"), OleDbType.Double) { Value = monat[i] });
+                    ps.Add(new DbParam("@umon" + (i + 1).ToString("D2"), DbParamTyp.Double) { Wert = monat[i] });
                 }
-                ps.Add(new OleDbParameter("@ukey", OleDbType.VarWChar) { Value = (object)(bez ?? "") });
+                ps.Add(new DbParam("@ukey", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") });
                 return DataRepository.ExecuteSQL("UPDATE " + TABLE + " SET " + set + " WHERE Bezeichner = ?", ps.ToArray());
             }
         }
@@ -274,7 +273,7 @@ namespace WindowsFormsApplication1
         public static bool TypIsReadOnly(string typname)
         {
             object v = DataRepository.ExecuteScalar("SELECT ReadOnly FROM " + TYP_STAMM + " WHERE Typname = ?",
-                new OleDbParameter("@typn", typname ?? ""));
+                new DbParam("@typn", typname ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -284,9 +283,9 @@ namespace WindowsFormsApplication1
             int newId = DataRepository.GetMaxID(TYP_STAMM) + 1;
             bool ok = DataRepository.ExecuteSQL(
                 "INSERT INTO " + TYP_STAMM + " (ID, Typname, ReadOnly) VALUES (?, ?, ?)",
-                new OleDbParameter("@tid", OleDbType.Integer) { Value = newId },
-                new OleDbParameter("@ttypn", OleDbType.VarWChar) { Value = (object)(typname ?? "") },
-                new OleDbParameter("@tro", OleDbType.Boolean) { Value = false });
+                new DbParam("@tid", DbParamTyp.Integer) { Wert = newId },
+                new DbParam("@ttypn", DbParamTyp.VarWChar) { Wert = (object)(typname ?? "") },
+                new DbParam("@tro", DbParamTyp.Boolean) { Wert = false });
             return ok ? newId : 0;
         }
 
@@ -299,7 +298,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TYP_STAMM + " WHERE Typname = ?",
-                new OleDbParameter("@typn", typname ?? ""));
+                new DbParam("@typn", typname ?? ""));
         }
 
         #endregion

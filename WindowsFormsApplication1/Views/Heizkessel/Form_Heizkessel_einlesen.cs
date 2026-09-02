@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
                 ps.Add(new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust));
                 ps.Add(new OleDbParameter("@ro", false));
 
-                v.Ausfuehren(sql, ps.ToArray());
+                v.Ausfuehren(sql, DbParam.Von(ps.ToArray()));
                 return true;
             }
             catch (Exception ex)
