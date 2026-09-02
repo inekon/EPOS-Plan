@@ -44,7 +44,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF12** | Vertriebsweg der Auslieferung (Custom Apps / Unlisted / App Store) und Behandlung des Lizenzverkaufs gegenüber Apples Kaufregeln | **Custom Apps** über Apple Business Manager prüfen; Klärung **vor** iU13, nicht im Review | vor iU13 | offen | | |
 | **iF13** | Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenennen? | **nein** — eigener mechanischer Schritt danach | iU4 | offen | | |
 | **iF14** | `Kenndaten_Test.sqlite` mit den 13 Referenzprojekten versionieren? | **ja** — sonst ist die Kern-CI nur ein Kompilierungstest (iR6). Befund 02.09.: siehe § 2.1 | iU3 (Baustein iE6) | **beschieden** | **ja — Anwender bestätigt 02.09.2026: die Datenbank enthält nirgends Kundendaten.** Anonymisierung entfällt; Reduzierung auf die 13 Projekte nur wegen der Dateigröße (GitHub-Grenze 100 MB) | 02.09.2026 |
-| **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | bestehende Toleranz (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten | vor iU3 | offen | | |
+| **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | bestehende Toleranz (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten | vor iU3 | **beschieden** | Toleranz wie heute (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; Befund 02.09.: 1030 auf x64-Linux **und** arm64-macOS byte-gleich — die Toleranz wird bisher nicht einmal gebraucht | 02.09.2026 |
 | **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JS-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm | iU7 | offen | | |
 | **iF17** | iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragen? | **ja** — Support-Frist 10.11.2026, einzige Antwort auf iR9 | iU1 | **beschieden** | **ja — iU1 läuft seit 02.09.2026 auf Branch `ios_migration`** | 02.09.2026 |
 | **iF18** | Welche VS-2026-Edition? (VS 2022 kann `net10.0` nicht targeten) | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt; sonst Professional | vor iU1 | **beschieden** | **Community 2026 — installiert unter `C:\Program Files\Microsoft Visual Studio\18\Community`** | 02.09.2026 |
@@ -171,6 +171,19 @@ Toleranz", sondern bit-identisch zum Windows-Referenzlauf vom 30.08. — keine P
 Datendrift auf x64. Damit ist Gate **iZ3 (Go)** erreicht. Offen bleibt die ARM64-Frage (iF15): Der
 CI-Schritt „Kern-Referenzlauf 1030" in `kern.yml` läuft ab jetzt auch auf `macos-latest` — sein
 erstes Ergebnis ist der iT3-Nachweis für Apple Silicon.
+
+**Nachtrag, CI-Lauf auf `edefbef` (02.09.2026, kern.yml mit Vergleichsschritt):**
+
+| Runner | Referenzlauf 1030 | Vergleich gegen Basis | Byte-Diff |
+|---|---|---|---|
+| `ubuntu-latest` (x64) | ✅ | **PASS**, 236.670 Werte | **alle 22 Dateien identisch** |
+| `macos-latest` = `macos-26-arm64` (**Apple Silicon**) | ✅ | **PASS**, 236.670 Werte | **alle 22 Dateien identisch** |
+
+Die für ARM64 erwartete Gleitkomma-Drift (iF15, Analogie zum x86→x64-Umstieg mit FMA) tritt auf
+diesem Rechenpfad **nicht** auf: Der Kern rechnet auf x64-Windows, x64-Linux und arm64-macOS
+bit-identisch. Das ist der iT3-Nachweis (Plattformvergleich) — geführt ohne Mac-Hardware, auf einem
+kostenlosen Runner, mit jedem Push wiederholt. Die Ergebnis-CSV liegen je OS als Artefakt am Lauf
+(14 Tage).
 
 
 ---
