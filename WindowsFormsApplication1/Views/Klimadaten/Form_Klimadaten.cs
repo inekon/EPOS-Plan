@@ -94,6 +94,13 @@ namespace WindowsFormsApplication1
             textBox_Longitude.Text = ctrlregion.Longitude.ToString();
             int ID_Klimaregion = ctrlregion.m_ID_Klimaregion;
 
+            // BEWUSST die ROHE Reihe (UTC), nicht der Ortszeit-Lesepfad
+            // SolardatenCtrl.ReadOrtszeit aus Paket A: Diese Maske zeigt den
+            // Datenbestand einer STAMM-Klimaregion, so wie er importiert wurde und
+            // gespeichert ist. Sie ist die Kontrollansicht des Imports, kein
+            // Rechenweg - eine verschobene Anzeige machte den Abgleich mit der
+            // PVGIS-Quelle unmoeglich. Alle stundenscharfen RECHNUNGEN gehen dagegen
+            // ueber ReadOrtszeit (Befund B1).
             ctrl.ReadAllStamm(ID_Klimaregion);
 
             // Chart Temperaturverlauf

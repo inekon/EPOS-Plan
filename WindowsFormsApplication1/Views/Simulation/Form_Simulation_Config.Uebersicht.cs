@@ -517,6 +517,11 @@ namespace WindowsFormsApplication1
         /// derselbe, den die Simulation über SimulationWaermebedarf.Stundentemperatur
         /// verwendet (Tab_Solar.Temperatur der Klimaregion). Liefert null, wenn dem
         /// Projekt keine Klimaregion zugeordnet ist oder keine 8760 Werte vorliegen.
+        ///
+        /// <para><b>B1 (Paket A): über denselben ORTSZEIT-Lesepfad wie die Simulation</b>
+        /// (<c>SolardatenCtrl.ReadOrtszeit</c>). Das eigene SQL hatte die Reihe im
+        /// UTC-Raster gelesen — der Erdreichdialog hätte sonst einen anderen Tagesgang
+        /// gezeigt als der Lauf, den er vorbereitet.</para>
         /// </summary>
         private float[] AussentemperaturLaden()
         {
@@ -531,16 +536,12 @@ namespace WindowsFormsApplication1
                 int idRegion = Convert.ToInt32(oRegion);
                 if (idRegion <= 0) return null;
 
-                System.Data.DataTable dt = DataRepository.GetDataTable(
-                    "SELECT Temperatur FROM Tab_Solar WHERE ID_Klimaregion = " + idRegion + " ORDER BY ID");
-                if (dt == null || dt.Rows.Count < 8760) return null;
+                SolardatenCtrl ctrldat = new SolardatenCtrl();
+                ctrldat.ReadOrtszeit(idRegion, m_ID_Projekt);
+                if (ctrldat.rows < 8760) return null;
 
                 float[] temp = new float[8760];
-                for (int i = 0; i < 8760; i++)
-                {
-                    object v = dt.Rows[i]["Temperatur"];
-                    temp[i] = (v == DBNull.Value) ? 0f : Convert.ToSingle(v);
-                }
+                for (int i = 0; i < 8760; i++) temp[i] = (float)ctrldat.items[i].Außen_Temp;
                 _aussentempCache = temp;
             }
             catch (Exception ex)
