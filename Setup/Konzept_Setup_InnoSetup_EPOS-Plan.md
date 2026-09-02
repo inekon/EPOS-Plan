@@ -481,6 +481,11 @@ COM-Referenzen (Excel-Interop, VBIDE), und das SDK-MSBuild bricht dabei mit
 Bitness-Option hat das Skript nicht; es gibt nur noch `win-x64`
 (Entscheidung 5.1 des Umstellungskonzepts).
 
+> **Nachtrag 02.09.2026:** Der Absatz zu MSB4803 ist überholt. Mit der
+> Umstellung des Excel-Interops auf ClosedXML hält das Projekt keine
+> COM-Referenzen mehr; `build-setup.ps1` veröffentlicht seither mit
+> `dotnet publish`, Visual Studio wird zum Bauen nicht mehr benötigt.
+
 **Freigabeprobe vor jeder Auslieferung** — auf einer frischen
 Windows-Installation, nicht auf dem Entwicklungsrechner:
 
