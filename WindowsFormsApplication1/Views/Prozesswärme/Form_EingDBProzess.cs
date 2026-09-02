@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
         {
             if(comboBox_Prozesstyp.Text == "" )
             {
-                MessageBox.Show("Prozesstyp ausw�hlen!");
+                MessageBox.Show("Prozesstyp auswählen!");
                 return;
             }
             // Leer- und Zahlpruefung jetzt zentral mit sprechender Meldung; der

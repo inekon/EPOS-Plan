@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -29,12 +29,12 @@ namespace WindowsFormsApplication1
             txt_Bedarfsart_Auswahl.Text = ctrl.Einheit;
             Jahresnutzungsgrad.Text = ctrl.Jahresnutzungsgrad.ToString();
             D_BW.Checked = ctrl.DezentralWarmwasser;
-            cmb_Bedarfsart.Items.Add("Ölverbrauch [l/a]"); 
-            cmb_Bedarfsart.Items.Add("Gasverbrauch [m³/a]"); 
+            cmb_Bedarfsart.Items.Add("Ã–lverbrauch [l/a]"); 
+            cmb_Bedarfsart.Items.Add("Gasverbrauch [mÂ³/a]"); 
             cmb_Bedarfsart.Items.Add("Gasverbrauch [MWh/a] (Ho)"); 
             cmb_Bedarfsart.Items.Add("Brennstoffverbrauch [MWh/a]"); 
             cmb_Bedarfsart.Items.Add("Verbrauch  [MWh/a]"); 
-            cmb_Bedarfsart.Items.Add("Wohnfläche [m²]");
+            cmb_Bedarfsart.Items.Add("WohnflÃ¤che [mÂ²]");
             cmb_Bedarfsart.Text = ctrl.Einheit; 
 
         }

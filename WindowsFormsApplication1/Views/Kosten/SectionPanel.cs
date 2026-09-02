@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -10,7 +10,7 @@ public class SectionPanel : Panel
     private Label lblTotal;
     public Panel Body { get; private set; }
 
-    public SectionPanel(string title, string icon, string totalValue = "0 �")
+    public SectionPanel(string title, string icon, string totalValue = "0 €")
     {
         this.Dock = DockStyle.Top;
         this.AutoSize = true;

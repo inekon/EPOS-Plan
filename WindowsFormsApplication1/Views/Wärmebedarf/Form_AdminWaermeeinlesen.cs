@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -29,13 +29,13 @@ namespace WindowsFormsApplication1
             textBox_Ordner.Text = szPath;
 
             // =================================================================================
-            // NOTEBOOK-FIX: Kontrolliertes Layout & Fix für die ListBox-Höhe
+            // NOTEBOOK-FIX: Kontrolliertes Layout & Fix fÃ¼r die ListBox-HÃ¶he
             // =================================================================================
 
-            // 1. Verhindert, dass die ListBox wegen der Schriftgröße das Layout sprengt:
+            // 1. Verhindert, dass die ListBox wegen der SchriftgrÃ¶ÃŸe das Layout sprengt:
             this.listBox_Extern.IntegralHeight = false;
 
-            // 2. Fenstergröße für Notebooks stabilisieren
+            // 2. FenstergrÃ¶ÃŸe fÃ¼r Notebooks stabilisieren
             this.MinimumSize = new System.Drawing.Size(680, 460);
             this.AutoSize = false;
 
@@ -46,14 +46,14 @@ namespace WindowsFormsApplication1
             this.btn_Loeschen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             this.btn_Einlesen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
-            // 4. Die obere Pfad-Eingabe wächst elastisch nach rechts mit
+            // 4. Die obere Pfad-Eingabe wÃ¤chst elastisch nach rechts mit
             this.Label2.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             this.textBox_Name.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             // 5. Die ListBox passt sich flexibel an, respektiert aber den Boden!
             this.listBox_Extern.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
-            // 6. WICHTIG: Die unteren Elemente MÜSSEN mit dem Boden nach unten wandern!
+            // 6. WICHTIG: Die unteren Elemente MÃœSSEN mit dem Boden nach unten wandern!
             this.label6.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.textBox_Ordner.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             this.btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll("Select * from Z_ProjektWaermebedarf where Bezeichner ='" + listBox_Extern.Text + "'");
             if (ctrl.rows > 0)
             {
-                MessageBox.Show("Es existiert eine Projektzuordnung, Löschen nicht möglich!");
+                MessageBox.Show("Es existiert eine Projektzuordnung, LÃ¶schen nicht mÃ¶glich!");
                 return;
             }
 

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
@@ -129,34 +129,34 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(listBox_Prozess_DB.Text))
             {
-                MessageBox.Show("Bitte wählen Sie einen Prozess aus, den Sie löschen möchten.");
+                MessageBox.Show("Bitte wÃ¤hlen Sie einen Prozess aus, den Sie lÃ¶schen mÃ¶chten.");
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Prozess_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Prozess_DB.Text + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             try
             {
-                // Parameterbasierte DELETE-Abfrage (schützt vor SQL-Injections und Sonderzeichen)
+                // Parameterbasierte DELETE-Abfrage (schÃ¼tzt vor SQL-Injections und Sonderzeichen)
                 ProzesswaermeStammCtrl ctrlDel = new ProzesswaermeStammCtrl();
 
-                // Direkt über das DataRepository ausführen
+                // Direkt Ã¼ber das DataRepository ausfÃ¼hren
                 if (ctrlDel.Delete(listBox_Prozess_DB.Text))
                 {
-                    // Erst wenn es in der DB gelöscht wurde, aus der ListBox entfernen
+                    // Erst wenn es in der DB gelÃ¶scht wurde, aus der ListBox entfernen
                     listBox_Prozess_DB.Items.Remove(listBox_Prozess_DB.Text);
-                    MessageBox.Show("Prozess erfolgreich gelöscht.");
+                    MessageBox.Show("Prozess erfolgreich gelÃ¶scht.");
                 }
                 else
                 {
-                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelöscht werden.");
+                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelÃ¶scht werden.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler beim Löschen des Prozesses: " + ex.Message);
-                MessageBox.Show("Fehler beim Löschvorgang!");
+                Console.WriteLine("Fehler beim LÃ¶schen des Prozesses: " + ex.Message);
+                MessageBox.Show("Fehler beim LÃ¶schvorgang!");
             }
         }
 

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     {
         SimulationWaermebedarf simulation;
 
-        // Statisches Array für die Monatsbeschriftungen auf der X-Achse
+        // Statisches Array fÃ¼r die Monatsbeschriftungen auf der X-Achse
         private readonly string[] monate = { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
         public Form_ErgProzesswaerme()
@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
         {
             simulation = waermebedarf_simulation;
 
-            // Textfelder befüllen
+            // Textfelder befÃ¼llen
             textBox_WB_Gebaeude.Text = simulation.Waermebedarf_Gebaeude_Gesamt.ToString("F2");
             textBox_Brauchwasser.Text = simulation.Waermebedarf_Brauchwasser.ToString("F2");
             textBox_WB_Extern.Text = simulation.Waermebedarf_Extern_Gesamt.ToString("F2");
@@ -37,16 +37,16 @@ namespace WindowsFormsApplication1
             textBox_WB_Gesamt.Text = simulation.Waermebedarf_Gesamt.ToString("F2");
             textBox_WB_Prozess.Text = simulation.Waermebedarf_Prozess.ToString("F2");
 
-            // RadioButtons aktivieren (Das löst die CheckedChanged-Events aus)
+            // RadioButtons aktivieren (Das lÃ¶st die CheckedChanged-Events aus)
             radioBtn_Prozesse.Checked = true;
             radioBtn_GrafikProzesse.Checked = true;
 
-            // Sicherheits-Erstbefüllung der Grafik, falls Events beim Laden blockieren
-            ZeigeMonatsGrafik("Prozesswärme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
+            // Sicherheits-ErstbefÃ¼llung der Grafik, falls Events beim Laden blockieren
+            ZeigeMonatsGrafik("ProzesswÃ¤rme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
         }
 
         /// <summary>
-        /// Bereitet das Chart-Control jungfräulich vor und fixiert das 12-Monats-Raster.
+        /// Bereitet das Chart-Control jungfrÃ¤ulich vor und fixiert das 12-Monats-Raster.
         /// </summary>
         private void ResetAndInitChart()
         {
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             chart1.ChartAreas.Clear();
             chart1.Titles.Clear();
 
-            // Eine neue Standard-Zeichenfläche hinzufügen
+            // Eine neue Standard-ZeichenflÃ¤che hinzufÃ¼gen
             ChartArea area = new ChartArea("MainArea");
 
             // Erzwingt das starre 12-Monats-Layout auf der X-Achse
@@ -66,12 +66,12 @@ namespace WindowsFormsApplication1
 
             chart1.ChartAreas.Add(area);
 
-            // Titel hinzufügen
-            chart1.Titles.Add(new Title("Wärmelast Monatsübersicht", Docking.Top, new Font("Arial", 12, FontStyle.Bold), Color.Black));
+            // Titel hinzufÃ¼gen
+            chart1.Titles.Add(new Title("WÃ¤rmelast MonatsÃ¼bersicht", Docking.Top, new Font("Arial", 12, FontStyle.Bold), Color.Black));
         }
 
         /// <summary>
-        /// Zeichnet die übergebenen Monatsdaten als saubere 12 Balken.
+        /// Zeichnet die Ã¼bergebenen Monatsdaten als saubere 12 Balken.
         /// </summary>
         private void ZeigeMonatsGrafik(string serienName, float[] monatsDaten, Color balkenFarbe)
         {
@@ -149,25 +149,25 @@ namespace WindowsFormsApplication1
             chart1.Invalidate(); // Neuzeichnen der Grafik erzwingen
         }
 
-        // --- Event-Handler für die Grafik-RadioButtons ---
+        // --- Event-Handler fÃ¼r die Grafik-RadioButtons ---
 
         private void radioBtn_GrafikProzesse_CheckedChanged(object sender, EventArgs e)
         {
             if (radioBtn_GrafikProzesse.Checked && simulation != null)
             {
-                ZeigeMonatsGrafik("Prozesswärme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
+                ZeigeMonatsGrafik("ProzesswÃ¤rme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
             }
         }
 
-        private void radioBtn_GrafikGebäude_CheckedChanged(object sender, EventArgs e)
+        private void radioBtn_GrafikGebÃ¤ude_CheckedChanged(object sender, EventArgs e)
         {
-            if (radioBtn_GrafikGebäude.Checked && simulation != null)
+            if (radioBtn_GrafikGebÃ¤ude.Checked && simulation != null)
             {
-                ZeigeMonatsGrafik("Gebäudewärme", simulation.Waermebedarf_Gebaeude_Monat, Color.Blue);
+                ZeigeMonatsGrafik("GebÃ¤udewÃ¤rme", simulation.Waermebedarf_Gebaeude_Monat, Color.Blue);
             }
         }
 
-        // --- Event-Handler für die Text-Tabellen-RadioButtons ---
+        // --- Event-Handler fÃ¼r die Text-Tabellen-RadioButtons ---
 
         private void radioBtn_Prozesse_CheckedChanged(object sender, EventArgs e)
         {
@@ -186,7 +186,7 @@ namespace WindowsFormsApplication1
             Monat_12.Text = simulation.Waermebedarf_Prozess_Monat[11].ToString("F2");
         }
 
-        private void radioBtn_Gebäude_CheckedChanged(object sender, EventArgs e)
+        private void radioBtn_GebÃ¤ude_CheckedChanged(object sender, EventArgs e)
         {
             if (simulation?.Waermebedarf_Gebaeude_Monat == null) return;
             Monat_1.Text = simulation.Waermebedarf_Gebaeude_Monat[0].ToString("F2");

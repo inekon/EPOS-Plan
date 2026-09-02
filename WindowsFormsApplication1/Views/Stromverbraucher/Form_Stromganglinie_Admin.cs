@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
             // Schreibgeschuetzte (ReadOnly) Stammdatensaetze duerfen nicht geloescht werden.
             if (ctrl_ganglinie.IsReadOnly(listBox_Extern.Text))
             {
-                MessageBox.Show("Diese Stromganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.", "Hinweis");
+                MessageBox.Show("Diese Stromganglinie ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.", "Hinweis");
                 return;
             }
 

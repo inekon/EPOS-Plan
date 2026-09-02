@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -54,9 +54,9 @@ namespace WindowsFormsApplication1
             //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
             //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
 
-            // Grundfarbe für alle Zeilen
+            // Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
 
             InitAuswahlListe();
@@ -111,7 +111,7 @@ namespace WindowsFormsApplication1
         }
 
         // Liest einen ganzzahligen Spaltenwert; probiert mehrere Spaltennamen
-        // (z.B. "Ruecklauf" ASCII bzw. "Rücklauf" mit Umlaut).
+        // (z.B. "Ruecklauf" ASCII bzw. "RÃ¼cklauf" mit Umlaut).
         private static int IntCol(DataRow row, params string[] cols)
         {
             foreach (string c in cols)
@@ -174,7 +174,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < list_werzmodel.Count; i++)
             {
                 ctrl.ReadSingle(list_werzmodel[i].ID_Solar);
-                summe += ctrl.m_Modulfläche;
+                summe += ctrl.m_ModulflÃ¤che;
             }
             return summe;
         }*/
@@ -186,7 +186,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll(szFilter);
             for (int i = 0; i < ctrl.rows; i++)
             {
-                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nModulfläche: " + ctrl.items[i].m_Modulfläche + " m²" + "\nAperturfläche: " + ctrl.items[i].m_Aperturfläche + " m²");
+                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nModulflÃ¤che: " + ctrl.items[i].m_ModulflÃ¤che + " mÂ²" + "\nAperturflÃ¤che: " + ctrl.items[i].m_AperturflÃ¤che + " mÂ²");
                 dgv.Rows[i].DividerHeight = 5;
             }
         }
@@ -200,7 +200,7 @@ namespace WindowsFormsApplication1
             int stammId = DataRepository.GetIdByName(SolarkollektorenStammCtrl.TABLE, "Bezeichner", szName);
             if (stammId <= 0)
             {
-                MessageBox.Show("Der ausgewählte Solarkollektor wurde in den Stammdaten nicht gefunden.");
+                MessageBox.Show("Der ausgewÃ¤hlte Solarkollektor wurde in den Stammdaten nicht gefunden.");
                 return;
             }
 
@@ -222,7 +222,7 @@ namespace WindowsFormsApplication1
             {
                 DataRow sr = dtStamm.Rows[0];
                 model.Vorlauf = IntCol(sr, "Vorlauf");
-                model.Ruecklauf = IntCol(sr, "Ruecklauf", "Rücklauf");
+                model.Ruecklauf = IntCol(sr, "Ruecklauf", "RÃ¼cklauf");
             }
 
             // Analog zu BHKW/Heizkessel: im direkten Projektmodus den Stammdatensatz sofort in die
@@ -233,7 +233,7 @@ namespace WindowsFormsApplication1
                 int projektId = new SolarkollektorenCtrl().CopyFromStamm(stammId, m_ID_Projekt);
                 if (projektId <= 0)
                 {
-                    MessageBox.Show("Der Datensatz konnte nicht in das Projekt übernommen werden.");
+                    MessageBox.Show("Der Datensatz konnte nicht in das Projekt Ã¼bernommen werden.");
                     return;
                 }
                 model.ID_Solar = projektId;
@@ -394,10 +394,10 @@ namespace WindowsFormsApplication1
                 // Text meldet GanzzahlPruefen und die Seite bleibt unveraendert.
                 int anzahl, neigung, azimut, vorlauf, ruecklauf;
                 if (!Program.GanzzahlPruefen(textBox_Anzahl, "Modulanzahl", out anzahl, true)) return;
-                if (!Program.GanzzahlPruefen(textBox_Kollektorneigung, "Neigung [°]", out neigung, true)) return;
-                if (!Program.GanzzahlPruefen(textBox_Azimut, "Azimut [°]", out azimut, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Kollektorneigung, "Neigung [Â°]", out neigung, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Azimut, "Azimut [Â°]", out azimut, true)) return;
                 if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out vorlauf, true)) return;
-                if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauf", out ruecklauf, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "RÃ¼cklauf", out ruecklauf, true)) return;
 
                 m.Kollektormodulanzahl = anzahl;
                 m.m_Neigung = neigung;
@@ -432,9 +432,9 @@ namespace WindowsFormsApplication1
         private void btn_Kollektor_DB_loeschen_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswÃ¤hlen!"); return; }
 
-            var result = MessageBox.Show("Wollen Sie wirklich den Solarkollektor löschen?", "Löschen", MessageBoxButtons.YesNo);
+            var result = MessageBox.Show("Wollen Sie wirklich den Solarkollektor lÃ¶schen?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
                 if (!ctrl.Delete((string)dataGridView1.SelectedRows[0].Cells[0].Value)) return;
@@ -448,7 +448,7 @@ namespace WindowsFormsApplication1
             Form_SolarDB frm = new Form_SolarDB();
             frm.m_mode = Form_DBBHKW.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswÃ¤hlen!"); return; }
 
             frm.SetControls((string)dataGridView1.CurrentRow.Cells[0].Value);
             System.Drawing.Point p1 = btn_Kollektor_DB_Edit.Location;

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll("Select * from Z_ProjektSolarganglinie where Bezeichner ='" + listBox_Extern.Text + "'");
             if (ctrl.rows > 0)
             {
-                MessageBox.Show("Es existiert eine Projektzuordnung, Löschen nicht möglich!");
+                MessageBox.Show("Es existiert eine Projektzuordnung, LÃ¶schen nicht mÃ¶glich!");
                 return;
             }
 

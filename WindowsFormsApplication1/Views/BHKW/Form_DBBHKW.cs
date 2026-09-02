@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Data.OleDb;
 using System.Windows.Forms;
 
@@ -89,14 +89,14 @@ namespace WindowsFormsApplication1
                 m_bKatalogsatz = model.m_bReadOnly;
                 btn_Speichern.Enabled = false;
                 btn_Speichern_Unter.Enabled = true;   // "Speichern unter" legt eine neue Kopie an -> immer erlaubt
-                btn_Überschreiben.Enabled = true;
+                btn_Ãœberschreiben.Enabled = true;
             }
             else
             {
                 m_bKatalogsatz = false;
                 btn_Speichern.Enabled = true;
                 btn_Speichern_Unter.Enabled = false;
-                btn_Überschreiben.Enabled = false;
+                btn_Ãœberschreiben.Enabled = false;
                 model = new BHKWStammModel();
                 model.m_szBezeichner = szName;
                 comboBox_Name.Text = szName;
@@ -253,7 +253,7 @@ namespace WindowsFormsApplication1
                                      : MyResource.Resource.BHKW_INVEST_HINWEIS_ABGELEITET;
         }
 
-        private void btn_Überschreiben_Click(object sender, EventArgs e)
+        private void btn_Ãœberschreiben_Click(object sender, EventArgs e)
         {
             // Zahlen erst hier pruefen: bei ungueltiger Eingabe bleibt der Dialog offen
             // und es wird nichts geschrieben.
@@ -271,10 +271,10 @@ namespace WindowsFormsApplication1
                 if (m_bKatalogsatz)
                 {
                     if (MessageBox.Show(
-                            "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt."
+                            "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschÃ¼tzt."
                             + Environment.NewLine + Environment.NewLine
-                            + "Soll er trotzdem überschrieben werden?",
-                            "Schreibgeschützter Datensatz",
+                            + "Soll er trotzdem Ã¼berschrieben werden?",
+                            "SchreibgeschÃ¼tzter Datensatz",
                             MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
                             MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                         return;
@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
             }
             catch
             {
-                MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
+                MessageBox.Show("Fehler beim Ãœberschreiben des Datensatzes!");
             }
         }
 
@@ -358,7 +358,7 @@ namespace WindowsFormsApplication1
             if (!Program.GanzzahlPruefen(textBox_Staub, "Staub-Emission", out werte.Staub, true)) return false;
 
             if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauftemperatur", out werte.Vorlauf, true)) return false;
-            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauftemperatur", out werte.Ruecklauf, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "RÃ¼cklauftemperatur", out werte.Ruecklauf, true)) return false;
 
             return true;
         }
@@ -392,8 +392,8 @@ namespace WindowsFormsApplication1
             model.m_Vorlauf = werte.Vorlauf;
             model.m_Ruecklauf = werte.Ruecklauf;
 
-            // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
-            // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
+            // Brennstoff: Sicherstellen, dass ein gÃ¼ltiger Index gewÃ¤hlt wurde
+            // Falls nichts gewÃ¤hlt ist (-1), wird hier die ID 1 gesetzt
             model.m_Brennstoff = comboBox_Brennstoff.SelectedIndex >= 0
                                ? comboBox_Brennstoff.SelectedIndex
                                : 1;
@@ -420,7 +420,7 @@ namespace WindowsFormsApplication1
             {
                 if (string.IsNullOrEmpty(frmLabel.m_szName))
                 {
-                    MessageBox.Show("Bitte einen gültigen Namen eingeben!");
+                    MessageBox.Show("Bitte einen gÃ¼ltigen Namen eingeben!");
                     return;
                 }
 
@@ -431,7 +431,7 @@ namespace WindowsFormsApplication1
                     // zurueck - das ersetzt den frueheren Rollback im catch.
                     using (DbVorgang v = DataRepository.Vorgang())
                     {
-                        // Existenzprüfung in der STAMM-Tabelle - im Vorgang, damit sie
+                        // ExistenzprÃ¼fung in der STAMM-Tabelle - im Vorgang, damit sie
                         // die noch nicht festgeschriebenen Zeilen sieht
                         rs.Open("select Bezeichner from Tab_BHKW_STAMM where Bezeichner='" + frmLabel.m_szName + "'", v);
                         if (!rs.EOF())
@@ -454,7 +454,7 @@ namespace WindowsFormsApplication1
                         BHKWStammCtrl ctrl = new BHKWStammCtrl();
                         ctrl.model = InitDatensatzUpdate(werte);
 
-                        // Dem Controller den aktiven Vorgang übergeben
+                        // Dem Controller den aktiven Vorgang Ã¼bergeben
                         ctrl.Vorgang = v;
 
                         if (ctrl.Update())
@@ -491,7 +491,7 @@ namespace WindowsFormsApplication1
 
             if (string.IsNullOrEmpty(comboBox_Name.Text))
             {
-                MessageBox.Show("Bitte einen gültigen Namen eingeben!");
+                MessageBox.Show("Bitte einen gÃ¼ltigen Namen eingeben!");
                 return;
             }
 
@@ -499,7 +499,7 @@ namespace WindowsFormsApplication1
             {
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    // 1. Existenzprüfung via COUNT in der STAMM-Tabelle
+                    // 1. ExistenzprÃ¼fung via COUNT in der STAMM-Tabelle
                     string checkSql = "SELECT COUNT(*) FROM Tab_BHKW_STAMM WHERE Bezeichner = ?";
                     int count = Convert.ToInt32(v.Skalar(checkSql,
                         new OleDbParameter("?", comboBox_Name.Text)));
@@ -642,8 +642,8 @@ namespace WindowsFormsApplication1
 
         private void btn_Eintragen_Click(object sender, EventArgs e)
         {
-            //Wenn Heizöl aktiviert ist, trage die entsprechenden Werte ein
-            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÖL"))
+            //Wenn HeizÃ¶l aktiviert ist, trage die entsprechenden Werte ein
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÃ–L"))
             {
                 textBox_SO2.Text = "270";
                 textBox_CO2.Text = "265000";
@@ -673,7 +673,7 @@ namespace WindowsFormsApplication1
                 // leeren Text enthalten, beides zaehlt hier wie 0 - keine Meldung.
                 double dPtherm;
                 Program.ZahlParsen(textBox_th_Leistung.Text, out dPtherm);
-                //Wenn die thermische Leistung größer als 1.000 kW ist
+                //Wenn die thermische Leistung grÃ¶ÃŸer als 1.000 kW ist
                 if (dPtherm > 1000)
                 {
                     textBox_NOx.Text = "250";
@@ -682,7 +682,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    //Wenn die thermische Leistung n i c h t größer als 1.000 kW ist
+                    //Wenn die thermische Leistung n i c h t grÃ¶ÃŸer als 1.000 kW ist
                     textBox_NOx.Text = "285";
                     textBox_CO.Text = "370";
                     textBox_Staub.Text = "0";
@@ -692,12 +692,12 @@ namespace WindowsFormsApplication1
 
         private void btn_CO2_Click(object sender, EventArgs e)
         {
-            //Wenn Heizöl aktiviert wurde, trage den CO2-Wert für Heizöl ein
-            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÖL")) textBox_CO2.Text = "290880";
-            //Wenn Gas aktiviert wurde, trage den CO2-Wert für Gas ein
+            //Wenn HeizÃ¶l aktiviert wurde, trage den CO2-Wert fÃ¼r HeizÃ¶l ein
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÃ–L")) textBox_CO2.Text = "290880";
+            //Wenn Gas aktiviert wurde, trage den CO2-Wert fÃ¼r Gas ein
             if (comboBox_Brennstoff.Text.ToUpper().Contains("GAS")) textBox_CO2.Text = "201600";
-            //Wenn Flüssiggas aktiviert wurde, trage den CO2-Wert für Flüssiggas ein
-            if (comboBox_Brennstoff.Text.ToUpper().Contains("FLÜSSIGGAS")) textBox_CO2.Text = "238680";
+            //Wenn FlÃ¼ssiggas aktiviert wurde, trage den CO2-Wert fÃ¼r FlÃ¼ssiggas ein
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("FLÃœSSIGGAS")) textBox_CO2.Text = "238680";
         }
 
         // Vorlauf/Ruecklauf: hier bewusst Ganzzahl-Faerbung, obwohl die alte Pruefung
