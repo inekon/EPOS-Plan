@@ -1,7 +1,7 @@
-# Kern-Lauf: baut und testet die vier Projekte ohne Windows- und ohne
-# Datenbankbindung (KiKern, KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests).
+# Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
+# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests und seit iU3 EPOS.Kern).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
-# WinForms-App und der Referenzlauf bleiben damit aussen vor.
+# WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
 #
 # Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
 # plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
@@ -37,3 +37,19 @@ jobs:
 
       - name: Testen
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+
+      # iU3: Der Rechenkern soll nicht nur uebersetzen, sondern rechnen. Der
+      # Referenzlauf gehoert nicht in den Solution-Filter (er ist eine Exe, kein
+      # Testprojekt) und wird deshalb einzeln gebaut.
+      - name: Referenzlauf bauen
+        run: dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+
+      # Die reduzierte Testdatenbank liegt nicht in jedem Checkout. Fehlt sie,
+      # wird der Schritt uebersprungen statt rot - der Bauteil oben ist der
+      # eigentliche Waechter, dieser Schritt der Zugewinn.
+      - name: Kern-Referenzlauf 1030
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: >
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build --
+          lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
+          --projekte 1030 --ziel artifacts/reflauf/${{ matrix.os }}_1030

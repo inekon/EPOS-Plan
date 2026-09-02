@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -11,7 +10,7 @@ namespace WindowsFormsApplication1
     // Neues Feld ReadOnly: schreibgeschuetzte Stammdatensaetze koennen nicht ueberschrieben/geloescht werden.
     // Wird von den Admin-/Katalog-Dialogen verwendet (Form_WP, Form_WP_einlesen, Wizard_WPItem,
     // Form_WPAuswahl, WPDataCtrl). Alle DB-Zugriffe laufen ueber DataRepository.
-    class WPStammCtrl : WPModel
+    partial class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
         public const string CURVE     = "Tab_Kenndaten_STAMM";
@@ -73,13 +72,6 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var item in _internalList)
-                if (item != null) ctrl.Items.Add(item.WPName);
-        }
-
         #endregion
 
         #region --- ADMIN WRITE (Tab_WP_STAMM) ---
@@ -89,8 +81,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(WPName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             try
@@ -122,8 +114,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(WPName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             try
@@ -344,7 +336,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Überschreiben der Wärmepumpe (Stammdaten): " + ex.Message);
+                    DataRepository.FehlerMelden("Fehler beim Überschreiben der Wärmepumpe (Stammdaten): " + ex.Message);
                     return false;
                 }
             }
