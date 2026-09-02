@@ -6,14 +6,16 @@
 .DESCRIPTION
     Ein Aufruf erledigt beide Schritte:
 
-      1. MSBuild.exe     -restore -t:Publish   (win-x64, eigenständig)
+      1. dotnet publish  (win-x64, eigenständig)
       2. ISCC.exe        Setup\EPOS-Plan.iss
 
     Das Ergebnis liegt anschließend unter Setup\Ausgabe.
 
-    Veröffentlicht wird mit dem MSBuild aus Visual Studio, nicht mit
-    "dotnet publish": Das Projekt hält COM-Referenzen (Excel-Interop, VBIDE),
-    die das SDK-MSBuild mit MSB4803 abweist.
+    Veröffentlicht wird mit "dotnet publish". Seit dem 02.09.2026 hält das
+    Projekt keine COM-Referenzen mehr (Excel-Interop auf ClosedXML umgestellt),
+    damit genügt "dotnet publish" — Visual Studio wird zum Bauen nicht mehr
+    benötigt. Voraussetzung ist das .NET SDK laut global.json: 10.0.400 oder
+    höher im Band 10.0.x.
 
     Es gibt nur noch eine Bitness — win-x64 (Konzept Umstellung 64 Bit,
     Entscheidung 5.1). Deshalb bewusst kein Plattform-Parameter.
@@ -156,48 +158,22 @@ if ($IsccVersion -lt [version]'6.3') {
 }
 Hinweis "Inno Setup $IsccVersion : $Iscc"
 
-# MSBuild von Visual Studio suchen. Veroeffentlicht wird bewusst NICHT mit
-# "dotnet publish": Das Projekt haelt COM-Referenzen (Excel-Interop, VBIDE),
-# und das SDK-MSBuild bricht dabei mit MSB4803 ab - ResolveComReference gibt
-# es nur im vollen MSBuild aus Visual Studio.
+# .NET SDK pruefen. Veroeffentlicht wird mit "dotnet publish": Seit dem
+# 02.09.2026 haelt das Projekt keine COM-Referenzen mehr (Excel-Interop auf
+# ClosedXML umgestellt), das frueher noetige MSBuild aus Visual Studio
+# entfaellt damit.
 if (-not $SkipPublish) {
-    # Primaer ueber vswhere - das findet JEDE installierte Fassung, unabhaengig
-    # von Jahreszahl und Editionsordner. Noetig seit VS 2026: dessen Verzeichnis
-    # heisst "18" (interne Hauptversion), nicht "2026", und liegt unter
-    # %ProgramFiles% statt (x86). Eine feste Pfadliste veraltet mit jeder Version.
-    $MsBuildExe = $null
-    $VsWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-    if (Test-Path $VsWhere) {
-        $MsBuildExe = & $VsWhere -latest -prerelease -products * `
-            -requires Microsoft.Component.MSBuild `
-            -find 'MSBuild\**\Bin\MSBuild.exe' |
-            Where-Object { $_ -notmatch '\\amd64\\' } | Select-Object -First 1
-    }
-
-    # Rueckfallebene, falls vswhere fehlt: bekannte Pfade beider Fassungen.
-    if (-not $MsBuildExe) {
-        $MsBuildKandidaten = @()
-        foreach ($Edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
-            $MsBuildKandidaten +=
-                (Join-Path $env:ProgramFiles "Microsoft Visual Studio\18\$Edition\MSBuild\Current\Bin\MSBuild.exe")
-            $MsBuildKandidaten +=
-                (Join-Path $env:ProgramFiles "Microsoft Visual Studio\2022\$Edition\MSBuild\Current\Bin\MSBuild.exe")
-        }
-        $MsBuildExe = $MsBuildKandidaten | Where-Object { Test-Path $_ } | Select-Object -First 1
-    }
-
-    if (-not $MsBuildExe) {
+    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
         throw @"
-MSBuild.exe von Visual Studio nicht gefunden. Gesucht wurde ueber vswhere
-($VsWhere) und ersatzweise unter
-$env:ProgramFiles\Microsoft Visual Studio\{18|2022}\<Edition>\MSBuild\Current\Bin.
+dotnet wurde nicht gefunden.
 
-Visual Studio (oder die Build Tools) mit der Arbeitslast ".NET-Desktop-
-entwicklung" installieren. "dotnet publish" ist kein Ersatz - es scheitert an
-den COM-Referenzen des Projekts mit MSB4803.
+Benoetigt wird das .NET SDK in der Fassung aus global.json - 10.0.400 oder
+hoeher im Band 10.0.x. Bezugsquelle: https://dotnet.microsoft.com/download
 "@
     }
-    Hinweis "MSBuild: $MsBuildExe"
+
+    $DotnetVersion = & dotnet --version
+    Hinweis "dotnet SDK $DotnetVersion"
 }
 
 # ---------------------------------------------------------------------------
@@ -209,14 +185,12 @@ if (-not $SkipPublish) {
 
     if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
 
-    # -restore statt "-t:Restore,Publish": MSBuild wertet ein Projekt je Aufruf
-    # nur einmal aus, die von der Wiederherstellung erzeugten Importdateien
-    # saehe derselbe Lauf also nicht mehr (NETSDK1004 auf frischem Klon).
-    # -restore erledigt die Wiederherstellung in einem eigenen Durchgang.
-    & $MsBuildExe $Projekt -restore -t:Publish -p:Configuration=$Configuration -p:Platform=x64 `
-        -p:RuntimeIdentifier=win-x64 -p:SelfContained=true -p:PublishDir=$PublishZiel `
-        -p:DebugType=none -p:DebugSymbols=false -v:m -nologo
-    if ($LASTEXITCODE -ne 0) { throw "MSBuild (Publish) ist mit Code $LASTEXITCODE fehlgeschlagen." }
+    # "dotnet publish" stellt die Pakete selbst wieder her; der frueher noetige
+    # eigene Wiederherstellungsdurchgang (-restore gegen NETSDK1004) entfaellt.
+    & dotnet publish $Projekt -c $Configuration -r win-x64 --self-contained true `
+        -p:Platform=x64 -p:PublishDir=$PublishZiel `
+        -p:DebugType=none -p:DebugSymbols=false -nologo -v:m
+    if ($LASTEXITCODE -ne 0) { throw "dotnet publish ist mit Code $LASTEXITCODE fehlgeschlagen." }
 }
 else {
     Schritt 'Veroeffentlichung uebersprungen'
