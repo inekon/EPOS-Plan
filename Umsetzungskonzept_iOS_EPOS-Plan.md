@@ -550,6 +550,22 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 Die beiden ❌ in der macOS-Spalte sind gewollt und dauerhaft: WinForms läuft dort nicht. Alles
 darüber ist der portable Teil — und er umfasst den gesamten Rechenkern.
 
+**Empirisch bestätigt am 02.09.2026 auf einem Linux-Rechner** (Ubuntu 24.04, .NET SDK 10.0.400
+über `dotnet-install.sh`, kein Visual Studio):
+
+| Projekt | `dotnet build` | `dotnet test` |
+|---|---|---|
+| `SpeicherEngine`, `KiKern`, `EposSqliteMigrator.Kern` | ✅ | — |
+| `SpeicherEngine.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **337/337** |
+| `KiKern.Tests` (`net9.0`, `DOTNET_ROLL_FORWARD=Major`) | ✅ | **450/450** |
+| `WindowsFormsApplication1` mit `-p:EnableWindowsTargeting=true` | ❌ **genau 2 × MSB4803** — die COM-Referenzen, sonst nichts | — |
+
+Das ist der Beweis für § 1.1 in Zahlen: Der gesamte Bestand außer den zwei `COMReference`-Zeilen
+ist bereits heute plattformfrei übersetzbar. Nach iE3 kompiliert auch das Hauptprojekt auf Linux
+und macOS — ausführen lässt es sich dort nicht (WinForms), aber jeder Übersetzungsfehler fällt
+ohne Windows-Rechner auf. Für die CI (§ 3.7) heißt das: Der `kern.yml`-Lauf ist sofort möglich,
+nicht erst nach iU4.
+
 ### 3.7 Continuous Integration
 
 Es gibt heute **keine**. Das ist bei einem Einzelplatz-Windows-Projekt vertretbar; bei zwei
