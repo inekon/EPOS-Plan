@@ -217,29 +217,23 @@ namespace WindowsFormsApplication1
         {
             try
             {
-<<<<<<< HEAD
+                // Konfliktaufloesung 02.09.2026 (Paket FX2, Nebenreparatur): der
+                // ANLAGENSCHARFE Zweig aus FX1 (I-1) mit den DbParam-Traegern der
+                // iU6-Umstellung - beide Seiten des Merges 981cb84 zusammengefuehrt.
                 string sql = "SELECT SUM(p.Leistung * a.PV_Leistung) " +
                              "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
                              "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@p", idProjekt),
-                    new OleDbParameter("@t", WizardItemClass.PV_TYP)
+                    new DbParam("@p", idProjekt),
+                    new DbParam("@t", WizardItemClass.PV_TYP)
                 };
                 if (idAnlage > 0)
                 {
                     sql += " AND a.ID = ?";
-                    ps.Add(new OleDbParameter("@a", idAnlage));
+                    ps.Add(new DbParam("@a", idAnlage));
                 }
                 object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
-=======
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT SUM(p.Leistung * a.PV_Leistung) " +
-                    "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
-                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
-                    new DbParam("@p", idProjekt),
-                    new DbParam("@t", WizardItemClass.PV_TYP));
->>>>>>> 981cb84469444a37a96d6473b969ac40be717a51
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o) / 1000.0;
             }
             catch { return 0; }

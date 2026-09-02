@@ -576,12 +576,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-<<<<<<< HEAD
-                var ps = new List<OleDbParameter> { new OleDbParameter("@p", projektID) };
-=======
-                string sql;
                 var ps = new List<DbParam> { new DbParam("@p", projektID) };
->>>>>>> 981cb84469444a37a96d6473b969ac40be717a51
 
                 string wert = malModulanzahl
                     ? "g.[" + geraetespalte + "] * a.[" + plan.Mengenspalte + "]"
