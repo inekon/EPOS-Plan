@@ -2775,7 +2775,7 @@ Please run the simulation with the boiler first.</value>
     <value>{0} further errors of the same kind were not listed individually.</value>
   </data>
   <data name="IMPORT_PROT_EXCEL_FEHLT" xml:space="preserve">
-    <value>Excel is not available on this machine. Please save the file as CSV and import it again.</value>
+    <value>The Excel file could not be read. Supported formats are .xlsx and .xlsm — please save .xls/.xlsb as .xlsx or CSV in Excel.</value>
   </data>
   <data name="IMPORT_PROT_EXCEL_BLATT" xml:space="preserve">
     <value>Worksheet "{0}" was not found; "{1}" is read instead.</value>

@@ -644,8 +644,19 @@ Anwendung vorher schließen.
 
 ## Bauen
 
-Nur über das MSBuild von Visual Studio — `dotnet build` scheitert an MSB4803
-(COM-Referenzen des App-Projekts).
+Standardweg seit dem 02.09.2026:
+
+```powershell
+dotnet build Referenzlauf\Referenzlauf.csproj -c Debug -p:Platform=x64
+```
+
+Die COM-Referenzen des App-Projekts, an denen `dotnet build` früher scheiterte, sind
+mit Paket iU1-P1.1 entfernt; seit iU1-P1.7 steht `Referenzlauf.csproj` außerdem **in**
+`WP-Plan.sln` (der Kopfkommentar der `.csproj` sagt noch das Gegenteil und ist überholt). Wer die
+ganze Solution baut, bekommt das Werkzeug also mit:
+`dotnet build WP-Plan.sln -c Debug -p:Platform=x64`.
+
+Alternative über das MSBuild von Visual Studio, falls `dotnet` einmal nicht in Frage kommt:
 
 ```powershell
 $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
@@ -656,15 +667,16 @@ $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe
     -p:Configuration=Debug -p:Platform=x64
 ```
 
-Beim allerersten Mal davor einmal `-t:Restore` mit denselben Parametern. Das Projekt ist
-bewusst **nicht** Teil von `WP-Plan.sln`.
+Beim allerersten Mal davor einmal `-t:Restore` mit denselben Parametern.
 
-Ergebnis: `Referenzlauf\bin\x64\Debug\net8.0-windows\Referenzlauf.exe`
+Ergebnis: `Referenzlauf\bin\x64\Debug\net10.0-windows\Referenzlauf.exe`
+(vor der Anhebung auf .NET 10 lag die EXE unter dem alten Frameworkordner — alte Pfade in
+Protokollen entsprechend lesen).
 
 ## Bedienung
 
 ```powershell
-$exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x64\Debug\net8.0-windows\Referenzlauf.exe"
+$exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x64\Debug\net10.0-windows\Referenzlauf.exe"
 ```
 
 ### `lauf` — Stand einfrieren

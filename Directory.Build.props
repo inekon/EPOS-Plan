@@ -1,0 +1,23 @@
+<Project>
+  <!--
+    Zentrale Buildeigenschaften fuer alle Projekte unter dieser Wurzel
+    (Umsetzungskonzept iOS, Paket iU1 / Baustein iE1).
+
+    Hier steht nur, was fuer JEDES Projekt gilt. TargetFramework, Nullable und
+    ImplicitUsings bleiben bewusst je Projekt - sie differieren im Bestand und
+    sollen greppbar bleiben. Paketversionen kommen in Directory.Packages.props.
+  -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+
+    <!--
+      Erlaubt, net*-windows-Projekte auch auf Linux und macOS zu UEBERSETZEN
+      (nur Referenzassemblies; ausfuehren laesst sich WinForms dort nicht).
+      Auf Windows ohne Wirkung. Gebraucht fuer die CI-Laeufe auf ubuntu/macos
+      und fuer Arbeitsumgebungen ohne Visual Studio.
+      EPOS.Kern setzt diese Eigenschaft in iU4 ausdruecklich auf false, damit
+      dort jede Windows-API den Build bricht statt erst die Laufzeit auf iOS.
+    -->
+    <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>

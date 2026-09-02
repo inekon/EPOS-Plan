@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
@@ -188,7 +188,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
             // TypDelete prueft selbst auf ReadOnly und meldet ggf.
             if (!BrauchwasserStammCtrl.TypDelete(listBox_Typname.Text)) return;

@@ -1,0 +1,48 @@
+# Windows-Lauf: baut die drei Solutions, die eine Windows-Umgebung brauchen,
+# und laesst danach die Kerntests laufen.
+#
+# Laeuft bewusst nicht bei jedem Push: nur auf den Hauptzweigen, naechtlich und
+# auf Zuruf. Der Lauf ist deutlich teurer als der Kern-Lauf (kern.yml), und die
+# schnelle Rueckmeldung liefert dort ohnehin schon ubuntu/macos.
+name: Windows
+
+on:
+  push:
+    branches: [main, sqlite, ios_migration]
+  schedule:
+    # 03:00 UTC, taeglich.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # SDK-Fassung aus global.json (10.0.400) - gleiche Quelle wie kern.yml.
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # Ausschliesslich x64: die Access-Engine (ACE OLEDB) liegt als 64-Bit-
+      # Fassung vor, Referenzlauf.csproj traegt <Platforms>x64</Platforms>.
+      - name: WP-Plan bauen
+        run: dotnet build WP-Plan.sln -c Release -p:Platform=x64
+
+      - name: EposSqliteMigrator bauen
+        run: dotnet build EposSqliteMigrator/EposSqliteMigrator.sln -c Release -p:Platform=x64
+
+      - name: ZugriffsschichtProben bauen
+        run: dotnet build Proben/ZugriffsschichtProben/ZugriffsschichtProben.sln -c Release -p:Platform=x64
+
+      # Nur die Kerntests. Der Referenzlauf wird hier gebaut, aber NICHT
+      # ausgefuehrt: er braucht eine echte Kenndaten.accdb mit Projektdaten,
+      # und die liegt nicht im Repository (iE6 / iF14). Der Referenzlauf bleibt
+      # deshalb ein Werkzeug fuer den Arbeitsplatz.
+      - name: Kerntests
+        run: dotnet test WP-Plan.Kern.slnf -c Release

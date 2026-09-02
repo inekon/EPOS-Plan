@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Data.OleDb;
 using System.Windows.Forms;
 
@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
             {
                 btn_Speichern.Enabled = false;
                 btn_Speichern_Unter.Enabled = true;
-                btn_‹berschreiben.Enabled = true;
+                btn_√úberschreiben.Enabled = true;
                 ctrl.ReadAll("Bezeichner='" + szName + "'");
                 model = ctrl.items[0];
             }
@@ -33,7 +33,7 @@ namespace WindowsFormsApplication1
             {
                 btn_Speichern.Enabled = true;
                 btn_Speichern_Unter.Enabled = false;
-                btn_‹berschreiben.Enabled = false;
+                btn_√úberschreiben.Enabled = false;
                 model = new SolarkollektorenModel();
                 model.m_szKollektorname = szName;
             }
@@ -42,8 +42,8 @@ namespace WindowsFormsApplication1
             textBox_Firma.Text = model.m_szFirma;
             textBox_Beschreibung.Text = model.m_szBeschreibung;
             textBox_Typ.Text = model.m_szKollektortyp;
-            textBox_Modul_A.Text = model.m_Modulfl‰che.ToString();
-            textBox_Absorber_A.Text = model.m_Aperturfl‰che.ToString();
+            textBox_Modul_A.Text = model.m_Modulfl√§che.ToString();
+            textBox_Absorber_A.Text = model.m_Aperturfl√§che.ToString();
             textBox_h0.Text = model.m_h0.ToString();
             textBox_k1.Text = model.m_k1.ToString();
             textBox_k2.Text = model.m_k2.ToString();
@@ -113,7 +113,7 @@ namespace WindowsFormsApplication1
             Program.ZahlFaerben(sender);
         }
 
-        private void btn_‹berschreiben_Click(object sender, EventArgs e)
+        private void btn_√úberschreiben_Click(object sender, EventArgs e)
         {
             // Zahlenfelder pruefen, bevor irgendetwas geschrieben wird; null heisst:
             // Meldung ist raus, Dialog bleibt offen.
@@ -136,7 +136,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler beim ‹berschreiben des Solarkollektors: " + ex.Message);
+                Console.WriteLine("Fehler beim √úberschreiben des Solarkollektors: " + ex.Message);
                 MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
                 this.DialogResult = DialogResult.Cancel;
             }
@@ -156,8 +156,8 @@ namespace WindowsFormsApplication1
             double modulflaeche, aperturflaeche, h0, k1, k2, kdir, kdiff, kosten;
             int vorlauf, ruecklauf;
 
-            if (!Program.ZahlPruefen(textBox_Modul_A, "Modulfl‰che", out modulflaeche)) return null;
-            if (!Program.ZahlPruefen(textBox_Absorber_A, "Aperturfl‰che", out aperturflaeche)) return null;
+            if (!Program.ZahlPruefen(textBox_Modul_A, "Modulfl√§che", out modulflaeche)) return null;
+            if (!Program.ZahlPruefen(textBox_Absorber_A, "Aperturfl√§che", out aperturflaeche)) return null;
             if (!Program.ZahlPruefen(textBox_h0, "h0", out h0)) return null;
             if (!Program.ZahlPruefen(textBox_k1, "k1", out k1)) return null;
             if (!Program.ZahlPruefen(textBox_k2, "k2", out k2)) return null;
@@ -165,15 +165,15 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(textBox_Kdiff, "Kdiff", out kdiff)) return null;
             if (!Program.ZahlPruefen(textBox_Kosten, "Investitionskosten", out kosten)) return null;
             if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out vorlauf, true)) return null;
-            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "R¸cklauf", out ruecklauf, true)) return null;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "R√ºcklauf", out ruecklauf, true)) return null;
 
             SolarkollektorenModel model = new SolarkollektorenModel();
             model.m_szKollektorname = textBox_Name.Text;
             model.m_szFirma = textBox_Firma.Text;
             model.m_szBeschreibung = textBox_Beschreibung.Text;
             model.m_szKollektortyp = textBox_Typ.Text;
-            model.m_Modulfl‰che = modulflaeche;
-            model.m_Aperturfl‰che = aperturflaeche;
+            model.m_Modulfl√§che = modulflaeche;
+            model.m_Aperturfl√§che = aperturflaeche;
             model.m_h0 = h0;
             model.m_k1 = k1;
             model.m_k2 = k2;
@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
             {
                 if (string.IsNullOrEmpty(frmLabel.m_szName))
                 {
-                    MessageBox.Show("Bitte einen g¸ltigen Kollektorname eingeben!");
+                    MessageBox.Show("Bitte einen g√ºltigen Kollektorname eingeben!");
                     return;
                 }
 

@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+ï»¿namespace WindowsFormsApplication1
 {
     partial class Form_Brauchwasser_Admin 
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelöscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gelÃ¶scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,8 +23,8 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode für die Designerunterstützung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// Erforderliche Methode fÃ¼r die DesignerunterstÃ¼tzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geÃ¤ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
             btn_Loeschen.Name = "btn_Loeschen";
             btn_Loeschen.Size = new System.Drawing.Size(180, 36);
             btn_Loeschen.TabIndex = 36;
-            btn_Loeschen.Text = "Profil löschen";
+            btn_Loeschen.Text = "Profil lÃ¶schen";
             btn_Loeschen.UseVisualStyleBackColor = true;
             btn_Loeschen.Click += btn_Loeschen_Click;
             // 
@@ -146,7 +146,7 @@ namespace WindowsFormsApplication1
             btn_TypeDBedit.Name = "btn_TypeDBedit";
             btn_TypeDBedit.Size = new System.Drawing.Size(180, 36);
             btn_TypeDBedit.TabIndex = 39;
-            btn_TypeDBedit.Text = "Pofiltyp ändern...";
+            btn_TypeDBedit.Text = "Pofiltyp Ã¤ndern...";
             btn_TypeDBedit.UseVisualStyleBackColor = true;
             btn_TypeDBedit.Click += btn_TypeDBedit_Click;
             // 
@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
             btn_DBedit.Name = "btn_DBedit";
             btn_DBedit.Size = new System.Drawing.Size(180, 36);
             btn_DBedit.TabIndex = 40;
-            btn_DBedit.Text = "Profil ändern...";
+            btn_DBedit.Text = "Profil Ã¤ndern...";
             btn_DBedit.UseVisualStyleBackColor = true;
             btn_DBedit.Click += btn_DBedit_Click;
             // 
@@ -172,7 +172,7 @@ namespace WindowsFormsApplication1
             Label12.Name = "Label12";
             Label12.Size = new System.Drawing.Size(234, 25);
             Label12.TabIndex = 41;
-            Label12.Text = "jährlicher Wärmebedarf:";
+            Label12.Text = "jÃ¤hrlicher WÃ¤rmebedarf:";
             Label12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // Label10

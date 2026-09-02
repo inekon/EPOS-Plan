@@ -2791,7 +2791,7 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
     <value>{0} weitere gleichartige Fehler wurden nicht einzeln aufgeführt.</value>
   </data>
   <data name="IMPORT_PROT_EXCEL_FEHLT" xml:space="preserve">
-    <value>Excel steht auf diesem Rechner nicht zur Verfügung. Bitte die Datei als CSV speichern und erneut einlesen.</value>
+    <value>Die Excel-Datei konnte nicht gelesen werden. Unterstützt werden .xlsx und .xlsm — .xls/.xlsb bitte in Excel als .xlsx oder CSV speichern.</value>
   </data>
   <data name="IMPORT_PROT_EXCEL_BLATT" xml:space="preserve">
     <value>Das Tabellenblatt "{0}" wurde nicht gefunden; gelesen wird "{1}".</value>

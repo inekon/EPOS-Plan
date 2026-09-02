@@ -4,17 +4,16 @@
     SpeicherEngine - UI-freie, DB-freie Rechenbibliothek des Stromspeicher-Moduls.
 
     Bewusste Festlegungen (Fachkonzept 8.1 / Umsetzungskonzept 2.1):
-      * TargetFramework net8.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
+      * TargetFramework net10.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
       * Kein <PlatformTarget> -> AnyCPU. Das Hauptprojekt baut x64 (ACE OLEDB als
         64-Bit-Engine); die Engine bleibt AnyCPU, die Bitness geht sie nichts an.
       * Keine Paket- und keine Projektreferenzen. Die Engine darf weder
         WPPlan.Core noch DataRepository noch System.Windows.Forms sehen.
-      * Nullable enable, LangVersion latest.
+      * Nullable enable. LangVersion kommt zentral aus Directory.Build.props.
   -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <RootNamespace>SpeicherEngine</RootNamespace>

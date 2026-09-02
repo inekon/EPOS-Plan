@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
         public double YMaxValue = 0;
         public double YMinValue = 0;
         public bool XAxisAsNumber = false;
-        public bool IsXYChart = false; // Neu: Für XY-Charts (z.B. Temperatur)
+        public bool IsXYChart = false; // Neu: FÃ¼r XY-Charts (z.B. Temperatur)
         public bool WheelZoomed = true;
         public string toolTipUnit = "";
         public string XAxisTitle = "Zeitverlauf (Jahresstunden)";
@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
                 _chart.Legends.Add(leg);
             }
 
-            // --- PLATZ FÜR LEGENDE ---
+            // --- PLATZ FÃœR LEGENDE ---
             ca.InnerPlotPosition.Auto = false;
             ca.InnerPlotPosition.X = 12;
             ca.InnerPlotPosition.Y = 8;
@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
 
             // --- RAHMEN ---
 //            _chart.BorderlineDashStyle = MitChartBorder ? ChartDashStyle.Solid : ChartDashStyle.None;
-            // Die korrekte Zuweisung für das Chart-Control
+            // Die korrekte Zuweisung fÃ¼r das Chart-Control
             _chart.BorderlineDashStyle = MitChartBorder ? System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid : System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
             _chart.BorderlineWidth = MitChartBorder ? 1 : 0;
             ca.BorderDashStyle = ChartDashStyle.DashDot;
@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
             _chart.Invalidate();
         }
 
-        // --- Hinzufügen von Serien (XY-Modus für Temperatur) ---
+        // --- HinzufÃ¼gen von Serien (XY-Modus fÃ¼r Temperatur) ---
         public void AddSeries(string seriesName, Color color, PointF[] points, int borderWidth = 0)
         {
             Series series = _chart.Series.Add(seriesName);
@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
             series.Sort(PointSortOrder.Ascending, "X");
         }
 
-        // --- Hinzufügen von Serien (Zeitreihen-Modus) ---
+        // --- HinzufÃ¼gen von Serien (Zeitreihen-Modus) ---
         public void AddSeries(string seriesName, Color color, float[] arr)
         {
             Series series = _chart.Series.Add(seriesName);

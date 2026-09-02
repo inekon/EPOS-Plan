@@ -5,18 +5,17 @@
        Es haengt per ProjectReference an der Anwendung, gehoert aber bewusst NICHT in
        deren Projektmappe - die Proben sollen den Ausrollstand nicht beeinflussen.
 
-       net8.0-windows + UseWindowsForms, weil die Zugriffsschicht ueber FehlerMelden
+       net10.0-windows + UseWindowsForms, weil die Zugriffsschicht ueber FehlerMelden
        an System.Windows.Forms haengt. Die Proben fahren deshalb durchgaengig in
        DataRepository.EngineModus(): dort wandert jede Meldung in die stille Sammlung
        statt in eine MessageBox, die einen unbeaufsichtigten Lauf blockieren wuerde. -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
-    <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>ZugriffsschichtProben</AssemblyName>

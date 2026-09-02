@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+Ôªønamespace WindowsFormsApplication1
 {
     partial class Form_ErgProzesswaerme
     {
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Verwendete Ressourcen bereinigen.
         /// </summary>
-        /// <param name="disposing">True, wenn verwaltete Ressourcen gelˆscht werden sollen; andernfalls False.</param>
+        /// <param name="disposing">True, wenn verwaltete Ressourcen gel√∂scht werden sollen; andernfalls False.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,8 +23,8 @@ namespace WindowsFormsApplication1
         #region Vom Windows Form-Designer generierter Code
 
         /// <summary>
-        /// Erforderliche Methode f¸r die Designerunterst¸tzung.
-        /// Der Inhalt der Methode darf nicht mit dem Code-Editor ge‰ndert werden.
+        /// Erforderliche Methode f√ºr die Designerunterst√ºtzung.
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor ge√§ndert werden.
         /// </summary>
         private void InitializeComponent()
         {
@@ -35,11 +35,11 @@ namespace WindowsFormsApplication1
             this.btn_Hilfe = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.radioBtn_GrafikGeb‰ude = new System.Windows.Forms.RadioButton();
+            this.radioBtn_GrafikGeb√§ude = new System.Windows.Forms.RadioButton();
             this.radioBtn_GrafikProzesse = new System.Windows.Forms.RadioButton();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.radioBtn_Geb‰ude = new System.Windows.Forms.RadioButton();
+            this.radioBtn_Geb√§ude = new System.Windows.Forms.RadioButton();
             this.radioBtn_Prozesse = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.Label27 = new System.Windows.Forms.Label();
@@ -125,18 +125,18 @@ namespace WindowsFormsApplication1
             // tabPage3
             // 
             resources.ApplyResources(this.tabPage3, "tabPage3");
-            this.tabPage3.Controls.Add(this.radioBtn_GrafikGeb‰ude);
+            this.tabPage3.Controls.Add(this.radioBtn_GrafikGeb√§ude);
             this.tabPage3.Controls.Add(this.radioBtn_GrafikProzesse);
             this.tabPage3.Controls.Add(this.chart1);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // radioBtn_GrafikGeb‰ude
+            // radioBtn_GrafikGeb√§ude
             // 
-            resources.ApplyResources(this.radioBtn_GrafikGeb‰ude, "radioBtn_GrafikGeb‰ude");
-            this.radioBtn_GrafikGeb‰ude.Name = "radioBtn_GrafikGeb‰ude";
-            this.radioBtn_GrafikGeb‰ude.UseVisualStyleBackColor = true;
-            this.radioBtn_GrafikGeb‰ude.CheckedChanged += new System.EventHandler(this.radioBtn_GrafikGeb‰ude_CheckedChanged);
+            resources.ApplyResources(this.radioBtn_GrafikGeb√§ude, "radioBtn_GrafikGeb√§ude");
+            this.radioBtn_GrafikGeb√§ude.Name = "radioBtn_GrafikGeb√§ude";
+            this.radioBtn_GrafikGeb√§ude.UseVisualStyleBackColor = true;
+            this.radioBtn_GrafikGeb√§ude.CheckedChanged += new System.EventHandler(this.radioBtn_GrafikGeb√§ude_CheckedChanged);
             // 
             // radioBtn_GrafikProzesse
             // 
@@ -152,7 +152,7 @@ namespace WindowsFormsApplication1
             chartArea1.AxisX.Title = "Monat";
             chartArea1.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
             chartArea1.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea1.AxisY.Title = "W‰rmebedarf [MWh]";
+            chartArea1.AxisY.Title = "W√§rmebedarf [MWh]";
             chartArea1.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
             chartArea1.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea1.Name = "ChartArea1";
@@ -169,18 +169,18 @@ namespace WindowsFormsApplication1
             // tabPage2
             // 
             resources.ApplyResources(this.tabPage2, "tabPage2");
-            this.tabPage2.Controls.Add(this.radioBtn_Geb‰ude);
+            this.tabPage2.Controls.Add(this.radioBtn_Geb√§ude);
             this.tabPage2.Controls.Add(this.radioBtn_Prozesse);
             this.tabPage2.Controls.Add(this.groupBox1);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // radioBtn_Geb‰ude
+            // radioBtn_Geb√§ude
             // 
-            resources.ApplyResources(this.radioBtn_Geb‰ude, "radioBtn_Geb‰ude");
-            this.radioBtn_Geb‰ude.Name = "radioBtn_Geb‰ude";
-            this.radioBtn_Geb‰ude.UseVisualStyleBackColor = true;
-            this.radioBtn_Geb‰ude.CheckedChanged += new System.EventHandler(this.radioBtn_Geb‰ude_CheckedChanged);
+            resources.ApplyResources(this.radioBtn_Geb√§ude, "radioBtn_Geb√§ude");
+            this.radioBtn_Geb√§ude.Name = "radioBtn_Geb√§ude";
+            this.radioBtn_Geb√§ude.UseVisualStyleBackColor = true;
+            this.radioBtn_Geb√§ude.CheckedChanged += new System.EventHandler(this.radioBtn_Geb√§ude_CheckedChanged);
             // 
             // radioBtn_Prozesse
             // 
@@ -697,9 +697,9 @@ private System.Windows.Forms.Label label15;
 private System.Windows.Forms.Label label16;
 private System.Windows.Forms.Label label12;
 private System.Windows.Forms.TabControl tabControl1;
-private System.Windows.Forms.RadioButton radioBtn_GrafikGeb‰ude;
+private System.Windows.Forms.RadioButton radioBtn_GrafikGeb√§ude;
 private System.Windows.Forms.RadioButton radioBtn_GrafikProzesse;
-private System.Windows.Forms.RadioButton radioBtn_Geb‰ude;
+private System.Windows.Forms.RadioButton radioBtn_Geb√§ude;
 private System.Windows.Forms.RadioButton radioBtn_Prozesse;
 private System.Windows.Forms.TextBox textBox_Brauchwasser;
 private System.Windows.Forms.Label label7;

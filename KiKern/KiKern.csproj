@@ -4,19 +4,18 @@
     KiKern - UI-freier, DB-freier Kern der Aufgabensteuerung des KI-Assistenten.
 
     Bewusste Festlegungen (Fachkonzept KI-Assistent 3.2 / 3.7, Vorbild SpeicherEngine):
-      * TargetFramework net8.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
+      * TargetFramework net10.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
       * Kein <PlatformTarget> -> AnyCPU. Das Hauptprojekt baut x64 (ACE OLEDB als
         64-Bit-Engine); der Kern bleibt AnyCPU, die Bitness geht ihn nichts an.
       * KEINE Paket- und KEINE Projektreferenzen. Der Kern darf weder
         WindowsFormsApplication1 noch DataRepository noch System.Windows.Forms sehen.
         JSON entsteht ausschliesslich ueber System.Text.Json aus der Basisbibliothek
         (Begruendung gegen JsonSchema.Net: siehe Klassenkopf von KiSchema).
-      * Nullable enable, LangVersion latest.
+      * Nullable enable. LangVersion kommt zentral aus Directory.Build.props.
   -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <RootNamespace>KiKern</RootNamespace>

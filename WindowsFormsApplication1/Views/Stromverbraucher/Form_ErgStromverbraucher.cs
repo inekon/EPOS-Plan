@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     {
         SimulationStrombedarf stromverbraucher_simulation;
 
-        // Statisches Array für die Monatsbeschriftungen auf der X-Achse
+        // Statisches Array fÃ¼r die Monatsbeschriftungen auf der X-Achse
         private readonly string[] monate = { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
         public Form_ErgStromverbraucher()
@@ -28,13 +28,13 @@ namespace WindowsFormsApplication1
         {
             stromverbraucher_simulation = simulation;
 
-            // Textfelder befüllen
+            // Textfelder befÃ¼llen
             textBox_WB_Extern.Text = simulation.Stromganglinie_gesamt.ToString("F2");
             textBox_MaxWaermelast.Text = simulation.Strombedarf_Max.ToString("F2");
             textBox_WB_Gesamt.Text = simulation.Strombedarf_gesamt.ToString("F2");
             textBox_WB_Gebaeude.Text = simulation.Strombedarf_Gebaeude_gesamt.ToString("F2");
 
-            // Tabelle befüllen
+            // Tabelle befÃ¼llen
             Monat_1.Text = simulation.Strombedarf_monat[0].ToString("F2");
             Monat_2.Text = simulation.Strombedarf_monat[1].ToString("F2");
             Monat_3.Text = simulation.Strombedarf_monat[2].ToString("F2");
@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             chart1.ChartAreas.Clear();
             chart1.Titles.Clear();
 
-            // Eine neue Standard-Zeichenfläche hinzufügen
+            // Eine neue Standard-ZeichenflÃ¤che hinzufÃ¼gen
             ChartArea area = new ChartArea("MainArea");
 
             // Erzwingt das starre 12-Monats-Layout auf der X-Achse
@@ -73,12 +73,12 @@ namespace WindowsFormsApplication1
 
             chart1.ChartAreas.Add(area);
 
-            // Titel hinzufügen (angepasst auf Strom)
-            chart1.Titles.Add(new Title("Strombedarf Monatsübersicht", Docking.Top, new Font("Arial", 12, FontStyle.Bold), Color.Black));
+            // Titel hinzufÃ¼gen (angepasst auf Strom)
+            chart1.Titles.Add(new Title("Strombedarf MonatsÃ¼bersicht", Docking.Top, new Font("Arial", 12, FontStyle.Bold), Color.Black));
         }
 
         /// <summary>
-        /// Zeichnet die übergebenen Stromdaten als saubere 12 Balken mit perfekter Y-Achse.
+        /// Zeichnet die Ã¼bergebenen Stromdaten als saubere 12 Balken mit perfekter Y-Achse.
         /// </summary>
         private void ZeigeStromGrafik(string serienName, float[] monatsDaten, Color balkenFarbe)
         {
@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
 
             chart1.Series.Add(serie);
 
-            // Legende ausblenden, da unbenötigt
+            // Legende ausblenden, da unbenÃ¶tigt
             if (chart1.Legends.Count > 0)
             {
                 chart1.Legends[0].Enabled = false;
@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
                 chart1.ChartAreas[0].AxisY.Interval = finaleSchrittweite;
                 chart1.ChartAreas[0].AxisY.Maximum = geglaettetesMaximum;
 
-                // Nachkommastellen dynamisch anpassen (Ganze Zahlen bei großen Werten, sonst mit Komma)
+                // Nachkommastellen dynamisch anpassen (Ganze Zahlen bei groÃŸen Werten, sonst mit Komma)
                 if (finaleSchrittweite >= 1.0)
                     chart1.ChartAreas[0].AxisY.LabelStyle.Format = "N0";
                 else if (finaleSchrittweite >= 0.1)

@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
 
     <!-- Wegen der Projektreferenz auf die WinForms-App zwingend erforderlich. -->
     <UseWindowsForms>true</UseWindowsForms>
@@ -34,7 +34,6 @@
     <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
     <AssemblyName>Referenzlauf</AssemblyName>
 
-    <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
 

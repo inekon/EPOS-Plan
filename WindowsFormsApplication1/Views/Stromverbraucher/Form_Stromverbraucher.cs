@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -270,7 +270,7 @@ namespace WindowsFormsApplication1
 
             if (textBox_Stromname.Text == "")
             {
-                MessageBox.Show("Bitte einen Entrag aus der Liste auswählen!");
+                MessageBox.Show("Bitte einen Entrag aus der Liste auswÃ¤hlen!");
                 return;
             }
 
@@ -338,16 +338,16 @@ namespace WindowsFormsApplication1
 
         private void btn_Strom_loeschen_Click(object sender, EventArgs e)
         {
-            // Sicherheitsprüfung, ob überhaupt ein Eintrag ausgewählt wurde
+            // SicherheitsprÃ¼fung, ob Ã¼berhaupt ein Eintrag ausgewÃ¤hlt wurde
             if (string.IsNullOrEmpty(listBox_Strom_DB.Text))
             {
-                MessageBox.Show("Bitte wählen Sie zuerst einen Eintrag aus!");
+                MessageBox.Show("Bitte wÃ¤hlen Sie zuerst einen Eintrag aus!");
                 return;
             }
 
             DialogResult dialogResult = MessageBox.Show(
-                $"Soll {listBox_Strom_DB.Text} wirklich gelöscht werden ?",
-                "Löschen",
+                $"Soll {listBox_Strom_DB.Text} wirklich gelÃ¶scht werden ?",
+                "LÃ¶schen",
                 MessageBoxButtons.YesNo
             );
 
@@ -371,7 +371,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Strom_Auswahl.SelectedIndices;
             if (indexes.Count == 0 || textBox_Verbrauch.Text.Trim() == "")
             {
-                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswÃ¤hlen und einen Wert eingeben!");
                 return;
             }
 
@@ -382,9 +382,9 @@ namespace WindowsFormsApplication1
             double dVerbrauch;
             if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dVerbrauch) || dVerbrauch < 0)
             {
-                MessageBox.Show("Eingaben überprüfen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
+                MessageBox.Show("Eingaben Ã¼berprÃ¼fen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
                                 "Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.",
-                                "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                "UngÃ¼ltige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 textBox_Verbrauch.Focus();
                 textBox_Verbrauch.SelectAll();
                 return;

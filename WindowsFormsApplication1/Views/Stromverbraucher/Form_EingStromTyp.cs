@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
@@ -55,7 +55,7 @@ namespace WindowsFormsApplication1
 
         public void SetControls()
         {
-            // Abfrage über das DataRepository holen
+            // Abfrage Ã¼ber das DataRepository holen
             string sql = "SELECT * FROM Tab_Stromverbrauchertyp_STAMM ORDER BY Typname";
             DataTable dt = DataRepository.GetDataTable(sql);
 
@@ -131,7 +131,7 @@ namespace WindowsFormsApplication1
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    // Index 3 entspricht der vierten Spalte (Überspringen von ID, Typname, Beschreibung)
+                    // Index 3 entspricht der vierten Spalte (Ãœberspringen von ID, Typname, Beschreibung)
                     int columnIndex = Tag * 24 + stunde + 3;
                     if (row[columnIndex] != DBNull.Value)
                     {
@@ -190,7 +190,7 @@ namespace WindowsFormsApplication1
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    string feldName = "_" + (Tag * 24 + stunde + 1).ToString(); // Access mag Spaltennamen, die nur aus Zahlen bestehen, oft nicht ohne Präfix/Klammern (z.B. [1]). Wenn deine Spalten in der DB exakt "1", "2" heißen, belasse es bei (Tag * 24 + stunde + 1).ToString()
+                    string feldName = "_" + (Tag * 24 + stunde + 1).ToString(); // Access mag Spaltennamen, die nur aus Zahlen bestehen, oft nicht ohne PrÃ¤fix/Klammern (z.B. [1]). Wenn deine Spalten in der DB exakt "1", "2" heiÃŸen, belasse es bei (Tag * 24 + stunde + 1).ToString()
                     string feld = (Tag * 24 + stunde + 1).ToString();
 
                     if (!Update(listBox_Typname.Text, feld, arr[Tag, stunde])) return;
@@ -217,7 +217,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Aktualisieren der Beschreibung nicht möglich!");
+                MessageBox.Show("Aktualisieren der Beschreibung nicht mÃ¶glich!");
                 Console.WriteLine("Fehler beim Aktualisieren der Beschreibung: " + ex.Message);
                 return false;
             }
@@ -226,8 +226,8 @@ namespace WindowsFormsApplication1
 
         private bool Update(string typ, string feld, double value)
         {
-            // Da Spaltennamen nicht parametrisiert werden können, betten wir den validierten Feldnamen direkt ein.
-            // Die eckigen Klammern [ ] schützen rein numerische Spaltennamen (z.B. [1], [2]) unter Access/OleDb.
+            // Da Spaltennamen nicht parametrisiert werden kÃ¶nnen, betten wir den validierten Feldnamen direkt ein.
+            // Die eckigen Klammern [ ] schÃ¼tzen rein numerische Spaltennamen (z.B. [1], [2]) unter Access/OleDb.
             string sql = $"UPDATE Tab_Stromverbrauchertyp_STAMM SET [{feld}] = ? WHERE Typname = ?";
 
             OleDbParameter[] parameters = new OleDbParameter[]
@@ -242,7 +242,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Aktualisieren des Stundenwerts nicht möglich!");
+                MessageBox.Show("Aktualisieren des Stundenwerts nicht mÃ¶glich!");
                 Console.WriteLine($"Fehler beim Aktualisieren von Feld {feld}: " + ex.Message);
                 return false;
             }
@@ -258,13 +258,13 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(listBox_Typname.Text))
             {
-                MessageBox.Show("Bitte wählen Sie zuerst einen Typnamen aus!");
+                MessageBox.Show("Bitte wÃ¤hlen Sie zuerst einen Typnamen aus!");
                 return;
             }
 
             DialogResult dialogResult = MessageBox.Show(
-                $"Soll {listBox_Typname.Text} wirklich gelöscht werden ?",
-                "Löschen",
+                $"Soll {listBox_Typname.Text} wirklich gelÃ¶scht werden ?",
+                "LÃ¶schen",
                 MessageBoxButtons.YesNo
             );
 

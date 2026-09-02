@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using ClosedXML.Excel;
 using NReco.Csv;
 using SpeicherEngine;
 
@@ -115,7 +116,7 @@ namespace WindowsFormsApplication1
     /// Datei-Leseschicht des erweiterten Lastgangimports (AP5, Fachkonzept 3.2):
     /// erkennt Format und Spalten, liest CSV/TXT ueber die eingebettete
     /// <see cref="CsvReader"/>-Bibliothek (NReco, MIT) und Excel-Mappen ueber
-    /// Interop.
+    /// ClosedXML (MIT).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -134,15 +135,17 @@ namespace WindowsFormsApplication1
     /// Lauf ist unabhaengig von der Windows-Regionseinstellung.
     /// </para>
     /// <para>
-    /// <b>Excel.</b> Der Zugriff erfolgt als <b>ein</b> Bulk-Read
-    /// (<c>Range.Value2</c> als <c>object[,]</c>) - nie zellweise, weil jeder
-    /// Zellzugriff ein eigener COM-Aufruf ist und 35.040 davon die Oberflaeche
-    /// minutenlang blockieren wuerden. <c>Value2</c> liefert Datumszellen als
-    /// OLE-Automation-Serienzahl; die Zeitspalte wird deshalb ueber
-    /// <see cref="DateTime.FromOADate"/> zurueckgewandelt. Ist Excel nicht
-    /// installiert, meldet die Klasse das sauber
-    /// (<see cref="SchluesselExcelFehlt"/>) statt eine COM-Ausnahme
-    /// durchzureichen.
+    /// <b>Excel.</b> Gelesen wird ueber <b>ClosedXML</b> (MIT) - ohne
+    /// installiertes Office und ohne COM. Die Mappe wird einmal geoeffnet und
+    /// ihre benutzte Flaeche in <b>einem</b> Durchlauf in ein <c>object[,]</c>
+    /// uebernommen; die Datei bleibt dabei nur lesend belegt
+    /// (<c>FileShare.ReadWrite</c>) und darf parallel in Excel offen sein.
+    /// <see cref="ZellwertWieValue2"/> bildet die fruehere
+    /// <c>Range.Value2</c>-Semantik nach: Datumszellen kommen als
+    /// OLE-Automation-Serienzahl heraus, die Zeitspalte wird deshalb weiterhin
+    /// ueber <see cref="DateTime.FromOADate"/> zurueckgewandelt. ClosedXML liest
+    /// nur OOXML - <c>.xls</c> und <c>.xlsb</c> werden mit der gezielten Meldung
+    /// <see cref="SchluesselExcelFehlt"/> abgewiesen.
     /// </para>
     /// <para>
     /// <b>Altweg.</b> Eine <c>.txt</c>-Datei mit einem Wert je Zeile ist der
@@ -191,7 +194,7 @@ namespace WindowsFormsApplication1
         /// <summary>Weitere gleichartige Fehler unterdrueckt. {0} = Anzahl.</summary>
         public const string SchluesselWeitereFehler = "IMPORT_PROT_WEITERE_FEHLER";
 
-        /// <summary>Excel nicht verfuegbar - Datei bitte als CSV speichern.</summary>
+        /// <summary>Format nicht lesbar (.xls/.xlsb) - Datei bitte als .xlsx oder CSV speichern.</summary>
         public const string SchluesselExcelFehlt = "IMPORT_PROT_EXCEL_FEHLT";
 
         /// <summary>Excel-Blatt nicht gefunden. {0} = gesuchter Name, {1} = verwendetes Blatt.</summary>
@@ -744,7 +747,7 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Excel ueber Interop - ein einziger Bulk-Read
+        // Excel ueber ClosedXML - ein einziger Bulk-Read
         // =====================================================================
 
         /// <summary>
@@ -784,8 +787,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Erkennt die Datumsspalten einer Excel-Mappe. <c>Value2</c> liefert
-        /// Datumszellen als OLE-Automation-Serienzahl und damit als
+        /// Erkennt die Datumsspalten einer Excel-Mappe.
+        /// <see cref="ZellwertWieValue2"/> liefert Datumszellen als
+        /// OLE-Automation-Serienzahl und damit als
         /// <c>double</c> - an einer einzelnen Zelle ist ein Datum nicht von einem
         /// Messwert zu unterscheiden. Erkennbar ist es nur an der <i>Reihe</i>:
         /// lauter Zahlen im Datumsbereich (1954-2119), streng steigend, mit
@@ -870,7 +874,7 @@ namespace WindowsFormsApplication1
 
             for (int z = 1; z <= zeilen; z++)
             {
-                // Leerzeilen der UsedRange ueberspringen.
+                // Leerzeilen der benutzten Flaeche ueberspringen.
                 bool leer = true;
                 for (int s = 1; s <= spalten && leer; s++)
                     if (daten[z, s] != null && ZelleAlsText(daten[z, s]).Length > 0) leer = false;
@@ -915,10 +919,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Oeffnet die Mappe, liest die benutzte Flaeche als <c>object[,]</c> in
-        /// <b>einem</b> <c>Range.Value2</c>-Zugriff und schliesst Excel wieder.
+        /// Oeffnet die Mappe ueber ClosedXML, liest die benutzte Flaeche
+        /// (<c>RangeUsed</c>) in <b>einem</b> Durchlauf als <c>object[,]</c> und
+        /// gibt die Datei wieder frei.
         /// </summary>
-        /// <returns><c>false</c>, wenn Excel fehlt oder die Mappe nicht lesbar ist.</returns>
+        /// <returns><c>false</c>, wenn das Format nicht lesbar ist (.xls/.xlsb)
+        /// oder die Mappe nicht geoeffnet werden kann.</returns>
         private static bool ExcelBulkRead(
             string pfad, string blatt, out object[,] daten, out List<string> blaetter,
             out string verwendet, List<PruefMeldung> meldungen)
@@ -927,79 +933,91 @@ namespace WindowsFormsApplication1
             blaetter = new List<string>();
             verwendet = "";
 
-            Microsoft.Office.Interop.Excel.Application app = null;
-            Microsoft.Office.Interop.Excel.Workbook mappe = null;
+            // ClosedXML liest ausschliesslich OOXML. Das alte Binaerformat .xls und
+            // das binaere .xlsb bleiben aussen vor - dafuer gibt es die gezielte
+            // Meldung statt einer Ausnahme aus der Bibliothek.
+            string endung = Path.GetExtension(pfad).ToLowerInvariant();
+            if (endung == ".xls" || endung == ".xlsb")
+            {
+                meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselExcelFehlt));
+                return false;
+            }
+
             try
             {
-                try
+                // FileShare.ReadWrite tritt an die Stelle des frueheren
+                // schreibgeschuetzten Oeffnens: die Mappe darf waehrend des Imports
+                // in Excel geoeffnet sein.
+                using (FileStream strom = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (XLWorkbook mappe = new XLWorkbook(strom))
                 {
-                    app = new Microsoft.Office.Interop.Excel.Application();
-                }
-                catch (Exception)
-                {
-                    // Kein Excel installiert / COM nicht registriert.
-                    meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselExcelFehlt));
-                    return false;
-                }
+                    IXLWorksheet gewaehlt = null;
+                    foreach (IXLWorksheet b in mappe.Worksheets)
+                    {
+                        blaetter.Add(b.Name);
+                        if (gewaehlt == null && (string.IsNullOrEmpty(blatt) || b.Name == blatt)) gewaehlt = b;
+                    }
+                    if (gewaehlt == null && mappe.Worksheets.Count > 0)
+                        gewaehlt = mappe.Worksheet(1);
+                    if (gewaehlt == null)
+                    {
+                        meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselDateiLeer));
+                        return false;
+                    }
 
-                app.Visible = false;
-                app.DisplayAlerts = false;
-                app.ScreenUpdating = false;
+                    verwendet = gewaehlt.Name;
+                    if (!string.IsNullOrEmpty(blatt) && verwendet != blatt)
+                        meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SchluesselExcelBlatt, blatt, verwendet));
 
-                mappe = app.Workbooks.Open(pfad, false, true);
+                    // *** Der einzige Datenzugriff: die gesamte benutzte Flaeche auf einmal. ***
+                    IXLRange bereich = gewaehlt.RangeUsed();
+                    if (bereich == null)
+                    {
+                        daten = new object[2, 2];      // leeres Blatt; 1-basiert wie Excel
+                        return true;
+                    }
 
-                Microsoft.Office.Interop.Excel.Worksheet gewaehlt = null;
-                foreach (Microsoft.Office.Interop.Excel.Worksheet b in mappe.Worksheets)
-                {
-                    blaetter.Add(b.Name);
-                    if (gewaehlt == null && (string.IsNullOrEmpty(blatt) || b.Name == blatt)) gewaehlt = b;
+                    int zeilen = bereich.RowCount();
+                    int spalten = bereich.ColumnCount();
+                    daten = new object[zeilen + 1, spalten + 1];   // 1-basiert wie Excel, Index 0 bleibt leer
+                    for (int z = 1; z <= zeilen; z++)
+                        for (int s = 1; s <= spalten; s++)
+                            daten[z, s] = ZellwertWieValue2(bereich.Cell(z, s).Value);
+                    return true;
                 }
-                if (gewaehlt == null && mappe.Worksheets.Count > 0)
-                    gewaehlt = (Microsoft.Office.Interop.Excel.Worksheet)mappe.Worksheets[1];
-                if (gewaehlt == null)
-                {
-                    meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselDateiLeer));
-                    return false;
-                }
-
-                verwendet = gewaehlt.Name;
-                if (!string.IsNullOrEmpty(blatt) && verwendet != blatt)
-                    meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SchluesselExcelBlatt, blatt, verwendet));
-
-                // *** Der einzige Datenzugriff: die gesamte benutzte Flaeche auf einmal. ***
-                object roh = gewaehlt.UsedRange.Value2;
-                if (roh is object[,])
-                {
-                    daten = (object[,])roh;
-                }
-                else
-                {
-                    daten = new object[2, 2];      // 1-basiert wie Excel
-                    daten[1, 1] = roh;
-                }
-                return true;
             }
             catch (Exception ex)
             {
                 meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselLesefehler, ex.Message));
                 return false;
             }
-            finally
-            {
-                try { if (mappe != null) mappe.Close(false); } catch (Exception) { }
-                try { if (app != null) app.Quit(); } catch (Exception) { }
-                try
-                {
-                    if (mappe != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(mappe);
-                    if (app != null) System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
-                }
-                catch (Exception) { }
-            }
         }
 
         /// <summary>
-        /// Zelleninhalt als Text. <c>Value2</c> liefert Zahlen als <c>double</c>;
-        /// die Ausgabe ist bewusst invariant.
+        /// Bildet die Semantik von <c>Range.Value2</c> nach, auf der die gesamte
+        /// nachgelagerte Auswertung beruht: Zahlen <i>und</i> Datumswerte kommen
+        /// als <c>double</c> heraus, Datumswerte dabei als
+        /// OLE-Automation-Serienzahl. <see cref="ExcelZeitspalten"/>,
+        /// <see cref="ZelleAlsText"/>, <see cref="ZelleAlsZahl"/> und
+        /// <see cref="ZelleAlsZeit"/> bleiben dadurch unveraendert.
+        /// </summary>
+        /// <param name="wert">Zellwert aus ClosedXML.</param>
+        /// <returns>Wert in Value2-Form; <c>null</c> bei leerer Zelle.</returns>
+        private static object ZellwertWieValue2(XLCellValue wert)
+        {
+            if (wert.IsBlank) return null;
+            if (wert.IsNumber) return wert.GetNumber();
+            if (wert.IsDateTime) return wert.GetDateTime().ToOADate();
+            if (wert.IsTimeSpan) return wert.GetTimeSpan().TotalDays;
+            if (wert.IsBoolean) return wert.GetBoolean();
+            if (wert.IsText) return wert.GetText();
+            if (wert.IsError) return wert.GetError().ToString();
+            return wert.ToString();
+        }
+
+        /// <summary>
+        /// Zelleninhalt als Text. <see cref="ZellwertWieValue2"/> liefert Zahlen
+        /// als <c>double</c>; die Ausgabe ist bewusst invariant.
         /// </summary>
         private static string ZelleAlsText(object zelle)
         {
@@ -1020,8 +1038,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Zelleninhalt als Zeitpunkt. <c>Value2</c> gibt Datumszellen als
-        /// OLE-Automation-Serienzahl zurueck; sie wird ueber
+        /// Zelleninhalt als Zeitpunkt. <see cref="ZellwertWieValue2"/> gibt
+        /// Datumszellen als OLE-Automation-Serienzahl zurueck; sie wird ueber
         /// <see cref="DateTime.FromOADate"/> zurueckgewandelt. Der zulaessige
         /// Bereich ist auf 1900-2199 begrenzt, damit reine Messwerte nicht
         /// versehentlich als Datum gelesen werden.

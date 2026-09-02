@@ -3,7 +3,7 @@
 ;  Inno Setup 6.3 oder neuer (wegen der Architekturbezeichner, siehe unten)
 ;
 ;  Ablage:      <Repo>\Setup\EPOS-Plan.iss
-;  Übersetzen:  Setup\build-setup.ps1   (ruft MSBuild-Publish und ISCC auf)
+;  Übersetzen:  Setup\build-setup.ps1   (ruft dotnet publish und ISCC auf)
 ;  Von Hand:    ISCC.exe EPOS-Plan.iss  (setzt eine fertige Veröffentlichung
 ;                                        unter <Repo>\artifacts\publish\win-x64
 ;                                        voraus)
@@ -23,10 +23,11 @@
 #define AppSupportURL  "https://epos-plan.de/support"
 
 ; Name der ausführbaren Datei im Veröffentlichungsordner.
-; Solange das Projekt <AssemblyName>WindowsFormsApplication1</AssemblyName>
-; trägt, muss hier dieser Name stehen. Nach der Umbenennung (Konzept 7.3) nur
-; diese Zeile ändern — build-setup.ps1 liest den Namen aus dieser Datei.
-#define AppExeName     "WindowsFormsApplication1.exe"
+; Das Projekt trägt seit dem 29.08.2026 <AssemblyName>EPOS_Plan</AssemblyName>
+; (Umbenennung nach Konzept 7.3), daher dieser Name. Bei einer weiteren
+; Umbenennung nur diese Zeile ändern — build-setup.ps1 liest den Namen aus
+; dieser Datei.
+#define AppExeName     "EPOS_Plan.exe"
 
 ; SourcePath ist der Ordner dieser Datei. Ob er einen abschließenden Backslash
 ; trägt, sagt die Dokumentation nicht zu — deshalb wie in allen offiziellen
@@ -34,7 +35,7 @@
 #define SetupDir       AddBackslash(SourcePath)
 #define RepoDir        SetupDir + "..\"
 
-; Ergebnis des MSBuild-Publish (win-x64, eigenständig) — siehe build-setup.ps1.
+; Ergebnis von dotnet publish (win-x64, eigenständig) — siehe build-setup.ps1.
 #ifndef PublishDir
   #define PublishDir   RepoDir + "artifacts\publish\win-x64"
 #endif
