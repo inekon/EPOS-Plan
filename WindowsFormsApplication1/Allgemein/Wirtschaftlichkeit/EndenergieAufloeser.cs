@@ -367,5 +367,89 @@ namespace WindowsFormsApplication1
             if (anlagenName != null && getroffen == 0) return null;
             return kwh > 0 ? kwh : (double?)null;
         }
+
+        // ================================================================ PAKET FX2
+        // ANWENDERENTSCHEID B-4 (02.09.2026): „,je Stunde' (EUR_PRO_H) ist ein fester
+        // Wert, wie bei Wartungskosten in € pro erzeugter Strommenge — nur die Summe
+        // über den Betrachtungszeitraum wird jeweils aus dem Lauf ermittelt."
+        // Also dasselbe Muster wie EUR_PRO_KWH_ELEKTRISCH (H4a): der SATZ [€/h] bleibt
+        // Eingabe, die MENGE [h/a] kommt frisch aus dem jüngsten Lauf; die gespeicherte
+        // Menge bleibt Konserve, wenn frisch nichts zu holen ist (H2-1-Ordnung).
+
+        /// <summary>
+        /// PAKET FX2 (Anwenderentscheid B-4): Stundenzahl [h/a] der Komponente bzw.
+        /// Anlage aus dem jüngsten Lauf — die Bezugsmenge der Bemessung „je Stunde".
+        /// null = keine Basis (kein Lauf, Komponente ohne Stundengröße, Anlage nicht
+        /// im Lauf, Summe 0); dann gilt weiter die gespeicherte Menge.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Was der Rechenkern hergibt — erhoben, nicht geraten.</b></para>
+        /// <list type="bullet">
+        /// <item><description><b>Wärmepumpe (1): ECHTE Betriebsstunden.</b>
+        /// <c>ErgebnisWaermepumpeModulModel.Betriebsstunden</c> zählt die Stunden, in
+        /// denen das Modul läuft (<c>SimulationWaermepumpe.Modul_WP_Laufzeit</c>,
+        /// Teilstunden anteilig, Guard <c>result[PTHERM] &gt; 0</c> aus B0-13). Das ist
+        /// die Größe, die die Bemessung meint.</description></item>
+        /// <item><description><b>BHKW (7): benannte NÄHERUNG.</b> Die Modulzeile führt
+        /// nur <c>VbhThermisch</c> = Wärme ÷ Wärmeleistung
+        /// (<c>SimulationBHKW.Laufzeiten</c>) und <c>VbhElektrisch</c> — beides
+        /// VOLLBENUTZUNGSstunden. Taktung und Teillast bildet der Rechenkern nicht ab;
+        /// ein Modul, das ein Jahr lang halb moduliert läuft, hat 8.760 Betriebsstunden
+        /// und 4.380 thermische Vbh. Genommen wird <c>VbhThermisch</c> — dieselbe
+        /// Größe, die der Betriebskosten-Dialog seit E3 als Bezug „je Stunde" anbietet
+        /// (<see cref="BetriebskostenCtrl.BEZUG_VBH_BHKW"/>) und die
+        /// <see cref="DbWerte.BEMESSUNG_EUR_PRO_H"/> als Näherung ausweist. Eine zweite
+        /// Wahrheit wäre schlimmer als die benannte Näherung.</description></item>
+        /// <item><description><b>Heizkessel (2) und alle übrigen: null.</b> Die
+        /// Kessel-Modulzeile führt WEDER Betriebsstunden NOCH Vollbenutzungsstunden
+        /// (Spalten: Waerme_Gas, Waerme_Oel, Waermeproduktion, Brennstoff, Verbrauch,
+        /// Jahresnutzungsgrad, carrier_id, Hilfsenergie). Es gibt nichts zu ermitteln —
+        /// dann lieber keine Zahl als eine erfundene.</description></item>
+        /// </list>
+        /// </remarks>
+        internal double? BetriebsstundenH(int komponentenID, int idAnlage)
+        {
+            string anlagenName = null;
+            if (idAnlage > 0 && !_anlagenName.TryGetValue(idAnlage, out anlagenName)) return null;
+
+            // Die Brennstoffzeile dient auch hier nur als (Modul, Zahl)-Paar; das Feld
+            // trägt STUNDEN, nicht MWh — deshalb summiert SummeStunden ohne Faktor.
+            var zeilen = new List<Brennstoffzeile>();
+            switch (komponentenID)
+            {
+                case KOMPONENTE_WAERMEPUMPE:
+                    if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
+                        foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Betriebsstunden });
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_BHKW:
+                    if (_ergebnis != null && _ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+                        foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.VbhThermisch });
+                    break;
+                default:
+                    return null;   // Heizkessel, Solar, PV, Speicher: keine Stundengröße
+            }
+
+            return SummeStunden(zeilen, anlagenName);
+        }
+
+        /// <summary>Anlagen-/Komponentensumme in Stunden — dieselben H2-Filterregeln
+        /// wie <see cref="SummeKwh"/>, nur ohne die MWh→kWh-Umrechnung.</summary>
+        private double? SummeStunden(List<Brennstoffzeile> zeilen, string anlagenName)
+        {
+            double h = 0;
+            int getroffen = 0;
+            foreach (Brennstoffzeile m in zeilen)
+            {
+                if (anlagenName != null &&
+                    !string.Equals(m.Modul ?? "", anlagenName, StringComparison.Ordinal))
+                    continue;
+                getroffen++;
+                if (m.VerbrauchMWh > 0) h += m.VerbrauchMWh;
+            }
+            if (anlagenName != null && getroffen == 0) return null;
+            return h > 0 ? h : (double?)null;
+        }
     }
 }
