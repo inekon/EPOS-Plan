@@ -25,6 +25,18 @@ namespace WindowsFormsApplication1
         public double m_Breite;
         public double m_Modulkosten;
 
+        /// <summary>
+        /// Zelltechnologie des Moduls (Spalte <c>Technologie</c>, Migrationsschritt 63,
+        /// Stufe E2.3): <see cref="DbWerte.PV_TECHNOLOGIE_C_SI"/> und Geschwister.
+        ///
+        /// <para><b>null oder leer = unbekannt.</b> Anders als die uebrigen Felder
+        /// dieses Modells wird hier NICHT auf 0 ausgewichen: Das erweiterte Rechenmodell
+        /// braucht die Unterscheidung "nicht gepflegt" gegen "ausdruecklich SONSTIGE"
+        /// nicht im Ergebnis (beide fallen auf die EINFACH-Modulformel zurueck), wohl
+        /// aber im Protokolltext und im Katalogdialog.</para>
+        /// </summary>
+        public string m_Technologie;
+
 
         public PhotovoltaikModel[] items;
 
@@ -47,7 +59,8 @@ namespace WindowsFormsApplication1
             m_T_NOCT = 0.0;
             m_Laenge = 0.0;
             m_Breite = 0.0;
-            m_Modulkosten = 0.0;    
+            m_Modulkosten = 0.0;
+            m_Technologie = null;   // null = nicht gepflegt (siehe Feldkommentar)
         }
     }
 }

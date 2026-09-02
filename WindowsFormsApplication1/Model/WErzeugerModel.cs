@@ -211,6 +211,41 @@
         /// </summary>
         public double? PV_Systemverluste;
 
+        // =============================================================================
+        // PV-Modellwahl und Wechselrichter (Paket B des PV-Ertragsmodells, Stufe E2)
+        // =============================================================================
+        //
+        // Dieselbe Begruendung und dieselbe NULL-Semantik wie bei den zwei Feldern
+        // darueber: Der Speicherweg ist Loeschen + Neuanlegen, was das Modell nicht
+        // kennt, geht bei jedem Speichern verloren. Alle fuenf sind nullable, weil NULL
+        // hier eine eigene Aussage traegt - und bei PV_Modell ist es sogar die
+        // wichtigste: NULL heisst "vereinfachtes Modell", also der Rechenweg aus
+        // Paket A, Zeichen fuer Zeichen.
+
+        /// <summary>
+        /// PV_Modell - das Rechenmodell dieser Anlage:
+        /// <see cref="DbWerte.PV_MODELL_EINFACH"/> oder
+        /// <see cref="DbWerte.PV_MODELL_ERWEITERT"/>. <b>NULL = EINFACH.</b>
+        /// </summary>
+        public string PV_Modell;
+
+        /// <summary>
+        /// PV_WrNennleistungKw - AC-Nennleistung des Wechselrichters [kW].
+        /// <b>NULL = kein Clipping</b>; die Kennlinienauslastung bezieht sich dann auf
+        /// die DC-Nennleistung der Anlage. Nur in ERWEITERT wirksam.
+        /// </summary>
+        public double? PV_WrNennleistungKw;
+
+        /// <summary>PV_WrEta10 - Wechselrichter-Wirkungsgrad bei 10 % Auslastung (0…1).
+        /// <b>NULL = 0,94.</b> Nur in ERWEITERT wirksam.</summary>
+        public double? PV_WrEta10;
+
+        /// <summary>PV_WrEta50 - Wirkungsgrad bei 50 % Auslastung; <b>NULL = 0,975.</b></summary>
+        public double? PV_WrEta50;
+
+        /// <summary>PV_WrEta100 - Wirkungsgrad bei 100 % Auslastung; <b>NULL = 0,97.</b></summary>
+        public double? PV_WrEta100;
+
         public WErzeugerModel()
         {
             ID = 0;

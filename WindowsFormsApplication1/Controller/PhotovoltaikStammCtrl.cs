@@ -107,8 +107,9 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf,
-                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten,
+                             Technologie, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             OleDbParameter[] ps = {
                 new OleDbParameter("@id", neueId),
@@ -128,6 +129,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@lae", this.m_Laenge),
                 new OleDbParameter("@bre", this.m_Breite),
                 new OleDbParameter("@mod", this.m_Modulkosten),
+                Tec(),
                 new OleDbParameter("@ro", false)
             };
 
@@ -238,7 +240,7 @@ namespace WindowsFormsApplication1
                             Bezeichner = ?, Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?,
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
-                            Laenge = ?, Breite = ?, Modulkosten = ?
+                            Laenge = ?, Breite = ?, Modulkosten = ?, Technologie = ?
                           WHERE ID = ?";
 
             OleDbParameter[] ps = {
@@ -258,6 +260,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@lae", this.m_Laenge),
                 new OleDbParameter("@bre", this.m_Breite),
                 new OleDbParameter("@mod", this.m_Modulkosten),
+                Tec(),
                 new OleDbParameter("@id", id)
             };
 
@@ -282,7 +285,7 @@ namespace WindowsFormsApplication1
                             Firma = ?, Leistung = ?, Wirkungsgrad = ?,
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
-                            Laenge = ?, Breite = ?
+                            Laenge = ?, Breite = ?, Technologie = ?
                           WHERE ID = ?";
 
             OleDbParameter[] ps = {
@@ -299,10 +302,22 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@noc", this.m_T_NOCT),
                 new OleDbParameter("@lae", this.m_Laenge),
                 new OleDbParameter("@bre", this.m_Breite),
+                Tec(),
                 new OleDbParameter("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
+        /// Parameter fuer <c>Technologie</c> (E2.3): LEER bleibt NULL. Eine leere
+        /// Zeichenkette waere eine dritte Aussage neben "nicht gepflegt" und einem der
+        /// fuenf Persistenzwerte - und die Dublettenpruefung vergleicht die Spalte mit.
+        /// </summary>
+        private OleDbParameter Tec()
+        {
+            return new OleDbParameter("@tec", string.IsNullOrEmpty(this.m_Technologie)
+                                                  ? DBNull.Value : (object)this.m_Technologie);
         }
 
         /// <summary>
@@ -352,6 +367,7 @@ namespace WindowsFormsApplication1
             this.m_Laenge = m.m_Laenge;
             this.m_Breite = m.m_Breite;
             this.m_Modulkosten = m.m_Modulkosten;
+            this.m_Technologie = m.m_Technologie;
         }
 
         private static bool ReadOnlyOf(DataRow row)
@@ -383,6 +399,9 @@ namespace WindowsFormsApplication1
             m.m_Laenge = D(row, "Laenge");
             m.m_Breite = D(row, "Breite");
             m.m_Modulkosten = D(row, "Modulkosten");
+            // E2.3: fehlende Spalte und NULL sind derselbe Fall - Technologie unbekannt.
+            if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value)
+                m.m_Technologie = row["Technologie"].ToString();
         }
 
         private PhotovoltaikModel MapRowToModel(DataRow row)
