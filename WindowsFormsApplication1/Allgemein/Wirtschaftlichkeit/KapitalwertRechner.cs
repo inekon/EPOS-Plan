@@ -46,6 +46,28 @@ namespace WindowsFormsApplication1
     /// mehr zu haben. Die Mehrjahrestabelle des Berichts braucht sie einzeln; sie stehen
     /// deshalb jetzt am <see cref="Zahlungsbild"/>. <b>Rein additiv</b> — der Rechenweg
     /// der Summen ist unverändert, und die Referenzprobe belegt das.</para>
+    ///
+    /// <para><b>PAKET FX3 (Anwenderentscheid R-2, 02.09.2026): ZWEI Betriebstöpfe.</b>
+    /// Bis dahin wuchsen ALLE Betriebskostenpositionen mit der Betriebspreissteigerung
+    /// p_B — auch die, deren Betrag als Anteil der ENDENERGIE bemessen ist
+    /// („x % der Endenergiekosten/​des Endenergiebedarfs", Hilfsenergie nach
+    /// <c>Konzept_BHKW_Wirtschaftlichkeit</c> § 4.5, Wege A und B). Das ist ein
+    /// Widerspruch in sich: Eine Position, die definitionsgemäß ein Anteil der
+    /// Energiekosten ist, folgt nach VDI 2067 / DIN EN 17463 der
+    /// <b>Energie</b>preisentwicklung. Der Rechner nimmt deshalb neben
+    /// <c>betriebJahr</c> (p_B) einen zweiten Topf <c>endenergieJahr</c> entgegen, der
+    /// mit p_E fortgeschrieben wird — wie die Energiekosten.
+    /// <b>Ergebnisneutral, solange der Topf leer ist</b> (0 bzw. <c>null</c>): Der
+    /// Ausdruck für die Ausgaben bleibt dann Zeichen für Zeichen der von vorher, denn
+    /// addiert wird eine echte 0.</para>
+    ///
+    /// <para><b>Was NICHT umgestellt wurde</b> (dokumentierte Grenzen des Pakets FX3):
+    /// die Alt-Arten <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c> und der
+    /// „Weg C" der Hilfsenergie (fester Jahresbetrag, <c>JAHRESBETRAG</c>) bleiben bei
+    /// p_B; die EINE Klammer <c>(energieJahr + behgJahr) × (1+p_E)^(t−1)</c> des
+    /// Bestandszweigs bleibt unangetastet. Die Zuordnung einer Position zu einem der
+    /// beiden Töpfe trifft der Aufrufer
+    /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskosten</c>), nicht dieser Rechenkern.</para>
     /// </summary>
     public static class KapitalwertRechner
     {
@@ -206,8 +228,26 @@ namespace WindowsFormsApplication1
             // (siehe den Kommentar in der Jahresschleife). Nominal, unabgezinst,
             // Index 1…T; Index 0 bleibt leer — dort steht die Investition.
 
-            /// <summary>Betriebskosten je Jahr [€], mit p_B fortgeschrieben.</summary>
+            /// <summary>
+            /// Betriebskosten je Jahr [€] — die GESAMTE Betriebszeile der
+            /// Mehrjahrestabelle.
+            /// <para><b>PAKET FX3 (R-2):</b> Sie trägt seither zwei Anteile: den
+            /// Betriebs-Topf mit p_B und den Endenergie-Topf mit p_E. Der zweite ist in
+            /// <see cref="EndenergieAnteilJeJahr"/> zusätzlich einzeln ausgewiesen —
+            /// <b>er steckt hier bereits drin und darf nicht addiert werden.</b> Dass
+            /// die Betriebszeile die Summe bleibt, ist Absicht: Nur so ist die Summe der
+            /// Positionsspalten weiterhin die Spalte „Netto nominal", und die
+            /// Selbstprüfung der Mehrjahrestabelle bleibt gültig.</para>
+            /// </summary>
             public double[] BetriebJeJahr;
+
+            /// <summary>
+            /// PAKET FX3 (R-2) — der mit p_E fortgeschriebene Endenergie-Anteil der
+            /// Betriebskosten je Jahr [€]; <b>Teilmenge von <see cref="BetriebJeJahr"/></b>
+            /// (reiner Ausweis, nirgends aufsummiert). 0 in jedem Jahr = keine
+            /// Endenergie-Position im Projekt, dann rechnet alles wie vor FX3.
+            /// </summary>
+            public double[] EndenergieAnteilJeJahr;
 
             /// <summary>Energiekosten je Jahr [€] OHNE CO₂-Abgabe, mit p_E fortgeschrieben.</summary>
             public double[] EnergieJeJahr;
@@ -291,6 +331,18 @@ namespace WindowsFormsApplication1
         /// <c>(energieJahr + behgJahr)</c> EINE Klammer, sonst verschöbe sich das
         /// Ergebnis in der letzten Stelle (Warnung aus Etappe E7).
         /// </param>
+        /// <param name="endenergieJahr">
+        /// PAKET FX3 (Anwenderentscheid R-2): der <b>Endenergie-Topf</b> der
+        /// Betriebskosten [€/a], Jahr-1-Wert — Positionen, deren Betrag an der
+        /// Endenergie bemessen ist. Er wird mit <paramref name="preisstEnergieProzent"/>
+        /// (p_E) fortgeschrieben statt mit p_B. <b>0 = kein solcher Topf</b>; dann ist
+        /// die Rechnung Zeichen für Zeichen die von vor FX3.
+        /// </param>
+        /// <param name="endenergieAbJahr">
+        /// Dasselbe für Endenergie-Positionen mit Startjahr ≥ 2 (KD6) — (Betrag,
+        /// Startjahr) wie <paramref name="betriebAbJahr"/>, nur eben im p_E-Topf.
+        /// <c>null</c> = keine.
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
@@ -299,7 +351,9 @@ namespace WindowsFormsApplication1
                                           IList<ErloesReihe> zusatzErloesReihen = null,
                                           double zuschuss = 0,
                                           double[] behgJeJahr = null,
-                                          IList<KeyValuePair<double, int>> betriebAbJahr = null)
+                                          IList<KeyValuePair<double, int>> betriebAbJahr = null,
+                                          double endenergieJahr = 0,
+                                          IList<KeyValuePair<double, int>> endenergieAbJahr = null)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -312,6 +366,7 @@ namespace WindowsFormsApplication1
                 NominalReihe = new double[T + 1],
                 // ETAPPE E7 — Rückgabekanal der Einzelpositionen (rein additiv).
                 BetriebJeJahr = new double[T + 1],
+                EndenergieAnteilJeJahr = new double[T + 1],   // FX3 (R-2), reiner Ausweis
                 EnergieJeJahr = new double[T + 1],
                 BehgJeJahr = new double[T + 1],
                 EinspeiseerloesJeJahr = new double[T + 1],
@@ -436,20 +491,43 @@ namespace WindowsFormsApplication1
                     foreach (KeyValuePair<double, int> vb in betriebAbJahr)
                         if (t >= vb.Value) betriebT += vb.Key;
 
-                double ausgaben = behgJeJahr == null
+                // PAKET FX3 (Anwenderentscheid R-2): der ZWEITE Betriebstopf. Er trägt
+                // die Positionen mit Endenergie-Bemessung und wächst mit p_E — dieselbe
+                // Rate wie die Energiekosten, weil eine Position „x % der
+                // Endenergiekosten" der Sache nach mit den Energiepreisen wächst
+                // (VDI 2067 / DIN EN 17463: bedarfsgebundene Kosten).
+                //
+                // ERGEBNISNEUTRAL OHNE TOPF: Ist endenergieT gleich 0, ist auch
+                // endenergieAusgabe eine echte 0; die Addition unten lässt jeden
+                // Summanden bitgenau, wie er war. Die Klammer (energieJahr + behgJahr)
+                // wird dabei NICHT angefasst.
+                double endenergieT = endenergieJahr;
+                if (endenergieAbJahr != null)
+                    foreach (KeyValuePair<double, int> ve in endenergieAbJahr)
+                        if (t >= ve.Value) endenergieT += ve.Key;
+                double endenergieAusgabe = endenergieT != 0
+                    ? endenergieT * Math.Pow(1.0 + pE, t - 1)
+                    : 0.0;
+
+                double ausgaben = (behgJeJahr == null
                     ? betriebT * Math.Pow(1.0 + pB, t - 1)
                       + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
                       + ersatzJeJahr[t]
                     : betriebT * Math.Pow(1.0 + pB, t - 1)
                       + energieJahr * Math.Pow(1.0 + pE, t - 1) + behgT
-                      + ersatzJeJahr[t];
+                      + ersatzJeJahr[t]) + endenergieAusgabe;
                 double einnahmen = erloesJahr;   // feste Einspeisevergütung, nominal konstant
                 if (zusatzErloesReihen != null)
                     foreach (ErloesReihe reihe in zusatzErloesReihen)
                         if (reihe != null) einnahmen += reihe.Wert(t);   // KWKG + Steuern (E4)
 
                 // ETAPPE E7 — Einzelpositionen für die Mehrjahrestabelle.
-                z.BetriebJeJahr[t] = betriebT * Math.Pow(1.0 + pB, t - 1);
+                // PAKET FX3: Die Betriebszeile bleibt die SUMME beider Töpfe — sonst
+                // stimmte die Summe der Positionsspalten nicht mehr mit „Netto nominal"
+                // überein und die Selbstprüfung der Mehrjahrestabelle fiele. Der
+                // p_E-Anteil steht daneben als eigener Ausweis.
+                z.BetriebJeJahr[t] = betriebT * Math.Pow(1.0 + pB, t - 1) + endenergieAusgabe;
+                z.EndenergieAnteilJeJahr[t] = endenergieAusgabe;
                 z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
                 z.BehgJeJahr[t] = behgJeJahr == null ? behgJahr * Math.Pow(1.0 + pE, t - 1) : behgT;
                 z.EinspeiseerloesJeJahr[t] = erloesJahr;
