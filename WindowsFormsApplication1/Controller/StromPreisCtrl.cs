@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using SpeicherEngine;
 
@@ -378,17 +377,17 @@ namespace WindowsFormsApplication1
                 "SELECT valid_from, arbeitspreis FROM energy_price " +
                 "WHERE carrier_id = ? AND id_projekt = ? AND valid_from <= ? " +
                 "ORDER BY valid_from DESC LIMIT 1",
-                new OleDbParameter("@cid", OleDbType.Integer) { Value = carrierId },
-                new OleDbParameter("@pid", OleDbType.Integer) { Value = idProjekt },
-                new OleDbParameter("@date", OleDbType.Date) { Value = stichtag });
+                new DbParam("@cid", DbParamTyp.Integer) { Wert = carrierId },
+                new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt },
+                new DbParam("@date", DbParamTyp.Date) { Wert = stichtag });
 
             if (dt == null || dt.Rows.Count == 0)
             {
                 dt = DataRepository.GetDataTable(
                     "SELECT valid_from, arbeitspreis FROM energy_price " +
                     "WHERE carrier_id = ? AND id_projekt = ? ORDER BY valid_from ASC LIMIT 1",
-                    new OleDbParameter("@cid", OleDbType.Integer) { Value = carrierId },
-                    new OleDbParameter("@pid", OleDbType.Integer) { Value = idProjekt });
+                    new DbParam("@cid", DbParamTyp.Integer) { Wert = carrierId },
+                    new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
 
                 if (dt != null && dt.Rows.Count > 0)
                     HinweisErgaenzen(string.Format(MyResource.Resource.PREIS_HINWEIS_VERSION_SPAETER,
@@ -425,7 +424,7 @@ namespace WindowsFormsApplication1
             // (4) Katalogpreis
             object k = DataRepository.ExecuteScalar(
                 "SELECT price_work FROM energy_carrier WHERE id = ?",
-                new OleDbParameter("@cid", carrierId));
+                new DbParam("@cid", carrierId));
             double katalog = Kommazahl(k) * EUR_JE_KWH_IN_CT;
             if (katalog > 0.0)
             {
@@ -495,8 +494,8 @@ namespace WindowsFormsApplication1
         private static double Skalar(string sql, int idProjekt, int carrierId)
         {
             object v = DataRepository.ExecuteScalar(sql,
-                new OleDbParameter("@pid", idProjekt),
-                new OleDbParameter("@cid", carrierId));
+                new DbParam("@pid", idProjekt),
+                new DbParam("@cid", carrierId));
             return Kommazahl(v);
         }
 

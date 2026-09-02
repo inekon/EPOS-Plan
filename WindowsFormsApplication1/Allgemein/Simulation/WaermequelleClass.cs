@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.IO;
 using Microsoft.Data.Sqlite;
@@ -471,7 +470,7 @@ namespace WindowsFormsApplication1
         /// zurückgeführt — allein wegen des Meldungstexts, den diese Methode seit jeher
         /// schreibt ("Stille Tabellenabfrage fehlgeschlagen: …").
         /// </summary>
-        private static DataTable TabelleStill(string sql, params OleDbParameter[] parameter)
+        private static DataTable TabelleStill(string sql, params DbParam[] parameter)
         {
             try
             {
@@ -534,7 +533,7 @@ namespace WindowsFormsApplication1
         /// Der Typ des Parameters wird aus dem WERT abgeleitet. Das trägt für alles, was
         /// tatsächlich einen Wert hat — für <see cref="DBNull"/> nicht: dort gibt es
         /// nichts abzuleiten. Wer NULL schreibt, nimmt die Überladung mit
-        /// ausdrücklichem <see cref="OleDbType"/>.
+        /// ausdrücklichem <see cref="DbParamTyp"/>.
         /// </summary>
         public static bool WertSchreiben(int idEnergieanlage, string spalte, object wert)
         {
@@ -542,7 +541,7 @@ namespace WindowsFormsApplication1
             {
                 string sql = "UPDATE Tab_Energieanlagen SET [" + spalte + "] = ? WHERE ID = " + idEnergieanlage;
                 return DataRepository.ExecuteSQL(sql,
-                    new OleDbParameter("@w", wert ?? (object)DBNull.Value));
+                    new DbParam("@w", wert ?? (object)DBNull.Value));
             }
             catch (Exception ex)
             {
@@ -564,13 +563,13 @@ namespace WindowsFormsApplication1
         /// Mit dem ausdrücklichen Typ hängt das Ergebnis nicht mehr daran, wie ACE rät.
         /// </summary>
         public static bool WertSchreiben(int idEnergieanlage, string spalte,
-                                         OleDbType typ, object wert)
+                                         DbParamTyp typ, object wert)
         {
             try
             {
                 string sql = "UPDATE Tab_Energieanlagen SET [" + spalte + "] = ? WHERE ID = " + idEnergieanlage;
                 return DataRepository.ExecuteSQL(sql,
-                    new OleDbParameter("@w", typ) { Value = wert ?? (object)DBNull.Value });
+                    new DbParam("@w", typ) { Wert = wert ?? (object)DBNull.Value });
             }
             catch (Exception ex)
             {
@@ -862,7 +861,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = TabelleStill(
                     "SELECT ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
                     "FROM [" + PufferSpCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = idPuffer });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = idPuffer });
                 if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
 
                 // Protokollkanal-Nachzug: HINWEIS - die Auflösungskette greift eine Stufe
@@ -890,8 +889,8 @@ namespace WindowsFormsApplication1
                     "SELECT ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
                     "FROM [" + PufferSpCtrl.TABLE + "] WHERE Bezeichner = ? AND ID_Projekt = ? " +
                     "ORDER BY ID LIMIT 1",
-                    new OleDbParameter("@bez", bezeichner),
-                    new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
+                    new DbParam("@bez", bezeichner),
+                    new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
                 if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
             }
 
@@ -899,7 +898,7 @@ namespace WindowsFormsApplication1
             DataTable stamm = TabelleStill(
                 "SELECT ID, Bezeichner, Gesamtvolumen, Bereitschaftsverluste FROM [" +
                 PufferSpStammCtrl.TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", bezeichner));
+                new DbParam("@bez", bezeichner));
             if (stamm != null && stamm.Rows.Count > 0)
             {
                 // Protokollkanal-Nachzug: HINWEIS - Stufe 3 der Auflösungskette.

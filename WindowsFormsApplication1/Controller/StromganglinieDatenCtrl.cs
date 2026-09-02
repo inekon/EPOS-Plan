@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -37,10 +36,10 @@ namespace WindowsFormsApplication1
                 // Standardkonforme DELETE-Syntax ohne "*" und Typkorrektur über expliziten Parameter
                 string sql = "DELETE FROM Tab_StromganglinieDaten WHERE ID_Ganglinie = ?";
 
-                OleDbParameter paramId = new OleDbParameter("@idGang", OleDbType.Integer);
-                paramId.Value = m_ID_GanglinieDaten;
+                DbParam paramId = new DbParam("@idGang", DbParamTyp.Integer);
+                paramId.Wert = m_ID_GanglinieDaten;
 
-                OleDbParameter[] ps = { paramId };
+                DbParam[] ps = { paramId };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -67,8 +66,8 @@ namespace WindowsFormsApplication1
                         foreach (var item in list_GanglinieDaten)
                         {
                             v.Ausfuehren(sqlInsert,
-                                new OleDbParameter("@id", OleDbType.Integer) { Value = item.m_ID_GanglinieDaten },
-                                new OleDbParameter("@wert", OleDbType.Double) { Value = item.m_Wert });
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = item.m_ID_GanglinieDaten },
+                                new DbParam("@wert", DbParamTyp.Double) { Wert = item.m_Wert });
                         }
 
                         // Erst jetzt wird alles physisch auf die Platte geschrieben
@@ -117,9 +116,9 @@ namespace WindowsFormsApplication1
                     // Kopfdatensatz über die geteilte Verbindung einfügen
                     string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
                     v.Ausfuehren(sqlKopf,
-                        new OleDbParameter("@id", OleDbType.Integer) { Value = neueGanglinieID },
-                        new OleDbParameter("@bez", OleDbType.VarWChar) { Value = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value },
-                        new OleDbParameter("@interval", OleDbType.Integer) { Value = kopfCtrl.m_Zeitinterval });
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = neueGanglinieID },
+                        new DbParam("@bez", DbParamTyp.VarWChar) { Wert = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value },
+                        new DbParam("@interval", DbParamTyp.Integer) { Wert = kopfCtrl.m_Zeitinterval });
 
                     // ======================================================================
                     // VORGANG 2: Die 8760 Datenpunkte (Tab_StromganglinieDaten)
@@ -137,8 +136,8 @@ namespace WindowsFormsApplication1
                             double parsedWert = double.Parse(roherWert, System.Globalization.CultureInfo.InvariantCulture);
 
                             v.Ausfuehren(sqlDaten,
-                                new OleDbParameter("@idGang", OleDbType.Integer) { Value = neueGanglinieID },
-                                new OleDbParameter("@wert", OleDbType.Double) { Value = parsedWert });
+                                new DbParam("@idGang", DbParamTyp.Integer) { Wert = neueGanglinieID },
+                                new DbParam("@wert", DbParamTyp.Double) { Wert = parsedWert });
 
                             // Optional: Das lokale Modell befüllen, falls du die Liste 'list_GanglinieDaten' danach noch im Code brauchst
                             StromganglinieDatenModel model = new StromganglinieDatenModel();

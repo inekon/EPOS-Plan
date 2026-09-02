@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         public void ReadSingle(int ID)
         {
             string sql = "SELECT * FROM Tab_Solarkollektoren WHERE ID = ?";
-            OleDbParameter parameter = new OleDbParameter("?", ID);
+            DbParam parameter = new DbParam("?", ID);
             DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
             rows = 0;
@@ -131,6 +131,10 @@ namespace WindowsFormsApplication1
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear(); // Wichtig: Alte Parameter bei Wiederverwendung leeren
 
+                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
+                // OleDbParameterCollection, die unmittelbar darunter mit
+                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
+                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
                 // Die Reihenfolge der Parameter MUSS exakt der Reihenfolge der '?' im SQL entsprechen!
                 DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szFirma ?? (object)DBNull.Value));
                 DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szBeschreibung ?? (object)DBNull.Value));
@@ -163,8 +167,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_Solarkollektoren WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -184,7 +188,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + SolarkollektorenStammCtrl.TABLE + "] WHERE ID = ?",
-                    new OleDbParameter("@id", stammId));
+                    new DbParam("@id", stammId));
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -211,9 +215,9 @@ namespace WindowsFormsApplication1
                      h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@idProj", idProjekt),
+                DbParam[] ps = {
+                    new DbParam("@id", neueId),
+                    new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
                     P("@fir", ColOrNull(s, "Firma")),
                     P("@bes", ColOrNull(s, "Beschreibung")),
@@ -251,13 +255,13 @@ namespace WindowsFormsApplication1
         {
             string sql = "DELETE FROM Tab_Solarkollektoren WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@idProj", idProjekt));
         }
 
-        private static OleDbParameter P(string name, object value)
+        private static DbParam P(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         private static object ColOrNull(DataRow row, string col)

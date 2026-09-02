@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -64,7 +63,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID_Projekt = ? ORDER BY Bezeichner",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (dt == null) return _internalList;
 
@@ -79,7 +78,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
 
             if (dt == null || dt.Rows.Count == 0) return null;
             return AusZeile(dt, dt.Rows[0]);
@@ -104,11 +103,11 @@ namespace WindowsFormsApplication1
             bool ok = DataRepository.ExecuteSQL(
                 "INSERT INTO [" + TABLE + "] (ID, ID_Projekt, Bezeichner, Monatswerte, Wochenwerte) " +
                 "VALUES (?, ?, ?, ?, ?)",
-                new OleDbParameter("@id", OleDbType.Integer) { Value = neueId },
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = m.ID_Projekt },
-                new OleDbParameter("@bez", OleDbType.VarWChar) { Value = m.Bezeichner ?? "" },
-                new OleDbParameter("@mon", OleDbType.VarWChar) { Value = m.Monatswerte ?? "" },
-                new OleDbParameter("@woch", OleDbType.LongVarWChar) { Value = m.Wochenwerte ?? "" });
+                new DbParam("@id", DbParamTyp.Integer) { Wert = neueId },
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
+                new DbParam("@bez", DbParamTyp.VarWChar) { Wert = m.Bezeichner ?? "" },
+                new DbParam("@mon", DbParamTyp.VarWChar) { Wert = m.Monatswerte ?? "" },
+                new DbParam("@woch", DbParamTyp.LongVarWChar) { Wert = m.Wochenwerte ?? "" });
 
             if (!ok) return -1;
 
@@ -124,10 +123,10 @@ namespace WindowsFormsApplication1
 
             return DataRepository.ExecuteSQL(
                 "UPDATE [" + TABLE + "] SET Bezeichner = ?, Monatswerte = ?, Wochenwerte = ? WHERE ID = ?",
-                new OleDbParameter("@bez", OleDbType.VarWChar) { Value = m.Bezeichner ?? "" },
-                new OleDbParameter("@mon", OleDbType.VarWChar) { Value = m.Monatswerte ?? "" },
-                new OleDbParameter("@woch", OleDbType.LongVarWChar) { Value = m.Wochenwerte ?? "" },
-                new OleDbParameter("@id", OleDbType.Integer) { Value = m.ID });
+                new DbParam("@bez", DbParamTyp.VarWChar) { Wert = m.Bezeichner ?? "" },
+                new DbParam("@mon", DbParamTyp.VarWChar) { Wert = m.Monatswerte ?? "" },
+                new DbParam("@woch", DbParamTyp.LongVarWChar) { Wert = m.Wochenwerte ?? "" },
+                new DbParam("@id", DbParamTyp.Integer) { Wert = m.ID });
         }
 
         /// <summary>Loescht ein Profil.</summary>
@@ -137,7 +136,7 @@ namespace WindowsFormsApplication1
 
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
         }
 
         // =====================================================================

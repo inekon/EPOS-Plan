@@ -213,7 +213,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DataRepository.ExecuteNonQuery(sql, parameters);
+                DataRepository.ExecuteNonQuery(sql, DbParam.Von(parameters));
             }
             catch (Exception ex)
             {
@@ -238,7 +238,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DataRepository.ExecuteNonQuery(sql, parameters);
+                DataRepository.ExecuteNonQuery(sql, DbParam.Von(parameters));
             }
             catch (Exception ex)
             {

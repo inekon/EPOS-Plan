@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -458,30 +457,30 @@ namespace WindowsFormsApplication1
                 // schon immer nach POSITION, nicht nach Namen.
                 foreach (var data in dataList)
                 {
-                    List<OleDbParameter> ps = new List<OleDbParameter>();
+                    List<DbParam> ps = new List<DbParam>();
 
                     // HIER WURDE DER SEITENEFFEKT 'nextId++' KOMPLETT ENTFERNT!
-                    ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = ID_Klimaregion });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Temperature });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_nord });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_sued });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_ost });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.Sol_west });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.GlobalIrradiance });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.DirectIrradiance });
-                    ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = data.DiffuseIrradiance });
+                    ps.Add(new DbParam("?", DbParamTyp.Integer) { Wert = ID_Klimaregion });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Temperature });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Sol_nord });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Sol_sued });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Sol_ost });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Sol_west });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.GlobalIrradiance });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.DirectIrradiance });
+                    ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.DiffuseIrradiance });
 
                     if (istKlimadaten)
                     {
-                        ps.Add(new OleDbParameter("?", OleDbType.Boolean) { Value = data.WE });
-                        ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = data.TagTyp_W });
-                        ps.Add(new OleDbParameter("?", OleDbType.Integer) { Value = data.TagTyp_NW });
-                        ps.Add(new OleDbParameter("?", OleDbType.Double) { Value = Math.Round(data.Sonnenwinkel, 1) });
+                        ps.Add(new DbParam("?", DbParamTyp.Boolean) { Wert = data.WE });
+                        ps.Add(new DbParam("?", DbParamTyp.Integer) { Wert = data.TagTyp_W });
+                        ps.Add(new DbParam("?", DbParamTyp.Integer) { Wert = data.TagTyp_NW });
+                        ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = Math.Round(data.Sonnenwinkel, 1) });
                     }
                     else
                     {
-                        ps.Add(new OleDbParameter("?", OleDbType.Double)
-                        { Value = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0 });
+                        ps.Add(new DbParam("?", DbParamTyp.Double)
+                        { Wert = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0 });
                     }
 
                     v.Ausfuehren(query, ps.ToArray());

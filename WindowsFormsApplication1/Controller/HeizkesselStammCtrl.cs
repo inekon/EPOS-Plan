@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -111,7 +110,7 @@ namespace WindowsFormsApplication1
                     if (StilleDb.NonQuery(
                             "UPDATE [" + s.Tabelle + "] SET [" + s.Name + "] = ? " +
                             "WHERE [" + s.Name + "] IS NULL OR [" + s.Name + "] = ''",
-                            new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR)) < 0)
+                            new DbParam("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR)) < 0)
                         Protokoll(s.Tabelle + "." + s.Name + ": Vorbelegung fehlgeschlagen.");
                 }
             }
@@ -170,7 +169,7 @@ namespace WindowsFormsApplication1
             _hasSingleData = false;
 
             string sql = "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@nam", name));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@nam", name));
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -189,7 +188,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -214,7 +213,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@nam", name ?? ""));
+                new DbParam("@nam", name ?? ""));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -222,7 +221,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
-                new OleDbParameter("@nam", name ?? ""));
+                new DbParam("@nam", name ?? ""));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -237,7 +236,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
-                new OleDbParameter("@nam", name ?? ""));
+                new DbParam("@nam", name ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -250,7 +249,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -281,30 +280,30 @@ namespace WindowsFormsApplication1
                              Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@bez", this.Name ?? ""),
-                new OleDbParameter("@bes", this.Beschreibung ?? ""),
-                new OleDbParameter("@fir", this.Firma ?? ""),
-                new OleDbParameter("@pth", this.Ptherm),
-                new OleDbParameter("@bre", this.Brennstoff),
-                new OleDbParameter("@wgg", this.Wirkungsgrad_Gas),
-                new OleDbParameter("@wgo", this.Wirkungsgrad_Oel),
-                new OleDbParameter("@inv", this.Investitionskosten),
-                new OleDbParameter("@rau", this.Raumbedarf),
-                new OleDbParameter("@war", this.Wartungskosten),
-                new OleDbParameter("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
-                new OleDbParameter("@nut", this.Nutzungsdauer),
-                new OleDbParameter("@co2", this.CO2),
-                new OleDbParameter("@so2", this.SO2),
-                new OleDbParameter("@nox", this.NOx),
-                new OleDbParameter("@co", this.CO),
-                new OleDbParameter("@sta", this.Staub),
-                new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@brn", this.Brennwert),
-                new OleDbParameter("@vl", this.Vorlauf),
-                new OleDbParameter("@tl", this.Ruecklauf),
-                new OleDbParameter("@ro", false)
+            DbParam[] ps = {
+                new DbParam("@id", neueId),
+                new DbParam("@bez", this.Name ?? ""),
+                new DbParam("@bes", this.Beschreibung ?? ""),
+                new DbParam("@fir", this.Firma ?? ""),
+                new DbParam("@pth", this.Ptherm),
+                new DbParam("@bre", this.Brennstoff),
+                new DbParam("@wgg", this.Wirkungsgrad_Gas),
+                new DbParam("@wgo", this.Wirkungsgrad_Oel),
+                new DbParam("@inv", this.Investitionskosten),
+                new DbParam("@rau", this.Raumbedarf),
+                new DbParam("@war", this.Wartungskosten),
+                new DbParam("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
+                new DbParam("@nut", this.Nutzungsdauer),
+                new DbParam("@co2", this.CO2),
+                new DbParam("@so2", this.SO2),
+                new DbParam("@nox", this.NOx),
+                new DbParam("@co", this.CO),
+                new DbParam("@sta", this.Staub),
+                new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@brn", this.Brennwert),
+                new DbParam("@vl", this.Vorlauf),
+                new DbParam("@tl", this.Ruecklauf),
+                new DbParam("@ro", false)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -383,29 +382,29 @@ namespace WindowsFormsApplication1
                             Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@bez", this.Name ?? ""),
-                new OleDbParameter("@bes", this.Beschreibung ?? ""),
-                new OleDbParameter("@fir", this.Firma ?? ""),
-                new OleDbParameter("@pth", this.Ptherm),
-                new OleDbParameter("@bre", this.Brennstoff),
-                new OleDbParameter("@wgg", this.Wirkungsgrad_Gas),
-                new OleDbParameter("@wgo", this.Wirkungsgrad_Oel),
-                new OleDbParameter("@inv", this.Investitionskosten),
-                new OleDbParameter("@rau", this.Raumbedarf),
-                new OleDbParameter("@war", this.Wartungskosten),
-                new OleDbParameter("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
-                new OleDbParameter("@nut", this.Nutzungsdauer),
-                new OleDbParameter("@co2", this.CO2),
-                new OleDbParameter("@so2", this.SO2),
-                new OleDbParameter("@nox", this.NOx),
-                new OleDbParameter("@co", this.CO),
-                new OleDbParameter("@sta", this.Staub),
-                new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@brn", this.Brennwert),
-                new OleDbParameter("@vl", this.Vorlauf),
-                new OleDbParameter("@rl", this.Ruecklauf),
-                new OleDbParameter("@id", this.ID)
+            DbParam[] ps = {
+                new DbParam("@bez", this.Name ?? ""),
+                new DbParam("@bes", this.Beschreibung ?? ""),
+                new DbParam("@fir", this.Firma ?? ""),
+                new DbParam("@pth", this.Ptherm),
+                new DbParam("@bre", this.Brennstoff),
+                new DbParam("@wgg", this.Wirkungsgrad_Gas),
+                new DbParam("@wgo", this.Wirkungsgrad_Oel),
+                new DbParam("@inv", this.Investitionskosten),
+                new DbParam("@rau", this.Raumbedarf),
+                new DbParam("@war", this.Wartungskosten),
+                new DbParam("@wae", HeizkesselCtrl.Einheit(this.Wartungskosten_Einheit)),
+                new DbParam("@nut", this.Nutzungsdauer),
+                new DbParam("@co2", this.CO2),
+                new DbParam("@so2", this.SO2),
+                new DbParam("@nox", this.NOx),
+                new DbParam("@co", this.CO),
+                new DbParam("@sta", this.Staub),
+                new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@brn", this.Brennwert),
+                new DbParam("@vl", this.Vorlauf),
+                new DbParam("@rl", this.Ruecklauf),
+                new DbParam("@id", this.ID)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -434,20 +433,20 @@ namespace WindowsFormsApplication1
                             Betriebsbereitschaftverlust = ?
                           WHERE ID = ?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@fir", this.Firma ?? ""),
-                new OleDbParameter("@pth", this.Ptherm),
-                new OleDbParameter("@bre", this.Brennstoff),
-                new OleDbParameter("@wgg", this.Wirkungsgrad_Gas),
-                new OleDbParameter("@wgo", this.Wirkungsgrad_Oel),
-                new OleDbParameter("@rau", this.Raumbedarf),
-                new OleDbParameter("@co2", this.CO2),
-                new OleDbParameter("@so2", this.SO2),
-                new OleDbParameter("@nox", this.NOx),
-                new OleDbParameter("@co", this.CO),
-                new OleDbParameter("@sta", this.Staub),
-                new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust),
-                new OleDbParameter("@id", id)
+            DbParam[] ps = {
+                new DbParam("@fir", this.Firma ?? ""),
+                new DbParam("@pth", this.Ptherm),
+                new DbParam("@bre", this.Brennstoff),
+                new DbParam("@wgg", this.Wirkungsgrad_Gas),
+                new DbParam("@wgo", this.Wirkungsgrad_Oel),
+                new DbParam("@rau", this.Raumbedarf),
+                new DbParam("@co2", this.CO2),
+                new DbParam("@so2", this.SO2),
+                new DbParam("@nox", this.NOx),
+                new DbParam("@co", this.CO),
+                new DbParam("@sta", this.Staub),
+                new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -461,7 +460,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT Bezeichner FROM [" + TABLE + "] WHERE ID = ?",
-                new OleDbParameter("@id", id));
+                new DbParam("@id", id));
             return (v != null && v != DBNull.Value) ? Convert.ToString(v) : "";
         }
 
@@ -473,8 +472,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ? AND ID <> ?",
-                new OleDbParameter("@nam", name ?? ""),
-                new OleDbParameter("@id", eigeneId));
+                new DbParam("@nam", name ?? ""),
+                new DbParam("@id", eigeneId));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
@@ -494,7 +493,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
-                new OleDbParameter("@nam", name ?? ""));
+                new DbParam("@nam", name ?? ""));
 
             int anzahl = (dt != null) ? dt.Rows.Count : 0;
 
@@ -528,7 +527,7 @@ namespace WindowsFormsApplication1
             }
 
             string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", id));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
         }
 
         // --- MAPPING ---

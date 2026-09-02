@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             psU[1] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
             for (int i = 1; i <= 12; i++) psU[1 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
             psU[14] = new System.Data.OleDb.OleDbParameter("@bez", (object)m_szProzessname ?? DBNull.Value);
-            if (DataRepository.ExecuteSQL(sqlU, psU))
+            if (DataRepository.ExecuteSQL(sqlU, DbParam.Von(psU)))
                 MessageBox.Show("Daten aktualisiert!");
             else
                 MessageBox.Show("Fehler beim Aktualisieren der Daten!");
@@ -137,7 +137,7 @@ namespace WindowsFormsApplication1
                 psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
                 for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
                 psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
-                if (DataRepository.ExecuteSQL(sqlI, psI))
+                if (DataRepository.ExecuteSQL(sqlI, DbParam.Von(psI)))
                     MessageBox.Show("Daten gespeichert!");
                 else
                     MessageBox.Show("Fehler beim Aktualisieren der Daten!");
@@ -165,7 +165,7 @@ namespace WindowsFormsApplication1
             psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
             for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
             psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
-            if (DataRepository.ExecuteSQL(sqlI, psI))
+            if (DataRepository.ExecuteSQL(sqlI, DbParam.Von(psI)))
                 MessageBox.Show("Daten gespeichert!");
             else
                 MessageBox.Show("Fehler beim Aktualisieren der Daten!");

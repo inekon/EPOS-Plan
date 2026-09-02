@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -42,7 +41,7 @@ namespace WindowsFormsApplication1
                 string sql = "SELECT v.ID_Projekt, v.Variantenname, p.Projektname " +
                              "FROM " + TAB_VARIANTE + " v INNER JOIN Tab_Projekt p ON v.ID_Projekt = p.ID " +
                              "WHERE v.ID_ProjektRef = ? ORDER BY v.Variantenname";
-                DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", idStamm));
+                DataTable dt = DataRepository.GetDataTable(sql, new DbParam("?", idStamm));
                 foreach (DataRow r in dt.Rows)
                 {
                     gruppe.Add(new VarianteInfo
@@ -80,7 +79,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT ID_ProjektRef FROM " + TAB_VARIANTE + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@proj", idProjekt));
                 if (o != null) return Convert.ToInt32(o);
             }
             catch { }
@@ -91,7 +90,7 @@ namespace WindowsFormsApplication1
         {
             object o = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ?",
-                new OleDbParameter("@name", name));
+                new DbParam("@name", name));
             return o != null && Convert.ToInt32(o) > 0;
         }
 
@@ -129,10 +128,10 @@ namespace WindowsFormsApplication1
                 int vid = DataRepository.GetMaxID(TAB_VARIANTE, "ID") + 1;
                 string ins = "INSERT INTO " + TAB_VARIANTE + " (ID, ID_Projekt, ID_ProjektRef, Variantenname) VALUES (?, ?, ?, ?)";
                 DataRepository.ExecuteSQL(ins,
-                    new OleDbParameter("@id", vid),
-                    new OleDbParameter("@proj", neueId),
-                    new OleDbParameter("@ref", idStamm),
-                    new OleDbParameter("@name", bezeichner));
+                    new DbParam("@id", vid),
+                    new DbParam("@proj", neueId),
+                    new DbParam("@ref", idStamm),
+                    new DbParam("@name", bezeichner));
 
                 KopiereEnergieEinstellungen(idStamm, neueId);
                 return neueId;
@@ -175,8 +174,8 @@ namespace WindowsFormsApplication1
                         " custom_price_base, ID_Umrechnung, co2, so2, nox " +
                         "FROM energy_project_settings WHERE ID_Projekt = ?";
                     DataRepository.ExecuteSQL(sqlSettings,
-                        new OleDbParameter("@neu", nachProjekt),
-                        new OleDbParameter("@von", vonProjekt));
+                        new DbParam("@neu", nachProjekt),
+                        new DbParam("@von", vonProjekt));
                 }
 
                 if (!HatProjektZeilen("energy_price", nachProjekt))
@@ -187,8 +186,8 @@ namespace WindowsFormsApplication1
                         "SELECT carrier_id, ?, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis " +
                         "FROM energy_price WHERE id_projekt = ?";
                     DataRepository.ExecuteSQL(sqlPrices,
-                        new OleDbParameter("@neu", nachProjekt),
-                        new OleDbParameter("@von", vonProjekt));
+                        new DbParam("@neu", nachProjekt),
+                        new DbParam("@von", vonProjekt));
                 }
             }
             catch { /* Hinweis obliegt dem Aufrufer; das Anlegen selbst gilt als gelungen */ }
@@ -203,7 +202,7 @@ namespace WindowsFormsApplication1
         {
             return StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT COUNT(*) FROM [" + tabelle + "] WHERE [ID_Projekt] = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt))) > 0;
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt))) > 0;
         }
 
         // ------------------------------------------------------------- Löschen
@@ -221,7 +220,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataRepository.ExecuteSQL("DELETE FROM " + TAB_VARIANTE + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@proj", idProjekt));
 
                 WErzeugerCtrl werz = new WErzeugerCtrl { ID_Projekt = idProjekt };
                 werz.Delete();
@@ -256,7 +255,7 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dt.Rows)
                 {
                     DataRepository.ExecuteSQL("DELETE FROM " + TAB_VARIANTE + " WHERE ID = ?",
-                        new OleDbParameter("@id", Convert.ToInt32(r["ID"])));
+                        new DbParam("@id", Convert.ToInt32(r["ID"])));
                     entfernt++;
                 }
             }

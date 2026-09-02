@@ -1,5 +1,4 @@
-﻿using System.Data.OleDb;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -139,9 +138,9 @@ namespace WindowsFormsApplication1
             "WHERE ID_Projekt = ? AND ID_Type IN (" + WAERMEERZEUGER_TYPEN + ") AND [Rücklauf] > 0";
 
         /// <summary>Parameter zu <see cref="SQL_SYSTEM_VORLAUF"/> / <see cref="SQL_SYSTEM_RUECKLAUF"/>.</summary>
-        public static OleDbParameter[] SystemTemperaturParameter(int idProjekt)
+        public static DbParam[] SystemTemperaturParameter(int idProjekt)
         {
-            return new[] { Par("@proj", OleDbType.Integer, idProjekt) };
+            return new[] { Par("@proj", DbParamTyp.Integer, idProjekt) };
         }
 
         /// <summary>
@@ -202,7 +201,7 @@ namespace WindowsFormsApplication1
         /// eingebaute Vorbelegung "55/35" o. ä.: Niedertemperatursysteme (z. B. 35/28)
         /// sollen sich aus den Erzeugern selbst ergeben.
         /// </summary>
-        public static OleDbParameter[] PufferParameter(int idPuffer, int idProjekt,
+        public static DbParam[] PufferParameter(int idPuffer, int idProjekt,
                                                        string bezeichner, int volumenLiter,
                                                        int? vorlauf = null, int? ruecklauf = null)
         {
@@ -213,16 +212,16 @@ namespace WindowsFormsApplication1
 
             return new[]
             {
-                Par("@id",    OleDbType.Integer,  idPuffer),
-                Par("@proj",  OleDbType.Integer,  idProjekt),
-                Par("@bez",   OleDbType.VarWChar, bezeichner),
-                Par("@typ",   OleDbType.VarWChar, SPEICHERTYP_PUFFER),
-                Par("@vol",   OleDbType.Integer,  volumenLiter),
-                Par("@verl",  OleDbType.Double,   0.0),
-                Par("@inv",   OleDbType.Double,   0.0),
-                Par("@verw",  OleDbType.VarWChar, VERWENDUNG_HEIZUNG),
-                Par("@vor",   OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
-                Par("@rueck", OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value)
+                Par("@id",    DbParamTyp.Integer,  idPuffer),
+                Par("@proj",  DbParamTyp.Integer,  idProjekt),
+                Par("@bez",   DbParamTyp.VarWChar, bezeichner),
+                Par("@typ",   DbParamTyp.VarWChar, SPEICHERTYP_PUFFER),
+                Par("@vol",   DbParamTyp.Integer,  volumenLiter),
+                Par("@verl",  DbParamTyp.Double,   0.0),
+                Par("@inv",   DbParamTyp.Double,   0.0),
+                Par("@verw",  DbParamTyp.VarWChar, VERWENDUNG_HEIZUNG),
+                Par("@vor",   DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
+                Par("@rueck", DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value)
             };
         }
 
@@ -261,7 +260,7 @@ namespace WindowsFormsApplication1
         /// ENDE der Liste, weil die Spalte per <c>ALTER TABLE ADD COLUMN</c> hinten
         /// angehängt wird und beide SQL-Anweisungen sie dort führen.
         /// </param>
-        public static OleDbParameter[] PufferParameterVoll(
+        public static DbParam[] PufferParameterVoll(
             int idPuffer, int idProjekt, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
@@ -272,27 +271,27 @@ namespace WindowsFormsApplication1
 
             return new[]
             {
-                Par("@id",       OleDbType.Integer,  idPuffer),
-                Par("@proj",     OleDbType.Integer,  idProjekt),
-                Par("@bez",      OleDbType.VarWChar, bezeichner),
-                Par("@her",      OleDbType.VarWChar, hersteller ?? ""),
-                Par("@typ",      OleDbType.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
-                Par("@vol",      OleDbType.Integer,  volumenLiter),
-                Par("@verl",     OleDbType.Double,   verluste),
-                Par("@inv",      OleDbType.Double,   investitionskosten),
-                Par("@verw",     OleDbType.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
-                Par("@vor",      OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
-                Par("@rueck",    OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
-                Par("@sEin",     OleDbType.Double,   schwelleEin),
-                Par("@sAus",     OleDbType.Double,   schwelleAus),
-                Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
-                Par("@entlade",  OleDbType.Integer,  entladeprio),
-                Par("@sReserve", OleDbType.Double,   schwelleReserve)
+                Par("@id",       DbParamTyp.Integer,  idPuffer),
+                Par("@proj",     DbParamTyp.Integer,  idProjekt),
+                Par("@bez",      DbParamTyp.VarWChar, bezeichner),
+                Par("@her",      DbParamTyp.VarWChar, hersteller ?? ""),
+                Par("@typ",      DbParamTyp.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
+                Par("@vol",      DbParamTyp.Integer,  volumenLiter),
+                Par("@verl",     DbParamTyp.Double,   verluste),
+                Par("@inv",      DbParamTyp.Double,   investitionskosten),
+                Par("@verw",     DbParamTyp.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
+                Par("@vor",      DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
+                Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
+                Par("@sEin",     DbParamTyp.Double,   schwelleEin),
+                Par("@sAus",     DbParamTyp.Double,   schwelleAus),
+                Par("@sNachr",   DbParamTyp.Double,   schwelleAusNachrang),
+                Par("@entlade",  DbParamTyp.Integer,  entladeprio),
+                Par("@sReserve", DbParamTyp.Double,   schwelleReserve)
             };
         }
 
         /// <summary>Parameter zu <see cref="SQL_PUFFER_UPDATE_VOLL"/> (ID zuletzt).</summary>
-        public static OleDbParameter[] PufferParameterVollUpdate(
+        public static DbParam[] PufferParameterVollUpdate(
             int idPuffer, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
@@ -303,21 +302,21 @@ namespace WindowsFormsApplication1
 
             return new[]
             {
-                Par("@bez",      OleDbType.VarWChar, bezeichner),
-                Par("@her",      OleDbType.VarWChar, hersteller ?? ""),
-                Par("@typ",      OleDbType.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
-                Par("@vol",      OleDbType.Integer,  volumenLiter),
-                Par("@verl",     OleDbType.Double,   verluste),
-                Par("@inv",      OleDbType.Double,   investitionskosten),
-                Par("@verw",     OleDbType.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
-                Par("@vor",      OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
-                Par("@rueck",    OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
-                Par("@sEin",     OleDbType.Double,   schwelleEin),
-                Par("@sAus",     OleDbType.Double,   schwelleAus),
-                Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
-                Par("@entlade",  OleDbType.Integer,  entladeprio),
-                Par("@sReserve", OleDbType.Double,   schwelleReserve),
-                Par("@id",       OleDbType.Integer,  idPuffer)
+                Par("@bez",      DbParamTyp.VarWChar, bezeichner),
+                Par("@her",      DbParamTyp.VarWChar, hersteller ?? ""),
+                Par("@typ",      DbParamTyp.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
+                Par("@vol",      DbParamTyp.Integer,  volumenLiter),
+                Par("@verl",     DbParamTyp.Double,   verluste),
+                Par("@inv",      DbParamTyp.Double,   investitionskosten),
+                Par("@verw",     DbParamTyp.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
+                Par("@vor",      DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
+                Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
+                Par("@sEin",     DbParamTyp.Double,   schwelleEin),
+                Par("@sAus",     DbParamTyp.Double,   schwelleAus),
+                Par("@sNachr",   DbParamTyp.Double,   schwelleAusNachrang),
+                Par("@entlade",  DbParamTyp.Integer,  entladeprio),
+                Par("@sReserve", DbParamTyp.Double,   schwelleReserve),
+                Par("@id",       DbParamTyp.Integer,  idPuffer)
             };
         }
 
@@ -358,50 +357,53 @@ namespace WindowsFormsApplication1
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         /// <summary>Parameter zu <see cref="SQL_ANLAGENZEILE_INSERT"/>.</summary>
-        public static OleDbParameter[] AnlagenzeileParameter(int idProjekt, string bezeichner, int idPuffer)
+        public static DbParam[] AnlagenzeileParameter(int idProjekt, string bezeichner, int idPuffer)
         {
             // ACHTUNG: die Parameter durchgehend über Par() mit ausdrücklichem Typ. Ein
             // literales 0 als Wert würde sonst an die Überladung
-            // OleDbParameter(string, OleDbType) binden - OleDbType.Empty hat den Wert 0 -
-            // und das INSERT scheitert mit "the OleDbType property is uninitialized".
+            // DbParam(string, DbParamTyp) binden - die Sprache lässt die literale Null in
+            // jeden Aufzählungstyp - und der Parameter stünde dann ohne Wert da. Bis zur
+            // Umstellung auf DbParam (iU6) hatte dieselbe Falle den Namen
+            // OleDbType.Empty und ließ das INSERT mit "the OleDbType property is
+            // uninitialized" scheitern.
             return new[]
             {
-                Par("@proj",    OleDbType.Integer,  idProjekt),
-                Par("@bez",     OleDbType.VarWChar, bezeichner),
-                Par("@typ",     OleDbType.Integer,  TYP_PUFFER),
-                Par("@art",     OleDbType.VarWChar, ""),
-                Par("@sperr",   OleDbType.Boolean,  false),
-                Par("@svon",    OleDbType.Integer,  0),
-                Par("@sbis",    OleDbType.Integer,  0),
-                Par("@vor",     OleDbType.Integer,  0),
-                Par("@rueck",   OleDbType.Integer,  0),
-                Par("@biv",     OleDbType.Boolean,  false),
-                Par("@ab",      OleDbType.Double,   0.0),
-                Par("@nutz",    OleDbType.Integer,  0),
-                Par("@grenz",   OleDbType.Double,   0.0),
-                Par("@koll",    OleDbType.Integer,  0),
-                Par("@pvleist", OleDbType.Double,   0.0),
-                Par("@neig",    OleDbType.Integer,  0),
-                Par("@azim",    OleDbType.Integer,  0),
-                Par("@wp",      OleDbType.Integer,  System.DBNull.Value),
-                Par("@sol",     OleDbType.Integer,  System.DBNull.Value),
-                Par("@pv",      OleDbType.Integer,  System.DBNull.Value),
-                Par("@sp",      OleDbType.Integer,  System.DBNull.Value),
-                Par("@kes",     OleDbType.Integer,  System.DBNull.Value),
-                Par("@bhkw",    OleDbType.Integer,  System.DBNull.Value),
-                Par("@puf",     OleDbType.Integer,  idPuffer > 0 ? (object)idPuffer : System.DBNull.Value),
-                Par("@carrier", OleDbType.Integer,  System.DBNull.Value),
-                Par("@stab",    OleDbType.Boolean,  false),
-                Par("@vol",     OleDbType.Double,   0.0),
-                Par("@mix",     OleDbType.Boolean,  false),
-                Par("@solan",   OleDbType.Integer,  0),
+                Par("@proj",    DbParamTyp.Integer,  idProjekt),
+                Par("@bez",     DbParamTyp.VarWChar, bezeichner),
+                Par("@typ",     DbParamTyp.Integer,  TYP_PUFFER),
+                Par("@art",     DbParamTyp.VarWChar, ""),
+                Par("@sperr",   DbParamTyp.Boolean,  false),
+                Par("@svon",    DbParamTyp.Integer,  0),
+                Par("@sbis",    DbParamTyp.Integer,  0),
+                Par("@vor",     DbParamTyp.Integer,  0),
+                Par("@rueck",   DbParamTyp.Integer,  0),
+                Par("@biv",     DbParamTyp.Boolean,  false),
+                Par("@ab",      DbParamTyp.Double,   0.0),
+                Par("@nutz",    DbParamTyp.Integer,  0),
+                Par("@grenz",   DbParamTyp.Double,   0.0),
+                Par("@koll",    DbParamTyp.Integer,  0),
+                Par("@pvleist", DbParamTyp.Double,   0.0),
+                Par("@neig",    DbParamTyp.Integer,  0),
+                Par("@azim",    DbParamTyp.Integer,  0),
+                Par("@wp",      DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@sol",     DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@pv",      DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@sp",      DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@kes",     DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@bhkw",    DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@puf",     DbParamTyp.Integer,  idPuffer > 0 ? (object)idPuffer : System.DBNull.Value),
+                Par("@carrier", DbParamTyp.Integer,  System.DBNull.Value),
+                Par("@stab",    DbParamTyp.Boolean,  false),
+                Par("@vol",     DbParamTyp.Double,   0.0),
+                Par("@mix",     DbParamTyp.Boolean,  false),
+                Par("@solan",   DbParamTyp.Integer,  0),
                 // Ladeprioritäten und -grenzen: 0 = „nach Vorgabe" / „nicht gesetzt"
                 // (Konzept 3.4) - siehe Kopfkommentar der Anweisung.
-                Par("@lprio",   OleDbType.Integer,  0),
-                Par("@lgrenz",  OleDbType.Double,   0.0),
-                Par("@lprioPV", OleDbType.Integer,  0),
-                Par("@lprio2",  OleDbType.Integer,  0),
-                Par("@lgrenz2", OleDbType.Double,   0.0)
+                Par("@lprio",   DbParamTyp.Integer,  0),
+                Par("@lgrenz",  DbParamTyp.Double,   0.0),
+                Par("@lprioPV", DbParamTyp.Integer,  0),
+                Par("@lprio2",  DbParamTyp.Integer,  0),
+                Par("@lgrenz2", DbParamTyp.Double,   0.0)
             };
         }
 
@@ -417,14 +419,14 @@ namespace WindowsFormsApplication1
             "WHERE ID_Projekt = ? AND ID_Type = ?";
 
         /// <summary>Parameter zu <see cref="SQL_BHKW_AUF_PUFFER"/>.</summary>
-        public static OleDbParameter[] BhkwAufPufferParameter(int idProjekt, int idPuffer)
+        public static DbParam[] BhkwAufPufferParameter(int idProjekt, int idPuffer)
         {
             return new[]
             {
-                Par("@ziel", OleDbType.VarWChar, WS_ZIEL_PUFFER_HEIZUNG),
-                Par("@puf",  OleDbType.Integer,  idPuffer),
-                Par("@proj", OleDbType.Integer,  idProjekt),
-                Par("@typ",  OleDbType.Integer,  TYP_BHKW)
+                Par("@ziel", DbParamTyp.VarWChar, WS_ZIEL_PUFFER_HEIZUNG),
+                Par("@puf",  DbParamTyp.Integer,  idPuffer),
+                Par("@proj", DbParamTyp.Integer,  idProjekt),
+                Par("@typ",  DbParamTyp.Integer,  TYP_BHKW)
             };
         }
 
@@ -509,9 +511,9 @@ namespace WindowsFormsApplication1
         /// <see cref="System.DBNull"/> sein kann: aus DBNull allein kann der
         /// OLE-DB-Provider den Spaltentyp nicht ableiten.
         /// </summary>
-        public static OleDbParameter Par(string name, OleDbType typ, object wert)
+        public static DbParam Par(string name, DbParamTyp typ, object wert)
         {
-            return new OleDbParameter(name, typ) { Value = wert ?? System.DBNull.Value };
+            return new DbParam(name, typ) { Wert = wert ?? System.DBNull.Value };
         }
     }
 }

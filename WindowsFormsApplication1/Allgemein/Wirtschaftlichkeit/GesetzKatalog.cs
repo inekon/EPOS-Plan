@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -321,15 +320,15 @@ namespace WindowsFormsApplication1
                     "INSERT INTO " + TAB_GESETZESPARAMETER +
                     " (ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle) " +
                     "VALUES (?,?,?,?,?,?,?,?)",
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = id },
-                    new OleDbParameter("@sch", OleDbType.VarWChar, 60) { Value = Gekuerzt(schluessel, 60) },
-                    new OleDbParameter("@kla", OleDbType.VarWChar, 40) { Value = Gekuerzt(klasse, 40) },
-                    new OleDbParameter("@jv", OleDbType.Integer) { Value = jahrVon },
-                    new OleDbParameter("@wert", OleDbType.Double)
-                    { Value = wert.HasValue ? (object)wert.Value : DBNull.Value },
-                    new OleDbParameter("@einh", OleDbType.VarWChar, 20) { Value = Gekuerzt(einheit, 20) },
-                    new OleDbParameter("@sta", OleDbType.VarWChar, 12) { Value = Gekuerzt(status, 12) },
-                    new OleDbParameter("@que", OleDbType.VarWChar, 120) { Value = Gekuerzt(quelle, 120) });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = id },
+                    new DbParam("@sch", DbParamTyp.VarWChar, 60) { Wert = Gekuerzt(schluessel, 60) },
+                    new DbParam("@kla", DbParamTyp.VarWChar, 40) { Wert = Gekuerzt(klasse, 40) },
+                    new DbParam("@jv", DbParamTyp.Integer) { Wert = jahrVon },
+                    new DbParam("@wert", DbParamTyp.Double)
+                    { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value },
+                    new DbParam("@einh", DbParamTyp.VarWChar, 20) { Wert = Gekuerzt(einheit, 20) },
+                    new DbParam("@sta", DbParamTyp.VarWChar, 12) { Wert = Gekuerzt(status, 12) },
+                    new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) });
                 return ok ? id : 0;
             }
             catch { return 0; }
@@ -345,13 +344,13 @@ namespace WindowsFormsApplication1
                 return DataRepository.ExecuteSQL(
                     "UPDATE " + TAB_GESETZESPARAMETER + " SET JahrVon = ?, [Wert] = ?, " +
                     "Einheit = ?, [Status] = ?, Quelle = ? WHERE ID = ?",
-                    new OleDbParameter("@jv", OleDbType.Integer) { Value = jahrVon },
-                    new OleDbParameter("@wert", OleDbType.Double)
-                    { Value = wert.HasValue ? (object)wert.Value : DBNull.Value },
-                    new OleDbParameter("@einh", OleDbType.VarWChar, 20) { Value = Gekuerzt(einheit, 20) },
-                    new OleDbParameter("@sta", OleDbType.VarWChar, 12) { Value = Gekuerzt(status, 12) },
-                    new OleDbParameter("@que", OleDbType.VarWChar, 120) { Value = Gekuerzt(quelle, 120) },
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                    new DbParam("@jv", DbParamTyp.Integer) { Wert = jahrVon },
+                    new DbParam("@wert", DbParamTyp.Double)
+                    { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value },
+                    new DbParam("@einh", DbParamTyp.VarWChar, 20) { Wert = Gekuerzt(einheit, 20) },
+                    new DbParam("@sta", DbParamTyp.VarWChar, 12) { Wert = Gekuerzt(status, 12) },
+                    new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
             catch { return false; }
         }
@@ -364,7 +363,7 @@ namespace WindowsFormsApplication1
             {
                 return DataRepository.ExecuteSQL(
                     "DELETE FROM " + TAB_GESETZESPARAMETER + " WHERE ID = ?",
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = id });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
             catch { return false; }
         }
@@ -514,7 +513,7 @@ namespace WindowsFormsApplication1
         {
             object marker = StilleDb.Scalar(
                 "SELECT MAX([Wert]) FROM " + TAB_GESETZESPARAMETER + " WHERE Schluessel = ?",
-                StilleDb.Par("@s", OleDbType.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
+                StilleDb.Par("@s", DbParamTyp.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
 
             if (marker != null && marker != DBNull.Value)
             {
@@ -554,9 +553,9 @@ namespace WindowsFormsApplication1
 
             int betroffen = StilleDb.NonQuery(
                 "UPDATE " + TAB_GESETZESPARAMETER + " SET [Wert] = ?, Quelle = ? WHERE Schluessel = ?",
-                StilleDb.Par("@w", OleDbType.Double, (double)generation),
-                StilleDb.Par("@q", OleDbType.VarWChar, quelle),
-                StilleDb.Par("@s", OleDbType.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
+                StilleDb.Par("@w", DbParamTyp.Double, (double)generation),
+                StilleDb.Par("@q", DbParamTyp.VarWChar, quelle),
+                StilleDb.Par("@s", DbParamTyp.VarWChar, DbWerte.GESETZ_KATALOG_GENERATION));
 
             if (betroffen > 0) return;
 
@@ -581,14 +580,14 @@ namespace WindowsFormsApplication1
                 "INSERT INTO " + TAB_GESETZESPARAMETER +
                 " (ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle) " +
                 "VALUES (?,?,?,?,?,?,?,?)",
-                StilleDb.Par("@id", OleDbType.Integer, id),
-                StilleDb.Par("@sch", OleDbType.VarWChar, schluessel),
-                StilleDb.Par("@kla", OleDbType.VarWChar, klasse),
-                StilleDb.Par("@jv", OleDbType.Integer, jahrVon),
-                StilleDb.Par("@wert", OleDbType.Double, wert.HasValue ? (object)wert.Value : DBNull.Value),
-                StilleDb.Par("@einh", OleDbType.VarWChar, einheit),
-                StilleDb.Par("@sta", OleDbType.VarWChar, status),
-                StilleDb.Par("@que", OleDbType.VarWChar, quelle));
+                StilleDb.Par("@id", DbParamTyp.Integer, id),
+                StilleDb.Par("@sch", DbParamTyp.VarWChar, schluessel),
+                StilleDb.Par("@kla", DbParamTyp.VarWChar, klasse),
+                StilleDb.Par("@jv", DbParamTyp.Integer, jahrVon),
+                StilleDb.Par("@wert", DbParamTyp.Double, wert.HasValue ? (object)wert.Value : DBNull.Value),
+                StilleDb.Par("@einh", DbParamTyp.VarWChar, einheit),
+                StilleDb.Par("@sta", DbParamTyp.VarWChar, status),
+                StilleDb.Par("@que", DbParamTyp.VarWChar, quelle));
 
             if (betroffen < 0)
                 throw new InvalidOperationException(

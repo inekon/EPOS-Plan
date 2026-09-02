@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
@@ -670,7 +669,7 @@ namespace WindowsFormsApplication1
                 "SELECT a.ID, a.Bezeichner, a.WQ_Typ, w.Typ AS Bauart " +
                 "FROM Tab_Energieanlagen AS a INNER JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.WP_TYP,
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             if (dt == null) return;
 
             foreach (DataRow r in dt.Rows)
@@ -711,7 +710,7 @@ namespace WindowsFormsApplication1
                 "FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.WP_TYP + " " +
                 "AND WQ_Unbegrenzt = TRUE",
-                new OleDbParameter("@p", idProjekt));
+                new DbParam("@p", idProjekt));
             if (dt == null) return;
 
             foreach (DataRow r in dt.Rows)
@@ -1215,7 +1214,7 @@ namespace WindowsFormsApplication1
                     DataTable dt = StilleDb.Tabelle(
                         "SELECT ID, [" + SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS +
                         "] AS Modus FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                        StilleDb.Par("@proj", OleDbType.Integer, _idProjekt));
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt));
 
                     if (dt != null)
                         foreach (DataRow r in dt.Rows)
@@ -1260,7 +1259,7 @@ namespace WindowsFormsApplication1
                         "FROM Tab_Energieanlagen AS a INNER JOIN Tab_Heizkessel AS k " +
                         "     ON a.ID_Kessel = k.ID " +
                         "WHERE a.ID_Projekt = ?",
-                        StilleDb.Par("@proj", OleDbType.Integer, _idProjekt));
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt));
 
                     if (dt != null)
                         foreach (DataRow r in dt.Rows)
@@ -1293,7 +1292,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dt = StilleDb.Tabelle(
                     "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
-                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
                 if (dt == null) return;
 
                 foreach (DataRow r in dt.Rows)

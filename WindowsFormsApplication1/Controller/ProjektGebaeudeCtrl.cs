@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -28,7 +27,7 @@ namespace WindowsFormsApplication1
         {
             // Sicherer parametrisierter SQL-String statt ungeschützter String-Verkettung
             string sql = "SELECT * FROM Abfrage_Projektgebaeude WHERE ID_Projekt = ?";
-            OleDbParameter parameter = new OleDbParameter("?", ID_Projekt);
+            DbParam parameter = new DbParam("?", ID_Projekt);
 
             // Daten über das Repository laden
             DataTable dt = DataRepository.GetDataTable(sql, parameter);

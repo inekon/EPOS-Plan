@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -320,7 +319,7 @@ namespace WindowsFormsApplication1
                     "FROM (Tab_Energieanlagen AS e LEFT JOIN Tab_BHKW AS b ON e.ID_BHKW = b.ID) " +
                     "LEFT JOIN Tab_Heizkessel AS h ON e.ID_Kessel = h.ID " +
                     "WHERE e.ID_Projekt = ? AND e.ID_Carrier = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
                 if (dt == null) return 0;
 
                 foreach (DataRow r in dt.Rows)
@@ -365,7 +364,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable eff = DataRepository.GetDataTable(
                     "SELECT eff_hi FROM Abfrage_Energietraeger_Effektiv WHERE ID_Projekt = ? AND carrier_id = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
                 if (eff != null && eff.Rows.Count > 0 && eff.Rows[0][0] != DBNull.Value)
                     info.EffHi = Convert.ToDouble(eff.Rows[0][0]);
             }
@@ -381,7 +380,7 @@ namespace WindowsFormsApplication1
                     "SELECT custom_price_work, custom_price_base, custom_price_power " +
                     "FROM energy_project_settings " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
                 if (s != null && s.Rows.Count > 0)
                 {
                     sPreis = W(s.Rows[0], "custom_price_work");
@@ -397,7 +396,7 @@ namespace WindowsFormsApplication1
                 DataTable k = DataRepository.GetDataTable(
                     "SELECT price_work, price_base, price_power, price_power_modus " +
                     "FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@c", carrierId));
+                    new DbParam("@c", carrierId));
                 if (k != null && k.Rows.Count > 0)
                 {
                     kPreis = W(k.Rows[0], "price_work");
@@ -449,7 +448,7 @@ namespace WindowsFormsApplication1
                     "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
-                    new OleDbParameter("@c", carrierId));
+                    new DbParam("@c", carrierId));
                 if (b != null && b.Rows.Count > 0)
                 {
                     // BEHG-pflichtig: Kategorien 1 Gas / 2 Öl / 3 Koks / 4 Kohle /
@@ -514,7 +513,7 @@ namespace WindowsFormsApplication1
                     "SELECT ec.id FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
                     "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
             catch { }

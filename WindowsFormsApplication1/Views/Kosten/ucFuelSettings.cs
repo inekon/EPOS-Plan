@@ -888,7 +888,7 @@ namespace WindowsFormsApplication1
                         "[factor] = ?, [user_edited] = TRUE, [" +
                         SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ?, [" +
                         SchemaKatalog.SPALTE_EC_AKTIV + "] = ? WHERE [ID] = ?",
-                        new OleDbParameter[]
+                        DbParam.Von(new OleDbParameter[]
                         {
                             new OleDbParameter("@von", r.Von),
                             new OleDbParameter("@nach", r.Nach),
@@ -896,7 +896,7 @@ namespace WindowsFormsApplication1
                             new OleDbParameter("@n", r.Name ?? ""),
                             new OleDbParameter("@a", r.Aktiv),
                             new OleDbParameter("@id", r.Id)
-                        });
+                        }));
                 }
                 else
                 {
@@ -909,7 +909,7 @@ namespace WindowsFormsApplication1
                         "[to_unit], [factor], [user_edited], [" +
                         SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" +
                         SchemaKatalog.SPALTE_EC_AKTIV + "]) VALUES (?, ?, ?, ?, ?, TRUE, ?, ?)",
-                        new OleDbParameter[]
+                        DbParam.Von(new OleDbParameter[]
                         {
                             new OleDbParameter("@id", neueId),
                             new OleDbParameter("@b", r.IdBrennstoff),
@@ -918,7 +918,7 @@ namespace WindowsFormsApplication1
                             new OleDbParameter("@f", r.Faktor),
                             new OleDbParameter("@n", r.Name ?? ""),
                             new OleDbParameter("@a", r.Aktiv)
-                        });
+                        }));
                     r.Id = neueId;
                 }
             }
@@ -1810,7 +1810,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@date", OleDbType.Date) { Value = chosenDate.Date } // .Date ignoriert Uhrzeit-Störfaktoren
                 };
 
-                int existingCount = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheck, checkParams));
+                int existingCount = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheck, DbParam.Von(checkParams)));
 
                 if (existingCount > 0)
                 {
@@ -1820,7 +1820,7 @@ namespace WindowsFormsApplication1
                                                     arbeitspreis_unit = ?, leistungspreis = ?
                                                 WHERE carrier_id = ? AND id_projekt = ? AND valid_from = ?";
 
-                    DataRepository.ExecuteSQL(sqlUpdateHistory, new OleDbParameter[] {
+                    DataRepository.ExecuteSQL(sqlUpdateHistory, DbParam.Von(new OleDbParameter[] {
                         new OleDbParameter("@ap", Math.Round(currentPriceBase, 4)),
                         new OleDbParameter("@hi", Math.Round(currentHiBase, 4)),
                         new OleDbParameter("@gp", Math.Round(currentGroundPrice, 4)),
@@ -1829,7 +1829,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@cid", _carrier.ID),
                         new OleDbParameter("@prid", _projectId),
                         new OleDbParameter("@date", OleDbType.Date) { Value = chosenDate.Date }
-                    });
+                    }));
                 }
                 else
                 {
@@ -1839,7 +1839,7 @@ namespace WindowsFormsApplication1
                                     valid_from, arbeitspreis_unit, leistungspreis) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-                    DataRepository.ExecuteSQL(sqlInsertHistory, new OleDbParameter[] {
+                    DataRepository.ExecuteSQL(sqlInsertHistory, DbParam.Von(new OleDbParameter[] {
 	                    new OleDbParameter("@cid", _carrier.ID),
 	                    new OleDbParameter("@prid", _projectId),
 	                    new OleDbParameter("@ap", Math.Round(currentPriceBase, 4)),
@@ -1848,7 +1848,7 @@ namespace WindowsFormsApplication1
 	                        new OleDbParameter("@date", OleDbType.Date) { Value = chosenDate.Date },
 	                    new OleDbParameter("@au", lblBasisnheit.Text),
 	                    new OleDbParameter("@lp", Math.Round(currentPowerPrice, 4))
-	                });
+	                }));
                 }
 
                 // Speicher-Anker aktualisieren
@@ -1869,7 +1869,7 @@ namespace WindowsFormsApplication1
                                 co2 = ?, so2 = ?, nox = ?
                                 WHERE ID_Projekt = ? AND ID_Energieträger = ?";
 
-            int rows = (int)DataRepository.ExecuteNonQuery(sqlUpsert, new OleDbParameter[] {
+            int rows = (int)DataRepository.ExecuteNonQuery(sqlUpsert, DbParam.Von(new OleDbParameter[] {
                 new OleDbParameter("@p", currentPriceBase),
                 new OleDbParameter("@pl", currentPowerPrice),
                 new OleDbParameter("@hi", currentHiBase),
@@ -1881,7 +1881,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@nox", currentNOx),
                 new OleDbParameter("@pid", _projectId),
                 new OleDbParameter("@eid", _carrier.ID)
-            });
+            }));
 
             if (rows == 0)
             {
@@ -1889,7 +1889,7 @@ namespace WindowsFormsApplication1
                                     (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, 
                                     custom_price_base, ID_Umrechnung, co2, so2, nox) 
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
+                DataRepository.ExecuteSQL(sqlInsert, DbParam.Von(new OleDbParameter[] {
                     new OleDbParameter("@pid", _projectId),
                     new OleDbParameter("@eid", _carrier.ID),
                     new OleDbParameter("@p", currentPriceBase),
@@ -1901,7 +1901,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@co2", currentCO2),
                     new OleDbParameter("@so2", currentSO2),
                     new OleDbParameter("@nox", currentNOx)
-                });
+                }));
             }
 
             // AP4: Der Aufschlagsblock schreibt in dieselbe Zeile und deshalb ERST
@@ -1938,7 +1938,7 @@ namespace WindowsFormsApplication1
             string sql = "SELECT id_brennstoff, from_unit, to_unit, factor FROM ENERGY_CONVERSION WHERE id_brennstoff = ?";
 
             OleDbParameter[] ps = { new OleDbParameter("@id", Idbrennstoff) };
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
 
             foreach (DataRow row in dt.Rows)
             {
@@ -1962,7 +1962,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@c", carrierId)
             };
 
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -2007,7 +2007,7 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@fu", conv.FromUnit),
                     new OleDbParameter("@tu", conv.ToUnitCode)
                 };
-                DataTable dt = DataRepository.GetDataTable(sql, ps);
+                DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     return Convert.ToInt32(dt.Rows[0]["ID"]);
@@ -2095,7 +2095,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DataTable dt = DataRepository.GetDataTable(sql, parameters.ToArray());
+                DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(parameters.ToArray()));
                 dgvHistory.DataSource = dt;
             }
             catch (Exception ex)

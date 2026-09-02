@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -183,7 +182,7 @@ namespace WindowsFormsApplication1
         private void KlimaregionUndGeoLesen()
         {
             object v = StilleDb.Scalar("SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
-                                       StilleDb.Par("@id", OleDbType.Integer, m_ID_Projekt));
+                                       StilleDb.Par("@id", DbParamTyp.Integer, m_ID_Projekt));
             if (v != null) nID_Klimaregion = StilleDb.Zahl(v);
             // Protokollkanal-Nachzug: WARNUNG - die Solarthermie rechnet mit dem Wetter
             // eines anderen Projekts weiter, das ist eine Ersatzannahme mit

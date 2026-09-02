@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -65,7 +64,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void ExecuteRead(string sql, params OleDbParameter[] parameters)
+        private void ExecuteRead(string sql, params DbParam[] parameters)
         {
             DataTable dt = DataRepository.GetDataTable(sql, parameters);
             _internalList.Clear();
@@ -127,8 +126,8 @@ namespace WindowsFormsApplication1
             if (idKlimaregion <= 0) return false;
             return DataRepository.ExecuteSQL(
                 "UPDATE Tab_Klimaregion SET Klimazone_DIN4710 = ? WHERE ID = ?",
-                new OleDbParameter("@zone", zone),
-                new OleDbParameter("@id", idKlimaregion));
+                new DbParam("@zone", zone),
+                new DbParam("@id", idKlimaregion));
         }
 
         #endregion
@@ -176,13 +175,13 @@ namespace WindowsFormsApplication1
                          "VALUES (?, ?, ?, ?, ?, ?)";
 
             // WICHTIG: Die Reihenfolge der Parameter MUSS exakt mit dem SQL übereinstimmen!
-            OleDbParameter[] ps = {
-                new OleDbParameter("?", idProjekt),
-                new OleDbParameter("?", szName ?? ""),   // NOT NULL
-                new OleDbParameter("?", Longitude),
-                new OleDbParameter("?", Latitude),
-                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new OleDbParameter("?", Klimazone_DIN4710)
+            DbParam[] ps = {
+                new DbParam("?", idProjekt),
+                new DbParam("?", szName ?? ""),   // NOT NULL
+                new DbParam("?", Longitude),
+                new DbParam("?", Latitude),
+                new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new DbParam("?", Klimazone_DIN4710)
             };
 
             // 2. Da die ID ein AutoWert ist, liefert der Vorgang sie im selben Aufruf
@@ -213,13 +212,13 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE Tab_Klimaregion SET Bezeichner = ?, Longitude = ?, Latitude = ?, " +
                          "Details = ?, Klimazone_DIN4710 = ? WHERE ID = ?";
 
-            OleDbParameter[] parameters = {
-                new OleDbParameter("?", m_szName ?? ""),   // NOT NULL
-                new OleDbParameter("?", Longitude),
-                new OleDbParameter("?", Latitude),
-                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new OleDbParameter("?", Klimazone_DIN4710),
-                new OleDbParameter("?", m_ID_Klimaregion) // WHERE-Bedingung
+            DbParam[] parameters = {
+                new DbParam("?", m_szName ?? ""),   // NOT NULL
+                new DbParam("?", Longitude),
+                new DbParam("?", Latitude),
+                new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new DbParam("?", Klimazone_DIN4710),
+                new DbParam("?", m_ID_Klimaregion) // WHERE-Bedingung
             };
 
             return DataRepository.ExecuteSQL(sql, parameters);
@@ -236,13 +235,13 @@ namespace WindowsFormsApplication1
             {
                 return DataRepository.ExecuteSQL(
                     "DELETE FROM Tab_Klimaregion WHERE Bezeichner = ? AND ID_Projekt = ?",
-                    new OleDbParameter("?", szName ?? ""),
-                    new OleDbParameter("?", idProjekt));
+                    new DbParam("?", szName ?? ""),
+                    new DbParam("?", idProjekt));
             }
 
             return DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_Klimaregion WHERE Bezeichner = ?",
-                new OleDbParameter("?", szName ?? ""));
+                new DbParam("?", szName ?? ""));
         }
 
         #endregion

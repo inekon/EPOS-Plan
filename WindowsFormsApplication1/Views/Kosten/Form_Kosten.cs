@@ -1274,7 +1274,7 @@ namespace WindowsFormsApplication1
             };
 
             // Repository nutzen, um die Daten zu holen
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
 
             // Kostenart, Bemessung und Erlöskennzeichen kommen aus einem ZWEITEN Zugriff
             // direkt auf Tab_ProjektWerte und werden über die ID zusammengeführt:
@@ -1999,7 +1999,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = ID_Projekt <= 0
                 ? DataRepository.GetDataTable(sql)
-                : DataRepository.GetDataTable(sql, ps);
+                : DataRepository.GetDataTable(sql, DbParam.Von(ps));
 
             foreach (DataRow row in dt.Rows)
             {
@@ -2102,7 +2102,7 @@ namespace WindowsFormsApplication1
                     int carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
-                        new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) });
+                        DbParam.Von(new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) }));
                     if (existing != null && existing != DBNull.Value)
                         carrierId = Convert.ToInt32(existing);
 
@@ -2129,16 +2129,16 @@ namespace WindowsFormsApplication1
                             new OleDbParameter("@nox",   default_nox),
                             new OleDbParameter("@active", OleDbType.Boolean) { Value = true }
                         };
-                        carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
+                        carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, DbParam.Von(ps));
                     }
 
                     // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
                     int vorhanden = Convert.ToInt32(DataRepository.ExecuteScalar(
                         "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
-                        new OleDbParameter[] {
+                        DbParam.Von(new OleDbParameter[] {
                     new OleDbParameter("@pid", m_ID_Projekt),
                     new OleDbParameter("@eid", carrierId)
-                        }));
+                        })));
                     if (vorhanden > 0)
                     {
                         MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
@@ -2151,7 +2151,7 @@ namespace WindowsFormsApplication1
                     string sqlHistory = @"INSERT INTO energy_price
                          (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                    DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
+                    DataRepository.ExecuteSQL(sqlHistory, DbParam.Von(new OleDbParameter[] {
                         new OleDbParameter("@cid",  carrierId),
                         new OleDbParameter("@prid", m_ID_Projekt),
                         new OleDbParameter("@ap",   Math.Round(default_arbeitspreis, 4)),
@@ -2160,13 +2160,13 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
                         new OleDbParameter("@au",   dlg.SelectedBillingUnit),
                         new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
-                    });
+                    }));
 
                     string sqlInsert = @"INSERT INTO energy_Project_settings
                          (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                           custom_price_base, ID_Umrechnung, co2, so2, nox)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
+                    DataRepository.ExecuteSQL(sqlInsert, DbParam.Von(new OleDbParameter[] {
                         new OleDbParameter("@pid",    m_ID_Projekt),
                         new OleDbParameter("@eid",    carrierId),
                         new OleDbParameter("@p",      Math.Round(default_arbeitspreis, 4)),
@@ -2178,7 +2178,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@co2",    default_co2),
                         new OleDbParameter("@so2",    default_so2),
                         new OleDbParameter("@nox",    default_nox)
-                    });
+                    }));
 
                     MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
                     return dlg.SelectedName;

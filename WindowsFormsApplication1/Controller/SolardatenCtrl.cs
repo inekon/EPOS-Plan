@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -66,8 +65,8 @@ namespace WindowsFormsApplication1
         {
             string sql = "SELECT * FROM Tab_Solar WHERE ID_Klimaregion = ? ORDER BY ID";
 
-            OleDbParameter paramReg = new OleDbParameter("@regId", OleDbType.Integer);
-            paramReg.Value = ID_Klimaregion;
+            DbParam paramReg = new DbParam("@regId", DbParamTyp.Integer);
+            paramReg.Wert = ID_Klimaregion;
 
             DataTable dt = DataRepository.GetDataTable(sql, new[] { paramReg });
 
@@ -145,9 +144,9 @@ namespace WindowsFormsApplication1
                         foreach (var item in list)
                         {
                             v.Ausfuehren(sqlInsert,
-                                new OleDbParameter("@id", OleDbType.Integer) { Value = currentID },
-                                new OleDbParameter("@regId", OleDbType.Integer) { Value = ID_Klimaregion },
-                                new OleDbParameter("@temp", OleDbType.Double) { Value = item.Außen_Temp });
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = currentID },
+                                new DbParam("@regId", DbParamTyp.Integer) { Wert = ID_Klimaregion },
+                                new DbParam("@temp", DbParamTyp.Double) { Wert = item.Außen_Temp });
 
                             currentID++;
                         }
@@ -183,7 +182,7 @@ namespace WindowsFormsApplication1
                 int refID = 0;
                 string sqlRef = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
                 object refRes = v.Skalar(sqlRef,
-                    new OleDbParameter("@name", OleDbType.VarWChar) { Value = szName ?? (object)DBNull.Value });
+                    new DbParam("@name", DbParamTyp.VarWChar) { Wert = szName ?? (object)DBNull.Value });
                 if (refRes != null && refRes != DBNull.Value)
                 {
                     refID = Convert.ToInt32(refRes);
@@ -194,11 +193,11 @@ namespace WindowsFormsApplication1
                 foreach (DataRow row in dt.Rows)
                 {
                     v.Ausfuehren(sqlInsert,
-                        new OleDbParameter("@id", OleDbType.Integer) { Value = nextID++ },
-                        new OleDbParameter("@regId", OleDbType.Integer) { Value = refID },
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = nextID++ },
+                        new DbParam("@regId", DbParamTyp.Integer) { Wert = refID },
                         // Dynamische Typprüfung für die übergebene DataTable
-                        new OleDbParameter("@temp", OleDbType.Double)
-                        { Value = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0 });
+                        new DbParam("@temp", DbParamTyp.Double)
+                        { Wert = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0 });
                 }
 
                 return true;

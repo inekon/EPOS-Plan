@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -48,10 +47,10 @@ namespace WindowsFormsApplication1
             if (carrierId <= 0 || string.IsNullOrWhiteSpace(name)) return false;
             return DataRepository.ExecuteSQL(
                 "UPDATE energy_carrier SET [name] = ?, group_code = ? WHERE id = ?",
-                new OleDbParameter("@n", name.Trim()),
-                new OleDbParameter("@g", string.IsNullOrWhiteSpace(gruppe)
+                new DbParam("@n", name.Trim()),
+                new DbParam("@g", string.IsNullOrWhiteSpace(gruppe)
                     ? (object)DBNull.Value : gruppe.Trim()),
-                new OleDbParameter("@id", carrierId));
+                new DbParam("@id", carrierId));
         }
 
         /// <summary>
@@ -69,10 +68,10 @@ namespace WindowsFormsApplication1
                 " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
                 " co2, so2, nox, is_active) " +
                 "VALUES (?, 0, ?, ?, ?, 'GASEOUS_FUEL', 'kWh', 1, 1, 0, 0, 0, 0, 0, 0, TRUE)",
-                new OleDbParameter("@id", id),
-                new OleDbParameter("@n", name.Trim()),
-                new OleDbParameter("@c", CodeFuer(name, id)),
-                new OleDbParameter("@g", string.IsNullOrWhiteSpace(gruppe)
+                new DbParam("@id", id),
+                new DbParam("@n", name.Trim()),
+                new DbParam("@c", CodeFuer(name, id)),
+                new DbParam("@g", string.IsNullOrWhiteSpace(gruppe)
                     ? "Sonstige" : gruppe.Trim()));
             return ok ? id : 0;
         }
@@ -87,7 +86,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM energy_carrier WHERE id = ?",
-                new OleDbParameter("@id", quellId));
+                new DbParam("@id", quellId));
             if (dt == null || dt.Rows.Count == 0) return 0;
             DataRow q = dt.Rows[0];
 
@@ -95,7 +94,7 @@ namespace WindowsFormsApplication1
             string name = VariantenName(Convert.ToString(q["name"]));
 
             var spalten = new List<string>();
-            var werte = new List<OleDbParameter>();
+            var werte = new List<DbParam>();
             foreach (DataColumn sp in dt.Columns)
             {
                 string s = sp.ColumnName;
@@ -106,7 +105,7 @@ namespace WindowsFormsApplication1
                 else if (string.Equals(s, "code", StringComparison.OrdinalIgnoreCase))
                     wert = CodeFuer(name, id);
                 else wert = q[s];
-                var p = new OleDbParameter("@" + s, wert ?? DBNull.Value);
+                var p = new DbParam("@" + s, wert ?? DBNull.Value);
                 werte.Add(p);
             }
             string sql = "INSERT INTO energy_carrier (" + string.Join(", ", spalten.ToArray()) +
@@ -136,10 +135,10 @@ namespace WindowsFormsApplication1
             // Verwaiste Preishistorie darf mit (sie gehört zum Träger).
             DataRepository.ExecuteSQL(
                 "DELETE FROM energy_price WHERE carrier_id = ?",
-                new OleDbParameter("@id", carrierId));
+                new DbParam("@id", carrierId));
             return DataRepository.ExecuteSQL(
                 "DELETE FROM energy_carrier WHERE id = ?",
-                new OleDbParameter("@id", carrierId));
+                new DbParam("@id", carrierId));
         }
 
         // ------------------------------------------ Projektzuordnung (Ä10) ---
@@ -181,7 +180,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT [ID_Energieträger] FROM energy_project_settings WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", projektId));
+                    new DbParam("@p", projektId));
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
                         if (r[0] != DBNull.Value) zugeordnet.Add(Convert.ToInt32(r[0]));
@@ -201,8 +200,8 @@ namespace WindowsFormsApplication1
             object da = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM energy_project_settings " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
             if (da != null && Convert.ToInt32(da) > 0) return true;
 
             return DataRepository.ExecuteSQL(
@@ -210,18 +209,18 @@ namespace WindowsFormsApplication1
                 "(ID_Projekt, [ID_Energieträger], custom_hi, custom_Hs, custom_price_work, " +
                 " custom_price_base, custom_price_power, co2, so2, nox, ID_Umrechnung) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId),
-                new OleDbParameter("@hi", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@hs", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@pw", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@pb", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@pp", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@co2", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@so2", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@nox", OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@conv", OleDbType.Integer)
-                { Value = UmrechnungFuer(carrierId) });
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId),
+                new DbParam("@hi", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@hs", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@pw", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@pb", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@pp", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@co2", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@so2", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@nox", DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@conv", DbParamTyp.Integer)
+                { Wert = UmrechnungFuer(carrierId) });
         }
 
         /// <summary>
@@ -237,7 +236,7 @@ namespace WindowsFormsApplication1
             {
                 object oBrennstoff = DataRepository.ExecuteScalar(
                     "SELECT ID_Brennstoff FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@cid", carrierId));
+                    new DbParam("@cid", carrierId));
                 if (oBrennstoff == null || oBrennstoff == DBNull.Value) return -1;
                 int idBrennstoff = Convert.ToInt32(oBrennstoff);
                 if (idBrennstoff <= 0) return -1;
@@ -263,8 +262,8 @@ namespace WindowsFormsApplication1
             object a = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Carrier = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
             int anlagen = (a == null || a == DBNull.Value) ? 0 : Convert.ToInt32(a);
             if (anlagen > 0)
             {
@@ -274,13 +273,13 @@ namespace WindowsFormsApplication1
 
             DataRepository.ExecuteSQL(
                 "DELETE FROM energy_price WHERE id_projekt = ? AND carrier_id = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
             return DataRepository.ExecuteSQL(
                 "DELETE FROM energy_project_settings " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
         }
 
         // ------------------------------------------------------------- Helfer ---
@@ -295,7 +294,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                object o = DataRepository.ExecuteScalar(sql, new OleDbParameter("@id", carrierId));
+                object o = DataRepository.ExecuteScalar(sql, new DbParam("@id", carrierId));
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }
@@ -309,7 +308,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
-                    new OleDbParameter("@n", kandidat));
+                    new DbParam("@n", kandidat));
                 if (o == null || Convert.ToInt32(o) == 0) return kandidat;
                 kandidat = basis + " Variante " + n;
             }
@@ -321,7 +320,7 @@ namespace WindowsFormsApplication1
             string code = (name ?? "").Trim();
             object o = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM energy_carrier WHERE code = ?",
-                new OleDbParameter("@c", code));
+                new DbParam("@c", code));
             return (o != null && Convert.ToInt32(o) > 0) ? code + " " + id : code;
         }
 

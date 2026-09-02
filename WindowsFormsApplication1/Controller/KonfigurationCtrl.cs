@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -167,7 +166,7 @@ namespace WindowsFormsApplication1
             object v = StilleDb.Scalar(
                 "SELECT [" + SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             if (v == null) return true;
             try { if (Convert.ToBoolean(v)) return true; }
@@ -233,8 +232,8 @@ namespace WindowsFormsApplication1
             int betroffen = StilleDb.NonQuery(
                 "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] = ? " +
                 "WHERE ID_Projekt = ?",
-                StilleDb.Par("@wert", OleDbType.Boolean, wert),
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@wert", DbParamTyp.Boolean, wert),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return betroffen > 0;
         }
@@ -273,7 +272,7 @@ namespace WindowsFormsApplication1
             object v = StilleDb.Scalar(
                 "SELECT [" + SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return KnappheitsreihenfolgeOderDefault(v);
         }
@@ -306,8 +305,8 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_Einstellungen SET [" +
                 SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE + "] = ? " +
                 "WHERE ID_Projekt = ?",
-                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@wert", DbParamTyp.VarWChar, wert),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return betroffen > 0;
         }
@@ -336,7 +335,7 @@ namespace WindowsFormsApplication1
             object v = StilleDb.Scalar(
                 "SELECT [" + SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return DbWerte.BoosterLesepunktOderDefault(v);
         }
@@ -367,8 +366,8 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_Einstellungen SET [" +
                 SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] = ? " +
                 "WHERE ID_Projekt = ?",
-                StilleDb.Par("@wert", OleDbType.VarWChar, wert),
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@wert", DbParamTyp.VarWChar, wert),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return betroffen > 0;
         }
@@ -391,30 +390,30 @@ namespace WindowsFormsApplication1
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 // Die Parameter werden als OLEDB-Objekte an dein DataRepository gereicht
-                OleDbParameter[] parameters = new OleDbParameter[]
+                DbParam[] parameters = new DbParam[]
                 {
-                    new OleDbParameter("?", ID_Projekt),
-                    new OleDbParameter("?", model.m_BHKW_Grenzleistung),
-                    new OleDbParameter("?", model.m_Netzverluste),
-                    new OleDbParameter("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_WP_Heizstab),
-                    new OleDbParameter("?", model.m_Kessel_Betriebsbereitschaft),
-                    new OleDbParameter("?", model.m_Tool_1 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Tool_2 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Tool_3 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Tool_4 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Tool_5 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Tool_6 ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Ladefuellstand_Min),
-                    new OleDbParameter("?", model.m_Ladefuellstand_Max),
-                    new OleDbParameter("?", model.m_Ladeleistung_Max),
-                    new OleDbParameter("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Ladeschwellwert),
-                    new OleDbParameter("?", model.Betriebsart),
-                    new OleDbParameter("?", model.Leistungsgrenze),
-                    new OleDbParameter("?", model.Pendelspeicher)
+                    new DbParam("?", ID_Projekt),
+                    new DbParam("?", model.m_BHKW_Grenzleistung),
+                    new DbParam("?", model.m_Netzverluste),
+                    new DbParam("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_WP_Heizstab),
+                    new DbParam("?", model.m_Kessel_Betriebsbereitschaft),
+                    new DbParam("?", model.m_Tool_1 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Tool_2 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Tool_3 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Tool_4 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Tool_5 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Tool_6 ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Ladefuellstand_Min),
+                    new DbParam("?", model.m_Ladefuellstand_Max),
+                    new DbParam("?", model.m_Ladeleistung_Max),
+                    new DbParam("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
+                    new DbParam("?", model.m_Ladeschwellwert),
+                    new DbParam("?", model.Betriebsart),
+                    new DbParam("?", model.Leistungsgrenze),
+                    new DbParam("?", model.Pendelspeicher)
                 };
 
                 // Übergabe an das DataRepository
@@ -484,31 +483,31 @@ namespace WindowsFormsApplication1
             WHERE ID_Projekt = ?";
 
                 // Die Parameter-Reihenfolge entspricht exakt den Fragezeichen im SQL-String
-                OleDbParameter[] parameters = new OleDbParameter[]
+                DbParam[] parameters = new DbParam[]
                 {
-            new OleDbParameter("?", model.m_BHKW_Grenzleistung),
-            new OleDbParameter("?", model.m_Netzverluste),
-            new OleDbParameter("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_WP_Heizstab),
-            new OleDbParameter("?", model.m_Kessel_Betriebsbereitschaft),
-            new OleDbParameter("?", model.m_Tool_1 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Tool_2 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Tool_3 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Tool_4 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Tool_5 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Tool_6 ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Ladefuellstand_Min),
-            new OleDbParameter("?", model.m_Ladefuellstand_Max),
-            new OleDbParameter("?", model.m_Ladeleistung_Max),
-            new OleDbParameter("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
-            new OleDbParameter("?", model.m_Ladeschwellwert),
-            new OleDbParameter("?", model.Betriebsart),
-            new OleDbParameter("?", model.Leistungsgrenze),
-            new OleDbParameter("?", model.Pendelspeicher),
+            new DbParam("?", model.m_BHKW_Grenzleistung),
+            new DbParam("?", model.m_Netzverluste),
+            new DbParam("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
+            new DbParam("?", model.m_WP_Heizstab),
+            new DbParam("?", model.m_Kessel_Betriebsbereitschaft),
+            new DbParam("?", model.m_Tool_1 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Tool_2 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Tool_3 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Tool_4 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Tool_5 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Tool_6 ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Ladefuellstand_Min),
+            new DbParam("?", model.m_Ladefuellstand_Max),
+            new DbParam("?", model.m_Ladeleistung_Max),
+            new DbParam("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
+            new DbParam("?", model.m_Ladeschwellwert),
+            new DbParam("?", model.Betriebsart),
+            new DbParam("?", model.Leistungsgrenze),
+            new DbParam("?", model.Pendelspeicher),
             // ID_Projekt steht am Ende, weil das WHERE-Statement ganz unten steht!
-            new OleDbParameter("?", ID_Projekt)
+            new DbParam("?", ID_Projekt)
                 };
 
                 // Übergabe an dein bestehendes DataRepository
@@ -529,7 +528,7 @@ namespace WindowsFormsApplication1
             {
                 // Sauberes ANSI-SQL für OLEDB ohne das ungültige "DELETE *"
                 string sql = "DELETE FROM Tab_Einstellungen WHERE ID_Projekt = ?";
-                OleDbParameter parameter = new OleDbParameter("?", ID_Projekt);
+                DbParam parameter = new DbParam("?", ID_Projekt);
 
                 DataRepository.ExecuteNonQuery(sql, parameter);
                 return true;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -154,8 +153,8 @@ namespace WindowsFormsApplication1
 
                 int betroffen = DataRepository.ExecuteNonQuery(sql,
                     WertParameter("@wert", b.Quelle.Zeile, f.Spalte),
-                    new OleDbParameter("@id", b.Ziel.Id),
-                    new OleDbParameter("@proj", idZiel));
+                    new DbParam("@id", b.Ziel.Id),
+                    new DbParam("@proj", idZiel));
 
                 if (betroffen < 0) { fehler = MyResource.Resource.BK_MSG_UEB_SCHREIBFEHLER; return false; }
                 if (betroffen == 0) { fehler = MyResource.Resource.BK_MSG_UEB_KEINE_ZIELZEILE; return false; }
@@ -176,8 +175,8 @@ namespace WindowsFormsApplication1
             try
             {
                 DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET Aenderungsdatum = ? WHERE ID = ?",
-                    new OleDbParameter("@d", OleDbType.Date) { Value = DateTime.Now },
-                    new OleDbParameter("@id", idProjekt));
+                    new DbParam("@d", DbParamTyp.Date) { Wert = DateTime.Now },
+                    new DbParam("@id", idProjekt));
             }
             catch { /* der Hinweis an den Anwender hängt nicht daran */ }
         }
@@ -189,7 +188,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM " + ErgebnisCtrl.TAB_KOPF + " WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
             }
             catch { return false; }
@@ -241,26 +240,26 @@ namespace WindowsFormsApplication1
         /// <see cref="DBNull"/> allein leitet der Provider keinen Typ ab (dieselbe
         /// Begründung wie bei <c>WizardCtrl.AnlagenParameter</c>).
         /// </summary>
-        private static OleDbParameter WertParameter(string name, DataRow quelle, string spalte)
+        private static DbParam WertParameter(string name, DataRow quelle, string spalte)
         {
-            OleDbType typ = OleDbType.Variant;
+            DbParamTyp typ = DbParamTyp.Variant;
             object wert = DBNull.Value;
 
             if (quelle != null && quelle.Table.Columns.Contains(spalte))
             {
                 Type t = quelle.Table.Columns[spalte].DataType;
-                if (t == typeof(string)) typ = OleDbType.VarWChar;
-                else if (t == typeof(bool)) typ = OleDbType.Boolean;
+                if (t == typeof(string)) typ = DbParamTyp.VarWChar;
+                else if (t == typeof(bool)) typ = DbParamTyp.Boolean;
                 else if (t == typeof(byte) || t == typeof(short) || t == typeof(int) || t == typeof(long))
-                    typ = OleDbType.Integer;
+                    typ = DbParamTyp.Integer;
                 else if (t == typeof(float) || t == typeof(double) || t == typeof(decimal))
-                    typ = OleDbType.Double;
-                else if (t == typeof(DateTime)) typ = OleDbType.Date;
+                    typ = DbParamTyp.Double;
+                else if (t == typeof(DateTime)) typ = DbParamTyp.Date;
 
                 if (quelle[spalte] != DBNull.Value) wert = quelle[spalte];
             }
 
-            return new OleDbParameter(name, typ) { Value = wert };
+            return new DbParam(name, typ) { Wert = wert };
         }
     }
 }
