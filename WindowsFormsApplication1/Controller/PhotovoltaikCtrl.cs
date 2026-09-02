@@ -189,14 +189,48 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double KwpDesProjekts(int idProjekt)
         {
+            return KwpSumme(idProjekt, 0);
+        }
+
+        /// <summary>
+        /// DER KERN der kWp-Rechnung — dieselbe Formel wie
+        /// <see cref="KwpDesProjekts"/>, wahlweise auf EINE Anlagenzeile eingegrenzt
+        /// (<paramref name="idAnlage"/> &gt; 0).
+        ///
+        /// <para><b>Warum es die anlagenscharfe Fassung gibt</b> (Anwenderentscheid
+        /// 30.08.2026, Befund I-1): Die Kostenseite bemisst „€ je kWp" je
+        /// Kostenposition, und eine Position darf an EINER Anlage hängen
+        /// (<c>Tab_ProjektWerte.ID_Anlage</c>). Sie brauchte deshalb dieselbe
+        /// Bezugsgröße wie Simulation und Vergütungsdialog, nur enger geschnitten —
+        /// eine zweite Formel daneben wäre genau der Bruch, der zu Befund I-1
+        /// geführt hat (dort summierte die Kostenseite die MODULANZAHL).
+        /// <c>internal</c> statt <c>private</c>, damit
+        /// <see cref="TechnikPlanwertCtrl.BaugroesseSumme"/> denselben Kern ruft und
+        /// es bei EINER kWp-Wahrheit bleibt.</para>
+        ///
+        /// <para>Der Filter <c>ID_Type = PV_TYP</c> bleibt unverändert Teil des Kerns:
+        /// Referenz-/Bestandsanlagen (<c>REF_PV_TYP</c>) tragen keine geplante
+        /// Leistung und dürfen weder die Simulationsgröße noch eine Kostenbemessung
+        /// aufblähen.</para>
+        /// </summary>
+        internal static double KwpSumme(int idProjekt, int idAnlage)
+        {
             try
             {
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT SUM(p.Leistung * a.PV_Leistung) " +
-                    "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
-                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                string sql = "SELECT SUM(p.Leistung * a.PV_Leistung) " +
+                             "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
+                             "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
+                var ps = new List<DbParam>
+                {
                     new DbParam("@p", idProjekt),
-                    new DbParam("@t", WizardItemClass.PV_TYP));
+                    new DbParam("@t", WizardItemClass.PV_TYP)
+                };
+                if (idAnlage > 0)
+                {
+                    sql += " AND a.ID = ?";
+                    ps.Add(new DbParam("@a", idAnlage));
+                }
+                object o = DataRepository.ExecuteScalar(sql, ps.ToArray());
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o) / 1000.0;
             }
             catch { return 0; }

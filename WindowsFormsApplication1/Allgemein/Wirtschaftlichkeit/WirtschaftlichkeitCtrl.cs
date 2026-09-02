@@ -4654,6 +4654,21 @@ namespace WindowsFormsApplication1
                     "CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit " +
                     "Strommix-Vorgabewert gerechnet."));
 
+            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
+            // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
+            // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus
+            // KostenEmissionRechner). GEMELDET, nicht abgeleitet: Die Zahlen dieses
+            // Ergebnisses bleiben unverändert — hier kommt allein die Hinweiszeile
+            // dazu, nach demselben Muster wie der Strommix-Rückfall darüber.
+            if (v.KesselVerbrauchFehlt)
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(
+                    T("WIRT_KESSELBRENNSTOFF_FEHLT",
+                      "Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des " +
+                      "Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff " +
+                      "fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe."),
+                    (v.KesselOhneVerbrauch == null || v.KesselOhneVerbrauch.Count == 0)
+                        ? "?" : string.Join(", ", v.KesselOhneVerbrauch)));
+
             // ETAPPE B2 (BW2/BF2) — Kohärenzprüfung als REINE Warnzeile. Sie liest die
             // Preiszerlegung und vergleicht sie mit den bereits gebuchten Gutschriften;
             // sie rechnet nichts nach und ändert nichts. Ein Fehlschlag darf den Lauf
@@ -4841,17 +4856,32 @@ namespace WindowsFormsApplication1
                     z.Abgeleitet = true;
                 }
 
-                // Runde 3 — „% der Investition": Basis ist die Summe aller bereits
-                // abgeleiteten Beträge (ohne Zuschüsse), stufig Anlage → Komponente
+                // Runde 3 — „% der Investition": Basis ist die Summe der in den Runden 1
+                // und 2 abgeleiteten Beträge (ohne Zuschüsse), stufig Anlage → Komponente
                 // → Projekt (dieselbe Semantik wie InvestSummeFuer der H4a).
+                //
+                // ANWENDERENTSCHEID I-3 (30.08.2026, Paket FX2) — ZWEI PHASEN.
+                // Die Basiszeilen werden VOR der Zuweisungsschleife eingefroren. Bis
+                // hierher setzte die Schleife jede fertige Zeile sofort auf
+                // Abgeleitet = true; eine ZWEITE „% der Investition"-Zeile rechnete
+                // deshalb die ERSTE in ihre Basis ein, und weil die Leseabfrage kein
+                // ORDER BY trägt, entschied die Datenbank über das Ergebnis (Befund I-3).
+                //
+                // Der Entscheid: Jede Investition ist eine eigene Position mit eigener
+                // Nutzungsdauer — das bleibt. %-Zeilen bemessen sich aber ausschließlich
+                // an den DIREKTEN Zeilen der Runden 1 und 2 und zählen einander nie mit.
+                // Damit ist das Ergebnis deterministisch und reihenfolgeunabhängig.
+                var basisZeilen = new List<InvestZeile>();
+                foreach (InvestZeile h in puffer)
+                    if (h.Abgeleitet && !h.Zuschuss) basisZeilen.Add(h);
+
                 foreach (InvestZeile z in puffer)
                 {
                     if (z.Abgeleitet) continue;
                     double sAnlage = 0, sKomponente = 0, sProjekt = 0;
                     bool aDa = false, kDa = false;
-                    foreach (InvestZeile h in puffer)
+                    foreach (InvestZeile h in basisZeilen)
                     {
-                        if (!h.Abgeleitet || h.Zuschuss) continue;
                         sProjekt += h.Betrag;
                         if (z.Komponente > 0 && h.Komponente == z.Komponente)
                         {
