@@ -387,3 +387,92 @@ Paket A (B1 + E1) zuerst — eigene Commits, Referenzbasis PA0 vorher, Vergleich
 erklärten Deltas. Paket B (E2) danach auf dem Paket-A-Stand, weil beide `SimulationPV`,
 `SolarPVGISCalculator`, die Anlagenzeile und `Form_PV` berühren; Referenzbasis PA1 wird die
 Bitgleichheits-Basis für EINFACH.
+
+---
+
+## Nachtrag 3 (02.09.2026) — Umsetzung Paket A (B1 + E1)
+
+**Paket A ist umgesetzt, verifiziert und mit Referenzlauf belegt.** Branch `ios_migration`,
+vier Commits:
+
+| Commit | Inhalt |
+|---|---|
+| `36c5401` | **PA1a** — Migrationsschritt **62** (`PV_WrWirkungsgrad`, `PV_Systemverluste` an `Tab_Energieanlagen`, erster Schritt des SQLite-Zweigs) und das Datenmodell dazu: `WErzeugerModel`, `WErzeugerCtrl.AusZeile`, `WizardCtrl.SQL_ANLAGE_INSERT`/`AnlagenParameter`, `SchemaKatalog`, `AbweichungsErmittler`, Testfälle der Zugriffsschichtproben |
+| `aced014` | **PA1b** — B1 (`SolarZeitbasis`, `SolardatenCtrl.ReadOrtszeit`, `SolardatenModel.TagUtc`/`StundeUtc`, alle vier stundenscharfen Leser) sowie E1.1, E1.2, E1.4 und E1.5 in `SimulationPV` |
+| `7c622b1` | **PA1c** — `Form_PV` (WR-Wirkungsgrad, Systemverluste), `Form_AdminPV` (`T_NOCT`), 7 Ressourcenschlüssel de + en |
+| (dieser) | **PA1** — Referenzlauf `Referenzlaeufe/2026-09-02_PA1_nach-PaketA/`, Umsetzungsprotokoll, LIESMICH |
+
+Umsetzungsprotokoll mit allen Zahlen, Fundstellen und Nebenbefunden:
+`WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md`.
+
+### N3.1 Wie die Entscheidungen Q1–Q3 umgesetzt sind
+
+* **Q1 (P_STC als Bemessungsgröße): ja, mit Konsistenzhinweis.** `P_DC = P_STC · G/1000 ·
+  (1 + γ(T_Zelle − 25))`; Rückfall auf die Flächenformel nur bei `Leistung ≤ 0`. Weichen
+  `P_STC` und `L·B·η·1000` um mehr als 3 % voneinander ab, sagt es das Protokoll je Modul.
+* **Q2 (mit Sommerzeit): ja.** EU-Regel fest verdrahtet, kein `TimeZoneInfo` — Begründung wie
+  in `GanglinienPruefung`. Das Referenzjahr bestimmt nur die Umstelltage: Jahr der
+  Spotpreisreihe des Projekts, sonst `DbWerte.SOLAR_REFERENZJAHR_STANDARD = 2025`
+  (deterministisch, **kein `DateTime.Today`** — sonst rechnete derselbe Referenzlauf am
+  Jahreswechsel andere Zahlen).
+* **Q3 (Korrektur beim Lesen): ja.** `SolardatenCtrl.ReadOrtszeit` verschiebt **ganze Zeilen**;
+  die Bestandsregionen bleiben unverändert gültig, kein Neuimport. Die UTC-Herkunft reist als
+  `TagUtc`/`StundeUtc` an der Zeile mit, damit der Sonnenstand weiter auf UTC-Basis rechnet.
+
+### N3.2 Was das Papier anders erwartet hatte
+
+1. **T_NOCT bleibt in dieser Referenzmenge wirkungslos.** Abschnitt 2.2 hatte den Rückfall bei
+   „`T_NOCT ≤ 0` oder NULL" vorgesehen; der PA0-Befund A1 hat gezeigt, dass in allen sechs
+   Katalogmodulen der Wert von `I_Kurzschluss` in `T_NOCT` steht (9,014 / 9,34 / 9,42) — positiv
+   und damit für dieses Kriterium unsichtbar. Umgesetzt ist deshalb ein **physikalisches
+   Fenster 20…60 °C**; es greift überall, und die erwarteten ±0,5 % Jahresertrag entstehen erst
+   **nach der Katalogpflege**.
+2. **Die Wirkung von B1 auf die Eigenverbrauchsquote ist kleiner als geschätzt.** Abschnitt 5
+   nannte „mehrere Prozentpunkte"; gemessen wurden **−0,95 pp (1007) bis +0,12 pp (1029)**. Der
+   Grund liegt in den Daten, nicht im Modell: Die Referenzprojekte fahren synthetische
+   Wochenprofile, die über den Tag flach sind. Deutlicher zeigen es die Speichergrößen
+   (Füllstandssumme bis −2,3 %, PV-Ladung des Pufferspeichers −8,9 %). Bei einem gemessenen
+   Lastgang mit Abendspitze ist die Wirkung entsprechend größer.
+3. **E1.4 ist messbar, wenn auch klein.** Der 1-basierte Tagindex bewegt die PV-Jahreserzeugung
+   um **+0,0013 % (Neigung 30°) bis +0,0115 % (Neigung 0°)** — innerhalb der angesagten
+   ≪ 0,1 %, aber geometrieabhängig.
+4. **Die Zeilenzahlprüfung aus Befund B4 ist mitgekommen.** `ReadOrtszeit` verschiebt **nicht**,
+   wenn die Reihe nicht 8.760 Zeilen führt, und meldet das als Warnung.
+
+### N3.3 Nebenwirkungen und Nebenbefunde
+
+* **Schemastand 62.** `.wpx`-Pakete mit Stand 61 werden abgewiesen
+  (`ProjektExportImportCtrl` vergleicht gegen `ZIEL_VERSION`) — systemimmanent, keine
+  Regression. **Neue Migrationsschritte beginnen bei 63.**
+* **Neue Konstante `SchemaMigration.FREEZE_VERSION_ACCESS = 61`.** Der eingefrorene
+  Access-Zweig endet bei 61 und kann 62 nie erreichen. Ohne die Trennung hätten
+  `HebeAltbestand` jede Alt-Hebung als Misserfolg gemeldet und der SQLite-Zweig jede Datei auf
+  Stand 61 als „nicht erstmigriert" abgewiesen.
+* **Bestandsfehler in `Form_AdminPV` geschlossen:** Das Speichern eines Katalogmoduls schrieb
+  `alpha_SC`, `beta_OC` und `T_NOCT` mit 0 zurück und löschte damit die Werte des CEC-Imports.
+  Das erklärt zugleich den vergifteten Katalog aus Befund A1. Der Schreibweg ist repariert; die
+  **vorhandenen Daten** sind es nicht — sie brauchen Neuimport oder Handpflege.
+* **`SQL_ANLAGE_INSERT` verliert weiterhin die KWKG-Spalten (Schritt 22) und die drei
+  B3-Spalten (Schritt 61).** Beim Löschen + Neuanlegen gehen sie still verloren — dieselbe
+  Fehlerklasse, die Paket 1 für die Quellen-/Senken-Konfiguration geschlossen hat. **Nur
+  protokolliert, bewusst nicht in Paket A behoben** (Wirtschaftlichkeitsmodul, eigene Abnahme;
+  die Anweisung wird an fünf Stellen benutzt).
+* **`gamma_PMP = 0`** beim Jinkosolar-Modul: 1011, 1026, 1028, 1029 rechnen ohne
+  Temperaturgang. E1.5 meldet es, ändert aber nichts.
+
+### N3.4 Referenzbasis und Abnahmestand für Paket B
+
+`Referenzlaeufe/2026-09-02_PA1_nach-PaketA/` (14 Projekte, 355 CSV, Codestand `7c622b1`,
+Schemastand 62) ist die neue **aktuelle Basis** und damit die **Bitgleichheits-Basis für das
+Modell EINFACH** (N2.5, Kriterium 1). Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich;
+`pruefen` plausibel. Gegen PA0: 391 geänderte Skalare, **jeder zugeordnet**, kein Schlüssel neu
+oder entfallen.
+
+**Offen (Sichtabnahme Philipp):**
+
+1. `Form_PV` — dritte Spalte im Panel „PV Anlage Eigenschaften", Panel 308 → 420 px.
+2. `Form_AdminPV` — Feld „Zelltemperatur NOCT [°C]" links unten.
+3. Katalogpflege `T_NOCT` für die sechs Referenzmodule; danach wird E1.2 wirksam und ein
+   neuer Basiswechsel fällig.
+
+Paket B (Stufe E2, Nachtrag 2) kann auf diesem Stand beginnen.

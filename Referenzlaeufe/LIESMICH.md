@@ -12,8 +12,73 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-02_PA1_nach-PaketA/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **62**.
+Der Stand **nach** Paket A des `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`
+(Befund B1 Zeitbasis UTC→Ortszeit, Stufe E1 „Eine Wahrheit").
+
+> **Anlass: Paket A ändert den Rechenkern in ALLEN Projekten.** Die Solarreihe wird beim
+> Lesen von UTC auf Ortszeit verschoben (+1 h MEZ / +2 h MESZ,
+> `SolardatenCtrl.ReadOrtszeit`), und die Stundentemperatur speist COP, Erdreich und
+> Reporting — es gibt kein Projekt ohne Delta. Dazu E1.1 (P_STC statt Fläche×η), E1.2
+> (T_NOCT), E1.3 (Wechselrichter und Systemverluste als Anlagenparameter,
+> **Migrationsschritt 62**), E1.4 (1-basierter Tagindex) und E1.5.
+>
+> **Codestand:** `7c622b1` (Branch `ios_migration`; Paketcommits `36c5401` → `aced014` →
+> `7c622b1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pa1\src`; **0 Fehler**, Warnungsprofil identisch zum Vorstand).
+> **Datenquelle:** derselbe Snapshot wie PA0 (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5
+> `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert dabei **61 → 62**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36, SchemaVersion 61).
+> **Selbstvergleich 14/14 PASS (3 882 476 Werte), 355/355 byte-/MD5-gleich**; `pruefen`
+> plausibel.
+>
+> **Gegen `2026-09-02_PA0_vor-PaketA`: FAIL in allen 14 Projekten — und genau das ist das
+> erwartete Ergebnis.** 391 geänderte Skalare, jeder zugeordnet; kein Schlüssel neu oder
+> entfallen. Die vier Familien: (1) die Stundentemperatur selbst (Summe −8,85 K Stuttgart /
+> −4,48 K München = exakt die zwei Umstellstunden), (2) PV-Jahreserzeugung **+0,0013 bis
+> +0,0468 %** — höchstens der Katalogfaktor, (3) Eigenverbrauchsquote −0,95 bis +0,12 pp und
+> Speicherfüllstand bis −2,3 %, (4) temperaturabhängige Größen der Wärmeseite.
+> **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
+> außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
+> [Laufprotokoll der Basis](2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) und im
+> [Paket-A-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
+>
+> **Diese Basis ist zugleich die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
+> EINFACH muss gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1).
+>
+> **ACHTUNG Schemastand 62.** Die Arbeitskopie jedes Folgelaufs wandert auf 62. `.wpx`-Pakete
+> mit Stand 61 werden von `ProjektExportImportCtrl` abgewiesen — systemimmanent.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-02_PA0_vor-PaketA`
+
+**`2026-09-02_PA0_vor-PaketA/`** — dieselben **vierzehn Projekte**, **355 CSV**,
+Schemastand **61**, Codestand `d46e200` (Ablage `df90063`). Der Stand **vor** Paket A und
+damit die einzige Quelle der Ganglinien im UTC-Raster.
+
+> **Anlass des Basiswechsels von B3-Kaskade auf PA0** (02.09.2026): (1) Der Anwender hat
+> **1040, 1041, 1042 und 1044 gelöscht** — die B3-Liste war nicht mehr lauffähig. (2) Paket A
+> verlangt **vollständige PV-/Solarthermie-Abdeckung**; **1026, 1028, 1029 und 1043** sind
+> deshalb neu aufgenommen (1043 ersetzt das gelöschte 1042 als Booster-Projekt und deckt den
+> Randfall „Gewerk aktiviert, kein Modul" ab). (3) Die Datenhaltung ist seit dem 02.09.2026
+> **SQLite**; die Quelle wurde über die SQLite-Backup-API konsistent entnommen (die Anwendung
+> lief während der Entnahme). **Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich.** Gegen
+> `2026-08-30_B3-Kaskade` waren acht Projekte byte-gleich; die Abweichungen bei 1030 und 1039
+> sind Datenänderungen des Anwenders. Vollständige Begründung im
+> [Laufprotokoll der Basis](2026-09-02_PA0_vor-PaketA/lauf_protokoll.md).
+
+### Frühere Fassung: `2026-08-30_B3-Kaskade`
+
 **`2026-08-30_B3-Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018,
-1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Die Datenbestände sind
+1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Seit dem 02.09.2026 nicht
+mehr lauffähig** — 1040 bis 1042 hat der Anwender gelöscht. Seinerzeit galt: **Die
+Datenbestände sind
 wieder zusammengeführt:** 1040–1042 stehen auf diesem Rechner wieder im Bestand, die
 Zweiteilung vom 29.08. (`Booster` für den Zweitstand, `E1E2` für diesen Stand) ist
 damit erledigt — es gilt wieder **eine** Basis.
@@ -277,12 +342,15 @@ EIN Stand.
 > „Aktuelle Basis"):
 >
 > ```powershell
-> # Vergleich gegen 2026-08-30_B3-Kaskade:
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> # Vergleich gegen 2026-09-02_PA1_nach-PaketA (und gegen PA0): vierzehn IDs
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 >
-> *(29.08.2026 bis 30.08.2026 galten zwei Listen je Datenbestand — 13 Projekte gegen
-> `Booster`, 10 Projekte gegen `E1E2`. Diese Zweiteilung ist aufgehoben.)*
+> *(Bis zum 02.09.2026 galten dreizehn IDs — 1040, 1041 und 1042 statt 1026, 1028, 1029
+> und 1043. Der Anwender hat 1040–1042 gelöscht; die Aufnahme der vier PV-/Booster-Projekte
+> war ein bewusster Basiswechsel für Paket A. 29.08.2026 bis 30.08.2026 galten zwei Listen
+> je Datenbestand — 13 Projekte gegen `Booster`, 10 gegen `E1E2`; diese Zweiteilung ist
+> aufgehoben.)*
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
 > Projektbestand**. Mit den Beispielprojekten 1026–1029 zieht sie inzwischen 1012 und 1026
@@ -364,7 +432,19 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-29_Booster/` bleibt als **vorheriger Stand** liegen (Codestand `0787aec`,
+`2026-09-02_PA0_vor-PaketA/` bleibt als **vorheriger Stand** liegen (Codestand `d46e200`,
+Schemastand 61, vierzehn Projekte, 355 CSV) — der Stand **vor** Paket A und damit die
+**einzige Quelle der Ganglinien im UTC-Raster**. Wer die Wirkung der Zeitbasis-Korrektur
+nachvollziehen will, stellt PA1 gegen diesen Ordner. Begründung im Abschnitt
+„Vorgängerbasis" oben.
+
+`2026-08-30_B3-Kaskade/` bleibt als **älterer Stand** liegen (Codestand `bad41f8`,
+Schemastand 61, dreizehn Projekte, 332 CSV) — die letzte Basis der B3-Linie und die
+einzige Quelle der Ganglinien von 1040, 1041 und 1042, die der Anwender inzwischen
+gelöscht hat. **Nicht mehr lauffähig** (drei ihrer IDs existieren nicht mehr); gegen PA0
+sind acht der gemeinsamen Projekte byte-gleich.
+
+`2026-08-29_Booster/` bleibt als **älterer Stand** liegen (Codestand `0787aec`,
 Schemastand 55, dreizehn Projekte, 332 CSV) — die letzte Basis **vor** der
 Wiederherstellung der 1030-Kaskade und dem Neuaufbau von 1042 und damit die einzige
 Quelle der Ganglinien des früheren zweiten Kaskadenmoduls „Agenitor 306 (250 kw.el) Gas"
