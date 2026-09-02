@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class ProjektCtrl : ProjektModel
+    partial class ProjektCtrl : ProjektModel
     {
         // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
         private List<ProjektModel> _internalList = new List<ProjektModel>();
@@ -262,17 +261,6 @@ namespace WindowsFormsApplication1
 
         #region --- UI FILL METHODS ---
 
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var p in _internalList) ctrl.Items.Add(p.m_szProjektname);
-        }
-
-        public void FillComboBox(ComboBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var p in _internalList) ctrl.Items.Add(p.m_szProjektname);
-        }
 
         #endregion
 

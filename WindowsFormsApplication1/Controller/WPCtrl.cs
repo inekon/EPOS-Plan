@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class WPCtrl : WPModel
+    partial class WPCtrl : WPModel
     {
         private List<WPModel> _internalList = new List<WPModel>();
         public int rows => _internalList.Count;
@@ -175,18 +174,6 @@ namespace WindowsFormsApplication1
 
                 // Bei ReadSingle fügen wir diese Instanz (this) als Kopie hinzu, damit rows auf 1 springt
                 _internalList.Add(this);
-            }
-        }
-
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var item in _internalList)
-            {
-                if (item != null)
-                {
-                    ctrl.Items.Add(item.WPName);
-                }
             }
         }
 

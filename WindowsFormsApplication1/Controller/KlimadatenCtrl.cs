@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -167,7 +166,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Fehler beim Massen-Schreiben: " + ex.Message);
+                DataRepository.FehlerMelden("Fehler beim Massen-Schreiben: " + ex.Message);
                 return false;
             }
         }

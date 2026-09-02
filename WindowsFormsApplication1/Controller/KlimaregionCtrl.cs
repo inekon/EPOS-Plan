@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -24,7 +23,7 @@ namespace WindowsFormsApplication1
     /// Die Leseseite (ReadAll/ReadSingle) war dagegen immer korrekt. Alle drei sind
     /// jetzt auf das reale Schema gezogen.
     /// </summary>
-    class KlimaregionCtrl : KlimaregionModel
+    partial class KlimaregionCtrl : KlimaregionModel
     {
         // --- Kompatibilitäts-Layer ---
         private List<KlimaregionModel> _internalList = new List<KlimaregionModel>();
@@ -246,22 +245,5 @@ namespace WindowsFormsApplication1
 
         #endregion
 
-        public void FillComboBox(ComboBox ctrl)
-        {
-            ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++)
-            {
-                ctrl.Items.Add(items[i].m_szName);
-            }
-        }
-
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++)
-            {
-                ctrl.Items.Add(items[i].m_szName);
-            }
-        }
     }
 }

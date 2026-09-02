@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public class BHKWCtrl : BHKWModel
+    public partial class BHKWCtrl : BHKWModel
     {
         public BHKWModel model;
 
@@ -366,14 +365,6 @@ namespace WindowsFormsApplication1
 
         #region --- UI FILL METHODS ---
 
-        public void FillComboBox(ComboBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var item in _internalList)
-            {
-                ctrl.Items.Add(item.m_szBezeichner);
-            }
-        }
 
         #endregion
 

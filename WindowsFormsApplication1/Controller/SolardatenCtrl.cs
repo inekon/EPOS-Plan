@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -205,7 +204,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Allgemeiner Fehler bei WriteDataTable: " + ex.Message);
-                MessageBox.Show("Fehler beim Schreiben der Tabellendaten: " + ex.Message);
+                DataRepository.FehlerMelden("Fehler beim Schreiben der Tabellendaten: " + ex.Message);
                 return false;
             }
         }

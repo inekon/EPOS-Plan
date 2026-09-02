@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -12,7 +11,7 @@ namespace WindowsFormsApplication1
     //   - liest/schreibt das Feld ReadOnly
     //   - Update() und Delete() verweigern die Aenderung schreibgeschuetzter Datensaetze
     // Alle DB-Zugriffe laufen ueber DataRepository.
-    public class BHKWStammCtrl : BHKWStammModel
+    public partial class BHKWStammCtrl : BHKWStammModel
     {
         public const string TABLE = "Tab_BHKW_STAMM";
 
@@ -174,8 +173,8 @@ namespace WindowsFormsApplication1
             // transaktionalen Neuanlagen ist der Datensatz ohnehin frisch (ReadOnly = false).
             if (!SchreibschutzUebergehen && Vorgang == null && IsReadOnly(model.m_szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
@@ -271,8 +270,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
@@ -284,14 +283,6 @@ namespace WindowsFormsApplication1
 
         #region --- UI FILL METHODS ---
 
-        public void FillComboBox(ComboBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var item in _internalList)
-            {
-                ctrl.Items.Add(item.m_szBezeichner);
-            }
-        }
 
         #endregion
 

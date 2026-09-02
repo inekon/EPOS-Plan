@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -342,17 +341,17 @@ namespace WindowsFormsApplication1
         {
             if (this.ID <= 0)
             {
-                MessageBox.Show("Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
+                Meldung.Warnung("Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
                     "geladen wurde. Bitte den Kessel erneut aus der Liste auswählen.",
-                    "Speichern nicht möglich", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Speichern nicht möglich");
                 return false;
             }
 
             // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
             if (IsReadOnlyById(this.ID))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
@@ -368,9 +367,9 @@ namespace WindowsFormsApplication1
             if (!string.Equals(GespeicherterBezeichner(this.ID), this.Name ?? "", StringComparison.Ordinal)
                 && BezeichnerBelegt(this.Name, this.ID))
             {
-                MessageBox.Show("Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
+                Meldung.Hinweis("Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
                     "\". Bitte einen eindeutigen Namen vergeben.",
-                    "Name bereits vergeben", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    "Name bereits vergeben");
                 return false;
             }
 
@@ -499,17 +498,17 @@ namespace WindowsFormsApplication1
 
             if (anzahl == 0)
             {
-                MessageBox.Show("Der Katalogeintrag \"" + (name ?? "") + "\" wurde nicht gefunden.",
-                    "Nicht gefunden", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Der Katalogeintrag \"" + (name ?? "") + "\" wurde nicht gefunden.",
+                    "Nicht gefunden");
                 return false;
             }
 
             if (anzahl > 1)
             {
-                MessageBox.Show("Der Name \"" + (name ?? "") + "\" ist im Katalog " + anzahl +
+                Meldung.Warnung("Der Name \"" + (name ?? "") + "\" ist im Katalog " + anzahl +
                     "-mal vergeben. Es ist deshalb nicht entscheidbar, welcher Eintrag gemeint ist - " +
                     "es wurde nichts gelöscht.",
-                    "Name mehrdeutig", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Name mehrdeutig");
                 return false;
             }
 
@@ -521,8 +520,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnlyById(id))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 

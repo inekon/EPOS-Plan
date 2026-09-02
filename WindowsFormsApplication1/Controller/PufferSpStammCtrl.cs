@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -129,8 +128,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnlyStatic(this.Name))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
@@ -197,8 +196,8 @@ namespace WindowsFormsApplication1
 
             if (IsReadOnlyStatic(id))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
 
