@@ -1,0 +1,70 @@
+<Project>
+  <!--
+    Zentrale Paketversionen (NuGet Central Package Management) fuer alle
+    Projekte unter dieser Wurzel - Umsetzungskonzept iOS, Paket iU1 / iE1.
+
+    Regel: In den .csproj steht nur noch <PackageReference Include="..." />,
+    die Version ausschliesslich hier. Eine verbliebene Version= in einem
+    Projekt bricht den Restore mit NU1008 - das ist gewollt.
+
+    Wegwerf-Harnesse unter dev\ (gitignored), die eigene Versionen tragen,
+    setzen in ihrer .csproj <ManagePackageVersionsCentrally>false</...>.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!-- Datenzugriff: App und EposSqliteMigrator teilen sich EINE Sqlite-Fassung. -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="System.Data.OleDb" Version="10.0.11" />
+  </ItemGroup>
+
+  <!-- Frameworkgekoppelte Pakete: ziehen mit dem .NET-Major mit. -->
+  <ItemGroup>
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
+    <PackageVersion Include="System.Management" Version="10.0.11" />
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.11" />
+  </ItemGroup>
+
+  <!-- Berichte, Dokumente, Rechnen -->
+  <ItemGroup>
+    <PackageVersion Include="ClosedXML" Version="0.105.1" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageVersion Include="Humanizer.Core" Version="2.14.1" />
+    <!-- Lizenz-Pin: ab 2.x gilt die Six-Labors-Split-Lizenz. Nicht anheben. -->
+    <PackageVersion Include="SixLabors.Fonts" Version="1.0.1" />
+  </ItemGroup>
+
+  <!-- Charts und Grafik (Windows-Huelle; SkiaSharp-Kern ist plattformfrei) -->
+  <ItemGroup>
+    <PackageVersion Include="WinForms.DataVisualization" Version="1.10.2" />
+    <PackageVersion Include="ScottPlot.WinForms" Version="5.1.57" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.Views.WindowsForms" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.1" />
+  </ItemGroup>
+
+  <!-- Lizenz, KI, Schema -->
+  <ItemGroup>
+    <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <PackageVersion Include="Mscc.GenerativeAI" Version="3.1.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.4" />
+  </ItemGroup>
+
+  <!-- Tests -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+</Project>
