@@ -400,20 +400,38 @@ war.
 | **ASP.NET und Webentwicklung** | `Microsoft.VisualStudio.Workload.NetWeb` | Blazor-Werkzeuge und Razor-Editor — ab iU8 für `EPOS.UI` |
 
 Wer die Auswahl reproduzierbar halten will (zweiter Arbeitsplatz, Neuaufsetzen), nimmt statt der
-Oberfläche den Installer auf der Kommandozeile:
+Oberfläche den Installer auf der Kommandozeile. **PowerShell als Administrator** — passend zur
+übrigen Werkzeugkette des Hauses (`build-setup.ps1`, Referenzlauf-Anleitung):
 
-```
-"C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify ^
-  --installPath "C:\Program Files\Microsoft Visual Studio\2026\Community" ^
-  --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
-  --add Microsoft.VisualStudio.Workload.NetCrossPlat ^
-  --add Microsoft.VisualStudio.Workload.NetWeb ^
-  --includeRecommended --passive --norestart
+```powershell
+# 1. Ist-Stand: welche Installationen gibt es?
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" `
+    -all -prerelease -format value -property installationPath
+
+# 2a. VS 2026 ist bereits installiert -> Workloads ergaenzen
+#     installPath aus der Ausgabe von Schritt 1 uebernehmen
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe" modify `
+    --installPath "C:\Program Files\Microsoft Visual Studio\2026\Community" `
+    --add Microsoft.VisualStudio.Workload.ManagedDesktop `
+    --add Microsoft.VisualStudio.Workload.NetCrossPlat `
+    --add Microsoft.VisualStudio.Workload.NetWeb `
+    --includeRecommended --passive --norestart
+
+# 2b. VS 2026 fehlt noch -> Bootstrapper, ohne modify und ohne installPath
+& "$HOME\Downloads\vs_community.exe" `
+    --add Microsoft.VisualStudio.Workload.ManagedDesktop `
+    --add Microsoft.VisualStudio.Workload.NetCrossPlat `
+    --add Microsoft.VisualStudio.Workload.NetWeb `
+    --includeRecommended --passive --norestart
+
+# 3. Kontrolle
+dotnet --list-sdks      # 10.0.x muss erscheinen
+dotnet workload list    # die MAUI-Workloads erscheinen
 ```
 
-Bei einer Neuinstallation tritt der Bootstrapper `vs_community.exe` an die Stelle von
-`setup.exe modify`, ohne `--installPath`. Kontrolle danach: `dotnet --list-sdks` zeigt 10.0.x,
-`dotnet workload list` führt die MAUI-Workloads.
+**Der Call-Operator `&` und der Backtick als Zeilenfortsetzung sind in PowerShell zwingend** — ein
+Pfad in Anführungszeichen ohne `&` gilt dort als Zeichenkette, und `^` ist die
+CMD-Fortsetzung und führt zu `Unerwartetes Token`.
 
 ### 3.3 Mac-Arbeitsplatz
 
