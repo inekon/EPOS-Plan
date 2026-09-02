@@ -5379,10 +5379,17 @@ namespace WindowsFormsApplication1
         /// die kWh-Arten aus dem jüngsten Lauf. ETAPPE H2-1: dazu die sechs
         /// Gerätewelt-Arten (Baugrößen über die Anlagen-Geräteverweise, H4b) —
         /// damit zieht z. B. „Wartung je kW" ihre kW auch auf der Betriebsseite
-        /// selbst. „% der Erzeugerkosten" bleibt Kaskadenmaterie der Investseite.</summary>
+        /// selbst. „% der Erzeugerkosten" bleibt Kaskadenmaterie der Investseite.
+        /// <para>PAKET FX2 (Anwenderentscheid B-4, 02.09.2026): dazu „je Stunde"
+        /// (<see cref="DbWerte.BEMESSUNG_EUR_PRO_H"/>) — der Satz [€/h] bleibt Eingabe,
+        /// die Stundenzahl kommt aus dem jüngsten Lauf
+        /// (<see cref="EndenergieAufloeser.BetriebsstundenH"/>). Damit sind von den vier
+        /// Arten des Befundes B-4 drei noch reine Konserve: <c>EUR_PRO_KWH</c>,
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>.</para></summary>
         private static bool IstRueckfallErmittelbareArt(string bem)
         {
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
@@ -5409,8 +5416,14 @@ namespace WindowsFormsApplication1
             if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
                 return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage);
 
-            if (!string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) &&
-                !string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal))
+            // PAKET FX2 (B-4): „je Stunde" holt seine Stundenzahl aus dem Lauf — sonst
+            // wie die kWh-Arten. Die Gerätewelt kennt die Art nicht; sie darf deshalb
+            // nicht in den BaugroesseSumme-Zweig unten fallen.
+            bool ausDemLauf =
+                string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+            if (!ausDemLauf)
                 return TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, komponente, bem, idAnlage);
 
             if (!versucht)
@@ -5419,6 +5432,9 @@ namespace WindowsFormsApplication1
                 aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
             }
             if (aufloeser == null) return null;
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal))
+                return aufloeser.BetriebsstundenH(komponente, idAnlage);
 
             return string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal)
                 ? aufloeser.WaermeerzeugungKwh(komponente, idAnlage)
@@ -5431,9 +5447,13 @@ namespace WindowsFormsApplication1
         /// Laufs" beim Dialog-Speichern. Die Rechenwege lesen ohnehin frisch; der
         /// Ausweis dient dem Dialog und Fremdlesern der Spalte. Geschrieben wird auch
         /// NULL (nichts ermittelbar = ehrlich kein Stand). false = keine ermittelbare
-        /// Art (die Menge bleibt Eingabewert, z. B. „je Stunde") oder Zeile unauffindbar.
+        /// Art (die Menge bleibt Eingabewert, z. B. „je kWh") oder Zeile unauffindbar.
         /// „% der Investition" in Kategorie 1 bemisst sich an der KASKADE (H4b,
         /// Runde 3), nicht an der Kostenwelt-Summe — dort kein Einzelzeilen-Ausweis.
+        /// <para>PAKET FX2 (Anwenderentscheid B-4): „je Stunde" zählt seither zu den
+        /// ermittelbaren Arten und ist hier OHNE weitere Änderung mitgedeckt — die
+        /// Methode fragt <see cref="IstRueckfallErmittelbareArt"/>; ausgewiesen wird
+        /// die Stundenzahl des jüngsten Laufs.</para>
         /// </summary>
         internal static bool MengeAusweisen(int positionsId, out double? menge)
         {

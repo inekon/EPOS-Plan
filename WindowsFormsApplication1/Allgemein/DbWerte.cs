@@ -449,13 +449,24 @@ namespace WindowsFormsApplication1
         public const string BEMESSUNG_PROZENT_INVESTITION = "PROZENT_INVESTITION";
 
         /// <summary>
-        /// Betrag je Vollbenutzungsstunde [€/h]: <c>Menge</c> = Vollbenutzungsstunden
-        /// [h/a], <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
+        /// Betrag je Stunde [€/h]: <c>Menge</c> = Stundenzahl [h/a],
+        /// <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
         /// <para>
-        /// <b>Naeherung.</b> Bezugsgroesse ist <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
-        /// — <c>Waerme / P_therm</c>. Echte Betriebsstunden bildet der Rechenkern nicht
-        /// ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat 8.760
-        /// Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das am Feld.
+        /// <b>PAKET FX2 (Anwenderentscheid B-4, 02.09.2026): Der SATZ ist Eingabe, die
+        /// MENGE kommt frisch aus dem juengsten Lauf</b>
+        /// (<c>EndenergieAufloeser.BetriebsstundenH</c>) — dasselbe Muster wie
+        /// „je kWh elektrisch". Die gespeicherte Menge bleibt Konserve, wenn frisch
+        /// nichts zu holen ist.
+        /// </para>
+        /// <para>
+        /// <b>Was die Menge je Komponente ist.</b> Waermepumpe: ECHTE Betriebsstunden
+        /// (<c>Tab_ErgebnisWaermepumpeModul.Betriebsstunden</c>). BHKW: benannte
+        /// NAEHERUNG ueber <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
+        /// (<c>Waerme / P_therm</c>) — echte Betriebsstunden bildet der Rechenkern dort
+        /// nicht ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat
+        /// 8.760 Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das
+        /// am Feld. Heizkessel und alle uebrigen Komponenten: KEINE Stundengroesse im
+        /// Ergebnis — der Aufloeser liefert null, es gilt die Konserve.
         /// </para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
