@@ -17,8 +17,9 @@ namespace WindowsFormsApplication1
     /// „Einstiegspunkte"):</para>
     /// <list type="bullet">
     ///   <item><description><see cref="Ausfuehren"/> - NORMALSTART auf der
-    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus und arbeitet die (heute leere)
-    ///     Liste der Schritte ab 62 ab. Keine OleDb-Verbindung.</description></item>
+    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus
+    ///     (<see cref="FREEZE_VERSION_ACCESS"/>) und arbeitet die Liste der Schritte ab 62
+    ///     bis <see cref="ZIEL_VERSION"/> ab. Keine OleDb-Verbindung.</description></item>
     ///   <item><description><see cref="HebeAltbestand"/> - EINGEFROREN. Fährt die
     ///     Schritte 1-61 auf einer Access-Datei; einziger Zweck ist die einmalige Hebung
     ///     eines Kundenbestands vor der Erstmigration (Implementierungskonzept 5.1 und
@@ -126,8 +127,40 @@ namespace WindowsFormsApplication1
         /// Hilfsenergie je Anlage. In derselben Reihenfolge angelegt: erst
         /// Schrittkonstante, Methode (<c>Schritt_61_SteuerJeAnlage</c>) und
         /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab 62.</b>
+        ///
+        /// 02.09.2026, Paket A des <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>
+        /// (Stufe E1.3): <see cref="SCHRITT_62_PV_ANLAGENPARAMETER"/> — die beiden
+        /// PV-Anlagenparameter <c>PV_WrWirkungsgrad</c> und <c>PV_Systemverluste</c>.
+        /// <b>Der erste Schritt des SQLite-Zweigs</b>: Er steht in
+        /// <see cref="SCHRITTE_SQLITE"/>, nicht im eingefrorenen Access-Zweig
+        /// <see cref="SCHRITTE"/>. Reihenfolge wie seit dem E6-Vorfall: erst
+        /// Schrittkonstante, Methode (<c>Schritt_62_PvAnlagenparameter</c>) und
+        /// <see cref="SCHRITTE_SQLITE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab
+        /// 63.</b>
         /// </summary>
-        public const int ZIEL_VERSION = 61;
+        public const int ZIEL_VERSION = 62;
+
+        /// <summary>
+        /// Der EINGEFRORENE Stand des Access-Zweigs: die höchste Nummer, die
+        /// <see cref="SCHRITTE"/> führt (Schritt 61). Bis zum 02.09.2026 war das
+        /// dieselbe Zahl wie <see cref="ZIEL_VERSION"/>; mit dem ersten SQLite-Schritt
+        /// (62) laufen beide auseinander, und die Stellen, die den EINEN oder den ANDEREN
+        /// Stand meinen, müssen es seither sagen:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>Access-Zweig</b> (<c>SchritteAbarbeiten</c>,
+        ///     <see cref="HebeAltbestand"/>): Ziel ist dieser Freeze-Stand. Ein Altbestand
+        ///     kann gar nicht höher kommen — die Schritte ab 62 sind SQLite-Schritte und
+        ///     lassen sich auf einer <c>.accdb</c> nicht fahren.</description></item>
+        ///   <item><description><b>SQLite-Zweig</b> (<c>SchritteAbarbeitenSqlite</c>):
+        ///     Der Eingangs-Test „ist das überhaupt ein migrierter Bestand?" prüft gegen
+        ///     diesen Freeze-Stand, das ERGEBNIS gegen <see cref="ZIEL_VERSION"/>. Eine
+        ///     Datei auf Stand 61 ist ein gültiger Bestand, der die Schritte ab 62 noch
+        ///     vor sich hat — mit <see cref="ZIEL_VERSION"/> im Eingangs-Test wäre sie
+        ///     fälschlich als „nicht erstmigriert" abgewiesen worden.</description></item>
+        /// </list>
+        /// </summary>
+        public const int FREEZE_VERSION_ACCESS = 61;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2235,6 +2268,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_61_STEUER_JE_ANLAGE = 61;
 
+        /// <summary>
+        /// PAKET A des <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>, Stufe E1.3:
+        /// <b>die beiden PV-Anlagenparameter</b> <c>PV_WrWirkungsgrad</c> und
+        /// <c>PV_Systemverluste</c> an <c>Tab_Energieanlagen</c>
+        /// (<see cref="SchemaKatalog.Schritt62_PvAnlagenparameter"/>).
+        ///
+        /// <para><b>DER ERSTE SCHRITT DES SQLITE-ZWEIGS.</b> Er steht deshalb in
+        /// <see cref="SCHRITTE_SQLITE"/>, nicht in <see cref="SCHRITTE"/>, und benutzt
+        /// ausschließlich <see cref="SqliteSpalteAnlegen"/> — <c>Lauf.Conn</c> ist im
+        /// SQLite-Zweig <c>null</c>, jeder Zugriff über <c>Ddl</c>/<c>TabellenSchema</c>
+        /// liefe ins Leere.</para>
+        ///
+        /// <para><b>Wozu.</b> Bis Paket A stand der Wechselrichter-Wirkungsgrad als
+        /// Konstante 0,95 im Rechenweg (<c>SimulationPV.Berechnung</c>), Systemverluste
+        /// gab es gar nicht. Beides ist eine Anlageneigenschaft und gehört in die
+        /// Anlagenzeile — dort liegen mit Neigung, Azimut und Modulanzahl schon alle
+        /// übrigen Angaben des Modulfelds.</para>
+        ///
+        /// <para><b>KEIN DML — das ist die Ergebnisneutralität.</b> Beide Spalten bleiben
+        /// nach <c>ADD COLUMN</c> NULL; NULL heißt 0,95 bzw. 0 % und damit exakt das
+        /// bisherige Verhalten. Ein DDL-<c>DEFAULT</c> auf einem Fachwert kommt nicht in
+        /// Frage (Hausregel): Er machte „nie gepflegt" und „auf den Vorgabewert gesetzt"
+        /// ununterscheidbar.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 62
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 61
+        /// geschnürt wurden. Das ist die eingebaute Zusage des Formats („nur gleicher
+        /// Schemastand") und gilt für jeden Migrationsschritt gleichermaßen.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte und meldet sie als „bereits vorhanden"; es gibt kein UPDATE,
+        /// das ein zweiter Lauf wiederholen könnte. Der Zweitlauf meldet den Schritt als
+        /// „bereits erledigt" und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_62_PV_ANLAGENPARAMETER = 62;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3489,7 +3558,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// EINGEFRORENER ACCESS-ZWEIG: hebt einen Altbestand (<c>.accdb</c>) über die
-        /// Schritte 1-61 auf den Freeze-Stand <see cref="ZIEL_VERSION"/>. Der einzige
+        /// Schritte 1-61 auf den Freeze-Stand <see cref="FREEZE_VERSION_ACCESS"/>. Der einzige
         /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1); aufgerufen
         /// wird er künftig aus dem Erststart-Assistenten (S8), VOR dem Lauf des
         /// <c>EposSqliteMigrator</c>.
@@ -3526,7 +3595,7 @@ namespace WindowsFormsApplication1
             l.Kopf(pfad);
             l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
             l.Kopf("Alt-Hebung des Access-Bestands (eingefrorener Zweig, Schritte 1-" +
-                   ZIEL_VERSION + ")");
+                   FREEZE_VERSION_ACCESS + ")");
 
             bool erfolg = false;
             try
@@ -3715,7 +3784,7 @@ namespace WindowsFormsApplication1
             int version = ApplikationCtrl.GetSchemaVersionOleDb(l.Conn);
             StandVorher = version;
             StandNachher = version;
-            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + FREEZE_VERSION_ACCESS + ")");
             l.Leerzeile();
 
             bool alleOk = true;
@@ -3830,7 +3899,7 @@ namespace WindowsFormsApplication1
             }
 
             l.Leerzeile();
-            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + FREEZE_VERSION_ACCESS + ")");
             if (IdPufferGemappt > 0 || IdPufferGenullt > 0)
                 l.Zeile("ID_PUFFER-Bereinigung: " + IdPufferGemappt + " auf die Projektkopie umgesetzt, " +
                         IdPufferGenullt + " geleert.");
@@ -4078,7 +4147,11 @@ namespace WindowsFormsApplication1
                             : " - jede BHKW-Zeile fuehrt ihre Investition jetzt in den fuenf " +
                               "Einzelposten, aus denen TechnikPlanwertCtrl.BasenFuellen sie liest."));
 
-            return alleOk && StandNachher >= ZIEL_VERSION;
+            // FREEZE_VERSION_ACCESS, nicht ZIEL_VERSION: Der Access-Zweig endet bei 61.
+            // Die Schritte ab 62 sind SQLite-Schritte - eine .accdb kann sie gar nicht
+            // erreichen, und mit ZIEL_VERSION haette hier jede Alt-Hebung Misserfolg
+            // gemeldet.
+            return alleOk && StandNachher >= FREEZE_VERSION_ACCESS;
         }
 
         // =================================================================================
@@ -4088,11 +4161,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Schritte des SQLite-Zweigs, also alles ab Nummer 62.
         ///
-        /// <para><b>Heute bewusst LEER.</b> Der Freeze-Stand 61 kommt fertig aus dem
-        /// <c>EposSqliteMigrator</c>; es gibt schlicht noch nichts nachzuziehen. Die Liste
-        /// steht trotzdem schon da, weil sonst der erste künftige Schritt zwischen zwei
-        /// Bauformen wählen müsste - und die naheliegende falsche Wahl wäre ein Eintrag in
-        /// <see cref="SCHRITTE"/>, also im eingefrorenen Access-Zweig.</para>
+        /// <para><b>Seit dem 02.09.2026 besetzt.</b> Der Freeze-Stand 61 kommt fertig aus
+        /// dem <c>EposSqliteMigrator</c>; alles darüber steht hier. Erster Eintrag ist
+        /// <see cref="SCHRITT_62_PV_ANLAGENPARAMETER"/> (Paket A des PV-Ertragsmodells).
+        /// Die Liste stand schon vorher leer da, weil sonst der erste künftige Schritt
+        /// zwischen zwei Bauformen hätte wählen müssen - und die naheliegende falsche Wahl
+        /// wäre ein Eintrag in <see cref="SCHRITTE"/> gewesen, also im eingefrorenen
+        /// Access-Zweig.</para>
         ///
         /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
         /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
@@ -4113,9 +4188,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly Schritt[] SCHRITTE_SQLITE =
         {
-            // Ab 62. Muster:
-            // new Schritt(SCHRITT_62_..., "Kurzbeschreibung", "Folge, wenn er scheitert",
-            //             Schritt_62_...),
+            // PAKET A des PV-Ertragsmodell-Konzepts, Stufe E1.3. Begruendung,
+            // Ergebnisneutralitaet und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_62_PV_ANLAGENPARAMETER,
+                        "PV-Anlagenparameter (PV_WrWirkungsgrad, PV_Systemverluste) " +
+                        "an Tab_Energieanlagen anlegen (Paket A, Stufe E1.3)",
+                        "Wechselrichter-Wirkungsgrad und Systemverluste bleiben dann " +
+                        "unveraenderlich: Die Simulation rechnet weiter mit dem festen " +
+                        "Faktor 0,95 und ohne Systemverluste, und die beiden Felder der " +
+                        "PV-Anlagenmaske haetten keine Spalte zum Speichern.",
+                        Schritt_62_PvAnlagenparameter),
         };
 
         /// <summary>
@@ -4196,12 +4278,15 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (version < ZIEL_VERSION)
+            // GEGEN DEN FREEZE-STAND, NICHT GEGEN DAS ZIEL: Eine Datei auf Stand 61 ist
+            // ein gueltiger erstmigrierter Bestand, der die Schritte ab 62 noch vor sich
+            // hat - genau der Normalfall, seit es SQLite-Schritte gibt.
+            if (version < FREEZE_VERSION_ACCESS)
             {
-                l.Zeile("Bestand ist nicht auf Freeze-Stand " + ZIEL_VERSION +
+                l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION_ACCESS +
                         " - bitte Erstmigration mit EposSqliteMigrator fahren.");
                 l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
-                        ZIEL_VERSION + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +
+                        FREEZE_VERSION_ACCESS + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +
                         "auf einer SQLite-Datei nicht nachspielen. Der Weg führt über den " +
                         "Altbestand: erst SchemaMigration.HebeAltbestand auf der .accdb, " +
                         "dann der EposSqliteMigrator.");
@@ -9723,6 +9808,40 @@ namespace WindowsFormsApplication1
                     "KEIN DML: alle fuenf Spalten bleiben NULL, und NULL heisst \"kein " +
                     "eigener Wert, es gilt der Projektwert\" bzw. \"keine Hilfsenergie\". " +
                     "KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 62 - PV-Anlagenparameter (Paket A des PV-Ertragsmodells, Stufe E1.3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 62 - der ERSTE Schritt des SQLite-Zweigs. Anlass,
+        /// Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_62_PV_ANLAGENPARAMETER"/>.
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/>, kein <c>SpaltenAnlegen</c>.</b>
+        /// Der Access-Helfer <c>SpaltenAnlegen</c> arbeitet über <c>TabellenSchema</c> und
+        /// damit über <c>Lauf.Conn</c> — die im SQLite-Zweig <c>null</c> ist. Der Typ
+        /// des Katalogs (<c>DOUBLE</c>) wird deshalb hier ausgeschrieben als
+        /// <c>REAL</c>: Alle Tabellen des Zielschemas sind <c>STRICT</c> und lassen bei
+        /// <c>ADD COLUMN</c> nur INT/INTEGER/REAL/TEXT/BLOB/ANY zu
+        /// (<c>StilleDb.SqliteSpaltenTyp</c> übersetzt an der Rückfallebene dasselbe).</para>
+        /// </summary>
+        private static bool Schritt_62_PvAnlagenparameter(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt62_PvAnlagenparameter)
+            {
+                // DOUBLE des Katalogs -> REAL der STRICT-Tabelle.
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, "REAL")) return false;
+            }
+
+            l.Notiz("62: 2 Spalte(n) (" + SchemaKatalog.SPALTE_EA_PV_WR_WIRKUNGSGRAD + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_SYSTEMVERLUSTE + ") an " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + " sichergestellt. " +
+                    "KEIN DML: beide Spalten bleiben NULL, und NULL heisst 0,95 " +
+                    "(Wechselrichter-Wirkungsgrad) bzw. 0 % (Systemverluste) - genau der " +
+                    "bisher fest verdrahtete Rechenweg. KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

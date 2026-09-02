@@ -1138,6 +1138,51 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Wechselrichter-Wirkungsgrad dieser PV-ANLAGE (0…1), Stufe E1.3 des
+        /// <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>.
+        ///
+        /// <b>NULL = 0,95</b> — genau der Faktor, den <c>SimulationPV.Berechnung</c> bis
+        /// Paket A fest verdrahtet hatte. Kein DDL-DEFAULT: Der Vorgabewert ist eine
+        /// Fachannahme und steht deshalb im Code (Hausregel „kein DDL-DEFAULT auf
+        /// Fachwerten"), nicht im Schema.
+        /// </summary>
+        public const string SPALTE_EA_PV_WR_WIRKUNGSGRAD = "PV_WrWirkungsgrad";
+
+        /// <summary>
+        /// Systemverluste dieser PV-ANLAGE [%] (Verschmutzung, Mismatch, DC-Verkabelung),
+        /// Stufe E1.3. <b>NULL = 0</b> — der Wert, der nichts ändert; eine
+        /// Bestandsdatenbank rechnet nach der Migration bitgleich weiter.
+        /// </summary>
+        public const string SPALTE_EA_PV_SYSTEMVERLUSTE = "PV_Systemverluste";
+
+        /// <summary>
+        /// Schritt 62 der Migration — die beiden PV-Anlagenparameter an
+        /// <c>Tab_Energieanlagen</c> (Konzept PV-Ertragsmodell, Stufe E1.3).
+        ///
+        /// <b>KEIN DML, und das ist die Ergebnisneutralität.</b> Beide Spalten bleiben
+        /// nach <c>ADD COLUMN</c> NULL, und NULL ist bei beiden der Wert, der nichts
+        /// ändert (0,95 bzw. 0 %) — der Rechenkern liefert danach dieselben Zahlen wie
+        /// vorher.
+        ///
+        /// <b>Anders als bei <see cref="Schritt61_SteuerJeAnlage"/> steht dieser Schritt
+        /// in <see cref="Alle"/>.</b> Das Kriterium ist der LESER, nicht die Tabelle: Der
+        /// RECHENKERN liest beide Spalten (<c>SimulationPV.Berechnung</c>). Fehlt eine
+        /// davon, rechnet der Lauf zwar weiter (der Leser ist tolerant, NULL und fehlende
+        /// Spalte sind derselbe Fall), aber die Rückfallebene soll sie genau deshalb
+        /// anlegen — sie ist für die Spalten der Eingabeseite da, die die Simulation
+        /// braucht.
+        ///
+        /// <b>Ordinalposition.</b> <c>Tab_Energieanlagen</c> wird ausschließlich
+        /// namensbasiert gelesen; das Anhängen ist gefahrlos (dieselbe Begründung wie bei
+        /// Schritt 61).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt62_PvAnlagenparameter =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_WIRKUNGSGRAD, "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_SYSTEMVERLUSTE,  "DOUBLE"),
+        };
+
+        /// <summary>
         /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
         /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor
         /// (<c>Form_Heizkessel_Bearbeiten</c>), beide Controller
@@ -3443,6 +3488,13 @@ namespace WindowsFormsApplication1
         /// Ergebnistabellen. Für die zwei Ergebnisspalten gibt es die eigene, tolerante
         /// Vorsorge unmittelbar vor dem Schreiben
         /// (<c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
+        ///
+        /// <see cref="Schritt62_PvAnlagenparameter"/> ist dagegen AUFGEFÜHRT, obwohl seine
+        /// Spalten wie die des Schritts 61 an <c>Tab_Energieanlagen</c> hängen — weil hier
+        /// das Kriterium erfüllt ist, an dem Schritt 61 scheitert: <b>Der Rechenkern liest
+        /// die Spalten</b> (<c>SimulationPV.Berechnung</c> holt Wechselrichter-Wirkungsgrad
+        /// und Systemverluste je Anlagenzeile). Damit gilt dieselbe Linie wie bei
+        /// <see cref="Schritt13_Mindestfuellstand"/>.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -3455,6 +3507,7 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
                 foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
+                foreach (SchemaSpalte s in Schritt62_PvAnlagenparameter) yield return s;
             }
         }
     }

@@ -57,6 +57,9 @@ namespace WindowsFormsApplication1
             new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Leistung",        "PV-Leistung", "kWp", 1),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Neigung",            "Neigung", "°", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Azimut",             "Azimut", "°", 0),
+            // Paket A des PV-Ertragsmodells (Stufe E1.3), Migrationsschritt 62.
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrWirkungsgrad",  "Wechselrichter-Wirkungsgrad", "", 2),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Systemverluste",  "Systemverluste", "%", 1),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Kollektormodulanzahl","Kollektormodulanzahl", "", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Solaranteil",        "Solaranteil", "%", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Volumen",            "Speichervolumen (Anlage)", "l", 0),
