@@ -164,7 +164,7 @@ Dokument.
 |---|---|---|---|
 | `Kenndaten.accdb` | 145 MB | **151,9 MB** | wächst weiter |
 | gespeicherte Access-Abfragen | 20 | **17** in der DB, **14** im Code referenziert, davon **11** fachlich benötigt | die drei übrigen (`Abfrage_Kuehlung_MaxLast`, `Abfrage_SST`, `Abfrage_KenndatenKuehlung_Max`) erscheinen **ausschließlich** in `SchemaMigration.cs` als Namenskonstanten und Reparatur-DDL — kein einziger lesender Anwendungszugriff. Mit dem Einfrieren des Access-Zweigs verlieren sie ihren letzten Verwender |
-| Dateien mit DB-Zugriff | 179 | **160** `DataRepository` · **60** `RecordSet` · **35** eigene `OleDbConnection` | die pauschale Zahl verdeckte drei verschieden schwere Baustellen |
+| Dateien mit DB-Zugriff | 179 | **160** `DataRepository` · **60** `RecordSet` (grep) bzw. **47** echte Nutzer · **35** eigene `OleDbConnection` (36 mit `RecordSet`, 67 Stellen) | die pauschale Zahl verdeckte drei verschieden schwere Baustellen; die engeren Zahlen stammen aus der SQLite-Bauanleitung |
 | Jet-Dialektstellen | 17 Dateien | **`IIf` 14 + `UCase` 3, sämtlich in `SchemaMigration.cs`**, dazu `IIf` in 2 Views | entfällt mit dem Einfrieren des Access-Zweigs fast vollständig. **Real umzustellen sind stattdessen: 42 × `SELECT TOP`, 20 × `@@IDENTITY`, 42 Boolean-Literale** |
 | nicht UTF-8 kodierte `.cs` | 93 | **68** (64 × cp1252, 4 × unknown-8bit), alle in `WindowsFormsApplication1/` | die 93 stammen vermutlich aus einer Zählung, die an Dateinamen mit Leerzeichen zerbrach |
 | `Form_Simulation_Detail.cs` | 6.200 Zeilen | **7.773** (mit Designer 10.855) | seither um ein Viertel gewachsen — das größte Einzelstück wird teurer, nicht billiger |
@@ -622,20 +622,30 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 
 ### iU6 — Datenschicht plattformfrei anschließen · M · Windows
 
-**Voraussetzung:** iU4, **SQLite-S4–S7**. **Block B1**, ergänzt um die Befunde aus § 1.4.
+**Voraussetzung:** iU4, **SQLite-S4a–S4e und S7**. **Block B1**, ergänzt um die Befunde aus § 1.4.
+
+**Dieses Paket ist bewusst klein, weil die SQLite-Bauanleitung das meiste bereits erledigt.** Was
+dort schon geplant ist, wird hier **nicht** wiederholt:
+
+| erledigt durch | Inhalt |
+|---|---|
+| **S4a** | `DataRepository`-Übersetzer (`?`→`@pN`), Verbindungsaufbau mit `PRAGMA foreign_keys = ON` je Verbindung — ohne diese Zeile sind alle 90 Fremdschlüssel wirkungslos |
+| **S4b** | die 36 Eigenverbindungs-Dateien, `StilleDb` und zwei private Klone, `RecordSet` **innen** |
+| **S4c** | ~24 `GetOleDbSchemaTable`-Stellen, ADOX-Reseed, 3 `CommandBuilder` |
+| **S4d** | Selbstheilungs-DDL: 29 Stellen in 16 Dateien |
+| **S4e** | Transaktionen auf `DbVorgang` — 18 + 13 Dateien. **Der Typ, den auch iOS braucht, entsteht also ohnehin** |
+
+Für iOS bleibt danach übrig:
 
 | Inhalt | Detail |
 |---|---|
-| `IDatenzugriff` in `EPOS.Kern`, Umsetzung in `EPOS.Daten` | `DataRepository` bleibt Fassade — 160 Aufruferdateien unangetastet |
-| **Providerneutraler Parametertyp** | `IDatenzugriff` mit eigenem `DbParam`; `DataRepository` bleibt als Windows-Adapter dahinter bestehen (Weg (c), § 1.4, → iF10). Die ~2.300 Altaufrufe wandern erst mit ihren Masken in iU9 |
-| `BeginTransaction` | Rückgabe `(OleDbConnection, OleDbTransaction)` → eigenes `DbVorgang`-Objekt — **29 Dateien** |
-| 35 Fremdverbindungen | eigene `new OleDbConnection` außerhalb der Fassade auf `IDatenzugriff` ziehen; Schwerpunkte `ErgebnisCtrl` (9), `PufferSpCtrl` (8), `WaermequelleClass` (5) |
-| **`RecordSet.DBCommand`** | öffentliche, setzbare `OleDbCommand`-Property (`RecordSet.cs:9`); UI-Code weist Verbindung und Transaktion von außen zu. In keinem Vorgängerdokument erfasst — **60 Dateien** betroffen, davon eine Teilmenge mit Zuweisung |
-| iOS-Besonderheit | `Microsoft.Data.Sqlite` zieht standardmäßig `SQLitePCLRaw.bundle_e_sqlite3`, das auf iOS an der AOT-Regel gegen dynamisches Laden scheitert. **Auf iOS ist `SQLitePCLRaw.bundle_green` zu setzen** (nutzt dort die System-SQLite) |
-| Seed und Pfade | Katalog-`.sqlite` als App-Beilage, beim Erststart in den beschreibbaren Bereich kopieren; `PRAGMA foreign_keys = ON` je Verbindung (sonst sind alle 90 Fremdschlüssel wirkungslose Dekoration) |
+| `IDatenzugriff` in `EPOS.Kern` mit eigenem `DbParam` | `DataRepository` bleibt in seiner S4-Fassung und wird als **Windows-Adapter** dahintergehängt (Weg (c), § 1.4, → iF10). Die ~2.300 Altaufrufe bleiben unberührt und wandern mit ihren Masken in iU9 |
+| **`RecordSet.DBCommand`** | Die Bauanleitung sagt ausdrücklich: „wird innen umgestellt, **die öffentliche Fläche bleibt**". Die Fläche ist `public OleDbCommand DBCommand { get; set; }` (`RecordSet.cs:9`), der UI-Code weist Verbindung und Transaktion von außen zu. Für Windows unschädlich, **für iOS ein Blocker** — `System.Data.OleDb` fehlt dort. Betrifft **47 echte Nutzer**; entweder die Property auf einen eigenen Typ heben oder `RecordSet` in iU9 mit seinen Masken ablösen |
+| iOS-Laufzeit | `Microsoft.Data.Sqlite` zieht standardmäßig `SQLitePCLRaw.bundle_e_sqlite3`, das auf iOS an der AOT-Regel gegen dynamisches Laden scheitert. **Auf iOS `SQLitePCLRaw.bundle_green` setzen** (nutzt dort die System-SQLite) |
+| Seed und Pfade | Katalog-`.sqlite` als App-Beilage, beim Erststart in den beschreibbaren Bereich kopieren (`IPfade`) |
 
-**Abnahme:** Testprojekte rechnen auf SQLite wertgleich; `EPOS.Kern` enthält keinen Verweis auf
-`System.Data.OleDb`.
+**Abnahme:** Testprojekte rechnen auf SQLite wertgleich; `EPOS.Kern` und `EPOS.Daten` enthalten
+keinen Verweis auf `System.Data.OleDb`.
 
 ### iU7 — Charts und Berichte plattformfrei · M · Windows
 
@@ -773,7 +783,7 @@ ersten Maske, M6); SQLite-S4–S7 vor iU6.
 |---|---|---|---|
 | **0 — Fundament** | iU0, iU1 · parallel SQLite-S0–S3 | Windows | iZ1: Solution baut ohne Visual Studio |
 | **1 — Umgebung und Beweis** | iU2, iU3 | Mac / CI | **iZ3: Go/No-Go** |
-| **2 — Datenschicht** | SQLite-S4–S7 | Windows | SQLite-Abnahmeprotokoll (S7) |
+| **2 — Datenschicht** | SQLite-S4a–S4e, S5–S7 (≈ 21–30 PT gesamt ab S0) | Windows | SQLite-Abnahmeprotokoll (S7) |
 | **3 — Gesundung** | iU4, iU5, iU6, iU7 | Windows | iZ4: Kern byte-gleich, baut auf macOS |
 | **4 — UI-Fundament** | iU8 | Windows | iZ5: Modell-C-Stichtag |
 | **5 — Masken** | iU9 (Wellen) | Windows | je Welle Feldkartenabnahme |
@@ -797,7 +807,7 @@ sichtbare iOS-Fortschritt später beginnt — der Beweis (iU3) liegt zu diesem Z
 | iU3 | **S0** | S1–S3 als Zulieferung |
 | iU4 | **S1**, A1, M10 | — |
 | iU5 | A2, A3, A4, M4 | — |
-| iU6 | **S2** (Rest), B1 | **S4–S7** als Voraussetzung |
+| iU6 | **S2** (Rest), B1 | **S4a–S4e, S7** als Voraussetzung; `DbVorgang` entsteht bereits in S4e |
 | iU7 | D1, D2, M5 | — |
 | iU8 | A5, A6, A7, M1, M2, M6, M9 | — |
 | iU9 | Block C: K1–K6 | — |
@@ -851,7 +861,7 @@ Sichtabnahme der Masken. Beides bleibt Handarbeit.
 | **iR5** | **Parallelentwicklung.** Der Fachausbau läuft weiter; jede Etappe, die während iU4–iU9 in die WinForms-App fließt, ist Arbeit, die später wandern muss | Der Umbau holt den Bestand nie ein | Modell-C-Stichtag (iZ5) so früh wie möglich; ab dann fließt Neues in `EPOS.UI` statt in WinForms |
 | **iR6** | **Kein Testdatenbestand in der CI.** `.gitignore` schließt `*.accdb` aus; ohne Datenbank ist die Kern-CI nur ein Kompilierungstest | Der Wertgleichheitsnachweis läuft nicht automatisch, sondern nur von Hand | Anonymisierte `Kenndaten_Test.sqlite` versionieren (iE6, iF14) |
 | **iR7** | **Provisionsfrage beim Lizenzverkauf.** Ob Apple bei einer B2B-Fachanwendung In-App-Kauf verlangt, entscheidet über 15–30 % je Lizenz | Geschäftsmodell | Vor iU13 klären (iF12); Custom Apps über Apple Business Manager entschärfen die Frage |
-| **iR8** | **`RecordSet` als blinder Fleck.** Die öffentliche `OleDbCommand`-Property steht in keinem Vorgängerdokument; 60 Dateien nutzen `RecordSet`, mit string-konkateniertem SQL, das die zentrale Parameterübersetzung vollständig umgeht | S4-Schätzung zu niedrig; iOS-Blocker bleibt unentdeckt | In SQLite-S1 mitmessen; in iU6 ausdrücklich als eigener Posten führen |
+| **iR8** | **`RecordSet` bleibt an OleDb gebunden.** Die Bauanleitung stellt in S4b nur das Innere um — „die öffentliche Fläche bleibt", und die ist `public OleDbCommand DBCommand { get; set; }`. Dazu string-konkateniertes SQL, das die zentrale Parameterübersetzung umgeht | Für Windows folgenlos, **für iOS ein harter Blocker** bei 47 echten Nutzern | In iU6 als eigener Posten führen: Property auf einen eigenen Typ heben **oder** `RecordSet` in iU9 mit seinen Masken ablösen |
 | **iR9** | **Nur ein Rechner, nur ein Mensch.** Tags, Referenzbasen und die einzige Buildumgebung hängen heute an einem Arbeitsplatz (`letzter-x86-stand` ist bis heute nicht gepusht) | Ausfallrisiko für das gesamte Vorhaben | Die CI ist zugleich die Antwort darauf: Sie macht den Build reproduzierbar und vom Einzelrechner unabhängig |
 | **iR10** | **`Form_Simulation_Detail`** wächst schneller als die Umstellung (6.200 → 7.773 Zeilen in vier Monaten) | Das größte Einzelstück wird nie fertig konvertiert | In iU9 nicht konvertieren, sondern zerlegen — und dafür einen eigenen Termin setzen, bevor es weiter wächst |
 
