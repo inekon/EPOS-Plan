@@ -9,12 +9,23 @@ Diese Datei beschreibt **Fachdomäne, Datenmodell, Migration und Umgang mit der 
 Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
-C#, `net8.0-windows`, WinForms (MDI), Build zwingend **x64** — die Access-Engine (ACE OLEDB) muss
-als 64-Bit-Fassung vorliegen. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
+C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
+**x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
 (Git-Tag `letzter-x86-stand`) in
+[`Konzept_Umstellung_64Bit_EPOS-Plan.md`](Konzept_Umstellung_64Bit_EPOS-Plan.md).
+
+Die Datenhaltung ist seit dem 02.09.2026 **SQLite** (`Kenndaten.sqlite`, siehe
+[`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md)); die native Bibliothek bringt
+`Microsoft.Data.Sqlite` mit. Die Access-Engine (ACE OLEDB, 64-Bit-Fassung) wird nur noch für die
+**Erststart-Migration vorhandener `.accdb`-Bestände** gebraucht — für einen Neustand ist sie
+nicht mehr erforderlich.
 
 
 ## Datenhaltung
+
+> Dieser Abschnitt beschreibt den Stand **vor** der SQLite-Umstellung vom 02.09.2026. Er gilt
+> weiterhin für Altbestände und für das Verständnis des Schemas; der laufende Betrieb steht in
+> [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md).
 
 Alles in einer einzigen Access-Datei `Kenndaten.accdb` — Kataloge **und** Projektdaten. Eine
 separate Projektdatei gibt es nicht.
