@@ -161,19 +161,38 @@ Hinweis "Inno Setup $IsccVersion : $Iscc"
 # und das SDK-MSBuild bricht dabei mit MSB4803 ab - ResolveComReference gibt
 # es nur im vollen MSBuild aus Visual Studio.
 if (-not $SkipPublish) {
-    $MsBuildKandidaten = @()
-    foreach ($Edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
-        $MsBuildKandidaten +=
-            (Join-Path $env:ProgramFiles "Microsoft Visual Studio\2022\$Edition\MSBuild\Current\Bin\MSBuild.exe")
+    # Primaer ueber vswhere - das findet JEDE installierte Fassung, unabhaengig
+    # von Jahreszahl und Editionsordner. Noetig seit VS 2026: dessen Verzeichnis
+    # heisst "18" (interne Hauptversion), nicht "2026", und liegt unter
+    # %ProgramFiles% statt (x86). Eine feste Pfadliste veraltet mit jeder Version.
+    $MsBuildExe = $null
+    $VsWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+    if (Test-Path $VsWhere) {
+        $MsBuildExe = & $VsWhere -latest -prerelease -products * `
+            -requires Microsoft.Component.MSBuild `
+            -find 'MSBuild\**\Bin\MSBuild.exe' |
+            Where-Object { $_ -notmatch '\\amd64\\' } | Select-Object -First 1
     }
 
-    $MsBuildExe = $MsBuildKandidaten | Where-Object { Test-Path $_ } | Select-Object -First 1
+    # Rueckfallebene, falls vswhere fehlt: bekannte Pfade beider Fassungen.
+    if (-not $MsBuildExe) {
+        $MsBuildKandidaten = @()
+        foreach ($Edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
+            $MsBuildKandidaten +=
+                (Join-Path $env:ProgramFiles "Microsoft Visual Studio\18\$Edition\MSBuild\Current\Bin\MSBuild.exe")
+            $MsBuildKandidaten +=
+                (Join-Path $env:ProgramFiles "Microsoft Visual Studio\2022\$Edition\MSBuild\Current\Bin\MSBuild.exe")
+        }
+        $MsBuildExe = $MsBuildKandidaten | Where-Object { Test-Path $_ } | Select-Object -First 1
+    }
+
     if (-not $MsBuildExe) {
         throw @"
-MSBuild.exe von Visual Studio 2022 nicht gefunden. Gesucht wurde unter
-$env:ProgramFiles\Microsoft Visual Studio\2022\<Edition>\MSBuild\Current\Bin.
+MSBuild.exe von Visual Studio nicht gefunden. Gesucht wurde ueber vswhere
+($VsWhere) und ersatzweise unter
+$env:ProgramFiles\Microsoft Visual Studio\{18|2022}\<Edition>\MSBuild\Current\Bin.
 
-Visual Studio 2022 (oder die Build Tools) mit der Arbeitslast ".NET-Desktop-
+Visual Studio (oder die Build Tools) mit der Arbeitslast ".NET-Desktop-
 entwicklung" installieren. "dotnet publish" ist kein Ersatz - es scheitert an
 den COM-Referenzen des Projekts mit MSB4803.
 "@

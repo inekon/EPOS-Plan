@@ -648,7 +648,10 @@ Nur über das MSBuild von Visual Studio — `dotnet build` scheitert an MSB4803
 (COM-Referenzen des App-Projekts).
 
 ```powershell
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
+$msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+        -latest -prerelease -products * -requires Microsoft.Component.MSBuild `
+        -find 'MSBuild\**\Bin\MSBuild.exe' | Where-Object { $_ -notmatch '\\amd64\\' } | Select-Object -First 1
+& $msb `
     C:\Waermeplan\WP_Plan\Referenzlauf\Referenzlauf.csproj `
     -p:Configuration=Debug -p:Platform=x64
 ```
