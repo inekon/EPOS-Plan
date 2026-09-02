@@ -13,7 +13,9 @@ zu den Vorgängerdokumenten sind in § 1.5 einzeln ausgewiesen.
 > Arbeitsblöcke A–E. Es bleibt gültig und wird hier **nicht wiederholt**, sondern zitiert.
 > [`Konzept_DB-Migration_SQLite_EPOS-Plan.md`](Konzept_DB-Migration_SQLite_EPOS-Plan.md) (Rev. 2,
 > 31.08.2026) beantwortet die **Datenschicht** — Etappen S0–S8, Entscheidungen D1–D8, Risiken R1–R4.
-> Auch das wird hier nur eingebunden.
+> Dessen Bauanleitung ist `Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md` (Rev. 1,
+> 01.09.2026, **auf Branch `sqlite`**) mit den Entscheidungen D9, den Risiken R5/R6 und den
+> Arbeitspaketen zu S2–S8. Beides wird hier nur eingebunden.
 > **Dieses Dokument beantwortet: wie, in welcher Reihenfolge, womit gebaut und woran nachgewiesen.**
 > Sein Schwerpunkt liegt auf dem neuen Auftragsbestandteil — der **Anpassung der
 > Entwicklungsumgebung** (§ 3).
@@ -66,7 +68,7 @@ ist der Machbarkeits-Spike (Grundlagen-S0) **nicht** das erste Paket, sondern da
 | Regressionsnetz | **vorhanden und scharf** — Referenzlauf-Suite, 6 Modi, Kindprozess je Projekt, Toleranz rel. 1e-4 / abs. 0,01, aktuelle Basis 13/13 PASS über 3.558.333 Werte | `Referenzlaeufe/LIESMICH.md` |
 | Chart-Stack SkiaSharp/ScottPlot | **Pakete vorhanden, praktisch ungenutzt** — `SkiaSharp 3.119.0`, `ScottPlot.WinForms 5.1.57` im `.csproj`; `ScottPlot` erscheint in **1** Datei, `SkiaSharp` in **0** | einziger Konsument: `Form_SpeicherOptimierung` |
 | Berichtskette portabel | **bereits gegeben** — `ClosedXML 0.105.1` (ab 0.97 ohne `System.Drawing.Common`), `DocumentFormat.OpenXml 3.5.1`, `BouncyCastle 2.7.0`, `MathNet.Numerics 5.0.0` | `.csproj` |
-| Datenschicht SQLite | **0 % implementiert.** Kein SQLite-Bezug in `.cs`, `.csproj`, `.sql`, `.ps1`, `.bat`, `.json`; kein `sql/`-Verzeichnis; kein `EposSqliteMigrator` | SQLite-Konzept § 12: S0 teilweise, **S1–S8 offen**, ≈ 19–28 PT |
+| Datenschicht SQLite | **angelaufen, aber noch kein Anwendungscode.** Auf `main` kein einziger SQLite-Bezug in `.cs`/`.csproj`. Auf **Branch `sqlite`** (Stand 01.09.2026 16:29) liegen: das Implementierungskonzept (644 Z.), `sql/S0_Protokoll_Rechner1_2026-09-01.md` und `sql/tools/Erzeuge-Schema.ps1` (874 Z., Schemagenerator für S2). S0 protokolliert, S2 im Bau, **S4–S8 offen** | SQLite-Konzept § 12; Implementierungskonzept § 9 |
 | `EPOS.Kern` / `EPOS.UI` | **existiert nicht** — kein Projekt, kein Verzeichnis. `WPPlan.Core` ist nur ein Namespace *innerhalb* der WinForms-App | — |
 | CI | **existiert nicht.** `.github/` enthält genau eine Datei, `copilot-instructions.md`, und deren Inhalt ist themenfremder Vorlagenrest (vier Zeilen generischer Azure-Regeln) | kein `workflows/`, kein Azure Pipelines, kein Jenkinsfile |
 | Zentrale Buildsteuerung | **existiert nicht** — kein `Directory.Build.props`, kein `Directory.Packages.props`, kein `NuGet.config`, kein `global.json`. Jedes Projekt trägt seine Versionen selbst, die SDK-Version ist nirgends festgeschrieben | `find` bis Tiefe 3, kein Treffer |
@@ -102,30 +104,40 @@ einmalige Einrichtung, sondern eine **laufende Pflegeverpflichtung** (→ iR2).
 
 ### 1.4 Der Konflikt zwischen den beiden Vorhaben
 
-Er steht in keinem der beiden Dokumente und ist der teuerste Einzelbefund dieser Prüfung.
+Er ist der wichtigste Einzelbefund dieser Prüfung — und er ist auf der Datenschichtseite gerade
+**frisch bestätigt und ausdrücklich verschärft** worden.
 
 Das SQLite-Konzept legt in § 7.4 fest: **`System.Data.OleDb` 8.0.1 bleibt im Projekt**, weil
 `OleDbParameter` „ein reiner Datenträger aus einem NuGet-Paket ist und sich ohne jede
-OLE-DB-Verbindung konstruieren lässt". Alle sechs Ausführungsmethoden von `DataRepository` behalten
-daher ihre Signatur `params OleDbParameter[]`; übersetzt wird nur **innen** (`?` → `@pN`). Das ist für
-Windows eine kluge Entscheidung — sie hält 160 Aufruferdateien unangetastet und macht aus 974
-SQL-Zeilen und 2.270 Parameterobjekten „rund 40 Baustellen".
+OLE-DB-Verbindung konstruieren lässt". Das Implementierungskonzept (01.09.2026) formuliert es
+schärfer: *„`OleDbParameter` bleibt als reiner Datenträger an allen ~2.300 Stellen stehen (2.265
+unqualifizierte + 28 vollqualifizierte Konstruktoren + 54 Array-Allokationen — an ihnen wird
+**nichts** geändert); übersetzt wird **innen** in `DataRepository`."*
 
-**Für iOS ist es eine Sackgasse.** `System.Data.OleDb` ist ein Windows-only-Paket; es steht auf iOS
-nicht zur Verfügung. Eine Signatur, die `OleDbParameter` führt, kann in `EPOS.Kern` nicht existieren.
+**Für Windows ist das die richtige Entscheidung** — sie ist gemessen begründet und hält den
+S4-Aufwand klein. **Für iOS ist sie eine Sackgasse:** `System.Data.OleDb` ist ein
+Windows-only-Paket. Eine Signatur, die `OleDbParameter` führt, kann in `EPOS.Kern` nicht existieren.
 
-| | wenn SQLite-S4 wie geplant umgesetzt wird | wenn S4 providerneutral geschnitten wird |
-|---|---|---|
-| Aufwand S4 | wie veranschlagt (5–8 PT) | + geschätzt 1–2 PT für einen eigenen Parametertyp |
-| Aufwand iOS-Datenschicht | **160 Aufruferdateien ein zweites Mal anfassen** | 0 — der Kern ist bereits portabel |
-| Zwischenstand | Windows läuft auf SQLite, iOS bleibt blockiert | beide Plattformen tragen dieselbe Schicht |
+Die Menge ist dabei größer, als eine bloße Signaturänderung vermuten lässt: Es geht nicht um sechs
+Methodenköpfe, sondern um **~2.300 Konstruktoraufrufe** in 160 Dateien.
 
-**Empfehlung (→ iF10):** SQLite-S4 wird mit einem **providerneutralen Parametertyp** ausgeführt — ein
-schlankes eigenes `DbParam` (Name, Wert, optionaler Typ) ersetzt `OleDbParameter` in den Signaturen.
-Die Übersetzung nach innen bleibt exakt die konzipierte; es ändert sich nur der Datenträger. Die
-Umstellung der Aufrufstellen ist mechanisch (Konstruktoraufruf), die Menge dieselbe, die dabei
-ohnehin angefasst wird. Wird diese Empfehlung nicht übernommen, ist die iOS-Datenschicht ein eigenes,
-vollwertiges Paket in der Größenordnung von S4 selbst.
+| Weg | Kosten jetzt | Kosten später | Bewertung |
+|---|---|---|---|
+| **(a)** `DbParam` sofort in S4 — alle ~2.300 Stellen umschreiben | hoch, aber weitgehend maschinell (die Aufrufe sind uniform) | 0 | erkauft Portabilität mit einem großen Einzeleingriff mitten in S4 |
+| **(b)** wie geplant, iOS-Datenschicht später separat | 0 | dieselben ~2.300 Stellen, dann ohne S4-Rückenwind | verschiebt die Arbeit, ohne sie zu verkleinern |
+| **(c)** **`IDatenzugriff` von Anfang an mit `DbParam`; `DataRepository` behält seine OleDb-Fassade als Windows-Adapter** | gering — nur die neue Schnittstelle | verteilt: jede Aufrufstelle wandert mit ihrer Maske in iU9 | **Empfehlung** |
+
+**Empfehlung (→ iF10): Weg (c).** `EPOS.Kern` definiert `IDatenzugriff` mit einem eigenen schlanken
+`DbParam` (Name, Wert, optionaler Typ). `DataRepository` bleibt exakt so, wie das
+Implementierungskonzept es baut — mit `OleDbParameter` und der `?`→`@pN`-Übersetzung — und wird
+zusätzlich als **Windows-Adapter** hinter `IDatenzugriff` gehängt. Die ~2.300 Altaufrufe bleiben
+unangetastet und wandern erst dann auf `DbParam`, wenn ihre Maske ohnehin nach `EPOS.UI` umgebaut
+wird (iU9, Strangler-Muster M1). Damit kostet die Portabilität **jetzt fast nichts**, S4 bleibt
+unverändert wie geplant, und trotzdem trägt der Kern von Anfang an eine iOS-fähige Schnittstelle.
+
+Was dafür **verbindlich festzulegen ist**: Neuer Datenzugriffscode geht ab dem Stichtag (iZ5)
+ausschließlich über `IDatenzugriff`/`DbParam`, nie mehr über `DataRepository` mit `OleDbParameter` —
+sonst wächst der Altbestand weiter, während er abgebaut werden soll.
 
 **Zweiter, kleinerer Befund derselben Art:** `RecordSet.cs:9` führt eine **öffentliche, setzbare
 Property vom konkreten Typ `OleDbCommand`**:
@@ -615,7 +627,7 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 | Inhalt | Detail |
 |---|---|
 | `IDatenzugriff` in `EPOS.Kern`, Umsetzung in `EPOS.Daten` | `DataRepository` bleibt Fassade — 160 Aufruferdateien unangetastet |
-| **Providerneutraler Parametertyp** | eigener `DbParam` statt `OleDbParameter` in allen sechs Ausführungssignaturen (→ iF10). Wird dies bereits in SQLite-S4 erledigt, entfällt dieser Posten hier vollständig |
+| **Providerneutraler Parametertyp** | `IDatenzugriff` mit eigenem `DbParam`; `DataRepository` bleibt als Windows-Adapter dahinter bestehen (Weg (c), § 1.4, → iF10). Die ~2.300 Altaufrufe wandern erst mit ihren Masken in iU9 |
 | `BeginTransaction` | Rückgabe `(OleDbConnection, OleDbTransaction)` → eigenes `DbVorgang`-Objekt — **29 Dateien** |
 | 35 Fremdverbindungen | eigene `new OleDbConnection` außerhalb der Fassade auf `IDatenzugriff` ziehen; Schwerpunkte `ErgebnisCtrl` (9), `PufferSpCtrl` (8), `WaermequelleClass` (5) |
 | **`RecordSet.DBCommand`** | öffentliche, setzbare `OleDbCommand`-Property (`RecordSet.cs:9`); UI-Code weist Verbindung und Transaktion von außen zu. In keinem Vorgängerdokument erfasst — **60 Dateien** betroffen, davon eine Teilmenge mit Zuweisung |
@@ -802,7 +814,7 @@ sichtbare iOS-Fortschritt später beginnt — der Beweis (iU3) liegt zu diesem Z
 |---|---|---|
 | **.NET 10** | 10.11.2026 (Support-Ende 8/9) — von außen gesetzt | **fix**, Paket iU1 |
 | **Modell C (M1)** | mit iZ5 — ab dann kein Dialog mehr doppelt | folgt aus iU8 |
-| **SQLite auf Windows (M3/iF9)** | SQLite-D7: „nach Schema-Beruhigung" — Schritt 62 (Einheitenbruch) und ab 63 (BHKW-Wirtschaftlichkeit) offen | **kein kalendarisches Datum.** Das ist die einzige Terminlücke der Kette und blockiert Etappe 2 (→ iF10) |
+| **SQLite auf Windows (M3/iF9)** | SQLite-D7, Stand 01.09.2026: BHKW-Wirtschaftlichkeit ist bereits Schritt 60/61 erledigt, **offen nur noch der Einheitenbruch (Schritt 62)**; S0–S3 laufen sofort | **kein kalendarisches Datum**, aber die Bedingung ist fast erfüllt. Ob Schritt 62 als letzter Access- oder erster SQLite-Schritt kommt, wird laut Implementierungskonzept bei S4-Start entschieden — beides trägt |
 
 ---
 
@@ -832,7 +844,7 @@ Sichtabnahme der Masken. Beides bleibt Handarbeit.
 
 | Nr. | Risiko | Wirkung | Gegenmaßnahme |
 |---|---|---|---|
-| **iR1** | **Der SQLite-Stichtag kommt nicht.** D7 bindet ihn an „Schema-Beruhigung", Schritt 62/63 sind offen — bei über zwanzig Fachetappen allein 2026 kann diese Bedingung dauerhaft unerfüllt bleiben | Etappe 2 blockiert, damit iU6, iU10 und das ganze iPad-Ziel | **Kalendarischen Termin setzen** statt einer Bedingung (iF10). SQLite-S0–S3 laufen ohnehin risikofrei vorab |
+| **iR1** | **Der SQLite-Stichtag kommt nicht.** D7 bindet ihn an „Schema-Beruhigung"; nach dem Stand vom 01.09.2026 fehlt nur noch Schritt 62 (Einheitenbruch) — bei über zwanzig Fachetappen im Jahr kann jederzeit ein neuer Schritt nachrücken | Etappe 2 blockiert, damit iU6, iU10 und das ganze iPad-Ziel | **Kalendarischen Termin setzen**, sobald Schritt 62 beschieden ist (iF10). SQLite-S0–S3 laufen ohnehin risikofrei vorab und sind bereits angelaufen |
 | **iR2** | **Apple-Toolchain-Drift.** .NET-für-iOS und Xcode sind versionsstarr gekoppelt; eine automatische Xcode-Aktualisierung legt den Build lahm | Mac-Arbeitsplatz und iOS-CI stehen | Xcode-Aktualisierungen **nie automatisch**; Version im Team dokumentieren; CI-Runner-Image pinnen |
 | **iR3** | **Blazor Hybrid und SkiaSharp** vertragen sich nicht unmittelbar (§ iU7) | zwei Chart-Stacks statt einem — genau das, was M5 verhindern soll | Frühentscheidung in iU7 (iF16), nicht erst bei der ersten Chart-Maske |
 | **iR4** | **Gleitkomma auf ARM64.** Zwischen x64 und Apple Silicon sind Abweichungen zu erwarten wie damals zwischen x86 und x64 | „wertgleich" wird bestreitbar, das Abnahmeinstrument stumpf | Toleranz vor iU3 definieren (iF15); FMA-Analyse als erprobtes Muster |
@@ -868,7 +880,7 @@ setzen sie voraus:**
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| **iF10** | **Wird SQLite-S4 providerneutral ausgeführt** (eigener `DbParam` statt `OleDbParameter` in den Signaturen), und **bekommt der SQLite-Stichtag ein Datum** statt der Bedingung „nach Schema-Beruhigung"? | **Ja zu beidem.** Ohne den ersten Punkt werden 160 Aufruferdateien zweimal angefasst (§ 1.4); ohne den zweiten hat die gesamte iOS-Kette keinen Anfangstermin (iR1) |
+| **iF10** | **Bekommt `IDatenzugriff` einen providerneutralen Parametertyp** (`DbParam`), während `DataRepository` seine OleDb-Fassade als Windows-Adapter behält — Weg (c) aus § 1.4? Und: **bekommt der SQLite-Stichtag ein Datum**, sobald Schritt 62 entschieden ist? | **Ja zu beidem.** Weg (c) kostet in S4 fast nichts, lässt die ~2.300 Altaufrufe unangetastet und macht den Kern trotzdem iOS-fähig; ohne ihn ist die iOS-Datenschicht ein eigenes Paket. Der Stichtag ist nach dem Stand vom 01.09. greifbar — nur Schritt 62 steht noch aus (iR1) |
 | **iF11** | Mac-Hardware sofort beschaffen — oder iU3 auf einem `macos-latest`-CI-Runner fahren und den Mac erst mit iU10 kaufen? | **CI-Runner für den Spike.** Verschiebt eine vierstellige Investition hinter das Go/No-Go-Gate, ohne den Beweis zu schwächen |
 | **iF12** | Vertriebsweg für die Auslieferung: Custom Apps über Apple Business Manager, Unlisted App oder öffentlicher App Store — und wie wird der Lizenzverkauf gegenüber Apples Kaufregeln behandelt? | **Custom Apps** prüfen: passt zum B2B-Kundenkreis und entschärft die Provisionsfrage. Klärung **vor** iU13, nicht im Review |
 | **iF13** | Wird der Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenannt? | **Nein** — der Umzug bleibt lesbar; die Umbenennung ist ein eigener mechanischer Schritt danach |
@@ -897,6 +909,7 @@ setzen sie voraus:**
 | Referenzlauf | `Referenzlauf/` (9 `.cs`), `Referenzlaeufe/LIESMICH.md`, Basis `Referenzlaeufe/2026-08-30_B3-Kaskade/` |
 | Freigabekette | `Setup/build-setup.ps1`, `Setup/EPOS-Plan.iss` (Z. 29 `AppExeName`), `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md` |
 | SQLite-Probe | `sqlite-probe/LIESMICH.md`, `sqlite-probe/aufbau.sql`, `sqlite-probe/EPOS_Beispiel.sqlite` |
+| SQLite-Umsetzung (Branch `sqlite`) | `Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md` (644 Z.), `sql/tools/Erzeuge-Schema.ps1` (874 Z.), `sql/S0_Protokoll_Rechner1_2026-09-01.md` |
 | Kodierungsregel | `.editorconfig` (bewusst ohne globales `charset`) |
 | Synchronisation | `GitHub_Sync.bat` |
 
@@ -916,6 +929,7 @@ setzen sie voraus:**
 | Grundlagen-S0–S6 | Etappen der Portierung | ebenda § 5 |
 | SQLite-S0–S8 | Etappen der Datenschicht | `Konzept_DB-Migration_SQLite_EPOS-Plan.md` § 12 |
 | SQLite-D1–D8, R1–R4 | Entscheidungen und Risiken der Datenschicht | ebenda |
+| SQLite-D9, R5, R6 | Fortschreibung aus der Bauanleitung | `Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md` (Branch `sqlite`) |
 | P0–P5 | Pakete der 64-Bit-Umstellung | `Konzept_Umstellung_64Bit_EPOS-Plan.md` |
 
 ### 9.3 Was dieses Dokument nicht ist
