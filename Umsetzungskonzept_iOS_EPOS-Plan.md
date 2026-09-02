@@ -361,18 +361,35 @@ bleibt als Rückfallebene stehen, bis der .NET-10-Sprung (iU1) durch die Referen
 | 5. Buildpfade nachziehen | Alle Skripte und Dokumente zeigen fest auf `…\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe` — betroffen sind `Setup/build-setup.ps1`, `Referenzlaeufe/LIESMICH.md`, `WindowsFormsApplication1/CLAUDE.md`, `Referenzlauf.csproj`. Mit iE3 (COM-Referenzen raus) entfällt die Bindung an das VS-MSBuild ohnehin — bis dahin sind die Pfade zu pflegen |
 | 6. Erst danach Schritt 6 aus iU1 (Hauptprojekt auf `net10.0-windows`) | vorher lässt sich `net10.0` gar nicht targeten |
 
-**Die Lizenz ist der eigentliche Stolperstein, nicht die Technik.** Eine gekaufte
-VS-2022-Professional-Dauerlizenz gilt **nicht** für VS 2026. Zwei Wege:
+**Zur Lizenz — Community 2026 ist der vorgesehene Weg.** Der heutige Buildpfad zeigt auf
+`2022\Community`, es läuft also bereits die kostenfreie Edition. **VS 2026 gibt es ebenfalls als
+Community**, mit gegenüber 2022 unveränderten Bedingungen. Der Versionssprung ändert an der
+Rechtslage damit nichts; er ist nur der Anlass, die Einordnung einmal festzuhalten:
 
-| Weg | Bedeutung |
+| Edition | Bedingung |
 |---|---|
-| **Visual-Studio-Abonnement** (Professional/Enterprise) | läuft bereits eines, entstehen keine zusätzlichen Kosten; künftige Hauptversionen sind eingeschlossen |
-| **Standalone-Lizenz VS 2026 Professional** | Einmalkauf, gilt unbefristet für diese Version — aber **nicht** für die übernächste |
+| **Community 2026** | In einer Organisation bis zu **5 Nutzer**, sofern es **keine „Enterprise"-Organisation** ist. Als Enterprise gilt: **mehr als 250 PCs/Nutzer oder mehr als 1 Mio. USD Jahresumsatz**. Unterhalb dieser Schwellen ist auch kommerzielle Entwicklung gedeckt |
+| **Professional 2026** | nötig, sobald eine Schwelle überschritten wird oder mehr als 5 Entwickler arbeiten. Eine gekaufte **VS-2022-Dauerlizenz gilt nicht** für 2026 — dann Abonnement oder neue Standalone-Lizenz |
 
-Bei einer reinen Dauerlizenz für 2022 ist ein Neukauf oder der Wechsel ins Abonnement nötig
-(→ iF18). **Community-Edition** ist für INEKON als Firma nur unter den Bedingungen der
-Community-Lizenz nutzbar — der heutige Buildpfad zeigt auf `2022\Community`, das ist vor dem
-Umstieg zu klären.
+Bleibt INEKON unter den Schwellen, ist der Umstieg **kostenneutral** (→ iF18).
+
+**Ablauf für Community 2026 im Einzelnen:**
+
+| # | Schritt | Anmerkung |
+|---|---|---|
+| 1 | Auf `visualstudio.microsoft.com/downloads` **Community 2026** wählen, Web-Installer herunterladen | kostenfrei, kein Produktschlüssel |
+| 2 | Installer starten — er erkennt die vorhandene VS-2022-Installation und bietet an, **Workloads und Einstellungen zu übernehmen** | annehmen; spart die manuelle Auswahl |
+| 3 | Workloads: **.NET-Desktopentwicklung** (Pflicht), **.NET MAUI** (für iU2 ff.), **ASP.NET und Webentwicklung** (Blazor-Werkzeuge für iU8) | MAUI und ASP.NET lassen sich später nachinstallieren |
+| 4 | Installieren — VS 2022 bleibt **unangetastet** daneben stehen | Dauer 30–90 Minuten je nach Workloads |
+| 5 | Mit einem Microsoft-Konto anmelden | Community verlangt die Anmeldung nach 30 Tagen |
+| 6 | **ResXManager** aus dem Marketplace nachinstallieren, falls Schritt 2 ihn nicht übernommen hat | VS 2026 ist rückwärtskompatibel zu VS-2022-Erweiterungen |
+| 7 | Erste Gegenprobe **ohne** Frameworkwechsel: Solution in VS 2026 öffnen, `Debug|x64` bauen, Referenzlauf fahren | **332/332 byte-gleich** — beweist, dass allein der IDE-Wechsel nichts bewegt |
+| 8 | MSBuild-Pfade nachziehen (Schritt 5 der Tabelle oben) | die 2026er-Installation liegt in einem anderen Verzeichnis |
+| 9 | Erst danach iU1 Schritt 6: Projekte auf `net10.0` | vorher lässt sich `net10.0` nicht targeten |
+
+Schritt 7 ist der eigentliche Wert dieser Reihenfolge: **IDE-Wechsel und Frameworkwechsel werden
+getrennt nachgewiesen.** Bewegt sich danach ein Ergebnis, ist klar, welcher der beiden Schritte es
+war.
 
 ### 3.3 Mac-Arbeitsplatz
 
@@ -994,7 +1011,7 @@ setzen sie voraus:**
 | **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | **Bestehende Toleranz** (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten |
 | **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JavaScript-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm; Interaktivität nur dort nachrüsten, wo sie fachlich gebraucht wird |
 | **iF17** | Wird iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragt? | **Ja.** Die Support-Frist läuft am 10.11.2026 ab; das Paket ist auch ohne iOS vollständig gerechtfertigt und die einzige Antwort auf iR9 |
-| **iF18** | **Visual-Studio-2026-Lizenzen beschaffen?** VS 2022 kann `net10.0` nicht targeten, und eine VS-2022-Pro-Standalone-Lizenz deckt VS 2026 nicht ab | **Ja, vor iU1** — ohne VS 2026 ist der Sprung auf .NET 10 nicht durchführbar, und ohne .NET 10 endet der Support am 10.11.2026. Zahl der Arbeitsplätze prüfen |
+| **iF18** | **Welche VS-2026-Edition?** VS 2022 kann `net10.0` nicht targeten, der Umstieg ist zwingend. Heute läuft **Community 2022** | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt (≤ 250 PCs/Nutzer **und** ≤ 1 Mio. USD Umsatz) und höchstens 5 Entwickler daran arbeiten — dann kostenneutral. Sonst Professional (Abo oder neue Standalone-Lizenz; die 2022er-Dauerlizenz gilt nicht weiter). Vor iU1 einordnen |
 
 ---
 
