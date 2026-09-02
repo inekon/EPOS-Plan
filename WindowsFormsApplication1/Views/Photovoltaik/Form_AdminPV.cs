@@ -36,7 +36,36 @@ namespace WindowsFormsApplication1
         private const int TNOCT_FELD_BREITE = 55;
         private const int TNOCT_OBEN = 319;
 
+        // =============================================================================
+        // Technologie (Paket B, Stufe E2.3)
+        // =============================================================================
+        //
+        // Die Zelltechnologie entscheidet im ERWEITERTEN Rechenmodell ueber den
+        // Huld-Koeffizientensatz. CEC- und PAN-Import schreiben sie mit; von Hand
+        // gepflegte Katalogsaetze brauchen dieses Feld. Es steht unter dem
+        // NOCT-Feld - in derselben freien linken Spalte.
+
+        private const int TECH_OBEN = TNOCT_OBEN + 34;
+        private const int TECH_FELD_BREITE = 150;
+
+        /// <summary>
+        /// Die Persistenzwerte in der Reihenfolge der Auswahlliste; Index 0 ist
+        /// "nicht gepflegt" und damit <c>null</c>. Anzeigetexte stehen daneben in
+        /// MyResource - ein Anzeigetext darf nie Steuerwert sein
+        /// (Drei-Schichten-Regel).
+        /// </summary>
+        private static readonly string[] TECHNOLOGIE_WERTE =
+        {
+            null,
+            DbWerte.PV_TECHNOLOGIE_C_SI,
+            DbWerte.PV_TECHNOLOGIE_CIS,
+            DbWerte.PV_TECHNOLOGIE_CDTE,
+            DbWerte.PV_TECHNOLOGIE_A_SI,
+            DbWerte.PV_TECHNOLOGIE_SONSTIGE
+        };
+
         private TextBox textBox_TNoct;
+        private ComboBox comboBox_Technologie;
         private ToolTip _tipAdminPv;
 
         /// <summary>alpha_SC des gerade geladenen Katalogsatzes - nicht editierbar, aber zu erhalten.</summary>
@@ -50,6 +79,73 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             InfoKnopf.Anbringen(this);   // H7: Infoknopf oben rechts -> help_mapping.txt
             TNoctFeldAnlegen();
+            TechnologiefeldAnlegen();
+        }
+
+        /// <summary>
+        /// Auswahlliste "Zelltechnologie" unter dem NOCT-Feld (Stufe E2.3).
+        ///
+        /// <para>Der erste Eintrag ist <b>"(nicht gepflegt)"</b> und schreibt NULL. Das
+        /// ist bewusst kein sechster Fachwert: "unbekannt" und "SONSTIGE" fuehren zwar
+        /// zur selben Rueckfallebene im Rechenkern, sagen dem Anwender aber Verschiedenes
+        /// - und der Simulationshinweis nennt beide Faelle getrennt.</para>
+        /// </summary>
+        private void TechnologiefeldAnlegen()
+        {
+            Label lbl = new Label();
+            lbl.Text = MyResource.Resource.PVM_MODUL_LABEL_TECHNOLOGIE;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(TNOCT_LABEL_BREITE, 19);
+            lbl.Location = new Point(TNOCT_LABEL_LINKS, TECH_OBEN + 3);
+            lbl.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            Controls.Add(lbl);
+
+            comboBox_Technologie = new ComboBox();
+            comboBox_Technologie.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Technologie.Location = new Point(TNOCT_FELD_LINKS, TECH_OBEN);
+            comboBox_Technologie.Size = new Size(TECH_FELD_BREITE, 25);
+            comboBox_Technologie.Items.AddRange(new object[]
+            {
+                MyResource.Resource.PVM_TECHNOLOGIE_LEER,
+                MyResource.Resource.PVM_TECHNOLOGIE_C_SI,
+                MyResource.Resource.PVM_TECHNOLOGIE_CIS,
+                MyResource.Resource.PVM_TECHNOLOGIE_CDTE,
+                MyResource.Resource.PVM_TECHNOLOGIE_A_SI,
+                MyResource.Resource.PVM_TECHNOLOGIE_SONSTIGE
+            });
+            comboBox_Technologie.SelectedIndex = 0;
+            Controls.Add(comboBox_Technologie);
+
+            _tipAdminPv.SetToolTip(lbl, MyResource.Resource.PVM_MODUL_TIP_TECHNOLOGIE);
+            _tipAdminPv.SetToolTip(comboBox_Technologie, MyResource.Resource.PVM_MODUL_TIP_TECHNOLOGIE);
+        }
+
+        /// <summary>Persistenzwert der Auswahl; <c>null</c> = nicht gepflegt.</summary>
+        private string TechnologieAusMaske()
+        {
+            int i = comboBox_Technologie != null ? comboBox_Technologie.SelectedIndex : 0;
+            return (i > 0 && i < TECHNOLOGIE_WERTE.Length) ? TECHNOLOGIE_WERTE[i] : null;
+        }
+
+        /// <summary>Persistenzwert in Auswahlindex; Unbekanntes landet auf "nicht gepflegt".</summary>
+        private void TechnologieSetzen(string wert)
+        {
+            if (comboBox_Technologie == null) return;
+
+            comboBox_Technologie.SelectedIndex = 0;
+            if (string.IsNullOrEmpty(wert)) return;
+
+            for (int i = 1; i < TECHNOLOGIE_WERTE.Length; i++)
+                if (string.Equals(TECHNOLOGIE_WERTE[i], wert, StringComparison.Ordinal))
+                { comboBox_Technologie.SelectedIndex = i; return; }
+        }
+
+        /// <summary>Textwert einer Katalogspalte; fehlende Spalte und NULL gelten als leer.</summary>
+        private static string ZuText(object wert)
+        {
+            if (wert == null || wert == DBNull.Value) return null;
+            string s = Convert.ToString(wert);
+            return string.IsNullOrEmpty(s) ? null : s;
         }
 
         /// <summary>
@@ -182,6 +278,10 @@ namespace WindowsFormsApplication1
                 model.m_Breite = breite;
                 model.m_Modulkosten = modulkosten;
 
+                // E2.3: Zelltechnologie. "(nicht gepflegt)" schreibt NULL - eine leere
+                // Zeichenkette waere eine dritte Aussage.
+                model.m_Technologie = TechnologieAusMaske();
+
                 // NICHT EDITIERTE FELDER AUS DEM GELADENEN DATENSATZ ERHALTEN.
                 // alpha_SC und beta_OC haben keine Maske; ohne diese beiden Zeilen
                 // schriebe der Speicherweg sie mit 0 zurueck und loeschte damit die
@@ -258,6 +358,11 @@ namespace WindowsFormsApplication1
                 // ueberschreibt (siehe Kopf der Klasse).
                 _alphaScGeladen = ZuZahl(rs.Read("alpha_SC"));
                 _betaOcGeladen = ZuZahl(rs.Read("beta_OC"));
+
+                // E2.3: Zelltechnologie (Migrationsschritt 63). Eine Datenbank ohne die
+                // Spalte liefert null - dann steht "(nicht gepflegt)".
+                try { TechnologieSetzen(ZuText(rs.Read("Technologie"))); }
+                catch { TechnologieSetzen(null); }
             }
             rs.Close();
         }
@@ -291,6 +396,7 @@ namespace WindowsFormsApplication1
                 // Ein NEUER Katalogsatz hat nichts zu erhalten.
                 _alphaScGeladen = 0.0;
                 _betaOcGeladen = 0.0;
+                TechnologieSetzen(null);
             }
             return;
         }
@@ -314,6 +420,7 @@ namespace WindowsFormsApplication1
             textBox_Modulkosten.Text = "0";
             _alphaScGeladen = 0.0;
             _betaOcGeladen = 0.0;
+            TechnologieSetzen(null);
         }
 
         private void btn_OK_Click(object sender, EventArgs e)

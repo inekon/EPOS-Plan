@@ -159,6 +159,10 @@ namespace WindowsFormsApplication1
             { "Form_PV",                     B_PHOTOVOLTAIK },
             { "Form_CECImport",              B_PHOTOVOLTAIK },
 
+            // Paket B des PV-Ertragsmodells (Stufe E2): der Wechselrichterdialog einer
+            // PV-Anlage, aufgerufen ueber den Knopf "Wechselrichter…" in Form_PV.
+            { "Form_PVModell",               B_PHOTOVOLTAIK },
+
             // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE
             // aber Main_PV_Test - nachgeschlagen wird der Typname, der Eintrag
             // darueber griff also nie. Er bleibt stehen, falls die Klasse einmal

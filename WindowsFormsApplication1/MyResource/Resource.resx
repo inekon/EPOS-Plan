@@ -173,6 +173,99 @@
 Die Vollzyklen sind hier der Jahresdurchsatz bezogen auf die Kapazität —
 bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</value>
   </data>
+  <data name="PVM_ANLAGE_BTN_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter…</value>
+  </data>
+  <data name="PVM_ANLAGE_LABEL_MODELL" xml:space="preserve">
+    <value>Rechenmodell:</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_MODELL" xml:space="preserve">
+    <value>Einfach = Rechenweg des Bestands (isotrope Einstrahlung, Modulformel mit gamma_PMP, fester Wechselrichter-Wirkungsgrad). Erweitert = Hay-Davies, Schwachlichtmodell nach Huld und Wechselrichter-Kennlinie mit Clipping.</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_WECHSELRICHTER" xml:space="preserve">
+    <value>AC-Nennleistung und Teillastkennlinie des Wechselrichters dieser Anlage. Nur im Modell Erweitert wirksam.</value>
+  </data>
+  <data name="PVM_DEGRADATION" xml:space="preserve">
+    <value>Degradation [%/a]:</value>
+  </data>
+  <data name="PVM_DEGRADATION_TIP" xml:space="preserve">
+    <value>Jährlicher Leistungsverlust der Module. Wirkt nur in der Erlösreihe, nicht in der Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind 0,3 bis 0,5 %/a.</value>
+  </data>
+  <data name="PVM_DLG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVM_DLG_DCAC" xml:space="preserve">
+    <value>DC/AC: {0:N2} kWp auf {1:N2} kW = {2:N2}</value>
+  </data>
+  <data name="PVM_DLG_DCAC_OHNE" xml:space="preserve">
+    <value>Ohne AC-Nennleistung: kein Clipping, Auslastung bezogen auf die kWp der Anlage.</value>
+  </data>
+  <data name="PVM_DLG_ETA_TIP" xml:space="preserve">
+    <value>Punkt der Teillastkennlinie als Faktor zwischen 0 und 1. 0 bedeutet: nicht gepflegt, es gilt die Vorbelegung eines typischen String-Wechselrichters.</value>
+  </data>
+  <data name="PVM_DLG_ETA10" xml:space="preserve">
+    <value>Wirkungsgrad bei 10 % Auslastung (0 = 0,94):</value>
+  </data>
+  <data name="PVM_DLG_ETA100" xml:space="preserve">
+    <value>Wirkungsgrad bei 100 % Auslastung (0 = 0,97):</value>
+  </data>
+  <data name="PVM_DLG_ETA50" xml:space="preserve">
+    <value>Wirkungsgrad bei 50 % Auslastung (0 = 0,975):</value>
+  </data>
+  <data name="PVM_DLG_KOPF_EINFACH" xml:space="preserve">
+    <value>Die Anlage rechnet im Modell Einfach. Die Felder sind deshalb gesperrt - sie wirken erst im Modell Erweitert.</value>
+  </data>
+  <data name="PVM_DLG_KOPF_ERWEITERT" xml:space="preserve">
+    <value>Angaben zum Wechselrichter dieser Anlage. 0 heißt jeweils: nicht gepflegt.</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG" xml:space="preserve">
+    <value>AC-Nennleistung [kW] (0 = kein Clipping):</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG_TIP" xml:space="preserve">
+    <value>Dauerleistung des Wechselrichters auf der Wechselstromseite. Sie begrenzt die Einspeisung (Clipping) und ist die Bezugsgröße der Teillastkennlinie.</value>
+  </data>
+  <data name="PVM_DLG_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVM_DLG_TITEL" xml:space="preserve">
+    <value>Wechselrichter — {0}</value>
+  </data>
+  <data name="PVM_MODELL_EINFACH" xml:space="preserve">
+    <value>Einfach</value>
+  </data>
+  <data name="PVM_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Erweitert</value>
+  </data>
+  <data name="PVM_MODUL_LABEL_TECHNOLOGIE" xml:space="preserve">
+    <value>Zelltechnologie:</value>
+  </data>
+  <data name="PVM_MODUL_TIP_TECHNOLOGIE" xml:space="preserve">
+    <value>Zelltechnologie des Moduls. Sie wählt im Modell Erweitert den Schwachlicht-Koeffizientensatz; für Dünnschicht und Sonstige gibt es keinen, dort gilt die Modulformel des einfachen Modells.</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_A_SI" xml:space="preserve">
+    <value>Dünnschicht / a-Si</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_C_SI" xml:space="preserve">
+    <value>Kristallines Silizium (mono/poly)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CDTE" xml:space="preserve">
+    <value>Cadmiumtellurid (CdTe)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CIS" xml:space="preserve">
+    <value>CIS / CIGS</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_LEER" xml:space="preserve">
+    <value>(nicht gepflegt)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_DCAC" xml:space="preserve">
+    <value>Modell erweitert · DC/AC {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Modell erweitert · ohne AC-Nennleistung</value>
+  </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Quell-Entnahmehöhe (0…1):</value>
   </data>

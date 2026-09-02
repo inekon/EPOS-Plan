@@ -470,6 +470,9 @@ namespace WindowsFormsApplication1
             kand.Werte["T_NOCT"] = model.m_T_NOCT;
             kand.Werte["Laenge"] = model.m_Laenge;
             kand.Werte["Breite"] = model.m_Breite;
+            // E2.3: seit Paket B Teil der Import-Schnittmenge (KatalogRegistry "PV") -
+            // zwei Katalogsaetze mit verschiedener Technologie sind nicht inhaltsgleich.
+            kand.Werte["Technologie"] = model.m_Technologie;
 
             List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
                 katalog, new List<ImportKandidat> { kand });
@@ -588,6 +591,9 @@ namespace WindowsFormsApplication1
                 model.m_T_NOCT = pvum.CecModule.T_NOCT;
                 model.m_Laenge = pvum.CecModule.Length;
                 model.m_Breite = pvum.CecModule.Width;
+                // E2.3 (Paket B): Die CEC-Spalte "Technology" wurde bisher verworfen -
+                // das erweiterte Rechenmodell waehlt daran den Huld-Koeffizientensatz.
+                model.m_Technologie = PvErweitertesModell.TechnologieAusCec(pvum.CecModule.Technology);
             }
             else {
                 model.m_alpha_SC = 0;//pvum.PanModule.muISC;
@@ -596,6 +602,9 @@ namespace WindowsFormsApplication1
                 model.m_T_NOCT = 0;
                 model.m_Laenge = pvum.PanModule.Height;
                 model.m_Breite = pvum.PanModule.Width;
+                // E2.3 (Paket B): PVsyst-Schluessel "Technol" (mtSiMono, mtCIS, mtCdTe,
+                // mtAmorphous) auf die fuenf Persistenzwerte.
+                model.m_Technologie = PvErweitertesModell.TechnologieAusPan(pvum.PanModule.Technol);
             }
             return model;
         }
