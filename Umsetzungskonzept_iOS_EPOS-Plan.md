@@ -800,6 +800,13 @@ und liefert ein gerechnetes Ergebnis auf den Bildschirm.
 
 ### iU3 — Machbarkeits-Spike · M · Mac/CI
 
+> **Status 02.09.2026 — bestanden.** Umgesetzt als `EPOS.Kern` (91 verlinkte Dateien, `net10.0`
+> ohne WinForms) + `EPOS.Referenzlauf`, Commits `13cedbb`…`db9f00f`. Projekt 1030 auf Linux x64
+> gegen `2026-08-30_B3-Kaskade`: **PASS, 22 Dateien byte-identisch.** Vorbedingungen, die das
+> Konzept nicht kannte: `DbParam` statt `OleDbParameter` (Test B) und der Kern in einer Assembly
+> ohne `UseWindowsForms` (Test A) — beides erledigt. Der Spike lief ohne Mac; die ARM64-Frage (iF15)
+> beantwortet der `macos-latest`-Schritt der CI. Einzelheiten: Entscheidungsregister § 2.2/2.3.
+
 **Voraussetzung:** iU1, iU2. **Entspricht Grundlagen-S0.** **Baustein:** iE6.
 
 Das ist der Beweis, für den das ganze Vorhaben vorne klein gehalten wird.
@@ -970,7 +977,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 |---|---|---|---|
 | **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
-| **iZ3** | **Go/No-Go** | iU3 | Projekt 1030 im Simulator wertgleich zur Referenzbasis |
+| **iZ3** | **Go/No-Go** | iU3 | **erreicht 02.09.2026** — 1030 auf Linux byte-gleich zur Referenzbasis |
 | **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS |
 | **iZ5** | Modell-C-Stichtag | iU8 | erster Blazor-Dialog produktiv, Maus und Finger abgenommen |
 | **iZ6** | iPad rechnet ein Projekt vollständig | iU10 | Ergebnis wertgleich, Bericht zeilengleich |

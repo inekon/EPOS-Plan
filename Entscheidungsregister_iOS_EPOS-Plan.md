@@ -156,6 +156,23 @@ sondern setzt zwei Umbauten voraus, die das Konzept erst für iU4/iU6 vorsah:
 Beides ist auf Linux nachweisbar, bevor ein Mac beteiligt ist. **iF11 verschiebt sich damit:** Der
 Spike läuft zuerst auf Linux (hier), macOS-Runner folgt für die ARM64-Frage (iF15).
 
+### 2.3 Ergebnis des Machbarkeits-Spikes (iU3), 02.09.2026 — **bestanden, byte-gleich**
+
+| | |
+|---|---|
+| Umsetzung | fünf Commits `13cedbb`…`db9f00f` (Brücken gekappt, WinForms gelöst, `OleDbCommand` aus dem Pfad, Stromspeicher-Haken, Projekte `EPOS.Kern` + `EPOS.Referenzlauf`); Hauptprojekt unverändert baubar, Warnliste byte-gleich zur Basis, 787 Tests |
+| `EPOS.Kern` | `net10.0`, `EnableWindowsTargeting=false`, **91 verlinkte Dateien** (90 aus `WindowsFormsApplication1/` + `SchemaTypKatalog.g.cs`; Planung: ≈ 86) — der Compiler hat entschieden. 87 × CA1416 = das Rest-OleDb-Inventar (`SolarkollektorenCtrl` 41, `PufferSpCtrl` 30, `RecordSet` 9, `ApplikationCtrl` 7) für iR8 |
+| Lauf | `EPOS.Referenzlauf lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030` auf Linux x64 (Ubuntu 24.04, SDK 10.0.400): 22 CSV, 150 Skalare, eine erwartete Engine-Warnung (Senke Anlage 14921) |
+| Vergleich | gegen `2026-08-30_B3-Kaskade/Projekt_1030`: **PASS, 236.670 Werte in Toleranz — und alle 22 Dateien byte-identisch** (`diff -rq` leer), einschließlich `aggregate.csv` |
+| Wiederholt | auf dem Merge-Stand mit FX1/FX2 (`db9f00f`): identisches Ergebnis |
+
+**Bedeutung:** Der Rechenkern rechnet außerhalb von Windows nicht nur „wertgleich innerhalb der
+Toleranz", sondern bit-identisch zum Windows-Referenzlauf vom 30.08. — keine Plattform-, keine
+Datendrift auf x64. Damit ist Gate **iZ3 (Go)** erreicht. Offen bleibt die ARM64-Frage (iF15): Der
+CI-Schritt „Kern-Referenzlauf 1030" in `kern.yml` läuft ab jetzt auch auf `macos-latest` — sein
+erstes Ergebnis ist der iT3-Nachweis für Apple Silicon.
+
+
 ---
 
 ## 3 Chart- und Grid-Masken — Auszählung
