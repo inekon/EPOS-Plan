@@ -20,20 +20,32 @@ namespace WindowsFormsApplication1
         // Simuliert das alte 'items' Array als Liste
         public List<PufferSpModel> items => _internalList;
 
-        public OleDbCommand DBCommand;
+        // iU3 SCHRITT 3: LAZY. Der Typ und die oeffentliche Flaeche bleiben - die
+        // Parametersammlung dieses Kommandos wird unten noch gefuellt. Es entsteht aber
+        // erst beim ersten Zugriff, weil der Konstruktor des net10.0-Stubs von
+        // System.Data.OleDb PlatformNotSupportedException wirft. Ein Rechenlauf, der
+        // diese Klasse nur liest, ruehrt das Kommando nie an.
+        private OleDbCommand _cmd;
+
+        public OleDbCommand DBCommand
+        {
+            get { return _cmd ??= new OleDbCommand(); }
+            set { _cmd = value; }
+        }
         public PufferSpModel model;
 
         public PufferSpCtrl()
         {
-            DBCommand = new OleDbCommand();
+            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
             model = new PufferSpModel();
         }
 
         ~PufferSpCtrl()
         {
-            if (DBCommand != null)
+            // Nullsicher UND ohne die lazy Eigenschaft anzufassen.
+            if (_cmd != null)
             {
-                DBCommand.Dispose();
+                _cmd.Dispose();
             }
         }
 

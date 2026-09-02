@@ -46,7 +46,21 @@ namespace WindowsFormsApplication1
     public class RecordSet : IDisposable
     {
         // Auf OleDbCommand umgestellt, damit Zuweisungen aus dem UI-Code (z.B. transaction) ohne Cast funktionieren
-        public OleDbCommand DBCommand { get; set; }
+        //
+        // UMSETZUNGSKONZEPT iU3, SCHRITT 3: LAZY. Der Typ bleibt (iR8 ist ein eigenes
+        // Paket), die oeffentliche Flaeche auch - aber das Kommando entsteht erst beim
+        // ERSTEN Zugriff. Grund: Das Paket System.Data.OleDb liefert fuer net10.0 einen
+        // Stub, der in JEDEM Konstruktor PlatformNotSupportedException wirft. Ein
+        // RecordSet, das im Rechenpfad nur "Open(sql)" macht - und das sind alle -,
+        // haette sonst schon beim Anlegen geworfen. Wer das Kommando wirklich als
+        // Datentraeger benutzt (Parameter setzen), bekommt es wie bisher.
+        private OleDbCommand _cmd;
+
+        public OleDbCommand DBCommand
+        {
+            get { return _cmd ??= new OleDbCommand(); }
+            set { _cmd = value; }
+        }
 
         /// <summary>Das materialisierte Ergebnis des letzten <see cref="Open"/>.</summary>
         private DataTable _ergebnis;
@@ -56,7 +70,22 @@ namespace WindowsFormsApplication1
 
         public RecordSet()
         {
-            DBCommand = new OleDbCommand();
+            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
+        }
+
+        /// <summary>
+        /// Merkt sich das SQL am Datentraeger — aber nur, wenn es ihn schon gibt.
+        ///
+        /// <para>Frueher stand hier schlicht <c>DBCommand.CommandText = sql</c>. Mit der
+        /// lazy angelegten Eigenschaft haette genau diese Zeile das Kommando erzwungen
+        /// und damit den Zweck des Schrittes aufgehoben. Der <c>CommandText</c> ist reiner
+        /// Ablagewert: Ausgefuehrt wird das SQL ueber die Zugriffsschicht, und kein
+        /// Aufrufer liest ihn zurueck (geprueft — ausserhalb dieser Datei greift niemand
+        /// auf <see cref="DBCommand"/> eines RecordSets zu).</para>
+        /// </summary>
+        private void MerkeSql(string sql)
+        {
+            if (_cmd != null) _cmd.CommandText = sql;
         }
 
         /// <summary>
@@ -71,9 +100,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private DbParam[] Parameter()
         {
-            if (DBCommand == null || DBCommand.Parameters.Count == 0) return null;
-            OleDbParameter[] p = new OleDbParameter[DBCommand.Parameters.Count];
-            DBCommand.Parameters.CopyTo(p, 0);
+            if (_cmd == null || _cmd.Parameters.Count == 0) return null;
+            OleDbParameter[] p = new OleDbParameter[_cmd.Parameters.Count];
+            _cmd.Parameters.CopyTo(p, 0);
             return DbParam.Von(p);
         }
 
@@ -102,7 +131,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DBCommand.CommandText = sql;
+                MerkeSql(sql);
 
                 if (vorgang != null)
                 {
@@ -142,7 +171,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = sql;
+                MerkeSql(sql);
 
                 if (vorgang != null)
                 {
@@ -218,10 +247,12 @@ namespace WindowsFormsApplication1
         public void Dispose()
         {
             Close();
-            if (DBCommand != null)
+            // Nullsicher UND ohne die lazy Eigenschaft zu beruehren: Ein RecordSet, das
+            // nie ein Kommando gebraucht hat, darf hier keines mehr anlegen.
+            if (_cmd != null)
             {
-                DBCommand.Dispose();
-                DBCommand = null;
+                _cmd.Dispose();
+                _cmd = null;
             }
         }
     }

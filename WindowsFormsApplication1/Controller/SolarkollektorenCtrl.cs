@@ -6,23 +6,33 @@ namespace WindowsFormsApplication1
 {
     class SolarkollektorenCtrl : SolarkollektorenModel
     {
-        // Auf OleDbCommand umgestellt, damit es mit der übergeordneten Transaktion kompatibel ist
-        public OleDbCommand DBCommand;
+        // iU3 SCHRITT 3: LAZY. Der Typ und die oeffentliche Flaeche bleiben - die
+        // Parametersammlung dieses Kommandos wird unten noch gefuellt. Es entsteht aber
+        // erst beim ersten Zugriff, weil der Konstruktor des net10.0-Stubs von
+        // System.Data.OleDb PlatformNotSupportedException wirft. Ein Rechenlauf, der
+        // diese Klasse nur liest, ruehrt das Kommando nie an.
+        private OleDbCommand _cmd;
+
+        public OleDbCommand DBCommand
+        {
+            get { return _cmd ??= new OleDbCommand(); }
+            set { _cmd = value; }
+        }
         public SolarkollektorenModel model = new SolarkollektorenModel();
 
         public SolarkollektorenCtrl()
         {
-            // Initialisierung eines Standard-Commands. 
-            // Wichtig: Wird dieses Control in einer Transaktion genutzt, überschreibt die Form 
-            // die Connection und die Transaction dieses Objekts von außen.
-            DBCommand = new OleDbCommand();
+            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
+            // Wird dieses Control in einer Transaktion genutzt, ueberschreibt die Form
+            // die Connection und die Transaction dieses Objekts weiterhin von aussen.
         }
 
         ~SolarkollektorenCtrl()
         {
-            if (DBCommand != null)
+            // Nullsicher UND ohne die lazy Eigenschaft anzufassen.
+            if (_cmd != null)
             {
-                DBCommand.Dispose();
+                _cmd.Dispose();
             }
         }
 

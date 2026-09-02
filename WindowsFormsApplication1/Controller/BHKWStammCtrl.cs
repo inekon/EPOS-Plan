@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -30,13 +29,15 @@ namespace WindowsFormsApplication1
         public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
         public List<BHKWStammModel> items => _internalList;
 
-        public OleDbCommand DBCommand;
+        // iU3 SCHRITT 3: Das OleDbCommand ist entfallen. Es war seit 3a28e4c nur noch
+        // Rest - CommandText setzen und Parameters.Clear() -, extern von niemandem
+        // benutzt, und sein Konstruktor wirft auf net10.0 PlatformNotSupportedException.
 
         /// <summary>
         /// ARBEITSPAKET S4e: Laeuft der Schreibvorgang innerhalb einer FREMDEN
         /// Transaktion (Form_DBBHKW), setzt der Aufrufer hier den Vorgang. Bis dahin
-        /// wurden dafuer Verbindung und Transaktion am <c>DBCommand</c> gesetzt; das
-        /// OleDbCommand bleibt reiner Datentraeger fuer CommandText und Parameter.
+        /// wurden dafuer Verbindung und Transaktion an einem <c>OleDbCommand</c>
+        /// gesetzt; dieses Feld ist mit iU3 ersatzlos entfallen.
         /// <c>null</c> = eigenstaendiger Aufruf ueber die Zugriffsschicht.
         /// </summary>
         public DbVorgang Vorgang { get; set; }
@@ -49,17 +50,8 @@ namespace WindowsFormsApplication1
         public BHKWStammCtrl()
         {
             _hasSingleData = false;
-            DBCommand = new OleDbCommand();
             model = new BHKWStammModel();
             LoadMetaData();
-        }
-
-        ~BHKWStammCtrl()
-        {
-            if (DBCommand != null)
-            {
-                DBCommand.Dispose();
-            }
         }
 
         #region --- DATABASE OPERATIONS ---
@@ -205,7 +197,6 @@ namespace WindowsFormsApplication1
                                      model.m_Kosten_Abgasreinigung),
                     model.m_Pel);
 
-                DBCommand.CommandText = sql;
                 // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
                 // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
                 // die Zugriffsschicht gegeben. Ein OleDbParameter wuerde dafuer heute
@@ -213,7 +204,6 @@ namespace WindowsFormsApplication1
                 // DbParam direkt. Reihenfolge, Namen und Werte unveraendert; gebunden
                 // wird ohnehin nach Position.
                 List<DbParam> werte = new List<DbParam>();
-                DBCommand.Parameters.Clear();
 
                 werte.Add(new DbParam("@besch", model.m_szBeschreibung ?? ""));
                 werte.Add(new DbParam("@firma", model.m_szFirma ?? ""));

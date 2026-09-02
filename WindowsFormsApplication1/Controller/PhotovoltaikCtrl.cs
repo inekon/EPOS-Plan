@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -13,24 +12,12 @@ namespace WindowsFormsApplication1
         public int rows => _internalList.Count;
         public new List<PhotovoltaikModel> items => _internalList;
 
-        [Obsolete("Verwendung von ODBC entfernt. DB-Operationen laufen jetzt über das DataRepository.")]
-        public OleDbCommand DBCommand;
+        // iU3 SCHRITT 3: Das bereits als [Obsolete] markierte OleDbCommand ist entfallen.
+        // Es hatte keinen einzigen Leser mehr, und sein Konstruktor wirft auf net10.0
+        // PlatformNotSupportedException - im Rechenpfad also ein sicherer Abbruch fuer
+        // nichts.
 
         public PhotovoltaikModel model = new PhotovoltaikModel();
-
-        public PhotovoltaikCtrl()
-        {
-#pragma warning disable CS0618
-            DBCommand = new OleDbCommand();
-#pragma warning restore CS0618
-        }
-
-        ~PhotovoltaikCtrl()
-        {
-#pragma warning disable CS0618
-            DBCommand?.Dispose();
-#pragma warning restore CS0618
-        }
 
         #region --- DATABASE READ OPERATIONS ---
 
