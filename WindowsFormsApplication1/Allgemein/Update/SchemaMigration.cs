@@ -135,10 +135,16 @@ namespace WindowsFormsApplication1
         /// <see cref="SCHRITTE_SQLITE"/>, nicht im eingefrorenen Access-Zweig
         /// <see cref="SCHRITTE"/>. Reihenfolge wie seit dem E6-Vorfall: erst
         /// Schrittkonstante, Methode (<c>Schritt_62_PvAnlagenparameter</c>) und
-        /// <see cref="SCHRITTE_SQLITE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab
-        /// 63.</b>
+        /// <see cref="SCHRITTE_SQLITE"/>-Eintrag, DANN das Ziel.
+        ///
+        /// 02.09.2026, Paket B desselben Konzepts (Stufe E2, Nachtrag 2):
+        /// <see cref="SCHRITT_63_PV_MODELLWAHL"/> — Modellwahl je Anlage, die
+        /// Wechselrichterangaben, die Modultechnologie und die Degradation. Dieselbe
+        /// Reihenfolge: erst Schrittkonstante, Methode
+        /// (<c>Schritt_63_PvModellwahl</c>) und <see cref="SCHRITTE_SQLITE"/>-Eintrag,
+        /// DANN das Ziel. <b>Neue Schritte ab 64.</b>
         /// </summary>
-        public const int ZIEL_VERSION = 62;
+        public const int ZIEL_VERSION = 63;
 
         /// <summary>
         /// Der EINGEFRORENE Stand des Access-Zweigs: die höchste Nummer, die
@@ -2304,6 +2310,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_62_PV_ANLAGENPARAMETER = 62;
 
+        /// <summary>
+        /// PAKET B des <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>, Stufe E2
+        /// (Nachtrag 2): <b>die Modellwahl je Anlage</b> und was das erweiterte Modell
+        /// dafür braucht — <c>PV_Modell</c>, <c>PV_WrNennleistungKw</c>,
+        /// <c>PV_WrEta10/50/100</c> an <c>Tab_Energieanlagen</c>, <c>Technologie</c> an
+        /// <c>Tab_PV</c> und <c>Tab_PV_STAMM</c>, <c>Degradation</c> an
+        /// <c>Tab_ProjektPhotovoltaik</c>
+        /// (<see cref="SchemaKatalog.Schritt63_PvModellwahl"/> und
+        /// <see cref="SchemaKatalog.Schritt63_PvStammUndDegradation"/>).
+        ///
+        /// <para><b>Wozu.</b> Stufe E2 ist kein Ersatz, sondern eine zweite Rechentiefe:
+        /// Hay-Davies statt isotroper Transposition, Huld-Schwachlichtmodell statt
+        /// linearem <c>P ∝ G</c>, Wechselrichter-Teillastkennlinie mit Clipping statt
+        /// eines konstanten Faktors. Der Anwender wählt sie <b>je Anlage</b> — die
+        /// Wechselrichterdaten gelten je Anlage, und ein Projekt darf gemischt sein
+        /// (ein Feld mit bekanntem Wechselrichter, eines ohne).</para>
+        ///
+        /// <para><b>KEIN DML — und hier ist es das ZENTRALE Abnahmekriterium.</b> Alle
+        /// acht Spalten bleiben nach <c>ADD COLUMN</c> NULL. NULL heißt bei
+        /// <c>PV_Modell</c> „EINFACH", also der Rechenweg von Paket A Zeichen für
+        /// Zeichen; die übrigen wirken ausschließlich in ERWEITERT bzw. sind mit
+        /// NULL = 0 ergebnisneutral (Degradation). Der Referenzlauf nach Paket B muss
+        /// deshalb <b>bitgleich</b> zu <c>2026-09-02_PA1_nach-PaketA</c> sein
+        /// (Konzept N2.5, Kriterium 1). Ein DDL-<c>DEFAULT</c> auf einem Fachwert kommt
+        /// wie immer nicht in Frage.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 63
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 62
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; es gibt kein UPDATE, das ein zweiter Lauf wiederholen
+        /// könnte. Der Zweitlauf meldet „bereits erledigt" und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_63_PV_MODELLWAHL = 63;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4198,6 +4240,18 @@ namespace WindowsFormsApplication1
                         "Faktor 0,95 und ohne Systemverluste, und die beiden Felder der " +
                         "PV-Anlagenmaske haetten keine Spalte zum Speichern.",
                         Schritt_62_PvAnlagenparameter),
+
+            // PAKET B desselben Konzepts, Stufe E2. Begruendung, Ergebnisneutralitaet
+            // (NULL = Modell EINFACH = Paket-A-Rechenweg) und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_63_PV_MODELLWAHL,
+                        "PV-Modellwahl (PV_Modell, Wechselrichterangaben, Technologie, " +
+                        "Degradation) anlegen (Paket B, Stufe E2)",
+                        "Das erweiterte PV-Rechenmodell bleibt dann unerreichbar: Die " +
+                        "Modellwahl, die Wechselrichterdaten je Anlage, die Modultechnologie " +
+                        "und die Degradation haetten keine Spalte zum Speichern. Gerechnet " +
+                        "wird weiter ausschliesslich im vereinfachten Modell.",
+                        Schritt_63_PvModellwahl),
         };
 
         /// <summary>
@@ -9842,6 +9896,50 @@ namespace WindowsFormsApplication1
                     "KEIN DML: beide Spalten bleiben NULL, und NULL heisst 0,95 " +
                     "(Wechselrichter-Wirkungsgrad) bzw. 0 % (Systemverluste) - genau der " +
                     "bisher fest verdrahtete Rechenweg. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 63 - PV-Modellwahl (Paket B des PV-Ertragsmodells, Stufe E2)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 63 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_63_PV_MODELLWAHL"/>.
+        ///
+        /// <para><b>Der Typ kommt aus dem Katalog, übersetzt wird beim Verbrauch.</b>
+        /// Anders als Schritt 62, der <c>"REAL"</c> ausgeschrieben hat, geht dieser
+        /// Schritt über <see cref="StilleDb.SqliteSpaltenTyp"/> — er führt neben
+        /// <c>DOUBLE</c> auch zwei <c>TEXT(n)</c>-Spalten, und die Übersetzung nach
+        /// <c>TEXT CHECK (length(…) &lt;= n)</c> ist genau dieselbe, die die
+        /// Rückfallebene (<c>WaermequelleClass.SchemaSicherstellen</c>) benutzt. Zwei
+        /// Schreibweisen derselben Spalte wären zwei Spaltendefinitionen.</para>
+        /// </summary>
+        private static bool Schritt_63_PvModellwahl(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt63_PvModellwahl)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt63_PvStammUndDegradation)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("63: 8 Spalte(n) sichergestellt - " +
+                    SchemaKatalog.SPALTE_EA_PV_MODELL + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_NENNLEISTUNG + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA10 + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA50 + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA100 + " an " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + ", " +
+                    SchemaKatalog.SPALTE_PV_TECHNOLOGIE + " an " + SchemaKatalog.TAB_PV +
+                    " und " + SchemaKatalog.TAB_PV_STAMM + ", " +
+                    SchemaKatalog.SPALTE_PPV_DEGRADATION + " an " +
+                    SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + ". " +
+                    "KEIN DML: alle acht Spalten bleiben NULL. NULL heisst bei " +
+                    SchemaKatalog.SPALTE_EA_PV_MODELL + " \"Modell EINFACH\", also der " +
+                    "Rechenweg aus Paket A, und bei der Degradation 0 %/a. KEIN " +
+                    "Rechenergebnis aendert sich.");
             return true;
         }
 

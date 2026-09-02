@@ -35,8 +35,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Wie <see cref="Lies"/>, aber nie null: Ohne Zeile kommt ein VORBELEGTES
         /// Modell zurueck (Aktiv=false, Ueberschusseinspeisung, DV-Entgelt 0,40 -
-        /// N5, Ausfallanteil 20 % - F5, IBN 1.1. des laufenden Jahres) - bewusst
-        /// OHNE Schreiben; erst Speichern legt die Zeile an (kein DDL-DEFAULT).
+        /// N5, Ausfallanteil 20 % - F5, Degradation 0,5 %/a - E2.4, IBN 1.1. des
+        /// laufenden Jahres) - bewusst OHNE Schreiben; erst Speichern legt die Zeile an
+        /// (kein DDL-DEFAULT).
+        ///
+        /// <para><b>Warum die Degradation NUR hier vorbelegt wird.</b> Eine BESTEHENDE
+        /// Zeile behaelt ihr NULL, und NULL heisst 0 %/a - sonst aenderte allein die
+        /// Migration die Erloesreihe jedes Bestandsprojekts. Vorbelegt wird also nur,
+        /// was der Anwender ohnehin gerade neu anlegt; genau dieselbe Trennung wie bei
+        /// DV-Entgelt (N5) und Ausfallanteil (F5).</para>
         /// </summary>
         public ProjektPhotovoltaikModel LiesOderVorbelegt(int idProjekt)
         {
@@ -57,7 +64,8 @@ namespace WindowsFormsApplication1
                 Par51a_Kompensieren = true,
                 Kappung60_Anwenden = DbWerte.PV_SCHALTER_AUTO,
                 MarktwertEntwicklung = 0,
-                BezugAusPreisreihe = false
+                BezugAusPreisreihe = false,
+                Degradation = 0.5
             };
         }
 
@@ -79,7 +87,7 @@ namespace WindowsFormsApplication1
                     "DvEntgelt = ?, PpaPreis = ?, PpaSpotAufschlag = ?, Par51_Anwenden = ?, " +
                     "IMSys_Einbaujahr = ?, AusfallanteilProzent = ?, Par51a_Kompensieren = ?, " +
                     "Kappung60_Anwenden = ?, MarktwertJahresmittel = ?, MarktwertEntwicklung = ?, " +
-                    "BezugAusPreisreihe = ?, GeaendertAm = ? WHERE ID_Projekt = ?",
+                    "BezugAusPreisreihe = ?, Degradation = ?, GeaendertAm = ? WHERE ID_Projekt = ?",
                     Parameter(m, projektAnsEnde: true));
                 if (rows > 0) return true;
 
@@ -91,8 +99,8 @@ namespace WindowsFormsApplication1
                     "Einspeiseart, Inbetriebnahme, KwpOverride, AwOverride, DvEntgelt, PpaPreis, " +
                     "PpaSpotAufschlag, Par51_Anwenden, IMSys_Einbaujahr, AusfallanteilProzent, " +
                     "Par51a_Kompensieren, Kappung60_Anwenden, MarktwertJahresmittel, " +
-                    "MarktwertEntwicklung, BezugAusPreisreihe, GeaendertAm) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "MarktwertEntwicklung, BezugAusPreisreihe, Degradation, GeaendertAm) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     ParameterInsert(m));
             }
             catch (Exception ex)
@@ -342,7 +350,10 @@ namespace WindowsFormsApplication1
                 Kappung60_Anwenden = Text(r, "Kappung60_Anwenden", DbWerte.PV_SCHALTER_AUTO),
                 MarktwertJahresmittel = Zahl(r, "MarktwertJahresmittel"),
                 MarktwertEntwicklung = Zahl(r, "MarktwertEntwicklung") ?? 0,
-                BezugAusPreisreihe = Wahr(r, "BezugAusPreisreihe")
+                BezugAusPreisreihe = Wahr(r, "BezugAusPreisreihe"),
+                // E2.4: NULL bleibt NULL - der Rechner liest daraus 0 %/a. Eine
+                // fehlende Spalte (Datenbank vor Schritt 63) ist derselbe Fall.
+                Degradation = Zahl(r, "Degradation")
             };
             object ibn = r["Inbetriebnahme"];
             m.Inbetriebnahme = (ibn == null || ibn == DBNull.Value)
@@ -371,6 +382,7 @@ namespace WindowsFormsApplication1
                 D("@jw", m.MarktwertJahresmittel),
                 new OleDbParameter("@mw", m.MarktwertEntwicklung),
                 new OleDbParameter("@bez", m.BezugAusPreisreihe),
+                D("@deg", m.Degradation),
                 new OleDbParameter("@ga", OleDbType.Date) { Value = m.GeaendertAm ?? (object)DBNull.Value }
             };
             if (projektAnsEnde) p.Add(new OleDbParameter("@pid", m.ID_Projekt));
