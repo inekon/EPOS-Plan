@@ -105,7 +105,8 @@ Zwei Messungen am Bestand, die die Entscheidung vorbereiten:
 Referenzprojekte reduzieren (übrige `Tab_Projekt`-Zeilen samt Kaskaden löschen, `VACUUM`) und als
 `Referenzlaeufe/Kenndaten_Test.sqlite` einchecken. **Nachtrag 02.09.2026, Anwender:** Die Datenbank
 enthält nirgends Kundendaten — die Prüfung auf Kundenbezug entfällt, die Reduzierung dient allein
-der Dateigröße (GitHub lehnt Einzeldateien über 100 MB ab; die `.accdb` hatte 151,9 MB). Das
+der Dateigröße: **Die produktive `Kenndaten.sqlite` hat 148 MB** (Anwender, 02.09.2026) — GitHub
+lehnt Einzeldateien über 100 MB ab, die Reduzierung auf die 13 Projekte ist damit Pflicht. Das
 Reduzierungsskript liegt unter `sql/tools/`. Erst damit sind der Spike (iU3) und der Referenzlauf in der CI (iE6) möglich. Die
 Referenz-CSV selbst sind nach dem Befund oben unkritisch.
 
