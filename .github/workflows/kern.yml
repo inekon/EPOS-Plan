@@ -1,0 +1,39 @@
+# Kern-Lauf: baut und testet die vier Projekte ohne Windows- und ohne
+# Datenbankbindung (KiKern, KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests).
+# Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
+# WinForms-App und der Referenzlauf bleiben damit aussen vor.
+#
+# Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
+# plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
+# hier auf, nicht erst beim iOS-Bau.
+name: Kern
+
+on: [push, pull_request]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build-test:
+    # fail-fast aus: schlaegt ubuntu fehl, soll macos trotzdem zu Ende laufen -
+    # nur so wird sichtbar, ob ein Fehler plattformabhaengig ist.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Die SDK-Fassung kommt aus global.json (10.0.400), damit CI und
+      # Arbeitsplatz nicht auseinanderlaufen.
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Bauen
+        run: dotnet build WP-Plan.Kern.slnf -c Release
+
+      - name: Testen
+        run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
