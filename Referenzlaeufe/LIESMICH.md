@@ -12,6 +12,59 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-03_M2_nach-Merge2/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem zweiten Merge von `origin/ios_migration`** — nach iU9 (Blazor-Dialoge),
+iU10 (iOS-Hülle `EPOS.iOS` als eigene Projektmappe), dem **SQL-Dialekt-Audit** und den
+Wirtschaftlichkeitspaketen FX2–FX5/B5.
+
+> **Sie ist byte-gleich zu M1 — und genau das ist ihr Zweck.** Die 38 Remote-Commits sind
+> Oberfläche, Plattform und Dialektpflege, keine Fachänderung am Rechenkern.
+> **355/355 byte-/MD5-gleich gegen M1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu — und diesmal trägt er mehr als beim ersten Mal.** Remote hat mit
+> dem SQL-Dialekt-Audit **elf SQL-Stellen in sieben Dateien umgeschrieben**. Ein Lauf des
+> **reinen** `origin/ios_migration` (`71cde0c`, ohne unsere Pakete, Schemastand 61) ist
+> trotzdem **355/355 byte-gleich zum THEIRS-Lauf von Merge 1** (`430a864`). Die
+> umgeschriebenen Stellen liegen sämtlich auf Pfaden, die der Referenzlauf nicht betritt —
+> Schreibwege ohne Aufrufer, Katalogpflege, Preisreihen-Rückfallebene. **Genau deshalb
+> müssen diese vier Pfade von Hand geprüft werden** (siehe Merge-2-Protokoll, offene
+> Punkte). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M1=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Codestand:** Merge-Commit `c2c64cb` (Branch `ios_migration`; Eltern `884ce7a` lokal und
+> `71cde0c` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge2\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen. Aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1. Einzelheiten, Konfliktliste und die Begründung des
+> Doppel-Fixes im
+> [Merge-2-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge2_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M1_nach-Merge`
+
 **`2026-09-03_M1_nach-Merge/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
 Der Stand **nach dem Merge von `origin/ios_migration`** — also nach dem Umzug des
