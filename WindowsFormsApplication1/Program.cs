@@ -69,21 +69,33 @@ namespace WindowsFormsApplication1
             // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.
             FeldsicherungSchalterAuswerten();
 
-            // MELDEHAKEN VOR ALLEM ANDEREN (Umsetzungskonzept iU3, Schritt 2).
+            // DIE DIENSTE VOR ALLEM ANDEREN (Umsetzungskonzept iU5).
             //
-            // Die Kerndateien - Zugriffsschicht, Wärmepumpen-Simulation, Stamm-Dialoge -
-            // rufen ihre Meldungen seither über Meldung.*, damit sie ohne
-            // System.Windows.Forms übersetzbar bleiben. Unter Windows soll sich exakt
-            // nichts ändern; deshalb werden die Haken hier wortgleich auf MessageBox
-            // bzw. Cursor gesetzt, und zwar VOR jedem Code, der eine Meldung absetzen
-            // könnte. Stünde das weiter unten, ginge genau die erste Meldung eines
+            // Kern-Code - Zugriffsschicht, Controller, Modelle - spricht die Umgebung
+            // ueber neun kleine Schnittstellen an (Dienste.Dialog, .Datei, .Pfade,
+            // .Einstellungen, .Lizenzablage, .GeraeteId, .Sprache, .Navigation,
+            // .Projekt). Ohne Oberflaeche gilt die Vorbelegung des Kerns; hier werden
+            // die Windows-Fassungen eingelegt.
+            //
+            // WARUM AN DIESER STELLE. Vor jedem Programmtext, der eine Meldung absetzen
+            // koennte - insbesondere vor DataRepository.DatenbankVorhanden() weiter
+            // unten. Stuende die Belegung darunter, ginge genau die erste Meldung eines
             // Startfehlers auf die Konsole statt in einen Dialog.
-            Meldung.Zeigen = text => MessageBox.Show(text);
-            Meldung.Hinweis = (text, titel) => MessageBox.Show(text, titel);
-            Meldung.Warnung = (text, titel) =>
-                MessageBox.Show(text, titel, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            Meldung.Warten = an =>
-                Cursor.Current = an ? Cursors.WaitCursor : Cursors.Default;
+            //
+            // MELDUNG.* WIRD NICHT MEHR BELEGT. Die vier Melde-Haken zeigen seit iU5
+            // selbst auf Dienste.Dialog (siehe Meldung.cs); eine Belegung hier waere
+            // eine zweite Wahrheit. Ein Nebeneffekt ist beabsichtigt: Meldung.Hinweis
+            // traegt damit wieder das Informationssymbol, das die Hinweisdialoge des
+            // Kerns bis iU3-2 hatten.
+            Dienste.Dialog = new WindowsDialogDienst();
+            Dienste.Datei = new WindowsDateiDienst();
+            Dienste.Pfade = new WindowsPfade();
+            Dienste.Einstellungen = new SettingsEinstellungen();
+            Dienste.Lizenzablage = new DpapiLizenzAblage();
+            Dienste.GeraeteId = new WindowsGeraeteId();
+            Dienste.Sprache = new WindowsSprache();
+            Dienste.Navigation = new WinFormsNavigation();
+            Dienste.Projekt = new FormStartProjektKontext();
 
             // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
             // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
@@ -192,6 +204,11 @@ namespace WindowsFormsApplication1
 
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
+
+            // Anmeldung beim eigenen Halter (iU5): Programmtext ausserhalb der Masken
+            // erreicht den Assistenten-Controller ueber WizardCtrl.Aktueller und nicht
+            // mehr ueber Program.wizardctrl.
+            WizardCtrl.Aktueller = wizardctrl;
 
             ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
             ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");

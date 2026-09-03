@@ -7,6 +7,19 @@ namespace WindowsFormsApplication1
 {
     class WizardCtrl
     {
+        /// <summary>
+        /// Der eine Assistenten-Controller des laufenden Programms.
+        ///
+        /// <para><b>Wozu.</b> Bis iU5 lag er als <c>Program.wizardctrl</c> im
+        /// WinForms-Einstiegspunkt; Kern-naher Programmtext, der den Rahmen des
+        /// Assistenten anmelden musste, kam nur über <c>Program</c> dorthin. Die
+        /// Anmeldung hier ist dasselbe Hausmuster wie <c>WizardParent.Aktiver</c>:
+        /// EIN statischer Halter, gesetzt von <c>Program.Main</c>,
+        /// <c>Program.wizardctrl</c> ist seither nur noch die Weiterleitung für die
+        /// Masken.</para>
+        /// </summary>
+        public static WizardCtrl Aktueller { get; set; }
+
         public WizardParent parentform;
         public bool speichern;
         public string Projektname;
