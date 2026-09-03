@@ -1954,7 +1954,7 @@ namespace WindowsFormsApplication1
 
         public static dynamic GetProjectPrice(int projectId, int carrierId)
         {
-            string sql = "SELECT * FROM ENERGY_PROJECT_SETTINGS WHERE ID_PROJEKT = ? AND id_ENERGIETRÄGER  = ?";
+            string sql = "SELECT * FROM ENERGY_PROJECT_SETTINGS WHERE ID_Projekt = ? AND ID_Energieträger = ?";
 
             DbParam[] ps = {
                 new DbParam("@p", projectId),
