@@ -97,6 +97,30 @@ namespace WindowsFormsApplication1
                         using (Form_Gesetzesparameter f = new Form_Gesetzesparameter())
                             return MitOk(f, besitzer);
 
+                    // --- iU9-W6.0d: die vier Katalogverwaltungen der Erzeugerdialoge ----
+                    // Alle vier bleiben bis Welle 14 WinForms-Masken; nach der Rueckkehr
+                    // laedt die Huelle die Katalogliste neu. Sie sind DIESELBEN Masken,
+                    // die Dienste.Navigation fuer Masken.HeizkesselAdmin,
+                    // Masken.PvAdmin und Masken.PufferSpAdmin zeigt - die Vorlaeufer
+                    // riefen zwei davon ueber MenueCtrl.PV() bzw. MenueCtrl.PufferSp().
+                    // Der Stromspeicher hatte kein Maskenkuerzel und oeffnete
+                    // Form_AdminStromspeicher direkt.
+                    case Sprungziel.HeizkesselAdmin:
+                        using (Form_Heizkessel_Admin f = new Form_Heizkessel_Admin())
+                            return MitOk(f, besitzer);
+
+                    case Sprungziel.StromspeicherAdmin:
+                        using (Form_AdminStromspeicher f = new Form_AdminStromspeicher())
+                            return MitOk(f, besitzer);
+
+                    case Sprungziel.PvAdmin:
+                        using (Form_AdminPV f = new Form_AdminPV())
+                            return MitOk(f, besitzer);
+
+                    case Sprungziel.PufferSpAdmin:
+                        using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
+                            return MitOk(f, besitzer);
+
                     default:
                         return false;
                 }

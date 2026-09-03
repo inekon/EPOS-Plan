@@ -1,4 +1,6 @@
-﻿using EPOS.UI.Dialoge.Allgemein;
+﻿using System.Linq;
+using System.Reflection;
+using EPOS.UI.Dialoge.Allgemein;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -12,11 +14,27 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public sealed class SprungzielTests
 {
-    public static TheoryData<string> AlleZiele => new()
+    /// <summary>
+    /// Alle Ziele ueber Spiegelung statt von Hand aufgezaehlt: Ein in Welle 6
+    /// nachgetragenes Ziel geht so nicht durch die Pruefung hindurch, ohne dass
+    /// jemand diese Liste pflegt.
+    /// </summary>
+    private static string[] Schluessel()
+        => typeof(Sprungziel)
+           .GetFields(BindingFlags.Public | BindingFlags.Static)
+           .Where(f => f.IsLiteral && f.FieldType == typeof(string))
+           .Select(f => (string)f.GetRawConstantValue()!)
+           .ToArray();
+
+    public static TheoryData<string> AlleZiele
     {
-        Sprungziel.Gesetzesparameter,
-        Sprungziel.GesetzesparameterCo2,
-    };
+        get
+        {
+            var daten = new TheoryData<string>();
+            foreach (string s in Schluessel()) daten.Add(s);
+            return daten;
+        }
+    }
 
     [Theory]
     [MemberData(nameof(AlleZiele))]
@@ -31,7 +49,8 @@ public sealed class SprungzielTests
     [Fact]
     public void Die_Schluessel_sind_eindeutig()
     {
-        Assert.NotEqual(Sprungziel.Gesetzesparameter, Sprungziel.GesetzesparameterCo2);
+        string[] alle = Schluessel();
+        Assert.Equal(alle.Length, alle.Distinct().Count());
     }
 
     [Fact]
@@ -41,5 +60,19 @@ public sealed class SprungzielTests
         // umbenennt, muss dort nachziehen. Der Test macht das Paar sichtbar.
         Assert.Equal("GESETZESPARAMETER", Sprungziel.Gesetzesparameter);
         Assert.Equal("GESETZESPARAMETER_CO2", Sprungziel.GesetzesparameterCo2);
+
+        // iU9-W6.0d: die vier Katalogverwaltungen der Erzeugerdialoge.
+        Assert.Equal("HEIZKESSEL_ADMIN", Sprungziel.HeizkesselAdmin);
+        Assert.Equal("STROMSPEICHER_ADMIN", Sprungziel.StromspeicherAdmin);
+        Assert.Equal("PV_ADMIN", Sprungziel.PvAdmin);
+        Assert.Equal("PUFFERSP_ADMIN", Sprungziel.PufferSpAdmin);
+    }
+
+    [Fact]
+    public void Alle_sechs_Ziele_sind_da()
+    {
+        // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
+        // die Bruecke hat dann einen toten switch-Zweig.
+        Assert.Equal(6, Schluessel().Length);
     }
 }
