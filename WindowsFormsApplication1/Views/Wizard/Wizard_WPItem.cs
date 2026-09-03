@@ -539,8 +539,8 @@ namespace WindowsFormsApplication1
             }
             try
             {
-                double invest = AnlagenSumme(Form_Kosten.KATEGORIE_INVESTITION);
-                double betrieb = AnlagenSumme(Form_Kosten.KATEGORIE_BETRIEB);
+                double invest = AnlagenSumme(KostenSummenCtrl.KATEGORIE_INVESTITION);
+                double betrieb = AnlagenSumme(KostenSummenCtrl.KATEGORIE_BETRIEB);
                 lblKostenSummen.Text = string.Format(
                     TWpi("WPI_KOSTEN_SUMMEN", "Invest {0:N0} € · Betrieb {1:N0} €/a"),
                     invest, betrieb);

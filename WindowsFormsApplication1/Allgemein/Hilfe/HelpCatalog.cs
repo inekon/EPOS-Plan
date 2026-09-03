@@ -1103,7 +1103,7 @@ namespace WindowsFormsApplication1
         /// Der Unterschied zu <see cref="RegisterControl"/>: Neben dem Praefix der
         /// Wurzel werden auch die Praefixe aller eingebetteten Formulare und
         /// UserControls angewandt. <c>MDIMainForm</c> traegt <c>Form_Start</c> als
-        /// eingebettetes Formular (<c>TopLevel=false</c>), und <c>Form_Kosten</c>
+        /// eingebettetes Formular (<c>TopLevel=false</c>), und <c>Form_KostenKomponente</c>
         /// haengt <c>ucFuelSettings</c> zur Laufzeit ein - beide sollen ihre eigenen
         /// Zeilen aus <c>help_mapping.txt</c> bekommen, ohne dass jemand dafuer Code
         /// in ihr Formular schreiben muss.

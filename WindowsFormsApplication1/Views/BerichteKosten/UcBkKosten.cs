@@ -25,9 +25,10 @@ namespace WindowsFormsApplication1
     ///   Energieträger × Preis) — hier wird deshalb angezeigt, was zuletzt berechnet
     ///   wurde, statt still nachzurechnen.</item>
     /// </list>
-    /// Darunter die beiden Detaillisten, die auch die Kostenverwaltung speisen:
-    /// Investitionssummen je Komponente (<see cref="Form_Kosten.LiesKomponentenSummen"/>,
-    /// Kategorie 1 — dieselbe Leselogik wie in <see cref="Form_Kosten"/>)
+    /// Darunter die beiden Detaillisten:
+    /// Investitionssummen je Komponente
+    /// (<see cref="KostenSummenCtrl.LiesKomponentenSummen"/>, Kategorie 1 — die
+    /// gemeinsame Leselogik aller Kostenanzeigen)
     /// und die Energieträger des Projekts
     /// (<c>Abfrage_Energietraeger_Effektiv</c> + <c>energy_project_settings</c> /
     /// <c>energy_carrier</c> — dieselbe Vorrangkette wie im
@@ -329,8 +330,8 @@ namespace WindowsFormsApplication1
 
                 // Nur zum Unterscheiden von „nichts erfasst" und „erfasst, aber 0" —
                 // gerechnet wird weiterhin ausschließlich mit LiesBetriebskosten.
-                DataTable bt = Form_Kosten.LiesKomponentenSummen(
-                    _idProjekt, Form_Kosten.KATEGORIE_BETRIEB);
+                DataTable bt = KostenSummenCtrl.LiesKomponentenSummen(
+                    _idProjekt, KostenSummenCtrl.KATEGORIE_BETRIEB);
                 betriebPositionen = (bt != null) ? bt.Rows.Count : 0;
             }
             catch { }
@@ -407,8 +408,8 @@ namespace WindowsFormsApplication1
             Melde(status);
         }
 
-        // Investitionssummen je Komponente — dieselbe Leselogik, die auch die
-        // Kostenverwaltung für ihre Gesamtsumme verwendet (Form_Kosten.LiesKomponentenSummen).
+        // Investitionssummen je Komponente — die gemeinsame Leselogik aller
+        // Kostenanzeigen (KostenSummenCtrl.LiesKomponentenSummen).
         //
         // Befund D1 (18.08.2026): Hier lief zuvor die gespeicherte Abfrage
         // Abfrage_KostenKomponenten, die NICHT nach KategorieID filtert. Die Tabelle mischte
@@ -471,9 +472,9 @@ namespace WindowsFormsApplication1
                 var investLose = new Dictionary<string, double>(StringComparer.Ordinal);
                 var betriebLose = new Dictionary<string, double>(StringComparer.Ordinal);
                 var komponentenMitPositionen = new HashSet<string>(StringComparer.Ordinal);
-                AnlagenSummenLesen(Form_Kosten.KATEGORIE_INVESTITION, anlagen, anlagenIds,
+                AnlagenSummenLesen(KostenSummenCtrl.KATEGORIE_INVESTITION, anlagen, anlagenIds,
                                    investAnlage, investLose, komponentenMitPositionen);
-                AnlagenSummenLesen(Form_Kosten.KATEGORIE_BETRIEB, anlagen, anlagenIds,
+                AnlagenSummenLesen(KostenSummenCtrl.KATEGORIE_BETRIEB, anlagen, anlagenIds,
                                    betriebAnlage, betriebLose, komponentenMitPositionen);
 
                 double summe = 0, summeBetrieb = 0;
@@ -594,10 +595,10 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DataTable t = Form_Kosten.LiesAnlagenSummen(_idProjekt, kategorie);
+                DataTable t = KostenSummenCtrl.LiesAnlagenSummen(_idProjekt, kategorie);
                 if (t == null)
                 {
-                    DataTable alt = Form_Kosten.LiesKomponentenSummen(_idProjekt, kategorie);
+                    DataTable alt = KostenSummenCtrl.LiesKomponentenSummen(_idProjekt, kategorie);
                     if (alt != null)
                         foreach (DataRow r in alt.Rows)
                         {
@@ -1160,7 +1161,7 @@ namespace WindowsFormsApplication1
             if (_idProjekt <= 0) return;
             Form f = this.FindForm();
             // KD6a (§ 3.2): Der Einstieg führt in den NEUEN Kostendialog im
-            // Projektmodus — der alte Editor Form_Kosten ist kein Einstieg mehr.
+            // Projektmodus — der alte Kosteneditor ist mit iU9-W0 entfallen.
             using (var dlg = new Form_KostenKomponente())
             {
                 // Ä19: vorgewählt wird die Komponente der GEWÄHLTEN Anlagenzeile —

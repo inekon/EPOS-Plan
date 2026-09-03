@@ -1548,7 +1548,8 @@ namespace WindowsFormsApplication1
         /// Legt die PROJEKTGEBUNDENEN Energieträgersätze zu den Anlagen einer Wizard-Auswahl
         /// an: je DISTINKTEM <c>ID_Carrier</c> ein Paar aus <c>energy_price</c> (Preishistorie)
         /// und <c>energy_Project_settings</c> (Projekteinstellungen) - dasselbe Datenbild, das
-        /// eine Zuordnung über den Kosten-Dialog erzeugt (<c>Form_Kosten.CreateNewEnergyCarrier</c>).
+        /// eine Zuordnung über den Energieträgerdialog erzeugt
+        /// (<c>EnergietraegerVarianteDialog</c>).
         ///
         /// WARUM HIER UND NICHT IM FORMULAR. Beide Tabellen haben eine erzwungene Beziehung auf
         /// <c>Tab_Projekt.ID</c>. Im Neuanlage-Wizard existiert die Projektzeile beim Auswählen
@@ -1561,7 +1562,7 @@ namespace WindowsFormsApplication1
         /// WERTEHERKUNFT. Aus der Katalogzeile kommt nur <c>ID_Brennstoff</c>; die PREISE und
         /// Heizwerte stammen danach aus <c>Tab_Brennstoff_Stamm</c> - exakt die Quellen, aus
         /// denen auch der Kosten-Weg liest: <c>Form_Kosten_Auswahl</c> holt Hi, Hs und Einheit
-        /// von dort, <c>Form_Kosten</c> die Standardpreise. <c>ID_Umrechnung</c> ist im Dialog
+        /// von dort, <c>Form_Energietraeger</c> die Standardpreise. <c>ID_Umrechnung</c> ist im Dialog
         /// ebenfalls abgeleitet (Brennstoff + Einheit) und wird hier genauso ermittelt. Die
         /// EMISSIONEN werden seit dem Anwenderentscheid vom 30.08.2026 NICHT mehr mitkopiert -
         /// Begründung im Block vor dem INSERT in <see cref="TraegerSatzAnlegen"/>.
@@ -1790,7 +1791,7 @@ namespace WindowsFormsApplication1
             return (o != null) ? Convert.ToInt32(o) : -1;
         }
 
-        /// <summary>Kleiner Helfer gegen null/DBNull - wie in Form_Kosten.</summary>
+        /// <summary>Kleiner Helfer gegen null/DBNull - wie in den Kostenmasken.</summary>
         private static double ToDouble(object o)
         {
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;

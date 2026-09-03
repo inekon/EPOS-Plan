@@ -9,8 +9,9 @@ namespace WindowsFormsApplication1
     /// (<c>Tab_ProjektWerte</c> + Katalog <c>Tab_Kostenfaktor</c>).
     ///
     /// <para>
-    /// <b>Warum getrennt von <see cref="Form_Kosten"/>.</b> Dieselben Regeln brauchen
-    /// mehrere Aufrufer: die Kostenverwaltung (Anlegen und Vorbelegen), die
+    /// <b>Warum getrennt von der Kostenmaske.</b> Dieselben Regeln brauchen
+    /// mehrere Aufrufer: der Kostendialog <c>Form_KostenKomponente</c> (Anlegen und
+    /// Vorbelegen), die
     /// Komponentenübernahme (<see cref="KomponentenUebernahmeCtrl"/>) und die KI-Auskunft
     /// zur Kostenlage. Eine zweite Kopie der Regeln wäre genau die
     /// Sorte Doppelpflege, an der die Kostenseite schon einmal auseinandergelaufen ist
@@ -27,8 +28,8 @@ namespace WindowsFormsApplication1
     /// <c>Gruppe</c> und einem eigenen Katalogeintrag mit
     /// <c>IsMainComponent = False</c>. <c>Tab_Kostenfaktor.StammID</c> ist ein AutoWert,
     /// fehlende Katalogeinträge entstehen darum beim ersten Bedarf — dasselbe
-    /// „Lern"-Muster, das <c>Form_Kosten.AddKostenItem</c> für
-    /// <c>Tab_KostenGruppenKatalog</c> schon verwendet.
+    /// „Lern"-Muster, das die Kostenmasken für <c>Tab_KostenGruppenKatalog</c>
+    /// schon verwenden.
     /// </para>
     /// </summary>
     internal static class KostenPositionCtrl
@@ -214,7 +215,7 @@ namespace WindowsFormsApplication1
         /// Anhang B).</para>
         ///
         /// <para><b>Die Methode bleibt trotzdem.</b> Der Gruppenkatalog ist nicht an die
-        /// Abfrage gebunden: <c>Form_Kosten</c> und der Investitionsreiter lesen ihn für
+        /// Abfrage gebunden: <c>Form_KostenKomponente</c> und der Investitionsreiter lesen ihn für
         /// die Gruppenauswahl und seit K5 für die Gruppenköpfe. Ein Gruppenname, der nur
         /// in <c>Tab_ProjektWerte</c> steht und nicht im Katalog, fehlte dort in der
         /// Auswahlliste — genau das verhindert diese Zeile weiterhin.</para>
@@ -655,7 +656,7 @@ namespace WindowsFormsApplication1
         /// <b>Eigene Abfrage statt Erweiterung von <c>Abfrage_Kostenfaktoren</c>.</b> Die
         /// gespeicherte Access-Abfrage liegt AUSSERHALB des Repos; sie zu ändern erreicht
         /// keine Bestandsinstallation (dieselbe Begründung, mit der schon
-        /// <c>Abfrage_KostenKomponenten</c> durch <c>Form_Kosten.LiesKomponentenSummen</c>
+        /// <c>Abfrage_KostenKomponenten</c> durch <c>KostenSummenCtrl.LiesKomponentenSummen</c>
         /// abgelöst wurde). Die fünf neuen Felder kommen deshalb über einen zweiten,
         /// direkten Zugriff auf <c>Tab_ProjektWerte</c> und werden über die ID
         /// zusammengeführt.

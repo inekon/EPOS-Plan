@@ -348,7 +348,7 @@ Was im Zuge der Umstellung **stirbt** statt mitzuwandern — die Umwandlung ist 
 | Gegenstand | Menge | Paket |
 |---|---|---|
 | `CSExeCOMServer` | 1 Projekt, .NET Framework 4.0 | iU0 |
-| dokumentierte tote Enden (`FormMain`-Altzweig, `Form_Wirtschaftlichkeit`-Hülle, `Form_AlsVariante`, „- Kopie"-Dateien) | ~10–15 Views | iU9 |
+| dokumentierte tote Enden (`FormMain`-Altzweig, `Form_Wirtschaftlichkeit`-Hülle, `Form_AlsVariante`, „- Kopie"-Dateien) | ~10–15 Views | **iU9-W0 erledigt** (iF29): 25 Dateien gelöscht; `FormMain` und `Form_AlsVariante` bleiben nach Anwenderentscheid |
 | ~~`DataRepository.ProviderVorhanden()`~~ | ersetzt durch `DatenbankVorhanden()` | ✔ erledigt (`6486c36`) |
 | ~~Access-Zweig der `SchemaMigration`~~ | eingefroren, SQLite-Zweig `SCHRITTE_SQLITE` daneben | ✔ erledigt (`6486c36`) |
 | ~~3 Views ohne Anwendungszugriff, 5 Phantom-Abfragen~~ | im Zielschema nicht mehr enthalten (14 Sichten) | ✔ erledigt (`6486c36`) |
@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | ⏳ nicht begonnen | — | — |
+| **iU9** Masken in Wellen | 🔄 W0 und W1 umgesetzt | `43452a7` | 105 von 111 Masken offen; Stilllegung nach iF29 abgeschlossen |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1396,7 +1396,7 @@ steht aus und ist die eigentliche Aufgabe von
 | K3 Chart-Masken | 9 / 18 — **in iU0 zu klären** | Ergebnis aus iU7 |
 | K4 programmatische Views | **42** | ohne Generator; für die jüngsten liegen maschinelle Feldkarten vor |
 | K5 Sonderstücke | 6–8 | `Form_Start` (2.470 Z.), `MDIMainForm`, `WizardParent`, Navigatoren — und **`Form_Simulation_Detail`: 7.773 Zeilen, 11 Reiter**, wird zerlegt statt konvertiert |
-| K6 stilllegen | ~10–15 | tote Enden begraben statt mitschleppen |
+| K6 stilllegen | ~10–15 | tote Enden begraben statt mitschleppen — **mit iU9-W0 abgetragen** (iF29): neun Masken gelöscht, `nein`/`verwaist` stehen auf 0 |
 
 **Reihenfolge:** nach Anfasswahrscheinlichkeit — zuerst Wirtschaftlichkeit und Kosten (die aktiven
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
@@ -1435,6 +1435,36 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Protokoll** mit Feldkartenabgleich, 19 Abweichungen (A‑1…A‑19), Windows-Abnahmeliste und sieben
 > offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W1_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+
+> **Statusblock iU9 — Welle 0 umgesetzt (03.09.2026, Basis `908926a`)**
+>
+> **Die K6-Liste ist abgetragen.** Der Anwenderentscheid **iF29** (Register § 1) hat entschieden,
+> was der Erreichbarkeitsgraph vom Vormittag gemeldet hatte: Vier unerreichbare und eine verwaiste
+> Maske werden **nicht** nach Blazor umgestellt, sondern stillgelegt — dazu drei Masken, die nur an
+> ihnen hingen, und `Form_KwkgModule`, deren Knopf seit B5b ausgeblendet war und deren Felder
+> vollständig im `BhkwWirtschaftlichkeitDialog` stehen. Drei Commits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `bb0474c` | **W0.1** Was von außen an `Form_Kosten` hing, in den Kern gerettet: `EPOS.Kern/Controller/KostenSummenCtrl.cs` (`KATEGORIE_INVESTITION`/`KATEGORIE_BETRIEB`, `GetAllCarriers`, `LiesKomponentenSummen`, `LiesAnlagenSummen` — Rümpfe wörtlich) und `EPOS.Kern/Model/EnergietraegerModel.cs` (`EnergyCarrier`, `EnergyConversion`); sieben Aufrufer umgestellt |
+> | `16b106a` | **W0.2** 25 Dateien / 10 625 Zeilen gelöscht: `Form_Kosten`, `Form_KostenfaktorItem`, `ucKostenItem` (Klasse `ucKostenZeile`), `Form_Betriebskosten`, `Form_Variantentest`, `Form_Wirtschaftlichkeit`, `Form_Bericht`, `Form_Simulation_Kurz`, `Form_Simulation_Detail - Kopie.cs`, `ChartManagerNeu.cs`, `Form_KwkgModule` — samt den zwei Altknöpfen der Startseite (`btn_Kosten`, `btn_Varianten`, jetzt auch aus Designer und `.resx` entfernt), dem Modul-Knopf der Wirtschaftlichkeitsparameter, der `Compile Remove`-Liste der `.csproj`, sieben `HilfeKontext`-Einträgen, neun Zeilen `help_mapping.txt` und 26 Kommentarverweisen |
+> | `43452a7` | **W0.3** Formularkarte: drittes — und erstes **stillgelegtes** — Prüfmuster (`Form_KostenfaktorItem`), `Form_Kosten.Auszug.cs` um `AddKostenItem` erweitert, 15 Tests umgehängt bzw. ersetzt, `Erreichbarkeit_2026-09-03.md` neu gezogen |
+>
+> **Zähler.** Designer-Dateien 114 → **108**, Masken 111 → **105**, lokalisiert 62 → **61**,
+> Kartenzeilen 2 322 → **2 231**, Felder ohne Beschriftung 172 → **168**. Erreichbarkeit:
+> ja 104 → **103**, **nein 4 → 0**, **verwaist 1 → 0**, unklar 2 → **2**
+> (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben und werden umgestellt).
+>
+> **Behalten wie entschieden:** `FormMain`/`Form_StromTest` (der Menüpunkt „Projektdetail" bleibt),
+> `Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten`, `Form_AlsVariante`.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` → 0 Fehler,
+> **28** Warnungen (30 vorher; die zwei WFO1000 von `AlsDialog` entfallen mit den Dialoghüllen) ·
+> `dotnet test WP-Plan.Kern.slnf` → **1 036** grün (35/450/337/214) · Formularkarte **119** grün,
+> Build 0/0 · Stapellauf **105** Masken, 0 nein / 0 verwaist · SQL-Prüfer 1 303 Texte, 0 Fundstellen ·
+> Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**, `diff -rq` ohne
+> Unterschied · `dotnet publish` mit vollständigem `wwwroot`. **Windows-Abnahme steht aus** — die
+> vier Prüfpunkte stehen im Protokoll, Abschnitt W0.
 
 ### iU10 — Die iOS-Hülle · L · Mac
 

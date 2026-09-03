@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
     /// <b>Dynamisch nachgeladene UserControls.</b> Ein Leerlauf-Durchgang allein
     /// saehe nur, was beim Oeffnen schon da war. Deshalb bekommt jeder Behaelter im
     /// erfassten Baum einen <see cref="Control.ControlAdded"/>-Haken. Was spaeter
-    /// eingehaengt wird - etwa <c>ucFuelSettings</c> in <c>Form_Kosten</c> -, meldet
+    /// eingehaengt wird - etwa <c>ucFuelSettings</c> in <c>Form_Energietraeger</c> -, meldet
     /// sich damit von selbst; nachgezogen wird gebuendelt im naechsten Leerlauf,
     /// damit ein Aufbau mit Dutzenden Steuerelementen nicht Dutzende Durchgaenge
     /// ausloest.
@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
     /// einmal erfasst. Ein zweiter Durchgang - durch <c>ControlAdded</c>, durch das
     /// Nachziehen nach dem Ladelauf oder durch einen der drei verbliebenen
     /// Selbstaufrufe in <c>Form_Start</c>, <c>Form_Klimadaten</c> und
-    /// <c>Form_Kosten</c> - ist harmlos: <c>HelpExtender.SetHelpKey</c> loest jede
+    /// <c>Form_Energietraeger</c> - ist harmlos: <c>HelpExtender.SetHelpKey</c> loest jede
     /// Ereignisbindung vor dem Setzen wieder und ueberschreibt den Schluessel,
     /// statt ihn zu ergaenzen.
     /// </para>

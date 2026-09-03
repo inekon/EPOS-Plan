@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -10,9 +10,10 @@ namespace WindowsFormsApplication1
     /// Bezugsgrößen und der EINE Rechenweg je Bemessungsart.
     ///
     /// <para>
-    /// <b>Warum ein eigener Controller.</b> Drei Aufrufer brauchen dieselben Regeln: der
-    /// Betriebskosten-Dialog (<see cref="Form_Betriebskosten"/>), die Kostenverwaltung
-    /// (Sperren der abgeleiteten Beträge) und die Wirtschaftlichkeit
+    /// <b>Warum ein eigener Controller.</b> Drei Aufrufer brauchen dieselben Regeln: die
+    /// Kostenseite (<see cref="UcBkKosten"/>), der Kostendialog
+    /// <c>Form_KostenKomponente</c> (Sperren der abgeleiteten Beträge) und die
+    /// Wirtschaftlichkeit
     /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskosten</c>). Eine zweite Kopie der Formel
     /// wäre genau die Sorte Doppelpflege, an der die Kostenseite schon einmal
     /// auseinandergelaufen ist (Befund D1).
@@ -436,7 +437,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>Tab_KostenKomponente.ID</c> der Komponenten, deren Investition als
-        /// Bezugsgröße dient. Dieselben Nummern wie <c>Form_Kosten.GetKomponentenID</c>;
+        /// Bezugsgröße dient. Dieselben Nummern wie in <c>Tab_KostenKomponente</c>;
         /// sie stehen hier als benannte Konstanten, damit die Zuordnung im
         /// Betriebskostenpfad nicht als nackte Zahl auftaucht.
         /// </summary>

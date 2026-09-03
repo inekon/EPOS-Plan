@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -106,7 +106,8 @@ namespace WindowsFormsApplication1
         /// <param name="ziel">
         /// Aufnehmender Behaelter, wenn der Knopf nicht auf die Maske selbst gehoert,
         /// sondern in ein Kopfband oder eine Knopfleiste (Muster
-        /// <c>Form_Kosten.pnlHeader</c>, <c>Form_Klimadaten.panel2</c>). <c>null</c> =
+        /// <c>Form_KostenKomponente.pnlHeader</c>, <c>Form_Klimadaten.panel2</c>).
+        /// <c>null</c> =
         /// die Maske selbst.
         /// </param>
         /// <param name="breite">Breite in Pixeln; 51 fuer die Registerseiten der Startmaske.</param>

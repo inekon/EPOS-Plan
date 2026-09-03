@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
@@ -335,7 +335,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Empfehlungsbereich als Hinweistext neben dem Satzfeld
-        /// (bestehendes Muster <c>Form_Betriebskosten</c>).</summary>
+        /// (bestehendes Muster der Betriebskostenpflege).</summary>
         private void EmpfehlungAnzeigen()
         {
             if (_pos != null && (_pos.EmpfehlungVon.HasValue || _pos.EmpfehlungBis.HasValue))

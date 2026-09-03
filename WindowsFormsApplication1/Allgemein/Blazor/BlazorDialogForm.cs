@@ -25,7 +25,8 @@ namespace WindowsFormsApplication1
     /// ein <see cref="DialogResult"/>. Die Komponente meldet ihr Ergebnis ueber
     /// einen <c>EventCallback</c>, der <see cref="Schliessen"/> ruft.</para>
     ///
-    /// <para><b>Beispiel</b> (Views\Kosten\Form_Kosten.cs, CreateNewEnergyCarrier):</para>
+    /// <para><b>Beispiel</b> (Views\Heizkessel\Form_Heizkessel.cs,
+    /// NeuenEnergietraegerAnlegen):</para>
     /// <code>
     /// var werte = new Dictionary&lt;string, object&gt;
     /// {
