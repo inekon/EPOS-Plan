@@ -45,6 +45,13 @@ CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.0.400.1`, Xcode
 Hand auslöst: GitHub → Actions → iOS → *Run workflow*. Was ohne Mac nachweisbar ist und was nicht,
 steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
 
+**Regel für die CI (Anwender, 03.09.2026): Vor dem Aufrufen des macOS-Läufers jeweils
+nachfragen, um das Actions-Kontingent nicht unnötig zu erhöhen.** Der macOS-Läufer zählt
+zehnfach. Deshalb laufen `kern.yml` bei Push nur auf ubuntu und `ios.yml` gar nicht von
+selbst; beide bauen auf macOS nur über *Actions → Run workflow* (bei `kern.yml` mit dem
+Häkchen „macos"), und dieser Aufruf wird vorher mit dem Anwender abgestimmt — auch nach
+Abschluss der Migration.
+
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
 
 | Werkzeug | Wofür | Aufruf |

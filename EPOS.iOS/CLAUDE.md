@@ -73,6 +73,9 @@ Nur auf macOS mit installierter Workload — **auf Linux und Windows ist der Bau
 ausgelöst wird (GitHub → Actions → iOS → *Run workflow*).
 
 ```bash
+> **Regel:** Der iOS-Job läuft nur auf Abruf (*Actions → iOS → Run workflow*) und nur nach
+> Rückfrage beim Anwender — der macOS-Läufer zählt zehnfach auf das Kontingent.
+
 dotnet workload install maui-ios --version 10.0.400.1 --skip-sign-check
 dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release -f net10.0-ios -r iossimulator-arm64 \
   -p:SeedDb=../Referenzlaeufe/Kenndaten_Test.sqlite
