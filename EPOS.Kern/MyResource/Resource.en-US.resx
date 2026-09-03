@@ -8533,4 +8533,25 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>The rank refers to the generator type. This project has {0} units of this type — each has its own card.</value>
   </data>
+  <data name="ALLG_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ALLG_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KAUSW_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energy carrier:</value>
+  </data>
+  <data name="KAUSW_LBL_VARIANTE" xml:space="preserve">
+    <value>Energy carrier variant name:</value>
+  </data>
+  <data name="KAUSW_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Please enter a variant name (code).</value>
+  </data>
+  <data name="KAUSW_MSG_TRAEGER_FEHLT" xml:space="preserve">
+    <value>Please select an energy carrier.</value>
+  </data>
+  <data name="KAUSW_TITEL" xml:space="preserve">
+    <value>Energy carrier variant</value>
+  </data>
 </root>

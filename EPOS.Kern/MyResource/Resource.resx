@@ -8540,4 +8540,25 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte.</value>
   </data>
+  <data name="ALLG_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ALLG_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KAUSW_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energieträger:</value>
+  </data>
+  <data name="KAUSW_LBL_VARIANTE" xml:space="preserve">
+    <value>Energieträger Varianten Bezeichnung:</value>
+  </data>
+  <data name="KAUSW_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen Variantennamen (Code) eingeben.</value>
+  </data>
+  <data name="KAUSW_MSG_TRAEGER_FEHLT" xml:space="preserve">
+    <value>Bitte einen Energieträger auswählen.</value>
+  </data>
+  <data name="KAUSW_TITEL" xml:space="preserve">
+    <value>Energieträger Variante</value>
+  </data>
 </root>
