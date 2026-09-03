@@ -184,6 +184,11 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Bedarf/BedarfErgebnisDialog` | **drei** Masken: `Form_ErgStromverbraucher`, `Form_ErgProzesswaerme`, `Form_ErgBrauchwasserwaerme` (iU9‑W8.2) | `Views/Bedarf/BedarfErgebnisHuelle.cs`; keine Datenbank — die Hülle friert das Rechenobjekt ein und rendert die Bilder vorab |
 | `Bedarf/TypProfilDialog` | **drei** Masken: `Form_EingStromTyp`, `Form_EingProzTyp`, `Form_EingBrauchwasserTyp` (iU9‑W8.3) | dieselbe Hüllendatei wie W8.1 → `TypProfilCtrl`, `ChartRenderer.Stundenprofil` |
 | `Bedarf/GebaeudetypDialog` | `Form_EingGebTyp` (iU9‑W8.4) | `Views/Bedarf/GebaeudetypHuelle.cs` → `TagVCtrl` |
+| `Bedarf/GebaeudeWohnflaecheDialog` | `Form_GebWohnflaeche` (iU9‑W9.3) | keine Datenseite; Ergebnis-Record |
+| `Bedarf/GebaeudeKatalogDialog` | **zwei** Masken: `Form_Gebaeude1`, `Form_Gebaeude2` (iU9‑W9.1) | `Views/Gebäude/GebaeudeKatalogHuelle.cs` → `GebaeudeStammCtrl`, `Ferienzeit` |
+| `Bedarf/GebaeudeDialog` | `Form_Gebaeude` (iU9‑W9.2) | `Views/Gebäude/GebaeudeHuelle.cs`; Assistentenseite 2, Admin-Modus, **drei** Überlagerungen |
+| `Bedarf/WaermebedarfExternDialog` | `Form_Waermebedarf` (iU9‑W9.4) | `Views/Wärmebedarf/WaermebedarfExternHuelle.cs`; Assistentenseite 3, Sprungbrücke |
+| `Bedarf/BedarfsProfileDialog` | **drei** Masken: `Form_Prozesswaerme`, `Form_Stromverbraucher`, `Form_Brauchwasser` (iU9‑W9.5) | `Views/Bedarf/BedarfsProfileHuelle.cs`; Assistentenseiten 4 und 5, **vier** Überlagerungen aus Welle 8 |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -214,6 +219,16 @@ brauchen) und keine Zeichenkette: Wo sie ein Text wäre, könnte eine Übersetzu
 oder ein Tippfehler sie still ins Leere laufen lassen. Jede Ausprägung hat einen
 EIGENEN bunit-Feldbestandstest — der Abgleich mit der Feldkarte läuft je
 Ausprägung, nicht je Komponente.
+
+**Acht Masken, fünf Komponenten** (iU9‑W9): Die vier Bedarfskacheln des
+Startbilds. Zwei Muster wiederholen sich: `Form_Gebaeude1` und
+`Form_Gebaeude2` bearbeiteten mit `frm.model = model` DENSELBEN Satz — sie
+werden zwei `Reiterblatt` und kein Unterdialog; die drei Bedarfsblätter sind
+wie in Welle 8 DRILLINGE und werden EINE Komponente mit der Ausprägung
+`BedarfsArt`. **Nach Welle 9 laufen zehn der dreizehn Assistentenseiten als
+Razor-Komponente** — die Seiten 2 bis 5 kamen dazu, und die
+Assistentenschnittstelle trägt seither jeden Listentyp
+(`IAssistentListenSeite<T>`, W9.0a).
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
