@@ -124,7 +124,6 @@ namespace WindowsFormsApplication1
             { "Form_Gebaeude",               B_GEBAEUDE },
             { "Form_Gebaeude1",              B_GEBAEUDE },
             { "Form_Gebaeude2",              B_GEBAEUDE },
-            { "Form_GebaeudetypNeu",         B_GEBAEUDE },
 
             { "Form_Heizkessel",             B_HEIZKESSEL },
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
@@ -196,8 +195,6 @@ namespace WindowsFormsApplication1
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
             { "Form_PeakShaving",            B_STROMSPEICHER },
-            { "Form_Sp_ItemNeu",             B_STROMSPEICHER },
-            { "Form_StromspeicherItemNeu",   B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
             { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
             { "Form_Stromspeicher",          B_STROMSPEICHER },
@@ -215,8 +212,6 @@ namespace WindowsFormsApplication1
             { "Form_Stromganglinie_Admin",   B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
-
-            { "Form_AlsVariante",            B_VARIANTEN },   // H7 nachgetragen
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
             { "Form_Waermebedarf",           B_WAERMEBEDARF },

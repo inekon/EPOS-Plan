@@ -197,13 +197,15 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            Point p1 = btn_Neu.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            frm.ShowDialog();
-
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            // BEFUND iU9-W2.1: Der Vorlaeufer rief ShowDialog() ZWEIMAL - der
+            // Dialog ging zweimal auf. Dieselbe Stelle war in Form_EingProzTyp
+            // und Form_EingStromTyp schon korrigiert; hier bleibt es jetzt
+            // ebenfalls bei EINEM Aufruf.
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (szName == null) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
@@ -213,43 +215,42 @@ namespace WindowsFormsApplication1
                     arr_seriell[Tag * 24 + stunde] = 0;
                 }
             }
-            if (BrauchwasserStammCtrl.TypNew(frm.m_szName) <= 0) return;
+            if (BrauchwasserStammCtrl.TypNew(szName) <= 0) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    if (!update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
+                    if (!update(szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
                 }
             }
 
-            update("", frm.m_szName);
+            update("", szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;
+            listBox_Typname.Text = szName;
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (szName == null) return;
 
-            Point p1 = btn_SpeichernUnter.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
-
-            if (BrauchwasserStammCtrl.TypNew(frm.m_szName) <= 0) return;
+            if (BrauchwasserStammCtrl.TypNew(szName) <= 0) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
+                    update(szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
                 }
             }
 
-            update(textBox_Beschreibung.Text, frm.m_szName);
+            update(textBox_Beschreibung.Text, szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;
+            listBox_Typname.Text = szName;
         }
 
     }

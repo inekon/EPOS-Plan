@@ -265,13 +265,11 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            Point p1 = btn_Neu.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-
-            // BUGFIX: frm.ShowDialog() darf hier nur einmal ausgewertet werden
-            if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (string.IsNullOrEmpty(szName)) return;
 
             // Arrays zurücksetzen
             for (int Tag = 0; Tag < 7; Tag++)
@@ -285,7 +283,7 @@ namespace WindowsFormsApplication1
 
             // Datensatz anlegen
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
-            DbParam[] ps = { new DbParam("@typ", frm.m_szName), new DbParam("@ro", false) };
+            DbParam[] ps = { new DbParam("@typ", szName), new DbParam("@ro", false) };
 
             if (DataRepository.ExecuteSQL(insertSql, ps))
             {
@@ -299,10 +297,10 @@ namespace WindowsFormsApplication1
                             for (int stunde = 0; stunde < 24; stunde++)
                             {
                                 string feldName = (Tag * 24 + stunde + 1).ToString();
-                                UpdateWert(v, frm.m_szName, feldName, 0);
+                                UpdateWert(v, szName, feldName, 0);
                             }
                         }
-                        UpdateBeschreibung(v, "", frm.m_szName);
+                        UpdateBeschreibung(v, "", szName);
                         v.Commit();
                     }
                 }
@@ -312,22 +310,20 @@ namespace WindowsFormsApplication1
                 }
 
                 SetControls();
-                listBox_Typname.Text = frm.m_szName;
+                listBox_Typname.Text = szName;
             }
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            Point p1 = btn_SpeichernUnter.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-
-            // BUGFIX: Nur ein Aufruf von ShowDialog()
-            if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (string.IsNullOrEmpty(szName)) return;
 
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
-            DbParam[] ps = { new DbParam("@typ", frm.m_szName), new DbParam("@ro", false) };
+            DbParam[] ps = { new DbParam("@typ", szName), new DbParam("@ro", false) };
 
             if (DataRepository.ExecuteSQL(insertSql, ps))
             {
@@ -340,10 +336,10 @@ namespace WindowsFormsApplication1
                             for (int stunde = 0; stunde < 24; stunde++)
                             {
                                 string feldName = (Tag * 24 + stunde + 1).ToString();
-                                UpdateWert(v, frm.m_szName, feldName, arr[Tag, stunde]);
+                                UpdateWert(v, szName, feldName, arr[Tag, stunde]);
                             }
                         }
-                        UpdateBeschreibung(v, textBox_Beschreibung.Text, frm.m_szName);
+                        UpdateBeschreibung(v, textBox_Beschreibung.Text, szName);
                         v.Commit();
                     }
                 }
@@ -353,7 +349,7 @@ namespace WindowsFormsApplication1
                 }
 
                 SetControls();
-                listBox_Typname.Text = frm.m_szName;
+                listBox_Typname.Text = szName;
             }
         }
 

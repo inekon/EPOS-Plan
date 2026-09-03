@@ -395,16 +395,11 @@ namespace WindowsFormsApplication1
                 idGeraet = new StromspeicherCtrl().CopyFromStamm(anlage.Bezeichner, m_ID_Projekt);
             if (idGeraet <= 0) { Melden(MyResource.Resource.VAR_MSG_GERAET_FEHLT); return; }
 
-            // Namensabfrage nach dem Form_Sp_ItemNeu-Muster (Hausdialog fuer
-            // Bezeichnungen; er weist eine leere Eingabe selbst zurueck).
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            frm.m_szName = Namensvorschlag(anlage.Bezeichner);
-            frm.SetControl();
-            frm.ShowDialog();
-            if (frm.DialogResult != DialogResult.OK) return;
-
-            string name = (frm.m_szName ?? "").Trim();
-            if (name.Length == 0) return;
+            // Namensabfrage ueber den Hausdialog (iU9-W2.1: NamensDialogHuelle
+            // statt Form_Sp_ItemNeu; er weist eine leere Eingabe selbst zurueck
+            // und liefert den Namen bereits getrimmt).
+            string name = NamensDialogHuelle.Bezeichner(null, Namensvorschlag(anlage.Bezeichner));
+            if (string.IsNullOrEmpty(name)) return;
             if (NameVergeben(name))
             {
                 Melden(string.Format(MyResource.Resource.VAR_MSG_NAME_VERGEBEN, name));

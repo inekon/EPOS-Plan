@@ -252,11 +252,13 @@ namespace WindowsFormsApplication1
 
         private void btn_EingneuerTyp_Click(object sender, EventArgs e)
         {
-            Form_GebaeudetypNeu frm = new Form_GebaeudetypNeu();
-            frm.ShowDialog();
-            if (frm.result != DialogResult.OK) return;
+            // iU9-W2.1: Bezeichner UND Beschreibung ueber NamensDialogHuelle;
+            // Form_GebaeudetypNeu ist im selben Schritt geloescht (Regel M1).
+            string szBeschreibung;
+            string szName = NamensDialogHuelle.BezeichnerUndBeschreibung(this, out szBeschreibung);
+            if (szName == null) return;
 
-            if (listBox_Typename.FindString(frm.m_szName) != -1)
+            if (listBox_Typename.FindString(szName) != -1)
             {
                 MessageBox.Show("Name existiert bereits!");
                 return;
@@ -269,8 +271,8 @@ namespace WindowsFormsApplication1
                 string sqlInsertTyp = "INSERT INTO Tab_DBTagV_STAMM (ID, Bezeichner, Beschreibung, Veraenderbar, ReadOnly) VALUES (?, ?, ?, ?, ?)";
                 DbParam[] paramsTyp = {
                     new DbParam("@nid", DbParamTyp.Integer) { Wert = nID },
-                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)(frm.m_szName ?? "") },
-                    new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(frm.m_szBeschreibung ?? "") },
+                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)szName },
+                    new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)szBeschreibung },
                     new DbParam("@ver", DbParamTyp.Boolean) { Wert = true },
                     new DbParam("@ro", DbParamTyp.Boolean) { Wert = false }
                 };
@@ -298,7 +300,7 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                listBox_Typename.Items.Add(frm.m_szName);
+                listBox_Typename.Items.Add(szName);
                 listBox_Typename.SelectedIndex = listBox_Typename.Items.Count - 1;
             }
             catch (Exception ex)

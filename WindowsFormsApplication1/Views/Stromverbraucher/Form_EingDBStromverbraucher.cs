@@ -108,17 +108,17 @@ namespace WindowsFormsApplication1
             double[] monat;
             if (!MonatswertePruefen(out monat)) return;
 
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this, textBox_Stromname.Text);
 
-            frm.m_szName = textBox_Stromname.Text;
-            frm.SetControl();
-
-            if (frm.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
                 StromverbraucherStammCtrl ctrl = new StromverbraucherStammCtrl();
-                if (ctrl.Exists(frm.m_szName)) { MessageBox.Show("Name existiert bereits!"); return; }
+                if (ctrl.Exists(szName)) { MessageBox.Show("Name existiert bereits!"); return; }
 
-                textBox_Stromname.Text = frm.m_szName;
+                textBox_Stromname.Text = szName;
 
                 if (ctrl.SaveHead(textBox_Stromname.Text, comboBox_Stromtyp.Text, textBox_Beschreibung.Text, monat, true))
                     MessageBox.Show("Daten gespeichert!");
