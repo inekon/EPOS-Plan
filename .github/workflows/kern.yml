@@ -3,10 +3,11 @@
 # seit iU4 EPOS.Kern.Tests).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
 # WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
-# Dazu kommen zwei Laeufe, die NICHT im Filter stehen, weil sie ausfuehrbar
-# und keine Testprojekte sind: der Referenzlauf (iU3) und seit iU7-7 die
-# ChartProben - der Nachweis, dass der Diagramm-Renderer des Berichts ohne
-# Windows zeichnet.
+# Dazu kommen drei Laeufe, die NICHT im Filter stehen: der Referenzlauf (iU3)
+# und seit iU7-7 die ChartProben - beides ausfuehrbare Programme statt
+# Testprojekte, die belegen, dass Rechenkern und Diagramm-Renderer ohne Windows
+# arbeiten - sowie seit iU8-12 die Tests des Formularkarten-Werkzeugs, das eine
+# eigene Projektmappe hat und deshalb im Filter nicht auftaucht (nur ubuntu).
 #
 # Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
 # plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
@@ -42,6 +43,20 @@ jobs:
 
       - name: Testen
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+
+      # iU8-12: Das Formularkarten-Werkzeug hat eine EIGENE Projektmappe und
+      # steht deshalb weder in WP-Plan.sln noch im Solution-Filter - der
+      # Test-Schritt oben sieht es nicht. Es ist die Abnahmecheckliste von iU9
+      # (Feldkarte je Maske), und eine stumpfe Checkliste faellt niemandem auf.
+      # Seine Tests zerfallen seit iU8-12e in zwei Arten: Werkzeugtests lesen
+      # eingefrorene Pruefmuster, Bestandstests (StapelTests) lesen die echten
+      # Designer-Dateien. Die zweite Art faellt absichtlich rot aus, sobald eine
+      # Maske umgestellt wird, ohne dass jemand den Stapellauf nachzieht.
+      # NUR ubuntu: Das Werkzeug ist plattformfrei, ein zweiter Lauf auf macOS
+      # brauchte Minutenkontingent (Faktor 10) und wuerde nichts Neues zeigen.
+      - name: Formularkarte-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
 
       # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
       # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
