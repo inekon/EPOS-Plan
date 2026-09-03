@@ -72,6 +72,28 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <!-- Properties\Settings.Designer.cs erbt von ApplicationSettingsBase. -->
     <PackageReference Include="System.Configuration.ConfigurationManager" />
+
+    <!--
+      iOS-LAUFZEIT DER ZUGRIFFSSCHICHT (iU6-T5, VORBEREITUNG FUER iU10).
+
+      Microsoft.Data.Sqlite zieht standardmaessig SQLitePCLRaw.bundle_e_sqlite3. Dieses
+      Buendel laedt die native Bibliothek dynamisch - genau das verbietet die AOT-Regel
+      von .NET fuer iOS. Auf iOS und Mac Catalyst gilt deshalb bundle_green: Es bindet
+      gegen die SYSTEM-SQLite des Geraets, die dort ohnehin vorhanden ist.
+
+      DIE ZEILE GREIFT HEUTE NICHT. Der Kern hat genau ein TargetFramework (net10.0);
+      die Bedingung ist erst wahr, wenn iU10 daraus ein Multi-Targeting mit
+      net10.0-ios / net10.0-maccatalyst macht. Sie steht trotzdem schon hier, damit die
+      Entscheidung dokumentiert ist und nicht beim Aufsetzen der Huelle neu getroffen
+      werden muss. Die Fassung steht zentral in Directory.Packages.props und ist an die
+      SQLitePCLRaw.core-Fassung gebunden, die Microsoft.Data.Sqlite mitbringt.
+
+      DAZU GEHOERT EIN ZWEITER SCHRITT IN DER HUELLE: bundle_green initialisiert sich
+      nicht von selbst - die iOS-App muss beim Start einmal SQLitePCL.Batteries_V2.Init()
+      rufen, bevor der erste SqliteConnection entsteht.
+    -->
+    <PackageReference Include="SQLitePCLRaw.bundle_green"
+                      Condition="$(TargetFramework.Contains('-ios')) Or $(TargetFramework.Contains('-maccatalyst'))" />
   </ItemGroup>
 
 
