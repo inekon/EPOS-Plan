@@ -240,6 +240,8 @@ namespace WindowsFormsApplication1
                 ["WerteTitelZusatz"] = traeger > 0 ? " — " + name : "",
                 ["SpalteWahl"] = Text_("EMK_SP_WAHL", "Wahl"),
                 ["SpalteAuswahl"] = Text_("EMK_SP_AUSWAHL_KOPF", "im Tab"),
+                ["HinweisAuswahl"] = Text_("EMK_SP_AUSWAHL",
+                    "Ausgewählte Arten erscheinen als Feld im Emissions-Tab und gehen in die CO₂e-Summe ein."),
                 ["SpalteKuerzel"] = Text_("EMK_SP_KUERZEL", "Kürzel"),
                 ["SpalteName"] = Text_("EMK_SP_NAME", "Name"),
                 ["SpalteEinheit"] = Text_("EMK_SP_EINHEIT", "Einheit"),
@@ -310,7 +312,10 @@ namespace WindowsFormsApplication1
                 ["FrageAbwaehlen"] = Text_("EMK_ART_ABWAEHLEN_FRAGE",
                     "Die Art stattdessen abwählen? Sie verschwindet dann aus den " +
                     "Emissionsfeldern und aus der CO₂e-Summe, ihre Werte bleiben erhalten."),
-                ["OkText"] = Text_("KDLG_BTN_OK", "OK"),
+                // Der Vorläufer rief hier T("KDLG_BTN_OK", "OK") — den Schlüssel gab
+                // es nie, gezeigt wurde immer der deutsche Rückfall. Jetzt steht der
+                // Haustext (iU9-W3.5).
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = Text_("PVW_ABBRECHEN", "Abbrechen"),
 
                 ["Geschlossen"] = EventCallback.Factory.Create<EmissionskatalogErgebnis>(

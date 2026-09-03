@@ -9239,4 +9239,205 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WPAR_ZINS" xml:space="preserve">
     <value>Kalkulationszinssatz i [%]:</value>
   </data>
+  <data name="EMK_AKTIV" xml:space="preserve">
+    <value>◆ geltend</value>
+  </data>
+  <data name="EMK_ART_ABWAEHLEN_FRAGE" xml:space="preserve">
+    <value>Die Art stattdessen abwählen? Sie verschwindet dann aus den Emissionsfeldern und aus der CO₂e-Summe, ihre Werte bleiben erhalten.</value>
+  </data>
+  <data name="EMK_ART_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="EMK_ART_DLG_BEARB" xml:space="preserve">
+    <value>Emissionsart bearbeiten</value>
+  </data>
+  <data name="EMK_ART_DLG_NEU" xml:space="preserve">
+    <value>Neue Emissionsart</value>
+  </data>
+  <data name="EMK_ART_F_EINHEIT" xml:space="preserve">
+    <value>Einheit:</value>
+  </data>
+  <data name="EMK_ART_F_GWP" xml:space="preserve">
+    <value>CO₂-Äquivalent (GWP₁₀₀):</value>
+  </data>
+  <data name="EMK_ART_F_KUERZEL" xml:space="preserve">
+    <value>Kürzel:</value>
+  </data>
+  <data name="EMK_ART_F_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="EMK_ART_F_QUELLE" xml:space="preserve">
+    <value>Quelle des Faktors:</value>
+  </data>
+  <data name="EMK_ART_GWP_UNGUELTIG" xml:space="preserve">
+    <value>Der Äquivalenzfaktor muss eine Zahl sein (Komma oder Punkt).</value>
+  </data>
+  <data name="EMK_ART_KUERZEL_LEER" xml:space="preserve">
+    <value>Das Kürzel darf nicht leer sein.</value>
+  </data>
+  <data name="EMK_ART_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="EMK_ART_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Emissionsart „{0}“ löschen?</value>
+  </data>
+  <data name="EMK_ART_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="EMK_ART_PFLICHT_HINWEIS" xml:space="preserve">
+    <value>CO₂ ist die Pflichtart: Der Äquivalenzfaktor bleibt 1.</value>
+  </data>
+  <data name="EMK_GRP_ARTEN" xml:space="preserve">
+    <value>Emissionsarten</value>
+  </data>
+  <data name="EMK_GRP_WERTE" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="EMK_GRP_WERTE_ART" xml:space="preserve">
+    <value>Werte: {0}{1}</value>
+  </data>
+  <data name="EMK_HINWEIS_TRAEGER" xml:space="preserve">
+    <value>„Übernehmen“ kopiert den markierten Wert als geltenden Trägerwert und vermerkt die Herkunft. Eine spätere Katalogänderung wirkt NICHT zurück. Werte ohne Träger sind Vorlagen für alle Träger.</value>
+  </data>
+  <data name="EMK_HINWEIS_VERWALTUNG" xml:space="preserve">
+    <value>Ohne Trägerkontext zeigt der Katalog die Arten und die trägerunabhängigen Vorlagen. Ausgelieferte Einträge sind unveränderlich — abwählen statt löschen.</value>
+  </data>
+  <data name="EMK_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="EMK_KONTEXT_TRAEGER" xml:space="preserve">
+    <value>Träger: {0}</value>
+  </data>
+  <data name="EMK_KONTEXT_VERWALTUNG" xml:space="preserve">
+    <value>Verwaltungsmodus — Arten und trägerunabhängige Vorlagen</value>
+  </data>
+  <data name="EMK_MODUS" xml:space="preserve">
+    <value>CO₂-Berechnung:</value>
+  </data>
+  <data name="EMK_MODUS_CO2" xml:space="preserve">
+    <value>CO₂</value>
+  </data>
+  <data name="EMK_MODUS_CO2E" xml:space="preserve">
+    <value>CO₂-Äquivalent (GWP₁₀₀)</value>
+  </data>
+  <data name="EMK_MODUS_ORT" xml:space="preserve">
+    <value>[globale Vorgabe]</value>
+  </data>
+  <data name="EMK_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="EMK_SP_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="EMK_SP_AUSWAHL" xml:space="preserve">
+    <value>Ausgewählte Arten erscheinen als Feld im Emissions-Tab und gehen in die CO₂e-Summe ein.</value>
+  </data>
+  <data name="EMK_SP_AUSWAHL_KOPF" xml:space="preserve">
+    <value>im Tab</value>
+  </data>
+  <data name="EMK_SP_CO2E" xml:space="preserve">
+    <value>bereits CO₂e?</value>
+  </data>
+  <data name="EMK_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="EMK_SP_GWP" xml:space="preserve">
+    <value>GWP₁₀₀</value>
+  </data>
+  <data name="EMK_SP_KUERZEL" xml:space="preserve">
+    <value>Kürzel</value>
+  </data>
+  <data name="EMK_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="EMK_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="EMK_SP_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="EMK_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="EMK_TIP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Ausgelieferte Art — abwählbar, aber nicht löschbar.</value>
+  </data>
+  <data name="EMK_TIP_PFLICHT" xml:space="preserve">
+    <value>Pflichtart — nicht abwählbar, nicht löschbar.</value>
+  </data>
+  <data name="EMK_TIP_UNVERAENDERLICH" xml:space="preserve">
+    <value>Ausgelieferter Katalogwert — unveränderlich. Übernehmen ist möglich.</value>
+  </data>
+  <data name="EMK_TITEL" xml:space="preserve">
+    <value>Emissionsfaktor-Katalog</value>
+  </data>
+  <data name="EMK_TRAEGER" xml:space="preserve">
+    <value>Träger</value>
+  </data>
+  <data name="EMK_UEBERNAHME_LEER" xml:space="preserve">
+    <value>Der gewählte Eintrag trägt keinen Zahlenwert.</value>
+  </data>
+  <data name="EMK_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="EMK_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="EMK_WERT_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="EMK_WERT_CO2E" xml:space="preserve">
+    <value>Wert ist bereits ein CO₂-Äquivalent (nicht weiter aufsummieren)</value>
+  </data>
+  <data name="EMK_WERT_DLG_BEARB" xml:space="preserve">
+    <value>Eigenen Wert bearbeiten</value>
+  </data>
+  <data name="EMK_WERT_DLG_NEU" xml:space="preserve">
+    <value>Neuer eigener Wert</value>
+  </data>
+  <data name="EMK_WERT_F_TEXT" xml:space="preserve">
+    <value>Bezeichnung/Quelle:</value>
+  </data>
+  <data name="EMK_WERT_F_WERT" xml:space="preserve">
+    <value>Wert:</value>
+  </data>
+  <data name="EMK_WERT_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="EMK_WERT_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Wert „{0}“ löschen?</value>
+  </data>
+  <data name="EMK_WERT_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="EMK_WERT_UNGUELTIG" xml:space="preserve">
+    <value>Der Wert muss eine Zahl ≥ 0 sein (Komma oder Punkt).</value>
+  </data>
+  <data name="EMK_WERT_UNVERAENDERLICH" xml:space="preserve">
+    <value>Ausgelieferte Katalogwerte sind unveränderlich — sie werden über neue Jahreszeilen der gesetzlichen Parameter fortgeschrieben. Legen Sie einen eigenen Wert an.</value>
+  </data>
+  <data name="EMK_WERT_VORLAGE" xml:space="preserve">
+    <value>Vorlage für ALLE Träger (ohne Trägerbindung)</value>
+  </data>
+  <data name="KPROF_BILD_ALT" xml:space="preserve">
+    <value>Jahresprofil der Strompreise über 8760 Stunden</value>
+  </data>
+  <data name="KPROF_BTN_VORSCHAU" xml:space="preserve">
+    <value>Vorschau aktualisieren</value>
+  </data>
+  <data name="KPROF_KEIN_BILD" xml:space="preserve">
+    <value>Noch kein Diagramm</value>
+  </data>
+  <data name="LPR_KOPF_MONATE" xml:space="preserve">
+    <value>Monatssätze</value>
+  </data>
+  <data name="LPR_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>Die Reihe konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="LPR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Reihe konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SPOT_STATUS_PRUEFT" xml:space="preserve">
+    <value>Datei wird geprüft …</value>
+  </data>
 </root>
