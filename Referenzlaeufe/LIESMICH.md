@@ -12,6 +12,71 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-03_M3_nach-Merge3/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem dritten Merge von `origin/ios_migration`** — nach **iU9 Welle 1**:
+sieben WinForms-Masken der Kosten- und Wirtschaftlichkeitsseite sind durch sechs
+Razor-Komponenten ersetzt und im selben Schritt gelöscht (Zeileneditor Vorlagenposition,
+Namensabfrage, Worst/Best Case, Übernahme ins Projekt, Kostenfaktor-Katalog,
+Kapitalwert-Verlauf).
+
+> **Sie ist byte-gleich zu M2 — und genau das ist ihr Zweck.** Die elf Remote-Commits
+> tauschen **Oberfläche** aus; der einzige neue Kern-Baustein (`KostenfaktorCtrl`) trägt die
+> drei SQL-Anweisungen aus `Form_KostenAdmin` zeichengleich weiter.
+> **355/355 byte-/MD5-gleich gegen M2, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`908926a`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 2**
+> (`71cde0c`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M2=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 18 und Remotes elf Commits
+> umfasst **vier** Dateien (`Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs`,
+> `HilfeKontext.cs`), alle vier automatisch zusammengelegt und zeilenweise gegengeprüft.
+> Keine der sieben gelöschten Masken stand in unserer Änderungsmenge.
+>
+> **Codestand:** Merge-Commit `359b1cd` (Branch `ios_migration`; Eltern `533eb7b` lokal und
+> `908926a` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge3\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen, und diese 29 sind **zeilengleich zu Merge 2**.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1 und 2. Weil Welle 1 die Wirtschaftlichkeits-Dialoge
+> anfasst, sind zwei Aussagen eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und die Liste der portierten Dialoge im
+> [Merge-3-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge3_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M2_nach-Merge2`
+
 **`2026-09-03_M2_nach-Merge2/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
 Der Stand **nach dem zweiten Merge von `origin/ios_migration`** — nach iU9 (Blazor-Dialoge),
