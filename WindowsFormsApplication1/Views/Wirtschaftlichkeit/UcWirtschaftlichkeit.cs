@@ -98,7 +98,7 @@ namespace WindowsFormsApplication1
             // faktisch nie skaliert. Die Anwendung läuft ohnehin DpiUnaware
             // (app.manifest, Program.SetHighDpiMode). None hält genau dieses Verhalten
             // fest und verhindert, dass ein Designer-Speichern die Skalierung erstmals
-            // scharf schaltet — Muster: ucFuelSettings, Form_Energietraeger.
+            // scharf schaltet — dasselbe Muster wie in den Kostenmasken.
             InitializeComponent();
             KachelnBauen();
             TexteSetzen();

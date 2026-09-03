@@ -1,4 +1,4 @@
-# Umsetzungskonzept: EPOS-Plan auf iOS
+﻿# Umsetzungskonzept: EPOS-Plan auf iOS
 
 **Rev. 2.2 — 03.09.2026 — Stand nach der Kette iU4…iU8**
 
@@ -1402,6 +1402,62 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W4: **sieben Masken →
+> sieben Razor-Komponenten**, jede WinForms-Fassung im selben Schritt gelöscht (Regel M1).
+> Es ist die größte Welle bisher — die beiden **Hosts** der Kostenseite fallen mit ihren
+> fünf Unterbausteinen auf einmal, zusammen 5 216 Zeilen WinForms. Acht Commits, einer je
+> Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `6c3cbc5` | **W4.0** Bausteinlücken 6–8: `Bausteine/Ueberlagerung.razor` (modaler Bereich IN der Komponente, Fokusfalle ohne JS), `Bausteine/Rueckfrage.razor` (Ja/Nein/Abbrechen), `Bausteine/Zeilenraster.razor` (Spaltenkopf, Zeilen, Abschlusszeile, Summenfuß); dazu der Nachzug von **A‑10 aus Welle 3** — die Untereditoren des Emissionskatalogs stehen jetzt in einer Überlagerung |
+> | `3db98e0` | **W4.1** `ucVorlagenZeile` → `Dialoge/Kosten/VorlagenZeile.razor`, `ucErtragBonus` → `Dialoge/Kosten/ErtragBonus.razor` mit `ErtragBonusGaben`; erster Aufrufer der Sprungbrücke aus W2.2 (W2‑O6 erledigt) |
+> | `e0b63be` | **W4.2** `Form_KostenKomponente` (918 Z.) → `Dialoge/Kosten/KostenKomponenteDialog.razor` + `KostenKomponenteHuelle`; die **fünf Unterdialoge der Welle 1** stehen jetzt in Überlagerungen desselben Fensters statt in je einer zweiten WebView (R2) |
+> | `4527d66` | **W4.3** `ucStromAufschlaege` und `ucBrennstoffBestandteile` → `Dialoge/Kosten/StromAufschlaege.razor` und `BrennstoffBestandteile.razor`; Summen, Restzeilen und Schnellwahlsätze kommen als fertiger Text aus der Hülle |
+> | `b43e8fd` | **W4.4** `Form_Energietraeger` (535 Z.) und `ucFuelSettings` (2 103 Z.) → `Dialoge/Kosten/EnergietraegerDialog.razor` + `EnergietraegerEinstellungen.razor` + `EnergietraegerHuelle`; **neu im Kern:** `EnergietraegerPreisCtrl` mit den neun SQL-Anweisungen der Maske; neuer Baustein `Mehrfachauswahl` (Bausteinlücke 11) |
+> | `09ecd37` | **W4.5** Ressourcen-Sammelnachtrag: 50 Schlüssel (`KKOMP_*`, `ETV_*`, `KDLG_EM_*`, `KDLG_ANLAGE_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `45246be` | **W4.6** Formularkarte-Tests: sechstes und siebtes Prüfmuster (`Form_KostenKomponente`, `ucVorlagenZeile`), Anker auf `Form_Heizkessel` umgehängt, Stapellauf-Zähler 98 → 91 |
+> | *dieses Paket* | **W4.7** Protokoll, Statusblock, `CLAUDE.md` ×2 |
+>
+> **Die Überlagerung ist der eigentliche Gewinn.** Bis Welle 3 wich jeder Blazor-Dialog,
+> der einen zweiten braucht, aus — der Kostenfaktor-Katalog legt inline an (W1.5, A‑13),
+> der Emissionskatalog zeigt seine Untereditoren als eingerückte Blöcke (W3.3, A‑10).
+> Grund war immer Risiko **R2**: ein zweites Fenster hieße eine zweite `BlazorWebView`.
+> Seit W4.0 gibt es dafür einen Baustein, und **neun Unterdialoge** stehen im selben
+> Fenster wie ihr Wirt: Worst/Best, Zeileneditor, Namensabfrage, Übernahme,
+> Kostenfaktor-Katalog, Kostenprofil, Spotpreis-Import, saisonale Sätze und der
+> Emissionskatalog. Die sechs Hüllen der Wellen 1 bis 3 liefern dafür statt eines
+> Fensters ihren **Parametersatz** (`Gaben`). Auf iOS ist diese Bauform ohnehin die
+> einzige (iL5).
+>
+> **Neun SQL-Anweisungen gehen in den Kern.** `ucFuelSettings` las und schrieb selbst;
+> `EPOS.Kern/Controller/EnergietraegerPreisCtrl.cs` trägt sie wortgleich — dieselben
+> Spalten, dieselbe Rundung, dieselbe Reihenfolge. Zwei Änderungen an der Bauform: Der
+> `dynamic`-Rückgabewert ist ein benannter Typ geworden, und die eine
+> `RecordSet`-Abfrage mit Zeichenkettenverkettung hat einen Parameter bekommen — sie ist
+> damit erstmals für den SQL-Dialektprüfer sichtbar.
+>
+> **`Views/Kosten` führt keine Designer-Maske mehr.** Mit den sieben Masken fallen die
+> zwei nutzerlos gewordenen Karten-Controls `EinstiegsKarte` und `SectionPanel`; ihre
+> Nachfolger heißen `Kachel` und `Gruppenkopf`. Der Stapellauf-Test des Werkzeugs läuft
+> deshalb über `Views/Heizkessel`.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **22** Warnungen (Basis 26; WFO1000 20 → 16) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 352** grün (1 217 vorher; 135 neue bunit-Tests) · Formularkarte **122** grün, Build
+> 0/0 · Stapellauf **91** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 301 Texte,
+> 0 Fundstellen · ChartProben 10 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 gegen
+> `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**, `diff -rq` ohne Unterschied ·
+> `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken, alle vollständig, dazu 28
+> Laufzeitfelder), 20 Abweichungen (A‑1…A‑20), Windows-Abnahmeliste mit achtzehn
+> fachlichen Proben und acht offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W4_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
