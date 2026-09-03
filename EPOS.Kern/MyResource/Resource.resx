@@ -9605,4 +9605,148 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="ETVAR_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>Fehler beim Speichern: </value>
   </data>
+  <data name="HZKK_TITEL" xml:space="preserve">
+    <value>Administration Heizkessel</value>
+  </data>
+  <data name="HZKK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="HZKK_LBL_NAME" xml:space="preserve">
+    <value>Kesselbezeichnung:</value>
+  </data>
+  <data name="HZKK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller:</value>
+  </data>
+  <data name="HZKK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="HZKK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technische Daten</value>
+  </data>
+  <data name="HZKK_LBL_PTHERM" xml:space="preserve">
+    <value>Thermische Leistung:</value>
+  </data>
+  <data name="HZKK_FELD_PTHERM" xml:space="preserve">
+    <value>Thermische Leistung</value>
+  </data>
+  <data name="HZKK_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energieträger:</value>
+  </data>
+  <data name="HZKK_LBL_WG_GAS" xml:space="preserve">
+    <value>Wirkungsgrad Gas, Biogas, Holz und Sonstiges:</value>
+  </data>
+  <data name="HZKK_FELD_WG_GAS" xml:space="preserve">
+    <value>Wirkungsgrad Gas, Biogas, Holz und Sonstiges</value>
+  </data>
+  <data name="HZKK_LBL_WG_OEL" xml:space="preserve">
+    <value>Wirkungsgrad Öl:</value>
+  </data>
+  <data name="HZKK_FELD_WG_OEL" xml:space="preserve">
+    <value>Wirkungsgrad Öl</value>
+  </data>
+  <data name="HZKK_HINT_WIRKUNGSGRAD" xml:space="preserve">
+    <value>(z. B. 0,9)</value>
+  </data>
+  <data name="HZKK_LBL_BBVERLUST" xml:space="preserve">
+    <value>Betriebsbereitschaftsverluste:</value>
+  </data>
+  <data name="HZKK_FELD_BBVERLUST" xml:space="preserve">
+    <value>Betriebsbereitschaftsverluste</value>
+  </data>
+  <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
+    <value>Brennwertkessel</value>
+  </data>
+  <data name="HZKK_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf:</value>
+  </data>
+  <data name="HZKK_FELD_VORLAUF" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="HZKK_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf:</value>
+  </data>
+  <data name="HZKK_FELD_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="HZKK_GRP_KOSTEN" xml:space="preserve">
+    <value>Eingabedaten zur Berechnung der Kosten</value>
+  </data>
+  <data name="HZKK_LBL_INVEST" xml:space="preserve">
+    <value>Investitionskosten:</value>
+  </data>
+  <data name="HZKK_FELD_INVEST" xml:space="preserve">
+    <value>Investitionskosten</value>
+  </data>
+  <data name="HZKK_LBL_RAUMBEDARF" xml:space="preserve">
+    <value>Raumbedarf:</value>
+  </data>
+  <data name="HZKK_FELD_RAUMBEDARF" xml:space="preserve">
+    <value>Raumbedarf</value>
+  </data>
+  <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer:</value>
+  </data>
+  <data name="HZKK_FELD_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="HZKK_GRP_BEHG" xml:space="preserve">
+    <value>Emissionen nach BEHG-V</value>
+  </data>
+  <data name="HZKK_BEHG_ZEILE" xml:space="preserve">
+    <value>für Heizzwecke in t CO2 / GJ</value>
+  </data>
+  <data name="HZKK_BEHG_OEL" xml:space="preserve">
+    <value>Heizöl: 0,0808</value>
+  </data>
+  <data name="HZKK_BEHG_FLUESSIGGAS" xml:space="preserve">
+    <value>Flüssiggas: 0,0663</value>
+  </data>
+  <data name="HZKK_BEHG_ERDGAS" xml:space="preserve">
+    <value>Erdgas: 0,056</value>
+  </data>
+  <data name="HZKK_BTN_CO2" xml:space="preserve">
+    <value>CO2 BEHG</value>
+  </data>
+  <data name="HZKK_GRP_EMISSIONEN" xml:space="preserve">
+    <value>Emissionsfaktoren bezogen auf den Brennstoffverbrauch</value>
+  </data>
+  <data name="HZKK_LBL_STAUB" xml:space="preserve">
+    <value>Staub:</value>
+  </data>
+  <data name="HZKK_FELD_STAUB" xml:space="preserve">
+    <value>Staub</value>
+  </data>
+  <data name="HZKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
+  <data name="HZKK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="HZKK_MSG_ZAHL" xml:space="preserve">
+    <value>Bitte für "{0}" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).</value>
+  </data>
+  <data name="HZKK_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen gültigen Namen eingeben!</value>
+  </data>
+  <data name="HZKK_MSG_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Katalog führt den Namen "{0}" {1}-mal. Bearbeitet wird der Eintrag mit der kleinsten ID ({2}); die übrigen bleiben unverändert.</value>
+  </data>
+  <data name="HZKK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Datensatz gespeichert</value>
+  </data>
+  <data name="HZKK_MSG_FEHLER" xml:space="preserve">
+    <value>Fehler beim Überschreiben des Datensatzes!</value>
+  </data>
+  <data name="HZKK_MSG_ANGELEGT" xml:space="preserve">
+    <value>Datensatz erfolgreich neu angelegt.</value>
+  </data>
+  <data name="HZKK_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name existiert bereits!</value>
+  </data>
+  <data name="HZKK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
+    <value>Fehler beim Speichern des Datensatzes!</value>
+  </data>
 </root>

@@ -690,18 +690,19 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        // iU9-W6.1: Der Katalogeditor ist die Razor-Komponente HeizkesselKatalogDialog.
+        // Diese Maske wird in W6.3 selbst zur Komponente und zeigt ihn dann in einer
+        // Ueberlagerung; bis dahin oeffnet sie ihn wie bisher als eigenes Fenster.
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            Form_Heizkessel_Bearbeiten frm = new Form_Heizkessel_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_EDIT);
-
             if (listBox_Kessel_DB.Text == "") return;
             int index = listBox_Kessel_DB.SelectedIndex;
-            frm.SetControls(listBox_Kessel_DB.Text, textBox_Kesselbeschreibung.Text);
-            DialogResult ret = frm.ShowDialog();
 
-            if (ret == DialogResult.OK)
+            string szKessel = HeizkesselHuelle.KatalogBearbeiten(
+                this, listBox_Kessel_DB.Text, textBox_Kesselbeschreibung.Text, neu: false);
+
+            if (szKessel != null)
             {
-                string szKessel = frm.m_szKessel;
                 listBox_Kessel.SelectedItems.Clear();
                 listBox_Kessel_DB.SelectedItems.Clear();
                 heizkesselctrl.ReadAll();

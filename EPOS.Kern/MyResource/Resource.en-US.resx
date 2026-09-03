@@ -9598,4 +9598,148 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="ETVAR_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>Error while saving: </value>
   </data>
+  <data name="HZKK_TITEL" xml:space="preserve">
+    <value>Boiler administration</value>
+  </data>
+  <data name="HZKK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="HZKK_LBL_NAME" xml:space="preserve">
+    <value>Boiler name:</value>
+  </data>
+  <data name="HZKK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="HZKK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="HZKK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technical data</value>
+  </data>
+  <data name="HZKK_LBL_PTHERM" xml:space="preserve">
+    <value>Thermal performance:</value>
+  </data>
+  <data name="HZKK_FELD_PTHERM" xml:space="preserve">
+    <value>Thermal performance</value>
+  </data>
+  <data name="HZKK_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energy source:</value>
+  </data>
+  <data name="HZKK_LBL_WG_GAS" xml:space="preserve">
+    <value>Efficiency of gas, biogas, wood and others:</value>
+  </data>
+  <data name="HZKK_FELD_WG_GAS" xml:space="preserve">
+    <value>Efficiency of gas, biogas, wood and others</value>
+  </data>
+  <data name="HZKK_LBL_WG_OEL" xml:space="preserve">
+    <value>Oil efficiency:</value>
+  </data>
+  <data name="HZKK_FELD_WG_OEL" xml:space="preserve">
+    <value>Oil efficiency</value>
+  </data>
+  <data name="HZKK_HINT_WIRKUNGSGRAD" xml:space="preserve">
+    <value>(e.g. 0.9)</value>
+  </data>
+  <data name="HZKK_LBL_BBVERLUST" xml:space="preserve">
+    <value>Operational readiness losses:</value>
+  </data>
+  <data name="HZKK_FELD_BBVERLUST" xml:space="preserve">
+    <value>Operational readiness losses</value>
+  </data>
+  <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
+    <value>Condensing boiler</value>
+  </data>
+  <data name="HZKK_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow:</value>
+  </data>
+  <data name="HZKK_FELD_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="HZKK_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return:</value>
+  </data>
+  <data name="HZKK_FELD_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="HZKK_GRP_KOSTEN" xml:space="preserve">
+    <value>Input data for calculating costs</value>
+  </data>
+  <data name="HZKK_LBL_INVEST" xml:space="preserve">
+    <value>Investment costs:</value>
+  </data>
+  <data name="HZKK_FELD_INVEST" xml:space="preserve">
+    <value>Investment costs</value>
+  </data>
+  <data name="HZKK_LBL_RAUMBEDARF" xml:space="preserve">
+    <value>Space requirements:</value>
+  </data>
+  <data name="HZKK_FELD_RAUMBEDARF" xml:space="preserve">
+    <value>Space requirements</value>
+  </data>
+  <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Duration of use:</value>
+  </data>
+  <data name="HZKK_FELD_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Duration of use</value>
+  </data>
+  <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Years</value>
+  </data>
+  <data name="HZKK_GRP_BEHG" xml:space="preserve">
+    <value>Emissions according to BEHG-V</value>
+  </data>
+  <data name="HZKK_BEHG_ZEILE" xml:space="preserve">
+    <value>for heating purposes in t CO2 / GJ</value>
+  </data>
+  <data name="HZKK_BEHG_OEL" xml:space="preserve">
+    <value>Heating oil: 0.0808</value>
+  </data>
+  <data name="HZKK_BEHG_FLUESSIGGAS" xml:space="preserve">
+    <value>LPG: 0.0663</value>
+  </data>
+  <data name="HZKK_BEHG_ERDGAS" xml:space="preserve">
+    <value>Natural gas: 0.056</value>
+  </data>
+  <data name="HZKK_BTN_CO2" xml:space="preserve">
+    <value>CO2 BEHG</value>
+  </data>
+  <data name="HZKK_GRP_EMISSIONEN" xml:space="preserve">
+    <value>Emission factors related to fuel consumption</value>
+  </data>
+  <data name="HZKK_LBL_STAUB" xml:space="preserve">
+    <value>Dust:</value>
+  </data>
+  <data name="HZKK_FELD_STAUB" xml:space="preserve">
+    <value>Dust</value>
+  </data>
+  <data name="HZKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="HZKK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="HZKK_MSG_ZAHL" xml:space="preserve">
+    <value>Please enter a number for "{0}" (decimal separator comma or dot).</value>
+  </data>
+  <data name="HZKK_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Please enter a valid name.</value>
+  </data>
+  <data name="HZKK_MSG_MEHRDEUTIG" xml:space="preserve">
+    <value>The catalogue holds the name "{0}" {1} times. The entry with the lowest ID ({2}) is edited; the others remain unchanged.</value>
+  </data>
+  <data name="HZKK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Record saved</value>
+  </data>
+  <data name="HZKK_MSG_FEHLER" xml:space="preserve">
+    <value>Error while overwriting the record.</value>
+  </data>
+  <data name="HZKK_MSG_ANGELEGT" xml:space="preserve">
+    <value>Record created successfully.</value>
+  </data>
+  <data name="HZKK_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name already exists.</value>
+  </data>
+  <data name="HZKK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
+    <value>Error while saving the record.</value>
+  </data>
 </root>
