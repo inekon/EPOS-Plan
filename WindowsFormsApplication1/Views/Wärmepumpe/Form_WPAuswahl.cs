@@ -69,7 +69,7 @@ namespace WindowsFormsApplication1
                     // Ä22: zweistufig (Projekt vor Stamm) statt items[0]-Zugriff —
                     // ein frischer Eintrag mit Stamm-Id ließ den Aufbau sonst
                     // abstürzen; ohne Treffer bleibt die Zeile mit Grunddaten stehen.
-                    GeraetedatenFuellen(item, item.ID_WP);
+                    WaermepumpeGeraeteCtrl.GeraetedatenFuellen(item, item.ID_WP);
 
                     lvitem.Text = item.Bezeichner;
                     lvitem.SubItems.Add(item.Nennleistung.ToString());
@@ -84,40 +84,10 @@ namespace WindowsFormsApplication1
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        /// <summary>
-        /// Ä22: Gerätedaten ZWEISTUFIG — Projektgerät (Tab_WP) vor Stammkatalog
-        /// (Tab_WP_STAMM). Ein frisch angelegter Listeneintrag trägt bis zum
-        /// Speichern die STAMM-Id (Neu-Fluss materialisiert erst beim
-        /// Verwaltungs-OK) — er ist damit trotzdem anzeig- und änderbar, statt in
-        /// „Datensatz nicht gefunden“ zu laufen. false = in keiner der beiden
-        /// Tabellen (dann zeigt der Aufrufer die präzisierte Meldung).
-        /// </summary>
-        internal static bool GeraetedatenFuellen(WErzeugerModel ziel, int idWp)
-        {
-            if (ziel == null || idWp <= 0) return false;
-
-            WPModel quelle = null;
-            WPCtrl wpctrl = new WPCtrl();
-            wpctrl.ReadAll("ID=" + idWp);
-            if (wpctrl.items.Count > 0) quelle = wpctrl.items[0];
-            else
-            {
-                WPStammCtrl stamm = new WPStammCtrl();
-                stamm.ReadAll("ID=" + idWp);
-                if (stamm.rows > 0) quelle = stamm.items[0];
-            }
-            if (quelle == null) return false;
-
-            ziel.Regelung = quelle.Regelung;
-            ziel.Nennleistung = quelle.Nennleistung;
-            ziel.Modulkosten = quelle.Modulkosten;
-            ziel.Baujahr = quelle.Baujahr;
-            ziel.Beschreibung = quelle.Beschreibung;
-            ziel.Firma = quelle.Firma;
-            ziel.Typ = quelle.Typ;
-            ziel.Heizung = quelle.Heizung;
-            return true;
-        }
+        // iU9-W7.0e: Die zweistufige Geraetesuche (Ä22, Projektgeraet vor
+        // Stammkatalog) steht als WaermepumpeGeraeteCtrl.GeraetedatenFuellen im Kern -
+        // sie hat mit W7.4 drei weitere Aufrufer bekommen, und keiner von ihnen ist
+        // mehr eine WinForms-Maske.
 
         private Form getWizardPage()
         {
@@ -153,46 +123,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_Ansicht_Click(object sender, EventArgs e)
-        {
-            WErzeugerModel item = new WErzeugerModel();
-            ListView.SelectedIndexCollection indexes = listView_WP.SelectedIndices;
-
-            if (indexes.Count > 0)
-            {
-                int n = indexes[0];
-                Wizard_WPItem frm = new Wizard_WPItem(textBox_WP.Text);
-                frm.m_werzitemlist = list_werzmodel;
-                
-                int idwp = 0;
-                int index = 0;
-                
-                for (index = 0; index < frm.m_werzitemlist.Count; index++)
-                {
-                    if (frm.m_werzitemlist[index].Bezeichner == textBox_WP.Text && frm.m_werzitemlist[index].ID_Type == 1)
-                    {
-                        idwp = frm.m_werzitemlist[index].ID_WP;
-                        break;
-                    }
-                }
-
-                if (idwp > 0)
-                {
-                    // Ä22: zweistufig — der Eintrag kann ein Projektgerät (Tab_WP)
-                    // oder eine noch nicht gespeicherte Stammwahl (Tab_WP_STAMM) sein.
-                    if (!GeraetedatenFuellen(frm.m_werzitemlist[index], idwp))
-                    {
-                        MessageBox.Show("Die Wärmepumpe (ID " + idwp + ") wurde weder bei den " +
-                            "Projektgeräten noch im Stammkatalog gefunden!", "Wärmepumpe",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-
-                    frm.SetControls(index);
-                    frm.ShowDialog();
-                }
-             }
-        }
+        // iU9-W7.4: btn_Ansicht_Click ist mit Wizard_WPItem entfallen. Der Handler war
+        // VERWAIST - der Designer kennt kein btn_Ansicht, weder als Steuerelement noch
+        // als Ereignisbindung (Befund W7-O-3). Der Ansichtsweg der Maske lief ueber den
+        // Doppelklick (listView_WP_MouseDoubleClick).
 
         private void btn_Uebernehmen_Click(object sender, EventArgs e)
         {
@@ -200,25 +134,23 @@ namespace WindowsFormsApplication1
             if (indexes.Count > 0)
             {
                 int n = indexes[0];
-                Wizard_WPItem frm = new Wizard_WPItem(textBox_WP.Text);
-                frm.m_werzitemlist = list_werzmodel;
 
                 int idwp = 0;
                 int index = 0;
-                
-                for (index = 0; index < frm.m_werzitemlist.Count; index++)
+
+                for (index = 0; index < list_werzmodel.Count; index++)
                 {
-                    if (frm.m_werzitemlist[index].Bezeichner == textBox_WP.Text && frm.m_werzitemlist[index].ID_Type == 1)
+                    if (list_werzmodel[index].Bezeichner == textBox_WP.Text && list_werzmodel[index].ID_Type == 1)
                     {
-                        idwp = frm.m_werzitemlist[index].ID_WP;
+                        idwp = list_werzmodel[index].ID_WP;
                         break;
                     }
                 }
 
                 // Absicherung: Ohne Treffer läuft die Schleife bis index == Count durch -
-                // der Zugriff m_werzitemlist[index] würde dann mit
+                // der Zugriff list_werzmodel[index] würde dann mit
                 // ArgumentOutOfRangeException abstürzen.
-                if (idwp <= 0 || index >= frm.m_werzitemlist.Count)
+                if (idwp <= 0 || index >= list_werzmodel.Count)
                 {
                     MessageBox.Show("Die ausgewählte Wärmepumpe '" + textBox_WP.Text +
                         "' wurde in der Projektliste nicht gefunden!", "Wärmepumpe",
@@ -230,31 +162,43 @@ namespace WindowsFormsApplication1
                 // funktioniert damit auch auf einem frisch angelegten Eintrag,
                 // dessen ID_WP bis zum Speichern die Stamm-Id ist (Befund
                 // „Datensatz (ID 67) nicht gefunden“).
-                if (!GeraetedatenFuellen(frm.m_werzitemlist[index], frm.m_werzitemlist[index].ID_WP))
+                if (!WaermepumpeGeraeteCtrl.GeraetedatenFuellen(list_werzmodel[index], idwp))
                 {
-                    MessageBox.Show("Die Wärmepumpe (ID " + frm.m_werzitemlist[index].ID_WP +
+                    MessageBox.Show("Die Wärmepumpe (ID " + idwp +
                         ") wurde weder bei den Projektgeräten noch im Stammkatalog gefunden!",
                         "Wärmepumpe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                frm.SetControls(index);
-                frm.ShowDialog();
-                if (!frm.CloseWithOK) return;
-                
-                list_werzmodel[index] = frm.m_werzitemlist[index];
+
+                // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+                // WaermepumpeAnlageDialog; Wizard_WPItem ist im selben Schritt
+                // GELOESCHT (Regel M1). Die Huelle bearbeitet die Zeile an Ort und
+                // Stelle - bei Abbruch bleibt sie unveraendert.
+                if (!WaermepumpeAnlageHuelle.Oeffnen(this, list_werzmodel[index], ProjektId())) return;
+
                 if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
 
                 ListViewItem lvitem;
                 lvitem = listView_WP.Items[n];
-                lvitem.Text = frm.item.Bezeichner;
+                lvitem.Text = list_werzmodel[index].Bezeichner;
                 // Ä23: Die Spalte heißt „Leistung [kW]“ und zeigt die NENNLEISTUNG —
                 // maxPTherm ist am Listenobjekt nie gefüllt und schrieb hier eine 0
                 // über den korrekten Aufbauwert.
-                lvitem.SubItems[1].Text = frm.item.Nennleistung.ToString();
-                lvitem.SubItems[2].Text = frm.item.Vorlauf.ToString();
-                lvitem.SubItems[3].Text = frm.item.Ruecklauf.ToString();
-                lvitem.SubItems[4].Text = frm.item.Betriebsart;
+                lvitem.SubItems[1].Text = list_werzmodel[index].Nennleistung.ToString();
+                lvitem.SubItems[2].Text = list_werzmodel[index].Vorlauf.ToString();
+                lvitem.SubItems[3].Text = list_werzmodel[index].Ruecklauf.ToString();
+                lvitem.SubItems[4].Text = list_werzmodel[index].Betriebsart;
             }
+        }
+
+        /// <summary>
+        /// Das geöffnete Projekt — Rückfall beim Nachziehen der Anlagenzeile
+        /// (iU9-W7.4). Der Vorläufer holte es sich in <c>Wizard_WPItem</c> selbst
+        /// aus <c>Program.startfrm</c>; jetzt reicht der Aufrufer es herein.
+        /// </summary>
+        private static int ProjektId()
+        {
+            return Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0;
         }
 
         private void btn_Neu_Click(object sender, EventArgs e)
@@ -263,27 +207,31 @@ namespace WindowsFormsApplication1
             DialogResult result =frmauswahl.ShowDialog();
             if (result != DialogResult.OK) return;
 
-            Wizard_WPItem frm = new Wizard_WPItem();
-            frm.SetWPCombox(frmauswahl.SelectedWP.Bezeichnung);
-            frm.ShowDialog();
-            if (!frm.CloseWithOK) return;
+            // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+            // WaermepumpeAnlageDialog. Der frische Eintrag traegt zunaechst nur den
+            // Namen und die STAMM-Id; die Huelle fuellt ihn beim OK.
+            WErzeugerModel neu = new WErzeugerModel();
+            neu.Bezeichner = frmauswahl.SelectedWP.Bezeichnung;
+            neu.ID_WP = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", neu.Bezeichner);
+
+            if (!WaermepumpeAnlageHuelle.Oeffnen(this, neu, ProjektId())) return;
 
             // Ä23: Der frische Eintrag bekommt seine Stammdaten (Nennleistung,
             // Regelung, …) ins Listenobjekt — zweistufig, denn ID_WP ist hier
             // noch die Stamm-Id (Ä22).
-            GeraetedatenFuellen(frm.item, frm.item.ID_WP);
-            frm.item.ID_Type = 1; 
+            WaermepumpeGeraeteCtrl.GeraetedatenFuellen(neu, neu.ID_WP);
+            neu.ID_Type = 1;
 
-            list_werzmodel.Add(frm.item);
+            list_werzmodel.Add(neu);
             if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
 
             ListViewItem lvitem = new ListViewItem();
-      
-            lvitem.Text = frm.item.Bezeichner;
-            lvitem.SubItems.Add(frm.item.Nennleistung.ToString());
-            lvitem.SubItems.Add(frm.item.Vorlauf.ToString());
-            lvitem.SubItems.Add(frm.item.Ruecklauf.ToString());
-            lvitem.SubItems.Add(frm.item.Betriebsart);
+
+            lvitem.Text = neu.Bezeichner;
+            lvitem.SubItems.Add(neu.Nennleistung.ToString());
+            lvitem.SubItems.Add(neu.Vorlauf.ToString());
+            lvitem.SubItems.Add(neu.Ruecklauf.ToString());
+            lvitem.SubItems.Add(neu.Betriebsart);
             lvitem = listView_WP.Items.Add(lvitem);
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -295,9 +243,7 @@ namespace WindowsFormsApplication1
             if (indexes.Count > 0)
             {
                 ListViewItem lvitem = listView_WP.Items[indexes[0]];
-                Wizard_WPItem frm_wpitem = new Wizard_WPItem(lvitem.Text);
                 WErzeugerCtrl ctrl = new WErzeugerCtrl();
-                List<WErzeugerModel> list = new List<WErzeugerModel>();
 
                 ctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "'");
                 if (ctrl.rows == 0)
@@ -310,7 +256,7 @@ namespace WindowsFormsApplication1
                 // Ä22/Ä23: zweistufig (Projektgerät vor Stammkatalog) statt
                 // Einstufigkeit über Tab_WP allein — frisch angelegte Einträge
                 // tragen bis zum Verwaltungs-OK die Stamm-Id.
-                if (!GeraetedatenFuellen(ctrl.items[0], ctrl.items[0].ID_WP))
+                if (!WaermepumpeGeraeteCtrl.GeraetedatenFuellen(ctrl.items[0], ctrl.items[0].ID_WP))
                 {
                     MessageBox.Show("Die Wärmepumpe (ID " + ctrl.items[0].ID_WP +
                         ") wurde weder bei den Projektgeräten noch im Stammkatalog gefunden!",
@@ -318,10 +264,8 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                list.Add(ctrl.items[0]);
-                frm_wpitem.m_werzitemlist = list;
-                frm_wpitem.SetControls(0);
-                frm_wpitem.ShowDialog();
+                // iU9-W7.4: dieselbe Razor-Komponente wie in den uebrigen drei Wegen.
+                WaermepumpeAnlageHuelle.Oeffnen(this, ctrl.items[0], ProjektId());
             }
         }
 

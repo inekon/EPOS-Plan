@@ -1,0 +1,613 @@
+﻿@* Detailansicht einer Waermepumpen-ANLAGE (iU9-W7.4).
+
+   VORBILD. Views/Wizard/Wizard_WPItem (690 Z., lokalisiert de/en, 47
+   Kartenzeilen, 3 Gruppen, 2 Reiter mit 2 Charts, 3 MessageBox, dazu die
+   Laufzeitfelder der Kostenzeile). Die groesste Maske der Welle.
+
+   DER DIALOG BEARBEITET EINE KOPIE. Der Vorlaeufer schrieb im OK-Knopf in
+   item - die Referenz in die Projektliste der Verwaltung. Hier bekommt der
+   Dialog eine Kopie, die Huelle uebertraegt sie beim OK zurueck; Abbrechen
+   verwirft sie.
+
+   DIE STILLE VORWAHL (Ä21). item.ID_WP traegt bei einer Zeile aus der
+   Projektliste die PROJEKT-Geraete-Id, bei einer frisch gewaehlten
+   Waermepumpe die Stammkatalog-Id. Der Vorlaeufer musste sich dafuer mit
+   m_bStilleFuellung gegen seinen eigenen Auswahl-Handler wehren, den schon
+   die programmatische Textzuweisung ausloeste. Hier gibt es das Problem
+   nicht: Der Aufbau fuellt aus den Daten, und NUR ein Klick auf eine
+   Listenzeile wechselt die Id - samt der Stammfelder am Datensatz (Ä23).
+
+   DREI SICHTBARKEITSREGELN, woertlich uebernommen: Die Betriebsart erscheint
+   nur bei bivalentem Betrieb; die Bivalenztemperatur nur, wenn sie
+   RECHENWIRKSAM ist - Teilparallel- oder Alternativbetrieb
+   (BivalenztemperaturSichtbarkeitSetzen:645). Die Pufferspeichergruppe wird
+   GAR NICHT gezeichnet (Ä19); ihre Werte laufen im Datensatz mit.
+
+   DIE KOSTENZEILE (Ä19/Ä22/Ä25) ersetzt die Modulkosten: ein Knopf und die
+   Summen dieser Anlage. Ohne gespeicherte Anlagenzeile bleibt er gesperrt und
+   sagt im Tooltip warum - hier zusaetzlich als Herleitungszeile, weil ein
+   Tooltip auf einem Beruehrungsgeraet nicht erreichbar ist.
+
+   TASTATUR: Esc bricht ab - aber erst, wenn keine Ueberlagerung offen ist.
+   Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_warnung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
+    }
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelWpAuswahl</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (WaermepumpeStammZeile zeile in _stammliste)
+                        {
+                            WaermepumpeStammZeile z = zeile;
+                            <tr class="@(z.Bezeichner == Daten.Bezeichner ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z.Bezeichner == Daten.Bezeichner)"
+                                                Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => WaermepumpeWaehlen(z)" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="BeiKatalog">@BtnKatalogText</button>
+            </div>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <Gruppenkopf Titel="@GruppeKenndaten">
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" NurLesen="true" />
+                    <div class="epos-feldpaar">
+                        <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
+                        <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
+                    </div>
+                    <div class="epos-feldpaar">
+                        <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
+                        <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true" />
+                    </div>
+                    <div class="epos-feldpaar">
+                        <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
+                                  NurLesen="true" />
+                        <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
+                                      Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
+                                      WertChanged="w => Daten.HeizstabLeistung = w" />
+                    </div>
+
+                    @* --- Ä19: die Kostenzeile statt der Modulkosten ---------------- *@
+                    <div class="epos-kostenleiste">
+                        @if (KostenOeffnen is not null)
+                        {
+                            <button type="button" class="epos-knopf" disabled="@(!_kostenBereit)"
+                                    title="@(_kostenBereit ? TipKosten : TipKostenNeu)"
+                                    @onclick="BeiKosten">@BtnKostenText</button>
+                        }
+                        <span class="epos-kostenleiste-hinweis">@Kostensummen</span>
+                    </div>
+                    @if (!_kostenBereit && KostenOeffnen is not null)
+                    {
+                        <Herleitungszeile Text="@TipKostenNeu" />
+                    }
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" @onclick="BeiStammdialog">@BtnParameterText</button>
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
+        </div>
+    </div>
+
+    <Gruppenkopf Titel="@GruppeAuslegung">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
+                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w" />
+                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
+                              Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
+                              WertChanged="w => Daten.Ruecklauf = w" />
+            </div>
+            <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeSpitzenlast">
+        <KindInhalt>
+            <Herleitungszeile Text="@HinweisSpitzenlast" />
+            <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
+                      WertChanged="w => Daten.Heizstab = w" />
+
+            <Schalter Bezeichnung="@LabelSperrzeit" Wert="@Daten.Sperrung"
+                      WertChanged="w => Daten.Sperrung = w" />
+            <div class="epos-feldpaar">
+                <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon" Wert="@Daten.SperrzeitVon"
+                              WertChanged="w => Daten.SperrzeitVon = w" />
+                <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis" Wert="@Daten.SperrzeitBis"
+                              WertChanged="w => Daten.SperrzeitBis = w" />
+            </div>
+            <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitStundeTag"
+                          Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
+                          WertChanged="w => Daten.Nutzungszeit = w" />
+
+            <Herleitungszeile Text="@HinweisBetrieb" />
+            <Schalter Bezeichnung="@LabelBivalent" Wert="@Daten.BivalenterBetrieb"
+                      WertChanged="BivalentSetzen" />
+
+            @if (Daten.BivalenterBetrieb)
+            {
+                <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarten"
+                             Auswahl="@BetriebsartIndex"
+                             AuswahlChanged="BetriebsartSetzen" Platzhalter="" />
+
+                @if (BivalenztemperaturSichtbar)
+                {
+                    <Zahlenfeld Bezeichnung="@LabelAbschalttemp" Einheit="@EinheitGrad"
+                                Feldname="@LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
+                                WertChanged="w => Daten.Abschaltpunkt = w" />
+                }
+                <Herleitungszeile Text="@BetriebsartErlaeuterung" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
+    <h2 class="epos-untergruppe">@LabelKennlinien</h2>
+
+    <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
+        <KindInhalt>
+            <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
+                <KindInhalt>
+                    <ChartBild Png="@_bilder.Cop" Alt="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
+                </KindInhalt>
+            </Reiterblatt>
+            <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
+                <KindInhalt>
+                    <ChartBild Png="@_bilder.Leistung" Alt="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Ueberlagerung 1: der Stammdialog ("Parameter Bearbeiten...") ------- *@
+    <Ueberlagerung Offen="@(_stammGaben is not null)" Schliessbar="false"
+                   Titel="@BtnParameterText" Geschlossen="() => _stammGaben = null">
+        <KindInhalt>
+            @if (_stammGaben is not null)
+            {
+                <WaermepumpeStammDialog @attributes="_stammGaben" Geschlossen="StammdialogFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: der Modulkatalog ---------------------------------- *@
+    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
+                   Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
+        <KindInhalt>
+            @if (_katalogOffen)
+            {
+                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Der bearbeitete Satz — eine KOPIE; die Hülle überträgt sie beim OK zurück.</summary>
+    [Parameter] public WaermepumpeAnlageDaten Daten { get; set; } = new();
+
+    /// <summary>Die Stammliste (<c>WPStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<WaermepumpeStammZeile>>? Stammliste { get; set; }
+
+    /// <summary>Die Vorlaufstufen eines Geräts (<c>KenndatenCtrl.ReadVorlauf</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyList<int>>? Vorlaeufe { get; set; }
+
+    /// <summary>Die beiden Kennlinienbilder eines Geräts (Wärme).</summary>
+    [Parameter] public Func<int, KennlinienBilder>? Bilder { get; set; }
+
+    /// <summary>Die Stammfelder eines Geräts — sie füllen die Anzeigefelder.</summary>
+    [Parameter] public Func<int, WaermepumpeStammDaten?>? Stammdaten { get; set; }
+
+    /// <summary>
+    /// Prüft Vor- und Rücklauf (<c>ProjektPuffer.TemperaturenPruefen</c> im Kern) und
+    /// liefert die Meldung oder <c>null</c>. Sie kommt als Delegat herein, weil
+    /// <c>ProjektPuffer</c> im Kern <c>internal</c> ist.
+    /// </summary>
+    [Parameter] public Func<int?, int?, string?>? TemperaturenPruefen { get; set; }
+
+    /// <summary>Steht eine gespeicherte Anlagenzeile? Entscheidet über den Kostenknopf.</summary>
+    [Parameter] public Func<bool>? KostenBereit { get; set; }
+
+    /// <summary>Investitions- und Betriebssumme dieser Anlage.</summary>
+    [Parameter] public Func<(double Invest, double Betrieb)>? Kostensumme { get; set; }
+
+    /// <summary>Öffnet die Kostenverwaltung; ohne Delegat kein Knopf.</summary>
+    [Parameter] public Func<Task>? KostenOeffnen { get; set; }
+
+    /// <summary>Der Katalog für die Überlagerung „Modul-Katalog…".</summary>
+    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Der Parametersatz des Stammdialogs für „Parameter Bearbeiten…".</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? StammGaben { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Feste Listen ----------------------------------------------------------
+
+    /// <summary>
+    /// Vorschlagswerte der Rücklaufauswahl [°C] (<c>RUECKLAUF_VORSCHLAEGE</c>:35).
+    /// Sie bleiben eine reine Vorschlagsliste ohne Grenzwirkung — deshalb steht das
+    /// Feld als Zahlenfeld da und die Vorschläge als Herleitungszeile darunter (A-18).
+    /// </summary>
+    [Parameter] public IReadOnlyList<int> RuecklaufVorschlaege { get; set; }
+        = new[] { 20, 22, 25, 28, 30, 32, 35, 40, 45 };
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Detailansicht";
+    [Parameter] public string LabelWpAuswahl { get; set; } = "Wärmepumpen Auswahl:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string GruppeKenndaten { get; set; } = "Wärmepumpen Kenndaten";
+    [Parameter] public string GruppeAuslegung { get; set; } = "Auslegung für Verteilung";
+    [Parameter] public string GruppeSpitzenlast { get; set; } = "Spitzenlast und Betrieb";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Bezeichnung";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
+    [Parameter] public string LabelTyp { get; set; } = "Wärmepumpentyp";
+    [Parameter] public string LabelRegelung { get; set; } = "Leistungsstufen";
+    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr";
+    [Parameter] public string LabelNennleistung { get; set; } = "Nennleistung";
+    [Parameter] public string LabelPHeizstab { get; set; } = "Heizstab";
+    [Parameter] public string LabelPHeizstabKurz { get; set; } = "Leistung Heizstab";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
+    [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
+    [Parameter] public string LabelHeizstab { get; set; } = "Wärmeerzeuger Spitzenlast:";
+    [Parameter] public string LabelSperrzeit { get; set; } = "Wärmepumpenleistung / maximale Betriebszeit:";
+    [Parameter] public string LabelVon { get; set; } = "Sperrzeit von";
+    [Parameter] public string LabelBis { get; set; } = "Sperrzeit bis";
+    [Parameter] public string LabelNutzungszeit { get; set; } = "Nutzungsdauer";
+    [Parameter] public string LabelBivalent { get; set; } = "Bivalenter Betrieb";
+    [Parameter] public string LabelBetriebsart { get; set; } = "Betriebsart";
+    [Parameter] public string LabelAbschalttemp { get; set; } = "Bivalenztemperatur";
+    [Parameter] public string LabelAbschalttempKurz { get; set; } = "Bivalenztemperatur";
+    [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
+    [Parameter] public string ReiterCop { get; set; } = "COP";
+    [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string EinheitGrad { get; set; } = "°C";
+    [Parameter] public string EinheitStundeTag { get; set; } = "h/Tag";
+    [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
+    [Parameter] public string BtnParameterText { get; set; } = "Parameter Bearbeiten...";
+    [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    [Parameter] public string HinweisSpitzenlast { get; set; } =
+        "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:";
+    [Parameter] public string HinweisBetrieb { get; set; } =
+        "Außentemperaturgesteuerter Betrieb:";
+
+    /// <summary>Vorschlagszeile unter dem Rücklauffeld; <c>{0}</c> ist die Werteliste.</summary>
+    [Parameter] public string RuecklaufFormat { get; set; } = "Übliche Werte: {0} °C";
+
+    [Parameter] public string TipKosten { get; set; } =
+        "Kostenverwaltung dieser Anlage öffnen (Projektmodus).";
+    [Parameter] public string TipKostenNeu { get; set; } =
+        "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten.";
+    [Parameter] public string TextKostenKeine { get; set; } = "Invest — · Betrieb —";
+    [Parameter] public string TextKostenSummen { get; set; } = "Invest {0:N0} € · Betrieb {1:N0} €/a";
+
+    [Parameter] public string WarnungBetriebsart { get; set; } = "Bitte Betriebsart auswählen!";
+    [Parameter] public string WarnungWaermepumpe { get; set; } = "Bitte Wärmepumpe auswählen!";
+
+    /// <summary>Warnung bei fehlender Pflichtangabe; <c>{0}</c> ist der Feldname.</summary>
+    [Parameter] public string WarnungFeldFormat { get; set; } = "Bitte {0} eingeben.";
+
+    /// <summary>Erläuterung zur gewählten Betriebsart (die drei langen Labels der Karte).</summary>
+    [Parameter] public string ErlaeuterungAlternativ { get; set; } =
+        "Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei der Unterschreitung des Bivalenzpunktes ein und übernimmt den alleinigen Heizbetrieb.";
+    [Parameter] public string ErlaeuterungParallel { get; set; } =
+        "Bei der bivalent-parallelen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Bei der Unterschreitung des Bivalenzpunktes unterstützt der zweite Wärmeerzeuger den Heizbetrieb der Wärmepumpe.";
+    [Parameter] public string ErlaeuterungTeilparallel { get; set; } =
+        "Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler und bivalent-alternativer Betriebsweise. Die Wärmepumpe arbeitet bis zum Bivalenzpunkt allein und wird anschließend vom zweiten Wärmeerzeuger unterstützt. Bei Erreichen einer weiteren festgelegten Temperatur (z. B. -2 °C) schaltet sich die Wärmepumpe ab.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Wizard_WPItem.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<WaermepumpeStammZeile> _stammliste = Array.Empty<WaermepumpeStammZeile>();
+    private IReadOnlyList<int> _vorlaufstufen = Array.Empty<int>();
+    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
+    private KennlinienBilder _bilder = KennlinienBilder.Leer;
+
+    private IReadOnlyDictionary<string, object>? _stammGaben;
+    private bool _katalogOffen;
+    private bool _kostenBereit;
+    private string _blatt = "COP";
+    private string _warnung = "";
+
+    /// <summary>Steht der Modulkatalog? Prüfhilfe für die Tests.</summary>
+    public bool KatalogOffen => _katalogOffen;
+
+    /// <summary>Steht der Stammdialog? Prüfhilfe für die Tests.</summary>
+    public bool StammdialogOffen => _stammGaben is not null;
+
+    /// <summary>Die drei Betriebsarten — STEUERWERTE aus <c>DbWerte</c>, keine Anzeigetexte.</summary>
+    private static readonly string[] BETRIEBSARTEN =
+    {
+        DbWerte.WP_BETRIEBSART_ALTERNATIV,
+        DbWerte.WP_BETRIEBSART_PARALLEL,
+        DbWerte.WP_BETRIEBSART_TEILPARALLEL
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Betriebsarten
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < BETRIEBSARTEN.Length; i++) l.Add((i, BETRIEBSARTEN[i]));
+            return l;
+        }
+    }
+
+    private int? BetriebsartIndex
+    {
+        get
+        {
+            for (int i = 0; i < BETRIEBSARTEN.Length; i++)
+                if (string.Equals(BETRIEBSARTEN[i], Daten.Betriebsart, StringComparison.Ordinal)) return i;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Die Bivalenztemperatur erscheint genau dann, wenn sie RECHENWIRKSAM ist:
+    /// bivalenter Betrieb UND eine Betriebsart, die <c>Abschaltpunkt</c> auswertet —
+    /// Teilparallelbetrieb (seit jeher) und Alternativbetrieb (seit K-3). Im
+    /// Parallelbetrieb bleibt der Wert wirkungslos und das Feld verborgen.
+    /// </summary>
+    private bool BivalenztemperaturSichtbar
+        => Daten.BivalenterBetrieb &&
+           (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
+            Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
+
+    private string BetriebsartErlaeuterung => Daten.Betriebsart switch
+    {
+        var b when b == DbWerte.WP_BETRIEBSART_ALTERNATIV => ErlaeuterungAlternativ,
+        var b when b == DbWerte.WP_BETRIEBSART_PARALLEL => ErlaeuterungParallel,
+        var b when b == DbWerte.WP_BETRIEBSART_TEILPARALLEL => ErlaeuterungTeilparallel,
+        _ => ""
+    };
+
+    private string RuecklaufVorschlagszeile
+        => string.Format(RuecklaufFormat, string.Join(", ", RuecklaufVorschlaege));
+
+    private string Kostensummen
+    {
+        get
+        {
+            if (!_kostenBereit || Kostensumme is null) return TextKostenKeine;
+            (double invest, double betrieb) = Kostensumme();
+            return string.Format(TextKostenSummen, invest, betrieb);
+        }
+    }
+
+    /// <summary>
+    /// Die Vorlaufstufen des gewählten Geräts. Steht der gespeicherte Vorlauf nicht
+    /// darunter, wird er vorangestellt — der Vorläufer hatte eine frei beschreibbare
+    /// <c>ComboBox</c>, und ein <c>select</c> würde ihn still verwerfen (A-16).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Vorlaufeintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (Daten.Vorlauf is int v && !_vorlaufstufen.Contains(v)) l.Add((v, v.ToString()));
+            foreach (int stufe in _vorlaufstufen) l.Add((stufe, stufe.ToString()));
+            return l;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        // STILLE Vorwahl: Der Aufbau fuellt aus den Daten und laesst Daten.IdWp
+        // unberuehrt - er ist der Fall, gegen den sich der Vorlaeufer mit
+        // m_bStilleFuellung wehren musste (Ä21).
+        Auffrischen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Vorlaufstufen, Bilder und Kostenzeile zum aktuellen Gerät nachziehen.</summary>
+    private void Auffrischen()
+    {
+        _vorlaufstufen = (Vorlaeufe is not null && Daten.IdWp > 0)
+            ? Vorlaeufe(Daten.IdWp) : Array.Empty<int>();
+        _bilder = (Bilder is not null && Daten.IdWp > 0)
+            ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
+        _kostenBereit = KostenBereit?.Invoke() ?? false;
+    }
+
+    /// <summary>
+    /// Eine ECHTE Nutzerwahl: Sie wechselt die Geräte-Id auf die Stammkatalog-Id UND
+    /// zieht die Stammfelder am Datensatz nach (Ä23) — sonst trüge das Listenobjekt
+    /// nach einem Wechsel weiter die Nennleistung der vorherigen Wahl, und die
+    /// Verwaltungsliste zeigte 0 kW.
+    /// </summary>
+    private void WaermepumpeWaehlen(WaermepumpeStammZeile zeile)
+    {
+        Daten.Bezeichner = zeile.Bezeichner;
+        Daten.IdWp = zeile.Id;
+        _warnung = "";
+
+        WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(zeile.Id);
+        if (stamm is not null)
+        {
+            Daten.Regelung = stamm.Regelung;
+            Daten.Nennleistung = stamm.Nennleistung ?? 0;
+            Daten.Modulkosten = stamm.Modulkosten;
+            Daten.Baujahr = stamm.Baujahr ?? 0;
+            Daten.Beschreibung = stamm.Beschreibung;
+            Daten.Firma = stamm.Firma;
+            Daten.Typ = stamm.Typ;
+            Daten.HeizstabLeistung = stamm.Heizstab;
+        }
+        Auffrischen();
+    }
+
+    private void BivalentSetzen(bool an)
+    {
+        Daten.BivalenterBetrieb = an;
+    }
+
+    private void BetriebsartSetzen(int? index)
+    {
+        Daten.Betriebsart = (index is int i && i >= 0 && i < BETRIEBSARTEN.Length)
+            ? BETRIEBSARTEN[i] : "";
+    }
+
+    // =================================================================================
+    // Kosten, Katalog, Stammdialog
+    // =================================================================================
+
+    private async Task BeiKosten()
+    {
+        if (KostenOeffnen is null) return;
+        await KostenOeffnen();
+        _kostenBereit = KostenBereit?.Invoke() ?? false;   // KostenSummenAnzeigen nach der Rueckkehr
+    }
+
+    private void BeiKatalog()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
+        _katalogOffen = true;
+    }
+
+    private void KatalogFertig(string? bezeichner)
+    {
+        _katalogOffen = false;
+        if (bezeichner is null) return;
+
+        WaermepumpeStammZeile? zeile = _stammliste.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is not null) WaermepumpeWaehlen(zeile);
+    }
+
+    private void BeiStammdialog()
+    {
+        if (StammGaben is null) return;
+        _stammGaben = StammGaben();
+    }
+
+    /// <summary>
+    /// Nach dem Stammdialog werden die Anzeigefelder nachgezogen — der Vorläufer las
+    /// dafür das Gerät erneut (<c>btn_WP_Click</c>:596). Die Stammliste wird ebenfalls
+    /// neu gezogen: Im Dialog kann eine Wärmepumpe angelegt oder gelöscht worden sein.
+    /// </summary>
+    private void StammdialogFertig(bool _)
+    {
+        _stammGaben = null;
+        _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+
+        WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(Daten.IdWp);
+        if (stamm is not null)
+        {
+            Daten.Beschreibung = stamm.Beschreibung;
+            Daten.Baujahr = stamm.Baujahr ?? 0;
+            Daten.Regelung = stamm.Regelung;
+            Daten.Typ = stamm.Typ;
+            Daten.Firma = stamm.Firma;
+            Daten.Modulkosten = stamm.Modulkosten;
+            Daten.Nennleistung = stamm.Nennleistung ?? 0;
+        }
+        Auffrischen();
+    }
+
+    // =================================================================================
+    // Abschluss
+    // =================================================================================
+
+    /// <summary>
+    /// Die Prüfungen von <c>btn_Beenden_Click</c>:197 in derselben Reihenfolge.
+    /// Statt drei <c>MessageBox</c> und der Meldungen aus <c>Program.GanzzahlPruefen</c>
+    /// steht ein Warnbanner, das das Feld beim Namen nennt.
+    /// </summary>
+    private string? ErsterFehler()
+    {
+        if (string.IsNullOrEmpty(Daten.Betriebsart) && Daten.BivalenterBetrieb)
+            return WarnungBetriebsart;
+        if (string.IsNullOrEmpty(Daten.Bezeichner))
+            return WarnungWaermepumpe;
+
+        string? temperatur = TemperaturenPruefen?.Invoke(Daten.Vorlauf, Daten.Ruecklauf);
+        if (temperatur is not null) return temperatur;
+
+        if (Daten.SperrzeitVon is null) return string.Format(WarnungFeldFormat, LabelVon);
+        if (Daten.SperrzeitBis is null) return string.Format(WarnungFeldFormat, LabelBis);
+        if (Daten.Nutzungszeit is null) return string.Format(WarnungFeldFormat, LabelNutzungszeit);
+        if (Daten.HeizstabLeistung is null) return string.Format(WarnungFeldFormat, LabelPHeizstabKurz);
+
+        // Die Bivalenztemperatur ist je nach Betriebsart ausgeblendet - ein leeres
+        // Feld ist deshalb erlaubt und laesst den bisherigen Wert stehen.
+        return null;
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(false);
+            return;
+        }
+
+        string? fehler = ErsterFehler();
+        if (fehler is not null) { _warnung = fehler; return; }
+
+        _warnung = "";
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _stammGaben is not null || _katalogOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

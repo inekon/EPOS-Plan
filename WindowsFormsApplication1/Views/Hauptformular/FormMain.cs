@@ -409,25 +409,21 @@ namespace WindowsFormsApplication1
             if (indexes.Count > 0)
             {
                 ListViewItem lvitem = listView_WP.Items[indexes[0]];
-                Wizard_WPItem frm_wpitem = new Wizard_WPItem(lvitem.Text);
                 WErzeugerCtrl ctrl = new WErzeugerCtrl();
-                List<WErzeugerModel> list = new List<WErzeugerModel>();
-                WPCtrl wpctrl = new WPCtrl();
 
                 ctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "'");
-                wpctrl.ReadAll("ID_WP=" + ctrl.items[0].ID_WP);
-                ctrl.items[0].Regelung = wpctrl.items[0].Regelung;
-                ctrl.items[0].Nennleistung = wpctrl.items[0].Nennleistung;
-                ctrl.items[0].Modulkosten = wpctrl.items[0].Modulkosten;
-                ctrl.items[0].Baujahr = wpctrl.items[0].Baujahr;
-                ctrl.items[0].Beschreibung = wpctrl.items[0].Beschreibung;
-                ctrl.items[0].Firma = wpctrl.items[0].Firma;
-                ctrl.items[0].Typ = wpctrl.items[0].Typ;
+                if (ctrl.rows == 0) return;
 
-                list.Add(ctrl.items[0]);
-                frm_wpitem.m_werzitemlist = list;
-                frm_wpitem.SetControls(0);
-                frm_wpitem.ShowDialog();
+                // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+                // WaermepumpeAnlageDialog; Wizard_WPItem ist im selben Schritt
+                // GELOESCHT (Regel M1). Die Geraetesuche ist dabei zweistufig
+                // geworden (Ä22, Projektgeraet vor Stammkatalog) - der frueher hier
+                // stehende ungepruefte wpctrl.items[0]-Zugriff lief bei einer
+                // Stammwahl in eine ArgumentOutOfRangeException. Dieser iF29-Altzweig
+                // bleibt bis Welle 16 stehen und bekommt keine weitere Pflege.
+                WaermepumpeGeraeteCtrl.GeraetedatenFuellen(ctrl.items[0], ctrl.items[0].ID_WP);
+                WaermepumpeAnlageHuelle.Oeffnen(this, ctrl.items[0],
+                    Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0);
             }
         }
 
