@@ -24,11 +24,25 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `MauiProgram.cs` | der Aufbau: die neun `Dienste.*` des Kerns belegen, die Datenbank bereitstellen, das DI-Verzeichnis der WebView füllen. Das iOS-Gegenstück zu `WindowsFormsApplication1/Program.cs` |
 | `App.cs`, `HauptSeite.cs` | ein Fenster, eine Seite, eine `BlazorWebView` mit `EPOS.UI.Seiten.AppWurzel` |
 | `wwwroot/index.html` | die Startseite der WebView — zeichengleich zur Windows-Fassung bis auf `EPOS.iOS.styles.css` und `viewport-fit=cover` |
-| `Dienste/` | die iOS-Fassungen der neun Umgebungsdienste und der beiden `EPOS.UI`-Schnittstellen |
-| `Datenbankbereitstellung.cs` | Seed-Kopie beim Erststart und `DataRepository.PfadUeberschreibung` |
-| `Pruefung/` | der Prüfmodus für die CI (`EPOS_PRUEFLAUF`) |
+| `Dienste/` | 11 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter` |
+| `Datenbankbereitstellung.cs` | Seed-Kopie beim Erststart, `DataRepository.PfadUeberschreibung`, die Gate-Zeilen `SQLite …`/`STRICT=…` und `VACUUM INTO` für die Sicherung |
+| `Pruefung/Prueflauf.cs` | der Prüfmodus für die CI (`EPOS_PRUEFLAUF`); `Ergebnisexport.cs` und `Protokoll.cs` sind aus `Referenzlauf/` **verlinkt**, nicht kopiert |
 | `Platforms/iOS/` | `Main.cs`, `AppDelegate.cs`, `Info.plist` |
 | `Resources/` | Programmsymbol und Startbild (Platzhalter bis iU13) |
+
+## Die neun Adapter auf einen Blick
+
+| Schnittstelle | iOS-Fassung | Technik | Besonderheit |
+|---|---|---|---|
+| `IPfade` | `IosPfade` | `NSSearchPath` | `Library/Application Support` statt `Environment.SpecialFolder` (auf Apple-Mobile lieferte das `~/.config`); Unterordnernamen zeichengleich zum Bestand |
+| `IEinstellungen` | `IosEinstellungen` | `Preferences` | Präfix `wp-plan.`; `LiesMaschine` liefert die Vorgabe (MDM erst iU11) |
+| `ILizenzAblage` | `IosLizenzAblage` | `SecureStorage` | Geltungsbereich als **Namenssuffix**; `Vorhanden`/`Loeschen` betrachten beide Einträge |
+| `IGeraeteId` | `IosGeraeteId` | `UIDevice` | `identifierForVendor` + Modell — neuer Abdruck, also neues Gerät am Lizenzserver |
+| `ISprache` | `IosSprache` | `NSLocale` + `Dienste.Einstellungen` | ohne gespeicherten Wert entscheidet die Gerätesprache; Umstellung wirkt sofort (kein Neustart) |
+| `IDateiDienst` | `IosDateiDienst` | `FilePicker`, `Share` | `DateiSpeichern` liefert einen Pfad unter `Documents`; `OrdnerWaehlen` = `""` |
+| `IDialogDienst` | `IosDialogDienst` | `Page.DisplayAlert` | vom Hauptfaden aus wird **nicht** gefragt, sondern „nein"/„Abbruch" geantwortet (iR-f) |
+| `INavigation` | `IosNavigation` | — | reicht an `EPOS.UI.Dienste.Navigationsziel` weiter |
+| `IProjektKontext` | `IosProjektKontext` | — | führt das offene Projekt selbst und schreibt `Tab_Applikation` fort |
 
 ## Regeln für Änderungen hier
 
@@ -64,6 +78,20 @@ dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release -f net10.0-ios -r iossimulator-
   -p:SeedDb=../Referenzlaeufe/Kenndaten_Test.sqlite
 ```
 
-Was sich **ohne** Mac prüfen lässt, steht in `../Umsetzung_iU10_Nachweise.md`: eine Restore-Probe
-mit `net10.0`-Stub gegen die echte `Directory.Packages.props` und ein Übersetzungslauf der
-plattformfreien Dateien dieser Hülle.
+Was sich **ohne** Mac prüfen lässt, steht in
+[`../Umsetzung_iU10_Nachweise.md`](../Umsetzung_iU10_Nachweise.md): eine Restore-Probe mit
+`net10.0`-Stub gegen die echte `Directory.Packages.props`, ein Übersetzungslauf der
+plattformfreien Dateien, ein Übersetzungslauf der **ganzen** Hülle gegen Attrappen der
+Plattform-API und ein Prüfstand der Datenseite gegen `Referenzlaeufe/Kenndaten_Test.sqlite`.
+
+**Der Prüfmodus.** Mit gesetzter Umgebungsvariablen `EPOS_PRUEFLAUF` rechnet die App beim Start
+das Referenzprojekt **1030** und legt CSV, `protokoll.txt` und zuletzt `fertig.txt` unter
+`Documents/pruefung/` ab. Der Simulator reicht Variablen mit dem Präfix `SIMCTL_CHILD_` durch:
+
+```bash
+SIMCTL_CHILD_EPOS_PRUEFLAUF=1 xcrun simctl launch --console-pty <udid> de.inekon.eposplan
+```
+
+Die Kultur wird dabei fest auf **de-DE** gestellt — wortgleich zu
+`EPOS.Referenzlauf.Program.KulturSetzen`. Ohne das mäße der Vergleich Kulturdrift statt
+Plattformdrift.

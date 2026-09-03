@@ -269,7 +269,7 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | `SpeicherEngine.Tests`, `KiKern.Tests` | xUnit | `net10.0` | AnyCPU | ihre Engine | ✔ **angehoben** (iU1) — 337 bzw. 450 Tests |
 | `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige (COM ist mit iU1-P1.1 entfallen) | **bleibt** — schrumpft über iU9; `ProjectReference` auf `EPOS.Kern` **und** `EPOS.UI`, SDK seit iU8-6 `Microsoft.NET.Sdk.Razor`. Von 585 `.cs` sind **356** übrig; unter `Allgemein/` und `Controller/` noch **62** von 133 |
 | `Referenzlauf` | Konsole | `net10.0-windows` | x64 | WinForms-App | **bleibt**, bis iU9 abgeschlossen ist |
-| `EPOS.iOS` | MAUI-App | `net10.0-ios` | ARM64 | `EPOS.Kern`, `EPOS.UI` | **neu** (iU10) |
+| `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 16 `.cs`, **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml`, **per Hand auszulösen** |
 | `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
 | `CSExeCOMServer` | — | — | — | — | ~~stilllegen (iU0)~~ — **erledigt** (`c3a8233`), aus dem Repo entfernt |
 | `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt seit iU9-1 an der lebenden **und erreichbaren** `Form_KostenKomponente` |
@@ -584,7 +584,7 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 | `SpeicherEngine`, `KiKern` (+ Tests) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `WindowsFormsApplication1` — SDK `Microsoft.NET.Sdk.Razor` (iU8-6) | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
 | `Referenzlauf` | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
-| `EPOS.iOS` | ❌ | ❌ | ✅ | ✅ **signiert, `.ipa`** |
+| `EPOS.iOS` — 16 `.cs`, eigene `.sln`; Bau **nur** mit Workload-Set `10.400.1` und Xcode 26.6 | ❌ | ❌ | ✅ *(Simulator, seit iU10-6 im Job `ios.yml`)* | ✅ **signiert, `.ipa` — offen, iU13** |
 
 Summe der Lösung am 03.09.2026 (`f95fc34`, Linux, SDK 10.0.400): `dotnet build WP-Plan.sln -c
 Release -p:Platform=x64 --no-incremental` → **0 Fehler, 34 Warnungen**; `dotnet test
@@ -624,7 +624,7 @@ Plattformen ist es der sichere Weg in eine unbemerkte Kerndrift (M8).
 |---|---|---|---|
 | `kern.yml` | `ubuntu-latest` **und** `macos-latest` | `dotnet build` + `dotnet test` über `WP-Plan.Kern.slnf` (Kern, UI, SpeicherEngine, KiKern und ihre Tests); seit iU7-7 die **ChartProben** mit den neun PNG als Artefakt; seit iU8-12 die **Formularkarte-Tests** (nur `ubuntu-latest` — das Werkzeug ist plattformfrei); Kern-Referenzlauf 1030/1007/1017 gegen die eingecheckte Testdatenbank und Vergleich gegen die Referenzbasis | jeder Push, jeder PR |
 | `windows.yml` | `windows-latest` | vollständige Solution mit VS-MSBuild (bis Schritt 5 abgeschlossen ist), danach `dotnet`; Referenzlauf-Vergleich gegen die eingefrorene Basis | Push auf Hauptzweige, nächtlich |
-| `ios.yml` | `macos-latest` | `EPOS.iOS` bauen, signieren, `.ipa`, TestFlight-Upload | Tag / manuell (ab iU13) |
+| `ios.yml` | **`macos-26`** (nicht `-latest`: das Label wandert) | Workload-Set `10.400.1` + `DEVELOPER_DIR=/Applications/Xcode_26.6.app`; `EPOS.iOS` für `iossimulator-arm64` bauen (ohne Signatur), im Simulator starten, Startmarken prüfen (`EPOS.iOS bereit: Projekte=n`, `SQLite …`, `STRICT=114`), Prüflauf 1030 und Toleranzvergleich gegen `2026-08-30_B3-Kaskade`; Artefakte: Startprotokoll, CSV, Bildschirmabzug, `.app` | **`workflow_dispatch`** und Pushes, die `EPOS.iOS/**`, `ios.yml` oder `Directory.Packages.props` berühren (seit iU10-6) |
 
 **Der ungelöste Punkt: die Testdatenbank.** `.gitignore` schließt `*.accdb` aus — „Änderungen an der
 Datenbank landen nie in einem Commit". Eine CI ohne Datenbank kann den Kern nicht rechnen lassen.
@@ -1411,11 +1411,45 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 |---|---|
 | MAUI-App `EPOS.iOS` mit `BlazorWebView` | Navigation nach iL5: Wizard-Workflow als Navigationsstruktur, kein MDI, keine modalen Ketten |
 | iOS-Adapter | Keychain (`ILizenzAblage`), `identifierForVendor` (`IGeraeteId`), Document-Picker/Share-Sheet (`IDateiDienst`, `ITeilen`), `Preferences` (`IEinstellungen`), App-Sandbox (`IPfade`), AirPrint (`IDrucken`) |
-| Datenbank auf dem Gerät | Seed-Kopie beim Erststart, `bundle_green`, Backup über das Share-Sheet |
+| Datenbank auf dem Gerät | Seed-Kopie beim Erststart, ~~`bundle_green`~~ **`bundle_e_sqlite3`** (iF27, siehe Statusblock), Backup über das Share-Sheet |
 | Lizenz | `LizenzToken` (Ed25519/BouncyCastle) und `LizenzServerClient` (REST gegen `epos-plan.de`) laufen unverändert — nur Ablage und Geräte-Id sind neu |
 
 **Abnahme (iZ6):** Ein Projekt vollständig auf dem iPad durchgeplant; Ergebnis-CSV wertgleich zur
 Windows-Basis; Bericht zeilengleich.
+
+#### Statusblock iU10 — Stand 03.09.2026
+
+**Sieben Schritte umgesetzt, einer offen.** Nachweise im Einzelnen:
+[`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
+
+| Schritt | Inhalt | Stand |
+|---|---|---|
+| **iU10-1** | Paketlage berichtigt: `bundle_green` raus (die Fassung 2.1.12 **existiert nicht**), `bundle_e_sqlite3` 2.1.12 rein, MAUI 10.0.100 und `SkiaSharp.NativeAssets.iOS` 3.119.0 dazu; `InternalsVisibleTo EPOS.iOS` | ✅ Linux |
+| **iU10-2** | `EPOS.UI/Seiten/` — `AppWurzel` (Zustandsmaschine Liste ↔ Dialog), `Projektliste`, `Seitenschluessel`; die Schnittstellen `IProjektQuelle` und `INavigationsZiel` | ✅ Linux, **+12 bunit-Tests** |
+| **iU10-3** | `EPOS.iOS/` angelegt: csproj, eigene `.sln`, `MauiProgram`, `App`, `HauptSeite`, `wwwroot/index.html`, `Platforms/iOS/`, Ressourcen | ✅ Restore-Probe · Bau nur CI |
+| **iU10-4** | Datenbankweg: Seed-Kopie beim Erststart, `DataRepository.PfadUeberschreibung`, Gate-Zeilen `SQLite …` / `STRICT=…`, Sicherung über `VACUUM INTO` | ✅ Übersetzungsprobe · Wirkung nur CI |
+| **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
+| **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
+| **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
+| **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
+
+**Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
+
+1. **MAUI Blazor Hybrid**, nicht ein reines `Microsoft.iOS`-Projekt. Für `net10.0-ios` gibt es
+   außerhalb von `Microsoft.AspNetCore.Components.WebView.Maui` **keinen** BlazorWebView-Host.
+2. **`bundle_e_sqlite3` auch auf iOS** (iF27). `bundle_green` 2.1.12 gibt es nicht, und die
+   System-SQLite des Geräts wäre für die **114 STRICT-Tabellen** der Datenbank nicht steuerbar.
+   Statisch gelinkt fährt iOS dieselbe **SQLite 3.53.3** wie Windows, Linux und der macOS-CI.
+3. **Mindest-iPadOS 17.0** (iF28) — von `SkiaSharp.NativeAssets.iOS` 3.119 (`net8.0-ios17.0`)
+   erzwungen; MAUI 10 selbst käme mit 15.0 aus.
+
+**Was wo bewiesen wird.**
+
+| Ort | Was |
+|---|---|
+| **Hier (Linux)** | Restore gegen die echte `Directory.Packages.props`; Übersetzung aller plattformfreien Hüllendateien; Übersetzung der *gesamten* Hülle gegen Attrappen der Plattform-API; die Datenseite gegen die echte Testdatenbank; 941 Tests; Referenzlauf 1030 byte-gleich |
+| **CI (`ios.yml`, `macos-26`)** | dass die Hülle mit der echten MAUI-API übersetzt und paketiert; dass die App im Simulator startet; die drei Startmarken; die Wertgleichheit der CSV gegen `2026-08-30_B3-Kaskade` |
+| **Gerät (iU13)** | AOT statt JIT (`ModuleInitializer`, `ApplicationSettingsBase`-Reflection, `DataTable`), Signierung, Speichergrenzen, Bedienung mit dem Finger, Bundle-Größe im Mobilfunk |
 
 ### iU11 — Kataloge, Importe, Feinschliff · M–L · Mac
 
