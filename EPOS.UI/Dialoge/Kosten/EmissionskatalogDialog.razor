@@ -81,6 +81,8 @@
                 </KindInhalt>
             </Raster>
 
+            <Herleitungszeile Text="@HinweisAuswahl" />
+
             @if (_artEditor is null)
             {
                 <div class="epos-leiste">
@@ -331,8 +333,16 @@
     /// <summary>Kopf der Wahlspalte.</summary>
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
 
-    /// <summary>Kopf der Haekchenspalte (EMK_SP_AUSWAHL).</summary>
-    [Parameter] public string SpalteAuswahl { get; set; } = "aktiv";
+    /// <summary>Kopf der Haekchenspalte (EMK_SP_AUSWAHL_KOPF).</summary>
+    [Parameter] public string SpalteAuswahl { get; set; } = "im Tab";
+
+    /// <summary>
+    /// Was das Haekchen bedeutet (EMK_SP_AUSWAHL). Im DataGridView war das der
+    /// Kurztext der Spalte; ein Raster hat keinen, deshalb steht der Satz unter
+    /// der Liste (iU9-W3.5).
+    /// </summary>
+    [Parameter] public string HinweisAuswahl { get; set; }
+        = "Ausgewählte Arten erscheinen als Feld im Emissions-Tab und gehen in die CO₂e-Summe ein.";
 
     /// <summary>Kopf der Kuerzelspalte (EMK_SP_KUERZEL).</summary>
     [Parameter] public string SpalteKuerzel { get; set; } = "Kürzel";
