@@ -8536,4 +8536,22 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energy costs/CO₂ balance incomplete: the fuel consumption of boiler {0} is not available in the simulation result — boiler fuel is missing from energy costs, CO₂ balance and the BEHG levy.</value>
   </data>
+  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
+    <value>Two relief regimes coexist in this project: {0} against {1}. Section 54 EnergieStG excludes quantities already relieved under Section 53 / Section 53a(5) — the same fuel quantity must not be relieved twice; the applications are separate procedures at the customs office. The calculation is unchanged: each plant is computed according to its own choice.</value>
+  </data>
+  <data name="KOH_NORM_53" xml:space="preserve">
+    <value>Sec. 53</value>
+  </data>
+  <data name="KOH_NORM_53A" xml:space="preserve">
+    <value>Sec. 53a(5)</value>
+  </data>
+  <data name="KOH_NORM_54" xml:space="preserve">
+    <value>Sec. 54</value>
+  </data>
+  <data name="KOH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>project choice</value>
+  </data>
+  <data name="KOH_HERKUNFT_ANLAGE" xml:space="preserve">
+    <value>plant choice</value>
+  </data>
 </root>

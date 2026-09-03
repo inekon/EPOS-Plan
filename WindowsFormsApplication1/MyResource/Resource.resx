@@ -8543,4 +8543,22 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch des Heizkessels {0} liegt im Simulationsergebnis nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz und BEHG-Abgabe.</value>
   </data>
+  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
+    <value>Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. § 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. Gerechnet wird unverändert je Anlage nach ihrer Wahl.</value>
+  </data>
+  <data name="KOH_NORM_53" xml:space="preserve">
+    <value>§ 53</value>
+  </data>
+  <data name="KOH_NORM_53A" xml:space="preserve">
+    <value>§ 53a Abs. 5</value>
+  </data>
+  <data name="KOH_NORM_54" xml:space="preserve">
+    <value>§ 54</value>
+  </data>
+  <data name="KOH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Projektwahl</value>
+  </data>
+  <data name="KOH_HERKUNFT_ANLAGE" xml:space="preserve">
+    <value>Anlagenwahl</value>
+  </data>
 </root>
