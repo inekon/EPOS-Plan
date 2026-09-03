@@ -1,0 +1,209 @@
+﻿@* Zeileneditor einer Vorlagenposition (iU9-W1.1).
+
+   Vorbild: Views/Kosten/Form_VorlagenPosition.cs und .Designer.cs (Etappe KD2,
+   Konzept Kostendialoge Rev. 1.2, § 5.2 - Stift-Symbol). Uebernommen sind der
+   Feldbestand der Feldkarte (Bezeichnung, Kostenart, Erlös-Kennzeichen,
+   Empfehlung von/bis), die Vorbelegung aus SetControls samt Rueckfall auf
+   "sonstige" und die Regel, dass eine leere Empfehlung zulaessig ist
+   (Program.ZahlPruefen mit leerErlaubt = true).
+
+   NICHT uebernommen ist die Kostenartenliste selbst: Der Vorlaeufer baute sie
+   im Konstruktor aus DbWerte.KOSTENART_* und uebersetzte sie ueber
+   Resource.KOSTENART_*. Beides gehoert in den Kern; die Komponente bekommt die
+   fertigen Eintraege als Parameter und gibt die gewaehlte Id zurueck.
+
+   Nutzungsdauer und Satz stehen im Raster der Hostmaske (FK4) und werden hier
+   wie bisher NICHT gedoppelt.
+
+   TEXTE. Der Vorlaeufer traegt unlokalisierte deutsche Literale. Sie stehen
+   hier woertlich als Standardwerte von [Parameter] string; die Huelle setzt sie
+   auf die Schluessel VPOS_* (Sammelnachtrag W1.7).
+
+   TASTATUR. Wie im ersten Dialog (iZ5): Wurzel-div mit tabindex="-1",
+   Erstfokus dort, Enter = OK, Esc = Abbrechen. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Textfeld Bezeichnung="@LabelBezeichnung" Wert="@_bezeichnung" WertChanged="BeiBezeichnung" />
+
+    <Auswahlfeld Bezeichnung="@LabelKostenart"
+                 Eintraege="@Kostenarten"
+                 Auswahl="@_kostenart"
+                 AuswahlChanged="BeiKostenart" />
+
+    <Schalter Bezeichnung="@LabelErloes" Wert="@_istErloes" WertChanged="BeiErloes" />
+
+    <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
+
+    <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die waehlbaren Kostenarten nach VDI 2067 in Anzeigereihenfolge - fertig
+    /// uebersetzt. Die Id ist der Index in der Liste des Aufrufers.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Kostenarten { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Bezeichnung der Position beim Oeffnen.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Id der Kostenart beim Oeffnen. <c>null</c> waehlt den Rueckfall
+    /// (<see cref="RueckfallKostenartId"/>) - genau wie
+    /// <c>SetControls</c>: <c>index &gt;= 0 ? index : 3</c>.
+    /// </summary>
+    [Parameter] public int? KostenartId { get; set; }
+
+    /// <summary>
+    /// Die Kostenart, die eine unbekannte oder fehlende Angabe bekommt. Vorgabe 3
+    /// = "sonstige", der Rueckfall des Vorlaeufers.
+    /// </summary>
+    [Parameter] public int RueckfallKostenartId { get; set; } = 3;
+
+    /// <summary>Erlös/Zuschuss beim Oeffnen.</summary>
+    [Parameter] public bool IstErloes { get; set; }
+
+    /// <summary>Untere Empfehlung beim Oeffnen; <c>null</c> = nicht gepflegt.</summary>
+    [Parameter] public double? EmpfehlungVon { get; set; }
+
+    /// <summary>Obere Empfehlung beim Oeffnen; <c>null</c> = nicht gepflegt.</summary>
+    [Parameter] public double? EmpfehlungBis { get; set; }
+
+    /// <summary>Das Ergebnis bei OK, <c>null</c> bei Abbrechen. Geschlossen wird von der Huelle.</summary>
+    [Parameter] public EventCallback<VorlagenPositionErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Fenstertitel (Designer: lblKopfTitel / Form.Text).</summary>
+    [Parameter] public string TitelText { get; set; } = "Position bearbeiten";
+
+    /// <summary>Beschriftung des Textfeldes (Designer: lblBezeichnung).</summary>
+    [Parameter] public string LabelBezeichnung { get; set; } = "Bezeichnung:";
+
+    /// <summary>Beschriftung der Auswahlliste (Designer: lblKostenart).</summary>
+    [Parameter] public string LabelKostenart { get; set; } = "Kostenart:";
+
+    /// <summary>Beschriftung des Schalters (Designer: chkErloes).</summary>
+    [Parameter] public string LabelErloes { get; set; } = "Erlös/Zuschuss (negativer Ausweis)";
+
+    /// <summary>Beschriftung des ersten Zahlenfeldes (Designer: lblEmpfehlung).</summary>
+    [Parameter] public string LabelEmpfehlungVon { get; set; } = "Empfehlung von/bis:";
+
+    /// <summary>Beschriftung des zweiten Zahlenfeldes (Designer: lblBis).</summary>
+    [Parameter] public string LabelEmpfehlungBis { get; set; } = "bis";
+
+    /// <summary>
+    /// Meldung bei leerer Bezeichnung (A-1: der Vorlaeufer liess den alten Namen
+    /// still stehen).
+    /// </summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte eine Bezeichnung eingeben.";
+
+    /// <summary>Beschriftung des OK-Knopfes.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_VorlagenPosition.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private string _bezeichnung = "";
+    private int? _kostenart;
+    private bool _istErloes;
+    private double? _empfVon;
+    private double? _empfBis;
+    private string _meldung = "";
+
+    /// <summary>Die gewaehlte Kostenart (Pruefhilfe fuer Tests).</summary>
+    public int? Kostenart => _kostenart;
+
+    protected override void OnInitialized()
+    {
+        _bezeichnung = Bezeichnung ?? "";
+        _istErloes = IstErloes;
+        _empfVon = EmpfehlungVon;
+        _empfBis = EmpfehlungBis;
+        // Wie SetControls: eine unbekannte Kostenart faellt auf "sonstige" zurueck.
+        _kostenart = KostenartId.HasValue && Bekannt(KostenartId.Value)
+            ? KostenartId : RueckfallKostenartId;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private bool Bekannt(int id)
+    {
+        foreach (var eintrag in Kostenarten)
+        {
+            if (eintrag.Id == id) return true;
+        }
+        return false;
+    }
+
+    private void BeiBezeichnung(string wert)
+    {
+        _bezeichnung = wert;
+        if (!string.IsNullOrWhiteSpace(wert)) _meldung = "";
+    }
+
+    private void BeiKostenart(int? id) => _kostenart = id;
+
+    private void BeiErloes(bool wert) => _istErloes = wert;
+
+    private void BeiEmpfVon(double? wert) => _empfVon = wert;
+
+    private void BeiEmpfBis(double? wert) => _empfBis = wert;
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        // A-1: btnOk_Click uebernahm den Namen nur, wenn er nicht leer war - ein
+        // geleertes Feld holte still den alten Namen zurueck. Hier sagt es der
+        // Dialog, statt die Eingabe stumm rueckgaengig zu machen.
+        if (string.IsNullOrWhiteSpace(_bezeichnung))
+        {
+            _meldung = MeldungNameFehlt;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(new VorlagenPositionErgebnis(
+            _bezeichnung.Trim(),
+            _kostenart ?? RueckfallKostenartId,
+            _istErloes,
+            _empfVon,
+            _empfBis));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => BeiErgebnis(true),
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

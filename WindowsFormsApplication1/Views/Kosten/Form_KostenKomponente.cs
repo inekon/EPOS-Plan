@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Kosten;
 
 namespace WindowsFormsApplication1
 {
@@ -522,12 +523,112 @@ namespace WindowsFormsApplication1
             if (geloescht) RasterAufbauen();
         }
 
+        /// <summary>
+        /// Die Kostenarten nach VDI 2067 in der Reihenfolge der Klappliste —
+        /// wortgleich aus der gelöschten Maske <c>Form_VorlagenPosition</c>
+        /// übernommen (iU9-W1.1). Der Index in diesem Feld IST die
+        /// <c>KostenartId</c>, die der Blazor-Dialog zurückgibt.
+        /// </summary>
+        private static readonly string[] KOSTENARTEN =
+        {
+            DbWerte.KOSTENART_KAPITALGEBUNDEN,
+            DbWerte.KOSTENART_BEDARFSGEBUNDEN,
+            DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
+            DbWerte.KOSTENART_SONSTIGE,
+            DbWerte.KOSTENART_ZUSCHUSS,
+        };
+
+        /// <summary>Anzeigetext einer Kostenart — wortgleich aus
+        /// <c>Form_VorlagenPosition.KostenartAnzeige</c> (iU9-W1.1).</summary>
+        private static string KostenartAnzeige(string persistenz)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString("KOSTENART_" + persistenz); }
+            catch { }
+            if (!string.IsNullOrEmpty(t)) return t;
+            switch (persistenz)
+            {
+                case "KAPITALGEBUNDEN": return "kapitalgebunden";
+                case "BEDARFSGEBUNDEN": return "bedarfsgebunden";
+                case "BETRIEBSGEBUNDEN": return "betriebsgebunden";
+                case "ZUSCHUSS": return "Zuschuss";
+                default: return "sonstige";
+            }
+        }
+
+        /// <summary>Die Kostenarten als Einträge des Auswahlfeldes (Id = Index).</summary>
+        private static List<Tuple<int, string>> KostenartEintraege()
+        {
+            var liste = new List<Tuple<int, string>>();
+            for (int i = 0; i < KOSTENARTEN.Length; i++)
+                liste.Add(Tuple.Create(i, KostenartAnzeige(KOSTENARTEN[i])));
+            return liste;
+        }
+
+        /// <summary>
+        /// ✏️ Zeileneditor — seit iU9-W1.1 die Razor-Komponente
+        /// <see cref="VorlagenPositionDialog"/> in der Hülle
+        /// <see cref="BlazorDialogForm{T}"/>; die WinForms-Maske
+        /// <c>Form_VorlagenPosition</c> ist im selben Schritt gelöscht (Regel M1).
+        ///
+        /// <para>Der Dialog bleibt datenbankfrei: Er bekommt die Kostenartenliste
+        /// fertig und gibt reine Werte zurück. Das Eintragen in die Position und
+        /// das Speichern stehen weiter hier — genau wie vorher in
+        /// <c>btnOk_Click</c> der Maske.</para>
+        /// </summary>
         private void Zeile_EditorAngefordert(object sender, KostenVorlagenPosition p)
         {
-            using (var dlg = new Form_VorlagenPosition())
+            var eintraege = new List<ValueTuple<int, string>>();
+            foreach (Tuple<int, string> e in KostenartEintraege())
+                eintraege.Add(new ValueTuple<int, string>(e.Item1, e.Item2));
+
+            int vorwahl = Array.IndexOf(KOSTENARTEN, p.Kostenart ?? "");
+
+            VorlagenPositionErgebnis ergebnis = null;
+            BlazorDialogForm<VorlagenPositionDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>
             {
-                dlg.SetControls(p);
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                ["Kostenarten"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege,
+                ["Bezeichnung"] = p.Bezeichnung ?? "",
+                ["KostenartId"] = vorwahl >= 0 ? (int?)vorwahl : null,
+                ["IstErloes"] = p.IstErloes,
+                ["EmpfehlungVon"] = p.EmpfehlungVon,
+                ["EmpfehlungBis"] = p.EmpfehlungBis,
+
+                ["TitelText"] = Text_("VPOS_TITEL", "Position bearbeiten"),
+                ["LabelBezeichnung"] = Text_("VPOS_LBL_BEZEICHNUNG", "Bezeichnung:"),
+                ["LabelKostenart"] = Text_("VPOS_LBL_KOSTENART", "Kostenart:"),
+                ["LabelErloes"] = Text_("VPOS_CHK_ERLOES", "Erlös/Zuschuss (negativer Ausweis)"),
+                ["LabelEmpfehlungVon"] = Text_("VPOS_LBL_EMPFEHLUNG", "Empfehlung von/bis:"),
+                ["LabelEmpfehlungBis"] = Text_("VPOS_LBL_BIS", "bis"),
+                ["MeldungNameFehlt"] = Text_("VPOS_MSG_NAME_FEHLT", "Bitte eine Bezeichnung eingeben."),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+
+                ["Geschlossen"] = Microsoft.AspNetCore.Components.EventCallback.Factory
+                    .Create<VorlagenPositionErgebnis>(this, e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null);
+                    })
+            };
+
+            dlg = new BlazorDialogForm<VorlagenPositionDialog>(
+                Text_("VPOS_TITEL", "Position bearbeiten"),
+                new System.Drawing.Size(560, 440), werte);
+
+            using (dlg)
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK || ergebnis == null) return;
+
+                // Wortgleich zu btnOk_Click der gelöschten Maske.
+                p.Bezeichnung = ergebnis.Bezeichnung;
+                p.Kostenart = KOSTENARTEN[Math.Max(0, Math.Min(KOSTENARTEN.Length - 1, ergebnis.KostenartId))];
+                p.IstErloes = ergebnis.IstErloes;
+                p.EmpfehlungVon = ergebnis.EmpfehlungVon;
+                p.EmpfehlungBis = ergebnis.EmpfehlungBis;
+
                 // Ä12: Der Editor hat sein eigenes OK — er schreibt SOFORT,
                 // im Projektmodus über den Projekt-Schreibweg.
                 bool ok = ProjektModus

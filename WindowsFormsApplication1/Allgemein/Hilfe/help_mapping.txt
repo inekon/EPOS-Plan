@@ -225,6 +225,10 @@ Form_Kostenprofil.btn_Help = Kosten
 # gesucht wird er nicht ueber ein Steuerelement, sondern ueber
 # HelpExtender.ZielFuer.
 Form_Kosten_Auswahl.btn_Help = Kosten
+# iU9-W1.1: Zeileneditor der Vorlagenposition, jetzt VorlagenPositionDialog.razor.
+# Die WinForms-Maske hatte keinen Infoknopf; die Komponente hat einen, und er
+# zeigt dieselbe Wikiseite wie die uebrigen Kostendialoge.
+Form_VorlagenPosition.btn_Help = Kosten
 Form_LeistungspreisReihe.btn_Help = Kosten
 Form_SpotpreisImport.btn_Help = Kosten
 Form_VorlagenUebernahme.btn_Help = Kosten
