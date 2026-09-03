@@ -3,7 +3,7 @@
 Hier steht, was altert: Schemanummern, Etappen, Zahlen, Basen. Wer etwas hieraus verwendet, prüft
 das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur bei Bedarf gelesen.
 
-**Stand 03.09.2026**, Branch `ios_migration` (nach iU9 Welle 7).
+**Stand 03.09.2026**, Branch `ios_migration` (nach iU9 Welle 8).
 
 ## Datenhaltung
 
@@ -36,22 +36,24 @@ das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur b
   432 Altaufrufe unter `Views/` lauffähig bis iU9. `RecordSet` hat 47 echte Nutzer (iR8).
 - Die Altkopien `..\WindowsFormsApplication1 - Kopie` und `..\mit_Puffer_KI_Lösungsversuch` sind
   seit 29.08.2026 entsorgt.
-- **Maskenumstellung nach Blazor (Paket iU9), Stand nach Welle 7 (03.09.2026):** Der Stapellauf
-  der Formularkarte zählt **73 Masken** (81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3,
-  102 nach W2, 105 nach W0, 111 nach W1, 118 davor), davon **47 lokalisiert** und **71 über
-  einen Öffner erreichbar** — 0 × „nein", 0 × „verwaist". Die Warnzahl der Mappe steht
-  unverändert bei **20** (14 WFO1000, 2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255). Welle 6 hat
-  die sieben Erzeugereingaben der Startkacheln umgestellt (4 202 Zeilen) und dabei erstmals
-  **Assistentenseiten** auf Razor gehoben (`BlazorAssistentSeite<T>`, vier von dreizehn
-  Seiten); Welle 7 die acht Masken der Gewerke **Wärmepumpe und Solarthermie**
-  (3 065 Zeilen, 43 MessageBox) samt zwei weiteren Assistentenseiten — sechs von dreizehn
-  laufen jetzt als Razor-Komponente. Neu im Kern: `WPCtrl` (Umzug), der Renderer
-  `ChartRenderer.Kennlinien` (968 × 520, ChartProben 10 → 12) und der transaktionale
-  Kennlinien-Abgleich `KenndatenCtrl.Abgleichen`. Portprotokolle
-  `Allgemein/Reporting/iU9_W6_Blazor_Port_Protokoll.md` und
-  `…/iU9_W7_Blazor_Port_Protokoll.md`.
-- **Testzahl `WP-Plan.Kern.slnf` nach Welle 7: 1 820** (1 636 nach W6) — KiKern 450,
-  SpeicherEngine 337, EPOS.UI 940, EPOS.Kern 93. Formularkarte-Tests: 123.
+- **Maskenumstellung nach Blazor (Paket iU9), Stand nach Welle 8 (03.09.2026):** Der Stapellauf
+  der Formularkarte zählt **63 Masken** (73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4,
+  98 nach W3, 102 nach W2, 105 nach W0, 111 nach W1, 118 davor), davon **37 lokalisiert**
+  und **61 über einen Öffner erreichbar** — 0 × „nein", 0 × „verwaist". Die Warnzahl der
+  Mappe steht unverändert bei **20** (14 WFO1000, 2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255).
+  Welle 7 hat die acht Masken der Gewerke **Wärmepumpe und Solarthermie** umgestellt
+  (3 065 Zeilen, 43 MessageBox) samt zwei Assistentenseiten — sechs von dreizehn laufen als
+  Razor-Komponente; Welle 8 die zehn Masken der drei **Bedarfsblätter** und der
+  Gebäudetypen-Verwaltung (2 569 Zeilen, 41 MessageBox). **Zehn Masken wurden VIER
+  Komponenten**: Die drei Blätter sind Drillinge, ihre Ausprägung ist der Aufzählungstyp
+  `BedarfsArt` und keine dritte Fassung. Neu im Kern: `BedarfStammCtrl`, `TypProfilCtrl`,
+  `Model/BedarfsArt.cs`, die Gebäudetyp-Verwaltung in `TagVCtrl` und die drei Renderer-Bilder
+  `MonatsSaeulen`/`Stundenprofil`/`Jahresverlauf` (ChartProben 12 → 15). Portprotokolle
+  `Allgemein/Reporting/iU9_W6_…`, `…/iU9_W7_Blazor_Port_Protokoll.md` und
+  `…/iU9_W8_Blazor_Port_Protokoll.md`.
+- **Testzahl `WP-Plan.Kern.slnf` nach Welle 8: 1 906** (1 820 nach W7, 1 636 nach W6) —
+  KiKern 450, SpeicherEngine 337, EPOS.UI 1 006, EPOS.Kern 113. Formularkarte-Tests: 123.
+  SQL-Dialektprüfer: 1 254 Texte, 0 Fundstellen.
   Referenzlauf 1030/1007/1017 gegen `Referenzlaeufe/2026-08-30_B3-Kaskade`
   **byte-gleich** (815 043 Werte).
 

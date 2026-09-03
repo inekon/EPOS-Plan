@@ -180,6 +180,10 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Solarthermie/SolarkollektorKatalogDialog` | `Form_SolarDB` (iU9‑W7.6) | `SolarkollektorHuelle` → `SolarkollektorenStammCtrl` |
 | `Solarthermie/SolarkollektorenDialog` | `Form_SolarKollektoren` (iU9‑W7.7) | dieselbe Hülle; Assistentenseite 8 |
 | `Solarthermie/SolarganglinieDialog` | `Form_Solarganglinie` (iU9‑W7.8) | `SolarganglinieHuelle` → `SolarganglinieStammCtrl`, `Z_ProjektSolarganglinieCtrl`; Sprungbrücke zur Ganglinienverwaltung |
+| `Bedarf/TypStammDialog` | **drei** Masken: `Form_EingDBStromverbraucher`, `Form_EingDBProzess`, `Form_EingDBBrauchwasser` (iU9‑W8.1) | `Views/Bedarf/TypStammHuelle.cs` → `BedarfStammCtrl` |
+| `Bedarf/BedarfErgebnisDialog` | **drei** Masken: `Form_ErgStromverbraucher`, `Form_ErgProzesswaerme`, `Form_ErgBrauchwasserwaerme` (iU9‑W8.2) | `Views/Bedarf/BedarfErgebnisHuelle.cs`; keine Datenbank — die Hülle friert das Rechenobjekt ein und rendert die Bilder vorab |
+| `Bedarf/TypProfilDialog` | **drei** Masken: `Form_EingStromTyp`, `Form_EingProzTyp`, `Form_EingBrauchwasserTyp` (iU9‑W8.3) | dieselbe Hüllendatei wie W8.1 → `TypProfilCtrl`, `ChartRenderer.Stundenprofil` |
+| `Bedarf/GebaeudetypDialog` | `Form_EingGebTyp` (iU9‑W8.4) | `Views/Bedarf/GebaeudetypHuelle.cs` → `TagVCtrl` |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -199,6 +203,17 @@ Zwei gleiche Kollektoren teilen sich eine Kopie in `Tab_Solarkollektoren`, und
 dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein. Die
 Wärmepumpenseite hat ihre eigene Form (`WaermepumpeAnlageDaten`), weil ihre Zeile
 vierzehn Felder trägt und nicht zwei.
+
+**Zehn Masken, vier Komponenten** (iU9‑W8): Die drei Bedarfsblätter —
+Stromverbraucher, Prozesswärme, Brauchwasser — sind DRILLINGE desselben Blatts.
+Ihr Stammkopf, ihr Ergebnisdialog und ihr Wochen-Stundenprofil unterscheiden
+sich in Titel, Typbeschriftung, Zieltabelle und einer Handvoll Meldungen, nicht
+im Aufbau. Die Ausprägung ist deshalb ein **Aufzählungstyp**
+(`WindowsFormsApplication1.BedarfsArt`, im Kern, weil ihn beide Seiten
+brauchen) und keine Zeichenkette: Wo sie ein Text wäre, könnte eine Übersetzung
+oder ein Tippfehler sie still ins Leere laufen lassen. Jede Ausprägung hat einen
+EIGENEN bunit-Feldbestandstest — der Abgleich mit der Feldkarte läuft je
+Ausprägung, nicht je Komponente.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
