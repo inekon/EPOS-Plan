@@ -900,8 +900,11 @@ namespace WindowsFormsApplication1
         /// Unterfunktion der Kostenverwaltung statt eines eigenen Menüeintrags.</summary>
         private void btnKatalog_Click(object sender, EventArgs e)
         {
-            using (var frm = new Form_KostenAdmin())
-                frm.ShowDialog(this);
+            // iU9-W1.5: Katalogpflege als Razor-Komponente über
+            // KostenfaktorKatalogHuelle; Form_KostenAdmin ist im selben Schritt
+            // gelöscht (Regel M1), die drei SQL-Anweisungen stehen jetzt im
+            // Kern-Controller KostenfaktorCtrl.
+            KostenfaktorKatalogHuelle.Oeffnen(this);
         }
 
         private static string Text_(string schluessel, string rueckfall)
