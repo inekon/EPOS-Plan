@@ -126,8 +126,8 @@
   <!-- Six-Labors-Split-Lizenz), deshalb steht das Paket ausdruecklich     -->
   <!-- hier und nicht nur transitiv ueber ClosedXML.                       -->
   <!--                                                                    -->
-  <!-- Der GDI+-Stand ChartRendererGdi bleibt in der Anwendung; er ist     -->
-  <!-- nur noch der Gegenpart des Windows-Bildvergleichs.                  -->
+  <!-- Der eingefrorene GDI+-Stand (ChartRendererGdi) ist mit iF23 am      -->
+  <!-- 03.09.2026 geloescht; die Berichtskette hat keine GDI+-Stelle mehr. -->
   <!-- ================================================================== -->
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
