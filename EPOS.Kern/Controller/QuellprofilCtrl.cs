@@ -27,8 +27,9 @@ namespace WindowsFormsApplication1
     /// Kalenderkonvention, die der additive Wochengang der Monatsvariante mitbrachte
     /// (Befund K1-O6).</para>
     ///
-    /// <para><b>Dialogfrei.</b> Alle Methoden laufen über <see cref="StilleDb"/> bzw.
-    /// eine eigene <see cref="OleDbConnection"/> — nie über <c>DataRepository</c>-Wege
+    /// <para><b>Dialogfrei.</b> Alle Methoden laufen über <see cref="StilleDb"/>
+    /// (bis S4b war es eine eigene <c>OleDbConnection</c>) — nie über
+    /// <c>DataRepository</c>-Wege
     /// mit MessageBox, weil <see cref="Jahresprofil(int)"/> aus dem ENGINE-Pfad heraus
     /// gerufen wird (Konzept 13.4: ein Fehlerdialog mitten im Rechenlauf ist ein
     /// hängender Referenzlauf).</para>
@@ -257,7 +258,7 @@ namespace WindowsFormsApplication1
         /// bis zu 8760 neue Zeilen. Ein abgebrochener Schreibvorgang darf kein halbes
         /// Profil hinterlassen; dieselbe Bauart wie
         /// <c>StromganglinieDatenCtrl.SpeichereGanglinieMitDaten</c>. Ein einziges,
-        /// wiederverwendetes <see cref="OleDbCommand"/> mit drei Parametern hält den
+        /// wiederverwendetes Kommando mit drei Parametern hält den
         /// Vorgang auch bei 8760 Zeilen unter einer Sekunde (gemessen 1,1 s auf einer
         /// Kopie der produktiven Datenbank).</para>
         ///

@@ -25,9 +25,9 @@
     verlinkten Datei bricht damit den Build, statt erst auf iOS zur Laufzeit
     aufzufallen.
 
-    KEIN NoWarn CA1416. Die verbliebenen Windows-APIs (System.Data.OleDb im
-    eingefrorenen Access-Zweig) sollen als Warnung SICHTBAR bleiben; ihre Zahl
-    ist das Restinventar, das die naechsten Pakete abtragen.
+    KEIN NoWarn CA1416. Mit iU6 ist das Restinventar auf NULL abgetragen: kein
+    System.Data.OleDb mehr, weder als PackageReference noch im Quelltext. Die
+    Regel bleibt scharf, damit eine neue Windows-API sofort als Warnung auffaellt.
   -->
 
   <PropertyGroup>
@@ -70,10 +70,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" />
-    <!-- Nur zur UEBERSETZUNG: OleDbParameter ist Datentraeger in der Bruecke
-         von DbParam, OleDbCommand der Rest in RecordSet (iR8). Auf Nicht-Windows
-         wirft jeder Konstruktor - der Rechenpfad ruft sie seit iU3-3 nicht mehr. -->
-    <PackageReference Include="System.Data.OleDb" />
     <!-- Properties\Settings.Designer.cs erbt von ApplicationSettingsBase. -->
     <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>

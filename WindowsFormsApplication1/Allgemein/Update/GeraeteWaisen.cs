@@ -411,7 +411,7 @@ namespace WindowsFormsApplication1
                 {
                     // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
                     // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
-                    if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(ps));
+                    if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(ps));
                     using (OleDbDataReader r = cmd.ExecuteReader())
                         while (r.Read())
                             if (!r.IsDBNull(0))

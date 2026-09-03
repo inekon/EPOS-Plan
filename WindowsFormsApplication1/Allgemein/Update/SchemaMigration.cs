@@ -13964,7 +13964,7 @@ namespace WindowsFormsApplication1
                 {
                     // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
                     // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     return cmd.ExecuteNonQuery();
                 }
             }
@@ -13984,7 +13984,7 @@ namespace WindowsFormsApplication1
                 {
                     // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
                     // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     object v = cmd.ExecuteScalar();
                     return v == DBNull.Value ? null : v;
                 }
@@ -14005,7 +14005,7 @@ namespace WindowsFormsApplication1
                 {
                     // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
                     // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParam.NachOleDb(p));
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     using (var adapter = new OleDbDataAdapter(cmd)) adapter.Fill(dt);
                 }
                 return dt;
