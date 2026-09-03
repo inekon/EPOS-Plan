@@ -175,7 +175,10 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
-            Form_PufferSp_Bearbeiten frm = new Form_PufferSp_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_NEU);
+            // iU9-W6.1: Bis hierher stand hier Form_Heizkessel_Bearbeiten.MODE_NEU - die
+            // Konstante einer FREMDEN Maske, die zufaellig denselben Wert trug. Mit
+            // deren Loeschung ist die eigene Konstante ohnehin die richtige.
+            Form_PufferSp_Bearbeiten frm = new Form_PufferSp_Bearbeiten(Form_PufferSp_Bearbeiten.MODE_NEU);
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).

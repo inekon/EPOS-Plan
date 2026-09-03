@@ -52,10 +52,27 @@
     /// </summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 
+    /// <summary>
+    /// Name des Feldes fuer die Sammelmeldung des Dialogs (iU9-W6.1) - Gegenstueck zu
+    /// <see cref="Zahlenfeld.Feldname"/>, dort steht die Begruendung.
+    /// </summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>Meldet jede AENDERUNG des Fehlerzustands; ohne <see cref="Feldname"/> nichts.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
     private string _text = "";
 
     /// <summary>Der Text im Feld ist gerade keine ganze Zahl (Pruefhilfe fuer Tests).</summary>
     public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
 
     protected override void OnParametersSet()
     {
@@ -72,7 +89,7 @@
 
         if (_text.Trim().Length == 0)
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = null;
             await WertChanged.InvokeAsync(null);
             return;
@@ -80,13 +97,13 @@
 
         if (Zahlen.GanzzahlParsen(_text, out int nWert) && ImBereich(nWert))
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = nWert;
             await WertChanged.InvokeAsync(nWert);
             return;
         }
 
-        Fehlerhaft = true;
+        await FehlerSetzen(true);
     }
 
     private bool ImBereich(int nWert)

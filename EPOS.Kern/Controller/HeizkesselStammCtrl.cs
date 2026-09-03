@@ -337,42 +337,33 @@ namespace WindowsFormsApplication1
         /// entsteht.
         /// </para>
         /// </remarks>
+        /// <remarks>
+        /// <para>
+        /// <b>Seit iU9-W6.1 zweigeteilt.</b> Die drei Ablehnungsgruende stehen in
+        /// <see cref="UpdateMitGrund"/> und kommen dort als Text ZURUECK; diese Methode
+        /// zeigt ihn wie bisher ueber <c>Meldung.*</c>. Grund: Der Katalogeditor ist
+        /// seither eine Razor-Komponente und hat keine <c>MessageBox</c> - er braucht den
+        /// Grund als Rueckgabe. Es bleibt bei genau EINER Regel, nur mit zwei Arten, sie
+        /// zu erfahren.
+        /// </para>
+        /// </remarks>
         public bool Update()
         {
-            if (this.ID <= 0)
+            (bool ok, string grund) = UpdateMitGrund();
+            if (!ok && !string.IsNullOrEmpty(grund))
             {
-                Meldung.Warnung("Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
-                    "geladen wurde. Bitte den Kessel erneut aus der Liste auswählen.",
-                    "Speichern nicht möglich");
-                return false;
+                // Die Titelzeile haengt am Grund - wie im Bestand: fehlende ID war eine
+                // Warnung, die beiden fachlichen Ablehnungen ein Hinweis.
+                if (this.ID <= 0) Meldung.Warnung(grund, "Speichern nicht möglich");
+                else if (IsReadOnlyById(this.ID)) Meldung.Hinweis(grund, "Schreibgeschützt");
+                else Meldung.Hinweis(grund, "Name bereits vergeben");
             }
+            return ok;
+        }
 
-            // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
-            if (IsReadOnlyById(this.ID))
-            {
-                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt");
-                return false;
-            }
-
-            // Umbenennen darf keinen bereits vergebenen Namen treffen - sonst legte
-            // ausgerechnet die Korrektur eine neue Dublette an.
-            //
-            // Die Pruefung greift NUR bei einer echten Umbenennung. Ohne diese
-            // Einschraenkung sperrte sie genau den Fall aus, um den es hier geht: Eine
-            // der 16 Bestandszeilen mit doppeltem Bezeichner liesse sich nicht mehr
-            // speichern, weil der eigene, unveraenderte Name ja bereits einer anderen
-            // Zeile gehoert. Bearbeiten muss moeglich bleiben - verboten ist nur, eine
-            // WEITERE Dublette zu erzeugen.
-            if (!string.Equals(GespeicherterBezeichner(this.ID), this.Name ?? "", StringComparison.Ordinal)
-                && BezeichnerBelegt(this.Name, this.ID))
-            {
-                Meldung.Hinweis("Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
-                    "\". Bitte einen eindeutigen Namen vergeben.",
-                    "Name bereits vergeben");
-                return false;
-            }
-
+        /// <summary>Die UPDATE-Anweisung selbst, ohne Pruefungen.</summary>
+        private bool Schreiben()
+        {
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Bezeichner = ?, Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
@@ -689,6 +680,185 @@ namespace WindowsFormsApplication1
                 "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", name ?? ""));
             return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
+
+        // =================================================================================
+        // W6.1 - der EINE Schreibeinstieg des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">
+        /// Der Grund im Klartext - bei Erfolg die Bestaetigung, sonst die Ablehnung.
+        /// Bereits lokalisiert; die Oberflaeche zeigt ihn als Banner.
+        /// </param>
+        /// <param name="Name">
+        /// Der Bezeichner, unter dem der Satz jetzt steht. Nach einer Umbenennung ist das
+        /// der NEUE Name - der Aufrufer waehlt damit die Zeile in seiner Liste wieder aus.
+        /// </param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck - der Weg des Knopfes
+        /// „Überschreiben".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zusammengefasst aus zwei Orten.</b> Bis iU9-W6.1 stand die Dublettenbremse
+        /// (<c>SELECT COUNT(*) … WHERE Bezeichner = ?</c>) in
+        /// <c>Form_Heizkessel_Bearbeiten.btn_Ueberschreiben_Click</c> und die drei
+        /// Ablehnungsgruende in <see cref="Update"/>, das sie ueber <c>Meldung.*</c>
+        /// selbst zeigte. Eine Razor-Komponente hat keine <c>MessageBox</c>: Der Grund
+        /// muss zurueckkommen, nicht erscheinen.
+        /// </para>
+        /// <para>
+        /// <b>Die Bremse bleibt.</b> <c>Tab_Heizkessel_STAMM</c> fuehrt auf
+        /// <c>Bezeichner</c> keinen eindeutigen Schluessel. Zwar adressiert
+        /// <see cref="Update"/> seit dem 18.08.2026 ueber die ID und traefe die
+        /// Dublette gar nicht mehr - die Meldung bleibt trotzdem, weil sonst
+        /// unerklaerlich bliebe, warum derselbe Name in der Auswahlliste mehrfach steht.
+        /// </para>
+        /// </remarks>
+        public static SpeicherErgebnis Ueberschreiben(HeizkesselModel daten)
+        {
+            if (daten == null)
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                // Tab_Heizkessel_STAMM fuehrt keinen eindeutigen Schluessel auf Bezeichner.
+                // Bei einer Dublette abbrechen, statt unbemerkt zu arbeiten, wo der
+                // Anwender nur einen von zwei Saetzen gesehen hat (gleiche Bremse wie in
+                // Form_Heizkessel_Admin).
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@nam", GespeicherterBezeichner(daten.ID)));
+                int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (nAnzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT,
+                                      GespeicherterBezeichner(daten.ID), nAnzahl), "");
+
+                var ctrl = new HeizkesselStammCtrl();
+                ctrl.Uebernehmen(daten);
+
+                (bool ok, string grund) = ctrl.UpdateMitGrund();
+                if (!ok) return new SpeicherErgebnis(false, grund, "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_GESPEICHERT", "Datensatz gespeichert"), ctrl.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an - der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter".
+        /// </summary>
+        /// <remarks>
+        /// Fasst <c>Form_Heizkessel_Bearbeiten.Insert</c> zusammen: erst
+        /// <see cref="Exists"/>, dann <see cref="Insert"/>. Der Vorlaeufer meldete beide
+        /// Ausgaenge ununterscheidbar als „Name existiert bereits oder Datenbankfehler!";
+        /// hier sagt der Grund, welcher der beiden es war.
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(HeizkesselModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_FEHLT",
+                    "Bitte einen gültigen Namen eingeben!"), "");
+
+            try
+            {
+                var ctrl = new HeizkesselStammCtrl();
+                ctrl.Uebernehmen(daten);
+                ctrl.Name = name.Trim();
+                ctrl.ID = 0;                       // Insert vergibt die Id selbst
+
+                if (ctrl.Exists(ctrl.Name))
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_BELEGT",
+                        "Name existiert bereits!"), "");
+
+                if (!ctrl.Insert())
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
+                        "Fehler beim Speichern des Datensatzes!"), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_ANGELEGT", "Datensatz erfolgreich neu angelegt."), ctrl.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
+                    "Fehler beim Speichern des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Die drei Ablehnungsgruende von <see cref="Update"/> als RUECKGABE statt als
+        /// Meldung. <see cref="Update"/> ruft die Methode und zeigt den Grund selbst -
+        /// so gibt es weiterhin genau eine Regel, aber zwei Arten, sie zu erfahren.
+        /// </summary>
+        internal (bool Ok, string Grund) UpdateMitGrund()
+        {
+            if (this.ID <= 0)
+                return (false, "Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
+                               "geladen wurde. Bitte den Kessel erneut aus der Liste auswählen.");
+
+            // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
+            if (IsReadOnlyById(this.ID))
+                return (false, "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.");
+
+            // Umbenennen darf keinen bereits vergebenen Namen treffen - sonst legte
+            // ausgerechnet die Korrektur eine neue Dublette an. Die Pruefung greift NUR
+            // bei einer echten Umbenennung; ohne diese Einschraenkung liesse sich eine der
+            // 16 Bestandszeilen mit doppeltem Bezeichner gar nicht mehr speichern.
+            if (!string.Equals(GespeicherterBezeichner(this.ID), this.Name ?? "", StringComparison.Ordinal)
+                && BezeichnerBelegt(this.Name, this.ID))
+                return (false, "Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
+                               "\". Bitte einen eindeutigen Namen vergeben.");
+
+            return (Schreiben(), "");
+        }
+
+        /// <summary>Uebernimmt die 21 Felder eines Modells in diesen Controller.</summary>
+        private void Uebernehmen(HeizkesselModel m)
+        {
+            this.ID = m.ID;
+            this.Name = m.Name;
+            this.Beschreibung = m.Beschreibung;
+            this.Firma = m.Firma;
+            this.Ptherm = m.Ptherm;
+            this.Brennstoff = m.Brennstoff;
+            this.Wirkungsgrad_Gas = m.Wirkungsgrad_Gas;
+            this.Wirkungsgrad_Oel = m.Wirkungsgrad_Oel;
+            this.Investitionskosten = m.Investitionskosten;
+            this.Raumbedarf = m.Raumbedarf;
+            this.Wartungskosten = m.Wartungskosten;
+            this.Wartungskosten_Einheit = m.Wartungskosten_Einheit;
+            this.Nutzungsdauer = m.Nutzungsdauer;
+            this.CO2 = m.CO2;
+            this.SO2 = m.SO2;
+            this.NOx = m.NOx;
+            this.CO = m.CO;
+            this.Staub = m.Staub;
+            this.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            this.Brennwert = m.Brennwert;
+            this.Vorlauf = m.Vorlauf;
+            this.Ruecklauf = m.Ruecklauf;
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
     }
 }

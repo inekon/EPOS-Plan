@@ -127,7 +127,6 @@ namespace WindowsFormsApplication1
 
             { "Form_Heizkessel",             B_HEIZKESSEL },
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
-            { "Form_Heizkessel_Bearbeiten",  B_HEIZKESSEL },
             { "Form_Heizkessel_einlesen",    B_HEIZKESSEL },
 
             { "Form_HelpPopup",              B_HILFE },

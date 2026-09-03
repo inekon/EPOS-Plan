@@ -27111,5 +27111,437 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Heizkessel ähnelt.
+        /// </summary>
+        public static string HZKK_TITEL {
+            get {
+                return ResourceManager.GetString("HZKK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kesselbezeichnung: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_NAME {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technische Daten ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_TECHNIK {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Leistung: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_PTHERM {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Leistung ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_PTHERM {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_ENERGIETRAEGER {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Gas, Biogas, Holz und Sonstiges: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_WG_GAS {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_WG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Gas, Biogas, Holz und Sonstiges ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_WG_GAS {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_WG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Öl: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_WG_OEL {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_WG_OEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Öl ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_WG_OEL {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_WG_OEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 0,9) ähnelt.
+        /// </summary>
+        public static string HZKK_HINT_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("HZKK_HINT_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_BBVERLUST {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_BBVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_BBVERLUST {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_BBVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_VORLAUF {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_KOSTEN {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_INVEST {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_RAUMBEDARF {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_RAUMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_RAUMBEDARF {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_RAUMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string HZKK_EINHEIT_JAHRE {
+            get {
+                return ResourceManager.GetString("HZKK_EINHEIT_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen nach BEHG-V ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_BEHG {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_BEHG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für Heizzwecke in t CO2 / GJ ähnelt.
+        /// </summary>
+        public static string HZKK_BEHG_ZEILE {
+            get {
+                return ResourceManager.GetString("HZKK_BEHG_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizöl: 0,0808 ähnelt.
+        /// </summary>
+        public static string HZKK_BEHG_OEL {
+            get {
+                return ResourceManager.GetString("HZKK_BEHG_OEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flüssiggas: 0,0663 ähnelt.
+        /// </summary>
+        public static string HZKK_BEHG_FLUESSIGGAS {
+            get {
+                return ResourceManager.GetString("HZKK_BEHG_FLUESSIGGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdgas: 0,056 ähnelt.
+        /// </summary>
+        public static string HZKK_BEHG_ERDGAS {
+            get {
+                return ResourceManager.GetString("HZKK_BEHG_ERDGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO2 BEHG ähnelt.
+        /// </summary>
+        public static string HZKK_BTN_CO2 {
+            get {
+                return ResourceManager.GetString("HZKK_BTN_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren bezogen auf den Brennstoffverbrauch ähnelt.
+        /// </summary>
+        public static string HZKK_GRP_EMISSIONEN {
+            get {
+                return ResourceManager.GetString("HZKK_GRP_EMISSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub: ähnelt.
+        /// </summary>
+        public static string HZKK_LBL_STAUB {
+            get {
+                return ResourceManager.GetString("HZKK_LBL_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub ähnelt.
+        /// </summary>
+        public static string HZKK_FELD_STAUB {
+            get {
+                return ResourceManager.GetString("HZKK_FELD_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschreiben ähnelt.
+        /// </summary>
+        public static string HZKK_BTN_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("HZKK_BTN_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
+        /// </summary>
+        public static string HZKK_BTN_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("HZKK_BTN_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte für "{0}" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt). ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_ZAHL {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen gültigen Namen eingeben! ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt den Namen "{0}" {1}-mal. Bearbeitet wird der Eintrag mit der kleinsten ID ({2}); die übrigen bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz gespeichert ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Überschreiben des Datensatzes! ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz erfolgreich neu angelegt. ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name existiert bereits! ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern des Datensatzes! ähnelt.
+        /// </summary>
+        public static string HZKK_MSG_FEHLER_ANLEGEN {
+            get {
+                return ResourceManager.GetString("HZKK_MSG_FEHLER_ANLEGEN", resourceCulture);
+            }
+        }
+        
     }
 }

@@ -160,15 +160,20 @@ namespace WindowsFormsApplication1
             listBox_Kessel_DB.Items.Remove(listBox_Kessel_DB.Text); 
         }
 
+        // iU9-W6.1: Der Katalogeditor ist die Razor-Komponente HeizkesselKatalogDialog;
+        // die WinForms-Fassung Form_Heizkessel_Bearbeiten ist im selben Schritt
+        // GELOESCHT (Regel M1). Diese Maske bleibt bis Welle 14 WinForms und ruft die
+        // Huelle - der Ablauf danach (Liste neu laden, Namen wieder waehlen) ist
+        // unveraendert; m_szKessel heisst jetzt der Rueckgabewert.
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            Form_Heizkessel_Bearbeiten frm = new Form_Heizkessel_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_EDIT);
-            if(listBox_Kessel_DB.Text == "") return;
-            frm.SetControls(listBox_Kessel_DB.Text, textBox_Kesselbeschreibung.Text);
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK)
+            if (listBox_Kessel_DB.Text == "") return;
+
+            string szKessel = HeizkesselHuelle.KatalogBearbeiten(
+                this, listBox_Kessel_DB.Text, textBox_Kesselbeschreibung.Text, neu: false);
+
+            if (szKessel != null)
             {
-                string szKessel = frm.m_szKessel;
                 LoadDBHeizkessel();
                 listBox_Kessel_DB.Text = szKessel;
             }
@@ -176,35 +181,23 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
-            Form_Heizkessel_Bearbeiten frm = new Form_Heizkessel_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_NEU);
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
             string szName = NamensDialogHuelle.Bezeichner(this);
+            if (szName == null) return;
 
-            if (szName != null)
+            if (new HeizkesselStammCtrl().Exists(szName))
             {
-                RecordSet rs = new RecordSet();
-                rs.Open("select Bezeichner from [Tab_Heizkessel_STAMM] where Bezeichner='" + szName + "'");
-                bool bExist = !rs.EOF();
-                rs.Close();
+                MessageBox.Show("Name existiert bereits!");
+                return;
+            }
 
-                if (bExist)
-                {
-                    MessageBox.Show("Name existiert bereits!");
-                }
-                else
-                {
-                    frm.SetControls(szName, "");
-
-                    DialogResult ret = frm.ShowDialog();
-                    if (ret == DialogResult.OK)
-                    {
-                        string szKessel = frm.m_szKessel;
-                        LoadDBHeizkessel();
-                        listBox_Kessel_DB.Text = szKessel;
-                    }
-                }
+            string szKessel = HeizkesselHuelle.KatalogBearbeiten(this, szName, "", neu: true);
+            if (szKessel != null)
+            {
+                LoadDBHeizkessel();
+                listBox_Kessel_DB.Text = szKessel;
             }
         }
 
