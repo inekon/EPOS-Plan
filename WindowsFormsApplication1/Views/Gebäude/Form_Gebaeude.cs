@@ -519,7 +519,6 @@ namespace WindowsFormsApplication1
 
         private void btn_GebAendern_DB_Click(object sender, EventArgs e)
         {
-            using var frm = new Form_Gebaeude1();
             var dgv = dataGridView1;
 
             // Robust prüfen: CurrentRow statt CurrentCell benutzen und auf null prüfen
@@ -529,21 +528,16 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            frm.m_bNeu = false;
-            frm.model.Gebaeudename = dgv.CurrentRow.Cells[0].Value as string ?? "";
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W9.1: Blazor-Huelle statt Form_Gebaeude1 (+ Form_Gebaeude2 als zweiter
+            // Reiter); beide Masken sind im selben Schritt geloescht (Regel M1).
+            GebaeudeKatalogHuelle.Bearbeiten(this, dgv.CurrentRow.Cells[0].Value as string ?? "");
             SetGebaeudeDB();
         }
 
         private void btn_Geb_Neu_DB_Click(object sender, EventArgs e)
         {
-            Form_Gebaeude1 frm = new Form_Gebaeude1();
-
-            frm.m_bNeu = true;
-            frm.model.Gebaeudename = "";
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W9.1: Blazor-Huelle statt Form_Gebaeude1 im Modus Neu.
+            GebaeudeKatalogHuelle.Neu(this);
             SetGebaeudeDB();
         }
 
