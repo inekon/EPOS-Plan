@@ -147,7 +147,10 @@ namespace WindowsFormsApplication1
             { "NavigatorStrom",              B_SIMULATION },
             { "NavigatorUebersicht",         B_SIMULATION },
             { "NavigatorWaerme",             B_SIMULATION },
-            { "Form_QuelleErdreich",         B_QUELLE_ERDREICH },
+            // iU9-W10a.3: Form_QuelleErdreich ist geloescht. Der Bereich
+            // B_QUELLE_ERDREICH bleibt - die HUELLE QuelleErdreichHuelle setzt ihn
+            // ueber SetzeBereich, solange der Blazor-Dialog steht, und nimmt ihn
+            // danach mit Zuruecksetzen wieder weg.
             { "Form_QuellePufferspeicher",   B_SIMULATION },
             { "Form_Quellprofil",            B_SIMULATION },
             { "Form_Simulation_Config",      B_SIM_KONFIG },

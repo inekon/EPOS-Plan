@@ -72,13 +72,20 @@ public sealed class SprungzielTests
 
         // iU9-W9.0f: die Verwaltung der externen Waermebedarfsganglinien.
         Assert.Equal("WAERMEBEDARF_EXTERN_ADMIN", Sprungziel.WaermebedarfExternAdmin);
+
+        // iU9-W10a.0c: derselbe Pufferspeicherkatalog NUR ZUM ANSEHEN. Er braucht
+        // einen eigenen Schluessel, weil die Bruecke dort m_bReadOnly setzen muss -
+        // sonst waere aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs
+        // geworden (Befund W10-B28).
+        Assert.Equal("PUFFERSP_ADMIN_NUR_LESEN", Sprungziel.PufferSpAdminNurLesen);
+        Assert.NotEqual(Sprungziel.PufferSpAdmin, Sprungziel.PufferSpAdminNurLesen);
     }
 
     [Fact]
-    public void Alle_acht_Ziele_sind_da()
+    public void Alle_neun_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
-        Assert.Equal(8, Schluessel().Length);
+        Assert.Equal(9, Schluessel().Length);
     }
 }

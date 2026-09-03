@@ -211,23 +211,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <!-- Klimazonenkarte DIN 4710 (Anwenderwunsch 29.08.2026): das vom Anwender
-       erstellte Kartenbild (PNG) als Anzeige plus seine SVG-Quelle, aus der
-       KlimazonenKarte zur Laufzeit die 15 Zonenpolygone fuer Hit-Test und
-       Hervorhebung liest (Gruppen "zonenflaechen"/"zonennummern", reine
-       M/L/Z-Pfade). Quelle im Repo: "Klimazonen DIN4710\" in der Wurzel.
-       LogicalName festgeschrieben, damit der Ressourcenname nicht am
-       Ordnerpfad haengt (Muster help_cache.json). -->
-  <ItemGroup>
-    <None Remove="Ressourcen\Zonenkarte_Klimazonen.png" />
-    <None Remove="Ressourcen\Zonenkarte_Klimazonen.svg" />
-    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.png">
-      <LogicalName>Zonenkarte_Klimazonen.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.svg">
-      <LogicalName>Zonenkarte_Klimazonen.svg</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
+  <!-- Klimazonenkarte DIN 4710: die beiden eingebetteten Ressourcen sind mit
+       iU9-W10a.3 ENTFALLEN. Das Kartenbild liegt jetzt als statisches Web-Asset
+       der Oberflaechenbibliothek unter EPOS.UI\wwwroot\bilder\ und kommt ueber
+       "_content/EPOS.UI/bilder/Zonenkarte_Klimazonen.png" beim Anwender an; die
+       15 Zonenpfade stehen als erzeugter Quelltext in
+       EPOS.Kern\Allgemein\Simulation\KlimazonenPfade.cs (Werkzeug
+       Werkzeuge\KlimazonenPfade\erzeugen.py, dort liegt auch die SVG-Quelle).
+       Das zugehoerige Steuerelement KlimazonenKarte ist geloescht. -->
 
   <!-- Resources-Generator-Verknüpfungen -->
   <ItemGroup>

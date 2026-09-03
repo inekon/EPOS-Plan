@@ -1,0 +1,795 @@
+﻿@* Waermequelle ERDREICH einer Sole-/Wasser-Wasser-Waermepumpe (iU9-W10a.3).
+
+   VORBILD. Views/Simulation/Form_QuelleErdreich (1 273 Z., Designer 377 Z.,
+   700 x 748, 30 Steuerelemente + Chart, vier MessageBox, 48 Ressourcen-
+   schluessel). Zwei Quellsysteme: ERDKOLLEKTOR (Verlegetiefe + Flaeche,
+   Quelltemperatur nach Kusuda gedaempft und phasenverschoben) oder ERDSONDE
+   (Laenge je Sonde + Anzahl, konstante Quelltemperatur). Dazu die
+   Jahresgang-Vorschau, die Bodenkennwerte und die Auslegungspruefung nach
+   VDI 4640 Blatt 2.
+
+   VIER BLOECKE, wie im Vorlaeufer: Quellsystem, Standort (Bodentyp, Klimazone,
+   Spreizung), Vorschau, Auslegungspruefung.
+
+   WAS AUS DEM DIALOG VERSCHWINDET:
+     * QuellsystemRasterAusrichten (:555-592) - vier Spalten, die zur Laufzeit
+       an gemessenen Textbreiten ausgerichtet wurden, weil die englischen
+       Beschriftungen laenger sind als die deutschen. In CSS macht das der
+       Umbruch.
+     * ProjektErmitteln :1102-1108 - der Rueckfall "this.Owner as
+       Form_Simulation_Config" war TOT (Befund W10-B7); der Aufrufer setzt
+       ID_Projekt selbst.
+     * ErgebnisUebernehmen :1155-1188 - die Zuordnung stand doppelt da und
+       liegt seit W10a.0b im Kern (ErdreichAuswertung.ErgebnisZuordnen,
+       Befund W10-B8).
+
+   ABWEICHUNG A-3 (Befund W10-B6): BODENTYP UND KLIMAZONE SIND
+   SCHLUESSELGEKOPPELT. Der Vorlaeufer las den Bodentyp ueber den LISTENINDEX
+   aus dem Katalog (AktuellerBodentyp:911-916). Wird der Katalog umsortiert,
+   zeigen Bestandsprojekte danach auf den falschen Boden - dieselbe Falle, die
+   Paket Q1 anderswo mit SchluesselEintrag beseitigt hat. Hier traegt jeder
+   Eintrag seinen Katalogschluessel; die Klimazone traegt ihre Nummer.
+
+   ABWEICHUNG A-4 (Befund W10-B11): GETRENNTE FELDER JE ZWEIG. Im Vorlaeufer
+   trug _tbLaenge bei Kollektorbetrieb die feste "90" und _tbTiefe bei
+   Sondenbetrieb die Vorgabe (SetControls:750-758). Wer umschaltete, verlor
+   damit still, was er im anderen Zweig gerade eingetippt hatte. Hier haelt der
+   Dialog beide Zweige getrennt; das Umschalten sperrt nur, es ueberschreibt
+   nicht.
+
+   ABWEICHUNG A-5 (Befund W10-B9): DER SIMULATIONSLAUF LAEUFT ASYNCHRON. Der
+   Vorlaeufer rechnete SYNCHRON im Oberflaechenfaden mit Sanduhr (:1039); in
+   einer WebView stuende damit die ganze Oberflaeche. Die Huelle rechnet auf
+   einem eigenen Faden (Probe R-W10a-2: SimulationRunner.Simuliere laeuft dort
+   fehlerfrei), die Komponente zeigt derweil eine Ueberlagerung "Simulation
+   laeuft …" und sperrt OK.
+
+   WOERTLICH TROTZ BEFUND (W10-B10, Anwenderentscheid steht aus): Die PRUEFUNG
+   rechnet mit den ANGEZEIGTEN Eingaben, der LAUF mit den GESPEICHERTEN. Genau
+   das benennt der Aenderungshinweis SIMQ_ERDREICH_SIM_NUR_GESPEICHERT; die
+   Halbheit bleibt, sie wird nicht stillschweigend repariert.
+
+   TASTATUR: Esc bricht ab - erst die Karte, dann der Dialog. Enter ist NICHT
+   belegt: Acht Pruefregeln haengen an OK, und ein versehentliches Enter waere
+   dort kein Bestaetigen. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Quellsystem ------------------------------------------------------- *@
+    <Gruppenkopf Titel="@GbQuellsystem">
+        <KindInhalt>
+            <Optionsgruppe Eintraege="@Quellsysteme" Auswahl="@(_sonde ? SONDE : KOLLEKTOR)"
+                           AuswahlChanged="SystemUmschalten" />
+
+            <div class="epos-erdreich-zweig">
+                <Zahlenfeld Bezeichnung="@LblVerlegetiefe" Einheit="m" Aktiv="@(!_sonde)"
+                            Feldname="@LblVerlegetiefe" Wert="@_tiefe"
+                            WertChanged="w => Setzen(() => _tiefe = w)" />
+                <Zahlenfeld Bezeichnung="@LblFlaeche" Einheit="m²" Aktiv="@(!_sonde)"
+                            Feldname="@LblFlaeche" Wert="@_flaeche"
+                            WertChanged="w => Setzen(() => _flaeche = w)" />
+                <Zahlenfeld Bezeichnung="@LblLaengeSonde" Einheit="m" Aktiv="@_sonde"
+                            Feldname="@LblLaengeSonde" Wert="@_laenge"
+                            WertChanged="w => Setzen(() => _laenge = w)" />
+                <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
+                              Feldname="@LblAnzahlSonden" Wert="@_anzahl"
+                              WertChanged="w => Setzen(() => _anzahl = w)" />
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Standort ---------------------------------------------------------- *@
+    <Gruppenkopf Titel="@GbStandort">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LblBodentyp" Eintraege="@Bodentypen"
+                         Auswahl="@_bodenIndex" AuswahlChanged="BodentypWaehlen" />
+            <Herleitungszeile Text="@LblBodentypHinweis" />
+
+            <div class="epos-erdreich-zone">
+                <Auswahlfeld Bezeichnung="@LblKlimazone" Eintraege="@Klimazonen"
+                             Auswahl="@_zone" AuswahlChanged="ZoneWaehlen" />
+                <button type="button" class="epos-knopf" title="@KarteKnopfTip"
+                        aria-label="@KarteKnopfTip"
+                        @onclick="() => _karteOffen = true">@BtnKarte</button>
+            </div>
+            <Herleitungszeile Text="@LblKlimazoneHinweis" />
+
+            <Zahlenfeld Bezeichnung="@LblSpreizung" Einheit="K" Feldname="@LblSpreizung"
+                        Wert="@_spreizung" WertChanged="w => Setzen(() => _spreizung = w)" />
+            <Herleitungszeile Text="@LblSpreizungHinweis" />
+
+            <Herleitungszeile Text="@_bodenkennwerte" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Vorschau ---------------------------------------------------------- *@
+    <Gruppenkopf Titel="@GbVorschau">
+        <KindInhalt>
+            <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+            <Herleitungszeile Text="@_kennwertzeile" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Auslegungsprüfung -------------------------------------------------- *@
+    <Gruppenkopf Titel="@GbPruefung">
+        <KindInhalt>
+            @if (_pruefungWarnt)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@_pruefung" />
+            }
+            else
+            {
+                <p class="epos-erdreich-pruefung">@_pruefung</p>
+            }
+
+            @if (_aenderungshinweis.Length > 0)
+            {
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_aenderungshinweis" />
+            }
+
+            @if (Simulieren is not null)
+            {
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="SimulationStarten">@BtnSimulation</button>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@(!_laeuft)" Ergebnis="BeiErgebnis" />
+
+    @* --- Die Klimazonenkarte als ÜBERLAGERUNG, nicht als zweites Fenster ---- *@
+    <Ueberlagerung Offen="@_karteOffen" Titel="@KarteTitel"
+                   Geschlossen="() => _karteOffen = false">
+        <KindInhalt>
+            <KlimazonenkarteDialog AktuelleZone="@(_zone ?? 0)" Zonen="@Kartenzonen"
+                                   ViewBox="@KlimazonenPfade.VIEWBOX"
+                                   TitelText="@KarteTitel"
+                                   Geschlossen="ZoneVonKarte" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Wartezustand des Simulationslaufs ---------------------------------- *@
+    <Ueberlagerung Offen="@_laeuft" Titel="@WarteTitel" Schliessbar="false">
+        <KindInhalt>
+            <p class="epos-wartezustand" role="status">@WarteText</p>
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Listenplatz „Erdkollektor" in der Optionsgruppe.</summary>
+    public const int KOLLEKTOR = 0;
+
+    /// <summary>Listenplatz „Erdsonde".</summary>
+    public const int SONDE = 1;
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Satz Übergabefelder (Vermessung §3 a).</summary>
+    [Parameter] public QuelleErdreichDaten Daten { get; set; } = new();
+
+    /// <summary>
+    /// Das Ergebnis des LAUFS beim Öffnen — die Auslegungsprüfung rechnet damit.
+    /// <c>Vorhanden = false</c> heißt „noch kein Simulationslauf".
+    /// </summary>
+    [Parameter] public ErdreichAuswertung.ErdreichLaufErgebnis Lauf { get; set; }
+        = ErdreichAuswertung.ErdreichLaufErgebnis.Keines;
+
+    /// <summary>
+    /// Rechnet das Projekt durch und liefert das Ergebnis dieser Anlage — oder einen
+    /// Fehlertext. <c>null</c> heißt „kein Lauf möglich"; dann fehlt der Knopf ganz.
+    ///
+    /// <para>Die Hülle rechnet auf einem EIGENEN FADEN (Abweichung A-5, Befund
+    /// W10-B9). Kommt weder Ergebnis noch Fehler zurück, hat der Lauf für diese Anlage
+    /// nichts geliefert — der dritte Fall des Vorläufers.</para>
+    /// </summary>
+    [Parameter]
+    public Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis? Ergebnis, string? Fehler)>>?
+        Simulieren { get; set; }
+
+    /// <summary>
+    /// Zeichnet die Vorschau: Quelltemperatur und Außentemperatur hinein, ein PNG
+    /// heraus. Ohne Delegat bleibt der Platzhalter stehen.
+    /// </summary>
+    [Parameter] public Func<double[], double[]?, Task<byte[]?>>? Jahresgangbild { get; set; }
+
+    /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
+    [Parameter] public EventCallback<QuelleErdreichDaten?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmequelle Erdreich";
+    [Parameter] public string TitelMitWp { get; set; } = "Wärmequelle Erdreich — {0}";
+    [Parameter] public string GbQuellsystem { get; set; } = "Quellsystem";
+    [Parameter] public string GbStandort { get; set; } = "Standort und Boden";
+    [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";
+    [Parameter] public string GbPruefung { get; set; } = "Auslegungsprüfung nach VDI 4640 Blatt 2";
+    [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
+    [Parameter] public string RbSonde { get; set; } = "Erdsonde";
+    [Parameter] public string LblVerlegetiefe { get; set; } = "Verlegetiefe:";
+    [Parameter] public string LblFlaeche { get; set; } = "Fläche:";
+    [Parameter] public string LblLaengeSonde { get; set; } = "Länge je Sonde:";
+    [Parameter] public string LblAnzahlSonden { get; set; } = "Anzahl Sonden:";
+    [Parameter] public string LblBodentyp { get; set; } = "Bodentyp:";
+    [Parameter] public string LblBodentypHinweis { get; set; } = "";
+    [Parameter] public string LblKlimazone { get; set; } = "Klimazone:";
+    [Parameter] public string LblKlimazoneHinweis { get; set; } = "";
+    [Parameter] public string LblSpreizung { get; set; } = "Nutzbare Spreizung:";
+    [Parameter] public string LblSpreizungHinweis { get; set; } = "";
+    /// <summary>
+    /// Beschriftung des Kartenknopfes. Der Vorläufer trug „…" — ein SYMBOL, kein Text;
+    /// was der Knopf tut, sagt <see cref="KarteKnopfTip"/>.
+    /// </summary>
+    [Parameter] public string BtnKarte { get; set; } = "…";
+    [Parameter] public string KarteKnopfTip { get; set; }
+        = "Klimazonenkarte anzeigen und Zone auf der Karte wählen";
+    [Parameter] public string KarteTitel { get; set; } = "Klimazonen nach DIN 4710";
+    [Parameter] public string BtnSimulation { get; set; } = "Simulation starten";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string BildAlt { get; set; }
+        = "Jahresgang der Quelltemperatur über 8760 Stunden";
+    [Parameter] public string PlatzhalterText { get; set; } = "Noch kein Diagramm";
+
+    /// <summary>Der Eintrag 0 der Zonenliste („0 — nicht zugeordnet").</summary>
+    [Parameter] public string ZoneNichtZugeordnet { get; set; } = "0 — nicht zugeordnet";
+
+    /// <summary>Kennwertzeile des Bodens; fünf Platzhalter (λ, ρ·c, a, d, Bodenart).</summary>
+    [Parameter] public string BodenkennwerteText { get; set; }
+        = "λ = {0} W/(m·K)   ρ·c_p = {1} MJ/(m³·K)   a = {2} mm²/s   " +
+          "Dämpfungstiefe d = {3} m   Bodenart nach Tabelle A1: {4}";
+
+    [Parameter] public string OhneKlimadaten { get; set; }
+        = "   (ohne Klimadaten — Ersatzwerte 9,5 °C / 8,5 K)";
+
+    [Parameter] public string PruefungKeinLauf { get; set; }
+        = "(noch kein Simulationslauf)\n\nDie Prüfung braucht maximale Entzugsleistung, " +
+          "Jahresentzugsarbeit und\nJahresvolllaststunden aus einem Simulationslauf.";
+
+    [Parameter] public string HinweisFestgestein { get; set; }
+        = "\n  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 " +
+          "abgebildet — nur Orientierung.";
+    [Parameter] public string HinweisVorbehalt { get; set; } = "\n  Hinweis: {0}";
+    [Parameter] public string AenderungHinweis { get; set; }
+        = "Eingaben geändert — die Auslegungsprüfung zeigt noch den letzten " +
+          "Simulationslauf. Bitte die Simulation neu starten.";
+    [Parameter] public string SimNurGespeichert { get; set; }
+        = "Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier " +
+          "geänderten Eingaben wirken erst nach „OK“ und einem neuen Lauf. " +
+          "Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.";
+
+    [Parameter] public string WarteTitel { get; set; } = "Simulation";
+    [Parameter] public string WarteText { get; set; } = "Simulation läuft …";
+
+    // Die acht Prüfregeln von btnOk_Click:1194-1264, wörtlich.
+    [Parameter] public string MsgZahlKollektor { get; set; }
+        = "Bitte gültige Zahlenwerte für Verlegetiefe und Fläche eintragen!";
+    [Parameter] public string MsgTiefeNull { get; set; }
+        = "Die Verlegetiefe muss größer als 0 m sein!";
+    [Parameter] public string MsgTiefeMax { get; set; }
+        = "Ein Erdkollektor wird nicht tiefer als 10 m verlegt.\n" +
+          "Für größere Tiefen das Quellsystem 'Erdsonde' wählen.";
+    [Parameter] public string MsgFlaeche { get; set; }
+        = "Bitte die Kollektorfläche eintragen — sie ist Eingangsgröße\n" +
+          "der Auslegungsprüfung nach VDI 4640 Blatt 2.";
+    [Parameter] public string MsgZahlSonde { get; set; }
+        = "Bitte gültige Zahlenwerte für Sondenlänge und Anzahl eintragen!";
+    [Parameter] public string MsgLaengeNull { get; set; }
+        = "Die Sondenlänge muss größer als 0 m sein!";
+    [Parameter] public string MsgAnzahlMin { get; set; }
+        = "Es muss mindestens eine Sonde vorhanden sein!";
+    [Parameter] public string MsgSpreizung { get; set; }
+        = "Bitte eine nutzbare Spreizung größer als 0 K eintragen!\n" +
+          "Sie ist Eingangsgröße der Frostprüfung der Quelle.";
+
+    // Die drei Meldungen des Simulationsknopfes.
+    [Parameter] public string MsgSimOhneProjekt { get; set; }
+        = "Das Projekt dieses Dialogs ließ sich nicht bestimmen — ohne Projektbezug " +
+          "kann kein Simulationslauf gestartet werden.";
+    [Parameter] public string MsgSimFehler { get; set; }
+        = "Der Simulationslauf ist abgebrochen — die Auslegungsprüfung bleibt " +
+          "unverändert:\n\n{0}";
+    [Parameter] public string MsgSimOhneErgebnis { get; set; }
+        = "Der Lauf hat für diese Anlage kein Erdreich-Ergebnis geliefert.";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_QuelleErdreich.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private bool _sonde;
+    private double? _tiefe;
+    private double? _flaeche;
+    private double? _laenge;
+    private int? _anzahl;
+    private double? _spreizung;
+    private int? _bodenIndex;
+    private int? _zone;
+
+    private ErdreichAuswertung.ErdreichLaufErgebnis _lauf =
+        ErdreichAuswertung.ErdreichLaufErgebnis.Keines;
+
+    /// <summary>Der Eingabestand beim Öffnen — Vergleichsgröße des Änderungshinweises.</summary>
+    private string _standGeladen = "";
+
+    /// <summary>Ist der angezeigte Lauf aus DIESEM Dialog angestoßen worden?</summary>
+    private bool _laufAusDialog;
+
+    private bool _karteOffen;
+    private bool _laeuft;
+
+    private string _bodenkennwerte = "";
+    private string _kennwertzeile = "";
+    private string _pruefung = "";
+    private bool _pruefungWarnt;
+    private string _aenderungshinweis = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private byte[]? _bild;
+
+    // --- Prüfhilfen für die Tests -----------------------------------------------
+
+    /// <summary>Der gewählte Zweig; <c>true</c> = Erdsonde.</summary>
+    public bool IstSonde => _sonde;
+
+    /// <summary>Der Katalogschlüssel des gewählten Bodens.</summary>
+    public string Bodentyp => Schluessel(_bodenIndex);
+
+    /// <summary>Die gewählte Klimazone; <c>0</c> = nicht zugeordnet.</summary>
+    public int Klimazone => _zone ?? 0;
+
+    /// <summary>Der Text der Auslegungsprüfung.</summary>
+    public string Pruefungstext => _pruefung;
+
+    /// <summary>Warnt die Prüfung (im Vorläufer: Firebrick)?</summary>
+    public bool PruefungWarnt => _pruefungWarnt;
+
+    /// <summary>Der Änderungshinweis; leer = keiner.</summary>
+    public string Aenderungshinweis => _aenderungshinweis;
+
+    /// <summary>Die stehende Meldung.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Läuft gerade eine Simulation?</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>Steht die Klimazonenkarte?</summary>
+    public bool KarteOffen => _karteOffen;
+
+    /// <summary>Die Kennwertzeile unter der Vorschau.</summary>
+    public string Kennwertzeile => _kennwertzeile;
+
+    /// <summary>Die Bodenkennwerte-Zeile.</summary>
+    public string Bodenkennwerte => _bodenkennwerte;
+
+    /// <summary>Das gezeichnete Bild.</summary>
+    public byte[]? Bild => _bild;
+
+    /// <summary>Die Werte der vier Zweigfelder (Prüfhilfe für A-4).</summary>
+    public (double? Tiefe, double? Flaeche, double? Laenge, int? Anzahl) Zweigfelder
+        => (_tiefe, _flaeche, _laenge, _anzahl);
+
+    // --- Listen -----------------------------------------------------------------
+
+    public string Titel => string.IsNullOrEmpty(Daten.WPName)
+        ? TitelText
+        : string.Format(TitelMitWp, Daten.WPName);
+
+    private IReadOnlyList<(int Id, string Text)> Quellsysteme => new[]
+    {
+        (KOLLEKTOR, RbKollektor),
+        (SONDE, RbSonde)
+    };
+
+    /// <summary>
+    /// Der Bodenkatalog. Die Id ist der KATALOGINDEX, der Schlüssel steht daneben —
+    /// gelesen wird über <see cref="Schluessel"/>, nicht über die Position in der
+    /// Anzeige (Abweichung A-3, Befund W10-B6).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Bodentypen
+    {
+        get
+        {
+            string[] anzeige = ErdreichTemperatur.KatalogAnzeige();
+            var l = new List<(int, string)>(anzeige.Length);
+            for (int i = 0; i < anzeige.Length; i++) l.Add((i, anzeige[i]));
+            return l;
+        }
+    }
+
+    /// <summary>Zone 0 („nicht zugeordnet") und 1…15 mit ihren Volllaststunden.</summary>
+    private IReadOnlyList<(int Id, string Text)> Klimazonen
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, ZoneNichtZugeordnet) };
+            for (int z = 1; z <= VDI4640Pruefung.KLIMAZONEN; z++) l.Add((z, Zonentext(z)));
+            return l;
+        }
+    }
+
+    /// <summary>Die 15 Zonen für die Karte — Pfad und Volllaststunden.</summary>
+    private IReadOnlyList<KlimazonenkarteDialog.Zone> Kartenzonen
+    {
+        get
+        {
+            var l = new List<KlimazonenkarteDialog.Zone>();
+            foreach ((int zone, string pfad) in KlimazonenPfade.Alle())
+                l.Add(new KlimazonenkarteDialog.Zone(
+                    zone, pfad, VDI4640Pruefung.VolllaststundenZone(zone)));
+            return l;
+        }
+    }
+
+    private static string Zonentext(int z)
+        => z.ToString(System.Globalization.CultureInfo.CurrentCulture) + " — " +
+           VDI4640Pruefung.VolllaststundenZone(z)
+               .ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " h/a";
+
+    private static string Schluessel(int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= ErdreichTemperatur.Katalog.Length)
+            return ErdreichTemperatur.BODENTYP_DEFAULT;
+        return ErdreichTemperatur.Katalog[index.Value].Schluessel;
+    }
+
+    // --- Aufbau -----------------------------------------------------------------
+
+    protected override void OnInitialized()
+    {
+        _lauf = Lauf ?? ErdreichAuswertung.ErdreichLaufErgebnis.Keines;
+
+        // SetControls:736-780, woertlich - nur die beiden Zweige sind getrennt (A-4).
+        _sonde = string.Equals(Daten.Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                               StringComparison.OrdinalIgnoreCase);
+
+        if (_sonde)
+        {
+            _laenge = Daten.Tiefe > 0 ? Daten.Tiefe : 90;
+            _tiefe = ErdreichTemperatur.TIEFE_DEFAULT;
+        }
+        else
+        {
+            _tiefe = Daten.Tiefe > 0 ? Daten.Tiefe : ErdreichTemperatur.TIEFE_DEFAULT;
+            _laenge = 90;
+        }
+
+        _flaeche = Daten.Flaeche;
+        _anzahl = Daten.Anzahl > 0 ? Daten.Anzahl : 1;
+
+        int bi = ErdreichTemperatur.KatalogIndex(Daten.Bodentyp);
+        _bodenIndex = bi >= 0 ? bi : ErdreichTemperatur.KatalogIndex(ErdreichTemperatur.BODENTYP_DEFAULT);
+
+        _zone = (Daten.Klimazone >= 0 && Daten.Klimazone <= VDI4640Pruefung.KLIMAZONEN)
+            ? Daten.Klimazone : 0;
+
+        _spreizung = Daten.Spreizung > 0 ? Daten.Spreizung : ErdreichAuswertung.SPREIZUNG_DEFAULT;
+
+        // Ausgangsstand festhalten, BEVOR der Anwender etwas aendern kann (Befund 4
+        // des Bestands). Er ist der Stand der Datenbank.
+        _standGeladen = Eingabestand();
+        _laufAusDialog = false;
+
+        Aktualisieren();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _ersterAufbau)
+        {
+            _ersterAufbau = false;
+            await _wurzel.FocusAsync();
+            await BildZeichnen();
+        }
+    }
+
+    // --- Eingaben ---------------------------------------------------------------
+
+    private void Setzen(Action was)
+    {
+        was();
+        Aktualisieren();
+        _ = BildZeichnen();
+    }
+
+    /// <summary>
+    /// Umschalten Kollektor ↔ Sonde. Es SPERRT nur — beide Zweige behalten ihre Werte
+    /// (Abweichung A-4, Befund W10-B11).
+    /// </summary>
+    private void SystemUmschalten(int? welches)
+    {
+        _sonde = welches == SONDE;
+        Aktualisieren();
+        _ = BildZeichnen();
+    }
+
+    private void BodentypWaehlen(int? index)
+    {
+        _bodenIndex = index;
+        Aktualisieren();
+        _ = BildZeichnen();
+    }
+
+    private void ZoneWaehlen(int? zone)
+    {
+        _zone = zone ?? 0;
+        Aktualisieren();
+    }
+
+    /// <summary>
+    /// Die Karte hat eine Zone geliefert — sie geht in die AUSWAHLLISTE, genau wie im
+    /// Vorläufer (<c>btnKarte_Click</c>:1079-1087). <c>null</c> heißt „nichts
+    /// übernommen"; die Liste bleibt dann, wie sie war.
+    /// </summary>
+    private void ZoneVonKarte(int? zone)
+    {
+        _karteOffen = false;
+        if (zone is null) return;
+        _zone = zone;
+        Aktualisieren();
+    }
+
+    // --- Anzeige ----------------------------------------------------------------
+
+    /// <summary>
+    /// Der gemeinsame Weg aller sechs Eingaben (<c>Aktualisieren</c>:800-860):
+    /// Bodenkennwerte, Kennwertzeile, Auslegungsprüfung und Änderungshinweis.
+    /// Das BILD zeichnet <see cref="BildZeichnen"/> — es läuft auf einem anderen Faden.
+    /// </summary>
+    private void Aktualisieren()
+    {
+        string boden = Bodentyp;
+        ErdreichTemperatur.Bodenkennwerte k = ErdreichTemperatur.Bodentyp(boden);
+        var ci = System.Globalization.CultureInfo.CurrentCulture;
+
+        _bodenkennwerte = string.Format(ci, BodenkennwerteText,
+            k.Lambda.ToString("0.0", ci),
+            k.RhoCp.ToString("0.00", ci),
+            k.A_mm2s.ToString("0.00", ci),
+            k.Daempfungstiefe.ToString("0.00", ci),
+            VDI4640Pruefung.BodenartAusBodentyp(boden));
+
+        float[] profil = Profil();
+        ErdreichTemperatur.Kennwerte kw = ErdreichTemperatur.ProfilKennwerte(profil);
+        ErdreichTemperatur.Jahresgang jg =
+            ErdreichTemperatur.AnalysiereJahresgang(Daten.Aussentemperatur);
+        _kennwertzeile = kw.Zeile() + (jg.AusKlimadaten ? "" : OhneKlimadaten);
+
+        PruefungAktualisieren(boden);
+        AenderungshinweisAktualisieren();
+    }
+
+    /// <summary>Das Quelltemperaturprofil des gewählten Zweigs.</summary>
+    private float[] Profil()
+        => _sonde
+            ? ErdreichTemperatur.JahresprofilSonde(Daten.Aussentemperatur, _laenge ?? 0)
+            : ErdreichTemperatur.JahresprofilKollektor(Daten.Aussentemperatur, _tiefe ?? 0, Bodentyp);
+
+    /// <summary>
+    /// Der Bereich der Auslegungsprüfung (<c>PruefungAktualisieren</c>:863-909).
+    /// Ohne Lauf steht der Hinweis da und NICHTS wird gerechnet.
+    /// </summary>
+    private void PruefungAktualisieren(string boden)
+    {
+        if (!_lauf.ErgebnisseVorhanden)
+        {
+            _pruefung = _lauf.HinweisErgebnis.Length > 0 ? _lauf.HinweisErgebnis : PruefungKeinLauf;
+            _pruefungWarnt = false;
+            return;
+        }
+
+        VDI4640Pruefung.Ergebnis erg;
+        if (_sonde)
+        {
+            double anzahl = _anzahl ?? 0;
+            erg = VDI4640Pruefung.PruefeSonde(
+                ErdreichTemperatur.Bodentyp(boden).Lambda,
+                (int)Math.Max(1, anzahl),
+                VDI4640Pruefung.Volllaststunden(_lauf.VolllastStunden, Klimazone),
+                VDI4640Pruefung.Sondenmeter(_laenge ?? 0, anzahl),
+                _lauf.MaxEntzugW, boden);
+        }
+        else
+        {
+            erg = VDI4640Pruefung.PruefeKollektor(
+                Klimazone, VDI4640Pruefung.BodenartAusBodentyp(boden),
+                _flaeche ?? 0, _lauf.MaxEntzugW, _lauf.JahresentzugKWh, boden);
+        }
+
+        string text = erg.Anzeigetext();
+        if (erg.Moeglich && erg.FestgesteinNaeherung) text += HinweisFestgestein;
+        if (_lauf.HinweisVorbehalt.Length > 0)
+            text += string.Format(HinweisVorbehalt, _lauf.HinweisVorbehalt);
+        if (_lauf.HinweisFrost.Length > 0) text += "\n  " + _lauf.HinweisFrost;
+
+        _pruefung = text;
+
+        // Firebrick des Vorlaeufers (:908) - hier die Warnstufe des Banners.
+        _pruefungWarnt = erg.Moeglich && erg.Warnung;
+    }
+
+    /// <summary>
+    /// Der Eingabestand als Vergleichsschlüssel (<c>Eingabestand</c>:933-941). Er
+    /// enthält alle sechs Größen, die in die Prüfung eingehen; das Trennzeichen kommt
+    /// in keinem Wert vor.
+    /// </summary>
+    private string Eingabestand()
+        => (_sonde ? "S" : "K") + "" + _tiefe + "" + _flaeche + "" +
+           _laenge + "" + _anzahl + "" + _bodenIndex + "" +
+           _zone + "" + _spreizung;
+
+    /// <summary>
+    /// Die drei Zustände des Änderungshinweises
+    /// (<c>AenderungshinweisAktualisieren</c>:961-974). Ohne Lauf oder ohne Änderung
+    /// steht keiner; sonst entscheidet, ob HIER gerechnet wurde.
+    /// </summary>
+    private void AenderungshinweisAktualisieren()
+    {
+        bool geaendert = !string.Equals(Eingabestand(), _standGeladen, StringComparison.Ordinal);
+
+        _aenderungshinweis = (!_lauf.ErgebnisseVorhanden || !geaendert)
+            ? ""
+            : _laufAusDialog ? SimNurGespeichert : AenderungHinweis;
+    }
+
+    private async Task BildZeichnen()
+    {
+        if (Jahresgangbild is null) return;
+
+        float[] profil = Profil();
+        var quelle = new double[profil.Length];
+        for (int i = 0; i < profil.Length; i++) quelle[i] = profil[i];
+
+        double[]? aussen = null;
+        float[]? a = Daten.Aussentemperatur;
+        if (a is not null && a.Length >= ErdreichTemperatur.STUNDEN_JAHR)
+        {
+            aussen = new double[ErdreichTemperatur.STUNDEN_JAHR];
+            for (int i = 0; i < aussen.Length; i++) aussen[i] = a[i];
+        }
+
+        byte[]? png = await Jahresgangbild(quelle, aussen);
+        _bild = png;
+        StateHasChanged();
+    }
+
+    // --- Simulationslauf --------------------------------------------------------
+
+    /// <summary>
+    /// <c>btnSimulation_Click</c>:1014-1069 — nur läuft der Lauf hier auf einem
+    /// eigenen Faden, und die Wartemeldung ist eine Überlagerung statt einer Sanduhr
+    /// (Abweichung A-5, Befund W10-B9).
+    /// </summary>
+    private async Task SimulationStarten()
+    {
+        if (Simulieren is null || _laeuft) return;
+
+        if (Daten.IdProjekt <= 0)
+        {
+            Melden(MsgSimOhneProjekt, WarnStufe.Hinweis);
+            return;
+        }
+
+        _meldung = "";
+        _laeuft = true;
+        StateHasChanged();
+
+        (ErdreichAuswertung.ErdreichLaufErgebnis? erg, string? fehler) antwort;
+        try
+        {
+            antwort = await Simulieren(Daten.IdProjekt);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+
+        if (!string.IsNullOrEmpty(antwort.fehler))
+        {
+            Melden(string.Format(MsgSimFehler, antwort.fehler), WarnStufe.Warnung);
+            return;
+        }
+
+        if (antwort.erg is null || !antwort.erg.Vorhanden)
+        {
+            Melden(MsgSimOhneErgebnis, WarnStufe.Hinweis);
+            return;
+        }
+
+        _lauf = antwort.erg;
+        _laufAusDialog = true;
+        _meldung = "";
+        Aktualisieren();
+        await BildZeichnen();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    // --- Ergebnis ---------------------------------------------------------------
+
+    /// <summary>
+    /// Die ACHT Prüfregeln aus <c>btnOk_Click</c>:1194-1264, in derselben Reihenfolge
+    /// und mit demselben Wortlaut. Jede meldet und lässt den Dialog offen.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Geschlossen.InvokeAsync(null);
+
+        double tiefe = 0, flaeche = 0, laenge = 0;
+        int anzahl = 0;
+
+        if (!_sonde)
+        {
+            if (_tiefe is null || _flaeche is null) return Meldet(MsgZahlKollektor);
+            tiefe = _tiefe.Value;
+            flaeche = _flaeche.Value;
+
+            if (tiefe <= 0) return Meldet(MsgTiefeNull);
+            if (tiefe > 10) return Meldet(MsgTiefeMax);
+            if (flaeche <= 0) return Meldet(MsgFlaeche);
+        }
+        else
+        {
+            if (_laenge is null || _anzahl is null) return Meldet(MsgZahlSonde);
+            laenge = _laenge.Value;
+            anzahl = _anzahl.Value;
+
+            if (laenge <= 0) return Meldet(MsgLaengeNull);
+            if (anzahl < 1) return Meldet(MsgAnzahlMin);
+        }
+
+        if (_spreizung is null || _spreizung.Value <= 0) return Meldet(MsgSpreizung);
+
+        _meldung = "";
+
+        // Rueckschreiben je Zweig - :1224-1227 bzw. :1248-1251, woertlich.
+        return Geschlossen.InvokeAsync(Daten with
+        {
+            Quellsystem = _sonde
+                ? ErdreichTemperatur.QUELLSYSTEM_SONDE
+                : ErdreichTemperatur.QUELLSYSTEM_KOLLEKTOR,
+            Tiefe = _sonde ? laenge : tiefe,
+            Flaeche = _sonde ? 0 : flaeche,
+            Anzahl = _sonde ? anzahl : 0,
+            Spreizung = _spreizung.Value,
+            Bodentyp = Bodentyp,
+            Klimazone = Klimazone
+        });
+    }
+
+    private Task Meldet(string text)
+    {
+        Melden(text, WarnStufe.Warnung);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Esc: erst die Karte, dann der Dialog (Hausregel der Überlagerungen).</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_laeuft) return Task.CompletedTask;      // ein Lauf laesst sich nicht wegdruecken
+        if (_karteOffen) { _karteOffen = false; return Task.CompletedTask; }
+        return Geschlossen.InvokeAsync(null);
+    }
+}

@@ -33393,5 +33393,32 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort und Boden ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_GB_STANDORT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_GB_STANDORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Diagramm ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_BILD_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_BILD_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation läuft … ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_SIM_LAEUFT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_SIM_LAEUFT", resourceCulture);
+            }
+        }
+        
     }
 }

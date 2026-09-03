@@ -11802,4 +11802,13 @@ Please check all entries!</value>
   <data name="WBX_TITEL" xml:space="preserve">
     <value>External heat requirement</value>
   </data>
+  <data name="SIMQ_ERDREICH_GB_STANDORT" xml:space="preserve">
+    <value>Location and soil</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BILD_PLATZHALTER" xml:space="preserve">
+    <value>No chart yet</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SIM_LAEUFT" xml:space="preserve">
+    <value>Simulation running …</value>
+  </data>
 </root>
