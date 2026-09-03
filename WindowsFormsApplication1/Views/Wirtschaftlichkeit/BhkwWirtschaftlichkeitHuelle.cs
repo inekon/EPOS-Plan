@@ -41,7 +41,9 @@ namespace WindowsFormsApplication1
         /// <summary>Innenmass des Dialogfensters. Breite wie die WinForms-Fassung
         /// (Hausmass § 5 der Feldkarte, 914); die Hoehe deckelt den Arbeitsbereich,
         /// gescrollt wird innerhalb der Komponente.</summary>
-        private const int FENSTER_BREITE = 914;
+        /// <summary>Gewuenschte Startbreite. Die Huelle klemmt sie auf den Bildschirm;
+        /// 914 px (bis 03.09.2026) zwangen die Anlagentabelle in den Umbruch.</summary>
+        private const int FENSTER_BREITE = 1240;
 
         /// <summary>
         /// Zeigt den Dialog. Liefert <c>true</c>, wenn mindestens einmal gespeichert
