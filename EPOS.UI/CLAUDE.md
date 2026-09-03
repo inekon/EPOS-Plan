@@ -51,6 +51,7 @@ entgegen — sie ist damit austauschbar.
 | `Reiter` + `Reiterblatt` | Reiterleiste; die Blätter melden sich selbst an, ein ungewähltes wird **gar nicht** gezeichnet (`role="tablist"/"tab"/"tabpanel"`, ←/→, Pos1/Ende, 44 px) | die 21 `TabControl` mit 74 `TabPage` |
 | `Kachelraster` | Reihe gleich breiter Karten, `auto-fit`/`minmax` statt gerechneter Prozentspalten | `UcBkKosten.pnlKacheln`, `UcWirtschaftlichkeit.KachelnBauen` |
 | `Kennzahlkachel` | Überschrift, großer Wert, leise Herkunftszeile — **Anzeige, kein Knopf**; leerer Wert = „—" | `UcBkKosten.Kachel` |
+| `Bildkarte` | Anklickbare Landkarte: ein Bild plus benannte SVG-Flächen darüber (Zeigen, Wählen, Übernehmen per Doppelklick) — **mit Tastatur**, jede Fläche ein Fokusziel | `Allgemein/GrafikTools/KlimazonenKarte.cs` (Regex über eine eingebettete SVG, iU9‑W10a.0e) |
 
 ## Standards (`Standards/`)
 
@@ -189,6 +190,14 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Bedarf/GebaeudeDialog` | `Form_Gebaeude` (iU9‑W9.2) | `Views/Gebäude/GebaeudeHuelle.cs`; Assistentenseite 2, Admin-Modus, **drei** Überlagerungen |
 | `Bedarf/WaermebedarfExternDialog` | `Form_Waermebedarf` (iU9‑W9.4) | `Views/Wärmebedarf/WaermebedarfExternHuelle.cs`; Assistentenseite 3, Sprungbrücke |
 | `Bedarf/BedarfsProfileDialog` | **drei** Masken: `Form_Prozesswaerme`, `Form_Stromverbraucher`, `Form_Brauchwasser` (iU9‑W9.5) | `Views/Bedarf/BedarfsProfileHuelle.cs`; Assistentenseiten 4 und 5, **vier** Überlagerungen aus Welle 8 |
+| `Simulation/WertAbfrage` | die Zahlenabfrage von `Form_Quellprofil` (iU9‑W10a.0f) | keine; Überlagerung im Wirt — ersetzt `Eingabefrage` für einen Aufrufer |
+| `Simulation/BetriebsmodusDialog` | `Form_Betriebsmodus` (iU9‑W10a.1) | `Views/Simulation/BetriebsmodusHuelle.cs`; reiner Entscheidungsdialog, Enter belegt |
+| `Simulation/KlimazonenkarteDialog` | `Form_Klimazonenkarte` + das Steuerelement `KlimazonenKarte` (iU9‑W10a.2) | keine Hülle — `KlimazonenPfade` im Kern; erscheint als Überlagerung im Erdreichdialog |
+| `Simulation/QuelleErdreichDialog` | `Form_QuelleErdreich` (iU9‑W10a.3) | `Views/Simulation/QuelleErdreichHuelle.cs` → `ErdreichTemperatur`, `ErdreichAuswertung`, `VDI4640Pruefung`, `ChartRenderer.Jahresgang`; der **Simulationslauf** läuft in `Task.Run` |
+| `Simulation/PufferSpProjektDialog` | `Form_PufferSp_Projekt` (iU9‑W10a.4) | `Views/Pufferspeicher/PufferSpProjektHuelle.cs` → `PufferSpCtrl`/`PufferSpStammCtrl`/`ProjektPuffer`; **16 Delegaten**, drei Rollen (Fenster + zwei Überlagerungen), Sprungbrücke |
+| `Simulation/QuellePufferspeicherDialog` | `Form_QuellePufferspeicher` (iU9‑W10a.5) | `Views/Simulation/QuellePufferspeicherHuelle.cs`; WP- und Kesselzweig in EINER Maske, Pufferverwaltung als Überlagerung |
+| `Simulation/QuellprofilDialog` | `Form_Quellprofil` (iU9‑W10a.6) | `Views/Simulation/QuellprofilHuelle.cs` → `QuellprofilCtrl`; **virtualisiertes** Raster mit 8 760 Zeilen |
+| `Simulation/WaermesenkeDialog` | `Form_Waermesenke` (iU9‑W10a.7) | `Views/Simulation/WaermesenkeHuelle.cs` → `Z_AnlageSenkeCtrl`, `AnlagePufferVerbundCtrl`, `Ladeordnung`, `Warnkriterien`; **11 Delegaten**, Pufferverwaltung als Überlagerung |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -229,6 +238,15 @@ wie in Welle 8 DRILLINGE und werden EINE Komponente mit der Ausprägung
 Razor-Komponente** — die Seiten 2 bis 5 kamen dazu, und die
 Assistentenschnittstelle trägt seither jeden Listentyp
 (`IAssistentListenSeite<T>`, W9.0a).
+
+**Sieben Masken, sieben Komponenten** (iU9‑W10a): die Dialoge, die
+`Form_Simulation_Config` öffnet. Hier wiederholt sich kein Muster — jede Maske
+ist ein eigener Gegenstand —, dafür wandert **eine** Komponente in drei Rollen:
+`PufferSpProjektDialog` erscheint als eigenes Fenster, als Überlagerung im
+Quellendialog und als Überlagerung im Senkendialog, immer mit demselben
+Delegatensatz. Zwei der sieben Masken hatten **keinen Designer** (Befund
+W10‑B38); ihr Feldabgleich läuft gegen den Quelltext. Der Wirt
+`Form_Simulation_Config` bleibt bis **W10b** WinForms.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
