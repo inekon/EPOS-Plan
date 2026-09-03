@@ -57,8 +57,11 @@ namespace WindowsFormsApplication1
         /// erst mit der Handle-Erzeugung, also beim <c>ShowDialog</c>.
         /// </summary>
         /// <param name="titel">Fenstertitel - derselbe Text wie in der Komponente.</param>
-        /// <param name="groesse">Innenmass des Dialogs. Die Groesse ist je Dialog fest;
-        /// das Anpassen an den Inhalt macht das Layout innerhalb der Komponente.</param>
+        /// <param name="groesse">Gewuenschtes Innenmass beim Oeffnen. Die Huelle klemmt es
+        /// auf den Arbeitsbereich des Bildschirms (Befund 03.09.2026: ein Fachdialog mit
+        /// 914 px Breite war auf dem Anwenderrechner zusammengequetscht und liess sich
+        /// nicht anpassen). Der Anwender kann das Fenster danach ziehen und maximieren;
+        /// das Layout innerhalb der Komponente ist fluessig (M2).</param>
         /// <param name="parameter">Die Parameter der Komponente, Name -&gt; Wert.</param>
         public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter)
             : this(titel, groesse, parameter, BlazorDienste.Erzeugen())
@@ -73,12 +76,13 @@ namespace WindowsFormsApplication1
                                 IServiceProvider dienste)
         {
             Text = titel;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             MinimizeBox = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
-            ClientSize = groesse;
+            MinimumSize = new Size(MIN_BREITE, MIN_HOEHE);
+            ClientSize = AnBildschirmGeklemmt(groesse);
             BackColor = Themaflaeche;
 
             _web = new BlazorWebView
@@ -108,6 +112,32 @@ namespace WindowsFormsApplication1
 
             _web.RootComponents.Add<TKomponente>("#app", parameter);
             Controls.Add(_web);
+        }
+
+        /// <summary>Kleinste sinnvolle Aussenmasse: darunter passt kein Dialogkopf mehr.</summary>
+        private const int MIN_BREITE = 520;
+        private const int MIN_HOEHE = 360;
+
+        /// <summary>
+        /// Klemmt das gewuenschte Innenmass auf 92 % des Arbeitsbereichs des Bildschirms,
+        /// auf dem der Dialog erscheint (Bildschirm des aktiven Fensters, sonst der
+        /// Hauptbildschirm). Kleinere Wuensche bleiben unveraendert.
+        /// </summary>
+        private static Size AnBildschirmGeklemmt(Size gewuenscht)
+        {
+            Rectangle arbeit;
+            try
+            {
+                Form aktiv = Form.ActiveForm;
+                arbeit = (aktiv != null ? Screen.FromControl(aktiv) : Screen.PrimaryScreen).WorkingArea;
+            }
+            catch
+            {
+                arbeit = Screen.PrimaryScreen.WorkingArea;
+            }
+            int maxBreite = Math.Max(MIN_BREITE, (int)(arbeit.Width * 0.92));
+            int maxHoehe = Math.Max(MIN_HOEHE, (int)(arbeit.Height * 0.92) - 40);   // Rahmen + Titelleiste
+            return new Size(Math.Min(gewuenscht.Width, maxBreite), Math.Min(gewuenscht.Height, maxHoehe));
         }
 
         /// <summary>

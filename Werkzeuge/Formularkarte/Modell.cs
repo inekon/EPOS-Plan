@@ -172,6 +172,13 @@ public sealed class Maske
     /// <summary>Fundstellen, an denen die Maske mit <c>ShowDialog</c> geoeffnet wird.</summary>
     public List<string> Aufrufer { get; } = new();
 
+    /// <summary>
+    /// Der Befund des Erreichbarkeitsgraphen: Ist der Oeffner dieser Maske selbst
+    /// noch von einem Einstieg aus zu erreichen? <c>null</c>, wenn nicht gerechnet
+    /// wurde (Stapellauf mit <c>--ohne-erreichbarkeit</c>).
+    /// </summary>
+    public Maskenknoten? Erreichbarkeit { get; set; }
+
     /// <summary>Zeile und Umfang der Ereignishandler in der Form_X.cs.</summary>
     public Dictionary<string, (int Zeile, int Zeilen)> Handler { get; } = new(StringComparer.Ordinal);
 

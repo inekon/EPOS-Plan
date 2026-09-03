@@ -236,6 +236,13 @@ public static class QuelltextLeser
         return Path.GetRelativePath(bezug, pfad).Replace('\\', '/');
     }
 
+    /// <summary>
+    /// Alle .cs-Dateien eines Projektbaums, einmal gelesen und danach
+    /// zwischengespeichert. Der Erreichbarkeitsgraph liest denselben Baum -
+    /// er soll ihn nicht ein zweites Mal von der Platte holen.
+    /// </summary>
+    public static IReadOnlyList<(string Pfad, string Text)> Baumdateien(string wurzel) => Dateien(wurzel);
+
     private static List<(string Pfad, string Text)> Dateien(string wurzel) =>
         Baeume.GetOrAdd(Path.GetFullPath(wurzel), pfad =>
         {

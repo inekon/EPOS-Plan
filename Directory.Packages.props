@@ -96,27 +96,70 @@
   </ItemGroup>
 
   <!--
-    iOS-Laufzeit der Zugriffsschicht (Umsetzungskonzept iOS, iU6 / iU10 - VORBEREITUNG).
+    iOS-LAUFZEIT DER ZUGRIFFSSCHICHT (Umsetzungskonzept iOS, iU6 / iU10).
 
-    Microsoft.Data.Sqlite zieht standardmaessig SQLitePCLRaw.bundle_e_sqlite3; das
-    scheitert auf iOS an der AOT-Regel gegen dynamisches Laden. Dort gilt statt dessen
-    bundle_green, das die SYSTEM-SQLite des Geraets benutzt.
+    SQLitePCLRaw.bundle_e_sqlite3 ist das Buendel, das Microsoft.Data.Sqlite ohnehin
+    transitiv mitbringt. Es steht hier AUSDRUECKLICH, weil die iOS-Huelle es ausdruecklich
+    referenziert - dieselbe Fassung auf allen vier Laeufern (Windows, Linux, macOS-CI, iOS)
+    und damit derselbe SQLite-Dialekt.
 
-    Die Fassung ist bewusst DIESELBE, die Microsoft.Data.Sqlite 10.0.11 heute
-    transitiv mitbringt - nachgemessen am 03.09.2026 mit
-    "dotnet list EPOS.Kern package" mit dem Schalter fuer transitive Pakete:
-        SQLitePCLRaw.bundle_e_sqlite3   2.1.12
-        SQLitePCLRaw.core               2.1.12
-        SQLitePCLRaw.lib.e_sqlite3      2.1.12
-        SQLitePCLRaw.provider.e_sqlite3 2.1.12
-    Zwei verschiedene SQLitePCLRaw-Staende im selben Graph waeren eine
-    Ladezeitueberraschung; deshalb haengt diese Zeile an der core-Fassung und wird beim
-    naechsten Sprung von Microsoft.Data.Sqlite mitgezogen.
+    WARUM NICHT bundle_green (Systembibliothek des Geraets). Bis iU10 stand hier eine
+    Vorbereitungszeile "SQLitePCLRaw.bundle_green 2.1.12". Sie war aus zwei Gruenden falsch:
 
-    Die Zeile ist derzeit UNBENUTZT: Die PackageReference in EPOS.Kern.csproj greift erst,
-    wenn der Kern ein -ios- oder -maccatalyst-TargetFramework bekommt (iU10).
+      1. DIE FASSUNG GIBT ES NICHT. bundle_green endet bei 2.1.11 und ist in 3.0 ganz
+         entfallen. Ein Restore mit dieser Zeile bricht mit NU1102 (nachgemessen 03.09.2026,
+         Restore-Probe B des iU10-Plans).
+      2. DIE BEGRUENDUNG WAR UEBERHOLT. Sie lautete "auf iOS verbietet die AOT-Regel das
+         dynamische Laden". Genau das tut bundle_e_sqlite3 auf iOS aber nicht: Fuer die
+         iOS-Zielkennungen liefert das Paket "provider.internal" (DllImport __Internal) und
+         eine statisch gelinkte e_sqlite3.a je Geraet und Simulator - NativeReference mit
+         Kind=Static und ForceLoad. Es wird also gar nichts geladen, sondern mitgelinkt.
+      3. DAS STRICT-GATE. Die Testdatenbank fuehrt 114 von 115 Tabellen als STRICT; das
+         verlangt SQLite >= 3.37. Mit bundle_green haengt die Fassung an der System-SQLite
+         des Geraets (iOS 17 = 3.42; iOS 18/26 nicht belegbar und nicht steuerbar). Mit
+         bundle_e_sqlite3 ist es ueberall SQLite 3.53.3.
+
+    Die Fassung haengt an der SQLitePCLRaw.core-Fassung, die Microsoft.Data.Sqlite 10.0.11
+    mitbringt (nachgemessen 03.09.2026 mit "dotnet list package" samt transitiven Paketen:
+    bundle_e_sqlite3 / core / lib.e_sqlite3 / provider.e_sqlite3 jeweils 2.1.12). Zwei
+    verschiedene SQLitePCLRaw-Staende im selben Graph waeren eine Ladezeitueberraschung.
   -->
   <ItemGroup>
-    <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+
+  <!--
+    DIE iOS-HUELLE (Paket iU10) - MAUI Blazor Hybrid.
+
+    EPOS.iOS ist eine MAUI-App mit genau einer ContentPage und einer BlazorWebView; die
+    Oberflaeche selbst liegt unveraendert in EPOS.UI. Warum MAUI und nicht ein reines
+    Microsoft.iOS-Projekt: Fuer net10.0-ios gibt es ausserhalb von
+    Microsoft.AspNetCore.Components.WebView.Maui keinen BlazorWebView-Host - das Basispaket
+    Components.WebView ist abstrakt, ein eigener WebViewManager ueber WKWebView waere
+    ungestuetzter Eigenbau. Dazu decken die MAUI-Essentials sechs der neun Dienstadapter ab
+    (Preferences, SecureStorage, FilePicker, Share, Launcher, FileSystem).
+
+    WARUM 10.0.100 UND NICHT DIE WORKLOAD-FASSUNG. Das Workload-Set 10.400.1 bringt MAUI
+    10.0.20 mit und setzt die impliziten Referenzen (Microsoft.Maui.Controls und Freunde)
+    auf diese Fassung. Die letzte STABILE Fassung von
+    Microsoft.AspNetCore.Components.WebView.Maui auf nuget.org ist dagegen 10.0.100, und sie
+    haengt an Microsoft.Maui.Controls DERSELBEN Fassung. Ohne Angleich stuenden 10.0.20 und
+    10.0.100 im selben Graph - NU1605. Deshalb steht hier fuer beide 10.0.100, und
+    EPOS.iOS.csproj hebt die impliziten Referenzen mit <MauiVersion>10.0.100</MauiVersion>
+    auf denselben Stand.
+
+    SkiaSharp.NativeAssets.iOS ist das iOS-Gegenstueck zu den drei bedingten Nativen in
+    EPOS.Kern.csproj (Win32 / Linux / macOS): der Diagramm-Renderer des Berichts zeichnet
+    seit iU7-2 mit SkiaSharp und braucht auf jedem Ziel seine eigene native Haelfte. Das
+    Paket traegt net8.0-ios17.0 - daher die Mindestfassung iOS 17.0 in der Huelle (iF28).
+
+    ALLE DREI ZEILEN GREIFEN NUR IN EPOS.iOS. Das Projekt steht in einer eigenen
+    Projektmappe (EPOS.iOS.sln) und weder in WP-Plan.sln noch im Solution-Filter - auf
+    ubuntu und windows gaebe es sonst NETSDK1147 (Workload nicht installierbar).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.100" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.100" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.iOS" Version="3.119.0" />
   </ItemGroup>
 </Project>

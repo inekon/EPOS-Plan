@@ -50,8 +50,28 @@ entgegen — sie ist damit austauschbar.
 
 ## Dienste (`Dienste/`)
 
-`IHilfeDienst` — die einzige Schnittstelle nach außen. Die Windows-Fassung hängt am
-`HelpCatalog`, für Tests gibt es `KeineHilfe`.
+Drei Schnittstellen nach außen — mehr sieht diese Bibliothek von der Umgebung nicht.
+
+| Schnittstelle | Wofür | Windows | iOS | ohne Umgebung |
+|---|---|---|---|---|
+| `IHilfeDienst` | Hilfetext und Wikiseite zu einem Schlüssel (`InfoKnopf`) | `WindowsHilfeDienst` am `HelpCatalog` | `IosHilfeDienst` (iU10-5) | `KeineHilfe` |
+| `IProjektQuelle` | die Daten der **Seiten**: Projektliste, Energieträgerliste, BHKW-Parametersatz, Übernahme des Anlegeergebnisses | — (dort ist die Startmaske der Einstieg) | `IosProjektQuelle` (iU10-7) | `KeineProjekte` |
+| `INavigationsZiel` | die **Gegenrichtung** zu `WindowsFormsApplication1.INavigation`: Was eine Oberfläche anbieten muss, damit ein Plattformadapter sie öffnen kann | `WinFormsNavigation` braucht sie nicht | `IosNavigation` reicht dorthin weiter | `Navigationsziel.Aktuell = null` |
+
+`Navigationsziel` ist der statische Halter der zuletzt gezeichneten Wurzel — dasselbe Muster
+wie `Dienste` im Kern, aus demselben Grund: Der Adapter entsteht beim Programmstart, die
+Komponente erst beim Zeichnen.
+
+## Seiten (`Seiten/`)
+
+Was eine **Hülle ohne eigene Fenster** braucht (Paket iU10, iOS). Ein Dialog wird dort nicht in
+einem zweiten Fenster geöffnet, sondern löst die Ansicht ab.
+
+| Komponente | Zweck |
+|---|---|
+| `AppWurzel` | die Wurzelkomponente der iOS-Hülle: eine Zustandsmaschine über `Seitenschluessel` (Liste ↔ Dialog), Registrierung als `INavigationsZiel`, Statuszeile nach einem Dialog. **Noch kein Router** — der Wizard nach iL5 ist iU10-9 |
+| `Projektliste` | der Einstieg: Nr., Projekt, Klimaregion, Ausstattung im `Raster` und je Zeile zwei Knöpfe, die einen Maskenschlüssel melden |
+| `Seitenschluessel` | die drei sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`) |
 
 ## Dialoge (`Dialoge/`)
 

@@ -16,12 +16,17 @@ public sealed class StapelTests
     [Fact]
     public void FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise()
     {
-        // Der Bestand schreibt beides: Form_Kosten_VarAuswahl.Designer.cs und
+        // Der Bestand schreibt beides: Form_KostenKomponente.Designer.cs und
         // Form_BHKWEing.designer.cs. Wer nur die grosse Schreibweise sucht,
         // uebersieht ueber ein Drittel der Masken.
+        //
+        // iU9-1 (03.09.2026): Bis dahin stand hier Form_Kosten_VarAuswahl. Die Maske
+        // ist mit iU9-1 geloescht (Regel M1); der Zeuge fuer die grosse Schreibweise
+        // ist jetzt Form_KostenKomponente - dieselbe Ablage, und im Gegensatz zur
+        // Vorgaengerin ueber UcBkKosten.btnVerwaltung_Click auch erreichbar.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
-        Assert.Contains(dateien, d => d.EndsWith("Form_Kosten_VarAuswahl.Designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
         Assert.True(dateien.Count >= 120, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
@@ -54,8 +59,8 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026: 63 von 120. Der Leser muss also beide
-        // Wege koennen, nicht nur den Designer.
+        // Gemessener Stand 03.09.2026 nach iU9-1: 63 von 118. Der Leser muss
+        // also beide Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 60,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
@@ -92,7 +97,7 @@ public sealed class StapelTests
         Assert.Contains("# Stapellauf Formularkarte", uebersicht, StringComparison.Ordinal);
         Assert.Contains("| davon Masken (mit InitializeComponent) | " + Lauf.Value.Masken + " |",
                         uebersicht, StringComparison.Ordinal);
-        Assert.Contains("Form_Kosten_VarAuswahl", uebersicht, StringComparison.Ordinal);
+        Assert.Contains("Form_KostenKomponente", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -104,12 +109,12 @@ public sealed class StapelTests
             var ergebnis = Stapel.Laufen(Repowurzel.Designer("Kosten"), ziel);
 
             Assert.Empty(ergebnis.Fehler);
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_VarAuswahl.karte.md")));
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_VarAuswahl.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.karte.md")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.razor")));
             Assert.True(File.Exists(Path.Combine(ziel, "UcKostenItem.razor")));
 
             // UTF-8 mit BOM - Hausregel fuer neue Dateien.
-            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_Kosten_VarAuswahl.razor"))[..3];
+            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_KostenKomponente.razor"))[..3];
             Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, kopf);
         }
         finally

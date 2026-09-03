@@ -111,8 +111,13 @@ namespace WindowsFormsApplication1
 
         public bool Delete(string szName)
         {
-            string sql = $"DELETE FROM Tab_Klimaregion WHERE Name = '{szName}'";
-            return DataRepository.ExecuteSQL(sql);
+            // SQL-Dialekt-Audit 03.09.2026: Die Spalte heisst im Schema Bezeichner, nicht
+            // Name ("no such column: Name") - "Name" traegt nur Tab_Klimaregion_STAMM.
+            // Der Zwilling KlimaregionCtrl.Delete loescht seit jeher ueber Bezeichner.
+            // Der Name kommt jetzt als Parameter statt als eingesetzter Text; das ist
+            // dieselbe Wirkung ohne die Anfuehrungszeichenfalle bei O'Brien & Co.
+            string sql = "DELETE FROM Tab_Klimaregion WHERE Bezeichner = ?";
+            return DataRepository.ExecuteSQL(sql, new DbParam("@bez", szName ?? ""));
         }
 
         /// <summary>
@@ -124,15 +129,19 @@ namespace WindowsFormsApplication1
         /// Kommandogenerator mit; an ihre Stelle treten ausdrueckliche Anweisungen auf dem
         /// <see cref="DbVorgang"/>. Erzeugt werden dieselben drei Faelle wie beim
         /// Generator - INSERT fuer neue, UPDATE fuer geaenderte, DELETE fuer geloeschte
-        /// Zeilen; Kriterium ist wie dort der Primaerschluessel ID_Klimadaten. Er ist
-        /// AutoWert und steht deshalb in keiner INSERT-Spaltenliste.
+        /// Zeilen; Kriterium ist wie dort der Primaerschluessel der Tabelle (ID, siehe
+        /// <c>SchreibeZeilen</c>). Er ist AutoWert und steht in keiner INSERT-Spaltenliste.
         /// </summary>
         public bool WritetDataTable(DataTable dt, string szName, DbVorgang v)
         {
             try
             {
                 // 1. ID_Klimaregion ermitteln (Nutzt die Verbindung/Transaktion des Vorgangs!)
-                string regSql = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
+                // SQL-Dialekt-Audit 03.09.2026: Tab_Klimaregion fuehrt den Schluessel als
+                // ID und den Namen als Bezeichner - ID_Klimaregion/Name gibt es nur in
+                // Tab_Klimaregion_STAMM. Tab_Klimadaten.ID_Klimaregion zeigt laut
+                // Fremdschluessel auf Tab_Klimaregion.ID, also ist DAS der gesuchte Wert.
+                string regSql = "SELECT ID FROM Tab_Klimaregion WHERE Bezeichner = ?";
                 int id_ref;
 
                 object regId = v.Skalar(regSql, new DbParam("?", szName ?? (object)DBNull.Value));
@@ -140,7 +149,7 @@ namespace WindowsFormsApplication1
                 id_ref = Convert.ToInt32(regId);
 
                 // 3. Spalten für die Verarbeitung vorbereiten
-                // WICHTIG: 'ID_Klimadaten' fügen wir NICHT manuell hinzu, das ist der Autowert!
+                // WICHTIG: den Primärschlüssel 'ID' fügen wir NICHT manuell hinzu, das ist der Autowert!
                 if (!dt.Columns.Contains("ID_Klimaregion"))
                 {
                     dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
@@ -158,7 +167,7 @@ namespace WindowsFormsApplication1
                 dt.Columns[5].ColumnName = "Temperatur"; dt.Columns[6].ColumnName = "WE";
                 dt.Columns[7].ColumnName = "Tagtyp_W"; dt.Columns[8].ColumnName = "Tagtyp_NW";
                 // Hinweis: Die Indizes [1] bis [8] verschieben sich um eins nach vorne,
-                // weil wir die 'ID_Klimadaten'-Spalte links nicht mehr künstlich einfügen!
+                // weil wir die Schlüsselspalte links nicht mehr künstlich einfügen!
 
                 // 5. Daten zeilenweise in die DB schreiben
                 SchreibeZeilen(dt, v);
@@ -174,14 +183,19 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Ersatz fuer <c>OleDbDataAdapter.Update</c> (ARBEITSPAKET S4e): schreibt die
         /// Aenderungen einer DataTable ueber ausdrueckliche Anweisungen auf dem Vorgang.
-        /// Wie der Kommandogenerator wird der Primaerschluessel ID_Klimadaten nie
+        /// Wie der Kommandogenerator wird der Primaerschluessel ID nie
         /// eingefuegt und dient bei UPDATE/DELETE als Kriterium. Unveraenderte Zeilen
         /// bleiben unberuehrt; am Ende wird - wie beim Adapter - bestaetigt.
         /// </summary>
         private static void SchreibeZeilen(DataTable dt, DbVorgang v)
         {
             const string TABELLE = "Tab_Klimadaten";
-            const string SCHLUESSEL = "ID_Klimadaten";
+            // SQL-Dialekt-Audit 03.09.2026: Der Primaerschluessel von Tab_Klimadaten
+            // heisst ID; ID_Klimadaten traegt nur Tab_Klimadaten_STAMM. Mit dem alten
+            // Namen scheiterten DELETE und UPDATE dieser Methode an
+            // "no such column: ID_Klimadaten". Die Lesestelle oben nimmt beide Namen
+            // entgegen, bleibt also unveraendert gueltig.
+            const string SCHLUESSEL = "ID";
 
             List<string> spalten = new List<string>();
             foreach (DataColumn c in dt.Columns)

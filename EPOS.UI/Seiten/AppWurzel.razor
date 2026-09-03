@@ -1,0 +1,222 @@
+﻿@* Die Wurzelkomponente der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
+
+   SIE IST NOCH KEIN ROUTER. Was hier steht, ist eine Zustandsmaschine mit drei
+   Zustaenden - Liste, Dialog A, Dialog B - und genau das, was iU10 braucht: Die
+   Huelle zeigt EINE Komponente, und diese entscheidet, welche Ansicht das ist. Der
+   Wizard-Workflow nach iL5 (Projekt -> Bedarf -> Erzeuger -> Simulation -> Bericht)
+   ist die Folgestufe (iU10-9); er ersetzt diese Maschine, nicht die Huelle darunter.
+
+   WARUM KEIN MODALES FENSTER. Unter Windows oeffnet BlazorDialogForm<T> ein
+   eigenes Fenster je Dialog. Auf dem iPad gibt es kein zweites Fenster; die
+   Ansicht wird ausgetauscht. Der Dialog selbst merkt davon nichts: Er bekommt
+   dieselben Parameter wie in der Windows-Huelle und meldet sein Ende ueber
+   denselben Rueckruf "Geschlossen" - wer ihn schliesst, ist seine Sache nicht.
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Geladen wird ueber IProjektQuelle; die
+   Fassung dahinter liegt in der Huelle (EPOS.iOS/Dienste/IosProjektQuelle).
+*@
+
+@namespace EPOS.UI.Seiten
+
+@implements EPOS.UI.Dienste.INavigationsZiel
+@implements IDisposable
+
+@inject IProjektQuelle Quelle
+
+@if (_ansicht == Seitenschluessel.Energietraeger)
+{
+    <EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteDialog
+        Energietraeger="@_energietraeger"
+        Geschlossen="BeiEnergietraegerFertig" />
+}
+else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not null)
+{
+    <EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitDialog
+        IdStamm="@_bhkw.IdStamm"
+        StammName="@_bhkw.StammName"
+        Anlagen="@_bhkw.Anlagen"
+        Parameter="@_bhkw.Parameter"
+        HatHeizkessel="@_bhkw.HatHeizkessel"
+        Doppelpflege="@_bhkw.Doppelpflege"
+        Katalog="@_bhkw.Katalog"
+        ErgebnisseLaden="@_bhkw.ErgebnisseLaden"
+        Speichern="@_bhkw.Speichern"
+        Geschlossen="BeiBhkwFertig" />
+}
+else
+{
+    @if (!string.IsNullOrEmpty(_statuszeile))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_statuszeile" />
+    }
+
+    <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" />
+}
+
+@code {
+    // =====================================================================
+    // Zustand - drei Ansichten, ein offenes Projekt
+    // =====================================================================
+
+    private string _ansicht = Seitenschluessel.Projektliste;
+    private IReadOnlyList<ProjektZeile> _projekte = Array.Empty<ProjektZeile>();
+    private IReadOnlyList<(int Id, string Name)> _energietraeger = Array.Empty<(int, string)>();
+    private BhkwDialogDaten? _bhkw;
+    private ProjektZeile? _projekt;
+    private string _statuszeile = "";
+
+    /// <summary>
+    /// Die zuletzt gezeichnete Wurzel meldet sich als Navigationsziel an. Der
+    /// iOS-Adapter <c>IosNavigation</c> reicht die Maskenschluessel des Kerns
+    /// hierher weiter; ohne angemeldete Wurzel laeuft er leer - derselbe Zustand
+    /// wie <c>KeineNavigation</c>.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Navigationsziel.Aktuell = this;
+        Laden();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (ReferenceEquals(Navigationsziel.Aktuell, this)) Navigationsziel.Aktuell = null;
+    }
+
+    // =====================================================================
+    // Laden
+    // =====================================================================
+
+    private void Laden()
+    {
+        _projekte = Quelle.Projekte();
+    }
+
+    /// <summary>Die Zahl der geladenen Projekte - die Huelle schreibt sie ins Startprotokoll.</summary>
+    public int ProjektAnzahl => _projekte.Count;
+
+    // =====================================================================
+    // Umschalten
+    // =====================================================================
+
+    private void BeiOeffnen((ProjektZeile Projekt, string Maske) wahl)
+    {
+        _projekt = wahl.Projekt;
+        _statuszeile = "";
+        Zeige(wahl.Maske);
+    }
+
+    private bool Zeige(string maske)
+    {
+        if (maske == Seitenschluessel.Energietraeger)
+        {
+            _energietraeger = Quelle.Energietraeger();
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.BhkwWirtschaftlichkeit)
+        {
+            _bhkw = Quelle.BhkwDaten(_projekt?.Id ?? 0);
+            if (_bhkw is null)
+            {
+                // Kein Stammprojekt, keine Anlagen: Die Liste bleibt stehen und
+                // sagt warum. Das ist der Windows-Zustand "Dialog geht nicht auf".
+                _statuszeile = KeinBhkwText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.Projektliste)
+        {
+            _ansicht = maske;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ZurueckZurListe()
+    {
+        _ansicht = Seitenschluessel.Projektliste;
+        _bhkw = null;
+        Laden();
+    }
+
+    // =====================================================================
+    // Rueckwege der beiden Dialoge
+    // =====================================================================
+
+    private void BeiEnergietraegerFertig(EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteErgebnis? ergebnis)
+    {
+        if (ergebnis is not null)
+        {
+            // Der Schreibweg liegt in der Huelle - dieselbe Aufteilung wie unter
+            // Windows, wo Form_Kosten nach dem Schliessen weiterarbeitet.
+            string name = Quelle.EnergietraegerUebernehmen(_projekt?.Id ?? 0, ergebnis);
+            _statuszeile = string.IsNullOrEmpty(name)
+                ? MeldungNichtAngelegt
+                : string.Format(MeldungAngelegt, name);
+        }
+
+        ZurueckZurListe();
+    }
+
+    private void BeiBhkwFertig(EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitErgebnis ergebnis)
+    {
+        _statuszeile = ergebnis is { Gespeichert: true } ? MeldungGespeichert : "";
+        ZurueckZurListe();
+    }
+
+    // =====================================================================
+    // INavigationsZiel - der Weg vom Kern herein
+    // =====================================================================
+
+    /// <inheritdoc />
+    public bool OeffneMaske(string maske, params object[] argumente)
+    {
+        // Der Kern ruft moeglicherweise von einem Hintergrundfaden; gezeichnet
+        // wird ausschliesslich auf dem Renderfaden.
+        bool bekannt = maske == Seitenschluessel.Energietraeger
+                    || maske == Seitenschluessel.BhkwWirtschaftlichkeit
+                    || maske == Seitenschluessel.Projektliste;
+
+        if (!bekannt) return false;
+
+        _ = InvokeAsync(() =>
+        {
+            Zeige(maske);
+            StateHasChanged();
+        });
+        return true;
+    }
+
+    /// <inheritdoc />
+    public void Auffrischen()
+    {
+        _ = InvokeAsync(() =>
+        {
+            Laden();
+            StateHasChanged();
+        });
+    }
+
+    // =====================================================================
+    // Texte - deutscher Rueckfall wie in den Dialogen (iU8-Muster)
+    // =====================================================================
+
+    /// <summary>Meldung nach dem Anlegen einer Energietraeger-Variante ({0} = Name).</summary>
+    [Parameter] public string MeldungAngelegt { get; set; } = "Variante „{0}“ wurde angelegt.";
+
+    /// <summary>Meldung, wenn nichts angelegt wurde.</summary>
+    [Parameter] public string MeldungNichtAngelegt { get; set; } = "Es wurde keine Variante angelegt.";
+
+    /// <summary>Meldung nach dem Speichern der BHKW-Wirtschaftlichkeit.</summary>
+    [Parameter] public string MeldungGespeichert { get; set; } = "Die Angaben wurden gespeichert.";
+
+    /// <summary>Meldung, wenn zum Projekt kein BHKW-Parametersatz zu laden ist.</summary>
+    [Parameter] public string KeinBhkwText { get; set; } =
+        "Zu diesem Projekt gibt es keine BHKW-Vergleichsgruppe.";
+}

@@ -104,10 +104,17 @@ iPad. `System.Data.OleDb` ist seit **iU6** ganz weg — kein `using`, kein Typ, 
 | `Microsoft.ML.OnnxRuntime`, `Microsoft.ML.Tokenizers` | `SemantikModell` | iU5-U2 |
 | `DocumentFormat.OpenXml` | `WordBerichtGenerator` | iU5-U3 |
 | `SixLabors.Fonts` | Spaltenbreiten für ClosedXML; **auf 1.0.1 gepinnt** (ab 2.x gilt die Six-Labors-Split-Lizenz) | iU5-U3 |
-| `SQLitePCLRaw.bundle_green` | greift erst mit dem iOS-Ziel (iU10) | iU6-T5 |
 
 Dazu zwei `ProjectReference`: `SpeicherEngine` (iU4) und `KiKern` (iU5-U2, UI- und DB-frei,
 ohne eigene Pakete).
+
+**Kein iOS-Sonderpaket mehr (iU10-1).** Bis iU10 stand hier eine bedingte `PackageReference` auf
+`SQLitePCLRaw.bundle_green` für die Ziele `net10.0-ios`/`net10.0-maccatalyst`. Sie ist gestrichen:
+Die Fassung 2.1.12 gibt es nicht (`bundle_green` endet bei 2.1.11, NU1102), `bundle_e_sqlite3`
+lädt auf iOS ohnehin nichts dynamisch (`provider.internal`, statisch gelinkte `e_sqlite3.a`), und
+die System-SQLite des Geräts wäre für die **114 STRICT-Tabellen** der Datenbank nicht steuerbar.
+Der Kern bekommt auch kein zweites `TargetFramework` — die iOS-Hülle `EPOS.iOS` referenziert ihn
+als `net10.0`-Bibliothek und zieht ihre Nativen selbst.
 
 **Datenzugriff ausschließlich über `DataRepository` mit `new DbParam(…)`.** `DataRepository`
 ist seit iU6-T4 eine **Fassade**: Die Arbeit macht `SqliteDatenzugriff` hinter

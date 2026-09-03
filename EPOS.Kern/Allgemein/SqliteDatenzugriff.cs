@@ -409,7 +409,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                DataRepository.FehlerMelden("Datenbankfehler: " + ex.Message);
+                DataRepository.FehlerMelden("Datenbankfehler: " + ex.Message + "\n\nAnweisung: " + Kurz(sql));
                 return false;
             }
         }
@@ -428,7 +428,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                DataRepository.FehlerMelden("Datenbankfehler (NonQuery): " + ex.Message);
+                DataRepository.FehlerMelden("Datenbankfehler (NonQuery): " + ex.Message + "\n\nAnweisung: " + Kurz(sql));
                 // Wir geben -1 zurück, um einen Fehler von "0 betroffenen Zeilen" zu unterscheiden
                 return -1;
             }
@@ -457,7 +457,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                DataRepository.FehlerMelden("Datenbankfehler (NonQuery): " + ex.Message);
+                DataRepository.FehlerMelden("Datenbankfehler (NonQuery): " + ex.Message + "\n\nAnweisung: " + Kurz(insertSql));
                 // Wir geben -1 zurück, um einen Fehler von "0 betroffenen Zeilen" zu unterscheiden
                 return 0;
             }
@@ -576,5 +576,14 @@ namespace WindowsFormsApplication1
                 "ORDER BY id, seq",
                 new DbParam("?", tabelle ?? string.Empty));
         }
-    }
+    
+        /// <summary>Die Anweisung fuer die Fehlermeldung, auf 300 Zeichen gekuerzt - damit
+        /// der Anwender melden kann, WELCHE Anweisung scheiterte (Befund 03.09.2026).</summary>
+        private static string Kurz(string sql)
+        {
+            if (string.IsNullOrEmpty(sql)) return "";
+            string s = sql.Replace("\r", " ").Replace("\n", " ");
+            return s.Length > 300 ? s.Substring(0, 300) + " …" : s;
+        }
+}
 }

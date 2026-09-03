@@ -1499,12 +1499,19 @@ namespace WindowsFormsApplication1
 
                 // 3. Gruppe in den Katalog aufnehmen ("Lern-Funktion")
                 // Wir nutzen den "Insert if not exists" Trick mit deiner neuen Methode
-                string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName) 
+                //
+                // SQL-Dialekt-Audit 03.09.2026: Die Unterabfrage hiess ihre Zählspalte
+                // frueher gar nicht und wurde als CheckTbl.[Expr1000] angesprochen -
+                // "Expr1000" ist der Name, den ACCESS einer unbenannten Ausdrucksspalte
+                // von sich aus gibt. SQLite tut das nicht ("no such column:
+                // CheckTbl.Expr1000"), der Katalogeintrag entstand also nie. Jetzt traegt
+                // die Spalte einen eigenen Namen; Wirkung und Zahl der Parameter bleiben.
+                string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName)
                               SELECT ?
-                              FROM (SELECT COUNT(*)
+                              FROM (SELECT COUNT(*) AS Anzahl
                               FROM Tab_KostenGruppenKatalog
-                              WHERE GruppenName = ?) AS CheckTbl 
-                              WHERE CheckTbl.[Expr1000] = 0";
+                              WHERE GruppenName = ?) AS CheckTbl
+                              WHERE CheckTbl.Anzahl = 0";
 
                 DataRepository.ExecuteSQL(sqlKatalog,
                     new DbParam("@g1", gewaehlteGruppe),
@@ -2103,6 +2110,16 @@ namespace WindowsFormsApplication1
         /// dieser Umstellung GELOESCHT (Regel M1: keine zweite Fassung derselben
         /// Maske). Angezeigt wird die Komponente von der Huelle
         /// <see cref="BlazorDialogForm{TKomponente}"/>.
+        /// </para>
+        /// <para>
+        /// <b>Befund 03.09.2026 (iU9-1).</b> Diese MASKE ist seit KD6a ohne Einstieg:
+        /// <c>Views\BerichteKosten\UcBkKosten.btnVerwaltung_Click</c> oeffnet
+        /// <c>Form_KostenKomponente</c>, und <c>Form_Start</c> raeumt den alten Knopf
+        /// mit <c>EntferneAltknopf(btn_Kosten)</c> ab. Der Blazor-Dialog war ueber sie
+        /// also gar nicht erreichbar. Die erreichbaren Aufrufer sind
+        /// <c>Views\Heizkessel\Form_Heizkessel</c> und <c>Views\BHKW\Form_BHKWEing</c>;
+        /// beide sind mit iU9-1 auf dieselbe Komponente umgestellt. Diese Methode
+        /// bleibt unveraendert stehen, solange die Maske selbst nicht geloescht ist.
         /// </para>
         /// <para>
         /// <b>Fuer diese Methode aendert sich wenig.</b> Sie bekommt weiterhin ein

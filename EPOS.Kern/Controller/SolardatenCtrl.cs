@@ -282,7 +282,13 @@ namespace WindowsFormsApplication1
 
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+                    // SQL-Dialekt-Audit 03.09.2026: Die Spalte heisst im Schema
+                    // Temperatur; "Außen_Temp" ist der Name der EIGENSCHAFT im Model
+                    // (siehe MapDataRowToModel, das Temperatur nach Außen_Temp liest).
+                    // Mit dem Modellnamen scheiterte der Satz an "table Tab_Solar has no
+                    // column named Außen_Temp" - unter Access ebenso, nur ruft niemand
+                    // diese Methode auf.
+                    string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Temperatur) VALUES (?, ?, ?)";
 
                     try
                     {
@@ -325,7 +331,11 @@ namespace WindowsFormsApplication1
                 nextID = (maxRes != DBNull.Value && maxRes != null ? Convert.ToInt32(maxRes) : 0) + 1;
 
                 int refID = 0;
-                string sqlRef = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
+                // SQL-Dialekt-Audit 03.09.2026: Tab_Klimaregion fuehrt den Schluessel als
+                // ID und den Namen als Bezeichner - ID_Klimaregion/Name gibt es nur in
+                // Tab_Klimaregion_STAMM. Tab_Solar.ID_Klimaregion zeigt auf
+                // Tab_Klimaregion.ID, also ist DAS der gesuchte Wert.
+                string sqlRef = "SELECT ID FROM Tab_Klimaregion WHERE Bezeichner = ?";
                 object refRes = v.Skalar(sqlRef,
                     new DbParam("@name", DbParamTyp.VarWChar) { Wert = szName ?? (object)DBNull.Value });
                 if (refRes != null && refRes != DBNull.Value)
@@ -334,7 +344,8 @@ namespace WindowsFormsApplication1
                 }
 
                 // Zeilenweises Schreiben in der Transaktion des Vorgangs
-                string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+                // Spaltenname wie im Schema (siehe Insert): Temperatur, nicht Außen_Temp.
+                string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Temperatur) VALUES (?, ?, ?)";
                 foreach (DataRow row in dt.Rows)
                 {
                     v.Ausfuehren(sqlInsert,

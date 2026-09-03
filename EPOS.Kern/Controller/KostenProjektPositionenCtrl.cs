@@ -287,6 +287,8 @@ namespace WindowsFormsApplication1
                     // schraenkt EXISTS auf dieselbe Verbundbedingung ein. Positionen
                     // ohne (gueltige) Anlage dieses Projekts bleiben unberuehrt.
                     // Schritt 47 im eingefrorenen Access-Zweig behaelt seine JOIN-Form.
+                    // Zweiter Fundort desselben Fehlers (remote dd4113f, SQL-Dialekt-
+                    // Audit): schon das ANLEGEN eines Heizkessels loeste ihn aus.
                     int komponentenId = Convert.ToInt32(r["ID"]);
                     string anlageDesProjekts =
                         "FROM Tab_Energieanlagen AS a " +
