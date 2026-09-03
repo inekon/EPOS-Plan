@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Programmsymbol - Platzhalter aus dem Hausthema (KartenStil): dunkles Blau
+     der Gruppenkoepfe als Grund, "EP" in der hellen Themaflaeche. Er wird von
+     der MAUI-Buildkette in alle geforderten Groessen gerastert. Ein
+     gestaltetes Symbol ist Sache von iU13 (TestFlight/Store). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="456" height="456" viewBox="0 0 456 456">
+  <rect width="456" height="456" fill="#0F1F3D"/>
+  <text x="228" y="292" font-family="Helvetica, Arial, sans-serif" font-size="200"
+        font-weight="bold" fill="#F5F4EF" text-anchor="middle">EP</text>
+</svg>

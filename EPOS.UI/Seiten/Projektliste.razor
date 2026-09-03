@@ -1,0 +1,94 @@
+﻿@* Die Projektliste - der Einstieg der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
+
+   Vorbild ist die Variantenliste der Startmaske (Views/Hauptformular/Form_Start,
+   Reiter "Projekte"): Nummer, Name, Klimaregion, Ausstattung. Uebernommen ist die
+   SPALTENFOLGE, nicht der Aufbau - statt eines ListView steht hier das Raster des
+   Hauses (QuickGrid).
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen kommen fertig als [Parameter];
+   geladen werden sie von der Huelle ueber IProjektQuelle.
+
+   BERUEHRUNG. Die beiden Knoepfe je Zeile tragen die Hausklasse epos-knopf und
+   damit das Mindestziel von 44 px (--epos-touchziel) - auf dem iPad wird mit dem
+   Finger getroffen, nicht mit dem Mauszeiger.
+*@
+
+@namespace EPOS.UI.Seiten
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<div class="epos-seite">
+
+    <div class="epos-seite-kopf">
+        <h1 class="epos-seite-titel">@TitelText</h1>
+        <span class="epos-seite-anzahl">@Zeilen.Count</span>
+    </div>
+
+    @if (Zeilen.Count == 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@LeerText" />
+    }
+    else
+    {
+        <Raster TZeile="ProjektZeile" Zeilen="@Zeilen.AsQueryable()">
+            <KindInhalt>
+                <PropertyColumn TGridItem="ProjektZeile" TProp="int" Property="@(z => z.Id)" Title="@SpalteNummer" />
+                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Name)" Title="@SpalteName" />
+                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Klimazone)" Title="@SpalteKlimazone" />
+                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Ausstattung)" Title="@SpalteAusstattung" />
+                <TemplateColumn TGridItem="ProjektZeile" Title="@SpalteAktionen">
+                    <button type="button" class="epos-knopf epos-projekt-energie"
+                            @onclick="@(() => Oeffne(context, Seitenschluessel.Energietraeger))">
+                        @KnopfEnergietraeger
+                    </button>
+                    <button type="button" class="epos-knopf epos-projekt-bhkw"
+                            @onclick="@(() => Oeffne(context, Seitenschluessel.BhkwWirtschaftlichkeit))">
+                        @KnopfBhkw
+                    </button>
+                </TemplateColumn>
+            </KindInhalt>
+        </Raster>
+    }
+</div>
+
+@code {
+    /// <summary>Die anzuzeigenden Projekte, fertig geladen und in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<ProjektZeile> Zeilen { get; set; } = Array.Empty<ProjektZeile>();
+
+    /// <summary>
+    /// Der Anwender will zu einem Projekt eine Maske oeffnen. Uebergeben werden das
+    /// Projekt und der sprachneutrale Maskenschluessel; geoeffnet wird von der
+    /// Wurzel, nicht von dieser Liste.
+    /// </summary>
+    [Parameter] public EventCallback<(ProjektZeile Projekt, string Maske)> Oeffnen { get; set; }
+
+    /// <summary>Ueberschrift der Seite.</summary>
+    [Parameter] public string TitelText { get; set; } = "Projekte";
+
+    /// <summary>Text, wenn die Datenbank kein Projekt fuehrt.</summary>
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Spaltentitel „Nr." (Tab_Projekt.ID).</summary>
+    [Parameter] public string SpalteNummer { get; set; } = "Nr.";
+
+    /// <summary>Spaltentitel „Projekt".</summary>
+    [Parameter] public string SpalteName { get; set; } = "Projekt";
+
+    /// <summary>Spaltentitel „Klimaregion".</summary>
+    [Parameter] public string SpalteKlimazone { get; set; } = "Klimaregion";
+
+    /// <summary>Spaltentitel „Ausstattung".</summary>
+    [Parameter] public string SpalteAusstattung { get; set; } = "Ausstattung";
+
+    /// <summary>Spaltentitel der Knopfspalte.</summary>
+    [Parameter] public string SpalteAktionen { get; set; } = "Öffnen";
+
+    /// <summary>Beschriftung des Knopfes „Energieträger anlegen".</summary>
+    [Parameter] public string KnopfEnergietraeger { get; set; } = "Energieträger…";
+
+    /// <summary>Beschriftung des Knopfes „BHKW-Wirtschaftlichkeit".</summary>
+    [Parameter] public string KnopfBhkw { get; set; } = "BHKW-Wirtschaftlichkeit…";
+
+    private Task Oeffne(ProjektZeile projekt, string maske)
+        => Oeffnen.InvokeAsync((projekt, maske));
+}

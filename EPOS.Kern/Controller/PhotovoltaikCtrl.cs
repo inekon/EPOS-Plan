@@ -214,6 +214,13 @@ namespace WindowsFormsApplication1
         {
             try
             {
+                // Konfliktaufloesung 02.09.2026 (Paket FX2, Nebenreparatur): der
+                // ANLAGENSCHARFE Zweig aus FX1 (I-1) mit den DbParam-Traegern der
+                // iU6-Umstellung - beide Seiten des Merges 981cb84 zusammengefuehrt.
+                // Integrations-Merge 03.09.2026 (FX/B5 auf ios_migration): der
+                // iOS-Strang hatte denselben Marker beim Umzug nach EPOS.Kern
+                // zeichengleich aufgeloest - der Rumpf ist auf beiden Seiten
+                // identisch, uebernommen wird nur diese Herkunftsnotiz.
                 string sql = "SELECT SUM(p.Leistung * a.PV_Leistung) " +
                              "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
                              "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";

@@ -4,6 +4,12 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 
+// Der Dialog „Energietraeger Variante“ ist seit iZ5 eine Razor-Komponente
+// (iU8, iU9-1). Bewusst NUR dieser eine Namensraum: EventCallback wird unten
+// ausgeschrieben, damit sich Microsoft.AspNetCore.Components nicht mit
+// System.Windows.Forms um Namen streitet.
+using EPOS.UI.Dialoge.Kosten;
+
 
 namespace WindowsFormsApplication1
 {
@@ -479,48 +485,107 @@ namespace WindowsFormsApplication1
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
         }
 
+        /// <summary>
+        /// Waehlt oder legt die Energietraegervariante zum Brennstoff des BHKW
+        /// an - Knopf "◀" (btn_Hinzu).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Paket iU9-1 (03.09.2026).</b> Der Dialog ist seit dem Stichtag iZ5 die
+        /// Razor-Komponente <c>EnergietraegerVarianteDialog</c> in <c>EPOS.UI</c>; die
+        /// WinForms-Fassung <c>Form_Kosten_VarAuswahl</c> ist mit diesem Schritt
+        /// GELOESCHT (Regel M1: keine zweite Fassung derselben Maske). Angezeigt wird
+        /// die Komponente von der Huelle <see cref="BlazorDialogForm{TKomponente}"/> -
+        /// genau wie in <c>Views\Kosten\Form_Kosten.cs</c>.
+        /// </para>
+        /// <para>
+        /// <b>Befund 03.09.2026.</b> Die Umstellung in iU8-9 hing am Kosteneditor
+        /// <c>Form_Kosten</c> - der ist seit KD6a aber kein Einstieg mehr. Die beiden
+        /// ERREICHBAREN Aufrufer sind diese Maske und <c>Form_BHKWEing</c>; deshalb
+        /// wurde die erste iU9-Welle vorgezogen.
+        /// </para>
+        /// <para>
+        /// <b>Fuer diese Methode aendert sich nur die Herkunft der Werte.</b> Was der
+        /// Anwender eingegeben hat, steht im Ergebnis-Record; die sechs daraus
+        /// ABGELEITETEN Werte holt <c>EnergietraegerVarianteCtrl.Ergaenzen</c> mit
+        /// denselben Abfragen, die der geloeschte Dialog beim Schliessen selbst
+        /// ausfuehrte. Alles danach - Transaktion, Katalogsuche, INSERT, Preishistorie,
+        /// Projektzuordnung - ist unveraendert.
+        /// </para>
+        /// <para>
+        /// <b>Was entfaellt.</b> Die drei Vorabfragen auf <c>Bezeichner</c>,
+        /// <c>ID_Kategorie</c> und <c>Gruppe</c> dienten allein dem alten Dialog:
+        /// <c>m_szBrennstoff</c> war seine Vorwahl (jetzt <c>VorwahlId</c> - dieselbe
+        /// Auswahl, nur ueber die Id statt ueber den Anzeigenamen), <c>m_KategorieID</c>
+        /// und <c>m_szKategorie</c> engten seine beiden Listen ein. NACH dem Dialog hat
+        /// keiner der drei Werte je eine Rolle gespielt; die Gruppe kommt hier wie im
+        /// Kostendialog aus <c>Ergaenzen</c> (<c>GroupCode</c>) und richtet sich damit
+        /// nach dem WIRKLICH gewaehlten Traeger. <c>bOhneVariante</c> war ein totes Feld
+        /// (K6): beide Aufrufer setzten es auf seinen Vorgabewert <c>false</c>, die
+        /// Maske selbst hat es nie gelesen.
+        /// </para>
+        /// <para>
+        /// <b>Bewusste Abweichung.</b> Die Auswahlliste zeigt jetzt ALLE Energietraeger
+        /// des Stamms, nicht nur die der Kategorie des vorgewaehlten Brennstoffs. Der
+        /// angelegte Traeger bleibt trotzdem stimmig, weil <c>group_code</c>,
+        /// <c>pricing_model</c>, <c>billing_unit</c>, Hi, Hs und die Umrechnung
+        /// ausnahmslos aus dem gewaehlten Traeger abgeleitet werden.
+        /// </para>
+        /// </remarks>
         private string CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)
         {
             carrierId = 0;
 
-            using (var dlg = new Form_Kosten_VarAuswahl())
+            // Das Ergebnis kommt nicht als Rueckgabewert, sondern ueber den Rueckruf
+            // der Komponente; die Huelle schliesst daraufhin das Fenster.
+            EnergietraegerVarianteErgebnis ergebnis = null;
+            BlazorDialogForm<EnergietraegerVarianteDialog> dlg = null;
+
+            var parameter = new Dictionary<string, object>
             {
-                string szBrennstoff = "";
-                string szKategorie = "";
-                int nKategorie = 0;
+                // Die Komponente bleibt datenbankfrei: Sie bekommt die Liste fertig.
+                ["Energietraeger"] = EnergietraegerVarianteCtrl.Energietraeger(EnergietraegerVarianteCtrl.KategorieZu(nBrennstoff)),   // nur die Kategorie der Komponente (Befund 03.09.2026)
 
-                object br = DataRepository.ExecuteScalar(
-                    "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new DbParam[] { new DbParam("@id", nBrennstoff) });
-                if (br != null && br != DBNull.Value)
-                    szBrennstoff = br.ToString();
+                // nBrennstoff stammt aus dem Stammsatz und ist 0, wenn dort kein
+                // Brennstoff hinterlegt ist. Dann gibt es keine Vorwahl und die
+                // Komponente zeigt den ersten Eintrag; der alte Dialog lief in diesem
+                // Fall in eine leere Liste und damit in einen Absturz.
+                ["VorwahlId"] = nBrennstoff > 0 ? (int?)nBrennstoff : null,
 
-                object brkatid = DataRepository.ExecuteScalar(
-                    "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new DbParam[] { new DbParam("@id", nBrennstoff) });
-                if (brkatid != null && brkatid != DBNull.Value)
-                    nKategorie = Convert.ToInt32(brkatid);
+                ["TitelText"] = MyResource.Resource.KAUSW_TITEL,
+                ["LabelEnergietraeger"] = MyResource.Resource.KAUSW_LBL_ENERGIETRAEGER,
+                ["LabelVariante"] = MyResource.Resource.KAUSW_LBL_VARIANTE,
+                ["MeldungNameFehlt"] = MyResource.Resource.KAUSW_MSG_NAME_FEHLT,
+                ["MeldungTraegerFehlt"] = MyResource.Resource.KAUSW_MSG_TRAEGER_FEHLT,
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
 
-                object brkat = DataRepository.ExecuteScalar(
-                    "SELECT Gruppe FROM Tab_BrennstoffKategorien WHERE ID = ?",
-                    new DbParam[] { new DbParam("@id", nKategorie) });
-                if (brkat != null && brkat != DBNull.Value)
-                    szKategorie = brkat.ToString();
+                ["Geschlossen"] = Microsoft.AspNetCore.Components.EventCallback.Factory
+                    .Create<EnergietraegerVarianteErgebnis>(this, e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null);
+                    })
+            };
 
-                dlg.m_szBrennstoff = szBrennstoff;
-                dlg.m_KategorieID = nKategorie;
-                dlg.m_szKategorie = szKategorie;
-                dlg.bOhneVariante = false;
+            dlg = new BlazorDialogForm<EnergietraegerVarianteDialog>(
+                MyResource.Resource.KAUSW_TITEL, new Size(460, 320), parameter);
 
-                if (dlg.ShowDialog() != DialogResult.OK) return "";
+            using (dlg)
+            {
+                if (dlg.ShowDialog() != DialogResult.OK || ergebnis == null) return "";
+
+                // Die sechs abgeleiteten Werte - frueher FetchAdditionalData und
+                // GetConvID im Dialog selbst, jetzt derselbe Weg im Kern.
+                EnergietraegerDaten daten = EnergietraegerVarianteCtrl.Ergaenzen(ergebnis.BrennstoffId);
 
                 // Default-Werte (reine Lesezugriffe) VOR der Transaktion ermitteln.
-                double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", dlg.SelectedBrennstoffID));
-                double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", dlg.SelectedBrennstoffID));
-                double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", dlg.SelectedBrennstoffID));
-                double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", dlg.SelectedBrennstoffID));
-                double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", dlg.SelectedBrennstoffID));
-                double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
+                double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", ergebnis.BrennstoffId));
+                double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", ergebnis.BrennstoffId));
+                double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", ergebnis.BrennstoffId));
+                double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", ergebnis.BrennstoffId));
+                double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", ergebnis.BrennstoffId));
+                double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", ergebnis.BrennstoffId));
 
                 // Punkt 1: Katalog-Träger und (bei echtem Projekt) Preishistorie + Projekt-
                 // Einstellungen in EINER Transaktion. Schlägt ein Insert fehl, macht Rollback
@@ -533,7 +598,7 @@ namespace WindowsFormsApplication1
                         carrierId = -1;
                         {
                             List<DbParam> ps = new List<DbParam>();
-                            ps.Add(new DbParam("@name", dlg.SelectedName));
+                            ps.Add(new DbParam("@name", ergebnis.VariantenName));
                             object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", ps.ToArray());
                             if (existing != null && existing != DBNull.Value)
                                 carrierId = Convert.ToInt32(existing);
@@ -542,14 +607,14 @@ namespace WindowsFormsApplication1
                         if (carrierId < 0)
                         {
                             List<DbParam> pTraeger = new List<DbParam>();
-                            pTraeger.Add(new DbParam("@idB", dlg.SelectedBrennstoffID));
-                            pTraeger.Add(new DbParam("@code", dlg.SelectedCode));
-                            pTraeger.Add(new DbParam("@name", dlg.SelectedName));
-                            pTraeger.Add(new DbParam("@gc", dlg.SelectedGroupCode));
-                            pTraeger.Add(new DbParam("@pm", dlg.SelectedBrennstoffCode));
-                            pTraeger.Add(new DbParam("@unit", dlg.SelectedBillingUnit));
-                            pTraeger.Add(new DbParam("@shi", dlg.SelectedHi));
-                            pTraeger.Add(new DbParam("@shs", dlg.SelectedHs));
+                            pTraeger.Add(new DbParam("@idB", ergebnis.BrennstoffId));
+                            pTraeger.Add(new DbParam("@code", ergebnis.BrennstoffName));
+                            pTraeger.Add(new DbParam("@name", ergebnis.VariantenName));
+                            pTraeger.Add(new DbParam("@gc", daten.GroupCode));
+                            pTraeger.Add(new DbParam("@pm", daten.Code));
+                            pTraeger.Add(new DbParam("@unit", daten.BillingUnit));
+                            pTraeger.Add(new DbParam("@shi", daten.Hi));
+                            pTraeger.Add(new DbParam("@shs", daten.Hs));
                             pTraeger.Add(new DbParam("@defap", default_arbeitspreis));
                             pTraeger.Add(new DbParam("@defgp", default_grundpreis));
                             pTraeger.Add(new DbParam("@co2", default_co2));
@@ -582,7 +647,7 @@ namespace WindowsFormsApplication1
                             v.Commit();
                             MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
                                             "werden beim Speichern des Projekts angelegt.");
-                            return dlg.SelectedName;
+                            return ergebnis.VariantenName;
                         }
 
                         // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
@@ -596,8 +661,8 @@ namespace WindowsFormsApplication1
                         if (vorhanden > 0)
                         {
                             v.Commit();
-                            MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
-                            return dlg.SelectedName;
+                            MessageBox.Show($"Die Energieträgervariante '{ergebnis.VariantenName}' ist diesem Projekt bereits zugeordnet.");
+                            return ergebnis.VariantenName;
                         }
 
                         // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen).
@@ -606,10 +671,10 @@ namespace WindowsFormsApplication1
                             ps.Add(new DbParam("@cid", carrierId));
                             ps.Add(new DbParam("@prid", m_ID_Projekt));
                             ps.Add(new DbParam("@ap", Math.Round(default_arbeitspreis, 4)));
-                            ps.Add(new DbParam("@hi", Math.Round(dlg.SelectedHi, 4)));
+                            ps.Add(new DbParam("@hi", Math.Round(daten.Hi, 4)));
                             ps.Add(new DbParam("@gp", Math.Round(default_grundpreis, 4)));
                             ps.Add(new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now });
-                            ps.Add(new DbParam("@au", dlg.SelectedBillingUnit));
+                            ps.Add(new DbParam("@au", daten.BillingUnit));
                             ps.Add(new DbParam("@lp", Math.Round(default_leistungspreis, 4)));
                             v.Ausfuehren(@"INSERT INTO energy_price
                                      (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
@@ -622,10 +687,10 @@ namespace WindowsFormsApplication1
                             ps.Add(new DbParam("@eid", carrierId));
                             ps.Add(new DbParam("@p", Math.Round(default_arbeitspreis, 4)));
                             ps.Add(new DbParam("@pl", Math.Round(default_leistungspreis, 4)));
-                            ps.Add(new DbParam("@h", Math.Round(dlg.SelectedHi, 4)));
-                            ps.Add(new DbParam("@hs", Math.Round(dlg.SelectedHs, 4)));
+                            ps.Add(new DbParam("@h", Math.Round(daten.Hi, 4)));
+                            ps.Add(new DbParam("@hs", Math.Round(daten.Hs, 4)));
                             ps.Add(new DbParam("@b", Math.Round(default_grundpreis, 4)));
-                            ps.Add(new DbParam("@convid", dlg.SelectedConvID));
+                            ps.Add(new DbParam("@convid", daten.ConvID));
                             ps.Add(new DbParam("@co2", default_co2));
                             ps.Add(new DbParam("@so2", default_so2));
                             ps.Add(new DbParam("@nox", default_nox));
@@ -637,7 +702,7 @@ namespace WindowsFormsApplication1
 
                         v.Commit();
                         MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
-                        return dlg.SelectedName;
+                        return ergebnis.VariantenName;
                     }
                     catch (Exception ex)
                     {

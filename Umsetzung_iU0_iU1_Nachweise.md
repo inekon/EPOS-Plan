@@ -8,6 +8,7 @@
 | iU4 | `4a0a4e2`..`18f515f` |
 | iU5 | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` |
 | iU6 | `22fb7eb`..`300a354` |
+| SQL-Dialekt-Audit (Nachzug zu iU6) | `3be8b0d`, `26c4d10` und der Doku-Commit darauf |
 | iU7 | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` |
 
 **iU8 steht in einer eigenen Liste:**
@@ -478,6 +479,80 @@ Bedingung `-ios`/`-maccatalyst` ist auf `net10.0` falsch. Build und Tests unver�
 
 - [ ] nur Restore und Build der Anwendung; fachlich ändert sich nichts. Der eigentliche Nachweis
       (bundle_green lädt, `Batteries_V2.Init()` greift) gehört zu iU10
+
+### SQL-Dialekt-Audit `3be8b0d`, `26c4d10` + Doku — der Nachzug zu iU6
+
+**Warum es hierher gehört.** iU6 hat den Datenzugriff plattformfrei gemacht, aber die
+**Sprache** der Anweisungen nicht angefasst. Der Bestand ist in Access aufgewachsen, und am
+03.09.2026 fielen beim Anwender zwei Altlasten auf, die der Referenzlauf nicht sehen kann,
+weil sie nicht im Rechenweg liegen:
+
+| | |
+|---|---|
+| `c288e1c` | `ucFuelSettings.GetProjectPrice` verglich `id_ENERGIETRÄGER` gegen die Spalte `ID_Energieträger`. SQLite faltet Groß/Klein **nur bei ASCII** — „no such column" |
+| `dd4113f` | `KostenProjektPositionenCtrl` führte `UPDATE … INNER JOIN … SET …` aus — „near INNER: syntax error" |
+
+Beides sind Bedienpfade. Der Punkt „**Was der Referenzlauf nicht abdeckt**" weiter unten
+sagt genau das; hier ist der systematische Nachzug dazu.
+
+**Drei Commits:**
+
+| Commit | Inhalt |
+|---|---|
+| `3be8b0d` | `Werkzeuge/SqlDialektPruefer/pruefer.py` — hält jeden SQL-Text mit `EXPLAIN` gegen `Referenzlaeufe/Kenndaten_Test.sqlite` und gegen die Access-Verbotsliste. Befundliste in der Commit-Meldung |
+| `26c4d10` | die 11 Fundstellen umgeschrieben (7 Dateien) |
+| *(dieser Commit)* | LIESMICH, CI-Schritt „SQL-Dialekt gegen SQLite" (nur ubuntu), `BETRIEB_SQLITE.md` Abschnitt 6 |
+
+**Befund** (Stand `dd4113f`, vor dem Umbau). 1331 SQL-Texte geprüft: 1171 in Ordnung,
+149 dynamisch (Tabellen- oder Spaltenname entsteht erst zur Laufzeit — Syntax geprüft,
+Objekte nicht prüfbar), **11 Fundstellen** in 6 Dateien. Davon zwei echte Dialektfehler, neun Bezeichner, die es im Schema nicht
+gibt (unter Access ebenso falsch, nur nie gemeldet, weil die Pfade nicht laufen).
+
+**Nicht angefasst, weil unter SQLite richtig:** die 20 Vergleiche `= True`/`= False`
+(alle 96 Boolean-Spalten der Testdatenbank führen 0/1 — Access’ −1 ist von der Migration
+weggeräumt), `IIF(…)` (SQLite kennt `iif` seit 3.32), geklammerte Joins, `[Tab].[Feld]`,
+`<>`, die drei `UPDATE … JOIN` in `SchemaMigration.cs` (Access-Zweig der
+Erststart-Migration, dort richtig).
+
+**Nachweis hier:** Prüfer nach dem Umbau 1330 Texte, **0 Fundstellen**, 149 dynamisch;
+Selbsttest 32 Anweisungen (21 müssen auffallen, 11 durchgehen), 0 Abweichungen;
+Build `WP-Plan.sln` Release x64 `--no-incremental` 0 Fehler / 30 Warnungen;
+`dotnet test WP-Plan.Kern.slnf` 929 (450 + 35 + 337 + 107);
+Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **GESAMT PASS**, 815.043 Werte,
+`diff -rq` ohne Ausgabe; `Proben/ZugriffsschichtProben` übersetzt.
+
+**Nachweis Windows — die umgeschriebenen Pfade durchklicken.** Sieben Masken, in dieser
+Reihenfolge; jede Zeile ist eine Stelle, die vorher schweigend nichts tat:
+
+- [ ] **Kosten → Position hinzufügen, mit einer NEUEN Gruppe** (`Form_Kosten`, `Expr1000`):
+      Gruppe eintippen, speichern, Dialog erneut öffnen — **die Gruppe steht jetzt in der
+      Auswahlliste**. Vorher blieb der Katalog leer, die Position selbst wurde aber
+      angelegt; wer den Unterschied sehen will, prüft
+      `SELECT * FROM Tab_KostenGruppenKatalog`
+- [ ] **Kosten → Reiter Energie → Energieträgerverwaltung** (`ucFuelSettings`, `c288e1c`):
+      öffnet ohne Meldung, Preise je Träger sichtbar
+- [ ] **Heizkessel → Knopf „◀" → Energieträger anlegen → OK**
+      (`KostenProjektPositionenCtrl`, `dd4113f`): kein „Datenbankfehler" beim Schließen,
+      die Kostenseite zeigt die Position mit Gerätezuordnung
+- [ ] **Kosten → Energie → Preisreihe** auf einer Datenbank **ohne** `Tab_PreisreiheDaten`
+      (`PreisreiheCtrl.StelleTabellenSicher`): Reihe anlegen, Werte einlesen, Reihe
+      löschen — danach steht **keine** Wertzeile mehr in `Tab_PreisreiheDaten`. Vorher
+      blieben bis zu 35.040 Waisenzeilen, weil der Fremdschlüssel lautlos nicht entstand
+- [ ] **Klimadaten → Region löschen** (`KlimadatenCtrl.Delete`): die Region ist weg;
+      der Weg über `KlimaregionCtrl` verhält sich unverändert
+- [ ] **Wärmepumpe → Stromtest → Knopf „Kühlung"** (`StromTestClass`): keine
+      Fehlermeldung mehr (die Auswertung selbst ist ein leerer Rumpf — geprüft wird nur,
+      dass der Zugriff durchgeht)
+- [ ] **Brauchwasser und Solardaten** (`BrauchwasserCtrl`, `SolardatenCtrl`): nichts zu
+      klicken — die geänderten Methoden haben keinen Aufrufer. Die Masken arbeiten über
+      `Z_ProjektBrauchwasserCtrl` bzw. lesen nur; sie müssen sich also **unverändert**
+      verhalten. Wer sicher gehen will, öffnet beide Masken einmal
+
+**Wenn eine dieser Masken abweicht,** ist `26c4d10` der einzige Verdächtige — er ist der
+einzige Commit der Kette, der Quelltext ändert. Der Prüfer (`3be8b0d`) und die Doku
+(dieser Commit) können nichts bewegen. Innerhalb von `26c4d10` gilt: Gruppe A (Form_Kosten,
+PreisreiheCtrl) fasst **laufende** Pfade an, Gruppe B nur Pfade, die vorher mit einer
+Datenbankmeldung endeten.
 
 ### Wenn der Referenzlauf auf Windows abweicht
 

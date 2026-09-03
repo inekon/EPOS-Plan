@@ -82,7 +82,10 @@ namespace WindowsFormsApplication1
         public void KühlleistungDaten(string szWaermepumpe)
         {
             WPCtrl wpCtrl = new WPCtrl();
-            wpCtrl.ReadSingle("select * from Tab_WP where WPName='" + szWaermepumpe + "'");
+            // SQL-Dialekt-Audit 03.09.2026: Tab_WP fuehrt den Namen als Bezeichner, eine
+            // Spalte WPName gibt es im ganzen Schema nicht ("no such column: WPName").
+            // Der Knopf "Kuehlung" in Form_StromTest lief deshalb in eine Fehlermeldung.
+            wpCtrl.ReadSingle("select * from Tab_WP where Bezeichner='" + szWaermepumpe + "'");
             int idwp = wpCtrl.ID;
 
             KenndatenKuehlungCtrl kdkCtrl = new KenndatenKuehlungCtrl();

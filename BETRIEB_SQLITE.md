@@ -174,7 +174,109 @@ Werte, jederzeit neu aufzubauen. **Kein Produktivdatenbestand.**
 
 ---
 
-## 6. Kundenbestände außerhalb des Erststarts
+## 6. SQL-Dialekt: Regeln für neuen Code
+
+**Stand 03.09.2026.** Access und SQLite sprechen nicht dieselbe Sprache. Der Bestand ist
+in Access aufgewachsen, und zwei Altlasten sind erst Wochen nach dem Cutover aufgefallen —
+beide in Pfaden, die der Referenzlauf nicht berührt (`ucFuelSettings.GetProjectPrice`,
+`KostenProjektPositionenCtrl`). Dieser Abschnitt hält fest, was beim Schreiben neuer
+Anweisungen zu beachten ist, und wie man es prüft, statt es zu hoffen.
+
+### 6.1 Die Umlautregel — die wichtigste, weil sie lautlos zuschlägt
+
+SQLite vergleicht Bezeichner **ohne Rücksicht auf Groß- und Kleinschreibung, aber nur bei
+ASCII-Buchstaben.** `id_energietraeger` findet `ID_Energietraeger`; `id_ENERGIETRÄGER`
+findet `ID_Energieträger` **nicht** — das große `Ä` ist für SQLite ein anderer Buchstabe
+als das kleine `ä`. Unter Access war die Schreibweise gleichgültig.
+
+> **Regel:** Jeder Bezeichner mit Umlaut, `ß` oder sonstigem Nicht-ASCII wird
+> **buchstabengetreu** so geschrieben, wie er im Schema steht. Im Zweifel nachsehen:
+> `PRAGMA table_info("Tab_…");`
+
+Das Schema führt heute **elf** solche Bezeichner — `ID_Energieträger`, `Rücklauf`,
+`Wirkungsgrad_Öl`, `Flaeche_Außenwand`, `k_Wert_Außenwand` und je drei
+`Abmessung_Anschluß_…`/`WBVK_Anschluß_…`. Im Quelltext stehen sie an 86 Stellen, allen
+voran `ID_Energieträger` (43-mal). Der Prüfer aus Abschnitt 6.4 hält jede einzelne davon
+gegen das Schema.
+
+### 6.2 Verbotsliste — Access-Schreibweisen und ihre SQLite-Entsprechung
+
+| Access | SQLite | Bemerkung |
+|---|---|---|
+| `UPDATE a INNER JOIN b ON … SET …` | `UPDATE a SET x = (SELECT … FROM b WHERE …) WHERE EXISTS (SELECT … )` | SQLite kennt kein JOIN im UPDATE; Meldung „near INNER: syntax error" |
+| `DELETE a.* FROM a INNER JOIN b …` | `DELETE FROM a WHERE EXISTS (SELECT 1 FROM b WHERE …)` | dasselbe für DELETE |
+| `IIf(b, x, y)` | `CASE WHEN b THEN x ELSE y END` | `IIF(b,x,y)` gibt es in SQLite seit 3.32 auch — dann ist es erlaubt |
+| `Nz(x, y)` | `COALESCE(x, y)` | |
+| `SELECT TOP 10 …` | `SELECT … LIMIT 10` | |
+| `SELECT DISTINCTROW …` | `SELECT DISTINCT …` | |
+| `#2026-01-31#` | `'2026-01-31'` | SQLite kennt kein Datumsliteral, nur Text/Zahl |
+| `a & b` (Verkettung) | `a \|\| b` | **lautlos falsch:** `&` ist in SQLite das bitweise UND |
+| `LIKE 'Haus*'` | `LIKE 'Haus%'` | **lautlos falsch:** `*` ist in SQLite ein normales Zeichen |
+| `LIKE 'H?us'` | `LIKE 'H_us'` | dito für `?` |
+| `Left(s,n)` / `Mid(s,p,n)` / `Right(s,n)` | `substr(s,1,n)` / `substr(s,p,n)` / `substr(s,-n)` | |
+| `UCase(s)` / `LCase(s)` | `upper(s)` / `lower(s)` | |
+| `IsNull(x)` | `x IS NULL` | Achtung: T-SQLs zweistelliges `ISNULL` ist wieder etwas anderes |
+| `CDbl(x)` / `CInt(x)` / `CStr(x)` | `CAST(x AS REAL / INTEGER / TEXT)` | |
+| `Val(s)` / `Str(n)` | `CAST(s AS REAL)` / `CAST(n AS TEXT)` | |
+| `Int(x)` | `CAST(x AS INTEGER)` | |
+| `Now()` / `Date()` | `datetime('now','localtime')` / `date('now','localtime')` | Access liefert einen Datumswert, SQLite Text |
+| `Year(d)` / `Month(d)` | `strftime('%Y', d)` / `strftime('%m', d)` | Ergebnis ist **Text**, nicht Zahl |
+| `DateAdd/DateDiff/DatePart` | `date(d, '+1 day')`, `julianday(a)-julianday(b)`, `strftime(…)` | |
+| `Switch(…)` / `Choose(…)` | `CASE WHEN … END` | |
+| `First(x)` / `Last(x)` | `min/max` mit `ORDER BY` + `LIMIT 1` | |
+| `SELECT … INTO Neu FROM …` | `CREATE TABLE Neu AS SELECT … FROM …` | |
+| `ALTER TABLE t ALTER COLUMN c …` | Tabelle neu anlegen und umkopieren | SQLite kann Spalten nur anfügen/umbenennen/löschen |
+| `ALTER TABLE t ADD CONSTRAINT … FOREIGN KEY …` | Fremdschlüssel **ins `CREATE TABLE`** | SQLite hängt einer bestehenden Tabelle keinen an |
+| `SELECT @@IDENTITY` | `last_insert_rowid()` **auf derselben Verbindung** | in EPOS-Plan: `ExecuteInsertAndGetId` |
+| `Expr1000`, `Expr1001` … | Ausdrucksspalte mit `AS Name` benennen | Access vergibt diese Namen selbst, SQLite nicht |
+| `TRANSFORM … PIVOT …` | von Hand mit `CASE WHEN`/`SUM` | Kreuztabellen gibt es nicht |
+
+**Erlaubt und unverändert:** `[Tabelle].[Feld]` in eckigen Klammern, `<>` als
+Ungleichheit, `INNER/LEFT JOIN` im `SELECT`, geklammerte Joins
+(`FROM (a LEFT JOIN b ON …) LEFT JOIN c ON …`), `?` als Platzhalter.
+
+### 6.3 `= True` / `= False`
+
+SQLite kennt `TRUE` und `FALSE` seit 3.23 — aber nur als **Alias für 1 und 0**. Access
+führte WAHR als **−1**. Das geht hier gut, weil die Migration jede Boolean-Spalte auf
+0/1 normalisiert (geprüft: alle 96 Boolean-Spalten der Testdatenbank führen ausschließlich
+0, 1 oder NULL). `WHERE Aktiv = TRUE` ist damit richtig. Wer eine **neue** Spalte anlegt,
+gibt ihr `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))` — dann bleibt das so.
+
+Für die **Sortierung** nach einer Boolean-Spalte nicht `ORDER BY aktiv DESC` schreiben,
+sondern die Absicht ausdrücken: `ORDER BY IIF(aktiv, 0, 1)` oder
+`ORDER BY CASE WHEN aktiv THEN 0 ELSE 1 END`. Sonst hängt die Reihenfolge an der
+Kodierung, und die hat sich mit der Umstellung geändert.
+
+### 6.4 Der Prüfbefehl
+
+Der Prüfer hält **jeden** SQL-Text des Quellbestands gegen eine echte SQLite-Datenbank
+(nur lesend geöffnet) und gegen die Verbotsliste oben:
+
+```
+python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Rückgabewert 1, sobald eine Fundstelle bleibt; die CI (`.github/workflows/kern.yml`,
+Schritt „SQL-Dialekt gegen SQLite", nur ubuntu) hängt daran. Nützliche Schalter:
+`--alle` (auch die fehlerfreien Texte), `--dynamisch` (nur die Texte, deren Tabellen- oder
+Spaltenname erst zur Laufzeit feststeht), `--csv DATEI`, `--selbsttest` (hält die Regeln
+gegen 32 eingebaute Beispiele — der Beleg, dass der Prüfer etwas finden *würde*).
+Einzelheiten in [`Werkzeuge\SqlDialektPruefer\LIESMICH.md`](Werkzeuge/SqlDialektPruefer/LIESMICH.md).
+
+**Eine einzelne Anweisung von Hand prüfen** — ohne die Datenbank zu verändern:
+
+```
+sqlite3 -readonly C:\ProgramData\EPOS_PLAN\Kenndaten.sqlite "EXPLAIN SELECT …;"
+```
+
+`EXPLAIN` bereitet die Anweisung nur vor und führt sie nicht aus. Sie durchläuft dabei
+Syntax- **und** Objektprüfung: „near …: syntax error" und „no such column: …" fallen beide
+hier auf, nicht erst beim Anwender.
+
+---
+
+## 7. Kundenbestände außerhalb des Erststarts
 
 Derselbe Migrationskern steckt auch in einem Konsolenwerkzeug. Es ist der Weg für
 Bestände, die nicht am eigenen Rechner liegen — eingeschickte Datenbanken, Prüfläufe,
@@ -228,7 +330,7 @@ einen anderen.
 
 ---
 
-## 7. Wiederherstellung
+## 8. Wiederherstellung
 
 **Eine Sicherung zurückholen** (EPOS-Plan vorher schließen):
 
@@ -251,7 +353,7 @@ nächste Start von EPOS-Plan (oder ein SQLite-Werkzeug) spielt es von selbst ein
 
 ---
 
-## 8. Wo was steht
+## 9. Wo was steht
 
 | Thema | Datei |
 |---|---|
@@ -260,3 +362,4 @@ nächste Start von EPOS-Plan (oder ein SQLite-Werkzeug) spielt es von selbst ein
 | Installer-Hinweise | [`BETRIEB_Installer_Hinweise.md`](BETRIEB_Installer_Hinweise.md) |
 | Gesamtkonzept der Umstellung | [`Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md`](Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md) |
 | Beispieldatenbank zum Üben | [`sqlite-probe\LIESMICH.md`](sqlite-probe/LIESMICH.md) |
+| SQL-Dialekt-Prüfer (Aufruf, Regeln, Ausnahmen) | [`Werkzeuge\SqlDialektPruefer\LIESMICH.md`](Werkzeuge/SqlDialektPruefer/LIESMICH.md) |

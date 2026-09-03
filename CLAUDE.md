@@ -33,6 +33,25 @@ die Texte in `MyResource.Resource.*`. Erster umgestellter Dialog: „Energieträ
 (`EnergietraegerVarianteDialog`). Voraussetzung beim Anwender ist die **WebView2-Laufzeit**; das
 Setup installiert sie nach.
 
+Die **iOS-Hülle steht seit dem 03.09.2026 (Paket iU10) in [`EPOS.iOS`](EPOS.iOS/CLAUDE.md)** — eine
+MAUI-Blazor-Hybrid-App mit **einer** Seite und darin **einer** `BlazorWebView`, die
+`EPOS.UI.Seiten.AppWurzel` zeigt. Sie trägt nur, was die Plattform beisteuert: die neun
+`Dienste.*`-Adapter (Schlüsselbund, `identifierForVendor`, `Preferences`, Sandbox-Pfade,
+Dokumentenwähler, Teilen-Blatt), die Seed-Kopie der Datenbank beim Erststart und den Prüfmodus für
+die CI. **Sie hat eine eigene Projektmappe `EPOS.iOS/EPOS.iOS.sln`** und steht bewusst weder in
+`WP-Plan.sln` noch im Solution-Filter — auf Windows und Linux gibt es die iOS-Workload nicht, jeder
+Restore dort bräche mit `NETSDK1147`. Gebaut und im Simulator geprüft wird sie **ausschließlich** im
+CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.0.400.1`, Xcode 26.6), den man von
+Hand auslöst: GitHub → Actions → iOS → *Run workflow*. Was ohne Mac nachweisbar ist und was nicht,
+steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
+
+**Regel für die CI (Anwender, 03.09.2026): Vor dem Aufrufen des macOS-Läufers jeweils
+nachfragen, um das Actions-Kontingent nicht unnötig zu erhöhen.** Der macOS-Läufer zählt
+zehnfach. Deshalb laufen `kern.yml` bei Push nur auf ubuntu und `ios.yml` gar nicht von
+selbst; beide bauen auf macOS nur über *Actions → Run workflow* (bei `kern.yml` mit dem
+Häkchen „macos"), und dieser Aufruf wird vorher mit dem Anwender abgestimmt — auch nach
+Abschluss der Migration.
+
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
 
 | Werkzeug | Wofür | Aufruf |
@@ -41,6 +60,7 @@ Setup installiert sie nach.
 | `Proben/ChartProben` | zeichnet die neun Berichtsbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus — ohne Datenbank, ohne Oberfläche. Fällt rot aus, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
 | `EPOS.Referenzlauf` | der plattformfreie Rechennachweis gegen die eingefrorene Basis; läuft auf Linux, macOS und in der CI | `dotnet run --project EPOS.Referenzlauf -- lauf …` bzw. `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen`, `bildvergleich` (dazu `liste` und `migration`). `bildvergleich` stellt die neuen SkiaSharp-Bilder den alten GDI+-Bildern gegenüber — nur unter Windows | `Referenzlauf.exe <modus> …` |
+| `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
 gegen `Referenzlaeufe/2026-08-30_B3-Kaskade` gehalten (13 Projekte, 332 CSV); die CI rechnet bei

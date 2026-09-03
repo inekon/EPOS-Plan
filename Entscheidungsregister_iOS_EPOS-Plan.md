@@ -1,6 +1,6 @@
 # Entscheidungsregister: EPOS-Plan auf iOS
 
-**Stand 03.09.2026 — nach der Kette iU4…iU8** (Ausgangspunkt: Arbeitsliste zu iU0 —
+**Stand 03.09.2026 — nach der Kette iU4…iU10** (Ausgangspunkt: Arbeitsliste zu iU0 —
 Klärung, Sicherung, Rückbau)
 
 > **Verhältnis zum Umsetzungskonzept**
@@ -23,10 +23,10 @@ ausgebreitet.
 
 ---
 
-## 1 Entscheidungsregister iF1–iF23
+## 1 Entscheidungsregister iF1–iF29
 
 iF1–iF9 stammen aus [`Konzept_iOS-Portierung_EPOS-Plan.md`](Konzept_iOS-Portierung_EPOS-Plan.md)
-§ 7, iF10–iF18 aus dem Umsetzungskonzept § 8.2; iF19–iF23 sind in der Umsetzung entstanden. Die Spalte **benötigt ab** nennt das Paket, das ohne
+§ 7, iF10–iF18 aus dem Umsetzungskonzept § 8.2; iF19–iF23 sind in der Umsetzung entstanden, **iF24–iF28 mit der iOS-Hülle (iU10)**. Die Spalte **benötigt ab** nennt das Paket, das ohne
 die Entscheidung nicht begonnen werden kann.
 
 | Nr. | Frage (Kurzform) | Empfehlung laut Konzept | benötigt ab | Status | Entscheid (Anwender) | Datum |
@@ -54,6 +54,12 @@ die Entscheidung nicht begonnen werden kann.
 | **iF21** | **DPI.** Die Anwendung ist bewusst `DpiUnaware`; die WebView2 wäre darin bei 125–200 % bitmapskaliert und sichtbar unscharf. Bleibt die Hülle eine **DPI-Insel** (`PER_MONITOR_AWARE_V2` nur für die Dauer des modalen Laufs) — oder wird die Anwendung als Ganzes DPI-fähig? | Insel; die Umstellung der 120 Masken ist ein eigenes Vorhaben | iU8, spätestens iU9 | **hier gebaut** (`DpiInsel` in `Allgemein/Blazor/BlazorDialogForm.cs`, iU8-6). **Windows-Befund offen:** 125 % und 150 % sind noch nicht am Gerät gesehen worden; auf Windows vor 10/1803 greift die Insel nicht. Prüfpunkte in `Umsetzung_iU8_Nachweise.md` | | |
 | **iF22** | **Präzisierung zu iF16 — wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten** | iU7/iU8 | **Bericht und Blazor** bekommen ein **Bild aus dem Kern-Renderer** (`EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs`, seit iU7-2 SkiaSharp statt GDI+); die **interaktiven Bildschirmmasken** bleiben bei **ScottPlot** — und das ist heute genau **eine** Maske, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp: es bleibt bei **einer** Grafikbibliothek, nur bei zwei Nutzungsarten. iF16 ist damit präzisiert, nicht ersetzt | | |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** Der wortgleiche GDI+-Stand aus iU7-1 ist der Gegenpart des Windows-Bildvergleichs — eine zweite, nicht gepflegte Fassung desselben Renderers | **ersatzlos löschen**, sobald der Bildvergleich abgenommen ist | nach der Windows-Abnahme von iU7 | **wartet auf den Anwender.** Er führt `Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>` aus; steht in `bildvergleich.md` PASS, wird die Datei gelöscht — sie ist bis dahin die einzige verbliebene GDI+-Stelle der Berichtskette | | |
+| **iF24** | **Apple-Developer-Konto** (99 €/Jahr) jetzt beschaffen — oder erst nach einem grünen Simulator-Lauf? | erst **nach** iU10-6; bis dahin kostet der Nachweis nur CI-Minuten. Der Simulator-Job braucht weder Konto noch Zertifikat. Gerätebau und TestFlight sind iU13 | vor iU13 | offen | | |
+| **iF25** | **Seed-Datenbank im App-Bundle.** E1 = Testdatenbank (77 MB, nur CI), E2 = Produktivstand (148 MB, ~250–280 MB installiert), E3 = Massendaten beim Erststart nachladen, E4 = vollständiger Download beim Erststart | **E1 für iU10** (per `-p:SeedDb` gesetzt), **E2 für TestFlight** — vorher `VACUUM` der Produktiv-DB messen. E3/E4 nur bei Store-Vorgaben; On-Demand-Resources sind mit .NET für iOS nicht baubar | vor iU13 | offen | | |
+| **iF26** | **KI-Semantiksuche auf iOS**: die 46-MB-`onnxruntime.xcframework` statisch mitlinken — oder die Semantiksuche auf iOS abschalten? | in iU10/iU11 **abschalten** — `ExcludeAssets="native;build;buildTransitive"` in `EPOS.iOS.csproj`. `SemantikModell` scheitert damit erst beim Aufruf, nicht beim Start; Chat und Wiki laufen über REST und sind unberührt. Entscheid vor iU13 | vor iU13 | **umgesetzt, vorläufig** (iU10-3) | | |
+| **iF27** | **`bundle_green` ist tot** — fährt iOS dieselbe SQLite 3.53.3 wie Windows (`bundle_e_sqlite3`, statisch gelinkt)? | **ja.** Die Fassung 2.1.12 von `bundle_green` existiert nicht (letzte 2.1.11, in 3.0 entfallen), und die System-SQLite des Geräts wäre für die **114 STRICT-Tabellen** nicht steuerbar. Auf iOS liefert `bundle_e_sqlite3` `provider.internal` und eine statisch gelinkte `e_sqlite3.a` — dieselbe Fassung auf allen vier Läufern | iU10 | **umgesetzt** (iU10-1), Bestätigung des Anwenders offen | | |
+| **iF28** | **Mindest-iPadOS 17.0** akzeptabel? | **ja** — von `SkiaSharp.NativeAssets.iOS` 3.119 (`net8.0-ios17.0`) erzwungen; MAUI 10 selbst käme mit 15.0 aus. iPadOS 17 läuft auf iPads ab 2018 | iU10 | **umgesetzt, vorläufig** (iU10-3) | | |
+| **iF29** | **Stilllegungsliste K6** — welche Masken werden gelöscht statt umgestellt? Befund `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md` (118 Masken: 111 ja, 4 nein, 1 verwaist, 2 unklar) | **löschen**: `Form_Kosten` mit `Form_KostenfaktorItem`, `ucKostenItem`, `Form_Betriebskosten` (seit KD6a ohne Einstieg); `Form_Variantentest` mit den Hüllen `Form_Wirtschaftlichkeit`, `Form_Bericht`; `Form_Simulation_Kurz` (`Compile Remove`, samt Kopien und `ChartManagerNeu`); `Form_KwkgModule` (Felder stehen im BHKW-Dialog). **Behalten und umstellen**: `Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` (nur bedingte Zweige), `Form_AlsVariante`. **`FormMain`/`Form_StromTest`**: Menüpunkt „Projektdetail" bleibt → W16 statt K6. Vorher die von außen genutzten Statics aus `Form_Kosten` in einen Kern-Controller ziehen | iU9 W0 | **entschieden** | **wie vorgeschlagen; Menüpunkt Projektdetail behalten** | 03.09.2026 |
 
 **Was zuerst gebraucht wird.** Vor dem Beginn von iU3 müssen **iF1, iF11, iF14 und iF15** stehen —
 sie definieren, was der Spike ist und woran er gemessen wird; ohne sie ist das Go/No-Go-Gate iZ3
@@ -589,8 +595,8 @@ letzte Stand der Maske liegt eingefroren unter `Formularkarte.Tests/Pruefmuster/
 (Designer, `.cs`, `.resx` und der Aufrufer-Auszug aus `Form_Kosten.cs`, wortgleich aus
 `92380ea^`); die Muster werden **nie übersetzt** und vom Stapellauf **übergangen** wie `bin` und
 `obj`, damit sie das Vollständigkeitsnetz nicht verfälschen. Die `StapelTests` prüfen weiterhin
-den lebenden Bestand, jetzt an der zeichengleichen Schwester `Form_Kosten_VarAuswahl`. **101
-Tests, alle grün.** Die Regel dahinter ist allgemein: **Ein Test, der das Werkzeug prüft, gehört
+den lebenden Bestand — bis iU9-1 an der zeichengleichen Schwester `Form_Kosten_VarAuswahl`,
+seit deren Löschung an `Form_KostenKomponente`. **101 Tests, alle grün.** Die Regel dahinter ist allgemein: **Ein Test, der das Werkzeug prüft, gehört
 an ein eingefrorenes Muster; ein Test, der den Bestand prüft, an den Bestand.** Mit jeder
 weiteren umgestellten Maske wäre sonst dasselbe wieder passiert.
 
@@ -610,7 +616,7 @@ seine Kultur selbst setzen — sonst prüft er die Sprache des Läufers.
 
 | Fund | Befund | Beleg |
 |---|---|---|
-| `bOhneVariante` in `Form_Kosten_VarAuswahl` | **totes Feature.** Die Eigenschaft wird an genau zwei Stellen gesetzt (`Form_Heizkessel.cs:282`, `Form_BHKWEing.cs:513`) — beide Male auf `false`, also auf den Vorgabewert. Der `true`-Zweig ist unerreichbar | `git grep bOhneVariante` — drei Treffer, keiner setzt `true` |
+| ~~`bOhneVariante` in `Form_Kosten_VarAuswahl`~~ — **begraben mit iU9-1** | **totes Feature.** Die Eigenschaft wurde an genau zwei Stellen gesetzt (`Form_Heizkessel.cs:282`, `Form_BHKWEing.cs:513`) — beide Male auf `false`, also auf den Vorgabewert; die Maske selbst hat sie nie gelesen. Mit der Maske ist sie gelöscht | `git grep bOhneVariante` — vor iU9-1 drei Treffer, keiner setzte `true`; heute nur noch das eingefrorene Prüfmuster |
 | `SectionPanel` in `Views/Kosten/` | **ohne Nutzer.** `new SectionPanel` kommt im ganzen Repo **null**-mal vor; die Klasse lebt nur noch als Optikvorbild des Blazor-Bausteins `Gruppenkopf` und wird in `EinstiegsKarte` ausdrücklich *nicht* beerbt | `git grep "new SectionPanel"` — 0 Treffer |
 
 Beides gehört in die K6-Liste von iU9 — nicht in die Umstellung. Eine tote Eigenschaft zweimal
@@ -632,6 +638,115 @@ englisch, Hochkontrast, 125 %/150 % (iF21), Enter/Esc, Infoknopf, WebView2-Profi
 in der Sandbox ohne WebView2 und ohne Internet (iF20), VS-2026-Designer unter dem Razor-SDK.
 Die Punkte stehen einzeln in
 [`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
+
+**Nachtrag 03.09.2026 — der Öffner des ersten Dialogs war unerreichbar (Befund der
+Windows-Abnahme).** `Form_Kosten` ist seit **KD6a kein Einstieg mehr**:
+`Views/BerichteKosten/UcBkKosten.btnVerwaltung_Click` öffnet `Form_KostenKomponente`, und
+`Views/Hauptformular/Form_Start.cs:2175` entfernt den alten Knopf mit
+`EntferneAltknopf(btn_Kosten)`. Der Dialog aus iU8-9 war damit in der Oberfläche gar nicht zu
+erreichen; die Abnahmeliste hätte ins Leere geführt. Die gleiche Funktion — Katalog-Energieträger
+wählen, Variantennamen vergeben, Projektträger anlegen — lebte in der zeichengleichen Schwester
+`Views/Kosten/Form_Kosten_VarAuswahl` mit zwei **erreichbaren** Aufrufern:
+`Views/Heizkessel/Form_Heizkessel.cs:251` und `Views/BHKW/Form_BHKWEing.cs:482` (nach der
+Umstellung `:304` bzw. `:535`), beide über den Knopf **„◀"** (`btn_Kessel_Hinzu` bzw.
+`btn_Hinzu`) hinter der Kachel *Heizkessel* (`Form_Start.cs:624`) / *BHKW*
+(`Form_Start.cs:1216`) im Startseiten-Reiter **Energieerzeuger**.
+
+Behoben mit der **vorgezogenen ersten iU9-Welle (`iU9-1`)**: Beide Aufrufer zeigen jetzt
+`BlazorDialogForm<EnergietraegerVarianteDialog>` nach demselben Muster wie `Form_Kosten`; die
+Schwester ist gelöscht (M1). Damit stehen die drei Abfragen des Dialogs nur noch einmal im
+Bestand — der in `EnergietraegerVarianteCtrl` angekündigte „Zweitnutzer" ist eingelöst, statt
+zum zweiten toten Zwilling zu werden. Drei Vorabfragen der Aufrufer (`Bezeichner`,
+`ID_Kategorie`, `Gruppe`) entfallen ersatzlos: Sie belegten allein `m_szBrennstoff`,
+`m_KategorieID` und `m_szKategorie` des alten Dialogs, und **nach** dem Dialog hat keiner der
+drei Werte je eine Rolle gespielt. Bewusst in Kauf genommen ist eine Verhaltensabweichung: Die
+Auswahlliste ist nicht mehr auf die Kategorie des vorgewählten Brennstoffs eingeengt; der
+angelegte Träger bleibt stimmig, weil `group_code`, `pricing_model`, `billing_unit`, Hi, Hs und
+die Umrechnung ausnahmslos aus dem **gewählten** Träger abgeleitet werden.
+
+**Die Lehre — sie gilt über iU8 hinaus: Die Wahl der umzustellenden Maske muss die
+Erreichbarkeit ihres Öffners prüfen, nicht nur Größe, Feldzahl und Feldtypen.** Ein Dialog, den
+niemand aufrufen kann, lässt sich weder abnehmen noch produktiv erproben; er sieht nach
+Fortschritt aus und ist keiner. Zwei Prüfungen kosten je eine Minute und hätten den Befund vorweg
+geliefert: `git grep -n "new <Maske>"` für die Aufrufer und dann für jeden Aufrufer dieselbe
+Frage eine Ebene höher, bis ein Menüpunkt, eine Kachel oder ein Reiter erreicht ist. Als
+**Folgepunkt** ist eine Spalte **„Öffner erreichbar"** für `Werkzeuge/Formularkarte` notiert
+(`Werkzeuge/Formularkarte/LIESMICH.md`, Abschnitt „Grenzen") — das Werkzeug kennt die Aufrufer
+einer Maske bereits (`maske.Aufrufer`), es fehlt allein der Schritt von dort zum Einstieg. **Nicht
+mit iU9-1 umgesetzt**, damit die Welle klein bleibt.
+
+### 2.9 Befund iU10 (die iOS-Hülle), 03.09.2026 — **hier erreicht, soweit ohne Mac möglich**
+
+Sieben Commits, `iU10-1`…`iU10-7`, auf `ios_migration`. Die Nachweise im Einzelnen stehen in
+[`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md); hier steht, was an Erkenntnis
+bleibt.
+
+**Die vorbereitete Paketzeile war doppelt falsch.** `Directory.Packages.props` und
+`EPOS.Kern.csproj` trugen seit iU6-T5 eine Vorbereitung für iOS: `SQLitePCLRaw.bundle_green`
+2.1.12, bedingt auf `-ios`/`-maccatalyst`. Beim ersten Restore wäre sie zweimal gebrochen:
+
+| Befund | Beleg |
+|---|---|
+| **Die Fassung 2.1.12 existiert nicht.** `bundle_green` endet bei **2.1.11** und ist in SQLitePCLRaw 3.0 ganz entfallen | Restore-Probe: `NU1102` |
+| **Die Begründung war überholt.** Sie lautete „auf iOS verbietet die AOT-Regel das dynamische Laden". `bundle_e_sqlite3` lädt dort aber gar nichts: Für die iOS-Kennungen liefert das Paket `provider.internal` (`DllImport __Internal`) und eine **statisch gelinkte** `e_sqlite3.a` je Gerät und Simulator (`NativeReference Kind=Static ForceLoad`) | Paketinhalt 2.1.12 |
+
+**Das STRICT-Gate ist der eigentliche Grund** (→ iF27). `Referenzlaeufe/Kenndaten_Test.sqlite`
+führt **114 von 115 Tabellen als `STRICT`**; das verlangt SQLite ≥ 3.37. Mit `bundle_green` hinge
+die Fassung an der System-SQLite des Geräts — iOS 17 = 3.42 (belegt), iOS 18/26 nicht belegbar und
+in keinem Fall steuerbar. Mit `bundle_e_sqlite3` steht auf **allen vier Läufern** dieselbe
+**SQLite 3.53.3**; auf Linux nachgemessen über den Prüfstand von iU10-7. Die App schreibt die
+beiden Zahlen beim Start ins Protokoll (`SQLite 3.53.3`, `STRICT=114`), und der CI-Job prüft sie.
+
+**Runner- und Xcode-Lage — beides muss gemeinsam gepinnt werden.** Das Workload-**Set**
+`10.0.400.1` bringt das iOS-Manifest **26.5.10315** mit, und dessen `WorkloadDependencies.json`
+verlangt `"xcode": "[26.6,)"`. Der Job setzt deshalb `DEVELOPER_DIR=/Applications/Xcode_26.6.app`
+und läuft auf **`macos-26`** statt auf `macos-latest` — das Label wandert, und ein neuer
+Xcode-Standard bräche den Bau ohne eine einzige Codeänderung (iR-a). Das Abbild `macos-26` führt
+macOS 26.6.1, Xcode 26.6 als Standard, Simulator-Laufzeiten iOS 26.2/26.4/26.5, iPad-Gerätetypen
+und .NET 10.0.400 vorinstalliert — **Workloads sind nicht vorinstalliert** und werden im Job
+nachgezogen (~3–6 min).
+
+**Die Paketversionen der Hülle.**
+
+| Paket | Fassung | Warum genau diese |
+|---|---|---|
+| `Microsoft.AspNetCore.Components.WebView.Maui` | **10.0.100** | letzte stabile Fassung; hängt an `Microsoft.Maui.Controls` **derselben** Fassung |
+| `Microsoft.Maui.Controls` | **10.0.100** | das Workload-Set setzt intern 10.0.20 — ohne Angleich über `<MauiVersion>` stünden zwei Stände im Graph (`NU1605`, iR-b) |
+| `SkiaSharp.NativeAssets.iOS` | **3.119.0** | dieselbe Zählung wie die drei anderen Nativen; trägt **nur** `net8.0-ios17.0` und erzwingt damit iPadOS 17.0 (iF28) |
+| `SQLitePCLRaw.bundle_e_sqlite3` | **2.1.12** | die Fassung, die `Microsoft.Data.Sqlite` 10.0.11 ohnehin transitiv zieht |
+| `Microsoft.ML.OnnxRuntime` | 1.22.1, `ExcludeAssets="native;build;buildTransitive"` | die native Hälfte ist eine **46 MB** große `xcframework` mit C++-Linkung (iF26) |
+
+**Drei Abweichungen von der Planvorlage, jede mit Grund.**
+
+1. **`Microsoft.NET.Sdk.Razor` statt `Microsoft.NET.Sdk`.** Nur das Razor-SDK packt die statischen
+   Web-Bestände einer Razor-Klassenbibliothek mit ein. Ohne es fehlte `_content/EPOS.UI/epos-ui.css`
+   im Anwendungspaket, und die Oberfläche wäre ungestaltet — derselbe Befund wie in iU8-6 (§ 2.8).
+   Damit entfällt zugleich die `MauiAsset`-Zeile für `wwwroot`.
+2. **`SingleProject=true`.** Ohne die Eigenschaft sucht die iOS-Kette `Info.plist` im Projektstamm
+   statt unter `Platforms/iOS/`.
+3. **`App.CreateWindow` statt `MainPage`.** `Application.MainPage` ist seit .NET 9 abgekündigt.
+
+**Ein Namensraum für die ganze Hülle.** Die Adapter liegen im Ordner `Dienste/`, aber im
+Namensraum `EPOS.iOS` — ein Unter-Namensraum `EPOS.iOS.Dienste` verdeckte den statischen Halter
+`WindowsFormsApplication1.Dienste` des Kerns, und `Dienste.Pfade` löste gegen den eigenen Ordner
+auf. Die Windows-Hülle hält es genauso (`WindowsFormsApplication1/Dienste/*.cs` liegen alle im
+Namensraum `WindowsFormsApplication1`).
+
+**Was iU10 bewusst NICHT tut.** Das **Anlegen** einer Energieträger-Variante schreibt noch nicht:
+Der Schreibweg (Katalogsuche, `INSERT` in `energy_carrier`, Preishistorie, Projektzuordnung) steht
+bis heute in `Views/Kosten/Form_Kosten.CreateNewEnergyCarrier` und hängt dort am Typ
+`EnergyCarrier` und an `EnergietraegerKatalogCtrl` — beides ist mit Absicht in der Anwendung
+geblieben. Ihn in der iOS-Hülle nachzubauen wäre genau die Doppelpflege, die Modell C abschafft.
+Der Dialog läuft vollständig (echte Trägerliste, Prüfung, Ergebnis samt der sechs abgeleiteten
+Werte über `EnergietraegerVarianteCtrl.Ergaenzen`); das Anlegen wartet auf den Umzug des
+Schreibwegs in den Kern.
+
+**Die Grenze der Linux-Nachweise — sie ist scharf zu ziehen.** Übersetzt wird hier gegen
+**Attrappen** der MAUI-, UIKit- und Foundation-API. Das belegt, dass der eigene Programmtext in
+sich stimmt: Namen, Typen, Überladungen, Nullbarkeit. Es belegt **nicht**, dass die echte MAUI-API
+so heißt. Der erste Lauf von `ios.yml` ist deshalb kein Formalakt, sondern der eigentliche Beweis.
+
+---
 
 ---
 

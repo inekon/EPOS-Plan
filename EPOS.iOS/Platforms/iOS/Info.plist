@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>XSAppIconAssets</key>
+	<string>Assets.xcassets/appicon.appiconset</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>de</string>
+	<!-- Die Anwendungsdaten liegen in der Sandbox; damit ein Anwender an seine
+	     Berichte, CSV-Ausgaben und Datenbanksicherungen kommt, wird Documents
+	     in der App "Dateien" sichtbar gemacht. Ohne diese beiden Schalter
+	     waeren die Ausgaben des Programms fuer den Anwender unerreichbar. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<!-- KEINE ATS-Ausnahme. Alle bekannten Ziele des Programms sind HTTPS
+	     (Lizenzserver und Wiki unter epos-plan.de, PVGIS, CEC); ein
+	     NSAllowsArbitraryLoads waere eine Aufweichung ohne Anlass. -->
+</dict>
+</plist>

@@ -75,6 +75,17 @@ public class EnergietraegerVarianteDialogTests : BunitContext
     }
 
     [Fact]
+    public void Mit_Vorwahl_ist_der_Variantenname_mit_dem_Traegernamen_vorbelegt()
+    {
+        // Wie der WinForms-Vorlaeufer (comboBox_Varianten.Text = Traegername):
+        // der Anwender kann sofort OK druecken (Befund 03.09.2026, Heizkessel).
+        var cut = Aufbauen(_ => { }, vorwahl: 7);
+
+        string erwartet = System.Linq.Enumerable.First(Traeger, t => t.Id == 7).Name;
+        Assert.Equal(erwartet, cut.FindAll("input")[0].GetAttribute("value"));
+    }
+
+    [Fact]
     public void Eine_Auswahl_belegt_den_Variantennamen_vor()
     {
         // wie cmbBrennstoffArt_SelectedIndexChanged:

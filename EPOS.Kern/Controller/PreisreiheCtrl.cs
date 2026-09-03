@@ -69,9 +69,16 @@ namespace WindowsFormsApplication1
 
                 if (!TabelleVorhanden(TABLE_DATEN))
                 {
-                    DataRepository.ExecuteSQL(SchemaStand.SQL_CREATE_PREISREIHEDATEN);
+                    // SQL-Dialekt-Audit 03.09.2026: Bis hierher stand die Tabelle ohne
+                    // Beziehung und der Fremdschluessel kam per
+                    // ALTER TABLE ... ADD CONSTRAINT nach. Das ist Access-DDL - SQLite
+                    // kann einer bestehenden Tabelle keinen Fremdschluessel anhaengen
+                    // ("near CONSTRAINT: syntax error"), und weil die Zeile in einem
+                    // stillen catch steht, fiel es nie auf: geloeschte Reihen liessen
+                    // ihre bis zu 35.040 Wertzeilen stehen. Die Beziehung gehoert
+                    // deshalb ins CREATE - so erzeugt der Migrator die Tabelle auch.
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_CREATE_PREISREIHEDATEN_MIT_FK);
                     DataRepository.ExecuteSQL(SchemaStand.SQL_INDEX_PREISREIHEDATEN);
-                    DataRepository.ExecuteSQL(SchemaStand.SQL_FK_PREISREIHEDATEN);
                 }
             }
             catch { /* der eigentliche Zugriff meldet den Fehler */ }
