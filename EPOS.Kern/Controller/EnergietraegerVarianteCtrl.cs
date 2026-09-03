@@ -59,12 +59,28 @@ namespace WindowsFormsApplication1
         /// (<c>DisplayMember = "Bezeichner"</c>, <c>ValueMember = "ID"</c>).
         /// </remarks>
         public static IReadOnlyList<(int Id, string Name)> Energietraeger()
+            => Energietraeger(null);
+
+        /// <summary>
+        /// Wie <see cref="Energietraeger()"/>, eingeengt auf eine Brennstoffkategorie
+        /// (<c>Tab_Brennstoff_Stamm.ID_Kategorie</c>) - so, wie es der bis 03.09.2026
+        /// gelöschte Zwilling <c>Form_Kosten_VarAuswahl</c> tat: Ein Heizkessel mit
+        /// Erdgas bekommt nur die Gasträger angeboten, nicht Strom oder Holz
+        /// (Anwenderbefund 03.09.2026). <paramref name="kategorieId"/> null oder 0 =
+        /// alle Träger.
+        /// </summary>
+        public static IReadOnlyList<(int Id, string Name)> Energietraeger(int? kategorieId)
         {
-            // Lädt die Namen aus Tab_Brennstoff_Stamm in die ComboBox
-            string sql = "SELECT ID, Bezeichner FROM Tab_Brennstoff_Stamm ORDER BY Bezeichner";
+            // Lädt die Namen aus Tab_Brennstoff_Stamm in die Auswahlliste
+            bool gefiltert = kategorieId.HasValue && kategorieId.Value > 0;
+            string sql = gefiltert
+                ? "SELECT ID, Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID_Kategorie = ? ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM Tab_Brennstoff_Stamm ORDER BY Bezeichner";
 
             var liste = new List<(int Id, string Name)>();
-            DataTable tb = DataRepository.GetDataTable(sql);
+            DataTable tb = gefiltert
+                ? DataRepository.GetDataTable(sql, new DbParam("@k", kategorieId.Value))
+                : DataRepository.GetDataTable(sql);
             if (tb == null) return liste;
 
             foreach (DataRow row in tb.Rows)
@@ -76,6 +92,19 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        /// <summary>
+        /// Die Brennstoffkategorie eines Katalogträgers (<c>Tab_Brennstoff_Stamm.ID_Kategorie</c>),
+        /// 0 wenn unbekannt. Die Aufrufer engen damit die Auswahlliste ein.
+        /// </summary>
+        public static int KategorieZu(int brennstoffId)
+        {
+            if (brennstoffId <= 0) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
+                new DbParam("@id", brennstoffId));
+            return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
         }
 
         /// <summary>

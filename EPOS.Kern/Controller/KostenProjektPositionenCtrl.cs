@@ -278,12 +278,17 @@ namespace WindowsFormsApplication1
                     if (!namen.TryGetValue(Convert.ToString(r["Komponente"]), out sp)) continue;
                     // Ids als LITERALE (ACE-Bindungsfalle, Ä21-Befund); der
                     // ID_Projekt-Vergleich schützt vor Fremdzuordnungen.
+                    // SQLite kennt kein UPDATE ... INNER JOIN (Access-Syntax; Befund
+                    // 03.09.2026 "near INNER: syntax error" beim Anlegen eines Kessels).
+                    // Gleiche Wirkung als korrelierte Unterabfrage: nur Zeilen mit
+                    // passender Anlage desselben Projekts werden umgeschluesselt.
+                    string anlage = "SELECT a.[" + sp + "] FROM Tab_Energieanlagen AS a " +
+                                    "WHERE a.ID = Tab_ProjektWerte.ID_Anlage AND a.ID_Projekt = " + projektId;
                     DataRepository.ExecuteSQL(
-                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
-                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + sp + "] " +
-                        "WHERE w.ProjektID = " + projektId +
-                        " AND a.ID_Projekt = " + projektId +
-                        " AND w.KomponentenID = " + Convert.ToInt32(r["ID"]));
+                        "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = (" + anlage + ") " +
+                        "WHERE ProjektID = " + projektId +
+                        " AND KomponentenID = " + Convert.ToInt32(r["ID"]) +
+                        " AND EXISTS (" + anlage + ")");
                 }
             }
             catch { }

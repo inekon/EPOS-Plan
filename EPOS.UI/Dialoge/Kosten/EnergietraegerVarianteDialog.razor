@@ -108,6 +108,10 @@
         // Die datengebundene ComboBox des Vorlaeufers hatte immer eine Auswahl;
         // das Textfeld war nach LoadBrennstoffArten dagegen leer.
         _auswahl = VorwahlId ?? (Energietraeger.Count > 0 ? Energietraeger[0].Id : (int?)null);
+        // Vorbelegung des Variantennamens auch fuer den vorgewaehlten Traeger - der
+        // WinForms-Vorlaeufer tat das ueber comboBox_Varianten.Text (Befund 03.09.2026:
+        // Feld blieb leer, weil nur der Wechsel der Auswahl vorbelegte).
+        if (VorwahlId.HasValue && string.IsNullOrWhiteSpace(_variantenName)) _variantenName = NameZu(_auswahl);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
