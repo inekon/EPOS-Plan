@@ -4,7 +4,25 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    partial class WPCtrl : WPModel
+    /// <summary>
+    /// Controller fuer die PROJEKTGERAETE der Waermepumpen (<c>Tab_WP</c>) samt der
+    /// Kopie eines Stammsatzes in ein Projekt.
+    ///
+    /// <para><b>Seit iU9-W7.0a im Kern.</b> Die Klasse lag bis dahin in
+    /// <c>WindowsFormsApplication1\Controller</c> und war <c>partial</c>: Ein zweiter
+    /// Teil (<c>WPCtrl.WinForms.cs</c>) trug die Methode <c>FillListBox(ListBox)</c>.
+    /// Ein partieller Typ geht nicht ueber die Assemblygrenze (Lehre aus
+    /// <c>WizardSeite</c>) — und der Umzug ist noetig, weil die Huellen der
+    /// Waermepumpen-Dialoge (W7.3 bis W7.5) den PROJEKTSTAND lesen muessen, ohne
+    /// WinForms zu kennen.</para>
+    ///
+    /// <para><b><c>FillListBox</c> ist ersatzlos entfallen.</b> Die Methode hatte im
+    /// gesamten Bestand keinen einzigen Aufrufer; die gleichnamige Methode in
+    /// <see cref="KlimaregionStammCtrl"/> gehoert einer anderen Klasse und bleibt, wo
+    /// sie ist. Sie in die Anwendung zurueckzuspiegeln haette eine
+    /// Erweiterungsmethode gekostet, die niemand ruft.</para>
+    /// </summary>
+    class WPCtrl : WPModel
     {
         private List<WPModel> _internalList = new List<WPModel>();
         public int rows => _internalList.Count;
