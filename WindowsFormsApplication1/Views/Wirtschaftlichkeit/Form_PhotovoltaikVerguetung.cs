@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
@@ -287,8 +288,8 @@ namespace WindowsFormsApplication1
         private void btnTarifPv_Click(object sender, EventArgs e)
         {
             if (_idStamm <= 0) return;
-            using (var f = new Form_Tarifstruktur(_idStamm, TarifSicht.Photovoltaik))
-                f.ShowDialog(this);
+            // iU9-W2.3: der Tarifdialog als Razor-Komponente ueber TarifstrukturHuelle.
+            TarifstrukturHuelle.Oeffnen(this, _idStamm, TarifSicht.Photovoltaik);
         }
 
         private void btnMarktwerte_Click(object sender, EventArgs e)

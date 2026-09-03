@@ -23,7 +23,7 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="decimal" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
-               @oninput="BeiEingabe" />
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
         {
             <span class="epos-einheit">@Einheit</span>
@@ -52,6 +52,19 @@
 
     /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie noetig.</summary>
     [Parameter] public int? Nachkommastellen { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld - dieselbe Eigenschaft, die
+    /// <see cref="Schalter"/> und <see cref="Auswahlfeld"/> schon fuehren
+    /// (iU9-W2.3).
+    ///
+    /// <para>Gebraucht wird sie von Dialogen, die ZWEI Rechenmodelle
+    /// nebeneinander zeigen und nur eines gelten lassen: Der Tarifdialog sperrt
+    /// den Block des nicht gewaehlten Modells, statt ihn auszublenden - die
+    /// Werte des anderen Modells bleiben damit lesbar und erhalten
+    /// (<c>Form_Tarifstruktur.ModusUebernehmen</c>: Enabled, nicht Visible).</para>
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
 
     private string _text = "";
 
