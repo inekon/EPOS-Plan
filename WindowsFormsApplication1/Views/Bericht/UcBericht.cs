@@ -276,12 +276,13 @@ namespace WindowsFormsApplication1
 
         private void btnDurchsuchen_Click(object sender, EventArgs e)
         {
-            using (var dlg = new FolderBrowserDialog())
-            {
-                dlg.Description = MyResource.Resource.BK_BER_DLG_ZIELORDNER;
-                if (Directory.Exists(txtZiel.Text)) dlg.SelectedPath = txtZiel.Text;
-                if (dlg.ShowDialog(Besitzer) == DialogResult.OK) txtZiel.Text = dlg.SelectedPath;
-            }
+            // iU7-9: Ordnerwahl über Dienste.Datei statt über FolderBrowserDialog.
+            // Titel und Startordner wie bisher; leer = abgebrochen, dann bleibt das
+            // Zielfeld stehen (der Bestandsdialog verhielt sich bei Abbruch genauso).
+            string start = Directory.Exists(txtZiel.Text) ? txtZiel.Text : "";
+            string gewaehlt = Dienste.Datei.OrdnerWaehlen(
+                MyResource.Resource.BK_BER_DLG_ZIELORDNER, start);
+            if (!string.IsNullOrEmpty(gewaehlt)) txtZiel.Text = gewaehlt;
         }
 
         private void btnAbbrechen_Click(object sender, EventArgs e)
@@ -331,46 +332,46 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            using (SaveFileDialog sfd = new SaveFileDialog())
+            // iU7-9: Speicherziel über Dienste.Datei statt über SaveFileDialog.
+            // Filter wie bisher; der Dateinamensvorschlag ist ein technischer Wert wie
+            // der Namensstamm „_Bericht_" in BerichtCtrl und deshalb bewusst nicht
+            // lokalisiert. Leer = abgebrochen.
+            string zieldatei = Dienste.Datei.DateiSpeichern(
+                null,
+                MyResource.Resource.BK_BER_DLG_FILTER_WORD,
+                "Projektvergleich_" + _stammName + ".docx");
+            if (string.IsNullOrEmpty(zieldatei)) return;
+
+            try
             {
-                sfd.Filter = MyResource.Resource.BK_BER_DLG_FILTER_WORD;
-                // Dateinamensvorschlag: technischer Wert wie der Namensstamm „_Bericht_"
-                // in BerichtCtrl und deshalb bewusst nicht lokalisiert.
-                sfd.FileName = "Projektvergleich_" + _stammName + ".docx";
-                if (sfd.ShowDialog(Besitzer) != DialogResult.OK) return;
+                Cursor = Cursors.WaitCursor;
+                // Der Bericht simuliert die Gruppe selbst neu (Nutzeranforderung
+                // 15.08.2026) und liefert die Meldungen der Läufe zurück.
+                ProjektvergleichBericht bericht = new ProjektvergleichBericht();
+                bericht.Erzeuge(zieldatei, gruppe);
+                Melde(string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, zieldatei));
 
-                try
-                {
-                    Cursor = Cursors.WaitCursor;
-                    // Der Bericht simuliert die Gruppe selbst neu (Nutzeranforderung
-                    // 15.08.2026) und liefert die Meldungen der Läufe zurück.
-                    ProjektvergleichBericht bericht = new ProjektvergleichBericht();
-                    bericht.Erzeuge(sfd.FileName, gruppe);
-                    Melde(string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, sfd.FileName));
+                string frage = MyResource.Resource.BK_BER_MSG_VERGLEICH_FERTIG;
+                if (bericht.Laufmeldungen.Count > 0)
+                    frage += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
+                             string.Join("\r\n• ", bericht.Laufmeldungen);
+                frage += "\r\n\r\n" + MyResource.Resource.BK_BER_FRAGE_OEFFNEN;
 
-                    string frage = MyResource.Resource.BK_BER_MSG_VERGLEICH_FERTIG;
-                    if (bericht.Laufmeldungen.Count > 0)
-                        frage += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
-                                 string.Join("\r\n• ", bericht.Laufmeldungen);
-                    frage += "\r\n\r\n" + MyResource.Resource.BK_BER_FRAGE_OEFFNEN;
-
-                    if (MessageBox.Show(frage, MyResource.Resource.BK_BER_TITEL_VERGLEICH,
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                        System.Diagnostics.Process.Start(
-                            new System.Diagnostics.ProcessStartInfo(sfd.FileName) { UseShellExecute = true });
-                }
-                catch (Exception ex)
-                {
-                    // Vollstaendige Fehlermeldung inkl. inner exceptions anzeigen (Statuszeile kuerzt ab).
-                    string msg = ex.Message;
-                    Exception inner = ex.InnerException;
-                    while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
-                    Melde(MyResource.Resource.BK_BER_STATUS_FEHLER);
-                    MessageBox.Show(msg, MyResource.Resource.BK_BER_TITEL_FEHLER_VERGLEICH,
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally { Cursor = Cursors.Default; }
+                if (MessageBox.Show(frage, MyResource.Resource.BK_BER_TITEL_VERGLEICH,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    Dienste.Datei.MitSystemOeffnen(zieldatei);
             }
+            catch (Exception ex)
+            {
+                // Vollstaendige Fehlermeldung inkl. inner exceptions anzeigen (Statuszeile kuerzt ab).
+                string msg = ex.Message;
+                Exception inner = ex.InnerException;
+                while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
+                Melde(MyResource.Resource.BK_BER_STATUS_FEHLER);
+                MessageBox.Show(msg, MyResource.Resource.BK_BER_TITEL_FEHLER_VERGLEICH,
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally { Cursor = Cursors.Default; }
         }
 
         // ------------------------------------------------------------- Erstellen
@@ -472,8 +473,7 @@ namespace WindowsFormsApplication1
 
                 if (MessageBox.Show(meldung, MyResource.Resource.BK_BER_TITEL_ERSTELLEN,
                         MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                    System.Diagnostics.Process.Start(
-                        new System.Diagnostics.ProcessStartInfo(erster) { UseShellExecute = true });
+                    Dienste.Datei.MitSystemOeffnen(erster);   // iU7-9
                 LadeDaten();   // Zeitstempel in der Liste auffrischen
             }
             catch (OperationCanceledException)
