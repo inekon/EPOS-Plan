@@ -8839,4 +8839,13 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="BHW_MSG_FEHLER_TITEL" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="BHW_PARAM_GRUPPE" xml:space="preserve">
+    <value>CHP unit — CHP Act, energy and electricity tax</value>
+  </data>
+  <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
+    <value>As of stage B5 these settings are held in the separate dialogue "CHP economics" — there together with the values per CHP module, the derivations and the preview.</value>
+  </data>
+  <data name="BHW_PARAM_KNOPF" xml:space="preserve">
+    <value>⚙ CHP economics (CHP Act, taxes, modules)…</value>
+  </data>
 </root>
