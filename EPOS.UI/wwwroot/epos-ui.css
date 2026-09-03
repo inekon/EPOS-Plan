@@ -1630,3 +1630,12 @@ body {
         stroke: Highlight;
     }
 }
+
+/* Kleine Abfrage EINER Zahl (WertAbfrage, iU9-W10a.0f) - derselbe Aufbau wie
+   die Rueckfrage: Inhalt untereinander, Knopfleiste darunter. */
+.epos-wertabfrage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 320px;
+}
