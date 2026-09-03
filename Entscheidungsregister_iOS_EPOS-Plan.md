@@ -23,7 +23,7 @@ ausgebreitet.
 
 ---
 
-## 1 Entscheidungsregister iF1–iF28
+## 1 Entscheidungsregister iF1–iF29
 
 iF1–iF9 stammen aus [`Konzept_iOS-Portierung_EPOS-Plan.md`](Konzept_iOS-Portierung_EPOS-Plan.md)
 § 7, iF10–iF18 aus dem Umsetzungskonzept § 8.2; iF19–iF23 sind in der Umsetzung entstanden, **iF24–iF28 mit der iOS-Hülle (iU10)**. Die Spalte **benötigt ab** nennt das Paket, das ohne
@@ -59,6 +59,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF26** | **KI-Semantiksuche auf iOS**: die 46-MB-`onnxruntime.xcframework` statisch mitlinken — oder die Semantiksuche auf iOS abschalten? | in iU10/iU11 **abschalten** — `ExcludeAssets="native;build;buildTransitive"` in `EPOS.iOS.csproj`. `SemantikModell` scheitert damit erst beim Aufruf, nicht beim Start; Chat und Wiki laufen über REST und sind unberührt. Entscheid vor iU13 | vor iU13 | **umgesetzt, vorläufig** (iU10-3) | | |
 | **iF27** | **`bundle_green` ist tot** — fährt iOS dieselbe SQLite 3.53.3 wie Windows (`bundle_e_sqlite3`, statisch gelinkt)? | **ja.** Die Fassung 2.1.12 von `bundle_green` existiert nicht (letzte 2.1.11, in 3.0 entfallen), und die System-SQLite des Geräts wäre für die **114 STRICT-Tabellen** nicht steuerbar. Auf iOS liefert `bundle_e_sqlite3` `provider.internal` und eine statisch gelinkte `e_sqlite3.a` — dieselbe Fassung auf allen vier Läufern | iU10 | **umgesetzt** (iU10-1), Bestätigung des Anwenders offen | | |
 | **iF28** | **Mindest-iPadOS 17.0** akzeptabel? | **ja** — von `SkiaSharp.NativeAssets.iOS` 3.119 (`net8.0-ios17.0`) erzwungen; MAUI 10 selbst käme mit 15.0 aus. iPadOS 17 läuft auf iPads ab 2018 | iU10 | **umgesetzt, vorläufig** (iU10-3) | | |
+| **iF29** | **Stilllegungsliste K6** — welche Masken werden gelöscht statt umgestellt? Befund `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md` (118 Masken: 111 ja, 4 nein, 1 verwaist, 2 unklar) | **löschen**: `Form_Kosten` mit `Form_KostenfaktorItem`, `ucKostenItem`, `Form_Betriebskosten` (seit KD6a ohne Einstieg); `Form_Variantentest` mit den Hüllen `Form_Wirtschaftlichkeit`, `Form_Bericht`; `Form_Simulation_Kurz` (`Compile Remove`, samt Kopien und `ChartManagerNeu`); `Form_KwkgModule` (Felder stehen im BHKW-Dialog). **Behalten und umstellen**: `Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` (nur bedingte Zweige), `Form_AlsVariante`. **`FormMain`/`Form_StromTest`**: Menüpunkt „Projektdetail" bleibt → W16 statt K6. Vorher die von außen genutzten Statics aus `Form_Kosten` in einen Kern-Controller ziehen | iU9 W0 | **entschieden** | **wie vorgeschlagen; Menüpunkt Projektdetail behalten** | 03.09.2026 |
 
 **Was zuerst gebraucht wird.** Vor dem Beginn von iU3 müssen **iF1, iF11, iF14 und iF15** stehen —
 sie definieren, was der Spike ist und woran er gemessen wird; ohne sie ist das Go/No-Go-Gate iZ3
