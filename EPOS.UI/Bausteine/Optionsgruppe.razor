@@ -1,0 +1,88 @@
+﻿@* Gruppe sich gegenseitig ausschliessender Optionen - der RadioButton des
+   Bestands (45 Stueck, u. a. Views/Kosten/Form_VorlagenUebernahme.Designer.cs
+   rbQuelleVorlage/rbQuelleProjekt und Views/Kosten/Form_CaseEingabe.cs
+   rbCaseAbsolut/rbCaseProzent).
+
+   WARUM NICHT AUSWAHLFELD. Eine Klappliste verbirgt die Moeglichkeiten, bis
+   man sie oeffnet; eine Optionsgruppe zeigt sie alle. Genau darauf beruhen die
+   Masken des Bestands: Der Anwender sieht, dass es zwei Quellen gibt, bevor er
+   waehlt. Bei mehr als etwa fuenf Eintraegen ist das Auswahlfeld die bessere
+   Wahl.
+
+   BAUWEISE. <fieldset role="radiogroup"> mit einem <legend> als Gruppentitel;
+   jeder Eintrag ist ein <label> um ein <input type="radio">. Damit gehoert die
+   Beschriftung zum Bedienelement (ein Klick auf den Text schaltet mit), und die
+   ganze Zeile ist 44 px hoch - Fingerbetrieb wie beim Schalter (M2).
+
+   Alle Eintraege teilen sich einen Namen, damit der Browser die Gruppe kennt
+   und die Pfeiltasten darin wandern. Der Name ist je Instanz eindeutig; sonst
+   wuerden zwei Gruppen auf derselben Seite einander umschalten. *@
+
+<fieldset class="epos-optionsgruppe" role="radiogroup" aria-label="@Bezeichnung">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
+    }
+    @foreach (var eintrag in Eintraege)
+    {
+        int id = eintrag.Id;
+        <label class="epos-option">
+            <input class="epos-option-kasten" type="radio" name="@_name"
+                   value="@id" checked="@(Auswahl == id)"
+                   disabled="@(!Aktiv || !IstWaehlbar(id))"
+                   @onchange="@(() => BeiWahl(id))" />
+            <span class="epos-feld-text">@eintrag.Text</span>
+        </label>
+    }
+</fieldset>
+
+@code {
+    /// <summary>Titel der Gruppe (die <c>legend</c>). Leer = ohne Titel.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Optionen in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Id der gewaehlten Option; <c>null</c> = keine. Bindbar ueber @@bind-Auswahl.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neu gewaehlte Id.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt die ganze Gruppe.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Ids, die EINZELN gesperrt sind - alles Uebrige bleibt waehlbar.
+    /// <c>null</c> = keine Sperre.
+    ///
+    /// <para>Gebraucht von Masken, die eine Quelle nur unter Bedingungen
+    /// anbieten: <c>Form_VorlagenUebernahme</c> sperrt „Aus Vorlage/Variante",
+    /// solange der Katalog fuer diese Komponente keine Vorlage fuehrt
+    /// (<c>rbQuelleVorlage.Enabled = _vorlagen.Count &gt; 0</c>), und
+    /// <c>Form_CaseEingabe</c> sperrt „Eingabe in %", solange kein
+    /// Erwartungswert vorliegt (<c>_rbProzent.Enabled = _daten.Betrag != 0</c>).</para>
+    /// </summary>
+    [Parameter] public IReadOnlyList<int>? Gesperrt { get; set; }
+
+    /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
+    private readonly string _name = "og" + Guid.NewGuid().ToString("N");
+
+    private bool IstWaehlbar(int id)
+    {
+        if (Gesperrt is null) return true;
+        foreach (int gesperrt in Gesperrt)
+        {
+            if (gesperrt == id) return false;
+        }
+        return true;
+    }
+
+    private Task BeiWahl(int id)
+    {
+        if (!Aktiv || !IstWaehlbar(id)) return Task.CompletedTask;
+        Auswahl = id;
+        return AuswahlChanged.InvokeAsync(id);
+    }
+}
