@@ -30,10 +30,10 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_Brauchwasser_Admin.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand nach Welle 7: 76 Dateien (82 nach W6, 89 nach W5,
-        // 92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2, 108 nach iU9-W0).
-        // Jede umgestellte Maske senkt die Zahl (Regel M1).
-        Assert.True(dateien.Count >= 76, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand nach Welle 8: 66 Dateien (76 nach W7, 82 nach W6,
+        // 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2,
+        // 108 nach iU9-W0). Jede umgestellte Maske senkt die Zahl (Regel M1).
+        Assert.True(dateien.Count >= 66, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -56,13 +56,15 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand nach Welle 7: 73 Masken (81 nach W6, 88 nach W5,
-        // 91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2, 105 nach iU9-W0,
-        // 111 nach iU9-W1). Jede umgestellte Maske senkt die Zahl (Regel M1);
-        // die acht der Welle 7 sind Form_WPFilterAuswahl, Kenndaten, Form_WP,
-        // Wizard_WPItem, Form_WPAuswahl, Form_SolarDB, Form_SolarKollektoren und
-        // Form_Solarganglinie.
-        Assert.True(Lauf.Value.Masken >= 73, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand nach Welle 8: 63 Masken (73 nach W7, 81 nach W6,
+        // 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2, 105 nach
+        // iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske senkt die Zahl
+        // (Regel M1); die ZEHN der Welle 8 sind die drei Bedarfsblaetter in je
+        // drei Auspraegungen - Form_EingDBStromverbraucher, Form_EingDBProzess,
+        // Form_EingDBBrauchwasser, Form_ErgStromverbraucher,
+        // Form_ErgProzesswaerme, Form_ErgBrauchwasserwaerme, Form_EingStromTyp,
+        // Form_EingProzTyp, Form_EingBrauchwasserTyp - und Form_EingGebTyp.
+        Assert.True(Lauf.Value.Masken >= 63, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -73,10 +75,12 @@ public sealed class StapelTests
         // Bis Welle 5 stand der Zaehler unveraendert bei 59: Keine der Masken der
         // Wellen 2 bis 5 war lokalisiert, sie alle setzten ihre Texte im Code.
         // Welle 6 stellt erstmals wieder LOKALISIERTE Masken um (54), Welle 7
-        // sieben weitere (47) - nur Form_WPFilterAuswahl trug deutsche Literale.
+        // sieben weitere (47), Welle 8 alle zehn (37) - auch die drei
+        // Brauchwassermasken zeichnen ueber ApplyResources, obwohl ihre Texte
+        // deutsche Literale in der neutralen .resx sind.
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 47,
+        Assert.True(Lauf.Value.Lokalisierte >= 37,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
