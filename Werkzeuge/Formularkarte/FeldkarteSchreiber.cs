@@ -45,6 +45,10 @@ public static class FeldkarteSchreiber
             ? paar.X.ToString(CultureInfo.InvariantCulture) + " x " + paar.Y.ToString(CultureInfo.InvariantCulture)
             : "");
         Zeile(werkzeug, "Lokalisiert", maske.Lokalisiert ? "ja (ApplyResources)" : "nein");
+        if (maske.Ressourcendateien.Count > 0)
+        {
+            Zeile(werkzeug, "Ressourcen", string.Join(", ", maske.Ressourcendateien.Select(d => "`" + Path.GetFileName(d) + "`")));
+        }
         Zeile(werkzeug, "Zeilen der Karte", felder.ToString(CultureInfo.InvariantCulture));
         Zeile(werkzeug, "Steuerelemente", Kartenbau.Typzeile(maske));
         Zeile(werkzeug, "Felder ohne Beschriftung", ohneLabel.ToString(CultureInfo.InvariantCulture));
