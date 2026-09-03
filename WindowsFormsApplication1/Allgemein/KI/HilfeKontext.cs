@@ -169,7 +169,6 @@ namespace WindowsFormsApplication1
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
             { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },
-            { "Form_Solarganglinie",         B_SOLARTHERMIE },
             { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
