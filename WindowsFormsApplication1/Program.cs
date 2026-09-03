@@ -19,7 +19,17 @@ namespace WindowsFormsApplication1
         public static WizardCtrl wizardctrl = null;
         public static string ApplicationPath_Common = "";
         public static string ApplicationPath_User = "";
-        public static int nLanguage = 0; // 0=de, 1=en  
+        /// <summary>
+        /// 0=de, 1=en — der Wert liegt seit iU4-1 in <see cref="Sprache.Nummer"/>,
+        /// damit Kern-Code (Berichtstexte) ihn ohne <c>Program</c> lesen kann. Diese
+        /// Weiterleitung bleibt, damit die vorhandenen Leser und die eine Setzstelle
+        /// aus der Registry unverändert weiterlaufen.
+        /// </summary>
+        public static int nLanguage
+        {
+            get { return Sprache.Nummer; }
+            set { Sprache.Nummer = value; }
+        }
 
         /// <summary>
         /// Not-Rückfall für die Basis-URL der Wiki-Dokumentation, falls der
@@ -440,30 +450,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Parst eine Zahl mit Dezimal-Komma ODER -Punkt. Gleiche Regel wie
-        /// WaermequelleClass.ZahlParsen, nur in double-Genauigkeit - gedacht für
-        /// Eingabefelder, deren Wert als double weiterverarbeitet wird.
-        /// Kein Tausendertrennzeichen: "1.234,5" wird bewusst abgelehnt, statt
-        /// wie double.Parse(CurrentCulture) still zu 12345 zu werden.
+        /// Weiterleitung auf <see cref="ZahlText.Parsen"/> (dort steht der Rumpf seit
+        /// iU4-1) — parst eine Zahl mit Dezimal-Komma ODER -Punkt, ohne
+        /// Tausendertrennzeichen. Bleibt stehen, damit die Masken ihren gewohnten
+        /// Aufruf behalten.
         /// </summary>
         public static bool ZahlParsen(string text, out double wert)
         {
-            wert = 0.0;
-            if (string.IsNullOrEmpty(text)) return false;
-            text = text.Trim().Replace(',', '.');
-            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.Parsen(text, out wert);
         }
 
         /// <summary>
-        /// Ganzzahl-Gegenstück zu <see cref="ZahlParsen"/>: invariant geparst.
-        /// Komma und Punkt sind hier bewusst KEINE gültigen Zeichen - es geht um
-        /// Stückzahlen, Tage, Nutzungsdauern und ganze Grad.
+        /// Weiterleitung auf <see cref="ZahlText.GanzzahlParsen"/> — Ganzzahl-
+        /// Gegenstück zu <see cref="ZahlParsen"/>, invariant geparst.
         /// </summary>
         public static bool GanzzahlParsen(string text, out int wert)
         {
-            wert = 0;
-            if (string.IsNullOrEmpty(text)) return false;
-            return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.GanzzahlParsen(text, out wert);
         }
 
         // ------------------------------------------------------------------
