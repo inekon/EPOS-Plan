@@ -57,14 +57,53 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, int idStamm, string stammName,
                                      List<int> variantenIds)
         {
+            Func<bool> neuGesammelt;
+            BlazorDialogForm<KapitalwertVerlaufDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(
+                Gaben(idStamm, stammName, variantenIds, out neuGesammelt))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create(new object(), () =>
+                {
+                    if (dlg != null) dlg.Schliessen(true);
+                })
+            };
+
+            // Das Entwurfsmaß 898 x 744 des Designers, auf den Arbeitsbereich
+            // gedeckelt — dasselbe tat GroesseAufArbeitsflaecheDeckeln. Die Hülle
+            // klemmt zusätzlich auf 92 % des Bildschirms.
+            int hoehe = Math.Max(560, Math.Min(760, Screen.PrimaryScreen.WorkingArea.Height - 90));
+            dlg = new BlazorDialogForm<KapitalwertVerlaufDialog>(
+                Titel(stammName ?? ""), new Size(1000, hoehe), werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return neuGesammelt();
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// der Verlauf in einer <c>Ueberlagerung</c> darin — dasselbe Fenster,
+        /// dieselbe WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
+        /// </summary>
+        /// <param name="neuGesammelt">
+        /// Liefert nach dem Schließen, ob der Lauf neu simuliert hat — dann
+        /// passen die persistierten Ergebnisse nicht mehr zum Simulationsstand
+        /// (Review Phase 11).
+        /// </param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int idStamm, string stammName, List<int> variantenIds, out Func<bool> neuGesammelt)
+        {
             string name = stammName ?? "";
             List<int> varianten = variantenIds ?? new List<int>();
 
             var ctrl = new WirtschaftlichkeitCtrl();
             BerichtsDaten daten = null;              // Zwischenspeicher des Simulationsstands
-            bool neuGesammelt = false;
-
-            BlazorDialogForm<KapitalwertVerlaufDialog> dlg = null;
+            var neu = new bool[1];
+            neuGesammelt = () => neu[0];
 
             var szenarien = new List<ValueTuple<int, string>>();
             for (int i = 0; i < SZENARIEN.Length; i++)
@@ -81,7 +120,7 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Szenarien"] = (IReadOnlyList<ValueTuple<int, string>>)szenarien,
                 ["JahreVorgabe"] = jahreVorgabe,
@@ -105,7 +144,7 @@ namespace WindowsFormsApplication1
                         // neu persistierte) Projekte selbst (Review-Verifikation 11).
                         if (!warGecacht && daten != null &&
                             daten.Varianten.Any(v => v.FrischSimuliert))
-                            neuGesammelt = true;
+                            neu[0] = true;
 
                         return Bilder(verlauf, p, jahre, szenario);
                     }, ct)),
@@ -121,26 +160,8 @@ namespace WindowsFormsApplication1
                 ["VorlageFehler"] = Text_("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}"),
                 ["AltDifferenz"] = Text_("WVERL_BILD_DIFF", TITEL_DIFF),
                 ["AltAbsolut"] = Text_("WVERL_BILD_ABS", TITEL_ABS),
-                ["PlatzhalterText"] = Text_("WVERL_KEIN_BILD", "Noch kein Diagramm"),
-
-                ["Geschlossen"] = EventCallback.Factory.Create(new object(), () =>
-                {
-                    if (dlg != null) dlg.Schliessen(true);
-                })
+                ["PlatzhalterText"] = Text_("WVERL_KEIN_BILD", "Noch kein Diagramm")
             };
-
-            // Das Entwurfsmaß 898 x 744 des Designers, auf den Arbeitsbereich
-            // gedeckelt — dasselbe tat GroesseAufArbeitsflaecheDeckeln. Die Hülle
-            // klemmt zusätzlich auf 92 % des Bildschirms.
-            int hoehe = Math.Max(560, Math.Min(760, Screen.PrimaryScreen.WorkingArea.Height - 90));
-            dlg = new BlazorDialogForm<KapitalwertVerlaufDialog>(
-                Titel(name), new Size(1000, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return neuGesammelt;
         }
 
         // ------------------------------------------------------------------ Bilder

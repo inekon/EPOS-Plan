@@ -69,6 +69,45 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Durchgang: laden, zeigen, Ergebnis melden.</summary>
         private static WirtParameterErgebnis EinmalZeigen(IWin32Window besitzer, int idStamm)
         {
+            WirtParameterErgebnis ergebnis = null;
+            BlazorDialogForm<WirtschaftlichkeitParameterDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(Gaben(idStamm, Sprungbruecke.Fuer(besitzer)))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<WirtParameterErgebnis>(
+                    new object(), e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
+                    })
+            };
+
+            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
+            dlg = new BlazorDialogForm<WirtschaftlichkeitParameterDialog>(
+                new WirtschaftlichkeitParameterTexte().Titel,
+                new Size(FENSTER_BREITE, hoehe), werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
+        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung
+        /// in die BHKW-Sicht wertet er selbst aus (<c>WirtParameterSprung</c>).
+        /// </summary>
+        /// <param name="sprung">
+        /// Die Sprungbrücke für den Gesetzeskatalog — ein WinForms-Ziel, das
+        /// weiter modal über allem erscheint. <c>null</c> = kein Knopf.
+        /// </param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int idStamm, Func<string, System.Threading.Tasks.Task<bool>> sprung)
+        {
             var ctrl = new WirtschaftlichkeitCtrl();
             WirtschaftlichkeitParameter parameter = ctrl.LadeParameter(idStamm);
             WirtschaftlichkeitCtrl.ErzeugerFlags erzeuger = ctrl.ErzeugerDerGruppe(idStamm);
@@ -90,10 +129,7 @@ namespace WindowsFormsApplication1
                 refKessel = Referenzkesselzeile(ctrl, parameter);
             }
 
-            WirtParameterErgebnis ergebnis = null;
-            BlazorDialogForm<WirtschaftlichkeitParameterDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Parameter"] = parameter,
                 ["HatBhkw"] = bhkw,
@@ -103,32 +139,14 @@ namespace WindowsFormsApplication1
                 ["Co2PrognoseAb"] = Co2PrognoseAb(),
 
                 // Die Sprungbruecke (iU9-W2.2) - Ersteinsatz.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                ["Sprung"] = sprung,
 
                 ["Speichern"] = new Func<bool>(() =>
                 {
                     try { return ctrl.SpeichereParameter(parameter); }
                     catch { return false; }
-                }),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<WirtParameterErgebnis>(
-                    new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
+                })
             };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<WirtschaftlichkeitParameterDialog>(
-                new WirtschaftlichkeitParameterTexte().Titel,
-                new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
         }
 
         /// <summary>
