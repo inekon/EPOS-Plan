@@ -122,8 +122,18 @@ namespace WindowsFormsApplication1
         /// <summary>Andockpunkt des PV-Vergütungsdialogs (PV-Konzept § 7).</summary>
         private Button btnPhotovoltaik;
 
-        /// <summary>Ä18: BHKW-Sicht der Tarifstruktur (Rollenmodell samt Referenz
-        /// und Einspeisung) — sichtbar, wenn die Gruppe ein BHKW führt.</summary>
+        /// <summary>
+        /// Ä18: BHKW-Sicht der Tarifstruktur (Rollenmodell samt Referenz und
+        /// Einspeisung) — sichtbar, wenn die Gruppe ein BHKW führt.
+        ///
+        /// <para><b>ETAPPE B5 (K8 = c, Anwenderentscheid 03.09.2026):</b> Der Knopf
+        /// öffnet jetzt <see cref="Form_BhkwWirtschaftlichkeit"/>. Die Fußleiste ist
+        /// voll — ein fünfter Sichtknopf läge bei x = −50 —, deshalb übernimmt der
+        /// vorhandene Knopf die neue Sicht. Die BHKW-Tarifsicht ist NICHT verloren: Der
+        /// neue Dialog trägt einen Sprungknopf „BHKW-Tarif…" in seine Stromsteuergruppe.
+        /// Der Feldname bleibt, damit die Andockstelle im Layout und in
+        /// <see cref="SetBusy"/> dieselbe ist.</para>
+        /// </summary>
         private Button btnBhkwTarif;
 
         /// <summary>Ä18: Einkaufsseite der Tarifstruktur (Zonen-Bezugspreise,
@@ -172,16 +182,14 @@ namespace WindowsFormsApplication1
                 Anchor = btnTarif.Anchor,
                 Location = new Point(btnTarif.Left - btnTarif.Width - 6, btnTarif.Top),
                 UseVisualStyleBackColor = true,
-                Text = "BHKW-Tarif…"
+                // ETAPPE B5 (K8 = c): Beschriftung und Ziel des Knopfes wechseln auf den
+                // neuen Sammeldialog. Der Text wird hier im Code gesetzt — die
+                // Designer-Datei bleibt unberührt (Hausregel), und der Rückfall gilt,
+                // solange der Schlüssel im resx-Sammelnachtrag fehlt.
+                Text = T("BHW_KNOPF", "BHKW-Wirtschaftlichkeit…")
             };
-            try
-            {
-                string t = MyResource.Resource.ResourceManager.GetString("WIRT_BTN_BHKW_TARIF");
-                if (!string.IsNullOrEmpty(t)) btnBhkwTarif.Text = t;
-            }
-            catch { }
             btnBhkwTarif.Visible = flags != null && flags.Bhkw;
-            btnBhkwTarif.Click += delegate { TarifSichtOeffnen(TarifSicht.Bhkw); };
+            btnBhkwTarif.Click += btnBhkwWirtschaftlichkeit_Click;
             Controls.Add(btnBhkwTarif);
 
             bool tarifAktiv = false;
@@ -230,6 +238,29 @@ namespace WindowsFormsApplication1
                 dlg.ShowDialog(Besitzer);
                 if (dlg.Gespeichert)
                     Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE B5 (BW9/K8 = c): öffnet den Sammeldialog „BHKW-Wirtschaftlichkeit".
+        ///
+        /// <para>Die Ergebnisse des zuletzt gerechneten Laufs werden
+        /// <b>durchgereicht</b>. Zwei ihrer Bestandteile sind nicht persistiert und aus
+        /// der Datenbank nicht zu holen: die Kohärenzhinweise (B2-O4) und die
+        /// KWKG-Modulnachweise mit der Mengenkette (E7/B3b). Hier liegen sie bereits im
+        /// Speicher — der Dialog bekommt sie, statt sie ein zweites Mal zu rechnen.</para>
+        /// </summary>
+        private void btnBhkwWirtschaftlichkeit_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new Form_BhkwWirtschaftlichkeit(_idStamm, _ergebnisse))
+            {
+                dlg.ShowDialog(Besitzer);
+                if (dlg.Gespeichert)
+                {
+                    ZeigeParameterzeile();
+                    Melde(T("BHW_MELD_GESPEICHERT",
+                            "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen."));
+                }
             }
         }
 
