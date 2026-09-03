@@ -357,11 +357,6 @@ namespace WindowsFormsApplication1
                 stromSeite.Modelle = list_stromverbrauchermodel;
                 stromSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
             }
-            else if (top == WizardItemClass.GEBAEUDE_ITEM)
-            {
-                ((Form_Gebaeude)page).list_gebmodel = list_gebmodel;
-                ((Form_Gebaeude)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
-            }
             else if (top == WizardItemClass.PROZESS_ITEM)
             {
                 ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;

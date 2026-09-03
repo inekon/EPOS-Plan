@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Windows.Forms;
@@ -76,54 +77,17 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
-            ListView.SelectedIndexCollection indexes = listView_Gebäude.SelectedIndices;
-            Z_ProjGebModel item;
-            Form_Gebaeude frm = new Form_Gebaeude();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_gebmodel.Clear();
-                
-            string sql = @"SELECT
-                             Z_ProjektGebaeude.ID, Z_ProjektGebaeude.[ID_Projekt], 
-                             [Tab_Gebaeude].ID_ProjektGebaeude, [Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche,
-                             Jahresnutzungsgrad, dezWarmwasserbereitung, Gebaeudeart, Beschreibung, Baualtersklasse
-                         FROM [Tab_Gebaeude]
-                         INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID
-                         WHERE Z_ProjektGebaeude.ID_Projekt=?";
+            // iU9-W9.0d: derselbe JOIN wie im Startbild - jetzt EINMAL im Kern.
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(m_ID_Projekt);
 
-            DbParam[] p = { new DbParam("@id",m_ID_Projekt) };
-            DataTable dt = DataRepository.GetDataTable(sql, p);
-
-            for(int i=0; i<dt.Rows.Count; i++)
-            {
-                DataRow dr = dt.Rows[i];
-                item = new Z_ProjGebModel();
-                // ARBEITSPAKET S5: harte Casts -> Convert (Typ-Vereinheitlichung).
-                // Der Typ-Rueckweg D9 liefert bereits Int32/Boolean; Convert ist die
-                // robuste Form, die auch bei Int64/0-1 aus SQLite traegt. Verhalten gleich.
-                item.ID_Z = Convert.ToInt32(dr["ID"]);
-                item.ID_Projekt = m_ID_Projekt;
-                item.ID_Gebaeude = Convert.ToInt32(dr["ID_ProjektGebaeude"]);
-                item.Gebaeudename = (string)dr["Gebaeudename"];
-                item.Wohnflaeche = (double)dr["Wohnflaeche_Waermebedarf"];
-                item.Einheit = (string)dr["Einheit_Waermebedarf_Wohnflaeche"];
-                item.Jahresnutzungsgrad = (double)dr["Jahresnutzungsgrad"];
-                item.DezentralWarmwasser = Convert.ToBoolean(dr["dezWarmwasserbereitung"]);
-                item.Gebaeudeart = (string)dr["Gebaeudeart"];  
-                item.Beschreibung = (string)dr["Beschreibung"];
-                item.Baualtersklasse = (string)dr["Baualtersklasse"];
-                frm.list_gebmodel.Add(item);
-            }
-                
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.2: Blazor-Huelle statt Form_Gebaeude.
+            if (GebaeudeHuelle.Oeffnen(listView_Gebäude, m_ID_Projekt, m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
-                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
+                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
@@ -137,7 +101,9 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Gebäude.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Gebaeude frm = new Form_Gebaeude();
+
+            // iU9-W9.2: Das frueher hier angelegte Form_Gebaeude war unbenutzt - es
+            // wurde weder gefuellt noch gezeigt. Ersatzlos gestrichen.
             
             if (indexes.Count > 0)
             {
@@ -154,19 +120,16 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Gebaeude frm = new Form_Gebaeude();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_gebmodel.Clear();
-            frm.SetControls(m_szProjektname);
-            frm.m_ID_Projekt = m_ID_Projekt;
-        
-            frm.ShowDialog();
+            // "Hinzufuegen" startet mit einer LEEREN Liste und legt nur an (kein Del_).
+            List<Z_ProjGebModel> liste = new List<Z_ProjGebModel>();
 
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.2: Blazor-Huelle statt Form_Gebaeude.
+            if (GebaeudeHuelle.Oeffnen(listView_Gebäude, m_ID_Projekt, m_szProjektname, liste))
             {
-                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
+                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;

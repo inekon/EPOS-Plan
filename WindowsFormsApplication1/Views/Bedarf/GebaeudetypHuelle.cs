@@ -34,7 +34,33 @@ namespace WindowsFormsApplication1
             bool ok = false;
             BlazorDialogForm<GebaeudetypDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>
+            var werte = new Dictionary<string, object>(Gaben())
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
+                {
+                    ok = b;
+                    if (dlg != null) dlg.Schliessen(b);
+                })
+            };
+
+            dlg = new BlazorDialogForm<GebaeudetypDialog>(
+                Text_("GTYP_TITEL", "Gebäudetypen Verwaltung"), MASS, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ok;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn seit iU9-W9.2
+        /// auch die Überlagerung in <c>GebaeudeDialog</c> nehmen kann (Risiko R2: kein
+        /// zweites Fenster über einem Blazor-Dialog).
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben()
+        {
+            return new Dictionary<string, object>
             {
                 ["Daten"] = new GebaeudetypDaten(),
                 ["Typen"] = new Func<IReadOnlyList<string>>(() => TagVCtrl.Typen()),
@@ -69,22 +95,8 @@ namespace WindowsFormsApplication1
                 ["HinweisGesperrt"] = Text_("GTYP_MSG_GESPERRT",
                     "Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden"),
 
-                ["HilfeSchluessel"] = "Form_EingGebTyp.btn_Help",
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
+                ["HilfeSchluessel"] = "Form_EingGebTyp.btn_Help"
             };
-
-            dlg = new BlazorDialogForm<GebaeudetypDialog>(
-                Text_("GTYP_TITEL", "Gebäudetypen Verwaltung"), MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
         }
 
         // =================================================================================

@@ -304,54 +304,22 @@ namespace WindowsFormsApplication1
 
         private void pBox_Gebaude_Click(object sender, EventArgs e)
         {
-            Z_ProjGebModel item;
-            Form_Gebaeude frm = new Form_Gebaeude();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
+            // iU9-W9.0d: der JOIN steht im Kern, nicht mehr dreimal im Oberflaechencode.
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(m_ID_Projekt);
 
-            frm.list_gebmodel.Clear();
-            //frm.SetControls(m_szProjektname);
-
-            string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.[ID_Projekt], " +
-                "[Tab_Gebaeude].Gebaeudename, [Tab_Gebaeude].Baualtersklasse, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
-                "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID" +
-                " where Z_ProjektGebaeude.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
+            // iU9-W9.2: Blazor-Huelle statt Form_Gebaeude.
+            if (GebaeudeHuelle.Oeffnen(this, m_ID_Projekt, m_szProjektname, liste))
             {
-                item = new Z_ProjGebModel();
-                item.ID_Z = (int)rs.Read("ID");
-                item.ID_Projekt = m_ID_Projekt;
-                item.ID_Gebaeude = (int)rs.Read("ID");
-                item.Gebaeudename = (string)rs.Read("Gebaeudename");
-                item.Wohnflaeche = (double)rs.Read("Wohnflaeche_Waermebedarf");
-                item.Einheit = (string)rs.Read("Einheit_Waermebedarf_Wohnflaeche");
-                item.Jahresnutzungsgrad = (double)rs.Read("Jahresnutzungsgrad");
-                item.DezentralWarmwasser = (bool)rs.Read("dezWarmwasserbereitung");
-                item.Gebaeudeart = (string)rs.Read("Gebaeudeart");
-                item.Beschreibung = (string)rs.Read("Beschreibung");
-                item.Baualtersklasse = (string)rs.Read("Baualtersklasse");
-
-                frm.list_gebmodel.Add(item);
-            }
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
-            {
-                if (frm.list_gebmodel.Count > 0)
+                if (liste.Count > 0)
                     status |= 8;
                 else status &= ~8;
                 pBox_Gebaude.Invalidate();
 
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
-                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
+                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;

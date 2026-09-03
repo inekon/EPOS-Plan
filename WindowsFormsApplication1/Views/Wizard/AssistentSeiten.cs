@@ -35,7 +35,9 @@ namespace WindowsFormsApplication1
         {
             /* 0  KOMPONENTEN_ITEM   */ () => new Wizard_Komponenten(),
             /* 1  PROJEKT_ITEM       */ () => new Wizard_Projekt(),
-            /* 2  GEBAEUDE_ITEM      */ () => new Form_Gebaeude(),
+            // iU9-W9.2: Die Gebaeudeseite ist eine Razor-Komponente; die Huelle baut
+            // ihre WebView erst in Bestuecken (siehe BlazorAssistentSeite).
+            /* 2  GEBAEUDE_ITEM      */ () => GebaeudeHuelle.AssistentSeite(),
             /* 3  WAERMEBEDARF_ITEM  */ () => new Form_Waermebedarf(),
             /* 4  PROZESS_ITEM       */ () => new Form_Prozesswaerme(),
             /* 5  STROMSTD_ITEM      */ () => new Form_Stromverbraucher(),
@@ -56,7 +58,8 @@ namespace WindowsFormsApplication1
 
         private static readonly ReadOnlyCollection<Type> _typen = new ReadOnlyCollection<Type>(new[]
         {
-            typeof(Wizard_Komponenten), typeof(Wizard_Projekt), typeof(Form_Gebaeude),
+            typeof(Wizard_Komponenten), typeof(Wizard_Projekt),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.GebaeudeDialog, Z_ProjGebModel>),
             typeof(Form_Waermebedarf), typeof(Form_Prozesswaerme), typeof(Form_Stromverbraucher),
             typeof(Wizard_Stromlastgang),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>),
