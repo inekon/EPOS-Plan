@@ -90,11 +90,13 @@ namespace WindowsFormsApplication1
         // Stand hat die Datenbank, mit der das Programm gerade arbeitet".
         //
         // EINGELOEST MIT ARBEITSPAKET S6: Der angekuendigte OleDb-Leser (und der dazu
-        // gehoerende Schreiber) stehen weiter unten als GetSchemaVersionOleDb /
-        // SetSchemaVersionOleDb. Sie bekommen die Verbindung HEREINGEREICHT und ziehen
-        // sich ausdruecklich KEINEN Verbindungsstring aus DataRepository - der liefert
-        // seit S4a den SQLite-String. Benutzt werden sie ausschliesslich vom
-        // eingefrorenen Access-Zweig SchemaMigration.HebeAltbestand.
+        // gehoerende Schreiber) heissen GetSchemaVersionOleDb / SetSchemaVersionOleDb.
+        // Sie standen bis iU6-T2 weiter unten in dieser Datei und liegen jetzt in der
+        // ANWENDUNG (Allgemein/Update/SchemaVersionAccess.cs) - siehe den Verweis dort,
+        // wo sie standen. Sie bekommen die Verbindung HEREINGEREICHT und ziehen sich
+        // ausdruecklich KEINEN Verbindungsstring aus DataRepository - der liefert seit
+        // S4a den SQLite-String. Benutzt werden sie ausschliesslich vom eingefrorenen
+        // Access-Zweig SchemaMigration.HebeAltbestand.
         // =========================================================================
 
         /// <summary>Name der Markerspalte in Tab_Applikation.</summary>

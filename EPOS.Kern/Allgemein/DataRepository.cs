@@ -25,7 +25,9 @@ namespace WindowsFormsApplication1
     // OleDbParameter, sondern DbParam - "new OleDbParameter(...)" wirft auf Linux/macOS
     // schon im Konstruktor (Entscheidungsregister 2.2, Messung B). Der Uebersetzer
     // arbeitet unveraendert: dieselbe Positionsnummerierung, dieselbe Normalisierung.
-    // Altaufrufe mit OleDbParameter kompilieren ueber die Bruecke in DbParam weiter.
+    // Mit iU6-T3b ist die Uebergangsbruecke aus DbParam ausgezogen: Sie steht als
+    // DbParamOleDb in der Anwendung, und EPOS.Kern nennt System.Data.OleDb nirgends
+    // mehr - weder im Quelltext noch als PackageReference.
     // =====================================================================================
 
     public static class DataRepository

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Data.OleDb;
-using System.Runtime.Versioning;
 
 namespace WindowsFormsApplication1
 {
@@ -21,32 +19,25 @@ namespace WindowsFormsApplication1
     // Precision/Scale kommen an keiner Aufrufstelle vor). Der Typ ist reiner
     // Datentraeger: Er bindet nichts, oeffnet nichts und kennt keinen Provider.
     //
-    // DIE UEBERGANGSBRUECKE. Der implizite Operator aus OleDbParameter und die Helfer
-    // Von()/NachOleDb() halten den Altbestand am Laufen, waehrend er stueckweise
-    // umgestellt wird:
-    //   - Von()/implizit  : Altaufrufe "GetDataTable(sql, new OleDbParameter(...))"
-    //                       kompilieren unveraendert weiter. Auf Windows laufen sie wie
-    //                       bisher; auf Linux werfen sie erst zur Laufzeit - und zwar nur
-    //                       dort, wo noch ein OleDbParameter GEBAUT wird. Das sind nach
-    //                       diesem Paket ausschliesslich die Masken unter Views/ (iU9)
-    //                       und RecordSet.DBCommand (iR8).
-    //   - NachOleDb()     : der Rueckweg fuer die zwei Stellen, die WIRKLICH noch eine
-    //                       Access-Verbindung fuellen - der eingefrorene Access-Zweig der
-    //                       SchemaMigration (Schritte 1-61, Hebung eines .accdb-Bestands
-    //                       vor der Erstmigration) und GeraeteWaisen, das von dort seine
-    //                       offene OleDbConnection hereingereicht bekommt. Beide sind wie
-    //                       der EposSqliteMigrator per Definition Windows-Code; sie
-    //                       tragen ihre Parameter jetzt trotzdem als DbParam und bauen
-    //                       den OleDbParameter erst unmittelbar vor Parameters.AddRange().
+    // ARBEITSPAKET iU6-T3b: DIE UEBERGANGSBRUECKE NACH OleDb IST HIER RAUS.
     //
-    // GEPLANTER ABBAU. Die Bruecke ist Uebergang, kein Dauerzustand:
-    //   1. mit iU9 wandern die Masken nach EPOS.UI - damit entfaellt der implizite
-    //      Operator und Von() (die Views sind die letzten Erbauer von OleDbParameter);
-    //   2. RecordSet.DBCommand (public OleDbCommand, iR8) faellt mit denselben Masken
-    //      oder wird vorher auf einen eigenen Typ gehoben;
-    //   3. NachOleDb() lebt genau so lange wie der Access-Zweig der SchemaMigration -
-    //      also bis der letzte .accdb-Bestand gehoben ist.
-    // Danach kann System.Data.OleDb aus dem Projekt verschwinden.
+    // Bis T3a trug diese Datei den impliziten Operator aus OleDbParameter, Von() und
+    // NachOleDb() samt Typabbildung - und mit ihnen ein "using System.Data.OleDb", das
+    // EPOS.Kern an ein Windows-Paket band. Alle drei sind in die ANWENDUNG gewandert:
+    //
+    //   WindowsFormsApplication1/Allgemein/DbParamOleDb.cs
+    //   [SupportedOSPlatform("windows")] internal static class DbParamOleDb
+    //       Aus(OleDbParameter) / Von(OleDbParameter[]) / Nach(DbParam[])
+    //
+    // Aus()/Von() haben dort keinen Nutzer mehr - der Sweep aus T3a hat die letzten
+    // Erbauer von OleDbParameter aus den Masken entfernt. Sie bleiben als Rueckfalltuer
+    // fuer Zweige stehen, die noch aus einer Access-Verbindung lesen. Nach() traegt
+    // weiterhin die vier Stellen des eingefrorenen Access-Zweigs (SchemaMigration:
+    // NonQuery/Skalar/Abfrage, GeraeteWaisen: Ids) und lebt genau so lange wie er.
+    //
+    // Was hier bleibt, ist damit der reine Datentraeger - kein Provider, kein
+    // Plattformbezug, kein #pragma. EPOS.Kern nennt System.Data.OleDb nicht mehr, weder
+    // im Quelltext noch als PackageReference.
     // =====================================================================================
 
     /// <summary>
@@ -54,7 +45,7 @@ namespace WindowsFormsApplication1
     /// <c>OleDbType</c> - der Bestand nutzte genau diese elf Werte, und die
     /// Gleichnamigkeit macht den Umstieg lesbar. Fuer SQLite ist die Angabe nur dort
     /// von Belang, wo ein Wert NULL sein kann; fuer den Access-Rueckweg
-    /// (<see cref="DbParam.NachOleDb"/>) ist sie es immer.
+    /// (<c>DbParamOleDb.Nach</c> in der Anwendung) ist sie es immer.
     /// </summary>
     public enum DbParamTyp
     {
@@ -91,7 +82,8 @@ namespace WindowsFormsApplication1
     /// jeden Aufzaehlungstyp. Wo eine Null als WERT gemeint ist, deshalb den
     /// dreiargumentigen Weg ueber eine <c>Par(...)</c>-Fabrik nehmen oder
     /// <c>(object)0</c> schreiben. Im Bestand gibt es keine solche Stelle (nachgemessen
-    /// am 02.09.2026); der Hinweis steht fuer neuen Code.</para>
+    /// am 02.09.2026, erneut vor dem Masken-Sweep iU6-T3a am 03.09.2026); der Hinweis
+    /// steht fuer neuen Code.</para>
     /// </summary>
     public sealed class DbParam
     {
@@ -164,123 +156,5 @@ namespace WindowsFormsApplication1
             string w = (_wert == null || _wert == DBNull.Value) ? "NULL" : _wert.ToString();
             return (Name ?? "?") + "=" + w + " [" + Typ + (Groesse > 0 ? "," + Groesse : "") + "]";
         }
-
-
-        // =================================================================================
-        // UEBERGANGSBRUECKE OleDbParameter <-> DbParam (Abbau siehe Kopfkommentar)
-        // =================================================================================
-        //
-        // Der ganze Block ist Windows-Code: System.Data.OleDb wirft ausserhalb von Windows
-        // schon im Konstruktor. Er wird auf Nicht-Windows nie AUFGERUFEN - deshalb laesst
-        // sich diese Datei dort uebersetzen und ihr uebriger Inhalt ausfuehren.
-#pragma warning disable CA1416 // Plattformkompatibilitaet: bewusst Windows-only, siehe oben
-
-        /// <summary>
-        /// Nimmt einen Altparameter entgegen, ohne dass die Aufrufstelle sich aendert.
-        /// Damit kompilieren die noch nicht umgestellten Aufrufe
-        /// <c>DataRepository.GetDataTable(sql, new OleDbParameter(...))</c> unveraendert
-        /// weiter (nach diesem Paket: die Masken unter <c>Views/</c>, iU9).
-        /// </summary>
-        [SupportedOSPlatform("windows")]
-        public static implicit operator DbParam(OleDbParameter p)
-        {
-            if (p == null) return null;
-            return new DbParam(p.ParameterName, AusOleDbTyp(p.OleDbType), p.Size) { Wert = p.Value };
-        }
-
-        /// <summary>
-        /// Dasselbe fuer ein ganzes Array - fuer die Stellen, die ihre Parameter aus einer
-        /// <c>OleDbParameterCollection</c> ziehen (<c>RecordSet</c>); der implizite
-        /// Operator greift bei Arrays nicht.
-        /// </summary>
-        [SupportedOSPlatform("windows")]
-        public static DbParam[] Von(OleDbParameter[] alt)
-        {
-            if (alt == null) return null;
-            DbParam[] ziel = new DbParam[alt.Length];
-            for (int i = 0; i < alt.Length; i++) ziel[i] = alt[i];   // impliziter Operator
-            return ziel;
-        }
-
-        /// <summary>
-        /// Der Rueckweg: baut aus Datentraegern echte OleDb-Parameter. NUR fuer die
-        /// Stellen, die eine offene <c>OleDbConnection</c> auf eine <c>.accdb</c> fuellen
-        /// - der eingefrorene Access-Zweig der <c>SchemaMigration</c> und
-        /// <c>GeraeteWaisen</c>.
-        ///
-        /// <para>Die drei Faelle bilden exakt die Konstruktoren nach, die der Bestand
-        /// dort benutzt hat: ohne Typangabe den zweiargumentigen Konstruktor (der Provider
-        /// leitet den Typ aus dem Wert ab), mit Typangabe den typisierten und - wo eine
-        /// Laenge angegeben war - den dreiargumentigen, in beiden Faellen mit
-        /// anschliessender Wertzuweisung.</para>
-        /// </summary>
-        [SupportedOSPlatform("windows")]
-        public static OleDbParameter[] NachOleDb(DbParam[] quelle)
-        {
-            if (quelle == null) return null;
-            OleDbParameter[] ziel = new OleDbParameter[quelle.Length];
-            for (int i = 0; i < quelle.Length; i++)
-            {
-                DbParam q = quelle[i];
-                if (q == null) { ziel[i] = null; continue; }
-
-                if (q.Typ == DbParamTyp.Unbestimmt)
-                {
-                    ziel[i] = new OleDbParameter(q.Name, q.Wert);
-                    continue;
-                }
-
-                OleDbType t = NachOleDbTyp(q.Typ);
-                ziel[i] = q.Groesse > 0
-                    ? new OleDbParameter(q.Name, t, q.Groesse) { Value = q.Wert }
-                    : new OleDbParameter(q.Name, t) { Value = q.Wert };
-            }
-            return ziel;
-        }
-
-        /// <summary>OleDb-Typ =&gt; eigener Typ. Alles Unbekannte wird
-        /// <see cref="DbParamTyp.Unbestimmt"/>; dann entscheidet der Wert.</summary>
-        [SupportedOSPlatform("windows")]
-        private static DbParamTyp AusOleDbTyp(OleDbType t)
-        {
-            switch (t)
-            {
-                case OleDbType.BigInt: return DbParamTyp.BigInt;
-                case OleDbType.Boolean: return DbParamTyp.Boolean;
-                case OleDbType.Date: return DbParamTyp.Date;
-                case OleDbType.Decimal: return DbParamTyp.Decimal;
-                case OleDbType.Double: return DbParamTyp.Double;
-                case OleDbType.Guid: return DbParamTyp.Guid;
-                case OleDbType.Integer: return DbParamTyp.Integer;
-                case OleDbType.LongVarWChar: return DbParamTyp.LongVarWChar;
-                case OleDbType.VarBinary: return DbParamTyp.VarBinary;
-                case OleDbType.VarWChar: return DbParamTyp.VarWChar;
-                case OleDbType.Variant: return DbParamTyp.Variant;
-                default: return DbParamTyp.Unbestimmt;   // OleDbType.Empty und alles Uebrige
-            }
-        }
-
-        /// <summary>Eigener Typ =&gt; OleDb-Typ (nur fuer <see cref="NachOleDb"/>).</summary>
-        [SupportedOSPlatform("windows")]
-        private static OleDbType NachOleDbTyp(DbParamTyp t)
-        {
-            switch (t)
-            {
-                case DbParamTyp.BigInt: return OleDbType.BigInt;
-                case DbParamTyp.Boolean: return OleDbType.Boolean;
-                case DbParamTyp.Date: return OleDbType.Date;
-                case DbParamTyp.Decimal: return OleDbType.Decimal;
-                case DbParamTyp.Double: return OleDbType.Double;
-                case DbParamTyp.Guid: return OleDbType.Guid;
-                case DbParamTyp.Integer: return OleDbType.Integer;
-                case DbParamTyp.LongVarWChar: return OleDbType.LongVarWChar;
-                case DbParamTyp.VarBinary: return OleDbType.VarBinary;
-                case DbParamTyp.VarWChar: return OleDbType.VarWChar;
-                case DbParamTyp.Variant: return OleDbType.Variant;
-                default: return OleDbType.Empty;
-            }
-        }
-
-#pragma warning restore CA1416
     }
 }
