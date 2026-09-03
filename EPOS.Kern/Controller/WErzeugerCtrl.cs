@@ -156,6 +156,78 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Zieht die ANLAGENZEILE eines Erzeugermodells aus der Datenbank nach
+        /// (iU9-W7.0e) — woertlich aus <c>Wizard_WPItem.AnlagenzeileNachziehen</c>
+        /// (Z. 466-510, Aenderung Ä25 vom 27.08.2026).
+        ///
+        /// <para><b>Wozu.</b> Die Kostenzeile der Waermepumpenmaske haengt an
+        /// <c>item.ID</c> (Anlagenzeile) und <c>item.ID_Projekt</c>. Beide traegt das
+        /// Listenobjekt nicht in jedem Einstieg: Ein Eintrag aus „Neu…" startet mit 0/0,
+        /// und der Del+Add-Speicherweg schreibt seit Ä24 zwar die frische Anlagen-Id
+        /// zurueck, <c>ID_Projekt</c> aber NICHT. Ohne dieses Nachziehen blieb „Kosten
+        /// bearbeiten…" auch bei laengst gespeicherter Anlage gesperrt.</para>
+        ///
+        /// <para><b>Zwei Wege, in dieser Reihenfolge.</b> (1) Ueber eine gueltige
+        /// <c>ID</c> am Modell: Die Zeile selbst nennt ihr Projekt — das heilt den
+        /// Ä24-Fall. (2) Sonst ueber den GERAETEANKER: Projekt-Geraetekopie
+        /// <c>Tab_WP.ID</c> → <c>Tab_Energieanlagen.ID_WP</c> desselben Projekts. Der
+        /// Verbund mit <c>Tab_WP</c> haelt Stammkatalog-Ids heraus (eine Katalogzeile
+        /// traegt kein <c>ID_Projekt</c> dieses Projekts — dieselbe Pruefung wie
+        /// <c>WizardCtrl.PufferGehoertZuProjekt</c>). Findet auch das nichts, ist die
+        /// Anlage wirklich noch nicht gespeichert.</para>
+        ///
+        /// <para><b>Die Ids stehen als LITERALE im Verbund.</b> ACE bindet positionale
+        /// Parameter dort nicht verlaesslich (Ä21-Befund); der Wortlaut bleibt deshalb
+        /// unveraendert. Es sind ausschliesslich <c>int</c>-Werte aus der Datenbank.</para>
+        /// </summary>
+        /// <param name="modell">Die Anlagenzeile; <c>ID</c> und <c>ID_Projekt</c> werden
+        /// bei Erfolg an Ort und Stelle gesetzt.</param>
+        /// <param name="projektRueckfall">
+        /// Das GEOEFFNETE Projekt. Der Vorlaeufer holte es sich aus
+        /// <c>Program.startfrm.m_ID_Projekt</c> — im Kern ist <c>Program.*</c> verboten,
+        /// deshalb reicht die Huelle es herein.
+        /// </param>
+        /// <returns><c>true</c>, wenn <c>ID</c> und <c>ID_Projekt</c> danach eine
+        /// GESPEICHERTE Anlagenzeile bezeichnen.</returns>
+        public static bool AnlagenzeileNachziehen(WErzeugerModel modell, int projektRueckfall)
+        {
+            if (modell == null) return false;
+            try
+            {
+                // (1) Gueltige Anlagen-Id am Listenobjekt.
+                if (modell.ID > 0)
+                {
+                    object p = DataRepository.ExecuteScalar(
+                        "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = ?",
+                        new DbParam("@id", modell.ID));
+                    if (p != null && p != DBNull.Value && Convert.ToInt32(p) > 0)
+                    {
+                        modell.ID_Projekt = Convert.ToInt32(p);
+                        return true;
+                    }
+                }
+
+                // (2) Sonst ueber den Geraeteanker.
+                int projekt = modell.ID_Projekt;
+                if (projekt <= 0) projekt = projektRueckfall;
+                if (projekt <= 0 || modell.ID_WP <= 0) return false;
+
+                object a = DataRepository.ExecuteScalar(
+                    "SELECT MIN(a.ID) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_WP AS g ON a.ID_WP = g.ID " +
+                    "WHERE a.ID_Projekt = " + projekt +
+                    " AND g.ID_Projekt = " + projekt +
+                    " AND a.ID_WP = " + modell.ID_WP);
+                if (a == null || a == DBNull.Value) return false;
+
+                modell.ID = Convert.ToInt32(a);
+                modell.ID_Projekt = projekt;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
         /// Überträgt eine Zeile aus <c>Tab_Energieanlagen</c> in ein Modell - die EINE
         /// Leseabbildung für <see cref="ReadAllFilter"/> und <see cref="ReadSingle"/>.
         ///

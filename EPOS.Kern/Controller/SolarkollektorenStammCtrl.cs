@@ -54,6 +54,41 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Id eines Katalogsatzes zu seinem Bezeichner (iU9-W7.0e) — dieselbe
+        /// Auskunft, die <c>Form_SolarKollektoren.btn_Hinzzu_Click</c> ueber
+        /// <c>DataRepository.GetIdByName</c> holte (Z. 199). Sie steht hier, damit die
+        /// Huelle nicht die Tabellenkonstante nach aussen tragen muss.
+        /// </summary>
+        /// <returns>0, wenn es den Namen im Katalog nicht gibt.</returns>
+        public static int IdZu(string szName)
+        {
+            return DataRepository.GetIdByName(TABLE, "Bezeichner", szName);
+        }
+
+        /// <summary>
+        /// Ein Katalogsatz ueber seine ID (iU9-W7.0e) — der Weg, auf dem
+        /// <c>btn_Hinzzu_Click</c> Vor- und Ruecklauf des Stammsatzes in die neue
+        /// Projektzeile uebernimmt (Z. 214-224).
+        ///
+        /// <para><b>Vorlauf und Ruecklauf werden ganzzahlig gelesen.</b> Der Vorlaeufer
+        /// tat das ueber eine eigene Hilfsmethode <c>IntCol</c>, die zwei Spaltennamen
+        /// probierte — „Ruecklauf" in ASCII und „Rücklauf" mit Umlaut. Die
+        /// Doppelschreibung stammt aus dem Access-Bestand; die Abbildung
+        /// <see cref="MapRowToModel"/> dieser Klasse kennt sie bereits.</para>
+        /// </summary>
+        /// <returns><c>null</c>, wenn es den Satz nicht gibt.</returns>
+        public static SolarkollektorenModel ReadById(int id)
+        {
+            if (id <= 0) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE ID = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            var ctrl = new SolarkollektorenStammCtrl();
+            return ctrl.MapRowToModel(dt.Rows[0]);
+        }
+
         public bool Exists(string szName)
         {
             object v = DataRepository.ExecuteScalar(
