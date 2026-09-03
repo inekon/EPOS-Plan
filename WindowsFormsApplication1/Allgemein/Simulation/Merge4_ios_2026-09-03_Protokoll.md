@@ -341,7 +341,7 @@ kollidieren können. **Nachzuholen, sobald VS geschlossen ist** — siehe offene
   nicht betroffen. Reparatur auf Zuruf.
 * **Kein Push.** `sicherung/vor-merge4-2026-09-03` und `merge4/ios-2026-09-03` sind lokale
   Anker und können nach der Abnahme entfallen; die Anker der Merges 1–3 stehen ebenfalls
-  noch. Der lokale Branch steht damit **21 Commits** vor `origin/ios_migration`.
+  noch. Der lokale Branch steht damit **22 Commits** vor `origin/ios_migration`.
 * Schemastand bleibt **63**; `.wpx`-Pakete mit Stand 62 werden abgewiesen — systemimmanent.
 * `sql/pv_katalog/` (Reparaturskript Isc-Signatur) ist weiterhin **nur mitgeführt**, nicht
   ausgeführt; die Freigabe steht aus.
