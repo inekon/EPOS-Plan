@@ -237,10 +237,10 @@ public sealed class ErreichbarkeitTests
         Assert.Equal(ergebnis.Masken,
                      ergebnis.Erreichbar(Erreichbar.Ja) + ergebnis.Erreichbar(Erreichbar.Nein) +
                      ergebnis.Erreichbar(Erreichbar.Verwaist) + ergebnis.Erreichbar(Erreichbar.Unklar));
-        // Gemessener Stand nach iU9-W4: 89 von 91 (die zwei uebrigen sind
-        // "unklar"; nach iU9-W3 waren es 96 von 98). Die Zahl sinkt mit jeder
+        // Gemessener Stand nach iU9-W5: 86 von 88 (die zwei uebrigen sind
+        // "unklar"; nach iU9-W4 waren es 89 von 91). Die Zahl sinkt mit jeder
         // Welle - der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 89,
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 86,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

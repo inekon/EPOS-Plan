@@ -70,6 +70,14 @@ public sealed class PruefmusterTests
         // der Razor-Schreiber den Anfangsbuchstaben gross zieht (RZ10011).
         { "Kosten", "ucVorlagenZeile",
           "EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor" },
+
+        // iU9-W5.2: UcBericht ist der EINZIGE Beleg fuer die CheckedListBox -
+        // mit ihrem Loeschen faellt der Typ aus der Typtabelle des Stapellaufs.
+        // Sie ist ausserdem der einzige Fall, in dem ein Steuerelement seine
+        // Beschriftung ueber ein daneben stehendes Label bekommt UND selbst
+        // keinen Text traegt.
+        { "Bericht", "UcBericht",
+          "EPOS.UI/Seiten/Berichte/BerichtSeite.razor" },
     };
 
     /// <summary>

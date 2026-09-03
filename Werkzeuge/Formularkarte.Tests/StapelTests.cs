@@ -28,12 +28,13 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Heizkessel.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W4: 92 Dateien (101 nach iU9-W3,
-        // 105 nach iU9-W2, 108 nach iU9-W0). Die sieben Designer-Masken der Welle 4
-        // (Form_KostenKomponente, Form_Energietraeger, ucFuelSettings,
-        // ucBrennstoffBestandteile, ucStromAufschlaege, ucVorlagenZeile,
-        // ucErtragBonus) sind umgestellt und geloescht.
-        Assert.True(dateien.Count >= 92, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W5: 89 Dateien (92 nach iU9-W4,
+        // 101 nach iU9-W3, 105 nach iU9-W2, 108 nach iU9-W0). Die drei
+        // Designer-Masken der Welle 5 (UcBericht, UcWirtschaftlichkeit,
+        // Form_BkUebernahme) sind umgestellt und geloescht; die drei uebrigen
+        // Masken des Reiters (UcBerichteKosten, UcBkKosten, UcBkUebersicht)
+        // waren K4 und zaehlten hier ohnehin nicht mit.
+        Assert.True(dateien.Count >= 89, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -56,11 +57,11 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W4: 91 Masken (98 nach iU9-W3,
-        // 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Die sieben
-        // Designer-Masken der Welle 4 sind auf Razor-Komponenten umgestellt und
-        // geloescht (Regel M1).
-        Assert.True(Lauf.Value.Masken >= 91, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W5: 88 Masken (91 nach iU9-W4,
+        // 98 nach iU9-W3, 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1).
+        // Die drei Designer-Masken der Welle 5 sind auf Razor-Komponenten
+        // umgestellt und geloescht (Regel M1).
+        Assert.True(Lauf.Value.Masken >= 88, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -68,8 +69,8 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W4: 59 von 91 — unveraendert seit
-        // iU9-W2, denn auch keine der sieben Masken der Welle 4 war lokalisiert
+        // Gemessener Stand 03.09.2026 nach iU9-W5: 59 von 88 — unveraendert seit
+        // iU9-W2, denn auch keine der Masken der Wellen 4 und 5 war lokalisiert
         // (sie alle setzten ihre Texte im Code). Der Anteil steigt damit von
         // Welle zu Welle: Der Leser muss weiterhin beide Wege koennen, nicht nur
         // den Designer.
