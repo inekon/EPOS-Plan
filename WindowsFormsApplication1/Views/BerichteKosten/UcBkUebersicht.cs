@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Berichte;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Win32;
 
 namespace WindowsFormsApplication1
@@ -35,8 +37,8 @@ namespace WindowsFormsApplication1
     /// Auf einer Merkmalszeile (Stufe 3) übernimmt sie GENAU DIESES EINE FELD aus einer
     /// anderen Version derselben Gruppe (<see cref="MerkmalUebernahmeCtrl"/>), auf einer
     /// Bestandszeile (Stufe 1) den ganzen Komponentenbestand des Gewerks
-    /// (<see cref="KomponentenUebernahmeCtrl"/>). Beides fragt vorher über
-    /// <see cref="Form_BkUebernahme"/> nach. Wo die Übernahme nicht trägt — Schlüsselspalte
+    /// (<see cref="KomponentenUebernahmeCtrl"/>). Beides fragt vorher über die
+    /// Razor-Komponente <c>BkUebernahmeDialog</c> nach (iU9-W5.1). Wo die Übernahme nicht trägt — Schlüsselspalte
     /// oder nicht umgesetztes Gewerk —, steht statt des Knopfes ein Strich mit Begründung
     /// im Kurzhinweis; ein sichtbarer, aber wirkungsloser Knopf wäre die schlechtere Auskunft.
     /// </summary>
@@ -1281,15 +1283,15 @@ namespace WindowsFormsApplication1
 
         // Die wählbaren Quellen: Stammprojekt (Vorgabe, erste Zeile von LadeGruppe) und
         // jede andere Variante derselben Gruppe - das Ziel selbst natürlich nicht.
-        private List<Form_BkUebernahme.Quelle> BaueQuellen(int idStamm, int idZiel)
+        private List<UebernahmeQuelle> BaueQuellen(int idStamm, int idZiel)
         {
-            var liste = new List<Form_BkUebernahme.Quelle>();
+            var liste = new List<UebernahmeQuelle>();
             ProjektEintrag stamm = AktuellerStamm;
             foreach (VariantenCtrl.VarianteInfo vi in
                      _ctrl.LadeGruppe(idStamm, stamm != null ? stamm.Name : ""))
             {
                 if (vi.IdProjekt == idZiel) continue;
-                liste.Add(new Form_BkUebernahme.Quelle
+                liste.Add(new UebernahmeQuelle
                 {
                     Id = vi.IdProjekt,
                     Anzeige = vi.IstStamm
@@ -1307,6 +1309,64 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(z.Variantenname) ? z.Projektname : z.Variantenname;
         }
 
+        /// <summary>
+        /// Die HÜLLE des Übernahmedialogs (iU9-W5.1) — inline, weil sie genau
+        /// zwei Aufrufer hat und beide hier stehen.
+        ///
+        /// <para>Sie zeigt die Razor-Komponente <c>BkUebernahmeDialog</c> in einer
+        /// <see cref="BlazorDialogForm{T}"/> und liefert die gewählte Quelle;
+        /// <c>null</c> heißt abgebrochen. Der Lader wird unverändert
+        /// durchgereicht — er läuft im Blazor-Verteiler und damit im
+        /// Oberflächenfaden, genau wie zuvor im <c>SelectedIndexChanged</c> der
+        /// Klappliste.</para>
+        ///
+        /// <para><b>Maße.</b> Der Vorläufer maß 520 × 380 mit Klartext und
+        /// 520 × 250 ohne (er setzte <c>ClientSize</c> im Konstruktor um). Beide
+        /// Maße bleiben; das Layout innerhalb der Komponente ist flüssig.</para>
+        /// </summary>
+        private int? UebernahmeFragen(string titel, string gegenstand,
+                                      List<UebernahmeQuelle> quellen,
+                                      Func<int, UebernahmeVorschau> lader, bool mitKlartext)
+        {
+            int? gewaehlt = null;
+            BlazorDialogForm<BkUebernahmeDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<BkUebernahmeErgebnis>(
+                    new object(), e =>
+                    {
+                        gewaehlt = e != null ? (int?)e.QuelleId : null;
+                        dlg.Schliessen(e != null);
+                    }),
+
+                ["TitelText"] = titel ?? "",
+                ["Gegenstand"] = gegenstand ?? "",
+                ["ZielName"] = ZielName(),
+                ["Quellen"] = (IReadOnlyList<UebernahmeQuelle>)quellen,
+                ["MitKlartext"] = mitKlartext,
+                ["Lader"] = lader,
+
+                // Texte des Vorläufers (TexteSetzen) — dieselben Schlüssel.
+                ["LabelQuelle"] = MyResource.Resource.BK_UEB_LBL_QUELLE,
+                ["LabelWertQuelle"] = MyResource.Resource.BK_UEB_LBL_WERT_QUELLE,
+                ["LabelZiel"] = MyResource.Resource.BK_UEB_LBL_ZIEL,
+                ["LabelWertZiel"] = MyResource.Resource.BK_UEB_LBL_WERT_ZIEL,
+                ["OkText"] = MyResource.Resource.SIM_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.BK_UEB_BTN_ABBRUCH,
+                ["MeldungKeineQuelle"] = MyResource.Resource.BK_MSG_UEB_KEINE_QUELLE
+            };
+
+            var groesse = new Size(560, mitKlartext ? 520 : 380);
+
+            using (dlg = new BlazorDialogForm<BkUebernahmeDialog>(titel ?? "", groesse, werte))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return null;
+            }
+
+            return gewaehlt;
+        }
+
         // --- A) Merkmals-Übernahme (Stufe-3-Zeile) --------------------------------
 
         private void MerkmalUebernahme(UebernahmeZeile uz)
@@ -1314,42 +1374,38 @@ namespace WindowsFormsApplication1
             AbweichungsErmittler.Merkmal f = uz.Feld;
             if (f == null) { Melde(MyResource.Resource.BK_MSG_UEB_KEIN_FELD); return; }
 
-            List<Form_BkUebernahme.Quelle> quellen = BaueQuellen(uz.IdStamm, uz.IdVariante);
+            List<UebernahmeQuelle> quellen = BaueQuellen(uz.IdStamm, uz.IdVariante);
             if (quellen.Count == 0) { Melde(MyResource.Resource.BK_MSG_UEB_KEINE_QUELLE); return; }
 
-            using (var dlg = new Form_BkUebernahme(
-                       MyResource.Resource.BK_UEB_TITEL_FELD,
-                       uz.Gewerk + " · " + uz.Merkmal,
-                       ZielName(), quellen,
-                       id => VorschauFeld(id, uz.IdVariante, f), false))
+            int? gewaehlt = UebernahmeFragen(MyResource.Resource.BK_UEB_TITEL_FELD,
+                                             uz.Gewerk + " · " + uz.Merkmal, quellen,
+                                             id => VorschauFeld(id, uz.IdVariante, f), false);
+            if (gewaehlt == null) return;
+
+            try
             {
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                Cursor = Cursors.WaitCursor;
 
-                try
-                {
-                    Cursor = Cursors.WaitCursor;
+                MerkmalUebernahmeCtrl.Befund b =
+                    MerkmalUebernahmeCtrl.Pruefe(gewaehlt.Value, uz.IdVariante, f);
 
-                    MerkmalUebernahmeCtrl.Befund b =
-                        MerkmalUebernahmeCtrl.Pruefe(dlg.GewaehlteQuelleId, uz.IdVariante, f);
+                string fehler;
+                if (!MerkmalUebernahmeCtrl.Schreibe(b, uz.IdVariante, f, out fehler))
+                { Melde(string.Format(MyResource.Resource.BK_MSG_UEB_FEHLER, fehler ?? "")); return; }
 
-                    string fehler;
-                    if (!MerkmalUebernahmeCtrl.Schreibe(b, uz.IdVariante, f, out fehler))
-                    { Melde(string.Format(MyResource.Resource.BK_MSG_UEB_FEHLER, fehler ?? "")); return; }
-
-                    NachSchreibvorgang(uz.IdVariante, string.Format(
-                        MyResource.Resource.BK_MSG_UEB_OK, uz.Gewerk, uz.Merkmal, b.Quelle.Anzeigewert));
-                }
-                catch (Exception ex)
-                { Melde(string.Format(MyResource.Resource.BK_MSG_UEB_FEHLER, ex.Message)); }
-                finally { Cursor = Cursors.Default; }
+                NachSchreibvorgang(uz.IdVariante, string.Format(
+                    MyResource.Resource.BK_MSG_UEB_OK, uz.Gewerk, uz.Merkmal, b.Quelle.Anzeigewert));
             }
+            catch (Exception ex)
+            { Melde(string.Format(MyResource.Resource.BK_MSG_UEB_FEHLER, ex.Message)); }
+            finally { Cursor = Cursors.Default; }
         }
 
-        private static Form_BkUebernahme.Vorschau VorschauFeld(int idQuelle, int idZiel,
-                                                               AbweichungsErmittler.Merkmal f)
+        private static UebernahmeVorschau VorschauFeld(int idQuelle, int idZiel,
+                                                       AbweichungsErmittler.Merkmal f)
         {
             MerkmalUebernahmeCtrl.Befund b = MerkmalUebernahmeCtrl.Pruefe(idQuelle, idZiel, f);
-            var v = new Form_BkUebernahme.Vorschau
+            var v = new UebernahmeVorschau
             {
                 Moeglich = b.Moeglich && !b.Gleichstand,
                 Grund = b.Moeglich
@@ -1376,49 +1432,45 @@ namespace WindowsFormsApplication1
             if (!KomponentenUebernahmeCtrl.Unterstuetzt(uz.Gewerk))
             { Melde(string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, uz.Gewerk)); return; }
 
-            List<Form_BkUebernahme.Quelle> quellen = BaueQuellen(uz.IdStamm, uz.IdVariante);
+            List<UebernahmeQuelle> quellen = BaueQuellen(uz.IdStamm, uz.IdVariante);
             if (quellen.Count == 0) { Melde(MyResource.Resource.BK_MSG_UEB_KEINE_QUELLE); return; }
 
             var ctrl = new KomponentenUebernahmeCtrl();
 
-            using (var dlg = new Form_BkUebernahme(
-                       MyResource.Resource.BK_UEB_TITEL_KOMP,
-                       uz.Gewerk,
-                       ZielName(), quellen,
-                       id => VorschauKomponenten(ctrl, id, uz.IdVariante, uz.Gewerk), true))
+            int? gewaehlt = UebernahmeFragen(MyResource.Resource.BK_UEB_TITEL_KOMP, uz.Gewerk, quellen,
+                                             id => VorschauKomponenten(ctrl, id, uz.IdVariante, uz.Gewerk),
+                                             true);
+            if (gewaehlt == null) return;
+
+            try
             {
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                Cursor = Cursors.WaitCursor;
 
-                try
-                {
-                    Cursor = Cursors.WaitCursor;
+                int idQuelle = gewaehlt.Value;
+                KomponentenUebernahmeCtrl.Vorschau v = ctrl.Planen(idQuelle, uz.IdVariante, uz.Gewerk);
 
-                    int idQuelle = dlg.GewaehlteQuelleId;
-                    KomponentenUebernahmeCtrl.Vorschau v = ctrl.Planen(idQuelle, uz.IdVariante, uz.Gewerk);
+                string fehler, hinweise;
+                if (!ctrl.Uebernehmen(idQuelle, uz.IdVariante, uz.Gewerk, out fehler, out hinweise))
+                { Melde(string.Format(MyResource.Resource.BK_MSG_KOMP_FEHLER, fehler ?? "")); return; }
 
-                    string fehler, hinweise;
-                    if (!ctrl.Uebernehmen(idQuelle, uz.IdVariante, uz.Gewerk, out fehler, out hinweise))
-                    { Melde(string.Format(MyResource.Resource.BK_MSG_KOMP_FEHLER, fehler ?? "")); return; }
+                if (!string.IsNullOrEmpty(hinweise))
+                    MessageBox.Show(hinweise, MyResource.Resource.BK_UEB_TITEL_KOMP,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    if (!string.IsNullOrEmpty(hinweise))
-                        MessageBox.Show(hinweise, MyResource.Resource.BK_UEB_TITEL_KOMP,
-                                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    NachSchreibvorgang(uz.IdVariante, string.Format(
-                        MyResource.Resource.BK_MSG_KOMP_OK, uz.Gewerk,
-                        v.Anlegen.Count, v.Gleichziehen.Count, v.Entfernen.Count));
-                }
-                catch (Exception ex)
-                { Melde(string.Format(MyResource.Resource.BK_MSG_KOMP_FEHLER, ex.Message)); }
-                finally { Cursor = Cursors.Default; }
+                NachSchreibvorgang(uz.IdVariante, string.Format(
+                    MyResource.Resource.BK_MSG_KOMP_OK, uz.Gewerk,
+                    v.Anlegen.Count, v.Gleichziehen.Count, v.Entfernen.Count));
             }
+            catch (Exception ex)
+            { Melde(string.Format(MyResource.Resource.BK_MSG_KOMP_FEHLER, ex.Message)); }
+            finally { Cursor = Cursors.Default; }
         }
 
-        private static Form_BkUebernahme.Vorschau VorschauKomponenten(KomponentenUebernahmeCtrl ctrl,
-                                                                      int idQuelle, int idZiel, string gewerk)
+        private static UebernahmeVorschau VorschauKomponenten(KomponentenUebernahmeCtrl ctrl,
+                                                              int idQuelle, int idZiel, string gewerk)
         {
             KomponentenUebernahmeCtrl.Vorschau p = ctrl.Planen(idQuelle, idZiel, gewerk);
-            return new Form_BkUebernahme.Vorschau
+            return new UebernahmeVorschau
             {
                 Moeglich = p.Moeglich,
                 Grund = p.Grund,
