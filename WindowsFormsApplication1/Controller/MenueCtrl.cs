@@ -228,68 +228,135 @@ namespace WindowsFormsApplication1
                 return frm.ShowDialog() == DialogResult.OK;
         }
 
+        /// <summary>
+        /// Projekte löschen (Nutzerauftrag 02.09.2026: Mehrfachauswahl analog zum
+        /// Öffnen-Dialog). Der Dialog liefert die angehakten Projekte — Varianten vor
+        /// ihren Stämmen — und hat bereits zurückgefragt. Je Projekt läuft der bewährte
+        /// Weg (Anlagen, Projektzeile samt Kaskaden) plus die gespeicherten
+        /// Ergebnisse, die bisher als Rückstand blieben. Rückgabe wie bisher ein
+        /// Name: der des aktiven Projekts, falls es dabei war (Form_Start setzt dann
+        /// seinen Platzhalter), sonst der zuletzt gelöschte; leer, wenn nichts geschah.
+        /// </summary>
         public string ProjektDelete(bool zuletzt = false)
         {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
-            Form_ProjektDelete frm = new Form_ProjektDelete();
-            string szProjekt = "";
-
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK && frm.szProjekt != "")
+            List<ProjektModel> liste;
+            bool sicherung;
+            using (Form_ProjektDelete frm = new Form_ProjektDelete())
             {
-                // --- NEU: MessageBox Sicherheitsabfrage vor dem tatsächlichen Löschen ---
-                DialogResult dialogResult = MessageBox.Show(
-                    $"Sind Sie sicher, dass Sie das Projekt '{frm.szProjekt}' und alle dazugehörigen Daten unwiderruflich löschen möchten?",
-                    "Projekt löschen bestätigen",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning,
-                    MessageBoxDefaultButton.Button2 // Fokus liegt zur Sicherheit auf "Nein"
-                );
+                if (frm.ShowDialog() != DialogResult.OK || frm.ZuLoeschen.Count == 0) return "";
+                liste = frm.ZuLoeschen;
+                sicherung = frm.SicherungGewuenscht;
+            }
 
-                // Wenn der Nutzer nicht auf "Ja" klickt, wird der Löschvorgang abgebrochen
-                if (dialogResult != DialogResult.Yes)
-                {
-                    return "";
-                }
+            if (sicherung && !DatenbankSichern("vor_Loeschen")) return "";
 
+            int aktuell = AktuelleProjektId();
+            string aktuellerName = "";
+            string letzter = "";
+            int n = 0;
+            var fehler = new List<string>();
+            foreach (ProjektModel p in liste)
+            {
                 try
                 {
-                    // 1. Unhandlichen OdbcDataAdapter durch sauberes DataRepository.GetDataTable (OLEDB) ersetzt
-                    string selectSql = "SELECT * FROM Tab_Applikation";
-                    DataTable dt = DataRepository.GetDataTable(selectSql);
-
-                    if (dt != null && dt.Rows.Count > 0)
+                    if (aktuell > 0 && p.m_ID == aktuell)
                     {
-                        DataRow row = dt.Rows[0];
-                        if (row["ID_Projekt"] != DBNull.Value && Convert.ToInt32(row["ID_Projekt"]) == frm.ID_Projekt)
-                        {
-                            // 2. Statt speicherintensiven CommandBuilder upzudaten, führen wir ein gezieltes UPDATE per Repository aus
-                            string updateSql = "UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0";
-                            OleDbParameter pName = new OleDbParameter("?", "");
-
-                            DataRepository.ExecuteNonQuery(updateSql, pName);
-                        }
+                        AktuellesProjektZuruecksetzen();
+                        aktuellerName = p.m_szProjektname ?? "";
                     }
+
+                    // Gespeicherte Simulationsergebnisse blieben beim alten Weg als
+                    // Rückstand (Tab_Ergebnis hängt an keiner Löschweitergabe).
+                    try { new ErgebnisCtrl().Delete(p.m_ID); } catch { }
+
+                    WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
+                    ctrlwerz.ID_Projekt = p.m_ID;
+                    ctrlwerz.Delete();
+
+                    ProjektCtrl ctrlproj = new ProjektCtrl();
+                    ctrlproj.m_szProjektname = p.m_szProjektname;
+                    ctrlproj.Delete(p.m_szProjektname);
+
+                    letzter = p.m_szProjektname ?? "";
+                    n++;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
-                    MessageBox.Show($"Fehler beim Zurücksetzen der Applikationsdaten: {ex.Message}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return "";
+                    fehler.Add((p.m_szProjektname ?? "?") + ": " + ex.Message);
                 }
-
-                ctrlwerz.ID_Projekt = frm.ID_Projekt;
-                ctrlwerz.Delete();
-
-                ctrlproj.m_szProjektname = frm.szProjekt;
-                ctrlproj.Delete(frm.szProjekt);
-                szProjekt = frm.szProjekt;
-
-                // --- NEU: Erfolgsmeldung nach erfolgreichem Löschen ---
-                MessageBox.Show($"Das Projekt '{szProjekt}' wurde erfolgreich gelöscht.", "Projekt gelöscht", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            return szProjekt;
+
+            string meldung = string.Format(Form_ProjektDelete.TPd("PDLG_ERFOLG", "{0} Projekt(e) gelöscht."), n);
+            if (fehler.Count > 0)
+                meldung += "\r\n\r\n" + string.Format(Form_ProjektDelete.TPd("PDLG_FEHLER", "Fehler bei:\r\n{0}"),
+                                                       string.Join("\r\n", fehler));
+            MessageBox.Show(meldung, Form_ProjektDelete.TPd("PDLG_TITEL", "Projekte löschen"), MessageBoxButtons.OK,
+                            fehler.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+            return aktuellerName.Length > 0 ? aktuellerName : letzter;
+        }
+
+        // Das aktive Projekt (Tab_Applikation.ID_Projekt), 0 wenn keins.
+        private static int AktuelleProjektId()
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Applikation");
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Projekt"] != DBNull.Value)
+                    return Convert.ToInt32(dt.Rows[0]["ID_Projekt"]);
+            }
+            catch { }
+            return 0;
+        }
+
+        // Gezieltes UPDATE statt CommandBuilder (Bestandsweg vor dem Umbau).
+        private static void AktuellesProjektZuruecksetzen()
+        {
+            OleDbParameter pName = new OleDbParameter("?", "");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0", pName);
+        }
+
+        /// <summary>
+        /// Sicherungskopie der aktiven Datenbank — in den Ordner „DB-Backup" neben der
+        /// Datei, falls es ihn gibt (der Migrationsstrang legt ihn an), sonst daneben;
+        /// Zweck und Zeitstempel im Namen. Bei SQLite reisen die Journal-Dateien
+        /// (-wal/-shm) mit, damit die Kopie den letzten Stand vollständig trägt.
+        /// Wirft bei Fehlern (der Aufrufer entscheidet, ob er fortfährt).
+        /// Gemeinsame Wahrheit für „Projekte löschen" und den Projektimport.
+        /// </summary>
+        public static string DatenbankKopieAnlegen(string zweck)
+        {
+            string dbPfad = DataRepository.GetDBPath();
+            string ordner = System.IO.Path.GetDirectoryName(dbPfad) ?? "";
+            string backupOrdner = System.IO.Path.Combine(ordner, "DB-Backup");
+            if (System.IO.Directory.Exists(backupOrdner)) ordner = backupOrdner;
+            string stamm = System.IO.Path.GetFileNameWithoutExtension(dbPfad) + "_" + zweck + "_" +
+                           DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string sicherung = System.IO.Path.Combine(ordner, stamm + System.IO.Path.GetExtension(dbPfad));
+            System.IO.File.Copy(dbPfad, sicherung, false);
+            foreach (string anhang in new[] { "-wal", "-shm" })
+                if (System.IO.File.Exists(dbPfad + anhang))
+                    System.IO.File.Copy(dbPfad + anhang, sicherung + anhang, true);
+            return sicherung;
+        }
+
+        // Sicherungskopie vor dem Löschen; false = der Anwender möchte nach einem
+        // Sicherungsfehler NICHT fortfahren.
+        private static bool DatenbankSichern(string zweck)
+        {
+            try
+            {
+                DatenbankKopieAnlegen(zweck);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return MessageBox.Show(
+                    string.Format(Form_ProjektDelete.TPd("PDLG_SICHERUNG_FEHLER",
+                        "Die Sicherungskopie konnte nicht angelegt werden:\r\n{0}\r\n\r\nTrotzdem löschen?"), ex.Message),
+                    Form_ProjektDelete.TPd("PDLG_TITEL", "Projekte löschen"),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+            }
         }
 
         public void WP_Administration()

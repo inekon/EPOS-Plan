@@ -8626,6 +8626,73 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>The rank refers to the generator type. This project has {0} units of this type — each has its own card.</value>
   </data>
+  <data name="PDLG_TITEL" xml:space="preserve">
+    <value>Delete projects</value>
+  </data>
+  <data name="PDLG_HINWEIS" xml:space="preserve">
+    <value>Tick the projects to delete. A base project takes its variants along. Deletion cannot be undone.</value>
+  </data>
+  <data name="PDLG_ALLE" xml:space="preserve">
+    <value>Select all visible</value>
+  </data>
+  <data name="PDLG_KEINE" xml:space="preserve">
+    <value>Clear selection</value>
+  </data>
+  <data name="PDLG_SICHERUNG" xml:space="preserve">
+    <value>Back up the database before deleting</value>
+  </data>
+  <data name="PDLG_LOESCHEN" xml:space="preserve">
+    <value>Delete…</value>
+  </data>
+  <data name="PDLG_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PDLG_VARIANTE" xml:space="preserve">
+    <value>variant</value>
+  </data>
+  <data name="PDLG_WEITERE" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
+  <data name="PDLG_RUECKFRAGE" xml:space="preserve">
+    <value>{0} project(s) and all their data will be deleted permanently:
+
+{1}
+Continue?</value>
+  </data>
+  <data name="PDLG_ERFOLG" xml:space="preserve">
+    <value>{0} project(s) deleted.</value>
+  </data>
+  <data name="PDLG_FEHLER" xml:space="preserve">
+    <value>Errors:
+{0}</value>
+  </data>
+  <data name="PDLG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>The backup copy could not be created:
+{0}
+
+Delete anyway?</value>
+  </data>
+  <data name="PA_AUSGEWAEHLT" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="PA_VARIANTE_VON" xml:space="preserve">
+    <value>Variant of: {0}</value>
+  </data>
+  <data name="WZP_PFLICHT" xml:space="preserve">
+    <value>(* = required)</value>
+  </data>
+  <data name="WZP_NAME_LEER" xml:space="preserve">
+    <value>Please enter a project name.</value>
+  </data>
+  <data name="WZP_NAME_VORHANDEN" xml:space="preserve">
+    <value>A project with this name already exists.</value>
+  </data>
+  <data name="WZP_KLIMA_LEER" xml:space="preserve">
+    <value>Please select a climate region.</value>
+  </data>
+  <data name="WZP_BESCHREIBUNG_HINT" xml:space="preserve">
+    <value>Short description: project, site, special features …</value>
+  </data>
   <data name="PV_ANLAGE_LABEL_SYSTEMVERLUSTE" xml:space="preserve">
     <value>System losses [%]:</value>
   </data>

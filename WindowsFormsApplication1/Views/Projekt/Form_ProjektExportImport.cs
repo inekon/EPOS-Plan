@@ -264,11 +264,9 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    string dbPfad = DataRepository.GetDBPath();
-                    string sicherung = Path.Combine(Path.GetDirectoryName(dbPfad) ?? "",
-                        Path.GetFileNameWithoutExtension(dbPfad) + "_vor_Import_" +
-                        DateTime.Now.ToString("yyyyMMdd_HHmmss") + Path.GetExtension(dbPfad));
-                    File.Copy(dbPfad, sicherung, false);
+                    // Gemeinsame Sicherungslogik mit „Projekte löschen" (SQLite-Journale,
+                    // DB-Backup-Ordner).
+                    string sicherung = MenueCtrl.DatenbankKopieAnlegen("vor_Import");
                     lblStatus.Text = "Sicherung: " + Path.GetFileName(sicherung);
                 }
                 catch (Exception exSich)
