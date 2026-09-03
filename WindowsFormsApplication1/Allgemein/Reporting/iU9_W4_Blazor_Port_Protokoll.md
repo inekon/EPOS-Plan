@@ -45,7 +45,8 @@ e0b63be  iU9-W4.2  KostenKomponenteDialog und seine Huelle
 b43e8fd  iU9-W4.4  EnergietraegerDialog samt Traegerkarte
 09ecd37  iU9-W4.5  Ressourcen-Sammelnachtrag (50 Schluessel, de + en + Designer)
 45246be  iU9-W4.6  Formularkarte-Tests (zwei Pruefmuster, neue Zaehler)
-(dieses Protokoll)  iU9-W4.7
+7c057ab  iU9-W4.7  Protokoll, Statusblock, CLAUDE.md x3
+64d7305  iU9-W4.8  Nachtrag: Leistungspreis-Modus ohne gewaehlten Traeger
 ```
 
 ---
