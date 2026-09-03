@@ -1,0 +1,38 @@
+﻿@* Raster aus Kacheln (iU9-W5.0).
+
+   WOZU. Kennzahlen stehen im Bestand als Reihe gleich breiter Karten
+   nebeneinander: drei auf der Kostenseite (Investition, Betrieb, Energie),
+   vier auf der Wirtschaftlichkeitsseite (Kapitalwert, Annuitaet, Amortisation,
+   interner Zinsfuss). Beide bauten dafuer ein TableLayoutPanel mit fest
+   gerechneten Prozentspalten (UcBkKosten.pnlKacheln, UcWirtschaftlichkeit.
+   KachelnBauen). Hier steht das einmal - und ohne gerechnete Breiten.
+
+   RESPONSIV STATT GERECHNET. Das CSS-Raster legt so viele Kacheln
+   nebeneinander, wie bei einer Mindestbreite Platz haben, und bricht sonst um
+   (auto-fit/minmax). Auf einem schmalen Fenster stehen die drei Kacheln
+   untereinander statt auf ein Drittel gequetscht; auf einem breiten fuellen
+   sie die Zeile. Der Aufrufer gibt dafuer nur die Mindestbreite an.
+
+   KEINE EIGENE KACHEL. Der Baustein ist ein Behaelter: Was darin steht, ist
+   entweder eine <Kennzahlkachel> (Anzeige) oder eine <Kachel> (Einstieg). So
+   bleibt eine Gestaltungswahrheit je Kartenart. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-kachelraster" style="@Stil">
+    @KindInhalt
+</div>
+
+@code {
+    /// <summary>Die Kacheln.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// Mindestbreite einer Kachel in Bildpunkten. Darunter bricht das Raster um.
+    /// 220 traegt eine Kennzahl samt Herkunftszeile ohne Trennung.
+    /// </summary>
+    [Parameter] public int Mindestbreite { get; set; } = 220;
+
+    private string Stil
+        => "--epos-kachel-min: " + Mindestbreite.ToString(System.Globalization.CultureInfo.InvariantCulture) + "px";
+}

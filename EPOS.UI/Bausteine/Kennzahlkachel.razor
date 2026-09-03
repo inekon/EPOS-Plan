@@ -1,0 +1,38 @@
+﻿@* Kennzahl-Karte: Ueberschrift, grosser Wert, leise Herkunftszeile
+   (iU9-W5.0).
+
+   VORBILD ist UcBkKosten.Kachel - die Karte, die seit KD6a auf der
+   Kostenseite UND auf der Wirtschaftlichkeitsseite steht (dort ueber ein
+   "internal" der Kostenseite, damit es nur EINE Gestaltung gibt). Genau diese
+   eine Gestaltung ist hier der Baustein.
+
+   ANZEIGE, KEIN EINSTIEG. Sie ist bewusst kein <button>: Ein Klick tut
+   nichts, und eine Sprachausgabe soll sie nicht als Schaltflaeche melden. Wer
+   einen Einstieg braucht, nimmt <Kachel>.
+
+   "—" STATT NULL. Der Wert wird fertig formatiert uebergeben; ein leerer Wert
+   erscheint als Gedankenstrich. Das ist die Hausregel der Kostenseite: Eine 0
+   waere eine Aussage, die niemand getroffen hat (Nutzerentscheidung 4 vom
+   18.08.2026). *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-kennzahlkachel">
+    <span class="epos-kennzahlkachel-titel">@Titel</span>
+    <span class="epos-kennzahlkachel-wert">@(string.IsNullOrEmpty(Wert) ? "—" : Wert)</span>
+    @if (!string.IsNullOrEmpty(Quelle))
+    {
+        <span class="epos-kennzahlkachel-quelle">@Quelle</span>
+    }
+</div>
+
+@code {
+    /// <summary>Ueberschrift der Karte.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Der fertig formatierte Wert; leer = „—".</summary>
+    [Parameter] public string Wert { get; set; } = "";
+
+    /// <summary>Leise Zeile darunter: woher der Wert stammt.</summary>
+    [Parameter] public string Quelle { get; set; } = "";
+}

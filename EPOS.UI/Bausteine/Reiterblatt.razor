@@ -1,0 +1,78 @@
+﻿@* Ein Blatt der Reiterleiste (iU9-W5.0) - das Gegenstueck zur TabPage.
+
+   Es meldet sich beim umgebenden <Reiter> an und zeichnet seinen Inhalt nur,
+   wenn es das gewaehlte ist. Ein nicht gewaehltes Blatt gibt GAR NICHTS aus:
+   Ein verstecktes, aber gezeichnetes Blatt haette seine Felder weiter im
+   Tabulatorzyklus und seine Rueckrufe weiter am Leben - genau der Fehler, den
+   ein TabControl nicht macht.
+
+   VERZOEGERTER AUFBAU. Weil ein ungewaehltes Blatt nicht existiert, entsteht
+   sein Inhalt erst beim ersten Betreten - dieselbe Zurueckhaltung, mit der
+   UcBerichteKosten seine vier Seiten "lazy" erzeugte, nur ohne eigenen Code
+   dafuer. Wer beim Betreten etwas nachladen will, nimmt Betreten. *@
+
+@namespace EPOS.UI.Bausteine
+@implements IDisposable
+
+@if (Sichtbar)
+{
+    <div class="epos-reiter-blatt" role="tabpanel" tabindex="0"
+         id="@("blatt-" + Schluessel)" aria-labelledby="@("reiter-" + Schluessel)">
+        @KindInhalt
+    </div>
+}
+
+@code {
+    private string _titel = "";
+    private bool _bedienbar = true;
+
+    /// <summary>Der umgebende Reiter (von <see cref="Reiter"/> herabgereicht).</summary>
+    [CascadingParameter] public Reiter? Eltern { get; set; }
+
+    /// <summary>Sprachneutraler Schluessel des Blattes - nie ein Anzeigetext.</summary>
+    [Parameter] public string Schluessel { get; set; } = "";
+
+    /// <summary>Beschriftung des Reiterknopfes.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt den Knopf, laesst ihn aber sichtbar.</summary>
+    [Parameter] public bool Bedienbar { get; set; } = true;
+
+    /// <summary>Der Inhalt des Blattes.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>Das Blatt wurde soeben sichtbar - Gelegenheit zum Nachladen.</summary>
+    [Parameter] public EventCallback Betreten { get; set; }
+
+    /// <summary>Ist dieses Blatt das gewaehlte?</summary>
+    public bool Sichtbar => Eltern is not null && Eltern.IstAktiv(Schluessel);
+
+    protected override void OnInitialized()
+    {
+        Eltern?.Anmelden(this);
+        _titel = Titel;
+        _bedienbar = Bedienbar;
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Titel und Sperre stehen in der LEISTE, die der Reiter zeichnet -
+        // aendert eines der beiden sich, muss er neu zeichnen.
+        if (!string.Equals(_titel, Titel, StringComparison.Ordinal) || _bedienbar != Bedienbar)
+        {
+            _titel = Titel;
+            _bedienbar = Bedienbar;
+            Eltern?.Aufgefrischt();
+        }
+    }
+
+    /// <summary>
+    /// Der Reiter meldet, dass dieses Blatt jetzt vorn steht (gerufen aus
+    /// <see cref="Reiter"/>). Warum von dort und nicht aus einem eigenen
+    /// <c>OnAfterRender</c>: siehe Begruendung dort.
+    /// </summary>
+    internal Task Betretend() => Betreten.InvokeAsync();
+
+    /// <inheritdoc />
+    public void Dispose() => Eltern?.Abmelden(this);
+}

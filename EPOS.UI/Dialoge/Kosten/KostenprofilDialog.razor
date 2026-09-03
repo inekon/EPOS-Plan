@@ -12,11 +12,11 @@
    StundenRasterBauen) - in keiner Feldkarte stehen sie deshalb. Hier sind es
    36 Zahlenfelder in zwei mitwachsenden Gittern.
 
-   DREI ABSCHNITTE STATT DREI REITER. Einen Reiter-Baustein gibt es in
-   EPOS.UI erst mit Welle 5 (Bausteinluecke 10); bis dahin stehen Monat,
-   Woche und Grafik als drei Gruppen untereinander. Fachlich ist das
-   dieselbe Maske - der Vorlaeufer zeichnete die Vorschau ohnehin bei jedem
-   Reiterwechsel neu.
+   DREI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-17). Welle 3
+   stellte Monat, Woche und Grafik als drei Gruppen untereinander, weil es
+   den Baustein Reiter noch nicht gab; mit 36 Feldern und Diagramm wurde das
+   ein langes Fenster (offener Punkt W3-O3). Seit Welle 5 steht der Baustein,
+   und die Maske hat ihre Reiterform zurueck.
 
    DIE VORSCHAU RECHNET DIE HUELLE. Sie ruft dieselbe Engine-Methode wie die
    Simulation (PreisModell.AusMonatsUndWochenwerten) und laesst den
@@ -45,65 +45,71 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* ========================================================= Monatswerte *@
-    <Gruppenkopf Titel="@KopfMonat">
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
         <KindInhalt>
-            <div class="epos-zahlenraster">
-                @for (int i = 0; i < 12; i++)
-                {
-                    int m = i;
-                    <Zahlenfeld Bezeichnung="@Monatsname(m)" Einheit="@Einheit"
-                                Wert="@_monat[m]" WertChanged="@(w => BeiMonat(m, w))" />
-                }
-            </div>
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf"
-                        @onclick="AlleMonate">@AlleMonateText</button>
-            </div>
+
+        @* ========================================================= Monatswerte *@
+        <Reiterblatt Schluessel="MONAT" Titel="@KopfMonat">
+            <KindInhalt>
+                <div class="epos-zahlenraster">
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        int m = i;
+                        <Zahlenfeld Bezeichnung="@Monatsname(m)" Einheit="@Einheit"
+                                    Wert="@_monat[m]" WertChanged="@(w => BeiMonat(m, w))" />
+                    }
+                </div>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="AlleMonate">@AlleMonateText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
+        @* ========================================================= Wochenwerte *@
+        <Reiterblatt Schluessel="WOCHE" Titel="@KopfWoche">
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentage"
+                             Auswahl="@_tag" AuswahlChanged="BeiTagwechsel" />
+
+                <div class="epos-zahlenraster">
+                    @{ int tagJetzt = _tag ?? 0; }
+                    @for (int i = 0; i < 24; i++)
+                    {
+                        int h = i;
+                        <Zahlenfeld Bezeichnung="@Stundenname(h)" Einheit="@Einheit"
+                                    Wert="@_woche[tagJetzt, h]" WertChanged="@(w => BeiStunde(h, w))" />
+                    }
+                </div>
+
+                <Herleitungszeile Text="@HinweisAbweichung" />
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="TagKopieren">@TagKopierenText</button>
+                    <button type="button" class="epos-knopf" disabled="@(_tagKopie is null)"
+                            @onclick="TagEinfuegen">@TagEinfuegenText</button>
+                    <button type="button" class="epos-knopf"
+                            @onclick="AlleTage">@AlleTageText</button>
+                    <button type="button" class="epos-knopf"
+                            @onclick="TagUebernehmen">@TagUebernehmenText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
+        @* ============================================================== Grafik *@
+        <Reiterblatt Schluessel="GRAFIK" Titel="@KopfGrafik" Betreten="VorschauZeichnen">
+            <KindInhalt>
+                <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@_zeichnet"
+                            @onclick="VorschauZeichnen">@AktualisierenText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
         </KindInhalt>
-    </Gruppenkopf>
-
-    @* ========================================================= Wochenwerte *@
-    <Gruppenkopf Titel="@KopfWoche">
-        <KindInhalt>
-            <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentage"
-                         Auswahl="@_tag" AuswahlChanged="BeiTagwechsel" />
-
-            <div class="epos-zahlenraster">
-                @{ int tagJetzt = _tag ?? 0; }
-                @for (int i = 0; i < 24; i++)
-                {
-                    int h = i;
-                    <Zahlenfeld Bezeichnung="@Stundenname(h)" Einheit="@Einheit"
-                                Wert="@_woche[tagJetzt, h]" WertChanged="@(w => BeiStunde(h, w))" />
-                }
-            </div>
-
-            <Herleitungszeile Text="@HinweisAbweichung" />
-
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf"
-                        @onclick="TagKopieren">@TagKopierenText</button>
-                <button type="button" class="epos-knopf" disabled="@(_tagKopie is null)"
-                        @onclick="TagEinfuegen">@TagEinfuegenText</button>
-                <button type="button" class="epos-knopf"
-                        @onclick="AlleTage">@AlleTageText</button>
-                <button type="button" class="epos-knopf"
-                        @onclick="TagUebernehmen">@TagUebernehmenText</button>
-            </div>
-        </KindInhalt>
-    </Gruppenkopf>
-
-    @* ============================================================== Grafik *@
-    <Gruppenkopf Titel="@KopfGrafik">
-        <KindInhalt>
-            <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@_zeichnet"
-                        @onclick="VorschauZeichnen">@AktualisierenText</button>
-            </div>
-        </KindInhalt>
-    </Gruppenkopf>
+    </Reiter>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
@@ -176,6 +182,9 @@
     /// <summary>Titel der Grafikgruppe (PREIS_PROFIL_TAB_GRAFIK).</summary>
     [Parameter] public string KopfGrafik { get; set; } = "Grafik";
 
+    /// <summary>Beschriftung der Reiterleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Kostenprofil";
+
     /// <summary>Einheit hinter jedem Zahlenfeld.</summary>
     [Parameter] public string Einheit { get; set; } = "ct/kWh";
 
@@ -240,6 +249,7 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    private string _reiter = "MONAT";
     private string _bezeichner = "";
     private readonly double?[] _monat = new double?[12];
     private readonly double?[,] _woche = new double?[7, 24];

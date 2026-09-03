@@ -13,10 +13,16 @@
    Texte herein — die Formeln stehen in der Engine bzw. im Pruefer
    EnergieEinheitenPruefung, und es soll sie nur einmal geben.
 
-   ZWEI ABSCHNITTE STATT ZWEIER REITER. Der Vorlaeufer haengte den Bestand in
-   ein TabControl („Preise & Umrechnung" / „Emissionen"); einen Reiter-Baustein
-   gibt es erst in Welle 5. Bis dahin stehen beide untereinander — dieselbe
-   Entscheidung wie A-17 in Welle 3.
+   ZWEI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-2). Der
+   Vorlaeufer haengte den Bestand in ein TabControl („Preise & Umrechnung" /
+   „Emissionen"); Welle 4 stellte beides untereinander, weil es den Baustein
+   Reiter noch nicht gab (offener Punkt W4-O1). Seit Welle 5 gibt es ihn, und
+   die Karte hat ihre zwei Reiter zurueck.
+
+   HISTORIE UND SPEICHERN STEHEN UNTER DER LEISTE, nicht in einem Reiter: Der
+   Speichern-Knopf gilt fuer die ganze Karte. Laege er in einem der beiden
+   Reiter, waere er vom anderen aus nicht erreichbar - genau der Fehler, den
+   ein TabControl mit Knopf ausserhalb nicht macht.
 
    OHNE ARTENKATALOG (Migrationsschritt 57 nicht gelaufen) bleiben die drei
    Bestandsfelder CO2/SO2/NOx sichtbar. Eine leere Emissionsmaske waere
@@ -28,6 +34,12 @@
 
     <p class="epos-traeger-name">@Stand.TraegerZeile</p>
     <p class="epos-traeger-gruppe">@Stand.GruppeZeile</p>
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+    <Reiterblatt Schluessel="PREISE" Titel="@TitelReiterPreise">
+        <KindInhalt>
 
     @* =============================================== Preise und Umrechnung *@
     <Gruppenkopf Titel="@TitelPreise">
@@ -153,8 +165,11 @@
                                 InArbeitspreis="() => InArbeitspreis.InvokeAsync()" />
     }
 
+        </KindInhalt>
+    </Reiterblatt>
+
     @* ====================================================== Emissionen *@
-    <Gruppenkopf Titel="@TitelEmissionen">
+    <Reiterblatt Schluessel="EMISSIONEN" Titel="@TitelEmissionen">
         <KindInhalt>
             @if (!Stand.EmissionenVerfuegbar)
             {
@@ -207,7 +222,10 @@
                         @onclick="() => KatalogVerwalten.InvokeAsync()">@KatalogVerwaltenText</button>
             }
         </KindInhalt>
-    </Gruppenkopf>
+    </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
 
     @* ================================================ Historie und Speichern *@
     <Gruppenkopf Titel="@TitelHistorie">
@@ -240,6 +258,9 @@
 </div>
 
 @code {
+    /// <summary>Der sichtbare Reiter der Karte (Schlüssel, kein Anzeigetext).</summary>
+    private string _reiter = "PREISE";
+
     /// <summary>Der Bearbeitungsstand der Trägerkarte.</summary>
     [Parameter] public EnergietraegerStand Stand { get; set; } = new();
 
@@ -309,7 +330,13 @@
 
     // ---- Texte ----------------------------------------------------------
 
-    [Parameter] public string TitelPreise { get; set; } = "Preise & Umrechnung";
+    /// <summary>Beschriftung des ersten Reiters (Vorlaeufer: Reiterseite 1).</summary>
+    [Parameter] public string TitelReiterPreise { get; set; } = "Preise & Umrechnung";
+
+    /// <summary>Beschriftung der Reiterleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Energieträger";
+
+    [Parameter] public string TitelPreise { get; set; } = "Preise";
     [Parameter] public string TitelUmrechnung { get; set; } = "Umrechnung nach kWh";
     [Parameter] public string TitelEmissionen { get; set; } = "Emissionen";
     [Parameter] public string TitelHistorie { get; set; } = "Preishistorie";
