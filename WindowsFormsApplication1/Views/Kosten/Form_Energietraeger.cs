@@ -229,8 +229,11 @@ namespace WindowsFormsApplication1
                         KostenprofilCtrl ctrl = new KostenprofilCtrl();
                         var vorhandene = ctrl.ReadAllByProjekt(_projektId);
                         int id = vorhandene.Count > 0 ? vorhandene[0].ID : 0;
-                        using (Form_Kostenprofil dlg = new Form_Kostenprofil(_projektId, id))
-                            dlg.ShowDialog(this);
+
+                        // iU9-W3.4: Der Profileditor ist eine Razor-Komponente
+                        // (KostenprofilDialog); Ablageformat, Engine-Vorschau und
+                        // Speicherweg liegen in der Hülle.
+                        KostenprofilHuelle.Oeffnen(this, _projektId, id);
                         AktualisiereKarten();
                     };
                     pnlInhalt.Controls.Add(_karteKostenprofil);
