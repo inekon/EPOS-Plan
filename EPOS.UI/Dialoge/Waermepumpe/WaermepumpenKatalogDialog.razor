@@ -1,0 +1,282 @@
+﻿@* Waermepumpen-Katalog - die FILTERSUCHE ueber den Stammkatalog (iU9-W7.1).
+
+   VORBILD. Views/Waermepumpe/Form_WPFilterAuswahl (325 Z., Klasse
+   Form_WpFilterAuswahl, NICHT lokalisiert, 29 Kartenzeilen, 0 MessageBox).
+   Sie ist das Blatt der Welle: Drei Masken oeffnen sie (Form_WP,
+   Wizard_WPItem, Form_WPAuswahl), und alle drei werden in dieser Welle selbst
+   Razor-Komponenten - deshalb hat der Katalog KEINE eigene Huelle, sondern
+   erscheint in einer Ueberlagerung im jeweiligen Wirt.
+
+   DER FILTER LIEGT IM KERN. WaermepumpenKatalogFilter.Anwenden ist die
+   woertliche Uebersetzung von ApplyFilter:66-130; diese Komponente sammelt nur
+   die Kriterien ein und ruft. Regel F4 des Wellenplans: Die Komponente filtert
+   nicht selbst.
+
+   "ALLE" IST NULL. Der Vorlaeufer verglich den Klapplistentext gegen das
+   deutsche Literal "Alle". In der zweisprachigen Fassung ist "Alle" ein
+   Anzeigetext und der Steuerwert null - dieselbe Trennung wie bei Sprungziel
+   und DbWerte (A-2).
+
+   DER TITEL WIRD ZUR HERLEITUNGSZEILE. Der Vorlaeufer schrieb die Trefferzahl
+   in die FENSTERUEBERSCHRIFT ("WP-Filter Auswahl (n Waermepumpen gefunden)").
+   Eine Ueberlagerung hat keine Fensterleiste; die Zahl steht deshalb als leise
+   Zeile ueber dem Raster, wo sie beim Filtern auch im Blick ist (A-7).
+
+   "DATEN FILTERN" IST REDUNDANT - schon im Vorlaeufer. Jede Klapplisten- und
+   jede Tasteneingabe ruft ApplyFilter ohnehin; der Knopf tat dasselbe noch
+   einmal. Er bleibt (Regel F3), und er tut weiterhin genau das.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt - "Uebernehmen" schreibt in
+   den Wirt zurueck, und ein versehentliches Enter waere dort kein Bestaetigen,
+   sondern ein Zufall. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @* --- Die Filterleiste: 7 Klapplisten, 4 Zahlenfelder, das Suchfeld ------- *@
+    <div class="epos-zahlenraster">
+        <Auswahlfeld Bezeichnung="@LabelHersteller" Eintraege="@Eintraege(_hersteller)"
+                     Auswahl="_wahlHersteller" AuswahlChanged="w => { _wahlHersteller = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelAuslegung" Eintraege="@Eintraege(_auslegung)"
+                     Auswahl="_wahlAuslegung" AuswahlChanged="w => { _wahlAuslegung = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelPrinzip" Eintraege="@Eintraege(_prinzip)"
+                     Auswahl="_wahlPrinzip" AuswahlChanged="w => { _wahlPrinzip = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelRegelung" Eintraege="@Eintraege(_regelung)"
+                     Auswahl="_wahlRegelung" AuswahlChanged="w => { _wahlRegelung = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Eintraege(_bauart)"
+                     Auswahl="_wahlBauart" AuswahlChanged="w => { _wahlBauart = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelAufstellung" Eintraege="@Eintraege(_aufstellung)"
+                     Auswahl="_wahlAufstellung" AuswahlChanged="w => { _wahlAufstellung = w; }" />
+        <Auswahlfeld Bezeichnung="@LabelZuheizung" Eintraege="@Eintraege(_zuheizung)"
+                     Auswahl="_wahlZuheizung" AuswahlChanged="w => { _wahlZuheizung = w; }" />
+
+        <Zahlenfeld Bezeichnung="@LabelVorlaufMin" Feldname="@LabelVorlaufMin"
+                    Wert="_vorlaufMin" WertChanged="w => { _vorlaufMin = w ?? 0; }"
+                    Min="0" Max="1000" Nachkommastellen="1" />
+        <Zahlenfeld Bezeichnung="@LabelVorlaufMax" Feldname="@LabelVorlaufMax"
+                    Wert="_vorlaufMax" WertChanged="w => { _vorlaufMax = w ?? 0; }"
+                    Min="0" Max="1000" Nachkommastellen="1" />
+        <Zahlenfeld Bezeichnung="@LabelLeistungMin" Feldname="@LabelLeistungMin"
+                    Wert="_leistungMin" WertChanged="w => { _leistungMin = w ?? 0; }"
+                    Min="0" Max="1000" Nachkommastellen="1" />
+        <Zahlenfeld Bezeichnung="@LabelLeistungMax" Feldname="@LabelLeistungMax"
+                    Wert="_leistungMax" WertChanged="w => { _leistungMax = w ?? 0; }"
+                    Min="0" Max="1000" Nachkommastellen="1" />
+
+        <Textfeld Bezeichnung="@LabelSuche" Wert="@_suche"
+                  WertChanged="w => { _suche = w; }" Platzhalter="@PlatzhalterSuche" />
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="StateHasChanged">@BtnFilternText</button>
+        <button type="button" class="epos-knopf" @onclick="Zuruecksetzen">@BtnResetText</button>
+    </div>
+
+    <Herleitungszeile Text="@Trefferzeile" />
+
+    <div class="epos-raster-huelle">
+        <Raster TZeile="WaermepumpenKatalogZeile" Zeilen="@Gefiltert.AsQueryable()">
+            <KindInhalt>
+                <TemplateColumn TGridItem="WaermepumpenKatalogZeile" Title="@SpalteWahl">
+                    <Zeilenwahl Gewaehlt="@(_gewaehlt == context)" Kurztext="@SpalteWahl"
+                                Gewaehltwerden="() => Waehlen(context)" />
+                </TemplateColumn>
+                <PropertyColumn TGridItem="WaermepumpenKatalogZeile" TProp="string"
+                                Property="@(z => z.Hersteller)" Title="@SpalteHersteller" />
+                <PropertyColumn TGridItem="WaermepumpenKatalogZeile" TProp="string"
+                                Property="@(z => z.Bezeichnung)" Title="@SpalteModell" />
+                <PropertyColumn TGridItem="WaermepumpenKatalogZeile" TProp="double"
+                                Property="@(z => z.MaxVorlauf)" Title="@SpalteVorlaufMax" />
+                <PropertyColumn TGridItem="WaermepumpenKatalogZeile" TProp="double"
+                                Property="@(z => z.MinVorlauf)" Title="@SpalteVorlaufMin" />
+                <TemplateColumn TGridItem="WaermepumpenKatalogZeile" Title="@SpalteLeistung">
+                    @context.MaxLeistung.ToString("N1", Kultur)
+                </TemplateColumn>
+                <TemplateColumn TGridItem="WaermepumpenKatalogZeile" Title="@SpalteZuheizung">
+                    @context.ElZuheizung.ToString("N1", Kultur)
+                </TemplateColumn>
+                <PropertyColumn TGridItem="WaermepumpenKatalogZeile" TProp="string"
+                                Property="@(z => z.Bauart)" Title="@SpalteBauart" />
+            </KindInhalt>
+        </Raster>
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(_gewaehlt is null)" @onclick="Uebernehmen">@BtnUebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Der ganze Stammkatalog (<c>WPStammCtrl.KatalogZeilen</c>). Gefiltert wird hier,
+    /// nicht in der Datenbank — genau wie im Vorläufer.
+    /// </summary>
+    [Parameter] public IReadOnlyList<WaermepumpenKatalogZeile> Zeilen { get; set; }
+        = Array.Empty<WaermepumpenKatalogZeile>();
+
+    /// <summary>
+    /// Das Ergebnis: der Bezeichner der gewählten Wärmepumpe, <c>null</c> bei Abbruch.
+    /// Der Vorläufer gab das ganze <c>WPData</c> zurück; alle drei Aufrufer lasen daraus
+    /// ausschließlich <c>SelectedWP.Bezeichnung</c>.
+    /// </summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmepumpen-Katalog";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
+    [Parameter] public string LabelAuslegung { get; set; } = "Auslegung";
+    [Parameter] public string LabelPrinzip { get; set; } = "Funktionsprinzip";
+    [Parameter] public string LabelRegelung { get; set; } = "Regelung";
+    [Parameter] public string LabelBauart { get; set; } = "Bauart";
+    [Parameter] public string LabelAufstellung { get; set; } = "Aufstellung";
+    [Parameter] public string LabelZuheizung { get; set; } = "Zuheizung";
+    [Parameter] public string LabelVorlaufMin { get; set; } = "VLT Min [°C]";
+    [Parameter] public string LabelVorlaufMax { get; set; } = "VLT Max [°C]";
+    [Parameter] public string LabelLeistungMin { get; set; } = "Leist. Min [kW]";
+    [Parameter] public string LabelLeistungMax { get; set; } = "Leist. Max [kW]";
+    [Parameter] public string LabelSuche { get; set; } = "Modell filtern (z.B. CS*7*)";
+    [Parameter] public string PlatzhalterSuche { get; set; } = "🔍  Suchen…";
+    [Parameter] public string TextAlle { get; set; } = "Alle";
+    [Parameter] public string BtnFilternText { get; set; } = "Daten filtern";
+    [Parameter] public string BtnResetText { get; set; } = "Filter Reset";
+    [Parameter] public string BtnUebernehmenText { get; set; } = "✔ Auswahl übernehmen";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
+    [Parameter] public string SpalteModell { get; set; } = "Modell";
+    [Parameter] public string SpalteVorlaufMax { get; set; } = "VLT max [°C]";
+    [Parameter] public string SpalteVorlaufMin { get; set; } = "VLT min [°C]";
+    [Parameter] public string SpalteLeistung { get; set; } = "Leistung [kW]";
+    [Parameter] public string SpalteZuheizung { get; set; } = "Zuheizer [kW]";
+    [Parameter] public string SpalteBauart { get; set; } = "Bauart";
+
+    /// <summary>
+    /// Die Herleitungszeile mit der Trefferzahl. <c>{0}</c> ist die Zahl — der
+    /// Vorläufer schrieb „WP-Filter Auswahl ({0} Wärmepumpen gefunden)" in die
+    /// Fensterüberschrift.
+    /// </summary>
+    [Parameter] public string TrefferFormat { get; set; } = "{0} Wärmepumpen gefunden";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPFilterAuswahl.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private static readonly CultureInfo Kultur = CultureInfo.GetCultureInfo("de-DE");
+
+    // Die Werte der sieben Klapplisten. Der Index 0 ist „Alle" und steht für null.
+    private IReadOnlyList<string> _hersteller = Array.Empty<string>();
+    private IReadOnlyList<string> _auslegung = Array.Empty<string>();
+    private IReadOnlyList<string> _prinzip = Array.Empty<string>();
+    private IReadOnlyList<string> _regelung = Array.Empty<string>();
+    private IReadOnlyList<string> _bauart = Array.Empty<string>();
+    private IReadOnlyList<string> _aufstellung = Array.Empty<string>();
+    private IReadOnlyList<string> _zuheizung = Array.Empty<string>();
+
+    private int? _wahlHersteller = 0, _wahlAuslegung = 0, _wahlPrinzip = 0, _wahlRegelung = 0;
+    private int? _wahlBauart = 0, _wahlAufstellung = 0, _wahlZuheizung = 0;
+
+    private double _vorlaufMin, _vorlaufMax, _leistungMin, _leistungMax;
+    private string _suche = "";
+
+    private WaermepumpenKatalogZeile? _gewaehlt;
+
+    /// <summary>Die gewählte Zeile — Prüfhilfe für die Tests.</summary>
+    public WaermepumpenKatalogZeile? Gewaehlt => _gewaehlt;
+
+    protected override void OnInitialized() => Vorbelegen();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Klapplisten füllen und die beiden Höchstwerte setzen — <c>LoadData</c>:50 und
+    /// <c>ResetFilter</c>:227 taten dasselbe.
+    /// </summary>
+    private void Vorbelegen()
+    {
+        _hersteller = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Hersteller);
+        _auslegung = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Auslegung);
+        _prinzip = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Funktionsprinzip);
+        _regelung = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Regelung);
+        _bauart = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Bauart);
+        _aufstellung = WaermepumpenKatalogFilter.Werte(Zeilen, x => x.Aufstellung);
+        _zuheizung = WaermepumpenKatalogFilter.Werte(
+            Zeilen, x => WaermepumpenKatalogFilter.ZuheizungText(x.ElZuheizung));
+
+        _wahlHersteller = _wahlAuslegung = _wahlPrinzip = _wahlRegelung = 0;
+        _wahlBauart = _wahlAufstellung = _wahlZuheizung = 0;
+
+        _vorlaufMin = 0;
+        _leistungMin = 0;
+        _vorlaufMax = WaermepumpenKatalogFilter.GroessterVorlauf(Zeilen);
+        _leistungMax = WaermepumpenKatalogFilter.GroessteLeistung(Zeilen);
+        _suche = "";
+    }
+
+    private void Zuruecksetzen()
+    {
+        Vorbelegen();
+        _gewaehlt = null;
+    }
+
+    /// <summary>„Alle" voran, danach die Werte — der Index ist der Steuerwert.</summary>
+    private IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> werte)
+    {
+        var l = new List<(int, string)> { (0, TextAlle) };
+        for (int i = 0; i < werte.Count; i++) l.Add((i + 1, werte[i]));
+        return l;
+    }
+
+    /// <summary>Index → Wert; 0 (oder außerhalb) heißt „Alle" und damit <c>null</c>.</summary>
+    private static string? Wert(IReadOnlyList<string> werte, int? index)
+        => (index is null || index <= 0 || index > werte.Count) ? null : werte[index.Value - 1];
+
+    /// <summary>Die Treffer. Gerechnet wird im Kern, hier steht nur das Einsammeln.</summary>
+    private IReadOnlyList<WaermepumpenKatalogZeile> Gefiltert
+        => WaermepumpenKatalogFilter.Anwenden(Zeilen, new WaermepumpenKatalogFilter.Kriterien(
+            Hersteller: Wert(_hersteller, _wahlHersteller),
+            Auslegung: Wert(_auslegung, _wahlAuslegung),
+            Funktionsprinzip: Wert(_prinzip, _wahlPrinzip),
+            Regelung: Wert(_regelung, _wahlRegelung),
+            Bauart: Wert(_bauart, _wahlBauart),
+            Aufstellung: Wert(_aufstellung, _wahlAufstellung),
+            Zuheizung: Wert(_zuheizung, _wahlZuheizung),
+            VorlaufMin: _vorlaufMin,
+            VorlaufMax: _vorlaufMax,
+            LeistungMin: _leistungMin,
+            LeistungMax: _leistungMax,
+            Suche: _suche));
+
+    private string Trefferzeile => string.Format(Kultur, TrefferFormat, Gefiltert.Count);
+
+    private void Waehlen(WaermepumpenKatalogZeile zeile) => _gewaehlt = zeile;
+
+    /// <summary>
+    /// „Übernehmen" ohne Zeile tut nichts — <c>SelectAndClose</c>:181 prüfte dafür
+    /// <c>dgv.CurrentRow != null</c>. Hier ist der Knopf zusätzlich gesperrt.
+    /// </summary>
+    private Task Uebernehmen()
+        => _gewaehlt is null ? Task.CompletedTask : Geschlossen.InvokeAsync(_gewaehlt.Bezeichnung);
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+}
