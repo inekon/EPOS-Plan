@@ -16,7 +16,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 3 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 820 Tests (Stand iU9-W7)
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 906 Tests (Stand iU9-W8)
 ```
 
 Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
@@ -40,8 +40,8 @@ mit seinen beiden WFO1000 löschte).
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor. **Mit iU9‑W7** kommen `WPCtrl` (Umzug), `WaermepumpeGeraeteCtrl` (die zweistufige Geräteauskunft Ä22) und die Datenwege der acht Wärmepumpen- und Solarmasken dazu: `WPStammCtrl.KatalogZeilen`/`GesperrtDurchProjekt`/`Speichern`, `KenndatenCtrl.Reihen`/`LiesStamm`/`Abgleichen` (transaktional), `KenndatenKuehlungCtrl.Reihen`/`HatKenndaten`, `WErzeugerCtrl.AnlagenzeileNachziehen`, `KostenSummenCtrl.AnlagenSumme`, `Z_ProjektSolarganglinieCtrl.LiesProjekt` und `SolarkollektorenStammCtrl.IdZu`/`ReadById` |
-| `Model/` (46) | alle 46 Modelle |
+| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor. **Mit iU9‑W7** kommen `WPCtrl` (Umzug), `WaermepumpeGeraeteCtrl` (die zweistufige Geräteauskunft Ä22) und die Datenwege der acht Wärmepumpen- und Solarmasken dazu: `WPStammCtrl.KatalogZeilen`/`GesperrtDurchProjekt`/`Speichern`, `KenndatenCtrl.Reihen`/`LiesStamm`/`Abgleichen` (transaktional), `KenndatenKuehlungCtrl.Reihen`/`HatKenndaten`, `WErzeugerCtrl.AnlagenzeileNachziehen`, `KostenSummenCtrl.AnlagenSumme`, `Z_ProjektSolarganglinieCtrl.LiesProjekt` und `SolarkollektorenStammCtrl.IdZu`/`ReadById`. **Mit iU9‑W8** kommen die drei Bedarfsblätter dazu: `BedarfStammCtrl` und `TypProfilCtrl` (neu — EINE Schnittstelle für drei Tabellen mit zwei verschiedenen Schlüsselspalten), die Schreibwege `ProzesswaermeStammCtrl.Exists`/`SaveHead`/`TypIsReadOnly`/`TypNew`/`TypDelete` (sie standen inline in zwei Masken) und die vollständige Gebäudetyp-Verwaltung in `TagVCtrl` (`Typen`, `Lies`, `Speichern`, `Anlegen`, `Loeschen`, `KurvenNamen`) |
+| `Model/` (47) | alle 47 Modelle; seit iU9‑W8 dazu der Aufzählungstyp `BedarfsArt` — er liegt hier und nicht in `EPOS.UI`, weil ihn BEIDE Seiten brauchen: Die Controller verteilen danach auf drei Tabellen, die Razor-Komponenten wählen danach ihre Beschriftungen |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
 
@@ -232,6 +232,21 @@ liefern `KenndatenCtrl.Reihen` und `KenndatenKuehlungCtrl.Reihen` als **ein**
 `…/WaermepumpeAnlageDialog.razor`, gezeichnet wird in den Hüllen
 `Views/Wärmepumpe/WaermepumpeStammHuelle.cs` (`BilderZu`).
 
+**Seit iU9‑W8.0c zeichnet er die BEDARFSBILDER.** Drei Methoden lösen die neun
+`Chart`-Steuerelemente der zehn Bedarfsmasken ab (Bausteinlücke 12):
+`ChartRenderer.MonatsSaeulen` (978 × 542 — die doppelte Zielauflösung des
+größten Vorläufers 489 × 271; x-Achse starr 1…12, y ab 0),
+`ChartRenderer.Stundenprofil` (1244 × 464 — EIN Bild für 168 Wochenstunden UND
+24 Tagesstunden; der Unterschied Fläche/Linie der beiden Vorläufer war keine
+Entscheidung, sondern die Voreinstellung zweier Diagrammverwalter) und
+`ChartRenderer.Jahresverlauf` (978 × 542, 8 760 Stunden über Monatsgrenzen —
+OHNE den Mausrad-Zoom des Vorläufers, weil ein PNG nicht spreizen kann).
+Die „schönen Schritte" der y-Achse sind wörtlich aus `SkaliereYAchse`
+übernommen und eine ANDERE Reihe als beim Kapitalwert-Verlauf
+(0,1/0,2/0,25/0,5/1/2/2,5/5/10 statt 1/2/2,5/5/10): Bedarfswerte brauchen auch
+Zehntel. Die Dialoge dazu stehen in `EPOS.UI/Dialoge/Bedarf/`, gezeichnet wird
+in den drei Hüllen unter `Views/Bedarf/`.
+
 **Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
 `ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
 `ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
@@ -271,7 +286,7 @@ Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
 sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W7.0c **zwölf** Bilder und
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W8.0c **fünfzehn** Bilder und
 prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
