@@ -12,6 +12,59 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-03_M1_nach-Merge/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem Merge von `origin/ios_migration`** — also nach dem Umzug des
+Rechenkerns von `WindowsFormsApplication1/` nach **`EPOS.Kern/`** (und `EPOS.UI/`).
+
+> **Sie ist byte-gleich zu PB1 — und genau das ist ihr Zweck.** Der Umzug ist eine
+> Verlagerung, keine Fachänderung: Er verschiebt 237 Dateien, ersetzt `OleDbParameter`
+> durch den providerfreien `DbParam` (iU6), zieht die Anlagen-Einfügeanweisung nach
+> `AnlagenSql` (iU3) und die Maskensteuerung nach `Dienste.Navigation` (iU5).
+> **355/355 byte-/MD5-gleich gegen PB1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (ohne unsere
+> Pakete, Schemastand 61) ist seinerseits **355/355 byte-gleich zu
+> `2026-09-02_PA0_vor-PaketA`**. Die 81 Remote-Commits haben also keinen einzigen
+> gerechneten Wert verschoben — und weil MERGE = PB1 exakt gilt, hat auch die
+> Zusammenführung nichts verschoben. Beide Achsen sind exakt; die Einordnungstabelle
+> „Datei | PB1=MERGE? | THEIRS=PA0?" bleibt leer, weil es keine Abweichung gibt.
+>
+> **Codestand:** Merge-Commit `e428092` (Branch `ios_migration`; Eltern `b9c566f` lokal und
+> `430a864` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** (WFO1000 28, NU1510 4, CS0109 2, CS0108 2,
+> WFO0003 1, CA2255 1) — aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — durchgehend **0 FAIL**. Einzelheiten,
+> Konfliktliste und Entscheidungen im
+> [Merge-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge_ios_2026-09-03_Protokoll.md).
+>
+> **Neue Pfade.** Wer die Suite nachbaut: Der Rechenkern liegt jetzt in `EPOS.Kern.dll`
+> (`DataRepository`, `DbParam`, `SimulationPV`, `SolarZeitbasis`, `PvErweitertesModell`,
+> `SolardatenCtrl`), die Anwendung mit `SchemaMigration` weiterhin in `EPOS_Plan.dll`.
+> Die **Namensräume sind unverändert** (`WindowsFormsApplication1`). Das Werkzeug unter
+> `Referenzlauf/` baut ohne Änderung, weil es die Anwendung referenziert und die
+> ihrerseits `EPOS.Kern`. Proben-Harnesse brauchen eine zusätzliche Referenz auf
+> `EPOS.Kern.dll` und setzen den DB-Pfad über `DataRepository.PfadUeberschreibung`
+> statt per Reflexion auf `Properties.Settings`.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_PB1_nach-PaketB`
+
 **`2026-09-03_PB1_nach-PaketB/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
 Der Stand **nach** Paket B desselben Konzepts (Stufe **E2**, Nachtrag 2: Modellwahl je
@@ -68,7 +121,7 @@ Clipping, Degradation).
 > & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### Vorgängerbasis: `2026-09-02_PA1_nach-PaketA`
+### Vorvorgängerbasis: `2026-09-02_PA1_nach-PaketA`
 
 **`2026-09-02_PA1_nach-PaketA/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **62**.
@@ -117,7 +170,7 @@ PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austaus
 > & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### Vorgängerbasis: `2026-09-02_PA0_vor-PaketA`
+### Ausgangsbasis vor Paket A: `2026-09-02_PA0_vor-PaketA`
 
 **`2026-09-02_PA0_vor-PaketA/`** — dieselben **vierzehn Projekte**, **355 CSV**,
 Schemastand **61**, Codestand `d46e200` (Ablage `df90063`). Der Stand **vor** Paket A und
