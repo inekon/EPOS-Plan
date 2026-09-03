@@ -22,7 +22,7 @@ namespace WindowsFormsApplication1
             if (varianten.Length == 0) varianten = "— (nur Stammprojekt)";
 
             string version = "";
-            try { version = System.Windows.Forms.Application.ProductVersion; } catch { }
+            try { version = ProduktFassung(); } catch { }
 
             k.Eigenschaften(
                 "Projekt", daten.Stammprojektname,
@@ -34,6 +34,54 @@ namespace WindowsFormsApplication1
 
             k.Hinweis("Erstellt mit EPOS-Plan · Energieplanungs-Software · Energie · Planung · Optimierung · Simulation");
             k.Seitenumbruch();
+        }
+
+        /// <summary>
+        /// Produktfassung des Programms — dieselbe Zeichenkette, die bis iU5-U3
+        /// <c>System.Windows.Forms.Application.ProductVersion</c> geliefert hat.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum nachgebildet und nicht einfach die Assembly-Version.</b> Der Wert steht
+        /// auf dem Deckblatt des Word-Berichts; er darf sich durch den Umzug in den Kern
+        /// nicht ändern. <c>Application.ProductVersion</c> geht in genau dieser Reihenfolge
+        /// vor: erst das <see cref="System.Reflection.AssemblyInformationalVersionAttribute"/>
+        /// des EINSTIEGS-Assemblies, sonst die Produktversion aus der Win32-Ressource
+        /// derselben Datei, sonst die Notfallzeichenkette „1.0.0.0". Genau das steht hier.
+        ///
+        /// <b>Der Bestand nimmt heute den zweiten Zweig.</b> Die Anwendung setzt
+        /// <c>GenerateAssemblyInfo=false</c> und deklariert in
+        /// <c>Properties\AssemblyInfo.cs</c> nur <c>AssemblyVersion</c> und
+        /// <c>AssemblyFileVersion</c> („1.1.0.0") — ohne informelle Fassung. Der Übersetzer
+        /// schreibt daraus die Win32-Ressource, deren ProductVersion damit ebenfalls
+        /// „1.1.0.0" lautet. Das Deckblatt zeigt also weiterhin 1.1.0.0.
+        ///
+        /// <b>Rückfall ohne Einstiegs-Assembly.</b> Unter einem Prüfstand oder in einem
+        /// fremden Wirt kann <c>GetEntryAssembly()</c> null sein; dann gilt diese Assembly
+        /// (EPOS.Kern) als Bezug. Ohne Rückfall stünde dort eine leere Zeile im Bericht.
+        /// </remarks>
+        internal static string ProduktFassung()
+        {
+            System.Reflection.Assembly einstieg =
+                System.Reflection.Assembly.GetEntryAssembly() ?? typeof(DeckblattBaustein).Assembly;
+
+            System.Reflection.AssemblyInformationalVersionAttribute merkmal =
+                (System.Reflection.AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(
+                    einstieg, typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+
+            string fassung = merkmal != null ? merkmal.InformationalVersion : null;
+
+            if (string.IsNullOrEmpty(fassung))
+            {
+                string datei = einstieg.Location;
+                if (!string.IsNullOrEmpty(datei) && System.IO.File.Exists(datei))
+                {
+                    string ausRessource =
+                        System.Diagnostics.FileVersionInfo.GetVersionInfo(datei).ProductVersion;
+                    if (ausRessource != null) fassung = ausRessource.Trim();
+                }
+            }
+
+            return string.IsNullOrEmpty(fassung) ? "1.0.0.0" : fassung;
         }
     }
 
