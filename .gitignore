@@ -385,6 +385,8 @@ Setup/Vorlage/*.accdb
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe
+# WebView2-Bootstrapper fuer das Setup (iU8-10): liegt in der Repowurzel, wird nie eingecheckt
+/MicrosoftEdgeWebview2Setup.exe
 
 # Editor-Sicherungskopien
 *.bak
