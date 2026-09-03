@@ -95,6 +95,18 @@ namespace WindowsFormsApplication1
             return ParseCsv(filePath);
         }
 
+        // Liest die CEC-Modultabelle. Zwei Formatvarianten sind belegt (Stand
+        // 02.09.2026) und werden beide gelesen:
+        //   - Originalformat der NREL-SAM-Bibliothek (Url1/Url2): Komma als
+        //     Trennzeichen, Punkt als Dezimalzeichen. Referenzkopie im Repo:
+        //     VDI-3805-Daten\PV\CEC Modules_UTC.csv
+        //   - Excel-Ausleitung derselben Tabelle: Semikolon als Trennzeichen, Komma
+        //     als Dezimalzeichen. Referenzkopie im Repo:
+        //     VDI-3805-Daten\PV\CEC Modules.csv
+        // Das Trennzeichen wird an der Kopfzeile bestimmt, das Dezimalzeichen
+        // erledigt SafeD. Fehlt eine Pflichtspalte, bricht der Import mit Meldung ab:
+        // frueher lieferte eine unbekannte Kopfzeile still 0 in alpha_SC, beta_OC,
+        // gamma_PMP und T_NOCT und damit stille Nullwerte im Modulkatalog.
         private (bool success, string message) ParseCsv(string path)
         {
             try
@@ -126,7 +138,10 @@ namespace WindowsFormsApplication1
 
                 if (dataLines.Count <= 1) return (false, "CSV leer.");
 
-                var headers = SplitCsvLine(dataLines[0]);
+                // Trennzeichen an der Kopfzeile bestimmen: das haeufigere von ';' und ','.
+                char sep = dataLines[0].Count(c => c == ';') > dataLines[0].Count(c => c == ',') ? ';' : ',';
+
+                var headers = SplitCsvLine(dataLines[0], sep);
                 var colIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < headers.Length; i++)
                     colIndex[headers[i].Trim().ToLowerInvariant().Replace(" ", "_")] = i;
@@ -134,16 +149,37 @@ namespace WindowsFormsApplication1
                 // Hilfsfunktion lokal (C# 7.3 erlaubt lokale Funktionen)
                 int GetCol(string name) => colIndex.TryGetValue(name, out int idx) ? idx : -1;
 
+                // Pflichtspalten: ohne sie stuende im Katalog stillschweigend 0.
+                var pflichtSpalten = new[]
+                {
+                    "name", "manufacturer", "stc", "a_c", "i_sc_ref", "v_oc_ref",
+                    "i_mp_ref", "v_mp_ref", "alpha_sc", "beta_oc", "gamma_pmp", "t_noct"
+                };
+                var fehlendeSpalten = pflichtSpalten.Where(s => GetCol(s) < 0).ToList();
+                if (fehlendeSpalten.Count > 0)
+                    return (false, "CEC-Kopfzeile unvollstaendig, fehlende Spalte(n): "
+                        + string.Join(", ", fehlendeSpalten));
+
+                int colDate = GetCol("date");
+
                 _allModules = new List<PVModule>();
 
                 for (int li = 1; li < dataLines.Count; li++)
                 {
-                    var fields = SplitCsvLine(dataLines[li]);
+                    var fields = SplitCsvLine(dataLines[li], sep);
                     if (fields.Length < 3) continue;
 
                     string GetF(int idx) => (idx >= 0 && idx < fields.Length) ? fields[idx].Trim() : "";
 
-                    DateTime dateTime = DateTime.Parse(fields[26], CultureInfo.InvariantCulture);
+                    // Datum ueber die Kopfzeile suchen und tolerant lesen. Frueher stand
+                    // hier fields[26] mit DateTime.Parse: eine einzige kurze oder leere
+                    // Zeile riss damit den gesamten Import ab.
+                    int jahr = 0;
+                    DateTime dateTime;
+                    if (DateTime.TryParse(GetF(colDate), CultureInfo.InvariantCulture,
+                                          DateTimeStyles.None, out dateTime))
+                        jahr = dateTime.Year;
+
                     var mod = new PVModule
                     {
                         Database = "CEC",  
@@ -165,7 +201,7 @@ namespace WindowsFormsApplication1
                         beta_oc = SafeD(GetF(GetCol("beta_oc"))),
                         gamma_pmp = SafeD(GetF(GetCol("gamma_pmp"))),
                         T_NOCT = SafeD(GetF(GetCol("t_noct"))),
-                        Date = dateTime.Year,
+                        Date = jahr,
                         // ... füge hier weitere Felder nach Bedarf hinzu
                     };
                     _allModules.Add(mod);
@@ -179,7 +215,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static string[] SplitCsvLine(string line)
+        private static string[] SplitCsvLine(string line, char sep = ',')
         {
             var result = new List<string>();
             bool inQuote = false;
@@ -188,7 +224,7 @@ namespace WindowsFormsApplication1
             {
                 char c = line[i];
                 if (c == '"') inQuote = !inQuote;
-                else if (c == ',' && !inQuote) { result.Add(cur.ToString()); cur.Clear(); }
+                else if (c == sep && !inQuote) { result.Add(cur.ToString()); cur.Clear(); }
                 else cur.Append(c);
             }
             result.Add(cur.ToString());
@@ -209,7 +245,9 @@ namespace WindowsFormsApplication1
 
         private static bool IsUnitsRow(string line)
         {
-            var markers = new[] { "m2", ",m,", ",A,", ",V,", ",K,", "Ohm" };
+            // Marker fuer beide Trennzeichen - die Textpruefung auf "Units" faengt die
+            // Zeile ohnehin, das hier ist die zweite Sicherung.
+            var markers = new[] { "m2", ",m,", ",A,", ",V,", ",K,", ";m;", ";A;", ";V;", ";K;", "Ohm" };
             return markers.Count(u => line.IndexOf(u, StringComparison.OrdinalIgnoreCase) >= 0) >= 2;
         }
 

@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Persistenzwerte in der Reihenfolge der Auswahlliste; Index 0 ist
-        /// "nicht gepflegt" und damit <c>null</c>. Anzeigetexte stehen daneben in
+        /// „nicht gepflegt" und damit <c>null</c>. Anzeigetexte stehen daneben in
         /// MyResource - ein Anzeigetext darf nie Steuerwert sein
         /// (Drei-Schichten-Regel).
         /// </summary>
@@ -83,12 +83,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Auswahlliste "Zelltechnologie" unter dem NOCT-Feld (Stufe E2.3).
+        /// Auswahlliste „Zelltechnologie" unter dem NOCT-Feld (Stufe E2.3).
         ///
-        /// <para>Der erste Eintrag ist <b>"(nicht gepflegt)"</b> und schreibt NULL. Das
-        /// ist bewusst kein sechster Fachwert: "unbekannt" und "SONSTIGE" fuehren zwar
+        /// <para>Der erste Eintrag ist <b>„(nicht gepflegt)"</b> und schreibt NULL. Das
+        /// ist bewusst kein sechster Fachwert: „unbekannt" und „SONSTIGE" fuehren zwar
         /// zur selben Rueckfallebene im Rechenkern, sagen dem Anwender aber Verschiedenes
-        /// - und der Simulationshinweis nennt beide Faelle getrennt.</para>
+        /// — und der Simulationshinweis nennt beide Faelle getrennt.</para>
         /// </summary>
         private void TechnologiefeldAnlegen()
         {
@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
             return (i > 0 && i < TECHNOLOGIE_WERTE.Length) ? TECHNOLOGIE_WERTE[i] : null;
         }
 
-        /// <summary>Persistenzwert in Auswahlindex; Unbekanntes landet auf "nicht gepflegt".</summary>
+        /// <summary>Persistenzwert → Auswahlindex; Unbekanntes landet auf „nicht gepflegt".</summary>
         private void TechnologieSetzen(string wert)
         {
             if (comboBox_Technologie == null) return;
@@ -288,6 +288,35 @@ namespace WindowsFormsApplication1
                 // Werte des CEC-Imports (Bestandsfehler, siehe Kopf der Klasse).
                 model.m_alpha_SC = _alphaScGeladen;
                 model.m_beta_OC = _betaOcGeladen;
+
+                // PLAUSIBILITAET VOR DEM SCHREIBEN (Befund 02.09.2026). Geprueft wird
+                // der fertig befuellte Satz, also auch das, was aus dem Bestand
+                // uebernommen wurde. Ein positiver Temperaturkoeffizient ergaebe in
+                // der Ertragsrechnung Mehrertrag bei Waerme und ist deshalb ein
+                // harter Fehler, kein Hinweis. Bei einem Fehler bleibt der Dialog
+                // offen und es wird nichts geschrieben - wie bei ZahlPruefen.
+                // alphaBetaPflegbar: false - diese Maske hat fuer alpha_SC und beta_OC
+                // keine Eingabefelder. Ein harter Fehler wuerde die sechs Altsaetze mit
+                // der Kopierfehler-Signatur dauerhaft unspeicherbar machen; hier sind
+                // es deshalb Hinweise. Was T_NOCT betrifft, bleibt Fehler - dieses Feld
+                // ist seit E1.2 pflegbar, der Anwender kann es also berichtigen.
+                PvModulPlausibilitaet.Befund befund =
+                    PvModulPlausibilitaet.Pruefe(model, alphaBetaPflegbar: false);
+                if (!befund.Ok)
+                {
+                    MessageBox.Show(PvModulPlausibilitaet.Meldung(befund),
+                        "Modulwerte nicht plausibel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                if (befund.Warnungen.Count > 0)
+                {
+                    if (MessageBox.Show(
+                            PvModulPlausibilitaet.Meldung(befund) + Environment.NewLine
+                                + Environment.NewLine + "Trotzdem speichern?",
+                            "Hinweis zu den Modulwerten",
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        return;
+                }
 
                 if (m_Neu)
                 {

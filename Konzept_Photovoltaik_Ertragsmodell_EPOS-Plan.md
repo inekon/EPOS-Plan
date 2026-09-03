@@ -377,7 +377,8 @@ Wechselrichterverlust [kWh/a], Volllaststunden — ins Simulationsprotokoll und 
    Kennlinie mit Vorbelegung — Protokoll benennt jede Rückfallebene.
 3. Prüfwerte: Huld η_rel(1, 0) = 1; Hay-Davies = isotrop bei DNI = 0; Clipping-Verlust = Σ max(0, P_DC·η −
    P_AC,nenn) exakt; Degradation NULL → Erlösreihe identisch zu P6-Stand (Wirtschaftlichkeits-Referenz
-   „INEKON Schulung 01" unverändert), d = 0,5 → Jahr 20 Faktor 0,9088.
+   „INEKON Schulung 01" unverändert), d = 0,5 → Jahr 20 Faktor **0,9092** ((1 − 0,005)^19 = 0,909156;
+   die Rev.-1-Angabe 0,9088 war ein Rechenfehler — korrigiert 03.09.2026 nach Hinweis aus der Umsetzung).
 4. Migration idempotent (Zweitlauf 0), CEC-/PAN-Import schreibt `Technologie`, Katalogdubletten-Prüfung
    berücksichtigt die Spalte.
 

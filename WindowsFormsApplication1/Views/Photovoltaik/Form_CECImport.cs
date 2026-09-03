@@ -424,8 +424,11 @@ namespace WindowsFormsApplication1
             textBox_13.Text = um.Imp.ToString();
             textBox_14.Text = um.Vmp.ToString();
             textBox_15.Text = um.Pmp.ToString();
-            textBox_16.Text = um.Database == "CEC" ? um.CecModule.alpha_sc.ToString() : "-";//um.PanModule.muISC.ToString();
-            textBox_17.Text = um.Database == "CEC" ? um.CecModule.beta_oc.ToString() : "-"; //um.PanModule.muVocSpec.ToString();
+            // PAN: die umgerechneten Werte zeigen, nicht mehr "-". PVsyst fuehrt
+            // muISC in mA/GradC und muVocSpec in mV/GradC; angezeigt wird, was der
+            // Import auch schreibt (A/K bzw. V/K, siehe PanModule.muIscAK/muVocVK).
+            textBox_16.Text = um.Database == "CEC" ? um.CecModule.alpha_sc.ToString() : um.PanModule.muIscAK.ToString("0.#####");
+            textBox_17.Text = um.Database == "CEC" ? um.CecModule.beta_oc.ToString() : um.PanModule.muVocVK.ToString("0.#####");
             textBox_18.Text = um.Database == "CEC" ? um.CecModule.gamma_pmp.ToString() : um.PanModule.muPmpReq.ToString();
             textBox_19.Text = um.Database == "CEC" ? um.CecModule.STC.ToString() : um.PanModule.PNom.ToString();
 
@@ -451,6 +454,28 @@ namespace WindowsFormsApplication1
             // 1. Modell wie bisher aus der Auswahl befuellen - gemeinsame Quelle fuer
             //    Vorpruefung und alle Schreibwege (CEC und PAN laufen beide hierher).
             PhotovoltaikModel model = InitDatensatzUpdate();
+
+            // 1a. Plausibilitaet der Temperatur- und Betriebskenngroessen
+            //     (PvModulPlausibilitaet, Befund 02.09.2026). Steht bewusst VOR der
+            //     Dublettenpruefung: die Registry vergleicht alpha_SC, beta_OC,
+            //     gamma_PMP und T_NOCT exakt mit, ein unplausibler Wert entschiede
+            //     also auch noch ueber "InhaltsGleich" oder "Abweichend".
+            PvModulPlausibilitaet.Befund befund = PvModulPlausibilitaet.Pruefe(model);
+            if (!befund.Ok)
+            {
+                MessageBox.Show(PvModulPlausibilitaet.Meldung(befund),
+                    "Modulwerte nicht plausibel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;   // nichts schreiben
+            }
+            if (befund.Warnungen.Count > 0)
+            {
+                if (MessageBox.Show(
+                        PvModulPlausibilitaet.Meldung(befund) + Environment.NewLine
+                            + Environment.NewLine + "Trotzdem uebernehmen?",
+                        "Hinweis zu den Modulwerten",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
+            }
 
             // 2. Vorpruefung gegen den Katalog (Dublettenkonzept 4.1) - ersetzt die
             //    fruehere COUNT-Abfrage auf den Bezeichner. Die Schluessel sind die
@@ -596,14 +621,21 @@ namespace WindowsFormsApplication1
                 model.m_Technologie = PvErweitertesModell.TechnologieAusCec(pvum.CecModule.Technology);
             }
             else {
-                model.m_alpha_SC = 0;//pvum.PanModule.muISC;
-                model.m_beta_OC = 0;//pvum.PanModule.muVocSpec;
-                model.m_Temp_Coeff_Pmax = pvum.PanModule.muPmpReq;
-                model.m_T_NOCT = 0;
+                // PAN-Einheiten in die DB-Konvention von Tab_PV_STAMM umrechnen
+                // (Befund 02.09.2026). PVsyst fuehrt muISC in mA/GradC und muVocSpec
+                // in mV/GradC; bis hierher standen deshalb feste Nullen, die den
+                // Katalogsatz ohne Temperaturgang liessen.
+                // ACHTUNG: muVocSpec/Voc/10 waere der RELATIVE Koeffizient in %/K
+                // (PanModule.muVocPerc) - der gehoert NICHT nach beta_OC (V/K).
+                model.m_alpha_SC = pvum.PanModule.muIscAK;        // mA/GradC -> A/K
+                model.m_beta_OC = pvum.PanModule.muVocVK;         // mV/GradC -> V/K
+                model.m_Temp_Coeff_Pmax = pvum.PanModule.muPmpReq;// %/GradC = %/K
+                model.m_T_NOCT = 0; // PAN fuehrt keinen NOCT: 0 = nicht vorhanden,
+                                    // die Simulation faellt dann auf 45 Grad C zurueck.
                 model.m_Laenge = pvum.PanModule.Height;
                 model.m_Breite = pvum.PanModule.Width;
                 // E2.3 (Paket B): PVsyst-Schluessel "Technol" (mtSiMono, mtCIS, mtCdTe,
-                // mtAmorphous) auf die fuenf Persistenzwerte.
+                // mtAmorphous …) auf die fuenf Persistenzwerte.
                 model.m_Technologie = PvErweitertesModell.TechnologieAusPan(pvum.PanModule.Technol);
             }
             return model;
