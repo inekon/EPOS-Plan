@@ -176,12 +176,14 @@ public sealed class ErreichbarkeitTests
     [Fact]
     public void DieSprungtabelleLoestDieMaskenschluesselAuf()
     {
-        // Form_WP wird NUR ueber Masken.WpAdministration geoeffnet - der Weg fuehrt
-        // vom MDI-Menue ueber MenueCtrl und WinFormsNavigation.
-        var knoten = Knoten("Form_WP");
+        // Der Zeuge stand bis iU9-W7.10 auf Form_WP (Masken.WpAdministration); die
+        // Maske ist mit W7.3 geloescht. Form_AdminStromspeicher wird ebenso NUR ueber
+        // die Sprungtabelle geoeffnet - Masken.StromspeicherAdmin, vom MDI-Menue ueber
+        // MenueCtrl und WinFormsNavigation - und kommt erst in Welle 14a an die Reihe.
+        var knoten = Knoten("Form_AdminStromspeicher");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Contains("Masken.WpAdministration", knoten.Pfad, StringComparison.Ordinal);
+        Assert.Contains("Masken.StromspeicherAdmin", knoten.Pfad, StringComparison.Ordinal);
     }
 
     // ==================================================================
@@ -240,11 +242,10 @@ public sealed class ErreichbarkeitTests
         Assert.Equal(ergebnis.Masken,
                      ergebnis.Erreichbar(Erreichbar.Ja) + ergebnis.Erreichbar(Erreichbar.Nein) +
                      ergebnis.Erreichbar(Erreichbar.Verwaist) + ergebnis.Erreichbar(Erreichbar.Unklar));
-        // Gemessener Stand nach dem Zusammenfuehren von Welle 5 und Welle 6:
-        // 86 von 88 nach W5 (89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die
-        // zwei uebrigen sind "unklar". Die Zahl sinkt mit jeder Welle, der
-        // Anteil bleibt; der endgueltige Wert der Welle 6 steht in W6.9.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 79,
+        // Gemessener Stand nach Welle 7: 71 von 73 (79 von 81 nach W6, 86 von 88
+        // nach W5, 89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die zwei
+        // uebrigen sind "unklar". Die Zahl sinkt mit jeder Welle, der Anteil bleibt.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 71,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
