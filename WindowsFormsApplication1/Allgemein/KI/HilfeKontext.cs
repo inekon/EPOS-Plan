@@ -223,7 +223,6 @@ namespace WindowsFormsApplication1
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
 
-            { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
             { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
             { "WizardParent",                B_ASSISTENT },
