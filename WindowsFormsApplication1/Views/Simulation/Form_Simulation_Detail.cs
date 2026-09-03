@@ -5045,29 +5045,25 @@ namespace WindowsFormsApplication1
             // Prüfen, ob es ein Doppelklick (2 Klicks) mit der linken Maustaste war
             if (e.Clicks == 2 && e.Button == MouseButtons.Left)
             {
-                Form_WPAuswahl frm = new Form_WPAuswahl();
+                // iU9-W7.5: Die Verwaltung ist die Razor-Komponente
+                // WaermepumpenDialog; Form_WPAuswahl ist im selben Schritt GELOESCHT
+                // (Regel M1). Diese Datei wird bis Welle 11 sonst nicht angefasst
+                // (Wachstumsstopp iR10) - geaendert ist genau dieser Aufruf.
                 WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-                WPCtrl wpctrl = new WPCtrl();
-                int id_type;
+                int id_type = WizardItemClass.WP_TYP;
 
-                frm.list_werzmodel.Clear();
+                List<WErzeugerModel> liste = new List<WErzeugerModel>();
                 werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
-                id_type = WizardItemClass.WP_TYP;
-
-                WErzeugerModel item = new WErzeugerModel();
                 for (int i = 0; i < werzctrl.rows; i++)
                 {
-                    frm.list_werzmodel.Add(werzctrl.items[i]);
+                    liste.Add(werzctrl.items[i]);
                 }
 
-                frm.SetControls(Program.startfrm.m_szProjektname);
-                DialogResult result = frm.ShowDialog();
-
-                if (result == DialogResult.OK)
+                if (WaermepumpenHuelle.Oeffnen(this, m_ID_Projekt, liste))
                 {
                     WizardCtrl wizctrl = new WizardCtrl();
                     wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
                 }
             }
         }

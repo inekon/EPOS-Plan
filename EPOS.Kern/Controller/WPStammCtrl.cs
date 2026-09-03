@@ -8,8 +8,9 @@ namespace WindowsFormsApplication1
     // (Tab_Kenndaten_STAMM / Tab_Kenndaten_Kuehlung_STAMM).
     // Schluessel = ID, Namensfeld = Bezeichner (im WPModel weiterhin als WPName gefuehrt).
     // Neues Feld ReadOnly: schreibgeschuetzte Stammdatensaetze koennen nicht ueberschrieben/geloescht werden.
-    // Wird von den Admin-/Katalog-Dialogen verwendet (Form_WP, Form_WP_einlesen, Wizard_WPItem,
-    // Form_WPAuswahl, WPDataCtrl). Alle DB-Zugriffe laufen ueber DataRepository.
+    // Wird von den Waermepumpen-Dialogen verwendet: seit iU9-W7 von den Huellen
+    // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
+    // weiterhin vom Import Form_WP_einlesen. Alle DB-Zugriffe laufen ueber DataRepository.
     class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
