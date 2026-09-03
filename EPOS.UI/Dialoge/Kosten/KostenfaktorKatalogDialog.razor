@@ -1,0 +1,224 @@
+﻿@* Katalog der Kostenfaktoren (iU9-W1.5).
+
+   Vorbild: Views/Kosten/Form_KostenAdmin.cs (128 Z.) und .Designer.cs. Die
+   Maske zeigte eine ListView, darunter "Neu" und "Löschen", unten OK.
+   Uebernommen sind die Liste, ihre Sortierung (die kommt aus dem Controller),
+   die Regel, dass ein leerer Name still uebergangen wird, und die Rueckfrage
+   vor dem Loeschen.
+
+   ZWEI AENDERUNGEN GEGENUEBER DER MASKE, beide in der Bauart begruendet:
+
+   1. Das Anlegen braucht keinen Unterdialog mehr. Der Vorlaeufer oeffnete
+      dafuer Form_KostenItemNeu - ein zweites Fenster fuer ein Textfeld. Hier
+      steht das Feld mit seinem Knopf ueber der Liste. Ein zweites Blazor-Fenster
+      ueber diesem waere eine zweite WebView (Risiko R2 des Wellenplans).
+
+   2. Die Wahl liegt in einer eigenen Spalte. Eine ListView markiert die
+      gewaehlte Zeile selbst, ein Raster (QuickGrid) kennt keine
+      Zeilenmarkierung - dasselbe Muster wie in der Anlagentabelle des Dialogs
+      "BHKW-Wirtschaftlichkeit" (A-6 aus B5b).
+
+   DIE RUECKFRAGE liegt bei der Huelle. Ein Ja/Nein-Baustein entsteht erst in
+   W4; bis dahin fragt die Huelle ueber Dienste.Dialog. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@EinleitungText" />
+
+    <div class="epos-neuzeile">
+        <Textfeld Bezeichnung="@LabelNeu" Wert="@_neuerName" WertChanged="BeiNeuerName" />
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@NeuText</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_meldung" />
+    }
+
+    <Raster TZeile="KostenfaktorZeile" Zeilen="@_zeilen.AsQueryable()">
+        <KindInhalt>
+            <TemplateColumn TGridItem="KostenfaktorZeile" Title="@SpalteWahl">
+                <button type="button" class="epos-knopf epos-anlagenwahl"
+                        aria-pressed="@(_gewaehlt == context.StammId ? "true" : "false")"
+                        title="@SpalteWahl"
+                        @onclick="() => _gewaehlt = context.StammId">@(_gewaehlt == context.StammId ? "●" : "○")</button>
+            </TemplateColumn>
+            <TemplateColumn TGridItem="KostenfaktorZeile" Title="@SpalteBezeichnung">
+                @context.Bezeichnung
+            </TemplateColumn>
+        </KindInhalt>
+    </Raster>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!_gewaehlt.HasValue)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@OkText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Katalogs — Id und Bezeichnung.</summary>
+    /// <param name="StammId"><c>Tab_Kostenfaktor.StammID</c>.</param>
+    /// <param name="Bezeichnung">Der angezeigte Name.</param>
+    public sealed record KostenfaktorZeile(int StammId, string Bezeichnung);
+
+    /// <summary>Die Eintraege des Katalogs, fertig geladen und sortiert.</summary>
+    [Parameter] public IReadOnlyList<KostenfaktorZeile> Zeilen { get; set; }
+        = Array.Empty<KostenfaktorZeile>();
+
+    /// <summary>Legt einen Kostenfaktor an. Rueckgabe = neue Id, 0 = nichts geschrieben.</summary>
+    [Parameter] public Func<string, int>? Neu { get; set; }
+
+    /// <summary>Loescht einen Kostenfaktor. Rueckgabe <c>false</c> = nichts geloescht.</summary>
+    [Parameter] public Func<int, bool>? Loeschen { get; set; }
+
+    /// <summary>
+    /// Rueckfrage vor dem Loeschen (Huelle: <c>Dienste.Dialog.Frage</c>).
+    /// Ohne Delegat wird nicht gefragt.
+    /// </summary>
+    [Parameter] public Func<string, bool>? Rueckfrage { get; set; }
+
+    /// <summary>Laedt die Liste neu — nach jedem Anlegen und Loeschen.</summary>
+    [Parameter] public Func<IReadOnlyList<KostenfaktorZeile>>? NeuLaden { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende (der Vorlaeufer kannte nur „OK" = schliessen).</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Fenstertitel (Designer: Form.Text).</summary>
+    [Parameter] public string TitelText { get; set; } = "Administration Kostenfaktoren";
+
+    /// <summary>Einleitungssatz (Designer: label2).</summary>
+    [Parameter] public string EinleitungText { get; set; } = "Verwalten Sie hier die Kostenfaktoren";
+
+    /// <summary>Beschriftung der Liste (Designer: lblKostenfaktoren).</summary>
+    [Parameter] public string SpalteBezeichnung { get; set; } = "Kostenfaktoren:";
+
+    /// <summary>Kopf der Wahlspalte.</summary>
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+
+    /// <summary>Beschriftung des Feldes fuer den neuen Namen (frueher Form_KostenItemNeu).</summary>
+    [Parameter] public string LabelNeu { get; set; } = "Bezeichner";
+
+    /// <summary>Beschriftung des Anlegeknopfes (Designer: btnNeuKostenfaktor).</summary>
+    [Parameter] public string NeuText { get; set; } = "➕ Neu";
+
+    /// <summary>Beschriftung des Loeschknopfes (Designer: btnDeleteKostenfaktor).</summary>
+    [Parameter] public string LoeschenText { get; set; } = "🗑️ Löschen";
+
+    /// <summary>Beschriftung des schliessenden Knopfes (Designer: btn_OK).</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Vorlage der Loeschrueckfrage, ein Platzhalter.</summary>
+    [Parameter] public string VorlageRueckfrage { get; set; } = "Kostenfaktor '{0}' wirklich löschen?";
+
+    /// <summary>Meldung, wenn das Anlegen scheitert (frueher eine MessageBox).</summary>
+    [Parameter] public string MeldungNeuFehler { get; set; } = "Der Kostenfaktor konnte nicht angelegt werden.";
+
+    /// <summary>Meldung, wenn das Loeschen scheitert.</summary>
+    [Parameter] public string MeldungLoeschenFehler { get; set; } = "Der Kostenfaktor konnte nicht gelöscht werden.";
+
+    /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_KostenAdmin.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<KostenfaktorZeile> _zeilen = new();
+    private int? _gewaehlt;
+    private string _neuerName = "";
+    private string _meldung = "";
+
+    /// <summary>Die markierte Zeile (Pruefhilfe fuer Tests).</summary>
+    public int? Gewaehlt => _gewaehlt;
+
+    /// <summary>Die angezeigten Zeilen (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<KostenfaktorZeile> Angezeigt => _zeilen;
+
+    protected override void OnInitialized()
+    {
+        _zeilen = new List<KostenfaktorZeile>(Zeilen);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void BeiNeuerName(string wert)
+    {
+        _neuerName = wert;
+        _meldung = "";
+    }
+
+    /// <summary>Wie <c>btnNeuKostenfaktor_Click</c>: leerer Name = nichts tun.</summary>
+    private void BeiNeu()
+    {
+        string name = (_neuerName ?? "").Trim();
+        if (name.Length == 0) return;
+        if (Neu is null) return;
+
+        int id = Neu(name);
+        if (id == 0)
+        {
+            _meldung = MeldungNeuFehler;
+            return;
+        }
+
+        _neuerName = "";
+        _meldung = "";
+        ListeNeuLaden();
+        _gewaehlt = id;
+    }
+
+    /// <summary>Wie <c>btnDeleteKostenfaktor_Click</c>: ohne Markierung nichts tun,
+    /// sonst erst fragen.</summary>
+    private void BeiLoeschen()
+    {
+        if (!_gewaehlt.HasValue || Loeschen is null) return;
+
+        KostenfaktorZeile? zeile = null;
+        foreach (KostenfaktorZeile z in _zeilen)
+        {
+            if (z.StammId == _gewaehlt.Value) { zeile = z; break; }
+        }
+        if (zeile is null) return;
+
+        if (Rueckfrage is not null &&
+            !Rueckfrage(string.Format(VorlageRueckfrage, zeile.Bezeichnung))) return;
+
+        if (!Loeschen(zeile.StammId))
+        {
+            _meldung = MeldungLoeschenFehler;
+            return;
+        }
+
+        _meldung = "";
+        _gewaehlt = null;
+        ListeNeuLaden();
+    }
+
+    private void ListeNeuLaden()
+    {
+        if (NeuLaden is null) return;
+        _zeilen = new List<KostenfaktorZeile>(NeuLaden());
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync();
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter ist NICHT belegt: "Neu" und "Löschen" schreiben sofort (A-7 aus B5b).
+        "Escape" => BeiSchliessen(),
+        _ => Task.CompletedTask
+    };
+}

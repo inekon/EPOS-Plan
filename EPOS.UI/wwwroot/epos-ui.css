@@ -440,6 +440,19 @@ body {
     height: 20px;
 }
 
+/* Zeile "Feld + Knopf" - der Ersatz fuer einen Anlegedialog, der nur ein
+   Textfeld hatte (Vorbild Form_KostenItemNeu ueber Form_KostenAdmin). Das Feld
+   waechst, der Knopf bleibt so breit, wie er sein muss. */
+.epos-neuzeile {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-neuzeile > .epos-feld {
+    flex: 1 1 auto;
+}
+
 /* Kontextzeile unter dem Dialogkopf: „‹Komponente› · ‹Kategorie›" - sie sagt,
    worauf sich der Dialog bezieht (Vorbild lblKontext in
    Form_VorlagenUebernahme, fett). */
