@@ -93,6 +93,36 @@ namespace WindowsFormsApplication1
             return KennlinienSatz.Bauen(vorlaeufe, dt, "Ptherm");
         }
 
+        /// <summary>
+        /// Die WÄRME-Kennlinien eines STAMMGERÄTS als Zeilenliste (iU9-W7.3) — die
+        /// Abfrage, mit der <c>Form_WP.btn_Kenndaten_Click</c> (Z. 479) das
+        /// <c>DataSet</c> des Editors füllte, in derselben Spaltenfolge.
+        ///
+        /// <para>Gegenstück zu <see cref="Abgleichen"/>: Diese Methode liest den Stand
+        /// IN den Editor, jene schreibt ihn zurück.</para>
+        /// </summary>
+        public static IReadOnlyList<KenndatenModel> LiesStamm(int idWp)
+        {
+            var liste = new List<KenndatenModel>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + WPStammCtrl.CURVE +
+                " WHERE ID_WP = ?",
+                new DbParam("@id", idWp));
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+                liste.Add(new KenndatenModel
+                {
+                    m_ID = r["ID"] != DBNull.Value ? Convert.ToInt32(r["ID"]) : 0,
+                    m_ID_WP = r["ID_WP"] != DBNull.Value ? Convert.ToInt32(r["ID_WP"]) : 0,
+                    m_nVorlauf = r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0,
+                    m_nTemperatur = r["Temperatur"] != DBNull.Value ? Convert.ToInt32(r["Temperatur"]) : 0,
+                    m_nCOP = r["COP"] != DBNull.Value ? Convert.ToDouble(r["COP"]) : 0,
+                    m_nPTherm = r["Ptherm"] != DBNull.Value ? Convert.ToDouble(r["Ptherm"]) : 0
+                });
+            return liste;
+        }
+
         #endregion
 
         #region --- DATABASE WRITE OPERATIONS ---

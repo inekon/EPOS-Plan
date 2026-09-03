@@ -198,8 +198,6 @@ namespace WindowsFormsApplication1
             // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
             // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der
             // Klassenname sagt das nicht, deshalb der Eintrag (H7).
-            { "Kenndaten",                   B_WAERMEPUMPE },
-            { "Form_WP",                     B_WAERMEPUMPE },
             { "Form_WPAuswahl",              B_WAERMEPUMPE },
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
