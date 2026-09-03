@@ -1,0 +1,69 @@
+﻿@* Rueckfrage Ja / Nein / Abbrechen (iU9-W4.0, Bausteinluecke 8).
+
+   WOZU. Der Bestand fragt rund fuenfhundert Mal mit einer MessageBox nach; ein
+   guter Teil davon sind echte Ja/Nein-Fragen vor einem Loeschen. EPOS.UI kennt
+   keine MessageBox (CLAUDE.md), und bis hierher reichte jede Komponente diese
+   Fragen an die Huelle weiter (Dienste.Dialog.Frage - iU9-W1.5 A-16,
+   iU9-W3.3 A-13). Das war ein WinForms-Fenster ueber einem Blazor-Dialog: auf
+   Windows tragbar, auf iOS gar nicht vorhanden.
+
+   Hier steht die Frage im selben Fenster, ueber Ueberlagerung. Der Wirt
+   bekommt die Antwort als Rueckruf und entscheidet, was er damit tut.
+
+   DREI ANTWORTEN, NICHT ZWEI. MessageBoxButtons.YesNo kennt zwei, YesNoCancel
+   drei. Ein Baustein fuer beides braucht deshalb ein Ergebnis, das "keine
+   Antwort" ausdruecken kann: true = Ja, false = Nein, null = Abbrechen. Ohne
+   MitAbbrechen gibt es nur die zwei Knoepfe, und Esc antwortet dann wie "Nein"
+   - genau wie das Schliessen einer YesNo-MessageBox ueber das Kreuz.
+
+   ENTER IST NICHT BELEGT. Wo die Antwort sofort loescht, waere ein
+   versehentliches Enter kein Bestaetigen, sondern ein Zufall (A-7 aus B5b).
+   Der Fokus liegt beim Oeffnen auf dem Bereich, nicht auf "Ja". *@
+
+@namespace EPOS.UI.Bausteine
+
+<Ueberlagerung Offen="@Offen" Titel="@TitelText" Schliessbar="false"
+               Geschlossen="BeiEsc">
+    <KindInhalt>
+        <div class="epos-rueckfrage">
+            <p class="epos-rueckfrage-text" role="alert">@Frage</p>
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="() => Antworten(true)">@JaText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="() => Antworten(false)">@NeinText</button>
+                @if (MitAbbrechen)
+                {
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => Antworten(null)">@AbbrechenText</button>
+                }
+            </div>
+        </div>
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Steht die Frage?</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Die Frage im Klartext — derselbe Satz wie in der MessageBox des Vorlaeufers.</summary>
+    [Parameter] public string Frage { get; set; } = "";
+
+    /// <summary>Ueberschrift des Bereichs (die MessageBox trug den Fenstertitel).</summary>
+    [Parameter] public string TitelText { get; set; } = "";
+
+    /// <summary>Bietet zusaetzlich „Abbrechen" an (YesNoCancel statt YesNo).</summary>
+    [Parameter] public bool MitAbbrechen { get; set; }
+
+    /// <summary>Die Antwort: <c>true</c> = Ja, <c>false</c> = Nein, <c>null</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool?> Beantwortet { get; set; }
+
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    private Task Antworten(bool? antwort) => Beantwortet.InvokeAsync(antwort);
+
+    /// <summary>Esc: mit Abbrechen-Knopf heisst es „Abbrechen", sonst „Nein".</summary>
+    private Task BeiEsc() => Antworten(MitAbbrechen ? null : false);
+}

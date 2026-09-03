@@ -1,0 +1,99 @@
+﻿@* Positionsraster: Spaltenkopf, Bearbeitungszeilen, Abschlusszeile, Summenfuss
+   (iU9-W4.0, Bausteinluecke 6, zweiter Teil).
+
+   WOZU EIN ZWEITES RASTER. Raster (QuickGrid) zeigt DATEN: Eine Zeile ist ein
+   Objekt, eine Zelle sein Feldwert, und Bedienelemente kommen ueber
+   TemplateColumn hinein. Das Positionsraster der Kostenverwaltung ist etwas
+   anderes: Dort IST jede Zeile eine kleine Maske mit sieben Bedienelementen,
+   die einander bedingen (Satz und Betrag sind gekoppelt, die Bemessung
+   entscheidet ueber beides) - im Bestand deshalb ein eigenes UserControl je
+   Zeile (Views/Kosten/ucVorlagenZeile.cs, 377 Zeilen). Eine QuickGrid-Spalte
+   je Feld haette diese Zeile in sieben Spaltenvorlagen zerschnitten.
+
+   Hier bleibt die Zeile eine Komponente. Der Baustein liefert nur das, was
+   ueber allen Zeilen gemeinsam ist:
+     - den Spaltenkopf (im Bestand pnlRasterKopf mit sieben Labels),
+     - den Rollbereich der Zeilen,
+     - eine Abschlusszeile („+ Neue Position hinzufuegen…", FK2),
+     - den Summenfuss (im Bestand lblSummeNetto/lblSummeBrutto).
+
+   SPALTEN OHNE PIXEL. Die WinForms-Fassung rechnete Pixelkoordinaten
+   (z.Width = pnlZeilen.ClientSize.Width - 4, mindestens 928). Hier steht ein
+   CSS-Raster: Spaltenmass gibt die Spuren an (z. B. "104px 2fr 1.4fr …"), und
+   sowohl der Kopf als auch jede Zeile setzen ihre Zellen in dieselben Spuren.
+   Die Zeilenkomponente traegt dafuer display:contents (Klasse epos-zr-zeile) -
+   ihre Zellen werden damit unmittelbar zu Zellen des Rasters, und die Spalten
+   fluchten ueber alle Zeilen hinweg, ohne dass eine Zeile ihre Breiten kennt.
+
+   ZEILENWAHL. MitZeilenwahl blendet eine erste Spalte fuer den runden
+   Wahlknopf ein (Baustein Zeilenwahl); die Zeile selbst rendert ihn, damit sie
+   weiss, wofuer sie steht. Der Baustein sorgt nur fuer Kopf und Spur. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-zeilenraster" role="table" aria-label="@Bezeichnung"
+     style="grid-template-columns: @Spaltenmass">
+
+    <div class="epos-zr-kopf" role="row">
+        @if (MitZeilenwahl)
+        {
+            <div class="epos-zr-kopfzelle" role="columnheader">@WahlKopf</div>
+        }
+        @foreach (string titel in Spalten)
+        {
+            <div class="epos-zr-kopfzelle" role="columnheader">@titel</div>
+        }
+    </div>
+
+    @KindInhalt
+
+    @if (AbschlussZeile is not null)
+    {
+        @AbschlussZeile
+    }
+
+    @if (Summen.Count > 0)
+    {
+        <div class="epos-zr-summe" role="row">
+            @foreach ((string text, bool stark) in Summen)
+            {
+                <div class="@(stark ? "epos-zr-summenzelle epos-zr-summenzelle--stark" : "epos-zr-summenzelle")"
+                     role="cell">@text</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Beschriftung des Rasters fuer die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Spaltenueberschriften in Anzeigereihenfolge (ohne die Wahlspalte).</summary>
+    [Parameter] public IReadOnlyList<string> Spalten { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Die CSS-Spuren des Rasters, wie sie in <c>grid-template-columns</c>
+    /// stehen — mit der Wahlspalte als erster Spur, wenn <see cref="MitZeilenwahl"/>
+    /// gesetzt ist.
+    /// </summary>
+    [Parameter] public string Spaltenmass { get; set; } = "1fr";
+
+    /// <summary>Blendet die Wahlspalte ein (Baustein <c>Zeilenwahl</c> in der Zeile).</summary>
+    [Parameter] public bool MitZeilenwahl { get; set; }
+
+    /// <summary>Ueberschrift der Wahlspalte.</summary>
+    [Parameter] public string WahlKopf { get; set; } = "Wahl";
+
+    /// <summary>Die Zeilen — je Zeile eine Komponente mit <c>epos-zr-zeile</c>.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>Die Abschlusszeile („+ Neue Position…"); <c>null</c> = keine.</summary>
+    [Parameter] public RenderFragment? AbschlussZeile { get; set; }
+
+    /// <summary>
+    /// Der Summenfuss: je Eintrag eine Zeile, <c>Stark</c> setzt sie fett
+    /// (im Bestand die Nettosumme gegenueber der Bruttozeile).
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Text, bool Stark)> Summen { get; set; }
+        = Array.Empty<(string, bool)>();
+}

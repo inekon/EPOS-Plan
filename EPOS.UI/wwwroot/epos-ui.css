@@ -745,3 +745,164 @@ body {
         color: rgb(138, 91, 0);
     }
 }
+
+/* ==========================================================================
+   Ueberlagerung, Rueckfrage und Zeilenraster (iU9-W4.0)
+
+   Bis Welle 4 wich ein Blazor-Dialog, der einen zweiten braucht, auf einen
+   eingerueckten Block aus (epos-editorblock) oder reichte die Frage an die
+   WinForms-Huelle weiter. Beides ersetzt die Ueberlagerung: ein modaler
+   Bereich IM Fenster, damit keine zweite WebView entsteht (Risiko R2 des
+   Wellenplans iU9) und damit es die Bauform auf iOS ueberhaupt gibt.
+   ========================================================================== */
+
+.epos-ueberlagerung-hintergrund {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(15, 31, 61, 0.45);
+}
+
+.epos-ueberlagerung {
+    position: fixed;
+    z-index: 41;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    width: min(92vw, 900px);
+    max-height: 90vh;
+    overflow: auto;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 8px 32px rgba(15, 31, 61, 0.35);
+}
+
+.epos-ueberlagerung-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-ueberlagerung-titel {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+/* Das Kreuz ist quadratisch - die Mindestbreite der Knoepfe wuerde es zu
+   einem Balken machen. */
+.epos-ueberlagerung-zu {
+    min-width: var(--epos-touchziel);
+    padding: 0;
+}
+
+/* Der Inhalt ist ueblich ein vollstaendiger Dialog. Sein eigener Rand wuerde
+   sich mit dem der Ueberlagerung addieren. */
+.epos-ueberlagerung-inhalt > .epos-dialog {
+    padding: 0;
+    background: transparent;
+}
+
+/* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen
+   deshalb NICHT display:none tragen (das nimmt ihnen den Tabulator). */
+.epos-fokusfalle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.epos-rueckfrage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+.epos-rueckfrage-text {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Zeilenraster: Spaltenkopf, Zeilen, Abschlusszeile, Summenfuss.
+
+   Die Zeilen sind eigene Komponenten. epos-zr-zeile setzt display:contents,
+   damit ihre Zellen zu Zellen DIESES Rasters werden und die Spalten ueber
+   alle Zeilen fluchten, ohne dass eine Zeile ihre Breiten kennt.
+   -------------------------------------------------------------------------- */
+
+.epos-zeilenraster {
+    display: grid;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    margin-top: var(--epos-rand);
+}
+
+.epos-zr-kopf,
+.epos-zr-zeile,
+.epos-zr-summe {
+    display: contents;
+}
+
+.epos-zr-kopfzelle {
+    padding: 4px 2px;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    white-space: nowrap;
+}
+
+.epos-zr-zelle {
+    min-width: 0;
+    padding: 2px 0;
+}
+
+/* Eine Zelle ohne eigenes Bedienelement (Kette, Einheit, Betragsspiegel). */
+.epos-zr-text {
+    color: var(--epos-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epos-zr-summenzelle {
+    grid-column: 1 / -1;
+    padding-top: 6px;
+    color: var(--epos-text);
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-zr-summenzelle--stark {
+    font-weight: 700;
+}
+
+/* Die Abschlusszeile ist die gestrichelte "+ Neue Position"-Zeile der Mockups
+   (FK2). Sie sieht anders aus als eine gepflegte Zeile, damit niemand sie fuer
+   einen Datensatz haelt. */
+.epos-zr-neuzeile {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 4px;
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+@media (forced-colors: active) {
+    .epos-ueberlagerung {
+        border: 2px solid ButtonBorder;
+    }
+
+    .epos-ueberlagerung-hintergrund {
+        forced-color-adjust: none;
+        background: rgba(0, 0, 0, 0.6);
+    }
+}
