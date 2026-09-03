@@ -113,7 +113,6 @@ public sealed class TarifstrukturTexte
         "Jahreshöchstlast (Staffel mit Winterpreisen)");
     public string Monatspreis { get; } = T("TARIF_MONATSPREIS",
         "Monatlicher Leistungspreis [€/kW·Monat]:");
-    public string SpStufe { get; } = T("TARIF_SP_STUFE", "Staffelstufe");
     public string SpObergrenze { get; } = T("TARIF_SP_OBERGRENZE", "Obergrenze [kW]");
     public string SpSommer { get; } = T("TARIF_SP_SOMMER", "Sommer [€/kW·a]");
     public string SpWinter { get; } = T("TARIF_SP_WINTER", "Winter [€/kW·a]");
