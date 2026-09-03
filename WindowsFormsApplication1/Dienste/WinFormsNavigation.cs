@@ -79,12 +79,11 @@ namespace WindowsFormsApplication1
                         return MitOk(frm);
                     }
 
+                // iU9-W8.4: Die Gebaeudetypen-Verwaltung ist die Razor-Komponente
+                // GebaeudetypDialog; Form_EingGebTyp ist im selben Schritt GELOESCHT
+                // (Regel M1). Die Huelle liefert dasselbe true/false wie MitOk.
                 case Masken.GebaeudetypenAdmin:
-                    using (Form_EingGebTyp frm = new Form_EingGebTyp())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return GebaeudetypHuelle.Oeffnen(null);
 
                 case Masken.WaermebedarfExternAdmin:
                     using (Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen())

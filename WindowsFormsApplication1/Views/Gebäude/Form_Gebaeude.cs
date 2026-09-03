@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -567,9 +567,8 @@ namespace WindowsFormsApplication1
 
         private void btn_GebTypAendern_DB_Click(object sender, EventArgs e)
         {
-            Form_EingGebTyp frm = new Form_EingGebTyp();
-            frm.SetControls(); 
-            frm.ShowDialog();
+            // iU9-W8.4: Blazor-Huelle statt Form_EingGebTyp.
+            GebaeudetypHuelle.Oeffnen(this);
         }
 
         private void listBox_Gebaeude_DB_SelectedIndexChanged(object sender, EventArgs e)

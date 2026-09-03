@@ -1,0 +1,419 @@
+﻿@* Gebaeudetypen-Verwaltung (iU9-W8.4).
+
+   VORBILD. Views/Gebaeude/Form_EingGebTyp (344 Z., 671 x 680, 33 Kartenzeilen,
+   6 MessageBox). Links die Typliste und die Beschreibung, daneben die
+   Kurvenliste ("Kurvenverlauf fuer den Tag:"), darunter 24 Stundenfelder und
+   das Tagesbild, unten vier Knoepfe.
+
+   DAS EINZIGE KOPF-DETAIL-MODELL DER WELLE. Ein Typ fuehrt FUENF oder ACHT
+   Tageskurven zu je 24 Stunden. Welche Namensliste gilt, entscheidet die
+   KURVENZAHL und nicht die Listenposition - die Typliste ist alphabetisch
+   sortiert, und der 5-Kurven-Typ steht nicht immer vorn.
+
+   DER KURVENWECHSEL UEBERTRAEGT STILL. RefreshArrayValues:145 schrieb beim
+   Umschalten die 24 Felder der VORIGEN Kurve in die Verteilung zurueck - ein
+   ungueltiges oder leeres Feld liess den bisherigen Wert stehen, ohne zu
+   melden. Gemeldet wird erst am Speichern-Knopf, und dort sind alle 24 Werte
+   Pflicht ("Stunde n"). Beides steht hier genauso.
+
+   DER AUSLIEFERUNGSBESTAND IST GESPERRT. Ist ein Typ nicht "Veraenderbar" oder
+   "ReadOnly", bleibt "Typ Speichern" gesperrt. Der Vorlaeufer sagte den Grund
+   in einem gelben ToolTip ueber der Typliste; ein Tooltip ist auf einem
+   Beruehrungsgeraet nicht erreichbar, also steht er hier als Herleitungszeile
+   (A-7).
+
+   LOESCHEN FRAGT NACH. Der Vorlaeufer loeschte einen Gebaeudetyp OHNE
+   Rueckfrage - Kopf und 192 Datenzeilen auf einen Klick, und der Katalog gilt
+   fuer alle Projekte (A-8, wie W6 A-4).
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt - zwei der vier Knoepfe
+   schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelName</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <tbody>
+                        @foreach (string typ in _typen)
+                        {
+                            string t = typ;
+                            <tr class="@(t == Daten.Name ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(t == Daten.Name)" Kurztext="@LabelName"
+                                                Gewaehltwerden="() => TypWaehlen(t)" />
+                                </td>
+                                <td>@t</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="3" />
+
+            @if (!string.IsNullOrEmpty(Daten.Name) && !Daten.Aenderbar)
+            {
+                <Herleitungszeile Text="@HinweisGesperrt" />
+            }
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelKurve</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <tbody>
+                        @for (int n = 0; n < Daten.Kurven; n++)
+                        {
+                            int kurve = n;
+                            <tr class="@(kurve == _kurve ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(kurve == _kurve)" Kurztext="@LabelKurve"
+                                                Gewaehltwerden="() => KurveWaehlen(kurve)" />
+                                </td>
+                                <td>@Kurvenname(kurve)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <Gruppenkopf Titel="@GruppeStunden">
+        <KindInhalt>
+            @for (int s = 0; s < 24; s++)
+            {
+                int stunde = s;
+                <Zahlenfeld Bezeichnung="@((stunde + 1).ToString())"
+                            Feldname="@Feldname(stunde)" Nachkommastellen="4"
+                            Aktiv="@(Daten.Kurven > 0)"
+                            Wert="@_felder[stunde]" WertChanged="w => _felder[stunde] = w" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <ChartBild Png="@_bild" Alt="@GruppeStunden" PlatzhalterText="@PlatzhalterBild" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
+                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!TypGewaehlt || !Daten.Aenderbar)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnSchliessenText</button>
+    </div>
+
+    @* "Typ hinzufuegen" fragt Name UND Beschreibung im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnNeuText" FrageText="@LabelName"
+                          ZusatzFrageText="@LabelBeschreibung"
+                          MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          ZusatzGeschlossen="b => _neueBeschreibung = b"
+                          Geschlossen="BeiNamensfrage" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText"
+                Frage="@string.Format(FrageLoeschen, Daten.Name)"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    /// <summary>Der Arbeitsstand: Kopf, Kurvennamen und die Tagesverteilungen.</summary>
+    [Parameter] public GebaeudetypDaten Daten { get; set; } = new();
+
+    /// <summary>Die Namensliste der Gebäudetypen (<c>SetControls</c>:32).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Typen { get; set; }
+
+    /// <summary>Lädt einen Gebäudetyp; <c>null</c> = es gibt ihn nicht (mehr).</summary>
+    [Parameter] public Func<string, GebaeudetypDaten?>? Lies { get; set; }
+
+    /// <summary>Schreibt die Tagesverteilungen zurück.</summary>
+    [Parameter] public Func<int, double[,], bool>? Speichern { get; set; }
+
+    /// <summary>Legt einen Typ an (Kopf + 192 Nullzeilen); Rückgabe: die neue Id oder 0.</summary>
+    [Parameter] public Func<string, string, int>? Anlegen { get; set; }
+
+    /// <summary>Löscht einen Gebäudetyp — Daten vor Kopf.</summary>
+    [Parameter] public Func<int, bool>? Loeschen { get; set; }
+
+    /// <summary>Zeichnet die 24 Stundenwerte einer Kurve; ohne Delegat bleibt es leer.</summary>
+    [Parameter] public Func<double[], byte[]>? Bild { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („OK"/Esc) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Gebäudetypen Verwaltung";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelKurve { get; set; } = "Kurvenverlauf für den Tag:";
+    [Parameter] public string GruppeStunden { get; set; } = "Stundenwerteeingabe [kW, kWh oder %]";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
+
+    [Parameter] public string BtnNeuText { get; set; } = "Typ hinzufügen";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Typ Löschen";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Typ Speichern";
+    [Parameter] public string BtnSchliessenText { get; set; } = "OK";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Die 24 Namen der Prüfmeldung („Stunde 7").</summary>
+    [Parameter] public IReadOnlyList<string>? Feldnamen { get; set; }
+
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
+    [Parameter] public string MeldungNameBelegt { get; set; } = "Name existiert bereits!";
+    [Parameter] public string MeldungGespeichert { get; set; } = "Daten gespeichert!";
+    [Parameter] public string MeldungFehler { get; set; } = "Speichern nicht möglich!";
+    [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>
+    /// Der Grund, aus dem „Typ Speichern" gesperrt ist. Wörtlich der Tooltip des
+    /// Vorläufers (<c>listBox_Typename_SelectedIndexChanged</c>:95).
+    /// </summary>
+    [Parameter] public string HinweisGesperrt { get; set; }
+        = "Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_EingGebTyp.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<string> _typen = Array.Empty<string>();
+    private int _kurve;
+    private readonly double?[] _felder = new double?[GebaeudetypDaten.STUNDEN];
+    private byte[]? _bild;
+
+    private bool _namensfrage;
+    private bool _loeschfrage;
+    private string _neueBeschreibung = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die Typliste — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<string> Typliste => _typen;
+
+    /// <summary>Die gewählte Kurve — Prüfhilfe für die Tests.</summary>
+    public int Kurvenwahl => _kurve;
+
+    /// <summary>Die 24 Felder der gewählten Kurve — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<double?> Felder => _felder;
+
+    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Steht die Löschrückfrage? Prüfhilfe für die Tests.</summary>
+    public bool Loeschfrage => _loeschfrage;
+
+    private bool TypGewaehlt => !string.IsNullOrEmpty(Daten.Name);
+
+    private string Kurvenname(int n)
+        => (Daten.Kurvennamen is not null && Daten.Kurvennamen.Count > n)
+            ? Daten.Kurvennamen[n] : "";
+
+    private string Feldname(int stunde)
+        => (Feldnamen is not null && Feldnamen.Count > stunde)
+            ? Feldnamen[stunde] : "Stunde " + (stunde + 1);
+
+    protected override void OnInitialized()
+    {
+        ListeLaden();
+
+        // SetControls:32 - die erste Wahl steht vorn und bekommt den Fokus.
+        if (_typen.Count > 0) TypWaehlen(_typen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void ListeLaden() => _typen = Typen?.Invoke() ?? Array.Empty<string>();
+
+    /// <summary>
+    /// Typwahl: Kopf, Kurvenzahl, Verteilung und Kurvenliste laden; danach steht die
+    /// erste Kurve vorn (<c>listBox_Typename_SelectedIndexChanged</c>:44).
+    /// </summary>
+    private void TypWaehlen(string name)
+    {
+        _meldung = "";
+        GebaeudetypDaten? gelesen = Lies?.Invoke(name);
+        if (gelesen is null)
+        {
+            Daten = new GebaeudetypDaten();
+            _kurve = 0;
+            Felderleeren();
+            _bild = null;
+            return;
+        }
+
+        Daten = gelesen;
+        _kurve = 0;
+        KurveZeigen(0);
+    }
+
+    /// <summary>
+    /// Kurvenwechsel: erst der STILLE Übertrag der bisherigen 24 Felder
+    /// (<c>RefreshArrayValues</c>: ein leeres oder ungültiges Feld lässt den alten Wert
+    /// stehen und meldet NICHT), dann die neue Kurve zeigen.
+    /// </summary>
+    private void KurveWaehlen(int n)
+    {
+        if (n == _kurve) return;
+        FelderStillUebernehmen();
+        _kurve = n;
+        KurveZeigen(n);
+    }
+
+    private void KurveZeigen(int n)
+    {
+        double[] werte = Daten.Kurve(n);
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = werte[s];
+        _bild = Bild?.Invoke(werte);
+    }
+
+    private void Felderleeren()
+    {
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = null;
+    }
+
+    /// <summary>Der stille Übertrag — leere und ungültige Felder bleiben außen vor.</summary>
+    private void FelderStillUebernehmen()
+    {
+        if (_kurve < 0 || _kurve >= Daten.Kurven) return;
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
+            if (_felder[s] is double wert) Daten.Verteilung[_kurve, s] = wert;
+    }
+
+    // =================================================================================
+    // Speichern, Anlegen, Löschen
+    // =================================================================================
+
+    /// <summary>
+    /// „Typ Speichern": erst die 24 Pflichtzahlen (<c>VerteilungUebernehmen</c>:158),
+    /// dann schreiben und das Bild neu zeichnen.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (!TypGewaehlt || !Daten.Aenderbar || Speichern is null) return;
+
+        for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++)
+            if (_felder[s] is null)
+            {
+                _meldung = string.Format(MeldungZahlFehlt, Feldname(s));
+                _meldungStufe = WarnStufe.Warnung;
+                return;
+            }
+
+        FelderStillUebernehmen();
+
+        if (!Speichern(Daten.Id, Daten.Verteilung))
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        KurveZeigen(_kurve);
+        _meldung = MeldungGespeichert;
+        _meldungStufe = WarnStufe.Hinweis;
+    }
+
+    /// <summary>
+    /// „Typ hinzufügen": Name UND Beschreibung, Dublettenprüfung gegen die Liste
+    /// (<c>listBox_Typename.FindString</c>), dann Kopf und 192 Nullzeilen.
+    /// </summary>
+    private void BeiNamensfrage(string? name)
+    {
+        _namensfrage = false;
+        if (string.IsNullOrEmpty(name) || Anlegen is null) return;
+
+        foreach (string vorhanden in _typen)
+            if (string.Equals(vorhanden, name, StringComparison.Ordinal))
+            {
+                _meldung = MeldungNameBelegt;
+                _meldungStufe = WarnStufe.Warnung;
+                return;
+            }
+
+        if (Anlegen(name, _neueBeschreibung) <= 0)
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _neueBeschreibung = "";
+        ListeLaden();
+        TypWaehlen(name);
+    }
+
+    /// <summary>
+    /// „Typ Löschen": Der Vorläufer löschte OHNE Rückfrage (A‑8). Der Auslieferungsbestand
+    /// bleibt gesperrt, wie dort.
+    /// </summary>
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        if (ja != true || !TypGewaehlt || Loeschen is null) return;
+
+        if (!Daten.Aenderbar)
+        {
+            _meldung = HinweisGesperrt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        if (!Loeschen(Daten.Id))
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        ListeLaden();
+        if (_typen.Count > 0) TypWaehlen(_typen[0]);
+        else { Daten = new GebaeudetypDaten(); Felderleeren(); _bild = null; }
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Ueberlagerung und Rueckfrage werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _namensfrage || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(true);
+    }
+}
