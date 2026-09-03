@@ -20,10 +20,12 @@ namespace WindowsFormsApplication1
     /// Wirtschaftlichkeits-/Anlagenpflege. Sprungknopf auf
     /// <c>Form_Gesetzesparameter</c>.</para>
     ///
-    /// <para><b>Photovoltaik (§ 6.2):</b> öffnet DASSELBE
-    /// <see cref="Form_PhotovoltaikVerguetung"/> wie der Knopf der
-    /// Wirtschaftlichkeit — stammprojektbezogen; im Admin-Kontext wählt eine
-    /// Klappliste das Stammprojekt (eine Vergütungswahrheit, V4/F7).</para>
+    /// <para><b>Photovoltaik (§ 6.2):</b> öffnet DENSELBEN Dialog wie der Knopf
+    /// der Wirtschaftlichkeit (seit iU9-W2.4 die Razor-Komponente
+    /// <c>PhotovoltaikVerguetungDialog</c> über
+    /// <see cref="PhotovoltaikVerguetungHuelle"/>) — stammprojektbezogen; im
+    /// Admin-Kontext wählt eine Klappliste das Stammprojekt (eine
+    /// Vergütungswahrheit, V4/F7).</para>
     ///
     /// <para><b>Übrige Komponenten (§ 6.3, FK5):</b> der Reiter wird vom
     /// Eigner ausgeblendet (<see cref="HatInhalt"/>).</para>
@@ -177,11 +179,8 @@ namespace WindowsFormsApplication1
         {
             int i = cmbPvProjekt.SelectedIndex;
             if (_projekte == null || i < 0 || i >= _projekte.Count) return;
-            using (var dlg = new Form_PhotovoltaikVerguetung())
-            {
-                dlg.SetControls(_projekte[i].Key);
-                dlg.ShowDialog(FindForm());
-            }
+            // iU9-W2.4: siehe PhotovoltaikVerguetungHuelle.
+            PhotovoltaikVerguetungHuelle.Oeffnen(FindForm(), _projekte[i].Key);
         }
 
         // ================================================================ Texte ---
