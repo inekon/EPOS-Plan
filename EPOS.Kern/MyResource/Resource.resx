@@ -11818,4 +11818,7 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMQ_ERDREICH_SIM_LAEUFT" xml:space="preserve">
     <value>Simulation läuft …</value>
   </data>
+  <data name="PSP_HERLEITUNG_VERWENDUNG" xml:space="preserve">
+    <value>Gespeichert wird zusätzlich der abgeleitete Altwert „{0}“.</value>
+  </data>
 </root>

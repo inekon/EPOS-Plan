@@ -33420,5 +33420,14 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert wird zusätzlich der abgeleitete Altwert „{0}“. ähnelt.
+        /// </summary>
+        public static string PSP_HERLEITUNG_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("PSP_HERLEITUNG_VERWENDUNG", resourceCulture);
+            }
+        }
+        
     }
 }

@@ -11811,4 +11811,7 @@ Please check all entries!</value>
   <data name="SIMQ_ERDREICH_SIM_LAEUFT" xml:space="preserve">
     <value>Simulation running …</value>
   </data>
+  <data name="PSP_HERLEITUNG_VERWENDUNG" xml:space="preserve">
+    <value>The derived legacy value „{0}“ is stored as well.</value>
+  </data>
 </root>

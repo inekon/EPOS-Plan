@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
 
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
-            { "Form_PufferSp_Projekt",       B_PUFFERSPEICHER },
+            // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
             { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
 
             { "DashboardForm",               B_SIMULATION },

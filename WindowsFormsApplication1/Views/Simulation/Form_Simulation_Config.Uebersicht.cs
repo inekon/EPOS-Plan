@@ -339,15 +339,16 @@ namespace WindowsFormsApplication1
         {
             if (m_ID_Projekt <= 0) return;
 
-            Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
-            frm.ID_Projekt = m_ID_Projekt;
-            frm.ID_Puffer = idPuffer;
+            // Die Maske ist seit iU9-W10a.4 eine Razor-Komponente
+            // (EPOS.UI/Dialoge/Simulation/PufferSpProjektDialog).
+            //
             // Einstieg über die Spalte: KEINE Verwendungsvorgabe - hier will der
             // Anwender den Bestand sehen, nicht einen bestimmten Kanal. Der Absprung aus
             // dem Senkendialog setzt die Vorgabe dagegen (Konzept 4.2).
-            frm.Verwendung = null;
-            frm.SetControls();
-            frm.ShowDialog(this);
+            //
+            // Der Rueckgabewert (zuletzt angelegter oder gewaehlter Speicher) wird hier
+            // nicht gebraucht - dieser Aufrufer las auch bisher nichts zurueck.
+            PufferSpProjektHuelle.Oeffnen(this, m_ID_Projekt, null, idPuffer);
 
             // Die Verwaltung schreibt sofort; deshalb unabhängig vom DialogResult neu
             // aufbauen. Ein entfernter Puffer kann außerdem Senken der Anlagen betreffen

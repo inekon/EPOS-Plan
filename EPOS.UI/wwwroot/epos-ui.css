@@ -210,6 +210,15 @@ body {
     color: var(--epos-senke-text);
 }
 
+/* Erfolg (iU9-W10a.4): dasselbe Waldgruen, mit dem die Statuszeile des Bestands
+   "hat geklappt" sagt (Color.ForestGreen in Form_PufferSp_Projekt.Status und
+   Form_Simulation_Config.ShowStatus). */
+.epos-warnbanner--erfolg {
+    border-color: rgb(34, 139, 34);
+    background: rgb(240, 250, 240);
+    color: rgb(24, 98, 24);
+}
+
 /* ==========================================================================
    Baustein: SpeichernLeiste (Vorbild Allgemein/SpeichernLeiste.cs)
    ========================================================================== */
@@ -731,6 +740,12 @@ body {
         border-color: rgb(216, 90, 48);
         background: rgb(255, 235, 235);
         color: rgb(153, 60, 29);
+    }
+
+    .epos-warnbanner--erfolg {
+        border-color: rgb(34, 139, 34);
+        background: rgb(240, 250, 240);
+        color: rgb(24, 98, 24);
     }
 
     .epos-fehleingabe {
