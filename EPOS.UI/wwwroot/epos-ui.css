@@ -1649,3 +1649,10 @@ body {
     gap: var(--epos-rand);
     min-width: 320px;
 }
+
+/* Die Statuszeile unter der Klimazonenkarte (iU9-W10a.2). Sie sagt, welche Zone
+   gewaehlt ist - im Vorlaeufer ein Label unter dem Kartencontrol. */
+.epos-kartenauswahl {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
