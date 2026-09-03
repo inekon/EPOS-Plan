@@ -1545,3 +1545,88 @@ body {
     border: 1px dashed var(--epos-rahmen);
     border-radius: var(--epos-ecke);
 }
+
+/* ==========================================================================
+   Bildkarte (iU9-W10a.0e) - ein Bild mit Klickflaechen.
+
+   Das SVG liegt DECKUNGSGLEICH ueber dem Bild; beide teilen sich den
+   Koordinatenraum der viewBox, aus der das Bild gerendert wurde. Deshalb
+   genuegt "gleiche Groesse, gleicher Ursprung" - eine Umrechnung wie im
+   WinForms-Vorlaeufer (Massstab + Zentrierung von Hand) gibt es nicht.
+
+   Farben und Strichbreiten woertlich aus KlimazonenKarte.OnPaint:239-283:
+   Hover ARGB(70,30,80,160) mit Rand rgb(30,80,160) 2 px, Auswahl
+   ARGB(60,178,34,34) mit Rand firebrick 3 px.
+   ========================================================================== */
+.epos-bildkarte {
+    position: relative;
+    display: block;
+    width: 100%;
+    line-height: 0;                 /* kein Zeilenabstand unter dem Bild */
+}
+
+.epos-bildkarte-bild {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.epos-bildkarte-flaechen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.epos-bildkarte-flaeche {
+    fill: transparent;
+    stroke: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.epos-bildkarte-flaeche:hover {
+    fill: rgba(30, 80, 160, .27);
+    stroke: rgb(30, 80, 160);
+    stroke-width: 2;
+}
+
+/* Der Tastaturweg ist neu (ein GraphicsPath kannte keinen Fokus) und muss
+   deshalb sichtbar sein - sonst waere er nur fuer die Sprachausgabe da. */
+.epos-bildkarte-flaeche:focus-visible {
+    fill: rgba(30, 80, 160, .27);
+    stroke: rgb(30, 80, 160);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+}
+
+.epos-bildkarte-flaeche--gewaehlt,
+.epos-bildkarte-flaeche--gewaehlt:hover {
+    fill: rgba(178, 34, 34, .24);
+    stroke: firebrick;
+    stroke-width: 3;
+    stroke-dasharray: none;
+}
+
+/* Ohne Flaechen bleibt das Bild stehen und darueber der Hinweis - genau so
+   verhielt sich der Vorlaeufer, wenn die Zuordnung nicht zustande kam. */
+.epos-bildkarte-ladefehler {
+    position: absolute;
+    inset: auto 0 0 0;
+    margin: 0;
+    padding: var(--epos-rand);
+    line-height: 1.4;
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+    border-top: 1px solid var(--epos-warn-rahmen);
+}
+
+@media (forced-colors: active) {
+    .epos-bildkarte-flaeche:hover,
+    .epos-bildkarte-flaeche:focus-visible,
+    .epos-bildkarte-flaeche--gewaehlt {
+        fill: Highlight;
+        fill-opacity: .3;
+        stroke: Highlight;
+    }
+}
