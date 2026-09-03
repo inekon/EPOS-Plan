@@ -99,16 +99,11 @@ namespace WindowsFormsApplication1
 
         private void btn_DBedit_Click(object sender, EventArgs e)
         {
-            Form_EingDBBrauchwasser frm = new Form_EingDBBrauchwasser();
-            frm.m_szBezeichner = textBox_Prozess_Name.Text;
-            frm.m_szBeschreibung = textBox_Beschreibung.Text;
-            frm.m_szBrauchwassertyp = textBox_Prozess_Type.Text;
-            frm.mode = "Bearbeiten";
-            Point p1 = btn_DBedit.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W8.1: Blazor-Huelle statt Form_EingDBBrauchwasser; die Positionierung
+            // an der Knopfposition entfaellt (wie iU9-W2.1).
+            TypStammHuelle.Bearbeiten(this, BedarfsArt.Brauchwasser,
+                                      textBox_Prozess_Name.Text, textBox_Beschreibung.Text,
+                                      textBox_Prozess_Type.Text);
             SetControls(m_szProjekt);
         }
 
@@ -125,7 +120,6 @@ namespace WindowsFormsApplication1
 
         private void btn_DBneu_Click(object sender, EventArgs e)
         {
-            Form_EingDBBrauchwasser frm = new Form_EingDBBrauchwasser();
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -133,10 +127,8 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_szBezeichner = szName;
-                frm.mode = "Neu";
-                frm.SetControls();
-                frm.ShowDialog();
+                // iU9-W8.1: Blazor-Huelle statt Form_EingDBBrauchwasser.
+                TypStammHuelle.Neu(this, BedarfsArt.Brauchwasser, szName);
                 SetControls(m_szProjekt);
             }
         }
