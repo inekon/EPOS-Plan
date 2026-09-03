@@ -16,8 +16,8 @@
         {
             <span class="epos-feld-text">@Bezeichnung</span>
         }
-        <textarea class="epos-eingabe epos-eingabe--mehrzeilig" rows="@Zeilen"
-                  maxlength="@Hoechstlaenge" placeholder="@Platzhalter"
+        <textarea class="epos-eingabe epos-eingabe--mehrzeilig @(Festbreite ? "epos-eingabe--festbreite" : "")"
+                  rows="@Zeilen" maxlength="@Hoechstlaenge" placeholder="@Platzhalter"
                   readonly="@NurLesen" @oninput="BeiEingabe">@Wert</textarea>
     </label>
 }
@@ -60,6 +60,14 @@ else
 
     /// <summary>Sichtbare Zeilen im mehrzeiligen Feld; ohne Wirkung sonst.</summary>
     [Parameter] public int Zeilen { get; set; } = 6;
+
+    /// <summary>
+    /// Feste Zeichenbreite (Schreibmaschinenschrift) im mehrzeiligen Feld -
+    /// fuer Protokolle, die ihre Spalten aus Leerzeichen bauen
+    /// (<c>Form_SpotpreisImport._tbProtokoll</c> stand in Consolas 9 pt).
+    /// Nachgetragen in iU9-W3.2; ohne Wirkung im einzeiligen Feld.
+    /// </summary>
+    [Parameter] public bool Festbreite { get; set; }
 
     /// <summary>
     /// Nur lesbar? Das Feld bleibt sichtbar, waehlbar und rollbar, nimmt aber

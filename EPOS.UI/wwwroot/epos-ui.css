@@ -599,6 +599,14 @@ body {
     resize: vertical;
 }
 
+/* Ein Protokoll baut seine Spalten aus Leerzeichen - es braucht eine Schrift
+   fester Zeichenbreite (Vorbild: _tbProtokoll in Consolas 9 pt). Die Liste
+   nennt die ueblichen Schriften der drei Plattformen und endet bei der
+   generischen Familie. */
+.epos-eingabe--festbreite {
+    font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
+}
+
 .epos-chartbild {
     max-width: 100%;
     height: auto;

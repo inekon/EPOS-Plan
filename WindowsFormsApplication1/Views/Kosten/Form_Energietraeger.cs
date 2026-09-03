@@ -247,8 +247,10 @@ namespace WindowsFormsApplication1
                 };
                 _karteSpotpreise.Geklickt += (s, e2) =>
                 {
-                    using (Form_SpotpreisImport dlg = new Form_SpotpreisImport(_projektId))
-                        dlg.ShowDialog(this);
+                    // iU9-W3.2: Der Import ist eine Razor-Komponente
+                    // (SpotpreisImportDialog); Dateiwahl, Prüfung und Schreiben
+                    // liegen in der Hülle.
+                    SpotpreisImportHuelle.Oeffnen(this, _projektId);
                     AktualisiereKarten();
                 };
                 pnlInhalt.Controls.Add(_karteSpotpreise);
