@@ -295,6 +295,49 @@ COM-Interop für Import und Export — eine laufende Excel-Sitzung stört die
 Installation nicht. Die Prüfung zu übernehmen hieße, Anwender ohne Grund
 auszusperren.
 
+### 5.5 Microsoft Edge WebView2 Runtime (seit Paket iU8)
+
+Die **zweite** echte Voraussetzung, seit die ersten Dialoge Blazor-Komponenten
+sind und in einer WebView2 laufen (`Allgemein\Blazor\BlazorDialogForm.cs`).
+Ohne die Laufzeit startet EPOS-Plan zwar, aber jeder Blazor-Dialog bliebe leer.
+Der erste davon ist „Energieträger Variante" aus `Form_Kosten`.
+
+Was das Setup mitbringt, ist nur das **SDK** — `Microsoft.Web.WebView2.Core.dll`
+und `WebView2Loader.dll` kommen mit `dotnet publish`. Die **Laufzeit** ist ein
+Systembestandteil und muss auf dem Rechner sein: Auf Windows 11 ist sie es, auf
+Windows 10, LTSC und Server nicht zwingend.
+
+Geprüft wird die Fassung unter der festen Produkt-GUID
+`F3017226-FE2A-4295-8BDF-00C3A9A7E4C5` im EdgeUpdate-Zweig — die von Microsoft
+dokumentierte Erkennung:
+
+```
+HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{…}\pv      (maschinenweit)
+HKCU\Software\Microsoft\EdgeUpdate\Clients\{…}\pv                   (je Benutzer)
+```
+
+Eine der beiden genügt. Der Wert `0.0.0.0` gilt ausdrücklich als **nicht
+vorhanden**: Ihn hinterlässt eine entfernte Laufzeit — der Schlüssel steht dann
+noch da, die Laufzeit nicht. Derselbe Befund wie bei der ACE-Leiche in 5.1.
+
+Fehlt die Laufzeit, läuft der mitgelieferte
+`MicrosoftEdgeWebview2Setup.exe /silent /install`; danach wird erneut geprüft
+und bei Fehlschlag gemeldet. **Abgebrochen wird nichts** — ohne WebView2
+arbeitet alles außer den neueren Dialogen weiter (dieselbe Linie wie E5 bei der
+Access-Engine).
+
+> **Online oder offline — offene Anwenderentscheidung.** Mitgeliefert wird der
+> *Evergreen-Bootstrapper* (rund 2 MB,
+> <https://go.microsoft.com/fwlink/p/?LinkId=2124703>). Er lädt die Laufzeit
+> beim Anwender **online** nach; ohne Internetverbindung auf dem Zielrechner
+> schlägt er fehl. Die Alternativen sind der *Standalone-Installer* (rund
+> 150 MB, offline lauffähig) und die *Fixed-Version-Verteilung* (die Laufzeit
+> liegt im Programmordner, angesprochen über
+> `CoreWebView2CreationProperties.BrowserExecutableFolder`; dann liegt die
+> Aktualisierung bei uns statt bei Microsoft). Welcher Weg gilt, entscheidet
+> der Anwender — bis dahin bleibt der Bootstrapper.
+
+
 ---
 
 ## 6. Die Datenbank
@@ -455,6 +498,7 @@ Setup\
   Liesmich.rtf                         Neuerungen, ACE-Supportfall, DB-Übernahme
   Vorlage\Kenndaten.accdb              Auslieferungsstand (NICHT versionieren)
   Voraussetzungen\AccessDatabaseEngine_X64.exe
+  Voraussetzungen\MicrosoftEdgeWebview2Setup.exe
   Ausgabe\                             Ergebnis (NICHT versionieren)
 ```
 
@@ -559,6 +603,9 @@ Verpacken und das Setup danach.
 | S1 | Wie kommen die Klimadaten zum Anwender? Rund 330 `.xls`, etwa 300 MB. Nachladen aus der Anwendung, eigenes Datenpaket oder doch ins Setup? | Klären, wie die Anwendung sie heute erwartet — Pfad, Zeitpunkt, Pflicht oder Kür |
 | S2 | `help_mapping.txt` liegt in der heutigen Release-Ausgabe, ist aber nicht im Projekt eingetragen — bei `dotnet publish` fehlt es | Prüfen, ob die Anwendung es braucht; wenn ja, als `Content` ins `.csproj` |
 | S3 | `AccessDatabaseEngine_X64.exe` (ADE 2016 Redistributable, **64 Bit**) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Aus dem Microsoft Download Center beschaffen und unverändert in die Repo-Wurzel legen (5.1). Die 32-bit-Fassung der x86-Ära entfällt ersatzlos |
+| S8 | `MicrosoftEdgeWebview2Setup.exe` (Evergreen-Bootstrapper) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Von <https://go.microsoft.com/fwlink/p/?LinkId=2124703> beschaffen und unverändert in die Repo-Wurzel legen (5.5) |
+| S9 | `.gitignore` deckt `/AccessDatabaseEngine*.exe` ab, den WebView2-Bootstrapper in der Repo-Wurzel aber **nicht** — `GitHub_Sync.bat` committet mit `git add -A` | Zeile `/MicrosoftEdgeWebview2Setup.exe` in `.gitignore` ergänzen |
+| S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | Anwenderentscheidung: Bootstrapper (heute), Standalone-Installer oder Fixed Version |
 | S4 | Herausgebername: „INEKON" oder die vollständige Firmierung? Steht in Setup, Softwareliste und später im Zertifikat | Festlegen, danach `#define AppPublisher` |
 | S5 | Automatisierte Erzeugung der Auslieferungsdatenbank (6.1) | Skript schreiben; bis dahin Handlauf mit Gegenprüfung |
 | S6 | `Settings.Default.Upgrade()` beim Versionswechsel vorhanden? (7.7) | Im Code nachsehen |

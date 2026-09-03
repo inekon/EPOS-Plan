@@ -47,6 +47,13 @@
 ; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
 #define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine_X64.exe"
 
+; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
+; die passende Fassung selbst nachlaedt. Gebraucht seit Paket iU8: Die neuen
+; Dialoge sind Blazor-Komponenten und laufen in einer WebView2. Auf Windows 11
+; ist die Laufzeit Bestandteil des Systems, auf Windows 10, LTSC und Server
+; nicht zwingend.
+#define WebView2Installer  SetupDir + "Voraussetzungen\MicrosoftEdgeWebview2Setup.exe"
+
 ; Version. Einzige Quelle ist die gebaute EXE; gepflegt wird sie in
 ; WindowsFormsApplication1\Properties\AssemblyInfo.cs
 ; (AssemblyFileVersion). Fehlt die Datei, würde
@@ -166,6 +173,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 german.AceInstallieren=Microsoft Access Database Engine (64 Bit) wird installiert …
 english.AceInstallieren=Installing Microsoft Access Database Engine (64-bit) …
 
+german.WebView2Installieren=Microsoft Edge WebView2 Runtime wird installiert …
+english.WebView2Installieren=Installing Microsoft Edge WebView2 Runtime …
+
 german.RechteSetzen=Zugriffsrechte des gemeinsamen Datenordners werden gesetzt …
 english.RechteSetzen=Setting permissions on the shared data folder …
 
@@ -190,6 +200,9 @@ english.Office32Hinweis=A 32-bit Microsoft Office is installed on this computer.
 
 german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nOhne sie kann EPOS-Plan nicht auf seine Datenbank zugreifen.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
 english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nWithout it EPOS-Plan cannot access its database.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
+
+german.WebView2Fehlt=Die Microsoft Edge WebView2 Runtime konnte nicht installiert werden.%n%nOhne sie bleiben die neueren Dialoge von EPOS-Plan leer; alles Uebrige arbeitet weiter.%n%nHaeufigste Ursache ist eine fehlende Internetverbindung: Der mitgelieferte Installer laedt die Laufzeit nach. Sie laesst sich jederzeit nachtraeglich installieren — Bezugsquelle "Microsoft Edge WebView2" auf den Microsoft-Seiten. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
+english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed.%n%nWithout it the newer EPOS-Plan dialogs stay blank; everything else keeps working.%n%nThe most common cause is a missing internet connection: the bundled installer downloads the runtime. It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages. When in doubt, contact support.%n%nSetup will continue.
 
 german.DatenLoeschen=Sollen auch die Projektdatenbank und die Einstellungen des angemeldeten Windows-Kontos gelöscht werden?%n%n%1%n%nDiese Daten lassen sich danach nicht wiederherstellen. Daten anderer Windows-Konten bleiben in jedem Fall erhalten und sind dort von Hand zu entfernen.
 english.DatenLoeschen=Do you also want to delete the project database and settings of the signed-in Windows account?%n%n%1%n%nThis cannot be undone. Data belonging to other Windows accounts is always kept and must be removed there manually.
@@ -235,6 +248,9 @@ Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion
 ; Voraussetzung: nur mitnehmen, wenn sie auf diesem Rechner fehlt.
 Source: "{#AceInstaller}"; DestDir: "{tmp}"; \
     Flags: deleteafterinstall; Check: not AceVorhanden
+
+Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \
+    Flags: deleteafterinstall; Check: not WebView2Vorhanden
 
 #if FileExists(SetupDir + "Lizenz.rtf")
 Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion
@@ -285,7 +301,17 @@ Filename: "{tmp}\AccessDatabaseEngine_X64.exe"; Parameters: "/quiet"; \
     Flags: waituntilterminated skipifdoesntexist; \
     BeforeInstall: Office32Hinweisen; AfterInstall: AceNachpruefen
 
-; 9.2 Rechte am gemeinsamen Datenordner reparieren.
+; 9.2 WebView2-Laufzeit. Der Bootstrapper laedt die passende Fassung online
+;     nach und ist danach fertig; er bringt selbst keine Oberflaeche mit.
+;     AfterInstall prueft den Erfolg nach — ohne die Laufzeit startet EPOS-Plan
+;     zwar, aber jeder Blazor-Dialog bliebe leer.
+Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; \
+    StatusMsg: "{cm:WebView2Installieren}"; \
+    Check: not WebView2Vorhanden; \
+    Flags: waituntilterminated skipifdoesntexist; \
+    AfterInstall: WebView2Nachpruefen
+
+; 9.3 Rechte am gemeinsamen Datenordner reparieren.
 ;     [Dirs] setzt die vererbenden Rechte am Ordner; Dateien einer
 ;     Vorgängerinstallation, deren Vererbung unterbrochen wurde, erreicht
 ;     zuverlässig nur icacls mit /T. Läuft deshalb nur, wenn der Ordner
@@ -296,7 +322,7 @@ Filename: "{sys}\icacls.exe"; \
     Check: LegacyOrdnerVorhanden; \
     Flags: runhidden waituntilterminated
 
-; 9.3 Programmstart anbieten
+; 9.4 Programmstart anbieten
 Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
     WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
 
@@ -398,6 +424,50 @@ procedure AceNachpruefen();
 begin
   if not AceVorhanden() then
     MsgBox(CustomMessage('AceFehlt'), mbError, MB_OK);
+end;
+
+
+{ ---- Voraussetzung: Microsoft Edge WebView2 Runtime (iU8) ----
+  Die Evergreen-Laufzeit traegt ihre Fassung unter der festen Produkt-GUID
+  F3017226-FE2A-4295-8BDF-00C3A9A7E4C5 im EdgeUpdate-Zweig (in den beiden
+  Zeichenketten unten steht sie mit den geschweiften Klammern, hier ohne -
+  eine schliessende Klammer wuerde diesen Kommentar beenden). Microsoft
+  dokumentiert genau diese Abfrage zur Erkennung.
+
+  Beide Ablagen zaehlen: Die maschinenweite Installation schreibt nach
+  HKLM (auf einem 64-Bit-System in die 32-Bit-Sicht WOW6432Node), die
+  Installation je Benutzer nach HKCU. Eine davon genuegt.
+
+  '0.0.0.0' ist ausdruecklich AUSGESCHLOSSEN: Diesen Wert hinterlaesst eine
+  entfernte Laufzeit — der Schluessel steht dann noch da, die Laufzeit nicht.
+  Derselbe Befund wie bei der ACE-Leiche oben. }
+function WebView2Vorhanden(): Boolean;
+var
+  Fassung: String;
+begin
+  Result := False;
+
+  if RegQueryStringValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+       'pv', Fassung) then
+    Result := (Fassung <> '') and (Fassung <> '0.0.0.0');
+
+  if not Result then
+    if RegQueryStringValue(HKCU,
+         'Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+         'pv', Fassung) then
+      Result := (Fassung <> '') and (Fassung <> '0.0.0.0');
+end;
+
+
+{ Nach dem stillen Lauf des Bootstrappers pruefen, ob er gegriffen hat.
+  Haeufigster Fehlschlag: keine Internetverbindung — der Bootstrapper laedt die
+  Laufzeit nach. Abgebrochen wird nichts: Ohne WebView2 bleiben nur die neueren
+  Dialoge leer, das uebrige Programm arbeitet weiter. }
+procedure WebView2Nachpruefen();
+begin
+  if not WebView2Vorhanden() then
+    MsgBox(CustomMessage('WebView2Fehlt'), mbError, MB_OK);
 end;
 
 
