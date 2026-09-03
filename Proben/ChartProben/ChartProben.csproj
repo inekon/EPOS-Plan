@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ChartProben (Umsetzungskonzept iOS, Paket iU7-3) - der PLATTFORMFREIE NACHWEIS
+    fuer den Diagramm-Renderer des Berichts.
+
+    Zweck: zeigen, dass ChartRenderer.cs nach der Portierung auf SkiaSharp (iU7-2)
+    OHNE Windows laeuft - also auf Linux, in der CI und damit spaeter auf iOS. Der
+    Bildvergleich unter Referenzlauf\ beweist die Bildgleichheit auf Windows, diese
+    Probe beweist die Lauffaehigkeit ueberall sonst. Beides zusammen ist die Abnahme.
+
+    net10.0 OHNE -windows und OHNE ProjectReference auf die Anwendung: Ein Verweis
+    auf WindowsFormsApplication1 haette die halbe Windows-Welt mitgezogen und den
+    Nachweis wertlos gemacht. Verlinkt wird deshalb GENAU EINE Datei aus dem
+    Bestand - der Renderer selbst. Was er sonst noch braucht, steht als schmaler
+    Ersatz daneben (siehe Stubs im Projektordner).
+
+    EIGENE Projektmappe, BEWUSST NICHT in WP-Plan.sln - dasselbe Muster wie
+    Proben\ZugriffsschichtProben: Die Proben sollen den Ausrollstand nicht
+    beeinflussen.
+
+    Die nativen SkiaSharp-Bibliotheken kommen je Plattform bedingt dazu; die
+    Versionen stehen zentral in ..\..\Directory.Packages.props.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Der Gegenbeweis: hier wird NICHT auf Windows gezielt. Jede Windows-API in
+         der verlinkten Datei bricht den Build. -->
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <!-- Es wird ausschliesslich benannt; ein Glob wuerde verschleiern, was
+         tatsaechlich zur Probe gehoert. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+    <AssemblyName>ChartProben</AssemblyName>
+    <RootNamespace>ChartProben</RootNamespace>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Der Pruefling - EINE Quelle, verlinkt statt kopiert. -->
+    <Compile Include="..\..\WindowsFormsApplication1\Allgemein\Bericht\ChartRenderer.cs"
+             Link="ChartRenderer.cs" />
+
+    <!-- Die Probe selbst und der schmale Ersatz fuer das, was der Renderer
+         ausserhalb seiner eigenen Datei anfasst. -->
+    <Compile Include="Program.cs" />
+    <Compile Include="ZeitreihenSatzStub.cs" />
+    <Compile Include="BerichtTexteStub.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+  </ItemGroup>
+
+</Project>
