@@ -1127,38 +1127,23 @@ namespace WindowsFormsApplication1
                         // Ergebnisanbindung der Auslegungsprüfung (Paket 7): Liegt für
                         // diese Anlage ein Simulationslauf der Sitzung vor, bekommt der
                         // Dialog die echten Werte statt "(noch kein Simulationslauf)".
-                        ErdreichAuswertung.AnlageErgebnis erdErg =
-                            ErdreichAuswertung.FuerAnlage(m_ID_Projekt, info.ID);
-                        if (erdErg != null)
+                        //
+                        // iU9-W10a.0b (Befund W10-B8): Die Zuordnung stand hier und noch
+                        // einmal wortgleich in Form_QuelleErdreich.ErgebnisUebernehmen.
+                        // Sie liegt jetzt als ErdreichAuswertung.ErgebnisZuordnen im Kern;
+                        // beide Stellen rufen sie.
+                        ErdreichAuswertung.ErdreichLaufErgebnis erdErg =
+                            ErdreichAuswertung.ErgebnisZuordnen(
+                                ErdreichAuswertung.FuerAnlage(m_ID_Projekt, info.ID));
+                        if (erdErg.Vorhanden)
                         {
-                            frmErde.ErgebnisseVorhanden = erdErg.MaxEntzugBelastbar;
+                            frmErde.ErgebnisseVorhanden = erdErg.ErgebnisseVorhanden;
                             frmErde.MaxEntzugW = erdErg.MaxEntzugW;
                             frmErde.JahresentzugKWh = erdErg.JahresentzugKWh;
                             frmErde.VolllastStunden = erdErg.VolllastStunden;
-                            if (erdErg.Unwirksam)
-                                // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
-                                // Das muss im Dialog stehen, sonst pflegt der Anwender
-                                // Bodentyp und Sondenlänge ins Leere (Konzept 4.5).
-                                // Umbrüche VOR dem Einsetzen normalisieren (Zeilenumbruch).
-                                frmErde.HinweisErgebnis = string.Format(
-                                    Zeilenumbruch.Normalisieren(
-                                        MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS), erdErg.Grenze);
-                            else if (!erdErg.MaxEntzugBelastbar)
-                                frmErde.HinweisErgebnis = string.Format(
-                                    Zeilenumbruch.Normalisieren(
-                                        MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG), erdErg.Grenze);
-                            else
-                            {
-                                if (erdErg.MaxEntzugGeschaetzt)
-                                    frmErde.HinweisVorbehalt = erdErg.Grenze;
-                                if (erdErg.InklSpeicherladung)
-                                    frmErde.HinweisVorbehalt = (frmErde.HinweisVorbehalt.Length > 0
-                                        ? frmErde.HinweisVorbehalt + " "
-                                        : "") +
-                                        MyResource.Resource.SIMQ_ERDREICH_SPEICHERLADUNG;
-                                if (erdErg.FrostWarnung)
-                                    frmErde.HinweisFrost = erdErg.Frosttext();
-                            }
+                            frmErde.HinweisErgebnis = erdErg.HinweisErgebnis;
+                            frmErde.HinweisVorbehalt = erdErg.HinweisVorbehalt;
+                            frmErde.HinweisFrost = erdErg.HinweisFrost;
                         }
 
                         frmErde.SetControls();

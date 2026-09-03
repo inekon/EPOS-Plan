@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
 
         private List<WaermesenkeClass.PufferInfo> _projektPuffer =
             new List<WaermesenkeClass.PufferInfo>();
-        private DataTable _katalog;
+        private IReadOnlyList<PufferSpStammCtrl.Katalogzeile> _katalog;
 
         /// <summary>0 = Neuanlage, sonst die ID des gerade bearbeiteten Puffers.</summary>
         private int _bearbeiteteId;
@@ -1134,17 +1134,18 @@ namespace WindowsFormsApplication1
             return -1;
         }
 
+        /// <summary>
+        /// iU9-W10a.0b (Befund W10-B27): Das inline-SQL auf Tab_Pufferspeicher_STAMM ist
+        /// nach PufferSpStammCtrl.Katalogzeilen gewandert — der Wortlaut unveraendert.
+        /// </summary>
         private void KatalogLaden()
         {
-            _katalog = StilleDb.Tabelle(
-                "SELECT ID, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, Bereitschaftsverluste, " +
-                "Investitionskosten FROM [" + PufferSpStammCtrl.TABLE + "] ORDER BY Bezeichner");
+            _katalog = PufferSpStammCtrl.Katalogzeilen();
 
             _cbKatalog.Items.Clear();
             _cbKatalog.Items.Add(MyResource.Resource.PSP_KATALOG_FREIE_EINGABE);
-            if (_katalog != null)
-                foreach (DataRow r in _katalog.Rows)
-                    _cbKatalog.Items.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
+            foreach (PufferSpStammCtrl.Katalogzeile z in _katalog)
+                _cbKatalog.Items.Add(z.Bezeichner);
             _cbKatalog.SelectedIndex = 0;
         }
 
@@ -1377,7 +1378,8 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            double qmax = volumen * 1.16 * (vorlauf - ruecklauf) / 1000.0;
+            // iU9-W10a.0b (Befund W10-B12): die Formel steht im Kern, nicht mehr hier.
+            double qmax = ProjektPuffer.NutzbareKapazitaetKWh(volumen, vorlauf - ruecklauf);
             _lblQmax.Text = string.Format(MyResource.Resource.PSP_ANZEIGE_QMAX, qmax.ToString("0.0"));
         }
 
@@ -1570,17 +1572,15 @@ namespace WindowsFormsApplication1
             if (_katalog == null) return;
 
             int zeile = _cbKatalog.SelectedIndex - 1;
-            if (zeile < 0 || zeile >= _katalog.Rows.Count) return;
+            if (zeile < 0 || zeile >= _katalog.Count) return;
 
-            DataRow r = _katalog.Rows[zeile];
+            PufferSpStammCtrl.Katalogzeile r = _katalog[zeile];
             _aktualisiert = true;
             try
             {
-                _tbBezeichner.Text = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
-                _tbVolumen.Text = StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen"))
-                                          .ToString(CultureInfo.InvariantCulture);
-                _tbVerluste.Text = StilleDb.Kommazahl(StilleDb.Feld(r, "Bereitschaftsverluste"))
-                                           .ToString("0.###");
+                _tbBezeichner.Text = r.Bezeichner;
+                _tbVolumen.Text = r.Gesamtvolumen.ToString(CultureInfo.InvariantCulture);
+                _tbVerluste.Text = r.Bereitschaftsverluste.ToString("0.###");
             }
             finally
             {
@@ -1885,13 +1885,12 @@ namespace WindowsFormsApplication1
             if (_cbKatalog.Enabled && _cbKatalog.SelectedIndex > 0 && _katalog != null)
             {
                 int zeile = _cbKatalog.SelectedIndex - 1;
-                if (zeile >= 0 && zeile < _katalog.Rows.Count)
+                if (zeile >= 0 && zeile < _katalog.Count)
                 {
-                    DataRow r = _katalog.Rows[zeile];
-                    hersteller = StilleDb.Text(StilleDb.Feld(r, "Hersteller"));
-                    string typ = StilleDb.Text(StilleDb.Feld(r, "Speichertyp"));
-                    if (typ.Length > 0) speichertyp = typ;
-                    investition = StilleDb.Kommazahl(StilleDb.Feld(r, "Investitionskosten"));
+                    PufferSpStammCtrl.Katalogzeile r = _katalog[zeile];
+                    hersteller = r.Hersteller;
+                    if (r.Speichertyp.Length > 0) speichertyp = r.Speichertyp;
+                    investition = r.Investitionskosten;
                     return;
                 }
             }
