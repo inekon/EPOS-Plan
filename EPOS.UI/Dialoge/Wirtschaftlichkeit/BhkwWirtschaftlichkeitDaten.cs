@@ -196,13 +196,16 @@ public static class BhkwWahlen
 /// <summary>
 /// Wohin der Anwender aus dem Dialog springen wollte.
 ///
-/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Die beiden Ziele sind
-/// WinForms-Dialoge (<c>Form_Tarifstruktur</c>). Eine Razor-Komponente kennt
-/// WinForms nicht, und ein Muster, mit dem ein Blazor-Dialog ein zweites modales
-/// Fenster ueber sich oeffnet, hat das Haus (Stand iU8) nicht: Die einzige
-/// Bruecke ist <c>IHilfeDienst</c>, und die zeigt ein MODELOSES Hilfefenster. Die
-/// Komponente meldet den Wunsch deshalb im Ergebnis; die Huelle oeffnet das Ziel,
-/// nachdem der Dialog geschlossen ist, und bringt ihn danach zurueck.</para>
+/// <para><b>Warum ein Sprungwunsch und kein Aufruf.</b> Beide Ziele sind
+/// Sichten desselben Tarifdialogs. Zu Etappe B5b war das eine WinForms-Maske
+/// (<c>Form_Tarifstruktur</c>), fuer die es kein Muster gab, sie aus einem
+/// Blazor-Dialog heraus zu oeffnen; seit iU9-W2.2 gibt es dafuer die
+/// <c>Sprungbruecke</c> — der Tarifdialog ist mit iU9-W2.3 aber SELBST eine
+/// Razor-Komponente geworden, und zwei WebViews uebereinander sind Risiko R2
+/// des Wellenplans. Der Sprung bleibt deshalb NACHGELAGERT: Die Komponente
+/// meldet den Wunsch im Ergebnis; die Huelle oeffnet das Ziel, nachdem der
+/// Dialog geschlossen ist, und bringt ihn danach zurueck. Ein Fenster wird
+/// daraus erst mit dem Baustein <c>Ueberlagerung</c> (Welle 4).</para>
 /// </summary>
 public enum BhkwSprung
 {

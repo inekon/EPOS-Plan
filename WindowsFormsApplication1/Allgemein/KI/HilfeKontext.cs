@@ -142,7 +142,6 @@ namespace WindowsFormsApplication1
             { "Form_Energietraeger",         B_KOSTEN },
             { "Form_LeistungspreisReihe",    B_KOSTEN },
             { "Form_PhotovoltaikVerguetung", B_KOSTEN },
-            { "Form_Tarifstruktur",          B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
             { "Form_PV",                     B_PHOTOVOLTAIK },

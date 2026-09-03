@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
@@ -209,15 +210,13 @@ namespace WindowsFormsApplication1
         /// derselbe Nachlauf wie beim früheren Sammel-Einstieg (btnTarif_Click).</summary>
         private void TarifSichtOeffnen(TarifSicht sicht)
         {
-            using (var dlg = new Form_Tarifstruktur(_idStamm, sicht))
+            // iU9-W2.3: der Tarifdialog als Razor-Komponente ueber
+            // TarifstrukturHuelle; Form_Tarifstruktur ist geloescht (Regel M1).
+            if (TarifstrukturHuelle.Oeffnen(Besitzer, _idStamm, sicht))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
-                    ZeigeParameterzeile();
-                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
-                }
+                _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                ZeigeParameterzeile();
+                Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
             }
         }
 
@@ -437,15 +436,12 @@ namespace WindowsFormsApplication1
 
         private void btnTarif_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_Tarifstruktur(_idStamm))
+            // iU9-W2.3: siehe TarifSichtOeffnen.
+            if (TarifstrukturHuelle.Oeffnen(Besitzer, _idStamm))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
-                    ZeigeParameterzeile();
-                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
-                }
+                _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                ZeigeParameterzeile();
+                Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
             }
         }
 
