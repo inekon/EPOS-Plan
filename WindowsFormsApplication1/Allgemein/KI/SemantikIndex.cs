@@ -493,9 +493,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ablageordner der Indexdateien.</summary>
         public static string Ordner()
         {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "wp-plan", "semantik", "index");
+            return Dienste.Pfade.Verbinde(Dienste.Pfade.Anwendungsdaten, "semantik", "index");
         }
 
         /// <summary>Belegter Plattenplatz des Index in Byte.</summary>

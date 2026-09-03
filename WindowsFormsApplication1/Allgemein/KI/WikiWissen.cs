@@ -1008,9 +1008,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ablageordner der Seitenauszuege.</summary>
         public static string CacheOrdner()
         {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "wp-plan", "wiki-wissen");
+            return Dienste.Pfade.Verbinde(Dienste.Pfade.Anwendungsdaten, "wiki-wissen");
         }
 
         /// <summary>

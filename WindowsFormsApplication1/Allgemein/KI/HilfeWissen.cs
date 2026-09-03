@@ -67,9 +67,9 @@ namespace WindowsFormsApplication1
             // Zusätzlich den lokalen WordPress-Hilfecache einlesen, falls vorhanden
             try
             {
-                string pfad = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    Application.ProductName ?? "WP-Plan", "help_cache.json");
+                // Produktdaten (%APPDATA%\<Produktname>) - derselbe Ordner, den
+                // WikiHelpCatalog.SicherungsPfad benutzt, NICHT %APPDATA%\wp-plan.
+                string pfad = Dienste.Pfade.Verbinde(Dienste.Pfade.Produktdaten, "help_cache.json");
 
                 if (File.Exists(pfad))
                 {

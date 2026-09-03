@@ -1656,16 +1656,13 @@ namespace WindowsFormsApplication1
         /// <summary>Ablageordner — derselbe wie bei der Lizenz (%APPDATA%\wp-plan).</summary>
         private static string Verzeichnis()
         {
-            string pfad = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wp-plan");
-            Directory.CreateDirectory(pfad);
-            return pfad;
+            return Dienste.Pfade.Unterordner(Dienste.Pfade.Anwendungsdaten);
         }
 
         /// <summary>Datei mit dem DPAPI-verschlüsselten API-Schlüssel.</summary>
         public static string SchluesselDatei()
         {
-            return Path.Combine(Verzeichnis(), "ki-schluessel.dat");
+            return Dienste.Pfade.Verbinde(Verzeichnis(), "ki-schluessel.dat");
         }
 
         private static string SchluesselLesen()

@@ -45,12 +45,13 @@ namespace WindowsFormsApplication1
         //  Ablageorte
         // ------------------------------------------------------------------
 
+        /// <summary>
+        /// <c>%APPDATA%\wp-plan</c>, angelegt falls noetig — unveraendert derselbe
+        /// Ordner wie vor iU5, nur ueber <c>Dienste.Pfade</c> gebildet.
+        /// </summary>
         private static string Verzeichnis()
         {
-            string pfad = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wp-plan");
-            Directory.CreateDirectory(pfad);
-            return pfad;
+            return Dienste.Pfade.Unterordner(Dienste.Pfade.Anwendungsdaten);
         }
 
         private static string TokenDatei() => Path.Combine(Verzeichnis(), "lizenz.dat");

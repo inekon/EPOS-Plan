@@ -41,30 +41,17 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// Oeffnet eine Datei mit der im System hinterlegten Anwendung.
+        /// <c>false</c>, wenn die Datei fehlt oder kein Programm dafuer da ist.
+        ///
+        /// <para>Der Weg dorthin liegt seit iU5 in <c>Dienste.Datei</c>: Die Pruefung auf
+        /// Vorhandensein, <c>UseShellExecute = true</c> und die Fehlerzeile auf der
+        /// Konsole sind unveraendert, sie stehen jetzt nur im Adapter.</para>
+        /// </summary>
         public bool OpenFileWithDefaultApp(string filePath)
         {
-            // Überprüfen Sie, ob die Datei existiert
-            if (!System.IO.File.Exists(filePath))
-            {
-                // Fehlerbehandlung: Datei nicht gefunden
-                return false;
-            }
-
-            try
-            {
-                // Startet die Datei mit der Standardanwendung des Systems.
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(filePath)
-                {
-                    UseShellExecute = true
-                });
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // Fehlerbehandlung für den Fall, dass kein Programm zum Öffnen der Datei vorhanden ist.
-                Console.WriteLine("Fehler beim Öffnen der Datei: " + ex.Message);
-                return false;
-            }
+            return Dienste.Datei.MitSystemOeffnen(filePath);
         }
     }
 }

@@ -876,14 +876,17 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>Ablageort der lokalen Sicherung im AppData-Verzeichnis.</summary>
+    /// <summary>
+    /// Ablageort der lokalen Sicherung im AppData-Verzeichnis.
+    ///
+    /// <para>Das ist <c>%APPDATA%\&lt;Produktname&gt;</c> und damit ein ANDERER Ordner
+    /// als <c>%APPDATA%\wp-plan</c>, unter dem Lizenz und KI-Schluessel liegen. Der
+    /// Unterschied ist gewachsen und bleibt: <c>Dienste.Pfade.Produktdaten</c> bildet
+    /// zeichengleich, was bisher <c>Application.ProductName ?? "WP-Plan"</c> ergab.</para>
+    /// </summary>
     private static string SicherungsPfad()
     {
-        string ordner = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            Application.ProductName ?? "WP-Plan");
-
-        return Path.Combine(ordner, StartbestandDateiName);
+        return Dienste.Pfade.Verbinde(Dienste.Pfade.Produktdaten, StartbestandDateiName);
     }
 
     private bool LokaleSicherungLaden(string pfad)

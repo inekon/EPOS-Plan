@@ -23,9 +23,12 @@ namespace WindowsFormsApplication1
 
         public CECDataService()
         {
-            _localCachePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "CECModuleImporter", "cec_modules.csv");
+            // BenutzerLokalBasis und nicht BenutzerLokal: Dieser Zwischenspeicher liegt
+            // seit jeher unter LocalApplicationData\CECModuleImporter und NICHT unter
+            // dem Anwendungsordner. Ein Zusammenlegen wuerde den Bestandsspeicher jedes
+            // Rechners entwerten.
+            _localCachePath = Dienste.Pfade.Verbinde(
+                Dienste.Pfade.BenutzerLokalBasis, "CECModuleImporter", "cec_modules.csv");
         }
 
         public async Task<(bool success, string message)> LoadDataAsync(IProgress<string> progress = null)

@@ -105,28 +105,25 @@ namespace WindowsFormsApplication1
             // Zuletzt verwendeten Export-Ordner vorschlagen, sonst "Dokumente"
             string startOrdner = LetztenPfadLesen();
             if (string.IsNullOrEmpty(startOrdner) || !Directory.Exists(startOrdner))
-                startOrdner = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                startOrdner = Dienste.Pfade.Dokumente;
 
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Title = "CSV Export";
-            dlg.Filter = "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
-            dlg.FilterIndex = 1;
-            dlg.RestoreDirectory = true;
-            dlg.InitialDirectory = startOrdner;
-            // WICHTIG: Ordner direkt im Dateinamen mitgeben - InitialDirectory alleine
-            // wird von Windows ignoriert, sobald sich das System für die Anwendung
-            // bereits einen zuletzt verwendeten Ordner gemerkt hat.
-            dlg.FileName = Path.Combine(startOrdner, vorschlagDateiname);
+            // Der Ordner geht MIT im Dateinamen hinein: Ein Startordner allein wird von
+            // Windows ignoriert, sobald sich das System für die Anwendung bereits einen
+            // zuletzt verwendeten Ordner gemerkt hat. Der Adapter setzt beides.
+            string dateiname = Dienste.Datei.DateiSpeichern(
+                "CSV Export",
+                "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
+                Path.Combine(startOrdner, vorschlagDateiname));
 
-            if (dlg.ShowDialog() != DialogResult.OK) return;
+            if (string.IsNullOrEmpty(dateiname)) return;
 
             // Ordner für den nächsten Export merken
-            PfadMerken(dlg.FileName);
+            PfadMerken(dateiname);
 
             try
             {
-                Schreiben(dlg.FileName, temperaturStuendlich, spalten, viertelstundenwerte);
-                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dlg.FileName, "CSV Export");
+                Schreiben(dateiname, temperaturStuendlich, spalten, viertelstundenwerte);
+                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
             }
             catch (Exception ex)
             {
