@@ -25,6 +25,27 @@ namespace WindowsFormsApplication1
 
         public int GetMaxID() => DataRepository.GetMaxID("Tab_Projekt", "ID");
 
+        /// <summary>
+        /// Zeigt <paramref name="idProjekt"/> auf eine wirklich vorhandene
+        /// <c>Tab_Projekt</c>-Zeile? (iU9-W9.0d)
+        ///
+        /// <para>Im Neuanlage-Zweig des Assistenten ist die Projekt-Id nur die in
+        /// <c>WizardParent.Next</c> geratene <c>GetMaxID() + 1</c>; ein UPDATE auf die
+        /// Projektzeile traefe dort 0 Zeilen und meldete trotzdem Erfolg. Die Pruefung
+        /// stand wortgleich in <c>Form_Prozesswaerme.ProjektIstGespeichert</c>:387 und
+        /// <c>Form_Stromverbraucher.ProjektIstGespeichert</c>:254.</para>
+        /// </summary>
+        public static bool Existiert(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?",
+                new DbParam("@id", idProjekt));
+
+            return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
+        }
+
         public bool Insert()
         {
             m_ID = GetMaxID() + 1;
