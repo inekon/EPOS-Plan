@@ -48,6 +48,8 @@
   <!-- ================================================================== -->
   <ItemGroup>
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+    <!-- Aufgabensteuerung des KI-Assistenten (iU5-U2): UI- und DB-frei, net10.0. -->
+    <ProjectReference Include="..\KiKern\KiKern.csproj" />
   </ItemGroup>
 
   <!-- ================================================================== -->
@@ -108,6 +110,21 @@
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" />
     <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- SEMANTIKSUCHE DES KI-ASSISTENTEN (Paket iU5-U2)                     -->
+  <!--                                                                    -->
+  <!-- Allgemein\KI\SemantikModell.cs bettet Textstellen mit einem lokalen  -->
+  <!-- ONNX-Modell ein und zerlegt den Text mit Microsoft.ML.Tokenizers.   -->
+  <!-- Beide Pakete sind verwaltet und plattformfrei; die nativen          -->
+  <!-- Laufzeitteile von OnnxRuntime bringt das Paket je Kennung selbst    -->
+  <!-- mit. Sie standen bisher nur deshalb allein in der Anwendung, weil   -->
+  <!-- die Datei dort lag.                                                 -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
   </ItemGroup>
 
   <!-- ================================================================== -->
