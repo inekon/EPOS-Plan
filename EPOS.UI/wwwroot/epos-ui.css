@@ -1200,3 +1200,11 @@ body {
     gap: 8px;
     flex: 0 0 auto;
 }
+
+/* Mehrzeiliger Zellinhalt (iU9-W6.4). Die Spalte "Eigenschaften" der
+   BHKW-Katalogliste trug im DataGridView vier Zeilen in EINER Zelle (Firma,
+   Brennstoff, Ptherm, Pel); die Zeilenumbrueche stehen im Text. Ohne diese
+   Regel schluckt HTML sie, und aus vier Zeilen wird eine lange. */
+.epos-mehrzeilig {
+    white-space: pre-line;
+}
