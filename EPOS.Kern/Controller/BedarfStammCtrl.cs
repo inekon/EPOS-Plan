@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -87,6 +87,26 @@ namespace WindowsFormsApplication1
                     ? Convert.ToDouble(row[spalte]) : 0.0;
             }
             return monat;
+        }
+
+        /// <summary>
+        /// Der JAHRESVERBRAUCH eines Katalogsatzes — die Summe seiner zwoelf Monatswerte
+        /// (iU9-W9.0b). Der Vorlaeufer hiess in allen drei Bedarfsmasken
+        /// <c>Prozesssumme</c> und stand dort dreimal wortgleich
+        /// (<c>Form_Prozesswaerme</c>:212, <c>Form_Stromverbraucher</c>:99,
+        /// <c>Form_Brauchwasser</c>:151).
+        ///
+        /// <para>Einen Satz, den es nicht gibt, wertet er wie der Vorlaeufer mit 0 —
+        /// dort lief die Schleife bei <c>rows == 0</c> gar nicht erst.</para>
+        /// </summary>
+        internal static double Jahressumme(BedarfsArt art, string bezeichner)
+        {
+            double[] monat = Monatswerte(art, bezeichner);
+            if (monat == null) return 0;
+
+            double summe = 0;
+            for (int i = 0; i < 12; i++) summe += monat[i];
+            return summe;
         }
 
         /// <summary>Gibt es den Bezeichner schon? („Name existiert bereits!")</summary>
