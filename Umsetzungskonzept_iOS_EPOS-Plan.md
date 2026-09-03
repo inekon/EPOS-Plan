@@ -1403,6 +1403,39 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
 
+> **Statusblock iU9 — Welle 1 umgesetzt (03.09.2026, Basis `aef9509`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt D: **sieben Masken der Kostenvorlagen und der
+> Wirtschaftlichkeit → sechs Razor-Komponenten**, jede WinForms-Fassung im selben Schritt gelöscht
+> (Regel M1). Neun Commits, einer je Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `9e4fa37` | **W1.0** Baustein `Optionsgruppe` (RadioButton-Gruppe; 45 im Bestand) samt 10 bunit-Tests |
+> | `0d92c89` | **W1.1** `Form_VorlagenPosition` → `Dialoge/Kosten/VorlagenPositionDialog.razor` |
+> | `e94978a` | **W1.2** `Form_VariantenName` + `Form_KostenItemNeu` → **eine** `Dialoge/Allgemein/NamensDialog.razor` mit dem Windows-Helfer `NamensDialogHuelle` |
+> | `f6e9264` | **W1.3** `Form_CaseEingabe` → `Dialoge/Kosten/CaseEingabeDialog.razor` |
+> | `584be20` | **W1.4** `Form_VorlagenUebernahme` → `Dialoge/Kosten/VorlagenUebernahmeDialog.razor` + `VorlagenUebernahmeHuelle` |
+> | `8c40854` | **W1.5** `Form_KostenAdmin` → `Dialoge/Kosten/KostenfaktorKatalogDialog.razor` + `KostenfaktorKatalogHuelle` + Kern-Controller `KostenfaktorCtrl` |
+> | `9a5df28` | **W1.6** `Form_WirtschaftlichkeitVerlauf` → `Dialoge/Wirtschaftlichkeit/KapitalwertVerlaufDialog.razor` + `KapitalwertVerlaufHuelle` |
+> | `e6a613e` | **W1.7** Ressourcen-Sammelnachtrag: 43 Schlüssel (`VPOS_*`, `NAMD_*`, `KCASE_*`, `KUEB_*`, `KFAK_*`, `WVERL_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `21e399c` | **W1.8** Formularkarte-Tests: Prüfmuster für `Form_CaseEingabe`, Stapellauf-Zähler 118 → 111 |
+>
+> **Bausteinsatz.** Genau ein neuer Baustein (`Optionsgruppe`, Lücke 1 aus Abschnitt E) und ein
+> neuer Dialogtyp (`NamensDialog`, Lücke 2). `Ueberlagerung`, `Rueckfrage` und `Fortschritt` bleiben
+> offen — die drei Stellen, an denen sie fehlen, sind im Protokoll als A‑16 und A‑17 benannt und
+> laufen bis dahin über die Hülle bzw. über die Statuszeile.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → 0 Fehler, **30** Warnungen
+> (Basis 34; WFO1000 30 → 24) · `dotnet test WP-Plan.Kern.slnf` → **1 024** grün (929 vorher; 95 neue
+> bunit-Tests) · Formularkarte **119** grün, Build 0/0 · Stapellauf **111** Masken · SQL-Prüfer
+> 1 333 Texte, 0 Fundstellen · Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade`
+> **PASS/PASS/PASS**, `diff -rq` ohne Unterschied · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich, 19 Abweichungen (A‑1…A‑19), Windows-Abnahmeliste und sieben
+> offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W1_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+
 ### iU10 — Die iOS-Hülle · L · Mac
 
 **Voraussetzung:** iU6, iU8 (Bausteinsatz steht). **Entspricht dem verschobenen Grundlagen-S3.**

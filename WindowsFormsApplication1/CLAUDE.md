@@ -6,10 +6,11 @@ Antworten und Code-Kommentare auf Deutsch.
 
 > **Der Rechenkern steht nicht mehr hier.** Seit Paket iU4 (03.09.2026) liegen die Kerndateien
 > im Projekt [`../EPOS.Kern/`](../EPOS.Kern/CLAUDE.md) — erst 168, nach dem zweiten Umzug
-> (iU5-U1…U5) und `ChartRenderer` (iU7-5) **268 `.cs`**: `Allgemein/Simulation/`,
+> (iU5-U1…U5), `ChartRenderer` (iU7-5) und `KostenfaktorCtrl` (iU9-W1.5) **269 `.cs`**:
+> `Allgemein/Simulation/`,
 > `Allgemein/Wirtschaftlichkeit/`, `Model/`, die Zugriffsschicht, der **ganze** Bericht
 > (Daten, Ausgabe und Renderer), `Lizenz/`, `Import/`, `Katalog/`, `Export/`, das KI-**Wissen**
-> und 80 Controller. Dieses Projekt referenziert es und übersetzt sie nicht mehr mit.
+> und 81 Controller. Dieses Projekt referenziert es und übersetzt sie nicht mehr mit.
 > **Regel: eine Fachänderung am Rechenkern wird EINMAL gemacht, im Kern.** Wer eine Datei hier
 > sucht und nicht findet, sucht sie dort — die Ordnerstruktur ist dieselbe geblieben.
 
@@ -60,9 +61,11 @@ Rückweg: Git-Tag `letzter-x86-stand`.
 
 **WFO1000 ist in .NET 10 standardmäßig ein *Fehler*** (WinForms-Designer-Serialisierung). Die
 `..\.editorconfig` stuft ihn auf `warning` herab, damit der Bestand baut, lässt ihn aber sichtbar:
-**60 Fundstellen**, Schwerpunkt `Form_Gesetzesparameter` (10), `Form_Kosten_VarAuswahl` (8) und die
-Karten-Controls des Kostenmoduls. Die Annotation je Property ist eine Fachentscheidung und gehört
-zu Paket iU9 — nicht nebenbei miterledigen.
+nach iU9-W1 noch **24 Fundstellen** (vorher 30; die Warnzahl der ganzen Mappe fiel damit von 34 auf
+30), Schwerpunkt `Form_Gesetzesparameter` (5) und die Karten-Controls des Kosten- und
+Simulationsmoduls (`EinstiegsKarte`, `SpeicherKarte`, `ErzeugerKarte`). Die
+Annotation je Property ist eine Fachentscheidung und gehört zu Paket iU9 — nicht nebenbei
+miterledigen; **mit jeder umgestellten Maske fällt die Zahl von selbst.**
 
 Das Setup (`..\Setup\build-setup.ps1`) wird derzeit von VS-MSBuild auf `dotnet publish`
 umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
@@ -101,14 +104,19 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 - **`Controller/`** (**20** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
   `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `KlimaregionStammCtrl`,
   `EnergietraegerKatalogCtrl`, `PeakShavingCtrl`, `ProjektExportImportCtrl` und `WPCtrl`
-  (+ `.WinForms.cs`). Die übrigen **80** liegen in `../EPOS.Kern/Controller/` — 50 seit iU4,
-  29 seit iU5-U4, einer seit iU8-8b.
+  (+ `.WinForms.cs`). Die übrigen **81** liegen in `../EPOS.Kern/Controller/` — 50 seit iU4,
+  29 seit iU5-U4, einer seit iU8-8b, einer seit iU9-W1.5 (`KostenfaktorCtrl`).
 - **`Model/`** — **keine `.cs` mehr**; alle 46 Modelle liegen in `../EPOS.Kern/Model/`.
-- **`Views/`** (**279 `.cs`**, davon 162 ohne Designer-Datei; **492 Dateien** mit `.resx`) —
+- **`Views/`** (**267 `.cs`**, davon 158 ohne Designer-Datei; **475 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). Vom Build ausgenommen sind die
-  „- Kopie"-Dateien und `Form_Simulation_Kurz.*`.
-- **`Allgemein/`** (**42** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+  „- Kopie"-Dateien und `Form_Simulation_Kurz.*`. **Mit iU9-W1 sind sieben Masken
+  verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
+  stehen drei Hüllen — `Views/Kosten/VorlagenUebernahmeHuelle.cs`,
+  `Views/Kosten/KostenfaktorKatalogHuelle.cs`,
+  `Views/Wirtschaftlichkeit/KapitalwertVerlaufHuelle.cs`. Der **Stapellauf der Formularkarte
+  zählt seither 111 Masken** (vorher 118); jede weitere Welle senkt die Zahl.
+- **`Allgemein/`** (**43** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts
@@ -138,8 +146,8 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | ~~`Import/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Import/`**: `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `GanglinienDatei`, `AnsiEncoding`. Ebenso `Katalog/` und `Export/` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
-| `Blazor/` | **Die Hülle für Razor-Dialoge (iU8).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut. Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
-| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
+| `Blazor/` | **Die Hülle für Razor-Dialoge (iU8).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` — `Fragen(besitzer, titel, frage, vorbelegung, meldungLeer)` für die fünf zeichengleichen Namensabfragen des Bestands. Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md` und `iU9_W1_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
