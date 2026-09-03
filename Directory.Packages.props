@@ -94,4 +94,29 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0" />
   </ItemGroup>
+
+  <!--
+    iOS-Laufzeit der Zugriffsschicht (Umsetzungskonzept iOS, iU6 / iU10 - VORBEREITUNG).
+
+    Microsoft.Data.Sqlite zieht standardmaessig SQLitePCLRaw.bundle_e_sqlite3; das
+    scheitert auf iOS an der AOT-Regel gegen dynamisches Laden. Dort gilt statt dessen
+    bundle_green, das die SYSTEM-SQLite des Geraets benutzt.
+
+    Die Fassung ist bewusst DIESELBE, die Microsoft.Data.Sqlite 10.0.11 heute
+    transitiv mitbringt - nachgemessen am 03.09.2026 mit
+    "dotnet list EPOS.Kern package" mit dem Schalter fuer transitive Pakete:
+        SQLitePCLRaw.bundle_e_sqlite3   2.1.12
+        SQLitePCLRaw.core               2.1.12
+        SQLitePCLRaw.lib.e_sqlite3      2.1.12
+        SQLitePCLRaw.provider.e_sqlite3 2.1.12
+    Zwei verschiedene SQLitePCLRaw-Staende im selben Graph waeren eine
+    Ladezeitueberraschung; deshalb haengt diese Zeile an der core-Fassung und wird beim
+    naechsten Sprung von Microsoft.Data.Sqlite mitgezogen.
+
+    Die Zeile ist derzeit UNBENUTZT: Die PackageReference in EPOS.Kern.csproj greift erst,
+    wenn der Kern ein -ios- oder -maccatalyst-TargetFramework bekommt (iU10).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.12" />
+  </ItemGroup>
 </Project>
