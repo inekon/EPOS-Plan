@@ -141,6 +141,23 @@ namespace ChartProben
                    new[] { PROFILLINIE_AUF_WEISS },
                    () => ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat"));
 
+            // 11/12 - Kennlinien (iU9-W7.0c): drei Vorlaufstufen (35/45/55 °C) ueber
+            // der Aussentemperatur -15…+20 °C. Zwei Bilder aus DENSELBEN Stuetzstellen,
+            // wie die beiden Reiterblaetter "COP" und "Leistung" der Waermepumpenmasken:
+            // Kreismarken fuer den COP, Kreuzmarken fuer die Leistung.
+            var kennlinienCop = Kennlinien(cop: true);
+            var kennlinienLeistung = Kennlinien(cop: false);
+
+            Pruefe(ziel, "kennlinien_cop", 968, 520,
+                   new[] { ChartRenderer.C_SERIEN[0], ChartRenderer.C_SERIEN[1], ChartRenderer.C_SERIEN[2] },
+                   () => ChartRenderer.Kennlinien("Kennlinien COP", "COP", "Temperatur",
+                            kennlinienCop, ChartRenderer.Kennlinienmarke.Kreis));
+
+            Pruefe(ziel, "kennlinien_leistung", 968, 520,
+                   new[] { ChartRenderer.C_SERIEN[0], ChartRenderer.C_SERIEN[1], ChartRenderer.C_SERIEN[2] },
+                   () => ChartRenderer.Kennlinien("Kennlinien Leistung", "Leistung", "Temperatur",
+                            kennlinienLeistung, ChartRenderer.Kennlinienmarke.Kreuz));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
@@ -348,6 +365,35 @@ namespace ChartProben
                         stunde++;
                     }
             return profil;
+        }
+
+        /// <summary>
+        /// Drei Waermepumpen-Kennlinien (iU9-W7.0c) — je Vorlaufstufe acht Stuetzstellen
+        /// von -15 bis +20 °C in 5-K-Schritten.
+        ///
+        /// <para>Die Physik ist nachgebildet, nicht gerechnet: Der COP steigt mit der
+        /// Aussentemperatur und faellt mit dem Vorlauf (kleinerer Temperaturhub), die
+        /// Waermeleistung steigt mit beidem. Es geht um den RENDERER — dass drei Reihen
+        /// mit unterschiedlichen Werten in drei Farben mit ihren Marken erscheinen und
+        /// zweimal Zeichnen dasselbe Bild liefert.</para>
+        /// </summary>
+        private static List<ChartRenderer.KennlinienReihe> Kennlinien(bool cop)
+        {
+            var reihen = new List<ChartRenderer.KennlinienReihe>();
+            foreach (int vorlauf in new[] { 35, 45, 55 })
+            {
+                var punkte = new List<(double Temperatur, double Wert)>();
+                for (int t = -15; t <= 20; t += 5)
+                {
+                    double hub = vorlauf - t;                       // Temperaturhub [K]
+                    double wert = cop
+                        ? 0.45 * (vorlauf + 273.15) / hub           // guetegradbehafteter Carnot-COP
+                        : 6.0 + 0.18 * t + 0.04 * (55 - vorlauf) * 3.0;
+                    punkte.Add((t, Math.Round(wert, 3)));
+                }
+                reihen.Add(new ChartRenderer.KennlinienReihe(vorlauf, punkte));
+            }
+            return reihen;
         }
 
         /// <summary>Drei Kapitalwertlinien ueber 21 Stuetzstellen; sie laufen durch die Null.</summary>
