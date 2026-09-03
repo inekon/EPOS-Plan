@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     /// <remarks>
     /// <para>
     /// Es werden bewusst KEINE englischen Wiki-Seiten gepflegt. Steht die
-    /// Oberflaeche auf Englisch (<c>Program.nLanguage != 0</c>), leitet die
+    /// Oberflaeche auf Englisch (<c>Dienste.Sprache.IstEnglisch</c>), leitet die
     /// Anwendung die Ziel-URL beim Oeffnen durch den Google-Uebersetzungs-Proxy:
     /// </para>
     /// <code>
@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                if (Program.nLanguage == 0) return url;   // deutsche Oberflaeche
+                if (!Dienste.Sprache.IstEnglisch) return url;   // deutsche Oberflaeche
 
                 if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out Uri adresse)) return url;
                 if (!string.Equals(adresse.Host, WikiHost, StringComparison.OrdinalIgnoreCase)) return url;

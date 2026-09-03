@@ -102,13 +102,15 @@ namespace WindowsFormsApplication1
             // eine zweite Wahrheit. Ein Nebeneffekt ist beabsichtigt: Meldung.Hinweis
             // traegt damit wieder das Informationssymbol, das die Hinweisdialoge des
             // Kerns bis iU3-2 hatten.
+            WindowsSprache sprache = new WindowsSprache();
+
             Dienste.Dialog = new WindowsDialogDienst();
             Dienste.Datei = new WindowsDateiDienst();
             Dienste.Pfade = new WindowsPfade();
             Dienste.Einstellungen = new SettingsEinstellungen();
             Dienste.Lizenzablage = new DpapiLizenzAblage();
             Dienste.GeraeteId = new WindowsGeraeteId();
-            Dienste.Sprache = new WindowsSprache();
+            Dienste.Sprache = sprache;
             Dienste.Navigation = new WinFormsNavigation();
             Dienste.Projekt = new FormStartProjektKontext();
 
@@ -132,23 +134,11 @@ namespace WindowsFormsApplication1
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
-            if (key == null)
-            {
-                key = Registry.CurrentUser.CreateSubKey(@"Software\\wp-plan");
-            }
-
-            nLanguage = (int)key.GetValue("Language", 0);
-            if (nLanguage == 0)
-            {
-                var culture_de = new CultureInfo("de-DE");
-                Thread.CurrentThread.CurrentUICulture = culture_de;
-            }
-            else
-            {
-                var culture_en = new CultureInfo("en-US");
-                Thread.CurrentThread.CurrentUICulture = culture_en;
-            }
+            // Die zuletzt eingestellte Oberflaechensprache uebernehmen: Registry-Wert
+            // Language lesen, Sprache.Nummer setzen, Anzeigekultur setzen. Der Weg
+            // dorthin liegt seit iU5 in WindowsSprache; nLanguage bleibt die
+            // Weiterleitung auf Sprache.Nummer, damit die Masken unveraendert lesen.
+            sprache.AusRegistryUebernehmen();
 
             // Startprüfung (vormals x64-Umstellung P1.3, jetzt DB-Migration SQLite 2.8):
             // Ohne lesbare Datenbankdatei ist jede DB-Operation unmöglich — sprechende

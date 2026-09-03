@@ -431,7 +431,7 @@ namespace WindowsFormsApplication1
             try
             {
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
-                    Program.nLanguage == 1 ? "License…" : "Lizenz…");
+                    Dienste.Sprache.IstEnglisch ? "License…" : "Lizenz…");
                 eintrag.Click += (s, e) =>
                 {
                     using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
@@ -691,26 +691,28 @@ namespace WindowsFormsApplication1
             Form_Lizenz.Anzeigen(this);
         }
 
+        /// <summary>
+        /// Stellt die Oberflaeche auf Deutsch um.
+        ///
+        /// <para>Wirksam wird das erst beim Neustart - die Textressourcen bereits
+        /// geoeffneter Masken wechseln nicht mehr. Das ist unveraendert der Bestand;
+        /// neu ist nur, dass der Registry-Wert ueber <c>Dienste.Sprache</c> geschrieben
+        /// wird statt hier von Hand.</para>
+        /// </summary>
         private void Deutsch_Click(object sender, EventArgs e)
         {
-            var culture_de = new CultureInfo("de-DE");
+            if (!Dienste.Sprache.IstEnglisch) return;
 
-            // Erzwingen der deutschen Sprache
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
-            var nLanguage = (int)key.GetValue("Language", 0);
-            if (nLanguage == 0) return;
-            key.SetValue("Language", 0, RegistryValueKind.DWord);
+            Dienste.Sprache.Setzen("de");
             Application.Restart();
         }
 
+        /// <summary>Stellt die Oberflaeche auf Englisch um; siehe <see cref="Deutsch_Click"/>.</summary>
         private void Englisch_Click(object sender, EventArgs e)
         {
-            var culture_de = new CultureInfo("en-US");
+            if (Dienste.Sprache.IstEnglisch) return;
 
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
-            var nLanguage = (int)key.GetValue("Language", 0);
-            if (nLanguage == 1) return;
-            key.SetValue("Language", 1, RegistryValueKind.DWord);
+            Dienste.Sprache.Setzen("en");
             Application.Restart();
         }
 
