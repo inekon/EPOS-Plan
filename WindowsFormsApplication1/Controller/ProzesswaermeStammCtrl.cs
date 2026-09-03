@@ -81,8 +81,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",

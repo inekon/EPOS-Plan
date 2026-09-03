@@ -32,7 +32,7 @@ namespace WindowsFormsApplication1
                 char lastChar = textFile[i].Substring(textFile[i].Length - 1, 1)[0];
                 if (lastChar.Equals(trennzeichen[0]) || lastChar.Equals(trennzeichen[1]))
                 {
-                    MessageBox.Show("Format Fehler:\n" + file + "\nDatei überprüfen!\nWerte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';' am Zeilenende");  
+                    Dienste.Dialog.Meldung("Format Fehler:\n" + file + "\nDatei überprüfen!\nWerte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';' am Zeilenende");
                     return false;
                 }
             }

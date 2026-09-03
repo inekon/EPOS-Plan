@@ -264,8 +264,7 @@ namespace WindowsFormsApplication1
             Func<string, string, bool> f = Frage;
             if (f != null) return f(text, titel);
 
-            return MessageBox.Show(text, titel, MessageBoxButtons.YesNo,
-                                   MessageBoxIcon.Question) == DialogResult.Yes;
+            return Dienste.Dialog.Frage(text, titel);
         }
 
         /// <summary>Hinweis anzeigen - im Engine-Modus nur ins Protokoll.</summary>
@@ -280,7 +279,7 @@ namespace WindowsFormsApplication1
             Action<string, string> h = Hinweis;
             if (h != null) { h(text, titel); return; }
 
-            MessageBox.Show(text, titel, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Dienste.Dialog.Meldung(text, titel);
         }
 
         /// <summary>

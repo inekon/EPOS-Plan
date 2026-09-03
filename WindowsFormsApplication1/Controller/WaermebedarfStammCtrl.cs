@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Diese Waermebedarf-Ganglinie ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.", "Hinweis");
+                Meldung.Hinweis("Diese Waermebedarf-Ganglinie ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.", "Hinweis");
                 return false;
             }
             int id = GetStammId(szName);
@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
                     return false;
                 }
             }
@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Kopieren der Waermebedarf-Ganglinie ins Projekt: " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Kopieren der Waermebedarf-Ganglinie ins Projekt: " + ex.Message);
                     return 0;
                 }
             }
