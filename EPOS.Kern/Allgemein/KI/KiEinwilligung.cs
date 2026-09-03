@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Microsoft.Win32;
 
 namespace WindowsFormsApplication1
 {
