@@ -574,7 +574,7 @@ namespace WindowsFormsApplication1
                 // beiden Prozess-Ziele richtig da (sie spiegelten sich als „Heizung").
                 Z_AnlageSenkeModel rang1 = SenkeAufRang(a.ID, 0);
                 k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_SENKE,
-                                           Form_Waermesenke.SenkeAnzeige(rang1)));
+                                           WaermesenkeClass.SenkeAnzeige(rang1)));
 
                 // Temperatur-Warnregel (Konzept Abschnitt 5), Wort für Wort die Regel der
                 // Erzeugerkarte: Erzeuger-Vorlauf < Puffer-Vorlauf der Hauptsenke.

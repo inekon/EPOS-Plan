@@ -279,17 +279,18 @@ namespace WindowsFormsApplication1
         // --- Ziele (Konzept 5.1) ------------------------------------------------------
 
         /// <summary>
-        /// true = das Ziel meint einen Pufferspeicher — die Frage des Dialogs an EINER
-        /// Stelle. Sie geht an <see cref="WaermesenkeClass.IstPufferZiel"/>, das seit
-        /// Paket S1 auch <c>PufferProzess</c> kennt. Die zweite Bedingung ist die
-        /// Rückversicherung: Dieselbe Methode ist zugleich die Normalisierungsregel der
-        /// ALTSPALTEN, und sollte sie dafür wieder auf die drei Altziele eingeschränkt
-        /// werden, denkt der Dialog trotzdem in seinen sechs.
+        /// true = das Ziel meint einen Pufferspeicher.
+        ///
+        /// <para><b>iU9‑W10a.0a (Befund W10‑B23).</b> Hier stand bis dahin eine eigene
+        /// Fassung mit einem zusätzlichen Oder-Zweig auf <c>WS_ZIEL_PUFFER_PROZESS</c> —
+        /// eine „Rückversicherung" für den Fall, dass die Kernfassung wieder auf die drei
+        /// Altziele eingeschränkt würde. Zwei Wahrheiten über dieselbe Frage; die
+        /// Kernfassung führt das S1-Ziel seit Paket S1 selbst, also bleibt sie die eine
+        /// Wahrheit.</para>
         /// </summary>
         private static bool IstPufferZiel(string ziel)
         {
-            return WaermesenkeClass.IstPufferZiel(ziel) ||
-                   string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
+            return WaermesenkeClass.IstPufferZiel(ziel);
         }
 
         /// <summary>true = Direktsenke Heizkreis (nur dort ist die Bedarfsart wirksam).</summary>
@@ -301,63 +302,23 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Anzeigename eines Ziels — inklusive der beiden S1-Ziele.
         ///
-        /// ÖFFENTLICH, weil auch die Erzeugerkarte die Senkenkette beschriftet
-        /// (<c>Form_Simulation_Config.Karten</c>).
-        ///
         /// <para><b>Der Zwischenstand ist beendet (iU3, Views-Kante 2).</b> Die Abbildung
-        /// steht jetzt dort, wohin dieser Kommentar sie verwiesen hat: bei
+        /// steht dort, wohin dieser Kommentar sie verwiesen hat: bei
         /// <see cref="WaermesenkeClass.ZielAnzeigeVollstaendig"/>, neben
-        /// <c>WaermesenkeClass.ZielAnzeige</c>. Hier bleibt die Weiterleitung — der
-        /// Rechenpfad (<c>Warnkriterien</c>) ruft nicht mehr in ein Formular.</para>
+        /// <c>WaermesenkeClass.ZielAnzeige</c>. Hier bleibt die Weiterleitung — seit
+        /// iU9‑W10a.0a nur noch für den Eigengebrauch dieser Maske (die Erzeugerkarte
+        /// ruft den Kern).</para>
         /// </summary>
-        public static string ZielAnzeige(string ziel)
+        private static string ZielAnzeige(string ziel)
         {
             return WaermesenkeClass.ZielAnzeigeVollstaendig(ziel);
         }
 
-        /// <summary>
-        /// Kompakte Anzeige EINER Senkenzeile für Karten, Übersichten und Schema:
-        /// „Ziel: Speicher" beim Ladeziel, beim HEIZKREIS das Ziel samt Bedarfsart
-        /// („Heizkreis (nur Warmwasser)"), <c>–</c> für „keine Zeile".
-        ///
-        /// <para><b>PAKET A1 — die EINE Stelle.</b> Bis dahin gab es zwei: diese für die
-        /// Kette ab Rang 3 und <c>WaermesenkeClass.HauptsenkeAnzeige</c>/
-        /// <c>ZweitsenkeAnzeige</c> für die gespiegelten Ränge 1 und 2. Mit der Spiegelung
-        /// sind die beiden anderen entfallen. Damit sich am BILD nichts ändert, sind
-        /// ihre beiden Eigenheiten hierher gewandert: die Kurzform des Ladeziels
-        /// (<c>WaermesenkeClass.KurzformZuZiel</c>) und die Bedarfsart-Feinsteuerung des
-        /// Heizkreises (Konzept 3.1).</para>
-        /// </summary>
-        public static string SenkeAnzeige(Z_AnlageSenkeModel z)
-        {
-            if (z == null) return LEER;
-
-            if (IstPufferZiel(z.Ziel))
-            {
-                // KURZFORM („Puffer Heizung"), nicht der lange Name der Auswahlliste:
-                // Karte, Übersicht und Schemaknoten haben die Senke schon immer so
-                // beschriftet, und daran ändert A1 nichts.
-                string ladeziel = WaermesenkeClass.KurzformZuZiel(z.Ziel);
-                if (z.ID_Puffer <= 0) return ladeziel;
-
-                string name = WaermesenkeClass.PufferName(z.ID_Puffer);
-                return name.Length > 0 ? ladeziel + ": " + name : ladeziel;
-            }
-
-            // Prozesswärme ist einkanalig - dort gibt es keine Bedarfsart zu unterscheiden.
-            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
-                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
-
-            switch (z.Bedarfsart)
-            {
-                case WaermequelleClass.SENKE_WARMWASSER:
-                    return MyResource.Resource.SIM_HEIZKREIS_NUR_WARMWASSER;
-                case WaermequelleClass.SENKE_HEIZUNG:
-                    return MyResource.Resource.SIM_HEIZKREIS_NUR_HEIZWAERME;
-                default:
-                    return MyResource.Resource.SIM_HEIZKREIS_BEIDES;
-            }
-        }
+        // iU9-W10a.0a (Befund W10-B22): SenkeAnzeige steht jetzt im Kern
+        // (WaermesenkeClass.SenkeAnzeige). Sie war eine statische Anzeigemethode auf
+        // diesem FORMULAR, und fuenf fremde Stellen riefen sie von hier - der Port der
+        // Maske nach Blazor haette den Bau gebrochen. Diese Maske selbst hat sie nie
+        // gerufen; deshalb bleibt hier auch keine Weiterleitung stehen.
 
         // PAKET A1: IstProzessZiel ist ENTFALLEN. Die Abfrage diente genau EINEM Zweck -
         // eine Anzeige, die aus den Altspalten WS_* las, musste die beiden Prozess-Ziele

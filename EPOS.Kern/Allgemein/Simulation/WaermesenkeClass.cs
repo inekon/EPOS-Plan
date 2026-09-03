@@ -1477,10 +1477,10 @@ namespace WindowsFormsApplication1
 
         // PAKET A1: HauptsenkeAnzeige und ZweitsenkeAnzeige sind ENTFALLEN. Sie zeigten
         // die beiden gespiegelten Altspalten-Plätze; ihre EINE Nachfolgerin ist
-        // Form_Waermesenke.SenkeAnzeige, die jede Senkenzeile eines beliebigen Rangs
+        // SenkeAnzeige (weiter unten), die jede Senkenzeile eines beliebigen Rangs
         // beschriftet - mit derselben Kurzform (KurzformZuZiel) und derselben
         // Bedarfsart-Feinsteuerung des Heizkreises, damit sich an den Karten kein
-        // Wort ändert.
+        // Wort ändert. Sie stand bis iU9-W10a.0a in Form_Waermesenke.
 
         /// <summary>
         /// Kurzform eines Puffer-Ziels für Übersichten („Puffer Heizung", „Puffer
@@ -1488,9 +1488,9 @@ namespace WindowsFormsApplication1
         /// zweimal im Code — mit dem dritten Ziel aus D5a wäre daraus die dritte
         /// Fehlerquelle geworden.
         ///
-        /// PAKET A1: öffentlich, weil die Senkenanzeige jetzt in
-        /// <c>Form_Waermesenke.SenkeAnzeige</c> zusammenläuft; das S1-Ziel
-        /// <c>PufferProzess</c> ist als vierte Kurzform dazugekommen.
+        /// PAKET A1: öffentlich, weil die Senkenanzeige in <see cref="SenkeAnzeige"/>
+        /// zusammenläuft; das S1-Ziel <c>PufferProzess</c> ist als vierte Kurzform
+        /// dazugekommen.
         /// </summary>
         public static string KurzformZuZiel(string ziel)
         {
@@ -1501,6 +1501,56 @@ namespace WindowsFormsApplication1
             if (string.Equals(ziel, ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
                 return MyResource.Resource.SIM_PUFFER_PROZESS_KURZ;
             return MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
+        }
+
+        /// <summary>
+        /// Anzeige für ein leeres Feld der Senkenliste — dasselbe Zeichen, das
+        /// <c>Form_Waermesenke</c> als <c>LEER</c> führte.
+        /// </summary>
+        public const string SENKE_LEER = "–";
+
+        /// <summary>
+        /// Kompakte Anzeige EINER Senkenzeile für Karten, Übersichten und Schema:
+        /// „Ziel: Speicher" beim Ladeziel, beim HEIZKREIS das Ziel samt Bedarfsart
+        /// („Heizkreis (nur Warmwasser)"), <c>–</c> für „keine Zeile".
+        ///
+        /// <para><b>iU9‑W10a.0a — die Methode steht jetzt hier.</b> Sie war
+        /// <c>Form_Waermesenke.SenkeAnzeige</c>, also eine statische Anzeigemethode auf
+        /// einem FORMULAR, und fünf fremde Stellen riefen sie von dort
+        /// (<c>Form_Simulation_Config.Uebersicht</c> :503/:509/:764,
+        /// <c>Form_Simulation_Config.Karten</c> :1734 und <c>SchemaModell</c> :577). Mit
+        /// dem Port der Maske nach Blazor bräche der Bau; deshalb ist der Umzug der
+        /// ERSTE Schritt der Welle (Befund W10‑B22). Am Text ändert sich nichts.</para>
+        /// </summary>
+        public static string SenkeAnzeige(Z_AnlageSenkeModel z)
+        {
+            if (z == null) return SENKE_LEER;
+
+            if (IstPufferZiel(z.Ziel))
+            {
+                // KURZFORM („Puffer Heizung"), nicht der lange Name der Auswahlliste:
+                // Karte, Übersicht und Schemaknoten haben die Senke schon immer so
+                // beschriftet, und daran ändert der Umzug nichts.
+                string ladeziel = KurzformZuZiel(z.Ziel);
+                if (z.ID_Puffer <= 0) return ladeziel;
+
+                string name = PufferName(z.ID_Puffer);
+                return name.Length > 0 ? ladeziel + ": " + name : ladeziel;
+            }
+
+            // Prozesswärme ist einkanalig - dort gibt es keine Bedarfsart zu unterscheiden.
+            if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+
+            switch (z.Bedarfsart)
+            {
+                case WaermequelleClass.SENKE_WARMWASSER:
+                    return MyResource.Resource.SIM_HEIZKREIS_NUR_WARMWASSER;
+                case WaermequelleClass.SENKE_HEIZUNG:
+                    return MyResource.Resource.SIM_HEIZKREIS_NUR_HEIZWAERME;
+                default:
+                    return MyResource.Resource.SIM_HEIZKREIS_BEIDES;
+            }
         }
 
         /// <summary>Bezeichner eines Puffers; "" wenn es ihn nicht gibt.</summary>
