@@ -9913,4 +9913,88 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="ALLG_BTN_NEIN" xml:space="preserve">
     <value>Nein</value>
   </data>
+  <data name="HZK_TITEL" xml:space="preserve">
+    <value>Verwaltung Heizkessel</value>
+  </data>
+  <data name="HZK_KOPFBAND" xml:space="preserve">
+    <value>Geben Sie Daten des Spitzenlastkessels ein</value>
+  </data>
+  <data name="HZK_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>ausgewählt im Projekt</value>
+  </data>
+  <data name="HZK_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Kessel aus Datenbank</value>
+  </data>
+  <data name="HZK_TIP_HINZU" xml:space="preserve">
+    <value>In das Projekt übernehmen</value>
+  </data>
+  <data name="HZK_TIP_ENTFERNEN" xml:space="preserve">
+    <value>Aus dem Projekt entfernen</value>
+  </data>
+  <data name="HZK_LBL_FILTER_BRENNSTOFF" xml:space="preserve">
+    <value>Filtern nach Brennstoffart:</value>
+  </data>
+  <data name="HZK_LBL_FILTER_LEISTUNG" xml:space="preserve">
+    <value>Filtern nach Leistung:</value>
+  </data>
+  <data name="HZK_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten...</value>
+  </data>
+  <data name="HZK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="HZK_BTN_ADMIN" xml:space="preserve">
+    <value>Administration...</value>
+  </data>
+  <data name="HZK_GRP_MODUL" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="HZK_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="HZK_LBL_TRAEGER" xml:space="preserve">
+    <value>Brennstoff Variante:</value>
+  </data>
+  <data name="HZK_LBL_BRENNSTOFFTYP" xml:space="preserve">
+    <value>Brennstoff Typ:</value>
+  </data>
+  <data name="HZK_LBL_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]:</value>
+  </data>
+  <data name="HZK_LBL_INVEST" xml:space="preserve">
+    <value>Investitionskosten [€]:</value>
+  </data>
+  <data name="HZK_STUFE_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="HZK_STUFE_BIS50" xml:space="preserve">
+    <value>bis 50 kW</value>
+  </data>
+  <data name="HZK_STUFE_50_200" xml:space="preserve">
+    <value>&gt;50 bis 200 kW</value>
+  </data>
+  <data name="HZK_STUFE_200_500" xml:space="preserve">
+    <value>&gt;200 bis 500 kW</value>
+  </data>
+  <data name="HZK_STUFE_500_1000" xml:space="preserve">
+    <value>&gt;500 bis 1.000 kW</value>
+  </data>
+  <data name="HZK_STUFE_UEBER1000" xml:space="preserve">
+    <value>über 1.000 kW</value>
+  </data>
+  <data name="HZK_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Der Katalogeintrag "{0}" wird für ALLE Projekte gelöscht. Fortfahren?</value>
+  </data>
+  <data name="HZK_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="HZK_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>Der Katalogeintrag konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="HZK_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden.</value>
+  </data>
+  <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
+  </data>
 </root>

@@ -623,15 +623,15 @@ namespace WindowsFormsApplication1
 
         private void pBox_Heizkessel_Click(object sender, EventArgs e)
         {
-            Form_Heizkessel frm = new Form_Heizkessel();
+            // iU9-W6.3: Der Dialog ist die Razor-Komponente HeizkesselDialog; die
+            // WinForms-Fassung Form_Heizkessel ist im selben Schritt GELOESCHT (Regel M1).
+            // Am Ablauf aendert sich nichts: Die Liste wird an Ort und Stelle bearbeitet,
+            // geschrieben wird hier.
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
-            int id_type;
+            int id_type = WizardItemClass.KESSEL_TYP;
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
 
-            frm.list_heizkesselmodel.Clear();
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
-            id_type = WizardItemClass.KESSEL_TYP;
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + id_type);
 
             // Vollstaendig gelesene Modelle durchreichen (siehe HeizkesselKontextMenuCtrl). Die
             // Teilkopie aus ID/ID_Kessel/ID_Type/Bezeichner/Vorlauf/Ruecklauf hat beim Speichern
@@ -641,20 +641,16 @@ namespace WindowsFormsApplication1
             // Nutzungszeit, Grenzleistung, Heizstab, Volumen, rendeMix und Solaranteil.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_heizkesselmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_ID_Projekt);
-            frm.m_nType = id_type;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            if (HeizkesselHuelle.Oeffnen(this, m_ID_Projekt, id_type, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
-                if (frm.list_heizkesselmodel.Count > 0)
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
+                if (liste.Count > 0)
                     status |= 1;
                 else status &= ~1;
                 pBox_Heizkessel.Invalidate();

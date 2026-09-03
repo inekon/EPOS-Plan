@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Forms;
@@ -44,7 +44,9 @@ namespace WindowsFormsApplication1
             /* 8  SOLAR_ITEM         */ () => new Form_SolarKollektoren(),
             /* 9  PV_ITEM            */ () => new Form_PV(),
             /* 10 SP_ITEM            */ () => new Form_Stromspeicher(),
-            /* 11 KESSEL_ITEM        */ () => new Form_Heizkessel(),
+            // iU9-W6.3: Die Kesselseite ist eine Razor-Komponente; die Huelle baut ihre
+            // WebView erst in Bestuecken (siehe BlazorAssistentSeite).
+            /* 11 KESSEL_ITEM        */ () => HeizkesselHuelle.AssistentSeite(),
             /* 12 BHKW_ITEM          */ () => new Form_BHKWEing()
         };
 
@@ -53,7 +55,8 @@ namespace WindowsFormsApplication1
             typeof(Wizard_Komponenten), typeof(Wizard_Projekt), typeof(Form_Gebaeude),
             typeof(Form_Waermebedarf), typeof(Form_Prozesswaerme), typeof(Form_Stromverbraucher),
             typeof(Wizard_Stromlastgang), typeof(Form_WPAuswahl), typeof(Form_SolarKollektoren),
-            typeof(Form_PV), typeof(Form_Stromspeicher), typeof(Form_Heizkessel),
+            typeof(Form_PV), typeof(Form_Stromspeicher),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.HeizkesselDialog>),
             typeof(Form_BHKWEing)
         });
 

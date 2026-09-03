@@ -28029,5 +28029,257 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Heizkessel ähnelt.
+        /// </summary>
+        public static string HZK_TITEL {
+            get {
+                return ResourceManager.GetString("HZK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie Daten des Spitzenlastkessels ein ähnelt.
+        /// </summary>
+        public static string HZK_KOPFBAND {
+            get {
+                return ResourceManager.GetString("HZK_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählt im Projekt ähnelt.
+        /// </summary>
+        public static string HZK_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("HZK_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel aus Datenbank ähnelt.
+        /// </summary>
+        public static string HZK_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("HZK_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In das Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string HZK_TIP_HINZU {
+            get {
+                return ResourceManager.GetString("HZK_TIP_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Projekt entfernen ähnelt.
+        /// </summary>
+        public static string HZK_TIP_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("HZK_TIP_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Brennstoffart: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_FILTER_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("HZK_LBL_FILTER_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Leistung: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_FILTER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("HZK_LBL_FILTER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten... ähnelt.
+        /// </summary>
+        public static string HZK_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("HZK_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string HZK_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("HZK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration... ähnelt.
+        /// </summary>
+        public static string HZK_BTN_ADMIN {
+            get {
+                return ResourceManager.GetString("HZK_BTN_ADMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
+        /// </summary>
+        public static string HZK_GRP_MODUL {
+            get {
+                return ResourceManager.GetString("HZK_GRP_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_NAME {
+            get {
+                return ResourceManager.GetString("HZK_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff Variante: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("HZK_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff Typ: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_BRENNSTOFFTYP {
+            get {
+                return ResourceManager.GetString("HZK_LBL_BRENNSTOFFTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW]: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("HZK_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten [€]: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("HZK_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_ALLE {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis 50 kW ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_BIS50 {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_BIS50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die >50 bis 200 kW ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_50_200 {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_50_200", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die >200 bis 500 kW ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_200_500 {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_200_500", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die >500 bis 1.000 kW ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_500_1000 {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_500_1000", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über 1.000 kW ähnelt.
+        /// </summary>
+        public static string HZK_STUFE_UEBER1000 {
+            get {
+                return ResourceManager.GetString("HZK_STUFE_UEBER1000", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag "{0}" wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
+        /// </summary>
+        public static string HZK_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("HZK_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string HZK_TITEL_LOESCHEN {
+            get {
+                return ResourceManager.GetString("HZK_TITEL_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_LOESCHFEHLER {
+            get {
+                return ResourceManager.GetString("HZK_MSG_LOESCHFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("HZK_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz konnte nicht in das Projekt übernommen werden. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_KOPIE_FEHLER {
+            get {
+                return ResourceManager.GetString("HZK_MSG_KOPIE_FEHLER", resourceCulture);
+            }
+        }
+        
     }
 }
