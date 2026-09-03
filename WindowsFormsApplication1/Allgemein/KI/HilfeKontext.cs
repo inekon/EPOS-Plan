@@ -152,7 +152,7 @@ namespace WindowsFormsApplication1
             // ueber SetzeBereich, solange der Blazor-Dialog steht, und nimmt ihn
             // danach mit Zuruecksetzen wieder weg.
             // iU9-W10a.5: Form_QuellePufferspeicher ist geloescht (Razor-Komponente).
-            { "Form_Quellprofil",            B_SIMULATION },
+            // iU9-W10a.6: Form_Quellprofil ist geloescht (Razor-Komponente).
             { "Form_Simulation_Config",      B_SIM_KONFIG },
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
             { "Form_Waermesenke",            B_SIMULATION },

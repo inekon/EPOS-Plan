@@ -1038,21 +1038,28 @@ namespace WindowsFormsApplication1
                         // eigener Gegenstand in Tab_Quellprofil/Tab_QuellprofilDaten mit
                         // den Betriebsarten Monat (12), Tag (365) und Stunde (8760); die
                         // Anlage verweist über WQ_ID_Quellprofil darauf.
-                        Form_Quellprofil frmProfil = new Form_Quellprofil();
-                        frmProfil.WPName = info.Bezeichner;
-                        frmProfil.ID_Projekt = m_ID_Projekt;
-
+                        // Die Maske ist seit iU9-W10a.6 eine Razor-Komponente
+                        // (EPOS.UI/Dialoge/Simulation/QuellprofilDialog). Sie SPEICHERT
+                        // selbst und liefert die Id; abgebrochen heisst null.
                         object oIdProfil = WaermequelleClass.WertLesen(info.ID, "WQ_ID_Quellprofil");
-                        if (oIdProfil != null) frmProfil.ID_Quellprofil = Convert.ToInt32(oIdProfil);
 
-                        // ALTWEG als Vorbelegung: Solange die Anlage kein Profil führt,
+                        // ALTWEG als Vorbelegung: Solange die Anlage kein Profil fuehrt,
                         // startet der Dialog mit dem, was die Engine heute rechnet
-                        // (WQ_Monatswerte/WQ_Wochenwerte, Konzept 15 Lese-Altlast).
-                        frmProfil.Monatswerte = WaermequelleClass.WertLesen(info.ID, "WQ_Monatswerte") as string;
-                        frmProfil.Wochenwerte = WaermequelleClass.WertLesen(info.ID, "WQ_Wochenwerte") as string;
-                        frmProfil.SetControls();
+                        // (WQ_Monatswerte/WQ_Wochenwerte, Konzept 15 Lese-Altlast). Die
+                        // beiden Parser stehen seit iU9-W10a.0b im Kern (Befund W10-B21).
+                        var profilDaten = new EPOS.UI.Dialoge.Simulation.QuellprofilDaten
+                        {
+                            WPName = info.Bezeichner,
+                            IdProjekt = m_ID_Projekt,
+                            IdQuellprofil = oIdProfil != null ? Convert.ToInt32(oIdProfil) : 0,
+                            Monatswerte = QuellprofilCtrl.MonatswerteParsen(
+                                WaermequelleClass.WertLesen(info.ID, "WQ_Monatswerte") as string),
+                            Wochenwerte = QuellprofilCtrl.WochenwerteParsen(
+                                WaermequelleClass.WertLesen(info.ID, "WQ_Wochenwerte") as string)
+                        };
 
-                        if (frmProfil.ShowDialog(this) != DialogResult.OK) return;
+                        int? neueProfilId = QuellprofilHuelle.Oeffnen(this, profilDaten);
+                        if (neueProfilId == null) return;
 
                         // FÜHREND ist der Fremdschlüssel. Er geht über die Überladung mit
                         // ausdrücklichem DbParamTyp weg - 0 ist keine gültige Profil-ID,
@@ -1060,7 +1067,7 @@ namespace WindowsFormsApplication1
                         // abweisen (dieselbe Regel wie bei WQ_ID_Puffer).
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Quellprofil",
                             DbParamTyp.Integer,
-                            frmProfil.ID_Quellprofil > 0 ? (object)frmProfil.ID_Quellprofil : DBNull.Value);
+                            neueProfilId.Value > 0 ? (object)neueProfilId.Value : DBNull.Value);
 
                         // WQ_Monatswerte/WQ_Wochenwerte werden NICHT mehr geschrieben:
                         // Sie sind Lese-Altlast (Konzept 15). Sie stehenzulassen ist der
