@@ -83,4 +83,15 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
+
+  <!-- Native SkiaSharp-Bibliotheken fuer die Nicht-Windows-Ziele (Paket iU7).
+       Der Renderer des Berichts ist seit iU7-2 plattformfrei; damit er sich auf
+       Linux und macOS auch AUSFUEHREN laesst, braucht es dort die passenden
+       nativen Bibliotheken. Die Win32-Fassung steht oben bei den Chart-Paketen.
+       NoDependencies = die Fassung ohne fontconfig-/GTK-Abhaengigkeit, wie sie
+       auf einem nackten CI-Abbild gebraucht wird. -->
+  <ItemGroup>
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0" />
+  </ItemGroup>
 </Project>
