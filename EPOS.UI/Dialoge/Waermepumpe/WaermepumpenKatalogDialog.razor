@@ -133,40 +133,40 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    [Parameter] public string TitelText { get; set; } = "Wärmepumpen-Katalog";
-    [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
-    [Parameter] public string LabelAuslegung { get; set; } = "Auslegung";
-    [Parameter] public string LabelPrinzip { get; set; } = "Funktionsprinzip";
-    [Parameter] public string LabelRegelung { get; set; } = "Regelung";
-    [Parameter] public string LabelBauart { get; set; } = "Bauart";
-    [Parameter] public string LabelAufstellung { get; set; } = "Aufstellung";
-    [Parameter] public string LabelZuheizung { get; set; } = "Zuheizung";
-    [Parameter] public string LabelVorlaufMin { get; set; } = "VLT Min [°C]";
-    [Parameter] public string LabelVorlaufMax { get; set; } = "VLT Max [°C]";
-    [Parameter] public string LabelLeistungMin { get; set; } = "Leist. Min [kW]";
-    [Parameter] public string LabelLeistungMax { get; set; } = "Leist. Max [kW]";
-    [Parameter] public string LabelSuche { get; set; } = "Modell filtern (z.B. CS*7*)";
-    [Parameter] public string PlatzhalterSuche { get; set; } = "🔍  Suchen…";
-    [Parameter] public string TextAlle { get; set; } = "Alle";
-    [Parameter] public string BtnFilternText { get; set; } = "Daten filtern";
-    [Parameter] public string BtnResetText { get; set; } = "Filter Reset";
-    [Parameter] public string BtnUebernehmenText { get; set; } = "✔ Auswahl übernehmen";
-    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
-    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
-    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
-    [Parameter] public string SpalteModell { get; set; } = "Modell";
-    [Parameter] public string SpalteVorlaufMax { get; set; } = "VLT max [°C]";
-    [Parameter] public string SpalteVorlaufMin { get; set; } = "VLT min [°C]";
-    [Parameter] public string SpalteLeistung { get; set; } = "Leistung [kW]";
-    [Parameter] public string SpalteZuheizung { get; set; } = "Zuheizer [kW]";
-    [Parameter] public string SpalteBauart { get; set; } = "Bauart";
+    [Parameter] public string TitelText { get; set; } = Resource.WPK_TITEL;
+    [Parameter] public string LabelHersteller { get; set; } = Resource.WPK_LBL_HERSTELLER;
+    [Parameter] public string LabelAuslegung { get; set; } = Resource.WPK_LBL_AUSLEGUNG;
+    [Parameter] public string LabelPrinzip { get; set; } = Resource.WPK_LBL_PRINZIP;
+    [Parameter] public string LabelRegelung { get; set; } = Resource.WPK_LBL_REGELUNG;
+    [Parameter] public string LabelBauart { get; set; } = Resource.WPK_LBL_BAUART;
+    [Parameter] public string LabelAufstellung { get; set; } = Resource.WPK_LBL_AUFSTELLUNG;
+    [Parameter] public string LabelZuheizung { get; set; } = Resource.WPK_LBL_ZUHEIZUNG;
+    [Parameter] public string LabelVorlaufMin { get; set; } = Resource.WPK_LBL_VLT_MIN;
+    [Parameter] public string LabelVorlaufMax { get; set; } = Resource.WPK_LBL_VLT_MAX;
+    [Parameter] public string LabelLeistungMin { get; set; } = Resource.WPK_LBL_LEISTUNG_MIN;
+    [Parameter] public string LabelLeistungMax { get; set; } = Resource.WPK_LBL_LEISTUNG_MAX;
+    [Parameter] public string LabelSuche { get; set; } = Resource.WPK_LBL_SUCHE;
+    [Parameter] public string PlatzhalterSuche { get; set; } = Resource.WPK_PLATZHALTER_SUCHE;
+    [Parameter] public string TextAlle { get; set; } = Resource.WPK_TEXT_ALLE;
+    [Parameter] public string BtnFilternText { get; set; } = Resource.WPK_BTN_FILTERN;
+    [Parameter] public string BtnResetText { get; set; } = Resource.WPK_BTN_RESET;
+    [Parameter] public string BtnUebernehmenText { get; set; } = Resource.WPK_BTN_UEBERNEHMEN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteHersteller { get; set; } = Resource.WPK_LBL_HERSTELLER;
+    [Parameter] public string SpalteModell { get; set; } = Resource.WPK_SP_MODELL;
+    [Parameter] public string SpalteVorlaufMax { get; set; } = Resource.WPK_SP_VLT_MAX;
+    [Parameter] public string SpalteVorlaufMin { get; set; } = Resource.WPK_SP_VLT_MIN;
+    [Parameter] public string SpalteLeistung { get; set; } = Resource.WPK_SP_LEISTUNG;
+    [Parameter] public string SpalteZuheizung { get; set; } = Resource.WPK_SP_ZUHEIZER;
+    [Parameter] public string SpalteBauart { get; set; } = Resource.WPK_SP_BAUART;
 
     /// <summary>
     /// Die Herleitungszeile mit der Trefferzahl. <c>{0}</c> ist die Zahl — der
     /// Vorläufer schrieb „WP-Filter Auswahl ({0} Wärmepumpen gefunden)" in die
     /// Fensterüberschrift.
     /// </summary>
-    [Parameter] public string TrefferFormat { get; set; } = "{0} Wärmepumpen gefunden";
+    [Parameter] public string TrefferFormat { get; set; } = Resource.WPK_TREFFER;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPFilterAuswahl.btn_Help";

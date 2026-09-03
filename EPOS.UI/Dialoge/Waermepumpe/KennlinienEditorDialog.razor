@@ -163,35 +163,34 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    [Parameter] public string TitelText { get; set; } = "Kenndaten";
-    [Parameter] public string LabelVorlaufliste { get; set; } = "Vorlauftemperatur [°C]";
-    [Parameter] public string LabelStuetzstellen { get; set; } = "Kennlinie dieser Vorlauftemperatur";
-    [Parameter] public string GruppeNeu { get; set; } = "Neue Stützstelle";
-    [Parameter] public string LabelTemperatur { get; set; } = "Temperatur";
-    [Parameter] public string LabelCop { get; set; } = "COP";
-    [Parameter] public string LabelPtherm { get; set; } = "Ptherm";
-    [Parameter] public string LabelNeuerVorlauf { get; set; } = "Neue Vorlauftemperatur";
-    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
-    [Parameter] public string SpalteVorlauf { get; set; } = "Vorlauf [°C]";
-    [Parameter] public string SpalteTemperatur { get; set; } = "Temperatur [°C]";
-    [Parameter] public string SpalteCop { get; set; } = "COP";
-    [Parameter] public string SpaltePtherm { get; set; } = "Ptherm [kW]";
-    [Parameter] public string SpalteAktion { get; set; } = "Aktion";
-    [Parameter] public string BtnItemNeuText { get; set; } = "Daten übernehmen";
-    [Parameter] public string BtnNeuVorlaufText { get; set; } = "Neue Vorlauftemperatur";
-    [Parameter] public string BtnZeileLoeschenText { get; set; } = "Stützstelle löschen";
+    [Parameter] public string TitelText { get; set; } = Resource.WPKL_TITEL;
+    [Parameter] public string LabelVorlaufliste { get; set; } = Resource.WPKL_LBL_VORLAUFLISTE;
+    [Parameter] public string LabelStuetzstellen { get; set; } = Resource.WPKL_LBL_STUETZSTELLEN;
+    [Parameter] public string GruppeNeu { get; set; } = Resource.WPKL_GRP_NEU;
+    [Parameter] public string LabelTemperatur { get; set; } = Resource.WPKL_LBL_TEMPERATUR;
+    [Parameter] public string LabelCop { get; set; } = Resource.WPKL_LBL_COP;
+    [Parameter] public string LabelPtherm { get; set; } = Resource.WPKL_LBL_PTHERM;
+    [Parameter] public string LabelNeuerVorlauf { get; set; } = Resource.WPKL_LBL_NEUVORLAUF;
+    [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteVorlauf { get; set; } = Resource.WPKL_SP_VORLAUF;
+    [Parameter] public string SpalteTemperatur { get; set; } = Resource.WPKL_SP_TEMPERATUR;
+    [Parameter] public string SpalteCop { get; set; } = Resource.WPKL_LBL_COP;
+    [Parameter] public string SpaltePtherm { get; set; } = Resource.WPKL_SP_PTHERM;
+    [Parameter] public string SpalteAktion { get; set; } = Resource.WPKL_SP_AKTION;
+    [Parameter] public string BtnItemNeuText { get; set; } = Resource.WPKL_BTN_ITEMNEU;
+    [Parameter] public string BtnNeuVorlaufText { get; set; } = Resource.WPKL_LBL_NEUVORLAUF;
+    [Parameter] public string BtnZeileLoeschenText { get; set; } = Resource.WPKL_BTN_ZEILE_LOESCHEN;
     [Parameter] public string EinheitGrad { get; set; } = "°C";
     [Parameter] public string EinheitKw { get; set; } = "kW";
-    [Parameter] public string OkText { get; set; } = "OK";
-    [Parameter] public string AbbrechenText { get; set; } = "Abbruch";
-    [Parameter] public string NurLesenText { get; set; } =
-        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden.";
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.WPKL_BTN_ABBRUCH;
+    [Parameter] public string NurLesenText { get; set; } = Resource.WPS_MSG_READONLY_KENNDATEN;
 
     /// <summary>Warnung, wenn keine Vorlaufstufe gewählt ist (Vorläufer: „Vorlauftemperatur selektieren!").</summary>
-    [Parameter] public string WarnungKeinVorlauf { get; set; } = "Vorlauftemperatur selektieren!";
+    [Parameter] public string WarnungKeinVorlauf { get; set; } = Resource.WPKL_MSG_KEIN_VORLAUF;
 
     /// <summary>Warnung bei fehlender Pflichtangabe; <c>{0}</c> ist der Feldname.</summary>
-    [Parameter] public string WarnungFeldFormat { get; set; } = "Bitte {0} eingeben.";
+    [Parameter] public string WarnungFeldFormat { get; set; } = Resource.WPKL_MSG_FELD;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Kenndaten.btn_Help";
