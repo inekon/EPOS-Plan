@@ -106,6 +106,12 @@ namespace WindowsFormsApplication1
             // ---------------- BHKW — KWKG 2025 ----------------
             if (_erzeuger.Bhkw)
             {
+                // ETAPPE B5 (BW9): Beide BHKW-Gruppen ziehen in den neuen Dialog
+                // Form_BhkwWirtschaftlichkeit um. Sie werden hier UNVERÄNDERT weiter
+                // aufgebaut und unmittelbar danach ausgeblendet — siehe Bw9Ausblenden.
+                int yVorBhkw = y;
+                int indexVorBhkw = this.Controls.Count;
+
                 Gruppe("BHKW — KWKG 2025", ref y);
                 numKwkg = Zeile("Bonus Eigenstrom [ct/kWh] (0 = aus):", ref y, 0m, 30m, 2, (decimal)_parameter.KwkgBonus, 0.1m);
                 numKwkgEinsp = Zeile("Bonus Einspeisung [ct/kWh]:", ref y, 0m, 30m, 2, (decimal)_parameter.KwkgBonusEinspeisung, 0.1m);
@@ -206,6 +212,13 @@ namespace WindowsFormsApplication1
                         new Steuerwahl(DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF, "voller BHKW-Brennstoff (§ 53 Abs. 2)"),
                         new Steuerwahl(DbWerte.AUFTEILUNG_ENERGETISCH,       "energetisch (konservativ)")
                     });
+
+                // ETAPPE B5 (BW9) — der Auszug. Beide Gruppen verschwinden vom
+                // Bildschirm, ihr Platz im Layout wird freigegeben, und an ihre Stelle
+                // tritt eine Statuszeile mit Sprungknopf.
+                Bw9Ausblenden(indexVorBhkw);
+                y = yVorBhkw;
+                Bw9Verweis(ref y);
             }
 
             // ---------------- Emissionsbilanz (Brennstoff-Erzeuger) ----------------
@@ -398,6 +411,74 @@ namespace WindowsFormsApplication1
             this.Name = "Form_WirtschaftlichkeitParameter";
             this.Text = "Wirtschaftlichkeits-Parameter";
             this.ResumeLayout(false);
+        }
+
+        // ------------------------------------------------------- ETAPPE B5 (BW9)
+
+        /// <summary>
+        /// Blendet alle Steuerelemente ab <paramref name="abIndex"/> aus — das sind
+        /// genau die beiden BHKW-Gruppen (Konzept § 6.1: „Was
+        /// <c>Form_WirtschaftlichkeitParameter</c> verlässt").
+        ///
+        /// <para><b>Warum ausblenden statt weglassen.</b> Der Speicherweg
+        /// <see cref="btnOk_Click"/> liest dieselben Steuerelemente weiter aus, und sie
+        /// tragen unverändert die geladenen Datenbankwerte — der Dialog schreibt die
+        /// BHKW-Angaben damit <b>wertgleich</b> zurück, wie er es auch für jede andere
+        /// ausgeblendete Gruppe tut (Vorgabe 12.08.2026: „Werte ausgeblendeter Gruppen
+        /// bleiben beim Speichern unverändert erhalten"). Ein Weglassen hätte den
+        /// Speicherweg auf null-Prüfungen umgebaut und damit ein Verhalten geändert, das
+        /// zu B5 nicht gehört.</para>
+        ///
+        /// <para>Unsichtbare Steuerelemente bekommen keinen Fokus, keinen Tabulator und
+        /// zählen nicht zum Bildlaufbereich — der freigegebene Platz wird deshalb
+        /// vollständig von den nachfolgenden Gruppen genutzt.</para>
+        /// </summary>
+        private void Bw9Ausblenden(int abIndex)
+        {
+            for (int i = abIndex; i < this.Controls.Count; i++)
+                this.Controls[i].Visible = false;
+        }
+
+        /// <summary>Die einzeilige Statuszeile mit Sprungknopf, die an die Stelle der
+        /// beiden ausgezogenen Gruppen tritt (Konzept § 6.1).</summary>
+        private void Bw9Verweis(ref int y)
+        {
+            Gruppe(T("BHW_PARAM_GRUPPE", "BHKW — KWKG, Energie- und Stromsteuer"), ref y);
+
+            string text = T("BHW_PARAM_VERWEIS",
+                            "Diese Angaben stehen seit Etappe B5 im eigenen Dialog " +
+                            "„BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je " +
+                            "BHKW-Modul, den Herleitungen und der Vorschau.");
+            var lbl = new Label
+            {
+                Location = new Point(28, y + 3),
+                ForeColor = Color.DimGray,
+                Text = text
+            };
+            lbl.Size = new Size(402, TextRenderer.MeasureText(
+                text, this.Font, new Size(402, 0), TextFormatFlags.WordBreak).Height + 4);
+            this.Controls.Add(lbl);
+            y += lbl.Height + 6;
+
+            var btn = new Button
+            {
+                Location = new Point(28, y),
+                Size = new Size(402, 28),
+                Text = T("BHW_PARAM_KNOPF",
+                         "⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…")
+            };
+            btn.Click += new EventHandler(btnBhkwWirtschaftlichkeit_Click);
+            this.Controls.Add(btn);
+            y += 36;
+        }
+
+        /// <summary>ETAPPE B5: öffnet den Sammeldialog. Die Werte DIESES Dialogs bleiben
+        /// unberührt — der neue Dialog schreibt selbst und liest beim Öffnen den
+        /// gespeicherten Stand (dasselbe Verhältnis wie beim Gesetzeskatalog).</summary>
+        private void btnBhkwWirtschaftlichkeit_Click(object sender, EventArgs e)
+        {
+            using (var f = new Form_BhkwWirtschaftlichkeit(_parameter.IdStamm))
+                f.ShowDialog(this);
         }
 
         // ------------------------------------------------------------- Layout-Helfer
@@ -666,6 +747,20 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return 2028;
+        }
+
+        /// <summary>
+        /// Anzeigetext mit deutschem Rückfall (Drei-Schichten-Regel: Anzeige ausschließlich
+        /// über den Katalog). Fehlt der Schlüssel, steht der deutsche Wortlaut — dasselbe
+        /// Muster wie in <c>Form_BhkwWirtschaftlichkeit</c>; dessen Helfer ist
+        /// <c>private</c> und deshalb hier nicht mitnutzbar.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
     }
 }
