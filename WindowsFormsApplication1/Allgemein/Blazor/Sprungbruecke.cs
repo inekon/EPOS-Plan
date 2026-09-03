@@ -121,6 +121,16 @@ namespace WindowsFormsApplication1
                         using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
                             return MitOk(f, besitzer);
 
+                    // --- iU9-W7.0f: die Stammdaten der Solarthermieganglinien ----------
+                    // Dieselbe Maske, die Dienste.Navigation fuer Masken.SolarganglinieAdmin
+                    // zeigt; der Vorlaeufer rief sie ueber MenueCtrl.Solarganglinie(). Sie
+                    // bleibt bis Welle 14b WinForms. Nach der Rueckkehr laedt der Dialog
+                    // seine Katalogliste neu - der Anwender kann dort etwas geaendert und
+                    // mit Abbrechen geschlossen haben (A-19 aus Welle 6).
+                    case Sprungziel.SolarganglinieAdmin:
+                        using (Form_Solarganglinie_Admin f = new Form_Solarganglinie_Admin())
+                            return MitOk(f, besitzer);
+
                     default:
                         return false;
                 }

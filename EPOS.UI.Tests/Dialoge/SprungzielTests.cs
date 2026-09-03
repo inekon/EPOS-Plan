@@ -66,13 +66,16 @@ public sealed class SprungzielTests
         Assert.Equal("STROMSPEICHER_ADMIN", Sprungziel.StromspeicherAdmin);
         Assert.Equal("PV_ADMIN", Sprungziel.PvAdmin);
         Assert.Equal("PUFFERSP_ADMIN", Sprungziel.PufferSpAdmin);
+
+        // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
+        Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
     }
 
     [Fact]
-    public void Alle_sechs_Ziele_sind_da()
+    public void Alle_sieben_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
-        Assert.Equal(6, Schluessel().Length);
+        Assert.Equal(7, Schluessel().Length);
     }
 }
