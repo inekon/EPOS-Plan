@@ -1138,3 +1138,27 @@ body {
     max-height: 48vh;
     overflow: auto;
 }
+
+/* ==================================================================== */
+/* KOSTENLEISTE (iU9-W6.0f)                                             */
+/*                                                                      */
+/* Vorbild Views/Kosten/KostenKnoepfe.Leiste: drei Knoepfe nebeneinander */
+/* in einem 40 px hohen Panel, rechts daneben der rote FK8-Kurzhinweis.  */
+/* Hier umbricht die Reihe, statt bei 480 px abgeschnitten zu werden -   */
+/* dieselbe Regel wie bei jeder anderen Reihe der Bibliothek (M2).       */
+/* ==================================================================== */
+
+.epos-kostenleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+    padding-top: var(--epos-rand);
+    border-top: 1px solid var(--epos-rahmen);
+}
+
+.epos-kostenleiste-hinweis {
+    color: var(--epos-senke-text);          /* Color.Firebrick des Vorlaeufers */
+    font-size: var(--epos-schriftgroesse);
+}
