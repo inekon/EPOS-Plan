@@ -25,9 +25,10 @@ namespace WindowsFormsApplication1
     /// <see cref="SKColor"/> statt des GDI+-Farbtyps <c>Color</c>. Die Datei hat damit
     /// KEINE Windows-Bindung mehr und kann in den plattformfreien Kern ziehen.</para>
     ///
-    /// <para>Der eingefrorene GDI+-Stand steht als <c>ChartRendererGdi</c> daneben; der
-    /// Modus <c>bildvergleich</c> der Referenzlauf-Suite hält beide Fassungen unter
-    /// Windows Pixel für Pixel gegeneinander (Paket iU7-1).</para>
+    /// <para>Der eingefrorene GDI+-Stand (<c>ChartRendererGdi</c>) und der Modus
+    /// <c>bildvergleich</c> der Referenzlauf-Suite sind mit Entscheid iF23 am 03.09.2026
+    /// gelöscht; dieser Renderer ist die einzige Fassung. Wächter sind die Renderer-Tests
+    /// im Kern und <c>Proben/ChartProben</c> (Maße, Farben, Determinismus).</para>
     ///
     /// Feste Farbzuordnung je Erzeuger über alle Diagramme (Konzept Kap. 6):
     /// WP blau, BHKW orange, Kessel grau, Solar gelb, PV grün, Netz/Rest neutral.

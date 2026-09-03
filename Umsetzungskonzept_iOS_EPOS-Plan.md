@@ -1211,8 +1211,9 @@ byte-gleich); die Windows-Punkte stehen im Statusblock.
 > jetzt die **Zeichnung** *und* die **Ausgabe** — `WordBerichtGenerator`,
 > `ExcelBerichtGenerator`, `Bausteine/`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`,
 > `IBerichtsBaustein` (verschoben im zweiten Umzug, siehe iU5-Statusblock). In der Anwendung
-> geblieben sind nur `ChartRendererGdi` — der Gegenpart des Windows-Bildvergleichs aus
-> iU7-1 — und `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft.
+> geblieben ist nur `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft;
+> `ChartRendererGdi` (Gegenpart des Windows-Bildvergleichs aus iU7-1) ist mit iF23 am
+> 03.09.2026 gelöscht.
 >
 > **Damit steht die Vorlage für iF16.** Der Kern liefert PNG-Bytes, die Oberfläche zeigt
 > sie an — genau der Weg, den `EPOS.UI/Standards/ChartBild` (iU8-4) schon annimmt. Ein
@@ -1254,8 +1255,10 @@ Kern-Renderer; ScottPlot bleibt nur dort, wo im Chart wirklich bedient wird (iF2
 
 **Abnahme:** Berichtsbilder aus dem neuen Renderer sind gegen die alten sichtgeprüft; Berichtsdatei
 zeilengleich. **Hier erreicht, soweit ohne Windows möglich** (ChartProben 9/9, drei Renderer-Tests,
-`kern.yml` auf ubuntu und macos); der Bildvergleich alt/neu läuft nur unter Windows und ist die
-Vorbedingung dafür, `ChartRendererGdi.cs` zu löschen (→ iF23).
+`kern.yml` auf ubuntu und macos). Der Bildvergleich alt/neu lief nur unter Windows und wurde
+nie gefahren: Der Anwender hat am 03.09.2026 die Löschung von `ChartRendererGdi.cs` und des
+Modus `bildvergleich` ohne ihn angeordnet (→ iF23); der Nachweis der Bildgleichheit ist seither
+der Sichtvergleich der Berichte am Gerät.
 
 ### iU8 — `EPOS.UI` und der erste Blazor-Dialog unter Windows · L · Windows
 
@@ -1933,7 +1936,7 @@ setzen sie voraus:**
 | **iF20** | **WebView2-Verteilung:** Online-Bootstrapper (heute), Standalone-Installer (~150 MB) oder Fixed Version? | Bootstrapper, solange kein Kunde ohne Internet installiert. **Anwenderentscheid, offen** — S10 im Setup-Konzept § 5.5 |
 | **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel** — gebaut mit iU8-6 (`DpiInsel`). Der Windows-Befund bei 125 % und 150 % steht aus; die Umstellung der ganzen Anwendung wäre ein eigenes Vorhaben mit Layoutwirkung auf 120 Masken |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
-| **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos löschen**, sobald `Referenzlauf.exe bildvergleich` unter Windows PASS meldet. Bis dahin ist die Datei eine zweite, nicht gepflegte Fassung desselben Renderers |
+| **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
 
 ---
 
@@ -1948,7 +1951,7 @@ setzen sie voraus:**
 | Rechenkern | `EPOS.Kern/Allgemein/BhkwPlan.cs` (410 Z., seit iU4-5 dort) |
 | Datenzugriff | `EPOS.Kern/Allgemein/DataRepository.cs` (Fassade seit iU6-T4), `IDatenzugriff.cs`, `SqliteDatenzugriff.cs`, `DbParam.cs`, `RecordSet.cs` (ohne `DBCommand`, iU6-T1) |
 | Schemapflege | `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (13.589 Z., 61 Schritte, `ZIEL_VERSION` Z. 112); `SchemaKatalog.cs` (3.461 Z.) |
-| Chart-Renderer | `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` (SkiaSharp seit iU7-2, im Kern seit iU7-5); der eingefrorene GDI+-Gegenpart `WindowsFormsApplication1/Allgemein/Bericht/ChartRendererGdi.cs` (→ iF23) |
+| Chart-Renderer | `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` (SkiaSharp seit iU7-2, im Kern seit iU7-5) — die einzige Fassung; der GDI+-Gegenpart ist mit iF23 gelöscht |
 | Excel-COM | `WindowsFormsApplication1/Allgemein/ToolsClass.cs`, `Allgemein/Import/GanglinienDatei.cs` |
 | Lizenz | `WindowsFormsApplication1/Allgemein/Lizenz/` (`LizenzToken.cs`, `GeraeteId.cs`, `LizenzServerClient.cs`, `LizenzManager.cs`); `Lizenzserver/` (PHP) |
 | Größtes Einzelstück | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.cs` (7.773 Z.) |

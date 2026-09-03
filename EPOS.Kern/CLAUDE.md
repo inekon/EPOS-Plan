@@ -62,7 +62,6 @@ Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie ü
 |---|---|
 | `BaseForm`, `Form_Hinweis` (+ Designer), `FensterEinpassung`, `SpeichernLeiste`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`) | Oberflächenbausteine — WinForms und GDI+ |
 | `Blazor/BlazorDialogForm`, `Blazor/BlazorDienste`, `Hilfe/WindowsHilfeDienst` | die Blazor-Hülle selbst (iU8-6/iU8-7): ein modales `Form` mit `BlazorWebView`, sein Dienstverzeichnis und die Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`. Sie **sind** die Oberfläche und können nie in den Kern |
-| `ChartRendererGdi` | der eingefrorene GDI+-Stand, nur noch Gegenpart des Windows-Bildvergleichs (`Referenzlauf/Bildvergleich.cs`) |
 | `Simulation/SchemaModell.cs` | Schema-**Ansicht**; ruft `Form_Waermesenke` |
 | `Update/SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb` |
 | `Bericht/BerichtsDatenSammler` | `EnergieMengen` aus `Views/Varianten/` |
@@ -219,10 +218,11 @@ zeigen" auch außerhalb des Berichts.
 **Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
 `ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
 `ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
-der Bericht entsteht damit auch auf dem iPad. Zwei Dinge blieben in der Anwendung:
-`ChartRendererGdi` (der eingefrorene GDI+-Stand, Gegenpart des Windows-Bildvergleichs
-`Referenzlauf/Bildvergleich.cs`, iU7-1) und `BerichtsDatenSammler`, weil er `EnergieMengen`
-aus `Views/Varianten/` ruft.
+der Bericht entsteht damit auch auf dem iPad. In der Anwendung blieb nur
+`BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft. Der eingefrorene
+GDI+-Stand `ChartRendererGdi` und der Modus `bildvergleich` der Referenzlauf-Suite sind mit
+Entscheid **iF23** am 03.09.2026 gelöscht — der Anwender hat die Löschung ohne den
+Windows-Bildvergleich angeordnet; die Berichtskette hat keine GDI+-Stelle mehr.
 
 **Die Fußzeilen-Fassung des Word-Berichts.** `Bausteine/BausteineStandard.cs` las die
 Programmfassung bis iU5-U3 über `System.Windows.Forms.Application.ProductVersion`. An ihrer
@@ -248,8 +248,8 @@ Sans/DejaVu Sans (Linux) → Helvetica/Arial (macOS/iOS). Das Layout ist **metri
 Umbrüche und Legendenbreiten folgen den gemessenen Textmaßen, nicht festen Pixelwerten.
 Folge, und das ist Absicht: **Textbreiten dürfen je Plattform abweichen.** Ein Vergleich
 Windows↔Linux ist deshalb ein Struktur- und Histogrammvergleich, kein Pixelvergleich; ein
-Pixelvergleich ist nur *innerhalb* einer Plattform sinnvoll (genau das macht der Modus
-`bildvergleich` der Referenzlauf-Suite gegen `ChartRendererGdi`).
+Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
+`bildvergleich` gegen den GDI+-Stand — beide mit iF23 gelöscht).
 
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen

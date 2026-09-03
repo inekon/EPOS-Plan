@@ -227,6 +227,38 @@ Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
 
+**iF24 — entschieden am 03.09.2026: Konto beschaffen.** Die Schritte, die nur der Anwender gehen
+kann (die CI übernimmt danach die Signierkette, iE9):
+
+1. Apple ID der Firma mit Zwei-Faktor-Anmeldung anlegen (nicht die private ID eines
+   Mitarbeiters — das Konto trägt später die App).
+2. Im Apple Developer Program als **Organisation** einschreiben (99 US-Dollar/Jahr). Dafür
+   verlangt Apple eine **D-U-N-S-Nummer** der INEKON; Prüfung durch Dun & Bradstreet dauert
+   Tage bis Wochen, die Einschreibung selbst nochmals einige Tage. Eine Einzelperson-Einschreibung
+   ginge schneller, kann aber später nicht in eine Organisation umgewandelt werden.
+3. Nach der Freischaltung in App Store Connect die **Bundle-ID `de.inekon.eposplan`** (aus
+   `EPOS.iOS/EPOS.iOS.csproj`) registrieren und einen App-Eintrag anlegen.
+4. Ein **Apple-Distribution-Zertifikat** (`.p12` mit Kennwort) und ein
+   **Provisioning-Profil** für TestFlight erzeugen.
+5. Beides als Repository-Geheimnisse hinterlegen (`IOS_P12_BASE64`, `IOS_P12_PASSWORD`,
+   `IOS_PROFILE_BASE64`); `ios.yml` bekommt in iU13 den Signierschritt. Geheimnisse gehören
+   nie in einen Commit.
+6. Für einen späteren Vertrieb außerhalb des Stores: **Apple Business Manager** prüfen
+   (Custom Apps, § 3.4 des Umsetzungskonzepts; entschärft die Provisionsfrage iR7).
+
+**iF25 — entschieden am 03.09.2026: E1 für die CI, E2 für TestFlight.** Die CI baut weiter mit der
+Testdatenbank (`-p:SeedDb`, 77 MB). Vor iU13 misst der Anwender unter Windows, wie groß der
+Produktivstand als Seed wird — die Produktivdatenbank liegt nicht im Repo:
+
+```
+sqlite3 Kenndaten.sqlite "VACUUM INTO 'Kenndaten_seed.sqlite'"
+dir Kenndaten_seed.sqlite
+```
+
+Die so erzeugte Datei wird in iU13 per `-p:SeedDb=<Pfad>` gebaut. Liegt sie deutlich über
+150 MB, ist vor dem Store-Weg zu prüfen, welche Massendatentabellen (Klima- und Solardaten)
+sich beim Erststart nachladen lassen (E3). E4 (Volldownload beim Erststart) nur bei Store-Vorgaben.
+
 - [ ] **AOT statt JIT.** Der Simulator führt JIT aus, das Gerät nicht. Zu prüfen sind die
       Stellen, die Reflection oder Startzeitmagie benutzen: der `[ModuleInitializer]` in
       `SimulationControl.Stromspeicher.cs`, `ApplicationSettingsBase` in `Properties/Settings`,
