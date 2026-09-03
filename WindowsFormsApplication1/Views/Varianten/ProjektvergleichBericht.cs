@@ -17,10 +17,11 @@ namespace WindowsFormsApplication1
     /// (NuGet: DocumentFormat.OpenXml – kein installiertes Word nötig).
     ///
     /// Datengrundlage: jedes Projekt der Gruppe wird zu Beginn FRISCH simuliert
-    /// (SimulationRunner.SimuliereUndSpeichere, Muster Form_Variantentest), danach
+    /// (SimulationRunner.SimuliereUndSpeichere, Muster des Altdialogs
+    /// „Projektvarianten"), danach
     /// liest ErgebnisCtrl.Load(idProjekt) den eben geschriebenen Lauf. Damit steht auch
     /// dieser Weg nie auf veralteten Ergebnissen (Nutzeranforderung 15.08.2026) — er
-    /// wird mit Phase 2 des Berichtsmoduls ohnehin durch Form_Bericht abgelöst.
+    /// wird mit Phase 2 des Berichtsmoduls ohnehin durch die Berichtsseite abgelöst.
     /// Verglichen werden Stamm + Variante spaltenweise. Zusätzlich Kuchendiagramme
     /// (Wärme-/Stromdeckung) je Projekt, gerendert als PNG (System.Drawing) und eingebettet.
     /// </summary>
@@ -77,7 +78,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Simuliert jedes Projekt der Vergleichsgruppe frisch und speichert das Ergebnis
         /// (frische SimulationRunner-Instanz je Projekt — Muster
-        /// Form_Variantentest.btnSimulieren_Click). Ein gescheitertes Projekt bricht den
+        /// des Altdialogs „Projektvarianten"). Ein gescheitertes Projekt bricht den
         /// Bericht nicht ab: es wird mit Namen gemeldet und der Bericht läuft mit dem
         /// zuletzt gespeicherten Stand weiter — dasselbe Verhalten wie im
         /// BerichtsDatenSammler.

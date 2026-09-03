@@ -94,8 +94,8 @@ namespace WindowsFormsApplication1
         // _stilleFehler gelten für den ganzen Prozess. Das trägt nur, solange HÖCHSTENS
         // EIN Simulationslauf gleichzeitig läuft - und die Anwendung ist dafür NICHT
         // einläufig: Der Berichtspfad rechnet in Task.Run auf einem ThreadPool-Thread
-        // (BerichtsDatenSammler.Sammle, gerufen aus Form_Bericht,
-        // Form_Wirtschaftlichkeit, Form_WirtschaftlichkeitVerlauf). Getragen wird die
+        // (BerichtsDatenSammler.Sammle, gerufen aus UcBericht,
+        // UcWirtschaftlichkeit, KapitalwertVerlaufHuelle). Getragen wird die
         // Annahme von der MODALITÄT dieser drei Formulare: Alle drei werden ausschließlich
         // über ShowDialog() geöffnet, der MDI-Thread kann währenddessen keinen zweiten
         // Lauf starten. Wer eines davon je nicht-modal öffnet, bricht diese Invariante -

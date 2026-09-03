@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
     /// die Seitentabelle Tab_Variante (ID, ID_Projekt, ID_ProjektRef, Variantenname)
     /// verknüpft die Variante (ID_Projekt) mit ihrem Stammprojekt (ID_ProjektRef).
     ///
-    /// Diese Klasse bündelt die bislang in Form_Variantentest verstreute Logik, damit
+    /// Diese Klasse bündelt die bis iU9-W0 im Altdialog „Projektvarianten" verstreute
+    /// Logik, damit
     /// Formular, Menüweg ("Als Variante speichern…") und Berichtsmodul dieselbe
     /// Implementierung nutzen. Kein UI-Bezug (Meldungen laufen über Rückgabewerte).
     /// </summary>

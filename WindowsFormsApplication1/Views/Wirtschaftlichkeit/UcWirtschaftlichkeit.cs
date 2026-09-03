@@ -21,10 +21,10 @@ namespace WindowsFormsApplication1
     /// damit garantiert identische Zahlen.
     ///
     /// <para><b>Herkunft.</b> Der Inhalt stand bis zum Umbau „Berichte &amp; Kosten"
-    /// direkt in <see cref="Form_Wirtschaftlichkeit"/>. Er ist unverändert in dieses
+    /// direkt im Wirtschaftlichkeitsdialog. Er ist unverändert in dieses
     /// UserControl gehoben worden, damit ihn die Seite „Wirtschaftlichkeit" des
-    /// Reiters einbetten kann; <see cref="Form_Wirtschaftlichkeit"/> ist seither nur
-    /// noch ein dünner Dialog-Wrapper um dieses Control. Geändert wurden allein die
+    /// Reiters einbetten kann; die Dialoghülle darum ist mit iU9-W0 entfallen
+    /// (Anwenderentscheid iF29). Geändert wurden allein die
     /// Wirtsbeziehungen: Formular-Eigenschaften (ClientSize/Text/StartPosition) sind
     /// zu Control-Eigenschaften geworden, <c>Load</c>/<c>FormClosing</c> zu
     /// <see cref="LadeDaten"/>/<see cref="Beschaeftigt"/>+<see cref="Abbrechen"/>,
@@ -72,24 +72,12 @@ namespace WindowsFormsApplication1
         /// <summary>Stammprojekt-ID der angezeigten Vergleichsgruppe.</summary>
         public int IdStamm { get { return _idStamm; } }
 
-        /// <summary>
-        /// true = das Control sitzt im Dialog-Wrapper <see cref="Form_Wirtschaftlichkeit"/>;
-        /// dann bleibt „Schließen" dauerhaft sichtbar. Eingebettet im Reiter erscheint
-        /// der Knopf nur während eines Laufs — als „Abbrechen".
-        /// </summary>
-        public bool AlsDialog
-        {
-            get { return _alsDialog; }
-            set { _alsDialog = value; if (btnSchliessen != null) btnSchliessen.Visible = value || Beschaeftigt; }
-        }
-        private bool _alsDialog;
-
         /// <summary>Der Anwender hat „Schließen" gedrückt (nur im Dialog-Wrapper belegt).</summary>
         public event EventHandler SchliessenAngefordert;
 
         public UcWirtschaftlichkeit(int idProjekt)
         {
-            // Variante → Stamm auflösen (Muster Form_AlsVariante/Form_Bericht).
+            // Variante → Stamm auflösen (Muster Form_AlsVariante/UcBericht).
             int idStamm = idProjekt;
             try
             {
@@ -257,7 +245,7 @@ namespace WindowsFormsApplication1
         /// <c>EPOS.UI</c> (<c>BhkwWirtschaftlichkeitDialog</c>); die WinForms-Fassung
         /// <c>Form_BhkwWirtschaftlichkeit</c> ist gelöscht (Regel M1). Angezeigt wird sie
         /// von <see cref="BhkwWirtschaftlichkeitHuelle"/> — Vorbild
-        /// <c>Form_Kosten.CreateNewEnergyCarrier</c> (iU8-9). Für diesen Handler ändert
+        /// <c>EnergietraegerVarianteDialog</c> (iU8-9). Für diesen Handler ändert
         /// sich nur die Zeile, die den Dialog öffnet; Rückmeldung und Nachlauf bleiben.</para>
         /// </summary>
         private void btnBhkwWirtschaftlichkeit_Click(object sender, EventArgs e)
@@ -839,8 +827,8 @@ namespace WindowsFormsApplication1
             btnParameter.Enabled = !busy;
             btnVerlauf.Enabled = !busy;
             btnBerechnen.Enabled = !busy;
-            // Eingebettet dient der Knopf allein dem Abbrechen; im Dialog bleibt er stehen.
-            btnSchliessen.Visible = AlsDialog || busy;
+            // Der Knopf dient allein dem Abbrechen; ausserhalb eines Laufs ist er weg.
+            btnSchliessen.Visible = busy;
             btnSchliessen.Text = busy ? "Abbrechen" : "Schließen";
             this.UseWaitCursor = busy;
         }

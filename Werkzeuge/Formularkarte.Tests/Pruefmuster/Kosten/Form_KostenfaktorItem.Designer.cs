@@ -1,4 +1,7 @@
-﻿namespace WindowsFormsApplication1
+﻿// Prüfmuster für Formularkarte — Stand vor iU9-W0 (16b106a^); die Maske ist mit dem
+// Anwenderentscheid iF29 stillgelegt worden, eine Nachfolge gibt es nicht: Sie hing am
+// einstiegslosen Form_Kosten und ist mit ihm gelöscht.
+namespace WindowsFormsApplication1
 {  
     partial class Form_KostenfaktorItem
     {
