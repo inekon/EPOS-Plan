@@ -1,26 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Die Menuewege der Anwendung: Projekt anlegen, oeffnen, duplizieren, loeschen
+    /// und die Stammdaten- und Einlesemasken.
+    ///
+    /// <para><b>Seit iU5 kennt dieser Controller keine Maske mehr.</b> Er nennt einen
+    /// sprachneutralen Maskenschluessel (<see cref="Masken"/>) und ueberlaesst das
+    /// Bauen und Zeigen <c>Dienste.Navigation</c>; das offene Projekt fuehrt
+    /// <c>Dienste.Projekt</c>. Vorher standen hier 25 Aufrufe der Bauform
+    /// <c>new Form_X(); frm.ShowDialog();</c> und neun Zugriffe auf
+    /// <c>Program.mainfrm</c>/<c>Program.startfrm</c>.</para>
+    ///
+    /// <para>Das Feld <c>wizparent</c> ist mit iU5 entfallen: Es wurde ausschliesslich
+    /// beschrieben und von niemandem gelesen; der Assistentenrahmen haengt seit Paket P4
+    /// ueber <c>WizardParent.Aktiver</c> und <c>WizardCtrl.Aktueller</c>.</para>
+    /// </summary>
     class MenueCtrl
     {
-        public WizardParent wizparent;
-
-        public MenueCtrl()
-        {
-            wizparent = null;
-        }
-
+        /// <summary>
+        /// Zieht den Projektnamen aus <c>Tab_Applikation</c> in den Kopf des
+        /// Detailformulars nach.
+        /// </summary>
         public void SetProjektname()
         {
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            ctrl.ReadSingle();
-            FormMain frm = (FormMain)Program.mainfrm;
-            frm.SetProjekt(ctrl.m_szProjektname);
+            Dienste.Navigation.AnsichtAktualisieren(Ansichten.ProjektDetail);
         }
 
         /// <summary>
@@ -50,14 +57,11 @@ namespace WindowsFormsApplication1
 
         private void AssistentZeigen(int betriebsart)
         {
-            wizparent = new WizardParent(AssistentSeiten.Erzeugen());
-            Program.wizardctrl.parentform = wizparent;
-            wizparent.SetWizardMode(betriebsart);
-            wizparent.ShowDialog();
-
-            if (wizparent.gespeichert)
+            // Der Rahmen wird von der Navigation gebaut, beim WizardCtrl angemeldet und
+            // modal gezeigt; hier bleibt nur die Rueckmeldung an den Anwender.
+            if (Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart))
             {
-                MessageBox.Show("Daten gespeichert");
+                Dienste.Dialog.Meldung("Daten gespeichert");
             }
         }
 
@@ -87,12 +91,11 @@ namespace WindowsFormsApplication1
         {
             if (!zuletzt)
             {
-                using (Form_ProjektAuswahl frm = new Form_ProjektAuswahl())
-                {
-                    if (frm.ShowDialog() != DialogResult.OK) return;
-                    if (frm.m_ID_Projekt <= 0 || frm.m_szProjekt == "") return;
-                    ProjektInFormMainLaden(frm.m_szProjekt, frm.m_ID_Projekt);
-                }
+                Projektwahl wahl = new Projektwahl();
+                if (!Dienste.Navigation.OeffneMaske(Masken.ProjektAuswahl, wahl)) return;
+                if (wahl.Id <= 0 || wahl.Name == "") return;
+
+                ProjektInFormMainLaden(wahl.Name, wahl.Id);
                 return;
             }
 
@@ -112,51 +115,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void ProjektInFormMainLaden(string szProjekt, int idProjekt)
         {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            ctrlproj.ReadSingle(szProjekt);
-
-            Program.mainfrm = new FormMain();
-            FormMain frmmain = (FormMain)Program.mainfrm;
-
-            string szKlima = frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion);
-
-            frmmain.SetProjekt(szProjekt);
-            frmmain.SetIDProjekt(idProjekt);
-            frmmain.SetKlima(szKlima);
-            Program.startfrm.SetKlima(szKlima);
-            frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
-            frmmain.SetKunde(ctrlproj.m_szKunde);
-            frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
-            frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
-            frmmain.SetWPControl(szProjekt);
-            frmmain.SetBHKWControl(szProjekt);
-            frmmain.SetSPControl(szProjekt);
-            frmmain.SetHeizkesselControl(szProjekt);
-            frmmain.SetGebaeudeControl(szProjekt);
-            frmmain.SetWaermebedarfExternControl(szProjekt);
-            frmmain.SetProzesswaermeControl(idProjekt);
-            frmmain.SetStrombedarfControl(idProjekt);
-            frmmain.SetStromganglinieControl(szProjekt);
-            frmmain.SetPVControl(szProjekt);
-            frmmain.SetPufferSpControl(szProjekt);
-            frmmain.SetSolarControl(szProjekt);
-            frmmain.Add_WPKontext();
-            frmmain.Add_BHKWKontext();
-            frmmain.Add_GebäudeKontext();
-            frmmain.Add_HeizkesselKontext();
-            frmmain.Add_WaermebedarfExternKontext();
-            frmmain.Add_ProzesswaermeKontext();
-            frmmain.Add_StrombedarfKontext();
-            frmmain.Add_StromganglinieKontext();
-            frmmain.Add_SpKontext();
-            frmmain.Add_PVKontext();
-            frmmain.Add_SolarKontext();
-
-            frmmain.ShowDialog();
-
-            Program.startfrm.m_szProjektname = szProjekt;
-            Program.startfrm.m_ID_Projekt = idProjekt;
-            Program.startfrm.SetTextProjekt(szProjekt);
+            // Der Ablauf selbst - Stammdaten lesen, zwoelf Gewerkslisten und elf
+            // Kontextmenues bestuecken, modal zeigen, danach den Projektkontext der
+            // Startmaske nachziehen - ist von der ersten bis zur letzten Anweisung
+            // Oberflaechenarbeit und steht seit iU5 zeilengleich in WinFormsNavigation.
+            Dienste.Navigation.OeffneMaske(Masken.ProjektDetail, szProjekt, idProjekt);
         }
 
         /// <summary>
@@ -199,20 +162,7 @@ namespace WindowsFormsApplication1
         /// </returns>
         public bool ProjektAktivSetzen(string szProjekt, int idProjekt)
         {
-            Form_Start start = Program.startfrm;
-            if (start == null) return false;
-
-            if (string.IsNullOrWhiteSpace(szProjekt) && idProjekt > 0)
-            {
-                ProjektCtrl ctrlproj = new ProjektCtrl();
-                ctrlproj.ReadSingle(idProjekt);
-                szProjekt = ctrlproj.rows > 0 ? ctrlproj.m_szProjektname : "";
-            }
-
-            if (!start.ProjektKontextUebernehmen(szProjekt)) return false;
-
-            start.ZuletztGeoeffnetMerken();
-            return true;
+            return Dienste.Projekt.Uebernehmen(idProjekt, szProjekt);
         }
 
         /// <summary>
@@ -224,8 +174,7 @@ namespace WindowsFormsApplication1
         /// <returns>true, wenn dupliziert wurde.</returns>
         public bool ProjektSpeichernUnter()
         {
-            using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
-                return frm.ShowDialog() == DialogResult.OK;
+            return Dienste.Navigation.OeffneMaske(Masken.ProjektSpeichernUnter);
         }
 
         /// <summary>
@@ -239,16 +188,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string ProjektDelete(bool zuletzt = false)
         {
-            List<ProjektModel> liste;
-            bool sicherung;
-            using (Form_ProjektDelete frm = new Form_ProjektDelete())
-            {
-                if (frm.ShowDialog() != DialogResult.OK || frm.ZuLoeschen.Count == 0) return "";
-                liste = frm.ZuLoeschen;
-                sicherung = frm.SicherungGewuenscht;
-            }
+            // Der Dialog liefert die Häkchenauswahl über sein Fach (iU5: der Controller
+            // kennt die Maske nicht) und hat mit der vollständigen Liste bereits
+            // zurückgefragt — die Einzelrückfrage des Bestands ist damit abgelöst.
+            Projektloeschwahl wahl = new Projektloeschwahl();
+            if (!Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl)) return "";
 
-            if (sicherung && !DatenbankSichern("vor_Loeschen")) return "";
+            List<ProjektModel> liste = wahl.ZuLoeschen;
+            if (liste == null || liste.Count == 0) return "";
+
+            if (wahl.SicherungGewuenscht && !DatenbankSichern("vor_Loeschen")) return "";
 
             int aktuell = AktuelleProjektId();
             string aktuellerName = "";
@@ -290,8 +239,9 @@ namespace WindowsFormsApplication1
             if (fehler.Count > 0)
                 meldung += "\r\n\r\n" + string.Format(Form_ProjektDelete.TPd("PDLG_FEHLER", "Fehler bei:\r\n{0}"),
                                                        string.Join("\r\n", fehler));
-            MessageBox.Show(meldung, Form_ProjektDelete.TPd("PDLG_TITEL", "Projekte löschen"), MessageBoxButtons.OK,
-                            fehler.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+            string titel = Form_ProjektDelete.TPd("PDLG_TITEL", "Projekte löschen");
+            if (fehler.Count > 0) Dienste.Dialog.Warnung(meldung, titel);
+            else Dienste.Dialog.Meldung(meldung, titel);
 
             return aktuellerName.Length > 0 ? aktuellerName : letzter;
         }
@@ -312,7 +262,7 @@ namespace WindowsFormsApplication1
         // Gezieltes UPDATE statt CommandBuilder (Bestandsweg vor dem Umbau).
         private static void AktuellesProjektZuruecksetzen()
         {
-            OleDbParameter pName = new OleDbParameter("?", "");
+            DbParam pName = new DbParam("?", "");
             DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0", pName);
         }
 
@@ -351,24 +301,26 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return MessageBox.Show(
+                // warnend + vorgabeNein: dieselbe Aussage wie zuvor über
+                // MessageBoxIcon.Warning und MessageBoxDefaultButton.Button2 — ohne
+                // Sicherung soll die Eingabetaste nicht löschen.
+                return Dienste.Dialog.Frage(
                     string.Format(Form_ProjektDelete.TPd("PDLG_SICHERUNG_FEHLER",
                         "Die Sicherungskopie konnte nicht angelegt werden:\r\n{0}\r\n\r\nTrotzdem löschen?"), ex.Message),
                     Form_ProjektDelete.TPd("PDLG_TITEL", "Projekte löschen"),
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
+                    warnend: true,
+                    vorgabeNein: true);
             }
         }
 
         public void WP_Administration()
         {
-            Form_WP frm = new Form_WP();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.WpAdministration);
         }
 
         public void StromspeicherBearbeiten()
         {
-            Form_AdminStromspeicher frm = new Form_AdminStromspeicher();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.StromspeicherAdmin);
         }
 
         /// <summary>
@@ -379,113 +331,86 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void PeakShavingBearbeiten()
         {
-            int idProjekt = Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0;
-            using (Form_PeakShaving frm = new Form_PeakShaving(idProjekt))
-                frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PeakShaving, Dienste.Projekt.Id);
         }
 
         public void GebaeudeBearbeiten()
         {
-            Form_Gebaeude frm = new Form_Gebaeude();
-            frm.m_bAdmin = true;
-            frm.SetControls("");
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.GebaeudeAdmin);
         }
 
         public void GebaeudetypenBearbeiten()
         {
-            Form_EingGebTyp frm = new Form_EingGebTyp();
-            frm.SetControls();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.GebaeudetypenAdmin);
         }
 
         public void WaermebedarfExtern()
         {
-            Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();
-            frm.SetControls();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.WaermebedarfExternAdmin);
         }
 
         public void Prozesswaerme()
         {
-            Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.ProzesswaermeAdmin);
         }
 
         public void Stromverbraucher()
         {
-            Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.StromverbraucherAdmin);
         }
 
         public void Stromganglinie()
         {
-            Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin();
-            frm.SetControls();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.StromganglinieAdmin);
         }
 
         public void Solarganglinie()
         {
-            Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin();
-            frm.SetControls();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.SolarganglinieAdmin);
         }
 
         public void WPImport()
         {
-            Form_WP_einlesen frm = new Form_WP_einlesen();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.WpImport);
         }
 
         public void Kessel()
         {
-            Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.HeizkesselAdmin);
         }
 
         public void BHKW()
         {
-            Form_BHKWAdmin frm = new Form_BHKWAdmin();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.BhkwAdmin);
         }
         public void Solarkollektoren()
         {
-            Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.SolarkollektorenAdmin);
         }
 
         public void PV()
         {
-            Form_AdminPV frm = new Form_AdminPV();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PvAdmin);
         }
 
         public void SPKImport()
         {
-            Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.HeizkesselImport);
         }
 
         public void PufferSPImport()
         {
-            Form_PufferSp_einlesen frm = new Form_PufferSp_einlesen();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PufferSpImport);
         }
 
         public void PufferSp()
         {
-            Form_PufferSp_Admin frm = new Form_PufferSp_Admin();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PufferSpAdmin);
         }
 
         public void Brauchwasser()
         {
-            Form_Brauchwasser_Admin frm = new Form_Brauchwasser_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.BrauchwasserAdmin);
         }
 
         public void PVImport()
@@ -495,8 +420,7 @@ namespace WindowsFormsApplication1
 
         public void SolarThermieImport()
         {
-            Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.SolarkollektorenImport);
         }
     }
 }

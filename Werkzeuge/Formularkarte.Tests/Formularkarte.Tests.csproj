@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests zum Formular-Generator (iU8-12).
+
+    Sie laufen gegen die ECHTEN Designer-Dateien des Bestands, nicht gegen
+    Nachbauten: Der Generator ist das Vollstaendigkeitsnetz fuer iU9, und ein
+    Netz, das nur gegen sich selbst geprueft wird, faengt nichts. Den Weg zur
+    Repowurzel findet Repowurzel.Pfad ueber WP-Plan.sln.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Formularkarte\Formularkarte.csproj" />
+  </ItemGroup>
+
+  <!--
+    Pruefmuster: eingefrorene Kopien von Masken, die es im Bestand nicht mehr
+    gibt (siehe Werkzeuge/Formularkarte/LIESMICH.md, Abschnitt "Pruefmuster").
+    Sie werden NIE uebersetzt - es sind Lesevorlagen fuer den Designer-Leser,
+    kein Code dieses Projekts. Ihr .resx darf auch nicht als Ressource in die
+    Testbaugruppe wandern.
+  -->
+  <ItemGroup>
+    <Compile Remove="Pruefmuster/**" />
+    <EmbeddedResource Remove="Pruefmuster/**" />
+    <None Remove="Pruefmuster/**" />
+    <None Include="Pruefmuster/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

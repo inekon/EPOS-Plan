@@ -1,1 +1,1 @@
-{"solution": {"path": "WP-Plan.sln", "projects": ["KiKern\\KiKern.csproj", "KiKern.Tests\\KiKern.Tests.csproj", "SpeicherEngine\\SpeicherEngine.csproj", "SpeicherEngine.Tests\\SpeicherEngine.Tests.csproj"]}}
+{"solution": {"path": "WP-Plan.sln", "projects": ["EPOS.Kern.Tests\\EPOS.Kern.Tests.csproj", "EPOS.Kern\\EPOS.Kern.csproj", "EPOS.UI.Tests\\EPOS.UI.Tests.csproj", "EPOS.UI\\EPOS.UI.csproj", "KiKern.Tests\\KiKern.Tests.csproj", "KiKern\\KiKern.csproj", "SpeicherEngine.Tests\\SpeicherEngine.Tests.csproj", "SpeicherEngine\\SpeicherEngine.csproj"]}}

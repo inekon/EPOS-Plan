@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetPVControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Photovoltaik, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
-                Program.mainfrm.SetPVControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Photovoltaik, m_ID_Projekt, m_szProjektname);
             }
 
         }

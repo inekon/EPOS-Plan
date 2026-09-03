@@ -1,7 +1,13 @@
-# Kern-Lauf: baut und testet die vier Projekte ohne Windows- und ohne
-# Datenbankbindung (KiKern, KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests).
+# Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
+# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests, seit iU3 EPOS.Kern und
+# seit iU4 EPOS.Kern.Tests).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
-# WinForms-App und der Referenzlauf bleiben damit aussen vor.
+# WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
+# Dazu kommen drei Laeufe, die NICHT im Filter stehen: der Referenzlauf (iU3)
+# und seit iU7-7 die ChartProben - beides ausfuehrbare Programme statt
+# Testprojekte, die belegen, dass Rechenkern und Diagramm-Renderer ohne Windows
+# arbeiten - sowie seit iU8-12 die Tests des Formularkarten-Werkzeugs, das eine
+# eigene Projektmappe hat und deshalb im Filter nicht auftaucht (nur ubuntu).
 #
 # Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
 # plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
@@ -37,3 +43,83 @@ jobs:
 
       - name: Testen
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+
+      # iU8-12: Das Formularkarten-Werkzeug hat eine EIGENE Projektmappe und
+      # steht deshalb weder in WP-Plan.sln noch im Solution-Filter - der
+      # Test-Schritt oben sieht es nicht. Es ist die Abnahmecheckliste von iU9
+      # (Feldkarte je Maske), und eine stumpfe Checkliste faellt niemandem auf.
+      # Seine Tests zerfallen seit iU8-12e in zwei Arten: Werkzeugtests lesen
+      # eingefrorene Pruefmuster, Bestandstests (StapelTests) lesen die echten
+      # Designer-Dateien. Die zweite Art faellt absichtlich rot aus, sobald eine
+      # Maske umgestellt wird, ohne dass jemand den Stapellauf nachzieht.
+      # NUR ubuntu: Das Werkzeug ist plattformfrei, ein zweiter Lauf auf macOS
+      # brauchte Minutenkontingent (Faktor 10) und wuerde nichts Neues zeigen.
+      - name: Formularkarte-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
+
+      # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
+      # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
+      # PNG-Signatur, Bildmasse, Farbvorkommen und Determinismus - ohne
+      # Datenbank, ohne Oberflaeche. Sie faellt rot aus, sobald der Renderer
+      # eine Windows-API braucht ODER sich das Bild aendert. Eigene .sln,
+      # deshalb nicht im Solution-Filter; gebaut wird sie vom dotnet run.
+      - name: ChartProben (Renderer plattformfrei)
+        run: dotnet run --project Proben/ChartProben -c Release
+
+      # Die Bilder selbst als Artefakt - bei einer Abweichung will man sie
+      # ansehen und nicht nur die Byte-Zahl lesen.
+      - name: ChartProben-Bilder als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chartproben-${{ matrix.os }}
+          path: artifacts/chartproben
+          retention-days: 14
+
+      # iU3: Der Rechenkern soll nicht nur uebersetzen, sondern rechnen. Der
+      # Referenzlauf gehoert nicht in den Solution-Filter (er ist eine Exe, kein
+      # Testprojekt) und wird deshalb einzeln gebaut.
+      - name: Referenzlauf bauen
+        run: dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+
+      # Die reduzierte Testdatenbank liegt nicht in jedem Checkout. Fehlt sie,
+      # wird der Schritt uebersprungen statt rot - der Bauteil oben ist der
+      # eigentliche Waechter, dieser Schritt der Zugewinn.
+      # iU4-7: drei Projekte statt einem. 1030 ist die Kaskade; 1007 und 1017
+      # fuehren aktive Stromspeicher-Varianten und decken damit den K8-Haken ab
+      # (SimulationControl.Stromspeicher.cs samt ModuleInitializer), der mit iU4
+      # in den Kern gezogen ist. Ohne sie wuerde ein stillgelegter Haken hier
+      # nicht auffallen.
+      - name: Kern-Referenzlauf 1030, 1007, 1017
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: >
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build --
+          lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
+          --projekte 1030,1007,1017 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+
+      # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
+      # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
+      # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
+      # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
+      # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
+      - name: Vergleich mit Referenzbasis 2026-08-30_B3-Kaskade
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          mkdir -p artifacts/reflauf/ref
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1017 artifacts/reflauf/ref/
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
+          echo "--- Byte-Diff (nur Information) ---"
+          for p in 1030 1007 1017; do
+            if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
+          done
+
+      - name: Ergebnis-CSV als Artefakt
+        if: always() && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: reflauf-kern-${{ matrix.os }}
+          path: artifacts/reflauf/${{ matrix.os }}_kern
+          retention-days: 14

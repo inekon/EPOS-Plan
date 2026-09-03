@@ -1,0 +1,26 @@
+﻿@* Tabelle - der Standardweg fuer Listen (Ersatz fuer DataGridView und
+   ListView des Bestands).
+
+   Duenne Huelle um QuickGrid: Sie legt nur die Hausklasse epos-raster darueber,
+   damit alle Listen gleich aussehen und ein spaeterer Wechsel der
+   Rasterbibliothek an einer Stelle stattfindet. Die Spalten gibt der Aufrufer
+   als KindInhalt an, z. B.
+
+       <Raster TZeile="Zeile" Zeilen="@meineZeilen">
+           <PropertyColumn Property="@(z => z.Bezeichner)" Title="Bezeichnung" />
+       </Raster>
+*@
+
+@typeparam TZeile
+
+<QuickGrid Items="@Zeilen" Class="epos-raster">
+    @KindInhalt
+</QuickGrid>
+
+@code {
+    /// <summary>Die anzuzeigenden Zeilen.</summary>
+    [Parameter] public IQueryable<TZeile>? Zeilen { get; set; }
+
+    /// <summary>Die Spaltendefinitionen (QuickGrid-Spalten).</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+}

@@ -1,0 +1,141 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Lesend geladene Detail-Daten eines Projekts für Projektbeschreibung,
+    /// Komponententabellen und Abweichungserkennung (Phase 2).
+    /// Zugriff bewusst über tolerante SQL-Reads (Spalten je DB-Stand prüfbar),
+    /// nicht über die Formular-Controller — Spaltennamen sind gegen das Schema
+    /// von Kenndaten.accdb verifiziert (11.08.2026).
+    ///
+    /// <para>
+    /// DER KOMPONENTENBESTAND KOMMT AUS <c>Tab_Energieanlagen</c>, nicht aus
+    /// <c>Tab_WP &amp; Co. WHERE ID_Projekt = ?</c> — siehe
+    /// <see cref="LadeGewerk"/>.
+    /// </para>
+    /// </summary>
+    public class ProjektDetails
+    {
+        /// <summary>Gewerk-Schlüssel → Eingabetabelle des Projekts.</summary>
+        public static readonly KeyValuePair<string, string>[] GewerkTabellen = new KeyValuePair<string, string>[]
+        {
+            new KeyValuePair<string, string>("Wärmepumpe",    "Tab_WP"),
+            new KeyValuePair<string, string>("BHKW",          "Tab_BHKW"),
+            new KeyValuePair<string, string>("Spitzenkessel", "Tab_Heizkessel"),
+            new KeyValuePair<string, string>("Solarthermie",  "Tab_Solarkollektoren"),
+            new KeyValuePair<string, string>("Photovoltaik",  "Tab_PV"),
+            new KeyValuePair<string, string>("Pufferspeicher","Tab_Pufferspeicher"),
+            new KeyValuePair<string, string>("Stromspeicher", "Tab_Stromspeicher"),
+        };
+
+        public int IdProjekt;
+
+        /// <summary>Bezeichner der Klimaregion des Projekts (Tab_Klimaregion, leer wenn keiner).</summary>
+        public string KlimaregionName = "";
+
+        /// <summary>Gebäude des Projekts (Tab_Gebaeude; null/leer möglich).</summary>
+        public DataTable Gebaeude;
+
+        /// <summary>Anlagenkonfiguration (Tab_Energieanlagen; null/leer möglich).</summary>
+        public DataTable Anlagen;
+
+        /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
+        public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
+
+        /// <summary>Gewerk → ALLE Komponentenzeilen des Projekts in Anlagenreihenfolge
+        /// (Nutzerauftrag 28.08.2026: die Gegenüberstellung zeigt eine Zeile je
+        /// Komponente, nicht mehr nur die Merkmale der ersten).</summary>
+        public Dictionary<string, DataTable> KomponentenAlle = new Dictionary<string, DataTable>();
+
+        /// <summary>Gewerk → Anzahl der Komponenten-Einträge des Projekts.</summary>
+        public Dictionary<string, int> KomponentenAnzahl = new Dictionary<string, int>();
+
+        public bool HatGewerk(string gewerk)
+        { return KomponentenAnzahl.ContainsKey(gewerk) && KomponentenAnzahl[gewerk] > 0; }
+
+        public static ProjektDetails Lade(int idProjekt)
+        {
+            var d = new ProjektDetails { IdProjekt = idProjekt };
+
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID_Projekt = ? LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                d.KlimaregionName = o as string ?? "";
+            }
+            catch { }
+
+            d.Gebaeude = LadeTabelle("Tab_Gebaeude", idProjekt);
+            d.Anlagen = LadeTabelle("Tab_Energieanlagen", idProjekt);
+
+            foreach (KeyValuePair<string, string> g in GewerkTabellen)
+            {
+                DataTable dt = LadeGewerk(g.Key, g.Value, idProjekt);
+                int anzahl = dt != null ? dt.Rows.Count : 0;
+                d.KomponentenAnzahl[g.Key] = anzahl;
+                if (anzahl > 0) { d.Komponenten[g.Key] = dt.Rows[0]; d.KomponentenAlle[g.Key] = dt; }
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// Die Komponenten EINES GEWERKS im Projekt — je Anlagenzeile eine
+        /// Gerätezeile, in der Reihenfolge der Anlagenzeilen
+        /// (<see cref="KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile"/>).
+        ///
+        /// <para>
+        /// NICHT über <c>WHERE ID_Projekt = ?</c> auf der Gerätetabelle: Die
+        /// Gerätetabellen führen Projektkopien eines Katalogsatzes, und jeder
+        /// Speichervorgang legt über <c>CopyFromStamm</c> eine NEUE Kopie an, während
+        /// <c>WErzeugerCtrl.Delete</c> nur die Anlagenzeilen räumt. In gewachsenen
+        /// Projekten — und erst recht in Varianten, die diese Historie mitkopiert
+        /// haben — steht dort Altbestand, auf den keine Anlage mehr zeigt. Gezählt
+        /// wurde er trotzdem: die Unterschiedstabelle der Seite „Übersicht“ meldete
+        /// Dutzende Komponenten und Gewerke als „vorhanden“, die das Projekt gar nicht
+        /// führt. Verbaut ist ausschließlich, was <c>Tab_Energieanlagen</c> führt —
+        /// dieselbe Liste, die die Verwaltungsdialoge unter „ausgewählt im Projekt“
+        /// zeigen und die die Simulation rechnet.
+        /// </para>
+        /// </summary>
+        private static DataTable LadeGewerk(string gewerk, string tabelle, int idProjekt)
+        {
+            KomponentenUebernahmeCtrl.GewerkPlan plan;
+            if (KomponentenUebernahmeCtrl.Plaene.TryGetValue(gewerk ?? "", out plan))
+                return KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile(plan, idProjekt);
+
+            return LadeTabelle(tabelle, idProjekt);   // Gewerk ohne Plan: wie bisher
+        }
+
+        private static DataTable LadeTabelle(string tabelle, int idProjekt)
+        {
+            try
+            {
+                return DataRepository.GetDataTable(
+                    "SELECT * FROM " + tabelle + " WHERE ID_Projekt = ? ORDER BY ID",
+                    new DbParam("@p", idProjekt));
+            }
+            catch { return null; }
+        }
+
+        // ------------------------------------------------------------- tolerante Zugriffe
+
+        public static string S(DataRow r, string col)
+        { return (r != null && r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? r[col].ToString() : ""; }
+
+        public static double? D(DataRow r, string col)
+        {
+            if (r == null || !r.Table.Columns.Contains(col) || r[col] == DBNull.Value) return null;
+            try { return Convert.ToDouble(r[col]); } catch { return null; }
+        }
+
+        public static bool? B(DataRow r, string col)
+        {
+            if (r == null || !r.Table.Columns.Contains(col) || r[col] == DBNull.Value) return null;
+            try { return Convert.ToBoolean(r[col]); } catch { return null; }
+        }
+    }
+}

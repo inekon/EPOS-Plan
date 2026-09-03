@@ -1,0 +1,38 @@
+﻿@* Einzeiliges Textfeld - Bezeichner, Codes, Variantennamen.
+
+   Bewusst ohne Pruefung: Was ein gueltiger Text ist, weiss nur der Dialog
+   (meist "nicht leer"), und er sagt es ueber OkErlaubt der SpeichernLeiste. *@
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe" type="text" value="@Wert" maxlength="@Hoechstlaenge"
+               placeholder="@Platzhalter" @oninput="BeiEingabe" />
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der Text. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public string Wert { get; set; } = "";
+
+    /// <summary>Meldet jede Aenderung.</summary>
+    [Parameter] public EventCallback<string> WertChanged { get; set; }
+
+    /// <summary>Grauer Hinweistext im leeren Feld.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>Hoechstzahl der Zeichen; <c>null</c> = unbegrenzt.</summary>
+    [Parameter] public int? Hoechstlaenge { get; set; }
+
+    private Task BeiEingabe(ChangeEventArgs e)
+    {
+        Wert = e.Value?.ToString() ?? "";
+        return WertChanged.InvokeAsync(Wert);
+    }
+}

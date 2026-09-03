@@ -78,11 +78,11 @@ namespace WindowsFormsApplication1
         /// Formular. Beide Einstiege (Neu und Bearbeiten) rufen genau diese Methode;
         /// sie unterscheiden sich danach nur noch in <c>SetWizardMode(...)</c>.
         /// </summary>
-        public static List<WizardItemClass> Erzeugen()
+        public static List<WizardSeite> Erzeugen()
         {
-            List<WizardItemClass> seiten = new List<WizardItemClass>(ERZEUGER.Length);
+            List<WizardSeite> seiten = new List<WizardSeite>(ERZEUGER.Length);
             for (int i = 0; i < ERZEUGER.Length; i++)
-                seiten.Add(new WizardItemClass(ERZEUGER[i](), i));
+                seiten.Add(new WizardSeite(ERZEUGER[i](), i));
             return seiten;
         }
     }

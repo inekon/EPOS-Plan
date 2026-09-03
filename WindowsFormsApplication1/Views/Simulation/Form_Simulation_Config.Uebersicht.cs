@@ -865,7 +865,7 @@ namespace WindowsFormsApplication1
                     // der SchemaMigration (dieselbe Regel wie in WaermesenkeClass).
                     WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                     WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Puffer",
-                        System.Data.OleDb.OleDbType.Integer, DBNull.Value);
+                        DbParamTyp.Integer, DBNull.Value);
                     break;
 
                 case WaermequelleClass.TYP_AUSSENLUFT:
@@ -945,12 +945,12 @@ namespace WindowsFormsApplication1
                         }
 
                         // E0: FÜHREND ist der Fremdschlüssel. Er geht über die
-                        // Überladung mit ausdrücklichem OleDbType weg — 0 ist keine
+                        // Überladung mit ausdrücklichem DbParamTyp weg — 0 ist keine
                         // gültige Puffer-ID, und die erzwungene Beziehung aus Schritt 4
                         // der SchemaMigration würde sie abweisen (dieselbe Regel wie in
                         // WaermesenkeClass.Schreiben).
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Puffer",
-                            System.Data.OleDb.OleDbType.Integer,
+                            DbParamTyp.Integer,
                             frmQuelle.ID_Puffer > 0 ? (object)frmQuelle.ID_Puffer : DBNull.Value);
                         // Der Bezeichner wird MITGESCHRIEBEN: Anzeigen und die
                         // Rückfallkette der Engine (Stufe 2/3) lesen ihn weiter.
@@ -976,14 +976,14 @@ namespace WindowsFormsApplication1
                         // PAKET Q1: die Quell-Entnahmehöhe gilt für Wärmepumpe UND
                         // Heizkessel (Konzept 8.4) und steht deshalb außerhalb des
                         // Verdampfer-Blocks. Über die Überladung mit ausdrücklichem
-                        // OleDbType, weil NULL hier der Regelfall ist („oben") und ACE aus
+                        // DbParamTyp, weil NULL hier der Regelfall ist („oben") und ACE aus
                         // DBNull allein keinen Spaltentyp ableitet.
                         // Erst in eine lokale Variable: Ein Formular ist eine
                         // MarshalByRefObject-Klasse, und der Zugriff auf HasValue/Value
                         // eines Nullable-FELDES darauf zieht CS1690 nach sich.
                         double? hoehe = frmQuelle.Anschlusshoehe;
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Anschlusshoehe",
-                            System.Data.OleDb.OleDbType.Double,
+                            DbParamTyp.Double,
                             hoehe.HasValue ? (object)hoehe.Value : DBNull.Value);
 
                         // PAKET B2 (Nutzerauftrag 28.08.2026): Der Temperaturbezug gilt nur
@@ -1048,11 +1048,11 @@ namespace WindowsFormsApplication1
                         if (frmProfil.ShowDialog(this) != DialogResult.OK) return;
 
                         // FÜHREND ist der Fremdschlüssel. Er geht über die Überladung mit
-                        // ausdrücklichem OleDbType weg - 0 ist keine gültige Profil-ID,
+                        // ausdrücklichem DbParamTyp weg - 0 ist keine gültige Profil-ID,
                         // und die Beziehung FK_Anlage_Quellprofil aus Schritt 54 würde sie
                         // abweisen (dieselbe Regel wie bei WQ_ID_Puffer).
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Quellprofil",
-                            System.Data.OleDb.OleDbType.Integer,
+                            DbParamTyp.Integer,
                             frmProfil.ID_Quellprofil > 0 ? (object)frmProfil.ID_Quellprofil : DBNull.Value);
 
                         // WQ_Monatswerte/WQ_Wochenwerte werden NICHT mehr geschrieben:

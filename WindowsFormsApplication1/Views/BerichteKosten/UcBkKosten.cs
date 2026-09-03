@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -645,7 +644,7 @@ namespace WindowsFormsApplication1
             {
                 kid = DataRepository.ExecuteScalar(
                     "SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente));
+                    new DbParam("@k", komponente));
             }
             catch { }
             if (kid == null || kid == DBNull.Value) return;
@@ -856,7 +855,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT carrier_id, name, billing_unit, eff_hi " +
                     "FROM Abfrage_Energietraeger_Effektiv WHERE ID_Projekt = ?",
-                    new OleDbParameter("@p", _idProjekt));
+                    new DbParam("@p", _idProjekt));
 
                 foreach (DataRow r in (dt != null ? dt.Rows.Cast<DataRow>()
                                                   : Enumerable.Empty<DataRow>()))
@@ -1061,14 +1060,14 @@ namespace WindowsFormsApplication1
                 DataTable k = DataRepository.GetDataTable(
                     "SELECT price_power, price_power_modus, pricing_model " +
                     "FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@c", carrierId));
+                    new DbParam("@c", carrierId));
                 if (k == null || k.Rows.Count == 0) return "—";
 
                 double? satz = null;
                 DataTable s = DataRepository.GetDataTable(
                     "SELECT custom_price_power FROM energy_project_settings " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new OleDbParameter("@p", _idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", _idProjekt), new DbParam("@c", carrierId));
                 if (s != null && s.Rows.Count > 0)
                 {
                     double? cw = D(s.Rows[0], "custom_price_power");
@@ -1124,7 +1123,7 @@ namespace WindowsFormsApplication1
                 DataTable s = DataRepository.GetDataTable(
                     "SELECT custom_price_work, custom_price_base FROM energy_project_settings " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                    new OleDbParameter("@p", _idProjekt), new OleDbParameter("@c", carrierId));
+                    new DbParam("@p", _idProjekt), new DbParam("@c", carrierId));
                 if (s != null && s.Rows.Count > 0)
                 {
                     sArbeit = D(s.Rows[0], "custom_price_work");
@@ -1138,7 +1137,7 @@ namespace WindowsFormsApplication1
             {
                 DataTable k = DataRepository.GetDataTable(
                     "SELECT price_work, price_base FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@c", carrierId));
+                    new DbParam("@c", carrierId));
                 if (k != null && k.Rows.Count > 0)
                 {
                     kArbeit = D(k.Rows[0], "price_work");

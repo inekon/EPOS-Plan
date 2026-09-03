@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -70,7 +69,12 @@ namespace WindowsFormsApplication1
         // -------------------------------------------------------------- Laden
 
         // Registry-Ablage der zuletzt gewählten Stamm-Auswahl.
-        private const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
+        /// <summary>
+        /// Registry-Zweig der Variantenprobe. Die EINE Wahrheit: <c>UcBkUebersicht</c>
+        /// fuehrte bis iU5 eine wortgleiche zweite Konstante und verwies damit auf
+        /// denselben Zweig, ohne dass eine Umbenennung beide erwischt haette.
+        /// </summary>
+        public const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
         private const string RegWertStamm = "LetzterStammID";
 
         private void LadeProjekte()
@@ -398,43 +402,43 @@ namespace WindowsFormsApplication1
                     IstStamm = false
                 });
 
-            using (System.Windows.Forms.SaveFileDialog sfd = new System.Windows.Forms.SaveFileDialog())
+            // iU7-9: Speicherziel und Öffnen über Dienste.Datei statt über
+            // SaveFileDialog und Process.Start. Filter und Dateinamensvorschlag
+            // unverändert; leer = abgebrochen.
+            string zieldatei = Dienste.Datei.DateiSpeichern(
+                null, "Word-Dokument (*.docx)|*.docx", "Projektvergleich_" + stamm.Name + ".docx");
+            if (string.IsNullOrEmpty(zieldatei)) return;
+
+            try
             {
-                sfd.Filter = "Word-Dokument (*.docx)|*.docx";
-                sfd.FileName = "Projektvergleich_" + stamm.Name + ".docx";
-                if (sfd.ShowDialog(this) != DialogResult.OK) return;
+                Cursor = Cursors.WaitCursor;
+                // Der Bericht simuliert die Gruppe selbst neu (Nutzeranforderung
+                // 15.08.2026) und liefert die Meldungen der Läufe zurück.
+                ProjektvergleichBericht bericht = new ProjektvergleichBericht();
+                bericht.Erzeuge(zieldatei, gruppe);
+                Melde("Bericht erstellt: " + zieldatei);
 
-                try
-                {
-                    Cursor = Cursors.WaitCursor;
-                    // Der Bericht simuliert die Gruppe selbst neu (Nutzeranforderung
-                    // 15.08.2026) und liefert die Meldungen der Läufe zurück.
-                    ProjektvergleichBericht bericht = new ProjektvergleichBericht();
-                    bericht.Erzeuge(sfd.FileName, gruppe);
-                    Melde("Bericht erstellt: " + sfd.FileName);
+                string frage = "Bericht wurde erstellt (alle Projekte neu simuliert).";
+                if (bericht.Laufmeldungen.Count > 0)
+                    frage += "\r\n\r\nHinweise:\r\n• " +
+                             string.Join("\r\n• ", bericht.Laufmeldungen);
+                frage += "\r\n\r\nJetzt öffnen?";
 
-                    string frage = "Bericht wurde erstellt (alle Projekte neu simuliert).";
-                    if (bericht.Laufmeldungen.Count > 0)
-                        frage += "\r\n\r\nHinweise:\r\n• " +
-                                 string.Join("\r\n• ", bericht.Laufmeldungen);
-                    frage += "\r\n\r\nJetzt öffnen?";
-
-                    if (MessageBox.Show(frage, "Projektvergleich",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sfd.FileName) { UseShellExecute = true });
-                }
-                catch (Exception ex)
-                {
-                    // Vollstaendige Fehlermeldung inkl. inner exceptions anzeigen (Statuszeile kuerzt ab).
-                    string msg = ex.Message;
-                    Exception inner = ex.InnerException;
-                    while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
-                    Melde("Fehler beim Erstellen des Berichts.");
-                    MessageBox.Show(msg, "Fehler beim Erstellen des Berichts",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally { Cursor = Cursors.Default; }
+                if (MessageBox.Show(frage, "Projektvergleich",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    Dienste.Datei.MitSystemOeffnen(zieldatei);
             }
+            catch (Exception ex)
+            {
+                // Vollstaendige Fehlermeldung inkl. inner exceptions anzeigen (Statuszeile kuerzt ab).
+                string msg = ex.Message;
+                Exception inner = ex.InnerException;
+                while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
+                Melde("Fehler beim Erstellen des Berichts.");
+                MessageBox.Show(msg, "Fehler beim Erstellen des Berichts",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally { Cursor = Cursors.Default; }
         }
 
         // -------------------------------------------------------------- Helfer

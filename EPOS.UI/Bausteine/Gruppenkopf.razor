@@ -1,0 +1,39 @@
+﻿@* Abschnittsueberschrift mit dunklem Balken, Symbol und Summe rechts.
+   Vorbild: Views/Kosten/SectionPanel.cs (Balken 40 px, #0F1F3D, weiss fett,
+   Summe #93C5FD). Anders als dort ist der Kopf hier nicht anklickbar -
+   Aufklappen war im Vorbild vorgesehen, aber nie verdrahtet. *@
+
+<section class="epos-gruppenkopf">
+    <header class="epos-gruppenkopf-balken">
+        @if (!string.IsNullOrEmpty(Symbol))
+        {
+            <span class="epos-gruppenkopf-symbol" aria-hidden="true">@Symbol</span>
+        }
+        <h2 class="epos-gruppenkopf-titel">@Titel</h2>
+        @if (!string.IsNullOrEmpty(Summe))
+        {
+            <span class="epos-gruppenkopf-summe">@Summe</span>
+        }
+    </header>
+    @if (KindInhalt is not null)
+    {
+        <div class="epos-gruppenkopf-koerper">@KindInhalt</div>
+    }
+</section>
+
+@code {
+    /// <summary>Ueberschrift des Abschnitts.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Zeichen links im Balken (Sinnbild, z. B. ein Emoji). Leer = kein Symbol.</summary>
+    [Parameter] public string Symbol { get; set; } = "";
+
+    /// <summary>
+    /// Bereits formatierte Summe rechts im Balken (z. B. "1.234 &euro;"). Das
+    /// Formatieren bleibt beim Aufrufer - die Komponente rechnet nicht.
+    /// </summary>
+    [Parameter] public string Summe { get; set; } = "";
+
+    /// <summary>Inhalt des Abschnitts unterhalb des Balkens.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+}

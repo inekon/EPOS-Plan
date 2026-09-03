@@ -1,0 +1,283 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EPOS.Kern - der RECHENKERN von EPOS-Plan als plattformfreie Bibliothek
+    (Umsetzungskonzept iOS, Paket iU3; Entscheidungsregister § 2.2).
+
+    Die Dateien liegen seit iU4-5 HIER - VERSCHOBEN, nicht verlinkt. Bis iU4-4
+    waren sie aus WindowsFormsApplication1 verlinkt; das war die Vorstufe, in der
+    beide Projekte dieselben Dateien uebersetzten und der Kern seine
+    Portabilitaet nachweisen konnte, ohne den Bestand anzufassen. Jetzt gibt es
+    sie nur noch einmal, und zwar hier: Die Anwendung uebersetzt sie nicht mehr,
+    sie referenziert dieses Projekt (ProjectReference in
+    WindowsFormsApplication1.csproj). Eine Fachaenderung am Rechenkern wird
+    damit an genau einer Stelle gemacht.
+
+    Aufgenommen wird per GLOBBING (Standardverhalten des SDK) - alles unter
+    diesem Ordner gehoert zum Kern. Die einzige Ausnahme ist der generierte
+    Typkatalog aus sql\schema, der weiterhin verlinkt wird: seine Quelle ist das
+    Erzeugungsskript, nicht dieses Projekt.
+
+    <EnableWindowsTargeting>false</EnableWindowsTargeting> ist die eigentliche
+    Pruefung: Directory.Build.props schaltet die Eigenschaft auf Nicht-Windows
+    ein, damit die net*-windows-Projekte dort uebersetzbar bleiben. Hier wird sie
+    ausdruecklich wieder abgeschaltet - jede WinForms-Beruehrung in einer
+    verlinkten Datei bricht damit den Build, statt erst auf iOS zur Laufzeit
+    aufzufallen.
+
+    KEIN NoWarn CA1416. Mit iU6 ist das Restinventar auf NULL abgetragen: kein
+    System.Data.OleDb mehr, weder als PackageReference noch im Quelltext. Die
+    Regel bleibt scharf, damit eine neue Windows-API sofort als Warnung auffaellt.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <RootNamespace>WindowsFormsApplication1</RootNamespace>
+    <AssemblyName>EPOS.Kern</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- ================================================================== -->
+  <!-- Rechenbibliotheken                                                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+    <!-- Aufgabensteuerung des KI-Assistenten (iU5-U2): UI- und DB-frei, net10.0. -->
+    <ProjectReference Include="..\KiKern\KiKern.csproj" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Die Anwendung sieht die internen Typen des Kerns (iU4-4).           -->
+  <!--                                                                    -->
+  <!-- Etliche Controller und Modelle sind ohne Zugriffsangabe deklariert  -->
+  <!-- und damit internal (ProjektCtrl, KlimaregionCtrl, WPStammCtrl,      -->
+  <!-- Properties.Settings, Init ...). Solange sie in derselben Assembly   -->
+  <!-- lagen, fiel das nicht auf; mit dem Umzug in EPOS.Kern (iU4-5)       -->
+  <!-- braucht die Anwendung diese Freigabe. Die Alternative - jeden       -->
+  <!-- betroffenen Typ auf public heben - waere eine breite Aenderung an   -->
+  <!-- der Sichtbarkeit des Bestands ohne fachlichen Grund.                -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="EPOS_Plan" />
+    <!-- Dasselbe fuer das Testprojekt (iU4-6): Init und andere Kerntypen sind
+         internal, sollen aber pruefbar sein. -->
+    <InternalsVisibleTo Include="EPOS.Kern.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <!-- Properties\Settings.Designer.cs erbt von ApplicationSettingsBase. -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+
+    <!--
+      iOS-LAUFZEIT DER ZUGRIFFSSCHICHT (iU6-T5, VORBEREITUNG FUER iU10).
+
+      Microsoft.Data.Sqlite zieht standardmaessig SQLitePCLRaw.bundle_e_sqlite3. Dieses
+      Buendel laedt die native Bibliothek dynamisch - genau das verbietet die AOT-Regel
+      von .NET fuer iOS. Auf iOS und Mac Catalyst gilt deshalb bundle_green: Es bindet
+      gegen die SYSTEM-SQLite des Geraets, die dort ohnehin vorhanden ist.
+
+      DIE ZEILE GREIFT HEUTE NICHT. Der Kern hat genau ein TargetFramework (net10.0);
+      die Bedingung ist erst wahr, wenn iU10 daraus ein Multi-Targeting mit
+      net10.0-ios / net10.0-maccatalyst macht. Sie steht trotzdem schon hier, damit die
+      Entscheidung dokumentiert ist und nicht beim Aufsetzen der Huelle neu getroffen
+      werden muss. Die Fassung steht zentral in Directory.Packages.props und ist an die
+      SQLitePCLRaw.core-Fassung gebunden, die Microsoft.Data.Sqlite mitbringt.
+
+      DAZU GEHOERT EIN ZWEITER SCHRITT IN DER HUELLE: bundle_green initialisiert sich
+      nicht von selbst - die iOS-App muss beim Start einmal SQLitePCL.Batteries_V2.Init()
+      rufen, bevor der erste SqliteConnection entsteht.
+    -->
+    <PackageReference Include="SQLitePCLRaw.bundle_green"
+                      Condition="$(TargetFramework.Contains('-ios')) Or $(TargetFramework.Contains('-maccatalyst'))" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- LIZENZ UND KATALOGIMPORT (Paket iU5-U1)                             -->
+  <!--                                                                    -->
+  <!-- BouncyCastle prueft die Ed25519-Signatur des Lizenztokens           -->
+  <!-- (Allgemein\Lizenz\LizenzToken.cs); ClosedXML liest Excel-Mappen im  -->
+  <!-- Ganglinienimport (Allgemein\Import\GanglinienDatei.cs). Beide       -->
+  <!-- Pakete sind plattformfrei - sie standen bisher nur deshalb in der   -->
+  <!-- Anwendung, weil die Dateien dort lagen.                             -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- AUSGABE DES BERICHTS (Paket iU5-U3)                                 -->
+  <!--                                                                    -->
+  <!-- Word (DocumentFormat.OpenXml) und Excel (ClosedXML, oben) sind      -->
+  <!-- Dateiformate, keine Windows-APIs - die Ausgabe laeuft damit auch    -->
+  <!-- auf iOS. SixLabors.Fonts misst fuer ClosedXML die Spaltenbreiten;   -->
+  <!-- die Fassung ist auf 1.0.1 gepinnt (ab 2.x gilt die                  -->
+  <!-- Six-Labors-Split-Lizenz), deshalb steht das Paket ausdruecklich     -->
+  <!-- hier und nicht nur transitiv ueber ClosedXML.                       -->
+  <!--                                                                    -->
+  <!-- Der GDI+-Stand ChartRendererGdi bleibt in der Anwendung; er ist     -->
+  <!-- nur noch der Gegenpart des Windows-Bildvergleichs.                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="SixLabors.Fonts" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- SEMANTIKSUCHE DES KI-ASSISTENTEN (Paket iU5-U2)                     -->
+  <!--                                                                    -->
+  <!-- Allgemein\KI\SemantikModell.cs bettet Textstellen mit einem lokalen  -->
+  <!-- ONNX-Modell ein und zerlegt den Text mit Microsoft.ML.Tokenizers.   -->
+  <!-- Beide Pakete sind verwaltet und plattformfrei; die nativen          -->
+  <!-- Laufzeitteile von OnnxRuntime bringt das Paket je Kennung selbst    -->
+  <!-- mit. Sie standen bisher nur deshalb allein in der Anwendung, weil   -->
+  <!-- die Datei dort lag.                                                 -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- DIAGRAMME DES BERICHTS (Paket iU7-5)                                -->
+  <!--                                                                    -->
+  <!-- Allgemein\Bericht\ChartRenderer.cs zeichnet seit iU7-2 mit          -->
+  <!-- SkiaSharp statt GDI+ und ist damit die erste Bericht-Datei ohne     -->
+  <!-- Windowsbindung. Sie liegt seit iU7-5 hier; die AUSGABE (Word,       -->
+  <!-- Excel, Bausteine) bleibt bis zu ihrer Etappe in der Anwendung.      -->
+  <!--                                                                    -->
+  <!-- WARUM DIE NATIVEN BIBLIOTHEKEN BEDINGT SIND. SkiaSharp ist zur      -->
+  <!-- Haelfte verwaltet und zur Haelfte nativ; das verwaltete Paket       -->
+  <!-- allein zeichnet nicht. Welche native Fassung passt, entscheidet     -->
+  <!-- das BAUSYSTEM, nicht das Ziel-Framework - deshalb                   -->
+  <!-- IsOSPlatform und nicht TargetFramework: derselbe Kern wird auf      -->
+  <!-- Linux (CI), macOS (CI) und Windows (Arbeitsplatz) gebaut, und       -->
+  <!-- jede Umgebung soll genau ihre eigene Native ziehen statt aller      -->
+  <!-- drei. Win32 steht mit dabei, weil windows.yml die Kerntests         -->
+  <!-- ausfuehrt (dotnet test WP-Plan.Kern.slnf) - dort gibt es die        -->
+  <!-- Native der Anwendung nicht, EPOS.Kern.Tests haengt allein an        -->
+  <!-- diesem Projekt. Fuer iOS/Mac Catalyst gilt das erst mit iU10:       -->
+  <!-- die dortigen Nativen kommen mit dem Multi-Targeting dazu.           -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- ================================================================== -->
+  <!-- DER KERNSATZ - 168 Dateien, hier im Projektordner (iU4-5)           -->
+  <!--                                                                    -->
+  <!-- Aufgenommen per Globbing; die Ordnerstruktur ist die aus            -->
+  <!-- WindowsFormsApplication1 uebernommene: Allgemein\..., Controller\,  -->
+  <!-- Model\, MyResource\, Properties\. Was dazugehoert und was mit       -->
+  <!-- Absicht in der Anwendung geblieben ist, steht in EPOS.Kern\CLAUDE.md-->
+  <!-- (kurz: Rechenkern, Zugriffsschicht, Modelle, Wirtschaftlichkeit und -->
+  <!-- die DATEN-Haelfte des Berichts sind hier; Bericht-AUSGABE,          -->
+  <!-- Schemamigration, Kataloge, Import, KI, Hilfe, Lizenz, Export und    -->
+  <!-- alles mit WinForms sind dort).                                      -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <!-- Generierter Typkatalog aus sql\schema - dieselbe EINE Quelle, die auch
+         das Hauptprojekt bis iU4-4 verlinkt hat (Arbeitspaket S2). Bleibt als
+         Link, weil die Datei von sql\tools\Erzeuge-Schema.ps1 erzeugt wird. -->
+    <Compile Include="..\sql\schema\SchemaTypKatalog.g.cs" Link="Allgemein\SchemaTypKatalog.g.cs" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Entwurfszeit-Verknuepfungen (aus WindowsFormsApplication1.csproj    -->
+  <!-- uebernommen, damit Visual Studio die erzeugten Dateien weiterhin    -->
+  <!-- ihren Quellen zuordnet).                                            -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Update="MyResource\Resource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
+  <!--                                                                    -->
+  <!-- Der Basisname steht in MyResource\Resource.Designer.cs:43 als       -->
+  <!-- "WindowsFormsApplication1.MyResource.Resource"; der LogicalName     -->
+  <!-- schreibt ihn fest, damit er nicht am Ordnerpfad dieses Projekts     -->
+  <!-- haengt. Beide .resx fuehren ausschliesslich Zeichenketten.          -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <EmbeddedResource Update="MyResource\Resource.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.resources</LogicalName>
+    </EmbeddedResource>
+    <!-- Satellitendatei OHNE Generator - nur die neutrale Datei traegt ihn
+         (dieselbe Regel wie bisher im Hauptprojekt, Paket 9 / L1). -->
+    <EmbeddedResource Update="MyResource\Resource.en-US.resx">
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.en-US.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

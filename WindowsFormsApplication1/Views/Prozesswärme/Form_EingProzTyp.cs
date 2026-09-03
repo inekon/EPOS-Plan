@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -90,7 +89,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
 
             string sql = "SELECT * FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?";
-            OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
+            DbParam[] ps = { new DbParam("@typ", listBox_Typname.Text) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -217,8 +216,8 @@ namespace WindowsFormsApplication1
         {
             string sql = "UPDATE Tab_Prozesstyp_STAMM SET Beschreibung = ? WHERE Bezeichner = ?";
             v.Ausfuehren(sql,
-                new OleDbParameter("@bes", szBeschreibung ?? (object)DBNull.Value),
-                new OleDbParameter("@typ", szTyp));
+                new DbParam("@bes", szBeschreibung ?? (object)DBNull.Value),
+                new DbParam("@typ", szTyp));
             return true;
         }
 
@@ -227,8 +226,8 @@ namespace WindowsFormsApplication1
             // Feldnamen in eckige Klammern setzen, da reine Nummern (z.B. [1]) sonst SQL-Syntaxfehler erzeugen
             string sql = $"UPDATE Tab_Prozesstyp_STAMM SET [{feld}] = ? WHERE Bezeichner = ?";
             v.Ausfuehren(sql,
-                new OleDbParameter("@val", value),
-                new OleDbParameter("@typ", typ));
+                new DbParam("@val", value),
+                new DbParam("@typ", typ));
             return true;
         }
 
@@ -251,7 +250,7 @@ namespace WindowsFormsApplication1
             if (dialogResult == DialogResult.No) return;
 
             string sql = "DELETE FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?";
-            OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
+            DbParam[] ps = { new DbParam("@typ", listBox_Typname.Text) };
 
             if (DataRepository.ExecuteSQL(sql, ps))
             {
@@ -286,7 +285,7 @@ namespace WindowsFormsApplication1
 
             // Datensatz anlegen
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
-            OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName), new OleDbParameter("@ro", false) };
+            DbParam[] ps = { new DbParam("@typ", frm.m_szName), new DbParam("@ro", false) };
 
             if (DataRepository.ExecuteSQL(insertSql, ps))
             {
@@ -328,7 +327,7 @@ namespace WindowsFormsApplication1
             if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
 
             string insertSql = "INSERT INTO Tab_Prozesstyp_STAMM ( Bezeichner, ReadOnly ) VALUES (?, ?)";
-            OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName), new OleDbParameter("@ro", false) };
+            DbParam[] ps = { new DbParam("@typ", frm.m_szName), new DbParam("@ro", false) };
 
             if (DataRepository.ExecuteSQL(insertSql, ps))
             {
@@ -363,7 +362,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM Tab_Prozesstyp_STAMM WHERE Bezeichner = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""));
+                new DbParam("@bez", szBezeichner ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 

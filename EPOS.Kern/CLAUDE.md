@@ -1,0 +1,281 @@
+# CLAUDE.md — `EPOS.Kern`, der Rechenkern
+
+Der plattformfreie Kern von EPOS-Plan: **268 `.cs`-Dateien** (168 aus iU4, dazu
+`IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
+aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b und die **74 Dateien des zweiten Umzugs**
+iU5-U1…U5), `net10.0` **ohne** `-windows`, AnyCPU.
+Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
+`../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
+auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
+bei 0**. Fachdomäne und Datenmodell stehen in der
+[`CLAUDE.md` der Repo-Wurzel](../CLAUDE.md), die Windows-Anwendung in
+[`../WindowsFormsApplication1/CLAUDE.md`](../WindowsFormsApplication1/CLAUDE.md).
+
+**Die eine Regel: Eine Fachänderung am Rechenkern wird EINMAL gemacht — hier.** Die Anwendung
+übersetzt diese Dateien nicht mehr mit, sie referenziert das Projekt.
+
+```powershell
+dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 3 Warnungen
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 886 Tests
+```
+
+Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
+mitgewandert (CS0108, `items` verdeckt `StromverbraucherModel.items`) — sie ist nicht neu. Die
+Gesamtzahl der Lösung liegt bei **34** (sie war 36, bis iU8-9 das Formular `Form_Kosten_Auswahl`
+mit seinen beiden WFO1000 löschte).
+
+## Was hier liegt
+
+| Ordner | Inhalt |
+|---|---|
+| `Allgemein/` (17) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test` |
+| `Allgemein/Simulation/` (25) | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb` |
+| `Allgemein/Wirtschaftlichkeit/` (20) | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
+| `Allgemein/Bericht/` (13 + 4) | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`; seit iU7-5 der **Renderer** `ChartRenderer`; seit iU5-U3 die **AUSGABE** `WordBerichtGenerator`, `ExcelBerichtGenerator`, `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` und `Bausteine/` (4 Dateien) |
+| `Allgemein/Dienste/` (22) | die **neun Umgebungsdienste** (iU5): `Dienste` (Halter), `IDialogDienst`, `IDateiDienst`, `IPfade`, `IEinstellungen`, `ILizenzAblage`, `IGeraeteId`, `ISprache`, `INavigation`, `IProjektKontext`, ihre Standardfassungen (`StilleDialoge`, `KeineDateiwahl`, `StandardPfade`, `FluechtigeEinstellungen`, `KeineAblage`, `KeineGeraeteId`, `StandardSprache`, `KeineNavigation`, `LeererProjektKontext`) und die sprachneutralen Schlüssel `Gewerke`, `Masken`, `Ansichten`, `Projektwahl` |
+| `Allgemein/Update/` (5) | `Anlagenzeilen`, `ProjektPuffer`, `SchemaKatalog`, `SchemaStand` (Ergebniszustand der Migration und die DDL-Konstanten, die Controller zur Selbstanlage brauchen) — seit iU5-U5 dazu `AnlagenEindeutigkeit` |
+| `Allgemein/Lizenz/` (4) | seit iU5-U1: `LizenzManager`, `LizenzToken` (Ed25519 über BouncyCastle), `LizenzServerClient`, `GeraeteId` — die Umgebung kommt über `Dienste.Lizenzablage`, `Dienste.Pfade`, `Dienste.Einstellungen` und `Dienste.GeraeteId` |
+| `Allgemein/Import/` (13) | seit iU5-U1: `AnsiEncoding`, `CsvReader` (NReco, MIT), `GanglinienDatei` (CSV/TXT und Excel über ClosedXML), `CEC/` (3), `Pan/` (2), `VDI 3805/` (5 — Heizkessel, Pufferspeicher, Solarkollektoren, Wärmepumpen, `VdiAuswahlFilter`) |
+| `Allgemein/Katalog/` (3) | seit iU5-U1: `DublettenPruefung`, `KatalogBereinigung`, `KatalogRegistry` |
+| `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
+| `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
+| `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
+| `Controller/` (80) | 80 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs) |
+| `Model/` (46) | alle 46 Modelle |
+| `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
+| `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
+
+`RecordSet` ist seit iU6-T1 ein reiner vorwärtslaufender Zeilenzeiger: `DBCommand`, `_cmd`,
+`MerkeSql()` und `Parameter()` sind ersatzlos gestrichen (iR8 — repositoryweit gab es **0**
+externe Nutzer). Wer parametrisiert arbeiten will, nimmt `DataRepository` oder `DbVorgang`.
+
+Verlinkt statt verschoben ist genau eine Datei: `../sql/schema/SchemaTypKatalog.g.cs` — ihre
+Quelle ist `sql/tools/Erzeuge-Schema.ps1`, nicht dieses Projekt.
+
+## Was mit Absicht NICHT hier liegt
+
+Nach dem zweiten Umzug (iU5-U1…U5) sind es noch **62 Dateien** unter
+`../WindowsFormsApplication1/Allgemein/` (42) und `../WindowsFormsApplication1/Controller/` (20).
+Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie übersehen worden wäre:
+
+| Was | Warum |
+|---|---|
+| `BaseForm`, `Form_Hinweis` (+ Designer), `FensterEinpassung`, `SpeichernLeiste`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`) | Oberflächenbausteine — WinForms und GDI+ |
+| `Blazor/BlazorDialogForm`, `Blazor/BlazorDienste`, `Hilfe/WindowsHilfeDienst` | die Blazor-Hülle selbst (iU8-6/iU8-7): ein modales `Form` mit `BlazorWebView`, sein Dienstverzeichnis und die Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`. Sie **sind** die Oberfläche und können nie in den Kern |
+| `ChartRendererGdi` | der eingefrorene GDI+-Stand, nur noch Gegenpart des Windows-Bildvergleichs (`Referenzlauf/Bildvergleich.cs`) |
+| `Simulation/SchemaModell.cs` | Schema-**Ansicht**; ruft `Form_Waermesenke` |
+| `Update/SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb` |
+| `Bericht/BerichtsDatenSammler` | `EnergieMengen` aus `Views/Varianten/` |
+| `KI/KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` | greifen auf lebende `Control`/`Form` zu |
+| `KI/KiChatService`, `KiAktionen` (trägt `KiHilfe`), `KiAktionenDialog`, `-Energie`, `-Lastgang`, `-Projekt`, `-Schreiben`, `-Sitzung`, `-Uebernahme`, `-Wirtschaft` | hängen an den vier obigen, an `HelpEntry` oder an `OleDbException` |
+| `IAssistentRahmen`, `StromTestClass` | `WizardSeite` aus `Views/Wizard/` bzw. `WPCtrl` |
+| die 12 `*KontextMenuCtrl` | `ListView`/`ContextMenuStrip` |
+| `WPCtrl` + `WPCtrl.WinForms.cs` | `partial` über zwei Dateien, die zweite ist WinForms — eine Klasse darf nicht halb hier liegen |
+| `KlimaregionStammCtrl` | `ComboBox`/`ListBox` in `FillComboBox`/`FillListBox` |
+| `WizardCtrl`, `MenueCtrl` | `WizardParent` aus `Views/Wizard/` |
+| `EnergietraegerKatalogCtrl` | `EnergyCarrier`, deklariert in `Views/Kosten/Form_Kosten.cs` |
+| `PeakShavingCtrl`, `ProjektExportImportCtrl` | `OleDbException` bzw. `SchemaMigration` |
+
+Ebenfalls dort, aber keine Quelldatei: `Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx`. Sie
+wird über `<None Update … CopyToOutputDirectory>` neben die EXE gelegt, und genau dort sucht sie
+`WordBerichtGenerator.FindeVorlage()` (`AppDomain.CurrentDomain.BaseDirectory`).
+
+**Die `partial`-Falle.** Vor jedem weiteren Umzug prüfen, ob die Klasse noch eine zweite Hälfte
+in der Anwendung hat. `SimulationControl` liegt mit beiden Hälften hier, `WPCtrl` mit beiden
+dort — dazwischen gibt es nichts.
+
+## Regeln für Änderungen hier
+
+**Kein WinForms-Code, kein `System.Data.OleDb`.** `EnableWindowsTargeting=false` ist der
+Wächter: Jede WinForms-Berührung bricht den Build sofort, nicht erst zur Laufzeit auf dem
+iPad. `System.Data.OleDb` ist seit **iU6** ganz weg — kein `using`, kein Typ, keine
+`PackageReference`. **CA1416 steht bei 0** (Verlauf 87 → 78 → 0);
+**kein `NoWarn`**, damit eine neu hereingetragene Windows-API sofort als Warnung auffällt.
+
+**Die Pakete des Kerns** — alle plattformfrei, Fassungen zentral in `Directory.Packages.props`:
+
+| Paket | Wofür | Seit |
+|---|---|---|
+| `Microsoft.Data.Sqlite` | Zugriffsschicht | iU4 |
+| `System.Configuration.ConfigurationManager` | `Properties\Settings` erbt von `ApplicationSettingsBase` | iU4 |
+| `SkiaSharp` (+ die bedingten Nativen) | `ChartRenderer` | iU7-5 |
+| `BouncyCastle.Cryptography` | Ed25519-Prüfung in `LizenzToken` | iU5-U1 |
+| `ClosedXML` | Excel — lesend in `GanglinienDatei`, schreibend im `ExcelBerichtGenerator` | iU5-U1 |
+| `Microsoft.ML.OnnxRuntime`, `Microsoft.ML.Tokenizers` | `SemantikModell` | iU5-U2 |
+| `DocumentFormat.OpenXml` | `WordBerichtGenerator` | iU5-U3 |
+| `SixLabors.Fonts` | Spaltenbreiten für ClosedXML; **auf 1.0.1 gepinnt** (ab 2.x gilt die Six-Labors-Split-Lizenz) | iU5-U3 |
+| `SQLitePCLRaw.bundle_green` | greift erst mit dem iOS-Ziel (iU10) | iU6-T5 |
+
+Dazu zwei `ProjectReference`: `SpeicherEngine` (iU4) und `KiKern` (iU5-U2, UI- und DB-frei,
+ohne eigene Pakete).
+
+**Datenzugriff ausschließlich über `DataRepository` mit `new DbParam(…)`.** `DataRepository`
+ist seit iU6-T4 eine **Fassade**: Die Arbeit macht `SqliteDatenzugriff` hinter
+`IDatenzugriff` (sechs Ausführungs-, fünf Schemamethoden, `DatenbankVorhanden`,
+`DatenbankPfad`). Für die rund 160 Aufruferdateien ändert das nichts — Signaturen,
+Fehlerwortlaute und Rückgabewerte im Fehlerfall sind dieselben. Auf der Fassade bleiben mit
+Absicht: der Engine-Modus (`FehlerMelden`, `EngineModus`, `StilleFehlerAbholen` — eine
+Meldeentscheidung für das ganze Programm), die Pfadauflösung (`PfadUeberschreibung`,
+`GetDBPath` — bekommt in iU5 ihr `IPfade`; **`PfadUeberschreibung` schlägt alles**, der
+Referenzlauf hängt daran) und die vier Bequemlichkeiten (`GetMaxID`,
+`DeleteWithDependencies`, `GetIdByName`, `GetValueById`).
+
+**Die Brücke nach OleDb steht in der ANWENDUNG**, nicht hier:
+`WindowsFormsApplication1/Allgemein/DbParamOleDb.cs` (`Aus`, `Von`, `Nach`,
+`[SupportedOSPlatform("windows")]`). Getragen wird sie nur noch vom eingefrorenen
+Access-Zweig der Erststart-Migration — `SchemaMigration`, `GeraeteWaisen` und
+`SchemaVersionAccess` (die aus `ApplikationCtrl` ausgelagerten Schemamarker-Methoden).
+Wer hier eine neue Zugriffsstelle schreibt, nimmt `DbParam` — sonst nichts.
+
+**Die Umgebung ausschließlich über `Dienste.*` — nie über `Program.*`.** Seit iU5 (03.09.2026)
+liegen neun Umgebungsdienste in `Allgemein/Dienste/`. Neuer Kerncode, der eine Meldung absetzt,
+einen Ablageort braucht, eine Einstellung liest, die Sprache kennen will oder eine Maske öffnen
+soll, ruft `Dienste.Dialog`, `Dienste.Datei`, `Dienste.Pfade`, `Dienste.Einstellungen`,
+`Dienste.Lizenzablage`, `Dienste.GeraeteId`, `Dienste.Sprache`, `Dienste.Navigation` bzw.
+`Dienste.Projekt`. **`Program.*` ist im Kern und in allen Kernkandidaten verboten** — der Wächter
+steht unten unter „Nachweis".
+
+| Dienst | Wofür | Vorbelegung ohne Oberfläche |
+|---|---|---|
+| `Dialog` | Meldung, Warnung, Fehler, Rückfrage, Dreifachwahl, Wartekurve | `StilleDialoge` — Konsole; Rückfrage = nein |
+| `Datei` | Datei-/Ordnerwahl, Öffnen mit der Systemanwendung | `KeineDateiwahl` — `""` bzw. `false` |
+| `Pfade` | `%APPDATA%\wp-plan`, `%APPDATA%\<Produkt>`, `LocalApplicationData[\WP-Plan]`, `CommonApplicationData\WP-Plan`, Dokumente | `StandardPfade` — `Environment.SpecialFolder` |
+| `Einstellungen` | Schlüssel-Wert-Ablage, dazu ein maschinenweiter Leser | `FluechtigeEinstellungen` — Wörterbuch im Speicher |
+| `Lizenzablage` | Geheimnisse; Geltungsbereich Gerät **oder** Benutzer als Parameter | `KeineAblage` — merkt nichts |
+| `GeraeteId` | Gerätemerkmale für die Lizenzbindung | `KeineGeraeteId` — leer |
+| `Sprache` | Kürzel, `IstEnglisch`, Umschalten | `StandardSprache` — hält `Sprache.Nummer` |
+| `Navigation` | Gewerksliste auffrischen, Maske öffnen, Ansicht auffrischen | `KeineNavigation` — Leerlauf, `OeffneMaske` = `false` |
+| `Projekt` | das offene Projekt (Id, Name, Klimazone, Wechsel) | `LeererProjektKontext` — `Vorhanden` = `false` |
+
+Belegt werden alle neun an genau EINER Stelle: `Program.Main`, vor
+`DataRepository.DatenbankVorhanden()`. Die Windows-Fassungen liegen in
+`../WindowsFormsApplication1/Dienste/`. Ein Prüfstand tauscht ein Feld, fährt seinen Fall und legt
+die Standardfassung zurück (`EPOS.Kern.Tests/DiensteTests.cs`).
+
+**Maskennamen und Gewerke sind sprachneutrale ASCII-Schlüssel** (`Gewerke.Bhkw`,
+`Masken.PufferSpAdmin`, `Ansichten.Varianten`) nach der Drei-Schichten-Regel — nie ein
+Anzeigetext.
+
+**Meldungen und Oberflächenaufgaben über Haken.** Das ältere Muster, das weiterhin gilt: ein
+`static Action<…>`-Feld hier, belegt von `Program.Main` in der Anwendung, mit einer folgenlosen
+oder auf die Konsole schreibenden Vorbelegung.
+
+| Haken | Wofür | Vorbelegung |
+|---|---|---|
+| `Meldung.Zeigen` / `.Hinweis` / `.Warnung` / `.Warten` | Dialog statt `MessageBox.Show` bzw. Sanduhr | **seit iU5 `Dienste.Dialog`** — ohne Oberfläche damit Konsole, `Warten` folgenlos. `Program.Main` belegt diese vier Haken **nicht mehr** |
+| `SimulationControl.Speicherlauf` | der Stromspeicherzweig (K8) | wird vom `[ModuleInitializer]` in `SimulationControl.Stromspeicher.cs` gesetzt, sobald diese Assembly lädt |
+| `SimulationRunner.Speicherergebnismodell` | dasselbe für das Ergebnismodell | wie oben |
+| `WErzeugerCtrl.GeraetewaisenAufraeumen` | Aufräumlauf nach dem Löschen eines Projekts | `null` = kein Lauf; zulässig, weil er ohnehin nach dem erfolgreichen DELETE läuft und der Migrationsschritt nachholt |
+| `DataRepository.Zugriff` | die Umsetzung hinter `IDatenzugriff` (iU6-T4) | `new SqliteDatenzugriff()`; wird in iU5 an `Dienste.Daten` gehängt |
+
+**ResX und Settings pflegen.** Der Anzeigetext-Katalog liegt jetzt hier; `Resource.Designer.cs`
+ist **eingecheckter Quelltext** und muss beim Ergänzen von Schlüsseln mitgepflegt werden. Nur die
+neutrale `Resource.resx` trägt den Code-Generator, die Satellitendatei nicht. Der `LogicalName`
+beider Dateien ist im `.csproj` festgeschrieben
+(`WindowsFormsApplication1.MyResource.Resource[.en-US].resources`), damit der Ressourcenname nicht
+am Ordnerpfad hängt — der Basisname in `Resource.Designer.cs` bleibt dadurch gültig. Visual Studio
+regeneriert die Designer-Datei bei jeder `.resx`-Änderung selbst; wer parallel von Hand ergänzt
+hat, baut Duplikate (CS0102).
+
+**`InternalsVisibleTo`.** Etliche Typen sind ohne Zugriffsangabe deklariert und damit `internal`
+(`ProjektCtrl`, `KlimaregionCtrl`, `WPStammCtrl`, `Properties.Settings`, `Init` …). Das `.csproj`
+gibt sie für `EPOS_Plan` und `EPOS.Kern.Tests` frei. Neue Typen brauchen deshalb **keine**
+Sichtbarkeitsanhebung, nur weil die Anwendung sie sieht.
+
+**Namespace bleibt `WindowsFormsApplication1`** — die Umbenennung ist eine eigene Entscheidung
+(iF13), nicht Teil dieser Etappe. Bezeichner und Kommentare deutsch.
+
+**Die Feldgrößen sind fest verdrahtet:** 8760 Stunden, 168 Wochenwerte, 365 Tage, 12 Monate, 24
+Tagesstunden; Vektoren `float` mit Zwischenrechnung in `double`; Arrays werden **in-place**
+überschrieben, der Rückgabewert fast überall ignoriert. Diese Konventionen beim Erweitern
+beibehalten.
+
+## Bericht: alles hier bis auf den GDI+-Stand
+
+**Der Diagramm-Renderer liegt seit iU7-5 hier** — `Allgemein/Bericht/ChartRenderer.cs`,
+SkiaSharp statt GDI+ (iU7-2), ohne eine einzige Windows-API. Er ist die Vorlage für iF16
+(`EPOS.UI/Standards/ChartBild`): Der Kern liefert PNG-Bytes, die Oberfläche zeigt sie an —
+ein Chart-Stack für Bericht *und* Bildschirm.
+
+**Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
+`ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
+`ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
+der Bericht entsteht damit auch auf dem iPad. Zwei Dinge blieben in der Anwendung:
+`ChartRendererGdi` (der eingefrorene GDI+-Stand, Gegenpart des Windows-Bildvergleichs
+`Referenzlauf/Bildvergleich.cs`, iU7-1) und `BerichtsDatenSammler`, weil er `EnergieMengen`
+aus `Views/Varianten/` ruft.
+
+**Die Fußzeilen-Fassung des Word-Berichts.** `Bausteine/BausteineStandard.cs` las die
+Programmfassung bis iU5-U3 über `System.Windows.Forms.Application.ProductVersion`. An ihrer
+Stelle steht jetzt `DeckblattBaustein.ProduktFassung()` mit derselben Reihenfolge wie WinForms:
+`AssemblyInformationalVersionAttribute` des **Einstiegs**-Assemblies, sonst
+`FileVersionInfo(...).ProductVersion` derselben Datei, sonst `"1.0.0.0"`. Der Bestand nimmt den
+zweiten Zweig — die Anwendung setzt `GenerateAssemblyInfo=false` und deklariert nur
+`AssemblyVersion`/`AssemblyFileVersion` `1.1.0.0`; das Deckblatt zeigt unter Windows deshalb
+unverändert `1.1.0.0`.
+
+**Die Vorlage bleibt neben der EXE.** `WordBerichtGenerator.FindeVorlage()` sucht
+`Vorlagen\Berichtsvorlage.docx` über `AppDomain.CurrentDomain.BaseDirectory` — die `.docx`
+selbst liegt weiterhin im Anwendungsprojekt und wird von dort ins Ausgabeverzeichnis kopiert.
+
+**Die Dateiwahl der Berichtsansicht läuft seit iU7-9 über `Dienste.Datei`** —
+`OrdnerWaehlen`, `DateiSpeichern` und `MitSystemOeffnen` statt `FolderBrowserDialog`,
+`SaveFileDialog` und `Process.Start` (`Views/Bericht/UcBericht.cs`,
+`Views/Varianten/Form_Variantentest.cs`).
+
+**Schriftregel iF19 — Systemschrift, flexibel.** Der Renderer bindet keine Schrift ein,
+sondern fragt `SKFontManager` eine Rückfallkette ab: Calibri (Windows) → Carlito/Liberation
+Sans/DejaVu Sans (Linux) → Helvetica/Arial (macOS/iOS). Das Layout ist **metrikgetrieben**:
+Umbrüche und Legendenbreiten folgen den gemessenen Textmaßen, nicht festen Pixelwerten.
+Folge, und das ist Absicht: **Textbreiten dürfen je Plattform abweichen.** Ein Vergleich
+Windows↔Linux ist deshalb ein Struktur- und Histogrammvergleich, kein Pixelvergleich; ein
+Pixelvergleich ist nur *innerhalb* einer Plattform sinnvoll (genau das macht der Modus
+`bildvergleich` der Referenzlauf-Suite gegen `ChartRendererGdi`).
+
+**Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
+Verdichtungen exakt und dass gezeichnet wird — drei Tests, in jedem Kern-Lauf dabei.
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet neun Bilder und
+prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
+`.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
+Pixelvergleich gegen GDI+ läuft unter Windows.
+
+**Die nativen SkiaSharp-Bibliotheken sind bedingt** — `Condition="$([MSBuild]::IsOSPlatform(…))"`
+in `EPOS.Kern.csproj` und in `EPOS.Kern.Tests.csproj`. Welche Native passt, entscheidet die
+Bauumgebung und nicht das TargetFramework; jede Umgebung zieht genau ihre eigene statt aller
+drei. Win32 steht mit dabei, weil `windows.yml` `dotnet test WP-Plan.Kern.slnf` fährt.
+
+## Nachweis
+
+Jede Änderung hier wird gegen die eingefrorene Windows-Basis geprüft:
+
+```bash
+dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017 \
+  --ziel artifacts/reflauf/neu
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  vergleich artifacts/reflauf/ref artifacts/reflauf/neu     # GESAMT: PASS
+```
+
+**Der iU5-Wächter — muss leer bleiben:**
+
+```bash
+git grep -nE '\bProgram\.[A-Za-z]' -- 'EPOS.Kern/*.cs' \
+    '../WindowsFormsApplication1/Allgemein/*.cs' \
+    '../WindowsFormsApplication1/Controller/*.cs' \
+    '../WindowsFormsApplication1/Model/*.cs' | grep -vP ':\s*(///|//|\*)'
+```
+
+Dieselben drei Projekte rechnet die CI (`.github/workflows/kern.yml`) auf `ubuntu-latest` und
+`macos-latest`. 1007 und 1017 führen aktive Stromspeicher-Varianten und decken damit den
+K8-Haken ab; ohne sie fiele ein stillgelegter Haken nicht auf.
+
+**Der Plattform-Wächter — muss ebenfalls leer bleiben:**
+
+```bash
+git grep -nE 'System\.Windows\.Forms|System\.Drawing|MessageBox\.|\bProgram\.|\bRegistry\.|ProtectedData|OleDb' \
+    -- 'EPOS.Kern/*.cs' | grep -vP ':\s*(///|//|\*)'
+```
+
+`\bRegistry\.` mit Wortgrenze — ohne sie trifft das Muster `speicherRegistry.` in
+`SimulationControl.cs` und meldet zwölf falsche Treffer.

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -124,7 +123,7 @@ namespace WindowsFormsApplication1
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt = null)
         {
             int srcId = _dup.GetProjektId(projektName);
-            if (srcId <= 0) { MessageBox.Show("Projekt '" + projektName + "' nicht gefunden."); return false; }
+            if (srcId <= 0) { Meldung.Zeigen("Projekt '" + projektName + "' nicht gefunden."); return false; }
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -300,7 +299,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Export: " + ex.Message); return false;
+                    Meldung.Zeigen("Fehler beim Export: " + ex.Message); return false;
                 }
             }
         }
@@ -471,11 +470,11 @@ namespace WindowsFormsApplication1
                             int neuVid;
                             { object m = v.Skalar("SELECT MAX(ID) FROM Tab_Variante"); neuVid = ((m == null || m == DBNull.Value) ? 0 : Convert.ToInt32(m)) + 1; }
                             {
-                                List<OleDbParameter> pl = new List<OleDbParameter>();
-                                pl.Add(new OleDbParameter("@id", neuVid));
-                                pl.Add(new OleDbParameter("@p", pId));
-                                pl.Add(new OleDbParameter("@r", sId));
-                                pl.Add(new OleDbParameter("@n", (object)(link.variantenname ?? "") ?? DBNull.Value));
+                                List<DbParam> pl = new List<DbParam>();
+                                pl.Add(new DbParam("@id", neuVid));
+                                pl.Add(new DbParam("@p", pId));
+                                pl.Add(new DbParam("@r", sId));
+                                pl.Add(new DbParam("@n", (object)(link.variantenname ?? "") ?? DBNull.Value));
                                 v.Ausfuehren("INSERT INTO Tab_Variante (ID, ID_Projekt, ID_ProjektRef, Variantenname) VALUES (?, ?, ?, ?)", pl.ToArray());
                             }
                             berichte.Add("Als Variante \u201E" + (string.IsNullOrEmpty(link.variantenname) ? link.projekt : link.variantenname) + "\u201C verknüpft.");
@@ -633,8 +632,8 @@ namespace WindowsFormsApplication1
             try
             {
                 {
-                    List<OleDbParameter> pl = new List<OleDbParameter>();
-                    pl.Add(new OleDbParameter("@n", name));
+                    List<DbParam> pl = new List<DbParam>();
+                    pl.Add(new DbParam("@n", name));
                     object o = v.Skalar("SELECT ID FROM Tab_Projekt WHERE Projektname = ?", pl.ToArray());
                     return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
                 }
@@ -669,14 +668,14 @@ namespace WindowsFormsApplication1
 
                     int betroffen = StilleDb.NonQuery(
                         "UPDATE sqlite_sequence SET seq = " + maxAusdruck + " WHERE name = ?",
-                        new OleDbParameter("@t", t.name));
+                        new DbParam("@t", t.name));
 
                     // Noch kein Eintrag (die Tabelle hat noch nie einen AutoWert vergeben)
                     // -> Zeile anlegen. Alles andere bleibt still, wie bisher.
                     if (betroffen == 0)
                         StilleDb.NonQuery(
                             "INSERT INTO sqlite_sequence (name, seq) VALUES (?, " + maxAusdruck + ")",
-                            new OleDbParameter("@t", t.name));
+                            new DbParam("@t", t.name));
                 }
                 catch { }
             }
@@ -773,7 +772,7 @@ namespace WindowsFormsApplication1
 
                 var cs = row.Keys.Where(x => zielTypen.ContainsKey(x)).ToList();
                 if (cs.Count == 0) continue;
-                var cps = new List<OleDbParameter>();
+                var cps = new List<DbParam>();
                 for (int n = 0; n < cs.Count; n++)
                     cps.Add(MacheParam("@c" + n, JsonToObject(row[cs[n]]), TypVon(zielTypen, cs[n])));
                 try
@@ -795,7 +794,7 @@ namespace WindowsFormsApplication1
             foreach (var row in rows)
             {
                 long altId = row[k.pk].GetInt64();
-                var wo = new List<string>(); var ps = new List<OleDbParameter>(); int i = 0;
+                var wo = new List<string>(); var ps = new List<DbParam>(); int i = 0;
                 foreach (var key in k.naturalKey)
                 {
                     string p = "@k" + (i++); wo.Add("[" + key + "] = " + p);
@@ -816,7 +815,7 @@ namespace WindowsFormsApplication1
                     {
                         var cs = row.Keys.Where(x => !x.Equals(k.pk, StringComparison.OrdinalIgnoreCase)
                                                      && zielTypen.ContainsKey(x)).ToList();
-                        var cps = new List<OleDbParameter>();
+                        var cps = new List<DbParam>();
                         for (int n = 0; n < cs.Count; n++)
                             cps.Add(MacheParam("@c" + n, JsonToObject(row[cs[n]]), TypVon(zielTypen, cs[n])));
                         try
@@ -961,36 +960,38 @@ namespace WindowsFormsApplication1
 
         // Baut eine aussagekräftige Fehlermeldung: welche Spalte hat welchen Zieltyp und
         // welchen tatsächlichen Wert-Typ bekommen. So lässt sich der Konflikt sofort erkennen.
-        private static string Diagnose(string ctx, List<string> spalten, List<OleDbParameter> ps, Dictionary<string, Type> typen)
+        private static string Diagnose(string ctx, List<string> spalten, List<DbParam> ps, Dictionary<string, Type> typen)
         {
             var sb = new StringBuilder(ctx + " -> ");
             for (int q = 0; q < spalten.Count && q < ps.Count; q++)
             {
                 string name = spalten[q].Trim('[', ']', ' ');
                 Type zt = (typen != null && typen.TryGetValue(name, out var t)) ? t : null;
-                object v = ps[q].Value;
+                object v = ps[q].Wert;
                 string vt = (v == null || v == DBNull.Value) ? "NULL" : v.GetType().Name;
                 sb.Append(name).Append("(Ziel=").Append(zt != null ? zt.Name : "?").Append(",Wert=").Append(vt).Append(") ");
             }
             return sb.ToString();
         }
 
-        // Erzeugt einen OleDbParameter, dessen Wert in den Zielspaltentyp konvertiert UND
-        // dessen OleDbType passend gesetzt ist. Ohne expliziten OleDbType bindet ADO.NET eine
-        // DateTime als DBTimeStamp – Access erwartet aber "Date", was ACE-Fehler 3464
-        // ("Datentypenkonflikt in Kriterienausdruck") auslöst, obwohl die .NET-Typen passen.
-        private static OleDbParameter MacheParam(string name, object rohWert, Type ziel)
+        // Erzeugt einen DbParam, dessen Wert in den Zielspaltentyp konvertiert UND
+        // dessen Typ passend gesetzt ist. Der Typ stammt aus der Access-Zeit: ohne ihn band
+        // ADO.NET eine DateTime als DBTimeStamp, während Access "Date" erwartete - ACE-Fehler
+        // 3464 ("Datentypenkonflikt in Kriterienausdruck"), obwohl die .NET-Typen passten.
+        // Er wird beibehalten, weil er die Absicht der Stelle dokumentiert; für SQLite
+        // entscheidet ohnehin DataRepository.NormalisiereWert über die Speicherform.
+        private static DbParam MacheParam(string name, object rohWert, Type ziel)
         {
             object w = Passe(rohWert, ziel);
-            var p = new OleDbParameter(name, w);
+            var p = new DbParam(name, w);
             Type t = ziel == null ? null : (Nullable.GetUnderlyingType(ziel) ?? ziel);
-            if (t == typeof(DateTime)) p.OleDbType = OleDbType.Date;
-            else if (t == typeof(bool)) p.OleDbType = OleDbType.Boolean;
+            if (t == typeof(DateTime)) p.Typ = DbParamTyp.Date;
+            else if (t == typeof(bool)) p.Typ = DbParamTyp.Boolean;
             else if (t == typeof(byte) || t == typeof(short) || t == typeof(int) || t == typeof(long))
-                p.OleDbType = OleDbType.Integer;
-            else if (t == typeof(double) || t == typeof(float)) p.OleDbType = OleDbType.Double;
-            else if (t == typeof(decimal)) p.OleDbType = OleDbType.Decimal;
-            else if (t == typeof(Guid)) p.OleDbType = OleDbType.Guid;
+                p.Typ = DbParamTyp.Integer;
+            else if (t == typeof(double) || t == typeof(float)) p.Typ = DbParamTyp.Double;
+            else if (t == typeof(decimal)) p.Typ = DbParamTyp.Decimal;
+            else if (t == typeof(Guid)) p.Typ = DbParamTyp.Guid;
             // String bewusst ohne expliziten Typ: ADO.NET wählt VarWChar/LongVarWChar passend
             // zur Länge, sonst würden Memo-Felder (> 255 Zeichen) abgeschnitten.
             return p;
@@ -1010,7 +1011,7 @@ namespace WindowsFormsApplication1
             try
             {
                 {
-                    List<OleDbParameter> pl = new List<OleDbParameter>();
+                    List<DbParam> pl = new List<DbParam>();
                     for (int q = 0; q < ph.Count; q++) pl.Add(MacheParam(ph[q], vals[q], typen[q]));
                     v.Ausfuehren("INSERT INTO [" + tab + "] (" + string.Join(",", cols) + ") VALUES (" + string.Join(",", ph) + ")", pl.ToArray());
                 }
@@ -1082,7 +1083,7 @@ namespace WindowsFormsApplication1
         private string VolleDiagnoseWerte(string tab, List<string> colNames, List<object> vals,
             List<Type> typen, DbVorgang v)
         {
-            var cols = new List<string>(); var ps = new List<OleDbParameter>();
+            var cols = new List<string>(); var ps = new List<DbParam>();
             var typMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
             for (int q = 0; q < colNames.Count; q++)
             {
@@ -1096,7 +1097,7 @@ namespace WindowsFormsApplication1
         // Vollständige Fehlerdiagnose für einen fehlgeschlagenen Zeilen-INSERT: Tabelle, jede
         // Spalte mit Zieltyp/Werttyp/echtem Wert, und für jede Access-Beziehung, ob der Eltern-
         // datensatz existiert – geprüft IN der laufenden Transaktion (sieht in-txn-Eltern).
-        private string VolleDiagnose(string tab, List<string> cols, List<OleDbParameter> ps,
+        private string VolleDiagnose(string tab, List<string> cols, List<DbParam> ps,
             Dictionary<string, Type> typen, DbVorgang v)
         {
             var sb = new StringBuilder();
@@ -1105,7 +1106,7 @@ namespace WindowsFormsApplication1
             {
                 string name = cols[q].Trim('[', ']', ' ');
                 Type zt = (typen != null && typen.TryGetValue(name, out var t)) ? t : null;
-                object wert = ps[q].Value;
+                object wert = ps[q].Wert;
                 bool leer = (wert == null || wert == DBNull.Value);
                 string vs = leer ? "NULL" : Convert.ToString(wert);
                 if (vs != null && vs.Length > 40) vs = vs.Substring(0, 40) + "…";
@@ -1118,7 +1119,7 @@ namespace WindowsFormsApplication1
                 foreach (var fk in list)
                 {
                     int idx = cols.FindIndex(c => c.Trim('[', ']', ' ').Equals(fk.Col, StringComparison.OrdinalIgnoreCase));
-                    object wert = (idx >= 0 && idx < ps.Count) ? ps[idx].Value : null;
+                    object wert = (idx >= 0 && idx < ps.Count) ? ps[idx].Wert : null;
                     bool leer = (wert == null || wert == DBNull.Value);
                     string status = leer ? "NULL (ok)"
                         : (FkExistiert(v, fk.RefTab, fk.RefCol, wert) ? "vorhanden" : ">>> FEHLT <<<");
@@ -1147,8 +1148,8 @@ namespace WindowsFormsApplication1
             try
             {
                 {
-                    List<OleDbParameter> pl = new List<OleDbParameter>();
-                    var p = new OleDbParameter("@v", OleDbType.VarWChar) { Value = wert };
+                    List<DbParam> pl = new List<DbParam>();
+                    var p = new DbParam("@v", DbParamTyp.VarWChar) { Wert = wert };
                     pl.Add(p);
                     v.Ausfuehren("INSERT INTO [" + refTab + "] ([" + refCol + "]) VALUES (?)", pl.ToArray());
                 }

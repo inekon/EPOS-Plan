@@ -1,0 +1,1436 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Ein einzelner Befund des Warnkriterienkatalogs.
+    ///
+    /// <para><see cref="Kriterium"/> ist ein SPRACHNEUTRALER Schluessel
+    /// (<c>"W1"</c>… bzw. <c>"HART_…"</c>, siehe <see cref="Warnkriterien"/>), mit dem
+    /// Aufrufer filtern und gruppieren; <see cref="Text"/> ist der fertige,
+    /// lokalisierte Anzeigetext. Beides gehoert getrennt — Drei-Schichten-Regel.</para>
+    /// </summary>
+    public class Warnbefund
+    {
+        /// <summary>Sprachneutraler Kriteriumsschluessel (<c>W1</c>…<c>HART_LEERES_SET</c>).</summary>
+        public string Kriterium = "";
+
+        /// <summary>
+        /// true = HART. Die Konstellation ist physikalisch bzw. konstruktiv unmoeglich
+        /// und wird von den Bestandsguards in Dialog und Engine abgewiesen; dieser
+        /// Katalog meldet sie zusaetzlich VORAB.
+        /// </summary>
+        public bool Hart;
+
+        /// <summary>Betroffene <c>Tab_Energieanlagen.ID</c>; 0, wenn der Befund an keiner Anlage haengt.</summary>
+        public int ID_Anlage;
+
+        /// <summary>Betroffene <c>Tab_Pufferspeicher.ID</c>; 0, wenn der Befund an keinem Speicher haengt.</summary>
+        public int ID_Puffer;
+
+        /// <summary>Fertiger, lokalisierter Anzeigetext.</summary>
+        public string Text = "";
+    }
+
+    /// <summary>
+    /// PAKET S2 — der WARNKRITERIENKATALOG aus Konzept 6.2 (Entscheidung F6) als EINE
+    /// Wahrheit fuer Dialog und Laufstart.
+    ///
+    /// <para><b>Der Grundsatz.</b> Zuordnungen zwischen Erzeugern und Pufferspeichern
+    /// sind frei — aber nur SINNVOLLE Konstellationen bleiben unkommentiert. Die
+    /// sperrende Pufferfilterung (<c>WaermesenkeClass.PufferPasst</c>) faellt mit diesem
+    /// Paket; an ihre Stelle tritt ein definierter Katalog, der beim Speichern einer
+    /// Senkenzeile (<see cref="PruefeSenke"/>) und beim Laufstart
+    /// (<see cref="PruefeProjekt"/>) dasselbe prueft und dieselben Texte liefert.</para>
+    ///
+    /// <para><b>Umgesetzte Kriterien.</b>
+    /// <list type="table">
+    ///   <item><term>W1</term><description>Das Puffer-Ziel einer Senkenzeile liegt
+    ///     ausserhalb des Klassen-Sets des gewaehlten Speichers — geladen wuerde mit
+    ///     einem Zweck, den der Speicher nie entlaedt.</description></item>
+    ///   <item><term>W2</term><description>Die BAUFORM (<c>Tab_Pufferspeicher.Speichertyp</c>)
+    ///     widerspricht dem Klassen-Set.</description></item>
+    ///   <item><term>W3</term><description>Der Erzeuger-Vorlauf liegt unter dem wirksamen
+    ///     Vorlauf <c>VL_eff</c> des Zielspeichers ODER — seit Paket P1 — unter dessen
+    ///     Nutztemperatur <c>T_Nutz_BW</c>.</description></item>
+    ///   <item><term>W4</term><description>Die Nutztemperatur <c>T_Nutz_BW</c> liegt ueber
+    ///     dem wirksamen Vorlauf <c>VL_eff</c> — der Lauf klemmt sie, sonst waere der
+    ///     Brauchwasserkanal dauerhaft abgeschaltet (Paket P1).</description></item>
+    ///   <item><term>W5</term><description>Ein als Waermequelle konfigurierter Puffer hat
+    ///     keinen einzigen Lader.</description></item>
+    ///   <item><term>W6</term><description>HART: <c>Schichten_Anzahl</c> &gt; 1 am
+    ///     Leitspeicher eines Parallelverbunds (Paket P1).</description></item>
+    ///   <item><term>HART_*</term><description>Kurzschluss (Quelle = eigenes Ladeziel),
+    ///     Ring in der Kaskadenkette, leeres Klassen-Set.</description></item>
+    /// </list></para>
+    ///
+    /// <para><b>PAKET P1 — die drei bis dahin vertagten Anteile sind scharf.</b> W4, W6
+    /// und der <c>T_Nutz</c>-Anteil von W3 verlangten Spalten, die es bis
+    /// Schema-Schritt 53 nicht gab (Ticket S2-O1); ihre Schluessel standen deshalb
+    /// reserviert im Katalogkopf. Sie sind jetzt echte Pruefungen — und bleiben
+    /// SPALTENTOLERANT: Fehlen <c>Schichten_Anzahl</c> und <c>T_Nutz_BW</c> (Schritt 53
+    /// nicht gelaufen), liefert <c>PufferSpCtrl.SchichtdatenAusZeile</c> die
+    /// verhaltensneutrale Vorbelegung, und keines der drei Kriterien schlaegt an. Auf
+    /// einem Bestand ohne gepflegte Schichtdaten aendert P1 am Laufprotokoll also
+    /// nichts.</para>
+    ///
+    /// <para><b>W6 wird ABGEWIESEN, nicht nur gemeldet</b> (Konzept 6.3, Entscheidung
+    /// F8): Verbund und Schichtung schliessen sich je Rechenspeicher aus. Der Guard sitzt
+    /// im Speicherdialog (<c>Form_PufferSp_Projekt</c>, N &gt; 1 an einem bestehenden
+    /// Leitspeicher) und in der Verbundpruefung
+    /// (<c>AnlagePufferVerbundCtrl.KonfliktPruefen</c>, Verbund an einem geschichteten
+    /// Leitspeicher). Dieser Katalog MELDET den Zustand zusaetzlich — an der Karte und
+    /// beim Laufstart —, damit ein auf anderem Weg entstandener Bestand nicht stumm
+    /// bleibt.</para>
+    ///
+    /// <para><b>Verhaeltnis zu den Bestandsguards.</b> Kurzschluss und Ring werden heute
+    /// schon abgefangen — im Senkendialog (<c>Form_Waermesenke.ListePruefen</c>), in der
+    /// Quellenpruefung (<c>WaermesenkeClass.QuellePruefen</c>), beim Aufbau der
+    /// Quellbezuege (<c>SimulationControl.QuellbezuegeAufbauen</c>, E-K2-1) und in der
+    /// Ebenen-Relaxation der Kaskadenschleife (Ring, ABBRUCH des Laufs). Diese Guards
+    /// bleiben unangetastet: Sie sitzen tiefer und decken Wege ab, die nicht ueber den
+    /// Dialog laufen. Der Katalog DUPLIZIERT sie nicht, sondern
+    /// <list type="bullet">
+    ///   <item><description>liefert dem Senkendialog den Kurzschluss-Text ueber
+    ///     <see cref="PruefeSenke"/> — dieselbe Ressource wie bisher, damit die Meldung
+    ///     Wort fuer Wort dieselbe bleibt;</description></item>
+    ///   <item><description>rechnet den Ring ueber DIESELBE Ebenen-Relaxation wie Dialog
+    ///     und Engine (<see cref="Hydraulikbild.Ebenen"/>) statt einer zweiten
+    ///     Ringsuche;</description></item>
+    ///   <item><description>meldet beim Laufstart NUR ins Protokoll. Kein harter Befund
+    ///     dieses Katalogs bricht einen Lauf ab — sonst gaebe es zwei Abbruchstellen fuer
+    ///     dieselbe Sache.</description></item>
+    /// </list></para>
+    ///
+    /// <para><b>Dialogfrei</b> (Konzept 13.4) und ohne Oberflaeche aufrufbar: gelesen
+    /// wird ueber <see cref="StilleDb"/> — den <c>?</c>-parametrisierten, MessageBox-freien
+    /// Weg auf <c>DataRepository.GetConnectionString()</c> — sowie ueber die vorhandenen
+    /// Bausteine <see cref="Hydraulikbild"/>, <see cref="Z_AnlageSenkeCtrl"/>,
+    /// <see cref="WaermesenkeClass"/> und <see cref="PufferSpCtrl"/>. Spaltentolerant:
+    /// Fehlt <c>Z_AnlageSenke</c> (Migrationsschritt 50 nicht gelaufen), gelten die
+    /// Altspalten <c>WS_*</c>; fehlen die Klassen-Set-Spalten (Schritt 49), gilt die
+    /// Ableitung aus <c>Verwendung</c>.</para>
+    /// </summary>
+    public static class Warnkriterien
+    {
+        // =====================================================================
+        // Kriteriumsschluessel — sprachneutral und ASCII (Drei-Schichten-Regel,
+        // Schicht "Schluessel"). Sie stehen in Protokollen, Filtern und Chips und
+        // duerfen NIE angezeigt werden.
+        // =====================================================================
+
+        /// <summary>Puffer-Ziel der Senkenzeile liegt ausserhalb des Klassen-Sets.</summary>
+        public const string W1_ZIEL_AUSSERHALB_SET = "W1";
+
+        /// <summary>Bauform (<c>Speichertyp</c>) widerspricht dem Klassen-Set.</summary>
+        public const string W2_BAUFORM_WIDERSPRUCH = "W2";
+
+        /// <summary>
+        /// Erzeuger-Vorlauf &lt; <c>VL_eff</c> des Zielspeichers — oder (Paket P1)
+        /// &lt; dessen <c>T_Nutz_BW</c>. BEIDE Anteile tragen denselben Schluessel: Es
+        /// ist dasselbe Kriterium des Konzepts („Erzeuger-Vorlauf &lt; <c>VL_eff</c> des
+        /// Ziel-Puffers bzw. &lt; <c>T_Nutz</c> des Zielkanals", 6.2), nur mit zwei
+        /// Messlatten und zwei Texten.
+        /// </summary>
+        public const string W3_VORLAUF_ZU_NIEDRIG = "W3";
+
+        /// <summary>
+        /// <c>T_Nutz_BW</c> &gt; <c>VL_eff</c> (Paket P1). Weich: Der Lauf klemmt die
+        /// Nutztemperatur auf <c>VL_eff</c> und rechnet weiter (Konzept 7.2) — ohne die
+        /// Klemmung waere der Brauchwasserkanal still komplett abgeschaltet.
+        /// </summary>
+        public const string W4_TNUTZ_UEBER_VLEFF = "W4";
+
+        /// <summary>Quellpuffer ohne einen einzigen Lader.</summary>
+        public const string W5_QUELLE_OHNE_LADER = "W5";
+
+        /// <summary>
+        /// HART (Paket P1): <c>Schichten_Anzahl</c> &gt; 1 am Leitspeicher eines
+        /// Parallelverbunds. Abgewiesen wird die Konstellation im Dialog, dieser Katalog
+        /// meldet sie — Begruendung im Klassenkopf.
+        /// </summary>
+        public const string W6_SCHICHTUNG_AM_VERBUND = "W6";
+
+        /// <summary>
+        /// Sole-/Wasser-Wasser-Waermepumpe OHNE konfigurierte Waermequelle
+        /// (<c>WQ_Typ</c> leer): Der Lauf rechnet ersatzweise mit der Aussenluft —
+        /// fuer diese Bauart ein Kategorienfehler (die Kennlinie ist auf Sole-/
+        /// Wassertemperaturen bezogen). Nutzerbefund 27.08.2026 (Booster-Kette 1042).
+        ///
+        /// <para>Die echte Quellkopplung ist mit Paket B1 geliefert (Konzept 8.2). Das
+        /// Kriterium bleibt: Es meldet nicht die fehlende KOPPLUNG, sondern die fehlende
+        /// QUELLE — eine Sole-/Wasser-Wasser-WP ohne <c>WQ_Typ</c> rechnet weiterhin
+        /// ersatzweise mit der Aussenluft, egal wie gut die Kopplung gebaut ist.</para>
+        /// </summary>
+        public const string QUELLE_NICHT_KONFIGURIERT = "QUELLE_FEHLT";
+
+        /// <summary>
+        /// Heizkessel MIT Quellpuffer, dessen Temperaturbezug auf
+        /// <c>DbWerte.WQ_TEMPMODUS_FEST</c> steht, aber KEIN gepflegtes Temperaturpaar
+        /// hat (Paket B2, Nutzerauftrag 28.08.2026 Punkt 1: „Falls die Vorlauf- und die
+        /// Rücklauftemperatur nicht gepflegt sind, gebe eine Warnung — aber nur wenn
+        /// erforderlich").
+        ///
+        /// <para><b>Alle drei Bedingungen zusammen — sonst schweigt der Katalog.</b> Ohne
+        /// Quellpuffer gibt es keinen Hub, gegen den zu rechnen wäre. Im Modus
+        /// <c>Berechnet</c> — der Vorbelegung des Migrationsschritts 55 und damit dem
+        /// Zustand JEDER Bestandsanlage — hat der Anwender ausdrücklich gesagt, dass er
+        /// keine Vorgabe machen will; dort ist der Hinweis untersagt („keinen Hinweis
+        /// geben"). Er erscheint also genau dann, wenn jemand „fest vorgegeben" gewählt
+        /// und die Vorgabe dann nicht gemacht hat.</para>
+        ///
+        /// <para><b>WEICH.</b> Der Lauf rechnet weiter — er fällt sichtbar auf den
+        /// Berechnet-Weg zurück (<c>SimulationControl.KesselKopplungSetzen</c>). Das
+        /// löst den Bestandszustand aus Ticket B1-O10 ab, in dem ein konfigurierter
+        /// Quellbezug stumm wirkungslos blieb.</para>
+        /// </summary>
+        public const string KESSEL_TEMPERATURPAAR = "KESSEL_TEMPERATURPAAR";
+
+        /// <summary>
+        /// Waermepumpe mit Pufferspeicher als Waermequelle, an der ZUGLEICH „Quelle
+        /// unbegrenzt verfuegbar" gesetzt ist (Paket B3, Nutzerbefund 28.08.2026,
+        /// Booster-Kette 1042).
+        ///
+        /// <para>Das Haekchen gewinnt seit jeher:
+        /// <c>WaermequelleClass.Quellspeicher</c> liefert dann KEINEN Speicher („nur die
+        /// Temperatur wirkt, keine Bilanz") — die Anlage rechnet mit konstant
+        /// <c>WQ_Temp</c>, und die gesamte Speicherkopplung aus Paket B1/B2 samt
+        /// Lesepunkt bleibt still abgeschaltet, obwohl ein Puffer gewaehlt ist. Beim
+        /// Anwender stand die Booster-WP so auf konstant 45 °C, waehrend Quellpuffer,
+        /// Lader und Senken fertig verschaltet waren.</para>
+        ///
+        /// <para><b>WEICH und nur fuer die WAERMEPUMPE:</b> Der Lauf rechnet den
+        /// dokumentierten Bestandsweg weiter (keine Ergebnisaenderung ohne
+        /// Anwenderaktion). Der HEIZKESSEL liest das Flag gar nicht
+        /// (<c>SimulationControl.QuellbezuegeAufbauen</c> fragt nur <c>WQ_Typ</c> und
+        /// <c>WQ_ID_Puffer</c>) — dort waere der Befund eine Warnung vor etwas
+        /// Wirkungslosem.</para>
+        /// </summary>
+        public const string QUELLE_UNBEGRENZT = "QUELLE_UNBEGRENZT";
+
+        /// <summary>HART: derselbe Speicher ist Quelle UND Ladeziel derselben Anlage.</summary>
+        public const string HART_KURZSCHLUSS = "HART_KURZSCHLUSS";
+
+        /// <summary>HART: Ring in der Booster-/Kaskadenkette.</summary>
+        public const string HART_RING = "HART_RING";
+
+        /// <summary>HART: leeres Klassen-Set — kein Kanal entlaedt den Speicher.</summary>
+        public const string HART_LEERES_SET = "HART_LEERES_SET";
+
+        // =====================================================================
+        // Rueckfall-Spreizung fuer VL_eff (Konzept 7.2)
+        // =====================================================================
+
+        /// <summary>
+        /// Generische Rueckfall-Spreizung [K], wenn ein Speicher kein gepflegtes
+        /// Temperaturpaar hat — dieselben 10 K, mit denen
+        /// <c>SimulationPufferspeicher.Init</c> dann sein <c>Q_max</c> bildet.
+        /// </summary>
+        public const double RUECKFALL_DELTA_T = 10;
+
+        /// <summary>
+        /// Rueckfall-Spreizung des BHKW-PENDELSPEICHERS [K] (Befund N2): Die Altformel
+        /// <c>Liter · 20 / 860</c> hatte 20 K fest verdrahtet, und ein Rueckfall auf
+        /// 10 K halbierte seine Kapazitaet ohne fachlichen Grund
+        /// (<c>SimulationControl</c>, Aufbau des Ersatz-Pendelspeichers).
+        /// </summary>
+        public const double RUECKFALL_DELTA_T_PENDELSPEICHER = 20;
+
+        // =====================================================================
+        // Oeffentliche Pruefwege
+        // =====================================================================
+
+        /// <summary>
+        /// Prueft ALLE Anlagen und Speicher eines Projekts; nie <c>null</c>, leer =
+        /// keine Beanstandung.
+        ///
+        /// <para>Reihenfolge der Befunde: erst die harten (Kurzschluss, Ring, leeres
+        /// Set), dann die weichen je Anlage in Rangfolge, zuletzt die speicherbezogenen.
+        /// Sie ist die Reihenfolge, in der die Befunde ins Protokoll gehen.</para>
+        ///
+        /// <para>Geprueft werden nur BETEILIGTE Speicher — solche, die eine Senkenzeile
+        /// laedt oder die eine Anlage als Quelle fuehrt. Projekt 1023 der Referenzmenge
+        /// zeigt, warum: Es traegt ueber 80 Pufferkopien aus wiederholtem „Projekt
+        /// duplizieren", von denen genau einer an der Hydraulik teilnimmt.</para>
+        /// </summary>
+        public static List<Warnbefund> PruefeProjekt(int idProjekt)
+        {
+            List<Warnbefund> befunde = new List<Warnbefund>();
+
+            Projektbild bild = Projektbild.Lesen(idProjekt);
+            if (bild == null) return befunde;
+
+            RingPruefen(bild, befunde);
+            SoleOhneQuellePruefen(idProjekt, befunde);
+            QuelleUnbegrenztTrotzPufferPruefen(idProjekt, befunde);
+
+            foreach (int idAnlage in bild.AnlagenReihenfolge)
+            {
+                List<Z_AnlageSenkeModel> kette = bild.Senken(idAnlage);
+                for (int i = 0; i < kette.Count; i++)
+                {
+                    // Der GESPEICHERTE Rang, nicht die Listenposition: Beim Laufstart
+                    // steht er in der Tabelle, und nur er ist die Zahl, die der Anwender
+                    // im Dialog sieht. Erst wenn er fehlt, zaehlt die Position.
+                    int rang = kette[i] != null && kette[i].Rang > 0 ? kette[i].Rang : i + 1;
+                    ZeilePruefen(bild, idAnlage, kette[i], rang, befunde);
+                }
+
+                QuelleOhneLaderPruefen(bild, idAnlage, befunde);
+                KesselTemperaturpaarPruefen(bild, idAnlage, befunde);
+            }
+
+            foreach (int idPuffer in bild.BeteiligtePuffer)
+                SpeicherPruefen(bild, idPuffer, befunde);
+
+            return befunde;
+        }
+
+        /// <summary>
+        /// Prueft EINE Senkenzeile — die Sofortpruefung des Senkendialogs; nie
+        /// <c>null</c>.
+        ///
+        /// <para>Geprueft wird die Zeile, wie sie GESPEICHERT WERDEN SOLL, gegen den
+        /// vorhandenen Bestand: Der Quellbezug der Anlage, das Klassen-Set und die
+        /// Temperaturen des Zielspeichers kommen aus der Datenbank, die Zeile selbst vom
+        /// Aufrufer. <paramref name="senke"/> traegt ihren Rang in
+        /// <c>Z_AnlageSenkeModel.Rang</c>; ist er 0, erscheint er nicht im Text.</para>
+        ///
+        /// <para>Projektweite Kriterien (Ring, W5) sind hier NICHT enthalten: Sie haengen
+        /// an der Gesamtkonfiguration und nicht an dieser einen Zeile. Den Ring haelt der
+        /// Quellendialog ab (<c>WaermesenkeClass.QuellePruefen</c>), W5 meldet der
+        /// Laufstart.</para>
+        /// </summary>
+        public static List<Warnbefund> PruefeSenke(int idProjekt, int idAnlage,
+                                                   Z_AnlageSenkeModel senke)
+        {
+            List<Warnbefund> befunde = new List<Warnbefund>();
+            if (senke == null) return befunde;
+
+            Projektbild bild = Projektbild.Lesen(idProjekt);
+            if (bild == null) return befunde;
+
+            ZeilePruefen(bild, idAnlage, senke, senke.Rang, befunde);
+            return befunde;
+        }
+
+        /// <summary>
+        /// Dieselbe Pruefung fuer eine GANZE Senkenliste — der Weg, den der Senkendialog
+        /// beim Speichern geht. Sie liest das Projektbild EINMAL statt je Zeile; bei
+        /// vier Raengen waeren das sonst sechzehn Abfragen fuer einen Knopfdruck.
+        ///
+        /// <para>Der RANG kommt aus der Listenposition, nicht aus
+        /// <c>Z_AnlageSenkeModel.Rang</c>: Im Dialog wird er erst beim Speichern
+        /// festgeschrieben, und bis dahin zaehlt allein die Reihenfolge.</para>
+        /// </summary>
+        public static List<Warnbefund> PruefeSenken(int idProjekt, int idAnlage,
+                                                    IList<Z_AnlageSenkeModel> senken)
+        {
+            List<Warnbefund> befunde = new List<Warnbefund>();
+            if (senken == null || senken.Count == 0) return befunde;
+
+            Projektbild bild = Projektbild.Lesen(idProjekt);
+            if (bild == null) return befunde;
+
+            for (int i = 0; i < senken.Count; i++)
+                ZeilePruefen(bild, idAnlage, senken[i], i + 1, befunde);
+
+            return befunde;
+        }
+
+        // =====================================================================
+        // Hilfsgroessen, die auch die Oberflaeche braucht
+        // =====================================================================
+
+        /// <summary>
+        /// PAKET B1 (Konzept 8.2 Punkt 3, Entscheidung F9) — die BOOSTER-ANZEIGEREGEL als
+        /// EINE Wahrheit fuer Karte und Schema.
+        ///
+        /// <para><b>Booster ist keine Persistenz.</b> F9 hat ausdruecklich gegen einen
+        /// eigenen Anlagentyp und gegen ein neues Schemafeld entschieden: Ein Booster ist
+        /// eine KONSTELLATION, und sie laesst sich vollstaendig aus der vorhandenen
+        /// Konfiguration ablesen — eine Anlage mit Waermequelle Pufferspeicher, deren
+        /// Quellpuffer von mindestens einer ANDEREN Anlage desselben Projekts geladen
+        /// wird (der GETEILTE Puffer). Genau diese Konstellation koppelt die Engine seit
+        /// Paket B1 temperaturmaessig an den Speicherzustand; Anzeige und Rechnung sagen
+        /// damit dasselbe.</para>
+        ///
+        /// <para><b>Warum „geteilt" und nicht „Zielpuffer traegt Brauchwasser".</b>
+        /// Konzept 8.2 nennt in der Benennungsregel den Zielpuffer der Klasse
+        /// Brauchwasser/Kombi. Das ist der HAEUFIGSTE Booster, aber nicht der
+        /// vollstaendige: Eine Waermepumpe, die aus einem fremdgeladenen Puffer bezieht
+        /// und einen Heizungspuffer laedt, ist hydraulisch derselbe Fall und rechnet in
+        /// der Engine genauso. Die Marke folgt deshalb der WIRKSAMEN Kopplung.</para>
+        ///
+        /// <para><b>Der Lader darf nicht die Anlage selbst sein</b> — das waere der
+        /// Kurzschluss (<see cref="HART_KURZSCHLUSS"/>), und die Engine richtet dort gar
+        /// keinen Quellbezug ein (E-K2-1). Ein Kurzschluss bekommt deshalb kein
+        /// Booster-Kennzeichen, sondern seinen Warn-Chip.</para>
+        ///
+        /// <para>Gelesen wird das Projektbild EINMAL — dieselbe Bauart wie
+        /// <see cref="PruefeProjekt"/>. Die Kartenspalte holt die Zuordnung je
+        /// Auffrischung einmal statt je Karte.</para>
+        /// </summary>
+        /// <returns>
+        /// Zuordnung <c>Tab_Energieanlagen.ID</c> → <c>Tab_Pufferspeicher.ID</c> des
+        /// geteilten Quellpuffers; nie <c>null</c>, leer = kein Booster im Projekt.
+        /// </returns>
+        public static Dictionary<int, int> BoosterAnlagen(int idProjekt)
+        {
+            Dictionary<int, int> treffer = new Dictionary<int, int>();
+
+            Projektbild bild = Projektbild.Lesen(idProjekt);
+            if (bild == null) return treffer;
+
+            foreach (int idAnlage in bild.AnlagenReihenfolge)
+            {
+                // Die ENGINE-Auflösung (Fremdschlüssel, nur WP/Kessel) — dieselbe, gegen
+                // die auch W5 prüft. Was die Engine nicht als Quellbezug aufbaut, kann
+                // kein Booster sein.
+                int idQuelle = bild.Quellpuffer(idAnlage);
+                if (idQuelle <= 0) continue;
+
+                bool geteilt = false;
+                foreach (int idLader in bild.Lader(idQuelle))
+                    if (idLader != idAnlage) { geteilt = true; break; }
+
+                if (geteilt) treffer[idAnlage] = idQuelle;
+            }
+
+            return treffer;
+        }
+
+        /// <summary>
+        /// Die KANAELE, die ein Senkenziel bedient sehen will — die Abbildung, gegen die
+        /// W1 das Klassen-Set haelt. Leeres Feld = Direktsenke oder unbekanntes Ziel
+        /// (dann gibt es nichts zu pruefen).
+        ///
+        /// <code>
+        ///   PufferHeizung       -> { HEIZUNG }
+        ///   PufferBrauchwasser  -> { BRAUCHWASSER }
+        ///   PufferProzess       -> { PROZESS }
+        ///   PufferKombi         -> { HEIZUNG, BRAUCHWASSER }
+        /// </code>
+        /// </summary>
+        public static int[] ZielKanaele(string ziel)
+        {
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal))
+                return new[] { Kanal.HEIZUNG };
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
+                return new[] { Kanal.BRAUCHWASSER };
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_PROZESS, StringComparison.Ordinal))
+                return new[] { Kanal.PROZESS };
+            if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return new[] { Kanal.HEIZUNG, Kanal.BRAUCHWASSER };
+
+            return new int[0];
+        }
+
+        /// <summary>
+        /// Das WIRKSAME Vorlaufniveau <c>VL_eff</c> eines Speichers [°C] nach der
+        /// Bestandsregel (Konzept 7.2):
+        ///
+        /// <code>
+        ///   Delta = Vorlauf − Ruecklauf
+        ///   Delta &gt;  0  ->  VL_eff = Vorlauf                       (gepflegtes Paar)
+        ///   Delta &lt;= 0  ->  VL_eff = Ruecklauf + Rueckfall-Delta_T  (10 K; 20 K am
+        ///                                                             BHKW-Pendelspeicher)
+        /// </code>
+        ///
+        /// Dieselbe Rueckfallregel, mit der <c>SimulationPufferspeicher.Init</c> ohne
+        /// Temperaturpaar sein <c>Q_max</c> bildet — dort als Spreizung, hier als
+        /// absolutes Niveau. Ein Speicher ohne jede Temperaturangabe kommt damit auf
+        /// <c>VL_eff</c> = 10 °C und loest W3 nie aus; das ist gewollt, denn eine
+        /// Warnung aus Unkenntnis waere schlechter als keine.
+        /// </summary>
+        public static double WirksamerVorlauf(int vorlauf, int ruecklauf, string bezeichner)
+        {
+            if (vorlauf - ruecklauf > 0) return vorlauf;
+
+            double delta = string.Equals(bezeichner, DbWerte.PSP_BEZ_PENDELSPEICHER,
+                                         StringComparison.Ordinal)
+                ? RUECKFALL_DELTA_T_PENDELSPEICHER
+                : RUECKFALL_DELTA_T;
+
+            return ruecklauf + delta;
+        }
+
+        /// <summary>Die weichen Befunde einer Liste; nie <c>null</c>.</summary>
+        public static List<Warnbefund> NurWeiche(List<Warnbefund> befunde)
+        {
+            List<Warnbefund> gefiltert = new List<Warnbefund>();
+            if (befunde != null)
+                foreach (Warnbefund b in befunde)
+                    if (b != null && !b.Hart) gefiltert.Add(b);
+            return gefiltert;
+        }
+
+        /// <summary>Der ERSTE harte Befund einer Liste; <c>null</c> = keiner.</summary>
+        public static Warnbefund ErsterHarter(List<Warnbefund> befunde)
+        {
+            if (befunde != null)
+                foreach (Warnbefund b in befunde)
+                    if (b != null && b.Hart) return b;
+            return null;
+        }
+
+        // =====================================================================
+        // Die Kriterien
+        // =====================================================================
+
+        /// <summary>W1, W3 und der Kurzschluss — alles, was an EINER Senkenzeile haengt.</summary>
+        private static void ZeilePruefen(Projektbild bild, int idAnlage,
+                                         Z_AnlageSenkeModel senke, int rang,
+                                         List<Warnbefund> befunde)
+        {
+            if (senke == null || senke.ID_Puffer <= 0) return;
+
+            int[] kanaele = ZielKanaele(senke.Ziel);
+            if (kanaele.Length == 0) return;              // Direktsenke: kein Speicherbezug
+
+            Pufferdaten p = bild.Puffer(senke.ID_Puffer);
+            if (p == null) return;                        // Puffer eines fremden Projekts o. Ae.
+
+            // --- HART: Quelle und Ladeziel derselben Anlage ---------------------------
+            //
+            // Wort fuer Wort dieselbe Meldung wie der Bestandsguard in
+            // Form_Waermesenke.ListePruefen — der Dialog uebernimmt sie von hier, statt
+            // sie ein zweites Mal zu bauen.
+            //
+            // GEFRAGT IST DIE ANZEIGE-AUFLOESUNG des Quellpuffers (Fremdschluessel,
+            // sonst Alt-Bezeichner), nicht die Engine-Auflösung: Genau die benutzt der
+            // abgeloeste Dialogguard (WaermesenkeClass.QuellPufferDerAnlage), und der
+            // Katalog darf einen Fall, den der Dialog bisher gesperrt hat, nicht
+            // durchlassen. W5 und der Ring fragen umgekehrt die ENGINE-Auflösung — was
+            // die Engine nie aufbaut, kann weder leerlaufen noch einen Ring schliessen.
+            if (bild.QuellpufferAnzeige(idAnlage) == senke.ID_Puffer)
+                befunde.Add(Befund(HART_KURZSCHLUSS, true, idAnlage, p.ID,
+                    string.Format(
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE),
+                        p.Anzeigename)));
+
+            // --- W1: Ziel ausserhalb des Klassen-Sets ---------------------------------
+            List<string> fehlend = new List<string>();
+            foreach (int k in kanaele)
+                if (!p.Set_BedientKanal(k)) fehlend.Add(KanalAnzeige(k));
+
+            if (fehlend.Count > 0)
+                befunde.Add(Befund(W1_ZIEL_AUSSERHALB_SET, false, idAnlage, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W1_ZIEL_AUSSERHALB_SET,
+                                  bild.Anlagenname(idAnlage), RangText(rang),
+                                  p.Anzeigename, WaermesenkeClass.ZielAnzeigeVollstaendig(senke.Ziel),
+                                  KlassenSetAnzeige(p.Set), Verbinden(fehlend))));
+
+            // --- W3: Erzeuger-Vorlauf unter VL_eff ------------------------------------
+            //
+            // Nur bei GEPFLEGTEM Erzeuger-Vorlauf: 0 heisst „nicht angegeben", nicht
+            // „0 °C".
+            int vorlaufAnlage = bild.AnlagenVorlauf(idAnlage);
+            double vlEff = p.VL_eff;
+
+            if (vorlaufAnlage > 0 && vlEff > 0 && vorlaufAnlage < vlEff)
+                befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W3_VORLAUF_ZU_NIEDRIG,
+                                  bild.Anlagenname(idAnlage), Grad(vorlaufAnlage),
+                                  Grad(vlEff), p.Anzeigename)));
+
+            // --- W3, T_Nutz-Anteil (PAKET P1) ----------------------------------------
+            //
+            // Die ZWEITE Messlatte desselben Kriteriums (Konzept 6.2: „bzw. < T_Nutz des
+            // Zielkanals"). Sie steht NEBEN der ersten und ersetzt sie nicht:
+            //
+            //   VL_eff-Befund    „der Erzeuger bringt den Speicher nicht auf
+            //                     Solltemperatur" - der Speicher laedt, nur eben nicht
+            //                     voll;
+            //   T_Nutz-Befund    „der Brauchwasserkanal bekommt gar nichts" - was unter
+            //                     T_Nutz eingeschichtet wird, gilt fuer diesen Kanal als
+            //                     unbrauchbar (7.4, Punkt 2).
+            //
+            // Der zweite ist die haertere Aussage und faellt in einem Fall AUCH ALLEIN an:
+            // Liegt T_Nutz_BW ueber VL_eff (Kriterium W4), kann ein Vorlauf zwischen
+            // beiden den Speicher voll laden und den Kanal trotzdem nie bedienen.
+            //
+            // Nur wenn T_Nutz_BW gepflegt ist (spaltentolerant: ohne Schritt 53 nie) und
+            // die Senkenzeile den BRAUCHWASSERkanal ueberhaupt beliefert - fuer eine
+            // reine Heizungs- oder Prozesszuordnung ist die Brauchwasser-Nutztemperatur
+            // keine Messlatte.
+            double tNutz = p.T_Nutz_BW ?? 0;
+            if (vorlaufAnlage > 0 && tNutz > 0 && vorlaufAnlage < tNutz &&
+                Enthaelt(kanaele, Kanal.BRAUCHWASSER))
+                befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W3_UNTER_TNUTZ,
+                                  bild.Anlagenname(idAnlage), Grad(vorlaufAnlage),
+                                  Grad(tNutz), p.Anzeigename)));
+        }
+
+        /// <summary>Enthaelt das Kanalfeld diesen Kanal?</summary>
+        private static bool Enthaelt(int[] kanaele, int kanal)
+        {
+            if (kanaele == null) return false;
+            foreach (int k in kanaele) if (k == kanal) return true;
+            return false;
+        }
+
+        /// <summary>W2 und das leere Klassen-Set — was an EINEM Speicher haengt.</summary>
+        private static void SpeicherPruefen(Projektbild bild, int idPuffer,
+                                            List<Warnbefund> befunde)
+        {
+            Pufferdaten p = bild.Puffer(idPuffer);
+            if (p == null) return;
+
+            // --- HART: leeres Klassen-Set ---------------------------------------------
+            //
+            // AUF HEUTIGEN DATEN NICHT ERREICHBAR, und das mit Absicht:
+            // PufferSpCtrl.KlassenSetAusZeile faellt bei fehlenden oder durchweg
+            // falschen Flags geordnet auf die Ableitung aus Verwendung zurueck, und die
+            // liefert im schlechtesten Fall {Heizung}. Der Guard ist das NETZ fuer die
+            // programmatischen Schreibwege (dieselbe Rolle wie die Hebung in
+            // PufferSpCtrl.KlassenSetBestimmen) und fuer den Tag, an dem die
+            // Verwendungs-Altlast mit Paket A1 stillgelegt wird.
+            if (p.Set.Leer)
+            {
+                befunde.Add(Befund(HART_LEERES_SET, true, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_HART_LEERES_SET, p.Anzeigename)));
+                return;                                   // ohne Set ist W2 nicht bewertbar
+            }
+
+            // --- W2: Bauform gegen Klassen-Set ----------------------------------------
+            //
+            // Geprueft wird die eine Richtung, die das Konzept nennt (6.2: „der vom
+            // Auftrag genannte Fall Warmwasserpuffer fuer Heizung"): eine Bauform, die
+            // fuer die WARMWASSERbereitung gebaut ist — Kombispeicher (ein Behaelter,
+            // zwei Zonen) und Solarspeicher (klassisch der Trinkwasserspeicher der
+            // Solaranlage) —, deren Klassen-Set den Brauchwasserkanal aber gar nicht
+            // enthaelt. Dann bleibt die Warmwasserseite des Behaelters ungenutzt.
+            //
+            // Die Gegenrichtung (reine Pufferspeicher-Bauform mit Brauchwasser im Set)
+            // ist AUSDRUECKLICH KEIN Befund: Ein Pufferspeicher mit Frischwasserstation
+            // ist der haeufigste Weg zur Warmwasserbereitung ueberhaupt — eine Warnung
+            // darauf waere Rauschen. Auch die Prozessklasse bewertet W2 nicht: Fuer
+            // Prozesswaerme gibt es keine eigene Bauform im Katalog.
+            //
+            // Eine LEERE Bauform ist kein Befund (Konzept 6.2: „nur pruefen, wenn
+            // Speichertyp gepflegt ist").
+            //
+            // PAKET L (S2-O8): Die Bauform stand hier als ROHER Persistenzwert im
+            // Meldungstext. Sie geht jetzt durch BauformAnzeige - dieselbe Regel wie
+            // beim Klassen-Set eine Zeile weiter.
+            if (p.BauformWarmwasserseitig && !p.Set.Brauchwasser)
+                befunde.Add(Befund(W2_BAUFORM_WIDERSPRUCH, false, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W2_BAUFORM_WIDERSPRUCH,
+                                  p.Anzeigename, BauformAnzeige(p.Speichertyp),
+                                  KlassenSetAnzeige(p.Set))));
+
+            // --- W4: T_Nutz_BW ueber VL_eff (PAKET P1) --------------------------------
+            //
+            // WEICH. Der Lauf klemmt die Nutztemperatur auf VL_eff und rechnet weiter
+            // (Konzept 7.2); ohne die Klemmung koennte keine Schicht sie je erreichen und
+            // der Brauchwasserkanal waere STILL komplett abgeschaltet - ein Speicher, der
+            // laedt und nie abgibt. Genau diese Stille soll der Befund beenden.
+            //
+            // Spaltentolerant: Ohne Migrationsschritt 53 ist T_Nutz_BW nie gepflegt.
+            double tNutz = p.T_Nutz_BW ?? 0;
+            if (tNutz > 0 && p.VL_eff > 0 && tNutz > p.VL_eff)
+                befunde.Add(Befund(W4_TNUTZ_UEBER_VLEFF, false, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W4_TNUTZ_UEBER_VLEFF,
+                                  p.Anzeigename, Grad(tNutz), Grad(p.VL_eff))));
+
+            // --- W6: Schichtung am Verbund-Leitspeicher (PAKET P1) --------------------
+            //
+            // HART. Verbund und Schichtung schliessen sich je Rechenspeicher aus
+            // (Konzept 6.3, Entscheidung F8) - Begruendung im Klassenkopf. Abgewiesen
+            // wird die Konstellation an ihren beiden Entstehungsstellen (Speicherdialog
+            // und Verbundpruefung); dieser Befund ist die MELDUNG fuer einen Bestand, der
+            // auf anderem Weg entstanden ist.
+            //
+            // Die Verbundabfrage laeuft erst, wenn ueberhaupt ein Speicher des Projekts
+            // geschichtet ist (bild.IstVerbundLeit ist trraege) - auf der Referenzmenge
+            // kostet das Kriterium damit keine einzige zusaetzliche Abfrage.
+            if (p.Schichten > PufferSpModel.SCHICHTEN_DEFAULT && bild.IstVerbundLeit(p.ID))
+                befunde.Add(Befund(W6_SCHICHTUNG_AM_VERBUND, true, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_W6_SCHICHTUNG_AM_VERBUND,
+                                  p.Anzeigename, p.Schichten)));
+        }
+
+        /// <summary>
+        /// QUELLE_FEHLT — Sole-/Wasser-Wasser-Waermepumpen ohne konfigurierte
+        /// Waermequelle (Nutzerbefund 27.08.2026, Booster-Kette). Eine solche Anlage
+        /// rechnet heute ersatzweise mit der Aussenluft — fuer diese Bauarten fachlich
+        /// falsch (die Kennlinie ist auf Sole-/Wassertemperaturen bezogen). Eigene
+        /// stille Abfrage statt einer Erweiterung des Projektbilds: Die Bauart
+        /// (<c>Tab_WP.Typ</c>) braucht sonst kein Kriterium.
+        /// </summary>
+        private static void SoleOhneQuellePruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT a.ID, a.Bezeichner, a.WQ_Typ, w.Typ AS Bauart " +
+                "FROM Tab_Energieanlagen AS a INNER JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.WP_TYP,
+                new DbParam("@p", idProjekt));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bauart = StilleDb.Text(StilleDb.Feld(r, "Bauart")).Trim();
+                if (bauart != DbWerte.WP_BAUART_SOLE_WASSER &&
+                    bauart != DbWerte.WP_BAUART_WASSER_WASSER) continue;
+
+                // PAKET Q1: EIN Leerwert-Test fuer Engine, Anzeige und Warnkatalog
+                // (WaermequelleClass.OhneQuelle ueber DbWerte.WQ_TYP_OHNE). Bis dahin
+                // stand hier Trim().Length > 0 - zeichengleich in der Wirkung, aber der
+                // Persistenzwert kam als Literal-Vergleich daher statt aus DbWerte.
+                if (!WaermequelleClass.OhneQuelle(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")))) continue;
+
+                int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
+                    string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
+                                  StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
+            }
+        }
+
+        /// <summary>
+        /// QUELLE_UNBEGRENZT — Waermepumpe mit Pufferquelle, deren Haekchen „unbegrenzt
+        /// verfuegbar" die Speicherkopplung abschaltet (Paket B3). Begruendung und
+        /// Abgrenzung (nur Waermepumpe) bei <see cref="QUELLE_UNBEGRENZT"/>.
+        ///
+        /// <para>Eigene stille Abfrage nach dem Muster von
+        /// <see cref="SoleOhneQuellePruefen"/>: Das Flag <c>WQ_Unbegrenzt</c> braucht
+        /// sonst kein Kriterium und gehoert deshalb nicht ins Projektbild. Der
+        /// Typvergleich laeuft im Code gegen <c>WaermequelleClass.TYP_PUFFER</c> —
+        /// Persistenzwerte stehen nicht als Literal im SQL (Drei-Schichten-Regel).</para>
+        /// </summary>
+        private static void QuelleUnbegrenztTrotzPufferPruefen(int idProjekt,
+                                                               List<Warnbefund> befunde)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, WQ_Typ, WQ_ID_Puffer, WQ_Puffer, WQ_Temp " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.WP_TYP + " " +
+                "AND WQ_Unbegrenzt = TRUE",
+                new DbParam("@p", idProjekt));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                                   WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
+                    continue;
+
+                // Nur wenn wirklich ein Puffer benannt ist — dieselbe Rueckfallkette
+                // wie WaermequelleClass.Quellspeicher (Fremdschluessel, sonst
+                // Bezeichner). Ohne beides gibt es nichts, was das Haekchen
+                // uebersteuern koennte.
+                int idPuffer = (int)StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                string bezeichner = StilleDb.Text(StilleDb.Feld(r, "WQ_Puffer")).Trim();
+                if (idPuffer <= 0 && bezeichner.Length == 0) continue;
+
+                string puffername = idPuffer > 0
+                    ? WaermesenkeClass.PufferName(idPuffer)
+                    : bezeichner;
+
+                double temp = StilleDb.Zahl(StilleDb.Feld(r, "WQ_Temp"));
+
+                int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                befunde.Add(Befund(QUELLE_UNBEGRENZT, false, idAnlage, idPuffer,
+                    string.Format(MyResource.Resource.SIMWARN_QUELLE_UNBEGRENZT,
+                                  StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                                  puffername, temp.ToString("0.#"))));
+            }
+        }
+
+        /// <summary>W5 — Quellpuffer ohne einen einzigen Lader.</summary>
+        private static void QuelleOhneLaderPruefen(Projektbild bild, int idAnlage,
+                                                   List<Warnbefund> befunde)
+        {
+            int idQuelle = bild.Quellpuffer(idAnlage);
+            if (idQuelle <= 0) return;
+            if (bild.Lader(idQuelle).Count > 0) return;
+
+            Pufferdaten p = bild.Puffer(idQuelle);
+            string name = p != null ? p.Anzeigename : WaermesenkeClass.PufferName(idQuelle);
+
+            befunde.Add(Befund(W5_QUELLE_OHNE_LADER, false, idAnlage, idQuelle,
+                string.Format(MyResource.Resource.SIMWARN_W5_QUELLE_OHNE_LADER,
+                              bild.Anlagenname(idAnlage), name)));
+        }
+
+        /// <summary>
+        /// KESSEL_TEMPERATURPAAR — Heizkessel am Quellpuffer im Modus „Fest" ohne
+        /// gepflegtes Temperaturpaar (Paket B2). Die drei Bedingungen und die Begruendung,
+        /// warum der Modus „Berechnet" NIE etwas meldet, stehen bei
+        /// <see cref="KESSEL_TEMPERATURPAAR"/>.
+        ///
+        /// <para>Die Reihenfolge der Pruefungen ist die guenstigste: Erst der
+        /// Quellpuffer (steht im ohnehin gelesenen Projektbild), dann die Erzeugerart,
+        /// erst danach die traegen Abfragen fuer Modus und Temperaturpaar. Ein Projekt
+        /// ohne Kessel-Quellpuffer - die gesamte Referenzmenge - zahlt keine einzige
+        /// zusaetzliche Rundreise.</para>
+        /// </summary>
+        private static void KesselTemperaturpaarPruefen(Projektbild bild, int idAnlage,
+                                                        List<Warnbefund> befunde)
+        {
+            int idQuelle = bild.Quellpuffer(idAnlage);
+            if (idQuelle <= 0) return;
+
+            Hydraulikbild.AnlagenEintrag a;
+            if (!bild.Bild.JeId.TryGetValue(idAnlage, out a) ||
+                a.ID_Type != ProjektPuffer.TYP_KESSEL) return;
+
+            if (!string.Equals(bild.TemperaturModus(idAnlage), DbWerte.WQ_TEMPMODUS_FEST,
+                               StringComparison.Ordinal)) return;
+
+            int v, r;
+            if (bild.AnlagenTemperaturpaar(idAnlage, out v, out r)) return;
+
+            Pufferdaten p = bild.Puffer(idQuelle);
+            string name = p != null ? p.Anzeigename : WaermesenkeClass.PufferName(idQuelle);
+
+            befunde.Add(Befund(KESSEL_TEMPERATURPAAR, false, idAnlage, idQuelle,
+                string.Format(MyResource.Resource.SIMWARN_KESSEL_TEMPERATURPAAR,
+                              bild.Anlagenname(idAnlage), name)));
+        }
+
+        /// <summary>
+        /// HART: Ring in der Kaskadenkette — ueber DIESELBE Ebenen-Relaxation, mit der
+        /// die Engine abbricht und der Quellendialog vorbeugt
+        /// (<see cref="Hydraulikbild.Ebenen"/>). Eine eigene Ringsuche daneben waere eine
+        /// zweite Auslegung derselben Frage.
+        /// </summary>
+        private static void RingPruefen(Projektbild bild, List<Warnbefund> befunde)
+        {
+            bool ring;
+            Dictionary<int, int> ebene = bild.Bild.Ebenen(0, 0, out ring);
+            if (!ring) return;
+
+            befunde.Add(Befund(HART_RING, true, 0, 0,
+                string.Format(
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIMWARN_HART_RING),
+                    bild.Bild.RingBeteiligte(ebene, 0, 0))));
+        }
+
+        // =====================================================================
+        // Anzeige-Bausteine
+        // =====================================================================
+
+        /// <summary>
+        /// Das Klassen-Set als Anzeigetext, z. B. „Heizung + Brauchwasser".
+        ///
+        /// <c>internal</c>, nicht <c>public</c>: <c>PufferSpCtrl</c> ist selbst
+        /// assemblyintern, und eine öffentliche Signatur mit internem Parametertyp
+        /// übersetzt der Compiler nicht (CS0051). Alle Aufrufer liegen ohnehin in
+        /// dieser Assembly.
+        /// </summary>
+        internal static string KlassenSetAnzeige(PufferSpCtrl.KlassenSet set)
+        {
+            if (set == null || set.Leer) return MyResource.Resource.PSP_KLASSENSET_LEER;
+
+            List<string> teile = new List<string>();
+            if (set.Heizung) teile.Add(KanalAnzeige(Kanal.HEIZUNG));
+            if (set.Brauchwasser) teile.Add(KanalAnzeige(Kanal.BRAUCHWASSER));
+            if (set.Prozess) teile.Add(KanalAnzeige(Kanal.PROZESS));
+
+            return Verbinden(teile);
+        }
+
+        /// <summary>
+        /// Anzeigename einer Speicher-BAUFORM (<c>Tab_Pufferspeicher.Speichertyp</c>) —
+        /// PAKET L, Ticket S2-O8.
+        ///
+        /// <para>Bis hierher stand im W2-Text der rohe Persistenzwert. Das ist derselbe
+        /// Schichtenbruch, den die Drei-Schichten-Regel verbietet: „Kombispeicher" ist ein
+        /// Steuerwert, kein Anzeigetext, und auf englischer Oberfläche stand er
+        /// unübersetzt in einer sonst übersetzten Meldung.</para>
+        ///
+        /// <para><b>Unbekannte Werte laufen ROH durch</b> — dieselbe tolerante Regel wie in
+        /// <c>ErzeugerKatalog.Anzeige</c>. Das ist hier keine Feinheit, sondern Pflicht:
+        /// Befund L0-1 (Paket 9) hat in Beständen englische Anzeigetexte
+        /// („Buffer storage") und in einem Fall den Altdatenrest „blabla" in die Spalte
+        /// geschrieben. Ein solcher Wert soll SICHTBAR bleiben, nicht auf eine der drei
+        /// bekannten Bauformen geraten werden.</para>
+        ///
+        /// <para>Die Auswahlliste des Speicherdialogs (<c>Form_PufferSp_Bearbeiten</c>)
+        /// führt dieselben drei Anzeigetexte in ihrer eigenen Formular-<c>.resx</c>; sie
+        /// bleibt unangetastet (Projektregel: Designer und Formular-Ressourcen nicht von
+        /// Hand pflegen).</para>
+        /// </summary>
+        internal static string BauformAnzeige(string speichertyp)
+        {
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_SOLAR, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_SOLAR;
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_PUFFER, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_PUFFER;
+            if (string.Equals(speichertyp, DbWerte.PSP_SPEICHERTYP_KOMBI, StringComparison.Ordinal))
+                return MyResource.Resource.PSP_SPEICHERTYP_ANZEIGE_KOMBI;
+
+            return speichertyp;
+        }
+
+        /// <summary>Anzeigename eines Kanals (Schicht „Anzeige", nie <c>Kanal.Name</c>).</summary>
+        public static string KanalAnzeige(int kanal)
+        {
+            switch (kanal)
+            {
+                case Kanal.BRAUCHWASSER: return MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE;
+                case Kanal.PROZESS: return MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+                default: return MyResource.Resource.KANAL_HEIZUNG_ANZEIGE;
+            }
+        }
+
+        private static string Verbinden(List<string> teile)
+        {
+            return teile.Count > 0
+                ? string.Join(MyResource.Resource.SIMWARN_TRENNER, teile.ToArray())
+                : MyResource.Resource.PSP_KLASSENSET_LEER;
+        }
+
+        /// <summary>Rangangabe fuer die Meldung; „–", solange kein Rang feststeht.</summary>
+        private static string RangText(int rang)
+        {
+            return rang > 0 ? rang.ToString(CultureInfo.CurrentCulture) : "–";
+        }
+
+        private static string Grad(double wert)
+        {
+            return wert.ToString("0.#", CultureInfo.CurrentCulture);
+        }
+
+        private static Warnbefund Befund(string kriterium, bool hart, int idAnlage,
+                                         int idPuffer, string text)
+        {
+            return new Warnbefund
+            {
+                Kriterium = kriterium,
+                Hart = hart,
+                ID_Anlage = idAnlage,
+                ID_Puffer = idPuffer,
+                Text = text ?? ""
+            };
+        }
+
+        // =====================================================================
+        // Ein Speicher, so wie der Katalog ihn braucht
+        // =====================================================================
+
+        /// <summary>
+        /// Die Puffer-Zeile in der Auflösung des Katalogs: Klassen-Set, Bauform,
+        /// Temperaturen und (Paket P1) die Schichtdaten. Aufgebaut aus EINER
+        /// Projektabfrage
+        /// (<c>SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?</c>) — der
+        /// <c>*</c>-Zugriff ist hier der spaltentolerante Weg: Ob die Flags des
+        /// Schemastands 49 und die Schichtspalten des Stands 53 vorhanden sind,
+        /// entscheiden <c>PufferSpCtrl.KlassenSetAusZeile</c> und
+        /// <c>…SchichtdatenAusZeile</c> an der DataRow, nicht die Abfrage.
+        /// </summary>
+        private sealed class Pufferdaten
+        {
+            public int ID;
+            public string Bezeichner = "";
+            public string Speichertyp = "";
+            public int Vorlauf;
+            public int Ruecklauf;
+            public PufferSpCtrl.KlassenSet Set;
+
+            /// <summary>
+            /// PAKET P1: Schichtung und Nutztemperatur (Migrationsschritt 53) — aus
+            /// DERSELBEN <c>SELECT *</c>-Zeile wie das Klassen-Set und ebenso
+            /// spaltentolerant. Fehlen die Spalten, steht hier die verhaltensneutrale
+            /// Vorbelegung (N = 1, <c>T_Nutz_BW</c> nicht gepflegt), und W4, W6 sowie der
+            /// <c>T_Nutz</c>-Anteil von W3 schlagen nie an.
+            /// </summary>
+            public PufferSpCtrl.Schichtdaten Schicht = new PufferSpCtrl.Schichtdaten();
+
+            /// <summary>Schichtenzahl des Speichers (1 = Ein-Zonen).</summary>
+            public int Schichten
+            {
+                get { return Schicht != null ? Schicht.Schichten : PufferSpModel.SCHICHTEN_DEFAULT; }
+            }
+
+            /// <summary>Mindest-Nutztemperatur Brauchwasser [°C]; <c>null</c> = nicht gepflegt.</summary>
+            public double? T_Nutz_BW
+            {
+                get { return Schicht != null ? Schicht.TNutzBW : null; }
+            }
+
+            /// <summary>Name fuer Meldungen; der Ersatztext, wenn kein Bezeichner gepflegt ist.</summary>
+            public string Anzeigename
+            {
+                get
+                {
+                    return Bezeichner.Length > 0
+                        ? Bezeichner : MyResource.Resource.PSP_BEZEICHNER_ERSATZ;
+                }
+            }
+
+            /// <summary>Wirksames Vorlaufniveau [°C], siehe <see cref="WirksamerVorlauf"/>.</summary>
+            public double VL_eff
+            {
+                get { return WirksamerVorlauf(Vorlauf, Ruecklauf, Bezeichner); }
+            }
+
+            /// <summary>
+            /// true, wenn die BAUFORM auf Warmwasser ausgelegt ist — Kombispeicher und
+            /// Solarspeicher. Die Bauform ist ein Persistenzwert (deutsch, eingefroren);
+            /// verglichen wird deshalb gegen <see cref="DbWerte"/>, nicht gegen einen
+            /// Anzeigetext. Gross-/Kleinschreibung wird toleriert (Befund L0-1: Aeltere
+            /// Staende haben den lokalisierten ComboBox-Text in die Spalte geschrieben).
+            /// </summary>
+            public bool BauformWarmwasserseitig
+            {
+                get
+                {
+                    return string.Equals(Speichertyp, DbWerte.PSP_SPEICHERTYP_KOMBI,
+                                         StringComparison.OrdinalIgnoreCase) ||
+                           string.Equals(Speichertyp, DbWerte.PSP_SPEICHERTYP_SOLAR,
+                                         StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            public bool Set_BedientKanal(int kanal)
+            {
+                if (Set == null) return false;
+                switch (kanal)
+                {
+                    case Kanal.BRAUCHWASSER: return Set.Brauchwasser;
+                    case Kanal.PROZESS: return Set.Prozess;
+                    default: return Set.Heizung;
+                }
+            }
+        }
+
+        // =====================================================================
+        // Das Projektbild — EINMAL lesen, alle Kriterien bedienen
+        // =====================================================================
+
+        /// <summary>
+        /// Alles, was der Katalog ueber ein Projekt wissen muss, in drei Abfragen:
+        /// die Verschaltung (<see cref="Hydraulikbild"/>), die Speicherzeilen und die
+        /// Senkenlisten. Ein Aufruf je Kriterium waere bei fuenf Erzeugern und drei
+        /// Speichern ein Dutzend Rundreisen fuer dieselbe Auskunft.
+        /// </summary>
+        private sealed class Projektbild
+        {
+            public Hydraulikbild Bild;
+            public readonly List<int> AnlagenReihenfolge = new List<int>();
+            public readonly List<int> BeteiligtePuffer = new List<int>();
+
+            private readonly Dictionary<int, Pufferdaten> _puffer =
+                new Dictionary<int, Pufferdaten>();
+            private readonly Dictionary<int, List<Z_AnlageSenkeModel>> _senken =
+                new Dictionary<int, List<Z_AnlageSenkeModel>>();
+
+            /// <summary>
+            /// Die Projekt-Puffer in der Bestandsdarstellung — gebraucht allein von
+            /// <see cref="QuellpufferAnzeige"/>, das die Alt-Bezeichner-Aufloesung
+            /// genau ueber diese Liste macht.
+            /// </summary>
+            private List<WaermesenkeClass.PufferInfo> _pufferInfo =
+                new List<WaermesenkeClass.PufferInfo>();
+
+            public static Projektbild Lesen(int idProjekt)
+            {
+                if (idProjekt <= 0) return null;
+
+                Hydraulikbild bild = Hydraulikbild.Lesen(idProjekt);
+                if (bild == null) return null;
+
+                Projektbild pb = new Projektbild();
+                pb.Bild = bild;
+                pb._idProjekt = idProjekt;
+
+                foreach (Hydraulikbild.AnlagenEintrag a in bild.Anlagen)
+                    pb.AnlagenReihenfolge.Add(a.ID);
+
+                pb.PufferLesen(idProjekt);
+                pb.SenkenLesen(idProjekt);
+                pb.BeteiligteSammeln();
+
+                return pb;
+            }
+
+            /// <summary>Die Senkenzeilen einer Anlage in Rangfolge; nie <c>null</c>.</summary>
+            public List<Z_AnlageSenkeModel> Senken(int idAnlage)
+            {
+                List<Z_AnlageSenkeModel> kette;
+                return _senken.TryGetValue(idAnlage, out kette)
+                    ? kette : new List<Z_AnlageSenkeModel>();
+            }
+
+            /// <summary>Ein Speicher des Projekts; <c>null</c>, wenn er nicht dazugehoert.</summary>
+            public Pufferdaten Puffer(int idPuffer)
+            {
+                Pufferdaten p;
+                return _puffer.TryGetValue(idPuffer, out p) ? p : null;
+            }
+
+            /// <summary>Quellpuffer einer Anlage (Engine-Wahrheit: Fremdschluessel, WP/Kessel); 0 = keiner.</summary>
+            public int Quellpuffer(int idAnlage)
+            {
+                int id;
+                return Bild.QuelleJeAnlage.TryGetValue(idAnlage, out id) ? id : 0;
+            }
+
+            /// <summary>
+            /// Quellpuffer in der ANZEIGE-Auflösung (Fremdschluessel, sonst
+            /// Alt-Bezeichner) — dieselbe, die <c>WaermesenkeClass.QuellPufferDerAnlage</c>
+            /// und die Erzeugerkarte benutzen. Sie ist die weitere der beiden und
+            /// deshalb die richtige fuer einen GUARD.
+            /// </summary>
+            public int QuellpufferAnzeige(int idAnlage)
+            {
+                return Bild.QuellpufferAnzeige(idAnlage, _pufferInfo);
+            }
+
+            /// <summary>Die Anlagen, die einen Speicher laden — ueber ALLE Raenge.</summary>
+            public List<int> Lader(int idPuffer)
+            {
+                return Bild.Lader(idPuffer);
+            }
+
+            /// <summary>Projekt dieses Bildes — gebraucht fuer die traege Verbundabfrage.</summary>
+            private int _idProjekt;
+
+            /// <summary>Leitspeicher-IDs der Parallelverbuende; <c>null</c> = noch nicht geholt.</summary>
+            private Dictionary<int, List<int>> _verbuende;
+
+            /// <summary>
+            /// true, wenn dieser Puffer LEITSPEICHER eines Parallelverbunds ist — die
+            /// zweite Haelfte von W6.
+            ///
+            /// <para><b>TRAEGE.</b> Die Verbundabfrage laeuft erst beim ersten Aufruf,
+            /// und der kommt nur zustande, wenn ueberhaupt ein Speicher des Projekts
+            /// <c>Schichten_Anzahl &gt; 1</c> traegt (siehe <see cref="SpeicherPruefen"/>).
+            /// Auf einer Datenbank ohne Migrationsschritt 53 und auf jedem Bestand ohne
+            /// gepflegte Schichtung kostet W6 damit KEINE zusaetzliche Rundreise — die
+            /// Zusicherung „P1 aendert ohne Schichtdaten nichts" gilt auch fuer die
+            /// Laufzeit.</para>
+            ///
+            /// <para>Gefragt wird dieselbe Auflösung, mit der die Speicher-Registry den
+            /// Verbund aufbaut (<c>AnlagePufferVerbundCtrl.VerbuendeDesProjekts</c>) —
+            /// eine zweite Auslegung derselben Zuordnungstabelle waere eine zweite
+            /// Wahrheit.</para>
+            /// </summary>
+            public bool IstVerbundLeit(int idPuffer)
+            {
+                if (idPuffer <= 0) return false;
+
+                if (_verbuende == null)
+                {
+                    List<int> abweichend;
+                    _verbuende = AnlagePufferVerbundCtrl.VerbuendeDesProjekts(_idProjekt,
+                                                                              out abweichend);
+                }
+
+                List<int> mitglieder;
+                return _verbuende.TryGetValue(idPuffer, out mitglieder) &&
+                       mitglieder != null && mitglieder.Count > 0;
+            }
+
+            public string Anlagenname(int idAnlage)
+            {
+                return Bild.Name(idAnlage);
+            }
+
+            public int AnlagenVorlauf(int idAnlage)
+            {
+                Hydraulikbild.AnlagenEintrag a;
+                if (!Bild.JeId.TryGetValue(idAnlage, out a)) return 0;
+                if (a.Vorlauf > 0) return a.Vorlauf;
+
+                // PAKET B1 (Konzept 8.4 Punkt 2 — Gleichbehandlung des Kessels): Beim
+                // HEIZKESSEL steht das Temperaturpaar nicht an der Anlagenzeile, sondern
+                // in Tab_Heizkessel; Tab_Energieanlagen.Vorlauf ist dort durchweg 0.
+                // Ohne diesen Rückgriff könnte W3 an einem Kessel nie anschlagen — die
+                // Warnung wäre eine reine Wärmepumpen-Warnung, obwohl das Kriterium den
+                // ERZEUGER meint. Dieselbe Vorrangkette benutzt die Engine für den
+                // Kessel-Quellanteil (SimulationControl.KesselTemperaturpaar, Stufe 1).
+                return (a.ID_Type == ProjektPuffer.TYP_KESSEL) ? KesselVorlauf(idAnlage) : 0;
+            }
+
+            /// <summary>
+            /// PAKET B2 — das GEPFLEGTE Temperaturpaar einer Anlage nach derselben Kette
+            /// wie <see cref="AnlagenVorlauf"/>: erst die Anlagenzeile
+            /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c>), beim Heizkessel
+            /// danach <c>Tab_Heizkessel</c> ueber <c>ID_Kessel</c>. Es ist die Kette, in
+            /// die der Kessel-Quellendialog im Modus „Fest" schreibt, und die die Engine
+            /// dort liest (<c>SimulationControl.KesselTemperaturpaarGepflegt</c>).
+            ///
+            /// <para>Nur ein VOLLSTAENDIGES Paar zaehlt
+            /// (<c>ProjektPuffer.IstTemperaturpaar</c>) — ein einzeln gepflegter Vorlauf
+            /// ohne Ruecklauf ist keine Betriebsvorgabe.</para>
+            /// </summary>
+            public bool AnlagenTemperaturpaar(int idAnlage, out int vorlauf, out int ruecklauf)
+            {
+                vorlauf = 0;
+                ruecklauf = 0;
+
+                Hydraulikbild.AnlagenEintrag a;
+                if (!Bild.JeId.TryGetValue(idAnlage, out a)) return false;
+
+                if (ProjektPuffer.IstTemperaturpaar(a.Vorlauf, a.Ruecklauf))
+                {
+                    vorlauf = a.Vorlauf;
+                    ruecklauf = a.Ruecklauf;
+                    return true;
+                }
+
+                if (a.ID_Type != ProjektPuffer.TYP_KESSEL) return false;
+
+                KesselVorlauf(idAnlage);   // fuellt _kesselVorlauf/_kesselRuecklauf traege
+                int v, r;
+                if (!_kesselVorlauf.TryGetValue(idAnlage, out v) ||
+                    !_kesselRuecklauf.TryGetValue(idAnlage, out r)) return false;
+
+                vorlauf = v;
+                ruecklauf = r;
+                return true;
+            }
+
+            /// <summary>
+            /// TEMPERATURMODUS je Anlage (<c>Tab_Energieanlagen.WQ_TemperaturModus</c>,
+            /// Schema-Schritt 55); <c>null</c> = noch nicht gelesen.
+            ///
+            /// <para><b>TRAEGE</b> wie <see cref="_kesselVorlauf"/>: Die Abfrage laeuft
+            /// erst, wenn ueberhaupt eine Anlage mit Kessel-Quellpuffer geprueft wird.
+            /// Auf der Referenzmenge — kein Kessel mit Quellpuffer — kostet das Kriterium
+            /// damit keine einzige zusaetzliche Rundreise.</para>
+            /// </summary>
+            private Dictionary<int, string> _temperaturModus;
+
+            /// <summary>
+            /// Der Temperaturbezug einer Anlage (<c>DbWerte.WQ_TEMPMODUS_*</c>); fehlende
+            /// Spalte, fehlende Zeile, NULL und jeder unbekannte Wert ergeben
+            /// <c>Berechnet</c> — dieselbe Auslegung wie in der Engine
+            /// (<c>DbWerte.TemperaturModusOderDefault</c>).
+            /// </summary>
+            public string TemperaturModus(int idAnlage)
+            {
+                if (_temperaturModus == null)
+                {
+                    _temperaturModus = new Dictionary<int, string>();
+
+                    DataTable dt = StilleDb.Tabelle(
+                        "SELECT ID, [" + SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS +
+                        "] AS Modus FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt));
+
+                    if (dt != null)
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                            if (id > 0)
+                                _temperaturModus[id] =
+                                    DbWerte.TemperaturModusOderDefault(StilleDb.Feld(r, "Modus"));
+                        }
+                }
+
+                string modus;
+                return _temperaturModus.TryGetValue(idAnlage, out modus)
+                    ? modus : DbWerte.WQ_TEMPMODUS_BERECHNET;
+            }
+
+            /// <summary>
+            /// Vorlauftemperaturen der Projekt-Kessel [°C] über
+            /// <c>Tab_Energieanlagen.ID_Kessel</c>; <c>null</c> = noch nicht gelesen.
+            /// TRÄGE: Die Abfrage läuft erst, wenn ein Kessel wirklich geprüft wird —
+            /// ein Projekt ohne Kessel zahlt nichts dafür.
+            /// </summary>
+            private Dictionary<int, int> _kesselVorlauf;
+
+            /// <summary>
+            /// PAKET B2: derselbe Satz für den RÜCKLAUF — <see cref="AnlagenTemperaturpaar"/>
+            /// braucht beide Werte, W3 nur den Vorlauf. Wird in derselben Abfrage und
+            /// unter derselben Bedingung („nur ein vollständiges Paar zählt") gefüllt;
+            /// die beiden Wörterbücher tragen deshalb immer dieselben Schlüssel.
+            /// </summary>
+            private Dictionary<int, int> _kesselRuecklauf;
+
+            private int KesselVorlauf(int idAnlage)
+            {
+                if (_kesselVorlauf == null)
+                {
+                    _kesselVorlauf = new Dictionary<int, int>();
+                    _kesselRuecklauf = new Dictionary<int, int>();
+
+                    DataTable dt = StilleDb.Tabelle(
+                        "SELECT a.ID, k.Vorlauf, k.Ruecklauf " +
+                        "FROM Tab_Energieanlagen AS a INNER JOIN Tab_Heizkessel AS k " +
+                        "     ON a.ID_Kessel = k.ID " +
+                        "WHERE a.ID_Projekt = ?",
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt));
+
+                    if (dt != null)
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                            int v = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
+                            int rl = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
+
+                            // Nur ein VOLLSTÄNDIGES Paar zählt — dieselbe Regel wie in der
+                            // Engine (ProjektPuffer.IstTemperaturpaar). Ein einzeln
+                            // gepflegter Vorlauf ohne Rücklauf ist keine Betriebsvorgabe.
+                            if (id > 0 && ProjektPuffer.IstTemperaturpaar(v, rl))
+                            {
+                                _kesselVorlauf[id] = v;
+                                _kesselRuecklauf[id] = rl;
+                            }
+                        }
+                }
+
+                int vorlauf;
+                return _kesselVorlauf.TryGetValue(idAnlage, out vorlauf) ? vorlauf : 0;
+            }
+
+            // --- Innenleben --------------------------------------------------------
+
+            private void PufferLesen(int idProjekt)
+            {
+                _pufferInfo = WaermesenkeClass.ProjektPufferListe(idProjekt, null);
+                if (_pufferInfo == null) _pufferInfo = new List<WaermesenkeClass.PufferInfo>();
+
+                DataTable dt = StilleDb.Tabelle(
+                    "SELECT * FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+                if (dt == null) return;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                    if (id <= 0 || _puffer.ContainsKey(id)) continue;
+
+                    _puffer[id] = new Pufferdaten
+                    {
+                        ID = id,
+                        Bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                        Speichertyp = StilleDb.Text(StilleDb.Feld(r, "Speichertyp")).Trim(),
+                        Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf")),
+                        Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf")),
+                        Set = PufferSpCtrl.KlassenSetAusZeile(r),
+                        Schicht = PufferSpCtrl.SchichtdatenAusZeile(r)
+                    };
+                }
+            }
+
+            /// <summary>
+            /// Die geordneten Senkenlisten des Projekts. Fuer eine Anlage OHNE Zeile in
+            /// <c>Z_AnlageSenke</c> gilt die Rang-1-Vorbelegung Heizkreis/Beides aus
+            /// <see cref="Hydraulikbild"/> — seit Paket A1 der einzige Rueckfall: Die
+            /// WS_-Spiegelung ist abgerissen, und die Migrationspflicht (Schritt 50
+            /// laeuft vor jedem Programmstart) macht den Fall „Tabelle fehlt"
+            /// unerreichbar.
+            ///
+            /// <para><b>NACHZUG A1.</b> <see cref="LaderErgaenzen"/> war noetig, solange
+            /// die Laderabbildung des Hydraulikbilds aus den zwei Altspalten entstand und
+            /// die Raenge ab 3 nicht kannte. Das Bild liest seine Senken inzwischen
+            /// selbst aus <c>Z_AnlageSenke</c>, ueber alle Raenge — die Ergaenzung traegt
+            /// deshalb nichts mehr nach und bleibt nur als idempotenter Abgleich stehen:
+            /// Sie und das Bild speisen sich aus derselben Tabelle und demselben
+            /// Rueckfall.</para>
+            /// </summary>
+            private void SenkenLesen(int idProjekt)
+            {
+                List<Z_AnlageSenkeModel> alle = new Z_AnlageSenkeCtrl().LesenJeProjekt(idProjekt);
+
+                foreach (Z_AnlageSenkeModel z in alle)
+                {
+                    if (z == null || z.ID_Anlage <= 0) continue;
+
+                    List<Z_AnlageSenkeModel> kette;
+                    if (!_senken.TryGetValue(z.ID_Anlage, out kette))
+                    {
+                        kette = new List<Z_AnlageSenkeModel>();
+                        _senken[z.ID_Anlage] = kette;
+                    }
+                    kette.Add(z);
+                }
+
+                foreach (Hydraulikbild.AnlagenEintrag a in Bild.Anlagen)
+                    if (!_senken.ContainsKey(a.ID))
+                        _senken[a.ID] = AusBildSenke(a);
+
+                LaderErgaenzen();
+            }
+
+            /// <summary>
+            /// Die Zwei-Platz-Sicht einer Anlage als Senkenliste (Rang 1 und 2).
+            ///
+            /// <para>Der Name hiess bis zum Nachzug A1 <c>AusAltspalten</c>; die Quelle
+            /// war <c>Hydraulikbild.AnlagenEintrag.Senke</c>, und die kam aus den
+            /// WS_-Spalten. Sie kommt jetzt aus <c>Z_AnlageSenke</c>, und dieser Zweig
+            /// laeuft nur noch fuer eine Anlage OHNE jede Zeile — dann traegt sie die
+            /// Rang-1-Vorbelegung Heizkreis/Beides.</para>
+            /// </summary>
+            private static List<Z_AnlageSenkeModel> AusBildSenke(Hydraulikbild.AnlagenEintrag a)
+            {
+                List<Z_AnlageSenkeModel> kette = new List<Z_AnlageSenkeModel>();
+
+                kette.Add(new Z_AnlageSenkeModel
+                {
+                    ID_Anlage = a.ID,
+                    Rang = 1,
+                    Ziel = a.Senke.Ziel,
+                    Bedarfsart = a.Senke.Bedarfsart,
+                    ID_Puffer = a.Senke.ID_Puffer
+                });
+
+                if (a.Senke.HatZweitsenke)
+                    kette.Add(new Z_AnlageSenkeModel
+                    {
+                        ID_Anlage = a.ID,
+                        Rang = 2,
+                        Ziel = a.Senke.Ziel2,
+                        Bedarfsart = a.Senke.Bedarfsart,
+                        ID_Puffer = a.Senke.ID_Puffer2
+                    });
+
+                return kette;
+            }
+
+            /// <summary>
+            /// Gleicht die Laderabbildung des Hydraulikbilds gegen die hier gelesenen
+            /// Senkenzeilen ab. Seit dem Nachzug A1 ein IDEMPOTENTER Abgleich (siehe
+            /// <see cref="SenkenLesen"/>) — beide Seiten stammen aus derselben Tabelle.
+            /// </summary>
+            private void LaderErgaenzen()
+            {
+                foreach (KeyValuePair<int, List<Z_AnlageSenkeModel>> e in _senken)
+                    foreach (Z_AnlageSenkeModel z in e.Value)
+                    {
+                        if (z == null || z.ID_Puffer <= 0) continue;
+                        if (ZielKanaele(z.Ziel).Length == 0) continue;
+
+                        List<int> lader;
+                        if (!Bild.LaderJePuffer.TryGetValue(z.ID_Puffer, out lader))
+                        {
+                            lader = new List<int>();
+                            Bild.LaderJePuffer[z.ID_Puffer] = lader;
+                        }
+                        if (!lader.Contains(e.Key)) lader.Add(e.Key);
+                    }
+            }
+
+            /// <summary>
+            /// Die Speicher, die an der Hydraulik teilnehmen: Ladeziel einer Senkenzeile
+            /// oder Waermequelle einer Anlage. Alles andere ist Kopienballast und wird
+            /// nicht bewertet (siehe <see cref="PruefeProjekt"/>).
+            /// </summary>
+            private void BeteiligteSammeln()
+            {
+                foreach (KeyValuePair<int, List<Z_AnlageSenkeModel>> e in _senken)
+                    foreach (Z_AnlageSenkeModel z in e.Value)
+                        if (z != null && z.ID_Puffer > 0 && ZielKanaele(z.Ziel).Length > 0)
+                            Aufnehmen(z.ID_Puffer);
+
+                foreach (KeyValuePair<int, int> q in Bild.QuelleJeAnlage) Aufnehmen(q.Value);
+            }
+
+            private void Aufnehmen(int idPuffer)
+            {
+                if (idPuffer <= 0 || !_puffer.ContainsKey(idPuffer)) return;
+                if (!BeteiligtePuffer.Contains(idPuffer)) BeteiligtePuffer.Add(idPuffer);
+            }
+        }
+    }
+}

@@ -390,7 +390,7 @@ namespace WindowsFormsApplication1
         /// (Alt-Zweig SchemaMigration, S6). Der Fehlerpfad ist fuer beide DERSELBE -
         /// gleicher Wortlaut, gleiche Rueckgabe.
         /// </summary>
-        private static List<int> Spalte(OleDbConnection conn, string sql, params OleDbParameter[] ps)
+        private static List<int> Spalte(OleDbConnection conn, string sql, params DbParam[] ps)
         {
             try
             {
@@ -409,7 +409,9 @@ namespace WindowsFormsApplication1
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
-                    if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(ps);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(ps));
                     using (OleDbDataReader r = cmd.ExecuteReader())
                         while (r.Read())
                             if (!r.IsDBNull(0))
@@ -543,9 +545,9 @@ namespace WindowsFormsApplication1
             return sb.ToString();
         }
 
-        private static OleDbParameter Par(int wert)
+        private static DbParam Par(int wert)
         {
-            return new OleDbParameter("@p", OleDbType.Integer) { Value = wert };
+            return new DbParam("@p", DbParamTyp.Integer) { Wert = wert };
         }
 
         private static string Kurz(Exception ex)

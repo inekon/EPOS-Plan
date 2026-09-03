@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -175,7 +174,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetSPControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -227,7 +226,7 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
-                Program.mainfrm.SetSPControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -268,7 +267,7 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
-                Program.mainfrm.SetSPControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -456,9 +455,8 @@ namespace WindowsFormsApplication1
 
             int idAnlage = AnlagenId(zeile);
 
-            if (MessageBox.Show(string.Format(MyResource.Resource.VAR_MSG_AKTIV_FRAGE, zeile.Text),
-                                MyResource.Resource.VAR_TITEL,
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (!Dienste.Dialog.Frage(string.Format(MyResource.Resource.VAR_MSG_AKTIV_FRAGE, zeile.Text),
+                                      MyResource.Resource.VAR_TITEL))
                 return;
 
             StromspeicherVarianteCtrl variantenCtrl = new StromspeicherVarianteCtrl();
@@ -498,9 +496,9 @@ namespace WindowsFormsApplication1
 
             int idAnlage = AnlagenId(zeile);
 
-            if (MessageBox.Show(string.Format(MyResource.Resource.VAR_MSG_LOESCHEN_FRAGE, zeile.Text),
-                                MyResource.Resource.VAR_TITEL,
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            // warnend: das Warnsymbol der Löschfrage ist eine Aussage.
+            if (!Dienste.Dialog.Frage(string.Format(MyResource.Resource.VAR_MSG_LOESCHEN_FRAGE, zeile.Text),
+                                      MyResource.Resource.VAR_TITEL, warnend: true))
                 return;
 
             // Die Geraetekopie MERKEN, solange die Anlagenzeile sie noch nennt.
@@ -631,14 +629,14 @@ namespace WindowsFormsApplication1
             {
                 object anzahl = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_SP = ?",
-                    new OleDbParameter("@sp", idGeraet));
+                    new DbParam("@sp", idGeraet));
 
                 if (anzahl == null || anzahl == DBNull.Value || Convert.ToInt32(anzahl) > 0) return;
 
                 DataRepository.ExecuteSQL(
                     "DELETE FROM Tab_Stromspeicher WHERE ID = ? AND ID_Projekt = ?",
-                    new OleDbParameter("@id", idGeraet),
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@id", idGeraet),
+                    new DbParam("@proj", idProjekt));
             }
             catch (Exception ex)
             {
@@ -651,8 +649,8 @@ namespace WindowsFormsApplication1
         {
             object anzahl = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND Bezeichner = ?",
-                new OleDbParameter("@proj", m_ID_Projekt),
-                new OleDbParameter("@bez", name ?? ""));
+                new DbParam("@proj", m_ID_Projekt),
+                new DbParam("@bez", name ?? ""));
 
             return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
         }
@@ -687,13 +685,12 @@ namespace WindowsFormsApplication1
             projctrl.m_Aenderungsdatum = DateTime.Now;
             projctrl.Update();
 
-            Program.mainfrm.SetSPControl(m_szProjektname);
+            Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
         }
 
         private void Melden(string text)
         {
-            MessageBox.Show(text, MyResource.Resource.VAR_TITEL,
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Dienste.Dialog.Warnung(text, MyResource.Resource.VAR_TITEL);
         }
     }
 }

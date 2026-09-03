@@ -9,6 +9,43 @@ Diese Datei beschreibt **Fachdomäne, Datenmodell, Migration und Umgang mit der 
 Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
+Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **268 `.cs`-Dateien**, `net10.0` **ohne**
+WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
+Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 80 Controller. Die
+Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
+Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
+
+Die **Umgebung erreicht der Kern nur über `Dienste.*`** (Paket iU5): neun Schnittstellen in
+`EPOS.Kern/Allgemein/Dienste/` — Dialog, Datei, Pfade, Einstellungen, Lizenzablage, GeräteId,
+Sprache, Navigation, Projekt — mit stillen Standardfassungen; die Windows-Fassungen legt
+`Program.Main` ein. **`Program.*`, `MessageBox`, `Registry`, DPAPI und `SpecialFolder` sind im
+Kern verboten**; zwei Wächter (in `EPOS.Kern/CLAUDE.md`) müssen leer bleiben.
+
+Die **Oberfläche wächst seit dem 03.09.2026 (Paket iU8) in [`EPOS.UI`](EPOS.UI/)**, einer
+Razor-Klassenbibliothek ohne Windows-Bindung; die WinForms-Anwendung stellt nur noch die Hülle
+(`WindowsFormsApplication1/Allgemein/Blazor/`, ein `BlazorWebView` in einem modalen Fenster).
+**Arbeitsregel seit dem Stichtag iZ5: Jeder neue und jeder ohnehin anzufassende Dialog entsteht
+als Razor-Komponente in `EPOS.UI`, seine WinForms-Fassung wird im selben Schritt gelöscht** —
+nie zwei Fassungen derselben Maske. Die Datenbankseite gehört dabei in einen Controller im Kern,
+die Texte in `MyResource.Resource.*`. Erster umgestellter Dialog: „Energieträger anlegen"
+(`EnergietraegerVarianteDialog`). Voraussetzung beim Anwender ist die **WebView2-Laufzeit**; das
+Setup installiert sie nach.
+
+**Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
+
+| Werkzeug | Wofür | Aufruf |
+|---|---|---|
+| `Werkzeuge/Formularkarte` | Feldkarte einer WinForms-Maske aus `InitializeComponent` und `.resx` — Name, Typ, Beschriftung beider Sprachen, Wertebereiche, Tab-Reihenfolge, Ereignishandler; dazu ein Razor-Sektionsskelett. **Vor jeder Maskenumstellung ziehen**, von Hand vergisst man ein Feld | `dotnet run --project Werkzeuge/Formularkarte -- <Designer.cs>`, Stapellauf mit `--alle` |
+| `Proben/ChartProben` | zeichnet die neun Berichtsbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus — ohne Datenbank, ohne Oberfläche. Fällt rot aus, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
+| `EPOS.Referenzlauf` | der plattformfreie Rechennachweis gegen die eingefrorene Basis; läuft auf Linux, macOS und in der CI | `dotnet run --project EPOS.Referenzlauf -- lauf …` bzw. `… vergleich <ref> <neu>` |
+| `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen`, `bildvergleich` (dazu `liste` und `migration`). `bildvergleich` stellt die neuen SkiaSharp-Bilder den alten GDI+-Bildern gegenüber — nur unter Windows | `Referenzlauf.exe <modus> …` |
+
+**Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
+gegen `Referenzlaeufe/2026-08-30_B3-Kaskade` gehalten (13 Projekte, 332 CSV); die CI rechnet bei
+jedem Push die Projekte 1030, 1007 und 1017 gegen dieselbe Basis.
+
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
 (Git-Tag `letzter-x86-stand`) in

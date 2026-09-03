@@ -641,7 +641,7 @@ namespace WindowsFormsApplication1
             // bewusst nicht gepflegt (Entscheid 7.1a). Übersetzt wird deshalb beim
             // ANTWORTEN. Der deutsche Zweig ist unverändert; im englischen entfällt
             // das "auf Deutsch", sonst stünden zwei sich widersprechende Regeln da.
-            if (Program.nLanguage != 0)
+            if (Dienste.Sprache.IstEnglisch)
             {
                 sb.AppendLine("Beantworte die Frage kurz und sachlich - höchstens 6 Sätze.");
                 sb.AppendLine("Answer in English.");
@@ -1587,43 +1587,24 @@ namespace WindowsFormsApplication1
         // Registry-Zugriff (still, ohne Fehlerdialoge)
         // ------------------------------------------------------------------
 
+        // Die drei Helfer heissen weiter "Reg*", weil sie unter Windows dieselbe
+        // Registry-Ablage bedienen wie bisher (HKCU\Software\wp-plan). Nur der Weg
+        // dorthin liegt seit iU5 in Dienste.Einstellungen; die 14 Aufrufstellen im
+        // Rest der Klasse sind unveraendert.
+
         private static string RegLesen(string wert)
         {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey key =
-                       Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL))
-                {
-                    return key != null ? key.GetValue(wert) as string : null;
-                }
-            }
-            catch { return null; }
+            return Dienste.Einstellungen.Lies(wert, null);
         }
 
         private static void RegSchreiben(string wert, string inhalt)
         {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey key =
-                       Microsoft.Win32.Registry.CurrentUser.CreateSubKey(REG_SCHLUESSEL))
-                {
-                    if (key != null) key.SetValue(wert, inhalt ?? "");
-                }
-            }
-            catch { }
+            Dienste.Einstellungen.Schreib(wert, inhalt ?? "");
         }
 
         private static void RegLoeschen(string wert)
         {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey key =
-                       Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL, true))
-                {
-                    if (key != null && key.GetValue(wert) != null) key.DeleteValue(wert, false);
-                }
-            }
-            catch { }
+            Dienste.Einstellungen.Loesche(wert);
         }
 
         // ------------------------------------------------------------------
@@ -1653,19 +1634,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string MigrationsProtokoll { get; private set; } = "";
 
-        /// <summary>Ablageordner — derselbe wie bei der Lizenz (%APPDATA%\wp-plan).</summary>
-        private static string Verzeichnis()
-        {
-            string pfad = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wp-plan");
-            Directory.CreateDirectory(pfad);
-            return pfad;
-        }
+        /// <summary>Name der Ablage mit dem verschlüsselten API-Schlüssel.</summary>
+        private const string SCHLUESSEL_ABLAGE = "ki-schluessel.dat";
 
-        /// <summary>Datei mit dem DPAPI-verschlüsselten API-Schlüssel.</summary>
+        /// <summary>
+        /// Ablageort des verschlüsselten API-Schlüssels in Klartext — nur für
+        /// Protokoll und Anwendermeldung. Unter Windows unverändert
+        /// <c>%APPDATA%\wp-plan\ki-schluessel.dat</c>.
+        /// </summary>
         public static string SchluesselDatei()
         {
-            return Path.Combine(Verzeichnis(), "ki-schluessel.dat");
+            return Dienste.Lizenzablage.Ablageort(SCHLUESSEL_ABLAGE);
         }
 
         private static string SchluesselLesen()
@@ -1680,13 +1659,12 @@ namespace WindowsFormsApplication1
 
                 try
                 {
-                    string datei = SchluesselDatei();
-                    if (File.Exists(datei))
-                    {
-                        byte[] klartext = ProtectedData.Unprotect(
-                            File.ReadAllBytes(datei), null, DataProtectionScope.CurrentUser);
-                        _schluessel = Encoding.UTF8.GetString(klartext);
-                    }
+                    // nurDiesesGeraet: false = Benutzerbereich. Der API-Schlüssel ist
+                    // persönlich und wird - anders als die Lizenz - NICHT an andere
+                    // Konten desselben Rechners weitergereicht. Dieser Geltungsbereich
+                    // darf sich nie ändern, sonst ist die vorhandene Ablage unlesbar.
+                    byte[] klartext = Dienste.Lizenzablage.Lesen(SCHLUESSEL_ABLAGE, false);
+                    if (klartext != null) _schluessel = Encoding.UTF8.GetString(klartext);
                 }
                 catch (Exception ex)
                 {
@@ -1707,16 +1685,14 @@ namespace WindowsFormsApplication1
                 string neu = (wert ?? "").Trim();
                 try
                 {
-                    string datei = SchluesselDatei();
                     if (neu.Length == 0)
                     {
-                        if (File.Exists(datei)) File.Delete(datei);
+                        Dienste.Lizenzablage.Loeschen(SCHLUESSEL_ABLAGE);
                     }
                     else
                     {
-                        byte[] verschluesselt = ProtectedData.Protect(
-                            Encoding.UTF8.GetBytes(neu), null, DataProtectionScope.CurrentUser);
-                        File.WriteAllBytes(datei, verschluesselt);
+                        Dienste.Lizenzablage.Schreiben(
+                            SCHLUESSEL_ABLAGE, Encoding.UTF8.GetBytes(neu), false);
                     }
                     _schluessel = neu;
                     _schluesselGeladen = true;
@@ -1744,15 +1720,13 @@ namespace WindowsFormsApplication1
 
             try
             {
-                string datei = SchluesselDatei();
-                if (!File.Exists(datei))
+                if (!Dienste.Lizenzablage.Vorhanden(SCHLUESSEL_ABLAGE))
                 {
-                    byte[] verschluesselt = ProtectedData.Protect(
-                        Encoding.UTF8.GetBytes(alt.Trim()), null, DataProtectionScope.CurrentUser);
-                    File.WriteAllBytes(datei, verschluesselt);
+                    Dienste.Lizenzablage.Schreiben(
+                        SCHLUESSEL_ABLAGE, Encoding.UTF8.GetBytes(alt.Trim()), false);
                     RegLoeschen(REG_APIKEY);
                     Protokoll("API-Schlüssel aus der Registry übernommen, verschlüsselt abgelegt (" +
-                              datei + "); der Registry-Wert wurde gelöscht.");
+                              SchluesselDatei() + "); der Registry-Wert wurde gelöscht.");
                 }
                 else
                 {

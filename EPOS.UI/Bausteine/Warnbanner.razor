@@ -1,0 +1,36 @@
+﻿@* Meldung im Dialog statt als MessageBox.
+
+   Der WinForms-Bestand unterbricht mit MessageBox.Show; die Blazor-Fassung
+   zeigt die Meldung an Ort und Stelle. role="alert" sorgt dafuer, dass ein
+   Sprachausgabeprogramm sie sofort vorliest - das leistete die modale
+   Meldung bisher nebenbei.
+
+   Farben: KartenStil.WARN_* fuer die Warnung, der Korallenklang der Senke
+   fuer den Fehler, die Hinweisflaeche der Startmaske fuer den Hinweis. *@
+
+<div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
+    <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
+    <span class="epos-warnbanner-text">@Text</span>
+</div>
+
+@code {
+    /// <summary>Dringlichkeit - bestimmt Farbklang und Zeichen.</summary>
+    [Parameter] public WarnStufe Stufe { get; set; } = WarnStufe.Warnung;
+
+    /// <summary>Der Meldungstext.</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    private string Klasse => Stufe switch
+    {
+        WarnStufe.Hinweis => "hinweis",
+        WarnStufe.Fehler => "fehler",
+        _ => "warnung"
+    };
+
+    private string Zeichen => Stufe switch
+    {
+        WarnStufe.Hinweis => "i",
+        WarnStufe.Fehler => "✕",   // Kreuz
+        _ => "!"
+    };
+}

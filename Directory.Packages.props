@@ -61,10 +61,62 @@
     <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.4" />
   </ItemGroup>
 
+  <!--
+    Blazor Hybrid (iU8) - die plattformfreie Razor-Bibliothek EPOS.UI und ihre
+    Windows-Huelle. Components.Web/QuickGrid ziehen mit dem .NET-Major mit;
+    WebView.WindowsForms hat eine eigene Zaehlung (10.0.100) und wird erst von
+    der Huelle in WindowsFormsApplication1 referenziert (Strang B). bunit 2.x
+    ist die Test-API (BunitContext, Render<T>); Microsoft.CodeAnalysis.CSharp
+    gehoert zum Formularkarten-Werkzeug (iU8-12) und steht hier nur bereit.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.100" />
+    <PackageVersion Include="bunit" Version="2.9.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+  </ItemGroup>
+
   <!-- Tests -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+  <!-- Native SkiaSharp-Bibliotheken fuer die Nicht-Windows-Ziele (Paket iU7).
+       Der Renderer des Berichts ist seit iU7-2 plattformfrei; damit er sich auf
+       Linux und macOS auch AUSFUEHREN laesst, braucht es dort die passenden
+       nativen Bibliotheken. Die Win32-Fassung steht oben bei den Chart-Paketen.
+       NoDependencies = die Fassung ohne fontconfig-/GTK-Abhaengigkeit, wie sie
+       auf einem nackten CI-Abbild gebraucht wird. -->
+  <ItemGroup>
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0" />
+  </ItemGroup>
+
+  <!--
+    iOS-Laufzeit der Zugriffsschicht (Umsetzungskonzept iOS, iU6 / iU10 - VORBEREITUNG).
+
+    Microsoft.Data.Sqlite zieht standardmaessig SQLitePCLRaw.bundle_e_sqlite3; das
+    scheitert auf iOS an der AOT-Regel gegen dynamisches Laden. Dort gilt statt dessen
+    bundle_green, das die SYSTEM-SQLite des Geraets benutzt.
+
+    Die Fassung ist bewusst DIESELBE, die Microsoft.Data.Sqlite 10.0.11 heute
+    transitiv mitbringt - nachgemessen am 03.09.2026 mit
+    "dotnet list EPOS.Kern package" mit dem Schalter fuer transitive Pakete:
+        SQLitePCLRaw.bundle_e_sqlite3   2.1.12
+        SQLitePCLRaw.core               2.1.12
+        SQLitePCLRaw.lib.e_sqlite3      2.1.12
+        SQLitePCLRaw.provider.e_sqlite3 2.1.12
+    Zwei verschiedene SQLitePCLRaw-Staende im selben Graph waeren eine
+    Ladezeitueberraschung; deshalb haengt diese Zeile an der core-Fassung und wird beim
+    naechsten Sprung von Microsoft.Data.Sqlite mitgezogen.
+
+    Die Zeile ist derzeit UNBENUTZT: Die PackageReference in EPOS.Kern.csproj greift erst,
+    wenn der Kern ein -ios- oder -maccatalyst-TargetFramework bekommt (iU10).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.12" />
   </ItemGroup>
 </Project>

@@ -2186,7 +2186,7 @@ namespace WindowsFormsApplication1
 
             int idErgebnis = StilleDb.Zahl(StilleDb.Scalar(
                 "SELECT MAX(ID) FROM [" + ErgebnisCtrl.TAB_KOPF + "] WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", System.Data.OleDb.OleDbType.Integer, m_ID_Projekt)));
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt)));
             if (idErgebnis <= 0) return werte;
 
             System.Data.DataTable dt = ErgebnisCtrl.PufferZeilenLesenStill(idErgebnis);

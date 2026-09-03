@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -50,7 +49,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void ExecuteRead(string sql, params OleDbParameter[] parameters)
+        private void ExecuteRead(string sql, params DbParam[] parameters)
         {
             DataTable dt = DataRepository.GetDataTable(sql, parameters);
             _internalList.Clear();
@@ -82,7 +81,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + TAB_REGION_STAMM + " WHERE Name = ?",
-                new OleDbParameter("@name", szName ?? ""));
+                new DbParam("@name", szName ?? ""));
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
@@ -91,7 +90,7 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID_Klimaregion FROM " + TAB_REGION_STAMM + " WHERE Name = ?",
-                new OleDbParameter("@name", szName ?? ""));
+                new DbParam("@name", szName ?? ""));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -104,12 +103,12 @@ namespace WindowsFormsApplication1
         public bool Add(string szName, double Longitude, double Latitude, string Details, DbVorgang v)
         {
             string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly) VALUES (?, ?, ?, ?, ?)";
-            OleDbParameter[] ps = {
-                new OleDbParameter("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
-                new OleDbParameter("?", Longitude),
-                new OleDbParameter("?", Latitude),
-                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new OleDbParameter("?", false)
+            DbParam[] ps = {
+                new DbParam("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
+                new DbParam("?", Longitude),
+                new DbParam("?", Latitude),
+                new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new DbParam("?", false)
             };
             // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
@@ -122,17 +121,17 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(m_szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             string sql = "UPDATE " + TAB_REGION_STAMM + " SET Name = ?, Longitude = ?, Latitude = ?, Details = ? WHERE ID_Klimaregion = ?";
-            OleDbParameter[] ps = {
-                new OleDbParameter("?", string.IsNullOrEmpty(m_szName) ? (object)DBNull.Value : m_szName),
-                new OleDbParameter("?", Longitude),
-                new OleDbParameter("?", Latitude),
-                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new OleDbParameter("?", m_ID_Klimaregion)
+            DbParam[] ps = {
+                new DbParam("?", string.IsNullOrEmpty(m_szName) ? (object)DBNull.Value : m_szName),
+                new DbParam("?", Longitude),
+                new DbParam("?", Latitude),
+                new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new DbParam("?", m_ID_Klimaregion)
             };
             return DataRepository.ExecuteSQL(sql, ps);
         }
@@ -142,12 +141,12 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             string sql = "DELETE FROM " + TAB_REGION_STAMM + " WHERE Name = ?";
-            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@name", szName ?? ""));
+            return DataRepository.ExecuteSQL(sql, new DbParam("@name", szName ?? ""));
         }
 
         #endregion
@@ -175,8 +174,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM " + TAB_REGION_PROJEKT + " WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@name", szName ?? ""),
-                new OleDbParameter("@idProj", idProjekt));
+                new DbParam("@name", szName ?? ""),
+                new DbParam("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -192,8 +191,8 @@ namespace WindowsFormsApplication1
             {
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_Projekt SET ID_Klimaregion = ? WHERE ID = ?",
-                    new OleDbParameter("@reg", neueRegionId),
-                    new OleDbParameter("@id", idProjekt));
+                    new DbParam("@reg", neueRegionId),
+                    new DbParam("@id", idProjekt));
             }
             return neueRegionId;
         }
@@ -206,7 +205,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(szName) || idProjekt <= 0) return 0;
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID_Klimaregion FROM " + TAB_REGION_STAMM + " WHERE Name = ?",
-                new OleDbParameter("@name", szName));
+                new DbParam("@name", szName));
             int stammRegionId = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
             if (stammRegionId <= 0) return 0;
             return ApplyRegionToProjekt(stammRegionId, idProjekt);
@@ -227,7 +226,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
                     return 0;
                 }
             }
@@ -243,16 +242,16 @@ namespace WindowsFormsApplication1
             // 1. Stammdaten (Referenz) lesen – ausserhalb der Transaktion, nur lesend.
             DataTable dtRegion = DataRepository.GetDataTable(
                 "SELECT * FROM " + TAB_REGION_STAMM + " WHERE ID_Klimaregion = ?",
-                new OleDbParameter("@id", stammRegionId));
+                new DbParam("@id", stammRegionId));
             if (dtRegion == null || dtRegion.Rows.Count == 0) return 0;
             DataRow reg = dtRegion.Rows[0];
             string szName = reg["Name"].ToString();
 
             // 2. Bereits im Projekt vorhanden? -> vorhandene Projekt-Region-ID zurueckgeben.
             {
-                List<OleDbParameter> p = new List<OleDbParameter>();
-                p.Add(new OleDbParameter("@name", szName));
-                p.Add(new OleDbParameter("@idProj", idProjekt));
+                List<DbParam> p = new List<DbParam>();
+                p.Add(new DbParam("@name", szName));
+                p.Add(new DbParam("@idProj", idProjekt));
                 object ex = v.Skalar("SELECT ID FROM " + TAB_REGION_PROJEKT + " WHERE Bezeichner = ? AND ID_Projekt = ?", p.ToArray());
                 if (ex != null && ex != DBNull.Value) return Convert.ToInt32(ex);
             }
@@ -260,9 +259,9 @@ namespace WindowsFormsApplication1
             // 3. Region in Projekt-Tabelle anlegen (ID ist AutoWert), neue Region-ID holen.
             //    ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             //    Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
-            OleDbParameter[] psRegion = {
-                new OleDbParameter("@idProj", idProjekt),
-                new OleDbParameter("@bez", szName),
+            DbParam[] psRegion = {
+                new DbParam("@idProj", idProjekt),
+                new DbParam("@bez", szName),
                 Val("@lon", reg["Longitude"]),
                 Val("@lat", reg["Latitude"]),
                 Val("@det", reg["Details"])
@@ -274,22 +273,22 @@ namespace WindowsFormsApplication1
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).
             DataTable dtKlima = DataRepository.GetDataTable(
                 "SELECT * FROM " + TAB_KLIMADATEN_STAMM + " WHERE ID_Klimaregion = ?",
-                new OleDbParameter("@id", stammRegionId));
+                new DbParam("@id", stammRegionId));
             if (dtKlima != null)
             {
                 string ins = "INSERT INTO " + TAB_KLIMADATEN_PROJEKT + " (ID_Projekt, ID_Klimaregion, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Temperatur, WE, TagTyp_W, TagTyp_NW, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 foreach (DataRow r in dtKlima.Rows)
                 {
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@idProj", idProjekt));
-                        p.Add(new OleDbParameter("@reg", neueRegionId));
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@idProj", idProjekt));
+                        p.Add(new DbParam("@reg", neueRegionId));
                         p.Add(Val("@sn", r["Sol_Nord"]));
                         p.Add(Val("@so", r["Sol_Ost"]));
                         p.Add(Val("@ss", r["Sol_Sued"]));
                         p.Add(Val("@sw", r["Sol_West"]));
                         p.Add(Val("@temp", r["Temperatur"]));
-                        p.Add(new OleDbParameter("@we", (r["WE"] != DBNull.Value) && Convert.ToBoolean(r["WE"])));
+                        p.Add(new DbParam("@we", (r["WE"] != DBNull.Value) && Convert.ToBoolean(r["WE"])));
                         p.Add(Val("@tw", r["TagTyp_W"]));
                         p.Add(Val("@tnw", r["TagTyp_NW"]));
                         p.Add(Val("@glob", ColOrNull(r, "Globalstrahlung")));
@@ -305,7 +304,7 @@ namespace WindowsFormsApplication1
             //    Projekt-Tab_Solar.ID ist KEIN AutoWert -> explizite ID (MAX+1) vergeben.
             DataTable dtSolar = DataRepository.GetDataTable(
                 "SELECT * FROM " + TAB_SOLAR_STAMM + " WHERE ID_Klimaregion = ?",
-                new OleDbParameter("@id", stammRegionId));
+                new DbParam("@id", stammRegionId));
             if (dtSolar != null && dtSolar.Rows.Count > 0)
             {
                 int nextId;
@@ -317,10 +316,10 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in dtSolar.Rows)
                 {
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("@id", nextId++));
-                        p.Add(new OleDbParameter("@idProj", idProjekt));
-                        p.Add(new OleDbParameter("@reg", neueRegionId));
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("@id", nextId++));
+                        p.Add(new DbParam("@idProj", idProjekt));
+                        p.Add(new DbParam("@reg", neueRegionId));
                         p.Add(Val("@temp", r["Temperatur"]));
                         p.Add(Val("@sn", r["Sol_Nord"]));
                         p.Add(Val("@so", r["Sol_Ost"]));
@@ -338,9 +337,9 @@ namespace WindowsFormsApplication1
             return neueRegionId;
         }
 
-        private static OleDbParameter Val(string name, object value)
+        private static DbParam Val(string name, object value)
         {
-            return new OleDbParameter(name, value ?? DBNull.Value);
+            return new DbParam(name, value ?? DBNull.Value);
         }
 
         private static object ColOrNull(DataRow row, string col)
