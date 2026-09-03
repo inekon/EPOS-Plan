@@ -30,10 +30,13 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_Brauchwasser_Admin.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand nach Welle 8: 66 Dateien (76 nach W7, 82 nach W6,
-        // 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2,
-        // 108 nach iU9-W0). Jede umgestellte Maske senkt die Zahl (Regel M1).
-        Assert.True(dateien.Count >= 66, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand nach Welle 9: 56 Dateien (66 nach W8, 76 nach W7,
+        // 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3, 105 nach
+        // iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die Zahl
+        // (Regel M1); Welle 9 nimmt ACHT Masken samt ihren Designer-Dateien mit
+        // - und zwei weitere Dateien, weil Form_Gebaeude1 und Form_Gebaeude2
+        // zusammen EINE Komponente werden.
+        Assert.True(dateien.Count >= 56, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -56,15 +59,15 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand nach Welle 8: 63 Masken (73 nach W7, 81 nach W6,
-        // 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2, 105 nach
-        // iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske senkt die Zahl
-        // (Regel M1); die ZEHN der Welle 8 sind die drei Bedarfsblaetter in je
-        // drei Auspraegungen - Form_EingDBStromverbraucher, Form_EingDBProzess,
-        // Form_EingDBBrauchwasser, Form_ErgStromverbraucher,
-        // Form_ErgProzesswaerme, Form_ErgBrauchwasserwaerme, Form_EingStromTyp,
-        // Form_EingProzTyp, Form_EingBrauchwasserTyp - und Form_EingGebTyp.
-        Assert.True(Lauf.Value.Masken >= 63, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand nach Welle 9: 55 Masken (63 nach W8, 73 nach W7,
+        // 81 nach W6, 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3, 102 nach
+        // iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske
+        // senkt die Zahl (Regel M1); die ACHT der Welle 9 sind die vier
+        // Bedarfskacheln des Startbilds samt ihren Katalogeditoren -
+        // Form_Gebaeude, Form_Gebaeude1, Form_Gebaeude2, Form_GebWohnflaeche,
+        // Form_Waermebedarf, Form_Prozesswaerme, Form_Stromverbraucher und
+        // Form_Brauchwasser.
+        Assert.True(Lauf.Value.Masken >= 55, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -77,10 +80,11 @@ public sealed class StapelTests
         // Welle 6 stellt erstmals wieder LOKALISIERTE Masken um (54), Welle 7
         // sieben weitere (47), Welle 8 alle zehn (37) - auch die drei
         // Brauchwassermasken zeichnen ueber ApplyResources, obwohl ihre Texte
-        // deutsche Literale in der neutralen .resx sind.
-        // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
+        // deutsche Literale in der neutralen .resx sind. Welle 9 nimmt acht
+        // weitere mit (29); nur Form_Brauchwasser war unlokalisiert.
+        // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 37,
+        Assert.True(Lauf.Value.Lokalisierte >= 29,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
