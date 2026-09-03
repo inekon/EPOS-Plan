@@ -599,6 +599,26 @@ body {
     resize: vertical;
 }
 
+/* Eingerueckter Bearbeitungsblock statt eines zweiten Fensters (iU9-W3.3,
+   Vorbild: die beiden zur Laufzeit gebauten Unterdialoge des
+   Emissionskatalogs). Der Rahmen sagt, dass hier gerade etwas anderes gilt;
+   solange er steht, ruht der Rest des Dialogs. */
+.epos-editorblock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 0 0;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke);
+}
+
+/* Der geltende Wert der Werteliste - im DataGridView war er fett. */
+.epos-wert-geltend {
+    font-weight: 700;
+}
+
 /* Ein Protokoll baut seine Spalten aus Leerzeichen - es braucht eine Schrift
    fester Zeichenbreite (Vorbild: _tbProtokoll in Consolas 9 pt). Die Liste
    nennt die ueblichen Schriften der drei Plattformen und endet bei der
