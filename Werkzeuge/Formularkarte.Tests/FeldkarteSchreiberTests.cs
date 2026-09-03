@@ -21,7 +21,8 @@ public sealed class FeldkarteSchreiberTests
         Assert.Contains("| Titel de | Energieträger Variante |", karte, StringComparison.Ordinal);
         Assert.Contains("| ClientSize | 356 x 185 |", karte, StringComparison.Ordinal);
         Assert.Contains("| MessageBox | 1 |", karte, StringComparison.Ordinal);
-        Assert.Contains("Form_Kosten.cs:2092", karte, StringComparison.Ordinal);
+        Assert.Contains("| Aufrufer (ShowDialog) | 1: `WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:",
+                        karte, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -74,7 +75,10 @@ public sealed class FeldkarteSchreiberTests
         var karte = Karte("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("## Ereignishandler in `Form_Kosten_Auswahl.cs`", karte, StringComparison.Ordinal);
-        Assert.Contains("| `btnOk_Click` | 42 | 14 Zeilen |", karte, StringComparison.Ordinal);
+
+        // Ohne feste Zeilennummer: der Bestand bewegt sich, das Werkzeug nicht.
+        var zeile = karte.Split('\n').Single(z => z.StartsWith("| `btnOk_Click` |", StringComparison.Ordinal));
+        Assert.Matches(@"^\| `btnOk_Click` \| \d+ \| \d+ Zeilen \|$", zeile.TrimEnd('\r'));
     }
 
     [Fact]
