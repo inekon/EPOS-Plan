@@ -138,6 +138,136 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql);
         }
 
+        /// <summary>
+        /// Gleicht die WÄRME-Kennlinien eines STAMMGERÄTS an einen Soll-Stand an
+        /// (iU9-W7.0d) — der Rückschreibweg aus <c>Form_WP.btn_Kenndaten_Click</c>
+        /// (Z. 475-553), jetzt in EINER Transaktion.
+        ///
+        /// <para><b>Was gleich bleibt.</b> Dieselben drei Anweisungen mit demselben
+        /// Wortlaut: <c>DELETE … WHERE ID = ?</c> für weggefallene Zeilen,
+        /// <c>INSERT … (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm)</c> mit
+        /// fortlaufender <c>ID = Max(ID)+1</c> für neue, <c>UPDATE … SET ID_WP, Vorlauf,
+        /// Temperatur, COP, Ptherm WHERE ID = ?</c> für geänderte. Auch die Id-Vergabe
+        /// bleibt: EINMAL <c>Max(ID)</c> über die GANZE Tabelle, danach hochzählen.</para>
+        ///
+        /// <para><b>Was sich ändert, und warum (Abweichung A-5).</b> Der Dialog
+        /// <c>Kenndaten</c> bearbeitete ein <c>DataSet</c>; der Aufrufer las die drei
+        /// Fälle aus <c>DataRow.RowState</c> ab und schrieb sie in einer Schleife OHNE
+        /// Transaktion. Ein Fehler in der Mitte hinterliess damit einen HALBEN Stand:
+        /// ein paar Zeilen gelöscht, der Rest noch alt. Eine Razor-Komponente hat kein
+        /// <c>DataSet</c> — sie bearbeitet eine Liste, und die Differenz rechnet jetzt
+        /// der Kern. Ergebnisgleich, aber alles oder nichts.</para>
+        ///
+        /// <para><b>Die Zuordnung läuft über <c>m_ID</c>.</b> Eine Soll-Zeile mit
+        /// <c>m_ID == 0</c> ist neu (der Vorläufer: <c>RowState.Added</c>); eine
+        /// Ist-Zeile, deren Id in keiner Soll-Zeile mehr vorkommt, ist gelöscht. Zeilen
+        /// mit unveränderten Werten werden übersprungen — der Vorläufer erkannte das
+        /// über <c>RowState.Unchanged</c>.</para>
+        /// </summary>
+        /// <param name="idWp">Das Stammgerät (<c>Tab_WP_STAMM.ID</c>).</param>
+        /// <param name="sollZeilen">Der Stand, den der Dialog zurückgibt.</param>
+        /// <returns><c>false</c>, wenn nichts geschrieben wurde (die Transaktion ist dann zurückgerollt).</returns>
+        public static bool Abgleichen(int idWp, IReadOnlyList<KenndatenModel> sollZeilen)
+        {
+            if (idWp <= 0) return false;
+            IReadOnlyList<KenndatenModel> soll = sollZeilen ?? (IReadOnlyList<KenndatenModel>)new List<KenndatenModel>();
+
+            // Ist-Stand. Er wird VOR der Transaktion gelesen - genau wie der Vorlaeufer
+            // das DataSet vor dem Oeffnen des Dialogs las.
+            var ist = new Dictionary<int, KenndatenModel>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + WPStammCtrl.CURVE + " WHERE ID_WP = ?",
+                new DbParam("@id", idWp));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["ID"] == DBNull.Value) continue;
+                    var m = new KenndatenModel
+                    {
+                        m_ID = Convert.ToInt32(r["ID"]),
+                        m_ID_WP = r["ID_WP"] != DBNull.Value ? Convert.ToInt32(r["ID_WP"]) : 0,
+                        m_nVorlauf = r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0,
+                        m_nTemperatur = r["Temperatur"] != DBNull.Value ? Convert.ToInt32(r["Temperatur"]) : 0,
+                        m_nCOP = r["COP"] != DBNull.Value ? Convert.ToDouble(r["COP"]) : 0,
+                        m_nPTherm = r["Ptherm"] != DBNull.Value ? Convert.ToDouble(r["Ptherm"]) : 0
+                    };
+                    ist[m.m_ID] = m;
+                }
+
+            var behalten = new HashSet<int>();
+            foreach (KenndatenModel s in soll) if (s != null && s.m_ID > 0) behalten.Add(s.m_ID);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    // (1) Weggefallene Zeilen.
+                    foreach (KenndatenModel a in ist.Values)
+                        if (!behalten.Contains(a.m_ID))
+                            v.Ausfuehren("DELETE FROM " + WPStammCtrl.CURVE + " WHERE ID = ?",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = a.m_ID });
+
+                    // (2) Id-Vergabe wie im Vorlaeufer: EINMAL Max(ID) ueber die ganze
+                    //     Tabelle, danach hochzaehlen. Innerhalb des Vorgangs gelesen,
+                    //     damit die soeben geloeschten Zeilen mitzaehlen.
+                    int naechsteId;
+                    {
+                        object m = v.Skalar("SELECT Max(ID) FROM " + WPStammCtrl.CURVE);
+                        naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                    }
+
+                    foreach (KenndatenModel s in soll)
+                    {
+                        if (s == null) continue;
+
+                        if (s.m_ID <= 0)
+                        {
+                            // (3) Neue Zeile.
+                            v.Ausfuehren(
+                                "INSERT INTO " + WPStammCtrl.CURVE +
+                                " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
+                                new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },
+                                new DbParam("@t", DbParamTyp.Integer) { Wert = s.m_nTemperatur },
+                                new DbParam("@cop", DbParamTyp.Double) { Wert = s.m_nCOP },
+                                new DbParam("@pt", DbParamTyp.Double) { Wert = s.m_nPTherm });
+                            continue;
+                        }
+
+                        // (4) Geaenderte Zeile. Unveraenderte bleiben unberuehrt - das
+                        //     entspricht RowState.Unchanged des Vorlaeufers.
+                        KenndatenModel alt;
+                        if (ist.TryGetValue(s.m_ID, out alt) &&
+                            alt.m_ID_WP == idWp &&
+                            alt.m_nVorlauf == s.m_nVorlauf &&
+                            alt.m_nTemperatur == s.m_nTemperatur &&
+                            Math.Abs(alt.m_nCOP - s.m_nCOP) < 1e-12 &&
+                            Math.Abs(alt.m_nPTherm - s.m_nPTherm) < 1e-12) continue;
+
+                        v.Ausfuehren(
+                            "UPDATE " + WPStammCtrl.CURVE +
+                            " SET ID_WP = ?, Vorlauf = ?, Temperatur = ?, COP = ?, Ptherm = ? WHERE ID = ?",
+                            new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
+                            new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },
+                            new DbParam("@t", DbParamTyp.Integer) { Wert = s.m_nTemperatur },
+                            new DbParam("@cop", DbParamTyp.Double) { Wert = s.m_nCOP },
+                            new DbParam("@pt", DbParamTyp.Double) { Wert = s.m_nPTherm },
+                            new DbParam("@id", DbParamTyp.Integer) { Wert = s.m_ID });
+                    }
+
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    DataRepository.FehlerMelden("Fehler beim Speichern der Kennliniendaten: " + ex.Message);
+                    return false;
+                }
+            }
+        }
+
         #endregion
     }
 }
