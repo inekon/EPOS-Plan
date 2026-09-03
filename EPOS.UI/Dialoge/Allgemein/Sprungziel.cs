@@ -49,4 +49,33 @@ public static class Sprungziel
     /// von einem Einstieg aus, der keine Klasse meint.
     /// </summary>
     public const string Gesetzesparameter = "GESETZESPARAMETER";
+
+    /// <summary>
+    /// Katalog „Administration Heizkessel" — der Knopf „Admin" des
+    /// Heizkessel-Projektdialogs (Vorläufer:
+    /// <c>Form_Heizkessel.btn_Admin_Click</c>, iU9-W6.3).
+    /// </summary>
+    public const string HeizkesselAdmin = "HEIZKESSEL_ADMIN";
+
+    /// <summary>
+    /// Katalog „Administration Stromspeicher" — der Knopf „Bearbeiten" des
+    /// Stromspeicher-Projektdialogs (Vorläufer:
+    /// <c>Form_Stromspeicher.btn_Bearbeiten_Click</c>, iU9-W6.6).
+    /// </summary>
+    public const string StromspeicherAdmin = "STROMSPEICHER_ADMIN";
+
+    /// <summary>
+    /// Katalog „Administration Photovoltaik" — der Knopf „Bearbeiten" des
+    /// PV-Projektdialogs (Vorläufer: <c>Form_PV.btn_Bearbeiten_Click</c> über
+    /// <c>MenueCtrl.PV()</c>, iU9-W6.5).
+    /// </summary>
+    public const string PvAdmin = "PV_ADMIN";
+
+    /// <summary>
+    /// Katalog „Administration Pufferspeicher" — der Knopf „Bearbeiten" des
+    /// Pufferspeicher-Projektdialogs (Vorläufer:
+    /// <c>Form_PufferSp.btn_Bearbeiten_Click</c> über <c>MenueCtrl.PufferSp()</c>,
+    /// iU9-W6.7).
+    /// </summary>
+    public const string PufferSpAdmin = "PUFFERSP_ADMIN";
 }
