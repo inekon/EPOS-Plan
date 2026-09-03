@@ -187,6 +187,80 @@ kostenlosen Runner, mit jedem Push wiederholt. Die Ergebnis-CSV liegen je OS als
 (14 Tage).
 
 
+### 2.4 Befund iU4 (`EPOS.Kern` herauslösen), 03.09.2026 — **hier erreicht**
+
+Sieben Commits `4a0a4e2`…`616dff4` auf der Basis `9fe9c71`.
+
+**Umfangszahlen.** `EPOS.Kern` führt **168 Dateien**, seit iU4-5 physisch unter `EPOS.Kern/`
+(vorher 91 verlinkte). Die Planung nannte 165; die Abweichung ist erklärt und klein:
+
+| Posten | Dateien |
+|---|---|
+| Bestand aus iU3 | 91 |
+| `Allgemein/Wirtschaftlichkeit/*` (`HilfsstromRechner` war schon dabei) | +19 |
+| Bericht-DATEN (`BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`) | +7 |
+| `Model/*` (alle 46) | +24 |
+| `Allgemein/Simulation/*` ohne `SchemaModell.cs` — die K8-Hälfte `SimulationControl.Stromspeicher.cs` kommt mit | +1 |
+| Controller (`StromspeicherSimCtrl` + die 23 geplanten, einschließlich `WErzeugerCtrl.Aufraeumen.cs`) | +24 |
+| `Settings.cs` (zweite `partial`-Hälfte von `Properties.Settings`) | +1 |
+| **vom Compiler verlangt:** `Allgemein/Sprache.cs`, `Allgemein/ZahlText.cs` (aus iU4-1) | +2 |
+| **Summe verlinkt (iU4-4)** | **169** |
+| davon Link auf `../sql/schema/SchemaTypKatalog.g.cs` — bleibt Link, zieht nicht um | −1 |
+| **Summe verschoben (iU4-5)** | **168** |
+
+Der Compiler hat außer `Sprache.cs` und `ZahlText.cs` **nichts** weiter verlangt. Die Anwendung
+schrumpft von 585 auf 417 `.cs`. `git diff -M`: 171 R100-Umbenennungen (168 `.cs` + `Resource.resx`,
+`Resource.en-US.resx`, `Settings.settings`) und zwei `.csproj` — kein Quelltext angefasst.
+
+**Die Partial-Lösung.** Zwei Klassen waren über `partial` in eine Kern- und eine
+Oberflächenhälfte geteilt. Das trägt nur innerhalb EINER Assembly. Aufgelöst wurde beides ohne
+Änderung an einer Aufrufstelle:
+
+* `WizardItemClass` (Typ- und Nummernkatalog) bleibt im Kern und ist nicht mehr `partial`; die
+  Oberflächenhälfte wird der **abgeleitete** Typ `WizardSeite : WizardItemClass` in
+  `Views/Wizard/`. Alle Nummernkonstanten bleiben unter dem gewohnten Namen erreichbar; die drei
+  `List<WizardItemClass>` werden `List<WizardSeite>`.
+* Die `FillComboBox`-Hälften der Controller werden **Erweiterungsmethoden** in
+  `Views/GemeinsameBausteine/ControllerListen.cs`. `ctrl.FillComboBox(box)` steht unverändert in
+  den Masken. Fünf `*Ctrl.WinForms.cs` (BHKWCtrl, KlimaregionCtrl, WPStammCtrl und die
+  `FillListBox`-Hälfte von ProjektCtrl) hatten **0 Aufrufer** und entfallen ersatzlos.
+
+`WPCtrl.WinForms.cs` bleibt unangetastet — `WPCtrl` bleibt in der Anwendung.
+
+**`InternalsVisibleTo`.** Etliche Controller und Modelle sind ohne Zugriffsangabe deklariert und
+damit `internal` (`ProjektCtrl`, `KlimaregionCtrl`, `WPStammCtrl`, `Properties.Settings`, `Init`
+…). Solange alles in einer Assembly lag, fiel das nicht auf. `EPOS.Kern.csproj` gibt die internen
+Typen deshalb für `EPOS_Plan` und `EPOS.Kern.Tests` frei. Die Alternative — jeden betroffenen Typ
+auf `public` heben — wäre eine breite Sichtbarkeitsänderung am Bestand ohne fachlichen Grund
+gewesen.
+
+**Speicherzweig und Haken.** `SimulationControl.Stromspeicher.cs` zieht mit in den Kern; sein
+`[ModuleInitializer]` setzt den K8-Haken jetzt beim Laden von `EPOS.Kern` statt beim Laden der
+Anwendung — also weiterhin vor jedem Simulationsaufruf. Das erzeugt die **einzige neue Warnung**
+der Etappe (CA2255, 1 ×). Damit ein stillgelegter Haken auffiele, rechnet der CI-Referenzlauf seit
+iU4-7 **1030, 1007 und 1017**; die beiden letzteren führen aktive Stromspeicher-Varianten. Alle
+drei sind hier byte-gleich zur Basis `2026-08-30_B3-Kaskade`.
+
+Umgekehrt läuft der **Geräte-Aufräumlauf** nach dem Löschen eines Projekts jetzt über den Haken
+`WErzeugerCtrl.GeraetewaisenAufraeumen` (`GeraeteWaisen` bleibt in der Anwendung). Vorbelegung
+`null` = kein Aufräumlauf; das ist zulässig, weil der Lauf ohnehin NACH dem erfolgreichen DELETE
+läuft, sein Ergebnis nicht in den Rückgabewert eingeht und der Migrationsschritt nachholt, was er
+liegen lässt.
+
+**Die 1011/1021-Lücke.** Die CI deckt jetzt drei der 13 Referenzprojekte ab. `1011` und `1021`
+bleiben ungeprüft — sie stehen in `Referenzlaeufe/2026-08-30_B3-Kaskade/` bereit, sind hier aber
+nicht mitgelaufen. Wer den Umfang weiter erhöhen will, tut das über dieselbe Liste in
+`kern.yml`; die Laufzeit der drei Projekte liegt bei wenigen Sekunden.
+
+**Zahlen des Nachweises.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64`: **0 Fehler, 123
+Warnungen** — dieselbe Summe wie vor der Etappe. Die Verteilung verschiebt sich (vorher Kern 88 /
+App 35, jetzt Kern 89 / App 34): Die neue CA2255 kommt hinzu, und CS0108 zu
+`WErzeugerModel.ID_Projekt` wird nur noch einmal gemeldet, weil die Datei nur noch einmal
+übersetzt wird. **CA1416 bleibt bei 87** — die 77 hinzugekommenen Dateien bringen keine einzige
+neue OleDb-Kante mit; das Rest-Inventar für iR8 ist unverändert (`SolarkollektorenCtrl` 41,
+`PufferSpCtrl` 30, `RecordSet` 9, `ApplikationCtrl` 7). `dotnet test WP-Plan.Kern.slnf`: **796**
+(787 + 9 neue in `EPOS.Kern.Tests`).
+
 ---
 
 ## 3 Chart- und Grid-Masken — Auszählung
