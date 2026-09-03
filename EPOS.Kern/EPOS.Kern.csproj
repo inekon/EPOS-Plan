@@ -63,6 +63,9 @@
   <!-- ================================================================== -->
   <ItemGroup>
     <InternalsVisibleTo Include="EPOS_Plan" />
+    <!-- Dasselbe fuer das Testprojekt (iU4-6): Init und andere Kerntypen sind
+         internal, sollen aber pruefbar sein. -->
+    <InternalsVisibleTo Include="EPOS.Kern.Tests" />
   </ItemGroup>
 
   <ItemGroup>
