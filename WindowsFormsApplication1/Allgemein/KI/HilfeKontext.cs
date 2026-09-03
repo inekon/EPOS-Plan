@@ -104,7 +104,6 @@ namespace WindowsFormsApplication1
             { "Form_Lizenz",                 B_LIZENZ },
 
             { "UcBericht",                   B_BERICHT },
-            { "Form_BkUebernahme",           B_BERICHT },
             { "UcBerichteKosten",            B_BERICHT },
             { "UcBkKosten",                  B_BERICHT },
             { "UcBkUebersicht",              B_BERICHT },
