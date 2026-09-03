@@ -44,6 +44,11 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
   schreibgeschützt; gearbeitet wird auf der Kopie in `Library/Application Support/WP-Plan/EPOS_PLAN`.
 - **`bundle_e_sqlite3`, nicht `bundle_green`** — dieselbe SQLite 3.53.3 wie auf Windows, Linux und
   im macOS-CI. Begründung in `Directory.Packages.props`.
+- **Ein Namensraum für die ganze Hülle: `EPOS.iOS`** — auch für die Dateien unter `Dienste/`.
+  Ein Unter-Namensraum `EPOS.iOS.Dienste` verdeckte den statischen Halter
+  `WindowsFormsApplication1.Dienste` des Kerns: `Dienste.Pfade` löste dann gegen den eigenen
+  Ordner auf und der Build brach. Die Windows-Hülle hält es genauso — `WindowsFormsApplication1/Dienste/*.cs`
+  liegen alle im Namensraum `WindowsFormsApplication1`.
 - Bezeichner und Kommentare deutsch; neue `.cs` UTF-8 **mit** BOM, LF; `.csproj`, `.plist`, `.html`
   ohne BOM.
 
