@@ -55,6 +55,30 @@ namespace WindowsFormsApplication1
         private static void Oeffnen(IWin32Window besitzer, BedarfsArt art, string name,
                                     string beschreibung, string typ, KatalogModus modus)
         {
+            BlazorDialogForm<TypStammDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(
+                Gaben(art, name, beschreibung, typ, modus))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
+                    _ => { if (dlg != null) dlg.Schliessen(true); })
+            };
+
+            dlg = new BlazorDialogForm<TypStammDialog>(Titel(art), MASS_STAMM, werte);
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Stammkopfes — ohne <c>Geschlossen</c>, damit ihn seit
+        /// iU9-W9.5 auch die Ueberlagerung in <c>BedarfsProfileDialog</c> nehmen kann
+        /// (Risiko R2).
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            BedarfsArt art, string name, string beschreibung, string typ, KatalogModus modus)
+        {
             var daten = new TypStammDaten
             {
                 Art = art,
@@ -70,9 +94,7 @@ namespace WindowsFormsApplication1
             if (monat != null)
                 for (int m = 0; m < 12; m++) daten.Monat[m] = monat[m];
 
-            BlazorDialogForm<TypStammDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
                 ["Modus"] = modus,
@@ -102,16 +124,8 @@ namespace WindowsFormsApplication1
                 ["MeldungNameFehlt"] = Text_("BTYP_MSG_NAME_LEER", "Bitte einen Namen eingeben!"),
                 ["MeldungGespeichert"] = Text_("BTYP_MSG_GESPEICHERT", "Daten gespeichert!"),
                 ["MeldungAktualisiert"] = Text_("BTYP_MSG_AKTUALISIERT", "Daten aktualisiert!"),
-                ["HilfeSchluessel"] = HilfeSchluessel(art),
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
-                    _ => { if (dlg != null) dlg.Schliessen(true); })
+                ["HilfeSchluessel"] = HilfeSchluessel(art)
             };
-
-            dlg = new BlazorDialogForm<TypStammDialog>(Titel(art), MASS_STAMM, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         /// <summary>
@@ -149,10 +163,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static void ProfilOeffnen(IWin32Window besitzer, BedarfsArt art)
         {
-            var daten = new TypProfilDaten { Art = art };
             BlazorDialogForm<TypProfilDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>
+            var werte = new Dictionary<string, object>(ProfilGaben(art))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
+                    _ => { if (dlg != null) dlg.Schliessen(true); })
+            };
+
+            dlg = new BlazorDialogForm<TypProfilDialog>(ProfilTitel(art), MASS_PROFIL, werte);
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Wochen-Stundenprofils — ohne <c>Geschlossen</c>, fuer die
+        /// Ueberlagerung in <c>BedarfsProfileDialog</c> (iU9-W9.5).
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> ProfilGaben(BedarfsArt art)
+        {
+            var daten = new TypProfilDaten { Art = art };
+
+            return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
                 ["Typen"] = new Func<IReadOnlyList<string>>(() => TypProfilCtrl.Typen(art)),
@@ -200,16 +234,8 @@ namespace WindowsFormsApplication1
                 ["MeldungFehler"] = Text_("BPRO_MSG_FEHLER", "Speichern nicht möglich!"),
                 ["FrageLoeschen"] = Text_("BPRO_FRAGE_LOESCHEN", "Soll {0} wirklich gelöscht werden ?"),
 
-                ["HilfeSchluessel"] = ProfilHilfeSchluessel(art),
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
-                    _ => { if (dlg != null) dlg.Schliessen(true); })
+                ["HilfeSchluessel"] = ProfilHilfeSchluessel(art)
             };
-
-            dlg = new BlazorDialogForm<TypProfilDialog>(ProfilTitel(art), MASS_PROFIL, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         /// <summary>

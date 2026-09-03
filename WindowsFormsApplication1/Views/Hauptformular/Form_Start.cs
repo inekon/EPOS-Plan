@@ -210,46 +210,25 @@ namespace WindowsFormsApplication1
 
         private void pBox_Prozess_Click(object sender, EventArgs e)
         {
-            Form_Prozesswaerme frm = new Form_Prozesswaerme();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_pwmodel.Clear();
+            // iU9-W9.0d: der JOIN steht im Kern.
+            List<Z_ProjektProzesswaermeModel> liste =
+                Z_ProjektProzesswaermeCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
-                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Bezeichner, Z_Projekt_Prozesswaerme.Summe " +
-                "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
-                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
-                " where Z_Projekt_Prozesswaerme.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
-                item.ID_Z = (int)rs.Read("ID");
-                item.ID_Projekt = m_ID_Projekt;
-                item.ID_Prozesswaerme = (int)rs.Read("ID_Prozesswaerme");
-                item.szProzessname = (string)rs.Read("Bezeichner");
-                item.Summe = (double)rs.Read("Summe");
-                frm.list_pwmodel.Add(item);
-            }
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Prozesswaerme.
+            if (BedarfsProfileHuelle.Oeffnen(this, m_ID_Projekt, m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
-                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
+                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
 
-            if (frm.list_pwmodel.Count > 0)
+            if (liste.Count > 0)
                 status |= 32;
             else status &= ~32;
             pBox_Prozess.Invalidate();
@@ -432,48 +411,26 @@ namespace WindowsFormsApplication1
 
         private void pBox_StdLastProfil_Click(object sender, EventArgs e)
         {
-            Form_Stromverbraucher frm = new Form_Stromverbraucher();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_sbmodel.Clear();
-            frm.SetControls(m_szProjektname);
+            // iU9-W9.0d: der JOIN steht im Kern. Der Vorlaeufer rief SetControls ZWEIMAL,
+            // vor und nach dem Aufbau der Liste - einmal genuegt.
+            List<Z_ProjektStromverbraucherModel> liste =
+                Z_ProjektStromverbraucherCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_Projekt_Stromverbraucher.ID, Z_Projekt_Stromverbraucher.ID_Projekt, " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Z_Projekt_Stromverbraucher.Summe, Tab_Stromverbraucher.Bezeichner " +
-                "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
-                " where Z_Projekt_Stromverbraucher.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-
-            while (rs.Next())
-            {
-                Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
-                item.m_ID_Z = (int)rs.Read("ID");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Stromverbraucher = (int)rs.Read("ID_Stromverbraucher");
-                item.m_szVerbraucher = (string)rs.Read("Bezeichner");//item.Text;
-                item.m_Summe = (double)rs.Read("Summe");
-                frm.list_sbmodel.Add(item);
-            }
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Stromverbraucher.
+            if (BedarfsProfileHuelle.Oeffnen(this, m_ID_Projekt, m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_Stromverbraucher(m_ID_Projekt);
-                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, frm.list_sbmodel);
+                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
 
-            if (frm.list_sbmodel.Count > 0)
+            if (liste.Count > 0)
                 status |= 64;
             else status &= ~64;
             pBox_StdLastProfil.Invalidate();
@@ -1801,46 +1758,25 @@ namespace WindowsFormsApplication1
 
         private void pBox_Brauchwasser_Click(object sender, EventArgs e)
         {
-            Form_Brauchwasser frm = new Form_Brauchwasser();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_pwmodel.Clear();
+            // iU9-W9.0d: der JOIN steht im Kern.
+            List<Z_ProjektBrauchwasserModel> liste =
+                Z_ProjektBrauchwasserCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_Projekt_Brauchwasser.ID, Z_Projekt_Brauchwasser.ID_Projekt, " +
-                "Z_Projekt_Brauchwasser.ID_Brauchwasser, Tab_Brauchwasser.Bezeichner, Z_Projekt_Brauchwasser.Summe " +
-                "FROM Z_Projekt_Brauchwasser INNER JOIN Tab_Brauchwasser ON " +
-                "Z_Projekt_Brauchwasser.ID_Brauchwasser = Tab_Brauchwasser.ID " +
-                " where Z_Projekt_Brauchwasser.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektBrauchwasserModel item = new Z_ProjektBrauchwasserModel();
-                item.ID_Z = (int)rs.Read("ID");
-                item.ID_Projekt = m_ID_Projekt;
-                item.ID_Brauchwasser = (int)rs.Read("ID_Brauchwasser");
-                item.szBezeichner = (string)rs.Read("Bezeichner");
-                item.Summe = (double)rs.Read("Summe");
-                frm.list_pwmodel.Add(item);
-            }
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Brauchwasser.
+            if (BedarfsProfileHuelle.Oeffnen(this, m_ID_Projekt, m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_Brauchwasser(m_ID_Projekt);
-                wizctrl.Add_Projekt_Brauchwasser(m_ID_Projekt, frm.list_pwmodel);
+                wizctrl.Add_Projekt_Brauchwasser(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
 
-            if (frm.list_pwmodel.Count > 0)
+            if (liste.Count > 0)
                 status |= 4096;
             else status &= ~4096;
             pBox_Brauchwasser.Invalidate();

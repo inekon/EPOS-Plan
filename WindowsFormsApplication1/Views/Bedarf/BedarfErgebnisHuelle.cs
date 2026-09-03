@@ -50,7 +50,19 @@ namespace WindowsFormsApplication1
         internal static void Zeigen(IWin32Window besitzer, SimulationStrombedarf simulation,
                                    int startReiter = 0)
         {
-            var daten = new BedarfErgebnisDaten
+            Oeffnen(besitzer, StromDaten(simulation, startReiter),
+                    Text_("BERG_REITER_STROM_ERG", "Strombedarf Ergebnisse"),
+                    Text_("BERG_REITER_STROM_MONAT", "Strombedarf monatlich"),
+                    Text_("BERG_REITER_STROM_GRAFIK", "Grafik Strombedarf"),
+                    Text_("BERG_GRP_STROM_MONAT", "Strombedarf monatlicher Verlauf:"),
+                    "Form_ErgStromverbraucher.btn_Help");
+        }
+
+        /// <summary>Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.</summary>
+        private static BedarfErgebnisDaten StromDaten(SimulationStrombedarf simulation,
+                                                      int startReiter)
+        {
+            return new BedarfErgebnisDaten
             {
                 Sicht = ErgebnisSicht.Strom,
                 MitBrauchwasser = false,
@@ -73,13 +85,6 @@ namespace WindowsFormsApplication1
                           Text_("BERG_BILD_STROM", "Strombedarf Monatsübersicht"), FARBE_STROM)
                 }
             };
-
-            Oeffnen(besitzer, daten,
-                    Text_("BERG_REITER_STROM_ERG", "Strombedarf Ergebnisse"),
-                    Text_("BERG_REITER_STROM_MONAT", "Strombedarf monatlich"),
-                    Text_("BERG_REITER_STROM_GRAFIK", "Grafik Strombedarf"),
-                    Text_("BERG_GRP_STROM_MONAT", "Strombedarf monatlicher Verlauf:"),
-                    "Form_ErgStromverbraucher.btn_Help");
         }
 
         /// <summary>
@@ -95,6 +100,20 @@ namespace WindowsFormsApplication1
         /// <param name="titelZusatz">Zusatz hinter dem Titel; leer = ohne.</param>
         internal static void Zeigen(IWin32Window besitzer, SimulationWaermebedarf simulation,
                                     bool mitBrauchwasser, int startReiter = 0, string titelZusatz = "")
+        {
+            Oeffnen(besitzer, WaermeDaten(simulation, mitBrauchwasser, startReiter, titelZusatz),
+                    Text_("BERG_REITER_WAERME_ERG", "Wärmebedarf Ergebnisse"),
+                    Text_("BERG_REITER_MONAT", "Übersicht monatlich"),
+                    Text_("BERG_REITER_GRAFIK", "Grafik"),
+                    Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
+                    mitBrauchwasser ? "Form_ErgBrauchwasserwaerme.btn_Help"
+                                    : "Form_ErgProzesswaerme.btn_Help");
+        }
+
+        /// <summary>Der Feldsatz des Wärmebedarfs — seit iU9-W9.5 eigene Methode.</summary>
+        private static BedarfErgebnisDaten WaermeDaten(SimulationWaermebedarf simulation,
+                                                       bool mitBrauchwasser, int startReiter,
+                                                       string titelZusatz)
         {
             // BEFUND W8-B4: Der Brauchwasserwert wird NUR in der Brauchwassermaske durch
             // 1000 geteilt (Form_ErgBrauchwasserwaerme.Init:36 gegen
@@ -127,7 +146,7 @@ namespace WindowsFormsApplication1
                     Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), FARBE_JAHR);
             }
 
-            var daten = new BedarfErgebnisDaten
+            return new BedarfErgebnisDaten
             {
                 Sicht = ErgebnisSicht.Waerme,
                 MitBrauchwasser = mitBrauchwasser,
@@ -156,14 +175,6 @@ namespace WindowsFormsApplication1
                 },
                 Sichten = sichten
             };
-
-            Oeffnen(besitzer, daten,
-                    Text_("BERG_REITER_WAERME_ERG", "Wärmebedarf Ergebnisse"),
-                    Text_("BERG_REITER_MONAT", "Übersicht monatlich"),
-                    Text_("BERG_REITER_GRAFIK", "Grafik"),
-                    Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
-                    mitBrauchwasser ? "Form_ErgBrauchwasserwaerme.btn_Help"
-                                    : "Form_ErgProzesswaerme.btn_Help");
         }
 
         // =================================================================================
@@ -177,19 +188,10 @@ namespace WindowsFormsApplication1
         {
             BlazorDialogForm<BedarfErgebnisDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>
+            var werte = new Dictionary<string, object>(
+                Gaben(daten, reiterKennzahlen, reiterMonate, reiterGrafik, gruppeMonate,
+                      hilfeSchluessel))
             {
-                ["Daten"] = daten,
-                ["TitelText"] = Text_("BERG_TITEL", "Simulation Ergebnisse"),
-                ["ReiterKennzahlen"] = reiterKennzahlen,
-                ["ReiterMonate"] = reiterMonate,
-                ["ReiterGrafik"] = reiterGrafik,
-                ["GruppeMonate"] = gruppeMonate,
-                ["EinheitMonat"] = EINHEIT_MWH,
-                ["LabelJahresverlauf"] = Text_("BERG_SCH_JAHRESVERLAUF", "Jahresverlauf"),
-                ["Monatsnamen"] = Monatsnamen(),
-                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
-                ["HilfeSchluessel"] = hilfeSchluessel,
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
                     _ => { if (dlg != null) dlg.Schliessen(true); })
             };
@@ -202,6 +204,59 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn seit iU9-W9.5
+        /// auch die Ueberlagerung in <c>BedarfsProfileDialog</c> nehmen kann (Risiko R2).
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            BedarfErgebnisDaten daten, string reiterKennzahlen, string reiterMonate,
+            string reiterGrafik, string gruppeMonate, string hilfeSchluessel)
+        {
+            return new Dictionary<string, object>
+            {
+                ["Daten"] = daten,
+                ["TitelText"] = Text_("BERG_TITEL", "Simulation Ergebnisse"),
+                ["ReiterKennzahlen"] = reiterKennzahlen,
+                ["ReiterMonate"] = reiterMonate,
+                ["ReiterGrafik"] = reiterGrafik,
+                ["GruppeMonate"] = gruppeMonate,
+                ["EinheitMonat"] = EINHEIT_MWH,
+                ["LabelJahresverlauf"] = Text_("BERG_SCH_JAHRESVERLAUF", "Jahresverlauf"),
+                ["Monatsnamen"] = Monatsnamen(),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["HilfeSchluessel"] = hilfeSchluessel
+            };
+        }
+
+        /// <summary>
+        /// Der Parametersatz zum STROMBEDARF — dieselben Daten wie <see cref="Zeigen"/>,
+        /// nur ohne Fenster (iU9-W9.5).
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            SimulationStrombedarf simulation, int startReiter)
+        {
+            return Gaben(StromDaten(simulation, startReiter),
+                         Text_("BERG_REITER_STROM_ERG", "Strombedarf Ergebnisse"),
+                         Text_("BERG_REITER_STROM_MONAT", "Strombedarf monatlich"),
+                         Text_("BERG_REITER_STROM_GRAFIK", "Grafik Strombedarf"),
+                         Text_("BERG_GRP_STROM_MONAT", "Strombedarf monatlicher Verlauf:"),
+                         "Form_ErgStromverbraucher.btn_Help");
+        }
+
+        /// <summary>Der Parametersatz zum WAERMEBEDARF (iU9-W9.5).</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            SimulationWaermebedarf simulation, bool mitBrauchwasser, int startReiter,
+            string titelZusatz)
+        {
+            return Gaben(WaermeDaten(simulation, mitBrauchwasser, startReiter, titelZusatz),
+                         Text_("BERG_REITER_WAERME_ERG", "Wärmebedarf Ergebnisse"),
+                         Text_("BERG_REITER_MONAT", "Übersicht monatlich"),
+                         Text_("BERG_REITER_GRAFIK", "Grafik"),
+                         Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
+                         mitBrauchwasser ? "Form_ErgBrauchwasserwaerme.btn_Help"
+                                         : "Form_ErgProzesswaerme.btn_Help");
         }
 
         /// <summary>

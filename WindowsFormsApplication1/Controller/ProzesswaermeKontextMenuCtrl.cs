@@ -93,44 +93,20 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
-            Form_Prozesswaerme frm = new Form_Prozesswaerme();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_pwmodel.Clear();
-            frm.SetControls(m_szProjektname);
+            // iU9-W9.0d: derselbe JOIN wie im Startbild - jetzt EINMAL im Kern.
+            List<Z_ProjektProzesswaermeModel> liste =
+                Z_ProjektProzesswaermeCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
-                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Bezeichner, " +
-                " Z_Projekt_Prozesswaerme.Summe " +
-                "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
-                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
-                " where Z_Projekt_Prozesswaerme.ID_Projekt=" + m_ID_Projekt;
-                //+ " and Tab_Prozesswaerme.Prozessname='" + lvitem.Text +
-                //"' and Z_Projekt_Prozesswaerme.ID=" + lvitem.SubItems[3].Text;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
-                item.ID_Z = (int)rs.Read("ID");
-                item.ID_Projekt = m_ID_Projekt;
-                item.ID_Prozesswaerme = (int)rs.Read("ID_Prozesswaerme");
-                item.szProzessname = (string)rs.Read("Bezeichner");
-                item.Summe = (double)rs.Read("Summe");
-                frm.list_pwmodel.Add(item);
-            }
-                
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Prozesswaerme.
+            if (BedarfsProfileHuelle.Oeffnen(listView_Prozesswaerme, m_ID_Projekt,
+                                             m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
-                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
-                    
+                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, liste);
+
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
@@ -159,19 +135,17 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Prozesswaerme frm = new Form_Prozesswaerme();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_pwmodel.Clear();
-            frm.SetControls(m_szProjektname);
-            frm.m_ID_Projekt = m_ID_Projekt;
-        
-            frm.ShowDialog();
+            // "Hinzufuegen" startet mit einer LEEREN Liste und legt nur an (kein Del_).
+            List<Z_ProjektProzesswaermeModel> liste = new List<Z_ProjektProzesswaermeModel>();
 
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Prozesswaerme.
+            if (BedarfsProfileHuelle.Oeffnen(listView_Prozesswaerme, m_ID_Projekt,
+                                             m_szProjektname, liste))
             {
-                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
+                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;

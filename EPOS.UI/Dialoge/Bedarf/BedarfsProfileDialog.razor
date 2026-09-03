@@ -1,0 +1,661 @@
+﻿@* Die BEDARFSPROFILE eines Projekts (iU9-W9.5) - DRILLINGE.
+
+   VORBILD. DREI Masken mit demselben Aufbau: Views/Prozesswaerme/
+   Form_Prozesswaerme (592 Z., 21 + 4 Kartenzeilen), Views/Stromverbraucher/
+   Form_Stromverbraucher (422 Z., 22 + 3) und Views/Brauchwasser/
+   Form_Brauchwasser (452 Z., 21 + 4). Links "Ausgewaehlt im Projekt", rechts
+   der Katalog, dazwischen die beiden Pfeile, unten der Infoblock und die
+   Gruppe "Aendern des Jahresverbrauchs". Sie unterscheiden sich in Titel,
+   Beschriftungen, Zieltabelle, im Rechenweg der Simulation und in einer
+   Handvoll Meldungen - nicht im Aufbau. Die Auspraegung ist deshalb ein
+   Aufzaehlungstyp (BedarfsArt) und keine dritte Fassung; der
+   Feldkartenabgleich laeuft je AUSPRAEGUNG (Risiko R-W8-1).
+
+   VIER UEBERLAGERUNGEN aus Welle 8 statt vier Fenstern (Risiko R2): der
+   Ergebnisdialog (W8.2), der Stammkopf (W8.1) in den beiden Modi Bearbeiten
+   und Neu, und das Wochen-Stundenprofil (W8.3). Die Namensabfrage vor
+   "DB neu" ist die fuenfte.
+
+   DER 500-ms-BILDBLITZ ENTFAELLT. "Uebernehmen" zeigte ein Bild, hielt den
+   Oberflaechenfaden mit Thread.Sleep(500) an und blendete es wieder aus - in
+   einer WebView waere das ein eingefrorener Dialog. An seiner Stelle steht
+   eine Meldung (A-10, wie W8 A-5).
+
+   BEFUND W9-B7. Die Meldung bei ungueltigem Jahresverbrauch nennt beim
+   Stromverbraucher kWh, bei Prozess und Brauchwasser MWh - fuer DIESELBE
+   Groesse, die ueberall in MWh angezeigt wird. Woertlich uebernommen, Frage
+   an den Anwender.
+
+   "MONATLICHER VERLAUF" IST BIS ZUR ERSTEN SIMULATION GESPERRT - Bestand
+   (SetControls setzt Enabled = false, btn_Simulation gibt frei).
+
+   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
+   Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-auswahlspalten">
+
+        @* ------------------------------------------ links: Projektliste --- *@
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-abschnitt">@LabelProjektliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (BedarfsProfilZeile zeile in Zeilen)
+                        {
+                            BedarfsProfilZeile z = zeile;
+                            <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
+                        @onclick="BeiHinzu">@BtnHinzuText</button>
+                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                        @onclick="BeiEntfernen">@BtnEntfernenText</button>
+            </div>
+        </div>
+
+        @* ------------------------------------------ rechts: Katalog ------- *@
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-abschnitt">@LabelKatalog</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                            @if (MitTypspalte)
+                            {
+                                <th>@SpalteTyp</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (BedarfsKatalogZeile zeile in _katalog)
+                        {
+                            BedarfsKatalogZeile k = zeile;
+                            <tr class="@(k == _katalogzeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogzeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogzeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Name</td>
+                                @if (MitTypspalte)
+                                {
+                                    <td>@k.Typ</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="BeiDbAendern">@BtnDbAendernText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="() => _namensfrage = true">@BtnDbNeuText</button>
+                <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
+                        @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
+                @if (TypProfilGaben is not null)
+                {
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* --------------------------------------------- Infoblock -------------- *@
+    <Gruppenkopf Titel="@GruppeInfo">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_infoName" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelTyp" Wert="@_infoTyp" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_infoBeschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="3" />
+            <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@_jahresverbrauch" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelSumme" Wert="@Gesamtsumme" NurLesen="true" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --------------------------------------------- Jahresverbrauch -------- *@
+    <Gruppenkopf Titel="@GruppeVerbrauch">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelNeuerWert" Einheit="@EinheitVerbrauch"
+                        Feldname="@LabelNeuerWert" Wert="@_neuerWert"
+                        WertChanged="w => _neuerWert = w" />
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiSimulation">@BtnSimulationText</button>
+        <button type="button" class="epos-knopf" disabled="@(!_gerechnet)"
+                @onclick="BeiVerlauf">@BtnVerlaufText</button>
+    </div>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Ueberlagerung 1: der Ergebnisdialog (W8.2) ------------------------ *@
+    <Ueberlagerung Offen="@(_ergebnisGaben is not null)" Schliessbar="false"
+                   Titel="@BtnVerlaufText" Geschlossen="() => _ergebnisGaben = null">
+        <KindInhalt>
+            @if (_ergebnisGaben is not null)
+            {
+                <BedarfErgebnisDialog @attributes="_ergebnisGaben"
+                                      Geschlossen="_ => _ergebnisGaben = null" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: der Stammkopf (W8.1) ----------------------------- *@
+    <Ueberlagerung Offen="@(_typStammGaben is not null)" Schliessbar="false"
+                   Titel="@BtnDbAendernText" Geschlossen="TypStammFertig">
+        <KindInhalt>
+            @if (_typStammGaben is not null)
+            {
+                <TypStammDialog @attributes="_typStammGaben" Geschlossen="_ => TypStammFertig()" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 3: das Wochen-Stundenprofil (W8.3) ------------------ *@
+    <Ueberlagerung Offen="@_typProfilOffen" Schliessbar="false"
+                   Titel="@BtnTypAendernText" Geschlossen="() => _typProfilOffen = false">
+        <KindInhalt>
+            @if (_typProfilOffen && TypProfilGaben is not null)
+            {
+                <TypProfilDialog @attributes="TypProfilGaben()"
+                                 Geschlossen="_ => _typProfilOffen = false" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 4: die Namensabfrage vor "DB neu" ------------------- *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnDbNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnDbNeuText" FrageText="@LabelName"
+                          MeldungLeer="@MeldungNameFehlt" OkText="@OkText"
+                          AbbrechenText="@AbbrechenText" Geschlossen="NamensfrageFertig" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText" Frage="@Loeschfrage"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Welches der drei Bedarfsblätter. Sie bestimmt Beschriftungen UND Rechenweg.</summary>
+    [Parameter] public BedarfsArt Art { get; set; } = BedarfsArt.Prozesswaerme;
+
+    /// <summary>
+    /// Die Profile des Projekts — die Liste gehört der Hülle und wird AN ORT UND STELLE
+    /// bearbeitet.
+    /// </summary>
+    [Parameter] public List<BedarfsProfilZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Der Profilkatalog.</summary>
+    [Parameter] public Func<IReadOnlyList<BedarfsKatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Der Infoblock zu einem Profil.</summary>
+    [Parameter] public Func<string, BedarfsProfilInfo?>? Info { get; set; }
+
+    /// <summary>Die Summe der zwölf Monatswerte eines Katalogsatzes.</summary>
+    [Parameter] public Func<string, double>? Jahressumme { get; set; }
+
+    /// <summary>Legt aus einem Katalogsatz eine neue Zuordnung an („◀").</summary>
+    [Parameter] public Func<string, BedarfsProfilZeile?>? Aufnehmen { get; set; }
+
+    /// <summary>Löscht einen Katalogsatz; <c>false</c> = abgelehnt (z. B. ReadOnly).</summary>
+    [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// Zeigt <c>ProjektId</c> auf eine wirklich vorhandene Projektzeile? Im Neuanlagezweig
+    /// des Assistenten ist sie nur eine geratene <c>MAX(ID)+1</c>.
+    /// </summary>
+    [Parameter] public Func<bool>? ProjektGespeichert { get; set; }
+
+    /// <summary>
+    /// Legt den Jahresverbrauch VOR dem Simulationslauf in die Projektzeile — die
+    /// Simulation liest ihn von dort und skaliert damit das Katalogprofil.
+    /// </summary>
+    [Parameter] public Action<string, double>? SummeSichern { get; set; }
+
+    /// <summary>
+    /// Rechnet und liefert den Parametersatz des Ergebnisdialogs. Die Hülle hält das
+    /// Rechenobjekt; die Komponente kennt die Simulationsklassen nicht (Risiko R‑W9‑4).
+    /// </summary>
+    [Parameter]
+    public Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>?>? Simulieren { get; set; }
+
+    /// <summary>Der Parametersatz des Ergebnisdialogs zum LETZTEN Rechenstand.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ErgebnisGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Stammkopfes (W8.1): Name, Beschreibung, Typ und
+    /// <c>istNeu</c>.
+    /// </summary>
+    [Parameter]
+    public Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? TypStammGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Wochen-Stundenprofils (W8.3). Kein Delegat = kein Knopf.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? TypProfilGaben { get; set; }
+
+    /// <summary>Meldet der Hülle, dass sich die Zuordnungsliste geändert hat.</summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste, dafür der Vorschauhinweis.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Prozesswärme";
+    [Parameter] public string KopfbandText { get; set; } = "Prozesswärme";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählte Prozesse im Projekt";
+    [Parameter] public string LabelKatalog { get; set; } = "Datenbank Prozesswärme";
+    [Parameter] public string GruppeInfo { get; set; } = "Profil";
+    [Parameter] public string GruppeVerbrauch { get; set; } = "Ändern des Jahresverbrauchs";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelTyp { get; set; } = "Typ:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelJahresverbrauch { get; set; }
+        = "jährlicher Prozesswärmebedarf:";
+    [Parameter] public string LabelSumme { get; set; } = "Summe aller ausgew. Prozesse:";
+    [Parameter] public string LabelNeuerWert { get; set; } = "neuer Wert";
+    [Parameter] public string EinheitVerbrauch { get; set; } = "MWh";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteTyp { get; set; } = "Typ";
+
+    [Parameter] public string BtnHinzuText { get; set; } = "◀";
+    [Parameter] public string BtnEntfernenText { get; set; } = "▶";
+    [Parameter] public string BtnDbAendernText { get; set; } = "Prozess in DB ändern";
+    [Parameter] public string BtnDbNeuText { get; set; } = "Prozess in DB neu";
+    [Parameter] public string BtnDbLoeschenText { get; set; } = "Prozess in DB löschen";
+    [Parameter] public string BtnTypAendernText { get; set; } = "Typ in DB ändern";
+    [Parameter] public string BtnSimulationText { get; set; } = "Simulation";
+    [Parameter] public string BtnVerlaufText { get; set; } = "monatlicher Verlauf";
+    [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>„Bitte einen Eintrag aus der Liste auswählen!" (Simulation ohne Auswahl).</summary>
+    [Parameter] public string MeldungKeineAuswahl { get; set; }
+        = "Bitte einen Eintrag aus der Liste auswählen!";
+
+    /// <summary>„Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!"</summary>
+    [Parameter] public string MeldungKeineZeile { get; set; }
+        = "Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!";
+
+    /// <summary>
+    /// Der Text bei ungültigem Jahresverbrauch. Er nennt beim Stromverbraucher kWh, bei
+    /// Prozess und Brauchwasser MWh — <b>Befund W9‑B7</b>, wörtlich übernommen.
+    /// </summary>
+    [Parameter] public string MeldungWertUngueltig { get; set; }
+        = "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.";
+
+    /// <summary>Die Bestätigung nach „Übernehmen" — der Ersatz für den 500‑ms-Bildblitz.</summary>
+    [Parameter] public string MeldungUebernommen { get; set; } = "Jahresverbrauch übernommen.";
+
+    /// <summary>Der einmalige Hinweis im Assistenten bei noch nicht gespeichertem Projekt.</summary>
+    [Parameter] public string MeldungVorschau { get; set; }
+        = "Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den " +
+          "Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem " +
+          "Speichern des Projekts auf die Simulation aus.";
+
+    /// <summary>„Soll {0} wirklich gelöscht werden ?"</summary>
+    [Parameter] public string MeldungLoeschfrage { get; set; }
+        = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>„Prozess erfolgreich gelöscht." — nur die Prozessmaske meldete das.</summary>
+    [Parameter] public string MeldungGeloescht { get; set; } = "";
+
+    /// <summary>Meldung des Namensdialogs bei leerer Eingabe.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Prozesswaerme.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<BedarfsKatalogZeile> _katalog = Array.Empty<BedarfsKatalogZeile>();
+    private BedarfsProfilZeile? _gewaehlt;
+    private BedarfsKatalogZeile? _katalogzeile;
+
+    private string _infoName = "";
+    private string _infoBeschreibung = "";
+    private string _infoTyp = "";
+    private string _jahresverbrauch = "";
+    private double? _neuerWert;
+
+    private bool _gerechnet;
+    private bool _hinweisGezeigt;
+    private bool _namensfrage;
+    private bool _loeschfrage;
+    private bool _typProfilOffen;
+    private IReadOnlyDictionary<string, object>? _ergebnisGaben;
+    private IReadOnlyDictionary<string, object>? _typStammGaben;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public BedarfsProfilZeile? Gewaehlt => _gewaehlt;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public BedarfsKatalogZeile? Katalogzeile => _katalogzeile;
+
+    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Name im Infoblock — Prüfhilfe für die Tests.</summary>
+    public string InfoName => _infoName;
+
+    /// <summary>Der angezeigte Jahresverbrauch — Prüfhilfe für die Tests.</summary>
+    public string Jahresverbrauch => _jahresverbrauch;
+
+    /// <summary>Steht der Ergebnisdialog? Prüfhilfe für die Tests.</summary>
+    public bool ErgebnisOffen => _ergebnisGaben is not null;
+
+    /// <summary>Steht der Stammkopf? Prüfhilfe für die Tests.</summary>
+    public bool TypStammOffen => _typStammGaben is not null;
+
+    /// <summary>Steht das Wochen-Stundenprofil? Prüfhilfe für die Tests.</summary>
+    public bool TypProfilOffen => _typProfilOffen;
+
+    /// <summary>Der Stromverbraucherkatalog ist eine LISTE ohne Typspalte (Bestand).</summary>
+    private bool MitTypspalte => Art != BedarfsArt.Stromverbraucher;
+
+    private string Gesamtsumme => Summe().ToString("F2");
+
+    private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
+
+    protected override void OnInitialized()
+    {
+        KatalogLaden();
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogLaden()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<BedarfsKatalogZeile>();
+        if (_katalogzeile is not null && !_katalog.Contains(_katalogzeile)) _katalogzeile = null;
+    }
+
+    private double Summe()
+    {
+        double s = 0;
+        foreach (BedarfsProfilZeile z in Zeilen) s += z.Summe;
+        return s;
+    }
+
+    // =================================================================================
+    // Auswahl und Infoblock
+    // =================================================================================
+
+    /// <summary>
+    /// Eine PROJEKTZEILE zeigt den Jahresverbrauch DIESER Zuordnung
+    /// (<c>listView_*_SelectedIndexChanged</c>).
+    /// </summary>
+    private void ProjektzeileWaehlen(BedarfsProfilZeile z)
+    {
+        _gewaehlt = z;
+        _katalogzeile = null;
+        _jahresverbrauch = z.Summe.ToString("F2");
+        InfoSetzen(z.Name);
+    }
+
+    /// <summary>
+    /// Eine KATALOGZEILE zeigt die Summe der zwölf Monatswerte
+    /// (<c>listBox_*_DB_SelectedIndexChanged</c>).
+    /// </summary>
+    private void KatalogzeileWaehlen(BedarfsKatalogZeile k)
+    {
+        _katalogzeile = k;
+        _gewaehlt = null;
+        _jahresverbrauch = (Jahressumme?.Invoke(k.Name) ?? 0).ToString("F2");
+        InfoSetzen(k.Name);
+    }
+
+    private void InfoSetzen(string name)
+    {
+        BedarfsProfilInfo? info = Info?.Invoke(name);
+        if (info is null) return;
+
+        _infoName = info.Name;
+        _infoBeschreibung = info.Beschreibung;
+        _infoTyp = info.Typ;
+    }
+
+    // =================================================================================
+    // Uebernehmen und Entfernen
+    // =================================================================================
+
+    private void BeiHinzu()
+    {
+        if (_katalogzeile is null || Aufnehmen is null) return;
+
+        BedarfsProfilZeile? neu = Aufnehmen(_katalogzeile.Name);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        ProjektzeileWaehlen(neu);
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    private void BeiEntfernen()
+    {
+        if (_gewaehlt is null) return;
+
+        Zeilen.Remove(_gewaehlt);
+        _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
+
+        if (_gewaehlt is not null) ProjektzeileWaehlen(_gewaehlt);
+        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// „Übernehmen" — Zeile markiert UND Wert ≥ 0 sind Pflicht
+    /// (<c>btn_neuerWert_Click</c>). Der 500‑ms-Bildblitz des Vorläufers ist eine Meldung
+    /// geworden (A-10).
+    /// </summary>
+    private void BeiUebernehmen()
+    {
+        if (_gewaehlt is null || _neuerWert is null)
+        {
+            Melden(MeldungKeineZeile, WarnStufe.Warnung);
+            return;
+        }
+        if (_neuerWert.Value < 0)
+        {
+            Melden(MeldungWertUngueltig, WarnStufe.Warnung);
+            return;
+        }
+
+        _gewaehlt.Summe = _neuerWert.Value;
+        _jahresverbrauch = _neuerWert.Value.ToString("F2");
+        Geaendert?.Invoke();
+        Melden(MeldungUebernommen, WarnStufe.Hinweis);
+    }
+
+    // =================================================================================
+    // Simulation
+    // =================================================================================
+
+    /// <summary>
+    /// Legt den eingegebenen Jahresverbrauch VOR dem Lauf in die Projektzeile —
+    /// <c>SummeFuerSimulationSichern</c> der Prozess- und der Strommaske, und der
+    /// eingebettete Zweig der Brauchwassermaske (<c>btn_Simulation_Click</c>:290).
+    ///
+    /// <para><b>Die Brauchwassermaske prüft NICHT, ob das Projekt gespeichert ist</b>, und
+    /// zeigt deshalb auch keinen Hinweis. Wörtlich übernommen.</para>
+    /// </summary>
+    private void SummeVorLaufSichern()
+    {
+        if (!Wizard || _neuerWert is null || _infoName.Length == 0) return;
+
+        if (Art == BedarfsArt.Brauchwasser)
+        {
+            SummeSichern?.Invoke(_infoName, _neuerWert.Value);
+            return;
+        }
+
+        if (ProjektGespeichert is null || ProjektGespeichert())
+        {
+            SummeSichern?.Invoke(_infoName, _neuerWert.Value);
+            return;
+        }
+
+        if (_hinweisGezeigt) return;
+        _hinweisGezeigt = true;
+        Melden(MeldungVorschau, WarnStufe.Hinweis);
+    }
+
+    private void BeiSimulation()
+    {
+        // Der Vorlaeufer zeigte seine Hinweise als MessageBox - sie waren nach dem
+        // Wegklicken weg. Ein Warnbanner bleibt stehen; also raeumt der naechste Lauf auf.
+        _meldung = "";
+
+        if (_infoName.Length == 0)
+        {
+            Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
+            return;
+        }
+        if (Simulieren is null) return;
+
+        SummeVorLaufSichern();
+
+        // Prozess und Strom rechnen ALLE Zuordnungen, Brauchwasser NUR die gewaehlte
+        // (btn_Simulation_Click:296-298 legt genau einen Namen in die Liste).
+        var namen = new List<string>();
+        if (Art == BedarfsArt.Brauchwasser) namen.Add(_infoName);
+        else foreach (BedarfsProfilZeile z in Zeilen) namen.Add(z.Name);
+
+        IReadOnlyDictionary<string, object>? gaben = Simulieren(namen);
+        if (gaben is null) return;
+
+        _gerechnet = true;
+        _ergebnisGaben = gaben;
+    }
+
+    private void BeiVerlauf()
+    {
+        if (!_gerechnet || ErgebnisGaben is null) return;
+        _ergebnisGaben = ErgebnisGaben();
+    }
+
+    // =================================================================================
+    // Katalog
+    // =================================================================================
+
+    private void BeiDbAendern()
+    {
+        if (TypStammGaben is null) return;
+        if (_infoName.Length == 0) { Melden(MeldungKeineAuswahl, WarnStufe.Warnung); return; }
+
+        _meldung = "";
+        _typStammGaben = TypStammGaben(_infoName, _infoBeschreibung, _infoTyp, false);
+    }
+
+    private void NamensfrageFertig(string? name)
+    {
+        _namensfrage = false;
+        if (string.IsNullOrEmpty(name) || TypStammGaben is null) return;
+
+        _typStammGaben = TypStammGaben(name, "", "", true);
+    }
+
+    /// <summary>
+    /// Nach dem Stammkopf laden alle drei Vorläufer Projektliste UND Katalog neu
+    /// (<c>SetControls</c> + <c>SetDBList</c>).
+    /// </summary>
+    private void TypStammFertig()
+    {
+        _typStammGaben = null;
+        KatalogLaden();
+        if (_infoName.Length > 0) InfoSetzen(_infoName);
+    }
+
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogzeile.Name)) return;
+
+        _katalogzeile = null;
+        KatalogLaden();
+        if (MeldungGeloescht.Length > 0) Melden(MeldungGeloescht, WarnStufe.Hinweis);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _ergebnisGaben is not null || _typStammGaben is not null ||
+            _typProfilOffen || _namensfrage || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}
