@@ -28722,5 +28722,113 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Pufferspeicher ähnelt.
+        /// </summary>
+        public static string PSPD_TITEL {
+            get {
+                return ResourceManager.GetString("PSPD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Pufferspeicher ein ähnelt.
+        /// </summary>
+        public static string PSPD_KOPFBAND {
+            get {
+                return ResourceManager.GetString("PSPD_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählt im Projekt ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher aus Datenbank ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Hersteller: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Volumen: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_FILTER_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_FILTER_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_TYP {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverluste: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_VERLUSTE {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen [l]: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten [€]: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ausgewählte Pufferspeicher wurde in den Stammdaten nicht gefunden. ähnelt.
+        /// </summary>
+        public static string PSPD_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("PSPD_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
     }
 }
