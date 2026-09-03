@@ -111,7 +111,7 @@ KI-Kontexteintrag; Publish-Probe vollständig.
 
 *Grundfunktion*
 
-- [ ] `Form_Kosten` → Reiter Energie → **„Energieträger anlegen"** öffnet den Dialog, mittig über
+- [ ] Startseite **Kosten** → Knopf **„Energieträgerverwaltung…"** (Fenster „Kosteneditor") → Reiter **„Energiekosten"** → Knopf **„➕ Hinzufügen…"** neben der Energieträgerliste öffnet den Dialog, mittig über
       dem Elternfenster, feste Größe, ohne Minimier-, Maximier- und Taskleistenknopf
 - [ ] **Kein weißes Aufblitzen** beim Öffnen (die Hülle steht auf der Themafläche `#f5f4ef`, bis
       die WebView2 aufgebaut ist)
