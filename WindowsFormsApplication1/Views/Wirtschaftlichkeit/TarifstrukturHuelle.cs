@@ -49,25 +49,11 @@ namespace WindowsFormsApplication1
         /// Aufrufer neu (Bestandsverhalten von <c>Form_Tarifstruktur.Gespeichert</c>).</returns>
         internal static bool Oeffnen(IWin32Window besitzer, int idStamm, TarifSicht sicht)
         {
-            var ctrl = new WirtschaftlichkeitCtrl();
-            TarifParameter tarif = ctrl.LadeTarif(idStamm);
-
             bool gespeichert = false;
             BlazorDialogForm<TarifstrukturDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>
+            var werte = new Dictionary<string, object>(Gaben(idStamm, sicht))
             {
-                ["Tarif"] = tarif,
-                ["Sicht"] = sicht,
-
-                // Der Schreibweg. Die Komponente hat den Bildschirmzustand
-                // unmittelbar davor in denselben Satz uebernommen.
-                ["Speichern"] = new Func<bool>(() =>
-                {
-                    try { return ctrl.SpeichereTarif(tarif); }
-                    catch { return false; }
-                }),
-
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
                 {
                     gespeichert = ok;
@@ -84,6 +70,33 @@ namespace WindowsFormsApplication1
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
             return gespeichert;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// der Tarifdialog in einer <c>Ueberlagerung</c> darin — dasselbe
+        /// Fenster, dieselbe WebView (Risiko R2). <c>Geschlossen</c> setzt der
+        /// Wirt.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(int idStamm, TarifSicht sicht)
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            TarifParameter tarif = ctrl.LadeTarif(idStamm);
+
+            return new Dictionary<string, object>
+            {
+                ["Tarif"] = tarif,
+                ["Sicht"] = sicht,
+
+                // Der Schreibweg. Die Komponente hat den Bildschirmzustand
+                // unmittelbar davor in denselben Satz uebernommen.
+                ["Speichern"] = new Func<bool>(() =>
+                {
+                    try { return ctrl.SpeichereTarif(tarif); }
+                    catch { return false; }
+                })
+            };
         }
 
         /// <summary>Fenstertitel — derselbe Text wie in der Komponente.</summary>

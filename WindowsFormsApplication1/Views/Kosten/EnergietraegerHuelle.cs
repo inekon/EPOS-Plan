@@ -88,14 +88,47 @@ namespace WindowsFormsApplication1
             new EnergietraegerHuelle(projektId).Zeigen(besitzer, traegerId);
         }
 
+        /// <summary>
+        /// Der PARAMETERSATZ der Energieträgerverwaltung (iU9-W5.4). Seit die
+        /// Kostenseite selbst eine Razor-Komponente ist, erscheint sie in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
+        ///
+        /// <para>Die Hüllen-INSTANZ hält den Bearbeitungsstand; sie lebt über
+        /// die Rückrufe des Satzes so lange wie der Bereich.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(int projektId, int traegerId = 0)
+        {
+            return new EnergietraegerHuelle(projektId).GabenIntern(traegerId);
+        }
+
         private void Zeigen(IWin32Window besitzer, int traegerId)
+        {
+            BlazorDialogForm<EnergietraegerDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(GabenIntern(traegerId))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
+                {
+                    if (dlg != null) dlg.Schliessen(ok);
+                })
+            };
+
+            dlg = new BlazorDialogForm<EnergietraegerDialog>(
+                T("KDLG_ET_TITEL", "Energieträgerverwaltung"), FENSTER, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        private IReadOnlyDictionary<string, object> GabenIntern(int traegerId)
         {
             ListeLaden();
             _katalogJahr = KatalogjahrErmitteln(_projektId, out _unternehmensart, out _co2PreisProjekt);
 
-            BlazorDialogForm<EnergietraegerDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Liste"] = Listeneintraege(),
                 ["TraegerVorwahl"] = traegerId > 0 ? (int?)traegerId : null,
@@ -188,21 +221,8 @@ namespace WindowsFormsApplication1
                 ["JaText"] = T("KKOMP_BTN_JA", "Ja"),
                 ["NeinText"] = T("KKOMP_BTN_NEIN", "Nein"),
                 ["VorlageGespeichert"] = " — " + T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr")
-                    .Replace("{0:HH:mm}", "{0}"),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
+                    .Replace("{0:HH:mm}", "{0}")
             };
-
-            dlg = new BlazorDialogForm<EnergietraegerDialog>(
-                T("KDLG_ET_TITEL", "Energieträgerverwaltung"), FENSTER, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         // =====================================================================

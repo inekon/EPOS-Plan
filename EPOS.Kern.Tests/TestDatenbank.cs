@@ -1,9 +1,23 @@
 ﻿using System;
 using System.IO;
 using WindowsFormsApplication1;
+using Xunit;
 
 namespace EPOS.Kern.Tests
 {
+    /// <summary>
+    /// Die Testsammlung aller Faelle, die eine ARBEITSKOPIE der Datenbank brauchen.
+    ///
+    /// <para><b>Warum sie noetig ist.</b> <see cref="DataRepository.PfadUeberschreibung"/>
+    /// ist ein STATISCHES Feld - es gibt genau eines fuer den ganzen Testlauf. xunit
+    /// faehrt Testklassen standardmaessig NEBENEINANDER; zwei Klassen, die beide ihre
+    /// eigene Arbeitskopie einlegen, ueberschreiben sich dabei gegenseitig den Pfad, und
+    /// eine von beiden schreibt in die Kopie der anderen. Dieselbe Sammlung heisst: eine
+    /// nach der anderen.</para>
+    /// </summary>
+    [CollectionDefinition("Testdatenbank")]
+    public sealed class TestdatenbankSammlung { }
+
     /// <summary>
     /// Eine ARBEITSKOPIE der Testdatenbank fuer die Dauer einer Testklasse (iU9-W6.0a).
     ///

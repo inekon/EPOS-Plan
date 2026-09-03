@@ -1,0 +1,424 @@
+﻿@* Die SEITE "Uebersicht" des Reiters "Berichte & Kosten" (iU9-W5.5).
+
+   Vorbild: Views/BerichteKosten/UcBkUebersicht.cs (1 552 Z., K4).
+
+   AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl,
+   Filter "nur Stammprojekte", die Liste aus Stamm und Varianten mit
+   Simulationsstand, daneben Bezeichnerfeld und die drei Knoepfe (Variante
+   anlegen, loeschen, Simulation starten). Darunter der Komponentenbereich -
+   auf der Stammzeile die GEGENUEBERSTELLUNG aller Versionen, auf einer
+   Variantenzeile deren UNTERSCHIEDE zum Stamm samt Aktionsspalte.
+
+   DIE SEITE VERGLEICHT NICHT SELBST. Beide Ansichten kommen als fertige
+   Zeilen aus der Huelle (ProjektDetails + AbweichungsErmittler - dieselbe
+   Diff-Welt, die auch der Bericht verwendet). Es gibt bewusst keine zweite
+   Vergleichslogik.
+
+   DIE AKTIONSSPALTE traegt einen Knopf, wo die Uebernahme greift, und einen
+   grauen Strich mit Begruendung, wo nicht - wortgleich zum Vorlaeufer: "Ein
+   Knopf, der beim Druecken nur erklaert, warum er nichts tut, waere die
+   schlechtere Auskunft."
+
+   DER UEBERNAHMEDIALOG STEHT IN EINER UEBERLAGERUNG (iU9-W5.1 baute ihn als
+   BkUebernahmeDialog; die Huelle zeigte ihn bis hierher in einem eigenen
+   Fenster). Ein zweites Fenster waere aus einer Blazor-SEITE heraus eine
+   zweite WebView (Risiko R2).
+
+   DIE ZWEI MESSAGEBOX-RUECKFRAGEN (Variante loeschen, Simulationsprotokoll)
+   werden zu einer Rueckfrage und einer Meldung im Fenster. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+@using EPOS.UI.Dialoge.Berichte
+
+<div class="epos-seite" tabindex="-1" @ref="_wurzel">
+
+    <div class="epos-seite-kopf">
+        <span class="epos-seite-titel">@TitelText</span>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    @* ------------------------------------------------ Stamm und Filter *@
+    <div class="epos-seite-zeile">
+        <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
+                     Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
+        <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
+                  WertChanged="BeiFilter" />
+    </div>
+
+    @* -------------------------------------------------------- Die Liste *@
+    <div class="epos-seite-spalten">
+        <section class="epos-seite-spalte">
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-variantentabelle">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">@SpalteArt</th>
+                            <th scope="col">@SpalteBezeichner</th>
+                            <th scope="col">@SpalteProjektname</th>
+                            <th scope="col">@SpalteSimulation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (VarianteZeile z in _stand.Zeilen)
+                        {
+                            VarianteZeile zeile = z;
+                            <tr class="@(zeile.IdProjekt == _stand.MarkierteId ? "epos-zeile--markiert" : "")">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(zeile.IdProjekt == _stand.MarkierteId)"
+                                                Kurztext="@WahlKurztext"
+                                                Gewaehltwerden="@(() => BeiZeile(zeile))" />
+                                </td>
+                                <td>@zeile.Art</td>
+                                <td>@zeile.Bezeichner</td>
+                                <td>@zeile.Projektname</td>
+                                <td><span class="@(zeile.Auffaellig ? "epos-veraltet" : "")">@zeile.SimStand</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        @* ------------------------------------------------- Die Verwaltung *@
+        <section class="epos-seite-spalte epos-variantenpflege">
+            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                      WertChanged="@(w => _bezeichner = w)" />
+            <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich)"
+                    @onclick="Anlegen">@AnlegenText</button>
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
+                    @onclick="LoeschenFragen">@LoeschenText</button>
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
+                    @onclick="Simulieren">@SimulierenText</button>
+        </section>
+    </div>
+
+    @* --------------------------------------------- Komponentenbereich *@
+    <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+
+    @if (_stand.Vergleich.Count > 0)
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-vergleichstabelle">
+                <thead>
+                    <tr>
+                        @foreach (string kopf in _stand.Spalten)
+                        {
+                            <th scope="col">@kopf</th>
+                        }
+                        @if (_mitAktionsspalte)
+                        {
+                            <th scope="col">@SpalteAktion</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (VergleichZeile v in _stand.Vergleich)
+                    {
+                        VergleichZeile zeile = v;
+                        <tr>
+                            <th scope="row" class="epos-vergleich-gewerk">@zeile.Gewerk</th>
+                            <td>@zeile.Merkmal</td>
+                            @for (int i = 0; i < zeile.Zellen.Count; i++)
+                            {
+                                int spalte = i;
+                                <td class="epos-zahl" title="@Kurztext(zeile, spalte)">@zeile.Zellen[spalte]</td>
+                            }
+                            @if (_mitAktionsspalte)
+                            {
+                                <td class="epos-zellenaktionen">
+                                    @if (zeile.MitAktion && string.IsNullOrEmpty(zeile.Sperrgrund)
+                                         && UebernahmeGaben is not null)
+                                    {
+                                        <button type="button" class="epos-knopf"
+                                                title="@zeile.AktionKurztext"
+                                                @onclick="@(() => UebernahmeOeffnen(zeile))">@UebernehmenText</button>
+                                    }
+                                    else if (zeile.MitAktion)
+                                    {
+                                        <span class="epos-gesperrt" title="@zeile.Sperrgrund">—</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_status))
+    {
+        <p class="epos-status">@_status</p>
+    }
+
+    @* ---------------------------------------------------- Unterdialoge *@
+    <Ueberlagerung Offen="@(_gaben is not null)" Schliessbar="false"
+                   Titel="@UebernehmenText" Geschlossen="() => UebernahmeFertig(null)">
+        <KindInhalt>
+            @if (_gaben is not null)
+            {
+                <BkUebernahmeDialog @attributes="_gaben" Geschlossen="UebernahmeFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
+                TitelText="@LoeschenText" Beantwortet="LoeschenBeantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    // =====================================================================
+    // Datenseite
+    // =====================================================================
+
+    /// <summary>Liefert den Anzeigestand (Vorbild <c>LadeProjekte</c>/<c>LadeAuswahl</c>).</summary>
+    [Parameter] public Func<UebersichtStand>? Laden { get; set; }
+
+    /// <summary>Das Stammprojekt hat gewechselt — die Hülle merkt es sich und meldet es weiter.</summary>
+    [Parameter] public Action<int>? StammGewechselt { get; set; }
+
+    /// <summary>Der Filter „nur Stammprojekte" hat gewechselt.</summary>
+    [Parameter] public Action<bool>? FilterGewechselt { get; set; }
+
+    /// <summary>Eine Listenzeile wurde markiert (Projekt-Id).</summary>
+    [Parameter] public Action<int>? ZeileMarkiert { get; set; }
+
+    /// <summary>Legt eine Variante an und liefert die Meldung.</summary>
+    [Parameter] public Func<string, string>? VarianteAnlegen { get; set; }
+
+    /// <summary>Die Frage vor dem Löschen; leer = nicht möglich.</summary>
+    [Parameter] public Func<string>? LoeschFrage { get; set; }
+
+    /// <summary>Löscht die markierte Variante und liefert die Meldung.</summary>
+    [Parameter] public Func<string>? VarianteLoeschen { get; set; }
+
+    /// <summary>
+    /// Simuliert Stamm und markierte Variante. Der Parameter ist der
+    /// Fortschrittsmelder; das Protokoll steht danach in
+    /// <see cref="LaufErgebnis.Meldung"/>.
+    /// </summary>
+    [Parameter] public Func<Action<Laufschritt>, Task<LaufErgebnis>>? Simulation { get; set; }
+
+    /// <summary>Der Parametersatz des Übernahmedialogs zu einer Zeile.</summary>
+    [Parameter] public Func<VergleichZeile, IReadOnlyDictionary<string, object>?>? UebernahmeGaben { get; set; }
+
+    /// <summary>Führt die Übernahme aus und liefert die Meldung.</summary>
+    [Parameter] public Func<VergleichZeile, int, string>? Uebernehmen { get; set; }
+
+    /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBkUebersicht.btn_Help";
+
+    // ---- Texte ----------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Übersicht";
+    [Parameter] public string LabelStamm { get; set; } = "Stammprojekt:";
+    [Parameter] public string LabelNurStaemme { get; set; } = "nur Stammprojekte";
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+    [Parameter] public string SpalteBezeichner { get; set; } = "Bezeichner";
+    [Parameter] public string SpalteProjektname { get; set; } = "Projektname";
+    [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
+    [Parameter] public string SpalteAktion { get; set; } = "Aktion";
+    [Parameter] public string AnlegenText { get; set; } = "Variante anlegen";
+    [Parameter] public string LoeschenText { get; set; } = "Variante löschen";
+    [Parameter] public string SimulierenText { get; set; } = "Simulation starten";
+    [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+    [Parameter] public string WahlKurztext { get; set; } = "Version wählen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldung „abgebrochen".</summary>
+    [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private UebersichtStand _stand = new();
+    private string _bezeichner = "";
+    private string _status = "";
+    private string _meldung = "";
+    private bool _laeuft;
+
+    private IReadOnlyDictionary<string, object>? _gaben;
+    private VergleichZeile? _uebernahmezeile;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    /// <summary>Statuszeile (Prüfhilfe).</summary>
+    public string Status => _status;
+
+    /// <summary>Die markierte Version (Prüfhilfe).</summary>
+    public int MarkierteId => _stand.MarkierteId;
+
+    /// <summary>Steht der Übernahmedialog? (Prüfhilfe)</summary>
+    public bool UebernahmeOffen => _gaben is not null;
+
+    /// <summary>Trägt der Komponentenbereich die Aktionsspalte? (Prüfhilfe)</summary>
+    public bool MitAktionsspalte => _mitAktionsspalte;
+
+    private bool _mitAktionsspalte;
+
+    protected override void OnInitialized() => Auffrischen();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Liest Auswahl, Liste und Komponentenbereich neu ein.</summary>
+    public void Auffrischen()
+    {
+        _stand = Laden?.Invoke() ?? new UebersichtStand();
+        _bezeichner = _stand.Bezeichnervorschlag ?? "";
+        _status = _stand.Statuszeile ?? "";
+
+        // Die Aktionsspalte gehoert zur UNTERSCHIEDSansicht - erkennbar
+        // daran, dass wenigstens eine Zeile sie traegt.
+        _mitAktionsspalte = false;
+        foreach (VergleichZeile v in _stand.Vergleich)
+            if (v.MitAktion) { _mitAktionsspalte = true; break; }
+
+        StateHasChanged();
+    }
+
+    private static string Kurztext(VergleichZeile z, int spalte)
+        => spalte < z.Kurztexte.Count ? z.Kurztexte[spalte] : "";
+
+    // =====================================================================
+    // Auswahl
+    // =====================================================================
+
+    private void BeiStamm(int? id)
+    {
+        if (id is null) return;
+        StammGewechselt?.Invoke(id.Value);
+        Auffrischen();
+    }
+
+    private void BeiFilter(bool an)
+    {
+        FilterGewechselt?.Invoke(an);
+        Auffrischen();
+    }
+
+    private void BeiZeile(VarianteZeile z)
+    {
+        ZeileMarkiert?.Invoke(z.IdProjekt);
+        Auffrischen();
+    }
+
+    // =====================================================================
+    // Variante anlegen und löschen
+    // =====================================================================
+
+    private void Anlegen()
+    {
+        if (VarianteAnlegen is null) return;
+
+        string meldung = VarianteAnlegen(_bezeichner ?? "");
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+    }
+
+    private void LoeschenFragen()
+    {
+        if (LoeschFrage is null) return;
+        string frage = LoeschFrage();
+        if (string.IsNullOrEmpty(frage)) return;
+        _loeschfrage = frage;
+        _loeschfrageOffen = true;
+    }
+
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || VarianteLoeschen is null) return;
+
+        string meldung = VarianteLoeschen();
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+    }
+
+    // =====================================================================
+    // Simulation
+    // =====================================================================
+
+    private async Task Simulieren()
+    {
+        if (_laeuft || Simulation is null) return;
+
+        _laeuft = true;
+        _meldung = "";
+        StateHasChanged();
+        try
+        {
+            LaufErgebnis erg = await Simulation(Melden);
+
+            if (erg.Abgebrochen) { _status = StatusAbgebrochen; return; }
+
+            Auffrischen();
+
+            // Der Vorlaeufer zeigte das Protokoll als MessageBox; hier steht
+            // es als Meldung im Fenster.
+            _meldung = erg.Meldung ?? "";
+            if (!string.IsNullOrEmpty(erg.Statuszeile)) _status = erg.Statuszeile;
+        }
+        finally
+        {
+            _laeuft = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Melden(Laufschritt s)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _status = s.Gesamt > 0 ? $"({s.Aktuell}/{s.Gesamt}) {s.Text}" : s.Text;
+            StateHasChanged();
+        });
+    }
+
+    // =====================================================================
+    // Übernahme
+    // =====================================================================
+
+    private void UebernahmeOeffnen(VergleichZeile z)
+    {
+        if (UebernahmeGaben is null) return;
+
+        IReadOnlyDictionary<string, object>? gaben = UebernahmeGaben(z);
+        if (gaben is null) return;
+
+        _uebernahmezeile = z;
+        _gaben = gaben;
+    }
+
+    private void UebernahmeFertig(BkUebernahmeErgebnis? ergebnis)
+    {
+        VergleichZeile? zeile = _uebernahmezeile;
+        _uebernahmezeile = null;
+        _gaben = null;
+
+        if (ergebnis is null || zeile is null || Uebernehmen is null) return;
+
+        string meldung = Uebernehmen(zeile, ergebnis.QuelleId);
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+    }
+}

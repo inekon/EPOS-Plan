@@ -103,12 +103,6 @@ namespace WindowsFormsApplication1
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
 
-            { "UcBericht",                   B_BERICHT },
-            { "Form_BkUebernahme",           B_BERICHT },
-            { "UcBerichteKosten",            B_BERICHT },
-            { "UcBkKosten",                  B_BERICHT },
-            { "UcBkUebersicht",              B_BERICHT },
-
             { "Form_BHKWAdmin",              B_BHKW },
             { "Form_BHKWEing",               B_BHKW },
 
@@ -215,7 +209,6 @@ namespace WindowsFormsApplication1
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
 
-            { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
             { "WizardParent",                B_ASSISTENT },
             { "Wizard_Projekt",              B_ASSISTENT },

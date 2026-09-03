@@ -80,6 +80,43 @@ namespace WindowsFormsApplication1
         private static BhkwWirtschaftlichkeitErgebnis EinmalZeigen(
             IWin32Window besitzer, int idStamm, List<WirtschaftlichkeitErgebnis> ergebnisseAusLauf)
         {
+            BhkwWirtschaftlichkeitErgebnis ergebnis = null;
+            BlazorDialogForm<BhkwWirtschaftlichkeitDialog> dlg = null;
+
+            string titel;
+            var werte = new Dictionary<string, object>(
+                Gaben(idStamm, ergebnisseAusLauf, out titel))
+            {
+                ["Geschlossen"] = EventCallback.Factory
+                    .Create<BhkwWirtschaftlichkeitErgebnis>(new object(), e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
+                    })
+            };
+
+            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
+            dlg = new BlazorDialogForm<BhkwWirtschaftlichkeitDialog>(
+                titel, new Size(FENSTER_BREITE, hoehe), werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
+        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung in
+        /// die Tarifsicht wertet er selbst aus (<c>BhkwSprung</c>).
+        /// </summary>
+        /// <param name="titel">Der Fenster- bzw. Bereichstitel.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int idStamm, List<WirtschaftlichkeitErgebnis> ergebnisseAusLauf, out string titel)
+        {
             var ctrl = new WirtschaftlichkeitCtrl();
             var anlagenCtrl = new KwkgAnlagenCtrl();
             var katalog = new GesetzKatalog();
@@ -100,10 +137,9 @@ namespace WindowsFormsApplication1
             try { doppelpflege.AddRange(KohaerenzPruefung.Pruefe(idStamm, null)); }
             catch { }
 
-            BhkwWirtschaftlichkeitErgebnis ergebnis = null;
-            BlazorDialogForm<BhkwWirtschaftlichkeitDialog> dlg = null;
+            titel = Titel(stammName);
 
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["IdStamm"] = idStamm,
                 ["StammName"] = stammName,
@@ -128,25 +164,8 @@ namespace WindowsFormsApplication1
 
                 // Der Schreibweg. Rueckgabe = Zahl der gescheiterten Saetze; die
                 // Komponente macht daraus ihre Statuszeile bzw. ihr Warnbanner.
-                ["Speichern"] = new Func<int>(() => Speichern(anlagenCtrl, ctrl, anlagen, parameter)),
-
-                ["Geschlossen"] = EventCallback.Factory
-                    .Create<BhkwWirtschaftlichkeitErgebnis>(new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
+                ["Speichern"] = new Func<int>(() => Speichern(anlagenCtrl, ctrl, anlagen, parameter))
             };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<BhkwWirtschaftlichkeitDialog>(
-                Titel(stammName), new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
         }
 
         /// <summary>

@@ -500,7 +500,7 @@ public class KostenKomponenteDialogTests : BunitContext
     // =====================================================================
 
     [Fact]
-    public void Der_Abschnitt_Ertrag_Bonus_erscheint_nur_wenn_die_Huelle_ihn_meldet()
+    public void Der_Reiter_Ertrag_Bonus_erscheint_nur_wenn_die_Huelle_ihn_meldet()
     {
         KostenKomponenteStand mit = Standard();
         mit.ErtragSichtbar = true;
@@ -513,7 +513,15 @@ public class KostenKomponenteDialogTests : BunitContext
         var ohne = Zeige();
         var cut = Zeige(stand: mit);
 
-        Assert.Empty(ohne.FindAll(".epos-ertragbonus"));
+        // iU9-W5.0 (Nachzug A-2): Der Vorlaeufer ENTFERNTE die zweite
+        // Reiterseite zur Laufzeit (ErtragReiterSteuern); hier fehlt der
+        // zweite Reiterknopf.
+        Assert.Single(ohne.FindAll(".epos-reiter-knopf"));
+        Assert.Equal(2, cut.FindAll(".epos-reiter-knopf").Count);
+        Assert.Equal("Ertrag/Bonus", cut.FindAll(".epos-reiter-knopf")[1].TextContent.Trim());
+
+        Assert.Empty(cut.FindAll(".epos-ertragbonus"));   // erst nach dem Wechsel
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
         Assert.Single(cut.FindAll(".epos-ertragbonus"));
     }
 

@@ -48,6 +48,9 @@ entgegen — sie ist damit austauschbar.
 | `Rueckfrage` | Ja / Nein / Abbrechen über der `Ueberlagerung` | die ≈ 500 `MessageBox`-Rückfragen des Bestands |
 | `Zeilenraster` | Spaltenkopf, Bearbeitungszeilen, Abschlusszeile, Summenfuß — CSS-Raster mit `display:contents` | `Views/Kosten/Form_KostenKomponente` (pnlRasterKopf + pnlZeilen + pnlFuss) |
 | `Mehrfachauswahl` | Liste mit Haken samt „Alle"/„Keine" | `CheckedListBox` (`Form_Energietraeger.KatalogUebernahme`) |
+| `Reiter` + `Reiterblatt` | Reiterleiste; die Blätter melden sich selbst an, ein ungewähltes wird **gar nicht** gezeichnet (`role="tablist"/"tab"/"tabpanel"`, ←/→, Pos1/Ende, 44 px) | die 21 `TabControl` mit 74 `TabPage` |
+| `Kachelraster` | Reihe gleich breiter Karten, `auto-fit`/`minmax` statt gerechneter Prozentspalten | `UcBkKosten.pnlKacheln`, `UcWirtschaftlichkeit.KachelnBauen` |
+| `Kennzahlkachel` | Überschrift, großer Wert, leise Herkunftszeile — **Anzeige, kein Knopf**; leerer Wert = „—" | `UcBkKosten.Kachel` |
 
 ## Standards (`Standards/`)
 
@@ -82,6 +85,14 @@ Drei Schnittstellen nach außen — mehr sieht diese Bibliothek von der Umgebung
 | `IProjektQuelle` | die Daten der **Seiten**: Projektliste, Energieträgerliste, BHKW-Parametersatz, Übernahme des Anlegeergebnisses | — (dort ist die Startmaske der Einstieg) | `IosProjektQuelle` (iU10-7) | `KeineProjekte` |
 | `INavigationsZiel` | die **Gegenrichtung** zu `WindowsFormsApplication1.INavigation`: Was eine Oberfläche anbieten muss, damit ein Plattformadapter sie öffnen kann | `WinFormsNavigation` braucht sie nicht | `IosNavigation` reicht dorthin weiter | `Navigationsziel.Aktuell = null` |
 
+`SeitenZustand` (iU9‑W5.0) ist keine Schnittstelle, sondern ein **Objekt mit
+Änderungsereignis**: Eine `BlazorDialogForm` setzt ihre Parameter einmal, beim Aufbau —
+ein Dialog lebt kurz. Eine **Seite** lebt so lange wie ihre Maske, und unter ihr wechselt
+das Projekt. Die Hülle schreibt (`ProjektSetzen`, `Auffrischen`), die Komponente hängt
+sich an `Geaendert` und zeichnet neu; die WebView bleibt dieselbe. Gelesen wird im
+Blazor-Verteiler, geschrieben aus dem Oberflächenfaden — die Komponente ruft deshalb
+`InvokeAsync`, bevor sie zeichnet.
+
 `Navigationsziel` ist der statische Halter der zuletzt gezeichneten Wurzel — dasselbe Muster
 wie `Dienste` im Kern, aus demselben Grund: Der Adapter entsteht beim Programmstart, die
 Komponente erst beim Zeichnen.
@@ -96,6 +107,25 @@ einem zweiten Fenster geöffnet, sondern löst die Ansicht ab.
 | `AppWurzel` | die Wurzelkomponente der iOS-Hülle: eine Zustandsmaschine über `Seitenschluessel` (Liste ↔ Dialog), Registrierung als `INavigationsZiel`, Statuszeile nach einem Dialog. **Noch kein Router** — der Wizard nach iL5 ist iU10-9 |
 | `Projektliste` | der Einstieg: Nr., Projekt, Klimaregion, Ausstattung im `Raster` und je Zeile zwei Knöpfe, die einen Maskenschlüssel melden |
 | `Seitenschluessel` | die drei sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`) |
+
+**`Seiten/Berichte/` — der Reiter „Berichte & Kosten" (iU9‑W5).** Die erste Gruppe von
+Seiten, die unter **Windows** läuft: `Form_Start.tabPage6` trägt eine
+`BlazorSeite<BerichteKostenSeite>` — eine WebView für alle vier Seiten (Risiko R5).
+
+| Komponente | Vorbild in WinForms | Datenseite |
+|---|---|---|
+| `BerichteKostenSeite` | `UcBerichteKosten` (810 Z., K4) | `Views/BerichteKosten/BerichteKostenHuelle.cs` |
+| `UebersichtSeite` | `UcBkUebersicht` (1 552 Z., K4) | `Views/BerichteKosten/UebersichtSeiteGaben.cs` |
+| `KostenSeite` | `UcBkKosten` (1 311 Z., K4) | `Views/BerichteKosten/KostenSeiteGaben.cs` |
+| `WirtschaftlichkeitSeite` | `UcWirtschaftlichkeit` (831 Z.) | `Views/Wirtschaftlichkeit/WirtschaftlichkeitSeiteGaben.cs` |
+| `BerichtSeite` | `UcBericht` (508 Z.) | `Views/Bericht/BerichtSeiteGaben.cs` |
+
+**Eine Seite ist kein Dialog.** Sie hat keine `Geschlossen`-Rückgabe und keine
+Schlussleiste; sie lädt über `Laden`, meldet über Rückrufe und frischt sich selbst auf.
+Wo ihre Spalten zur **Laufzeit** entstehen (die Vergleichstabelle je Version, die zehn
+Trägerspalten, die Zeilenfarben der Kostenseite), steht eine gewöhnliche `<table>` mit der
+Hausklasse `epos-raster` statt eines `Raster` — ein `QuickGrid` braucht seine Spalten zur
+Übersetzungszeit.
 
 ## Dialoge (`Dialoge/`)
 
@@ -126,6 +156,7 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Kosten/BrennstoffBestandteile` | `ucBrennstoffBestandteile` (iU9‑W4.3) | im Wirt; Summen aus `BrennstoffBestandteilCtrl` |
 | `Kosten/EnergietraegerEinstellungen` | `ucFuelSettings` (iU9‑W4.4, 2 103 Z.) | `EnergietraegerHuelle` → **`EnergietraegerPreisCtrl`** (neun SQL-Anweisungen, neu im Kern) |
 | `Kosten/EnergietraegerDialog` | `Form_Energietraeger` (iU9‑W4.4) | dieselbe Hülle; **vier** Unterdialoge in Überlagerungen |
+| `Berichte/BkUebernahmeDialog` | `Form_BkUebernahme` (iU9‑W5.1) | `UebersichtSeiteGaben` — ein Dialog, zwei Füllungen (Wertgegenüberstellung oder Klartext) |
 
 **Ein Dialog IN einem Dialog** (iU9‑W4.0): Seit es `Ueberlagerung` gibt, öffnet ein
 Blazor-Dialog seine Unterdialoge **im selben Fenster** statt in einer zweiten

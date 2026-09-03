@@ -63,6 +63,44 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Durchgang: laden, zeigen, Ergebnis melden.</summary>
         private static PvVerguetungErgebnis EinmalZeigen(IWin32Window besitzer, int idStamm)
         {
+            PvVerguetungErgebnis ergebnis = null;
+            BlazorDialogForm<PhotovoltaikVerguetungDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(Gaben(idStamm, () => dlg))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<PvVerguetungErgebnis>(
+                    new object(), e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
+                    })
+            };
+
+            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
+            dlg = new BlazorDialogForm<PhotovoltaikVerguetungDialog>(
+                new PhotovoltaikVerguetungTexte().Titel, new Size(FENSTER_BREITE, hoehe), werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
+        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung in
+        /// den Tarifdialog wertet er selbst aus (<c>PvSprung</c>).
+        /// </summary>
+        /// <param name="besitzerHalter">
+        /// Liefert das Fenster, über dem der Dateiwähler des Marktwert-Imports
+        /// erscheint — die Dialoghülle bzw. das Fenster der Seite.
+        /// </param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int idStamm, Func<Form> besitzerHalter)
+        {
             var ctrl = new ProjektPhotovoltaikCtrl();
             var katalog = new GesetzKatalog();
 
@@ -111,10 +149,7 @@ namespace WindowsFormsApplication1
             try { wirt = new WirtschaftlichkeitCtrl().LadeParameter(idStamm); }
             catch { }
 
-            PvVerguetungErgebnis ergebnis2 = null;
-            BlazorDialogForm<PhotovoltaikVerguetungDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Modell"] = modell,
                 ["KwpRechnerisch"] = kwpRechnerisch,
@@ -140,25 +175,8 @@ namespace WindowsFormsApplication1
                 }),
 
                 ["MarktwerteImportieren"] = new Func<MarktwertImport>(
-                    () => MarktwerteImportieren(dlgHalter: () => dlg, ctrl: ctrl)),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<PvVerguetungErgebnis>(
-                    new object(), e =>
-                    {
-                        ergebnis2 = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
+                    () => MarktwerteImportieren(dlgHalter: besitzerHalter, ctrl: ctrl))
             };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<PhotovoltaikVerguetungDialog>(
-                new PhotovoltaikVerguetungTexte().Titel, new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis2;
         }
 
         /// <summary>

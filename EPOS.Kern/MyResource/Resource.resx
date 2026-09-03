@@ -9997,4 +9997,111 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
   </data>
+  <!-- ==================================================================
+       iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
+       (Sammelnachtrag der Welle 5; Zugriff ueber
+       ResourceManager.GetString mit deutschem Rueckfall im Code).
+       ================================================================== -->
+  <data name="BKS_LBL_FORTSCHRITT" xml:space="preserve">
+    <value>Fortschritt</value>
+  </data>
+  <data name="BKS_BTN_JA" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="BKS_BTN_NEIN" xml:space="preserve">
+    <value>Nein</value>
+  </data>
+  <data name="BKS_LBL_STAMM" xml:space="preserve">
+    <value>Stammprojekt:</value>
+  </data>
+  <data name="BKS_LBL_NUR_STAEMME" xml:space="preserve">
+    <value>nur Stammprojekte</value>
+  </data>
+  <data name="BKS_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner:</value>
+  </data>
+  <data name="BKS_BTN_ANLEGEN" xml:space="preserve">
+    <value>Variante anlegen</value>
+  </data>
+  <data name="BKS_BTN_SIMULIEREN" xml:space="preserve">
+    <value>Simulation starten</value>
+  </data>
+  <data name="BKS_WAHL_VERSION" xml:space="preserve">
+    <value>Version wählen</value>
+  </data>
+  <data name="BKS_WAHL_ANLAGE" xml:space="preserve">
+    <value>Anlage wählen</value>
+  </data>
+  <data name="BK_KOSTEN_ANLAGE_OHNE_POSITIONEN" xml:space="preserve">
+    <value>Diese Anlage führt keine eigenen Positionen — „Kosten bearbeiten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.</value>
+  </data>
+  <data name="PVW_MELD_GESPEICHERT" xml:space="preserve">
+    <value>PV-Vergütung gespeichert — bitte neu berechnen.</value>
+  </data>
+  <data name="WIRT_TITEL" xml:space="preserve">
+    <value>Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463)</value>
+  </data>
+  <data name="WIRT_STAMM" xml:space="preserve">
+    <value>Stamm:</value>
+  </data>
+  <data name="WIRT_LBL_GRUPPE" xml:space="preserve">
+    <value>Vergleichsgruppe (Referenz: Stamm, fest gewählt):</value>
+  </data>
+  <data name="WIRT_LBL_SZENARIO" xml:space="preserve">
+    <value>Szenario:</value>
+  </data>
+  <data name="WIRT_BTN_PARAMETER" xml:space="preserve">
+    <value>Parameter…</value>
+  </data>
+  <data name="WIRT_BTN_VERLAUF" xml:space="preserve">
+    <value>Verlauf…</value>
+  </data>
+  <data name="WIRT_BTN_BERECHNEN" xml:space="preserve">
+    <value>Berechnen</value>
+  </data>
+  <data name="WIRT_PARAM_KOPF" xml:space="preserve">
+    <value>Parameter:</value>
+  </data>
+  <data name="WIRT_PARAM_REFERENZ" xml:space="preserve">
+    <value>Referenz: Stammprojekt · Restwert linear</value>
+  </data>
+  <data name="WIRT_SP_KENNZAHL" xml:space="preserve">
+    <value>Kennzahl</value>
+  </data>
+  <data name="WIRT_ZEILE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="WIRT_STATUS_KEINE" xml:space="preserve">
+    <value>Noch keine Wirtschaftlichkeitsberechnung gespeichert — bitte „Berechnen“.</value>
+  </data>
+  <data name="WIRT_STATUS_VERALTET" xml:space="preserve">
+    <value>⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.</value>
+  </data>
+  <data name="WIRT_STATUS_STAND" xml:space="preserve">
+    <value>Gespeicherte Ergebnisse vom {0}.</value>
+  </data>
+  <data name="WIRT_STATUS_BERECHNET" xml:space="preserve">
+    <value>Berechnet am {0} — Ergebnisse gespeichert (Basis für den Berichts-Baustein Wirtschaftlichkeit).</value>
+  </data>
+  <data name="WIRT_MSG_RECHENFEHLER" xml:space="preserve">
+    <value>Fehler bei der Wirtschaftlichkeitsberechnung: {0}</value>
+  </data>
+  <data name="WIRT_MELD_TARIF" xml:space="preserve">
+    <value>Tarifstruktur gespeichert — bitte neu berechnen.</value>
+  </data>
+  <data name="WIRT_MELD_PARAMETER" xml:space="preserve">
+    <value>Parameter gespeichert — bitte neu berechnen.</value>
+  </data>
+  <data name="WIRT_MELD_VERLAUF_NEU" xml:space="preserve">
+    <value>⚠ Für den Verlauf wurde neu simuliert — gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand, bitte „Berechnen“.</value>
+  </data>
+  <data name="WIRT_SZEN_ERWARTET" xml:space="preserve">
+    <value>Erwartet</value>
+  </data>
+  <data name="WIRT_SZEN_BEST" xml:space="preserve">
+    <value>Best Case</value>
+  </data>
+  <data name="WIRT_SZEN_WORST" xml:space="preserve">
+    <value>Worst Case</value>
+  </data>
 </root>

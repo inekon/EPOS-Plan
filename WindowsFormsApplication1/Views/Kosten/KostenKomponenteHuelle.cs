@@ -115,7 +115,47 @@ namespace WindowsFormsApplication1
                 .Zeigen(besitzer, komponente, betrieb, idAnlage);
         }
 
+        /// <summary>
+        /// Der PARAMETERSATZ der Kostenverwaltung im PROJEKTMODUS (iU9-W5.4).
+        /// Seit die Kostenseite selbst eine Razor-Komponente ist, erscheint sie
+        /// in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
+        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
+        ///
+        /// <para>Die Hüllen-INSTANZ hält den Bearbeitungsstand; sie lebt über
+        /// die Rückrufe des Satzes so lange wie der Bereich.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> GabenProjekt(
+            int idProjekt, string projektname, string komponente = null,
+            bool betrieb = false, int idAnlage = 0)
+        {
+            string titel;
+            return new KostenKomponenteHuelle(idProjekt, projektname)
+                .GabenIntern(komponente, betrieb, idAnlage, out titel);
+        }
+
         private void Zeigen(IWin32Window besitzer, string komponente, bool betrieb, int idAnlage)
+        {
+            BlazorDialogForm<KostenKomponenteDialog> dlg = null;
+
+            string titel;
+            var werte = new Dictionary<string, object>(
+                GabenIntern(komponente, betrieb, idAnlage, out titel))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
+                {
+                    if (dlg != null) dlg.Schliessen(ok);
+                })
+            };
+
+            dlg = new BlazorDialogForm<KostenKomponenteDialog>(titel, FENSTER, werte);
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        private IReadOnlyDictionary<string, object> GabenIntern(
+            string komponente, bool betrieb, int idAnlage, out string titel)
         {
             _komponenten = KostenVorlagenCtrl.Komponenten();
             int vorwahl = EintraegeBauen(idAnlage, komponente);
@@ -125,9 +165,12 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _eintraege.Count; i++)
                 eintraege.Add(new ValueTuple<int, string>(i, _eintraege[i].Text));
 
-            BlazorDialogForm<KostenKomponenteDialog> dlg = null;
+            titel = ProjektModus
+                ? string.Format(T("KDLG_TITEL_PROJEKT", "Kostenverwaltung {0} — {1}"),
+                                _eintraege.Count > 0 ? _eintraege[Math.Max(0, vorwahl)].Text : "", _projektname)
+                : T("KDLG_TITEL", "Kostenverwaltung {0}").Replace(" {0}", "");
 
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Eintraege"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege,
                 ["EintragVorwahl"] = vorwahl >= 0 ? (int?)vorwahl : null,
@@ -205,24 +248,8 @@ namespace WindowsFormsApplication1
                 ["MeldungNameBelegt"] = T("KDLG_MSG_NAME_BELEGT",
                     "Der Name ist bereits vergeben oder leer."),
                 ["VorlageGespeichert"] = T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr")
-                    .Replace("{0:HH:mm}", "{0}"),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
+                    .Replace("{0:HH:mm}", "{0}")
             };
-
-            string titel = ProjektModus
-                ? string.Format(T("KDLG_TITEL_PROJEKT", "Kostenverwaltung {0} — {1}"),
-                                _eintraege.Count > 0 ? _eintraege[Math.Max(0, vorwahl)].Text : "", _projektname)
-                : T("KDLG_TITEL", "Kostenverwaltung {0}").Replace(" {0}", "");
-
-            dlg = new BlazorDialogForm<KostenKomponenteDialog>(titel, FENSTER, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         // =====================================================================

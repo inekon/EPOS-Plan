@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
    EPOS.UI (Umsetzungskonzept iOS, Paket iU8).
 
@@ -1207,4 +1207,326 @@ body {
    Regel schluckt HTML sie, und aus vier Zeilen wird eine lange. */
 .epos-mehrzeilig {
     white-space: pre-line;
+/* --------------------------------------------------------------------------
+   Reiterleiste (iU9-W5.0) - der Ersatz fuer TabControl/TabPage. Die Knoepfe
+   sind Beruehrungsziele (44 px) und tragen ihren Zustand ueber die Farbe UND
+   ueber den Unterstrich: Im Hochkontrastmodus faellt die Flaeche weg, der
+   Rahmen bleibt.
+   -------------------------------------------------------------------------- */
+.epos-reiter {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.epos-reiter-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    border-bottom: 1px solid var(--epos-rahmen);
+    margin-bottom: var(--epos-rand);
+}
+
+.epos-reiter-knopf {
+    min-height: var(--epos-touchziel);
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    cursor: pointer;
+}
+
+.epos-reiter-knopf:hover:not(:disabled) {
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-text);
+}
+
+.epos-reiter-knopf:disabled {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+.epos-reiter-knopf--aktiv {
+    color: var(--epos-quelle-text);
+    border-bottom-color: var(--epos-quelle-rahmen);
+    font-weight: 600;
+}
+
+/* Das Blatt fuellt den Rest und rollt fuer sich - so bleibt die Leiste beim
+   Blaettern eines langen Inhalts stehen. */
+.epos-reiter-blatt {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.epos-reiter-blatt:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* --------------------------------------------------------------------------
+   Kachelraster und Kennzahlkachel (iU9-W5.0). Statt der gerechneten
+   Prozentspalten der TableLayoutPanels (UcBkKosten.pnlKacheln,
+   UcWirtschaftlichkeit.KachelnBauen) legt das Raster so viele Karten
+   nebeneinander, wie bei --epos-kachel-min Platz haben.
+   -------------------------------------------------------------------------- */
+.epos-kachelraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--epos-kachel-min, 220px), 1fr));
+    gap: var(--epos-rand);
+}
+
+.epos-kennzahlkachel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #f4f6fa;
+}
+
+.epos-kennzahlkachel-titel {
+    font-weight: 600;
+    color: #333333;
+}
+
+.epos-kennzahlkachel-wert {
+    font-size: 19px;
+    color: #0073aa;
+}
+
+.epos-kennzahlkachel-quelle {
+    color: var(--epos-text-leise);
+}
+
+/* --------------------------------------------------------------------------
+   Seiten des Reiters "Berichte & Kosten" (iU9-W5).
+
+   Der Bestand rechnete seine Flaechen mit TableLayoutPanels und
+   Prozentspalten (UcBkKosten.tl 30/70, UcBkUebersicht.tl mit 222 px
+   Absolutspalte, UcBerichteKosten mit 208 px Navigation). Hier machen das
+   Flex und Grid: Zwei Spalten nebeneinander, solange Platz ist, sonst
+   untereinander.
+   -------------------------------------------------------------------------- */
+.epos-seite-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--epos-rand);
+    align-items: start;
+}
+
+.epos-seite-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-seite-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-rand);
+    align-items: flex-end;
+}
+
+/* Ein Simulationsstand, der fehlt oder veraltet ist. Der Vorlaeufer faerbte
+   die ganze Listenzeile ziegelrot (ForeColor = Color.Firebrick); hier traegt
+   die Zelle die Farbe - sie ist die Aussage, nicht die Zeile. */
+.epos-veraltet {
+    color: var(--epos-senke-text);
+    font-weight: 600;
+}
+
+/* Der Fortschritt eines langen Laufs. Der Baustein Fortschritt kommt mit
+   Welle 11; bis dahin traegt das HTML-Element <progress> die ProgressBar der
+   Feldkarte. */
+.epos-fortschritt {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-fortschritt-balken {
+    flex: 1 1 auto;
+    height: 14px;
+}
+
+/* Die linke Navigation des Reiters (UcBerichteKosten.lvNav, 208 px, dunkel).
+   Die Farben sind die der Detailsimulation - dieselbe Palette wie dort, damit
+   die zwei senkrechten Menues der Anwendung gleich aussehen. */
+.epos-navigation {
+    display: flex;
+    min-height: 100%;
+    align-items: stretch;
+}
+
+.epos-navigation-liste {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 208px;
+    background: #23282d;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.epos-navigation-knopf {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    color: #eeeeee;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-navigation-knopf:hover:not(:disabled) {
+    background: #191e23;
+    color: #00b9eb;
+}
+
+.epos-navigation-knopf--aktiv {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.epos-navigation-symbol {
+    flex: 0 0 auto;
+    width: 22px;
+    text-align: center;
+}
+
+/* Die Inhaltsflaeche rechts der Navigation rollt fuer sich. */
+.epos-navigation-inhalt {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto;
+}
+
+/* Die Kopfzeile des Reiters (UcBerichteKosten.lblKopf, 30 px hoch). */
+.epos-navigation-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+    padding: 6px var(--epos-karte-rand);
+    font-weight: 700;
+    color: #1f4e79;
+}
+
+/* Die Vergleichsmatrix der Wirtschaftlichkeitsseite (iU9-W5.3). Ihre Spalten
+   entstehen zur Laufzeit - eine je Version -, deshalb ist sie eine
+   gewoehnliche Tabelle mit der Hausklasse epos-raster. Der Zeilentitel steht
+   fett (Vorbild UcWirtschaftlichkeit.Zeile), die Werte rechts. */
+.epos-matrix {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-matrix-titel {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.epos-matrix-zelle {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Die beiden Tabellen der Kostenseite (iU9-W5.4). Sie tragen Zeilenfarben,
+   Kurztexte je Zelle und eine Summenzeile - die Farben sind die des
+   Vorlaeufers (UcBkKosten: FFE6E6 rosa, FFF4CC gelb).
+   -------------------------------------------------------------------------- */
+.epos-kostentabelle,
+.epos-traegertabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Zehn Spalten passen bei keiner Fensterbreite in ihre Mindestbreiten; die
+   Koepfe brechen deshalb um (dieselbe Entscheidung wie WrapMode = True im
+   Vorlaeufer), und die Tabelle blaettert notfalls waagerecht. */
+.epos-traegertabelle th {
+    white-space: normal;
+}
+
+.epos-zahl {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.epos-zellenaktionen {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Ein verbautes Gewerk ohne Kostenposition bzw. ein verwendeter Traeger ohne
+   Zuordnung: eine FEHLENDE EINGABE, kein Nullbetrag. */
+.epos-zeile--fehlt > td {
+    background: #ffe6e6;
+}
+
+/* Positionen ohne (gueltige) Anlagenzuordnung - sie rechnen mit. */
+.epos-zeile--lose > td {
+    background: #fff4cc;
+}
+
+.epos-zeile--summe > td {
+    font-weight: 700;
+}
+
+.epos-zeile--hinweis > td {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+/* Ä19: Die gewaehlte Anlage kennzeichnet ihren Energietraeger rechts. */
+.epos-zeile--markiert > td {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+.epos-kostenkopf {
+    justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   Die Uebersichtsseite (iU9-W5.5).
+   -------------------------------------------------------------------------- */
+.epos-variantentabelle,
+.epos-vergleichstabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Das Gewerk steht nur in der ersten Zeile seines Blocks - und dort fett
+   (Vorbild UcBkUebersicht.SchreibeVergleichsZeile). */
+.epos-vergleich-gewerk {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Die Pflegespalte rechts der Liste (Vorlaeufer: 222 px Absolutspalte). */
+.epos-variantenpflege {
+    flex: 0 0 auto;
+    max-width: 260px;
+}
+
+/* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
+   mit Begruendung im Kurztext. */
+.epos-gesperrt {
+    color: var(--epos-text-sehr-leise);
 }
