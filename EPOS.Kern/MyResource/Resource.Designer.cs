@@ -33429,5 +33429,23 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Wahl stehen alle Pufferspeicher des Projekts. Führt d... ähnelt.
+        /// </summary>
+        public static string SIM_HERLEITUNG_SPEICHERLISTE {
+            get {
+                return ResourceManager.GetString("SIM_HERLEITUNG_SPEICHERLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für den Verbund kommen nur Speicher derselben Verwendung ... ähnelt.
+        /// </summary>
+        public static string SIM_HERLEITUNG_VERBUNDLISTE {
+            get {
+                return ResourceManager.GetString("SIM_HERLEITUNG_VERBUNDLISTE", resourceCulture);
+            }
+        }
+        
     }
 }
