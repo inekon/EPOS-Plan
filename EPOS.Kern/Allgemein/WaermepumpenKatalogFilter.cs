@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -83,30 +83,11 @@ namespace WindowsFormsApplication1
             if (zeilen == null) return Array.Empty<WaermepumpenKatalogZeile>();
             if (k == null) return zeilen;
 
-            string suche = (k.Suche ?? "").Trim();
-            bool ohneSuche = string.IsNullOrEmpty(suche) || suche == "*";
-            Regex muster = null;
-
-            if (!ohneSuche)
-            {
-                try
-                {
-                    // Regex.Escape maskiert Sonderzeichen; die maskierten Platzhalter
-                    // werden danach wieder zu ihrer Regex-Bedeutung gemacht.
-                    string ausdruck = "^" + Regex.Escape(suche)
-                        .Replace("\\*", ".*").Replace("\\?", ".") + "$";
-
-                    // Ohne Platzhalter will der Anwender eine Teilsuche - dann keine Anker.
-                    if (!suche.Contains("*") && !suche.Contains("?"))
-                        ausdruck = Regex.Escape(suche);
-
-                    muster = new Regex(ausdruck, RegexOptions.IgnoreCase);
-                }
-                catch
-                {
-                    ohneSuche = true;
-                }
-            }
+            // iU9-W9.0e: Die Uebersetzung Platzhalter -> regulaerer Ausdruck stand hier und
+            // in Form_Gebaeude.ApplyGridFilter zweimal gleichlautend; sie steht jetzt in
+            // Suchmuster. Verhalten unveraendert: null heisst "kein Filter" - bei leerer
+            // Eingabe, bei "*" und bei einem Muster, das sich nicht uebersetzen laesst.
+            Regex muster = Suchmuster.Uebersetzen(k.Suche);
 
             return zeilen.Where(x =>
                 (k.Hersteller == null || x.Hersteller == k.Hersteller) &&
@@ -118,7 +99,7 @@ namespace WindowsFormsApplication1
                 (k.Zuheizung == null || ZuheizungText(x.ElZuheizung) == k.Zuheizung) &&
                 (x.MaxVorlauf >= k.VorlaufMin && x.MaxVorlauf <= k.VorlaufMax) &&
                 (x.MaxLeistung >= k.LeistungMin && x.MaxLeistung <= k.LeistungMax) &&
-                (ohneSuche || (x.Bezeichnung != null && muster.IsMatch(x.Bezeichnung)))
+                Suchmuster.Trifft(muster, x.Bezeichnung ?? "")
             ).ToList();
         }
 
