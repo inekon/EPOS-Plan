@@ -1351,20 +1351,16 @@ namespace WindowsFormsApplication1
 
         private void pBox_Solarthermie_Click(object sender, EventArgs e)
         {
-            Form_Solarganglinie frm2 = new Form_Solarganglinie();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            WPCtrl wpctrl = new WPCtrl();
             Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
-            RecordSet rs = new RecordSet();
 
             int id_type;
 
-            System.Drawing.Point p1 = pBox_Solarthermie.Location;
-            p1 = tabControl_Wizard.PointToScreen(p1);
-            p1.Y /= 2;
-            p1.X /= 2;
+            // iU9-W7.7/W7.8: Die Positionierung ueber p1 ist mit den beiden
+            // WinForms-Masken entfallen - eine Blazor-Huelle kennt kein
+            // PointToScreen und erscheint mittig ueber dieser Maske.
 
             if (radioButton_KollektorProfil.Checked)
             {
@@ -1393,35 +1389,18 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                frm2.DateiListe.Clear();
+                // iU9-W7.8: Der Gangliniendialog ist die Razor-Komponente
+                // SolarganglinieDialog; Form_Solarganglinie ist im selben Schritt
+                // GELOESCHT (Regel M1). Der Verbund, der hier mit einem RecordSet
+                // Zeile fuer Zeile gelesen wurde, steht als
+                // Z_ProjektSolarganglinieCtrl.LiesProjekt im Kern (W7.0e).
+                List<Z_ProjektSolarganglinieModel> ganglinien =
+                    Z_ProjektSolarganglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-                string sql = "SELECT Z_ProjektSolarganglinie.ID, Z_ProjektSolarganglinie.ID_Projekt, " +
-                      "Z_ProjektSolarganglinie.ID_Ganglinie, Tab_Solarganglinie.Bezeichner " +
-                      "FROM Z_ProjektSolarganglinie INNER JOIN Tab_Solarganglinie ON " +
-                      "Z_ProjektSolarganglinie.ID_Ganglinie = Tab_Solarganglinie.ID " +
-                      " where Z_ProjektSolarganglinie.ID_Projekt=" + m_ID_Projekt;
-
-                rs.Open(sql);
-                while (rs.Next())
-                {
-                    Z_ProjektSolarganglinieCtrl item = new Z_ProjektSolarganglinieCtrl();
-                    item.m_ID_Z = (int)rs.Read("ID");
-                    item.m_ID_Projekt = m_ID_Projekt;
-                    item.m_ID_Solarganglinie = (int)rs.Read("ID_Ganglinie");
-                    item.m_szSolarganglinie = (string)rs.Read("Bezeichner");
-                    frm2.DateiListe.Add(item);
-                }
-                rs.Close();
-
-                frm2.m_ID_Projekt = m_ID_Projekt;
-                frm2.SetControls(m_szProjektname);
-                frm2.Location = p1;
-                frm2.ShowDialog();
-
-                if (frm2.result == DialogResult.OK)
+                if (SolarganglinieHuelle.Oeffnen(this, m_ID_Projekt, ganglinien))
                 {
                     wizctrl.Del_Solarganglinie(m_ID_Projekt);
-                    wizctrl.Add_Solarganglinie(m_ID_Projekt, frm2.DateiListe);
+                    wizctrl.Add_Solarganglinie(m_ID_Projekt, ganglinien);
 
                     projctrl.ReadSingle(m_szProjektname);
                     projctrl.m_Aenderungsdatum = DateTime.Now;

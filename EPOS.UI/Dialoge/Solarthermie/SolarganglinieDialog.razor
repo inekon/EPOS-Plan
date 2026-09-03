@@ -1,0 +1,260 @@
+﻿@* Solarthermieganglinien eines Projekts (iU9-W7.8).
+
+   VORBILD. Views/Solarthermie/Form_Solarganglinie (132 Z., lokalisiert de/en,
+   9 Kartenzeilen, 0 MessageBox). Die schmalste Maske der Welle: links die
+   Ganglinien des Projekts, rechts der Katalog, dazwischen ◀ und ▶, darunter
+   Name und Beschreibung als Anzeige.
+
+   DIESELBE DATENFORM WIE DIE ERZEUGER. ErzeugerZeile traegt Schluessel und
+   GeraetId getrennt - hier die Zuordnungs-Id (Z_ProjektSolarganglinie.ID) und
+   die Ganglinien-Id (Tab_Solarganglinie.ID). Genau diese Trennung braucht die
+   Maske: Dieselbe Ganglinie darf mehrfach zugeordnet sein, und "▶" muss dann
+   die ZEILE treffen, nicht den ersten Namensvetter.
+
+   DIE VERWALTUNG BLEIBT WINFORMS. "Bearbeiten..." fuehrt in
+   Form_Solarganglinie_Admin (bis Welle 14b) und laeuft deshalb ueber die
+   Sprungbruecke - Sprungziel.SolarganglinieAdmin (W7.0f). Ohne Delegat kein
+   Knopf.
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ErzeugerZeile zeile in Zeilen)
+                        {
+                            ErzeugerZeile z = zeile;
+                            <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="epos-auswahlpfeile">
+            <button type="button" class="epos-knopf" title="@LabelHinzu"
+                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">◀</button>
+            <button type="button" class="epos-knopf" title="@LabelEntfernen"
+                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">▶</button>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (KatalogZeile zeile in _katalog)
+                        {
+                            KatalogZeile k = zeile;
+                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Sprung is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+              Mehrzeilig="true" Zeilen="3" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die Ganglinien des Projekts. <c>Schluessel</c> ist die Zuordnungs-Id
+    /// (<c>Z_ProjektSolarganglinie.ID</c>), <c>GeraetId</c> die Ganglinien-Id
+    /// (<c>Tab_Solarganglinie.ID</c>). Die Liste gehört der Hülle und wird an Ort und
+    /// Stelle bearbeitet.
+    /// </summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>
+    /// Der Ganglinienkatalog (<c>SolarganglinieStammCtrl.ReadAll</c>).
+    /// <c>Eigenschaften</c> trägt die Beschreibung.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Nimmt die Ganglinie in das Projekt auf („◀").</summary>
+    [Parameter] public Func<int, ErzeugerZeile?>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste („▶").</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Weiterführung in die Ganglinienverwaltung; ohne Delegat kein Knopf.</summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Solarthermieganglinien";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählt im Projekt";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Solarthermieganglinie aus DB";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private string _name = "";
+    private string _beschreibung = "";
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    protected override void OnInitialized() => KatalogNeuLaden();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogNeuLaden()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<KatalogZeile>();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    /// <summary>
+    /// Die Wahl zeigt Name UND Beschreibung. Der Vorläufer setzte nur den Namen —
+    /// sein Beschreibungsfeld blieb in jedem Zustand leer, obwohl der Katalogsatz
+    /// (<c>SolarganglinieModel.m_szBeschreibung</c>) sie führt (Abweichung A-27).
+    /// </summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _name = zeile.Bezeichner;
+        _beschreibung = BeschreibungZu(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _name = zeile.Bezeichner;
+        _beschreibung = zeile.Eigenschaften;
+    }
+
+    private string BeschreibungZu(string bezeichner)
+    {
+        foreach (KatalogZeile k in _katalog)
+            if (string.Equals(k.Bezeichner, bezeichner, StringComparison.Ordinal)) return k.Eigenschaften;
+        return "";
+    }
+
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        ErzeugerZeile? neu = Aufnehmen(_katalogZeile.Id);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        ProjektZeileWaehlen(neu);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWÄHLTE Zeile geht. Der Vorläufer suchte die erste Zeile mit
+    /// demselben Namen (<c>btn_Entfernen_Click</c>:89) — bei zwei Zuordnungen
+    /// derselben Ganglinie also nicht zwingend die markierte.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _name = "";
+        _beschreibung = "";
+    }
+
+    /// <summary>
+    /// „Bearbeiten…": Sprung in die Ganglinienverwaltung. Danach wird der Katalog
+    /// IMMER neu gezogen — der Vorläufer tat dasselbe (<c>btn_Bearbeiten_Click</c>:117).
+    /// </summary>
+    private async Task BeiBearbeiten()
+    {
+        if (Sprung is null) return;
+
+        _projektZeile = null;
+        _katalogZeile = null;
+        await Sprung(Sprungziel.SolarganglinieAdmin);
+        KatalogNeuLaden();
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Geschlossen.InvokeAsync(false) : Task.CompletedTask;
+}
