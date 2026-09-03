@@ -484,6 +484,8 @@ namespace WindowsFormsApplication1
         /// Anteil der Brennstoffkosten [%/a]: <c>Menge</c> = Summe Brennstoffkosten
         /// [€/a], <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
         /// Bemessung der Hilfsenergiekosten nach VDI 2067.
+        /// <para><b>PAKET FX4-b:</b> eskaliert in der Mehrjahresrechnung mit p_E
+        /// (Endenergie-Topf), nicht mehr mit p_B — siehe den Block zu Etappe H1.</para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
@@ -553,6 +555,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anteil der Stromkosten des Trägerbezugs [%] — Basis kommt DIREKT aus
         /// der Energieträgerwelt (KL7/FK3: keine Positionszeile im Betriebskosten-Raster).
+        /// <para><b>PAKET FX4-b:</b> eskaliert in der Mehrjahresrechnung mit p_E
+        /// (Endenergie-Topf), nicht mehr mit p_B — siehe den Block zu Etappe H1.</para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
         public const string BEMESSUNG_PROZENT_STROMKOSTEN = "PROZENT_STROMKOSTEN";
 
@@ -599,10 +603,19 @@ namespace WindowsFormsApplication1
         //   WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe und den Parameter
         //   endenergieJahr von KapitalwertRechner.Rechne.
         //
-        //   AUSDRUECKLICH NICHT umgestellt (Grenzen des Anwenderentscheids):
-        //     - PROZENT_BRENNSTOFFKOSTEN und PROZENT_STROMKOSTEN (die Alt-Vorlaeufer
-        //       von Weg A) bleiben bei p_B - sie laufen aus und sollen sich nicht
-        //       mehr aendern;
+        //   PAKET FX4-b (Anwenderentscheid 02.09.2026): DIE ZWEI ALT-VORLAEUFER
+        //   ZIEHEN GLEICH. PROZENT_BRENNSTOFFKOSTEN und PROZENT_STROMKOSTEN
+        //   eskalieren seither EBENFALLS mit p_E - sie sind derselben Sache nach ein
+        //   Anteil der Energiekosten, nur projektweit statt anlagenscharf bemessen.
+        //   FX3 hatte sie noch ausgenommen ("sie laufen aus"); der Anwender hat das
+        //   revidiert. Die Zuordnung trifft WirtschaftlichkeitCtrl.IstEnergiepreisArt;
+        //   ihre MENGENermittlung bleibt unveraendert Konserve (IstEndenergieArt).
+        //
+        //   PAKET FX4-c: Der Sensitivitaets-Ausschlag "Energiekosten +-10 %" skaliert
+        //   den p_E-Topf mit demselben Faktor wie die Energiekosten
+        //   (WirtschaftlichkeitCtrl.RechneBild).
+        //
+        //   AUSDRUECKLICH NICHT umgestellt (Grenze des Anwenderentscheids, Stand FX4):
         //     - "Weg C" der Hilfsenergie, also der feste Jahresbetrag
         //       (JAHRESBETRAG/BETRAG), bleibt bei p_B - ein fester Betrag traegt
         //       keine Endenergie-Bemessung.

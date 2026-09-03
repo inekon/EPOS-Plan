@@ -61,13 +61,23 @@ namespace WindowsFormsApplication1
     /// Ausdruck für die Ausgaben bleibt dann Zeichen für Zeichen der von vorher, denn
     /// addiert wird eine echte 0.</para>
     ///
-    /// <para><b>Was NICHT umgestellt wurde</b> (dokumentierte Grenzen des Pakets FX3):
-    /// die Alt-Arten <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c> und der
-    /// „Weg C" der Hilfsenergie (fester Jahresbetrag, <c>JAHRESBETRAG</c>) bleiben bei
-    /// p_B; die EINE Klammer <c>(energieJahr + behgJahr) × (1+p_E)^(t−1)</c> des
-    /// Bestandszweigs bleibt unangetastet. Die Zuordnung einer Position zu einem der
-    /// beiden Töpfe trifft der Aufrufer
-    /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskosten</c>), nicht dieser Rechenkern.</para>
+    /// <para><b>PAKET FX4 (Anwenderentscheid vom 02.09.2026): der p_E-Topf wächst um die
+    /// zwei Alt-Arten und zieht in der Sensitivität mit.</b> Seit FX4-b gehören auch
+    /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c> — die projektweiten
+    /// Vorläufer von Weg A — in den Endenergie-Topf; sie sind derselben Sache nach ein
+    /// Anteil der Energiekosten. Seit FX4-c skaliert der Sensitivitäts-Ausschlag
+    /// „Energiekosten ±10 %" den Topf mit demselben Faktor wie die Energiekosten
+    /// (der Aufrufer reicht ihn bereits skaliert herein — <b>dieser Rechenkern sieht
+    /// davon nichts</b> und ist von FX4 unverändert geblieben).</para>
+    ///
+    /// <para><b>Was NICHT umgestellt ist</b> (dokumentierte Grenzen, Stand FX4):
+    /// der „Weg C" der Hilfsenergie — der feste Jahresbetrag
+    /// (<c>JAHRESBETRAG</c>/<c>BETRAG</c>) — bleibt bei p_B, denn ein fester Betrag trägt
+    /// keine Endenergie-Bemessung; die EINE Klammer
+    /// <c>(energieJahr + behgJahr) × (1+p_E)^(t−1)</c> des Bestandszweigs bleibt
+    /// unangetastet. Die Zuordnung einer Position zu einem der beiden Töpfe trifft der
+    /// Aufrufer (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>), nicht dieser
+    /// Rechenkern.</para>
     /// </summary>
     public static class KapitalwertRechner
     {
@@ -334,9 +344,14 @@ namespace WindowsFormsApplication1
         /// <param name="endenergieJahr">
         /// PAKET FX3 (Anwenderentscheid R-2): der <b>Endenergie-Topf</b> der
         /// Betriebskosten [€/a], Jahr-1-Wert — Positionen, deren Betrag an der
-        /// Endenergie bemessen ist. Er wird mit <paramref name="preisstEnergieProzent"/>
-        /// (p_E) fortgeschrieben statt mit p_B. <b>0 = kein solcher Topf</b>; dann ist
-        /// die Rechnung Zeichen für Zeichen die von vor FX3.
+        /// Endenergie bemessen ist (seit FX4-b auch die zwei Alt-Arten
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c>). Er wird mit
+        /// <paramref name="preisstEnergieProzent"/> (p_E) fortgeschrieben statt mit p_B.
+        /// <b>0 = kein solcher Topf</b>; dann ist die Rechnung Zeichen für Zeichen die
+        /// von vor FX3.
+        /// <para>Seit FX4-c reicht der Aufrufer diesen Wert im Sensitivitätslauf
+        /// <b>bereits mit dem Energiefaktor multipliziert</b> herein — hier ändert das
+        /// nichts, der Topf ist und bleibt ein Jahr-1-Betrag.</para>
         /// </param>
         /// <param name="endenergieAbJahr">
         /// Dasselbe für Endenergie-Positionen mit Startjahr ≥ 2 (KD6) — (Betrag,

@@ -1385,9 +1385,12 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// PAKET FX3 (Anwenderentscheid R-2): der Endenergie-Topf der
             /// Betriebskosten [€/a] — Positionen mit
-            /// <c>PROZENT_ENDENERGIEKOSTEN</c>/<c>PROZENT_ENDENERGIEBEDARF</c>. Er
-            /// eskaliert in der Jahresreihe mit p_E statt mit p_B (Begründung an
-            /// <see cref="BetriebsTopfe"/>). <see cref="Betrieb"/> trägt ihn NICHT
+            /// <c>PROZENT_ENDENERGIEKOSTEN</c>/<c>PROZENT_ENDENERGIEBEDARF</c>, seit
+            /// PAKET FX4-b auch <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c>
+            /// (<see cref="IstEnergiepreisArt"/>). Er eskaliert in der Jahresreihe mit
+            /// p_E statt mit p_B (Begründung an <see cref="BetriebsTopfe"/>) und wird
+            /// seit FX4-c vom Sensitivitäts-Energiefaktor mitskaliert
+            /// (<see cref="RechneBild"/>). <see cref="Betrieb"/> trägt ihn NICHT
             /// mehr mit; die Summe beider ist die ausgewiesene Betriebskostenzahl.
             /// </summary>
             public double Endenergie;
@@ -4440,18 +4443,42 @@ namespace WindowsFormsApplication1
             }
 
             // PAKET FX3 (R-2): Der Endenergie-Topf geht als EIGENER Term hinein und
-            // eskaliert mit preisstEnergie. Er wird vom energieFaktor der Sensitivität
-            // NICHT skaliert: Der Ausschlag „Energiekosten ±10 %" fragt nach den
-            // Energiekosten des Simulationslaufs, nicht nach den Betriebskosten — und
-            // die Bezugsgröße der %-Zeile ist ein Ergebniswert des Laufs, kein
-            // Preisparameter. Die Sensitivität „Energiepreissteigerung ±" wirkt dagegen
-            // sehr wohl, denn sie kommt über preisstEnergie herein.
+            // eskaliert mit preisstEnergie.
+            //
+            // PAKET FX4-c (Anwenderentscheid 02.09.2026, offener Punkt FX3-5): Er wird
+            // vom energieFaktor der Sensitivität jetzt MITSKALIERT — genau wie die
+            // Energiekosten selbst, die CO₂-Abgabe und die jahresscharfe CO₂-Reihe
+            // darüber. Fachlich: Der Topf trägt Positionen, deren Betrag ein ANTEIL der
+            // Endenergie(-kosten) ist; steigen die Energiekosten der Variante um 10 %,
+            // steigt ein Anteil davon mit. Bis FX3 blieb er außen vor (Begründung
+            // damals: die Bezugsgröße sei ein Ergebniswert des Laufs, kein
+            // Preisparameter) — der Anwender hat das am 02.09.2026 anders entschieden.
+            //
+            // WIE skaliert wird, ist genau die Mechanik der übrigen Energiegrößen: Der
+            // Faktor greift am JAHR-1-BETRAG (bei e.Energie und e.Behg ebenso), die
+            // Preissteigerung (1+p_E)^(t−1) läuft unverändert darüber. Die
+            // Startjahr-Anteile (KD6) werden mitskaliert, denn auch sie sind
+            // Jahr-1-Beträge, nur eben später fällig.
+            //
+            // OHNE AUSSCHLAG UNVERÄNDERT: energieFaktor ist im Normallauf exakt 1,0 —
+            // die Multiplikation mit 1,0 ist in IEEE 754 wertgleich, und die Liste wird
+            // dann gar nicht erst kopiert. Die Sensitivität „Energiepreissteigerung ±"
+            // wirkt wie bisher über preisstEnergie.
+            IList<KeyValuePair<double, int>> endenergieAbJahr = e.EndenergieAbJahr;
+            if (energieFaktor != 1.0 && endenergieAbJahr != null && endenergieAbJahr.Count > 0)
+            {
+                var skaliert = new List<KeyValuePair<double, int>>(endenergieAbJahr.Count);
+                foreach (KeyValuePair<double, int> ve in endenergieAbJahr)
+                    skaliert.Add(new KeyValuePair<double, int>(ve.Key * energieFaktor, ve.Value));
+                endenergieAbJahr = skaliert;
+            }
+
             return KapitalwertRechner.Rechne(invest, e.Betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
                 e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
-                e.BetriebAbJahr, e.Endenergie, e.EndenergieAbJahr);
+                e.BetriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -4539,6 +4566,16 @@ namespace WindowsFormsApplication1
                 // weggefallenen KWKG-Bonus.
                 Zuschuss = e.Zuschuss,
                 Betrieb = e.Betrieb,
+                // PAKET FX4-a (Anwenderentscheid 02.09.2026, offener Punkt FX3-2):
+                // Die Betriebskosten mit STARTJAHR ≥ 2 (KD6) fehlten hier seit KD6 —
+                // eine Altlücke, keine Absicht. Ohne sie rechnete das Novellen-Szenario
+                // gegen andere Betriebskosten als die Basis, und die ausgewiesene
+                // Differenz enthielte sie; dieselbe Begründung wie beim Zuschuss, bei
+                // der CO₂-Reihe und beim Endenergie-Topf. Mit diesem Feld ist die Kopie
+                // für RechneBild VOLLSTÄNDIG (Investitionen, Zuschuss, beide
+                // Betriebstöpfe samt Startjahr-Anteilen, Energie, Erlös, CO₂).
+                // Bestandswirkung null: 0 Zeilen mit StartJahr > 1 im gesamten Bestand.
+                BetriebAbJahr = e.BetriebAbJahr,
                 // PAKET FX3 (R-2): Der Endenergie-Topf MUSS mitkopiert werden —
                 // dieselbe Begründung wie beim Zuschuss und bei der CO₂-Reihe: Sonst
                 // rechnete das Novellen-Szenario gegen andere Betriebskosten als die
@@ -5174,15 +5211,23 @@ namespace WindowsFormsApplication1
         /// eskaliert mit p_E — sonst führe dasselbe Projekt in BEST und in ERWARTET mit
         /// verschiedenen Preisraten.</para>
         ///
-        /// <para><b>Dokumentierte Grenzen.</b> Die Alt-Arten
+        /// <para><b>PAKET FX4-b (Anwenderentscheid 02.09.2026, offener Punkt FX3-4):
+        /// die zwei Alt-Arten gehören dazu.</b>
         /// <see cref="DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN"/> und
-        /// <see cref="DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN"/> (die projektweiten
-        /// Vorläufer von Weg A) bleiben im Betriebs-Topf, ebenso der „Weg C" der
-        /// Hilfsenergie — der feste Jahresbetrag
-        /// (<see cref="DbWerte.BEMESSUNG_JAHRESBETRAG"/>/<see cref="DbWerte.BEMESSUNG_BETRAG"/>).
-        /// Beides ist eine Fachentscheidung des Anwenders vom 02.09.2026 und keine
-        /// Vergesslichkeit: Ein fester Betrag trägt keine Endenergie-Bemessung, und die
-        /// Alt-Arten sollen sich nicht ändern, während sie auslaufen.</para>
+        /// <see cref="DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN"/> — die projektweiten
+        /// Vorläufer von Weg A — liegen seither im Endenergie-Topf, samt ihrer
+        /// Startjahr-Anteile. FX3 hatte sie ausgenommen („sie laufen aus und sollen
+        /// sich nicht mehr ändern"); der Anwender hat entschieden, sie gleichzuziehen,
+        /// denn sie sind derselben Sache nach ein Anteil der Energiekosten. Die
+        /// Bezugsmenge holen sie unverändert aus der gepflegten Konserve — ihre
+        /// MENGENermittlung ist von FX4 nicht berührt
+        /// (<see cref="IstEndenergieArt"/> bleibt, was es war).</para>
+        ///
+        /// <para><b>Dokumentierte Grenze (Stand FX4).</b> Der „Weg C" der Hilfsenergie —
+        /// der feste Jahresbetrag
+        /// (<see cref="DbWerte.BEMESSUNG_JAHRESBETRAG"/>/<see cref="DbWerte.BEMESSUNG_BETRAG"/>) —
+        /// bleibt im Betriebs-Topf (p_B). Das ist eine Fachentscheidung des Anwenders und
+        /// keine Vergesslichkeit: Ein fester Betrag trägt keine Endenergie-Bemessung.</para>
         /// </summary>
         internal sealed class BetriebsTopfe
         {
@@ -5193,8 +5238,9 @@ namespace WindowsFormsApplication1
             public List<KeyValuePair<double, int>> BetriebAbJahr =
                 new List<KeyValuePair<double, int>>();
 
-            /// <summary>Endenergie-bemessene Betriebskosten p. a. mit Preissteigerung
-            /// p_E, Zahlung ab t0 [€/a].</summary>
+            /// <summary>Energiepreisgebundene Betriebskosten p. a. mit Preissteigerung
+            /// p_E, Zahlung ab t0 [€/a] — die Arten aus
+            /// <see cref="IstEnergiepreisArt"/>.</summary>
             public double EndenergieSofort;
 
             /// <summary>Endenergie-Topf-Positionen mit Startjahr ≥ 2 (KD6).</summary>
@@ -5267,17 +5313,18 @@ namespace WindowsFormsApplication1
                     int start = StartJahrDerZeile(r);
                     double beitrag;
                     // PAKET FX3 (R-2): Diese Zeile gehört in den Endenergie-Topf (p_E),
-                    // sobald ihre BEMESSUNGSART eine Endenergie-Art ist — unabhängig
-                    // davon, ob der Betrag abgeleitet wurde oder aus einem gepflegten
-                    // Szenariowert stammt.
-                    bool ausEndenergie = false;
+                    // sobald ihre BEMESSUNGSART eine energiepreisgebundene Art ist —
+                    // unabhängig davon, ob der Betrag abgeleitet wurde oder aus einem
+                    // gepflegten Szenariowert stammt.
+                    // PAKET FX4-b: dazu zählen jetzt auch die zwei Alt-Arten.
+                    bool ausEnergiepreis = false;
 
                     if (!mitBemessung) beitrag = wert;
                     else
                     {
                         string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                         bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
-                        ausEndenergie = IstEndenergieArt(bem);
+                        ausEnergiepreis = IstEnergiepreisArt(bem);
 
                         if (string.IsNullOrEmpty(bem) ||
                             string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
@@ -5322,7 +5369,7 @@ namespace WindowsFormsApplication1
                     // Akkumulator geführt. Ohne solche Zeile bleibt summeEnde eine echte
                     // 0 und der Betriebstopf sammelt Zeile für Zeile wie vor FX3 —
                     // deshalb bleiben Bestandsprojekte bitgenau.
-                    if (ausEndenergie)
+                    if (ausEnergiepreis)
                     {
                         if (start > 1)
                             topfe.EndenergieAbJahr.Add(new KeyValuePair<double, int>(beitrag, start));
@@ -5451,11 +5498,39 @@ namespace WindowsFormsApplication1
             return wert != 0 ? wert : erwartet;   // 0/leer = kein Szenariowert gepflegt
         }
 
-        /// <summary>ETAPPE H2: die beiden Endenergie-Bemessungen (Konzept § 4.5).</summary>
+        /// <summary>ETAPPE H2: die beiden Endenergie-Bemessungen (Konzept § 4.5).
+        /// <para><b>Das ist die MENGEN-Frage, nicht die Topf-Frage:</b> Nur diese zwei
+        /// Arten holen ihre Bezugsgröße frisch aus dem Lauf
+        /// (<see cref="EndenergieMenge"/>). Welcher Preissteigerungstopf zuständig ist,
+        /// beantwortet seit FX4-b <see cref="IstEnergiepreisArt"/> — die beiden Fragen
+        /// fallen seither auseinander und dürfen nicht zusammengelegt werden.</para></summary>
         private static bool IstEndenergieArt(string bem)
         {
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// PAKET FX4-b (Anwenderentscheid 02.09.2026): die Bemessungsarten, deren Betrag
+        /// ein ANTEIL DER ENERGIEKOSTEN ist — sie eskalieren mit p_E statt mit p_B und
+        /// gehören deshalb in den Endenergie-Topf von
+        /// <see cref="LiesBetriebskostenTopfe"/>.
+        ///
+        /// <para>Das sind die beiden Endenergie-Arten aus H1 (Wege A und B) <b>und</b>
+        /// ihre zwei projektweiten Vorläufer <c>PROZENT_BRENNSTOFFKOSTEN</c> /
+        /// <c>PROZENT_STROMKOSTEN</c>. FX3 hatte die Vorläufer noch ausgenommen; der
+        /// Anwender hat sie am 02.09.2026 gleichgezogen.</para>
+        ///
+        /// <para><b>Nicht dabei:</b> der feste Jahresbetrag („Weg C",
+        /// <see cref="DbWerte.BEMESSUNG_JAHRESBETRAG"/>/<see cref="DbWerte.BEMESSUNG_BETRAG"/>)
+        /// und alle mengenbezogenen Arten (€/kWh, €/kW, €/h …) — ihr Betrag ist kein
+        /// Anteil eines Energiepreises.</para>
+        /// </summary>
+        private static bool IstEnergiepreisArt(string bem)
+        {
+            return IstEndenergieArt(bem) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal);
         }
 
         /// <summary>
