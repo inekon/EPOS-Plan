@@ -1,0 +1,265 @@
+﻿@* Der Inhalt des Haupt-Reiters "Berichte & Kosten" (iU9-W5.6).
+
+   Vorbild: Views/BerichteKosten/UcBerichteKosten.cs (810 Z., K4).
+
+   Links eine senkrechte Navigation im Stil der Detaillierten Simulation
+   (dunkles Menue, Vektor-Sinnbild je Seite), rechts die gewaehlte Seite:
+   Uebersicht, Kosten, Wirtschaftlichkeit, Bericht.
+
+   EINE WebView, VIER SEITEN (Risiko R5). Der Vorlaeufer haengte vier
+   UserControls nacheinander in ein Panel; hier ist es eine Zustandsmaschine
+   ueber vier Schluessel. Die Navigation traegt role="tablist" und die Knoepfe
+   role="tab" - dieselbe Struktur, die ein TabControl meldet; die Pfeiltasten
+   wandern wie im Baustein Reiter, nur senkrecht (auf/ab).
+
+   DIE SCHWEREN SEITEN ENTSTEHEN ERST BEIM ERSTEN AUFRUF, weil ein nicht
+   gewaehlter Zweig gar nicht gezeichnet wird - dieselbe Zurueckhaltung, mit
+   der der Vorlaeufer seine Seiten "lazy" erzeugte, nur ohne eigenen Code.
+
+   OHNE STAMMPROJEKT gibt es keine Vergleichsgruppe: Wirtschaftlichkeit und
+   Bericht bekommen dann keinen Parametersatz, und statt der Seite steht der
+   Hinweis - wortgleich zum Vorlaeufer (BK_MSG_KEIN_STAMM).
+
+   DER PROJEKTWECHSEL laeuft ueber den SeitenZustand der Huelle: Wer im
+   Kopfband der Startmaske auf eine andere Version umschaltet, loest
+   Geaendert aus; die Seite holt ihre Gaben neu, OHNE dass die WebView neu
+   gebaut wuerde. Der Vorlaeufer machte dasselbe ueber SetzeProjekt.
+
+   H11 ENTFAELLT. Der Vorlaeufer musste den Infoknopf jeder eingebetteten
+   Seite von der Kopfzeile abruecken - er suchte dafuer den ersten freien
+   Platz im Streifen des Knopfes (110 Zeilen Messcode). In der Blazor-Fassung
+   traegt die Kopfzeile den Knopf des Behaelters und jede Seite ihren eigenen
+   im FLUSS ihres Inhalts; sie koennen sich nicht mehr ueberdecken. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+@implements IDisposable
+
+<div class="epos-navigation">
+
+    <div class="epos-navigation-liste" role="tablist" aria-label="@NavigationBezeichnung"
+         @onkeydown="BeiTaste">
+        @foreach ((string schluessel, string text) in Eintraege)
+        {
+            string s = schluessel;
+            <button type="button" role="tab" class="@Knopfklasse(s)"
+                    id="@("bknav-" + s)" aria-selected="@(s == _seite ? "true" : "false")"
+                    aria-controls="bknav-inhalt" tabindex="@(s == _seite ? 0 : -1)"
+                    @onclick="@(() => Zeige(s))">
+                <span class="epos-navigation-symbol" aria-hidden="true">@Symbol(s)</span>@text
+            </button>
+        }
+    </div>
+
+    <div class="epos-navigation-inhalt" id="bknav-inhalt" role="tabpanel"
+         aria-labelledby="@("bknav-" + _seite)">
+
+        <div class="epos-navigation-kopf">
+            <span>@Kopfzeile</span>
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        </div>
+
+        @if (_gaben is null)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinStammText" />
+        }
+        else if (_seite == SEITE_UEBERSICHT)
+        {
+            <UebersichtSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_KOSTEN)
+        {
+            <KostenSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_WIRTSCHAFT)
+        {
+            <WirtschaftlichkeitSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_BERICHT)
+        {
+            <BerichtSeite @key="_stand" @attributes="_gaben" />
+        }
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Die vier Seitenschluessel — Schicht 2 der Drei-Schichten-Regel:
+    // sprachneutral, ASCII. Wortgleich aus UcBerichteKosten uebernommen,
+    // damit die Sprungziele des Menues (MDIMainForm) unveraendert bleiben.
+    // =====================================================================
+
+    /// <summary>Die Seite „Übersicht".</summary>
+    public const string SEITE_UEBERSICHT = "UEBERSICHT";
+
+    /// <summary>Die Seite „Kosten".</summary>
+    public const string SEITE_KOSTEN = "KOSTEN";
+
+    /// <summary>Die Seite „Wirtschaftlichkeit".</summary>
+    public const string SEITE_WIRTSCHAFT = "WIRTSCHAFT";
+
+    /// <summary>Die Seite „Bericht".</summary>
+    public const string SEITE_BERICHT = "BERICHT";
+
+    // =====================================================================
+    // Datenseite
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz einer Seite. <c>null</c> heißt „geht gerade nicht" —
+    /// ohne Stammprojekt gibt es keine Vergleichsgruppe, und statt der Seite
+    /// steht <see cref="KeinStammText"/>.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>?>? SeitenGaben { get; set; }
+
+    /// <summary>Die Kopfzeile zu einer Seite (Titel und Stammname).</summary>
+    [Parameter] public Func<string, string>? Kopf { get; set; }
+
+    /// <summary>
+    /// Der geteilte Zustand der Hülle: Projektwechsel und Auffrischen. Die
+    /// Seite hängt sich an sein Änderungsereignis, statt die WebView neu
+    /// bauen zu lassen.
+    /// </summary>
+    [Parameter] public EPOS.UI.Dienste.SeitenZustand? Zustand { get; set; }
+
+    /// <summary>Die Seite, die beim Aufbau vorn steht.</summary>
+    [Parameter] public string Startseite { get; set; } = SEITE_UEBERSICHT;
+
+    /// <summary>
+    /// Ein Seitenwunsch der Hülle, abgefragt bei jeder Änderung des Zustands.
+    /// Leer = keiner. So kommt der Menüweg „Projekte › Varianten und Bericht…"
+    /// an sein Ziel, ohne dass die Hülle die Komponente kennen müsste
+    /// (Vorbild <c>UcBerichteKosten.ZeigeSeite</c>).
+    /// </summary>
+    [Parameter] public Func<string>? Seitenwunsch { get; set; }
+
+    /// <summary>Hilfeschlüssel der Kopfzeile — der der alten Maske.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBerichteKosten.btn_Help";
+
+    // ---- Texte ----------------------------------------------------------
+
+    [Parameter] public string NavUebersicht { get; set; } = "Übersicht";
+    [Parameter] public string NavKosten { get; set; } = "Kosten";
+    [Parameter] public string NavWirtschaft { get; set; } = "Wirtschaftlichkeit";
+    [Parameter] public string NavBericht { get; set; } = "Bericht";
+    [Parameter] public string NavigationBezeichnung { get; set; } = "Berichte und Kosten";
+
+    /// <summary>Hinweis ohne Stammprojekt (BK_MSG_KEIN_STAMM).</summary>
+    [Parameter] public string KeinStammText { get; set; }
+        = "Bitte zuerst ein Stammprojekt wählen.";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private string _seite = SEITE_UEBERSICHT;
+    private IReadOnlyDictionary<string, object>? _gaben;
+
+    /// <summary>
+    /// Der Zählerstand des letzten Neuaufbaus. Er dient als <c>@@key</c> der
+    /// Seitenkomponente: Ein Projektwechsel soll die Seite NEU aufbauen (ihr
+    /// <c>OnInitialized</c> lädt), nicht nur ihre Parameter tauschen.
+    /// </summary>
+    private int _stand;
+
+    /// <summary>Die sichtbare Seite (Prüfhilfe und Wirt).</summary>
+    public string AktiveSeite => _seite;
+
+    private IReadOnlyList<(string Schluessel, string Text)> Eintraege => new[]
+    {
+        (SEITE_UEBERSICHT, NavUebersicht),
+        (SEITE_KOSTEN, NavKosten),
+        (SEITE_WIRTSCHAFT, NavWirtschaft),
+        (SEITE_BERICHT, NavBericht)
+    };
+
+    private string Kopfzeile => Kopf?.Invoke(_seite) ?? "";
+
+    protected override void OnInitialized()
+    {
+        _seite = Bekannt(Startseite) ? Startseite : SEITE_UEBERSICHT;
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        GabenHolen();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+    }
+
+    private void BeiZustand()
+    {
+        // Der Zustand kommt vom Oberflaechenfaden der Huelle; gezeichnet wird
+        // ausschliesslich auf dem Renderfaden (Muster AppWurzel.OeffneMaske).
+        _ = InvokeAsync(() =>
+        {
+            string wunsch = Seitenwunsch?.Invoke() ?? "";
+            if (Bekannt(wunsch)) _seite = wunsch;
+
+            GabenHolen();
+            StateHasChanged();
+        });
+    }
+
+    private static bool Bekannt(string s)
+        => s == SEITE_UEBERSICHT || s == SEITE_KOSTEN
+        || s == SEITE_WIRTSCHAFT || s == SEITE_BERICHT;
+
+    /// <summary>Stellt die Seite mit diesem Schlüssel ein (auch von außen).</summary>
+    public void Zeige(string schluessel)
+    {
+        if (!Bekannt(schluessel)) return;
+        _seite = schluessel;
+        GabenHolen();
+        StateHasChanged();
+    }
+
+    private void GabenHolen()
+    {
+        _gaben = SeitenGaben?.Invoke(_seite);
+        _stand++;
+    }
+
+    private string Knopfklasse(string s)
+        => s == _seite
+            ? "epos-navigation-knopf epos-navigation-knopf--aktiv"
+            : "epos-navigation-knopf";
+
+    /// <summary>
+    /// Das Sinnbild je Seite. Der Vorläufer zeichnete vier GDI-Vektoren
+    /// (Liste, Euro, Säulen, Dokument); hier stehen dieselben vier Zeichen als
+    /// Text — kein Renderer, kein Bild, und im Hochkontrastmodus sichtbar.
+    /// </summary>
+    private static string Symbol(string s) => s switch
+    {
+        SEITE_UEBERSICHT => "☰",
+        SEITE_KOSTEN => "€",
+        SEITE_WIRTSCHAFT => "▤",
+        SEITE_BERICHT => "▦",
+        _ => ""
+    };
+
+    private void BeiTaste(KeyboardEventArgs e)
+    {
+        IReadOnlyList<(string Schluessel, string Text)> liste = Eintraege;
+        int jetzt = 0;
+        for (int i = 0; i < liste.Count; i++)
+            if (liste[i].Schluessel == _seite) { jetzt = i; break; }
+
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                Zeige(liste[(jetzt - 1 + liste.Count) % liste.Count].Schluessel);
+                break;
+            case "ArrowDown":
+                Zeige(liste[(jetzt + 1) % liste.Count].Schluessel);
+                break;
+            case "Home":
+                Zeige(liste[0].Schluessel);
+                break;
+            case "End":
+                Zeige(liste[liste.Count - 1].Schluessel);
+                break;
+        }
+    }
+}
