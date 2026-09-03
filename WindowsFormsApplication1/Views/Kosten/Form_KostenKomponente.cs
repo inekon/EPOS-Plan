@@ -753,26 +753,26 @@ namespace WindowsFormsApplication1
                 ? (string)cmbKomponente.Items[cmbKomponente.SelectedIndex] : "";
             string vorschlag = basis + " — Variante " + (_varianten.Count);
 
-            using (var dlg = new Form_VariantenName())
-            {
-                dlg.SetControls(
-                    kopie ? Text_("KDLG_MSG_KOPIE_TITEL", "Speichern unter")
-                          : Text_("KDLG_MSG_NEU_TITEL", "Neue Variante"),
-                    Text_("KDLG_MSG_NEU_NAME", "Name der neuen Variante:"),
-                    vorschlag);
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+            // iU9-W1.2: Die Namensabfrage ist die Razor-Komponente NamensDialog;
+            // Form_VariantenName ist im selben Schritt gelöscht (Regel M1).
+            string name = NamensDialogHuelle.Fragen(this,
+                kopie ? Text_("KDLG_MSG_KOPIE_TITEL", "Speichern unter")
+                      : Text_("KDLG_MSG_NEU_TITEL", "Neue Variante"),
+                Text_("KDLG_MSG_NEU_NAME", "Name der neuen Variante:"),
+                vorschlag,
+                Text_("NAMD_MSG_LEER", "Bitte einen Namen eingeben."));
+            if (name == null) return;
 
-                int neueId = kopie
-                    ? KostenVorlagenCtrl.SpeichernUnter(quelle.Id, dlg.Ergebnis)
-                    : KostenVorlagenCtrl.VorlageNeu(KomponentenId, KategorieId, dlg.Ergebnis);
-                if (neueId == 0)
-                {
-                    MessageBox.Show(Text_("KDLG_MSG_NAME_BELEGT", "Der Name ist bereits vergeben oder leer."),
-                        Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                VariantenLaden(neueId);
+            int neueId = kopie
+                ? KostenVorlagenCtrl.SpeichernUnter(quelle.Id, name)
+                : KostenVorlagenCtrl.VorlageNeu(KomponentenId, KategorieId, name);
+            if (neueId == 0)
+            {
+                MessageBox.Show(Text_("KDLG_MSG_NAME_BELEGT", "Der Name ist bereits vergeben oder leer."),
+                    Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+            VariantenLaden(neueId);
         }
 
         private void btnVarianteLoeschen_Click(object sender, EventArgs e)

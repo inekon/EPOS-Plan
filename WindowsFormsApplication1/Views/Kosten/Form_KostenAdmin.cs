@@ -42,34 +42,29 @@ namespace WindowsFormsApplication1
         // Button: Neuer Kostenfaktor
         private void btnNeuKostenfaktor_Click(object sender, EventArgs e)
         {
-            Form_KostenItemNeu frmLabel = new Form_KostenItemNeu();
+            // iU9-W1.2: Die Namensabfrage ist die Razor-Komponente NamensDialog;
+            // Form_KostenItemNeu ist im selben Schritt gelöscht (Regel M1). Der
+            // Dialog erschien vorher an der Knopfposition — die Blazor-Hülle
+            // erscheint mittig über dem Besitzerfenster (Hausmaß seit iU8).
+            string neueBezeichnung = NamensDialogHuelle.Fragen(this,
+                "Bezeichner eingeben", "Bezeichner", "", "Bezeichnung eingeben!");
+            if (neueBezeichnung == null) return;
+            if (neueBezeichnung.Length == 0) return;
 
-            System.Drawing.Point p1 = btnNeuKostenfaktor.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
+            // Befund B4: das alte INSERT nutzte den Variablennamen als
+            // SQL-Bezeichner (VALUES (neueBezeichnung)) und scheiterte immer.
+            // Jetzt: Platzhalter + neue StammID + IsMainComponent = False.
+            int stammId = DataRepository.GetMaxID("Tab_Kostenfaktor", "StammID") + 1;
+            bool ok = DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_Kostenfaktor (StammID, Bezeichnung, IsMainComponent) VALUES (?, ?, ?)",
+                new DbParam("@sid", stammId),
+                new DbParam("@bez", neueBezeichnung),
+                new DbParam("@main", DbParamTyp.Boolean) { Wert = false });
+            if (!ok)
+                MessageBox.Show("Der Kostenfaktor konnte nicht angelegt werden.", "Fehler",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            if (frmLabel.ShowDialog() == DialogResult.OK)
-            {
-                string neueBezeichnung = (frmLabel.m_szName ?? "").Trim();
-                if (neueBezeichnung.Length == 0) return;
-
-                // Befund B4: das alte INSERT nutzte den Variablennamen als
-                // SQL-Bezeichner (VALUES (neueBezeichnung)) und scheiterte immer.
-                // Jetzt: Platzhalter + neue StammID + IsMainComponent = False.
-                int stammId = DataRepository.GetMaxID("Tab_Kostenfaktor", "StammID") + 1;
-                bool ok = DataRepository.ExecuteSQL(
-                    "INSERT INTO Tab_Kostenfaktor (StammID, Bezeichnung, IsMainComponent) VALUES (?, ?, ?)",
-                    new DbParam("@sid", stammId),
-                    new DbParam("@bez", neueBezeichnung),
-                    new DbParam("@main", DbParamTyp.Boolean) { Wert = false });
-                if (!ok)
-                    MessageBox.Show("Der Kostenfaktor konnte nicht angelegt werden.", "Fehler",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                LoadKostenfaktoren();
-            }
+            LoadKostenfaktoren();
         }
 
         private void AnpassenSpaltenbreite()
