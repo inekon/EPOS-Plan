@@ -18,6 +18,7 @@ if (args.Length == 0 || args[0] is "--hilfe" or "-h" or "--help")
 }
 
 string? quelle = null, resx = null, karte = null, razor = null, alle = null, ziel = null, wurzel = null;
+var erreichbarkeit = true;
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -29,6 +30,8 @@ for (var i = 0; i < args.Length; i++)
         case "--alle": alle = Naechstes(args, ref i); break;
         case "--ziel": ziel = Naechstes(args, ref i); break;
         case "--wurzel": wurzel = Naechstes(args, ref i); break;
+        case "--erreichbarkeit": erreichbarkeit = true; break;
+        case "--ohne-erreichbarkeit": erreichbarkeit = false; break;
         default:
             if (args[i].StartsWith("--", StringComparison.Ordinal))
             {
@@ -53,7 +56,7 @@ try
             return 2;
         }
 
-        var ergebnis = Stapel.Laufen(alle, ziel, wurzel);
+        var ergebnis = Stapel.Laufen(alle, ziel, wurzel, erreichbarkeit);
         var uebersicht = Stapel.Uebersicht(ergebnis, alle);
 
         if (ziel is not null)
@@ -61,6 +64,13 @@ try
             var pfad = Path.Combine(ziel, "UEBERSICHT.md");
             File.WriteAllText(pfad, uebersicht, bom);
             Console.WriteLine("Geschrieben nach " + ziel + " (" + ergebnis.Masken + " Masken, Uebersicht: " + pfad + ")");
+
+            if (erreichbarkeit)
+            {
+                var befund = Path.Combine(ziel, "ERREICHBARKEIT.md");
+                File.WriteAllText(befund, Stapel.Erreichbarkeitsbefund(ergebnis, alle), bom);
+                Console.WriteLine("Befundliste: " + befund);
+            }
         }
         Console.WriteLine(uebersicht);
         return ergebnis.Fehler.Count == 0 ? 0 : 1;
@@ -78,7 +88,7 @@ try
         return 2;
     }
 
-    var maske = Kartenbau.Vollstaendig(quelle, resx, wurzel);
+    var maske = Kartenbau.Vollstaendig(quelle, resx, wurzel, erreichbarkeit);
 
     if (karte is null && razor is null)
     {
@@ -141,5 +151,8 @@ static void Hilfe()
           --alle    Stapellauf ueber alle *.Designer.cs unterhalb des Ordners
           --ziel    Ausgabeordner des Stapellaufs (ohne: nur die Uebersicht)
           --wurzel  Projektordner fuer die Suche nach ShowDialog-Aufrufern
+
+          --erreichbarkeit        Spalte "Oeffner erreichbar" mitrechnen (Vorgabe)
+          --ohne-erreichbarkeit   sie weglassen - spart den Graphlauf ueber den Baum
         """);
 }

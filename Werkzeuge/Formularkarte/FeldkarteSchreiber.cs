@@ -56,6 +56,12 @@ public static class FeldkarteSchreiber
             ? maske.Meldungen.ToString(CultureInfo.InvariantCulture)
             : "keine Form_X.cs gefunden");
         Zeile(werkzeug, "Aufrufer (ShowDialog)", Aufrufer(maske));
+        if (maske.Erreichbarkeit is { } befund)
+        {
+            // Die Frage, die die Karte bis iU8-12 nicht beantwortet hat: Ist der
+            // Aufrufer selbst noch ueber Menue, Kachel oder Reiter zu erreichen?
+            Zeile(werkzeug, "Öffner erreichbar", befund.Zusammenfassung);
+        }
         if (maske.FormularEreignisse.Count > 0)
         {
             Zeile(werkzeug, "Fensterereignisse", string.Join(", ", maske.FormularEreignisse.Select(e => "`" + e + "`")));
