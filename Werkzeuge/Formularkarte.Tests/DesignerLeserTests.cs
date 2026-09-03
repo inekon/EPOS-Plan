@@ -16,19 +16,16 @@ public sealed class DesignerLeserTests
     private static Maske Lesen(string relativ) =>
         Kartenbau.Vollstaendig(Repowurzel.Designer(relativ));
 
-    // Die Zeilenregel fuer Beschriftungen kommt erst mit iU8-12b; bis dahin
-    // steht jedes Label als eigene Zeile in der Karte.
-
     // ---- Form_Kosten_Auswahl: die Handkarte aus dem Plan --------------------
 
     [Fact]
-    public void KostenAuswahl_HatSechsZeilen()
+    public void KostenAuswahl_HatVierZeilen()
     {
         var abschnitte = Kartenbau.Abschnitte(Lesen(KostenAuswahl));
 
         var abschnitt = Assert.Single(abschnitte);
         Assert.Equal("Fenster", abschnitt.Titel);
-        Assert.Equal(6, abschnitt.Zeilen.Count);
+        Assert.Equal(4, abschnitt.Zeilen.Count);
     }
 
     [Fact]
@@ -37,18 +34,17 @@ public sealed class DesignerLeserTests
         var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
 
         Assert.Equal(
-            new[] { "cmbBrennstoffArt", "TextBox_Variante", "btn_Abbrechen", "btn_OK", "label1", "label_Variante" },
+            new[] { "cmbBrennstoffArt", "TextBox_Variante", "btn_Abbrechen", "btn_OK" },
             zeilen.Select(z => z.Element.Name).ToArray());
     }
 
     [Fact]
-    public void KostenAuswahl_LiestDieTexteDerLabel()
+    public void KostenAuswahl_BeschriftungenStehenLinksInDerselbenZeile()
     {
         var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
 
-        Assert.Equal("Energieträger:", zeilen[4].TextDe);
-        Assert.Equal("Energieträger Varianten Bezeichnung:", zeilen[5].TextDe);
-        Assert.Equal(new Paar(13, 29), zeilen[4].Element.Ort);
+        Assert.Equal("Energieträger:", zeilen[0].TextDe);
+        Assert.Equal("Energieträger Varianten Bezeichnung:", zeilen[1].TextDe);
     }
 
     [Fact]
@@ -108,21 +104,23 @@ public sealed class DesignerLeserTests
     // ---- Form_KostenfaktorItem: 7 Zeilen, 5 Zuordnungen --------------------
 
     [Fact]
-    public void Kostenfaktor_HatZwoelfZeilen()
+    public void Kostenfaktor_HatSiebenZeilen()
     {
         var abschnitt = Assert.Single(Kartenbau.Abschnitte(Lesen(KostenfaktorItem)));
-        Assert.Equal(12, abschnitt.Zeilen.Count);
+        Assert.Equal(7, abschnitt.Zeilen.Count);
     }
 
     [Fact]
-    public void Kostenfaktor_LiestKoordinatenBeiderSpalten()
+    public void Kostenfaktor_OrdnetAlleFuenfLabelZu()
     {
-        var maske = Lesen(KostenfaktorItem);
+        var zeilen = Kartenbau.Abschnitte(Lesen(KostenfaktorItem))[0].Zeilen
+            .ToDictionary(z => z.Element.Name, z => z.TextDe, StringComparer.Ordinal);
 
-        // Label links (x = 16), Feld rechts (x = 114) - die Rohdaten der
-        // Zeilenregel, die iU8-12b daraus macht.
-        Assert.Equal(new Paar(16, 163), maske.Finden("label2")!.Ort);
-        Assert.Equal(new Paar(114, 160), maske.Finden("textBox_Wert")!.Ort);
+        Assert.Equal("Kostenfaktor", zeilen["comboBox1"]);
+        Assert.Equal("Gruppe", zeilen["comboBox_Gruppe"]);
+        Assert.Equal("Nutzungsdauer", zeilen["textBox_Nutzungsdauer"]);
+        Assert.Equal("Einheit", zeilen["textBox_Einheit"]);
+        Assert.Equal("Wert", zeilen["textBox_Wert"]);
     }
 
     [Fact]
@@ -135,6 +133,13 @@ public sealed class DesignerLeserTests
         Assert.Equal(new Paar(370, 255), maske.Fenstergroesse);
         Assert.Equal(new Paar(114, 32), maske.Finden("comboBox1")!.Ort);
         Assert.Equal("DropDownList", maske.Finden("comboBox1")!.Wert("DropDownStyle"));
+    }
+
+    [Fact]
+    public void Kostenfaktor_KeinVerbrauchtesLabelStehtNochAlsZeile()
+    {
+        var zeilen = Kartenbau.Abschnitte(Lesen(KostenfaktorItem))[0].Zeilen;
+        Assert.DoesNotContain(zeilen, z => z.Element.Art == Art.Beschriftung);
     }
 
     [Fact]

@@ -78,6 +78,16 @@ public sealed class FeldkarteSchreiberTests
     }
 
     [Fact]
+    public void LokalisierteMaskeNenntIhreRessourcendateien()
+    {
+        var karte = Karte("Stromspeicher/Form_StromspeicherItemNeu.Designer.cs");
+
+        Assert.Contains("| Lokalisiert | ja (ApplyResources) |", karte, StringComparison.Ordinal);
+        Assert.Contains("`Form_StromspeicherItemNeu.en-US.resx`", karte, StringComparison.Ordinal);
+        Assert.Contains("| Titel en | Enter identifier |", karte, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void GrenzenEinerNumericUpDownStehenInDerSpalteBereich()
     {
         // Der Designer schreibt Minimum/Maximum als new decimal(new int[]{...}) -

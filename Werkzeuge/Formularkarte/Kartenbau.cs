@@ -47,10 +47,12 @@ public sealed class Abschnitt
 /// </summary>
 public static class Kartenbau
 {
-    /// <summary>Liest Designer und Form_X.cs und baut die Abschnitte.</summary>
-    public static Maske Vollstaendig(string designerPfad, string? suchwurzel = null)
+    /// <summary>Liest Designer, .resx und Form_X.cs und baut die Abschnitte.</summary>
+    public static Maske Vollstaendig(string designerPfad, string? resxPfad = null, string? suchwurzel = null)
     {
         var maske = DesignerLeser.Lesen(designerPfad);
+        ResxLeser.Anwenden(maske, resxPfad);
+        LabelRegel.Anwenden(maske);
         QuelltextLeser.Anwenden(maske, suchwurzel);
         return maske;
     }
@@ -88,15 +90,16 @@ public static class Kartenbau
     private static int Ordnung(Steuerelement element) => element.TabIndex ?? int.MaxValue;
 
     /// <summary>
-    /// Kommt das Steuerelement als eigene Zeile in die Karte? Solange die
-    /// Zeilenregel fehlt (iU8-12b), steht jedes Label als eigene Zeile da.
+    /// Kommt das Steuerelement als eigene Zeile in die Karte? Ein Label, das
+    /// bereits als Beschriftung eines Feldes dient, nicht - es steht dort in
+    /// der Spalte "Label/Text de".
     /// </summary>
     public static bool Zeilenwuerdig(Steuerelement element) => element.Art switch
     {
         Art.Feld => true,
         Art.Knopf => true,
         Art.Sonstig => true,
-        Art.Beschriftung => true,
+        Art.Beschriftung => !element.AlsBeschriftungVerbraucht,
         _ => false
     };
 
@@ -114,14 +117,18 @@ public static class Kartenbau
         };
     }
 
-    /// <summary>
-    /// Deutsche Beschriftung. Vorerst der eigene Text des Steuerelements - die
-    /// Zuordnung des Labels links daneben kommt mit der Zeilenregel (iU8-12b).
-    /// </summary>
-    public static string TextDe(Steuerelement element) => element.Text;
+    /// <summary>Deutsche Beschriftung: Label links/darueber, sonst der eigene Text.</summary>
+    public static string TextDe(Steuerelement element) =>
+        element.Beschriftung is { } label && !string.IsNullOrWhiteSpace(label.Text)
+            ? label.Text
+            : element.Text;
 
-    /// <summary>Englische Beschriftung; sie kommt mit dem .resx-Leser (iU8-12b).</summary>
-    public static string TextEn(Steuerelement element) => element.TextEn ?? "";
+    /// <summary>Englische Beschriftung aus der en-US-.resx, in derselben Reihenfolge.</summary>
+    public static string TextEn(Steuerelement element)
+    {
+        if (element.Beschriftung is { } label && !string.IsNullOrWhiteSpace(label.TextEn)) return label.TextEn!;
+        return element.TextEn ?? "";
+    }
 
     /// <summary>
     /// Feldtyp und Zielkomponente. Die Tabelle steht in LIESMICH.md;
