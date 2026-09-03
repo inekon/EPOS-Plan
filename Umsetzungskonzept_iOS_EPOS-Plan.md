@@ -964,6 +964,52 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 >
 > **Offen nach iU5:** der Windows-Vollreferenzlauf 332/332, die Eingabehelfer
 > `Program.Zahl*`/`Ganzzahl*` mit ihren Masken (iU9) und die genannten Ausnahmen.
+>
+> **iU5-Abschluss: der zweite Umzug (03.09.2026).** Fünf Commits (`7204224` iU5-U1 …
+> `dc7d182` iU5-U5) auf der Basis `c477523`. Nachdem iU5 den Kernkandidaten die Umgebung
+> abgenommen hatte, ist die Frage „was kann noch mit?" nicht mehr geschätzt, sondern
+> **gemessen worden**: Jede Datei unter `Allgemein/` und `Controller/` wurde nach
+> `EPOS.Kern/` verschoben und der Kernbau mit `EnableWindowsTargeting=false` als Wächter
+> laufen gelassen; was er ablehnte, ging unverändert zurück. **74 von 133 Dateien sind
+> mitgegangen** — der Kern wächst von **193 auf 267** `.cs`-Dateien.
+>
+> | Tranche | Commit | Verschoben | Zurück (Grund) |
+> |---|---|---|---|
+> | iU5-U1 | `7204224` | **20** — `Lizenz/` (4), `Export/` (1), `Import/` (12), `Katalog/` (3) | keine |
+> | iU5-U2 | `b65a451` | **11** von 25 aus `KI/` — Wissen, Semantik, Texte, Schutzstufen, Einwilligung | **14**: `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` (lebende `Control`/`Form`); `KiAktionenDialog` (+ `HelpEntry`); `KiAktionenProjekt`/`-Schreiben` (`OleDbException`); `KiChatService`, `KiAktionenSitzung`, `KiAktionen` (+ `KiHilfe`), `-Energie`, `-Uebernahme`, `-Wirtschaft`, `KiAktionenLastgang` (`GanglinienEintrag`) |
+> | iU5-U3 | `f5e099c` | **9** — die Bericht-AUSGABE: Word, Excel, `Bausteine/` (4), `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` | **2**: `ChartRendererGdi` (GDI+, von vornherein ausgenommen), `BerichtsDatenSammler` (`EnergieMengen` aus `Views/Varianten/`) |
+> | iU5-U4 | `d502963` | **29** von 47 Controllern — sieben Stamm-, vierzehn Projekt-, fünf Zuordnungs-Controller, `BerichtCtrl`, `SpotpreisImportCtrl`, `SpotpreisLeser` | **18**: die 12 `*KontextMenuCtrl`, `WPCtrl` (+ `.WinForms.cs`, `partial`), `KlimaregionStammCtrl` (`ComboBox`/`ListBox`), `WizardCtrl`/`MenueCtrl` (`WizardParent`), `EnergietraegerKatalogCtrl` (`EnergyCarrier`), `PeakShavingCtrl` (`OleDbException`), `ProjektExportImportCtrl` (`SchemaMigration`) |
+> | iU5-U5 | `dc7d182` | **5** — `ToolsClass`, `FileDlgClass`, `Hilfe/DokuUebersetzung`, `Update/AnlagenEindeutigkeit`, `chart_test` | **3**: `StromTestClass` (`WPCtrl`), `IAssistentRahmen` (`WizardSeite`), `Simulation/SchemaModell` (`Form_Waermesenke`) |
+>
+> **Ein einziger inhaltlicher Eingriff.** `Bausteine/BausteineStandard.cs` las die
+> Programmfassung über `System.Windows.Forms.Application.ProductVersion`; an ihre Stelle tritt
+> `DeckblattBaustein.ProduktFassung()` mit derselben Reihenfolge (informelle Fassung des
+> Einstiegs-Assemblies → `FileVersionInfo.ProductVersion` → `"1.0.0.0"`). Weil die Anwendung
+> `GenerateAssemblyInfo=false` setzt und nur `AssemblyFileVersion 1.1.0.0` deklariert, zeigt das
+> Deckblatt unter Windows unverändert `1.1.0.0`. Dazu **17 tote `using`-Zeilen** entfernt
+> (`System.Windows.Forms` 15×, `Microsoft.Win32` 2×) — in keiner dieser Dateien wurde ein Typ
+> aus dem Namensraum benutzt; ohne `EnableWindowsTargeting` fiel das nie auf.
+>
+> **Neu im Kern**: `BouncyCastle.Cryptography`, `ClosedXML`, `DocumentFormat.OpenXml`,
+> `SixLabors.Fonts`, `Microsoft.ML.OnnxRuntime`, `Microsoft.ML.Tokenizers` und eine
+> `ProjectReference` auf `KiKern` — alle plattformfrei. `Mscc.GenerativeAI` und
+> `Microsoft.Extensions.Http/Logging` wurden **nicht** gebraucht: Die Namen stehen im Bestand
+> nur in Kommentaren von `KiChatService`, und der bleibt in der Anwendung.
+>
+> **Die Schnittkante, die dabei sichtbar wurde:** Was der KI-Assistent **weiß**, ist Kern; was
+> er **bedient**, hängt an lebenden WinForms-Controls und bleibt bei der Oberfläche, bis iU8 die
+> Masken ablöst. Dasselbe Muster bei den Controllern: Rechnen und Speichern gehen mit, Listen-
+> und Kontextmenü-Bedienung bleibt.
+>
+> **Nachweis je Tranche:** Kern 0 Fehler (Warnungen 2 → 3, die dritte ist CS0108 aus
+> `StromverbraucherStammCtrl` und mitgewandert), Lösung x64 0 Fehler / 36 Warnungen
+> unverändert, 886 Tests grün, Referenzlauf 1030/1007/1017 GESAMT PASS mit leerem
+> `diff -rq`, ChartProben 9 Bilder ohne Verstoß, `ZugriffsschichtProben` und
+> `Referenzlauf` (x64) 0 Fehler, beide Wächter 0 Treffer.
+>
+> **Offen nach dem zweiten Umzug:** die Windows-Bedienprobe (Berichte, Katalogimport,
+> Lizenzaktivierung, KI-Chat) und die 59 Dateien, die erst mit `Views/` bzw. mit dem
+> Access-Zweig gehen können.
 
 **Voraussetzung:** iU4. **Block A2, A3, A4, M4.**
 
@@ -1065,23 +1111,26 @@ Referenzlauf über `IDatenzugriff` wertgleich.
 
 ### iU7 — Charts und Berichte plattformfrei · M · Windows
 
-> **Status 03.09.2026 — der Renderer ist im Kern, die Ausgabe steht noch aus.** Vier
-> weitere Commits (`6c797df` iU7-5 … iU7-8) auf der Basis `300a354`, aufbauend auf
-> iU7-1…iU7-4 (`c6b32eb`…`f84932b`).
+> **Status 03.09.2026 — Renderer und Ausgabe sind im Kern.** Fünf
+> weitere Commits (`6c797df` iU7-5 … `57d7cc8` iU7-9) auf der Basis `300a354`, aufbauend auf
+> iU7-1…iU7-4 (`c6b32eb`…`f84932b`). Die Ausgabe selbst ist im zweiten Umzug gewandert
+> (iU5-U3, `f5e099c`); iU7-9 hat den letzten Rest — die Systemdialoge der Berichtsansicht —
+> auf `Dienste.Datei` gelegt.
 >
 > | Tranche | Commit | Inhalt |
 > |---|---|---|
 > | iU7-5 | `6c797df` | **`ChartRenderer.cs` von `WindowsFormsApplication1` nach `EPOS.Kern/Allgemein/Bericht/`** — verschoben, nicht verlinkt. `SkiaSharp` im `EPOS.Kern.csproj`, die nativen Bibliotheken **bedingt über `IsOSPlatform`** (Linux, macOS, Win32). Namespace bleibt `WindowsFormsApplication1`, alle Aufrufer der Anwendung und `Referenzlauf/Bildvergleich.cs` übersetzen unverändert |
 > | iU7-6 | `525db95` | **`Proben/ChartProben` hängt am Kern** statt an Ersatzklassen: `ProjectReference` auf `EPOS.Kern` statt `Compile Include`; `ZeitreihenSatzStub.cs` und `BerichtTexteStub.cs` gelöscht. Die Probe misst jetzt die echten `ZeitreihenSatz`/`VerlaufSerie`/`BerichtTexte` |
 > | iU7-7 | `343a549` | **ChartProben in `kern.yml`** — nach dem Test-Schritt, auf ubuntu **und** macos; die neun PNG als Artefakt `chartproben-<os>` (14 Tage) |
-> | iU7-8 | dieser Commit | **Drei Renderer-Tests in `EPOS.Kern.Tests`**: `TagesMittel`/`MonatsSummenMWh` exakt, `Kuchen` liefert PNG in 960×600, `BalkenHorizontal` zweimal byte-gleich. **869 → 872 Tests** |
+> | iU7-8 | `0759b37` | **Drei Renderer-Tests in `EPOS.Kern.Tests`**: `TagesMittel`/`MonatsSummenMWh` exakt, `Kuchen` liefert PNG in 960×600, `BalkenHorizontal` zweimal byte-gleich. **869 → 872 Tests** |
+> | iU7-9 | `57d7cc8` | **Berichtsausgabe über `Dienste.Datei`**: `Views/Bericht/UcBericht.cs` (Ordnerwahl, Speicherziel, zweimal Öffnen) und `Views/Varianten/Form_Variantentest.cs` (Speicherziel, Öffnen) rufen `OrdnerWaehlen`, `DateiSpeichern` und `MitSystemOeffnen` statt `FolderBrowserDialog`, `SaveFileDialog` und `Process.Start`. `WordBerichtGenerator.FindeVorlage()` brauchte nichts — sie sucht schon über `AppDomain.CurrentDomain.BaseDirectory`. Eine bewusste Abweichung: die Dialoge bekommen kein Besitzerfenster mehr, weil `IDateiDienst` keines kennt |
 >
-> **Der Renderer war die Eintrittskarte, nicht der ganze Bericht.** Im Kern liegt jetzt
-> die **Zeichnung**; die **Ausgabe** — `WordBerichtGenerator`, `ExcelBerichtGenerator`,
-> `Bausteine/`, `BerichtsDatenSammler`, `ZeitreihenExtraktor` — bleibt in der Anwendung,
-> bis sie ihre eigene Etappe bekommt: Sie hängt an `IDateiDienst`/`ITeilen` (iU5), nicht
-> an GDI+. `ChartRendererGdi` bleibt ebenfalls dort; er ist nur noch der Gegenpart des
-> Windows-Bildvergleichs aus iU7-1.
+> **Der Renderer war die Eintrittskarte, der Rest kam mit iU5-U3 und iU7-9.** Im Kern liegt
+> jetzt die **Zeichnung** *und* die **Ausgabe** — `WordBerichtGenerator`,
+> `ExcelBerichtGenerator`, `Bausteine/`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`,
+> `IBerichtsBaustein` (verschoben im zweiten Umzug, siehe iU5-Statusblock). In der Anwendung
+> geblieben sind nur `ChartRendererGdi` — der Gegenpart des Windows-Bildvergleichs aus
+> iU7-1 — und `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft.
 >
 > **Damit steht die Vorlage für iF16.** Der Kern liefert PNG-Bytes, die Oberfläche zeigt
 > sie an — genau der Weg, den `EPOS.UI/Standards/ChartBild` (iU8-4) schon annimmt. Ein
@@ -1089,7 +1138,8 @@ Referenzlauf über `IDatenzugriff` wertgleich.
 > (iR3).
 >
 > **Nachweis:** `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → 0 Fehler,
-> **36 Warnungen** (unverändert); `EPOS.Kern` allein 0 Fehler, **2 Warnungen**.
+> **36 Warnungen** (unverändert); `EPOS.Kern` allein 0 Fehler, **2 Warnungen** (nach
+> iU5-U4 drei — die dritte ist mit `StromverbraucherStammCtrl` mitgewandert).
 > `dotnet test WP-Plan.Kern.slnf -c Release` → **872** (869 + 3).
 > `dotnet run --project Proben/ChartProben -c Release` → *9 Bilder geprueft, 0
 > Verstoesse*; alle neun PNG **byte-gleich** zum Stand vor dem Umzug (Schrift auf dem
