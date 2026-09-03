@@ -1,0 +1,313 @@
+﻿@* Solarkollektor im Katalog bearbeiten (iU9-W7.6).
+
+   VORBILD. Views/Solarthermie/Form_SolarDB (286 Z., lokalisiert de/en, 27
+   Kartenzeilen, 12 MessageBox). Vier Textfelder, acht Pflichtzahlen, zwei
+   Ganzzahlen mit erlaubter Leere und die drei Speicherwege des
+   Katalogeditors - dieselbe Bauart wie HeizkesselKatalogDialog (W6.1) und
+   BhkwKatalogDialog (W6.2), deshalb auch derselbe KatalogModus und dasselbe
+   KatalogSpeicherErgebnis.
+
+   DREI SPEICHERWEGE, ZWEI ZUSTAENDE.
+   * "Ueberschreiben" (nur im Modus Bearbeiten) schreibt den geladenen Satz
+     zurueck.
+   * "Speichern unter" (nur im Modus Bearbeiten) fragt einen NEUEN Namen und
+     legt darunter an.
+   * "Speichern" (nur im Modus Neu) legt unter dem vorgegebenen Namen an.
+   Woertlich aus SetControls:19, das genau diese drei Enabled-Zustaende setzt.
+
+   DIE NAMENSABFRAGE steht in einer Ueberlagerung statt in einem zweiten
+   Fenster (Risiko R2): dieselbe NamensDialog-Komponente, die der Vorlaeufer
+   ueber NamensDialogHuelle als eigenes Fenster zeigte.
+
+   BESCHRIFTUNGEN AUS DEM DESIGNER, nicht aus der Feldkarte (R-W6-7): Die
+   Karte ordnet "k2 :" dem Feld textBox_Kosten zu und laesst textBox_k2 ohne
+   Beschriftung. Die Koordinaten sagen etwas anderes - Label15 "k2:" (80,327)
+   steht LINKS von textBox_k2 (111,327), Label25 "Investitionskosten:"
+   (356,297) UEBER textBox_Kosten (359,319). Ein Test haelt beides fest.
+
+   ZWEI VERWAISTE HANDLER ENTFALLEN: textBox_C_TextChanged:90 und
+   textBox_Ertrag_TextChanged:105 faerben Felder, die es im Designer nicht
+   (mehr) gibt.
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt - drei der vier Knoepfe
+   schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Gruppenkopf Titel="@GruppeBezeichnung">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
+                      WertChanged="w => Daten.Firma = w" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+            <Textfeld Bezeichnung="@LabelKollektortyp" Wert="@Daten.Kollektortyp"
+                      WertChanged="w => Daten.Kollektortyp = w" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeTechnik">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelModulflaeche" Einheit="@EinheitFlaeche"
+                            Feldname="@LabelModulflaecheKurz" Wert="@Daten.Modulflaeche"
+                            WertChanged="w => Daten.Modulflaeche = w" />
+                <Zahlenfeld Bezeichnung="@LabelAperturflaeche" Einheit="@EinheitFlaeche"
+                            Feldname="@LabelAperturflaecheKurz" Wert="@Daten.Aperturflaeche"
+                            WertChanged="w => Daten.Aperturflaeche = w" />
+            </div>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelH0" Feldname="@LabelH0Kurz"
+                            Wert="@Daten.H0" WertChanged="w => Daten.H0 = w" />
+                <Zahlenfeld Bezeichnung="@LabelK1" Einheit="@EinheitK1"
+                            Feldname="@LabelK1Kurz" Wert="@Daten.K1"
+                            WertChanged="w => Daten.K1 = w" />
+            </div>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelK2" Einheit="@EinheitK2"
+                            Feldname="@LabelK2Kurz" Wert="@Daten.K2"
+                            WertChanged="w => Daten.K2 = w" />
+                <Zahlenfeld Bezeichnung="@LabelKdir" Feldname="@LabelKdirKurz"
+                            Wert="@Daten.Kdir" WertChanged="w => Daten.Kdir = w" />
+            </div>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelKdiff" Einheit="@EinheitWinkel"
+                            Feldname="@LabelKdiffKurz" Wert="@Daten.Kdiff"
+                            WertChanged="w => Daten.Kdiff = w" />
+                <Zahlenfeld Bezeichnung="@LabelKosten" Einheit="@EinheitEuro"
+                            Feldname="@LabelKostenKurz" Wert="@Daten.Kosten"
+                            WertChanged="w => Daten.Kosten = w" />
+            </div>
+            <div class="epos-feldpaar">
+                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad"
+                              Feldname="@LabelVorlaufKurz" Wert="@Daten.Vorlauf"
+                              WertChanged="w => Daten.Vorlauf = w" />
+                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
+                              Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
+                              WertChanged="w => Daten.Ruecklauf = w" />
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="() => _namensfrage = true">@BtnSpeichernUnterText</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => Geschlossen.InvokeAsync(false)">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(Modus != KatalogModus.Neu)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+    </div>
+
+    @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnSpeichernUnterText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnSpeichernUnterText" FrageText="@LabelName"
+                          Vorbelegung="@Daten.Name" MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiSpeichernUnter" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Der Feldsatz. Die Hülle lädt ihn und nimmt ihn beim Speichern entgegen.</summary>
+    [Parameter] public SolarkollektorKatalogDaten Daten { get; set; } = new();
+
+    /// <summary>Welche der drei Speicherwege angeboten werden.</summary>
+    [Parameter] public KatalogModus Modus { get; set; } = KatalogModus.Bearbeiten;
+
+    /// <summary>Schreibt den geladenen Satz zurück („Überschreiben").</summary>
+    [Parameter] public Func<SolarkollektorKatalogDaten, KatalogSpeicherErgebnis>? Ueberschreiben { get; set; }
+
+    /// <summary>Legt einen neuen Satz an — zweiter Parameter ist der gewünschte Name.</summary>
+    [Parameter] public Func<SolarkollektorKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
+
+    /// <summary><c>true</c> = geschrieben, <c>false</c> = abgebrochen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Kollektor Bearbeiten";
+    [Parameter] public string GruppeBezeichnung { get; set; } = "Bezeichnung";
+    [Parameter] public string GruppeTechnik { get; set; } = "Technische Daten";
+    [Parameter] public string LabelName { get; set; } = "Kollektorname :";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller :";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung :";
+    [Parameter] public string LabelKollektortyp { get; set; } = "Kollektortype :";
+    [Parameter] public string LabelModulflaeche { get; set; } = "Modulfläche :";
+    [Parameter] public string LabelAperturflaeche { get; set; } = "Aperturfläche :";
+    [Parameter] public string LabelH0 { get; set; } = "h0 :";
+    [Parameter] public string LabelK1 { get; set; } = "k1 :";
+    [Parameter] public string LabelK2 { get; set; } = "k2 :";
+    [Parameter] public string LabelKdir { get; set; } = "Kdir :";
+    [Parameter] public string LabelKdiff { get; set; } = "Kdiff :";
+    [Parameter] public string LabelKosten { get; set; } = "Investitionskosten :";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
+
+    // Die KURZNAMEN gehen in die Fehlermeldung - der Vorlaeufer nannte in
+    // Program.ZahlPruefen genau diese Woerter, ohne Doppelpunkt und ohne Einheit.
+    [Parameter] public string LabelModulflaecheKurz { get; set; } = "Modulfläche";
+    [Parameter] public string LabelAperturflaecheKurz { get; set; } = "Aperturfläche";
+    [Parameter] public string LabelH0Kurz { get; set; } = "h0";
+    [Parameter] public string LabelK1Kurz { get; set; } = "k1";
+    [Parameter] public string LabelK2Kurz { get; set; } = "k2";
+    [Parameter] public string LabelKdirKurz { get; set; } = "Kdir";
+    [Parameter] public string LabelKdiffKurz { get; set; } = "Kdiff";
+    [Parameter] public string LabelKostenKurz { get; set; } = "Investitionskosten";
+    [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";
+    [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
+
+    [Parameter] public string EinheitFlaeche { get; set; } = "m²";
+    [Parameter] public string EinheitK1 { get; set; } = "W/(m²*K)";
+    [Parameter] public string EinheitK2 { get; set; } = "W/(m²*K²)";
+    [Parameter] public string EinheitWinkel { get; set; } = "50°";
+    [Parameter] public string EinheitEuro { get; set; } = "€";
+    [Parameter] public string EinheitGrad { get; set; } = "°C";
+
+    [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Meldung bei fehlender Pflichtzahl; <c>{0}</c> ist der Feldname.</summary>
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+
+    /// <summary>„Bitte einen Kollektorname eingeben!" (<c>btn_Speichern_Click</c>:190).</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Kollektorname eingeben!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SolarDB.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _namensfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
+    public bool Namensfrage => _namensfrage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Die acht Pflichtzahlen — wortgleich zur Reihenfolge in
+    /// <c>InitDatensatzUpdate</c>. Vorlauf und Rücklauf fehlen hier mit Absicht: Dort
+    /// steht <c>leerErlaubt: true</c>, leer gilt als 0.
+    /// </summary>
+    private string? FehlendePflichtzahl()
+    {
+        if (Daten.Modulflaeche is null) return LabelModulflaecheKurz;
+        if (Daten.Aperturflaeche is null) return LabelAperturflaecheKurz;
+        if (Daten.H0 is null) return LabelH0Kurz;
+        if (Daten.K1 is null) return LabelK1Kurz;
+        if (Daten.K2 is null) return LabelK2Kurz;
+        if (Daten.Kdir is null) return LabelKdirKurz;
+        if (Daten.Kdiff is null) return LabelKdiffKurz;
+        if (Daten.Kosten is null) return LabelKostenKurz;
+        return null;
+    }
+
+    /// <summary><c>false</c> = eine Pflichtzahl fehlt, die Meldung steht bereits.</summary>
+    private bool ZahlenStehen()
+    {
+        string? fehlt = FehlendePflichtzahl();
+        if (fehlt is null) return true;
+
+        _meldung = string.Format(MeldungZahlFehlt, fehlt);
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
+    }
+
+    private async Task BeiUeberschreiben()
+    {
+        if (Ueberschreiben is null || !ZahlenStehen()) return;
+        await Auswerten(Ueberschreiben(Daten));
+    }
+
+    private async Task BeiSpeichern()
+    {
+        if (Anlegen is null) return;
+
+        // Der Vorlaeufer prueft ZUERST den Namen und dann die Zahlen
+        // (btn_Speichern_Click:188-196) - diese Reihenfolge bleibt.
+        if (string.IsNullOrWhiteSpace(Daten.Name))
+        {
+            _meldung = MeldungNameFehlt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+        if (!ZahlenStehen()) return;
+
+        await Auswerten(Anlegen(Daten, Daten.Name));
+    }
+
+    /// <summary>
+    /// „Speichern unter": erst der Name, dann die Zahlen — genau die Reihenfolge von
+    /// <c>btn_Speichern_Unter_Click</c>:225. Der Vorläufer prüfte dort ausdrücklich
+    /// VOR dem Übernehmen des neuen Namens, „so bleibt bei einer Fehleingabe auch das
+    /// Namensfeld unverändert"; hier bleibt <c>Daten.Name</c> aus demselben Grund
+    /// stehen und die Hülle bekommt den neuen Namen als zweiten Parameter.
+    /// </summary>
+    private async Task BeiSpeichernUnter(string? name)
+    {
+        _namensfrage = false;
+        if (name is null || Anlegen is null) return;
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            _meldung = MeldungNameFehlt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+        if (!ZahlenStehen()) return;
+
+        await Auswerten(Anlegen(Daten, name.Trim()));
+    }
+
+    /// <summary>
+    /// Erfolg schließt den Dialog wie bisher; eine Ablehnung bleibt als Banner stehen
+    /// und lässt ihn offen (Folgepaket zu ab5bf32, wie in Welle 6).
+    /// </summary>
+    private async Task Auswerten(KatalogSpeicherErgebnis ergebnis)
+    {
+        if (ergebnis.Ok)
+        {
+            await Geschlossen.InvokeAsync(true);
+            return;
+        }
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}
