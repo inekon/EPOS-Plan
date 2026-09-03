@@ -1,20 +1,33 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using SkiaSharp;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Off-Screen-Diagramm-Rendering für den Bericht (Konzept Kap. 6) auf Basis
-    /// System.Drawing — bewusst ohne UI-Handle und ohne Fremd-API, damit das Rendering
+    /// SkiaSharp — bewusst ohne UI-Handle und ohne Fremd-API, damit das Rendering
     /// im Hintergrund-Thread deterministisch läuft (gleiches Muster wie die
     /// Kuchendiagramme des Bestandsberichts). Alle Methoden liefern PNG-Bytes;
     /// gerendert wird in doppelter Zielauflösung (Einbettung skaliert herunter).
+    ///
+    /// <para><b>Paket iU7 — die Portierung von GDI+ auf SkiaSharp.</b> Bis zum
+    /// 03.09.2026 zeichnete diese Datei mit GDI+ und war damit die letzte
+    /// Windows-Bindung im Berichtsweg. Übersetzt wurde 1:1 und ohne jede Änderung an
+    /// Bildmaßen, Farben, Texten oder Achsenlogik: <c>Graphics</c> → <see cref="SKCanvas"/>,
+    /// <c>Pen</c> → <see cref="SKPaint"/> im Stroke-Stil, <c>Brush</c> → <see cref="SKPaint"/>
+    /// im Fill-Stil, <c>MeasureString</c> → <see cref="SKFont.MeasureText(string)"/>,
+    /// <c>FillPie</c> → <see cref="SKPath.ArcTo(SKRect, float, float, bool)"/>,
+    /// <c>Bitmap.Save(Png)</c> → <see cref="SKSurface"/> + <see cref="SKImage.Encode(SKEncodedImageFormat, int)"/>.
+    /// Die öffentliche Fläche ist unverändert; nur die Farbfelder tragen jetzt
+    /// <see cref="SKColor"/> statt des GDI+-Farbtyps <c>Color</c>. Die Datei hat damit
+    /// KEINE Windows-Bindung mehr und kann in den plattformfreien Kern ziehen.</para>
+    ///
+    /// <para>Der eingefrorene GDI+-Stand steht als <c>ChartRendererGdi</c> daneben; der
+    /// Modus <c>bildvergleich</c> der Referenzlauf-Suite hält beide Fassungen unter
+    /// Windows Pixel für Pixel gegeneinander (Paket iU7-1).</para>
     ///
     /// Feste Farbzuordnung je Erzeuger über alle Diagramme (Konzept Kap. 6):
     /// WP blau, BHKW orange, Kessel grau, Solar gelb, PV grün, Netz/Rest neutral.
@@ -22,15 +35,15 @@ namespace WindowsFormsApplication1
     public static class ChartRenderer
     {
         // Palette (identisch zum Bestandsbericht).
-        public static readonly Color C_WP = Color.FromArgb(0x41, 0x72, 0xC4);
-        public static readonly Color C_BHKW = Color.FromArgb(0xED, 0x7D, 0x31);
-        public static readonly Color C_KESSEL = Color.FromArgb(0x80, 0x80, 0x80);
-        public static readonly Color C_SOLAR = Color.FromArgb(0xFF, 0xC0, 0x00);
-        public static readonly Color C_PV = Color.FromArgb(0x70, 0xAD, 0x47);
-        public static readonly Color C_NETZ = Color.FromArgb(0x9E, 0x48, 0x0E);
-        public static readonly Color C_REST = Color.FromArgb(0xBF, 0xBF, 0xBF);
-        public static readonly Color C_BEDARF = Color.FromArgb(0x33, 0x33, 0x33);
-        public static readonly Color C_STAMM = Color.FromArgb(0x1F, 0x4E, 0x79);
+        public static readonly SKColor C_WP = new SKColor(0x41, 0x72, 0xC4);
+        public static readonly SKColor C_BHKW = new SKColor(0xED, 0x7D, 0x31);
+        public static readonly SKColor C_KESSEL = new SKColor(0x80, 0x80, 0x80);
+        public static readonly SKColor C_SOLAR = new SKColor(0xFF, 0xC0, 0x00);
+        public static readonly SKColor C_PV = new SKColor(0x70, 0xAD, 0x47);
+        public static readonly SKColor C_NETZ = new SKColor(0x9E, 0x48, 0x0E);
+        public static readonly SKColor C_REST = new SKColor(0xBF, 0xBF, 0xBF);
+        public static readonly SKColor C_BEDARF = new SKColor(0x33, 0x33, 0x33);
+        public static readonly SKColor C_STAMM = new SKColor(0x1F, 0x4E, 0x79);
 
         /// <summary>
         /// PAKET E1: Farbfolge der Wärmespeicher-Füllstandslinien (Konzept 6.3) — sie
@@ -38,18 +51,18 @@ namespace WindowsFormsApplication1
         /// Dieselbe Reihenfolge wie <c>NavigatorWaerme.SPEICHER_FARBEN</c>, damit
         /// Bildschirm und Bericht denselben Speicher gleich einfärben.
         /// </summary>
-        public static readonly Color[] C_SPEICHER =
+        public static readonly SKColor[] C_SPEICHER =
         {
-            Color.MediumVioletRed, Color.DarkViolet, Color.Teal,
-            Color.SaddleBrown, Color.DarkSlateGray, Color.Crimson
+            SKColors.MediumVioletRed, SKColors.DarkViolet, SKColors.Teal,
+            SKColors.SaddleBrown, SKColors.DarkSlateGray, SKColors.Crimson
         };
 
         private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
         public class Segment
         {
-            public string Label; public double Wert; public Color Farbe;
-            public Segment(string l, double w, Color f) { Label = l; Wert = w; Farbe = f; }
+            public string Label; public double Wert; public SKColor Farbe;
+            public Segment(string l, double w, SKColor f) { Label = l; Wert = w; Farbe = f; }
         }
 
         public class Balken
@@ -60,8 +73,8 @@ namespace WindowsFormsApplication1
 
         public class Reihe
         {
-            public string Name; public double[] Werte; public Color Farbe;
-            public Reihe(string n, double[] w, Color f) { Name = n; Werte = w; Farbe = f; }
+            public string Name; public double[] Werte; public SKColor Farbe;
+            public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
         }
 
         // =================================================================== Kuchen
@@ -70,36 +83,37 @@ namespace WindowsFormsApplication1
         public static byte[] Kuchen(string titel, List<Segment> segmente)
         {
             int W = 960, H = 600;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel, W);
 
                 double total = segmente.Sum(s => Math.Max(s.Wert, 0));
                 if (total <= 0) total = 1;
 
-                var rect = new RectangleF(40f, 90f, 440f, 440f);
+                var rect = SKRect.Create(40f, 90f, 440f, 440f);
                 float start = -90f;
                 foreach (Segment s in segmente)
                 {
                     float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
-                    using (var b = new SolidBrush(s.Farbe))
-                        g.FillPie(b, rect.X, rect.Y, rect.Width, rect.Height, start, sweep);
+                    using (var b = Fuellung(s.Farbe))
+                        Kreissegment(g, rect, start, sweep, b);
                     start += sweep;
                 }
-                using (var stift = new Pen(Color.White, 3f)) g.DrawEllipse(stift, rect);
+                using (var stift = Strich(SKColors.White, 3f)) g.DrawOval(rect, stift);
 
                 float lx = 540f, ly = 110f;
-                using (var lf = new Font("Calibri", 19f))
+                using (var lf = Schrift(19f))
+                using (var rahmen = Strich(SKColors.Gray, 1f))
                     foreach (Segment s in segmente)
                     {
-                        using (var b = new SolidBrush(s.Farbe)) g.FillRectangle(b, lx, ly, 28f, 28f);
-                        g.DrawRectangle(Pens.Gray, lx, ly, 28f, 28f);
-                        g.DrawString(s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
-                                     lf, Brushes.Black, lx + 40f, ly + 1f);
+                        using (var b = Fuellung(s.Farbe)) g.DrawRect(lx, ly, 28f, 28f, b);
+                        g.DrawRect(lx, ly, 28f, 28f, rahmen);
+                        Text(g, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                             lf, SKColors.Black, lx + 40f, ly + 1f);
                         ly += 48f;
                     }
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
@@ -113,36 +127,37 @@ namespace WindowsFormsApplication1
         {
             int W = 1240;
             int H = 150 + balken.Count * 64;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
 
                 float links = 300f, rechts = W - 150f, oben = 80f;
                 double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
 
-                using (var lf = new Font("Calibri", 18f))
-                using (var wf = new Font("Calibri", 17f))
+                using (var lf = Schrift(18f))
+                using (var wf = Schrift(17f))
+                using (var rahmen = Strich(SKColors.Gray, 1f))
                 {
                     for (int i = 0; i < balken.Count; i++)
                     {
                         float y = oben + i * 64f;
                         Balken b = balken[i];
                         float laenge = (float)(Math.Abs(b.Wert) / max * (rechts - links));
-                        Color farbe = b.Hervorheben ? C_STAMM : C_WP;
+                        SKColor farbe = b.Hervorheben ? C_STAMM : C_WP;
 
                         // Label links (rechtsbündig).
-                        var lgr = g.MeasureString(b.Label, lf);
-                        g.DrawString(b.Label, lf, Brushes.Black, links - 12f - lgr.Width, y + 8f);
+                        float lbreite = lf.MeasureText(b.Label ?? "");
+                        Text(g, b.Label, lf, SKColors.Black, links - 12f - lbreite, y + 8f);
 
-                        using (var br = new SolidBrush(farbe)) g.FillRectangle(br, links, y, laenge, 40f);
-                        g.DrawRectangle(Pens.Gray, links, y, laenge, 40f);
-                        g.DrawString(b.Wert.ToString("N0", DE), wf, Brushes.Black, links + laenge + 10f, y + 9f);
+                        using (var br = Fuellung(farbe)) g.DrawRect(links, y, laenge, 40f, br);
+                        g.DrawRect(links, y, laenge, 40f, rahmen);
+                        Text(g, b.Wert.ToString("N0", DE), wf, SKColors.Black, links + laenge + 10f, y + 9f);
                     }
                 }
-                using (var achse = new Pen(Color.DimGray, 2f))
-                    g.DrawLine(achse, links, oben - 8f, links, oben + balken.Count * 64f - 16f);
-                return Png(bmp);
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                    g.DrawLine(links, oben - 8f, links, oben + balken.Count * 64f - 16f, achse);
+                return Png(flaeche);
             }
         }
 
@@ -233,9 +248,9 @@ namespace WindowsFormsApplication1
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
             int W = 1240, H = 520;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, "Speicherverlauf — Füllstand [kWh]", W);
 
                 double max = reihen.Max(r => r.Werte.Max());
@@ -244,20 +259,20 @@ namespace WindowsFormsApplication1
                 float panelB = (W - 120f) / 3f;
                 for (int p = 0; p < 3; p++)
                 {
-                    var rc = new RectangleF(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                    var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
                     PanelRahmen(g, rc, titelWoche[p]);
                     foreach (Reihe r in reihen)
                         ZeichneLinie(g, rc, Ausschnitt(r.Werte, fenster[p], 168), 0, max, r.Farbe, 3f);
                     // Y-Beschriftung nur links.
                     if (p == 0)
-                        using (var f = new Font("Calibri", 15f))
+                        using (var f = Schrift(15f))
                         {
-                            g.DrawString(max.ToString("N0", DE), f, Brushes.DimGray, rc.X - 62f, rc.Y - 8f);
-                            g.DrawString("0", f, Brushes.DimGray, rc.X - 24f, rc.Bottom - 10f);
+                            Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
+                            Text(g, "0", f, SKColors.DimGray, rc.Left - 24f, rc.Bottom - 10f);
                         }
                 }
                 Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
@@ -286,7 +301,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < z.Speicherreihen.Count; i++)
             {
                 string s = z.Speicherreihen[i];
-                Color farbe = C_SPEICHER[i % C_SPEICHER.Length];
+                SKColor farbe = C_SPEICHER[i % C_SPEICHER.Length];
 
                 string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
                 string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
@@ -294,7 +309,7 @@ namespace WindowsFormsApplication1
                 if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
                 if (z.Hat(unten))
                     reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
-                                         Color.FromArgb(150, farbe)));
+                                         farbe.WithAlpha(150)));
             }
 
             // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
@@ -322,24 +337,24 @@ namespace WindowsFormsApplication1
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
             int W = 1240, H = 560;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, "Speichertemperaturen — oberste und unterste Schicht [°C]", W);
 
                 float panelB = (W - 120f) / 3f;
                 for (int p = 0; p < 3; p++)
                 {
-                    var rc = new RectangleF(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                    var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
                     PanelRahmen(g, rc, titelWoche[p]);
                     foreach (Reihe r in reihen)
                         ZeichneLinie(g, rc, Ausschnitt(r.Werte, fenster[p], 168), min, max, r.Farbe, 3f);
 
                     if (p == 0)
-                        using (var f = new Font("Calibri", 15f))
+                        using (var f = Schrift(15f))
                         {
-                            g.DrawString(max.ToString("N0", DE), f, Brushes.DimGray, rc.X - 62f, rc.Y - 8f);
-                            g.DrawString(min.ToString("N0", DE), f, Brushes.DimGray, rc.X - 62f, rc.Bottom - 10f);
+                            Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
+                            Text(g, min.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Bottom - 10f);
                         }
                 }
 
@@ -347,7 +362,7 @@ namespace WindowsFormsApplication1
                 // schneller als beim Füllstandsdiagramm.
                 Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
                         70f, H - 96f, W - 70f);
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
@@ -358,11 +373,11 @@ namespace WindowsFormsApplication1
                                              KeyValuePair<int[], string[]> xticks)
         {
             int W = 1240, H = 560;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = new RectangleF(90f, 80f, W - 130f, 380f);
+                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
                 int n = stapel.Count > 0 ? stapel[0].Werte.Length : linie.Length;
                 var summe = new double[n];
@@ -389,7 +404,7 @@ namespace WindowsFormsApplication1
                 var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
                 if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
                 Legende(g, leg, 90f, H - 64f);
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
@@ -397,11 +412,11 @@ namespace WindowsFormsApplication1
                                              int[] xpos, string[] xlab)
         {
             int W = 1240, H = 560;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = new RectangleF(90f, 80f, W - 130f, 380f);
+                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
                 int n = reihen[0].Werte.Length;
                 double max = Nice(reihen.Max(r => r.Werte.Max()));
@@ -411,7 +426,7 @@ namespace WindowsFormsApplication1
                     ZeichneLinie(g, rc, r.Werte, 0, max, r.Farbe, r.Farbe == C_BEDARF ? 3.5f : 2.5f);
 
                 Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
@@ -420,11 +435,11 @@ namespace WindowsFormsApplication1
         {
             int W = 1240, H = 560;
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = new RectangleF(90f, 80f, W - 130f, 380f);
+                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
                 // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
                 Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
@@ -439,64 +454,64 @@ namespace WindowsFormsApplication1
 
                 // Achsen + Monatslabels.
                 AchsenRaster(g, rc, max, null, null, 12);
-                using (var f = new Font("Calibri", 15f))
+                using (var f = Schrift(15f))
                     for (int m = 0; m < 12; m++)
                     {
-                        float x = rc.X + (m + 0.5f) * rc.Width / 12f;
-                        var gr = g.MeasureString(monate[m], f);
-                        g.DrawString(monate[m], f, Brushes.DimGray, x - gr.Width / 2f, rc.Bottom + 8f);
+                        float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
+                        float breite = f.MeasureText(monate[m]);
+                        Text(g, monate[m], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
                     }
 
                 float slot = rc.Width / 12f;
                 float bBreit = slot * 0.5f, bSchmal = slot * 0.18f;
                 for (int m = 0; m < 12; m++)
                 {
-                    float x0 = rc.X + m * slot + slot * 0.12f;
+                    float x0 = rc.Left + m * slot + slot * 0.12f;
                     float unten = rc.Bottom;
                     foreach (Reihe r in stapel)
                     {
                         float hoehe = (float)(r.Werte[m] / max * rc.Height);
-                        using (var br = new SolidBrush(r.Farbe))
-                            g.FillRectangle(br, x0, unten - hoehe, bBreit, hoehe);
+                        using (var br = Fuellung(r.Farbe))
+                            g.DrawRect(x0, unten - hoehe, bBreit, hoehe, br);
                         unten -= hoehe;
                     }
                     if (einspeisung != null)
                     {
                         float hoehe = (float)(einspeisung.Werte[m] / max * rc.Height);
-                        using (var br = new SolidBrush(einspeisung.Farbe))
-                            g.FillRectangle(br, x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe, bSchmal, hoehe);
+                        using (var br = Fuellung(einspeisung.Farbe))
+                            g.DrawRect(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe, bSchmal, hoehe, br);
                     }
                 }
 
                 if (linie != null)
                 {
-                    var punkte = new PointF[12];
+                    var punkte = new SKPoint[12];
                     for (int m = 0; m < 12; m++)
-                        punkte[m] = new PointF(rc.X + (m + 0.5f) * slot,
+                        punkte[m] = new SKPoint(rc.Left + (m + 0.5f) * slot,
                             rc.Bottom - (float)(linie[m] / max * rc.Height));
-                    using (var stift = new Pen(C_BEDARF, 3f)) g.DrawLines(stift, punkte);
+                    using (var stift = Strich(C_BEDARF, 3f)) Linienzug(g, punkte, stift);
                 }
 
                 var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
                 if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
                 Legende(g, leg, 90f, H - 56f);
-                return Png(bmp);
+                return Png(flaeche);
             }
         }
 
         // ============================================== Kapitalwert-Verlauf (Phase 11)
 
         /// <summary>Serienfarben der Verlaufslinien (Variante 1…n; Stamm = C_STAMM).</summary>
-        public static readonly Color[] C_SERIEN =
+        public static readonly SKColor[] C_SERIEN =
         {
-            Color.FromArgb(0xED, 0x7D, 0x31),   // Orange
-            Color.FromArgb(0x70, 0xAD, 0x47),   // Grün
-            Color.FromArgb(0x41, 0x72, 0xC4),   // Blau
-            Color.FromArgb(0x9E, 0x48, 0x0E),   // Braun
-            Color.FromArgb(0x7A, 0x5C, 0xA8),   // Violett
-            Color.FromArgb(0x2E, 0x8B, 0x8B),   // Petrol
-            Color.FromArgb(0xC0, 0x50, 0x4D),   // Rot
-            Color.FromArgb(0xBF, 0x8F, 0x00)    // Ocker
+            new SKColor(0xED, 0x7D, 0x31),   // Orange
+            new SKColor(0x70, 0xAD, 0x47),   // Grün
+            new SKColor(0x41, 0x72, 0xC4),   // Blau
+            new SKColor(0x9E, 0x48, 0x0E),   // Braun
+            new SKColor(0x7A, 0x5C, 0xA8),   // Violett
+            new SKColor(0x2E, 0x8B, 0x8B),   // Petrol
+            new SKColor(0xC0, 0x50, 0x4D),   // Rot
+            new SKColor(0xBF, 0x8F, 0x00)    // Ocker
         };
 
         /// <summary>Verlaufsserien → Diagramm-Reihen (Stamm dunkel/dick, Varianten
@@ -527,20 +542,20 @@ namespace WindowsFormsApplication1
         public static byte[] KapitalwertVerlauf(string titel, List<Reihe> reihen, string fussnote)
         {
             int W = 1240, H = 620;
-            using (var bmp = new Bitmap(W, H))
-            using (var g = Start(bmp))
+            using (var flaeche = Start(W, H))
             {
+                SKCanvas g = flaeche.Canvas;
                 Titel(g, titel + "  [€]", W);
-                var rc = new RectangleF(110f, 80f, W - 150f, 400f);
+                var rc = SKRect.Create(110f, 80f, W - 150f, 400f);
 
                 var gueltig = reihen.Where(r => r.Werte != null && r.Werte.Length >= 2 &&
                                            r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
                                     .ToList();
                 if (gueltig.Count == 0)
                 {
-                    using (var f = new Font("Calibri", 18f))
-                        g.DrawString("Keine berechenbaren Reihen.", f, Brushes.DimGray, rc.X, rc.Y + 20f);
-                    return Png(bmp);
+                    using (var f = Schrift(18f))
+                        Text(g, "Keine berechenbaren Reihen.", f, SKColors.DimGray, rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
                 }
                 int n = gueltig.Max(r => r.Werte.Length);          // Stützstellen (Jahre + 1)
 
@@ -557,191 +572,363 @@ namespace WindowsFormsApplication1
                 max = Math.Ceiling(max / schritt) * schritt;
 
                 // Raster + y-Beschriftung.
-                using (var raster = new Pen(Color.Gainsboro, 1f))
-                using (var f = new Font("Calibri", 15f))
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
                     for (double wert = min; wert <= max + schritt / 2; wert += schritt)
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
-                        g.DrawLine(raster, rc.X, y, rc.Right, y);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
                         string lab = wert.ToString("N0", DE);
-                        var gr = g.MeasureString(lab, f);
-                        g.DrawString(lab, f, Brushes.DimGray, rc.X - gr.Width - 6f, y - gr.Height / 2f);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
 
                 // X-Achse: Jahre 0…N, Beschriftung in sinnvollen Schritten.
                 int jahre = n - 1;
                 int xschritt = jahre <= 12 ? 1 : jahre <= 25 ? 2 : jahre <= 50 ? 5 : 10;
-                using (var raster = new Pen(Color.Gainsboro, 1f))
-                using (var f = new Font("Calibri", 15f))
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
                     for (int t = 0; t <= jahre; t += xschritt)
                     {
-                        float x = rc.X + (float)t / Math.Max(jahre, 1) * rc.Width;
-                        g.DrawLine(raster, x, rc.Y, x, rc.Bottom);
+                        float x = rc.Left + (float)t / Math.Max(jahre, 1) * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
                         string lab = t.ToString(DE);
-                        var gr = g.MeasureString(lab, f);
-                        g.DrawString(lab, f, Brushes.DimGray, x - gr.Width / 2f, rc.Bottom + 8f);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
                     }
-                using (var f = new Font("Calibri", 15f))
-                    g.DrawString(BerichtTexte.T("Jahr"), f, Brushes.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+                using (var f = Schrift(15f))
+                    Text(g, BerichtTexte.T("Jahr"), f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
 
                 // Achsen + hervorgehobene Nulllinie.
-                using (var achse = new Pen(Color.DimGray, 2f))
+                using (var achse = Strich(SKColors.DimGray, 2f))
                 {
-                    g.DrawLine(achse, rc.X, rc.Y, rc.X, rc.Bottom);
-                    g.DrawLine(achse, rc.X, rc.Bottom, rc.Right, rc.Bottom);
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
                 }
                 float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
-                using (var stift = new Pen(Color.DimGray, 2f) { DashStyle = DashStyle.Dash })
-                    g.DrawLine(stift, rc.X, y0, rc.Right, y0);
+                using (var strichel = SKPathEffect.CreateDash(new[] { 3f * 2f, 1f * 2f }, 0f))
+                using (var stift = Strich(SKColors.DimGray, 2f))
+                {
+                    stift.PathEffect = strichel;
+                    g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
+                }
 
                 // Linien (kürzere Reihen enden früher; x bezieht sich auf N).
                 foreach (Reihe r in gueltig)
                 {
-                    var punkte = new PointF[r.Werte.Length];
+                    var punkte = new SKPoint[r.Werte.Length];
                     for (int t = 0; t < r.Werte.Length; t++)
                     {
-                        float x = rc.X + (float)t / Math.Max(jahre, 1) * rc.Width;
+                        float x = rc.Left + (float)t / Math.Max(jahre, 1) * rc.Width;
                         float y = (float)(rc.Bottom - (r.Werte[t] - min) / (max - min) * rc.Height);
-                        punkte[t] = new PointF(x, Math.Max(rc.Y, Math.Min(rc.Bottom, y)));
+                        punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
                     }
-                    using (var stift = new Pen(r.Farbe, r.Farbe == C_STAMM ? 3.5f : 2.5f)
-                                       { LineJoin = LineJoin.Round })
-                        g.DrawLines(stift, punkte);
+                    using (var stift = Strich(r.Farbe, r.Farbe == C_STAMM ? 3.5f : 2.5f))
+                    {
+                        stift.StrokeJoin = SKStrokeJoin.Round;
+                        Linienzug(g, punkte, stift);
+                    }
                 }
 
                 Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
                         110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
                 if (!string.IsNullOrEmpty(fussnote))
-                    using (var f = new Font("Calibri", 14f, FontStyle.Italic))
-                        g.DrawString(fussnote, f, Brushes.DimGray, 110f, H - 28f);
-                return Png(bmp);
+                    using (var f = Schrift(14f, kursiv: true))
+                        Text(g, fussnote, f, SKColors.DimGray, 110f, H - 28f);
+                return Png(flaeche);
             }
+        }
+
+        // =================================================================== Schrift
+
+        // ---------------------------------------------------------------------
+        // ENTSCHEIDUNG iF19 — keine mitgelieferte Schriftdatei.
+        //
+        // Der Bericht schrieb seit jeher hart „Calibri". Unter Windows ist die
+        // Schrift mit Office da, auf jedem anderen System nicht. Statt eine
+        // Schriftdatei mitzuliefern (Lizenz, Paketgroesse, Pflege) faellt der
+        // Renderer der Reihe nach zurueck:
+        //
+        //   1. die Familien aus ERSATZSCHRIFTEN, in dieser Reihenfolge
+        //      → Windows: die echte Calibri, damit sich am Bild NICHTS aendert.
+        //      → Linux/CI: Carlito (metrisch wie Calibri), sonst Liberation Sans
+        //        oder DejaVu Sans.
+        //   2. die Systemschrift im gewuenschten Stil (MatchFamily(null, Stil))
+        //      → iOS/macOS: Helvetica bzw. SF Pro.
+        //   3. irgendeine Schrift, die ein 'A' zeichnen kann (MatchCharacter)
+        //   4. SKTypeface.Default — der Notnagel, der nie null ist.
+        //
+        // Auf Systemen mit fontconfig kann Schritt 1 bereits bei „Calibri" eine
+        // Ersatzschrift liefern (fontconfig antwortet immer mit einer Naeherung);
+        // das ist gewollt — gebraucht wird eine lesbare serifenlose Schrift, nicht
+        // ausgerechnet Calibri.
+        //
+        // Die Punktgroessen des Bestandes (14…22 pt) waren GDI+-Punkte bei 96 dpi.
+        // SKFont rechnet in Pixeln, deshalb pt * 96/72. Damit bleiben Textgroesse
+        // und Bildmasse dieselben wie vor der Portierung.
+        // ---------------------------------------------------------------------
+
+        /// <summary>
+        /// Die gesuchten Schriftfamilien in dieser Reihenfolge — die erste vorhandene
+        /// gewinnt. Dieselbe Liste benutzt der Excel-Bericht für die Spaltenbreiten
+        /// (ExcelBerichtGenerator, Paket iU7-4), damit Diagramm und Tabelle desselben
+        /// Berichts nicht in verschiedenen Schriften vermessen werden.
+        ///
+        /// <para><b>Warum die Liste und nicht nur „Calibri".</b> Ohne fontconfig — und
+        /// genau ohne die läuft die native Linux-Fassung von SkiaSharp, die die CI
+        /// benutzt — liefert <c>MatchFamily("Calibri")</c> nichts, und die reine
+        /// Systemschrift war auf dem Probelauf am 03.09.2026 <b>DejaVu Serif</b>. Eine
+        /// Serifenschrift in Achsen und Legenden ist gegenüber Calibri ein sichtbarer
+        /// Rückschritt; die Liste hält den Bericht auf einer serifenlosen Schrift.
+        /// Carlito steht direkt hinter Calibri, weil es metrisch dazu passt.</para>
+        /// </summary>
+        private static readonly string[] ERSATZSCHRIFTEN =
+        { "Calibri", "Carlito", "Liberation Sans", "DejaVu Sans", "Helvetica", "Arial" };
+
+        private static readonly Dictionary<int, SKTypeface> _schriftarten = new Dictionary<int, SKTypeface>();
+        private static readonly object _schriftSchloss = new object();
+
+        /// <summary>Schriftart je Stil, einmal ermittelt und dann gehalten.</summary>
+        private static SKTypeface Schriftart(bool fett, bool kursiv)
+        {
+            int schluessel = (fett ? 1 : 0) | (kursiv ? 2 : 0);
+            lock (_schriftSchloss)
+            {
+                SKTypeface gefunden;
+                if (_schriftarten.TryGetValue(schluessel, out gefunden)) return gefunden;
+
+                var stil = new SKFontStyle(
+                    fett ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal,
+                    SKFontStyleWidth.Normal,
+                    kursiv ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright);
+
+                SKFontManager verwaltung = SKFontManager.Default;
+                SKTypeface t = null;
+                foreach (string familie in ERSATZSCHRIFTEN)
+                {
+                    try { t = verwaltung.MatchFamily(familie, stil); } catch { }
+                    if (t != null) break;
+                }
+                if (t == null) try { t = verwaltung.MatchFamily(null, stil); } catch { }
+                if (t == null) try { t = verwaltung.MatchCharacter(null, stil, null, 'A'); } catch { }
+                if (t == null) t = SKTypeface.Default;
+
+                _schriftarten[schluessel] = t;
+                return t;
+            }
+        }
+
+        /// <summary>Schrift in Punkt (wie im Bestand) — intern nach Pixeln umgerechnet.</summary>
+        private static SKFont Schrift(float punkt, bool fett = false, bool kursiv = false)
+        {
+            return new SKFont(Schriftart(fett, kursiv), punkt * 96f / 72f)
+            {
+                Edging = SKFontEdging.Antialias,
+                Subpixel = true
+            };
+        }
+
+        /// <summary>Zeilenhöhe einer Schrift — Ersatz für <c>MeasureString(...).Height</c>.</summary>
+        private static float TextHoehe(SKFont f)
+        {
+            SKFontMetrics m = f.Metrics;
+            return m.Descent - m.Ascent;
+        }
+
+        /// <summary>
+        /// Text an der linken OBEREN Ecke (x, y) — dieselbe Bezugsecke wie
+        /// <c>Graphics.DrawString</c>. Skia bezieht sich auf die Grundlinie, deshalb wird
+        /// der Aufstieg (negativ) abgezogen.
+        /// </summary>
+        private static void Text(SKCanvas g, string text, SKFont f, SKColor farbe, float x, float y)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            using (var p = Fuellung(farbe))
+                g.DrawText(text, x, y - f.Metrics.Ascent, f, p);
         }
 
         // =================================================================== Helfer
 
-        private static Graphics Start(Bitmap bmp)
+        /// <summary>Zeichenfläche mit weißem Grund (ersetzt Bitmap + Graphics.Clear).</summary>
+        private static SKSurface Start(int breite, int hoehe)
         {
-            var g = Graphics.FromImage(bmp);
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            g.Clear(Color.White);
-            return g;
+            var flaeche = SKSurface.Create(
+                new SKImageInfo(breite, hoehe, SKColorType.Rgba8888, SKAlphaType.Premul));
+            flaeche.Canvas.Clear(SKColors.White);
+            return flaeche;
         }
 
-        private static void Titel(Graphics g, string text, int breite)
+        /// <summary>Flächenfarbe (ersetzt SolidBrush) — immer kantengeglättet.</summary>
+        private static SKPaint Fuellung(SKColor farbe)
         {
-            using (var f = new Font("Calibri", 22f, FontStyle.Bold))
-                g.DrawString(text, f, new SolidBrush(C_STAMM), 24f, 16f);
+            return new SKPaint { Color = farbe, Style = SKPaintStyle.Fill, IsAntialias = true };
         }
 
-        private static void PanelRahmen(Graphics g, RectangleF rc, string titel)
+        /// <summary>Strichfarbe und -stärke (ersetzt Pen) — immer kantengeglättet.</summary>
+        private static SKPaint Strich(SKColor farbe, float staerke)
         {
-            g.DrawRectangle(Pens.Silver, rc.X, rc.Y, rc.Width, rc.Height);
-            using (var f = new Font("Calibri", 16f, FontStyle.Bold))
-                g.DrawString(titel, f, Brushes.DimGray, rc.X, rc.Y - 28f);
+            return new SKPaint
+            {
+                Color = farbe,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = staerke,
+                IsAntialias = true
+            };
         }
 
-        private static void AchsenRaster(Graphics g, RectangleF rc, double max,
+        /// <summary>Kreissegment vom Mittelpunkt aus (ersetzt Graphics.FillPie).</summary>
+        private static void Kreissegment(SKCanvas g, SKRect rect, float start, float sweep, SKPaint fuellung)
+        {
+            using (var pfad = new SKPath())
+            {
+                pfad.MoveTo(rect.MidX, rect.MidY);
+                pfad.ArcTo(rect, start, sweep, false);
+                pfad.Close();
+                g.DrawPath(pfad, fuellung);
+            }
+        }
+
+        /// <summary>Streckenzug (ersetzt Graphics.DrawLines).</summary>
+        private static void Linienzug(SKCanvas g, SKPoint[] punkte, SKPaint stift)
+        {
+            if (punkte == null || punkte.Length < 2) return;
+            using (var pfad = new SKPath())
+            {
+                pfad.MoveTo(punkte[0]);
+                for (int i = 1; i < punkte.Length; i++) pfad.LineTo(punkte[i]);
+                g.DrawPath(pfad, stift);
+            }
+        }
+
+        /// <summary>Gefülltes Vieleck (ersetzt Graphics.FillPolygon).</summary>
+        private static void Vieleck(SKCanvas g, SKPoint[] punkte, SKPaint fuellung)
+        {
+            if (punkte == null || punkte.Length < 3) return;
+            using (var pfad = new SKPath())
+            {
+                pfad.MoveTo(punkte[0]);
+                for (int i = 1; i < punkte.Length; i++) pfad.LineTo(punkte[i]);
+                pfad.Close();
+                g.DrawPath(pfad, fuellung);
+            }
+        }
+
+        private static void Titel(SKCanvas g, string text, int breite)
+        {
+            using (var f = Schrift(22f, fett: true))
+                Text(g, text, f, C_STAMM, 24f, 16f);
+        }
+
+        private static void PanelRahmen(SKCanvas g, SKRect rc, string titel)
+        {
+            using (var rahmen = Strich(SKColors.Silver, 1f))
+                g.DrawRect(rc.Left, rc.Top, rc.Width, rc.Height, rahmen);
+            using (var f = Schrift(16f, fett: true))
+                Text(g, titel, f, SKColors.DimGray, rc.Left, rc.Top - 28f);
+        }
+
+        private static void AchsenRaster(SKCanvas g, SKRect rc, double max,
                                          int[] xpos, string[] xlab, int n)
         {
-            using (var raster = new Pen(Color.Gainsboro, 1f))
-            using (var f = new Font("Calibri", 15f))
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var f = Schrift(15f))
             {
                 for (int s = 0; s <= 4; s++)
                 {
                     float y = rc.Bottom - s * rc.Height / 4f;
-                    g.DrawLine(raster, rc.X, y, rc.Right, y);
+                    g.DrawLine(rc.Left, y, rc.Right, y, raster);
                     string lab = (max * s / 4.0).ToString("N0", DE);
-                    var gr = g.MeasureString(lab, f);
-                    g.DrawString(lab, f, Brushes.DimGray, rc.X - gr.Width - 6f, y - gr.Height / 2f);
+                    float breite = f.MeasureText(lab);
+                    Text(g, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                 }
                 if (xpos != null)
                     for (int i = 0; i < xpos.Length; i++)
                     {
-                        float x = rc.X + (float)xpos[i] / Math.Max(n - 1, 1) * rc.Width;
-                        g.DrawLine(raster, x, rc.Y, x, rc.Bottom);
-                        var gr = g.MeasureString(xlab[i], f);
-                        g.DrawString(xlab[i], f, Brushes.DimGray, x - gr.Width / 2f, rc.Bottom + 8f);
+                        float x = rc.Left + (float)xpos[i] / Math.Max(n - 1, 1) * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        float breite = f.MeasureText(xlab[i]);
+                        Text(g, xlab[i], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
                     }
             }
-            using (var achse = new Pen(Color.DimGray, 2f))
+            using (var achse = Strich(SKColors.DimGray, 2f))
             {
-                g.DrawLine(achse, rc.X, rc.Y, rc.X, rc.Bottom);
-                g.DrawLine(achse, rc.X, rc.Bottom, rc.Right, rc.Bottom);
+                g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
             }
         }
 
-        private static void ZeichneLinie(Graphics g, RectangleF rc, double[] werte,
-                                         double min, double max, Color farbe, float staerke)
+        private static void ZeichneLinie(SKCanvas g, SKRect rc, double[] werte,
+                                         double min, double max, SKColor farbe, float staerke)
         {
             if (werte == null || werte.Length < 2) return;
             int schritt = Math.Max(1, werte.Length / (int)rc.Width);
-            var punkte = new List<PointF>();
+            var punkte = new List<SKPoint>();
             for (int i = 0; i < werte.Length; i += schritt)
             {
-                float x = rc.X + (float)i / (werte.Length - 1) * rc.Width;
+                float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
                 float y = rc.Bottom - (float)((werte[i] - min) / (max - min) * rc.Height);
-                punkte.Add(new PointF(x, Math.Max(rc.Y, Math.Min(rc.Bottom, y))));
+                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
             }
             if (punkte.Count >= 2)
-                using (var stift = new Pen(farbe, staerke) { LineJoin = LineJoin.Round })
-                    g.DrawLines(stift, punkte.ToArray());
+                using (var stift = Strich(farbe, staerke))
+                {
+                    stift.StrokeJoin = SKStrokeJoin.Round;
+                    Linienzug(g, punkte.ToArray(), stift);
+                }
         }
 
-        private static void ZeichneFlaeche(Graphics g, RectangleF rc, double[] unten,
-                                           double[] oben, double max, Color farbe)
+        private static void ZeichneFlaeche(SKCanvas g, SKRect rc, double[] unten,
+                                           double[] oben, double max, SKColor farbe)
         {
             int n = oben.Length;
             int schritt = Math.Max(1, n / (int)rc.Width);
-            var pfad = new List<PointF>();
+            var pfad = new List<SKPoint>();
             for (int i = 0; i < n; i += schritt)
                 pfad.Add(Punkt(rc, i, n, oben[i], max));
             for (int i = ((n - 1) / schritt) * schritt; i >= 0; i -= schritt)
                 pfad.Add(Punkt(rc, i, n, unten[i], max));
             if (pfad.Count >= 3)
-                using (var br = new SolidBrush(Color.FromArgb(210, farbe)))
-                    g.FillPolygon(br, pfad.ToArray());
+                using (var br = Fuellung(farbe.WithAlpha(210)))
+                    Vieleck(g, pfad.ToArray(), br);
         }
 
-        private static PointF Punkt(RectangleF rc, int i, int n, double wert, double max)
+        private static SKPoint Punkt(SKRect rc, int i, int n, double wert, double max)
         {
-            float x = rc.X + (float)i / (n - 1) * rc.Width;
+            float x = rc.Left + (float)i / (n - 1) * rc.Width;
             float y = rc.Bottom - (float)(wert / max * rc.Height);
-            return new PointF(x, Math.Max(rc.Y, Math.Min(rc.Bottom, y)));
+            return new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
         }
 
-        private static void Legende(Graphics g, List<Segment> eintraege, float x, float y,
+        private static void Legende(SKCanvas g, List<Segment> eintraege, float x, float y,
                                     float umbruchBei = 0)
         {
             float startX = x;
-            using (var f = new Font("Calibri", 16f))
+            using (var f = Schrift(16f))
+            using (var rahmen = Strich(SKColors.Gray, 1f))
                 foreach (Segment s in eintraege)
                 {
-                    float breite = 40f + g.MeasureString(s.Label, f).Width + 24f;
+                    float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
                     { x = startX; y += 30f; }   // Umbruch bei vielen Serien (Review 11)
-                    using (var b = new SolidBrush(s.Farbe)) g.FillRectangle(b, x, y, 22f, 22f);
-                    g.DrawRectangle(Pens.Gray, x, y, 22f, 22f);
-                    g.DrawString(s.Label, f, Brushes.Black, x + 28f, y + 1f);
+                    using (var b = Fuellung(s.Farbe)) g.DrawRect(x, y, 22f, 22f, b);
+                    g.DrawRect(x, y, 22f, 22f, rahmen);
+                    Text(g, s.Label, f, SKColors.Black, x + 28f, y + 1f);
                     x += breite;
                 }
         }
 
-        private static byte[] Png(Bitmap bmp)
+        private static byte[] Png(SKSurface flaeche)
         {
-            using (var ms = new MemoryStream())
-            {
-                bmp.Save(ms, ImageFormat.Png);
-                return ms.ToArray();
-            }
+            using (SKImage bild = flaeche.Snapshot())
+            using (SKData daten = bild.Encode(SKEncodedImageFormat.Png, 100))
+                return daten.ToArray();
         }
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
         private static List<Reihe> WaermeErzeugerReihen(ZeitreihenSatz z, bool tagesmittel)
         {
             var l = new List<Reihe>();
-            Action<string, string, Color> add = (key, name, farbe) =>
+            Action<string, string, SKColor> add = (key, name, farbe) =>
             {
                 if (!z.Hat(key)) return;
                 double[] w = z.Hole(key);
