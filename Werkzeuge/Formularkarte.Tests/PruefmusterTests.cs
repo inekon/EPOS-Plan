@@ -22,23 +22,43 @@ namespace Formularkarte.Tests;
 /// </summary>
 public sealed class PruefmusterTests
 {
-    [Fact]
-    public void DieBlazorNachfolgeStehtImRepoUndDieWinFormsMaskeNichtMehr()
+    /// <summary>
+    /// Je Muster: der Fachordner, der Maskenname und die Razor-Nachfolge.
+    /// </summary>
+    public static TheoryData<string, string, string> Muster => new()
     {
-        Assert.True(File.Exists(Repowurzel.Datei("EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor")),
-                    "Die Nachfolge EnergietraegerVarianteDialog.razor fehlt.");
+        { "Kosten", "Form_Kosten_Auswahl",
+          "EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor" },
+
+        // iU9-W1.3: Die vier Drehfelder von Form_CaseEingabe sind der einzige
+        // Beleg fuer die Bereichsspalte einer NumericUpDown.
+        { "Kosten", "Form_CaseEingabe",
+          "EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Muster))]
+    public void DieBlazorNachfolgeStehtImRepoUndDieWinFormsMaskeNichtMehr(
+        string fach, string maske, string nachfolge)
+    {
+        Assert.True(File.Exists(Repowurzel.Datei(nachfolge)),
+                    "Die Nachfolge " + nachfolge + " fehlt.");
 
         foreach (var endung in new[] { ".Designer.cs", ".cs", ".resx" })
         {
-            var alt = Repowurzel.Designer("Kosten/Form_Kosten_Auswahl" + endung);
+            var alt = Repowurzel.Designer(fach + "/" + maske + endung);
             Assert.False(File.Exists(alt), "Die WinForms-Fassung lebt wieder: " + alt);
 
-            var muster = Repowurzel.Pruefmuster("Kosten/Form_Kosten_Auswahl" + endung);
+            var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
             Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
         }
+    }
 
+    [Fact]
+    public void DiePruefmusterZaehlenNichtZumBestand()
+    {
         // Das Pruefmuster ist Lesevorlage, kein Bestand: Der Stapellauf ueber das
-        // Repo darf es nicht als 120. Maske mitzaehlen.
+        // Repo darf es nicht als weitere Maske mitzaehlen.
         Assert.DoesNotContain(Stapel.Dateien(Repowurzel.Pfad),
                               d => d.Contains("Pruefmuster", StringComparison.Ordinal));
     }
