@@ -141,5 +141,65 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(150 + balken.Count * 64, bild.Height);
             }
         }
+
+        // =====================================================================
+        // 4 — Kostenprofil (iU9-W3.4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Kostenprofil des Preisdialogs zeichnet in 1296x780 — der doppelten
+        /// Zielaufloesung des abgeloesten WinForms-Chart (648x390) — und ist
+        /// deterministisch. Beides ist Bedingung dafuer, dass der Dialog das Bild
+        /// zwischenspeichern und die Probe <c>Proben\ChartProben</c> es
+        /// pixelweise pruefen kann.
+        ///
+        /// <para>Die Reihe laeuft hier ins Negative: Ein Wochenwert des
+        /// Kostenprofils ist eine ABWEICHUNG und darf den Monatswert unter null
+        /// ziehen. Der Renderer muss dafuer eine vorzeichenfaehige Achse
+        /// aufspannen, ohne die Linie abzuschneiden.</para>
+        /// </summary>
+        [Fact]
+        public void Kostenprofil_zeichnet_deterministisch_in_1296x780()
+        {
+            var profil = new double[8760];
+            for (int i = 0; i < profil.Length; i++)
+                profil[i] = 25.0 + 6.0 * System.Math.Sin(2.0 * System.Math.PI * i / 8760.0)
+                          + 3.0 * System.Math.Sin(2.0 * System.Math.PI * (i % 24) / 24.0)
+                          - (i > 8000 ? 40.0 : 0.0);          // Schlussabschnitt unter null
+
+            byte[] a = ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat");
+            byte[] b = ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat");
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);
+
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(1296, bild.Width);
+                Assert.Equal(780, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Ohne Reihe (oder mit einer zu kurzen) liefert der Renderer trotzdem ein
+        /// Bild in voller Groesse mit einem Hinweis darin — genau wie
+        /// <c>KapitalwertVerlauf</c> bei „keine berechenbaren Reihen". Der Dialog
+        /// braucht in jedem Fall etwas zum Anzeigen.
+        /// </summary>
+        [Fact]
+        public void Kostenprofil_ohne_Reihe_liefert_ein_leeres_Bild_statt_null()
+        {
+            byte[] leer = ChartRenderer.Kostenprofil("Kostenprofil", null, "ct/kWh", "Monat");
+            byte[] kurz = ChartRenderer.Kostenprofil("Kostenprofil", new double[1], "ct/kWh", "Monat");
+
+            Assert.NotNull(leer);
+            Assert.NotNull(kurz);
+
+            using (SKBitmap bild = SKBitmap.Decode(leer))
+            {
+                Assert.Equal(1296, bild.Width);
+                Assert.Equal(780, bild.Height);
+            }
+        }
     }
 }
