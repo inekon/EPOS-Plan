@@ -571,5 +571,124 @@ namespace WindowsFormsApplication1
             FillModelFromRow(m, row);
             return m;
         }
+
+        // =================================================================================
+        // W6.0c - der KATALOGFILTER des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer <c>Form_Heizkessel.SetFilter</c> legte nur den Bezeichner in die
+        /// <c>ListBox</c> und suchte die Id beim Hinzufuegen ueber
+        /// <c>DataRepository.GetIdByName</c> nach. <c>Tab_Heizkessel_STAMM</c> hat auf
+        /// <c>Bezeichner</c> aber keinen eindeutigen Index (siehe
+        /// <see cref="AnzahlMitBezeichner"/>) - bei einer Dublette entschied die Reihenfolge
+        /// der Engine, welcher Kessel aufgenommen wurde. Die Id kommt deshalb mit der Zeile.
+        /// </remarks>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Die sechs Leistungsstufen des Filters, Index 0 = „Alle".
+        /// </summary>
+        /// <remarks>
+        /// Die Praedikate sind zeichengleich aus <c>Form_Heizkessel.SetFilter</c>
+        /// uebernommen. Was sich aendert, ist allein der STEUERWERT: Bis Welle 6 verglich
+        /// die Maske den ANGEZEIGTEN Text der editierbaren <c>ComboBox</c> gegen deutsche
+        /// Literale - mit lokalisierten Eintraegen haette das in keiner anderen Sprache
+        /// mehr getroffen (dieselbe Fehlerklasse wie B0-10 im Pufferspeicher, dort in
+        /// Paket 9 auf den Index umgestellt). Jetzt entscheidet der Index.
+        /// </remarks>
+        public static readonly string[] LEISTUNG_SQL =
+        {
+            "Ptherm Like '%'",
+            "Ptherm <50",
+            "Ptherm >=50 and Ptherm <200",
+            "Ptherm >=200 and Ptherm <500",
+            "Ptherm >=500 and Ptherm <1000",
+            "Ptherm >=1000"
+        };
+
+        /// <summary>
+        /// Die Katalogliste des Projektdialogs, eingeengt auf Brennstoffgruppe und
+        /// Leistungsstufe.
+        /// </summary>
+        /// <param name="gruppe">
+        /// Eintrag aus <see cref="Brennstoffart_Gruppe"/>. Leer, <c>null</c>, „Alle" und
+        /// jeder unbekannte Wert heben die Einengung auf - Bestandsverhalten.
+        /// </param>
+        /// <param name="leistungsstufe">Index in <see cref="LEISTUNG_SQL"/>; alles
+        /// ausserhalb gilt als 0 („Alle").</param>
+        /// <remarks>
+        /// <para>
+        /// Die Gruppenkette ist WORTGLEICH aus <c>Form_Heizkessel.SetFilter</c> (Z. 665-676)
+        /// uebernommen, samt ihrer beiden Ungenauigkeiten (Regel F3 - eine stille Reparatur
+        /// waere eine Fachaenderung; Befund W6-O-1 des Protokolls):
+        /// </para>
+        /// <list type="bullet">
+        /// <item>Die Kette kennt „Sonstige", <c>Tab_BrennstoffKategorien</c> fuehrt aber
+        /// „Sonstige Energieträger" - der Eintrag trifft nie, und die Liste zeigt dann
+        /// alle Brennstoffe der gewaehlten Leistungsstufe.</item>
+        /// <item>„Sonstige" ist auf <c>Brennstoff=23</c> abgebildet; 23 ist im Katalog
+        /// aber Fernwaerme. <c>Form_BHKWEing.BuildFilter</c> bildet dieselben drei Gruppen
+        /// auf 23/24/25 ab und liegt damit richtig.</item>
+        /// </list>
+        /// <para>
+        /// Ebenfalls Bestand: Die Gruppen „Fernwärme" und „Wasserstoff" stehen in der
+        /// Kette gar nicht und heben die Einengung deshalb auf.
+        /// </para>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
+        {
+            if (leistungsstufe < 0 || leistungsstufe >= LEISTUNG_SQL.Length) leistungsstufe = 0;
+            string szFilterLeistung = LEISTUNG_SQL[leistungsstufe];
+
+            string szFilter = "";
+            string g = gruppe ?? "";
+            if (g == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (g == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (g == "Koks") szFilter = "Brennstoff=10";
+            else if (g == "Kohle") szFilter = "Brennstoff=11";
+            else if (g == "Holz") szFilter = "Brennstoff=12";
+            else if (g == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (g == "Strom") szFilter = "Brennstoff=13";
+            else if (g == "Pellets") szFilter = "Brennstoff=15";
+            else if (g == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (g == "Sonstige") szFilter = "Brennstoff=23";
+            else if (g == "Alle") szFilter = "Brennstoff Like '%'";
+
+            string sql = szFilter == ""
+                ? "SELECT ID, Bezeichner FROM [" + TABLE + "] WHERE " + szFilterLeistung + " ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM [" + TABLE + "] WHERE " + szFilter + " and " + szFilterLeistung + " ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt.
+        /// </summary>
+        /// <remarks>
+        /// Ersetzt <c>DataRepository.GetIdByName(TABLE, "Bezeichner", name)</c> in den
+        /// Aufrufern. <c>ORDER BY ID</c> macht die Wahl bei einer Dublette benennbar - es
+        /// ist die zuerst angelegte Zeile, dieselbe Wahl wie in <see cref="ReadSingle"/>.
+        /// </remarks>
+        public static int IdZu(string name)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", name ?? ""));
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
     }
 }

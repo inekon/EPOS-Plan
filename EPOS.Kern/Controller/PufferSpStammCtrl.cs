@@ -232,5 +232,198 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Investitionskosten") && row["Investitionskosten"] != DBNull.Value) m.Investitionskosten = Convert.ToDouble(row["Investitionskosten"]);
             return m;
         }
+
+        // =================================================================================
+        // W6.0c - Volumen- und Herstellerfilter der beiden Pufferspeicherdialoge
+        // =================================================================================
+
+        /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// SQL-Praedikat je Volumenstufe, Index 0 = „Alle".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Umgezogen aus <c>WindowsFormsApplication1/Views/Pufferspeicher/PufferSpFilter.cs</c>
+        /// (Paket 9 / L5) - dort hing die Tabelle an einer <c>ComboBox</c> und war damit
+        /// fuer eine Razor-Komponente unerreichbar. Der Wortlaut der sechs Praedikate ist
+        /// unveraendert, einschliesslich der NULL-Absicherung in Stufe 0:
+        /// </para>
+        /// <para>
+        /// Der Bestandsausdruck <c>Gesamtvolumen Like '%'</c> wandelt die Zahl in Text und
+        /// vergleicht; fuer <c>NULL</c> ergibt das wieder <c>NULL</c> - der Satz fiele aus
+        /// „Alle" heraus. Ein Katalogsatz ohne gepflegtes Gesamtvolumen (etwa aus einem
+        /// VDI-3805-Import) waere damit unsichtbar, ohne dass irgendwo eine Meldung
+        /// erscheint. Die Klammer ist noetig, weil das Praedikat mit <c>and</c> an den
+        /// Herstellerfilter gehaengt wird.
+        /// </para>
+        /// </remarks>
+        public static readonly string[] VOLUMEN_SQL =
+        {
+            "(Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')",
+            "Gesamtvolumen <100",
+            "Gesamtvolumen >=100 and Gesamtvolumen <200",
+            "Gesamtvolumen >=200 and Gesamtvolumen <500",
+            "Gesamtvolumen >=500 and Gesamtvolumen <1000",
+            "Gesamtvolumen >=1000"
+        };
+
+        /// <summary>
+        /// Die Anzeigetexte der sechs Filterstufen in derselben Reihenfolge wie
+        /// <see cref="VOLUMEN_SQL"/> - der Index ist der Steuerwert.
+        /// </summary>
+        public static IReadOnlyList<string> VolumenTexte()
+        {
+            return new[]
+            {
+                MyResource.Resource.PSP_FILTER_ALLE,
+                MyResource.Resource.PSP_FILTER_BIS_100L,
+                MyResource.Resource.PSP_FILTER_100_BIS_200L,
+                MyResource.Resource.PSP_FILTER_200_BIS_500L,
+                MyResource.Resource.PSP_FILTER_500_BIS_1000L,
+                MyResource.Resource.PSP_FILTER_UEBER_1000L
+            };
+        }
+
+        /// <summary>
+        /// Die Hersteller des Katalogs - die Auswahlliste <c>comboBox_Hersteller</c>.
+        /// </summary>
+        /// <remarks>
+        /// <c>Form_PufferSp_Load</c> baute sie ueber <c>ReadAll</c> und
+        /// <c>FindStringExact</c> zusammen, also ueber die Oberflaeche. Hier macht es die
+        /// Datenbank; die Reihenfolge ist damit stabil statt an der Katalogsortierung
+        /// haengend.
+        /// </remarks>
+        public static IReadOnlyList<string> Hersteller()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Hersteller FROM " + TABLE + " GROUP BY Hersteller ORDER BY Hersteller");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                string h = row["Hersteller"] == DBNull.Value ? "" : row["Hersteller"].ToString();
+                if (h.Length > 0) liste.Add(h);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Katalogliste, eingeengt auf Hersteller und Volumenstufe.
+        /// </summary>
+        /// <param name="hersteller">
+        /// Leer, <c>null</c> und <c>PSP_FILTER_ALLE</c> heben die Einengung auf - dieselbe
+        /// Regel wie <c>PufferSpFilter.HerstellerSql</c>.
+        /// </param>
+        /// <param name="volumenstufe">Index in <see cref="VOLUMEN_SQL"/>; alles ausserhalb
+        /// gilt als 0 („Alle").</param>
+        /// <remarks>
+        /// Aus <c>Form_PufferSp.SetFilter</c> (Z. 300). Der Herstellername kommt als
+        /// <see cref="DbParam"/> statt als eingesetzter Text mit verdoppeltem Hochkomma -
+        /// dieselbe Wirkung, aber ohne Zeichenketten-Arithmetik.
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string hersteller, int volumenstufe)
+        {
+            if (volumenstufe < 0 || volumenstufe >= VOLUMEN_SQL.Length) volumenstufe = 0;
+            string szFilterVolumen = VOLUMEN_SQL[volumenstufe];
+
+            string h = (hersteller ?? "").Trim();
+            bool alle = h.Length == 0 ||
+                        string.Equals(h, MyResource.Resource.PSP_FILTER_ALLE,
+                                      StringComparison.OrdinalIgnoreCase);
+
+            string sql = alle
+                ? "SELECT ID, Bezeichner FROM " + TABLE + " WHERE " + szFilterVolumen + " ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM " + TABLE + " WHERE Hersteller = ? and " + szFilterVolumen + " ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = alle
+                ? DataRepository.GetDataTable(sql)
+                : DataRepository.GetDataTable(sql, new DbParam("@firma", h));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die sechs Anzeigefelder eines Speichers - der Detailblock des Projektdialogs.
+        /// Die Zahlen kommen bereits als Text mit einer Nachkommastelle
+        /// (<c>Form_PufferSp.FeldText</c>).
+        /// </summary>
+        public sealed record SpeicherDetail(string Bezeichner, string Hersteller, string Typ,
+                                            string Bereitschaftsverluste, string Gesamtvolumen,
+                                            string Investitionskosten);
+
+        /// <summary>Die Feldliste beider Detailabfragen - je Tabelle dieselbe.</summary>
+        internal const string DETAIL_FELDER =
+            "SELECT Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, " +
+            "Gesamtvolumen, Investitionskosten FROM ";
+
+        /// <summary>
+        /// Die Anzeigefelder eines KATALOGsatzes ueber seinen Primaerschluessel;
+        /// <c>null</c>, wenn es ihn nicht gibt.
+        /// </summary>
+        public static SpeicherDetail Detail(int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                DETAIL_FELDER + TABLE + " WHERE ID=?", new DbParam("@id", id));
+            return AusZeile(dt);
+        }
+
+        /// <summary>
+        /// Die Anzeigefelder eines Katalogsatzes ueber seinen Bezeichner; <c>null</c>,
+        /// wenn es ihn nicht gibt (<c>listBox_PufferSp_DB_SelectedIndexChanged</c>).
+        /// </summary>
+        public static SpeicherDetail Detail(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                DETAIL_FELDER + TABLE + " WHERE Bezeichner=? ORDER BY ID",
+                new DbParam("@nam", szName ?? ""));
+            return AusZeile(dt);
+        }
+
+        /// <summary>
+        /// Erste Zeile als <see cref="SpeicherDetail"/>; die Zahlen mit einer
+        /// Nachkommastelle wie <c>Form_PufferSp.FeldText</c>.
+        /// </summary>
+        internal static SpeicherDetail AusZeile(DataTable dt)
+        {
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow row = dt.Rows[0];
+            return new SpeicherDetail(
+                FeldText(row, "Bezeichner"),
+                FeldText(row, "Hersteller"),
+                FeldText(row, "Speichertyp"),
+                FeldText(row, "Bereitschaftsverluste"),
+                FeldText(row, "Gesamtvolumen"),
+                FeldText(row, "Investitionskosten"));
+        }
+
+        /// <summary>
+        /// Feldwert als Text; NULL und fehlende Spalte ergeben eine leere Zeichenkette,
+        /// Fliesskommazahlen bekommen eine Nachkommastelle. Wortgleich aus
+        /// <c>Form_PufferSp.FeldText</c> uebernommen - die Oberflaeche zeigte diese Felder
+        /// nur an und rechnete nicht mit ihnen.
+        /// </summary>
+        internal static string FeldText(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object wert = row[spalte];
+            if (wert == null || wert == DBNull.Value) return "";
+
+            if (wert is double d) return d.ToString("0.0");
+            if (wert is float f) return f.ToString("0.0");
+            if (wert is decimal m) return m.ToString("0.0");
+
+            return wert.ToString();
+        }
     }
 }
