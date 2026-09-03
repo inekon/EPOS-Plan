@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Startbild - Platzhalter; Grundfarbe ist die Themaflaeche #F5F4EF, damit
+     der Uebergang in die BlazorWebView (gleiche Farbe) nicht blitzt. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#F5F4EF"/>
+  <text x="64" y="80" font-family="Helvetica, Arial, sans-serif" font-size="44"
+        font-weight="bold" fill="#0F1F3D" text-anchor="middle">EP</text>
+</svg>

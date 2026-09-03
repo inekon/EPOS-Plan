@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    EPOS.iOS - die iOS-HUELLE von EPOS-Plan (Umsetzungskonzept iOS, Paket iU10).
+
+    WAS SIE IST. Eine MAUI-App mit genau EINER ContentPage, und in dieser eine
+    BlazorWebView. Die Oberflaeche selbst liegt unveraendert in EPOS.UI, der
+    Rechenweg unveraendert in EPOS.Kern. Diese Huelle traegt nur, was die
+    Plattform beisteuert: den Einstiegspunkt, die neun Dienstadapter, den Weg
+    zur Datenbank in der Sandbox und - fuer die CI - den Pruefmodus.
+
+    WARUM MAUI UND NICHT EIN REINES Microsoft.iOS-PROJEKT. Fuer net10.0-ios gibt
+    es ausserhalb von Microsoft.AspNetCore.Components.WebView.Maui keinen
+    BlazorWebView-Host; das Basispaket Components.WebView ist abstrakt, ein
+    eigener WebViewManager ueber WKWebView waere ungestuetzter Eigenbau. Dazu
+    decken die MAUI-Essentials sechs der neun Adapter ab (Preferences,
+    SecureStorage, FilePicker, Share, Launcher, FileSystem). Die MAUI-Flaeche
+    bleibt trotzdem minimal: keine Shell, kein XAML, keine MAUI-Navigation -
+    die Navigation lebt in Blazor (EPOS.UI/Seiten/AppWurzel).
+
+    WARUM Microsoft.NET.Sdk.Razor UND NICHT Microsoft.NET.Sdk. Dieselbe Wahl wie
+    in der Windows-Huelle (iU8-6): Nur das Razor-SDK packt die statischen
+    Web-Bestaende einer Razor-Klassenbibliothek mit ein. Ohne es fehlte
+    "_content/EPOS.UI/epos-ui.css" im Anwendungspaket und die Oberflaeche waere
+    ungestaltet. wwwroot wird dadurch automatisch aufgenommen und braucht KEINE
+    eigene MauiAsset-Zeile.
+
+    WARUM EINE EIGENE PROJEKTMAPPE (EPOS.iOS.sln; Praezedenz Proben/ChartProben
+    und Werkzeuge/Formularkarte). Dieses Projekt steht bewusst NICHT in
+    WP-Plan.sln und nicht im Solution-Filter: Auf ubuntu und windows gibt es die
+    iOS-Workload nicht, jeder Restore dort braeche mit NETSDK1147.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <!-- Platforms\iOS\ wird zur Plattformmappe; damit findet die Buildkette
+         Info.plist, AppDelegate und die Ressourcen an ihrem MAUI-ueblichen Ort. -->
+    <SingleProject>true</SingleProject>
+    <!-- Implizite MAUI-Referenzen auf die CPM-Fassung von WebView.Maui heben:
+         Das Workload-Set 10.400.1 bringt MAUI 10.0.20 mit, die letzte stabile
+         WebView.Maui-Fassung ist 10.0.100 und haengt an Microsoft.Maui.Controls
+         DERSELBEN Fassung - ohne Angleich NU1605 (iR-b). -->
+    <MauiVersion>10.0.100</MauiVersion>
+
+    <RootNamespace>EPOS.iOS</RootNamespace>
+    <AssemblyName>EPOS.iOS</AssemblyName>
+    <ApplicationTitle>EPOS-Plan</ApplicationTitle>
+    <ApplicationId>de.inekon.eposplan</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <!-- 17.0: von SkiaSharp.NativeAssets.iOS 3.119 (net8.0-ios17.0) erzwungen;
+         MAUI 10 selbst kaeme mit 15.0 aus (iF28 - iPads ab 2018). -->
+    <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifiers>iossimulator-arm64;ios-arm64</RuntimeIdentifiers>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+
+    <!-- Rechen- und Anzeigekultur wie auf den drei anderen Laeufern (ICU, kein
+         Hybrid). HybridGlobalization=false ist der Riegel gegen iR-d: Mit der
+         Hybridfassung rechnete iOS mit anderen Zahlenformaten als Windows, und
+         der Ergebnisvergleich maesse Kulturdrift statt Plattformdrift. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <HybridGlobalization>false</HybridGlobalization>
+
+    <!-- Seed-Datenbank: in der CI die eingecheckte Testdatenbank; ein Produktbau
+         uebergibt -p:SeedDb=<Pfad> (iF25). -->
+    <SeedDb Condition="'$(SeedDb)' == ''">..\Referenzlaeufe\Kenndaten_Test.sqlite</SeedDb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+
+    <!-- iOS-Native des Kern-Renderers - Gegenstueck zu den drei bedingten
+         Nativen in EPOS.Kern.csproj (Win32, Linux, macOS). -->
+    <PackageReference Include="SkiaSharp.NativeAssets.iOS" />
+
+    <!-- AUSDRUECKLICH, obwohl Microsoft.Data.Sqlite es ohnehin transitiv zieht:
+         Auf iOS liefert dieses Paket "provider.internal" (DllImport __Internal)
+         und eine STATISCH gelinkte e_sqlite3.a je Geraet und Simulator. Damit
+         faehrt iOS dieselbe SQLite 3.53.3 wie Windows, Linux und der macOS-CI -
+         die Voraussetzung fuer die 114 STRICT-Tabellen der Datenbank (iF27). -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+
+    <!-- KI-SEMANTIKSUCHE IST AUF iOS NICHT ERREICHBAR (iF26). Die native
+         Haelfte von OnnxRuntime ist eine 46 MB grosse xcframework, die statisch
+         mit -lc++ gelinkt wuerde. Sie bleibt draussen; SemantikModell scheitert
+         damit erst beim Aufruf und nicht beim Start. Aufheben = diese Zeile
+         loeschen. Chat und Wiki laufen ueber REST und sind unberuehrt. -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" ExcludeAssets="native;build;buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Seed-Datenbank und Berichtsvorlage liegen als Anwendungsbestand im
+         Paket; gelesen werden sie ueber FileSystem.OpenAppPackageFileAsync.
+         Die Vorlage traegt denselben Unterordner, unter dem
+         WordBerichtGenerator.FindeVorlage sie sucht. -->
+    <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
+               LogicalName="Vorlagen\Berichtsvorlage.docx" />
+
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />
+  </ItemGroup>
+
+</Project>
