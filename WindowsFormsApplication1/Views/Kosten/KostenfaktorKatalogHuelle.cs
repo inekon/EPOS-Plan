@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -20,18 +17,16 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class KostenfaktorKatalogHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 569 × 414;
-        /// die Liste steht jetzt untereinander mit Anlegezeile und Leiste.</summary>
-        private static readonly Size FENSTER = new Size(600, 560);
-
-        /// <summary>Zeigt den Dialog. Der Vorlaeufer kannte kein Ergebnis — sein
-        /// „OK" schloss nur das Fenster (<c>btn_OK_Click</c>: <c>Close()</c>).</summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
-        internal static void Oeffnen(IWin32Window besitzer)
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.2). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Kostenverwaltung selbst eine
+        /// Razor-Komponente ist, erscheint der Katalog in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben()
         {
-            BlazorDialogForm<KostenfaktorKatalogDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Zeilen"] = Zeilen(),
                 ["NeuLaden"] = new Func<IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>>(Zeilen),
@@ -55,21 +50,8 @@ namespace WindowsFormsApplication1
                 ["MeldungNeuFehler"] = Text_("KFAK_MSG_NEU_FEHLER",
                     "Der Kostenfaktor konnte nicht angelegt werden."),
                 ["MeldungLoeschenFehler"] = Text_("KFAK_MSG_LOESCHEN_FEHLER",
-                    "Der Kostenfaktor konnte nicht gelöscht werden."),
-
-                ["Geschlossen"] = EventCallback.Factory.Create(new object(), () =>
-                {
-                    if (dlg != null) dlg.Schliessen(true);
-                })
+                    "Der Kostenfaktor konnte nicht gelöscht werden.")
             };
-
-            dlg = new BlazorDialogForm<KostenfaktorKatalogDialog>(
-                Text_("KFAK_TITEL", "Administration Kostenfaktoren"), FENSTER, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         /// <summary>Die Katalogzeilen aus dem Kern, in die Zeilenform der Komponente.</summary>

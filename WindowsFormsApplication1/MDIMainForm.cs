@@ -67,11 +67,7 @@ namespace WindowsFormsApplication1
 
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(text);
                 eintrag.Name = "MenuItem_Kostenvorlagen";
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_KostenKomponente frm = new Form_KostenKomponente())
-                        frm.ShowDialog(this);
-                };
+                eintrag.Click += (s, e) => KostenKomponenteHuelle.Oeffnen(this);
 
                 MenuItem_KostenVerwaltung.DropDownItems.Add(eintrag);
 

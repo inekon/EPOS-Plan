@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -27,17 +24,17 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class VorlagenUebernahmeHuelle
     {
-        /// <summary>Innenmaß des Fensters: fünf Auswahllisten, Vorschau, zwei Knöpfe.
-        /// Die WinForms-Fassung maß 544 × 348; die Blazor-Fassung stellt die Felder
-        /// untereinander und braucht deshalb mehr Höhe (Befund 03.09.2026: lieber
-        /// höher als umgebrochen).</summary>
-        private static readonly Size FENSTER = new Size(640, 620);
-
         /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn mindestens einmal
-        /// erfolgreich übernommen wurde.
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.2). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Kostenverwaltung selbst eine
+        /// Razor-Komponente ist, erscheint der Übernahmedialog in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). Geblieben ist die Datenseite: dieselben Controller mit
+        /// denselben Filtern wie zuvor <c>Form_VorlagenUebernahme.SetControls</c>.
+        ///
+        /// <para><c>Geschlossen</c> steht bewusst NICHT im Satz — den Rückruf
+        /// setzt der Wirt, der auch das Fenster hält.</para>
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
         /// <param name="komponentenId">Kostenkomponente (Ä7-Auswahl).</param>
         /// <param name="komponentenName">Anzeigename der Komponente — zugleich der
         /// Schlüssel, mit dem die Quell-Anlagenliste gefiltert wird (Ä21).</param>
@@ -46,9 +43,9 @@ namespace WindowsFormsApplication1
         /// (Ä11: zur Auswahl stehen immer alle Vorlagen des Katalogs).</param>
         /// <param name="zielProjektId">&gt; 0 = das Ziel steht fest (Projektmodus).</param>
         /// <param name="zielAnlageId">Ziel-Anlage der Übernahme (Ä20); 0 = ohne Bezug.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, int komponentenId, string komponentenName,
-                                     int kategorieId, KostenVorlageKopf vorlage,
-                                     int zielProjektId = 0, int zielAnlageId = 0)
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int komponentenId, string komponentenName, int kategorieId,
+            KostenVorlageKopf vorlage, int zielProjektId = 0, int zielAnlageId = 0)
         {
             string name = komponentenName ?? "";
 
@@ -69,10 +66,7 @@ namespace WindowsFormsApplication1
             int? quellProjektVorwahl = zielProjektId > 0 ? (int?)zielProjektId : null;
             int? quellVorlageVorwahl = vorlage != null ? (int?)vorlage.Id : null;
 
-            bool uebernommen = false;
-            BlazorDialogForm<VorlagenUebernahmeDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["KontextText"] = name + " · " +
                     (kategorieId == KostenSummenCtrl.KATEGORIE_BETRIEB
@@ -106,23 +100,8 @@ namespace WindowsFormsApplication1
                 ["LabelQuellProjekt"] = Text_("KUEB_LBL_QUELLPROJEKT", "Quellprojekt:"),
                 ["LabelQuellAnlage"] = Text_("KUEB_LBL_QUELLANLAGE", "Quellanlage:"),
                 ["UebernehmenText"] = Text_("KDLG_ET_BTN_UEBERNEHMEN", "Übernehmen"),
-                ["SchliessenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), erfolg =>
-                {
-                    uebernommen = erfolg;
-                    if (dlg != null) dlg.Schliessen(erfolg);
-                })
+                ["SchliessenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
-
-            dlg = new BlazorDialogForm<VorlagenUebernahmeDialog>(
-                Text_("KUEB_TITEL", "Übernahme ins Projekt"), FENSTER, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return uebernommen;
         }
 
         /// <summary>

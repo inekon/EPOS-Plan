@@ -99,20 +99,12 @@ namespace WindowsFormsApplication1
             {
                 // KD6a: Der Projektkontext läuft über den NEUEN Kostendialog; die
                 // Leselogik der Altmaske steht seit iU9-W0 in KostenSummenCtrl.
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetProjekt(projektId, ProjektName(projektId), komponente, betrieb);
-                    dlg.ShowDialog(eigner);
-                }
+                KostenKomponenteHuelle.OeffnenProjekt(eigner, projektId,
+                                                      ProjektName(projektId), komponente, betrieb);
             }
             else
             {
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetControls(komponente);
-                    if (betrieb) dlg.WaehleBetrieb();
-                    dlg.ShowDialog(eigner);
-                }
+                KostenKomponenteHuelle.Oeffnen(eigner, komponente, betrieb);
             }
         }
 
