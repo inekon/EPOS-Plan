@@ -1,5 +1,6 @@
 # Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
-# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests und seit iU3 EPOS.Kern).
+# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests, seit iU3 EPOS.Kern und
+# seit iU4 EPOS.Kern.Tests).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
 # WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
 #
@@ -47,12 +48,17 @@ jobs:
       # Die reduzierte Testdatenbank liegt nicht in jedem Checkout. Fehlt sie,
       # wird der Schritt uebersprungen statt rot - der Bauteil oben ist der
       # eigentliche Waechter, dieser Schritt der Zugewinn.
-      - name: Kern-Referenzlauf 1030
+      # iU4-7: drei Projekte statt einem. 1030 ist die Kaskade; 1007 und 1017
+      # fuehren aktive Stromspeicher-Varianten und decken damit den K8-Haken ab
+      # (SimulationControl.Stromspeicher.cs samt ModuleInitializer), der mit iU4
+      # in den Kern gezogen ist. Ohne sie wuerde ein stillgelegter Haken hier
+      # nicht auffallen.
+      - name: Kern-Referenzlauf 1030, 1007, 1017
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030 --ziel artifacts/reflauf/${{ matrix.os }}_1030
+          --projekte 1030,1007,1017 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
@@ -64,14 +70,18 @@ jobs:
         run: |
           mkdir -p artifacts/reflauf/ref
           cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
-          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_1030
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1017 artifacts/reflauf/ref/
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          if diff -rq artifacts/reflauf/ref/Projekt_1030 artifacts/reflauf/${{ matrix.os }}_1030/Projekt_1030; then echo "BYTE-GLEICH: alle Dateien identisch"; else echo "byte-verschieden (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
+          for p in 1030 1007 1017; do
+            if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
+          done
 
       - name: Ergebnis-CSV als Artefakt
         if: always() && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: reflauf-1030-${{ matrix.os }}
-          path: artifacts/reflauf/${{ matrix.os }}_1030
+          name: reflauf-kern-${{ matrix.os }}
+          path: artifacts/reflauf/${{ matrix.os }}_kern
           retention-days: 14
