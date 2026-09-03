@@ -1,0 +1,190 @@
+﻿@* Karte der 15 KLIMAZONEN nach DIN 4710 zum Ansehen und Auswaehlen
+   (iU9-W10a.2, Konzept_Klimazonenkarte_EPOS-Plan.md).
+
+   VORBILD. Views/Simulation/Form_Klimazonenkarte (96 Z., Designer 125 Z.,
+   700 x 760, vier Steuerelemente, KEINE MessageBox) samt dem Steuerelement
+   Allgemein/GrafikTools/KlimazonenKarte (326 Z.), das Bild und Polygone
+   zeichnete. Beides ersetzt der Baustein Bildkarte: ein PNG mit einem
+   SVG-Overlay darueber, statt eines eigenen Controls mit Hit-Test.
+
+   VIER FELDER, WIE IN DER KARTE. Die Karte selbst, eine Statuszeile darunter,
+   OK und Abbrechen. Der Titel steht in der Kopfzeile.
+
+   "NICHT ZUGEORDNET" GIBT ES HIER NICHT (Befund W10-B4). Zone 0 ist auf der
+   Karte bewusst nicht waehlbar - eine Flaeche "keine Zone" gibt es nicht. Wer
+   die Zuordnung LOESEN will, nimmt die Auswahlliste des Erdreich-Dialogs; sie
+   bleibt deshalb bestehen und ist zugleich der Tastaturweg fuer alle, die nicht
+   auf eine Landkarte zielen wollen. Der Dialog liefert nur 1…15 oder null.
+
+   DER DOPPELKLICK UEBERNIMMT (karte_ZoneUebernommen:90-94): erst die Auswahl,
+   dann das Ergebnis - der Vorlaeufer rief AuswahlAnzeigen() und setzte danach
+   DialogResult.
+
+   ABWEICHUNG A-2 (Befund W10-B2): Der Vorlaeufer hatte keinen Hilfeeinstieg;
+   die Komponente traegt einen, wie alle uebrigen Dialoge dieser Welle.
+
+   TASTATUR: Esc bricht ab. Enter ist BELEGT - der Dialog waehlt nur aus und
+   schreibt nichts. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Bildkarte BildUrl="@BildUrl" Bildbeschreibung="@TitelText" ViewBox="@ViewBox"
+               Flaechen="@Zonenflaechen" Gewaehlt="@_zone"
+               GewaehltChanged="z => _zone = z" Uebernommen="Uebernehmen"
+               LadefehlerText="@LadefehlerText" />
+
+    <p class="epos-kartenauswahl" role="status">@Auswahltext</p>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>
+    /// EINE Zone, wie die Hülle sie liefert: Nummer und Volllaststunden.
+    /// </summary>
+    /// <param name="Nummer">Die Zonennummer 1…15.</param>
+    /// <param name="Pfad">Die SVG-Pfadangabe im Raum der <see cref="ViewBox"/>.</param>
+    /// <param name="Volllaststunden">Jahresvolllaststunden [h/a] — sie stehen im Kurztext.</param>
+    public sealed record Zone(int Nummer, string Pfad, double Volllaststunden);
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Die vorgewählte Zone 1…15; <c>0</c> = keine.</summary>
+    [Parameter] public int AktuelleZone { get; set; }
+
+    /// <summary>Die 15 Zonen samt Pfad und Volllaststunden.</summary>
+    [Parameter] public IReadOnlyList<Zone> Zonen { get; set; } = Array.Empty<Zone>();
+
+    /// <summary>Die Bildquelle des Kartenbildes.</summary>
+    [Parameter] public string BildUrl { get; set; }
+        = "_content/EPOS.UI/bilder/Zonenkarte_Klimazonen.png";
+
+    /// <summary>Der Koordinatenraum der Pfade („0 0 breite höhe").</summary>
+    [Parameter] public string ViewBox { get; set; } = "";
+
+    /// <summary>Das Ergebnis: die Zone 1…15, <c>null</c> bei Abbruch oder Esc.</summary>
+    [Parameter] public EventCallback<int?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Klimazonen nach DIN 4710";
+
+    /// <summary>Statuszeile mit gewählter Zone; <c>{0}</c> ist der Zonentext.</summary>
+    [Parameter] public string GewaehltText { get; set; } = "Gewählte Zone: {0}";
+
+    /// <summary>Statuszeile ohne Auswahl.</summary>
+    [Parameter] public string KeineText { get; set; }
+        = "Noch keine Zone gewählt — eine Zonenfläche auf der Karte anklicken.";
+
+    /// <summary>Kurztext einer Zonenfläche; <c>{0}</c> Zone, <c>{1}</c> Volllaststunden.</summary>
+    [Parameter] public string ZoneTip { get; set; } = "Zone {0} — {1} h/a";
+
+    /// <summary>Der Text, wenn keine Zonenfläche vorliegt.</summary>
+    [Parameter] public string LadefehlerText { get; set; }
+        = "Die Klimazonenkarte konnte nicht geladen werden — die Auswahl bleibt über die Liste möglich.";
+
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Klimazonenkarte.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private int _zone;
+
+    /// <summary>Die gewählte Zone; <c>0</c> = keine. Prüfhilfe für die Tests.</summary>
+    public int GewaehlteZone => _zone;
+
+    /// <summary>
+    /// Die Statuszeile unter der Karte — <c>AuswahlAnzeigen</c>:72-79.
+    /// </summary>
+    public string Auswahltext => _zone >= 1
+        ? string.Format(GewaehltText, Zonentext(_zone))
+        : KeineText;
+
+    /// <summary>
+    /// Der Anzeigetext einer Zone: „8 — 2.000 h/a" (<c>ZonenText</c>:65-69). Dieselbe
+    /// Bauweise trägt die Auswahlliste des Erdreich-Dialogs; deshalb kommt sie hier
+    /// wie dort aus Nummer und Volllaststunden, nicht aus einem eigenen Text.
+    /// </summary>
+    public string Zonentext(int zone)
+    {
+        double h = 0;
+        foreach (Zone z in Zonen) if (z.Nummer == zone) { h = z.Volllaststunden; break; }
+        return zone.ToString(System.Globalization.CultureInfo.CurrentCulture) + " — " +
+               h.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " h/a";
+    }
+
+    private IReadOnlyList<Bildkarte.Flaeche> Zonenflaechen
+    {
+        get
+        {
+            var l = new List<Bildkarte.Flaeche>();
+            foreach (Zone z in Zonen)
+            {
+                if (string.IsNullOrEmpty(z.Pfad)) continue;
+                l.Add(new Bildkarte.Flaeche(
+                    z.Nummer, z.Pfad,
+                    string.Format(ZoneTip,
+                        z.Nummer.ToString(System.Globalization.CultureInfo.CurrentCulture),
+                        z.Volllaststunden.ToString("N0",
+                            System.Globalization.CultureInfo.CurrentCulture))));
+            }
+            return l;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // Nur eine Zone der Karte darf vorgewaehlt sein; 0 und alles ausserhalb
+        // heisst "keine" (der Vorlaeufer reichte AktuelleZone ungeprueft durch, und
+        // das Control zeichnete dann einfach keine Hervorhebung).
+        _zone = AktuelleZone;
+        bool bekannt = false;
+        foreach (Zone z in Zonen) if (z.Nummer == _zone) { bekannt = true; break; }
+        if (!bekannt) _zone = 0;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Doppelklick auf eine Fläche — er übernimmt sofort.</summary>
+    private Task Uebernehmen(int zone)
+    {
+        _zone = zone;
+        return Ergebnis();
+    }
+
+    private Task BeiErgebnis(bool ok) => ok ? Ergebnis() : Geschlossen.InvokeAsync(null);
+
+    /// <summary>
+    /// Das Ergebnis geht nur durch, wenn eine Zone der Karte gewählt ist. Der
+    /// Aufrufer prüfte dasselbe (<c>1 ≤ Zone ≤ KLIMAZONEN</c>,
+    /// <c>Form_QuelleErdreich</c>:1084) — ohne Auswahl heißt OK dasselbe wie
+    /// Abbrechen: Es bleibt beim bisherigen Stand.
+    /// </summary>
+    private Task Ergebnis()
+        => Geschlossen.InvokeAsync(_zone >= 1 ? _zone : (int?)null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => Geschlossen.InvokeAsync(null),
+        "Enter" => Ergebnis(),
+        _ => Task.CompletedTask
+    };
+}
