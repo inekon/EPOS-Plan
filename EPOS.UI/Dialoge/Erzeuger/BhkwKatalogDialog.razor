@@ -1,0 +1,601 @@
+﻿@* Katalogeditor BHKW (iU9-W6.2).
+
+   VORBILD. Views/BHKW/Form_DBBHKW (712 Z., NICHT lokalisiert, 58 Kartenzeilen
+   in fuenf Gruppen, 13 MessageBox). Er schreibt ausschliesslich in
+   Tab_BHKW_STAMM; schreibgeschuetzte Saetze (ReadOnly) koennen nur nach
+   ausdruecklicher Rueckfrage ueberschrieben werden.
+
+   DIE FUENF EINZELPOSTEN FUEHREN (Nutzerentscheid 22.08.2026, Regel in
+   BHKWKosten): Modul + Montage + Lieferung + Schallschutzhaube +
+   Abgasreinigung ergeben die Investition. "Investitionskosten" [EUR/kWel] ist
+   daraus ABGELEITET, nur Anzeige und schreibgeschuetzt. Zuvor fuehrten beide
+   Wege dieselbe Groesse und liefen auseinander (A-Tron_21_F: Posten 0,00 EUR,
+   Investition_kwel 2000 bei Pel 21).
+
+   DREI ZUSTAENDE der Hinweiszeile, wortgleich aus HinweisAnzeigen (Z. 216):
+   * Pel = 0 -> "unbestimmt": Es gibt keinen Wert je kWel, und das wird gesagt
+     statt einer erfundenen 0,00.
+   * direkt nach dem Laden und der gespeicherte Wert passt nicht zur Summe ->
+     "Abweichung". Der Wert bleibt stehen; nachgezogen wird er erst beim
+     Speichern oder sobald sich ein Posten bzw. Pel aendert.
+   * sonst -> "abgeleitet".
+
+   DER NAME IST IM MODUS BEARBEITEN NUR LESBAR (A-3 des Protokolls W6).
+   BHKWStammCtrl.Update filtert per Bezeichner; ein in comboBox_Name
+   geaenderter Name traefe im EDIT keinen Satz und meldete trotzdem Erfolg -
+   ExecuteSQL gilt auch bei null betroffenen Zeilen als gelungen. Umbenannt
+   wird ueber "Speichern unter", das eine Kopie anlegt.
+
+   DIE RUECKFRAGE VOR DEM UEBERSCHREIBEN eines Katalogsatzes steht als
+   Rueckfrage-Baustein im selben Fenster (iU9-W4.0). Der Vorlaeufer zeigte eine
+   MessageBox mit MessageBoxDefaultButton.Button2 - hier liegt der Fokus beim
+   Oeffnen auf dem Bereich, nicht auf "Ja" (Baustein-Regel).
+
+   TASTATUR. Wurzel-div mit tabindex="-1", Erstfokus dort, Esc = Abbrechen.
+   Enter ist nicht belegt: Drei Knoepfe schreiben sofort in den Katalog. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Gruppenkopf Titel="@GruppeBezeichnung">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Bezeichner"
+                      WertChanged="BeiName" NurLesen="@(Modus == KatalogModus.Bearbeiten)" />
+            <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
+                      WertChanged="w => Daten.Firma = w" />
+            <Textfeld Bezeichnung="@LabelMotortyp" Wert="@Daten.Motortyp"
+                      WertChanged="w => Daten.Motortyp = w" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeTechnik">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelPtherm" Einheit="kW" Feldname="@FeldPtherm"
+                            Wert="@Daten.Ptherm" WertChanged="BeiPtherm"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelPel" Einheit="kW" Feldname="@FeldPel"
+                            Wert="@Daten.Pel" WertChanged="BeiPel"
+                            FehlerZustand="BeiFehlerZustand" />
+            </div>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelWirkungsgrad" Einheit="@HinweisWirkungsgrad"
+                            Feldname="@FeldWirkungsgrad"
+                            Wert="@Daten.Wirkungsgrad" WertChanged="w => Daten.Wirkungsgrad = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%" Feldname="@FeldGrenzleistung"
+                            Wert="@Daten.Grenzleistung" WertChanged="w => Daten.Grenzleistung = w"
+                            FehlerZustand="BeiFehlerZustand" />
+            </div>
+            <Auswahlfeld Bezeichnung="@LabelEnergietraeger" Eintraege="@Brennstoffe"
+                         Auswahl="@Daten.Brennstoff" AuswahlChanged="w => Daten.Brennstoff = w" />
+            <div class="epos-feldpaar">
+                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@FeldVorlauf"
+                              Wert="@Daten.Vorlauf" WertChanged="w => Daten.Vorlauf = w"
+                              FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@FeldRuecklauf"
+                              Wert="@Daten.Ruecklauf" WertChanged="w => Daten.Ruecklauf = w"
+                              FehlerZustand="BeiFehlerZustand" />
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeKosten">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelModul" Einheit="€" Feldname="@FeldModul"
+                            Wert="@Daten.KostenModul" WertChanged="w => BeiPosten(() => Daten.KostenModul = w)"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelMontage" Einheit="€" Feldname="@FeldMontage"
+                            Wert="@Daten.KostenMontage" WertChanged="w => BeiPosten(() => Daten.KostenMontage = w)"
+                            FehlerZustand="BeiFehlerZustand" />
+            </div>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelLieferung" Einheit="€" Feldname="@FeldLieferung"
+                            Wert="@Daten.KostenLieferung" WertChanged="w => BeiPosten(() => Daten.KostenLieferung = w)"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelSchallschutz" Einheit="€" Feldname="@FeldSchallschutz"
+                            Wert="@Daten.KostenSchallschutzhaube"
+                            WertChanged="w => BeiPosten(() => Daten.KostenSchallschutzhaube = w)"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelAbgasreinigung" Einheit="€" Feldname="@FeldAbgasreinigung"
+                            Wert="@Daten.KostenAbgasreinigung"
+                            WertChanged="w => BeiPosten(() => Daten.KostenAbgasreinigung = w)"
+                            FehlerZustand="BeiFehlerZustand" />
+            </div>
+
+            @* Summe und abgeleiteter Wert - beide nur lesbar, beide von hier gefuellt. *@
+            <div class="epos-feldpaar">
+                <Textfeld Bezeichnung="@LabelSumme" Wert="@SummeText" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelInvest" Wert="@InvestText" NurLesen="true" />
+            </div>
+            <Herleitungszeile Text="@InvestHinweis" />
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelRaumbedarf" Einheit="m³" Feldname="@FeldRaumbedarf"
+                            Wert="@Daten.Raumbedarf" WertChanged="w => Daten.Raumbedarf = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelWartung" Einheit="€ / kWhel" Feldname="@FeldWartung"
+                            Wert="@Daten.WartungskostenJeKWhel"
+                            WertChanged="w => Daten.WartungskostenJeKWhel = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="@LabelNutzungsdauer" Einheit="@EinheitJahre"
+                              Feldname="@FeldNutzungsdauer"
+                              Wert="@Daten.Nutzungsdauer" WertChanged="w => Daten.Nutzungsdauer = w"
+                              FehlerZustand="BeiFehlerZustand" />
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeBehg">
+        <KindInhalt>
+            <Herleitungszeile Text="@BehgZeile"
+                              Formel="@($"{BehgOel} · {BehgFluessiggas} · {BehgErdgas}")" />
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="BeiCo2Vorgabe">@BtnCo2Text</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeEmissionen">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Ganzzahlfeld Bezeichnung="CO2:" Einheit="g / MWh" Feldname="CO2-Emission"
+                              Wert="@Daten.CO2" WertChanged="w => Daten.CO2 = w"
+                              FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="SO2:" Einheit="g / MWh" Feldname="SO2-Emission"
+                              Wert="@Daten.SO2" WertChanged="w => Daten.SO2 = w"
+                              FehlerZustand="BeiFehlerZustand" />
+            </div>
+            <div class="epos-feldpaar">
+                <Ganzzahlfeld Bezeichnung="NOx:" Einheit="g / MWh" Feldname="NOx-Emission"
+                              Wert="@Daten.NOx" WertChanged="w => Daten.NOx = w"
+                              FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="CO:" Einheit="g / MWh" Feldname="CO-Emission"
+                              Wert="@Daten.CO" WertChanged="w => Daten.CO = w"
+                              FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="@LabelStaub" Einheit="g / MWh" Feldname="@FeldStaub"
+                              Wert="@Daten.Staub" WertChanged="w => Daten.Staub = w"
+                              FehlerZustand="BeiFehlerZustand" />
+            </div>
+            <div class="epos-leiste">
+                <Schalter Bezeichnung="@LabelScr" Wert="@Daten.ScrVorhanden"
+                          WertChanged="w => Daten.ScrVorhanden = w" />
+                <button type="button" class="epos-knopf" @onclick="BeiEintragen">@BtnEintragenText</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <KostenKnoepfeLeiste KostenOeffnen="@KostenOeffnen" EnergiekostenOeffnen="@EnergiekostenOeffnen"
+                         Fk8Kurz="@Fk8Kurz" Fk8Hinweis="@Fk8Hinweis"
+                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                         EnergieText="@KostenEnergieText" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="() => _namensfrage = true">@BtnSpeichernUnterText</button>
+        <button type="button" class="epos-knopf" @onclick="() => Geschlossen.InvokeAsync(null)">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(Modus != KatalogModus.Neu)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+    </div>
+
+    @* Katalogsatz ueberschreiben: einmal ausdruecklich nachfragen. *@
+    <Rueckfrage Offen="@_schutzfrage" Frage="@FrageSchreibschutz" TitelText="@TitelSchreibschutz"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchutzfrage" />
+
+    @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnSpeichernUnterText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnSpeichernUnterText" FrageText="@LabelName"
+                          Vorbelegung="@Daten.Bezeichner" MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiSpeichernUnter" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Der Feldsatz. Die Huelle laedt ihn und nimmt ihn beim Speichern entgegen.</summary>
+    [Parameter] public BhkwKatalogDaten Daten { get; set; } = new();
+
+    /// <summary>Welche der drei Speicherwege angeboten werden.</summary>
+    [Parameter] public KatalogModus Modus { get; set; } = KatalogModus.Bearbeiten;
+
+    /// <summary>
+    /// Die Energietraeger. Die Id ist der 0-BASIERTE Listenindex — anders als beim
+    /// Heizkessel (Bestand, siehe <see cref="BhkwKatalogDaten.Brennstoff"/>).
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Brennstoffe { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Schreibt den geladenen Satz zurueck. Der zweite Parameter ist die Antwort auf die
+    /// Schreibschutzfrage: <c>true</c> hebt den Schutz fuer diesen Vorgang auf.
+    /// </summary>
+    [Parameter] public Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>? Ueberschreiben { get; set; }
+
+    /// <summary>Legt einen neuen Satz an - zweiter Parameter ist der gewuenschte Name.</summary>
+    [Parameter] public Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
+
+    /// <summary>Die CO2-Vorgabe zum Brennstoff (<c>EmissionsVorgaben.BhkwCo2</c>); <c>null</c> = keine.</summary>
+    [Parameter] public Func<string, double?>? Co2Vorgabe { get; set; }
+
+    /// <summary>
+    /// Der Emissionssatz zu Brennstoff, SCR-Schalter und thermischer Leistung
+    /// (<c>EmissionsVorgaben.Bhkw</c>). Jeder Wert <c>null</c> = keine Vorgabe.
+    /// </summary>
+    [Parameter] public Func<string, bool, double, (double? SO2, double? CO2, double? NOx, double? CO, double? Staub)>?
+        EmissionsVorgabe { get; set; }
+
+    /// <summary>Die Summe der fuenf Posten (<c>BHKWKosten.Summe</c>).</summary>
+    [Parameter] public Func<double, double, double, double, double, double>? Summe { get; set; }
+
+    /// <summary>Ist der Wert je kWel bestimmbar? (<c>BHKWKosten.JeKWelBestimmbar</c>)</summary>
+    [Parameter] public Func<double, bool>? JeKWelBestimmbar { get; set; }
+
+    /// <summary>Der Wert je kWel (<c>BHKWKosten.JeKWel</c>).</summary>
+    [Parameter] public Func<double, double, double>? JeKWel { get; set; }
+
+    /// <summary>Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    // --- Kostenleiste (KD6) ----------------------------------------------------
+
+    [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
+    [Parameter] public Func<Task>? EnergiekostenOeffnen { get; set; }
+    [Parameter] public string Fk8Kurz { get; set; } = "";
+    [Parameter] public string Fk8Hinweis { get; set; } = "";
+    [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
+    [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "BHKW Eigenschaften";
+    [Parameter] public string GruppeBezeichnung { get; set; } = "Modul";
+    [Parameter] public string LabelName { get; set; } = "Modulname:";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller:";
+    [Parameter] public string LabelMotortyp { get; set; } = "Motortyp:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+
+    [Parameter] public string GruppeTechnik { get; set; } = "Technische Daten";
+    [Parameter] public string LabelPtherm { get; set; } = "Thermische Leistung:";
+    [Parameter] public string FeldPtherm { get; set; } = "thermische Leistung";
+    [Parameter] public string LabelPel { get; set; } = "Elektrische Leistung:";
+    [Parameter] public string FeldPel { get; set; } = "elektrische Leistung";
+    [Parameter] public string LabelWirkungsgrad { get; set; } = "Ges. Wirkungsgrad:";
+    [Parameter] public string FeldWirkungsgrad { get; set; } = "Gesamtwirkungsgrad";
+    [Parameter] public string HinweisWirkungsgrad { get; set; } = "(z. B. 0,85)";
+    [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung:";
+    [Parameter] public string FeldGrenzleistung { get; set; } = "untere Grenzleistung";
+    [Parameter] public string LabelEnergietraeger { get; set; } = "Energieträger:";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
+    [Parameter] public string FeldVorlauf { get; set; } = "Vorlauftemperatur";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
+    [Parameter] public string FeldRuecklauf { get; set; } = "Rücklauftemperatur";
+
+    [Parameter] public string GruppeKosten { get; set; } = "Eingabedaten zur Berechnung der Kosten";
+    [Parameter] public string LabelModul { get; set; } = "Modul:";
+    [Parameter] public string FeldModul { get; set; } = "Kosten Modul";
+    [Parameter] public string LabelMontage { get; set; } = "Montage und Inbetriebnahme:";
+    [Parameter] public string FeldMontage { get; set; } = "Kosten Montage und Inbetriebnahme";
+    [Parameter] public string LabelLieferung { get; set; } = "Lieferung (50 km Umkreis):";
+    [Parameter] public string FeldLieferung { get; set; } = "Kosten Lieferung";
+    [Parameter] public string LabelSchallschutz { get; set; } = "Schallschutzhaube:";
+    [Parameter] public string FeldSchallschutz { get; set; } = "Kosten Schallschutzhaube";
+    [Parameter] public string LabelAbgasreinigung { get; set; } = "Abgasreinigung, z. B. Kat:";
+    [Parameter] public string FeldAbgasreinigung { get; set; } = "Kosten Abgasreinigung";
+    [Parameter] public string LabelSumme { get; set; } = "Summe der Einzelposten [€]:";
+    [Parameter] public string LabelInvest { get; set; } = "Investitionskosten [€ / kWel]:";
+    [Parameter] public string LabelRaumbedarf { get; set; } = "Raumbedarf:";
+    [Parameter] public string FeldRaumbedarf { get; set; } = "Raumbedarf";
+    [Parameter] public string LabelWartung { get; set; } = "Wartungskosten:";
+    [Parameter] public string FeldWartung { get; set; } = "Wartungskosten";
+    [Parameter] public string LabelNutzungsdauer { get; set; } = "Nutzungsdauer:";
+    [Parameter] public string FeldNutzungsdauer { get; set; } = "Nutzungsdauer";
+    [Parameter] public string EinheitJahre { get; set; } = "Jahre";
+
+    /// <summary>Anzeigetext, wenn Pel = 0 ist (<c>BHKW_INVEST_UNBESTIMMT</c>).</summary>
+    [Parameter] public string InvestUnbestimmt { get; set; } = "unbestimmt";
+
+    /// <summary>Hinweiszeile „abgeleitet" (<c>BHKW_INVEST_HINWEIS_ABGELEITET</c>).</summary>
+    [Parameter] public string HinweisAbgeleitet { get; set; } =
+        "Abgeleitet aus den Einzelposten und der elektrischen Leistung.";
+
+    /// <summary>Hinweiszeile „unbestimmt" (<c>BHKW_INVEST_HINWEIS_UNBESTIMMT</c>).</summary>
+    [Parameter] public string HinweisUnbestimmt { get; set; } =
+        "Ohne elektrische Leistung gibt es keinen Wert je kWel.";
+
+    /// <summary>Hinweiszeile „Abweichung" (<c>BHKW_INVEST_HINWEIS_ABWEICHUNG</c>).</summary>
+    [Parameter] public string HinweisAbweichung { get; set; } =
+        "Der gespeicherte Wert weicht von der Ableitung ab; er wird beim Speichern nachgezogen.";
+
+    [Parameter] public string GruppeBehg { get; set; } = "Emissionen nach BEHG-V";
+    [Parameter] public string BehgZeile { get; set; } = "für Heizzwecke in t CO2 / GJ";
+    [Parameter] public string BehgOel { get; set; } = "Heizöl: 0,0808";
+    [Parameter] public string BehgFluessiggas { get; set; } = "Flüssiggas: 0,0663";
+    [Parameter] public string BehgErdgas { get; set; } = "Erdgas: 0,056";
+    [Parameter] public string BtnCo2Text { get; set; } = "CO2 BEHG";
+
+    [Parameter] public string GruppeEmissionen { get; set; } = "Emissionsfaktoren bezogen auf den Brennstoffverbrauch";
+    [Parameter] public string LabelStaub { get; set; } = "Staub:";
+    [Parameter] public string FeldStaub { get; set; } = "Staub-Emission";
+    [Parameter] public string LabelScr { get; set; } = "mit SCR";
+    [Parameter] public string BtnEintragenText { get; set; } = "Eintragen";
+
+    [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Die Rueckfrage vor dem Ueberschreiben eines Auslieferungssatzes.</summary>
+    [Parameter] public string FrageSchreibschutz { get; set; } =
+        "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.\n\n" +
+        "Soll er trotzdem überschrieben werden?";
+
+    [Parameter] public string TitelSchreibschutz { get; set; } = "Schreibgeschützter Datensatz";
+
+    [Parameter] public string MeldungZahlUngueltig { get; set; } =
+        "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
+
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
+
+    /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_DBBHKW.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _namensfrage;
+    private bool _schutzfrage;
+
+    /// <summary>
+    /// <c>true</c>, solange nichts geaendert wurde. Nur dann wird eine Abweichung
+    /// zwischen gespeichertem Wert und Ableitung benannt (Vorbild
+    /// <c>BestandHinweisAnzeigen</c>, Parameter <c>bestand</c>).
+    /// </summary>
+    private bool _bestand = true;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private readonly List<string> _fehlerhaft = new();
+
+    /// <summary>Steht die Namensabfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Steht die Schreibschutzfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool Schutzfrage => _schutzfrage;
+
+    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Die abgeleitete Investition
+    // =================================================================================
+
+    private double SummeEinzelposten()
+    {
+        double m = Daten.KostenModul ?? 0, mo = Daten.KostenMontage ?? 0,
+               l = Daten.KostenLieferung ?? 0, s = Daten.KostenSchallschutzhaube ?? 0,
+               a = Daten.KostenAbgasreinigung ?? 0;
+
+        return Summe is not null ? Summe(m, mo, l, s, a) : m + mo + l + s + a;
+    }
+
+    private bool Bestimmbar(double pel)
+        => JeKWelBestimmbar is not null ? JeKWelBestimmbar(pel) : pel > 0;
+
+    private double JeKWelWert(double summe, double pel)
+        => JeKWel is not null ? JeKWel(summe, pel) : (pel > 0 ? summe / pel : 0);
+
+    /// <summary>Die Summe der Einzelposten, wie <c>SummeAnzeigen</c> sie zeigte.</summary>
+    private string SummeText => SummeEinzelposten().ToString("F2");
+
+    /// <summary>
+    /// Der Wert je kWel. Solange nichts geaendert wurde, steht der GESPEICHERTE Wert da
+    /// (Bestandsverhalten); danach die Ableitung. Bei Pel = 0 immer „unbestimmt".
+    /// </summary>
+    private string InvestText
+    {
+        get
+        {
+            double pel = Daten.Pel ?? 0;
+            if (!Bestimmbar(pel)) return InvestUnbestimmt;
+            if (_bestand) return (Daten.InvestitionJeKWel ?? 0).ToString("F2");
+            return JeKWelWert(SummeEinzelposten(), pel).ToString("F2");
+        }
+    }
+
+    /// <summary>Die drei Zustaende der Hinweiszeile (Vorbild <c>HinweisAnzeigen</c>).</summary>
+    private string InvestHinweis
+    {
+        get
+        {
+            double pel = Daten.Pel ?? 0;
+            if (!Bestimmbar(pel)) return HinweisUnbestimmt;
+
+            bool abweichung = _bestand &&
+                Math.Abs((Daten.InvestitionJeKWel ?? 0) - JeKWelWert(SummeEinzelposten(), pel)) > 0.005;
+
+            return abweichung ? HinweisAbweichung : HinweisAbgeleitet;
+        }
+    }
+
+    /// <summary>Eine Aenderung an Pel oder einem Posten zieht die Ableitung nach.</summary>
+    private void BeiPosten(Action setzen)
+    {
+        setzen();
+        _bestand = false;
+    }
+
+    private void BeiPtherm(double? wert) => Daten.Ptherm = wert;
+
+    private void BeiPel(double? wert)
+    {
+        Daten.Pel = wert;
+        _bestand = false;
+    }
+
+    private void BeiName(string wert)
+    {
+        if (Modus == KatalogModus.Bearbeiten) return;
+        Daten.Bezeichner = wert;
+    }
+
+    // =================================================================================
+    // Vorgabewerte
+    // =================================================================================
+
+    private void BeiCo2Vorgabe()
+    {
+        if (Co2Vorgabe is null) return;
+        double? wert = Co2Vorgabe(GewaehlterBrennstoff());
+        if (wert.HasValue) Daten.CO2 = (int)wert.Value;
+    }
+
+    /// <summary>
+    /// „Eintragen": Der Satz haengt an Brennstoff, SCR-Schalter und thermischer
+    /// Leistung. Ein Feld ohne Vorgabe bleibt stehen - Bestandsverhalten.
+    /// </summary>
+    private void BeiEintragen()
+    {
+        if (EmissionsVorgabe is null) return;
+
+        var satz = EmissionsVorgabe(GewaehlterBrennstoff(), Daten.ScrVorhanden, Daten.Ptherm ?? 0);
+        if (satz.SO2.HasValue) Daten.SO2 = (int)satz.SO2.Value;
+        if (satz.CO2.HasValue) Daten.CO2 = (int)satz.CO2.Value;
+        if (satz.NOx.HasValue) Daten.NOx = (int)satz.NOx.Value;
+        if (satz.CO.HasValue) Daten.CO = (int)satz.CO.Value;
+        if (satz.Staub.HasValue) Daten.Staub = (int)satz.Staub.Value;
+    }
+
+    private string GewaehlterBrennstoff()
+    {
+        foreach (var b in Brennstoffe)
+            if (Daten.Brennstoff.HasValue && b.Id == Daten.Brennstoff.Value) return b.Text;
+        return "";
+    }
+
+    // =================================================================================
+    // Speichern
+    // =================================================================================
+
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft)
+        {
+            if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+        }
+        else
+        {
+            _fehlerhaft.Remove(meldung.Feld);
+        }
+    }
+
+    private bool EingabenPruefen()
+    {
+        if (_fehlerhaft.Count == 0) return true;
+
+        _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
+    }
+
+    private async Task BeiUeberschreiben()
+    {
+        if (Ueberschreiben is null) return;
+        if (!EingabenPruefen()) return;
+
+        // Katalogsatz: einmal ausdruecklich nachfragen und den Schutz nur fuer genau
+        // diesen Schreibvorgang aufheben.
+        if (Daten.Katalogsatz) { _schutzfrage = true; return; }
+
+        await Schreiben(false);
+    }
+
+    private async Task BeiSchutzfrage(bool? antwort)
+    {
+        _schutzfrage = false;
+        if (antwort != true) return;   // "Nein" schreibt nichts
+        await Schreiben(true);
+    }
+
+    private async Task Schreiben(bool schutzUebergehen)
+    {
+        KatalogSpeicherErgebnis ergebnis = Ueberschreiben!(Daten, schutzUebergehen);
+        await NachDemSchreiben(ergebnis);
+    }
+
+    private async Task BeiSpeichern()
+    {
+        if (Anlegen is null) return;
+        if (!EingabenPruefen()) return;
+
+        if (string.IsNullOrWhiteSpace(Daten.Bezeichner))
+        {
+            _meldung = MeldungNameFehlt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        await NachDemSchreiben(Anlegen(Daten, Daten.Bezeichner));
+    }
+
+    private async Task BeiSpeichernUnter(string? name)
+    {
+        _namensfrage = false;
+        if (name is null || Anlegen is null) return;
+        if (!EingabenPruefen()) return;
+
+        await NachDemSchreiben(Anlegen(Daten, name));
+    }
+
+    private async Task NachDemSchreiben(KatalogSpeicherErgebnis ergebnis)
+    {
+        if (ergebnis is null) return;
+
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(ergebnis.Name);
+    }
+
+    /// <summary>Esc schliesst; Enter bleibt unbelegt. Die Ueberlagerungen zuerst.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _namensfrage || _schutzfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(null);
+    }
+}

@@ -818,24 +818,20 @@ namespace WindowsFormsApplication1
 
         private void btn_DBBHKW_Edit_Click(object sender, EventArgs e)
         {
-            // Bearbeitet einen STAMM-Datensatz (Editor Form_DBBHKW muss auf STAMM zeigen).
-            Form_DBBHKW frm = new Form_DBBHKW();
-            frm.m_mode = Form_DBBHKW.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
             if (sr.Count == 0) { MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
 
             string szName = (string)dataGridView1.CurrentRow.Cells[0].Value;
 
-            // Editor ist auch für schreibgeschützte (ReadOnly) Datensätze aufrufbar;
-            // dort ist lediglich der "Überschreiben"-Button gesperrt.
-            frm.SetControls(szName);
-            DialogResult result = frm.ShowDialog();
-            if (result == DialogResult.OK) SetFilter();
+            // iU9-W6.2: Der Editor ist die Razor-Komponente BhkwKatalogDialog. Diese
+            // Maske wird in W6.4 selbst zur Komponente und zeigt ihn dann in einer
+            // Ueberlagerung; bis dahin oeffnet sie ihn wie bisher als eigenes Fenster.
+            // Er ist auch fuer schreibgeschuetzte (ReadOnly) Datensaetze aufrufbar.
+            if (BhkwHuelle.KatalogBearbeiten(this, szName, neu: false)) SetFilter();
         }
 
         private void btn_DBBHKW_Neu_Click(object sender, EventArgs e)
         {
-            Form_DBBHKW frm = new Form_DBBHKW();
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -843,10 +839,7 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_mode = Form_DBBHKW.MODE_NEU;
-                frm.SetControls(szName);
-                frm.m_szName = szName;
-                frm.ShowDialog();
+                BhkwHuelle.KatalogBearbeiten(this, szName, neu: true);
                 SetFilter();
             }
         }
