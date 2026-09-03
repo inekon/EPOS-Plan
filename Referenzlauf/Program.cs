@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     ///   liste      [&lt;dbOrdner&gt;]
     ///   migration  &lt;quellDb&gt; &lt;zielOrdner&gt; [--nokopie] [--schreibschutz]
     ///   projekt    &lt;id&gt; &lt;zielordner&gt; &lt;dbordner&gt;     (intern: ein Projekt im Kindprozess)
+    ///   bildvergleich --quelle &lt;sqlite&gt; --projekte 1030,1007,1017 --ziel &lt;ordner&gt;
     ///
     /// Jedes Projekt laeuft in einem EIGENEN Kindprozess. Das ist der einzige zuverlaessige
     /// Weg, einen haengenden Lauf (Endlosschleife oder eine nicht wegklickbare MessageBox
@@ -64,6 +65,11 @@ namespace WindowsFormsApplication1.Referenzlauf
                         return Plausibilitaet.Pruefen(args[1]);
                     case "liste": return ModusListe(args.Skip(1).ToArray());
                     case "migration": return Migrationslauf.Ausfuehren(args.Skip(1).ToArray());
+                    // Paket iU7-1: Abnahme der Renderer-Portierung. Laeuft OHNE
+                    // Kindprozess je Projekt - der Modus rechnet nur und zeichnet, und
+                    // ein haengender Lauf faellt hier sofort auf statt eine Bilderserie
+                    // stillschweigend halbfertig zu lassen.
+                    case "bildvergleich": return Bildvergleich.Ausfuehren(args.Skip(1).ToArray());
                     default: Hilfe(); return 2;
                 }
             }
@@ -127,6 +133,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             Console.WriteLine("  Referenzlauf.exe pruefen <ordner>");
             Console.WriteLine("  Referenzlauf.exe liste [<dbOrdner>]");
             Console.WriteLine("  Referenzlauf.exe migration <quellDb> <zielOrdner> [--nokopie] [--schreibschutz]");
+            Console.WriteLine("  Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>");
         }
 
         // =================================================================================
