@@ -515,6 +515,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string ALLG_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("ALLG_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
+        /// </summary>
+        public static string ALLG_BTN_OK {
+            get {
+                return ResourceManager.GetString("ALLG_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät „{0}&quot; ist bereits im Projekt.
         ///
         ///Als zweites, baugleiches Gerät aufnehmen? Dann wird eine eigene Gerätekopie angelegt.
@@ -5252,6 +5270,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KANAL_PROZESS_ANZEIGE {
             get {
                 return ResourceManager.GetString("KANAL_PROZESS_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
+        /// </summary>
+        public static string KAUSW_LBL_ENERGIETRAEGER {
+            get {
+                return ResourceManager.GetString("KAUSW_LBL_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger Varianten Bezeichnung: ähnelt.
+        /// </summary>
+        public static string KAUSW_LBL_VARIANTE {
+            get {
+                return ResourceManager.GetString("KAUSW_LBL_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Variantennamen (Code) eingeben. ähnelt.
+        /// </summary>
+        public static string KAUSW_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("KAUSW_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Energieträger auswählen. ähnelt.
+        /// </summary>
+        public static string KAUSW_MSG_TRAEGER_FEHLT {
+            get {
+                return ResourceManager.GetString("KAUSW_MSG_TRAEGER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger Variante ähnelt.
+        /// </summary>
+        public static string KAUSW_TITEL {
+            get {
+                return ResourceManager.GetString("KAUSW_TITEL", resourceCulture);
             }
         }
         
