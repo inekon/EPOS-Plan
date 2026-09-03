@@ -19,6 +19,19 @@ Ergebnis der Linux-Nachweise in einem Satz: **`dotnet build WP-Plan.sln -c Relea
 `dotnet test WP-Plan.Kern.slnf` meldet 886/886, und der Referenzlauf 1030/1007/1017 ist gegen
 `2026-08-30_B3-Kaskade` byte-gleich.**
 
+> **Befund 03.09.2026 — der Aufrufweg dieser Liste war falsch.** Die Punkte unter iU8-9
+> führten über `Form_Kosten`. Diese Maske ist seit **KD6a kein Einstieg mehr**:
+> `Views/BerichteKosten/UcBkKosten.btnVerwaltung_Click` öffnet `Form_KostenKomponente`, und
+> `Views/Hauptformular/Form_Start.cs:2175` entfernt den alten Knopf mit
+> `EntferneAltknopf(btn_Kosten)`. Der erste Blazor-Dialog war in der Oberfläche also gar nicht
+> zu erreichen — die Abnahme wäre ins Leere gelaufen. Die gleiche Funktion lebte in der
+> zeichengleichen Schwester `Views/Kosten/Form_Kosten_VarAuswahl` mit zwei **erreichbaren**
+> Aufrufern. Deshalb ist die **erste iU9-Welle vorgezogen** worden (`iU9-1`): `Form_Heizkessel`
+> und `Form_BHKWEing` öffnen jetzt dieselbe Razor-Komponente, `Form_Kosten_VarAuswahl` ist
+> gelöscht. Der Aufrufweg der Grundfunktion unten ist entsprechend berichtigt; alles Weitere
+> (Tastatur, Finger, Sprache, Darstellung, Ablage) gilt unverändert, nur eben an diesen beiden
+> Masken.
+
 > **Ohne WebView2-Laufzeit ist nichts davon prüfbar.** Auf Windows 11 ist sie da. Auf einem
 > Windows-10- oder LTSC-Rechner zuerst prüfen:
 > `reg query "HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" /v pv`
@@ -100,30 +113,57 @@ deshalb kein Test in `EPOS.Kern.Tests`.
 
 ---
 
-### `92380ea` — iU8-9: Stichtag iZ5, `Form_Kosten` öffnet die Komponente
+### `92380ea` (+ iU9-1) — Stichtag iZ5: Heizkessel und BHKW öffnen die Komponente
 
 **Nachweis hier:** Build 0 Fehler / 34 Warnungen; 886 Tests grün; Referenzlauf 1030/1007/1017
 **GESAMT PASS** (815 043 Werte), `diff -rq` nur `protokoll.txt`; `git grep Form_Kosten_Auswahl`
 findet nur noch Kommentare, die Zeile in `help_mapping.txt`, den Hilfeschlüssel und den
 KI-Kontexteintrag; Publish-Probe vollständig.
 
+**Nachgetragen mit iU9-1 (03.09.2026):** Der Öffner ist nicht mehr `Form_Kosten` (seit KD6a ohne
+Einstieg), sondern `Views/Heizkessel/Form_Heizkessel.cs:304` (Knopf `btn_Kessel_Hinzu`,
+Handler ab `:184`) und `Views/BHKW/Form_BHKWEing.cs:535` (Knopf `btn_Hinzu`, Handler ab `:412`)
+— beide über `CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)`. Vor der Umstellung
+standen die Methoden auf `:251` bzw. `:482`. `Form_Kosten_VarAuswahl` ist gelöscht; Build
+0 Fehler / **30** Warnungen (die vier WFO1000 der gelöschten Maske entfallen), **928** Tests
+grün, Formularkarte 101/101.
+
 **Nachweis Windows — das ist die eigentliche Abnahme von iZ5:**
 
 *Grundfunktion*
 
-- [ ] Startseite **Kosten** → Knopf **„Energieträgerverwaltung…"** (Fenster „Kosteneditor") → Reiter **„Energiekosten"** → Knopf **„➕ Hinzufügen…"** neben der Energieträgerliste öffnet den Dialog, mittig über
-      dem Elternfenster, feste Größe, ohne Minimier-, Maximier- und Taskleistenknopf
+- [ ] **Heizkessel:** Startseite → Reiter **„Energieerzeuger"** → Kachel **Heizkessel**
+      (`pBox_Heizkessel`, `Form_Start.cs:624`) → im Fenster „Heizkessel" links einen Kessel aus
+      der Stammliste wählen → Knopf **„◀"** (`btn_Kessel_Hinzu`) öffnet den Dialog, mittig über
+      dem Elternfenster, ohne Minimier- und Taskleistenknopf. **Seit `034727d`** ist die Hülle
+      `Sizable` und maximierbar, das Startmaß auf 92 % des Arbeitsbereichs geklemmt und die
+      Mindestgröße 520 × 360 — der Dialog wünscht 460 × 320 und erscheint deshalb in der
+      Mindestgröße
+- [ ] **BHKW:** Startseite → Reiter **„Energieerzeuger"** → Kachel **BHKW** (`pBox_BHKW`,
+      `Form_Start.cs:1216`) → im Raster ein BHKW wählen → Knopf **„◀"** (`btn_Hinzu`) — derselbe
+      Dialog
+- [ ] Beide Wege gehen auch **im Projektassistenten** (`AssistentSeiten.cs:47/48`) und über das
+      **Kontextmenü** der Gewerksliste (`HeizkesselKontextMenuCtrl`, `BHKWKontextMenuCtrl`)
 - [ ] **Kein weißes Aufblitzen** beim Öffnen (die Hülle steht auf der Themafläche `#f5f4ef`, bis
       die WebView2 aufgebaut ist)
 - [ ] Die Auswahl eines Energieträgers **belegt den Variantennamen vor** — wie vorher
       `cmbBrennstoffArt_SelectedIndexChanged`
 - [ ] **OK mit leerem Namen**: der Dialog bleibt offen und zeigt das Warnbanner „Bitte einen
       Variantennamen (Code) eingeben." (vorher eine MessageBox)
-- [ ] **OK mit Namen**: Dialog schließt, der Träger wird angelegt, die Meldung „Energieträgervariante
-      erfolgreich angelegt." erscheint, und der neue Träger ist in `listBox_Energieträger`
-      **markiert**
+- [ ] **OK mit Namen**: Dialog schließt, der Träger wird angelegt, die Meldung
+      „Energieträgervariante erfolgreich angelegt." erscheint — und **erst danach** wird der
+      Kessel bzw. das BHKW in die Auswahlliste übernommen (`carrierID > 0` ist die Bedingung)
 - [ ] **Zweites Anlegen mit demselben Namen** meldet „… ist diesem Projekt bereits zugeordnet."
-- [ ] **Abbrechen** legt nichts an und ändert die Auswahl in der Liste nicht
+      und übernimmt die Anlage trotzdem — die `carrierId` bleibt gültig
+- [ ] **Abbrechen** legt nichts an **und fügt keinen Kessel / kein BHKW hinzu** (kein verwaister
+      Eintrag mit `ID_Carrier = 0`, keine Projektkopie in `Tab_Heizkessel`/`Tab_BHKW`)
+- [ ] **Im Projektassistenten** (noch kein gespeichertes Projekt): Die Meldung lautet
+      „Energieträgervariante vorgemerkt. …"; Preis- und Emissionssätze trägt `WizardCtrl` beim
+      Speichern nach
+- [ ] **Auswahlliste des Dialogs:** Sie zeigt seit iU9-1 **alle** Energieträger des Stamms, nicht
+      mehr nur die Kategorie des Kesselbrennstoffs (bewusste Abweichung). Der angelegte Träger
+      trägt trotzdem `group_code`, `pricing_model`, `billing_unit`, Hi und Hs des **gewählten**
+      Trägers
 
 *Tastatur (M2, Risiko G2 — `AcceptButton`/`CancelButton` sehen keine Tasten aus der WebView2)*
 
@@ -212,8 +252,10 @@ Probemaske: Der letzte Stand der gelöschten Maske liegt **eingefroren** unter
 `Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/` (Designer, `.cs`, `.resx` und der
 Aufrufer-Auszug aus `Form_Kosten.cs`, wortgleich aus `92380ea^`). Das Muster wird **nie
 übersetzt** und vom Stapellauf **übergangen** wie `bin` und `obj`; die `StapelTests` prüfen
-weiterhin den lebenden Bestand, jetzt an `Form_Kosten_VarAuswahl`. **101 Tests, alle grün.**
-Nachgemessen nach iZ5: **122 Designer-Dateien, 119 Masken** im Repo, davon **117 unter `Views/`**.
+weiterhin den lebenden Bestand — **seit iU9-1 an `Form_KostenKomponente`**, weil
+`Form_Kosten_VarAuswahl` inzwischen selbst gelöscht ist. **101 Tests, alle grün.**
+Nachgemessen nach iU9-1: **121 Designer-Dateien, 118 Masken** im Repo, davon **116 unter
+`Views/`** (nach iZ5 waren es 122/119/117).
 
 Das Werkzeug steht weder in `WP-Plan.sln` noch in `WP-Plan.Kern.slnf`; Bau und die 886 Tests
 bleiben davon unberührt. **Offen bleibt nur die Aufnahme in die CI** — sie ist Gegenstand des

@@ -589,8 +589,8 @@ letzte Stand der Maske liegt eingefroren unter `Formularkarte.Tests/Pruefmuster/
 (Designer, `.cs`, `.resx` und der Aufrufer-Auszug aus `Form_Kosten.cs`, wortgleich aus
 `92380ea^`); die Muster werden **nie übersetzt** und vom Stapellauf **übergangen** wie `bin` und
 `obj`, damit sie das Vollständigkeitsnetz nicht verfälschen. Die `StapelTests` prüfen weiterhin
-den lebenden Bestand, jetzt an der zeichengleichen Schwester `Form_Kosten_VarAuswahl`. **101
-Tests, alle grün.** Die Regel dahinter ist allgemein: **Ein Test, der das Werkzeug prüft, gehört
+den lebenden Bestand — bis iU9-1 an der zeichengleichen Schwester `Form_Kosten_VarAuswahl`,
+seit deren Löschung an `Form_KostenKomponente`. **101 Tests, alle grün.** Die Regel dahinter ist allgemein: **Ein Test, der das Werkzeug prüft, gehört
 an ein eingefrorenes Muster; ein Test, der den Bestand prüft, an den Bestand.** Mit jeder
 weiteren umgestellten Maske wäre sonst dasselbe wieder passiert.
 
@@ -610,7 +610,7 @@ seine Kultur selbst setzen — sonst prüft er die Sprache des Läufers.
 
 | Fund | Befund | Beleg |
 |---|---|---|
-| `bOhneVariante` in `Form_Kosten_VarAuswahl` | **totes Feature.** Die Eigenschaft wird an genau zwei Stellen gesetzt (`Form_Heizkessel.cs:282`, `Form_BHKWEing.cs:513`) — beide Male auf `false`, also auf den Vorgabewert. Der `true`-Zweig ist unerreichbar | `git grep bOhneVariante` — drei Treffer, keiner setzt `true` |
+| ~~`bOhneVariante` in `Form_Kosten_VarAuswahl`~~ — **begraben mit iU9-1** | **totes Feature.** Die Eigenschaft wurde an genau zwei Stellen gesetzt (`Form_Heizkessel.cs:282`, `Form_BHKWEing.cs:513`) — beide Male auf `false`, also auf den Vorgabewert; die Maske selbst hat sie nie gelesen. Mit der Maske ist sie gelöscht | `git grep bOhneVariante` — vor iU9-1 drei Treffer, keiner setzte `true`; heute nur noch das eingefrorene Prüfmuster |
 | `SectionPanel` in `Views/Kosten/` | **ohne Nutzer.** `new SectionPanel` kommt im ganzen Repo **null**-mal vor; die Klasse lebt nur noch als Optikvorbild des Blazor-Bausteins `Gruppenkopf` und wird in `EinstiegsKarte` ausdrücklich *nicht* beerbt | `git grep "new SectionPanel"` — 0 Treffer |
 
 Beides gehört in die K6-Liste von iU9 — nicht in die Umstellung. Eine tote Eigenschaft zweimal
@@ -632,6 +632,42 @@ englisch, Hochkontrast, 125 %/150 % (iF21), Enter/Esc, Infoknopf, WebView2-Profi
 in der Sandbox ohne WebView2 und ohne Internet (iF20), VS-2026-Designer unter dem Razor-SDK.
 Die Punkte stehen einzeln in
 [`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
+
+**Nachtrag 03.09.2026 — der Öffner des ersten Dialogs war unerreichbar (Befund der
+Windows-Abnahme).** `Form_Kosten` ist seit **KD6a kein Einstieg mehr**:
+`Views/BerichteKosten/UcBkKosten.btnVerwaltung_Click` öffnet `Form_KostenKomponente`, und
+`Views/Hauptformular/Form_Start.cs:2175` entfernt den alten Knopf mit
+`EntferneAltknopf(btn_Kosten)`. Der Dialog aus iU8-9 war damit in der Oberfläche gar nicht zu
+erreichen; die Abnahmeliste hätte ins Leere geführt. Die gleiche Funktion — Katalog-Energieträger
+wählen, Variantennamen vergeben, Projektträger anlegen — lebte in der zeichengleichen Schwester
+`Views/Kosten/Form_Kosten_VarAuswahl` mit zwei **erreichbaren** Aufrufern:
+`Views/Heizkessel/Form_Heizkessel.cs:251` und `Views/BHKW/Form_BHKWEing.cs:482` (nach der
+Umstellung `:304` bzw. `:535`), beide über den Knopf **„◀"** (`btn_Kessel_Hinzu` bzw.
+`btn_Hinzu`) hinter der Kachel *Heizkessel* (`Form_Start.cs:624`) / *BHKW*
+(`Form_Start.cs:1216`) im Startseiten-Reiter **Energieerzeuger**.
+
+Behoben mit der **vorgezogenen ersten iU9-Welle (`iU9-1`)**: Beide Aufrufer zeigen jetzt
+`BlazorDialogForm<EnergietraegerVarianteDialog>` nach demselben Muster wie `Form_Kosten`; die
+Schwester ist gelöscht (M1). Damit stehen die drei Abfragen des Dialogs nur noch einmal im
+Bestand — der in `EnergietraegerVarianteCtrl` angekündigte „Zweitnutzer" ist eingelöst, statt
+zum zweiten toten Zwilling zu werden. Drei Vorabfragen der Aufrufer (`Bezeichner`,
+`ID_Kategorie`, `Gruppe`) entfallen ersatzlos: Sie belegten allein `m_szBrennstoff`,
+`m_KategorieID` und `m_szKategorie` des alten Dialogs, und **nach** dem Dialog hat keiner der
+drei Werte je eine Rolle gespielt. Bewusst in Kauf genommen ist eine Verhaltensabweichung: Die
+Auswahlliste ist nicht mehr auf die Kategorie des vorgewählten Brennstoffs eingeengt; der
+angelegte Träger bleibt stimmig, weil `group_code`, `pricing_model`, `billing_unit`, Hi, Hs und
+die Umrechnung ausnahmslos aus dem **gewählten** Träger abgeleitet werden.
+
+**Die Lehre — sie gilt über iU8 hinaus: Die Wahl der umzustellenden Maske muss die
+Erreichbarkeit ihres Öffners prüfen, nicht nur Größe, Feldzahl und Feldtypen.** Ein Dialog, den
+niemand aufrufen kann, lässt sich weder abnehmen noch produktiv erproben; er sieht nach
+Fortschritt aus und ist keiner. Zwei Prüfungen kosten je eine Minute und hätten den Befund vorweg
+geliefert: `git grep -n "new <Maske>"` für die Aufrufer und dann für jeden Aufrufer dieselbe
+Frage eine Ebene höher, bis ein Menüpunkt, eine Kachel oder ein Reiter erreicht ist. Als
+**Folgepunkt** ist eine Spalte **„Öffner erreichbar"** für `Werkzeuge/Formularkarte` notiert
+(`Werkzeuge/Formularkarte/LIESMICH.md`, Abschnitt „Grenzen") — das Werkzeug kennt die Aufrufer
+einer Maske bereits (`maske.Aufrufer`), es fehlt allein der Schritt von dort zum Einstieg. **Nicht
+mit iU9-1 umgesetzt**, damit die Welle klein bleibt.
 
 ---
 

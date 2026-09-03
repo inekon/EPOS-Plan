@@ -272,7 +272,7 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | `EPOS.iOS` | MAUI-App | `net10.0-ios` | ARM64 | `EPOS.Kern`, `EPOS.UI` | **neu** (iU10) |
 | `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
 | `CSExeCOMServer` | — | — | — | — | ~~stilllegen (iU0)~~ — **erledigt** (`c3a8233`), aus dem Repo entfernt |
-| `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt an der lebenden `Form_Kosten_VarAuswahl` |
+| `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt seit iU9-1 an der lebenden **und erreichbaren** `Form_KostenKomponente` |
 | `Proben/ChartProben` | Konsole | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU7-3/iU7-6) — eigene `.sln`, `EnableWindowsTargeting=false`; zeichnet 9 Bilder und prüft Maße, Farben, Determinismus. Läuft in `kern.yml` auf ubuntu und macos |
 
 Die beiden vorhandenen Rechenbibliotheken sind das Vorbild: `EPOS.Kern` ist dasselbe Muster, nur
@@ -1345,6 +1345,24 @@ Vorbedingung dafür, `ChartRendererGdi.cs` zu löschen (→ iF23).
 >    **117 unter `Views/`**.
 > 3. **WebView2-Verteilung online oder offline** — Bootstrapper (heute), Standalone-Installer
 >    oder Fixed Version. Anwenderentscheidung, offen als S10 im Setup-Konzept.
+>
+> **iU9-1 (vorgezogen) — der Öffner des ersten Dialogs war unerreichbar.** Die Windows-Abnahme
+> vom 03.09.2026 hat gezeigt, dass iU8-9 die falsche Maske umgestellt hat: `Form_Kosten` ist seit
+> **KD6a kein Einstieg mehr** (`UcBkKosten.btnVerwaltung_Click` öffnet `Form_KostenKomponente`,
+> `Form_Start.cs:2175` entfernt `btn_Kosten` per `EntferneAltknopf`). Der erste Blazor-Dialog war
+> damit in der Oberfläche nicht zu erreichen — nicht falsch gebaut, nur an der toten Maske
+> angeschlossen. Dieselbe Funktion lebte in der zeichengleichen Schwester
+> `Views/Kosten/Form_Kosten_VarAuswahl` mit zwei erreichbaren Aufrufern:
+> `Form_Heizkessel.CreateNewEnergyCarrier` (Knopf „◀", `btn_Kessel_Hinzu`) und dem Gegenstück in
+> `Form_BHKWEing` (`btn_Hinzu`). Beide öffnen seit **iU9-1** dieselbe Razor-Komponente über
+> `BlazorDialogForm`; die Schwester ist gelöscht (M1), damit gibt es die drei Abfragen des
+> Dialogs nur noch einmal — in `EnergietraegerVarianteCtrl`. `Form_Kosten.CreateNewEnergyCarrier`
+> bleibt unverändert stehen (die Maske ist tot, aber nicht gelöscht — das entscheidet der
+> Anwender) und trägt den Befund als Kommentar. **Nachweis:** Build 0 Fehler / **30** Warnungen
+> (34 minus die vier WFO1000 der gelöschten Maske), **928** Tests, Formularkarte **101/101**,
+> Referenzlauf 1030/1007/1017 **GESAMT PASS**. **Die Lehre** steht im Entscheidungsregister
+> § 2.8: Die Wahl der ersten Maske muss die **Erreichbarkeit des Öffners** prüfen, nicht nur
+> Größe und Feldzahl.
 
 **Voraussetzung:** iU5, iU7. **Block A5, A6, A7; M1, M2, M6, M9.** **Das ist der Modell-C-Stichtag.**
 
@@ -1353,7 +1371,7 @@ Vorbedingung dafür, `ChartRendererGdi.cs` zu löschen (→ iF23).
 | `EPOS.UI` als Razor-Klassenbibliothek | Bausteinsatz nach A5: SpeichernLeiste, InfoKnopf (an `help_mapping`), Kachel, EinstiegsKarte, Gruppenkopf, Herleitungszeile, Kohärenzzeile, Warnbanner, Farb-/Typografiethema — ~10–12 Bausteine |
 | `BlazorWebView` in der WinForms-App | `Microsoft.AspNetCore.Components.WebView.WindowsForms` (für .NET 10 verfügbar und gepflegt); WebView2-Laufzeit als Voraussetzung |
 | Standards **vor** der ersten Maske | Raster (QuickGrid-Wrapper), Charts (Ergebnis aus iU7), Datums-/Auswahlfelder — M6: ein nachträglicher Rasterwechsel hieße 36 Masken zweimal bauen |
-| Formular-Generator (A7) | ✔ **gebaut** als `Werkzeuge/Formularkarte` (iU8-12). Roslyn über die Designer-Dateien des Bestands — **123/120/63** vor dem Stichtag, **122 Designer-Dateien / 119 Masken** danach (117 unter `Views/`), nicht 118 und nicht 79/74/21: Feldkarte (Name, Typ, Beschriftung über die **Zeilenregel** „nächstes Label links in derselben Zeile, \|Δy\| ≤ 8 px" — das Raster Label x28/Control x270 gibt es nicht —, Wertebereiche, ComboBox-Einträge, Tab-Reihenfolge, `resx`-Schlüssel beider Sprachen) + Razor-Sektionsskelette, dazu ein Stapellauf `--alle` |
+| Formular-Generator (A7) | ✔ **gebaut** als `Werkzeuge/Formularkarte` (iU8-12). Roslyn über die Designer-Dateien des Bestands — **123/120/63** vor dem Stichtag, **122/119** nach iZ5 und **121 Designer-Dateien / 118 Masken** nach iU9-1 (116 unter `Views/`), nicht 118 und nicht 79/74/21: Feldkarte (Name, Typ, Beschriftung über die **Zeilenregel** „nächstes Label links in derselben Zeile, \|Δy\| ≤ 8 px" — das Raster Label x28/Control x270 gibt es nicht —, Wertebereiche, ComboBox-Einträge, Tab-Reihenfolge, `resx`-Schlüssel beider Sprachen) + Razor-Sektionsskelette, dazu ein Stapellauf `--alle` |
 | Erster Dialog | ✔ `Form_Kosten_Auswahl` („Energieträger anlegen") → `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor`; Datenbankseite in `EPOS.Kern/Controller/EnergietraegerVarianteCtrl.cs`, Texte in `MyResource.Resource.*` — der Dialog spricht damit erstmals auch Englisch |
 
 **Abnahme (iZ5):** Ein Blazor-Dialog läuft im Produktivbetrieb der Windows-App, mit Maus **und**
