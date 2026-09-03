@@ -24,7 +24,7 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `MauiProgram.cs` | der Aufbau: die neun `Dienste.*` des Kerns belegen, die Datenbank bereitstellen, das DI-Verzeichnis der WebView füllen. Das iOS-Gegenstück zu `WindowsFormsApplication1/Program.cs` |
 | `App.cs`, `HauptSeite.cs` | ein Fenster, eine Seite, eine `BlazorWebView` mit `EPOS.UI.Seiten.AppWurzel` |
 | `wwwroot/index.html` | die Startseite der WebView — zeichengleich zur Windows-Fassung bis auf `EPOS.iOS.styles.css` und `viewport-fit=cover` |
-| `Dienste/` | 11 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter` |
+| `Dienste/` | 12 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter` |
 | `Datenbankbereitstellung.cs` | Seed-Kopie beim Erststart, `DataRepository.PfadUeberschreibung`, die Gate-Zeilen `SQLite …`/`STRICT=…` und `VACUUM INTO` für die Sicherung |
 | `Pruefung/Prueflauf.cs` | der Prüfmodus für die CI (`EPOS_PRUEFLAUF`); `Ergebnisexport.cs` und `Protokoll.cs` sind aus `Referenzlauf/` **verlinkt**, nicht kopiert |
 | `Platforms/iOS/` | `Main.cs`, `AppDelegate.cs`, `Info.plist` |
