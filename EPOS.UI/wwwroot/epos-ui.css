@@ -453,6 +453,18 @@ body {
     flex: 1 1 auto;
 }
 
+/* Untertitel INNERHALB einer Gruppe - der fette Label, mit dem die
+   programmatisch gebauten Masken ihre Bloecke gliederten
+   (Form_Tarifstruktur.Gruppe, Form_WirtschaftlichkeitParameter.Gruppe). Kein
+   zweiter Gruppenkopf: Ein Balken im Balken waere eine Hierarchie, die es
+   fachlich nicht gibt. */
+.epos-untergruppe {
+    margin: 8px 0 0 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 700;
+    color: var(--epos-text);
+}
+
 /* Kontextzeile unter dem Dialogkopf: „‹Komponente› · ‹Kategorie›" - sie sagt,
    worauf sich der Dialog bezieht (Vorbild lblKontext in
    Form_VorlagenUebernahme, fett). */

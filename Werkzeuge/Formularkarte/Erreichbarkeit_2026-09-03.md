@@ -49,7 +49,7 @@ nur `Form_Variantentest` geöffnet hat:
 | `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
 | `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
 
-Die übrigen 103 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
+Die übrigen 100 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
 
 **Für die Wellenplanung iU9:** Eine Maske mit „nein" oder „verwaist" wird **nicht** nach Blazor
@@ -57,17 +57,33 @@ umgestellt — sie wird stillgelegt. Eine Maske mit „unklar" wird vor der Umst
 jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte und jede umgestellte Maske senkt
 die Gesamtzahl.
 
+## Stand nach iU9-W2 (Nachtrag 03.09.2026)
+
+Welle 2 hat sechs Masken umgestellt und gelöscht — drei mit Designer, drei ohne (K4):
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_StromspeicherItemNeu` | K1, lokalisiert, 28 Aufrufer | `EPOS.UI/Dialoge/Allgemein/NamensDialog.razor` über `NamensDialogHuelle.Bezeichner` |
+| `Form_GebaeudetypNeu` | K1, lokalisiert | derselbe Dialog, mit zweitem Feld (`BezeichnerUndBeschreibung`) |
+| `Form_AlsVariante` | K4 | derselbe Dialog, mit Hinweiszeile (`FragenMitHinweis`); der Ablauf steht als `Views/Varianten/AlsVarianteHuelle.cs` |
+| `Form_Tarifstruktur` | K4 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/TarifstrukturDialog.razor` |
+| `Form_PhotovoltaikVerguetung` | K1 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` |
+| `Form_WirtschaftlichkeitParameter` | K4 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor` |
+
+Der Stapellauf zählt seither **102 Masken** (105 nach iU9‑W0), **0 × „nein"**, **0 × „verwaist"**,
+unverändert **2 × „unklar"**. Die drei K4-Masken hatten nie eine Designer-Datei und sind in
+dieser Zählung deshalb nie erschienen; sichtbar wird ihr Verschwinden nur in der
+Erreichbarkeitstabelle unten.
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 103 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 100 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 2 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 105 | |
-
-## Alle Masken
+| gesamt | 102 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -105,7 +121,6 @@ die Gesamtzahl.
 | Form_Gebaeude | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude.designer.cs` |
 | Form_Gebaeude1 | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_GebAendern_DB → Form_Gebaeude1 | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude1.designer.cs` |
 | Form_Gebaeude2 | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_GebAendern_DB → Form_Gebaeude1 → btn_Dialog2 → Form_Gebaeude2 | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude2.designer.cs` |
-| Form_GebaeudetypNeu | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.GebaeudetypenBearbeiten → Masken.GebaeudetypenAdmin → Form_EingGebTyp → btn_EingneuerTyp → Form_GebaeudetypNeu | `WindowsFormsApplication1/Views/Gebäude/Form_GebaeudetypNeu.Designer.cs` |
 | Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
 | Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
 | Form_Heizkessel | ja | Form_Start → pBox_Heizkessel_Click → Form_Heizkessel | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel.Designer.cs` |
@@ -123,7 +138,6 @@ die Gesamtzahl.
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
 | Form_PV | ja | Form_Start → pBox_PV → Form_PV | `WindowsFormsApplication1/Views/Photovoltaik/Form_PV.Designer.cs` |
 | Form_PeakShaving | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving | `WindowsFormsApplication1/Views/Stromspeicher/Form_PeakShaving.Designer.cs` |
-| Form_PhotovoltaikVerguetung | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → .ctor → ucErtragBonus → btnPvOeffnen → Form_PhotovoltaikVerguetung | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/Form_PhotovoltaikVerguetung.Designer.cs` |
 | Form_ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/Form_ProjektAuswahl.Designer.cs` |
 | Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
 | Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
@@ -150,7 +164,6 @@ die Gesamtzahl.
 | Form_Stromganglinie | ja | Form_Start → pBox_StromMessdaten_Click → Form_Stromganglinie | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie.designer.cs` |
 | Form_Stromganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromganglinie → Masken.StromganglinieAdmin → Form_Stromganglinie_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie_Admin.designer.cs` |
 | Form_Stromspeicher | ja | Form_Start → pBox_Stromspeicher → Form_Stromspeicher | `WindowsFormsApplication1/Views/Stromspeicher/Form_Stromspeicher.designer.cs` |
-| Form_StromspeicherItemNeu | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV → btn_Neu → Form_Sp_ItemNeu | `WindowsFormsApplication1/Views/Stromspeicher/Form_StromspeicherItemNeu.Designer.cs` |
 | Form_Stromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher.designer.cs` |
 | Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
 | Form_WP | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WP_Administration → Masken.WpAdministration → Form_WP | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP.Designer.cs` |

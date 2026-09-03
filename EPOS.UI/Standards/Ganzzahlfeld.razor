@@ -17,7 +17,7 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="numeric" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
-               @oninput="BeiEingabe" />
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
         {
             <span class="epos-einheit">@Einheit</span>
@@ -43,6 +43,14 @@
 
     /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
     [Parameter] public int? Max { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld — Gegenstueck zu
+    /// <see cref="Zahlenfeld.Aktiv"/> (iU9-W2.3). Der Tarifdialog sperrt damit
+    /// die HT-Grenzen, sobald das Rollenmodell gilt: Dort gibt es kein HT/NT
+    /// (Leitentscheidung L10), die Zahlen bleiben aber stehen.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
 
     private string _text = "";
 

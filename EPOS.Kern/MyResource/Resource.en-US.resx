@@ -8998,4 +8998,238 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WVERL_KEIN_BILD" xml:space="preserve">
     <value>No chart yet</value>
   </data>
+  <data name="NAMD_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="NAMD_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="NAMD_MSG_BEZEICHNUNG" xml:space="preserve">
+    <value>Please enter a name.</value>
+  </data>
+  <data name="NAMD_TITEL_BEZEICHNER" xml:space="preserve">
+    <value>Enter identifier</value>
+  </data>
+  <data name="TARIF_AKTIV" xml:space="preserve">
+    <value>Tariff structure active (replaces the flat electricity prices of the cost screen)</value>
+  </data>
+  <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
+    <value>Energy price (average) [€/kWh]:</value>
+  </data>
+  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
+    <value>Feed-in price [€/kWh]:</value>
+  </data>
+  <data name="TARIF_GRUNDPREIS" xml:space="preserve">
+    <value>Base price [€/a]:</value>
+  </data>
+  <data name="TARIF_GUELTIG_AB" xml:space="preserve">
+    <value>Price basis (valid from):</value>
+  </data>
+  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
+    <value>Purchase prices [€/kWh]</value>
+  </data>
+  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
+    <value>Feed-in prices [€/kWh] (PV and CHP feed-in — shared field)</value>
+  </data>
+  <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in (no demand price — finding 11 of the legacy application; shared field for PV and CHP feed-in)</value>
+  </data>
+  <data name="TARIF_G_ROLLEN" xml:space="preserve">
+    <value>Role model (stage E5) — difference method “avoided cost”</value>
+  </data>
+  <data name="TARIF_G_STAFFEL" xml:space="preserve">
+    <value>Demand price scale (on the annual peak purchase)</value>
+  </data>
+  <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
+    <value>Time zones (peak applies Mon–Fri; reference year 2026)</value>
+  </data>
+  <data name="TARIF_G_ZONEN" xml:space="preserve">
+    <value>Zone model (stage W3) — four zone prices, two-step scale</value>
+  </data>
+  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
+    <value>Zone model (stage W3) — feed-in prices</value>
+  </data>
+  <data name="TARIF_HT_BIS" xml:space="preserve">
+    <value>Peak to hour (exclusive):</value>
+  </data>
+  <data name="TARIF_HT_VON" xml:space="preserve">
+    <value>Peak from hour (zone model only):</value>
+  </data>
+  <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
+    <value>Demand price model:</value>
+  </data>
+  <data name="TARIF_LM_JAHR" xml:space="preserve">
+    <value>Annual peak load (scale with winter prices)</value>
+  </data>
+  <data name="TARIF_LM_MONATLICH" xml:space="preserve">
+    <value>monthly (Σ twelve monthly maxima × €/kW·month)</value>
+  </data>
+  <data name="TARIF_LM_STAFFEL" xml:space="preserve">
+    <value>Scale (summer and winter maximum separately)</value>
+  </data>
+  <data name="TARIF_MODELL" xml:space="preserve">
+    <value>Tariff model:</value>
+  </data>
+  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
+    <value>Role model (purchase / residual power / feed-in)</value>
+  </data>
+  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
+    <value>Zone model (winter/summer × peak/off-peak)</value>
+  </data>
+  <data name="TARIF_MONATSPREIS" xml:space="preserve">
+    <value>Monthly demand price [€/kW·month]:</value>
+  </data>
+  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
+    <value>The peak window is empty (from ≥ to).</value>
+  </data>
+  <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
+    <value>The role model is active, but no energy price is maintained for either purchase or residual power — the calculation then falls back to the flat prices of the cost screen.</value>
+  </data>
+  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
+    <value>The tariff structure is active, but no purchase price is maintained — the calculation then falls back to the flat prices of the cost screen.</value>
+  </data>
+  <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>The tariff structure could not be saved.</value>
+  </data>
+  <data name="TARIF_ROLLE_BEZUG" xml:space="preserve">
+    <value>Purchase tariff WITHOUT CHP (reference)</value>
+  </data>
+  <data name="TARIF_ROLLE_REST" xml:space="preserve">
+    <value>Residual power tariff WITH CHP (smaller offtake, usually more expensive)</value>
+  </data>
+  <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
+    <value>Component view: ONE tariff record applies per master project. Header data and shared price fields appear in several views and mean the same values.</value>
+  </data>
+  <data name="TARIF_SOMMER_HT" xml:space="preserve">
+    <value>Summer peak:</value>
+  </data>
+  <data name="TARIF_SOMMER_NT" xml:space="preserve">
+    <value>Summer off-peak:</value>
+  </data>
+  <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
+    <value>Upper limit [kW]</value>
+  </data>
+  <data name="TARIF_SP_SOMMER" xml:space="preserve">
+    <value>Summer [€/kW·a]</value>
+  </data>
+  <data name="TARIF_SP_WINTER" xml:space="preserve">
+    <value>Winter [€/kW·a]</value>
+  </data>
+  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Scale limit [kW]:</value>
+  </data>
+  <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>The scale limits are CUMULATIVE upper limits: “500 / 2,000 / 8,000 kW” means up to 500 kW step 1, 500–2,000 kW step 2, 2,000–8,000 kW step 3, above that step 4. An upper limit of 0 means “open ended” and terminates the scale. The legacy catalogue stores step WIDTHS here — old number series must be converted before transfer.</value>
+  </data>
+  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Price up to the limit [€/kW·a]:</value>
+  </data>
+  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Price above the limit [€/kW·a]:</value>
+  </data>
+  <data name="TARIF_STUFE" xml:space="preserve">
+    <value>Step {0}</value>
+  </data>
+  <data name="TARIF_STUFE_REST" xml:space="preserve">
+    <value>Step {0} (remainder)</value>
+  </data>
+  <data name="TARIF_TITEL" xml:space="preserve">
+    <value>Electricity tariff structure</value>
+  </data>
+  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
+    <value>Tariff structure electricity purchase (heat pump &amp; loads)</value>
+  </data>
+  <data name="TARIF_TITEL_BHKW" xml:space="preserve">
+    <value>Tariff structure CHP (electricity)</value>
+  </data>
+  <data name="TARIF_TITEL_PV" xml:space="preserve">
+    <value>Tariff structure PV feed-in</value>
+  </data>
+  <data name="TARIF_WINTER_BIS" xml:space="preserve">
+    <value>Winter to month:</value>
+  </data>
+  <data name="TARIF_WINTER_HT" xml:space="preserve">
+    <value>Winter peak:</value>
+  </data>
+  <data name="TARIF_WINTER_NT" xml:space="preserve">
+    <value>Winter off-peak:</value>
+  </data>
+  <data name="TARIF_WINTER_VON" xml:space="preserve">
+    <value>Winter from month:</value>
+  </data>
+  <data name="PVV_G_EINSPEISEART" xml:space="preserve">
+    <value>Feed-in type</value>
+  </data>
+  <data name="PVV_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>The PV remuneration could not be saved.</value>
+  </data>
+  <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
+    <value>Jumping to the tariff dialog closes this window and reopens it afterwards — please apply your entries first.</value>
+  </data>
+  <data name="WPAR_AUFSCHLAEGE" xml:space="preserve">
+    <value>Include surcharges (grid fee, levies, electricity tax, concession, sales) — maintained in the energy carrier dialog (electricity)</value>
+  </data>
+  <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="WPAR_EINSP_KWK" xml:space="preserve">
+    <value>CHP electricity feed-in tariff [€/kWh]:</value>
+  </data>
+  <data name="WPAR_EINSP_PV" xml:space="preserve">
+    <value>PV feed-in tariff [€/kWh]:</value>
+  </data>
+  <data name="WPAR_G_ALLGEMEIN" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="WPAR_G_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel — BEHG and emission balance (CHP/boiler)</value>
+  </data>
+  <data name="WPAR_G_STROM" xml:space="preserve">
+    <value>Electricity — feed-in and purchase</value>
+  </data>
+  <data name="WPAR_HINWEIS" xml:space="preserve">
+    <value>The parameters apply to the master project and all variants of the comparison group; generator groups appear only if the generator type occurs in the group (hidden values are preserved). Energy and electricity prices come from the cost screen. Surcharges: default OFF — switched on, energy costs typically rise by about a third (proposed values totalling 11.746 ct/kWh). They are maintained per energy carrier in the cost screen; WHETHER the economic calculation applies them is decided in the energy carrier dialog (electricity) — the checkbox here only shows the choice.</value>
+  </data>
+  <data name="WPAR_HINWEIS_KWKG" xml:space="preserve">
+    <value>CHP Act: cap override 0 = degressive full-load-hour scale 2025 from the commissioning year; eligible only with a cut-off date up to 31/12/2026 and realisation by the end of the 4th following year. Taxes: without an explicit entry NO credit arises — § 53 and § 53a are mutually exclusive, the rates and limits come from the catalogue “Statutory parameters”. The annual utilisation rate is needed only for § 53a (threshold 70 %).</value>
+  </data>
+  <data name="WPAR_JAHRE" xml:space="preserve">
+    <value>Observation period T [a]:</value>
+  </data>
+  <data name="WPAR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>The parameters could not be saved.</value>
+  </data>
+  <data name="WPAR_PARK" xml:space="preserve">
+    <value>Reference power plant fleet:</value>
+  </data>
+  <data name="WPAR_PARK_KEINER" xml:space="preserve">
+    <value>(no emission balance)</value>
+  </data>
+  <data name="WPAR_PREIS_B" xml:space="preserve">
+    <value>Operating cost increase [%/a]:</value>
+  </data>
+  <data name="WPAR_PREIS_E" xml:space="preserve">
+    <value>Energy price increase [%/a]:</value>
+  </data>
+  <data name="WPAR_REFKESSEL" xml:space="preserve">
+    <value>Reference boiler (from project): {0} — η {1} %{2}</value>
+  </data>
+  <data name="WPAR_REFKESSEL_FEHLT" xml:space="preserve">
+    <value>Reference boiler: no boiler maintained in the master project — default η {0} % applies.</value>
+  </data>
+  <data name="WPAR_REFKESSEL_VORGABE" xml:space="preserve">
+    <value>, fuel from default</value>
+  </data>
+  <data name="WPAR_SPRUNG_HINWEIS" xml:space="preserve">
+    <value>The jump closes this dialog and reopens it afterwards — please save first.</value>
+  </data>
+  <data name="WPAR_TITEL" xml:space="preserve">
+    <value>Economic parameters</value>
+  </data>
+  <data name="WPAR_ZINS" xml:space="preserve">
+    <value>Discount rate i [%]:</value>
+  </data>
 </root>

@@ -207,13 +207,14 @@ namespace WindowsFormsApplication1
             int volumen;
             if (!VolumenPruefen(out volumen)) return;
 
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
-                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                if (string.IsNullOrEmpty(szName))
                 {
                     MessageBox.Show(MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG);
                     return;
@@ -222,13 +223,13 @@ namespace WindowsFormsApplication1
                 try
                 {
                     PufferSpStammCtrl ctrl = new PufferSpStammCtrl();
-                    if (ctrl.Exists(frmLabel.m_szName)) { MessageBox.Show(MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT); return; }
+                    if (ctrl.Exists(szName)) { MessageBox.Show(MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT); return; }
 
-                    textBox_Name.Text = frmLabel.m_szName;
-                    m_szPufferSp = frmLabel.m_szName;
+                    textBox_Name.Text = szName;
+                    m_szPufferSp = szName;
 
                     PufferSpModel m = InitDatensatzUpdate(volumen);
-                    m.Name = frmLabel.m_szName;
+                    m.Name = szName;
 
                     if (ctrl.InsertFrom(m))
                     {

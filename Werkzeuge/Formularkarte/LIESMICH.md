@@ -187,7 +187,7 @@ Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
 ### Knoten, Kanten, Wurzeln
 
 **Knoten** sind die Masken: Klassen, die von `Form`, `UserControl` oder `BaseForm` abstammen —
-über beliebig viele Stufen. Das sind mehr als die 105 Designer-Masken; die Reiter, Kacheln und
+über beliebig viele Stufen. Das sind mehr als die 102 Designer-Masken; die Reiter, Kacheln und
 Navigatoren des Hauptfensters (`Views/BerichteKosten/UcBk*`, `Views/Simulation/Navigator*`,
 `Views/Hauptformular/*`) sind Zwischenknoten und tragen den Weg mit.
 
@@ -285,7 +285,22 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_KostenfaktorItem.Designer.cs   Stand 16b106a^, unverändert (iU9‑W0)
     Form_KostenfaktorItem.cs            dito
     Form_KostenfaktorItem.resx          dito
+
+Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
+    Form_StromspeicherItemNeu.Designer.cs   Stand f9b5016^, unverändert (iU9‑W2.1)
+    Form_StromspeicherItemNeu.cs            dito
+    Form_StromspeicherItemNeu.resx          dito
+    Form_StromspeicherItemNeu.de-DE.resx    dito — der lokalisierte Weg braucht alle drei
+    Form_StromspeicherItemNeu.en-US.resx    dito
 ```
+
+Das vierte Muster (`Form_StromspeicherItemNeu`, mit **iU9‑W2.1** durch
+`EPOS.UI/Dialoge/Allgemein/NamensDialog.razor` ersetzt) ist der Beleg für den **lokalisierten
+Weg**: Im Designer steht zu ihren Feldern keine einzige Zahl — Koordinaten, Größen und
+`TabIndex` kommen aus der `.resx`, die Übersetzungen aus den beiden Satellitendateien, und ihr
+Klassenname (`Form_Sp_ItemNeu`) weicht vom Dateinamen ab. Sechs Tests hängen daran
+(`ResxLeserTests` fünf, `FeldkarteSchreiberTests` einer); eine lebende Maske mit derselben
+Häufung gibt es nicht. Deshalb wandern hier ausnahmsweise **fünf** Dateien mit statt drei.
 
 Das dritte Muster (`Form_KostenfaktorItem`) ist der einzige **stillgelegte** Fall: Die Maske ist mit
 **iU9‑W0** nicht umgestellt, sondern gelöscht worden (Anwenderentscheid iF29) — eine Blazor-Nachfolge
@@ -349,10 +364,10 @@ Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung ge
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **119 Tests grün** (101 vor
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **120 Tests grün** (101 vor
 iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft als
-`Theory` **zwei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht als eigener
-Test daneben). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
+`Theory` inzwischen **drei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht
+als eigener Test daneben; das dritte Muster kommt mit iU9‑W2.1). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
 Variantenprobe und die verwaiste Kurzansicht festhielten, sind entfallen — an ihre Stelle treten die
 Abnahme „keine Maske mehr auf nein oder verwaist", die Probe „die stillgelegten Masken kennt der
 Graph nicht mehr" und die zweite `Theory` über die stillgelegten Muster. Die Tests laufen gegen die
@@ -394,20 +409,20 @@ ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` eben
 (104 mit erreichbarem Öffner, 4 unerreichbar, 1 verwaist, 2 unklar). Die sieben Dateien der beiden
 Prüfmuster sind darin **nicht** enthalten.
 
-**Nachgemessen nach iU9‑W0** (sechs Designer-Masken stillgelegt: `Form_Kosten`,
-`Form_KostenfaktorItem`, `ucKostenItem`, `Form_Variantentest`, `Form_Simulation_Kurz`,
-`Form_KwkgModule`): **108** Designer-Dateien, **105** Masken, 3 ohne `InitializeComponent`,
-0 nicht lesbar, **61** lokalisiert, 2231 Kartenzeilen, 168 Felder ohne Beschriftung; über
-`--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **105** Masken (103 mit erreichbarem
-Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die zehn Dateien der drei Prüfmuster sind
-darin **nicht** enthalten.
+**Nachgemessen nach iU9‑W2** (drei weitere Designer-Masken umgestellt und gelöscht:
+`Form_StromspeicherItemNeu`, `Form_GebaeudetypNeu`, `Form_PhotovoltaikVerguetung` — die drei
+K4-Masken der Welle hatten nie eine Designer-Datei): **105** Designer-Dateien, **102** Masken,
+3 ohne `InitializeComponent`, 0 nicht lesbar, **59** lokalisiert, 2188 Kartenzeilen, 168 Felder
+ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **102**
+Masken (100 mit erreichbarem Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die fünfzehn
+Dateien der vier Prüfmuster sind darin **nicht** enthalten.
 
-**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W0** über
-`--alle WindowsFormsApplication1` — **105** Masken:
+**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W2** über
+`--alle WindowsFormsApplication1` — **102** Masken:
 
 | Öffner erreichbar | Masken |
 |---|---|
-| ja | 103 |
+| ja | 100 |
 | nein | 0 (die vier von iU8‑12f sind mit iU9‑W0 stillgelegt — Anwenderentscheid iF29) |
 | verwaist | 0 (`Form_Simulation_Kurz` ist gelöscht, mit ihr die `Compile Remove`-Liste) |
 | unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben, siehe iF29) |

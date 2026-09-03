@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
@@ -209,27 +210,23 @@ namespace WindowsFormsApplication1
         /// derselbe Nachlauf wie beim früheren Sammel-Einstieg (btnTarif_Click).</summary>
         private void TarifSichtOeffnen(TarifSicht sicht)
         {
-            using (var dlg = new Form_Tarifstruktur(_idStamm, sicht))
+            // iU9-W2.3: der Tarifdialog als Razor-Komponente ueber
+            // TarifstrukturHuelle; Form_Tarifstruktur ist geloescht (Regel M1).
+            if (TarifstrukturHuelle.Oeffnen(Besitzer, _idStamm, sicht))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
-                    ZeigeParameterzeile();
-                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
-                }
+                _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                ZeigeParameterzeile();
+                Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
             }
         }
 
         private void btnPhotovoltaik_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_PhotovoltaikVerguetung())
-            {
-                dlg.SetControls(_idStamm);
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                    Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
-            }
+            // iU9-W2.4: der PV-Verguetungsdialog als Razor-Komponente ueber
+            // PhotovoltaikVerguetungHuelle; Form_PhotovoltaikVerguetung ist
+            // geloescht (Regel M1).
+            if (PhotovoltaikVerguetungHuelle.Oeffnen(Besitzer, _idStamm))
+                Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
         }
 
         /// <summary>
@@ -437,28 +434,24 @@ namespace WindowsFormsApplication1
 
         private void btnTarif_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_Tarifstruktur(_idStamm))
+            // iU9-W2.3: siehe TarifSichtOeffnen.
+            if (TarifstrukturHuelle.Oeffnen(Besitzer, _idStamm))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
-                    ZeigeParameterzeile();
-                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
-                }
+                _tarifCache = null;   // E7: Beschriftung der Stromkostenzeile neu holen
+                ZeigeParameterzeile();
+                Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
             }
         }
 
         private void btnParameter_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_WirtschaftlichkeitParameter(_idStamm))
+            // iU9-W2.5: der Parameterdialog als Razor-Komponente ueber
+            // WirtschaftlichkeitParameterHuelle; Form_WirtschaftlichkeitParameter
+            // ist geloescht (Regel M1).
+            if (WirtschaftlichkeitParameterHuelle.Oeffnen(Besitzer, _idStamm))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    ZeigeParameterzeile();
-                    Melde("Parameter gespeichert — bitte neu berechnen.");
-                }
+                ZeigeParameterzeile();
+                Melde("Parameter gespeichert — bitte neu berechnen.");
             }
         }
 

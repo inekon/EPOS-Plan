@@ -1,0 +1,486 @@
+﻿@* Dialog "Tarifstruktur Strom" - die Razor-Fassung (iU9-W2.3).
+
+   HERKUNFT. Die WinForms-Fassung Views/Wirtschaftlichkeit/Form_Tarifstruktur.cs
+   (588 Zeilen, programmatisch aufgebaut) ist mit dieser Komponente GELOESCHT -
+   Regel M1: keine zweite Fassung derselben Maske. Uebernommen sind Feldbestand,
+   Reihenfolge, Wertebereiche, Nullsemantik, die Sichtenlogik Ae18 und die drei
+   Pruefungen des Speicherwegs wortgleich.
+
+   ZWEI MODELLE NEBENEINANDER. Der Tarifsatz je Stamm ist einer; welches
+   Rechenmodell gilt, sagt cbModus. Der Block des NICHT gewaehlten Modells wird
+   GESPERRT, nicht ausgeblendet - so bleiben seine Werte lesbar und erhalten
+   (Form_Tarifstruktur.ModusUebernehmen: Enabled, nicht Visible). Dafuer haben
+   Zahlenfeld und Ganzzahlfeld seit iU9-W2.3 den Parameter Aktiv.
+
+   SICHTEN (Ae18). Es gilt EIN Tarifsatz je Stamm; die Sicht bestimmt nur,
+   welche Bloecke gebaut werden. Was nicht gebaut ist, wird beim Speichern auch
+   nicht ueberschrieben - deshalb prueft jeder Zweig des Speicherwegs seine
+   Sichtbedingung, genau wie der Vorlaeufer seine Felder auf null prueft.
+
+   ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Der Tarifsatz kommt fertig
+   geladen als [Parameter] herein (WirtschaftlichkeitCtrl.LadeTarif) und wird
+   an Ort und Stelle fortgeschrieben; geschrieben wird ueber den Rueckruf
+   Speichern (WirtschaftlichkeitCtrl.SpeichereTarif) - dasselbe Verhaeltnis wie
+   im Dialog BHKW-Wirtschaftlichkeit.
+
+   TASTATUR. Esc schliesst. Enter bleibt unbelegt: In einer Maske mit rund
+   fuenfzig Zahlenfeldern waere ein versehentliches Enter kein Bestaetigen,
+   sondern ein Zufall (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@_t.Titel(Sicht)</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Schalter Bezeichnung="@_t.Aktiv" @bind-Wert="_aktiv" />
+
+    <Auswahlfeld Bezeichnung="@_t.Modell" Eintraege="@TarifWahlen.Eintraege(_modusWahlen)"
+                 Auswahl="_modusNr" AuswahlChanged="ModusGewaehlt" />
+
+    <Datumsfeld Bezeichnung="@_t.GueltigAb" @bind-Wert="_gueltigAb" />
+
+    @if (Sicht != TarifSicht.Komplett)
+    {
+        @* Ae18: Die Sicht zeigt einen AUSSCHNITT desselben Tarifsatzes - das
+           muss dastehen, sonst wirken die anderen Sichten wie eigene Tarife. *@
+        <Herleitungszeile Text="@_t.SichtHinweis" />
+    }
+
+    @* ------------------------------------------------------- Zeitzonen *@
+    <Gruppenkopf Titel="@_t.GZeitzonen" Symbol="🕑">
+        <KindInhalt>
+            <Ganzzahlfeld Bezeichnung="@_t.WinterVon" @bind-Wert="_winterVon" Min="1" Max="12" />
+            <Ganzzahlfeld Bezeichnung="@_t.WinterBis" @bind-Wert="_winterBis" Min="1" Max="12" />
+            @* HT/NT entfaellt im Rollenmodell (Leitentscheidung L10). *@
+            <Ganzzahlfeld Bezeichnung="@_t.HtVon" @bind-Wert="_htVon" Min="0" Max="23"
+                          Aktiv="@(!Rollen)" />
+            <Ganzzahlfeld Bezeichnung="@_t.HtBis" @bind-Wert="_htBis" Min="1" Max="24"
+                          Aktiv="@(!Rollen)" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ----------------------------------------------------- Zonenmodell *@
+    <Gruppenkopf Titel="@(MitZonenBezug ? _t.GZonen : _t.GZonenNurEinspeisung)" Symbol="⌗">
+        <KindInhalt>
+            @if (MitZonenBezug)
+            {
+                <h3 class="epos-untergruppe">@_t.GBezugspreise</h3>
+                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_bezugWinterHt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_bezugWinterNt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_bezugSommerHt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_bezugSommerNt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+            }
+
+            @if (MitZonenEinspeisung)
+            {
+                <h3 class="epos-untergruppe">@_t.GEinspeisepreise</h3>
+                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_einspWinterHt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_einspWinterNt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_einspSommerHt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_einspSommerNt"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+            }
+
+            @if (MitZonenBezug)
+            {
+                <h3 class="epos-untergruppe">@_t.GStaffel</h3>
+                <Zahlenfeld Bezeichnung="@_t.StaffelGrenze" @bind-Wert="_staffelGrenze"
+                            Min="0" Max="100000" Nachkommastellen="0" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.StaffelPreis1" @bind-Wert="_staffelPreis1"
+                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
+                <Zahlenfeld Bezeichnung="@_t.StaffelPreis2" @bind-Wert="_staffelPreis2"
+                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ---------------------------------------------------- Rollenmodell *@
+    <Gruppenkopf Titel="@_t.GRollen" Symbol="⇄">
+        <KindInhalt>
+            @if (MitRolleBezug)
+            {
+                @RollenBlock(_t.RolleBezug, _bezug)
+            }
+            @if (MitRolleReststrom)
+            {
+                @RollenBlock(_t.RolleReststrom, _rest)
+            }
+
+            @if (MitRolleEinspeisung)
+            {
+                <h3 class="epos-untergruppe">@_t.GEinspeisung</h3>
+                <Zahlenfeld Bezeichnung="@_t.Einspeisepreis" @bind-Wert="_einspArbeit"
+                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@Rollen" />
+                <Zahlenfeld Bezeichnung="@_t.Grundpreis" @bind-Wert="_einspGrund"
+                            Min="0" Max="1000000" Nachkommastellen="2" Aktiv="@Rollen" />
+            }
+
+            @if (MitRolleBezug || MitRolleReststrom)
+            {
+                <Herleitungszeile Text="@_t.StaffelHinweis" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @foreach (string warnung in _warnungen)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@warnung" />
+    }
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    <SpeichernLeiste OkText="@_t.BtnSpeichern" AbbrechenText="@_t.BtnAbbrechen"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Was hereinkommt
+    // =====================================================================
+
+    /// <summary>
+    /// Der Tarifsatz des Stammprojekts (<c>WirtschaftlichkeitCtrl.LadeTarif</c>),
+    /// fertig geladen. Der Dialog schreibt seine Eingaben in DIESES Objekt
+    /// zurueck - genau wie die WinForms-Fassung; die Huelle speichert danach
+    /// denselben Satz.
+    /// </summary>
+    [Parameter] public TarifParameter Tarif { get; set; } = new TarifParameter();
+
+    /// <summary>Die Komponentensicht (Ae18). Vorgabe: alle Bloecke.</summary>
+    [Parameter] public TarifSicht Sicht { get; set; } = TarifSicht.Komplett;
+
+    /// <summary>
+    /// Schreibt den Tarifsatz fort. <c>true</c> = gespeichert.
+    /// <c>null</c> = kein Schreibweg (Pruefstand); dann meldet der Dialog den
+    /// Speicherfehler.
+    /// </summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>
+    /// <c>true</c> = gespeichert (der Aufrufer rechnet dann neu, Bestandsverhalten
+    /// von <c>Form_Tarifstruktur.Gespeichert</c>), <c>false</c> = abgebrochen.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Schluessel des Hilfeknopfes - dieselbe Wikiseite wie bisher.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Tarifstruktur.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private readonly TarifstrukturTexte _t = new();
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<Steuerwahl> _modusWahlen = Array.Empty<Steuerwahl>();
+    private IReadOnlyList<Steuerwahl> _leistungswahlen = Array.Empty<Steuerwahl>();
+
+    private bool _aktiv;
+    private int? _modusNr;
+    private DateOnly? _gueltigAb;
+
+    private int? _winterVon, _winterBis, _htVon, _htBis;
+
+    private double? _bezugWinterHt, _bezugWinterNt, _bezugSommerHt, _bezugSommerNt;
+    private double? _einspWinterHt, _einspWinterNt, _einspSommerHt, _einspSommerNt;
+    private double? _staffelGrenze, _staffelPreis1, _staffelPreis2;
+
+    private RollenFelder _bezug = new();
+    private RollenFelder _rest = new();
+    private double? _einspArbeit, _einspGrund;
+
+    private readonly List<string> _warnungen = new();
+    private string _fehler = "";
+    private bool _warnungBestaetigt;
+
+    /// <summary>Die Eingabefelder EINER Tarifrolle (Bezug oder Reststrom).</summary>
+    private sealed class RollenFelder
+    {
+        public double? Arbeit, Grund, Monat;
+        public int? ModellNr;
+        public readonly double?[] Grenze = new double?[4];
+        public readonly double?[] Sommer = new double?[4];
+        public readonly double?[] Winter = new double?[4];
+    }
+
+    /// <summary>Gilt das Rollenmodell? (Pruefhilfe fuer Tests.)</summary>
+    public bool Rollen => string.Equals(TarifWahlen.WertZu(_modusWahlen, _modusNr),
+                                        DbWerte.TARIF_MODUS_ROLLEN, StringComparison.Ordinal);
+
+    // Ae18 - welcher Block in dieser Sicht gebaut wird. Die Bezugsrolle bleibt
+    // auch in der BHKW-Sicht stehen: Sie ist die REFERENZ der Differenzmethode.
+    private bool MitZonenBezug => Sicht is TarifSicht.Komplett or TarifSicht.Strombezug;
+    private bool MitZonenEinspeisung => Sicht != TarifSicht.Strombezug;
+    private bool MitRolleBezug => Sicht != TarifSicht.Photovoltaik;
+    private bool MitRolleReststrom => Sicht is TarifSicht.Komplett or TarifSicht.Bhkw;
+    private bool MitRolleEinspeisung => Sicht != TarifSicht.Strombezug;
+
+    protected override void OnInitialized()
+    {
+        _modusWahlen = TarifWahlen.Modus(_t);
+        _leistungswahlen = TarifWahlen.Leistungsmodell(_t);
+
+        TarifParameter p = Tarif ?? new TarifParameter();
+
+        _aktiv = p.Aktiv;
+        _modusNr = TarifWahlen.NummerZu(_modusWahlen, p.Modus);
+        _gueltigAb = p.GueltigAb.HasValue ? DateOnly.FromDateTime(p.GueltigAb.Value) : null;
+
+        _winterVon = p.WinterVonMonat;
+        _winterBis = p.WinterBisMonat;
+        _htVon = p.HtVonStunde;
+        _htBis = p.HtBisStunde;
+
+        _bezugWinterHt = p.PreisBezugWinterHT;
+        _bezugWinterNt = p.PreisBezugWinterNT;
+        _bezugSommerHt = p.PreisBezugSommerHT;
+        _bezugSommerNt = p.PreisBezugSommerNT;
+
+        _einspWinterHt = p.PreisEinspWinterHT;
+        _einspWinterNt = p.PreisEinspWinterNT;
+        _einspSommerHt = p.PreisEinspSommerHT;
+        _einspSommerNt = p.PreisEinspSommerNT;
+
+        _staffelGrenze = p.StaffelGrenzeKW;
+        _staffelPreis1 = p.StaffelPreis1EurKW;
+        _staffelPreis2 = p.StaffelPreis2EurKW;
+
+        _bezug = RolleLesen(p.Bezug);
+        _rest = RolleLesen(p.Reststrom);
+        _einspArbeit = p.Einspeisung.ArbeitspreisEurKWh;
+        _einspGrund = p.Einspeisung.GrundpreisEurJahr;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private RollenFelder RolleLesen(TarifRolle r)
+    {
+        var f = new RollenFelder
+        {
+            Arbeit = r.ArbeitspreisEurKWh,
+            Grund = r.GrundpreisEurJahr,
+            Monat = r.MonatspreisEurKWMonat,
+            ModellNr = TarifWahlen.NummerZu(_leistungswahlen, r.Leistungsmodell)
+        };
+        for (int i = 0; i < 4; i++)
+        {
+            LeistungsStufe s = i < r.Stufen.Count ? r.Stufen[i] : new LeistungsStufe();
+            f.Grenze[i] = s.ObergrenzeKW;
+            f.Sommer[i] = s.PreisSommer;
+            f.Winter[i] = s.PreisWinter;
+        }
+        return f;
+    }
+
+    // =====================================================================
+    // Ein Rollenblock
+    // =====================================================================
+
+    /// <summary>
+    /// Arbeits-, Grund- und Monatspreis, Modellauswahl und die vierstufige
+    /// Staffel.
+    ///
+    /// <para><b>Abweichung zur Maske:</b> Die Staffel stand dort als Raster
+    /// Grenze | Sommer | Winter mit drei Spaltenkoepfen. Hier ist jedes Feld
+    /// einzeln beschriftet („Stufe 2 — Sommer [€/kW·a]"): Eine dreispaltige
+    /// Zahlentabelle ist auf einem Telefon nicht zu bedienen, und ein Feld ohne
+    /// eigene Beschriftung ist fuer ein Sprachausgabeprogramm namenlos.</para>
+    /// </summary>
+    private RenderFragment RollenBlock(string titel, RollenFelder f) => @<text>
+        <h3 class="epos-untergruppe">@titel</h3>
+
+        <Zahlenfeld Bezeichnung="@_t.Arbeitspreis" Wert="@f.Arbeit"
+                    WertChanged="@(w => f.Arbeit = w)"
+                    Min="0" Max="5" Nachkommastellen="4" Aktiv="@Rollen" />
+        <Zahlenfeld Bezeichnung="@_t.Grundpreis" Wert="@f.Grund"
+                    WertChanged="@(w => f.Grund = w)"
+                    Min="0" Max="1000000" Nachkommastellen="2" Aktiv="@Rollen" />
+        <Auswahlfeld Bezeichnung="@_t.Leistungsmodell"
+                     Eintraege="@TarifWahlen.Eintraege(_leistungswahlen)"
+                     Auswahl="@f.ModellNr" AuswahlChanged="@(n => f.ModellNr = n)"
+                     Aktiv="@Rollen" />
+        <Zahlenfeld Bezeichnung="@_t.Monatspreis" Wert="@f.Monat"
+                    WertChanged="@(w => f.Monat = w)"
+                    Min="0" Max="1000" Nachkommastellen="3" Aktiv="@Rollen" />
+
+        @for (int i = 0; i < 4; i++)
+        {
+            int nr = i;
+            <Zahlenfeld Bezeichnung="@Stufenfeld(nr, _t.SpObergrenze)" Wert="@f.Grenze[nr]"
+                        WertChanged="@(w => f.Grenze[nr] = w)"
+                        Min="0" Max="1000000" Nachkommastellen="0" Aktiv="@Rollen" />
+            <Zahlenfeld Bezeichnung="@Stufenfeld(nr, _t.SpSommer)" Wert="@f.Sommer[nr]"
+                        WertChanged="@(w => f.Sommer[nr] = w)"
+                        Min="0" Max="10000" Nachkommastellen="2" Aktiv="@Rollen" />
+            <Zahlenfeld Bezeichnung="@Stufenfeld(nr, _t.SpWinter)" Wert="@f.Winter[nr]"
+                        WertChanged="@(w => f.Winter[nr] = w)"
+                        Min="0" Max="10000" Nachkommastellen="2" Aktiv="@Rollen" />
+        }
+    </text>;
+
+    /// <summary>„Stufe 4 (Rest) — Winter [€/kW·a]".</summary>
+    private string Stufenfeld(int index, string spalte)
+    {
+        string stufe = string.Format(index == 3 ? _t.StufeRest : _t.Stufe, index + 1);
+        return stufe + " — " + spalte;
+    }
+
+    // =====================================================================
+    // Umschalten
+    // =====================================================================
+
+    private void ModusGewaehlt(int? nummer)
+    {
+        _modusNr = nummer;
+        // Der Modus aendert die Sperren; die Warnungen gelten je Modell und
+        // sind damit ueberholt.
+        _warnungen.Clear();
+        _warnungBestaetigt = false;
+        _fehler = "";
+    }
+
+    // =====================================================================
+    // Speichern
+    // =====================================================================
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(false); return; }
+
+        _fehler = "";
+
+        // Harte Pruefung: ein leeres HT-Fenster ist keine Zeitzone.
+        if (!Rollen && Wert(_htVon, Tarif.HtVonStunde) >= Wert(_htBis, Tarif.HtBisStunde))
+        {
+            _fehler = _t.MsgHtLeer;
+            return;
+        }
+
+        // Die beiden weichen Pruefungen. Der Vorlaeufer zeigte dafuer eine
+        // MessageBox und speicherte danach; hier haelt der erste Klick an und
+        // zeigt die Banner, der zweite speichert - dieselbe Reihenfolge
+        // (sehen, bestaetigen, schreiben) ohne zweites Fenster.
+        _warnungen.Clear();
+        if (_aktiv && !Rollen && MitZonenBezug &&
+            Wert(_bezugWinterHt, 0) <= 0 && Wert(_bezugWinterNt, 0) <= 0 &&
+            Wert(_bezugSommerHt, 0) <= 0 && Wert(_bezugSommerNt, 0) <= 0)
+        {
+            _warnungen.Add(_t.MsgOhneBezugspreis);
+        }
+        if (_aktiv && Rollen && MitRolleBezug && MitRolleReststrom &&
+            Wert(_bezug.Arbeit, 0) <= 0 && Wert(_rest.Arbeit, 0) <= 0)
+        {
+            _warnungen.Add(_t.MsgOhneArbeitspreis);
+        }
+        if (_warnungen.Count > 0 && !_warnungBestaetigt)
+        {
+            _warnungBestaetigt = true;
+            return;
+        }
+
+        Uebernehmen();
+
+        if (Speichern is null || !Speichern())
+        {
+            _fehler = _t.MsgSpeicherfehler;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// Bildschirm → Tarifsatz. Ae18: Nur die in dieser Sicht GEBAUTEN Felder
+    /// ueberschreiben den geladenen Satz — alles andere behaelt seine Werte
+    /// (eine Wahrheit, mehrere Fenster).
+    /// </summary>
+    private void Uebernehmen()
+    {
+        TarifParameter p = Tarif;
+
+        p.Aktiv = _aktiv;
+        p.Modus = TarifWahlen.WertZu(_modusWahlen, _modusNr);
+        p.GueltigAb = _gueltigAb.HasValue
+                    ? _gueltigAb.Value.ToDateTime(TimeOnly.MinValue) : null;
+        p.WinterVonMonat = Wert(_winterVon, p.WinterVonMonat);
+        p.WinterBisMonat = Wert(_winterBis, p.WinterBisMonat);
+        p.HtVonStunde = Wert(_htVon, p.HtVonStunde);
+        p.HtBisStunde = Wert(_htBis, p.HtBisStunde);
+
+        if (MitZonenBezug)
+        {
+            p.PreisBezugWinterHT = Wert(_bezugWinterHt, p.PreisBezugWinterHT);
+            p.PreisBezugWinterNT = Wert(_bezugWinterNt, p.PreisBezugWinterNT);
+            p.PreisBezugSommerHT = Wert(_bezugSommerHt, p.PreisBezugSommerHT);
+            p.PreisBezugSommerNT = Wert(_bezugSommerNt, p.PreisBezugSommerNT);
+
+            p.StaffelGrenzeKW = Wert(_staffelGrenze, p.StaffelGrenzeKW);
+            p.StaffelPreis1EurKW = Wert(_staffelPreis1, p.StaffelPreis1EurKW);
+            p.StaffelPreis2EurKW = Wert(_staffelPreis2, p.StaffelPreis2EurKW);
+        }
+
+        if (MitZonenEinspeisung)
+        {
+            p.PreisEinspWinterHT = Wert(_einspWinterHt, p.PreisEinspWinterHT);
+            p.PreisEinspWinterNT = Wert(_einspWinterNt, p.PreisEinspWinterNT);
+            p.PreisEinspSommerHT = Wert(_einspSommerHt, p.PreisEinspSommerHT);
+            p.PreisEinspSommerNT = Wert(_einspSommerNt, p.PreisEinspSommerNT);
+        }
+
+        if (MitRolleBezug) RolleSchreiben(_bezug, p.Bezug);
+        if (MitRolleReststrom) RolleSchreiben(_rest, p.Reststrom);
+        if (MitRolleEinspeisung)
+        {
+            p.Einspeisung.ArbeitspreisEurKWh = Wert(_einspArbeit, p.Einspeisung.ArbeitspreisEurKWh);
+            p.Einspeisung.GrundpreisEurJahr = Wert(_einspGrund, p.Einspeisung.GrundpreisEurJahr);
+        }
+    }
+
+    private void RolleSchreiben(RollenFelder f, TarifRolle r)
+    {
+        r.ArbeitspreisEurKWh = Wert(f.Arbeit, r.ArbeitspreisEurKWh);
+        r.GrundpreisEurJahr = Wert(f.Grund, r.GrundpreisEurJahr);
+        r.MonatspreisEurKWMonat = Wert(f.Monat, r.MonatspreisEurKWMonat);
+        r.Leistungsmodell = TarifWahlen.WertZu(_leistungswahlen, f.ModellNr);
+        for (int i = 0; i < 4 && i < r.Stufen.Count; i++)
+        {
+            r.Stufen[i].ObergrenzeKW = Wert(f.Grenze[i], r.Stufen[i].ObergrenzeKW);
+            r.Stufen[i].PreisSommer = Wert(f.Sommer[i], r.Stufen[i].PreisSommer);
+            r.Stufen[i].PreisWinter = Wert(f.Winter[i], r.Stufen[i].PreisWinter);
+        }
+    }
+
+    /// <summary>
+    /// Ein GELEERTES Zahlenfeld behaelt den geladenen Wert. Eine
+    /// <c>NumericUpDown</c> konnte nicht leer sein, ein Eingabefeld schon; „0"
+    /// setzt man weiterhin, indem man 0 schreibt. So kann ein versehentlich
+    /// geleertes Feld keine Null in die Datenbank tragen.
+    /// </summary>
+    private static double Wert(double? feld, double rueckfall) => feld ?? rueckfall;
+
+    private static int Wert(int? feld, int rueckfall) => feld ?? rueckfall;
+
+    private Task BeiTaste(KeyboardEventArgs e) =>
+        e.Key == "Escape" ? BeiErgebnis(false) : Task.CompletedTask;
+}

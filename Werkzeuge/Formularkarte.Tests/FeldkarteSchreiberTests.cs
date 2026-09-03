@@ -93,7 +93,9 @@ public sealed class FeldkarteSchreiberTests
     [Fact]
     public void LokalisierteMaskeNenntIhreRessourcendateien()
     {
-        var karte = Karte("Stromspeicher/Form_StromspeicherItemNeu.Designer.cs");
+        // iU9-W2.1: umgestellt und geloescht; der letzte Stand liegt als
+        // Pruefmuster daneben (Regel M1).
+        var karte = Musterkarte("Stromspeicher/Form_StromspeicherItemNeu.Designer.cs");
 
         Assert.Contains("| Lokalisiert | ja (ApplyResources) |", karte, StringComparison.Ordinal);
         Assert.Contains("`Form_StromspeicherItemNeu.en-US.resx`", karte, StringComparison.Ordinal);
