@@ -130,7 +130,8 @@
     @* ================================================== Preisbloecke *@
     @if (Stand.Aufschlaege is not null)
     {
-        <StromAufschlaege Stand="@Stand.Aufschlaege" Anzeige="@AufschlagAnzeige"
+        <StromAufschlaege @attributes="AufschlagTexte" Stand="@Stand.Aufschlaege"
+                          Anzeige="@AufschlagAnzeige"
                           SatzRegelfall="@SatzRegelfall" SatzReduziert="@SatzReduziert"
                           Geaendert="BeiPreisblock" />
         <Kohaerenzzeile Text="@Stand.EffektivpreisText" />
@@ -143,7 +144,8 @@
 
     @if (Stand.Bestandteile is not null)
     {
-        <BrennstoffBestandteile Stand="@Stand.Bestandteile" Anzeige="@BestandteilAnzeige"
+        <BrennstoffBestandteile @attributes="BestandteilTexte"
+                                Stand="@Stand.Bestandteile" Anzeige="@BestandteilAnzeige"
                                 ArbeitspreisCtKwh="@ArbeitspreisCtKwh"
                                 SatzRegel="@SatzRegel" Satz53a="@Satz53a" Satz54="@Satz54"
                                 SatzCo2="@SatzCo2"
@@ -249,6 +251,16 @@
 
     /// <summary>Der Arbeitspreis in ct/kWh — Bezugsgröße der Restzeile.</summary>
     [Parameter] public double ArbeitspreisCtKwh { get; set; }
+
+    /// <summary>
+    /// Die Texte des Aufschlagsblocks (<c>MyResource.PREIS_*</c>) — sie kommen
+    /// als Satz herein, damit der verschachtelte Baustein sie nicht einzeln
+    /// durchgereicht bekommen muss. Leer = die deutschen Vorgaben der Komponente.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? AufschlagTexte { get; set; }
+
+    /// <summary>Dasselbe für die Preiszerlegung (<c>BB_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BestandteilTexte { get; set; }
 
     [Parameter] public Schnellwahlsatz? SatzRegelfall { get; set; }
     [Parameter] public Schnellwahlsatz? SatzReduziert { get; set; }

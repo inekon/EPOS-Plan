@@ -117,6 +117,156 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
+    <value>💾 Save</value>
+  </data>
+  <data name="ETV_LBL_ARBEITSPREIS" xml:space="preserve">
+    <value>Energy price</value>
+  </data>
+  <data name="ETV_LBL_BASISEINHEIT" xml:space="preserve">
+    <value>Base unit:</value>
+  </data>
+  <data name="ETV_LBL_BRENNWERT" xml:space="preserve">
+    <value>Gross calorific value</value>
+  </data>
+  <data name="ETV_LBL_CO2" xml:space="preserve">
+    <value>CO2  [g/kWh]</value>
+  </data>
+  <data name="ETV_LBL_FORMEL" xml:space="preserve">
+    <value>Formula:</value>
+  </data>
+  <data name="ETV_LBL_GRUNDPREIS" xml:space="preserve">
+    <value>Standing charge</value>
+  </data>
+  <data name="ETV_LBL_GUELTIG_AB" xml:space="preserve">
+    <value>Valid from</value>
+  </data>
+  <data name="ETV_LBL_HEIZWERT" xml:space="preserve">
+    <value>Net calorific value</value>
+  </data>
+  <data name="ETV_LBL_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Demand charge</value>
+  </data>
+  <data name="ETV_LBL_NOX" xml:space="preserve">
+    <value>NOx  [g/kWh]</value>
+  </data>
+  <data name="ETV_LBL_PREISBASIS" xml:space="preserve">
+    <value>Price basis</value>
+  </data>
+  <data name="ETV_LBL_PREIS_JE_KWH" xml:space="preserve">
+    <value>Price per kWh:</value>
+  </data>
+  <data name="ETV_LBL_SO2" xml:space="preserve">
+    <value>SO2  [g/kWh]</value>
+  </data>
+  <data name="ETV_LEER" xml:space="preserve">
+    <value>Please select an energy carrier.</value>
+  </data>
+  <data name="ETV_SP_ARBEITSPREIS" xml:space="preserve">
+    <value>Energy price</value>
+  </data>
+  <data name="ETV_SP_BASISEINHEIT" xml:space="preserve">
+    <value>Base unit</value>
+  </data>
+  <data name="ETV_SP_GRUNDPREIS" xml:space="preserve">
+    <value>Standing charge [€/a]</value>
+  </data>
+  <data name="ETV_SP_GUELTIG_AB" xml:space="preserve">
+    <value>Valid from</value>
+  </data>
+  <data name="ETV_SP_HEIZWERT" xml:space="preserve">
+    <value>Calorific value</value>
+  </data>
+  <data name="ETV_SP_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Demand charge</value>
+  </data>
+  <data name="ETV_TITEL_HISTORIE" xml:space="preserve">
+    <value>Price history</value>
+  </data>
+  <data name="ETV_UEBERNAHME_FRAGE" xml:space="preserve">
+    <value>Which catalogue carriers should be added to the project?</value>
+  </data>
+  <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
+    <value>{0} (no unit in the project)</value>
+  </data>
+  <data name="KDLG_ANLAGE_LOSE" xml:space="preserve">
+    <value>{0} (without unit assignment)</value>
+  </data>
+  <data name="KDLG_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="KDLG_EM_KATALOG" xml:space="preserve">
+    <value>Catalogue…</value>
+  </data>
+  <data name="KDLG_EM_KEIN_KATALOG" xml:space="preserve">
+    <value>The emission species catalogue is not available in this database (migration step 57 missing). The three legacy fields apply.</value>
+  </data>
+  <data name="KDLG_EM_MODUS" xml:space="preserve">
+    <value>CO₂ calculation:</value>
+  </data>
+  <data name="KDLG_EM_MODUS_CO2" xml:space="preserve">
+    <value>CO₂</value>
+  </data>
+  <data name="KDLG_EM_MODUS_CO2E" xml:space="preserve">
+    <value>CO₂ equivalent (GWP₁₀₀)</value>
+  </data>
+  <data name="KDLG_EM_MODUS_ORT_PROJEKT" xml:space="preserve">
+    <value>[project]</value>
+  </data>
+  <data name="KDLG_EM_MODUS_ORT_VORGABE" xml:space="preserve">
+    <value>[global default]</value>
+  </data>
+  <data name="KDLG_EM_SP_ART" xml:space="preserve">
+    <value>Species</value>
+  </data>
+  <data name="KDLG_EM_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KDLG_EM_SP_HERKUNFT" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KDLG_EM_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="KDLG_EM_SUMME" xml:space="preserve">
+    <value>Total CO₂ equivalent (selected species): {0} g/kWh</value>
+  </data>
+  <data name="KDLG_EM_SUMME_F3" xml:space="preserve">
+    <value>The CO₂ value is already an equivalent — total = value, further species are not added.</value>
+  </data>
+  <data name="KDLG_EM_VERWALTEN" xml:space="preserve">
+    <value>Manage emission species &amp; catalogue…</value>
+  </data>
+  <data name="KDLG_ET_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="KDLG_ET_TAB_EMISSIONEN" xml:space="preserve">
+    <value>Emissions</value>
+  </data>
+  <data name="KDLG_ET_TAB_PREISE" xml:space="preserve">
+    <value>Prices &amp; conversion</value>
+  </data>
+  <data name="KKOMP_BANNER_ZU" xml:space="preserve">
+    <value>Hide note</value>
+  </data>
+  <data name="KKOMP_BTN_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="KKOMP_BTN_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="KKOMP_RASTER" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="KKOMP_TT_EDITOR" xml:space="preserve">
+    <value>Edit item</value>
+  </data>
+  <data name="KKOMP_TT_VARIANTE_LOESCHEN" xml:space="preserve">
+    <value>Delete variant</value>
+  </data>
+  <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Delete item</value>
+  </data>
   <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
     <value>Storage in the project</value>
   </data>

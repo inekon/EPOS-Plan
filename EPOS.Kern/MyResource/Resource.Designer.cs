@@ -4386,6 +4386,213 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
+        /// </summary>
+        public static string ETV_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ETV_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
+        /// </summary>
+        public static string ETV_LBL_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_LBL_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basiseinheit: ähnelt.
+        /// </summary>
+        public static string ETV_LBL_BASISEINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_LBL_BASISEINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwert ähnelt.
+        /// </summary>
+        public static string ETV_LBL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("ETV_LBL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO2  [g/kWh] ähnelt.
+        /// </summary>
+        public static string ETV_LBL_CO2 {
+            get {
+                return ResourceManager.GetString("ETV_LBL_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Formel: ähnelt.
+        /// </summary>
+        public static string ETV_LBL_FORMEL {
+            get {
+                return ResourceManager.GetString("ETV_LBL_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis ähnelt.
+        /// </summary>
+        public static string ETV_LBL_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("ETV_LBL_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig ab ähnelt.
+        /// </summary>
+        public static string ETV_LBL_GUELTIG_AB {
+            get {
+                return ResourceManager.GetString("ETV_LBL_GUELTIG_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert ähnelt.
+        /// </summary>
+        public static string ETV_LBL_HEIZWERT {
+            get {
+                return ResourceManager.GetString("ETV_LBL_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis ähnelt.
+        /// </summary>
+        public static string ETV_LBL_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_LBL_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NOx  [g/kWh] ähnelt.
+        /// </summary>
+        public static string ETV_LBL_NOX {
+            get {
+                return ResourceManager.GetString("ETV_LBL_NOX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbasis ähnelt.
+        /// </summary>
+        public static string ETV_LBL_PREISBASIS {
+            get {
+                return ResourceManager.GetString("ETV_LBL_PREISBASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis pro kWh: ähnelt.
+        /// </summary>
+        public static string ETV_LBL_PREIS_JE_KWH {
+            get {
+                return ResourceManager.GetString("ETV_LBL_PREIS_JE_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SO2  [g/kWh] ähnelt.
+        /// </summary>
+        public static string ETV_LBL_SO2 {
+            get {
+                return ResourceManager.GetString("ETV_LBL_SO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Energieträger wählen. ähnelt.
+        /// </summary>
+        public static string ETV_LEER {
+            get {
+                return ResourceManager.GetString("ETV_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
+        /// </summary>
+        public static string ETV_SP_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_SP_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis Einheit ähnelt.
+        /// </summary>
+        public static string ETV_SP_BASISEINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_SP_BASISEINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
+        /// </summary>
+        public static string ETV_SP_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("ETV_SP_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig ab ähnelt.
+        /// </summary>
+        public static string ETV_SP_GUELTIG_AB {
+            get {
+                return ResourceManager.GetString("ETV_SP_GUELTIG_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert ähnelt.
+        /// </summary>
+        public static string ETV_SP_HEIZWERT {
+            get {
+                return ResourceManager.GetString("ETV_SP_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis ähnelt.
+        /// </summary>
+        public static string ETV_SP_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_SP_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preishistorie ähnelt.
+        /// </summary>
+        public static string ETV_TITEL_HISTORIE {
+            get {
+                return ResourceManager.GetString("ETV_TITEL_HISTORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Katalogträger sollen ins Projekt? ähnelt.
+        /// </summary>
+        public static string ETV_UEBERNAHME_FRAGE {
+            get {
+                return ResourceManager.GetString("ETV_UEBERNAHME_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten – Raumtemperaturen, Wärmebrücken und Ferienzeiten ähnelt.
         /// </summary>
         public static string GEB2_TITEL {
@@ -5931,6 +6138,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (keine Anlage im Projekt) ähnelt.
+        /// </summary>
+        public static string KDLG_ANLAGE_KEINE {
+            get {
+                return ResourceManager.GetString("KDLG_ANLAGE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (ohne Anlagenzuordnung) ähnelt.
+        /// </summary>
+        public static string KDLG_ANLAGE_LOSE {
+            get {
+                return ResourceManager.GetString("KDLG_ANLAGE_LOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
         /// </summary>
         public static string KDLG_AUFSCHLAG_ANWENDEN {
@@ -5985,6 +6210,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
+        /// </summary>
+        public static string KDLG_BTN_OK {
+            get {
+                return ResourceManager.GetString("KDLG_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die + Position hinzufügen ähnelt.
         /// </summary>
         public static string KDLG_BTN_POSITION {
@@ -6035,6 +6269,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_EFFEKTIVPREIS {
             get {
                 return ResourceManager.GetString("KDLG_EFFEKTIVPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog… ähnelt.
+        /// </summary>
+        public static string KDLG_EM_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_EM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Emissionsarten-Katalog ist auf dieser Datenbank nicht verfügbar (Migrationsschritt 57 fehlt). Es [rest der Zeichenfolge] ähnelt.
+        /// </summary>
+        public static string KDLG_EM_KEIN_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_EM_KEIN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Berechnung: ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS_CO2 {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Äquivalent (GWP₁₀₀) ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS_CO2E {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die [Projekt] ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS_ORT_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS_ORT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die [globale Vorgabe] ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS_ORT_VORGABE {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS_ORT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SP_ART {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SP_WERT {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Äquivalent gesamt (ausgewählte Arten): {0} g/kWh ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SUMME {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Wert ist bereits Äquivalent — Summe = Wert, weitere Arten werden nicht aufsummiert. ähnelt.
+        /// </summary>
+        public static string KDLG_EM_SUMME_F3 {
+            get {
+                return ResourceManager.GetString("KDLG_EM_SUMME_F3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsarten &amp; Katalog verwalten… ähnelt.
+        /// </summary>
+        public static string KDLG_EM_VERWALTEN {
+            get {
+                return ResourceManager.GetString("KDLG_EM_VERWALTEN", resourceCulture);
             }
         }
         
@@ -6327,6 +6687,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string KDLG_ET_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten). ähnelt.
         /// </summary>
         public static string KDLG_ET_KATALOG_NUR_LESEN {
@@ -6476,6 +6845,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ET_STAMM_SPEICHERN {
             get {
                 return ResourceManager.GetString("KDLG_ET_STAMM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TAB_EMISSIONEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TAB_EMISSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preise &amp; Umrechnung ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TAB_PREISE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TAB_PREISE", resourceCulture);
             }
         }
         
@@ -10840,6 +11227,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_WIKI_SUCHE_LAEUFT {
             get {
                 return ResourceManager.GetString("KI_WIKI_SUCHE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ausblenden ähnelt.
+        /// </summary>
+        public static string KKOMP_BANNER_ZU {
+            get {
+                return ResourceManager.GetString("KKOMP_BANNER_ZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja ähnelt.
+        /// </summary>
+        public static string KKOMP_BTN_JA {
+            get {
+                return ResourceManager.GetString("KKOMP_BTN_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein ähnelt.
+        /// </summary>
+        public static string KKOMP_BTN_NEIN {
+            get {
+                return ResourceManager.GetString("KKOMP_BTN_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen ähnelt.
+        /// </summary>
+        public static string KKOMP_RASTER {
+            get {
+                return ResourceManager.GetString("KKOMP_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position bearbeiten ähnelt.
+        /// </summary>
+        public static string KKOMP_TT_EDITOR {
+            get {
+                return ResourceManager.GetString("KKOMP_TT_EDITOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
+        /// </summary>
+        public static string KKOMP_TT_VARIANTE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KKOMP_TT_VARIANTE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position löschen ähnelt.
+        /// </summary>
+        public static string KKOMP_TT_ZEILE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KKOMP_TT_ZEILE_LOESCHEN", resourceCulture);
             }
         }
         

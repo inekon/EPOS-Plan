@@ -133,6 +133,10 @@ namespace WindowsFormsApplication1
                 ["EmissionskatalogAuswerten"] = new Action<EmissionskatalogErgebnis>(
                     EmissionskatalogAuswerten),
 
+                ["KarteTexte"] = KarteTexte(),
+                ["AufschlagTexte"] = AufschlagTexte(),
+                ["BestandteilTexte"] = BestandteilTexte(),
+
                 ["TitelText"] = T("KDLG_ET_TITEL", "Energieträgerverwaltung"),
                 ["KontextText"] = Katalogkontext
                     ? T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)")
@@ -1550,6 +1554,113 @@ namespace WindowsFormsApplication1
                                : T("KDLG_LPR_EBENE_PROJEKT", "Projektreihe"));
             }
             catch { return ""; }
+        }
+
+        // =====================================================================
+        // Texte der Trägerkarte und der beiden Preisblöcke
+        // =====================================================================
+
+        /// <summary>
+        /// Die Texte der Trägerkarte. Sie stehen als Satz, weil die Komponente
+        /// sie an einen verschachtelten Baustein weiterreicht — einzeln
+        /// durchgereicht wären es dreißig Parameter auf zwei Ebenen.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> KarteTexte()
+        {
+            return new Dictionary<string, object>
+            {
+                ["TitelPreise"] = T("KDLG_ET_TAB_PREISE", "Preise & Umrechnung"),
+                ["TitelUmrechnung"] = MyResource.Resource.KOSTEN_UMRECHNUNG_TITEL,
+                ["TitelEmissionen"] = T("KDLG_ET_TAB_EMISSIONEN", "Emissionen"),
+                ["TitelHistorie"] = T("ETV_TITEL_HISTORIE", "Preishistorie"),
+                ["LabelPreisbasis"] = T("ETV_LBL_PREISBASIS", "Preisbasis"),
+                ["LabelBasiseinheit"] = T("ETV_LBL_BASISEINHEIT", "Basiseinheit:"),
+                ["LabelArbeitspreis"] = T("ETV_LBL_ARBEITSPREIS", "Arbeitspreis"),
+                ["LabelLeistungspreis"] = T("ETV_LBL_LEISTUNGSPREIS", "Leistungspreis"),
+                ["LabelGrundpreis"] = T("ETV_LBL_GRUNDPREIS", "Grundpreis"),
+                ["LabelHeizwert"] = T("ETV_LBL_HEIZWERT", "Heizwert"),
+                ["LabelBrennwert"] = T("ETV_LBL_BRENNWERT", "Brennwert"),
+                ["LabelPreisJeKwh"] = T("ETV_LBL_PREIS_JE_KWH", "Preis pro kWh:"),
+                ["LabelFormel"] = T("ETV_LBL_FORMEL", "Formel:"),
+                ["ModusJahrText"] = T("KDLG_LP_MODUS_JAHR", "Jahresleistungspreis"),
+                ["ModusMonatText"] = T("KDLG_LP_MODUS_MONAT", "Monatsleistungspreis"),
+                ["SaisonText"] = T("KDLG_LP_SAISON", "Saisonale Sätze…"),
+                ["SpalteName"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NAME,
+                ["SpalteVon"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_VON,
+                ["SpalteNach"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NACH,
+                ["SpalteFaktor"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_FAKTOR,
+                ["SpalteAktiv"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_AKTIV,
+                ["RegelNeuText"] = MyResource.Resource.KOSTEN_UMRECHNUNG_NEU,
+                ["AufschlagAnwendenText"] = T("KDLG_AUFSCHLAG_ANWENDEN",
+                    "Aufschläge in der Wirtschaftlichkeit berücksichtigen"),
+                ["LabelModus"] = T("KDLG_EM_MODUS", "CO₂-Berechnung:"),
+                ["ModusCo2Text"] = T("KDLG_EM_MODUS_CO2", "CO₂"),
+                ["ModusCo2eText"] = T("KDLG_EM_MODUS_CO2E", "CO₂-Äquivalent (GWP₁₀₀)"),
+                ["SpalteArt"] = T("KDLG_EM_SP_ART", "Art"),
+                ["SpalteWert"] = T("KDLG_EM_SP_WERT", "Wert"),
+                ["SpalteEinheit"] = T("KDLG_EM_SP_EINHEIT", "Einheit"),
+                ["SpalteHerkunft"] = T("KDLG_EM_SP_HERKUNFT", "Herkunft"),
+                ["KatalogZeileText"] = T("KDLG_EM_KATALOG", "Katalog…"),
+                ["KatalogVerwaltenText"] = T("KDLG_EM_VERWALTEN",
+                    "Emissionsarten & Katalog verwalten…"),
+                ["KeinKatalogText"] = T("KDLG_EM_KEIN_KATALOG",
+                    "Der Emissionsarten-Katalog ist auf dieser Datenbank nicht verfügbar "
+                    + "(Migrationsschritt 57 fehlt). Es gelten die drei Bestandsfelder."),
+                ["LabelCo2"] = T("ETV_LBL_CO2", "CO2  [g/kWh]"),
+                ["LabelSo2"] = T("ETV_LBL_SO2", "SO2  [g/kWh]"),
+                ["LabelNox"] = T("ETV_LBL_NOX", "NOx  [g/kWh]"),
+                ["LabelGueltigAb"] = T("ETV_LBL_GUELTIG_AB", "Gültig ab"),
+                ["SpeichernText"] = T("ETV_BTN_SPEICHERN", "💾 Speichern"),
+                ["SpalteGueltigAb"] = T("ETV_SP_GUELTIG_AB", "Gültig ab"),
+                ["SpalteHeizwert"] = T("ETV_SP_HEIZWERT", "Heizwert"),
+                ["SpalteBasisEinheit"] = T("ETV_SP_BASISEINHEIT", "Basis Einheit"),
+                ["SpalteArbeitspreis"] = T("ETV_SP_ARBEITSPREIS", "Arbeitspreis"),
+                ["SpalteGrundpreis"] = T("ETV_SP_GRUNDPREIS", "Grundpreis [€/a]"),
+                ["SpalteLeistungspreis"] = T("ETV_SP_LEISTUNGSPREIS", "Leistungspreis")
+            };
+        }
+
+        /// <summary>Die Texte des Aufschlagsblocks — wortgleich aus
+        /// <c>ucStromAufschlaege.TexteSetzen</c>.</summary>
+        private static IReadOnlyDictionary<string, object> AufschlagTexte()
+        {
+            return new Dictionary<string, object>
+            {
+                ["TitelAufschlag"] = MyResource.Resource.PREIS_GRUPPE_AUFSCHLAG,
+                ["TitelVerguetung"] = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG,
+                ["ModusAufgeschluesselt"] = MyResource.Resource.PREIS_MODUS_AUFGESCHLUESSELT,
+                ["ModusGesamtwert"] = MyResource.Resource.PREIS_MODUS_GESAMTWERT,
+                ["LabelNetzentgelt"] = MyResource.Resource.PREIS_KOMP_NETZENTGELT,
+                ["LabelUmlagen"] = MyResource.Resource.PREIS_KOMP_UMLAGEN,
+                ["LabelStromsteuer"] = MyResource.Resource.PREIS_KOMP_STROMSTEUER,
+                ["LabelKonzession"] = MyResource.Resource.PREIS_KOMP_KONZESSION,
+                ["LabelVertrieb"] = MyResource.Resource.PREIS_KOMP_VERTRIEB,
+                ["LabelGesamtaufschlag"] = MyResource.Resource.PREIS_LABEL_GESAMTAUFSCHLAG,
+                ["LabelVerguetungPv"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_PV,
+                ["LabelVerguetungBhkw"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_BHKW,
+                ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH
+            };
+        }
+
+        /// <summary>Die Texte der Preiszerlegung — wortgleich aus
+        /// <c>ucBrennstoffBestandteile.TexteSetzen</c>.</summary>
+        private static IReadOnlyDictionary<string, object> BestandteilTexte()
+        {
+            return new Dictionary<string, object>
+            {
+                ["TitelBestandteile"] = T("BB_GRUPPE_BESTANDTEILE", "Preisbestandteile des Brennstoffs"),
+                ["ModusAufgeschluesselt"] = T("BB_MODUS_AUFGESCHLUESSELT",
+                    "aufgeschlüsselt (Summe ist der Preis)"),
+                ["ModusGesamtwert"] = T("BB_MODUS_GESAMTWERT", "Gesamtwert (Arbeitspreis gilt)"),
+                ["LabelSchnellwahl"] = T("BB_SCHNELLWAHL", "Schnellwahl (Katalog):"),
+                ["LabelEnergiesteuer"] = T("BB_KOMP_ENERGIESTEUER", "Energiesteuer"),
+                ["LabelCo2"] = T("BB_KOMP_CO2", "CO₂-Anteil (BEHG)"),
+                ["LabelNetzentgelt"] = T("BB_KOMP_NETZENTGELT", "Netz-/Messentgelt"),
+                ["LabelVertrieb"] = T("BB_KOMP_VERTRIEB", "Vertrieb"),
+                ["LabelArbeitspreis"] = T("BB_LABEL_ARBEITSPREIS", "Arbeitspreis (Trägerdialog)"),
+                ["InArbeitspreisText"] = T("BB_BTN_IN_ARBEITSPREIS", "In Arbeitspreis übernehmen"),
+                ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH
+            };
         }
 
         private static string T(string schluessel, string rueckfall)
