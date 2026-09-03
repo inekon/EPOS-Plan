@@ -4,68 +4,28 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Volumen- und Herstellerfilter der beiden Pufferspeicher-Katalogdialoge
-    /// (<see cref="Form_PufferSp"/> und <see cref="Form_PufferSp_Admin"/>).
+    /// Volumen- und Herstellerfilter des Pufferspeicher-Katalogdialogs
+    /// <see cref="Form_PufferSp_Admin"/> — die COMBOBOX-Seite.
     ///
     /// <para>
-    /// <b>Warum zentral (Paket 9 / L5).</b> Die sechs Filterstufen standen in beiden
-    /// Dialogen doppelt — einmal als <c>Items.Add</c>-Folge und einmal als
-    /// <c>if/else</c>-Kette, die den ANGEZEIGTEN Text gegen deutsche Literale verglich.
-    /// Genau daraus entstand Bestandsfehler <b>B0-10</b>: Ohne Treffer blieb der
-    /// Volumenteil des Prädikats leer, das SQL endete auf „… and  order by …" und die
-    /// Liste blieb stumm leer. Der B0-Fix hat die Vorbelegung ergänzt, aber die
-    /// Textvergleiche stehen gelassen — mit lokalisierten Einträgen hätten sie ab jetzt
-    /// NIE mehr getroffen und der Filter wäre wirkungslos geworden.
+    /// <b>Wo die Tabellen jetzt stehen (iU9-W6.0c).</b> Die sechs SQL-Prädikate und ihre
+    /// sechs Anzeigetexte sind nach <see cref="PufferSpStammCtrl"/> in den Kern gewandert
+    /// (<c>VOLUMEN_SQL</c>, <c>VolumenTexte()</c>). Grund: Der Projektdialog
+    /// <c>Form_PufferSp</c> ist seit iU9-W6.7 die Razor-Komponente
+    /// <c>PufferspeicherDialog</c>, und die kennt keine <see cref="ComboBox"/> — an eine
+    /// Klasse, die eine erwartet, kam sie nicht heran. Der Kern führt die Tabellen damit
+    /// EINMAL für beide Dialoge.
     /// </para>
-    ///
     /// <para>
-    /// <b>Drei-Schichten-Regel.</b> Die Auswahl entscheidet über den
-    /// <see cref="ComboBox.SelectedIndex"/> — sprachneutral, Schicht 2. Der angezeigte
-    /// Text ist reine Anzeige und kommt aus dem Ressourcenkatalog; die SQL-Fragmente
-    /// sind Persistenz und stehen ausschließlich hier.
+    /// <b>Was hier bleibt.</b> Genau die drei Handgriffe an der ComboBox:
+    /// füllen, vorbelegen und die Auswahl in ein Prädikat übersetzen.
+    /// <c>Form_PufferSp_Admin</c> ist bis Welle 14 eine WinForms-Maske und braucht sie
+    /// unverändert. Der Wortlaut der Prädikate und die Regel „Index ist der Steuerwert"
+    /// (Paket 9 / L5, Bestandsfehler B0-10) stehen im Kern beschrieben.
     /// </para>
     /// </summary>
     internal static class PufferSpFilter
     {
-        /// <summary>
-        /// SQL-Prädikat je Filterstufe, in der Reihenfolge der Einträge, die
-        /// <see cref="VolumenfilterFuellen"/> anlegt. Index 0 = „Alle".
-        ///
-        /// <para>
-        /// <b>NULL-Absicherung in Stufe 0 (Paket-9-Nacharbeit).</b> Der Bestandsausdruck
-        /// <c>Gesamtvolumen Like '%'</c> wandelt die Zahl in Text und vergleicht; für
-        /// <c>NULL</c> ergibt das in Jet/ACE wieder <c>NULL</c> — der Satz fällt also aus
-        /// „Alle" heraus. Ein Katalogsatz ohne gepflegtes Gesamtvolumen (etwa aus einem
-        /// VDI-3805-Import) wäre damit im Dialog unsichtbar, ohne dass irgendwo eine
-        /// Meldung erscheint. Die Klammer ist nötig, weil die Aufrufer das Prädikat mit
-        /// <c>and</c> an den Herstellerfilter hängen.
-        /// Die übrigen fünf Stufen bleiben wortgleich zum Bestand.
-        /// </para>
-        /// </summary>
-        private static readonly string[] VOLUMEN_SQL =
-        {
-            "(Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')",
-            "Gesamtvolumen <100",
-            "Gesamtvolumen >=100 and Gesamtvolumen <200",
-            "Gesamtvolumen >=200 and Gesamtvolumen <500",
-            "Gesamtvolumen >=500 and Gesamtvolumen <1000",
-            "Gesamtvolumen >=1000"
-        };
-
-        /// <summary>Die Anzeigetexte der sechs Filterstufen in derselben Reihenfolge.</summary>
-        private static string[] VolumenTexte()
-        {
-            return new[]
-            {
-                MyResource.Resource.PSP_FILTER_ALLE,
-                MyResource.Resource.PSP_FILTER_BIS_100L,
-                MyResource.Resource.PSP_FILTER_100_BIS_200L,
-                MyResource.Resource.PSP_FILTER_200_BIS_500L,
-                MyResource.Resource.PSP_FILTER_500_BIS_1000L,
-                MyResource.Resource.PSP_FILTER_UEBER_1000L
-            };
-        }
-
         /// <summary>
         /// Füllt den Volumenfilter und stellt ihn auf „Alle". Bewusst über
         /// <c>SelectedIndex</c> statt über <c>Text</c>: Damit stimmen Anzeige und
@@ -73,48 +33,43 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>Das Auslösen von <c>SelectedIndexChanged</c> ist gewollt</b> und wurde in
-        /// der Paket-9-Nacharbeit ausdrücklich NICHT unterdrückt. Zwei Messungen dazu:
+        /// der Paket-9-Nacharbeit ausdrücklich NICHT unterdrückt: Die Bestandsvorbelegung
+        /// <c>comboBox_Volumen.Text = "Alle"</c> löste es ebenfalls genau einmal aus (der
+        /// <c>Text</c>-Setzer sucht den Eintrag und setzt <c>SelectedIndex</c>).
         /// </para>
-        /// <list type="bullet">
-        /// <item>Die Bestandsvorbelegung <c>comboBox_Volumen.Text = "Alle"</c> löste das
-        /// Ereignis <b>ebenfalls genau einmal</b> aus (der <c>Text</c>-Setzer der ComboBox
-        /// sucht den Eintrag und setzt <c>SelectedIndex</c>). Der Aufruf von
-        /// <c>SetFilter()</c> beim Öffnen ist also kein Zugewinn aus Paket 9 —
-        /// Sortierung und Trefferliste sind unverändert.</item>
-        /// <item><c>Form_PufferSp_Load</c> füllt die rechte Liste zunächst aus
-        /// <c>Tab_Pufferspeicher</c> (Projekttabelle!); erst <c>SetFilter()</c> ersetzt
-        /// sie durch den KATALOG <c>Tab_Pufferspeicher_STAMM</c>. Würde man das Ereignis
-        /// beim Füllen abklemmen, stünde beim Öffnen die falsche Tabelle im Dialog.</item>
-        /// </list>
         /// </summary>
         public static void VolumenfilterFuellen(ComboBox cb)
         {
             if (cb == null) return;
 
             cb.Items.Clear();
-            cb.Items.AddRange(VolumenTexte());
+            foreach (string t in PufferSpStammCtrl.VolumenTexte()) cb.Items.Add(t);
             cb.SelectedIndex = 0;   // "Alle"
         }
 
         /// <summary>
         /// Das SQL-Prädikat zur aktuellen Auswahl. Freitext (die ComboBox ist
-        /// editierbar) und eine leere Auswahl liefern „alle Volumina" — dieselbe
-        /// Vorbelegung wie nach dem B0-10-Fix, jetzt aber sprachunabhängig.
+        /// editierbar) und eine leere Auswahl liefern „alle Volumina".
         /// </summary>
         public static string VolumenSql(ComboBox cb)
         {
-            if (cb == null) return VOLUMEN_SQL[0];
+            if (cb == null) return PufferSpStammCtrl.VOLUMEN_SQL[0];
 
             int index = cb.SelectedIndex;
-            if (index < 0 || index >= VOLUMEN_SQL.Length)
+            if (index < 0 || index >= PufferSpStammCtrl.VOLUMEN_SQL.Length)
             {
                 // Freitext: über den angezeigten Text versuchen, sonst "alle".
-                index = Array.FindIndex(VolumenTexte(),
-                    t => string.Equals(t, (cb.Text ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
-                if (index < 0) return VOLUMEN_SQL[0];
+                index = -1;
+                string gesucht = (cb.Text ?? "").Trim();
+                var texte = PufferSpStammCtrl.VolumenTexte();
+                for (int i = 0; i < texte.Count; i++)
+                    if (string.Equals(texte[i], gesucht, StringComparison.OrdinalIgnoreCase))
+                    { index = i; break; }
+
+                if (index < 0) return PufferSpStammCtrl.VOLUMEN_SQL[0];
             }
 
-            return VOLUMEN_SQL[index];
+            return PufferSpStammCtrl.VOLUMEN_SQL[index];
         }
 
         /// <summary>

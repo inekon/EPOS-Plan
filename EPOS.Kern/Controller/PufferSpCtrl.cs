@@ -1850,5 +1850,34 @@ namespace WindowsFormsApplication1
         {
             return row.Table.Columns.Contains(col) ? row[col] : DBNull.Value;
         }
+
+        // =================================================================================
+        // W6.0c - der Detailblock des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Die Anzeigefelder einer PROJEKTKOPIE; <c>null</c>, wenn es sie noch nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Aus <c>Form_PufferSp.listBox_PufferSp_SelectedIndexChanged</c> (Z. 231-248).
+        /// Adressiert wird ueber die ID, nicht ueber den Bezeichner - Befund 4 der Maske:
+        /// Eine Projektkopie kann anders heissen als ihre Vorlage („… 600 Liter" gegen
+        /// „… 600 Ltr") und darf im selben Projekt doppelt vorkommen.
+        /// </para>
+        /// <para>
+        /// <c>null</c> heisst „frisch hinzugefuegt": Dort steht in <c>ID_PUFFER</c> noch
+        /// die STAMM-Id, die Projektkopie legt erst <c>WizardCtrl</c> beim Speichern an.
+        /// Der Aufrufer faellt dann auf <c>PufferSpStammCtrl.Detail(id)</c> zurueck.
+        /// </para>
+        /// </remarks>
+        public static PufferSpStammCtrl.SpeicherDetail Detail(int idPuffer, int idProjekt)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                PufferSpStammCtrl.DETAIL_FELDER + TABLE + " WHERE ID=? AND ID_Projekt=?",
+                new DbParam("@id", idPuffer),
+                new DbParam("@proj", idProjekt));
+            return PufferSpStammCtrl.AusZeile(dt);
+        }
     }
 }

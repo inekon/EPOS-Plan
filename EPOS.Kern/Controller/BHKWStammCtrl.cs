@@ -345,5 +345,116 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+
+        // =================================================================================
+        // W6.0c - der KATALOGFILTER des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste. Der Vorlaeufer <c>Form_BHKWEing</c> zeigte sie in
+        /// einem <c>DataGridView</c> mit zwei Spalten: „Name" und ein Mehrzeiler
+        /// „Eigenschaften" aus Firma, Brennstoff, Ptherm und Pel.
+        /// </summary>
+        /// <param name="Id">Primaerschluessel - er ersetzt die Namenssuche des Vorlaeufers.</param>
+        /// <param name="Bezeichner">Spalte „Name".</param>
+        /// <param name="Firma">Erste Zeile der Spalte „Eigenschaften".</param>
+        /// <param name="Brennstoff">
+        /// Anzeigename des Brennstoffs aus <see cref="Brennstoffart"/>; leer, wenn die
+        /// gespeicherte Nummer ausserhalb der Liste liegt - Bestandsverhalten.
+        /// </param>
+        /// <param name="Ptherm">Thermische Leistung [kW].</param>
+        /// <param name="Pel">Elektrische Leistung [kW].</param>
+        public sealed record KatalogZeile(int Id, string Bezeichner, string Firma,
+                                          string Brennstoff, double Ptherm, double Pel);
+
+        /// <summary>
+        /// Die Katalogliste des Projektdialogs, eingeengt auf Brennstoffgruppe und
+        /// Leistungsstufe.
+        /// </summary>
+        /// <param name="gruppe">
+        /// Eintrag aus <see cref="Brennstoffart_Gruppe"/>. Leer, <c>null</c>, „Alle" und
+        /// jeder unbekannte Wert heben die Einengung auf - Bestandsverhalten.
+        /// </param>
+        /// <param name="leistungsstufe">
+        /// Index in <see cref="LeistungFilterText"/>: 0 = „Alle", 1..8 die acht Stufen aus
+        /// <see cref="LeistungText"/>. Alles ausserhalb gilt als 0.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// Die Gruppenkette ist WORTGLEICH aus <c>Form_BHKWEing.BuildFilter</c> (Z. 168-186)
+        /// uebernommen, samt der doppelten Zeile fuer „Tierische Fette" (die zweite war
+        /// schon dort unerreichbar). Anders als die Heizkesselkette bildet sie alle zwoelf
+        /// Gruppen von <c>Tab_BrennstoffKategorien</c> ab; der Unterschied zwischen beiden
+        /// ist Befund W6-O-1 des Protokolls.
+        /// </para>
+        /// <para>
+        /// <b>Abweichung mit Grund (A-6).</b> Die Leistungsstufe kommt jetzt ueber den
+        /// INDEX aus <see cref="LeistungFilterText"/> statt ueber einen Textvergleich. Im
+        /// Bestand fuellte <c>SetControls</c> die Liste aus <see cref="LeistungText"/> -
+        /// letzter Eintrag „größer 1200 kW" -, waehrend <c>BuildFilter</c> gegen
+        /// „über 1.200 kW" verglich: Die achte Stufe traf NIE und zeigte still alle
+        /// Leistungen. Ueber den Index ist sie erreichbar. Dieselbe Umstellung wie in
+        /// Paket 9 fuer den Pufferspeicher (B0-10).
+        /// </para>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
+        {
+            if (leistungsstufe < 0 || leistungsstufe >= LeistungFilterText.Length) leistungsstufe = 0;
+            string szFilterLeistung = LeistungFilterText[leistungsstufe];
+
+            string szFilter = "";
+            string g = gruppe ?? "";
+            if (g == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (g == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (g == "Koks") szFilter = "Brennstoff=10";
+            else if (g == "Kohle") szFilter = "Brennstoff=11";
+            else if (g == "Holz") szFilter = "Brennstoff=12";
+            else if (g == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (g == "Strom") szFilter = "Brennstoff=13";
+            else if (g == "Pellets") szFilter = "Brennstoff=15";
+            else if (g == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (g == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (g == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (g == "Wasserstoff") szFilter = "Brennstoff=25";
+            else if (g == "Alle") szFilter = "Brennstoff Like '%'";
+
+            string szWhere = szFilter == "" ? szFilterLeistung
+                                            : "(" + szFilter + ") and " + szFilterLeistung;
+            string sql = "SELECT * FROM " + TABLE + " WHERE " + szWhere + " ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+
+                int brennIdx = row["Brennstoff"] != DBNull.Value ? Convert.ToInt32(row["Brennstoff"]) : 0;
+                string brennText = (brennIdx >= 1 && brennIdx <= Brennstoffart.Count)
+                                 ? Brennstoffart[brennIdx - 1] : "";
+
+                liste.Add(new KatalogZeile(
+                    Convert.ToInt32(row["ID"]),
+                    row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString(),
+                    row["Firma"] == DBNull.Value ? "" : row["Firma"].ToString(),
+                    brennText,
+                    row["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(row["Ptherm"]),
+                    row["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(row["Pel"])));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt - Ersatz fuer
+        /// <c>DataRepository.GetIdByName</c> in den Aufrufern.
+        /// </summary>
+        public static int IdZu(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", szBezeichner ?? ""));
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
     }
 }

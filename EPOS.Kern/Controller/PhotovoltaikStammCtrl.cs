@@ -389,5 +389,116 @@ namespace WindowsFormsApplication1
             FillFromRow(m, row);
             return m;
         }
+
+        // =================================================================================
+        // W6.0c - Herstellerfilter des Projektdialogs
+        // =================================================================================
+
+        /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Die Hersteller des Katalogs in Anzeigereihenfolge - die Auswahlliste
+        /// <c>comboBox_Hersteller</c>.
+        /// </summary>
+        /// <remarks>
+        /// Zeichengleich <c>Form_PV_Load</c> (Z. 69):
+        /// <c>SELECT Firma FROM Tab_PV_STAMM GROUP BY Firma ORDER BY Firma</c>. Das
+        /// <c>GROUP BY</c> statt <c>DISTINCT</c> ist Bestand und bleibt - es tut hier
+        /// dasselbe.
+        /// </remarks>
+        public static IReadOnlyList<string> Hersteller()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Firma FROM " + TABLE + " GROUP BY Firma ORDER BY Firma");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+                liste.Add(row["Firma"] == DBNull.Value ? "" : row["Firma"].ToString());
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Katalogliste, eingeengt auf einen Hersteller.
+        /// </summary>
+        /// <param name="hersteller">
+        /// Eintrag aus <see cref="Hersteller"/>. Leer, <c>null</c> und „Alle" heben die
+        /// Einengung auf.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// Aus <c>Form_PV.SetFilter</c> (Z. 215-233). Zwei Dinge aendern sich, beide
+        /// notwendig:
+        /// </para>
+        /// <list type="bullet">
+        /// <item>Der Herstellername kommt als <see cref="DbParam"/> statt als eingesetzter
+        /// Text. Der Bestand baute <c>Firma='…'</c> zusammen, ohne das Hochkomma zu
+        /// verdoppeln - ein Herstellername mit Apostroph zerriss das Praedikat
+        /// (der Pufferspeicherfilter verdoppelte es wenigstens).</item>
+        /// <item><c>ORDER BY Bezeichner</c> steht jetzt da. Der Bestand sortierte hier
+        /// NICHT, waehrend die Erstbefuellung ueber <see cref="ReadAll"/> sortiert kam -
+        /// die Liste sprang beim ersten Filtern in eine andere Reihenfolge.</item>
+        /// </list>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string hersteller)
+        {
+            string h = (hersteller ?? "").Trim();
+            bool alle = h.Length == 0 || h == "Alle";
+
+            string sql = alle
+                ? "SELECT ID, Bezeichner FROM " + TABLE + " ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM " + TABLE + " WHERE Firma = ? ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = alle
+                ? DataRepository.GetDataTable(sql)
+                : DataRepository.GetDataTable(sql, new DbParam("@firma", h));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Anzeigefelder eines Katalogmoduls - der Detailblock des Projektdialogs.
+        /// </summary>
+        /// <param name="Bezeichner">Modulname.</param>
+        /// <param name="Beschreibung">Freitext.</param>
+        /// <param name="Firma">Hersteller.</param>
+        /// <param name="Leistung">Leistung EINES Moduls [kW].</param>
+        public sealed record ModulDetail(string Bezeichner, string Beschreibung,
+                                         string Firma, double Leistung);
+
+        /// <summary>
+        /// Die vier Anzeigefelder zum Bezeichner; <c>null</c>, wenn es keinen Satz gibt.
+        /// </summary>
+        /// <remarks>
+        /// Fasst die drei zeichengleichen <c>RecordSet</c>-Bloecke von
+        /// <c>listBox_Auswahl_SelectedIndexChanged</c> (Z. 163),
+        /// <c>listBox_DB_SelectedIndexChanged</c> (Z. 191) und
+        /// <c>UpdateGesamtleistung</c> (Z. 314) zusammen. <c>ORDER BY ID</c> macht die Wahl
+        /// bei einem doppelt vergebenen Bezeichner benennbar.
+        /// </remarks>
+        public static ModulDetail Detail(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner, Beschreibung, Firma, Leistung FROM " + TABLE +
+                " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            return new ModulDetail(
+                r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
+                r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
+                r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
+                r["Leistung"] == DBNull.Value ? 0 : Convert.ToDouble(r["Leistung"]));
+        }
     }
 }
