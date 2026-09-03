@@ -633,3 +633,61 @@ Einlesemasken aus dem Menü; Lastspitzenkappung mit und ohne offenes Projekt; KI
 einzige die Aufrufrichtung um und ist damit der erste Verdächtige, T0 der zweite (dort ändert
 sich das Verhalten der Melde-Haken).
 
+---
+
+## Nachweise iU5-Abschluss (zweiter Umzug) und iU7-9
+
+**Stand 03.09.2026 · `7204224`..`57d7cc8` auf der Basis `c477523`.** Sechs Commits: fünf
+Umzugstranchen (`iU5-U1`…`iU5-U5`) und die Berichtsausgabe über `Dienste.Datei` (`iU7-9`).
+Der Kern wächst von **193 auf 267** `.cs`-Dateien; unter `WindowsFormsApplication1/Allgemein/`
+und `/Controller/` bleiben **59** von 133.
+
+### Was auf Linux geprüft ist
+
+Nach **jeder** der sechs Tranchen vollständig gefahren, jedes Mal mit demselben Ergebnis:
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet build EPOS.Kern/EPOS.Kern.csproj -c Release --no-incremental` | 0 Fehler; 2 Warnungen bis iU5-U3, ab iU5-U4 **3** (CS0108 aus `StromverbraucherStammCtrl`, mitgewandert) |
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` | 0 Fehler, **36** Warnungen — unverändert zur Basis |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | **886** (35 + 450 + 337 + 64), 0 Fehlschläge |
+| Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | **GESAMT: PASS** (815 043 Werte); `diff -rq` ohne `protokoll.txt` **leer** |
+| `dotnet run --project Proben/ChartProben -c Release` | 9 Bilder, **0 Verstöße** |
+| `dotnet build Proben/ZugriffsschichtProben/ZugriffsschichtProben.sln -c Release -p:Platform=x64` | 0 Fehler |
+| `dotnet build Referenzlauf/Referenzlauf.csproj -c Release -p:Platform=x64` | 0 Fehler |
+| iU5-Wächter `\bProgram\.[A-Za-z]` über Kern + `Allgemein/` + `Controller/` + `Model/` | 0 Treffer |
+| Plattform-Wächter `System\.Windows\.Forms|System\.Drawing|MessageBox\.|\bProgram\.|\bRegistry\.|ProtectedData|OleDb` über `EPOS.Kern/*.cs` | 0 Treffer |
+
+`git diff -M --stat` je Umzugs-Commit zeigt ausschließlich R100-Umbenennungen, die
+`EPOS.Kern.csproj`-Ergänzungen und die 17 gestrichenen toten `using`-Zeilen; einzige inhaltliche
+Änderung im ganzen Umzug ist `DeckblattBaustein.ProduktFassung()` in
+`Bausteine/BausteineStandard.cs`.
+
+### Am Gerät zu prüfen (Windows)
+
+Nichts davon lässt sich auf Linux fahren — die Anwendung startet dort nicht.
+
+| Nr. | Was | Erwartung |
+|---|---|---|
+| 1 | **Bericht erzeugen** (Berichtsansicht, Word **und** Excel angehakt) | beide Dateien entstehen im gewählten Zielordner, Word öffnet mit Inhaltsverzeichnis und Diagrammen |
+| 2 | **Fußzeilen-/Deckblattfassung im Word-Bericht** | Feld „EPOS-Plan-Version" zeigt **`1.1.0.0`** — genau wie vor dem Umzug. Das ist die Probe auf den Ersatz von `Application.ProductVersion` |
+| 3 | **Zielordner wählen** (Schaltfläche „Durchsuchen…") | der gewohnte Ordnerdialog; Startordner ist der Inhalt des Zielfeldes; Abbruch lässt das Feld stehen |
+| 4 | **„Vergleich (alt)"** in der Berichtsansicht | Speichern-Dialog mit Filter „Word-Dokument", Vorschlag `Projektvergleich_<Stamm>.docx`; nach „Ja" öffnet Word die Datei |
+| 5 | **Öffnen mit Systemanwendung** nach dem regulären Berichtslauf | „Ja" startet Word bzw. Excel; „Nein" tut nichts |
+| 6 | **Variantentest → Berichtsexport** | Speichern-Dialog und Öffnen wie unter 4 |
+| 7 | **Vorlage gefunden** | der Word-Bericht benutzt `Vorlagen\Berichtsvorlage.docx` neben der EXE (Formatvorlagen „Title"/„Heading1" statt der Ersatz-Styles) |
+| 8 | **KI-Chat** — Frage stellen, Aktion ausführen lassen, Sicherungspunkt und Schutzstufen | unverändert; besonders `feld_setzen` (bedient die Maske) und `projekt_aktiv` |
+| 9 | **Semantiksuche / Wiki-Wissen** | Index wird gebaut, Treffer erscheinen; im englischen Modus geht die Wiki-URL über translate.goog |
+| 10 | **Lizenzaktivierung** | Aktivieren, Token bleibt nach Neustart gültig, Geräte-ID unverändert, Tagesanker wird fortgeschrieben |
+| 11 | **Katalogimport VDI 3805** — Heizkessel, Pufferspeicher, Solarkollektoren, Wärmepumpen | Auswahl-Filter greift, Import schreibt, Dublettenprüfung meldet Treffer |
+| 12 | **Katalogimport CEC / PAN** (Photovoltaik) | Modulliste wird geladen und übernommen |
+| 13 | **Ganglinien einlesen** — CSV/TXT **und** Excel-Mappe | beide Wege lesen wie bisher (NReco bzw. ClosedXML) |
+| 14 | **CSV-Export** | schlägt den zuletzt benutzten Ordner vor, schreibt mit BOM |
+| 15 | **Stammdatenmasken** (die sieben umgezogenen Stamm-Controller) | anlegen, ändern, löschen; Meldungen erscheinen als Dialog, nicht auf der Konsole |
+| 16 | **Erststart-Migration aus `.accdb`** | unverändert — der Access-Zweig wurde nicht angefasst |
+
+### Wenn eine Tranche stört
+
+`git revert` der betroffenen Tranche; die fünf Umzüge sind untereinander unabhängig, weil jede
+für sich baut. Der einzige inhaltliche Verdächtige ist `iU5-U3` (Fußzeilenfassung), der einzige
+verhaltensnahe `iU7-9` (Dialoge ohne Besitzerfenster).
