@@ -157,12 +157,28 @@ namespace WindowsFormsApplication1
         public static string Basis()
         {
             string wert = null;
-            try { wert = Properties.Settings.Default.WordPressUrl; }
+            try { wert = Dienste.Einstellungen.Lies(EINSTELLUNG_BASIS); }
             catch (Exception ex) { Debug.WriteLine("[Wiki] Einstellwert nicht lesbar: " + ex.Message); }
 
-            if (string.IsNullOrWhiteSpace(wert)) wert = Program.WIKI_STANDARD;
+            if (string.IsNullOrWhiteSpace(wert)) wert = WIKI_STANDARD;
             return wert.Trim().TrimEnd('/');
         }
+
+        /// <summary>
+        /// Name des Einstellwerts mit der Basis-URL. Er heisst aus
+        /// Vertraeglichkeitsgruenden weiterhin <c>WordPressUrl</c> — eine Umbenennung
+        /// wuerde gespeicherte Anwenderwerte in der <c>user.config</c> verwerfen
+        /// (Entscheid 7.3 des Hilfekonzepts).
+        /// </summary>
+        public const string EINSTELLUNG_BASIS = "WordPressUrl";
+
+        /// <summary>
+        /// Not-Rueckfall fuer die Basis-URL der Wiki-Dokumentation, falls der
+        /// Einstellwert leer ist (A2). Derselbe Wert steht als Werksvorgabe in der
+        /// <c>app.config</c>; <c>Program.WIKI_STANDARD</c> ist seit iU5 nur noch die
+        /// Weiterleitung hierher.
+        /// </summary>
+        public const string WIKI_STANDARD = "https://wiki.epos-plan.de";
 
         // ==================================================================
         //  Stichwoerter (B1.1) - die Rohfrage verlaesst den Rechner NICHT

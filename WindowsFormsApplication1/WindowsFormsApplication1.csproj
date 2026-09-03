@@ -117,7 +117,6 @@
 
     <!-- Konfiguration / Settings -->
     <PackageReference Include="System.Configuration.ConfigurationManager" />
-    <PackageReference Include="System.Management" />
 
     <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
     <PackageReference Include="BouncyCastle.Cryptography" />

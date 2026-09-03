@@ -49,10 +49,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Not-Rückfall für die Basis-URL der Wiki-Dokumentation, falls der
-        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Derselbe Wert steht
-        /// als Werksvorgabe in der <c>app.config</c>.
+        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Seit iU5 nur noch eine
+        /// Weiterleitung auf <see cref="WikiWissen.WIKI_STANDARD"/>, damit Kern-Code
+        /// den Rückfall ohne <c>Program</c> erreicht.
         /// </summary>
-        public const string WIKI_STANDARD = "https://wiki.epos-plan.de";
+        public const string WIKI_STANDARD = WikiWissen.WIKI_STANDARD;
 
         // Der globale Katalog, auf den alle Formulare zugreifen können
         public static WikiHelpCatalog HelpCatalog { get; private set; }
@@ -65,8 +66,6 @@ namespace WindowsFormsApplication1
         /// braucht dafür noch eigenen Programmtext.
         /// </summary>
         public static HelpExtender HelpExtender { get; private set; }
-
-        private static Process _webServerProcess;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -235,7 +234,7 @@ namespace WindowsFormsApplication1
             // "WordPressUrl" — eine Umbenennung würde gespeicherte Anwenderwerte
             // in der user.config verwerfen (Entscheid 7.3 des Konzepts).
             // WIKI_STANDARD greift nur, wenn der Einstellwert leer ist.
-            string dokuBasis = Properties.Settings.Default.WordPressUrl;
+            string dokuBasis = Dienste.Einstellungen.Lies(WikiWissen.EINSTELLUNG_BASIS);
             if (string.IsNullOrWhiteSpace(dokuBasis)) dokuBasis = WIKI_STANDARD;
 
             HelpCatalog = new WikiHelpCatalog(dokuBasis);
@@ -252,10 +251,6 @@ namespace WindowsFormsApplication1
             // Ab hier ist help_mapping.txt die einzige Stelle, an der Hilfe
             // gepflegt wird.
             HelpExtender = HilfeAutomatik.Starten(HelpCatalog);
-
-            // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
-            // kein separates CMD Fensetr mit Aufruf nötig
-            //StartLocalWebServer();
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
@@ -706,42 +701,6 @@ namespace WindowsFormsApplication1
             public const string MoveDown = "⬇";   // \u2B07
             public const string Add = "➕";   // \u2795
             public const string Remove = "➖";   // \u2796
-        }
-
-        private static void StartLocalWebServer()
-        {
-            try
-            {
-                _webServerProcess = new Process();
-
-                // Da 'dotnet' ein globaler Systembefehl ist, können wir ihn direkt beim Namen nennen
-                _webServerProcess.StartInfo.FileName = "dotnet";
-
-                // Hier sagen wir dotnet-serve, welchen Ordner es auf welchem Port öffnen soll:
-                // "serve" = Tool aufrufen
-                // "-d C:\WPFake" = Dieses Verzeichnis ausliefern
-                // "-p 8080" = Port 8080 nutzen
-                _webServerProcess.StartInfo.Arguments = @"serve -d C:\WPFake -p 8080";
-
-                // WICHTIG: Macht das CMD-Fenster für den Benutzer unsichtbar
-                _webServerProcess.StartInfo.CreateNoWindow = true;
-                _webServerProcess.StartInfo.UseShellExecute = false;
-
-                _webServerProcess.Start();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Fehler beim Starten von dotnet-serve: " + ex.Message);
-            }
-        }
-
-        private static void StopLocalWebServer()
-        {
-            if (_webServerProcess != null && !_webServerProcess.HasExited)
-            {
-                _webServerProcess.Kill(); // Schließt dotnet-serve im Hintergrund wieder
-                _webServerProcess.Dispose();
-            }
         }
 
      }

@@ -43,48 +43,27 @@ namespace WindowsFormsApplication1
     {
         private const int STUNDEN_JAHR = 8760;
 
-        // Zuletzt verwendeter Export-Ordner wird in der Registry gemerkt
-        // (gleicher Schlüssel wie die Sprach-Einstellung der Anwendung).
-        private const string REG_SCHLUESSEL = @"Software\wp-plan";
-        private const string REG_WERT = "CsvExportPfad";
+        // Zuletzt verwendeter Export-Ordner wird gemerkt - unter Windows im selben
+        // Registry-Zweig wie die Sprach-Einstellung der Anwendung. Der Zweig steht seit
+        // iU5 im Adapter (RegistryEinstellungen), hier nur noch der Wertname.
+        private const string EINSTELLUNG_PFAD = "CsvExportPfad";
 
-        /// <summary>
-        /// Liest den zuletzt verwendeten Export-Ordner aus der Registry (HKCU\Software\wp-plan).
-        /// </summary>
+        /// <summary>Liest den zuletzt verwendeten Export-Ordner; <c>null</c>, wenn keiner gemerkt ist.</summary>
         private static string LetztenPfadLesen()
         {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL))
-                {
-                    return key != null ? key.GetValue(REG_WERT) as string : null;
-                }
-            }
-            catch
-            {
-                return null;
-            }
+            return Dienste.Einstellungen.Lies(EINSTELLUNG_PFAD, null);
         }
 
         /// <summary>
         /// Merkt sich den Ordner der gespeicherten Datei für den nächsten Export.
+        /// Fehler bleiben still: Pfad merken ist eine Bequemlichkeit, kein Auftrag.
         /// </summary>
         private static void PfadMerken(string dateiname)
         {
-            try
-            {
-                string ordner = Path.GetDirectoryName(dateiname);
-                if (string.IsNullOrEmpty(ordner)) return;
+            string ordner = Path.GetDirectoryName(dateiname);
+            if (string.IsNullOrEmpty(ordner)) return;
 
-                using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(REG_SCHLUESSEL))
-                {
-                    if (key != null) key.SetValue(REG_WERT, ordner);
-                }
-            }
-            catch
-            {
-                // Pfad merken ist optional - Fehler hier nicht an den Benutzer melden
-            }
+            Dienste.Einstellungen.Schreib(EINSTELLUNG_PFAD, ordner);
         }
 
         /// <summary>

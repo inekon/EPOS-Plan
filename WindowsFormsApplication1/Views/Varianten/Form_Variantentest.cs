@@ -69,7 +69,12 @@ namespace WindowsFormsApplication1
         // -------------------------------------------------------------- Laden
 
         // Registry-Ablage der zuletzt gewählten Stamm-Auswahl.
-        private const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
+        /// <summary>
+        /// Registry-Zweig der Variantenprobe. Die EINE Wahrheit: <c>UcBkUebersicht</c>
+        /// fuehrte bis iU5 eine wortgleiche zweite Konstante und verwies damit auf
+        /// denselben Zweig, ohne dass eine Umbenennung beide erwischt haette.
+        /// </summary>
+        public const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
         private const string RegWertStamm = "LetzterStammID";
 
         private void LadeProjekte()
