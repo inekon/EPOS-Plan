@@ -82,7 +82,7 @@ jobs:
       # Rauchtest reicht JIT ohne Linker; AOT gehoert zum Geraetebau (iU13).
       - name: Bauen (Simulator, ohne Signatur)
         run: >
-          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Debug
           -f net10.0-ios -r iossimulator-arm64
           -p:SeedDb=../${{ env.SEED }}
 
