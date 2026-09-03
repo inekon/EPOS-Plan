@@ -236,9 +236,9 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | Projekt | Art | TargetFramework(s) | Plattform | darf referenzieren | Status |
 |---|---|---|---|---|---|
 | `EPOS.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | **nichts** aus dem Bestand; nur plattformfreie Pakete | **vorhanden** — seit iU3 als 91 verlinkte Dateien, seit **iU4-5 mit 168 physisch verschobenen Dateien** |
-| `EPOS.Daten` | Klassenbibliothek | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU6) |
+| ~~`EPOS.Daten`~~ | — | — | — | — | **entfällt (iU6)** — `IDatenzugriff` und `SqliteDatenzugriff` liegen in `EPOS.Kern/Allgemein/`; ein eigenes Projekt hätte den Kern von seiner Zugriffsschicht getrennt, ohne dass ein zweiter Anbieter in Sicht ist |
 | `EPOS.UI` | Razor-Klassenbibliothek | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU8) |
-| `EPOS.Kern.Tests` | xUnit | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **vorhanden** (iU4-6) — 9 Tests, in `WP-Plan.Kern.slnf` |
+| `EPOS.Kern.Tests` | xUnit | `net10.0` | AnyCPU | `EPOS.Kern` | **vorhanden** (iU4-6) — **18 Tests** seit iU6-T4, in `WP-Plan.Kern.slnf` |
 | `EPOS.Referenzlauf` | Konsole | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **vorhanden** (iU3) — ersetzt `Referenzlauf` für den Kernbeweis |
 | `SpeicherEngine`, `KiKern` | Klassenbibliothek | `net10.0` | AnyCPU | nichts | **anheben** (iU1) |
 | `SpeicherEngine.Tests`, `KiKern.Tests` | xUnit | `net10.0` | AnyCPU | ihre Engine | **anheben** (iU1) |
@@ -545,10 +545,10 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 
 | Projekt | VS-MSBuild (Win) | `dotnet` (Win) | `dotnet` (macOS) | Xcode-Kette |
 |---|---|---|---|---|
-| `EPOS.Kern` — **168 Dateien** seit iU4-5; `dotnet build` 0 Fehler, 89 Warnungen (87 CA1416, 1 CS0108, 1 CA2255) | ✅ | ✅ | ✅ | – |
+| `EPOS.Kern` — **170 Dateien** (168 aus iU4-5 + `IDatenzugriff.cs`, `SqliteDatenzugriff.cs` aus iU6-T4); `dotnet build` 0 Fehler, **2 Warnungen** (1 CS0108, 1 CA2255) — **CA1416 seit iU6 bei 0**, kein `System.Data.OleDb` mehr | ✅ | ✅ | ✅ | – |
 | `EPOS.Daten` | ✅ | ✅ | ✅ | – |
 | `EPOS.UI` | ✅ | ✅ | ✅ | – |
-| `EPOS.Kern.Tests` — 9 Tests (iU4-6) | ✅ | ✅ **testet** | ✅ **testet** | – |
+| `EPOS.Kern.Tests` — **18 Tests** (9 aus iU4-6, 9 aus iU6-T4) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `EPOS.Referenzlauf` | ✅ | ✅ **läuft** | ✅ **läuft** | – |
 | `SpeicherEngine`, `KiKern` (+ Tests) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `WindowsFormsApplication1` | ✅ | ✅ *(nach Schritt 5)* | ❌ | – |
@@ -895,6 +895,70 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 
 ### iU6 — Datenzugriff plattformfrei · S–M · Windows
 
+> **Status 03.09.2026 — hier erreicht, Windows-Nachweis offen.** Sechs Commits
+> (`9cf6f86` iU6-T1 … `27bc634` iU6-T5) auf `origin/ios_migration` = `18f515f`.
+>
+> **Das Ergebnis in einem Satz: `EPOS.Kern` nennt `System.Data.OleDb` nicht mehr — weder
+> im Quelltext noch als `PackageReference` —, und `CA1416` ist von 87 auf 0 gefallen.**
+> Der Datenzugriff liegt hinter `IDatenzugriff`; `DataRepository` bleibt die Fassade
+> davor und ist für die rund 160 Aufruferdateien unverändert.
+>
+> | Tranche | Commit | Inhalt | CA1416 |
+> |---|---|---|---|
+> | iU6-T1 | `9cf6f86` | `RecordSet.DBCommand` **ersatzlos gestrichen** (iR8) | 87 → 78 |
+> | iU6-T2 | `5836b8c` | toter OleDb-Code in `SolarkollektorenCtrl`, `PufferSpCtrl`; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
+> | iU6-T3a | `99e5a68` | Masken-Sweep: `OleDbParameter` → `DbParam` in 46 Views | 0 |
+> | iU6-T3b | `7fb4bfd` | Brücke aus dem Kern; `System.Data.OleDb` aus `EPOS.Kern.csproj` | 0 |
+> | iU6-T4 | `64c06d7` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
+> | iU6-T5 | `27bc634` | `bundle_green` für iOS vorbereitet (greift erst mit Multi-Targeting) | 0 |
+>
+> **iR8 war eine Streichung, kein Umbau.** Die Vermessung fand repositoryweit **null**
+> Zugriffe auf `RecordSet.DBCommand` außerhalb von `RecordSet.cs`. Das Kommando wurde
+> seit iU3 nur noch lazy im Getter angelegt und blieb damit immer `null`; `MerkeSql()`
+> schrieb in ein Objekt, das es nie gab, `Parameter()` lieferte ausnahmslos `null`. Ein
+> Ersatztyp wäre eine Fassade für null Nutzer gewesen — und hätte den falschen Eindruck
+> erweckt, `RecordSet` trage Parameter. Es gibt deshalb **keinen `DbBefehl`**.
+>
+> **Dasselbe Bild in zwei Controllern.** `SolarkollektorenCtrl.Update()`,
+> `PufferSpCtrl.Delete(string)` und `PufferSpCtrl.Update()` füllten ein `DBCommand`, das
+> nie eine Verbindung bekam, und riefen darauf `ExecuteNonQuery()` — auf Windows also
+> eine `InvalidOperationException` im `catch` und ein stilles `return false`. Alle drei
+> hatten **0 Aufrufer** (erschöpfende Instanzlisten in den Commit-Bodys); geschrieben
+> wird über die OleDb-freien `*StammCtrl`. Zusammen waren das 71 der 87 Warnungen.
+>
+> **`EPOS.Daten` entsteht nicht.** Die Planung sah dafür ein eigenes Projekt vor. Der
+> Vertrag ist ein Interface und eine Klasse — ein drittes Projekt hätte den Kern von
+> seiner eigenen Zugriffsschicht getrennt, ohne dass ein zweiter Anbieter in Sicht wäre
+> (§ 1.5, Präzisierung zu iL2: es gibt **einen** Dialekt). `IDatenzugriff` und
+> `SqliteDatenzugriff` liegen daher in `EPOS.Kern/Allgemein/`.
+>
+> **Der Masken-Sweep kam vor die Streichung.** Umgekehrt wäre der Zwischenstand nicht
+> übersetzbar gewesen: Die Views hängen an genau dem impliziten Operator und an
+> `DbParam.Von()`, die T3b entfernt. Das Skript hat 434 `OleDbParameter`-Vorkommen
+> ersetzt, 54 `DbParam.Von(…)`-Klammern aufgelöst, 39 `OleDbType` auf `DbParamTyp`
+> gehoben, 36 Objektinitialisierer `{ Value = }` auf `{ Wert = }` gezogen und 38
+> `using System.Data.OleDb;` entfernt — 46 Dateien, keine von Hand.
+>
+> **Was Windows-seitig offen ist.** Der Referenzlauf deckt den Rechenpfad ab, nicht die
+> Bedienung. Offen sind deshalb: die **Erststart-Migration aus einem `.accdb`-Bestand**
+> (einziger verbliebener Nutzer der Brücke — `SchemaMigration` und `GeraeteWaisen` binden
+> über `DbParamOleDb.Nach`, den Schemamarker liest und schreibt `SchemaVersionAccess`);
+> die **Solar- und Pufferspeicher-Dialoge**, die sich „unverändert" verhalten müssen; die
+> **36 Views mit `RecordSet`** (FormMain 13, Form_Start 10, Form_PV 6, Form_Gebäude 6,
+> Form_WP 4, dazu `Form_DBBHKW.cs:436/450` mit den `DbVorgang`-Überladungen); und die
+> Sweep-Dateien mit den meisten Stellen — `Form_Kosten.cs` (83), `ucFuelSettings.cs`
+> (80), `Form_BHKWEing.cs` (50), `Form_Heizkessel.cs` (46),
+> `Form_Heizkessel_einlesen.cs` (20). Die Liste ist je Commit abhakbar in
+> [`Umsetzung_iU0_iU1_Nachweise.md`](Umsetzung_iU0_iU1_Nachweise.md).
+>
+> **Nachweis hier:** `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → 0 Fehler,
+> **36 Warnungen** (vorher 123; die 87 CA1416 sind weg). `EPOS.Kern` allein: 0 Fehler,
+> **2 Warnungen** (CA2255, CS0108 — beide aus dem Bestand). `dotnet test
+> WP-Plan.Kern.slnf` → **805** (796 + 9 neue). Referenzlauf **1030, 1007, 1017** gegen
+> `2026-08-30_B3-Kaskade`: **GESAMT PASS (815.043 Werte), alle drei byte-gleich** — nach
+> **jeder** Tranche. `Proben/ZugriffsschichtProben` übersetzt fehlerfrei.
+> `dotnet list EPOS.Kern package | grep -c OleDb` → **0**.
+
 **Voraussetzung:** iU4. **Block B1.** Der Umfang ist gegenüber Rev. 1 stark geschrumpft, weil
 `6486c36` das Meiste bereits erledigt hat.
 
@@ -1070,7 +1134,7 @@ dem Go/No-Go-Gate.
 | iU3 | **S0** | erledigt — die SQLite-Datenbasis steht bereits zur Verfügung |
 | iU4 | **S1**, A1, M10 | — |
 | iU5 | A2, A3, A4, M4 | — |
-| iU6 | B1 | **S4a–S8 erledigt**; `DbVorgang`, `PRAGMA`-Schemaauskunft und Dialekt-Sweep liegen vor |
+| iU6 | B1 | **S4a–S8 erledigt**; `DbVorgang`, `PRAGMA`-Schemaauskunft und Dialekt-Sweep lagen vor. **Selbst erledigt 03.09.2026** (`9cf6f86`…`27bc634`) |
 | iU7 | D1, D2, M5 | — |
 | iU8 | A5, A6, A7, M1, M2, M6, M9 | — |
 | iU9 | Block C: K1–K6 | — |
@@ -1124,7 +1188,7 @@ Sichtabnahme der Masken. Beides bleibt Handarbeit.
 | **iR5** | **Parallelentwicklung.** Der Fachausbau läuft weiter; jede Etappe, die während iU4–iU9 in die WinForms-App fließt, ist Arbeit, die später wandern muss | Der Umbau holt den Bestand nie ein | Modell-C-Stichtag (iZ5) so früh wie möglich; ab dann fließt Neues in `EPOS.UI` statt in WinForms |
 | **iR6** | **Kein Testdatenbestand in der CI.** `.gitignore` schließt `*.accdb` aus; ohne Datenbank ist die Kern-CI nur ein Kompilierungstest | Der Wertgleichheitsnachweis läuft nicht automatisch, sondern nur von Hand | Anonymisierte `Kenndaten_Test.sqlite` versionieren (iE6, iF14) |
 | **iR7** | **Provisionsfrage beim Lizenzverkauf.** Ob Apple bei einer B2B-Fachanwendung In-App-Kauf verlangt, entscheidet über 15–30 % je Lizenz | Geschäftsmodell | Vor iU13 klären (iF12); Custom Apps über Apple Business Manager entschärfen die Frage |
-| **iR8** | **`RecordSet` bleibt an OleDb gebunden — bestätigt.** Die Umstellung hat die öffentliche Fläche ausdrücklich „Zeichen für Zeichen" erhalten; `DBCommand` ist weiterhin `public OleDbCommand` (`RecordSet.cs:49`) und wird intern mit `new OleDbCommand()` befüllt | Für Windows folgenlos, **für iOS ein harter Blocker** bei 47 echten Nutzern | In iU6 als eigener Posten: Property auf einen eigenen Typ heben **oder** `RecordSet` in iU9 mit seinen Masken ablösen |
+| ~~**iR8**~~ | ~~**`RecordSet` bleibt an OleDb gebunden.**~~ **Erledigt 03.09.2026 mit iU6-T1 (`9cf6f86`) — als STREICHUNG, nicht als Umbau.** Befund der Vermessung: repositoryweit **0 externe Nutzer** von `RecordSet.DBCommand`; das Kommando entstand seit iU3 nur lazy im Getter und blieb damit immer `null` — die 47 „Nutzer" hingen an `Open`, `Next`, `Read` und `Close`, nie am Kommando | entfallen | `DBCommand`, `_cmd`, `MerkeSql()` und `Parameter()` ersatzlos gestrichen; **kein Ersatztyp** (Begründung im Kopfkommentar von `RecordSet.cs`). `IDisposable` bleibt |
 | **iR9** | **Nur ein Rechner, nur ein Mensch.** Tags, Referenzbasen und die einzige Buildumgebung hängen heute an einem Arbeitsplatz (`letzter-x86-stand` ist bis heute nicht gepusht) | Ausfallrisiko für das gesamte Vorhaben | Die CI ist zugleich die Antwort darauf: Sie macht den Build reproduzierbar und vom Einzelrechner unabhängig |
 | **iR10** | **`Form_Simulation_Detail`** wächst schneller als die Umstellung (6.200 → 7.773 Zeilen in vier Monaten) | Das größte Einzelstück wird nie fertig konvertiert | In iU9 nicht konvertieren, sondern zerlegen — und dafür einen eigenen Termin setzen, bevor es weiter wächst |
 
@@ -1153,7 +1217,7 @@ setzen sie voraus:**
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| **iF10** | **Bekommt `IDatenzugriff` einen providerneutralen Parametertyp** (`DbParam`), während `DataRepository` seine OleDb-Fläche als Windows-Adapter behält — Weg (b) aus § 1.4? Oder werden die ~2.300 `OleDbParameter`-Aufrufe in einem Zug maschinell ersetzt (Weg a)? | **Weg (b).** Er kostet fast nichts, lässt den Altbestand unangetastet und macht den Kern trotzdem iOS-fähig. Weg (a) ist seit `6486c36` deutlich billiger als zuvor (`DataRepository` ist innen sauber) und bleibt als spätere Aufräumoption offen — als Vorbedingung für iOS ist er nicht nötig |
+| **iF10** | **Bekommt `IDatenzugriff` einen providerneutralen Parametertyp** (`DbParam`), während `DataRepository` seine OleDb-Fläche als Windows-Adapter behält — Weg (b) aus § 1.4? Oder werden die ~2.300 `OleDbParameter`-Aufrufe in einem Zug maschinell ersetzt (Weg a)? | **Weg (b) — mit iU6 ausgeführt (03.09.2026).** `IDatenzugriff` und `SqliteDatenzugriff` stehen, `DataRepository` ist die unveränderte Fassade davor. **Weg (a) hat sich dabei nebenbei erledigt:** Der Masken-Sweep iU6-T3a hat die 434 `OleDbParameter`-Stellen der Views maschinell auf `DbParam` gezogen — die OleDb-Fläche ist damit nicht nur umgangen, sondern weg. Übrig ist allein der eingefrorene Access-Zweig der Erststart-Migration |
 | **iF11** | Mac-Hardware sofort beschaffen — oder iU3 auf einem `macos-latest`-CI-Runner fahren und den Mac erst mit iU10 kaufen? | **CI-Runner für den Spike.** Verschiebt eine vierstellige Investition hinter das Go/No-Go-Gate, ohne den Beweis zu schwächen |
 | **iF12** | Vertriebsweg für die Auslieferung: Custom Apps über Apple Business Manager, Unlisted App oder öffentlicher App Store — und wie wird der Lizenzverkauf gegenüber Apples Kaufregeln behandelt? | **Custom Apps** prüfen: passt zum B2B-Kundenkreis und entschärft die Provisionsfrage. Klärung **vor** iU13, nicht im Review |
 | **iF13** | Wird der Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenannt? | **Nein** — der Umzug bleibt lesbar; die Umbenennung ist ein eigener mechanischer Schritt danach |

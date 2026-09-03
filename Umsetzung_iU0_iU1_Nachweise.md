@@ -1,6 +1,6 @@
-# Nachweisliste iU0 / iU1 / iU4 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 / iU6 — Abnahme auf Windows
 
-**Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`**
+**Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`, iU6: `9cf6f86`..`27bc634`**
 
 Die Pakete iU0 und iU1 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md)
 (§ 4, Rev. 2.1) sind umgesetzt. **Alle Nachweise wurden auf Linux geführt** — SDK 10.0.400, kein
@@ -337,6 +337,148 @@ Auch hier halbieren. Die Reihenfolge der Verdächtigen ist eine andere als bei i
   Datenbestand nach dem Löschen eines Projekts schon.
 - **`0ae589f` (iU4-3)** betrifft ausschließlich den Assistenten und zwei Auswahllisten.
 - `4a0a4e2`, `09cd975` und `616dff4` können ein Rechenergebnis nicht bewegen.
+
+---
+
+## Nachweise iU6 — Datenzugriff plattformfrei
+
+**Stand 03.09.2026 · Branch `ios_migration` · `9cf6f86`..`27bc634` auf Basis `18f515f`.**
+
+Alle Nachweise auf Linux geführt (SDK 10.0.400, kein Visual Studio). Nach **jeder** der sechs
+Tranchen wurden gefahren: Build (`WP-Plan.sln`, Release, x64, `--no-incremental`), Kern-Build
+allein mit CA1416-Zählung, Tests (`WP-Plan.Kern.slnf`), Referenzlauf **1030/1007/1017** gegen
+`Referenzlaeufe/2026-08-30_B3-Kaskade` und die Übersetzung von
+`Proben/ZugriffsschichtProben`. Durchgehend **0 Fehler**, **GESAMT PASS** und **byte-gleich**.
+
+| Tranche | Warnungen Lösung | Warnungen `EPOS.Kern` | CA1416 | Tests |
+|---|---|---|---|---|
+| Basis `18f515f` | 123 | 89 | 87 | 796 |
+| iU6-T1 `9cf6f86` | 114 | 80 | 78 | 796 |
+| iU6-T2 `5836b8c` | 36 | 2 | **0** | 796 |
+| iU6-T3a `99e5a68` | 36 | 2 | 0 | 796 |
+| iU6-T3b `7fb4bfd` | 36 | 2 | 0 | 796 |
+| iU6-T4 `64c06d7` | 36 | 2 | 0 | **805** |
+| iU6-T5 `27bc634` | 36 | 2 | 0 | 805 |
+
+Die zwei verbleibenden Kern-Warnungen stammen aus dem Bestand: CA2255
+(`SimulationControl.Stromspeicher.cs:24`, `ModuleInitializer`) und CS0108
+(`WErzeugerModel.cs:6`).
+
+Ein Hinweis zum `diff -rq`: Das Laufwerkzeug legt im Zielordner ein `protokoll.txt` an, das der
+eingefrorene Referenzstand nicht enthält. Das ist der einzige gemeldete Unterschied; alle
+Ergebnisdateien sind byte-gleich.
+
+### `9cf6f86` — iU6-T1: `RecordSet.DBCommand` ersatzlos gestrichen (iR8)
+
+**Nachweis hier:** 114 Warnungen, CA1416 87 → 78, 796 Tests, 1030/1007/1017 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] `FormMain` — die 13 `RecordSet`-Stellen: Anlagenlisten aller Register füllen sich wie bisher
+- [ ] `Form_Start` (10 Stellen) — Projektliste, Öffnen, Löschen
+- [ ] `Form_PV` (6), `Form_Gebäude` (6), `Form_WP` (4) — Listen und Auswahlfelder
+- [ ] `Form_DBBHKW` — Speichern eines Katalogeintrags: `Form_DBBHKW.cs:436` und `:450` sind die
+      **einzigen** Nutzer der `DbVorgang`-Überladungen `Open(sql, vorgang)` / `Insert(sql, vorgang)`;
+      ein Abbruch mitten im Speichern muss weiterhin vollständig zurückrollen
+
+### `5836b8c` — iU6-T2: toter OleDb-Code in drei Kern-Controllern
+
+**Nachweis hier:** 36 Warnungen (Lösung) bzw. 2 (Kern), **CA1416 = 0**, 796 Tests,
+1030/1007/1017 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] Solarthermie-Katalog: `Form_SolarKollektoren` (Übernahme ins Projekt, Löschen aus dem
+      Projekt, Löschen im Katalog) und `Form_SolarKollektorenAdmin` — Verhalten **unverändert**;
+      geschrieben wird über `SolarkollektorenStammCtrl`
+- [ ] Pufferspeicher-Katalog: `Form_PufferSp` und `Form_PufferSp_Admin` — dasselbe über
+      `PufferSpStammCtrl`
+- [ ] `FormMain` Register Solarthermie und Pufferspeicher (`FormMain.cs:1204/1237`) — Listen
+      unverändert
+- [ ] **Erststart-Migration eines vorhandenen `.accdb`-Bestands** bis Zielstand 61: Der
+      Schemamarker wird jetzt über `SchemaVersionAccess` (neue App-Datei) gelesen und je Schritt
+      fortgeschrieben. Der Lauf muss dieselbe Schrittfolge und dasselbe Protokoll liefern wie vorher
+
+### `99e5a68` — iU6-T3a: Masken-Sweep `OleDbParameter` → `DbParam` (46 Views)
+
+**Nachweis hier:** 36 Warnungen, CA1416 = 0, 796 Tests, byte-gleich. BOM- und
+Zeilenenden-Zustand der 281 View-Dateien vor und nach dem Lauf identisch (237 mit BOM, 44 ohne,
+0 mit CRLF).
+
+**Nachweis Windows** — der Sweep berührt reine Bedienpfade, die der Referenzlauf nicht fährt.
+Nach Dichte der Änderungen:
+
+- [ ] `Form_Kosten.cs` (83 Stellen) — Kostenpositionen anlegen, ändern, löschen; Energieträger
+- [ ] `ucFuelSettings.cs` (80) — Brennstoffeinstellungen und **Preishistorie** (dort stehen die
+      Stellen mit ausdrücklichem `DbParamTyp.Date`)
+- [ ] `Form_BHKWEing.cs` (50) — Katalogeintrag anlegen und speichern
+- [ ] `Form_Heizkessel.cs` (46) und `Form_Heizkessel_einlesen.cs` (20) — Katalog und Import
+- [ ] `Form_EingGebTyp` — Gebäudetyp anlegen: die dichteste Stelle mit typisierten Parametern
+      (`Boolean`, `Double`, `Integer`, `VarWChar`) und NULL-fähigen Spalten
+- [ ] Stichprobe über die übrigen Masken: Speichern, Anlegen, Löschen, Katalogimport
+
+### `7fb4bfd` — iU6-T3b: Brücke aus dem Kern, OleDb-Paket raus
+
+**Nachweis hier:** `dotnet list EPOS.Kern package | grep -c OleDb` → **0**; im Kern kein `using`,
+kein Typ, keine `PackageReference` mehr. 36 Warnungen, CA1416 = 0, 796 Tests, byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] **Erststart-Migration aus `.accdb`** — der einzige verbliebene Nutzer der Brücke:
+      `SchemaMigration.NonQuery/Skalar/Abfrage` und `GeraeteWaisen.Ids` binden ihre `DbParam`
+      jetzt über `DbParamOleDb.Nach`. Besonders die Schritte mit ausdrücklichem Typ und
+      Feldlänge (dreiargumentiger `OleDbParameter`-Konstruktor)
+- [ ] Aufräumlauf „Gerätewaisen" nach dem Löschen eines Projekts — beide Wege: der reguläre über
+      die Zugriffsschicht **und** der aus der Migration hereingereichte über eine offene
+      `OleDbConnection`
+
+### `64c06d7` — iU6-T4: `IDatenzugriff`, `SqliteDatenzugriff`, Fassade
+
+**Nachweis hier:** `dotnet test WP-Plan.Kern.slnf` → **805** (796 + 9 neue in
+`EPOS.Kern.Tests/DatenzugriffTests.cs`). `git diff --stat` der Tranche zeigt genau vier Dateien:
+`DataRepository.cs` und die drei neuen — **keine** der rund 160 Aufruferdateien wurde angefasst.
+Referenzlauf byte-gleich; damit ist zugleich belegt, dass `PfadUeberschreibung` weiterhin alles
+schlägt (der Lauf arbeitet ausschließlich über diesen Haken).
+
+**Nachweis Windows:**
+
+- [ ] Ein voller Bediendurchlauf: Projekt öffnen, Anlagen anlegen/ändern/löschen, Simulation,
+      Bericht. Jeder Datenbankzugriff läuft jetzt durch eine Weiterleitung — fällt etwas aus,
+      fällt es sofort auf
+- [ ] Ein **provozierter Datenbankfehler in der Bedienung** muss die MessageBox wie bisher zeigen,
+      derselbe Fehler **im Simulationslauf** sie wie bisher unterdrücken und in der Sammelliste
+      landen (Engine-Modus)
+- [ ] Der Diagnosezusatz „Abfrage: …" hängt weiterhin an den Meldungen von `GetDataTable` und
+      `ExecuteScalar`
+- [ ] `Form_AdminSettings`: ein geänderter Datenbankordner greift weiterhin (`GetDBPath`
+      unverändert übernommen)
+- [ ] Test-Explorer in VS 2026: dieselben 805 grün
+
+### `27bc634` — iU6-T5: `bundle_green` vorbereitet
+
+**Nachweis hier:** `dotnet list EPOS.Kern package` zeigt unverändert nur
+`Microsoft.Data.Sqlite 10.0.11` und `System.Configuration.ConfigurationManager 10.0.11` — die
+Bedingung `-ios`/`-maccatalyst` ist auf `net10.0` falsch. Build und Tests unverändert.
+
+**Nachweis Windows:**
+
+- [ ] nur Restore und Build der Anwendung; fachlich ändert sich nichts. Der eigentliche Nachweis
+      (bundle_green lädt, `Batteries_V2.Init()` greift) gehört zu iU10
+
+### Wenn der Referenzlauf auf Windows abweicht
+
+Auch hier halbieren. Die Reihenfolge der Verdächtigen:
+
+- **`64c06d7` (iU6-T4)** ist der einzige Commit, der den Rechenpfad anfasst — jeder
+  Datenbankzugriff geht seitdem durch eine Weiterleitung. Sollte per Konstruktion nichts bewegen
+  (die Rümpfe sind wörtlich verschoben); wenn doch, dann in `NormalisiereWert`,
+  `UebersetzeParameterzeichen` oder im Typ-Rückweg `LadeTabelle`.
+- **`5836b8c` (iU6-T2)** kann ein Rechenergebnis nicht bewegen, wohl aber den **Datenbestand**
+  nach einer Erststart-Migration (`SchemaVersionAccess`).
+- **`99e5a68` (iU6-T3a)** betrifft ausschließlich Bedienpfade; ein Referenzlauf kann davon nicht
+  abweichen, eine gespeicherte Eingabe schon.
+- `9cf6f86`, `7fb4bfd` und `27bc634` können ein Rechenergebnis nicht bewegen — gestrichener toter
+  Code, verschobene Brücke, eine unwirksame Paketzeile.
 
 ---
 
