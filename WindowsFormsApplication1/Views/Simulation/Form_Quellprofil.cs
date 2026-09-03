@@ -172,27 +172,15 @@ namespace WindowsFormsApplication1
         /// Rückgabeweg bleibt für die Diagrammvorschau bestehen; geschrieben wird die
         /// Spalte vom Aufrufer nicht mehr.</para>
         /// </summary>
+        /// <remarks>
+        /// iU9-W10a.0b (Befund W10-B21): Der Parser und sein Gegenstueck stehen jetzt in
+        /// QuellprofilCtrl (MonatswerteParsen/MonatswerteText); hier bleibt die
+        /// Eigenschaft als Uebergabefeld des Aufrufers.
+        /// </remarks>
         public string Monatswerte
         {
-            get
-            {
-                string[] werte = new string[12];
-                for (int m = 0; m < 12; m++)
-                    werte[m] = _monat[m].ToString(CultureInfo.InvariantCulture);
-                return string.Join(";", werte);
-            }
-            set
-            {
-                for (int m = 0; m < 12; m++) _monat[m] = VORGABE_MONATSWERT; // Vorgabe
-                if (string.IsNullOrEmpty(value)) return;
-
-                string[] teile = value.Split(';');
-                for (int m = 0; m < 12 && m < teile.Length; m++)
-                {
-                    float w;
-                    if (WaermequelleClass.ZahlParsen(teile[m], out w)) _monat[m] = w;
-                }
-            }
+            get { return QuellprofilCtrl.MonatswerteText(_monat); }
+            set { _monat = QuellprofilCtrl.MonatswerteParsen(value); }
         }
 
         /// <summary>
@@ -214,20 +202,15 @@ namespace WindowsFormsApplication1
             }
             set
             {
+                // iU9-W10a.0b (Befund W10-B21): Der Parser steht jetzt in
+                // QuellprofilCtrl.WochenwerteParsen; null heisst dort wie hier
+                // "kein Wochengang" (alle Werte 0 zaehlen nicht).
                 Array.Clear(_woche, 0, _woche.Length); // Vorgabe: keine Abweichung
-                _wochengangVorhanden = false;
-                if (string.IsNullOrEmpty(value)) return;
+                double[] gelesen = QuellprofilCtrl.WochenwerteParsen(value);
+                _wochengangVorhanden = gelesen != null;
+                if (gelesen == null) return;
 
-                string[] teile = value.Split(';');
-                for (int i = 0; i < 168 && i < teile.Length; i++)
-                {
-                    float w;
-                    if (WaermequelleClass.ZahlParsen(teile[i], out w))
-                    {
-                        _woche[i / 24, i % 24] = w;
-                        if (w != 0) _wochengangVorhanden = true;
-                    }
-                }
+                for (int i = 0; i < 168; i++) _woche[i / 24, i % 24] = gelesen[i];
             }
         }
 

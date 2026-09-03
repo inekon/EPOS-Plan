@@ -879,8 +879,9 @@ namespace WindowsFormsApplication1
             VDI4640Pruefung.Ergebnis erg;
             if (_rbSonde.Checked)
             {
-                double meter = laenge * Math.Max(1, anzahl);
-                double stunden = VolllastStunden > 0 ? VolllastStunden : VDI4640Pruefung.VolllaststundenZone(AktuelleZone());
+                // iU9-W10a.0b: Sondenmeterzahl und Stundenwahl stehen im Kern.
+                double meter = VDI4640Pruefung.Sondenmeter(laenge, anzahl);
+                double stunden = VDI4640Pruefung.Volllaststunden(VolllastStunden, AktuelleZone());
                 erg = VDI4640Pruefung.PruefeSonde(
                     ErdreichTemperatur.Bodentyp(bodenSchluessel).Lambda,
                     (int)Math.Max(1, anzahl), stunden, meter, MaxEntzugW, bodenSchluessel);
@@ -1144,47 +1145,24 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Übernimmt die Ergebnisgrößen eines Laufs in die Felder der Auslegungsprüfung.
         ///
-        /// Die Zuordnung ist Zeile für Zeile dieselbe, die der Aufrufer beim Öffnen des
-        /// Dialogs vornimmt (Form_Simulation_Config.Uebersicht.cs, Zweig TYP_ERDREICH,
-        /// Block „Ergebnisanbindung der Auslegungsprüfung"). Sie steht hier absichtlich
-        /// noch einmal und nicht als gemeinsame Hilfsmethode: Die gemeinsame Methode
-        /// gehörte in den Aufrufer oder in ErdreichAuswertung, und beide Wege hätten
-        /// Dateien angefasst, die für diesen Befund gesperrt waren. Ändert sich die
-        /// Zuordnung, sind beide Stellen zu pflegen - deshalb dieser Hinweis.
+        /// <para><b>iU9‑W10a.0b (Befund W10‑B8).</b> Die Zuordnung stand hier Zeile für
+        /// Zeile ein zweites Mal — der Aufrufer machte beim Öffnen des Dialogs dasselbe
+        /// (<c>Form_Simulation_Config.Uebersicht</c>, Zweig TYP_ERDREICH). Der Quelltext
+        /// vermerkte die Doppelung und nannte <c>ErdreichAuswertung</c> als richtigen Ort;
+        /// dort steht sie jetzt als <c>ErgebnisZuordnen</c>, und beide Stellen rufen
+        /// sie.</para>
         /// </summary>
         private void ErgebnisUebernehmen(ErdreichAuswertung.AnlageErgebnis erg)
         {
-            ErgebnisseVorhanden = erg.MaxEntzugBelastbar;
-            MaxEntzugW = erg.MaxEntzugW;
-            JahresentzugKWh = erg.JahresentzugKWh;
-            VolllastStunden = erg.VolllastStunden;
+            ErdreichAuswertung.ErdreichLaufErgebnis e = ErdreichAuswertung.ErgebnisZuordnen(erg);
 
-            HinweisErgebnis = "";
-            HinweisVorbehalt = "";
-            HinweisFrost = "";
-
-            if (erg.Unwirksam)
-            {
-                // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
-                HinweisErgebnis = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS.Replace("\n", Environment.NewLine),
-                    erg.Grenze);
-                return;
-            }
-
-            if (!erg.MaxEntzugBelastbar)
-            {
-                HinweisErgebnis = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG.Replace("\n", Environment.NewLine),
-                    erg.Grenze);
-                return;
-            }
-
-            if (erg.MaxEntzugGeschaetzt) HinweisVorbehalt = erg.Grenze;
-            if (erg.InklSpeicherladung)
-                HinweisVorbehalt = (HinweisVorbehalt.Length > 0 ? HinweisVorbehalt + " " : "") +
-                                   MyResource.Resource.SIMQ_ERDREICH_SPEICHERLADUNG;
-            if (erg.FrostWarnung) HinweisFrost = erg.Frosttext();
+            ErgebnisseVorhanden = e.ErgebnisseVorhanden;
+            MaxEntzugW = e.MaxEntzugW;
+            JahresentzugKWh = e.JahresentzugKWh;
+            VolllastStunden = e.VolllastStunden;
+            HinweisErgebnis = e.HinweisErgebnis;
+            HinweisVorbehalt = e.HinweisVorbehalt;
+            HinweisFrost = e.HinweisFrost;
         }
 
         // ------------------------------------------------------------------

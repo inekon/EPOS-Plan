@@ -880,7 +880,8 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            double kapazitaet = p.Gesamtvolumen * 1.16 * spreizung / 1000.0;
+            // iU9-W10a.0b (Befund W10-B12): die Formel steht im Kern, nicht mehr hier.
+            double kapazitaet = ProjektPuffer.NutzbareKapazitaetKWh(p.Gesamtvolumen, spreizung);
             _lblKapazitaet.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_KAPAZITAET,
                 kapazitaet.ToString("F1"));
         }

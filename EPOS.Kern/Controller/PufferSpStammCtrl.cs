@@ -240,6 +240,62 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
         public sealed record KatalogZeile(int Id, string Bezeichner);
 
+        // =================================================================================
+        // W10a.0b - die Katalogliste des PROJEKTdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste des Projektdialogs — die sieben Felder, die
+        /// <c>Form_PufferSp_Projekt</c> aus dem Auslieferungskatalog uebernimmt.
+        /// </summary>
+        /// <param name="Id">Primaerschluessel im Katalog.</param>
+        /// <param name="Bezeichner">Der Name, den die Klappliste zeigt.</param>
+        /// <param name="Hersteller">Uebernahmefeld beim Speichern.</param>
+        /// <param name="Speichertyp">Uebernahmefeld beim Speichern (leer = Bestand behalten).</param>
+        /// <param name="Gesamtvolumen">Liter — fuellt das Volumenfeld.</param>
+        /// <param name="Bereitschaftsverluste">kWh/24h — fuellt das Verlustfeld.</param>
+        /// <param name="Investitionskosten">Uebernahmefeld beim Speichern.</param>
+        public sealed record Katalogzeile(int Id, string Bezeichner, string Hersteller,
+                                          string Speichertyp, int Gesamtvolumen,
+                                          double Bereitschaftsverluste, double Investitionskosten);
+
+        /// <summary>
+        /// Der vollstaendige Auslieferungskatalog fuer den PROJEKTdialog, nach Bezeichner
+        /// sortiert.
+        ///
+        /// <para><b>iU9‑W10a.0b (Befund W10‑B27).</b> Die Abfrage stand als inline-SQL in
+        /// <c>Form_PufferSp_Projekt.KatalogLaden</c> :1139-1141 — in einer MASKE, wo der
+        /// SQL-Dialektpruefer sie zwar findet, aber niemand sie wiederverwenden kann. Der
+        /// Wortlaut ist unveraendert uebernommen, einschliesslich der Sortierung.</para>
+        ///
+        /// <para><b>Warum nicht <see cref="Filtern"/>.</b> Jene Methode liefert Id und
+        /// Bezeichner fuer die gefilterte KATALOGverwaltung; der Projektdialog filtert
+        /// nicht, uebernimmt dafuer aber fuenf weitere Felder in seine Eingabefelder.
+        /// Zwei Fragen, zwei Abfragen.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogzeile> Katalogzeilen()
+        {
+            var liste = new List<Katalogzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, Bereitschaftsverluste, " +
+                "Investitionskosten FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                liste.Add(new Katalogzeile(
+                    StilleDb.Zahl(StilleDb.Feld(r, "ID")),
+                    StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                    StilleDb.Text(StilleDb.Feld(r, "Hersteller")),
+                    StilleDb.Text(StilleDb.Feld(r, "Speichertyp")),
+                    StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen")),
+                    StilleDb.Kommazahl(StilleDb.Feld(r, "Bereitschaftsverluste")),
+                    StilleDb.Kommazahl(StilleDb.Feld(r, "Investitionskosten"))));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// SQL-Praedikat je Volumenstufe, Index 0 = „Alle".
         /// </summary>

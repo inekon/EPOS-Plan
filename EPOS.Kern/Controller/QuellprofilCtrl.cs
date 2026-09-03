@@ -80,6 +80,91 @@ namespace WindowsFormsApplication1
         private static readonly int[] TAGE_PRO_MONAT = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
         // =====================================================================
+        // W10a.0b - die beiden ALTWEG-Serialisierungen
+        // =====================================================================
+
+        /// <summary>
+        /// Vorbelegung eines Monatswerts, wenn der Altweg keinen liefert — 10 °C, der
+        /// Wert, mit dem <c>Form_Quellprofil</c> seine zwölf Felder füllte.
+        /// </summary>
+        public const double VORGABE_MONATSWERT = 10.0;
+
+        /// <summary>
+        /// Zerlegt die Altspalte <c>WQ_Monatswerte</c> („t1;…;t12") in zwölf Zahlen.
+        ///
+        /// <para><b>iU9‑W10a.0b (Befund W10‑B21).</b> Der Parser stand als Setter einer
+        /// EIGENSCHAFT in <c>Form_Quellprofil</c> :175-196 — im Formular, also für jede
+        /// andere Seite unerreichbar, und vom WinForms-Analysator obendrein als WFO1000
+        /// angemahnt. Die Regeln sind wörtlich übernommen: Vor dem Lesen stehen alle zwölf
+        /// Felder auf der Vorgabe; ein leerer Text lässt es dabei; überzählige Felder
+        /// werden ignoriert, fehlende bleiben auf der Vorgabe, und ein unlesbares Feld
+        /// überschreibt seine Vorgabe NICHT.</para>
+        /// </summary>
+        /// <returns>Immer zwölf Werte; <c>null</c> gibt es nicht, nur die Vorgabe.</returns>
+        public static double[] MonatswerteParsen(string text)
+        {
+            double[] werte = new double[12];
+            for (int m = 0; m < 12; m++) werte[m] = VORGABE_MONATSWERT;
+            if (string.IsNullOrEmpty(text)) return werte;
+
+            string[] teile = text.Split(';');
+            for (int m = 0; m < 12 && m < teile.Length; m++)
+            {
+                float w;
+                if (WaermequelleClass.ZahlParsen(teile[m], out w)) werte[m] = w;
+            }
+            return werte;
+        }
+
+        /// <summary>
+        /// Die Gegenrichtung zu <see cref="MonatswerteParsen"/>: zwölf Zahlen als
+        /// „t1;…;t12" in INVARIANTER Schreibweise — die Spalte ist Persistenz, kein
+        /// Anzeigetext (Drei-Schichten-Regel).
+        /// </summary>
+        public static string MonatswerteText(double[] werte)
+        {
+            string[] teile = new string[12];
+            for (int m = 0; m < 12; m++)
+            {
+                double w = (werte != null && m < werte.Length) ? werte[m] : VORGABE_MONATSWERT;
+                teile[m] = w.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+            return string.Join(";", teile);
+        }
+
+        /// <summary>
+        /// Zerlegt die Altspalte <c>WQ_Wochenwerte</c> (168 Werte, Montag 0 Uhr bis
+        /// Sonntag 23 Uhr) in ein Feld von 168 Zahlen.
+        ///
+        /// <para><b>Der Rückgabewert unterscheidet zwei Fälle.</b> <c>null</c> heißt „kein
+        /// Wochengang" — genau das, was <c>Form_Quellprofil</c> als
+        /// <c>_wochengangVorhanden = false</c> führte und woran der Altweg-Reiter hängt.
+        /// Ein Wochengang gilt als vorhanden, sobald mindestens EIN Wert ungleich 0
+        /// gelesen wurde; lauter Nullen sind „keine Abweichung" und damit kein
+        /// Wochengang.</para>
+        /// </summary>
+        /// <returns>168 Werte, oder <c>null</c>, wenn kein Wochengang gepflegt ist.</returns>
+        public static double[] WochenwerteParsen(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return null;
+
+            double[] werte = new double[168];
+            bool vorhanden = false;
+
+            string[] teile = text.Split(';');
+            for (int i = 0; i < 168 && i < teile.Length; i++)
+            {
+                float w;
+                if (WaermequelleClass.ZahlParsen(teile[i], out w))
+                {
+                    werte[i] = w;
+                    if (w != 0) vorhanden = true;
+                }
+            }
+            return vorhanden ? werte : null;
+        }
+
+        // =====================================================================
         // Lesen
         // =====================================================================
 

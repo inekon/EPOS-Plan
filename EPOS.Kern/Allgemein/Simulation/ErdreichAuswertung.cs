@@ -224,6 +224,99 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        // =================================================================================
+        // W10a.0b - was der Erdreich-Dialog von einem Lauf braucht
+        // =================================================================================
+
+        /// <summary>
+        /// Die sieben Größen, mit denen die Auslegungsprüfung des Erdreich-Dialogs
+        /// arbeitet — das Ergebnis eines Laufs, übersetzt in die Sprache der Anzeige.
+        /// </summary>
+        /// <param name="Vorhanden">
+        /// Es gibt überhaupt ein Ergebnis für diese Anlage. <c>false</c> heißt „noch kein
+        /// Simulationslauf"; die übrigen Felder sind dann bedeutungslos.
+        /// </param>
+        /// <param name="ErgebnisseVorhanden">
+        /// Die maximale Entzugsleistung ist je Modul belastbar — nur dann RECHNET die
+        /// Prüfung, sonst steht nur <paramref name="HinweisErgebnis"/> da.
+        /// </param>
+        /// <param name="MaxEntzugW">Maximale Entzugsleistung [W].</param>
+        /// <param name="JahresentzugKWh">Jahresentzugsarbeit [kWh/a].</param>
+        /// <param name="VolllastStunden">Jahresvolllaststunden [h/a].</param>
+        /// <param name="HinweisErgebnis">
+        /// Der Text ANSTELLE der Prüfung (Luft-Wasser oder nicht belastbar); leer, wenn
+        /// gerechnet werden kann.
+        /// </param>
+        /// <param name="HinweisVorbehalt">Vorbehalt ZUR Prüfung (geschätzt, inkl. Speicherladung).</param>
+        /// <param name="HinweisFrost">Frostmeldung der zweiten Warnbedingung.</param>
+        public sealed record ErdreichLaufErgebnis(
+            bool Vorhanden,
+            bool ErgebnisseVorhanden,
+            double MaxEntzugW,
+            double JahresentzugKWh,
+            double VolllastStunden,
+            string HinweisErgebnis,
+            string HinweisVorbehalt,
+            string HinweisFrost)
+        {
+            /// <summary>„Es gab keinen Lauf" — der Zustand beim Öffnen ohne Ergebnis.</summary>
+            public static readonly ErdreichLaufErgebnis Keines =
+                new ErdreichLaufErgebnis(false, false, 0, 0, 0, "", "", "");
+        }
+
+        /// <summary>
+        /// Übersetzt ein <see cref="AnlageErgebnis"/> in die Anzeigegrößen des
+        /// Erdreich-Dialogs.
+        ///
+        /// <para><b>iU9‑W10a.0b (Befund W10‑B8).</b> Diese Zuordnung stand ZWEIMAL
+        /// wortgleich da: in <c>Form_QuelleErdreich.ErgebnisUebernehmen</c> :1155-1188 und
+        /// in <c>Form_Simulation_Config.Uebersicht</c> :1130-1162, wo der Aufrufer denselben
+        /// Satz Felder beim Öffnen des Dialogs setzt. Der Quelltext vermerkte die Doppelung
+        /// selbst und nannte diese Klasse als richtigen Ort; dort steht sie jetzt.</para>
+        ///
+        /// <para><b>Die Reihenfolge der drei Fälle ist die Fachregel.</b> „Unwirksam"
+        /// (Luft-Wasser) schlägt „nicht belastbar", und beide schließen die Prüfung
+        /// aus — erst danach werden Vorbehalt und Frostmeldung überhaupt gefüllt.</para>
+        /// </summary>
+        /// <param name="erg">Das Laufergebnis; <c>null</c> ergibt <see cref="ErdreichLaufErgebnis.Keines"/>.</param>
+        public static ErdreichLaufErgebnis ErgebnisZuordnen(AnlageErgebnis erg)
+        {
+            if (erg == null) return ErdreichLaufErgebnis.Keines;
+
+            if (erg.Unwirksam)
+            {
+                // Luft-Wasser: die Konfiguration wird gar nicht gerechnet. Das muss im
+                // Dialog stehen, sonst pflegt der Anwender Bodentyp und Sondenlaenge ins
+                // Leere (Konzept 4.5). Umbrueche VOR dem Einsetzen normalisieren.
+                return new ErdreichLaufErgebnis(
+                    true, erg.MaxEntzugBelastbar, erg.MaxEntzugW, erg.JahresentzugKWh,
+                    erg.VolllastStunden,
+                    string.Format(CultureInfo.CurrentCulture,
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS),
+                        erg.Grenze),
+                    "", "");
+            }
+
+            if (!erg.MaxEntzugBelastbar)
+            {
+                return new ErdreichLaufErgebnis(
+                    true, false, erg.MaxEntzugW, erg.JahresentzugKWh, erg.VolllastStunden,
+                    string.Format(CultureInfo.CurrentCulture,
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG),
+                        erg.Grenze),
+                    "", "");
+            }
+
+            string vorbehalt = erg.MaxEntzugGeschaetzt ? erg.Grenze : "";
+            if (erg.InklSpeicherladung)
+                vorbehalt = (vorbehalt.Length > 0 ? vorbehalt + " " : "") +
+                            MyResource.Resource.SIMQ_ERDREICH_SPEICHERLADUNG;
+
+            return new ErdreichLaufErgebnis(
+                true, true, erg.MaxEntzugW, erg.JahresentzugKWh, erg.VolllastStunden,
+                "", vorbehalt, erg.FrostWarnung ? erg.Frosttext() : "");
+        }
+
         /// <summary>
         /// Wertet einen abgeschlossenen Lauf aus und legt die Erdreich-Ergebnisse ab.
         /// Fehlertolerant: Bei fehlenden Daten bleibt die Liste des Projekts leer,
