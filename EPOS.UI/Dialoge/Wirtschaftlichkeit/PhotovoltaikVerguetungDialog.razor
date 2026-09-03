@@ -1,0 +1,549 @@
+﻿@* Dialog "PV-Verguetung (EEG)" - die Razor-Fassung (iU9-W2.4).
+
+   HERKUNFT. Die WinForms-Fassung Views/Wirtschaftlichkeit/
+   Form_PhotovoltaikVerguetung (Designer + 422 Zeilen Code, Etappe P5/P6) ist
+   mit dieser Komponente GELOESCHT - Regel M1. Uebernommen sind Feldbestand
+   (Feldkarte 36 Zeilen), Reihenfolge, Wertebereiche, die Nullsemantik
+   "0 = keiner" und die gesamte Live-Logik aus Aktualisieren() wortgleich; die
+   Beschriftungen kommen aus denselben Schluesseln PVW_*.
+
+   ER RECHNET NICHTS SELBST. Saetze, Erloesreihe und Kennzahlen kommen aus den
+   Bestandsrechnern des Kerns - EegSatzRechner, PvErloesRechner,
+   PvKennzahlenRechner. Sie sind datenbankfrei und nehmen ihren Zugang zum
+   Gesetzeskatalog als Delegat (Leitentscheidung L9); genau so bekommt ihn
+   diese Komponente. Eine Zweitrechnung waere die zweite Wahrheit, die V4/F7
+   verhindern soll.
+
+   ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Modell, Mengen des letzten
+   Laufs, Kosten und Wirtschaftlichkeitsparameter kommen fertig geladen als
+   [Parameter] herein; geschrieben wird ueber den Rueckruf Speichern
+   (ProjektPhotovoltaikCtrl.Speichern).
+
+   LIVE. Die WinForms-Fassung rief Aktualisieren() nach jeder Eingabe und
+   schrieb die Ergebnisse in Labels. Hier ist jede dieser Groessen eine
+   Eigenschaft, die beim Zeichnen gelesen wird - dasselbe Ergebnis, nur ohne
+   den Zwischenschritt ueber Steuerelemente. Die Zulaessigkeitsregel
+   (feste EV nur bis 100 kW, unentgeltlich < 200 kW) schaltet dabei wie bisher
+   auf Marktpraemie um, sobald die gewaehlte Form unzulaessig wird.
+
+   TASTATUR. Esc schliesst, Enter bleibt unbelegt (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@_t.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Schalter Bezeichnung="@_t.Aktiv" Wert="@Modell.Aktiv"
+              WertChanged="@(w => Modell.Aktiv = w)" />
+
+    @* ---------------------------------------------------------- Anlage *@
+    <Gruppenkopf Titel="@_t.GAnlage" Symbol="☀">
+        <KindInhalt>
+            <Herleitungszeile Text="@_t.Kwp" Formel="@KwpText" />
+
+            <Zahlenfeld Bezeichnung="@_t.KwpOverride" Wert="@(Modell.KwpOverride ?? 0)"
+                        WertChanged="@LeistungGeaendert"
+                        Min="0" Max="100000" Nachkommastellen="2" />
+
+            <Datumsfeld Bezeichnung="@_t.Ibn" Wert="@Ibn"
+                        WertChanged="@IbnGeaendert" />
+
+            <Optionsgruppe Bezeichnung="@_t.GEinspeiseart" Eintraege="@_einspeisearten"
+                           Auswahl="@EinspeiseartNr" AuswahlChanged="EinspeiseartGewaehlt" />
+
+            @if (!string.IsNullOrEmpty(Anlagenwarnung))
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Anlagenwarnung" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --------------------------------------------- Anzulegender Wert *@
+    <Gruppenkopf Titel="@_t.GAw" Symbol="€">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@_t.AwOverride" Wert="@(Modell.AwOverride ?? 0)"
+                        WertChanged="@(w => Modell.AwOverride = w > 0 ? w : null)"
+                        Min="0" Max="100" Nachkommastellen="2" />
+
+            <Herleitungszeile Text="@AwText" />
+            <Herleitungszeile Text="@Satz.Herleitung" />
+            <Herleitungszeile Text="@EvText" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------------ Vermarktung *@
+    <Gruppenkopf Titel="@_t.GVermarktung" Symbol="⇄">
+        <KindInhalt>
+            <Optionsgruppe Eintraege="@_vermarktungsformen" Gesperrt="@GesperrteFormen"
+                           Auswahl="@VermarktungNr" AuswahlChanged="VermarktungGewaehlt" />
+
+            <Zahlenfeld Bezeichnung="@_t.Dv" Wert="@(Modell.DvEntgelt ?? 0)"
+                        WertChanged="@(w => Modell.DvEntgelt = w)"
+                        Min="0" Max="10" Nachkommastellen="2" Aktiv="@IstMarktpraemie" />
+            <Zahlenfeld Bezeichnung="@_t.PpaPreis" Wert="@(Modell.PpaPreis ?? 0)"
+                        WertChanged="@(w => Modell.PpaPreis = w > 0 ? w : null)"
+                        Min="0" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
+            <Zahlenfeld Bezeichnung="@_t.PpaAufschlag" Wert="@(Modell.PpaSpotAufschlag ?? 0)"
+                        WertChanged="@(w => Modell.PpaSpotAufschlag = w != 0 ? w : null)"
+                        Min="-100" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
+
+            <Herleitungszeile Text="@VermarktungHinweis" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* -------------------------------------------------- § 51 / § 51a *@
+    <Gruppenkopf Titel="@_t.G51">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@_t.Anwenden"
+                         Eintraege="@TarifWahlen.Eintraege(_schalter)"
+                         Auswahl="@PvSchalterwahlen.Index(Modell.Par51_Anwenden)"
+                         AuswahlChanged="@(n => Modell.Par51_Anwenden = PvSchalterwahlen.Wert(n))" />
+
+            <Ganzzahlfeld Bezeichnung="@_t.IMSys" Wert="@(Modell.IMSys_Einbaujahr ?? 0)"
+                          WertChanged="@(w => Modell.IMSys_Einbaujahr = w >= 2000 ? w : null)"
+                          Min="0" Max="2100" />
+
+            <Zahlenfeld Bezeichnung="@_t.Ausfall" Wert="@(Modell.AusfallanteilProzent ?? 0)"
+                        WertChanged="@(w => Modell.AusfallanteilProzent = w)"
+                        Min="0" Max="100" Nachkommastellen="1" Einheit="%" />
+
+            <Schalter Bezeichnung="@_t.Par51a" Wert="@Modell.Par51a_Kompensieren"
+                      WertChanged="@(w => Modell.Par51a_Kompensieren = w)" />
+
+            <Herleitungszeile Text="@Par51Status" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------- Bezugsbewertung *@
+    <Gruppenkopf Titel="@_t.GBezug">
+        <KindInhalt>
+            <Schalter Bezeichnung="@_t.BezugReihe" Wert="@Modell.BezugAusPreisreihe"
+                      WertChanged="@(w => Modell.BezugAusPreisreihe = w)" />
+            <Herleitungszeile Text="@_t.Stromsteuer" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ---------------------------------------------------------- Kappung *@
+    <Gruppenkopf Titel="@_t.GKappung">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@_t.Anwenden"
+                         Eintraege="@TarifWahlen.Eintraege(_schalter)"
+                         Auswahl="@PvSchalterwahlen.Index(Modell.Kappung60_Anwenden)"
+                         AuswahlChanged="@(n => Modell.Kappung60_Anwenden = PvSchalterwahlen.Wert(n))" />
+            <Herleitungszeile Text="@KappungStatus" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --------------------------------------------------------- Vorschau *@
+    <Gruppenkopf Titel="@_t.GVorschau" Symbol="Σ">
+        <KindInhalt>
+            <Herleitungszeile Text="@VorschauText" />
+            <Herleitungszeile Text="@KennzahlText" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------------- Sprungwege *@
+    @if (MarktwerteImportieren is not null)
+    {
+        <button type="button" class="epos-knopf epos-sprung"
+                @onclick="MarktwerteKlick">@_t.BtnMarktwerte</button>
+    }
+    <button type="button" class="epos-knopf epos-sprung"
+            @onclick="TarifKlick">@_t.BtnTarif</button>
+    <Herleitungszeile Text="@_t.SprungHinweis" />
+
+    @if (!string.IsNullOrEmpty(_hinweis))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_hinweis" />
+    }
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    <SpeichernLeiste OkText="@_t.BtnUebernehmen" AbbrechenText="@_t.BtnAbbrechen"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Was hereinkommt
+    // =====================================================================
+
+    /// <summary>
+    /// Der Vergütungssatz des Stammprojekts
+    /// (<c>ProjektPhotovoltaikCtrl.LiesOderVorbelegt</c>), fertig geladen. Der
+    /// Dialog schreibt seine Eingaben in DIESES Objekt zurück; die Hülle
+    /// speichert danach denselben Satz. Felder, die der Dialog nicht führt
+    /// (Marktwert-Override, Marktwertentwicklung), bleiben damit erhalten.
+    /// </summary>
+    [Parameter] public ProjektPhotovoltaikModel Modell { get; set; } = new ProjektPhotovoltaikModel();
+
+    /// <summary>Rechnerische Leistung aus den Anlagen des Projekts
+    /// (<c>PhotovoltaikCtrl.KwpDesProjekts</c>).</summary>
+    [Parameter] public double KwpRechnerisch { get; set; }
+
+    /// <summary>Einspeisemenge des letzten Simulationsergebnisses [MWh/a];
+    /// 0 = noch kein Lauf.</summary>
+    [Parameter] public double EinspeisungMWh { get; set; }
+
+    /// <summary>Stromproduktion des letzten Laufs [MWh/a].</summary>
+    [Parameter] public double ErzeugungMWh { get; set; }
+
+    /// <summary>Strombedarf des letzten Laufs [MWh/a].</summary>
+    [Parameter] public double BedarfMWh { get; set; }
+
+    /// <summary>Eigenverbrauchsquote MIT Speicher [%]; <c>null</c> = keine
+    /// Speicherrechnung. Sie kommt STETS im Paar mit der Autarkie (N.3).</summary>
+    [Parameter] public double? EvQuoteSpeicher { get; set; }
+
+    /// <summary>Autarkiegrad MIT Speicher [%].</summary>
+    [Parameter] public double? AutarkieSpeicher { get; set; }
+
+    /// <summary>Investition der Komponente Photovoltaik [€]; <c>null</c> = keine Zeile.</summary>
+    [Parameter] public double? InvestPv { get; set; }
+
+    /// <summary>Betriebskosten der Komponente Photovoltaik [€/a]; <c>null</c> = keine Zeile.</summary>
+    [Parameter] public double? BetriebPv { get; set; }
+
+    /// <summary>Arbeitspreis Strom [€/kWh] aus der Vorrangkette der Energiekosten.</summary>
+    [Parameter] public double? StrompreisEurKwh { get; set; }
+
+    /// <summary>Zins, Betrachtungszeitraum und Preissteigerung für die Kennzahlen;
+    /// <c>null</c> = keine Kennzahlzeile.</summary>
+    [Parameter] public WirtschaftlichkeitParameter? WirtParameter { get; set; }
+
+    /// <summary>Lesefassade auf <c>Tab_Gesetzesparameter</c>
+    /// (<c>GesetzKatalog.Wert</c>) — dieselbe Übergabe als Delegat, die
+    /// <c>EegSatzRechner</c> und <c>PvErloesRechner</c> selbst verlangen.</summary>
+    [Parameter] public Func<string, int, double?>? Katalog { get; set; }
+
+    /// <summary>Kalenderjahr → amtlicher Jahresmarktwert Solar [ct/kWh]
+    /// (<c>ProjektPhotovoltaikCtrl.Jahresmarktwert</c>).</summary>
+    [Parameter] public Func<int, double?>? Jahresmarktwert { get; set; }
+
+    /// <summary>Schreibt den Satz fort. <c>true</c> = gespeichert.</summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>
+    /// Der Marktwert-Import (P6): Dateiauswahl und Einlesen liegen in der Hülle
+    /// — <c>null</c> als Rückgabe heißt „abgebrochen". <c>null</c> als Delegat
+    /// heißt „diese Umgebung kann keine Datei wählen"; dann fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Func<MarktwertImport?>? MarktwerteImportieren { get; set; }
+
+    /// <summary>Was der Dialog beim Schließen meldet.</summary>
+    [Parameter] public EventCallback<PvVerguetungErgebnis> Geschlossen { get; set; }
+
+    /// <summary>Schlüssel des Hilfeknopfes — dieselbe Wikiseite wie bisher.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PhotovoltaikVerguetung.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private readonly PhotovoltaikVerguetungTexte _t = new();
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<Steuerwahl> _schalter = Array.Empty<Steuerwahl>();
+    private IReadOnlyList<(int Id, string Text)> _einspeisearten = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _vermarktungsformen = Array.Empty<(int, string)>();
+
+    private string _hinweis = "";
+    private string _fehler = "";
+    private bool _gespeichert;
+
+    protected override void OnInitialized()
+    {
+        _schalter = PvSchalterwahlen.Liste(_t);
+        _einspeisearten = new[] { (0, _t.Ueberschuss), (1, _t.Voll) };
+        _vermarktungsformen = new[]
+        {
+            (0, _t.Ev), (1, _t.Marktpraemie), (2, _t.Ppa), (3, _t.Keine)
+        };
+
+        ZulaessigkeitPruefen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Die Kultur der Anzeige — dieselbe wie Bericht und Reiter.</summary>
+    private static CultureInfo Kultur => BhwTexte.Kultur;
+
+    // =====================================================================
+    // Anlage
+    // =====================================================================
+
+    /// <summary>Inbetriebnahme als Kalendertag; <c>null</c> = nicht angegeben.</summary>
+    private DateOnly? Ibn
+    {
+        get => Modell.Inbetriebnahme > DateTime.MinValue
+             ? DateOnly.FromDateTime(Modell.Inbetriebnahme) : null;
+        set => Modell.Inbetriebnahme = value.HasValue
+             ? value.Value.ToDateTime(TimeOnly.MinValue) : DateTime.MinValue;
+    }
+
+    /// <summary>Das Jahr, mit dem die Kataloge gelesen werden.</summary>
+    private int Jahr => Modell.Inbetriebnahme > DateTime.MinValue
+                      ? Modell.Inbetriebnahme.Year : DateTime.Now.Year;
+
+    /// <summary>Die geltende Leistung: Override, sonst rechnerisch (V3).</summary>
+    public double Kwp => Modell.KwpOverride ?? KwpRechnerisch;
+
+    private int? EinspeiseartNr => string.Equals(Modell.Einspeiseart,
+        DbWerte.PV_EINSPEISEART_VOLL, StringComparison.Ordinal) ? 1 : 0;
+
+    private void EinspeiseartGewaehlt(int? nummer)
+    {
+        Modell.Einspeiseart = nummer == 1
+            ? DbWerte.PV_EINSPEISEART_VOLL : DbWerte.PV_EINSPEISEART_UEBERSCHUSS;
+    }
+
+    private string KwpText
+    {
+        get
+        {
+            string s = string.Format(Kultur, _t.KwpWert, KwpRechnerisch);
+            if (Modell.KwpOverride.HasValue)
+                s += string.Format(Kultur, _t.KwpOverrideZusatz, Modell.KwpOverride.Value);
+            return s;
+        }
+    }
+
+    /// <summary>Die Warnungen der Gruppe Anlage (§ 7 Punkt 1).</summary>
+    public string Anlagenwarnung =>
+        Kwp > 1000 ? _t.WarnAusschreibung
+        : Kwp > 2000 ? _t.WarnStromsteuer
+        : "";
+
+    // =====================================================================
+    // Anzulegender Wert
+    // =====================================================================
+
+    private double? KatalogWert(string schluessel, double rueckfall)
+    {
+        if (Katalog is null) return rueckfall;
+        return Katalog(schluessel, Jahr) ?? rueckfall;
+    }
+
+    /// <summary>Der anzulegende Wert samt Herleitung (Pruefhilfe fuer Tests).</summary>
+    public EegSatzErgebnis Satz => EegSatzRechner.AnzulegenderWert(
+        Math.Max(0.001, Kwp), Modell.Inbetriebnahme, Modell.Einspeiseart, Katalog, Kultur);
+
+    private double Aw => Modell.AwOverride ?? Satz.AwMixCt;
+
+    private string AwText
+    {
+        get
+        {
+            string s = string.Format(Kultur, "AW_mix: {0:0.00} ct/kWh", Aw);
+            if (Modell.AwOverride.HasValue) s += " " + _t.AwOverrideZusatz;
+            return s;
+        }
+    }
+
+    private string EvText
+    {
+        get
+        {
+            double abschlag = KatalogWert(DbWerte.GESETZ_EEG_EV_ABSCHLAG, 0.4) ?? 0.4;
+            return string.Format(Kultur, _t.EvSatz, abschlag, Math.Max(0, Aw - abschlag));
+        }
+    }
+
+    // =====================================================================
+    // Vermarktung
+    // =====================================================================
+
+    private int? VermarktungNr =>
+        string.Equals(Modell.Vermarktungsform, DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE, StringComparison.Ordinal) ? 1
+        : string.Equals(Modell.Vermarktungsform, DbWerte.PV_VERMARKTUNG_SONSTIGE_DV, StringComparison.Ordinal) ? 2
+        : string.Equals(Modell.Vermarktungsform, DbWerte.PV_VERMARKTUNG_KEINE, StringComparison.Ordinal) ? 3
+        : 0;
+
+    private void VermarktungGewaehlt(int? nummer)
+    {
+        Modell.Vermarktungsform = nummer switch
+        {
+            1 => DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE,
+            2 => DbWerte.PV_VERMARKTUNG_SONSTIGE_DV,
+            3 => DbWerte.PV_VERMARKTUNG_KEINE,
+            _ => DbWerte.PV_VERMARKTUNG_EV
+        };
+    }
+
+    private bool IstMarktpraemie => VermarktungNr == 1;
+    private bool IstPpa => VermarktungNr == 2;
+
+    /// <summary>Feste EV nur bis 100 kW (N3), unentgeltlich nur unter 200 kW (N4).</summary>
+    private bool EvErlaubt => Kwp <= (KatalogWert(DbWerte.GESETZ_EEG_EV_GRENZE_KW, 100) ?? 100) + 0.0001;
+    private bool KeineErlaubt => Kwp < (KatalogWert(DbWerte.GESETZ_EEG_UNENTGELTLICH_GRENZE_KW, 200) ?? 200);
+
+    /// <summary>Die gesperrten Optionen (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<int> GesperrteFormen
+    {
+        get
+        {
+            var l = new List<int>(2);
+            if (!EvErlaubt) l.Add(0);
+            if (!KeineErlaubt) l.Add(3);
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Wird die GEWAEHLTE Vermarktungsform unzulaessig, schaltet der Dialog wie
+    /// der Vorlaeufer auf Marktpraemie um — sonst stuende eine Wahl im Modell,
+    /// die es nicht geben darf. Geprueft wird, wo sich die Grenzen aendern
+    /// koennen: bei der Leistung und beim Inbetriebnahmejahr.
+    /// </summary>
+    private void ZulaessigkeitPruefen()
+    {
+        if ((!EvErlaubt && VermarktungNr == 0) || (!KeineErlaubt && VermarktungNr == 3))
+            Modell.Vermarktungsform = DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE;
+    }
+
+    private void LeistungGeaendert(double? wert)
+    {
+        Modell.KwpOverride = wert > 0 ? wert : null;
+        ZulaessigkeitPruefen();
+    }
+
+    private void IbnGeaendert(DateOnly? datum)
+    {
+        Ibn = datum;
+        ZulaessigkeitPruefen();
+    }
+
+    private string VermarktungHinweis => EvErlaubt ? _t.Hinweis21c : _t.EvGesperrt;
+
+    // =====================================================================
+    // § 51 / § 51a und Kappung
+    // =====================================================================
+
+    /// <summary>Der Statussatz der Gruppe § 51 (Pruefhilfe fuer Tests).</summary>
+    public string Par51Status
+    {
+        get
+        {
+            if (Modell.Inbetriebnahme < PvErloesRechner.Par51Stichtag) return _t.Altanlage;
+            double grenze = KatalogWert(DbWerte.GESETZ_EEG_51_GRENZE_KW, 100) ?? 100;
+            if (Kwp >= grenze) return _t.Greift;
+            if (Modell.IMSys_Einbaujahr.HasValue)
+                return string.Format(Kultur, _t.GreiftImSys, Modell.IMSys_Einbaujahr.Value + 1);
+            return _t.Verschont;
+        }
+    }
+
+    /// <summary>Der Statussatz der Kappungsgruppe (Pruefhilfe fuer Tests).</summary>
+    public string KappungStatus
+    {
+        get
+        {
+            int stellung = PvSchalterwahlen.Index(Modell.Kappung60_Anwenden);
+            if (stellung == 2) return _t.KappungAus;
+            bool automatisch = VermarktungNr == 0 && !Modell.IMSys_Einbaujahr.HasValue;
+            return stellung == 1 || automatisch ? _t.KappungAn : _t.KappungInaktiv;
+        }
+    }
+
+    // =====================================================================
+    // Vorschau
+    // =====================================================================
+
+    private PvErloesErgebnis Erloes => PvErloesRechner.Rechne(
+        Modell, KwpRechnerisch, EinspeisungMWh, null, null, 20,
+        Katalog, Jahresmarktwert ?? (jahr => null), Kultur);
+
+    /// <summary>Die Vorschauzeile (Pruefhilfe fuer Tests).</summary>
+    public string VorschauText
+    {
+        get
+        {
+            if (EinspeisungMWh <= 0) return _t.VorschauOhneErgebnis;
+            PvErloesErgebnis e = Erloes;
+            return string.Format(Kultur, _t.Vorschau,
+                EinspeisungMWh, e.SatzJahr1Ct,
+                e.JeJahr != null && e.JeJahr.Length > 1 ? e.JeJahr[1] : 0,
+                e.VerguetungsausfallKwh, e.VerguetungsausfallEur,
+                e.Kompensation51aEur, e.LetztesVerguetungsjahr);
+        }
+    }
+
+    /// <summary>Die Kennzahlzeile (P6, N.3 Nr. 3).</summary>
+    public string KennzahlText
+    {
+        get
+        {
+            if (ErzeugungMWh <= 0 || WirtParameter is null) return "—";
+            PvKennzahlen k = PvKennzahlenRechner.Rechne(
+                ErzeugungMWh, EinspeisungMWh, BedarfMWh,
+                EvQuoteSpeicher, AutarkieSpeicher, InvestPv, BetriebPv,
+                WirtParameter.Zinssatz, WirtParameter.Betrachtungszeitraum,
+                WirtParameter.PreissteigerungEnergie,
+                StrompreisEurKwh, Erloes.JeJahr, Kultur);
+            return PvKennzahlenRechner.Anzeige(k, Kultur);
+        }
+    }
+
+    // =====================================================================
+    // Knoepfe
+    // =====================================================================
+
+    private void MarktwerteKlick()
+    {
+        _hinweis = ""; _fehler = "";
+        if (MarktwerteImportieren is null) return;
+
+        MarktwertImport? ergebnis = MarktwerteImportieren();
+        if (ergebnis is null) return;   // Dateiauswahl abgebrochen
+
+        if (ergebnis.Ok) _hinweis = _t.ImportOk + ergebnis.Bericht;
+        else _fehler = _t.ImportFehler + ergebnis.Bericht;
+    }
+
+    private Task TarifKlick() => Schliessen(PvSprung.Tarif);
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Schliessen(PvSprung.Keiner); return; }
+
+        _fehler = "";
+
+        // Pflichtangabe Inbetriebnahme. In WinForms war das eine tote Pruefung -
+        // ein DateTimePicker kann nicht leer sein; ein Datumsfeld schon.
+        if (Modell.Aktiv && Modell.Inbetriebnahme == DateTime.MinValue)
+        {
+            _fehler = _t.IbnPflicht;
+            return;
+        }
+
+        if (Speichern is null || !Speichern())
+        {
+            _fehler = _t.MsgSpeicherfehler;
+            return;
+        }
+
+        _gespeichert = true;
+        await Schliessen(PvSprung.Keiner);
+    }
+
+    private Task Schliessen(PvSprung sprung) =>
+        Geschlossen.InvokeAsync(new PvVerguetungErgebnis(_gespeichert, sprung));
+
+    private Task BeiTaste(KeyboardEventArgs e) =>
+        e.Key == "Escape" ? Schliessen(PvSprung.Keiner) : Task.CompletedTask;
+}

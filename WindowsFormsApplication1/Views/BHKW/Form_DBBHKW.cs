@@ -406,18 +406,16 @@ namespace WindowsFormsApplication1
             Eingabewerte werte;
             if (!EingabenPruefen(out werte)) return;
 
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             RecordSet rs = new RecordSet();
 
-            System.Drawing.Point p1 = btn_Speichern_Unter.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
-                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                if (string.IsNullOrEmpty(szName))
                 {
                     MessageBox.Show("Bitte einen gültigen Namen eingeben!");
                     return;
@@ -432,7 +430,7 @@ namespace WindowsFormsApplication1
                     {
                         // Existenzprüfung in der STAMM-Tabelle - im Vorgang, damit sie
                         // die noch nicht festgeschriebenen Zeilen sieht
-                        rs.Open("select Bezeichner from Tab_BHKW_STAMM where Bezeichner='" + frmLabel.m_szName + "'", v);
+                        rs.Open("select Bezeichner from Tab_BHKW_STAMM where Bezeichner='" + szName + "'", v);
                         if (!rs.EOF())
                         {
                             MessageBox.Show("Name existiert bereits!");
@@ -442,11 +440,11 @@ namespace WindowsFormsApplication1
                         }
                         rs.Close();
 
-                        comboBox_Name.Text = frmLabel.m_szName;
-                        comboBox_Name.Items.Add(frmLabel.m_szName);
+                        comboBox_Name.Text = szName;
+                        comboBox_Name.Items.Add(szName);
 
                         // INSERT in die STAMM-Tabelle inkl. ReadOnly=false (Feld ist NOT NULL)
-                        rs.Insert("INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES ('" + frmLabel.m_szName + "', False)", v);
+                        rs.Insert("INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES ('" + szName + "', False)", v);
                         rs.Close();
 
                         // 4. Controller verarbeiten (Stammdaten)

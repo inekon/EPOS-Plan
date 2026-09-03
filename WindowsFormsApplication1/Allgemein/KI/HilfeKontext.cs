@@ -124,7 +124,6 @@ namespace WindowsFormsApplication1
             { "Form_Gebaeude",               B_GEBAEUDE },
             { "Form_Gebaeude1",              B_GEBAEUDE },
             { "Form_Gebaeude2",              B_GEBAEUDE },
-            { "Form_GebaeudetypNeu",         B_GEBAEUDE },
 
             { "Form_Heizkessel",             B_HEIZKESSEL },
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
@@ -142,8 +141,6 @@ namespace WindowsFormsApplication1
             { "Form_SpotpreisImport",        B_KOSTEN },
             { "Form_Energietraeger",         B_KOSTEN },
             { "Form_LeistungspreisReihe",    B_KOSTEN },
-            { "Form_PhotovoltaikVerguetung", B_KOSTEN },
-            { "Form_Tarifstruktur",          B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
             { "Form_PV",                     B_PHOTOVOLTAIK },
@@ -196,8 +193,6 @@ namespace WindowsFormsApplication1
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
             { "Form_PeakShaving",            B_STROMSPEICHER },
-            { "Form_Sp_ItemNeu",             B_STROMSPEICHER },
-            { "Form_StromspeicherItemNeu",   B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
             { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
             { "Form_Stromspeicher",          B_STROMSPEICHER },
@@ -216,8 +211,6 @@ namespace WindowsFormsApplication1
             { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
-            { "Form_AlsVariante",            B_VARIANTEN },   // H7 nachgetragen
-
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
             { "Form_Waermebedarf",           B_WAERMEBEDARF },
 
@@ -230,7 +223,6 @@ namespace WindowsFormsApplication1
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
 
-            { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
             { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
             { "WizardParent",                B_ASSISTENT },

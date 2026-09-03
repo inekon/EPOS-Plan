@@ -11433,11 +11433,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string NAMD_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("NAMD_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string NAMD_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("NAMD_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung eingeben! ähnelt.
+        /// </summary>
+        public static string NAMD_MSG_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("NAMD_MSG_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen eingeben. ähnelt.
         /// </summary>
         public static string NAMD_MSG_LEER {
             get {
                 return ResourceManager.GetString("NAMD_MSG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner eingeben ähnelt.
+        /// </summary>
+        public static string NAMD_TITEL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("NAMD_TITEL_BEZEICHNER", resourceCulture);
             }
         }
         
@@ -15426,6 +15462,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_VOLLZYKLEN_KOMBI_TIP {
             get {
                 return ResourceManager.GetString("PSP_VOLLZYKLEN_KOMBI_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseart ähnelt.
+        /// </summary>
+        public static string PVV_G_EINSPEISEART {
+            get {
+                return ResourceManager.GetString("PVV_G_EINSPEISEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string PVV_MSG_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("PVV_MSG_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen. ähnelt.
+        /// </summary>
+        public static string PVV_SPRUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("PVV_SPRUNG_HINWEIS", resourceCulture);
             }
         }
         
@@ -22692,6 +22755,456 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur aktiv (ersetzt die Flat-Strompreise der Kostenmaske) ähnelt.
+        /// </summary>
+        public static string TARIF_AKTIV {
+            get {
+                return ResourceManager.GetString("TARIF_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis (Durchschnitt) [€/kWh]: ähnelt.
+        /// </summary>
+        public static string TARIF_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("TARIF_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string TARIF_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("TARIF_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisepreis [€/kWh]: ähnelt.
+        /// </summary>
+        public static string TARIF_EINSPEISEPREIS {
+            get {
+                return ResourceManager.GetString("TARIF_EINSPEISEPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a]: ähnelt.
+        /// </summary>
+        public static string TARIF_GRUNDPREIS {
+            get {
+                return ResourceManager.GetString("TARIF_GRUNDPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisstand (gültig ab): ähnelt.
+        /// </summary>
+        public static string TARIF_GUELTIG_AB {
+            get {
+                return ResourceManager.GetString("TARIF_GUELTIG_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreise [€/kWh] ähnelt.
+        /// </summary>
+        public static string TARIF_G_BEZUGSPREISE {
+            get {
+                return ResourceManager.GetString("TARIF_G_BEZUGSPREISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld) ähnelt.
+        /// </summary>
+        public static string TARIF_G_EINSPEISEPREISE {
+            get {
+                return ResourceManager.GetString("TARIF_G_EINSPEISEPREISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung) ähnelt.
+        /// </summary>
+        public static string TARIF_G_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("TARIF_G_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“ ähnelt.
+        /// </summary>
+        public static string TARIF_G_ROLLEN {
+            get {
+                return ResourceManager.GetString("TARIF_G_ROLLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis-Staffel (auf die Jahres-Bezugsspitze) ähnelt.
+        /// </summary>
+        public static string TARIF_G_STAFFEL {
+            get {
+                return ResourceManager.GetString("TARIF_G_STAFFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026) ähnelt.
+        /// </summary>
+        public static string TARIF_G_ZEITZONEN {
+            get {
+                return ResourceManager.GetString("TARIF_G_ZEITZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel ähnelt.
+        /// </summary>
+        public static string TARIF_G_ZONEN {
+            get {
+                return ResourceManager.GetString("TARIF_G_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Stufe W3) — Einspeisepreise ähnelt.
+        /// </summary>
+        public static string TARIF_G_ZONEN_EINSP {
+            get {
+                return ResourceManager.GetString("TARIF_G_ZONEN_EINSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HT bis Stunde (exklusiv): ähnelt.
+        /// </summary>
+        public static string TARIF_HT_BIS {
+            get {
+                return ResourceManager.GetString("TARIF_HT_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HT von Stunde (nur Zonenmodell): ähnelt.
+        /// </summary>
+        public static string TARIF_HT_VON {
+            get {
+                return ResourceManager.GetString("TARIF_HT_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreismodell: ähnelt.
+        /// </summary>
+        public static string TARIF_LEISTUNGSMODELL {
+            get {
+                return ResourceManager.GetString("TARIF_LEISTUNGSMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahreshöchstlast (Staffel mit Winterpreisen) ähnelt.
+        /// </summary>
+        public static string TARIF_LM_JAHR {
+            get {
+                return ResourceManager.GetString("TARIF_LM_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die monatlich (Σ zwölf Monatsmaxima × €/kW·Monat) ähnelt.
+        /// </summary>
+        public static string TARIF_LM_MONATLICH {
+            get {
+                return ResourceManager.GetString("TARIF_LM_MONATLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staffel (Sommer- und Wintermaximum getrennt) ähnelt.
+        /// </summary>
+        public static string TARIF_LM_STAFFEL {
+            get {
+                return ResourceManager.GetString("TARIF_LM_STAFFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifmodell: ähnelt.
+        /// </summary>
+        public static string TARIF_MODELL {
+            get {
+                return ResourceManager.GetString("TARIF_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell (Bezug / Reststrom / Einspeisung) ähnelt.
+        /// </summary>
+        public static string TARIF_MODELL_ROLLEN {
+            get {
+                return ResourceManager.GetString("TARIF_MODELL_ROLLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell (Winter/Sommer × HT/NT) ähnelt.
+        /// </summary>
+        public static string TARIF_MODELL_ZONEN {
+            get {
+                return ResourceManager.GetString("TARIF_MODELL_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatlicher Leistungspreis [€/kW·Monat]: ähnelt.
+        /// </summary>
+        public static string TARIF_MONATSPREIS {
+            get {
+                return ResourceManager.GetString("TARIF_MONATSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das HT-Fenster ist leer (von ≥ bis). ähnelt.
+        /// </summary>
+        public static string TARIF_MSG_HT_LEER {
+            get {
+                return ResourceManager.GetString("TARIF_MSG_HT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück. ähnelt.
+        /// </summary>
+        public static string TARIF_MSG_OHNE_ARBEIT {
+            get {
+                return ResourceManager.GetString("TARIF_MSG_OHNE_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück. ähnelt.
+        /// </summary>
+        public static string TARIF_MSG_OHNE_BEZUG {
+            get {
+                return ResourceManager.GetString("TARIF_MSG_OHNE_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tarifstruktur konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string TARIF_MSG_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("TARIF_MSG_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugstarif OHNE BHKW (Referenz) ähnelt.
+        /// </summary>
+        public static string TARIF_ROLLE_BEZUG {
+            get {
+                return ResourceManager.GetString("TARIF_ROLLE_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer) ähnelt.
+        /// </summary>
+        public static string TARIF_ROLLE_REST {
+            get {
+                return ResourceManager.GetString("TARIF_ROLLE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und geteilte Preisfelder erscheinen in mehreren Sichten und meinen dieselben Werte. ähnelt.
+        /// </summary>
+        public static string TARIF_SICHT_HINWEIS {
+            get {
+                return ResourceManager.GetString("TARIF_SICHT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer HT: ähnelt.
+        /// </summary>
+        public static string TARIF_SOMMER_HT {
+            get {
+                return ResourceManager.GetString("TARIF_SOMMER_HT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer NT: ähnelt.
+        /// </summary>
+        public static string TARIF_SOMMER_NT {
+            get {
+                return ResourceManager.GetString("TARIF_SOMMER_NT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Obergrenze [kW] ähnelt.
+        /// </summary>
+        public static string TARIF_SP_OBERGRENZE {
+            get {
+                return ResourceManager.GetString("TARIF_SP_OBERGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer [€/kW·a] ähnelt.
+        /// </summary>
+        public static string TARIF_SP_SOMMER {
+            get {
+                return ResourceManager.GetString("TARIF_SP_SOMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter [€/kW·a] ähnelt.
+        /// </summary>
+        public static string TARIF_SP_WINTER {
+            get {
+                return ResourceManager.GetString("TARIF_SP_WINTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staffelgrenze [kW]: ähnelt.
+        /// </summary>
+        public static string TARIF_STAFFEL_GRENZE {
+            get {
+                return ResourceManager.GetString("TARIF_STAFFEL_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt bis 500 kW Stufe 1, 500–2.000 kW Stufe 2, 2.000–8.000 kW Stufe 3, darüber Stufe 4. Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind vor der Übernahme umzurechnen. ähnelt.
+        /// </summary>
+        public static string TARIF_STAFFEL_HINWEIS {
+            get {
+                return ResourceManager.GetString("TARIF_STAFFEL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis bis Grenze [€/kW·a]: ähnelt.
+        /// </summary>
+        public static string TARIF_STAFFEL_PREIS1 {
+            get {
+                return ResourceManager.GetString("TARIF_STAFFEL_PREIS1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis über Grenze [€/kW·a]: ähnelt.
+        /// </summary>
+        public static string TARIF_STAFFEL_PREIS2 {
+            get {
+                return ResourceManager.GetString("TARIF_STAFFEL_PREIS2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe {0} ähnelt.
+        /// </summary>
+        public static string TARIF_STUFE {
+            get {
+                return ResourceManager.GetString("TARIF_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe {0} (Rest) ähnelt.
+        /// </summary>
+        public static string TARIF_STUFE_REST {
+            get {
+                return ResourceManager.GetString("TARIF_STUFE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur Strom ähnelt.
+        /// </summary>
+        public static string TARIF_TITEL {
+            get {
+                return ResourceManager.GetString("TARIF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur Strombezug (Wärmepumpe & Verbraucher) ähnelt.
+        /// </summary>
+        public static string TARIF_TITEL_BEZUG {
+            get {
+                return ResourceManager.GetString("TARIF_TITEL_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur BHKW (Strom) ähnelt.
+        /// </summary>
+        public static string TARIF_TITEL_BHKW {
+            get {
+                return ResourceManager.GetString("TARIF_TITEL_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur PV-Einspeisung ähnelt.
+        /// </summary>
+        public static string TARIF_TITEL_PV {
+            get {
+                return ResourceManager.GetString("TARIF_TITEL_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter bis Monat: ähnelt.
+        /// </summary>
+        public static string TARIF_WINTER_BIS {
+            get {
+                return ResourceManager.GetString("TARIF_WINTER_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter HT: ähnelt.
+        /// </summary>
+        public static string TARIF_WINTER_HT {
+            get {
+                return ResourceManager.GetString("TARIF_WINTER_HT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter NT: ähnelt.
+        /// </summary>
+        public static string TARIF_WINTER_NT {
+            get {
+                return ResourceManager.GetString("TARIF_WINTER_NT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter von Monat: ähnelt.
+        /// </summary>
+        public static string TARIF_WINTER_VON {
+            get {
+                return ResourceManager.GetString("TARIF_WINTER_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string Text_Beschreibung {
@@ -25156,6 +25669,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIZ_BTN_SPEICHERN {
             get {
                 return ResourceManager.GetString("WIZ_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) berücksichtigen — Pflege im Energieträgerdialog (Strom) ähnelt.
+        /// </summary>
+        public static string WPAR_AUFSCHLAEGE {
+            get {
+                return ResourceManager.GetString("WPAR_AUFSCHLAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string WPAR_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("WPAR_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung KWK-Strom [€/kWh]: ähnelt.
+        /// </summary>
+        public static string WPAR_EINSP_KWK {
+            get {
+                return ResourceManager.GetString("WPAR_EINSP_KWK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung PV [€/kWh]: ähnelt.
+        /// </summary>
+        public static string WPAR_EINSP_PV {
+            get {
+                return ResourceManager.GetString("WPAR_EINSP_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Allgemein ähnelt.
+        /// </summary>
+        public static string WPAR_G_ALLGEMEIN {
+            get {
+                return ResourceManager.GetString("WPAR_G_ALLGEMEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel) ähnelt.
+        /// </summary>
+        public static string WPAR_G_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("WPAR_G_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom — Einspeisung und Bezug ähnelt.
+        /// </summary>
+        public static string WPAR_G_STROM {
+            get {
+                return ResourceManager.GetString("WPAR_G_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Parameter gelten für Stamm und alle Varianten der Vergleichsgruppe; Erzeuger-Gruppen erscheinen nur, wenn der Erzeugertyp in der Gruppe vorkommt (ausgeblendete Werte bleiben erhalten). Energie- und Strompreise kommen aus der Kostenmaske. Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten typischerweise um rund ein Drittel (Vorschlagswerte in Summe 11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; OB die Wirtschaftlichkeit sie ansetzt, wird im Energieträgerdialog (Strom) entschieden — der Haken hier zeigt die Wahl nur an. ähnelt.
+        /// </summary>
+        public static string WPAR_HINWEIS {
+            get {
+                return ResourceManager.GetString("WPAR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 + Realisierung bis Ablauf des 4. Folgejahres. Steuern: Ohne ausdrückliche Angabe entsteht KEINE Gutschrift — § 53 und § 53a schließen einander aus, die Sätze und Grenzwerte kommen aus dem Katalog „Gesetzliche Parameter“. Der Jahresnutzungsgrad wird nur für § 53a gebraucht (Schwelle 70 %). ähnelt.
+        /// </summary>
+        public static string WPAR_HINWEIS_KWKG {
+            get {
+                return ResourceManager.GetString("WPAR_HINWEIS_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T [a]: ähnelt.
+        /// </summary>
+        public static string WPAR_JAHRE {
+            get {
+                return ResourceManager.GetString("WPAR_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Parameter konnten nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string WPAR_MSG_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("WPAR_MSG_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenz-Kraftwerkspark: ähnelt.
+        /// </summary>
+        public static string WPAR_PARK {
+            get {
+                return ResourceManager.GetString("WPAR_PARK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Emissionsbilanz) ähnelt.
+        /// </summary>
+        public static string WPAR_PARK_KEINER {
+            get {
+                return ResourceManager.GetString("WPAR_PARK_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb [%/a]: ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_B {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Energie [%/a]: ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_E {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenzkessel (aus Projekt): {0} — η {1} %{2} ähnelt.
+        /// </summary>
+        public static string WPAR_REFKESSEL {
+            get {
+                return ResourceManager.GetString("WPAR_REFKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenzkessel: kein Heizkessel im Stammprojekt gepflegt — Vorgabe η {0} % gilt. ähnelt.
+        /// </summary>
+        public static string WPAR_REFKESSEL_FEHLT {
+            get {
+                return ResourceManager.GetString("WPAR_REFKESSEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Brennstoff aus Vorgabe ähnelt.
+        /// </summary>
+        public static string WPAR_REFKESSEL_VORGABE {
+            get {
+                return ResourceManager.GetString("WPAR_REFKESSEL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern. ähnelt.
+        /// </summary>
+        public static string WPAR_SPRUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("WPAR_SPRUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeits-Parameter ähnelt.
+        /// </summary>
+        public static string WPAR_TITEL {
+            get {
+                return ResourceManager.GetString("WPAR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszinssatz i [%]: ähnelt.
+        /// </summary>
+        public static string WPAR_ZINS {
+            get {
+                return ResourceManager.GetString("WPAR_ZINS", resourceCulture);
             }
         }
         

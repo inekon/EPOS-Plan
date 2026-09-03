@@ -639,11 +639,12 @@ namespace WindowsFormsApplication1
             // vergeben wird, der anschließend an der Zahlenprüfung scheitert
             if (!EingabenPruefen()) return;
 
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
                 HeizkesselModel model = new HeizkesselModel();
 
@@ -651,13 +652,13 @@ namespace WindowsFormsApplication1
                 model = InitDatensatzUpdate();
 
                 // Den neuen Namen aus dem Dialog setzen
-                model.Name = frmLabel.m_szName;
+                model.Name = szName;
 
                 // Alles in einem Rutsch speichern
                 if (Insert(model))
                 {
-                    textBox_Name.Text = frmLabel.m_szName;
-                    m_szKessel = frmLabel.m_szName;
+                    textBox_Name.Text = szName;
+                    m_szKessel = szName;
 
                     MessageBox.Show("Datensatz erfolgreich neu angelegt.");
                     this.DialogResult = DialogResult.OK;

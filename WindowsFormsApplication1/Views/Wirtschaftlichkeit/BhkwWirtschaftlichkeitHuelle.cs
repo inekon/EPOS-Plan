@@ -27,13 +27,15 @@ namespace WindowsFormsApplication1
     /// <c>WirtschaftlichkeitCtrl.SpeichereParameter</c>.</para>
     ///
     /// <para><b>Der Sprung in die Tarifstruktur laeuft nachgelagert.</b> Die beiden
-    /// Sprungknoepfe der Stromsteuergruppe fuehren in <c>Form_Tarifstruktur</c> —
-    /// einen WinForms-Dialog. Ein Muster, mit dem eine Razor-Komponente ein zweites
-    /// MODALES Fenster ueber sich oeffnet, hat das Haus (Stand iU8) nicht; die
-    /// einzige Bruecke ist <c>IHilfeDienst</c>, und die zeigt ein modeloses
-    /// Hilfefenster. Die Komponente meldet den Wunsch deshalb im Ergebnis, diese
-    /// Huelle schliesst den Dialog, oeffnet das Ziel und bringt den Dialog danach
-    /// mit frisch geladenen Daten zurueck. <b>Designfrage fuer B6</b> (siehe
+    /// Sprungknoepfe der Stromsteuergruppe fuehren in den Tarifdialog. Zu B5b war
+    /// das eine WinForms-Maske ohne Weg, sie aus einem Blazor-Dialog heraus zu
+    /// oeffnen; seit iU9-W2.2 gibt es dafuer die <see cref="Sprungbruecke"/> —
+    /// nur ist der Tarifdialog mit iU9-W2.3 SELBST eine Blazor-Huelle geworden
+    /// (<see cref="TarifstrukturHuelle"/>), und zwei WebViews uebereinander sind
+    /// Risiko R2. Die Komponente meldet den Wunsch deshalb weiter im Ergebnis,
+    /// diese Huelle schliesst den Dialog, oeffnet das Ziel und bringt den Dialog
+    /// danach mit frisch geladenen Daten zurueck. <b>Aufloesung mit dem Baustein
+    /// Ueberlagerung, Welle 4</b> (siehe
     /// <c>Allgemein/Reporting/B5b_Blazor_Port_Protokoll.md</c>).</para>
     /// </summary>
     internal static class BhkwWirtschaftlichkeitHuelle
@@ -178,10 +180,13 @@ namespace WindowsFormsApplication1
                              ? TarifSicht.Bhkw : TarifSicht.Strombezug;
             try
             {
-                using (var dlg = new Form_Tarifstruktur(idStamm, sicht))
-                {
-                    if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-                }
+                // iU9-W2.3: Das Ziel ist seit dem Port SELBST eine Blazor-Huelle.
+                // Der Sprung bleibt deshalb NACHGELAGERT (schliessen -> Ziel ->
+                // wieder oeffnen): Zwei WebViews uebereinander waeren Risiko R2,
+                // und die Sprungbruecke (iU9-W2.2) fuehrt ausdruecklich nur
+                // WinForms-Masken. Erst der Baustein Ueberlagerung (Welle 4)
+                // macht daraus ein Fenster.
+                TarifstrukturHuelle.Oeffnen(besitzer, idStamm, sicht);
             }
             catch (Exception ex)
             {

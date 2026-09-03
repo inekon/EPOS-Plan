@@ -65,4 +65,24 @@ public class GanzzahlfeldTests : BunitContext
         Assert.Null(erhalten);
         Assert.True(cut.Instance.Fehlerhaft);
     }
+    [Fact]
+    public void Ohne_Angabe_ist_das_Feld_bedienbar()
+    {
+        var cut = Render<Ganzzahlfeld>();
+
+        Assert.False(cut.Find("input").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Aktiv_false_sperrt_das_Feld_laesst_den_Wert_aber_lesbar()
+    {
+        // iU9-W2.3: HT/NT entfaellt im Rollenmodell (Leitentscheidung L10) -
+        // die Stunden bleiben stehen, sind aber nicht mehr zu aendern.
+        var cut = Render<Ganzzahlfeld>(p => p
+            .Add(x => x.Wert, 6)
+            .Add(x => x.Aktiv, false));
+
+        Assert.True(cut.Find("input").HasAttribute("disabled"));
+        Assert.Equal("6", cut.Find("input").GetAttribute("value"));
+    }
 }

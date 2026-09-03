@@ -176,19 +176,15 @@ namespace WindowsFormsApplication1
         private void btn_Neu_Click(object sender, EventArgs e)
         {
             Form_PufferSp_Bearbeiten frm = new Form_PufferSp_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_NEU);
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            Point p1 = btn_Neu.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
-
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
                 RecordSet rs = new RecordSet();
-                rs.Open("select Bezeichner from Tab_Pufferspeicher_STAMM where Bezeichner='" + frmLabel.m_szName + "'");
+                rs.Open("select Bezeichner from Tab_Pufferspeicher_STAMM where Bezeichner='" + szName + "'");
                 bool bExist = !rs.EOF();
                 rs.Close();
 
@@ -198,7 +194,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    frm.SetControls(frmLabel.m_szName);
+                    frm.SetControls(szName);
 
                     DialogResult ret = frm.ShowDialog();
                     if (ret == DialogResult.OK)
