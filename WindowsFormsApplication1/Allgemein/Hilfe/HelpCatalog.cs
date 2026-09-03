@@ -1760,6 +1760,81 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Die BRUECKE fuer Oberflaechen ohne Steuerelemente (Umsetzungskonzept iOS,
+        /// Paket iU8): Was steht im Hilfekatalog zu dieser Zuordnungszeile?
+        /// </summary>
+        /// <param name="schluessel">
+        /// Die linke Seite einer Zeile aus <c>help_mapping.txt</c>, also
+        /// <c>Praefix.Controlpfad</c> - zum Beispiel
+        /// <c>Form_Kosten_Auswahl.btn_Help</c>.
+        /// </param>
+        /// <returns>
+        /// Kurztext, Beschreibung und Adresse; <c>null</c>, wenn die Zuordnung
+        /// fehlt, der Katalog das Ziel nicht kennt oder noch nichts geladen ist.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum das noetig ist.</b> Der ganze uebrige Weg des Hilfesystems
+        /// haengt an einem <see cref="Control"/>: <see cref="ZuordnungenAnwenden"/>
+        /// SUCHT das Steuerelement zu einer Zeile und haengt Ereignisse daran.
+        /// Ein Blazor-Dialog hat keine Steuerelemente - sein Infoknopf ist ein
+        /// <c>&lt;button&gt;</c> in einer WebView2. Er kennt nur denselben
+        /// Schluessel und fragt hier nach.
+        /// </para>
+        /// <para>
+        /// Aufgeloest wird genau wie beim Klick auf einen Infobutton
+        /// (<see cref="EintragHolen"/>): Zuordnungszeile -&gt; Ziel, Ziel gegen die
+        /// Oberflaechensprache und den Katalog (<see cref="ZielAufloesen(string, out string)"/>),
+        /// Anker wieder anhaengen (<see cref="MitAnker"/>). Nur das Abschalten des
+        /// Steuerelements bei leerem Katalog entfaellt - es gibt keines.
+        /// </para>
+        /// <para>
+        /// <b>Die letzte passende Zeile gewinnt</b>, wie in
+        /// <see cref="ZuordnungenAnwenden"/>: Die Zeilen der Datei neben der EXE
+        /// stehen hinter den eingebetteten und uebersteuern sie damit (F2).
+        /// </para>
+        /// </remarks>
+        public EPOS.UI.Dienste.HilfeEintrag ZielFuer(string schluessel)
+        {
+            if (_catalog == null || string.IsNullOrWhiteSpace(schluessel)) return null;
+
+            // Zuordnungszeile suchen: "Praefix.Controlpfad = Ziel".
+            string zeilenziel = "";
+            foreach (string rohzeile in ZuordnungsZeilen())
+            {
+                string line = rohzeile == null ? "" : rohzeile.Trim('\uFEFF', ' ', '\t');
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+                int gleich = line.IndexOf('=');
+                if (gleich <= 0) continue;
+
+                string linkeSeite = line.Substring(0, gleich).Trim();
+                if (!string.Equals(linkeSeite, schluessel.Trim(), StringComparison.OrdinalIgnoreCase)) continue;
+
+                string ziel = line.Substring(gleich + 1).Trim();
+                if (ziel.Length > 0) zeilenziel = ziel;   // spaetere Zeile schlaegt fruehere
+            }
+
+            if (zeilenziel.Length == 0)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[Help] WARNUNG: help_mapping.txt kennt '{schluessel}' nicht - der Infoknopf bleibt wirkungslos.");
+                return null;
+            }
+
+            string adresse = ZielAufloesen(zeilenziel, out string anker);
+            if (string.IsNullOrEmpty(adresse)) return null;
+
+            HelpEntry eintrag = MitAnker(_catalog.Get(adresse), anker);
+            if (eintrag == null || string.IsNullOrEmpty(eintrag.Tooltip)) return null;
+
+            return new EPOS.UI.Dienste.HilfeEintrag(
+                eintrag.Tooltip,
+                eintrag.Beschreibung,
+                string.IsNullOrEmpty(eintrag.Url) ? null : eintrag.Url);
+        }
+
         private void PopupBereitstellen()
         {
             if (_popup == null || _popup.IsDisposed) _popup = new Form_HelpPopup();

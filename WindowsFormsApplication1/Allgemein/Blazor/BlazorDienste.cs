@@ -49,15 +49,11 @@ namespace WindowsFormsApplication1
                     // JS-Laufzeit, Dateianbieter).
                     sammlung.AddWindowsFormsBlazorWebView();
 
-                    // Der Zugang zum Hilfesystem fuer <InfoKnopf>.
-                    //
-                    // VORLAEUFIG die leere Fassung: Die Windows-Bruecke auf
-                    // HelpCatalog entsteht im naechsten Schritt (iU8-7,
-                    // Allgemein\Hilfe\WindowsHilfeDienst.cs) und tritt dann hier an
-                    // ihre Stelle. Bis dahin bleibt der Infoknopf sichtbar, aber
-                    // wirkungslos - das ist genau das Verhalten, das KeineHilfe
-                    // zusichert.
-                    sammlung.AddSingleton<IHilfeDienst, KeineHilfe>();
+                    // Der Zugang zum Hilfesystem fuer <InfoKnopf>: dieselbe
+                    // Aufloesung ueber help_mapping.txt und den Wiki-Katalog, die
+                    // auch ein WinForms-Infobutton nimmt
+                    // (Allgemein\Hilfe\WindowsHilfeDienst.cs, iU8-7).
+                    sammlung.AddSingleton<IHilfeDienst, WindowsHilfeDienst>();
 
                     _dienste = sammlung.BuildServiceProvider();
                 }
