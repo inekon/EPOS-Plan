@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -149,76 +148,20 @@ namespace WindowsFormsApplication1
         // =========================================================================
         // Schemamarker im ALTBESTAND (ARBEITSPAKET S6, eingefrorener Access-Zweig)
         //
-        // Formgleich mit den beiden Methoden darueber - nur eben ueber OleDb auf einer
-        // HEREINGEREICHTEN Verbindung. Drei Unterschiede, alle drei Absicht:
+        // ARBEITSPAKET iU6-T2: WOERTLICH AUSGELAGERT, NICHT GEAENDERT. Die beiden
+        // OleDb-Fassungen GetSchemaVersionOleDb/SetSchemaVersionOleDb stehen jetzt in
+        // der Anwendung: WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs
+        // (statische Klasse SchemaVersionAccess, [SupportedOSPlatform("windows")]).
         //
-        //   1. KEIN DataRepository. Weder Verbindungsstring noch Zugriffsmethode: Beides
-        //      zeigt seit S4a auf die SQLite-Datei. Die Verbindung kommt vom Aufrufer
-        //      (SchemaMigration.HebeAltbestand baut sie aus einem ausdruecklichen
-        //      ACE-Verbindungsstring auf den .accdb-Pfad).
-        //   2. SELECT TOP 1 statt LIMIT 1. Die Zugriffsschicht ist auf SQLite umgestellt,
-        //      der Altbestand aber nicht: ACE kennt kein LIMIT. Der Dialektwechsel aus S5
-        //      gilt hier ausdruecklich NICHT.
-        //   3. Ebenso TOLERANT wie die SQLite-Fassung: fehlende Spalte, fehlende Zeile,
-        //      fehlende Tabelle -> Version 0, ohne Dialog und ohne Ausnahme. Genau das
-        //      braucht der Bootstrap der Migration, der die Markerspalte erst anlegt.
+        // Grund: EPOS.Kern ist plattformfrei und darf System.Data.OleDb nicht mehr
+        // sehen. Eine partial-Haelfte konnte die Anwendung nicht beisteuern - partial
+        // geht nicht ueber Assemblygrenzen -, und die beiden Methoden sind static und
+        // beruehren keinen Instanzzustand dieser Klasse; sie brauchen von hier nur
+        // SPALTE_SCHEMAVERSION. Aufrufer ist ausschliesslich der eingefrorene
+        // Access-Zweig SchemaMigration.HebeAltbestand.
+        //
+        // Die SQLite-Fassungen GetSchemaVersion/SetSchemaVersion darueber bleiben hier.
         // =========================================================================
-
-        /// <summary>
-        /// Schemastand des ALTBESTANDS ueber die hereingereichte OleDb-Verbindung.
-        /// 0 bedeutet "noch nichts migriert" - auch dann, wenn Spalte, Zeile oder
-        /// Tabelle fehlen.
-        /// </summary>
-        internal static int GetSchemaVersionOleDb(OleDbConnection verbindung)
-        {
-            if (verbindung == null) return 0;
-            try
-            {
-                DataTable dt = new DataTable();
-                using (OleDbCommand cmd =
-                           new OleDbCommand("SELECT TOP 1 * FROM Tab_Applikation", verbindung))
-                using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
-                {
-                    adapter.Fill(dt);
-                }
-
-                if (!dt.Columns.Contains(SPALTE_SCHEMAVERSION)) return 0;  // Spalte fehlt -> Version 0
-                if (dt.Rows.Count == 0) return 0;                          // Zeile fehlt  -> Version 0
-
-                object v = dt.Rows[0][SPALTE_SCHEMAVERSION];
-                if (v == null || v == DBNull.Value) return 0;
-                return Convert.ToInt32(v);
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Schreibt den Schemastand in den ALTBESTAND. Rueckgabe false, wenn nichts
-        /// geschrieben werden konnte - die Migration wertet das als Fehlschlag des
-        /// Schritts (gleiche Zusage wie <see cref="SetSchemaVersion"/>).
-        /// </summary>
-        internal static bool SetSchemaVersionOleDb(OleDbConnection verbindung, int version)
-        {
-            if (verbindung == null) return false;
-            try
-            {
-                using (OleDbCommand cmd = new OleDbCommand(
-                           "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?", verbindung))
-                {
-                    // iU6: KEIN DbParam - hier wird eine echte OleDbCommand-Sammlung
-                    // auf einer Access-Verbindung gefuellt (Altbestand-Zweig).
-                    cmd.Parameters.Add(new OleDbParameter("@v", version));
-                    return cmd.ExecuteNonQuery() > 0;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         private void FillModelFromRow(ApplikationModel target, DataRow row)
         {
