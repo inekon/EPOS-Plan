@@ -5,6 +5,7 @@ using Formularkarte;
 //
 //   dotnet run --project Werkzeuge/Formularkarte -- <Form_X.Designer.cs>
 //        [--resx <pfad>] [--karte <ausgabe.md>] [--razor <ausgabe.razor>]
+//   dotnet run --project Werkzeuge/Formularkarte -- --alle <Ordner> --ziel <Ordner>
 //
 // Ohne --karte/--razor geht die Feldkarte nach stdout.
 
@@ -16,7 +17,7 @@ if (args.Length == 0 || args[0] is "--hilfe" or "-h" or "--help")
     return 0;
 }
 
-string? quelle = null, resx = null, karte = null, razor = null, wurzel = null;
+string? quelle = null, resx = null, karte = null, razor = null, alle = null, ziel = null, wurzel = null;
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -25,6 +26,8 @@ for (var i = 0; i < args.Length; i++)
         case "--resx": resx = Naechstes(args, ref i); break;
         case "--karte": karte = Naechstes(args, ref i); break;
         case "--razor": razor = Naechstes(args, ref i); break;
+        case "--alle": alle = Naechstes(args, ref i); break;
+        case "--ziel": ziel = Naechstes(args, ref i); break;
         case "--wurzel": wurzel = Naechstes(args, ref i); break;
         default:
             if (args[i].StartsWith("--", StringComparison.Ordinal))
@@ -42,6 +45,27 @@ var bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
 
 try
 {
+    if (alle is not null)
+    {
+        if (!Directory.Exists(alle))
+        {
+            Console.Error.WriteLine("Ordner nicht gefunden: " + alle);
+            return 2;
+        }
+
+        var ergebnis = Stapel.Laufen(alle, ziel, wurzel);
+        var uebersicht = Stapel.Uebersicht(ergebnis, alle);
+
+        if (ziel is not null)
+        {
+            var pfad = Path.Combine(ziel, "UEBERSICHT.md");
+            File.WriteAllText(pfad, uebersicht, bom);
+            Console.WriteLine("Geschrieben nach " + ziel + " (" + ergebnis.Masken + " Masken, Uebersicht: " + pfad + ")");
+        }
+        Console.WriteLine(uebersicht);
+        return ergebnis.Fehler.Count == 0 ? 0 : 1;
+    }
+
     if (quelle is null)
     {
         Console.Error.WriteLine("Keine Designer-Datei angegeben.");
@@ -109,10 +133,13 @@ static void Hilfe()
 
           Formularkarte <Form_X.Designer.cs> [--resx <pfad>]
                         [--karte <ausgabe.md>] [--razor <ausgabe.razor>]
+          Formularkarte --alle <Ordner> [--ziel <Ordner>] [--wurzel <Projektordner>]
 
           --resx    abweichende neutrale .resx (sonst die neben dem Designer)
           --karte   Feldkarte als Markdown; ohne --karte/--razor geht sie nach stdout
           --razor   Razor-Skelett fuer EPOS.UI/Dialoge/
+          --alle    Stapellauf ueber alle *.Designer.cs unterhalb des Ordners
+          --ziel    Ausgabeordner des Stapellaufs (ohne: nur die Uebersicht)
           --wurzel  Projektordner fuer die Suche nach ShowDialog-Aufrufern
         """);
 }

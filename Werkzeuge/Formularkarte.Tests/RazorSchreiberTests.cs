@@ -72,10 +72,9 @@ public sealed class RazorSchreiberTests
     {
         var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
-        Assert.Contains("// TODO: btn_OK.Click -> btnOk_Click aus Form_Kosten_Auswahl.cs:42 (14 Zeilen)",
-                        razor, StringComparison.Ordinal);
-        Assert.Contains("// TODO: Fenster.Load -> Form_Kosten_Auswahl_Load aus Form_Kosten_Auswahl.cs:122 (9 Zeilen)",
-                        razor, StringComparison.Ordinal);
+        // Die Zeilennummer wird nicht festgeschrieben - der Bestand bewegt sich.
+        Assert.Matches(@"// TODO: btn_OK\.Click -> btnOk_Click aus Form_Kosten_Auswahl\.cs:\d+ \(\d+ Zeilen\)", razor);
+        Assert.Matches(@"// TODO: Fenster\.Load -> Form_Kosten_Auswahl_Load aus Form_Kosten_Auswahl\.cs:\d+ \(\d+ Zeilen\)", razor);
     }
 
     [Fact]

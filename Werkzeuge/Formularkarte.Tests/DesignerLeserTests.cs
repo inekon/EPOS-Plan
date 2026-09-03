@@ -88,7 +88,10 @@ public sealed class DesignerLeserTests
 
         Assert.True(maske.QuelltextGefunden);
         Assert.Equal(1, maske.Meldungen);
-        Assert.Equal("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:2092", Assert.Single(maske.Aufrufer));
+
+        var aufrufer = Assert.Single(maske.Aufrufer);
+        Assert.StartsWith("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:", aufrufer, StringComparison.Ordinal);
+        Fundstelle.Enthaelt(aufrufer, "new Form_Kosten_Auswahl");
     }
 
     [Fact]
@@ -96,9 +99,12 @@ public sealed class DesignerLeserTests
     {
         var maske = Lesen(KostenAuswahl);
 
-        Assert.True(maske.Handler.TryGetValue("btnOk_Click", out var stelle));
-        Assert.Equal(42, stelle.Zeile);
-        Assert.Equal(14, stelle.Zeilen);
+        Assert.Equal(4, maske.Handler.Count);
+        foreach (var handler in new[] { "btnOk_Click", "btn_Abbrechen_Click",
+                                        "cmbBrennstoffArt_SelectedIndexChanged", "Form_Kosten_Auswahl_Load" })
+        {
+            Fundstelle.HandlerStimmt(maske, handler);
+        }
     }
 
     // ---- Form_KostenfaktorItem: 7 Zeilen, 5 Zuordnungen --------------------
@@ -148,6 +154,9 @@ public sealed class DesignerLeserTests
         var maske = Lesen(KostenfaktorItem);
 
         Assert.Equal(0, maske.Meldungen);
-        Assert.Equal("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:1482", Assert.Single(maske.Aufrufer));
+
+        var aufrufer = Assert.Single(maske.Aufrufer);
+        Assert.StartsWith("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:", aufrufer, StringComparison.Ordinal);
+        Fundstelle.Enthaelt(aufrufer, "new Form_KostenfaktorItem");
     }
 }
