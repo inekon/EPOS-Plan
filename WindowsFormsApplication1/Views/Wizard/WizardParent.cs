@@ -323,7 +323,17 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            if (top == WizardItemClass.WP_ITEM)
+            // iU9-W6.0e: Die Erzeugerseiten, die schon Razor-Komponenten sind, hängen
+            // sich über EINE Schnittstelle ein statt über je zwei Zeilen mit hartem
+            // Typumbruch — für eine BlazorAssistentSeite<T> träfe der ohnehin nicht mehr.
+            // Der Zweig steht VOR der Kette; die noch nicht umgestellten Seiten fallen
+            // wie bisher durch sie hindurch.
+            if (page is IAssistentErzeugerSeite erzeugerSeite)
+            {
+                erzeugerSeite.Modelle = list_werzmodel;
+                erzeugerSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
+            }
+            else if (top == WizardItemClass.WP_ITEM)
             {
                 ((Form_WPAuswahl)page).list_werzmodel = list_werzmodel;
                 ((Form_WPAuswahl)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
