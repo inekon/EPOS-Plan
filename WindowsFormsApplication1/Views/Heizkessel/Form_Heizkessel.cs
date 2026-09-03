@@ -313,7 +313,7 @@ namespace WindowsFormsApplication1
             var parameter = new Dictionary<string, object>
             {
                 // Die Komponente bleibt datenbankfrei: Sie bekommt die Liste fertig.
-                ["Energietraeger"] = EnergietraegerVarianteCtrl.Energietraeger(),
+                ["Energietraeger"] = EnergietraegerVarianteCtrl.Energietraeger(EnergietraegerVarianteCtrl.KategorieZu(nBrennstoff)),   // nur die Kategorie der Komponente (Befund 03.09.2026)
 
                 // nBrennstoff stammt aus dem Stammsatz und ist 0, wenn dort kein
                 // Brennstoff hinterlegt ist. Dann gibt es keine Vorwahl und die
