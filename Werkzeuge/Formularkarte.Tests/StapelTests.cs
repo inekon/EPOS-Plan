@@ -28,9 +28,10 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 108 Dateien (114 nach iU9-W1,
-        // sechs Designer-Masken stillgelegt).
-        Assert.True(dateien.Count >= 107, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W2: 105 Dateien (108 nach iU9-W0;
+        // Form_StromspeicherItemNeu, Form_GebaeudetypNeu und
+        // Form_PhotovoltaikVerguetung sind umgestellt und geloescht).
+        Assert.True(dateien.Count >= 105, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -53,10 +54,12 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 105 Masken (111 nach iU9-W1;
-        // Form_Kosten, Form_KostenfaktorItem, ucKostenItem, Form_Variantentest,
-        // Form_Simulation_Kurz und Form_KwkgModule sind stillgelegt - iF29).
-        Assert.True(Lauf.Value.Masken >= 105, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W2: 102 Masken (105 nach iU9-W0,
+        // 111 nach iU9-W1). Die drei Designer-Masken der Welle 2 sind auf
+        // Razor-Komponenten umgestellt und geloescht (Regel M1); die drei
+        // K4-Masken der Welle hatten nie einen Designer und wurden hier nie
+        // mitgezaehlt.
+        Assert.True(Lauf.Value.Masken >= 102, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -64,10 +67,11 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 61 von 105 (Form_Simulation_Kurz war
-        // die eine lokalisierte Maske der Stilllegung). Der Leser muss also beide Wege
+        // Gemessener Stand 03.09.2026 nach iU9-W2: 59 von 102 (Form_StromspeicherItemNeu
+        // und Form_GebaeudetypNeu waren die beiden lokalisierten Masken der Welle;
+        // Form_PhotovoltaikVerguetung war es nicht). Der Leser muss also beide Wege
         // koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 60,
+        Assert.True(Lauf.Value.Lokalisierte >= 59,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

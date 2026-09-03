@@ -7,14 +7,22 @@ namespace Formularkarte.Tests;
 /// <c>resources.ApplyResources(ctrl, "name")</c> - Koordinaten, Groessen,
 /// TabIndex und Texte kommen aus <c>Form_X.resx</c>, die Uebersetzungen aus
 /// <c>Form_X.de-DE.resx</c> und <c>Form_X.en-US.resx</c>.
-/// Beispielmaske: <c>Views/Stromspeicher/Form_StromspeicherItemNeu</c>
-/// (Klasse <c>Form_Sp_ItemNeu</c> - Datei- und Klassenname weichen ab).
+/// Beispielmaske: <c>Form_StromspeicherItemNeu</c> (Klasse
+/// <c>Form_Sp_ItemNeu</c> - Datei- und Klassenname weichen ab).
+///
+/// <para>Sie ist mit <b>iU9-W2.1</b> auf die Razor-Komponente
+/// <c>EPOS.UI/Dialoge/Allgemein/NamensDialog.razor</c> umgestellt und im
+/// Bestand geloescht (Regel M1); ihr letzter Stand liegt eingefroren als
+/// Pruefmuster daneben. Sie bleibt der Beleg fuer den lokalisierten Weg: drei
+/// Ressourcendateien, Koordinaten und TabIndex ausschliesslich in der
+/// <c>.resx</c>, dazu ein Klassenname, der vom Dateinamen abweicht.</para>
 /// </summary>
 public sealed class ResxLeserTests
 {
     private const string ItemNeu = "Stromspeicher/Form_StromspeicherItemNeu.Designer.cs";
 
-    private static Maske Lesen() => Kartenbau.Vollstaendig(Repowurzel.Designer(ItemNeu));
+    private static Maske Lesen() =>
+        Kartenbau.Vollstaendig(Repowurzel.Pruefmuster(ItemNeu), null, Repowurzel.PruefmusterWurzel);
 
     [Fact]
     public void ErkenntDieLokalisierungUndLiestAlleDreiDateien()
@@ -86,7 +94,8 @@ public sealed class ResxLeserTests
         // Der Kopf jeder .resx enthaelt in einem XML-Kommentar Beispiele wie
         // <data name="Name1">. Wer die .resx mit einem Suchmuster statt mit
         // einem XML-Leser liest, nimmt sie als echte Eintraege mit.
-        var werte = ResxLeser.Lesen(Repowurzel.Designer("Stromspeicher/Form_StromspeicherItemNeu.resx"));
+        var werte = ResxLeser.Lesen(
+            Repowurzel.Pruefmuster("Stromspeicher/Form_StromspeicherItemNeu.resx"));
 
         Assert.DoesNotContain("Name1", werte.Keys);
         Assert.DoesNotContain("Bitmap1", werte.Keys);
