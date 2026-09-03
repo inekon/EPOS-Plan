@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W7 umgesetzt, W8 in Arbeit | `e5114e1` | **73** Designer-Masken offen (81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil und Kennlinien erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6/W7 alle sieben Erzeugerkacheln des Startbilds und **sechs der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl` im Kern |
+| **iU9** Masken in Wellen | 🔄 W0 bis W8 umgesetzt, W9 in Arbeit | `8995d3e` | **63** Designer-Masken offen (73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder (Monatssäulen, Stundenprofil, Jahresverlauf) erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6/W7 alle sieben Erzeugerkacheln des Startbilds und **sechs der dreizehn Assistentenseiten** als Razor-Komponenten, seit W8 die vier Bedarfstyp-Dialoge (Ergebnis, Stammkopf, Typprofil, Gebäudetyp) als Blätter für W9; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl` im Kern |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,49 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeilen W8a/W8b, Arbeitsanweisung
+> `iU9_W8_Arbeitsanweisung.md` (Scratchpad der Sitzung): **zehn Masken der Bedarfstypen → vier
+> Razor-Komponenten** in `EPOS.UI/Dialoge/Bedarf/` — die drei Ergebnismasken, die drei
+> Stammkopfmasken und die drei Typprofilmasken der Drillinge Prozesswärme, Stromverbraucher und
+> Brauchwasser werden **je eine** Komponente mit der Ausprägung `BedarfsArt`, dazu der Gebäudetyp;
+> jede WinForms-Fassung gelöscht (Regel M1), 41 `MessageBox`. Die vier Komponenten sind die
+> Blätter, die Welle 9 (Bedarfsmasken vom Startbild) als Überlagerungen einhängt. Elf Sachcommits
+> und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `e9d7ad6` `fec0a20` `b1d8a4b` | **W8.0a/b/d** `ProzesswaermeStammCtrl` auf den Schnitt seiner Zwillinge; `BedarfsArt`, `BedarfStammCtrl` und `TypProfilCtrl` im Kern (eine Datenseite für drei Kataloge); `TagVCtrl` trägt die Gebäudetyp-Verwaltung |
+> | `c046c07` | **W8.0c** drei Bedarfsbilder im `ChartRenderer` (**Monatssäulen**, **Stundenprofil**, **Jahresverlauf**) mit drei Proben |
+> | `34e69ff` `1e9c8fc` `6b65f2e` `2119e18` | **W8.1–W8.4** `BedarfErgebnisDialog` (eingefrorenes Rechenobjekt als DTO), `TypStammDialog`, `TypProfilDialog` (Tag kopieren/einfügen wirkt jetzt, Befund B1), `GebaeudetypDialog` — zehn Masken gelöscht |
+> | `cbb358e` `04dd413` `51c806d` | **W8.5–W8.7** 143 Textschlüssel de/en, Formularkarte-Tests, Protokoll, drei CLAUDE.md, STAND.md |
+> | `8995d3e` | Merge `origin/ios_migration` (Statusblock W7) |
+>
+> **Der Ertrag ist die eine Datenseite für drei Kataloge.** Drei Zwillingsdialoge je Blatt mit je
+> eigenem Aufbaucode sind eine Komponente mit Ausprägung, die Schreibwege laufen in **einer**
+> Transaktion (A‑9), die drei Charts sind drei Renderer-Bilder mit Proben. Zwei Befunde des
+> Bestands sind behoben (Tag kopieren/einfügen ohne Wirkung, „Novmember“), einer bleibt als
+> **Frage an den Anwender**: `Form_Brauchwasser_Admin` öffnet die **Prozess**-Ansicht des
+> Ergebnisdialogs (W8‑O‑3, wörtlich übernommen), und im Brauchwasser-Ergebnis steht ein Teiler
+> 1000, den die beiden Zwillinge nicht haben — **eine der Anzeigen ist um den Faktor 1000
+> daneben** (W8‑O‑5).
+>
+> **Nachweise** (auf dem gemergten Stand `8995d3e`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **1 906** grün (1 820 nach W7; +66 bunit,
+> +20 Kern) · Formularkarte **123** grün · Stapellauf **63** Masken (73 − 10), 61 erreichbar,
+> 0 × „nein“ · SQL-Prüfer 1 254 Texte, 0 Fundstellen · **ChartProben 15 Bilder**, 0 Verstöße
+> · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit
+> vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, 14 Abweichungen (A‑1…A‑14),
+> Windows-Abnahmeliste mit 13 Punkten und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W8_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Startreiter und Sicht des Brauchwasser-Ergebnisdialogs,
+> „Überschreiben“ nach „Speichern unter“, Tagwechsel im Typprofil verwirft nicht übernommene
+> Eingaben, stiller Kurvenübertrag im Gebäudetyp, fünf bzw. acht Kurvennamen nach Kurvenzahl,
+> de/en, 125 %, Finger/Maus, Esc/Enter je Dialog.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >

@@ -30,6 +30,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KurvenNamen_liefert_bei_fuenf_Kurven_die_kurze_Liste()
         {
+            using var _ = new DeutscheOberflaeche();
             List<string> namen = TagVCtrl.KurvenNamen(5);
 
             Assert.Equal(5, namen.Count);
@@ -40,6 +41,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KurvenNamen_liefert_bei_acht_Kurven_die_lange_Liste()
         {
+            using var _ = new DeutscheOberflaeche();
             List<string> namen = TagVCtrl.KurvenNamen(8);
 
             Assert.Equal(8, namen.Count);
@@ -54,8 +56,33 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KurvenNamen_nimmt_unterhalb_von_fuenf_ebenfalls_die_kurze_Liste()
         {
+            using var _ = new DeutscheOberflaeche();
             Assert.Equal(new[] { "Winter-heiter", "Winter-trübe", "Übergang-heiter", "Übergang-trübe" },
                          TagVCtrl.KurvenNamen(4));
+        }
+
+        /// <summary>
+        /// Die Kurvennamen kommen aus <c>MyResource.Resource</c> und folgen der
+        /// Oberflaechensprache des Fadens. Der Windows-Laeufer der CI laeuft mit en-US
+        /// (Lauf 33801244655 nach W8: „Winter - clear" statt „Winter-heiter"); die
+        /// deutschen Erwartungswerte oben gelten deshalb nur mit festgelegter Sprache.
+        /// Stellt de-DE ein und beim Verlassen die vorherige Sprache wieder her.
+        /// </summary>
+        private sealed class DeutscheOberflaeche : IDisposable
+        {
+            private readonly System.Globalization.CultureInfo _vorher =
+                System.Threading.Thread.CurrentThread.CurrentUICulture;
+
+            public DeutscheOberflaeche()
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture =
+                    new System.Globalization.CultureInfo("de-DE");
+            }
+
+            public void Dispose()
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = _vorher;
+            }
         }
 
         // ================================================================= Datenbank
