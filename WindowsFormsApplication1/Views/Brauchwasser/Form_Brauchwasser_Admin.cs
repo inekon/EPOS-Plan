@@ -135,13 +135,9 @@ namespace WindowsFormsApplication1
 
         private void btn_TypeDBedit_Click(object sender, EventArgs e)
         {
-            Form_EingBrauchwasserTyp frm = new Form_EingBrauchwasserTyp();
-
-            Point p1 = btn_TypeDBedit.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W8.3: Blazor-Huelle statt Form_EingBrauchwasserTyp; die Positionierung
+            // an der Knopfposition entfaellt (wie iU9-W2.1).
+            TypStammHuelle.ProfilOeffnen(this, BedarfsArt.Brauchwasser);
         }
 
         private void listBox_DB_Click(object sender, EventArgs e)
