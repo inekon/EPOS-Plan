@@ -1,4 +1,4 @@
-# CLAUDE.md — `EPOS.Kern`, der Rechenkern
+﻿# CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
 Der plattformfreie Kern von EPOS-Plan: **268 `.cs`-Dateien** (168 aus iU4, dazu
 `IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
@@ -40,7 +40,7 @@ mit seinen beiden WFO1000 löschte).
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (80) | 80 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs) |
+| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte) |
 | `Model/` (46) | alle 46 Modelle |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
