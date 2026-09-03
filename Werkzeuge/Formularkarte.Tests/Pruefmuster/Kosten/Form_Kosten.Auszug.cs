@@ -1,9 +1,15 @@
-﻿// Prüfmuster für Formularkarte — Stand vor iU8-9 (92380ea^); die Maske wurde durch
-// EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor ersetzt.
+﻿// Prüfmuster für Formularkarte — die beiden Öffnermethoden der stillgelegten
+// Kostenverwaltung.
 //
-// Auszug aus WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs, Zeilen 2089-2196:
-// die einzige Stelle des Bestands, die Form_Kosten_Auswahl modal geöffnet hat.
-// Der Methodenrumpf steht unverändert; ergänzt sind nur Namensraum und Klassenhülle,
+// 1. CreateNewEnergyCarrier, Stand vor iU8-9 (92380ea^), Zeilen 2089-2196 von
+//    WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs: die einzige Stelle des
+//    Bestands, die Form_Kosten_Auswahl modal geöffnet hat. Diese Maske wurde durch
+//    EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor ersetzt.
+// 2. AddKostenItem, Stand vor iU9-W0 (16b106a^), Zeilen 1418-1484 derselben Datei:
+//    die einzige Stelle, die Form_KostenfaktorItem modal geöffnet hat. Beide Masken
+//    sind mit dem Anwenderentscheid iF29 stillgelegt.
+//
+// Die Methodenrümpfe stehen unverändert; ergänzt sind nur Namensraum und Klassenhülle,
 // damit der Auszug für sich allein syntaktisch gültiges C# ist — der Aufrufersucher
 // des Werkzeugs zerlegt ihn mit Roslyn.
 
@@ -118,6 +124,74 @@ namespace WindowsFormsApplication1
                 }
             }
             return "";
+        }
+
+        private void AddKostenItem(string komponenete)
+        {
+            // K4-Wächter: Ohne Kostenkategorie gibt es nichts zu erfassen. Die Prüfung
+            // steht VOR dem Dialog — den Anwender erst tippen zu lassen und den Datensatz
+            // danach zu verwerfen wäre die schlechtere Hälfte beider Möglichkeiten.
+            int? kat = AktuelleKategorieOderNull();
+            if (!kat.HasValue) return;
+
+            // Eingabemaske öffnen (bleibt UI-Logik)
+            Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
+
+            if (frm.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                // 2. Werte aus dem Dialog abrufen
+                int stammID = frm.gewählteID;
+                double nutzungsdauer = Convert.ToDouble(frm.Nutzungsdauer);
+                double betrag = Convert.ToDouble(frm.Wert);
+                string einheit = frm.Einheit;
+                string gewaehlteGruppe = string.IsNullOrWhiteSpace(frm.Gruppe) ? "Allgemein" : frm.Gruppe.Trim();
+
+                // 3. Gruppe in den Katalog aufnehmen ("Lern-Funktion")
+                // Wir nutzen den "Insert if not exists" Trick mit deiner neuen Methode
+                //
+                // SQL-Dialekt-Audit 03.09.2026: Die Unterabfrage hiess ihre Zählspalte
+                // frueher gar nicht und wurde als CheckTbl.[Expr1000] angesprochen -
+                // "Expr1000" ist der Name, den ACCESS einer unbenannten Ausdrucksspalte
+                // von sich aus gibt. SQLite tut das nicht ("no such column:
+                // CheckTbl.Expr1000"), der Katalogeintrag entstand also nie. Jetzt traegt
+                // die Spalte einen eigenen Namen; Wirkung und Zahl der Parameter bleiben.
+                string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName)
+                              SELECT ?
+                              FROM (SELECT COUNT(*) AS Anzahl
+                              FROM Tab_KostenGruppenKatalog
+                              WHERE GruppenName = ?) AS CheckTbl
+                              WHERE CheckTbl.Anzahl = 0";
+
+                DataRepository.ExecuteSQL(sqlKatalog,
+                    new DbParam("@g1", gewaehlteGruppe),
+                    new DbParam("@g2", gewaehlteGruppe));
+
+                // 4. INSERT in Tab_ProjektWerte
+                string sqlInsert = @"INSERT INTO Tab_ProjektWerte
+                                    (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, KomponentenID, KategorieID) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+                DataRepository.ExecuteSQL(sqlInsert,
+                    new DbParam("@pid", m_ID_Projekt),
+                    new DbParam("@sid", stammID),
+                    new DbParam("@val", betrag),
+                    new DbParam("@nd", nutzungsdauer),
+                    new DbParam("@ein", einheit),
+                    new DbParam("@grp", gewaehlteGruppe),
+                    new DbParam("@kid", GetKomponentenID(komponenete)),
+                    new DbParam("@kat", kat.Value)
+                );
+
+                // 5. UI aktualisieren
+                LoadKostenFaktoren(m_ID_Projekt, komponenete);
+                Gesamtkosten();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Verarbeiten der Daten: " + ex.Message);
+            }
         }
     }
 }
