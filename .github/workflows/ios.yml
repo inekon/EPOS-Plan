@@ -76,6 +76,10 @@ jobs:
 
       # Der Simulator braucht KEINE Signatur; deshalb laeuft dieser Job ohne
       # Apple-Konto und ohne Geheimnisse (iF24).
+      # Debug statt Release: Der Release-Bau fuer den Simulator lief im fuenften Lauf
+      # (33740727778, 03.09.2026) 40 Minuten in der Mono-AOT-Uebersetzung mit LLVM
+      # (mono-aot-cross, opt) ueber den gesamten Kern und wurde abgebrochen. Fuer den
+      # Rauchtest reicht JIT ohne Linker; AOT gehoert zum Geraetebau (iU13).
       - name: Bauen (Simulator, ohne Signatur)
         run: >
           dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release
@@ -103,7 +107,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p artifacts/ios
-          APP=$(ls -d EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app)
+          APP=$(ls -d EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app)
           echo "App: $APP"
           xcrun simctl install "${{ steps.sim.outputs.udid }}" "$APP"
 
@@ -173,5 +177,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          path: EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
           retention-days: 14
