@@ -150,16 +150,17 @@ public sealed class ErreichbarkeitTests
     }
 
     [Fact]
-    public void FormGebaeudeIstUeberDieStartseiteZuErreichen()
+    public void FormStromganglinieIstUeberDieStartseiteZuErreichen()
     {
-        // iU9-W6: Bis dahin stand hier Form_Heizkessel; die Maske ist mit iU9-W6.3
-        // geloescht (Regel M1). Form_Gebaeude haengt genauso an einer Kachel der
-        // Startseite und bleibt bis Welle 9 im Bestand.
-        var knoten = Knoten("Form_Gebaeude");
+        // iU9-W9: Bis dahin stand hier Form_Gebaeude (davor Form_Heizkessel); beide
+        // sind mit ihrer Welle geloescht (Regel M1). Form_Stromganglinie haengt
+        // genauso an einer Kachel der Startseite (pBox_StromMessdaten_Click) und
+        // bleibt bis Welle 12 im Bestand.
+        var knoten = Knoten("Form_Stromganglinie");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
         Assert.StartsWith("Form_Start", knoten.Pfad, StringComparison.Ordinal);
-        Assert.EndsWith("Form_Gebaeude", knoten.Pfad, StringComparison.Ordinal);
+        Assert.EndsWith("Form_Stromganglinie", knoten.Pfad, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -242,11 +243,11 @@ public sealed class ErreichbarkeitTests
         Assert.Equal(ergebnis.Masken,
                      ergebnis.Erreichbar(Erreichbar.Ja) + ergebnis.Erreichbar(Erreichbar.Nein) +
                      ergebnis.Erreichbar(Erreichbar.Verwaist) + ergebnis.Erreichbar(Erreichbar.Unklar));
-        // Gemessener Stand nach Welle 8: 61 von 63 (71 von 73 nach W7, 79 von 81
-        // nach W6, 86 von 88 nach W5, 89 von 91 nach iU9-W4, 96 von 98 nach
-        // iU9-W3) - die zwei uebrigen sind "unklar". Die Zahl sinkt mit jeder
-        // Welle, der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 61,
+        // Gemessener Stand nach Welle 9: 54 von 55 (61 von 63 nach W8, 71 von 73
+        // nach W7, 79 von 81 nach W6, 86 von 88 nach W5, 89 von 91 nach iU9-W4,
+        // 96 von 98 nach iU9-W3) - die eine uebrige ist "unklar". Die Zahl sinkt
+        // mit jeder Welle, der Anteil bleibt.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 54,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -259,13 +260,15 @@ public sealed class ErreichbarkeitTests
 
         var befund = Stapel.Erreichbarkeitsbefund(ergebnis, Projekt);
         Assert.Contains("# Öffner erreichbar — Befund aller Masken", befund, StringComparison.Ordinal);
-        Assert.Contains("| Form_GebWohnflaeche | unklar |", befund, StringComparison.Ordinal);
+        // iU9-W9: Form_GebWohnflaeche war die erste der beiden "unklar"-Masken und
+        // ist mit W9.3 geloescht; uebrig bleibt Form_PufferSp_Bearbeiten (Welle 14a).
+        Assert.Contains("| Form_PufferSp_Bearbeiten | unklar |", befund, StringComparison.Ordinal);
         Assert.Contains("| gesamt | " + ergebnis.Masken + " | |", befund, StringComparison.Ordinal);
 
         // Das Ungeklaerte steht oben - die Liste wird von vorn abgearbeitet.
         var kopf = befund.Substring(befund.IndexOf("| Maske |", StringComparison.Ordinal));
-        Assert.True(kopf.IndexOf("| Form_GebWohnflaeche | unklar |", StringComparison.Ordinal) <
-                    kopf.IndexOf("| Form_Gebaeude | ja |", StringComparison.Ordinal),
+        Assert.True(kopf.IndexOf("| Form_PufferSp_Bearbeiten | unklar |", StringComparison.Ordinal) <
+                    kopf.IndexOf("| Form_Stromganglinie | ja |", StringComparison.Ordinal),
                     "Die ungeklaerten Masken stehen nicht vorn.");
     }
 
