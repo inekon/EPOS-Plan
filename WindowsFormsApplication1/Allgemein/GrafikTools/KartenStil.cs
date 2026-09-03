@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     /// </para>
     /// <para>
     /// Der zweite Block (KARTE_*) sind die Einstiegskarten-Token: die Werte der
-    /// <see cref="EinstiegsKarte"/> (Views\Kosten), von der die
+    /// <c>EinstiegsKarte</c> (bis iU9-W4.4 in Views\Kosten), von der die
     /// <see cref="AktionsKarte"/> abstammt. Sie liegen hier, damit Startmaske und
     /// Kostenreiter nicht zwei auseinanderlaufende Farbtabellen führen.
     /// </para>
@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
         public const int ECKE = 6;
 
         // ------------------------------------------------------------------
-        //  Einstiegs-/Aktionskarten (EinstiegsKarte, AktionsKarte)
+        //  Einstiegs-/Aktionskarten (AktionsKarte; EinstiegsKarte bis iU9-W4.4)
         // ------------------------------------------------------------------
 
         /// <summary>Rahmen einer Einstiegs-/Aktionskarte in Ruhe (#D1D5DB).</summary>
@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly Color KARTE_STATUS = Color.FromArgb(90, 0, 255, 0);
 
-        /// <summary>Innenabstand einer Einstiegs-/Aktionskarte [px] (wie EinstiegsKarte).</summary>
+        /// <summary>Innenabstand einer Einstiegs-/Aktionskarte [px].</summary>
         public const int KARTE_RAND = 16;
 
         /// <summary>Durchmesser des Statuspunkts einer Aktionskarte [px].</summary>

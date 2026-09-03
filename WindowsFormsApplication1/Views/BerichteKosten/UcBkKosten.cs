@@ -1181,11 +1181,7 @@ namespace WindowsFormsApplication1
         {
             if (_idProjekt <= 0) return;
             Form f = this.FindForm();
-            using (var dlg = new Form_Energietraeger())
-            {
-                dlg.SetControls(_idProjekt);
-                if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
-            }
+            EnergietraegerHuelle.Oeffnen(f, _idProjekt);
             Aktualisiere();
         }
 

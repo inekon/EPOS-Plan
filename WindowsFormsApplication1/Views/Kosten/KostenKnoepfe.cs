@@ -53,13 +53,8 @@ namespace WindowsFormsApplication1
             Button energie = Knopf(T("KDLG_KNOPF_ENERGIE", "Energiekosten…"), 8 + 316);
             energie.Click += (s, e) =>
             {
-                using (var dlg = new Form_Energietraeger())
-                {
-                    dlg.SetControls(projektId());
-                    int? traeger = carrierId != null ? carrierId() : null;
-                    if (traeger.HasValue) dlg.WaehleTraeger(traeger.Value);
-                    dlg.ShowDialog(eigner);
-                }
+                int? traeger = carrierId != null ? carrierId() : null;
+                EnergietraegerHuelle.Oeffnen(eigner, projektId(), traeger ?? 0);
             };
             leiste.Controls.Add(energie);
 

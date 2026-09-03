@@ -1,0 +1,418 @@
+﻿@* Die Traegerkarte der Energietraegerverwaltung (iU9-W4.4).
+
+   Vorbild: Views/Kosten/ucFuelSettings.cs (2 103 Z.) und .Designer.cs — der
+   groesste Baustein der Kostenseite, gewachsen ueber die Etappen K3
+   (Umrechnungsblock), AP4 (Aufschlaege), B2 (Preisbestandteile), KD4
+   (Leistungspreis-Modus und Saisonreihen) und E3 (Emissions-Reiter).
+
+   WAS DIE KOMPONENTE NICHT MEHR TUT. Der Vorlaeufer las und schrieb selbst:
+   neun SQL-Anweisungen standen in der Maske. Sie stehen seit dieser Welle im
+   Kern-Controller EnergietraegerPreisCtrl, und die Huelle verbindet beides
+   (Regel F5). Ebenso wenig rechnet sie: Preis je kWh, Effektivzeile,
+   Verstosshinweis und die Summen der beiden Preisbloecke kommen als fertige
+   Texte herein — die Formeln stehen in der Engine bzw. im Pruefer
+   EnergieEinheitenPruefung, und es soll sie nur einmal geben.
+
+   ZWEI ABSCHNITTE STATT ZWEIER REITER. Der Vorlaeufer haengte den Bestand in
+   ein TabControl („Preise & Umrechnung" / „Emissionen"); einen Reiter-Baustein
+   gibt es erst in Welle 5. Bis dahin stehen beide untereinander — dieselbe
+   Entscheidung wie A-17 in Welle 3.
+
+   OHNE ARTENKATALOG (Migrationsschritt 57 nicht gelaufen) bleiben die drei
+   Bestandsfelder CO2/SO2/NOx sichtbar. Eine leere Emissionsmaske waere
+   schlechter als die alte. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-traegerkarte">
+
+    <p class="epos-traeger-name">@Stand.TraegerZeile</p>
+    <p class="epos-traeger-gruppe">@Stand.GruppeZeile</p>
+
+    @* =============================================== Preise und Umrechnung *@
+    <Gruppenkopf Titel="@TitelPreise">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Auswahlfeld Bezeichnung="@LabelPreisbasis" Eintraege="@Stand.Preisbasen"
+                             Auswahl="@Stand.PreisbasisId" AuswahlChanged="BeiPreisbasis" />
+                <Kohaerenzzeile Text="@($"{LabelBasiseinheit} {Stand.Basiseinheit}")" />
+            </div>
+
+            <Zahlenfeld Bezeichnung="@LabelArbeitspreis" Einheit="@Stand.EinheitArbeitspreis"
+                        Wert="@Stand.Arbeitspreis"
+                        WertChanged="@(w => Feld(() => Stand.Arbeitspreis = w ?? Stand.Arbeitspreis))" />
+
+            @if (Stand.MitLeistungspreis)
+            {
+                <div class="epos-feldpaar">
+                    <Zahlenfeld Bezeichnung="@LabelLeistungspreis" Einheit="@Stand.EinheitLeistungspreis"
+                                Wert="@Stand.Leistungspreis"
+                                WertChanged="@(w => Feld(() => Stand.Leistungspreis = w ?? Stand.Leistungspreis))" />
+                    <Auswahlfeld Eintraege="@LEISTUNGSMODI"
+                                 Auswahl="@(Stand.LeistungsModusMonat ? 1 : 0)"
+                                 AuswahlChanged="BeiLeistungsModus" />
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => SaisonSaetze.InvokeAsync()">@SaisonText</button>
+                </div>
+                @if (!string.IsNullOrEmpty(Stand.ReihenStatus))
+                {
+                    <Herleitungszeile Text="@Stand.ReihenStatus" />
+                }
+            }
+
+            <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
+                        Wert="@Stand.Grundpreis"
+                        WertChanged="@(w => Feld(() => Stand.Grundpreis = w ?? Stand.Grundpreis))" />
+
+            @if (Stand.MitHeizwert)
+            {
+                <Zahlenfeld Bezeichnung="@LabelHeizwert" Einheit="@Stand.EinheitHeizwert"
+                            Wert="@Stand.Heizwert"
+                            WertChanged="@(w => Feld(() => Stand.Heizwert = w ?? Stand.Heizwert))" />
+            }
+            @if (Stand.MitBrennwert)
+            {
+                <Zahlenfeld Bezeichnung="@LabelBrennwert" Einheit="@Stand.EinheitBrennwert"
+                            Wert="@Stand.Brennwert"
+                            WertChanged="@(w => Feld(() => Stand.Brennwert = w ?? Stand.Brennwert))" />
+            }
+
+            @if (Stand.MitFormel)
+            {
+                <Kohaerenzzeile Text="@($"{LabelPreisJeKwh} {Stand.PreisJeKwh}")" />
+                <Herleitungszeile Text="@($"{LabelFormel} {Stand.FormelText}")" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ============================================= Umrechnungsblock (K3) *@
+    <Gruppenkopf Titel="@TitelUmrechnung">
+        <KindInhalt>
+            <Raster TZeile="UmrechnungsregelZeile" Zeilen="@Stand.Regeln.AsQueryable()"
+                    Bearbeitbar="true">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="UmrechnungsregelZeile" Title="@SpalteName">
+                        <Textfeld Wert="@context.Name"
+                                  WertChanged="@(w => Regel(context, () => context.Name = w))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="UmrechnungsregelZeile" Title="@SpalteVon">
+                        <Textfeld Wert="@context.Von"
+                                  WertChanged="@(w => Regel(context, () => context.Von = w))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="UmrechnungsregelZeile" Title="@SpalteNach">
+                        <Textfeld Wert="@context.Nach"
+                                  WertChanged="@(w => Regel(context, () => context.Nach = w))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="UmrechnungsregelZeile" Title="@SpalteFaktor">
+                        <Zahlenfeld Wert="@context.Faktor" Min="0"
+                                    WertChanged="@(w => Faktor(context, w))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="UmrechnungsregelZeile" Title="@SpalteAktiv">
+                        <Schalter Wert="@context.Aktiv"
+                                  WertChanged="@(w => Abschalten(context, w))" />
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="() => RegelNeu.InvokeAsync()">@RegelNeuText</button>
+                <span class="epos-status">@Stand.EffektivText</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Stand.VerstossText))
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Stand.VerstossText" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ================================================== Preisbloecke *@
+    @if (Stand.Aufschlaege is not null)
+    {
+        <StromAufschlaege Stand="@Stand.Aufschlaege" Anzeige="@AufschlagAnzeige"
+                          SatzRegelfall="@SatzRegelfall" SatzReduziert="@SatzReduziert"
+                          Geaendert="BeiPreisblock" />
+        <Kohaerenzzeile Text="@Stand.EffektivpreisText" />
+        @if (Stand.MitAufschlagSchalter)
+        {
+            <Schalter Bezeichnung="@AufschlagAnwendenText" Wert="@Stand.AufschlaegeAnwenden"
+                      WertChanged="BeiAufschlagAnwenden" />
+        }
+    }
+
+    @if (Stand.Bestandteile is not null)
+    {
+        <BrennstoffBestandteile Stand="@Stand.Bestandteile" Anzeige="@BestandteilAnzeige"
+                                ArbeitspreisCtKwh="@ArbeitspreisCtKwh"
+                                SatzRegel="@SatzRegel" Satz53a="@Satz53a" Satz54="@Satz54"
+                                SatzCo2="@SatzCo2"
+                                Geaendert="BeiPreisblock"
+                                InArbeitspreis="() => InArbeitspreis.InvokeAsync()" />
+    }
+
+    @* ====================================================== Emissionen *@
+    <Gruppenkopf Titel="@TitelEmissionen">
+        <KindInhalt>
+            @if (!Stand.EmissionenVerfuegbar)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinKatalogText" />
+                <Zahlenfeld Bezeichnung="@LabelCo2" Einheit="g/kWh" Wert="@Stand.AltCO2"
+                            WertChanged="@(w => Feld(() => Stand.AltCO2 = w ?? Stand.AltCO2))" />
+                <Zahlenfeld Bezeichnung="@LabelSo2" Einheit="g/kWh" Wert="@Stand.AltSO2"
+                            WertChanged="@(w => Feld(() => Stand.AltSO2 = w ?? Stand.AltSO2))" />
+                <Zahlenfeld Bezeichnung="@LabelNox" Einheit="g/kWh" Wert="@Stand.AltNOx"
+                            WertChanged="@(w => Feld(() => Stand.AltNOx = w ?? Stand.AltNOx))" />
+            }
+            else
+            {
+                <div class="epos-feldpaar">
+                    <Optionsgruppe Bezeichnung="@LabelModus" Eintraege="@MODI"
+                                   Auswahl="@(Stand.ModusCo2e ? 1 : 0)"
+                                   AuswahlChanged="BeiModus" />
+                    <Herleitungszeile Text="@Stand.ModusOrt" />
+                </div>
+
+                <Raster TZeile="EmissionsFeldZeile" Zeilen="@Stand.Emissionszeilen.AsQueryable()"
+                        Bearbeitbar="true">
+                    <KindInhalt>
+                        <TemplateColumn TGridItem="EmissionsFeldZeile" Title="@SpalteArt">
+                            @context.Name
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="EmissionsFeldZeile" Title="@SpalteWert">
+                            <Zahlenfeld Wert="@context.Wert" Aktiv="@(!context.NurLesend)"
+                                        WertChanged="@(w => EmissionsWert(context, w))" />
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="EmissionsFeldZeile" Title="@SpalteEinheit">
+                            @context.Einheit
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="EmissionsFeldZeile" Title="@SpalteHerkunft">
+                            <span title="@context.Herkunft">@context.Herkunft</span>
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="EmissionsFeldZeile" Title="">
+                            <button type="button" class="epos-knopf" disabled="@context.NurLesend"
+                                    @onclick="@(() => KatalogFuerZeile.InvokeAsync(context.Kuerzel))">@KatalogZeileText</button>
+                        </TemplateColumn>
+                    </KindInhalt>
+                </Raster>
+
+                <Kohaerenzzeile Text="@Stand.EmissionsSumme" />
+                @if (!string.IsNullOrEmpty(Stand.EmissionsHinweis))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Stand.EmissionsHinweis" />
+                }
+                <button type="button" class="epos-knopf"
+                        @onclick="() => KatalogVerwalten.InvokeAsync()">@KatalogVerwaltenText</button>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ================================================ Historie und Speichern *@
+    <Gruppenkopf Titel="@TitelHistorie">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Datumsfeld Bezeichnung="@LabelGueltigAb" Wert="@Stand.GueltigAb"
+                            WertChanged="@(w => Stand.GueltigAb = w)" />
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="() => Speichern.InvokeAsync()">@SpeichernText</button>
+            </div>
+
+            <Raster TZeile="PreishistorieZeile" Zeilen="@Stand.Historie.AsQueryable()">
+                <KindInhalt>
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.GueltigAb)" Title="@SpalteGueltigAb" />
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.Heizwert)" Title="@SpalteHeizwert" />
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.Basiseinheit)" Title="@SpalteBasisEinheit" />
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.Arbeitspreis)" Title="@SpalteArbeitspreis" />
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.Grundpreis)" Title="@SpalteGrundpreis" />
+                    <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
+                                    Property="@(z => z.Leistungspreis)" Title="@SpalteLeistungspreis" />
+                </KindInhalt>
+            </Raster>
+        </KindInhalt>
+    </Gruppenkopf>
+</div>
+
+@code {
+    /// <summary>Der Bearbeitungsstand der Trägerkarte.</summary>
+    [Parameter] public EnergietraegerStand Stand { get; set; } = new();
+
+    /// <summary>Summen- und Restzeile des Aufschlagsblocks (von der Hülle gerechnet).</summary>
+    [Parameter] public PreisblockAnzeige AufschlagAnzeige { get; set; } = new("", "", false);
+
+    /// <summary>Dasselbe für die Preiszerlegung.</summary>
+    [Parameter] public PreisblockAnzeige BestandteilAnzeige { get; set; } = new("", "", false);
+
+    /// <summary>Der Arbeitspreis in ct/kWh — Bezugsgröße der Restzeile.</summary>
+    [Parameter] public double ArbeitspreisCtKwh { get; set; }
+
+    [Parameter] public Schnellwahlsatz? SatzRegelfall { get; set; }
+    [Parameter] public Schnellwahlsatz? SatzReduziert { get; set; }
+    [Parameter] public Schnellwahlsatz? SatzRegel { get; set; }
+    [Parameter] public Schnellwahlsatz? Satz53a { get; set; }
+    [Parameter] public Schnellwahlsatz? Satz54 { get; set; }
+    [Parameter] public Schnellwahlsatz? SatzCo2 { get; set; }
+
+    /// <summary>Ein Feld hat sich geändert — die Hülle rechnet Formel, Effektivzeile
+    /// und Preisblöcke nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Preisbasis wurde gewechselt — die Hülle rechnet alle Felder um.</summary>
+    [Parameter] public EventCallback<int> PreisbasisGewechselt { get; set; }
+
+    /// <summary>Der Leistungspreis-Modus wurde umgestellt (KATALOGsache je Träger).</summary>
+    [Parameter] public EventCallback<bool> LeistungsModusGewechselt { get; set; }
+
+    /// <summary>„Saisonale Sätze…" (FK6a).</summary>
+    [Parameter] public EventCallback SaisonSaetze { get; set; }
+
+    /// <summary>„Regel hinzufügen" (K3).</summary>
+    [Parameter] public EventCallback RegelNeu { get; set; }
+
+    /// <summary>
+    /// DER RIEGEL (§ 4.3): Die Regel, die den Träger nach kWh trägt, lässt sich
+    /// nicht abschalten. Gefragt wird der Prüfer in der Hülle — damit gibt es
+    /// keine zweite Fassung der Fachregel. Rückgabe <c>false</c> = bleibt an.
+    /// </summary>
+    [Parameter] public Func<UmrechnungsregelZeile, bool, bool>? RegelAbschalten { get; set; }
+
+    /// <summary>„In Arbeitspreis übernehmen" der Preiszerlegung.</summary>
+    [Parameter] public EventCallback InArbeitspreis { get; set; }
+
+    /// <summary>Ä16: Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
+    [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
+
+    /// <summary>„Katalog…" einer Emissionszeile (E4), mit dem Kürzel der Art.</summary>
+    [Parameter] public EventCallback<string> KatalogFuerZeile { get; set; }
+
+    /// <summary>„Emissionsarten &amp; Katalog verwalten…".</summary>
+    [Parameter] public EventCallback KatalogVerwalten { get; set; }
+
+    /// <summary>„💾 Speichern" der Trägerkarte.</summary>
+    [Parameter] public EventCallback Speichern { get; set; }
+
+    // ---- Texte ----------------------------------------------------------
+
+    [Parameter] public string TitelPreise { get; set; } = "Preise & Umrechnung";
+    [Parameter] public string TitelUmrechnung { get; set; } = "Umrechnung nach kWh";
+    [Parameter] public string TitelEmissionen { get; set; } = "Emissionen";
+    [Parameter] public string TitelHistorie { get; set; } = "Preishistorie";
+    [Parameter] public string LabelPreisbasis { get; set; } = "Preisbasis";
+    [Parameter] public string LabelBasiseinheit { get; set; } = "Basiseinheit:";
+    [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis";
+    [Parameter] public string LabelLeistungspreis { get; set; } = "Leistungspreis";
+    [Parameter] public string LabelGrundpreis { get; set; } = "Grundpreis";
+    [Parameter] public string LabelHeizwert { get; set; } = "Heizwert";
+    [Parameter] public string LabelBrennwert { get; set; } = "Brennwert";
+    [Parameter] public string LabelPreisJeKwh { get; set; } = "Preis pro kWh:";
+    [Parameter] public string LabelFormel { get; set; } = "Formel:";
+    [Parameter] public string ModusJahrText { get; set; } = "Jahresleistungspreis";
+    [Parameter] public string ModusMonatText { get; set; } = "Monatsleistungspreis";
+    [Parameter] public string SaisonText { get; set; } = "Saisonale Sätze…";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteVon { get; set; } = "von";
+    [Parameter] public string SpalteNach { get; set; } = "nach";
+    [Parameter] public string SpalteFaktor { get; set; } = "Faktor";
+    [Parameter] public string SpalteAktiv { get; set; } = "aktiv";
+    [Parameter] public string RegelNeuText { get; set; } = "Regel hinzufügen";
+    [Parameter] public string AufschlagAnwendenText { get; set; }
+        = "Aufschläge in der Wirtschaftlichkeit berücksichtigen";
+    [Parameter] public string LabelModus { get; set; } = "CO₂-Berechnung:";
+    [Parameter] public string ModusCo2Text { get; set; } = "CO₂";
+    [Parameter] public string ModusCo2eText { get; set; } = "CO₂-Äquivalent (GWP₁₀₀)";
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+    [Parameter] public string SpalteWert { get; set; } = "Wert";
+    [Parameter] public string SpalteEinheit { get; set; } = "Einheit";
+    [Parameter] public string SpalteHerkunft { get; set; } = "Herkunft";
+    [Parameter] public string KatalogZeileText { get; set; } = "Katalog…";
+    [Parameter] public string KatalogVerwaltenText { get; set; }
+        = "Emissionsarten & Katalog verwalten…";
+    [Parameter] public string KeinKatalogText { get; set; }
+        = "Der Emissionsarten-Katalog ist auf dieser Datenbank nicht verfügbar "
+        + "(Migrationsschritt 57 fehlt). Es gelten die drei Bestandsfelder.";
+    [Parameter] public string LabelCo2 { get; set; } = "CO2  [g/kWh]";
+    [Parameter] public string LabelSo2 { get; set; } = "SO2  [g/kWh]";
+    [Parameter] public string LabelNox { get; set; } = "NOx  [g/kWh]";
+    [Parameter] public string LabelGueltigAb { get; set; } = "Gültig ab";
+    [Parameter] public string SpeichernText { get; set; } = "💾 Speichern";
+    [Parameter] public string SpalteGueltigAb { get; set; } = "Gültig ab";
+    [Parameter] public string SpalteHeizwert { get; set; } = "Heizwert";
+    [Parameter] public string SpalteBasisEinheit { get; set; } = "Basis Einheit";
+    [Parameter] public string SpalteArbeitspreis { get; set; } = "Arbeitspreis";
+    [Parameter] public string SpalteGrundpreis { get; set; } = "Grundpreis [€/a]";
+    [Parameter] public string SpalteLeistungspreis { get; set; } = "Leistungspreis";
+
+    private (int Id, string Text)[] LEISTUNGSMODI
+        => new[] { (0, ModusJahrText), (1, ModusMonatText) };
+
+    private (int Id, string Text)[] MODI
+        => new[] { (0, ModusCo2Text), (1, ModusCo2eText) };
+
+    private void Feld(Action aendern)
+    {
+        aendern();
+        Geaendert.InvokeAsync();
+    }
+
+    private Task BeiPreisbasis(int? id)
+    {
+        if (!id.HasValue) return Task.CompletedTask;
+        Stand.PreisbasisId = id;
+        return PreisbasisGewechselt.InvokeAsync(id.Value);
+    }
+
+    private Task BeiLeistungsModus(int? id)
+    {
+        Stand.LeistungsModusMonat = id == 1;
+        return LeistungsModusGewechselt.InvokeAsync(Stand.LeistungsModusMonat);
+    }
+
+    private Task BeiModus(int? id)
+    {
+        Stand.ModusCo2e = id == 1;
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task BeiAufschlagAnwenden(bool an)
+    {
+        Stand.AufschlaegeAnwenden = an;
+        return AufschlagAnwenden.InvokeAsync(an);
+    }
+
+    private Task BeiPreisblock() => Geaendert.InvokeAsync();
+
+    private void Regel(UmrechnungsregelZeile zeile, Action aendern)
+    {
+        aendern();
+        Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Eine unbrauchbare Eingabe wird NICHT übernommen — das Zahlenfeld färbt
+    /// sich und meldet nichts nach außen (Hausregel). Hier bleibt deshalb nur
+    /// die zweite Bedingung des Vorläufers: ein Faktor muss größer null sein.
+    /// </summary>
+    private void Faktor(UmrechnungsregelZeile zeile, double? wert)
+    {
+        if (!wert.HasValue || wert.Value <= 0) return;
+        zeile.Faktor = wert.Value;
+        Geaendert.InvokeAsync();
+    }
+
+    private void Abschalten(UmrechnungsregelZeile zeile, bool an)
+    {
+        if (!an && RegelAbschalten is not null && !RegelAbschalten(zeile, false)) return;
+        zeile.Aktiv = an;
+        Geaendert.InvokeAsync();
+    }
+
+    private void EmissionsWert(EmissionsFeldZeile zeile, double? wert)
+    {
+        zeile.Wert = wert;
+        Geaendert.InvokeAsync();
+    }
+}

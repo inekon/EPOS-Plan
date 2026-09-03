@@ -136,7 +136,6 @@ namespace WindowsFormsApplication1
             { "Form_Klimadaten",             B_KLIMADATEN },
 
             { "Form_Kosten_Auswahl",         B_KOSTEN },
-            { "Form_Energietraeger",         B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
             { "Form_PV",                     B_PHOTOVOLTAIK },

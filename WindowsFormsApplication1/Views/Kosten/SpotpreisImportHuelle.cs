@@ -38,23 +38,23 @@ namespace WindowsFormsApplication1
         private static readonly Size FENSTER = new Size(760, 720);
 
         /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn eine Reihe angelegt wurde.
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Energieträgerverwaltung selbst
+        /// eine Razor-Komponente ist, erscheint der Import in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
         /// <param name="idProjekt">Projekt, dem eine Projektreihe gehören würde;
         /// der Schalter „allen Projekten zur Verfügung stellen" schreibt statt
         /// dessen nach Projekt 0.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, int idProjekt)
+        internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt)
         {
             PreisreiheCtrl.StelleTabellenSicher();
 
             var ctrl = new SpotpreisImportCtrl();
             SpotpreisImportCtrl.Lauf lauf = null;
-            bool angelegt = false;
 
-            BlazorDialogForm<SpotpreisImportDialog> dlg = null;
-
-            var parameter = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 // btnWaehlen_Click: derselbe Filter, dieselbe Prüfung auf Vorhandensein
                 // (Dienste.Datei liefert "" bei Abbruch).
@@ -81,7 +81,6 @@ namespace WindowsFormsApplication1
                         int id = ctrl.Speichere(lauf, bezeichner, ziel, fortschritt);
                         if (id <= 0) return new SpotpreisSpeicherung(0, 0);
 
-                        angelegt = true;
                         return new SpotpreisSpeicherung(id, lauf.Reihe.StundenreiheCtKwh.Length);
                     })),
 
@@ -100,22 +99,8 @@ namespace WindowsFormsApplication1
                 ["VorlageSchreibt"] = Schreibvorlage(),
                 ["VorlageGespeichert"] = MyResource.Resource.PREIS_IMPORT_STATUS_GESPEICHERT,
                 ["TextNichtGespeichert"] = MyResource.Resource.PREIS_IMPORT_STATUS_NICHT_GESPEICHERT,
-                ["TextPrueft"] = Text_("SPOT_STATUS_PRUEFT", "Datei wird geprüft …"),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
+                ["TextPrueft"] = Text_("SPOT_STATUS_PRUEFT", "Datei wird geprüft …")
             };
-
-            dlg = new BlazorDialogForm<SpotpreisImportDialog>(
-                MyResource.Resource.PREIS_IMPORT_TITEL, FENSTER, parameter);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return angelegt;
         }
 
         /// <summary>

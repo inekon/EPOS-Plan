@@ -47,16 +47,32 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Zeigt den Dialog.
+        /// Ein Aufruf des Katalogs: sein Parametersatz und die Auswertung seines
+        /// Ergebnisses (iU9-W4.4).
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
+        /// <param name="Parameter">Was die Komponente bekommt — ohne
+        /// <c>Geschlossen</c>, das setzt der Wirt.</param>
+        /// <param name="Auswerten">Wandelt das Ergebnis der Komponente in die
+        /// drei Eigenschaften der gelöschten Maske und schreibt dabei — wie
+        /// <c>Beenden()</c> — die globale Modus-Vorgabe, wenn sie sich geändert
+        /// hat.</param>
+        internal sealed record Aufruf(IReadOnlyDictionary<string, object> Parameter,
+                                      Func<EmissionskatalogErgebnis, Ergebnis> Auswerten);
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Trägerkarte selbst eine
+        /// Razor-Komponente ist, erscheint der Katalog in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2).
+        /// </summary>
         /// <param name="carrierId">Träger; 0 = Verwaltungsmodus ohne Träger.</param>
         /// <param name="carrierName">Anzeigename für die Kopfzeile.</param>
         /// <param name="artVorwahl">Kürzel der Art, auf die vorgewählt wird; leer = die erste.</param>
         /// <param name="rueckgabemodus">true, wenn „Übernehmen" den Wert
         /// zurückreichen statt schreiben soll (Aufruf aus dem Emissions-Tab).</param>
-        internal static Ergebnis Oeffnen(IWin32Window besitzer, int carrierId, string carrierName,
-                                         string artVorwahl, bool rueckgabemodus)
+        internal static Aufruf Gaben(int carrierId, string carrierName,
+                                     string artVorwahl, bool rueckgabemodus)
         {
             int traeger = carrierId > 0 ? carrierId : 0;
             string name = carrierName ?? "";
@@ -67,7 +83,6 @@ namespace WindowsFormsApplication1
             var werte = new List<EmissionswertModel>();
 
             var ergebnis = new Ergebnis();
-            BlazorDialogForm<EmissionskatalogDialog> dlg = null;
 
             // Der Modus-Schalter im Katalog wirkt IMMER auf die globale Vorgabe
             // (Konzept F7); der Projekt-Override sitzt im Emissions-Tab.
@@ -316,36 +331,25 @@ namespace WindowsFormsApplication1
                 // es nie, gezeigt wurde immer der deutsche Rückfall. Jetzt steht der
                 // Haustext (iU9-W3.5).
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
-                ["AbbrechenText"] = Text_("PVW_ABBRECHEN", "Abbrechen"),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<EmissionskatalogErgebnis>(
-                    new object(), erg =>
-                    {
-                        ergebnis.ArtenGeaendert = erg.ArtenGeaendert;
-                        ergebnis.WerteGeaendert = erg.WerteGeaendert;
-                        if (erg.UebernommenId > 0)
-                            ergebnis.Uebernommen = WertZuId(werte, erg.UebernommenId);
-
-                        // Beenden(): Die globale Vorgabe nur schreiben, wenn sie
-                        // sich geändert hat — wortgleich zum Vorläufer.
-                        string modus = erg.ModusCo2e
-                            ? DbWerte.EMISSION_MODUS_CO2E : DbWerte.EMISSION_MODUS_CO2;
-                        if (!string.Equals(modus, EmissionenCtrl.VorgabeLesen(),
-                                           StringComparison.Ordinal))
-                            EmissionenCtrl.VorgabeSchreiben(modus);
-
-                        if (dlg != null) dlg.Schliessen(erg.Bestaetigt);
-                    })
+                ["AbbrechenText"] = Text_("PVW_ABBRECHEN", "Abbrechen")
             };
 
-            dlg = new BlazorDialogForm<EmissionskatalogDialog>(
-                Text_("EMK_TITEL", "Emissionsfaktor-Katalog"), FENSTER, parameter);
-
-            using (dlg)
+            return new Aufruf(parameter, erg =>
             {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
+                ergebnis.ArtenGeaendert = erg.ArtenGeaendert;
+                ergebnis.WerteGeaendert = erg.WerteGeaendert;
+                if (erg.UebernommenId > 0)
+                    ergebnis.Uebernommen = WertZuId(werte, erg.UebernommenId);
+
+                // Beenden(): Die globale Vorgabe nur schreiben, wenn sie sich
+                // geändert hat — wortgleich zum Vorläufer.
+                string modus = erg.ModusCo2e
+                    ? DbWerte.EMISSION_MODUS_CO2E : DbWerte.EMISSION_MODUS_CO2;
+                if (!string.Equals(modus, EmissionenCtrl.VorgabeLesen(), StringComparison.Ordinal))
+                    EmissionenCtrl.VorgabeSchreiben(modus);
+
+                return ergebnis;
+            });
         }
 
         // =================================================================== Wandlung

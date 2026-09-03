@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1
     /// optionaler Statuspunkt, Hover-Zustand und ein Ereignis <see cref="Geklickt"/>.
     ///
     /// <para>
-    /// <b>Woher.</b> Weiterentwicklung der <see cref="EinstiegsKarte"/>
+    /// <b>Woher.</b> Weiterentwicklung der <c>EinstiegsKarte</c>
     /// (Views\Kosten) — dort ein Laufzeit-<c>Panel</c>, hier ein im
     /// Visual-Studio-Designer platzierbares <see cref="UserControl"/> mit
     /// <c>.Designer.cs</c> und <c>.resx</c> (Kern-Vorgabe des Konzepts
