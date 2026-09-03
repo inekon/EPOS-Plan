@@ -1,6 +1,7 @@
 # CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **171 Dateien**, `net10.0` **ohne** `-windows`, AnyCPU.
+Der plattformfreie Kern von EPOS-Plan: **193 Dateien** (168 aus iU4, dazu `IDatenzugriff`/`SqliteDatenzugriff`
+aus iU6, `ChartRenderer` aus iU7-5 und die 22 Dienste-Dateien aus iU5), `net10.0` **ohne** `-windows`, AnyCPU.
 Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
 `../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
 auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
@@ -13,7 +14,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 2 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 872 Tests
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 886 Tests
 ```
 
 ## Was hier liegt
@@ -24,6 +25,7 @@ dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 872 Tests
 | `Allgemein/Simulation/` | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb` |
 | `Allgemein/Wirtschaftlichkeit/` | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
 | `Allgemein/Bericht/` | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler` — dazu seit iU7-5 der **Renderer** `ChartRenderer` |
+| `Allgemein/Dienste/` | die **neun Umgebungsdienste** (iU5): `Dienste` (Halter), `IDialogDienst`, `IDateiDienst`, `IPfade`, `IEinstellungen`, `ILizenzAblage`, `IGeraeteId`, `ISprache`, `INavigation`, `IProjektKontext`, ihre Standardfassungen (`StilleDialoge`, `KeineDateiwahl`, `StandardPfade`, `FluechtigeEinstellungen`, `KeineAblage`, `KeineGeraeteId`, `StandardSprache`, `KeineNavigation`, `LeererProjektKontext`) und die sprachneutralen Schlüssel `Gewerke`, `Masken`, `Ansichten`, `Projektwahl` |
 | `Allgemein/Update/` | `Anlagenzeilen`, `ProjektPuffer`, `SchemaKatalog`, `SchemaStand` (Ergebniszustand der Migration und die DDL-Konstanten, die Controller zur Selbstanlage brauchen) |
 | `Controller/` | 50 Controller ohne Oberflächenbezug |
 | `Model/` | alle 46 Modelle |
@@ -76,13 +78,42 @@ Access-Zweig der Erststart-Migration — `SchemaMigration`, `GeraeteWaisen` und
 `SchemaVersionAccess` (die aus `ApplikationCtrl` ausgelagerten Schemamarker-Methoden).
 Wer hier eine neue Zugriffsstelle schreibt, nimmt `DbParam` — sonst nichts.
 
-**Meldungen und Oberflächenaufgaben über Haken.** Das Muster: ein `static Action<…>`-Feld hier,
-belegt von `Program.Main` in der Anwendung, mit einer folgenlosen oder auf die Konsole
-schreibenden Vorbelegung.
+**Die Umgebung ausschließlich über `Dienste.*` — nie über `Program.*`.** Seit iU5 (03.09.2026)
+liegen neun Umgebungsdienste in `Allgemein/Dienste/`. Neuer Kerncode, der eine Meldung absetzt,
+einen Ablageort braucht, eine Einstellung liest, die Sprache kennen will oder eine Maske öffnen
+soll, ruft `Dienste.Dialog`, `Dienste.Datei`, `Dienste.Pfade`, `Dienste.Einstellungen`,
+`Dienste.Lizenzablage`, `Dienste.GeraeteId`, `Dienste.Sprache`, `Dienste.Navigation` bzw.
+`Dienste.Projekt`. **`Program.*` ist im Kern und in allen Kernkandidaten verboten** — der Wächter
+steht unten unter „Nachweis".
+
+| Dienst | Wofür | Vorbelegung ohne Oberfläche |
+|---|---|---|
+| `Dialog` | Meldung, Warnung, Fehler, Rückfrage, Dreifachwahl, Wartekurve | `StilleDialoge` — Konsole; Rückfrage = nein |
+| `Datei` | Datei-/Ordnerwahl, Öffnen mit der Systemanwendung | `KeineDateiwahl` — `""` bzw. `false` |
+| `Pfade` | `%APPDATA%\wp-plan`, `%APPDATA%\<Produkt>`, `LocalApplicationData[\WP-Plan]`, `CommonApplicationData\WP-Plan`, Dokumente | `StandardPfade` — `Environment.SpecialFolder` |
+| `Einstellungen` | Schlüssel-Wert-Ablage, dazu ein maschinenweiter Leser | `FluechtigeEinstellungen` — Wörterbuch im Speicher |
+| `Lizenzablage` | Geheimnisse; Geltungsbereich Gerät **oder** Benutzer als Parameter | `KeineAblage` — merkt nichts |
+| `GeraeteId` | Gerätemerkmale für die Lizenzbindung | `KeineGeraeteId` — leer |
+| `Sprache` | Kürzel, `IstEnglisch`, Umschalten | `StandardSprache` — hält `Sprache.Nummer` |
+| `Navigation` | Gewerksliste auffrischen, Maske öffnen, Ansicht auffrischen | `KeineNavigation` — Leerlauf, `OeffneMaske` = `false` |
+| `Projekt` | das offene Projekt (Id, Name, Klimazone, Wechsel) | `LeererProjektKontext` — `Vorhanden` = `false` |
+
+Belegt werden alle neun an genau EINER Stelle: `Program.Main`, vor
+`DataRepository.DatenbankVorhanden()`. Die Windows-Fassungen liegen in
+`../WindowsFormsApplication1/Dienste/`. Ein Prüfstand tauscht ein Feld, fährt seinen Fall und legt
+die Standardfassung zurück (`EPOS.Kern.Tests/DiensteTests.cs`).
+
+**Maskennamen und Gewerke sind sprachneutrale ASCII-Schlüssel** (`Gewerke.Bhkw`,
+`Masken.PufferSpAdmin`, `Ansichten.Varianten`) nach der Drei-Schichten-Regel — nie ein
+Anzeigetext.
+
+**Meldungen und Oberflächenaufgaben über Haken.** Das ältere Muster, das weiterhin gilt: ein
+`static Action<…>`-Feld hier, belegt von `Program.Main` in der Anwendung, mit einer folgenlosen
+oder auf die Konsole schreibenden Vorbelegung.
 
 | Haken | Wofür | Vorbelegung |
 |---|---|---|
-| `Meldung.Zeigen` / `.Hinweis` / `.Warnung` / `.Warten` | Dialog statt `MessageBox.Show` bzw. Sanduhr | Konsole; `Warten` folgenlos |
+| `Meldung.Zeigen` / `.Hinweis` / `.Warnung` / `.Warten` | Dialog statt `MessageBox.Show` bzw. Sanduhr | **seit iU5 `Dienste.Dialog`** — ohne Oberfläche damit Konsole, `Warten` folgenlos. `Program.Main` belegt diese vier Haken **nicht mehr** |
 | `SimulationControl.Speicherlauf` | der Stromspeicherzweig (K8) | wird vom `[ModuleInitializer]` in `SimulationControl.Stromspeicher.cs` gesetzt, sobald diese Assembly lädt |
 | `SimulationRunner.Speicherergebnismodell` | dasselbe für das Ergebnismodell | wie oben |
 | `WErzeugerCtrl.GeraetewaisenAufraeumen` | Aufräumlauf nach dem Löschen eines Projekts | `null` = kein Lauf; zulässig, weil er ohnehin nach dem erfolgreichen DELETE läuft und der Migrationsschritt nachholt |
@@ -155,6 +186,15 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
   --ziel artifacts/reflauf/neu
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
   vergleich artifacts/reflauf/ref artifacts/reflauf/neu     # GESAMT: PASS
+```
+
+**Der iU5-Wächter — muss leer bleiben:**
+
+```bash
+git grep -nE '\bProgram\.[A-Za-z]' -- 'EPOS.Kern/*.cs' \
+    '../WindowsFormsApplication1/Allgemein/*.cs' \
+    '../WindowsFormsApplication1/Controller/*.cs' \
+    '../WindowsFormsApplication1/Model/*.cs' | grep -vP ':\s*(///|//|\*)'
 ```
 
 Dieselben drei Projekte rechnet die CI (`.github/workflows/kern.yml`) auf `ubuntu-latest` und

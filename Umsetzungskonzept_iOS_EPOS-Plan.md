@@ -881,6 +881,90 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 
 ### iU5 — Statics kappen, Dienste einziehen · L · Windows
 
+> **Status 03.09.2026 — Abnahmekriterium erreicht, Windows-Bedienprobe offen.** Sechs
+> Commits (`3a9dee3` iU5-T0 … `7d0752f` iU5-T5) auf der Basis `18f515f`.
+>
+> **Das Abnahmekriterium ist maschinell erfüllt:**
+> ```bash
+> git grep -nE '\bProgram\.[A-Za-z]' -- 'EPOS.Kern/*.cs' \
+>     'WindowsFormsApplication1/Allgemein/*.cs' \
+>     'WindowsFormsApplication1/Controller/*.cs' \
+>     'WindowsFormsApplication1/Model/*.cs' | grep -vP ':\s*(///|//|\*)'
+> # → 0 Treffer  (Basis: 53)
+> ```
+>
+> **Der Halter statt eines Containers.** `EPOS.Kern/Allgemein/Dienste/` führt neun
+> Schnittstellen mit Standardfassungen und den statischen Halter `Dienste`; die
+> Windows-Fassungen liegen in `WindowsFormsApplication1/Dienste/` und werden in
+> `Program.Main` **vor** `DataRepository.DatenbankVorhanden()` eingelegt. Ein
+> DI-Container ist im Bestand fremd — acht austauschbare Haken (`Meldung`,
+> `KiTexte.Lieferant`, `KiEinwilligung.Nachfragen`, `KiAusfuehrer.*`,
+> `AnlagenEindeutigkeit.Frage`, `SimulationControl.Speicherlauf` …) tragen ihn bereits;
+> von den 22 rufenden Klassen sind etliche rein statisch. Begründung im
+> Entscheidungsregister § 2.6.
+>
+> **`Meldung` bleibt** und zeigt seit T0 selbst auf `Dienste.Dialog`. `Program.Main`
+> belegt deshalb nur noch `Dienste.*`. Beabsichtigter Nebeneffekt: Die Hinweisdialoge
+> des Kerns tragen unter Windows wieder das **Informationssymbol**, das sie bis iU3-2
+> hatten.
+>
+> **Tranchen und Zahlen.**
+>
+> | Tranche | Commit | Dateien | Fundstellen | Warnungen | Tests | Referenzlauf |
+> |---|---|---|---|---|---|---|
+> | T0 Halter, Schnittstellen, Adapter | `3a9dee3` | 33 neu + 4 | — | 123 / 89 | 809 | PASS |
+> | T1 Dialoge | `5eae11f` | 14 | 33 `MessageBox.Show` | 123 / 89 | 809 | PASS |
+> | T2 Pfade und Dateien | `7cda009` | 13 | 12 `SpecialFolder`, 2 Dateidialoge, 1 `Process.Start` | 123 / 89 | 809 | PASS |
+> | T3 Einstellungen und Lizenz | `c288461` | 11 | ~30 Registry, 10 DPAPI, 3 `Settings` | 123 / 89 | 809 | PASS |
+> | T4 Sprache | `3ee613f` | 5 | 5 `nLanguage` | 123 / 89 | 809 | PASS |
+> | T5 Navigation und Kontext | `7d0752f` | 21 | 32 `Set*Control`, 25 `ShowDialog`, 9 `startfrm` | 123 / 89 | 810 | PASS |
+>
+> Warnungen „App / Kern"; die Summe **123** ist unverändert die Basis von iU4.
+> Referenzlauf jeweils **1030, 1007, 1017** gegen `2026-08-30_B3-Kaskade`:
+> **GESAMT PASS, 815.043 Werte**, `diff -rq` nur `protokoll.txt` zusätzlich.
+>
+> **Rückbau (M4).** `System.Management` als Paketreferenz entfernt (vorher bestätigt:
+> null Treffer auf `System.Management`, `ManagementObject`, `ManagementClass`, `Win32_*`
+> im ganzen Repo — die Geräte-ID lief nie über WMI). `Program.StartLocalWebServer` /
+> `StopLocalWebServer` samt fester Pfadangabe `C:\WPFake` gelöscht (34 Zeilen, einziger
+> Aufruf seit jeher auskommentiert). Die Dublette
+> `RegPfad = @"Software\EPOS_PLAN\Variantentest"` auf eine Konstante gelegt.
+>
+> **Ausnahmen, die bewusst stehen bleiben.**
+>
+> | Fundstelle | Warum |
+> |---|---|
+> | `DataRepository.cs` — `Properties.Settings.DBPath/DBName`, `CommonApplicationData` | tabu in iU5, gehört zu iU6 |
+> | `ErststartMigration.cs` — `Properties.Settings.Save()` | Access-Zweig, bleibt mit der Erststart-Migration in der Anwendung |
+> | `HelpExtender` in `Hilfe/HelpCatalog.cs` — `new Form_HelpPopup()` | Oberflächenbaustein wie `HilfeAutomatik`/`InfoKnopf`, geht mit iU9 |
+> | 12 `*KontextMenuCtrl` — 44 `new Form_X` / `ShowDialog` | **siehe unten** |
+> | `EPOS.Kern/Allgemein/Dienste/StandardPfade.cs` — `SpecialFolder` | die Standardfassung von `IPfade` selbst; genau dort gehört es hin |
+> | `SimulationControl`/`SimulationKanaele` (`speicherRegistry`), `SchemaMigration` (`KatalogRegistry`) | Wortteil, kein Registry-Zugriff — der Wächterausdruck führt kein `\b` |
+>
+> **Warum die Bearbeitungsdialoge der Kontextmenüs bleiben.** Sie sind keine
+> `Program`-Bindung, sondern eine Maske-zu-Maske-Kopplung: Der Controller füllt
+> `frm.list_werzmodel` mit typisierten Modellen, setzt `frm.m_nType`/`m_ID_Projekt`,
+> ruft `frm.SetControls(…)`, zeigt und liest die Liste zurück. Ein Schlüssel plus
+> `object[]` bildete das nur ab, indem der halbe Controller in `WinFormsNavigation`
+> zöge. Diese Klassen sind ohnehin **Oberflächenbausteine** — sie führen `ListView`,
+> `ContextMenuStrip` und `MouseEventHandler` und können nie in den plattformfreien Kern;
+> sie wandern mit ihren Masken in iU9. `MenueCtrl` dagegen ist vollständig umgestellt und
+> braucht kein `using System.Windows.Forms` mehr.
+>
+> **Windows-Prüfpunkte für die Abnahme am Gerät.** Registry-Werte werden unverändert
+> gelesen (`Language`, `GeminiApiKey`, `KiZaehler`, `KiHinweisBestaetigt`,
+> `CsvExportPfad`, `LizenzAnker`, `LizenzZugestimmt`); die Lizenz bleibt aktiviert und
+> der KI-Schlüssel lesbar (DPAPI-Geltungsbereiche unverändert `LocalMachine` bzw.
+> `CurrentUser`); Umschalten de↔en wirkt nach Neustart wie bisher; alle zwölf Gewerke
+> öffnen und speichern über das Kontextmenü; die vier Ja/Nein-Rückfragen antworten in
+> beide Richtungen richtig — die Projektlöschung mit Fokus auf „Nein"; alle 19
+> Stammdaten- und Einlesemasken aus dem Menü; CSV-Export schlägt den zuletzt benutzten
+> Ordner vor; Hilfe-Zwischenspeicher unter `%APPDATA%\EPOS-Plan` und Lizenz unter
+> `%APPDATA%\wp-plan` bleiben liegen.
+>
+> **Offen nach iU5:** der Windows-Vollreferenzlauf 332/332, die Eingabehelfer
+> `Program.Zahl*`/`Ganzzahl*` mit ihren Masken (iU9) und die genannten Ausnahmen.
+
 **Voraussetzung:** iU4. **Block A2, A3, A4, M4.**
 
 | Inhalt | Menge |
@@ -892,6 +976,8 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 | `Program.Zahl*`/`Ganzzahl*` → Eingabekomponenten | **44 Dateien**; Vorkommen: `ZahlPruefen` 121, `ZahlFaerben` 120, `ZahlParsen` 55, dazu `Ganzzahl*` 102 |
 
 **Abnahme:** Kein View-fremder Code greift auf `Program.*`; Referenzläufe unverändert PASS.
+**Hier erreicht** (Linux, drei Projekte byte-gleich, Wächter 0 Treffer); die Bedienprobe auf
+Windows und der Vollreferenzlauf 332/332 stehen aus.
 
 ### iU6 — Datenzugriff plattformfrei · S–M · Windows
 
@@ -1115,6 +1201,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 | **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
 | **iZ3** | **Go/No-Go** | iU3 | **erreicht 02.09.2026** — 1030 auf Linux byte-gleich zur Referenzbasis |
+| **iZ5a** | Statics gekappt | iU5 | Wächter `Program.*` im Kernsatz = 0 Treffer — **hier erreicht 03.09.2026** (`3a9dee3`…`7d0752f`); Referenzlauf 1030/1007/1017 byte-gleich, **Windows-Bedienprobe offen** |
 | **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS — **hier erreicht 03.09.2026** (168 Dateien verschoben, 796 Tests, 1030/1007/1017 byte-gleich); **Windows-Nachweis 332/332 offen** |
 | **iZ5** | Modell-C-Stichtag | iU8 | erster Blazor-Dialog produktiv, Maus und Finger abgenommen |
 | **iZ6** | iPad rechnet ein Projekt vollständig | iU10 | Ergebnis wertgleich, Bericht zeilengleich |
