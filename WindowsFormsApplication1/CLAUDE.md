@@ -4,6 +4,14 @@ Kontext zum **Code** dieses Projekts. Fachdomäne, Datenmodell, Migration und Um
 `Kenndaten.accdb` stehen in der [`CLAUDE.md` der Repo-Wurzel](../CLAUDE.md) — hier nicht wiederholen.
 Antworten und Code-Kommentare auf Deutsch.
 
+> **Der Rechenkern steht nicht mehr hier.** Seit Paket iU4 (03.09.2026) liegen 168 Kerndateien —
+> `Allgemein/Simulation/`, `Allgemein/Wirtschaftlichkeit/`, `Model/`, die Zugriffsschicht, die
+> Daten-Hälfte des Berichts und 50 Controller — im Projekt
+> [`../EPOS.Kern/`](../EPOS.Kern/CLAUDE.md). Dieses Projekt referenziert es und übersetzt sie
+> nicht mehr mit. **Regel: eine Fachänderung am Rechenkern wird EINMAL gemacht, im Kern.** Wer
+> eine Datei hier sucht und nicht findet, sucht sie dort — die Ordnerstruktur ist dieselbe
+> geblieben.
+
 ## Build
 
 `net10.0-windows`, WinForms, `WinExe`. Namespace `WindowsFormsApplication1`;
@@ -57,21 +65,33 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 - **`Program.cs`** — `Main` startet die MDI-Oberfläche. Hält `mdifrm`, `mainfrm`, `startfrm`,
   `menuectrl`, `wizardctrl`, `HelpCatalog`, `ApplicationPath_Common/_User`, `nLanguage`
   (Sprache aus Registry `HKCU\Software\wp-plan`). Globaler veränderlicher Zustand — Seiteneffekte
-  bei Änderungen mitdenken.
-- **`Controller/`** (70 Dateien, `*Ctrl.cs`) — Logik je Gewerk; Kontextmenüs als `*KontextMenuCtrl`,
-  Katalogpflege als `*StammCtrl`, Projektzuordnungen als `Z_Projekt*Ctrl`.
-- **`Model/`** (36 Dateien, `*Model.cs`) — Datenmodelle je Gewerk.
+  bei Änderungen mitdenken. `nLanguage`, `ZahlParsen` und `GanzzahlParsen` sind seit iU4-1 nur
+  noch **Weiterleitungen** auf `Sprache` bzw. `ZahlText` im Kern; `Main` setzt außerdem die Haken
+  `Meldung.*` und `WErzeugerCtrl.GeraetewaisenAufraeumen`, über die Kern-Code Meldungen absetzt
+  und den Geräte-Aufräumlauf anstößt, ohne WinForms zu kennen.
+- **`Controller/`** (**49** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: Kontextmenüs als
+  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, die Stamm-Controller mit `MessageBox` und
+  `WPCtrl`. Die übrigen **50** liegen seit iU4 in `../EPOS.Kern/Controller/`.
+- **`Model/`** — **keine `.cs` mehr**; alle 46 Modelle liegen in `../EPOS.Kern/Model/`.
 - **`Views/`** (185 `.cs`, 384 Dateien) — `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik,
   Wärmepumpe, Simulation, Wizard, Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …).
-- **`Allgemein/`** (73 Dateien) — geteilte Infrastruktur, siehe unten.
+- **`Allgemein/`** (**82** Dateien) — geteilte Infrastruktur, siehe unten. `Simulation/` (bis auf
+  `SchemaModell.cs`), `Wirtschaftlichkeit/` (vollständig) und die Daten-Hälfte von `Bericht/`
+  sind mit iU4 in den Kern gezogen; hier bleiben die Bericht-AUSGABE (7 Dateien),
+  `Update/` (Schemamigration, Access-Zweig), `Katalog/`, `Import/`, `KI/`, `Hilfe/`,
+  `GrafikTools/`, `Export/` und `Lizenz/`.
+
+Die Aufteilung im Einzelnen — was im Kern liegt und was mit Absicht hier geblieben ist — steht im
+Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.csproj) und in
+[`../EPOS.Kern/CLAUDE.md`](../EPOS.Kern/CLAUDE.md).
 
 ## Module in `Allgemein/`
 
 | Ordner | Inhalt |
 |---|---|
-| `Bericht/` | Berichtsmodul: `WordBerichtGenerator` (OpenXML, Vorlage `Vorlagen/Berichtsvorlage.docx`), `ExcelBerichtGenerator` (ClosedXML), `ChartRenderer` (GDI+/PNG), `Bausteine/` (konfigurierbare Berichtsteile), `BerichtTexte` (de/en) |
-| `Wirtschaftlichkeit/` | `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` |
-| `Simulation/` | Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
+| `Bericht/` | Die **AUSGABE**-Hälfte des Berichtsmoduls: `WordBerichtGenerator` (OpenXML, Vorlage `Vorlagen/Berichtsvorlage.docx`), `ExcelBerichtGenerator` (ClosedXML), `ChartRenderer` (GDI+/PNG), `Bausteine/` (konfigurierbare Berichtsteile), `BerichtsDatenSammler`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`, `IBerichtsBaustein`. Sie zieht bis iU7 nicht um. Die **DATEN**-Hälfte (`BerichtTexte` de/en, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`) liegt seit iU4 in `../EPOS.Kern/Allgemein/Bericht/` |
+| `Wirtschaftlichkeit/` | **vollständig in `../EPOS.Kern/Allgemein/Wirtschaftlichkeit/`** (iU4): `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` und 16 weitere |
+| `Simulation/` | **bis auf `SchemaModell.cs` (Schema-Ansicht) in `../EPOS.Kern/Allgemein/Simulation/`** (iU4). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
 | `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, DPAPI-Ablage, Zustände von `NichtAktiviert` bis `Lesemodus` |
 | `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
 | `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
@@ -79,7 +99,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
-**Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien. Seit 02.09.2026 (`6486c36`)
+**Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
 `PRAGMA foreign_keys = ON` je Verbindung); den Verbindungsstring baut zentral `GetConnectionString()`.
 Die Ausführungsmethoden nehmen seit 02.09.2026 `params DbParam[]` (`Allgemein/DbParam.cs`, eigener
@@ -94,7 +114,7 @@ innen ebenfalls auf SQLite, die Property `DBCommand` bleibt `OleDbCommand`. Neue
 ausschließlich über `DataRepository`; das Ziel `IDatenzugriff`/`DbParam` steht im
 `Umsetzungskonzept_iOS_EPOS-Plan.md` (iU6). Betrieb: `BETRIEB_SQLITE.md`.
 
-**Rechenkern:** vollständig verwaltet in `Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`), aufgerufen
+**Rechenkern:** vollständig verwaltet in `../EPOS.Kern/Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`, seit iU4 dort), aufgerufen
 aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
 `DllImport`. Der frühere Weg über `..\CSExeCOMServer` ist abgelöst; das Projekt wurde am
 02.09.2026 aus dem Repo **entfernt** (Paket iU0-P0.1). Historie:
@@ -157,7 +177,9 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   ausgecheckten Branch mit seinem GitHub-Gegenstück (seit 26.08.2026; vorher fest `origin/main`).
 - **Wegwerf-Harnesse nur unter `..\dev\` (Repo-Wurzel, gitignored).** Die `.csproj` sammelt
   `**\*.cs` ein — eine `.cs`-Datei unterhalb von `WindowsFormsApplication1\` (auch in einem
-  eigenen Unterordner) bricht den Build sofort (CS0017, zweites `Main`).
+  eigenen Unterordner) bricht den Build sofort (CS0017, zweites `Main`). Dasselbe gilt seit iU4-5
+  für `..\EPOS.Kern\`, das ebenfalls per Globbing aufnimmt — dort bricht zusätzlich jede
+  WinForms-Berührung den Build (`EnableWindowsTargeting=false`).
   Ein Harness unter `..\dev\` erbt `..\Directory.Build.props` (und künftig
   `..\Directory.Packages.props`) — dort deshalb
   `<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>` setzen, sonst scheitert
@@ -170,7 +192,7 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   künftig `EPOS_Plan.dll`; die `user.config`-Ablage wandert mit dem Namen (Bestand war
   leer — geprüft, keine Übernahme nötig); das DLL-Tausch-Rezept der Referenzläufe
   tauscht künftig `EPOS_Plan.dll`.
-- **Visual Studio regeneriert `MyResource/Resource.Designer.cs` selbst**, sobald es eine
+- **Visual Studio regeneriert `../EPOS.Kern/MyResource/Resource.Designer.cs` selbst** (die Datei ist mit iU4-5 dorthin gezogen), sobald es eine
   `.resx`-Änderung bemerkt (alphabetische Einordnung). Wer den Designer parallel von Hand
   ergänzt hat, baut Duplikate (CS0102) — vor dem Build prüfen und die Hand-Einfügung
   entfernen, die generierte behalten.

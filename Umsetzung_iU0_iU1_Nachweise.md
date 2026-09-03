@@ -1,6 +1,6 @@
-# Nachweisliste iU0 / iU1 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 — Abnahme auf Windows
 
-**Stand 02.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11)**
+**Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`**
 
 Die Pakete iU0 und iU1 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md)
 (§ 4, Rev. 2.1) sind umgesetzt. **Alle Nachweise wurden auf Linux geführt** — SDK 10.0.400, kein
@@ -227,12 +227,126 @@ Kommentare. PowerShell nur gelesen, nicht ausgeführt (kein `pwsh` auf Linux).
 
 ---
 
+## Nachweise iU4 — `EPOS.Kern` herauslösen
+
+**Stand 03.09.2026 · Branch `ios_migration` · `4a0a4e2`..`616dff4` auf Basis `9fe9c71`.**
+
+Auch hier gilt: alle Nachweise auf Linux geführt (SDK 10.0.400, kein Visual Studio). Nach **jedem**
+der sieben Commits wurden Build (`WP-Plan.sln`, Release, x64, `--no-incremental`), Tests
+(`WP-Plan.Kern.slnf`) und der Referenzlauf 1030 gegen `Referenzlaeufe/2026-08-30_B3-Kaskade`
+gefahren: durchgehend **0 Fehler**, **PASS** und **byte-gleich**. Die Warnsumme der Lösung ist am
+Ende dieselbe wie am Anfang: **123** (Verteilung verschoben, siehe iU4-5).
+
+### `4a0a4e2` — iU4-1: `Sprache` und `ZahlText`
+
+**Nachweis hier:** 123 Warnungen, 787 Tests, 1030 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] Start mit Registry `Language=0` und `Language=1` — Oberfläche und Bericht in der jeweiligen
+      Sprache wie bisher
+- [ ] Eine Zahleneingabe (Emissionen, Kostenprofil): Komma **und** Punkt gültig, `1.234,5`
+      abgelehnt, Färbung und Prüfmeldung unverändert
+
+### `fb5374e` — iU4-2: Kanten kappen
+
+**Nachweis hier:** 123 Warnungen, 787 Tests, 1030 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] Projekt löschen **und** Variante löschen → die verwaisten Gerätezeilen verschwinden weiterhin
+      (der Haken `WErzeugerCtrl.GeraetewaisenAufraeumen` ist in `Program.Main` belegt)
+- [ ] Menü „Export/Import" öffnet und schließt unverändert
+- [ ] Stromspeicher-Stammdaten, schreibgeschützter Satz: Meldung erscheint — **jetzt ohne
+      Info-Symbol** (`Meldung.Hinweis` = `MessageBox.Show(text, titel)`), Text und Titel
+      unverändert. Einzige sichtbare Abweichung der Etappe, so im Konzept vorgegeben
+- [ ] Projekt duplizieren mit leerem/unbekanntem Namen → die fünf Meldungen erscheinen weiter
+- [ ] Preisreihen- und Kostenprofildialog auf einer Datenbank ohne diese Tabellen → stille
+      Selbstanlage greift weiter
+
+### `0ae589f` — iU4-3: `WizardSeite` und `ControllerListen`
+
+**Nachweis hier:** 123 Warnungen, 787 Tests, 1030 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] Projektassistent vollständig durchlaufen, **beide** Einstiege (Neu und Bearbeiten):
+      Seitenfolge, Vor/Zurück über inaktive Seiten hinweg, Komponentenseite mit dem Ein- und
+      Ausschalten einzelner Gewerke
+- [ ] BHKW-Stammdatendialog (`Form_DBBHKW`) — Namensliste gefüllt
+- [ ] Projekt löschen (`Form_ProjektDelete`) — Projektliste gefüllt
+
+### `09cd975` — iU4-4: Linkliste auf 169 Dateien, `InternalsVisibleTo`
+
+**Nachweis hier:** `EPOS.Kern` allein: 0 Fehler, 89 Warnungen (87 CA1416, 1 CS0108, 1 CA2255 neu).
+Lösung 124 Warnungen (die eine CA2255 mehr). 787 Tests, 1030 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] Reiner Projektdatei-Schritt — die Lösung muss in VS 2026 unverändert bauen
+
+### `b1a73af` — iU4-5: Big-Bang, 168 Dateien verschoben
+
+**Nachweis hier:** `git diff -M`: 171 R100-Umbenennungen + 2 `.csproj`, sonst nichts.
+`WindowsFormsApplication1` 585 → 417 `.cs`. Lösung 123 Warnungen (Kern 89, App 34).
+`EPOS.Kern/bin/Release/net10.0/en-US/EPOS.Kern.resources.dll` vorhanden und in der
+Anwendungsausgabe. Proben-sln 0 Fehler. 787 Tests, 1030 byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] VS 2026 öffnet `WP-Plan.sln` und zeigt jetzt **9 Projekte**; Projektmappen-Explorer zeigt
+      `EPOS.Kern` mit den verschobenen Ordnern; `Debug|x64` baut durch
+- [ ] Anwendung starten, ein Projekt laden, durch die Bereiche gehen — die Anzeigetexte kommen
+      jetzt aus `EPOS.Kern.dll`
+- [ ] **Sprachumschaltung auf Englisch** — `en-US\EPOS.Kern.resources.dll` muss neben der EXE
+      liegen und greifen
+- [ ] Einstellungen (`Properties.Settings`, u. a. `WordPressUrl`) lesen **und** schreiben
+- [ ] **Referenzlauf 332/332 byte-gleich** — der eigentliche iZ4-Nachweis
+- [ ] Setup bauen (`.\Setup\build-setup.ps1 -Schnell`) und prüfen, dass `EPOS.Kern.dll` **und**
+      der `en-US`-Ordner mit ausgeliefert werden; einmal installieren und starten
+- [ ] WinForms-Designer öffnet ein Formular, das Kerntypen benutzt (z. B. `Form_Quellprofil`)
+
+### `b6efc76` — iU4-6: `EPOS.Kern.Tests`
+
+**Nachweis hier:** `dotnet test WP-Plan.Kern.slnf` → **796** (787 + 9), 0 Fehler.
+
+**Nachweis Windows:**
+
+- [ ] Test-Explorer in VS 2026 und `dotnet test` auf der Windows-Buildmaschine: dieselben 796 grün
+
+### `616dff4` — iU4-7: CI-Referenzlauf auf drei Projekte
+
+**Nachweis hier:** derselbe Lauf lokal — 1030 PASS (236.670 Werte), 1007 PASS (324.219),
+1017 PASS (254.154), **GESAMT PASS (815.043 Werte)**, alle drei byte-gleich.
+
+**Nachweis Windows:**
+
+- [ ] nichts — reine Workflow-Änderung für ubuntu/macos; `windows.yml` bleibt unverändert
+
+### Wenn der Referenzlauf auf Windows abweicht
+
+Auch hier halbieren. Die Reihenfolge der Verdächtigen ist eine andere als bei iU1:
+
+- **`b1a73af` (iU4-5)** ist der einzige Commit, der Dateien bewegt — aber er ändert **keinen
+  Quelltext** (171 R100-Umbenennungen). Wenn er etwas bewegt, dann über die Ressourcen: Der
+  Anzeigetext-Katalog wird jetzt aus `EPOS.Kern.dll` statt aus `EPOS_Plan.dll` geladen. Prüfpunkt
+  ist der `LogicalName` in `EPOS.Kern.csproj`.
+- **`fb5374e` (iU4-2)** ist der einzige Commit mit einer bewusst in Kauf genommenen sichtbaren
+  Änderung (das fehlende Info-Symbol) und mit dem neuen Haken für den Aufräumlauf. Ein
+  Ergebnisunterschied im Referenzlauf kann von hier nicht kommen — ein Unterschied im
+  Datenbestand nach dem Löschen eines Projekts schon.
+- **`0ae589f` (iU4-3)** betrifft ausschließlich den Assistenten und zwei Auswahllisten.
+- `4a0a4e2`, `09cd975` und `616dff4` können ein Rechenergebnis nicht bewegen.
+
+---
+
 ## Reihenfolge der Abnahme
 
 Von billig nach teuer — jeder Schritt setzt den vorigen voraus.
 
-1. **VS 2026 öffnet `WP-Plan.sln`** und zeigt **7 Projekte**; `Debug|x64` baut durch.
-   Danach `WP-Plan.Kern.slnf` öffnen: genau vier Projekte.
+1. **VS 2026 öffnet `WP-Plan.sln`** und zeigt seit iU4 **9 Projekte** (bei iU1 waren es 7);
+   `Debug|x64` baut durch. Danach `WP-Plan.Kern.slnf` öffnen: seit iU4-6 genau **sechs**
+   Projekte (bei iU1 vier).
 2. **Anwendung starten, ein Projekt laden.** Bricht es hier ab, ist alles Weitere sinnlos.
 3. **Referenzlauf gegen `Referenzlaeufe\2026-08-30_B3-Kaskade` → 332/332 byte-gleich (iT1).**
    *Das ist der eigentliche iZ1-Nachweis.* Frameworksprung, Kodierungswechsel und `UseWPF`-Rückbau

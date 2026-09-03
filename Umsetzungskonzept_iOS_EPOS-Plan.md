@@ -235,14 +235,14 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 
 | Projekt | Art | TargetFramework(s) | Plattform | darf referenzieren | Status |
 |---|---|---|---|---|---|
-| `EPOS.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | **nichts** aus dem Bestand; nur plattformfreie Pakete | **neu** (iU4) |
+| `EPOS.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | **nichts** aus dem Bestand; nur plattformfreie Pakete | **vorhanden** — seit iU3 als 91 verlinkte Dateien, seit **iU4-5 mit 168 physisch verschobenen Dateien** |
 | `EPOS.Daten` | Klassenbibliothek | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU6) |
 | `EPOS.UI` | Razor-Klassenbibliothek | `net10.0` | AnyCPU | `EPOS.Kern` | **neu** (iU8) |
-| `EPOS.Kern.Tests` | xUnit | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **neu** (iU4) |
-| `EPOS.Referenzlauf` | Konsole | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **neu** (iU4) — ersetzt `Referenzlauf` für den Kernbeweis |
+| `EPOS.Kern.Tests` | xUnit | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **vorhanden** (iU4-6) — 9 Tests, in `WP-Plan.Kern.slnf` |
+| `EPOS.Referenzlauf` | Konsole | `net10.0` | AnyCPU | `EPOS.Kern`, `EPOS.Daten` | **vorhanden** (iU3) — ersetzt `Referenzlauf` für den Kernbeweis |
 | `SpeicherEngine`, `KiKern` | Klassenbibliothek | `net10.0` | AnyCPU | nichts | **anheben** (iU1) |
 | `SpeicherEngine.Tests`, `KiKern.Tests` | xUnit | `net10.0` | AnyCPU | ihre Engine | **anheben** (iU1) |
-| `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige + COM | **bleibt** — schrumpft über iU9 |
+| `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige + COM | **bleibt** — schrumpft über iU9; seit iU4-5 mit `ProjectReference` auf `EPOS.Kern` und 168 Dateien weniger (585 → 417 `.cs`) |
 | `Referenzlauf` | Konsole | `net10.0-windows` | x64 | WinForms-App | **bleibt**, bis iU9 abgeschlossen ist |
 | `EPOS.iOS` | MAUI-App | `net10.0-ios` | ARM64 | `EPOS.Kern`, `EPOS.Daten`, `EPOS.UI` | **neu** (iU10) |
 | `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
@@ -545,10 +545,10 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 
 | Projekt | VS-MSBuild (Win) | `dotnet` (Win) | `dotnet` (macOS) | Xcode-Kette |
 |---|---|---|---|---|
-| `EPOS.Kern` | ✅ | ✅ | ✅ | – |
+| `EPOS.Kern` — **168 Dateien** seit iU4-5; `dotnet build` 0 Fehler, 89 Warnungen (87 CA1416, 1 CS0108, 1 CA2255) | ✅ | ✅ | ✅ | – |
 | `EPOS.Daten` | ✅ | ✅ | ✅ | – |
 | `EPOS.UI` | ✅ | ✅ | ✅ | – |
-| `EPOS.Kern.Tests` | ✅ | ✅ **testet** | ✅ **testet** | – |
+| `EPOS.Kern.Tests` — 9 Tests (iU4-6) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `EPOS.Referenzlauf` | ✅ | ✅ **läuft** | ✅ **läuft** | – |
 | `SpeicherEngine`, `KiKern` (+ Tests) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `WindowsFormsApplication1` | ✅ | ✅ *(nach Schritt 5)* | ❌ | – |
@@ -826,18 +826,58 @@ Pakets.
 
 ### iU4 — `EPOS.Kern` herauslösen · L · Windows
 
+> **Status 03.09.2026 — hier erreicht, Windows-Nachweis offen.** Sieben Commits
+> (`4a0a4e2` iU4-1 … `616dff4` iU4-7) auf `origin/ios_migration` = `9fe9c71`.
+>
+> **Umfang:** `EPOS.Kern` führt **168 Dateien**, die seit iU4-5 physisch unter
+> `EPOS.Kern/` liegen (`git mv`, Ordnerstruktur `Allgemein/…`, `Controller/`, `Model/`,
+> `MyResource/`, `Properties/` erhalten). Die Anwendung übersetzt sie nicht mehr, sondern
+> referenziert das Projekt; sie schrumpft von 585 auf 417 `.cs`. Der Weg dorthin ging
+> über iU4-4: Erst wurde der volle Umfang **verlinkt** und übersetzt — der
+> Portabilitätsbeweis vor dem Umzug, Wächter `EnableWindowsTargeting=false`.
+>
+> **Gekappte Kanten (iU4-1 bis iU4-3):** `Sprache` und `ZahlText` lösen die letzten
+> `Program`-Statics des Kernpfads ab (`Program` leitet weiter); acht Schema-Konstanten
+> ziehen von `SchemaMigration` nach `SchemaStand`; `KomponentenUebernahmeCtrl` ruft
+> `AnlagenSql` direkt statt über `WizardCtrl`; sieben `MessageBox.Show` werden zu
+> `Meldung.*`; der Geräte-Aufräumlauf läuft über den Haken
+> `WErzeugerCtrl.GeraetewaisenAufraeumen`. Die beiden `partial`-Aufteilungen über die
+> künftige Assemblygrenze hinweg sind aufgelöst: `WizardItemClass` bekommt mit
+> `WizardSeite` einen abgeleiteten Oberflächentyp, die `FillComboBox`-Hälften werden
+> Erweiterungsmethoden in `ControllerListen`. Fünf `*Ctrl.WinForms.cs` entfallen
+> ersatzlos (0 Aufrufer).
+>
+> **`InternalsVisibleTo`** auf `EPOS_Plan` und `EPOS.Kern.Tests` — etliche Controller und
+> Modelle sind ohne Zugriffsangabe deklariert und damit `internal`; die Alternative wäre
+> eine breite Sichtbarkeitsänderung am Bestand ohne fachlichen Grund gewesen.
+>
+> **Nachweis hier:** `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → 0 Fehler,
+> **123 Warnungen** (EPOS.Kern 89, App 34) — dieselbe Summe wie vor der Etappe.
+> `dotnet test WP-Plan.Kern.slnf` → **796** (787 + 9 neue). Referenzlauf **1030, 1007 und
+> 1017** gegen `2026-08-30_B3-Kaskade`: **GESAMT PASS, alle drei byte-gleich.**
+>
+> **Offen nach iU4:** `Program.*`-Statics und `MessageBox` in `Views/` (iU5), `IDatenzugriff`
+> (iU6), die AUSGABE-Hälfte des Berichts samt `ChartRenderer` (iU7), `EPOS.UI` (iU8), die
+> Maskenwellen mit den 432 `OleDbParameter`-Altaufrufen und WFO1000 (iU9), `IEinstellungen`
+> und `ILizenzAblage` (iU11). In der Anwendung bleiben mit Absicht: `SchemaMigration` samt
+> Access-Zweig, `SchemaModell`, `GeraeteWaisen`, `ErststartMigration`,
+> `AnlagenEindeutigkeit`, `Katalog/`, `Import/` (außer `AnsiEncoding`), `WizardCtrl`, die
+> `*KontextMenuCtrl`, `MenueCtrl`, die Stamm-Controller mit `MessageBox`, `KI/`, `Hilfe/`,
+> `GrafikTools/`, `Export/`, `Lizenz/` und `WPCtrl`.
+
 **Voraussetzung:** iU3 bestanden. **Entspricht Grundlagen-S1**, Block A1, M10. **Bausteine:** iE5, iE8.
 
 | Inhalt | Detail |
 |---|---|
 | `EPOS.Referenzlauf` **zuerst** | headless-Runner gegen den unveränderten Bestand kalibrieren — das Messinstrument entsteht vor dem Umbau (§ 3.8) |
-| Umzug | Modelle (45 Dateien), Rechenkern (`BhkwPlan.cs`, 410 Z.), Simulation (25 Dateien in `Allgemein/Simulation`), Wirtschaftlichkeit (20), `DbWerte.cs` (2.562 Z.), Berichtslogik (18) |
-| Kodierung | die **68** Nicht-UTF-8-Dateien beim Umzug einmalig auf UTF-8 mit BOM (M10) — eigener Commit, keine Inhaltsänderung |
+| Umzug | **umgesetzt mit 168 Dateien**: Modelle (46), Rechenkern (`BhkwPlan.cs`), Simulation (25 von 26 — ohne `SchemaModell.cs`), Wirtschaftlichkeit (20), `DbWerte.cs`, die DATEN-Hälfte des Berichts (7 statt 18 — die Ausgabe folgt mit iU7), Zugriffsschicht und 50 Controller |
+| Kodierung | **entfällt** — mit iU1-P1.12 (`3ba7d54`) bereits erledigt; der Umzug ist deshalb ein reines `git mv` (171 R100-Umbenennungen) |
 | Portabilitätssperre | `net10.0` ohne `-windows`, macOS-Build in der CI (iE5) |
 | Namespace | **unverändert** lassen (§ 3.5, → iF13) |
 
 **Abnahme (iZ4):** Windows-App baut und rechnet **byte-gleich** — 332/332. Zusätzlich: `EPOS.Kern`
 baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
+**Hier erreicht** (Linux, drei Projekte byte-gleich); der Windows-Durchlauf 332/332 steht aus.
 
 ### iU5 — Statics kappen, Dienste einziehen · L · Windows
 
@@ -979,7 +1019,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 | **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
 | **iZ3** | **Go/No-Go** | iU3 | **erreicht 02.09.2026** — 1030 auf Linux byte-gleich zur Referenzbasis |
-| **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS |
+| **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS — **hier erreicht 03.09.2026** (168 Dateien verschoben, 796 Tests, 1030/1007/1017 byte-gleich); **Windows-Nachweis 332/332 offen** |
 | **iZ5** | Modell-C-Stichtag | iU8 | erster Blazor-Dialog produktiv, Maus und Finger abgenommen |
 | **iZ6** | iPad rechnet ein Projekt vollständig | iU10 | Ergebnis wertgleich, Bericht zeilengleich |
 | **iZ7** | Auslieferungsfähig | iU13 | signiertes `.ipa`, Feldtest bestanden, Vertriebsweg eingerichtet |

@@ -9,6 +9,12 @@ Diese Datei beschreibt **Fachdomäne, Datenmodell, Migration und Umgang mit der 
 Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
+Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — 168 Dateien, `net10.0` **ohne** WinForms: Simulation,
+Wirtschaftlichkeit, Modelle, Zugriffsschicht und die Daten-Hälfte des Berichts. Die
+Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
+Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
+
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
 (Git-Tag `letzter-x86-stand`) in
