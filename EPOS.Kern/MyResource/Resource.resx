@@ -9590,4 +9590,19 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="SPOT_STATUS_PRUEFT" xml:space="preserve">
     <value>Datei wird geprüft …</value>
   </data>
+  <data name="ETVAR_MSG_ANLAGE_FEHLER" xml:space="preserve">
+    <value>Der Energieträger konnte nicht angelegt werden.</value>
+  </data>
+  <data name="ETVAR_MSG_VORGEMERKT" xml:space="preserve">
+    <value>Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze werden beim Speichern des Projekts angelegt.</value>
+  </data>
+  <data name="ETVAR_MSG_ZUGEORDNET" xml:space="preserve">
+    <value>Die Energieträgervariante '{0}' ist diesem Projekt bereits zugeordnet.</value>
+  </data>
+  <data name="ETVAR_MSG_ANGELEGT" xml:space="preserve">
+    <value>Energieträgervariante erfolgreich angelegt.</value>
+  </data>
+  <data name="ETVAR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Fehler beim Speichern: </value>
+  </data>
 </root>

@@ -9583,4 +9583,19 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="SPOT_STATUS_PRUEFT" xml:space="preserve">
     <value>Checking file …</value>
   </data>
+  <data name="ETVAR_MSG_ANLAGE_FEHLER" xml:space="preserve">
+    <value>The energy carrier could not be created.</value>
+  </data>
+  <data name="ETVAR_MSG_VORGEMERKT" xml:space="preserve">
+    <value>Energy carrier variant noted. The price and emission records are created when the project is saved.</value>
+  </data>
+  <data name="ETVAR_MSG_ZUGEORDNET" xml:space="preserve">
+    <value>The energy carrier variant '{0}' is already assigned to this project.</value>
+  </data>
+  <data name="ETVAR_MSG_ANGELEGT" xml:space="preserve">
+    <value>Energy carrier variant created successfully.</value>
+  </data>
+  <data name="ETVAR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Error while saving: </value>
+  </data>
 </root>
