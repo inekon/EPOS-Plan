@@ -426,3 +426,99 @@ GEÄNDERT
 GELÖSCHT
   17 Dateien der sieben WinForms-Masken (Regel M1) — Liste in § 6
 ```
+
+---
+
+# Nachtrag W0 — Stilllegung nach Anwenderentscheid iF29 (03.09.2026)
+
+> Basis `908926a` (Branch `ios_migration`). Plan: Wellenplan iU9, Abschnitt B.
+> Dieser Nachtrag steht hier und nicht in einem eigenen Protokoll, weil W0 dieselbe
+> Werkzeugkette und dieselben Prüfmuster berührt wie Welle 1.
+
+## W0.1 Auftrag
+
+Der Erreichbarkeitsgraph (Paket iU8‑12f) hatte vier unerreichbare und eine verwaiste Maske
+gemeldet. **iF29** entscheidet: Sie werden **nicht** umgestellt, sondern stillgelegt — dazu drei
+Masken, die nur an ihnen hingen, und `Form_KwkgModule`, deren Knopf seit B5b ausgeblendet ist und
+deren Felder vollständig im `BhkwWirtschaftlichkeitDialog` stehen.
+
+| Commit | Inhalt |
+|---|---|
+| `bb0474c` | **W0.1** Statics gerettet: `EPOS.Kern/Controller/KostenSummenCtrl.cs` und `EPOS.Kern/Model/EnergietraegerModel.cs` |
+| `16b106a` | **W0.2** 25 Dateien / 10 625 Zeilen gelöscht, Aufrufer und Ablagen angepasst |
+| `43452a7` | **W0.3** Formularkarte-Tests, drittes Prüfmuster, Befundliste neu gezogen |
+
+## W0.2 Gelöscht
+
+| Maske | Warum | Nachfolge |
+|---|---|---|
+| `Views/Kosten/Form_Kosten.{cs,Designer.cs,resx}` | seit KD6a ohne Einstieg | `Views/BerichteKosten/UcBkKosten.cs` (Seite) und `Views/Kosten/Form_KostenKomponente.cs` (Dialog) |
+| `Views/Kosten/Form_KostenfaktorItem.{cs,Designer.cs,resx}` | hing allein an `Form_Kosten.AddKostenItem` | — (Prüfmuster erhalten) |
+| `Views/Kosten/ucKostenItem.{cs,Designer.cs,resx}` (Klasse `ucKostenZeile`) | hing allein an `Form_Kosten.UpdateDetailPanel` | `ucVorlagenZeile` |
+| `Views/Kosten/Form_Betriebskosten.cs` (K4) | einziger Öffner war `Form_Kosten` | `BetriebskostenCtrl` + `UcBkKosten` |
+| `Views/Varianten/Form_Variantentest.{cs,Designer.cs,resx}` | `btn_Varianten` war entfernt | `Views/BerichteKosten/UcBkUebersicht.cs` |
+| `Views/Wirtschaftlichkeit/Form_Wirtschaftlichkeit.cs` (K4) | einziger Öffner war `Form_Variantentest` | `UcWirtschaftlichkeit` im Reiter |
+| `Views/Bericht/Form_Bericht.cs` (K4) | dito | `UcBericht` im Reiter |
+| `Views/Simulation/Form_Simulation_Kurz.{cs,Designer.cs,resx,de-DE.resx,en-US.resx}` | verwaist, unter `Compile Remove` | `Form_Simulation_Detail` |
+| `Views/Simulation/Form_Simulation_Detail - Kopie.cs` | dito | — |
+| `Allgemein/GrafikTools/ChartManagerNeu.cs` | dito | `ChartManager` |
+| `Views/Wirtschaftlichkeit/Form_KwkgModule.{cs,Designer.cs,resx}` | Knopf seit B5b ausgeblendet | `BhkwWirtschaftlichkeitDialog`, Gruppe 1b/2 |
+
+**Gerettet in den Kern** (Rümpfe wörtlich, `DbParam`, SQLite-Dialekt):
+`KostenSummenCtrl.KATEGORIE_INVESTITION`/`KATEGORIE_BETRIEB`, `GetAllCarriers`,
+`LiesKomponentenSummen`, `LiesAnlagenSummen`; dazu `EnergyCarrier` und `EnergyConversion` als
+`EPOS.Kern/Model/EnergietraegerModel.cs`. Umgestellte Aufrufer: `EnergietraegerKatalogCtrl`,
+`Form_Energietraeger`, `VorlagenUebernahmeHuelle`, `Form_KostenKomponente`, `Wizard_WPItem`,
+`Form_PhotovoltaikVerguetung`, `UcBkKosten`.
+
+**Mitgezogen:** die zwei Altknöpfe der Startseite (`btn_Kosten`, `btn_Varianten`) samt Handlern,
+Designer-Feldern und 24 `.resx`-Einträgen; der Modul-Knopf der Wirtschaftlichkeitsparameter; die
+`Compile Remove`-Liste der `.csproj`; sieben `HilfeKontext`-Einträge; neun Zeilen
+`help_mapping.txt`; `AlsDialog` in `UcBericht`/`UcWirtschaftlichkeit` (nur die gelöschten Hüllen
+setzten es); 26 Kommentar- und cref-Verweise.
+
+## W0.3 Zähler
+
+| Kennzahl | nach W1 | nach W0 |
+|---|---:|---:|
+| Designer-Dateien (Repo) | 114 | **108** |
+| Masken | 111 | **105** |
+| lokalisiert | 62 | **61** |
+| Kartenzeilen | 2 322 | **2 231** |
+| Felder ohne Beschriftung | 172 | **168** |
+| Öffner erreichbar („ja") | 104 | **103** |
+| unerreichbar („nein") | 4 | **0** |
+| verwaist | 1 | **0** |
+| unklar | 2 | **2** |
+
+## W0.4 Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` | 0 Fehler, **28** Warnungen (30 vorher) |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | **1 036** grün (35 + 450 + 337 + 214) |
+| `dotnet build`/`test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` | 0/0 Warnungen, **119** Tests grün |
+| Stapellauf `--alle WindowsFormsApplication1 --erreichbarkeit` | **105** Masken, 0 nein, 0 verwaist |
+| `python3 Werkzeuge/SqlDialektPruefer/pruefer.py` | 1 303 SQL-Texte, **0** Fundstellen |
+| `EPOS.Referenzlauf lauf`/`vergleich` 1030, 1007, 1017 gegen `2026-08-30_B3-Kaskade` | **PASS/PASS/PASS** (815 043 Werte); `diff -rq` ohne Unterschied |
+| `dotnet publish -c Release -p:Platform=x64` | `wwwroot/` vollständig (`_framework`, `_content/EPOS.UI`, `index.html`) |
+
+## W0.5 Abnahmeliste Windows
+
+Alles Obige ist auf Linux gemessen. Am Windows-Rechner nachzuziehen:
+
+| # | Punkt | Erwartung | ✓ |
+|---|---|---|:--:|
+| W0‑1 | Startseite, Reiter „Berichte & Kosten" | Die zwei Altknöpfe „Kosten" und „Varianten" sind **weg** — nicht nur unsichtbar; die vierseitige Navigation steht wie bisher | ☐ |
+| W0‑2 | Berichte & Kosten → Kosten | Kacheln, Komponententabelle und Trägerliste zeigen dieselben Zahlen wie vor W0; „Kostenverwaltung öffnen…" führt in `Form_KostenKomponente` | ☐ |
+| W0‑3 | Wirtschaftlichkeit → Parameter | Der Knopf „⚙ Werte je BHKW-Modul…" ist weg; die Felder stehen im Dialog „BHKW-Wirtschaftlichkeit" | ☐ |
+| W0‑4 | Hilfe | Infoknopf auf der Kostenseite, im Kostendialog und im Energieträgerdialog zeigt weiter die Wikiseite „Kosten"; der KI-Assistent nennt für diese Masken denselben Bereich | ☐ |
+| W0‑5 | Menü → Projekte → Projektdetail | `FormMain` und `Form_StromTest` bleiben erreichbar (Anwenderentscheid iF29) | ☐ |
+
+## W0.6 Offene Punkte
+
+| # | Punkt |
+|---|---|
+| **W0‑O1** | `EPOS.iOS/Dienste/IosProjektQuelle.cs` nennt in einer Meldung noch `Views/Kosten/Form_Kosten.CreateNewEnergyCarrier`. Die Datei gehört zur iOS-Hülle und wird dort beim nächsten Anfassen nachgezogen. |
+| **W0‑O2** | Die Erkennung „Knopf wird zur Laufzeit entfernt" (`EntferneAltknopf`) im Erreichbarkeitswerkzeug hat seit W0 keinen Beleg mehr im Bestand. Sie bleibt stehen; ein Prüfmuster dafür lohnt erst, wenn der Fall wiederkommt. |
+| **W0‑O3** | `SchliessenAngefordert` in `UcBericht`/`UcWirtschaftlichkeit` hat keinen Abonnenten mehr (die Dialoghüllen sind weg). Das Ereignis bleibt, weil die Seiten es beim Umbau nach Blazor (Welle 5) wieder brauchen. |

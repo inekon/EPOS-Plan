@@ -187,7 +187,7 @@ Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
 ### Knoten, Kanten, Wurzeln
 
 **Knoten** sind die Masken: Klassen, die von `Form`, `UserControl` oder `BaseForm` abstammen —
-über beliebig viele Stufen. Das sind mehr als die 118 Designer-Masken; die Reiter, Kacheln und
+über beliebig viele Stufen. Das sind mehr als die 105 Designer-Masken; die Reiter, Kacheln und
 Navigatoren des Hauptfensters (`Views/BerichteKosten/UcBk*`, `Views/Simulation/Navigator*`,
 `Views/Hauptformular/*`) sind Zwischenknoten und tragen den Weg mit.
 
@@ -263,7 +263,8 @@ Ein langer Pfad wird in der Mitte mit `…` gekürzt; die vollen Öffnerlisten s
 ## Prüfmuster
 
 Die Tests lesen die **echten** Designer-Dateien des Bestands — das ist der Sinn der Sache und bleibt
-so. Nur: Eine Maske, die umgestellt ist, gibt es nicht mehr. Mit **iU8‑9 (Stichtag iZ5)** hat
+so. Nur: Eine Maske, die umgestellt **oder stillgelegt** ist, gibt es nicht mehr. Mit
+**iU8‑9 (Stichtag iZ5)** hat
 `Form_Kosten_Auswahl` ihre WinForms-Fassung verloren (Regel M1: keine zweite Fassung derselben
 Maske) und läuft seither als `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor`. Genau
 diese Maske war aber die **Handkarte aus dem Umsetzungsplan iU8, Abschnitt D**, an der 19 Tests die
@@ -277,22 +278,32 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_Kosten_Auswahl.Designer.cs     Stand 92380ea^, unverändert
     Form_Kosten_Auswahl.cs              dito
     Form_Kosten_Auswahl.resx            dito
-    Form_Kosten.Auszug.cs               die eine Methode, die den Dialog modal öffnete
+    Form_Kosten.Auszug.cs               die zwei Methoden, die Dialoge modal öffneten
     Form_CaseEingabe.Designer.cs        Stand f6e9264^, unverändert (iU9‑W1.3)
     Form_CaseEingabe.cs                 dito
     Form_CaseEingabe.resx               dito
+    Form_KostenfaktorItem.Designer.cs   Stand 16b106a^, unverändert (iU9‑W0)
+    Form_KostenfaktorItem.cs            dito
+    Form_KostenfaktorItem.resx          dito
 ```
+
+Das dritte Muster (`Form_KostenfaktorItem`) ist der einzige **stillgelegte** Fall: Die Maske ist mit
+**iU9‑W0** nicht umgestellt, sondern gelöscht worden (Anwenderentscheid iF29) — eine Blazor-Nachfolge
+gibt es nicht. Sie bleibt als Muster, weil an ihr zwei Aussagen hängen, die sonst kein Beleg mehr
+trägt: die alte Designer-Schreibweise mit `this.` und die Kette „Öffner ohne Wurzel = nein", die den
+Erreichbarkeitsgraphen überhaupt ausgelöst hat.
 
 Das zweite Muster (`Form_CaseEingabe`, mit **iU9‑W1.3** durch
 `EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor` ersetzt) trägt **keinen** `.Auszug.cs`: An ihm
 hängt genau ein Test — die Bereichsspalte einer `NumericUpDown` —, und der sucht keinen Aufrufer.
 Ein Auszug ohne Leser wäre eine Datei, die niemand pflegt.
 
-Jede Datei nennt im Kopfkommentar Herkunft und Nachfolge. `Form_Kosten.Auszug.cs` ist
-`CreateNewEnergyCarrier` aus `Views/Kosten/Form_Kosten.cs` (Zeilen 2089–2196 im Stand `92380ea^`),
-Rumpf unverändert, ergänzt nur um Namensraum und Klassenhülle — sonst wäre es kein gültiges C# und
-Roslyn fände den Aufrufer nicht. So findet die Aufrufersuche im Prüfmuster **genau einen** Treffer,
-wie im Bestand vor dem Stichtag auch.
+Jede Datei nennt im Kopfkommentar Herkunft und Nachfolge. `Form_Kosten.Auszug.cs` trägt die beiden
+Öffnermethoden der stillgelegten Kostenverwaltung: `CreateNewEnergyCarrier` (Zeilen 2089–2196 im
+Stand `92380ea^`) öffnete `Form_Kosten_Auswahl`, `AddKostenItem` (Zeilen 1418–1484 im Stand
+`16b106a^`) den `Form_KostenfaktorItem`. Beide Rümpfe stehen unverändert, ergänzt nur um Namensraum
+und Klassenhülle — sonst wäre es kein gültiges C# und Roslyn fände die Aufrufer nicht. So findet die
+Aufrufersuche im Prüfmuster je Maske **genau einen** Treffer, wie im Bestand vor dem Stichtag auch.
 
 Drei Regeln halten die Muster von allem anderen fern:
 
@@ -306,11 +317,12 @@ Drei Regeln halten die Muster von allem anderen fern:
   lag.
 
 `PruefmusterTests` hält den Stichtag fest: die Blazor-Nachfolge steht im Repo, die WinForms-Fassung
-nicht mehr, das Prüfmuster ist vollständig da und zählt nicht mit.
+nicht mehr, das Prüfmuster ist vollständig da und zählt nicht mit. Für die stillgelegten Muster
+prüft eine zweite `Theory` dasselbe ohne die Nachfolge.
 
 ### Ein weiteres Muster anlegen
 
-Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
+Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung gelöscht ist:
 
 1. Die drei Dateien aus dem letzten Stand **vor** dem Löschcommit holen (`<sha>^:<pfad>` aus der
    Historie), unverändert bis auf einen Kopfkommentar „Prüfmuster für Formularkarte — Stand vor
@@ -331,16 +343,21 @@ Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
    sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`,
    `KostenKnoepfe`, `Wizard_WPItem`); `Form_KostenfaktorItem` läge im selben Ordner, steht aber
    selbst auf „nein" — es hängt am einstiegslosen `Form_Kosten`.
-5. `PruefmusterTests` um die neue Maske ergänzen.
+5. `PruefmusterTests` um die neue Maske ergänzen — `Muster` für eine umgestellte Maske (mit
+   Nachfolge), `StillgelegteMuster` für eine gelöschte (ohne).
 
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
 `dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **119 Tests grün** (101 vor
-iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft jetzt als
+iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft als
 `Theory` **zwei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht als eigener
-Test daneben). Die Tests laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen
-Nachbauten — mit der einen Ausnahme, die der Abschnitt „Prüfmuster" beschreibt.
+Test daneben). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
+Variantenprobe und die verwaiste Kurzansicht festhielten, sind entfallen — an ihre Stelle treten die
+Abnahme „keine Maske mehr auf nein oder verwaist", die Probe „die stillgelegten Masken kennt der
+Graph nicht mehr" und die zweite `Theory` über die stillgelegten Muster. Die Tests laufen gegen die
+**echten** Designer-Dateien des Repos, nicht gegen Nachbauten — mit der einen Ausnahme, die der
+Abschnitt „Prüfmuster" beschreibt.
 
 **Übersetzt das Skelett?** Nachgewiesen am 03.09.2026: eine Kopie von `EPOS.UI/` im Scratchpad, alle
 **120** erzeugten Skelette in `Dialoge/` gelegt, `dotnet build -c Release` → **0 Fehler,
@@ -377,15 +394,23 @@ ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` eben
 (104 mit erreichbarem Öffner, 4 unerreichbar, 1 verwaist, 2 unklar). Die sieben Dateien der beiden
 Prüfmuster sind darin **nicht** enthalten.
 
-**Erreichbarkeit, gemessen am 03.09.2026 (iU8‑12f)** über
-`--alle WindowsFormsApplication1` — **118** Masken:
+**Nachgemessen nach iU9‑W0** (sechs Designer-Masken stillgelegt: `Form_Kosten`,
+`Form_KostenfaktorItem`, `ucKostenItem`, `Form_Variantentest`, `Form_Simulation_Kurz`,
+`Form_KwkgModule`): **108** Designer-Dateien, **105** Masken, 3 ohne `InitializeComponent`,
+0 nicht lesbar, **61** lokalisiert, 2231 Kartenzeilen, 168 Felder ohne Beschriftung; über
+`--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **105** Masken (103 mit erreichbarem
+Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die zehn Dateien der drei Prüfmuster sind
+darin **nicht** enthalten.
+
+**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W0** über
+`--alle WindowsFormsApplication1` — **105** Masken:
 
 | Öffner erreichbar | Masken |
 |---|---|
-| ja | 111 |
-| nein | 4 (`Form_Kosten`, `Form_KostenfaktorItem`, `ucKostenItem`, `Form_Variantentest`) |
-| verwaist | 1 (`Form_Simulation_Kurz` — steht unter `Compile Remove`) |
-| unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten`) |
+| ja | 103 |
+| nein | 0 (die vier von iU8‑12f sind mit iU9‑W0 stillgelegt — Anwenderentscheid iF29) |
+| verwaist | 0 (`Form_Simulation_Kurz` ist gelöscht, mit ihr die `Compile Remove`-Liste) |
+| unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben, siehe iF29) |
 
 Der vollständige Befund mit Pfad bzw. Öffner je Maske steht in
 [`Erreichbarkeit_2026-09-03.md`](Erreichbarkeit_2026-09-03.md).

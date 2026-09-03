@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     /// sichtbare Auswahl statt der Schalterlogik „Sommerpreis = 0", und ein Feld
     /// „Preisstand" hält fest, aus welchem Jahr die Preise stammen.</para>
     ///
-    /// Komplett im Code aufgebaut (kein Designer/.resx nötig) — Muster Form_Bericht.
+    /// Komplett im Code aufgebaut (kein Designer/.resx nötig).
     /// Die Modellblöcke werden UMGESCHALTET, nicht aus- und eingeblendet: Ein
     /// handle-loses Control, das erst zur Laufzeit sichtbar wird, verrutscht in einem
     /// scrollenden Formular (Befund d49075e). Enabled ist hier ohnehin die ehrlichere

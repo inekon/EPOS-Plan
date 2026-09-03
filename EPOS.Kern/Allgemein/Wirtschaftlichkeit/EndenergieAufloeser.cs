@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <c>Tab_KostenKomponente.ID</c> der Wärmepumpe — dieselbe feste Nummer wie
-        /// in <c>Form_Kosten.GetKomponentenID</c> („Wärmepumpe" = 1; Begründung für
+        /// in <c>Tab_KostenKomponente</c> („Wärmepumpe" = 1; Begründung für
         /// die festen Nummern 1…7 dort). BHKW und Heizkessel stehen bereits benannt
         /// in <see cref="BetriebskostenCtrl"/>.
         /// </summary>

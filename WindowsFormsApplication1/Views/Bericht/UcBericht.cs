@@ -14,9 +14,9 @@ namespace WindowsFormsApplication1
     /// Ausgabeformat, Zielordner, „Erstellen".
     ///
     /// <para><b>Herkunft.</b> Der Inhalt stand bis zum Umbau „Berichte &amp; Kosten"
-    /// direkt in <see cref="Form_Bericht"/> und ist unverändert hierher gehoben
-    /// worden, damit die Seite „Bericht" des Reiters ihn einbetten kann;
-    /// <see cref="Form_Bericht"/> ist seither nur noch ein dünner Dialog-Wrapper.
+    /// direkt im Berichtsdialog und ist unverändert hierher gehoben worden, damit
+    /// die Seite „Bericht" des Reiters ihn einbetten kann; die Dialoghülle
+    /// darum ist mit iU9-W0 entfallen (Anwenderentscheid iF29).
     /// Neu hinzugekommen ist allein der Knopf „Projektvergleich + Bericht (alt)",
     /// der beim Wegfall des Dialogs „Projektvarianten" sonst verloren gegangen wäre.</para>
     ///
@@ -39,9 +39,8 @@ namespace WindowsFormsApplication1
     /// „Projektvergleich + Bericht (alt)"; er stand bislang im Dialog
     /// „Projektvarianten" und ist mit dessen Wegfall auf die Berichtsseite
     /// gewandert, damit die Funktion nicht verloren geht. <c>btnAbbrechen</c>
-    /// startet unsichtbar — eingebettet im Reiter erscheint er nur während eines
-    /// Laufs (<see cref="SetBusy"/>), im Dialog-Wrapper bleibt er stehen
-    /// (<see cref="AlsDialog"/>).
+    /// startet unsichtbar — er erscheint nur während eines Laufs
+    /// (<see cref="SetBusy"/>).
     /// </para>
     /// </remarks>
     public partial class UcBericht : UserControl
@@ -56,18 +55,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stammprojekt-ID der Vergleichsgruppe.</summary>
         public int IdStamm { get { return _idStamm; } }
-
-        /// <summary>
-        /// true = das Control sitzt im Dialog-Wrapper <see cref="Form_Bericht"/>;
-        /// dann bleibt „Schließen" dauerhaft sichtbar. Eingebettet im Reiter
-        /// erscheint der Knopf nur während eines Laufs — als „Abbrechen".
-        /// </summary>
-        public bool AlsDialog
-        {
-            get { return _alsDialog; }
-            set { _alsDialog = value; if (btnAbbrechen != null) btnAbbrechen.Visible = value || Beschaeftigt; }
-        }
-        private bool _alsDialog;
 
         /// <summary>Der Anwender hat „Schließen" gedrückt (nur im Dialog-Wrapper belegt).</summary>
         public event EventHandler SchliessenAngefordert;
@@ -507,8 +494,8 @@ namespace WindowsFormsApplication1
             btnDurchsuchen.Enabled = !busy;
             btnVergleichAlt.Enabled = !busy;
             btnErstellen.Enabled = !busy;
-            // Eingebettet dient der Knopf allein dem Abbrechen; im Dialog bleibt er stehen.
-            btnAbbrechen.Visible = AlsDialog || busy;
+            // Der Knopf dient allein dem Abbrechen; ausserhalb eines Laufs ist er weg.
+            btnAbbrechen.Visible = busy;
             btnAbbrechen.Text = busy
                 ? MyResource.Resource.BK_BER_BTN_ABBRECHEN
                 : MyResource.Resource.BK_BER_BTN_SCHLIESSEN;

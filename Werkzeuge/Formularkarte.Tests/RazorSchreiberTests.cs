@@ -115,10 +115,15 @@ public sealed class RazorSchreiberTests
     public void KleingeschriebeneMaskenBekommenEinenGrossenAnfangsbuchstaben()
     {
         // Razor laesst kleingeschriebene Komponentennamen nicht zu (RZ10011).
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/ucKostenItem.Designer.cs"));
+        //
+        // iU9-W0 (03.09.2026): Bis dahin stand hier ucKostenItem. Die Maske haengt am
+        // einstiegslosen Form_Kosten und ist mit ihm stillgelegt (Anwenderentscheid
+        // iF29); der Zeuge ist jetzt ucVorlagenZeile - dieselbe Ablage, und ueber
+        // Form_KostenKomponente auch erreichbar.
+        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/ucVorlagenZeile.Designer.cs"));
 
-        Assert.Equal("UcKostenItem.razor", RazorSchreiber.Dateiname(maske));
-        Assert.Contains("public sealed record UcKostenItemWerte", RazorSchreiber.Schreiben(maske),
+        Assert.Equal("UcVorlagenZeile.razor", RazorSchreiber.Dateiname(maske));
+        Assert.Contains("public sealed record UcVorlagenZeileWerte", RazorSchreiber.Schreiben(maske),
                         StringComparison.Ordinal);
     }
 

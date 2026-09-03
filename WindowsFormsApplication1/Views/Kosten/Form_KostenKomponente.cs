@@ -208,10 +208,10 @@ namespace WindowsFormsApplication1
                 var ids = new HashSet<int>();
                 foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in _anlagenListe)
                     ids.Add(a.AnlageId);
-                foreach (int kat in new[] { Form_Kosten.KATEGORIE_INVESTITION,
-                                            Form_Kosten.KATEGORIE_BETRIEB })
+                foreach (int kat in new[] { KostenSummenCtrl.KATEGORIE_INVESTITION,
+                                            KostenSummenCtrl.KATEGORIE_BETRIEB })
                 {
-                    System.Data.DataTable t = Form_Kosten.LiesAnlagenSummen(_idProjekt, kat);
+                    System.Data.DataTable t = KostenSummenCtrl.LiesAnlagenSummen(_idProjekt, kat);
                     if (t == null) continue;
                     foreach (System.Data.DataRow r in t.Rows)
                     {
@@ -272,7 +272,7 @@ namespace WindowsFormsApplication1
 
         private int KategorieId
         {
-            get { return rbInvest.Checked ? Form_Kosten.KATEGORIE_INVESTITION : Form_Kosten.KATEGORIE_BETRIEB; }
+            get { return rbInvest.Checked ? KostenSummenCtrl.KATEGORIE_INVESTITION : KostenSummenCtrl.KATEGORIE_BETRIEB; }
         }
 
         private KostenVorlageKopf Variante

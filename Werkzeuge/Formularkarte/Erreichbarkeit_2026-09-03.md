@@ -1,6 +1,6 @@
 # Öffner erreichbar — Befund aller Masken (03.09.2026)
 
-Die **K6-Liste** für iU9: Welche der 118 WinForms-Masken sind vom Einstieg der Anwendung aus
+Die **K6-Liste** für iU9: Welche der WinForms-Masken sind vom Einstieg der Anwendung aus
 überhaupt noch zu erreichen — und welche nicht? Erzeugt mit
 
 ```bash
@@ -10,9 +10,9 @@ dotnet run --project Werkzeuge/Formularkarte -c Release -- \
 ```
 
 **Wozu.** Paket iU8-9 hat den ersten Blazor-Dialog an `Form_Kosten` gehängt, weil die Feldkarte
-dort einen Aufrufer auswies. `Form_Kosten` selbst ist aber seit KD6a ohne Einstieg: Die
-Startseite nimmt `btn_Kosten` in `BaueBerichteKostenSeite` mit `EntferneAltknopf` aus der Maske,
-und der Designer meldet den Handler seither gar nicht mehr an. Die Karte nannte den Aufrufer,
+dort einen Aufrufer auswies. `Form_Kosten` selbst war aber seit KD6a ohne Einstieg: Die
+Startseite nahm `btn_Kosten` in `BaueBerichteKostenSeite` mit `EntferneAltknopf` aus der Maske,
+und der Designer meldete den Handler seither gar nicht mehr an. Die Karte nannte den Aufrufer,
 nicht den Weg dorthin — genau diese Lücke schließt die Spalte „Öffner erreichbar" (Paket
 iU8-12f, Entscheidungsregister § 2.8).
 
@@ -24,44 +24,53 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
-## Was zu tun ist
+## Stand nach iU9-W0 (Anwenderentscheid iF29)
+
+Der Befund vom Vormittag nannte **vier unerreichbare und eine verwaiste Maske**. Alle fünf sind
+mit iU9-W0 **stillgelegt** statt umgestellt worden — dazu `Form_KwkgModule`, deren Knopf seit
+B5b ausgeblendet war, und die zwei K4-Hüllen `Form_Wirtschaftlichkeit` und `Form_Bericht`, die
+nur `Form_Variantentest` geöffnet hat:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Kosten` | nein | gelöscht; Nachfolge ist der Reiter „Berichte & Kosten" (`UcBkKosten`) mit `Form_KostenKomponente`. Die von außen genutzten Statics stehen als `KostenSummenCtrl` im Kern. |
+| `Form_KostenfaktorItem` | nein | gelöscht (hing allein an `Form_Kosten.AddKostenItem`); der letzte Stand liegt als Prüfmuster unter `Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/`. |
+| `ucKostenItem` (Klasse `ucKostenZeile`) | nein | gelöscht (hing allein an `Form_Kosten.UpdateDetailPanel`). |
+| `Form_Variantentest` | nein | gelöscht; die Variantenfunktion lebt in `UcBkUebersicht`. Mit ihr die beiden K4-Hüllen `Form_Wirtschaftlichkeit` und `Form_Bericht`. |
+| `Form_Simulation_Kurz` | verwaist | gelöscht, mit ihr `Form_Simulation_Detail - Kopie.cs`, `ChartManagerNeu.cs` und die `Compile Remove`-Liste der `.csproj`. |
+| `Form_KwkgModule` | ja (Knopf ausgeblendet) | gelöscht; alle Felder stehen im `BhkwWirtschaftlichkeitDialog`. |
+
+**Damit steht der Bestand auf 0 × „nein" und 0 × „verwaist".**
+
+## Was noch zu tun ist
 
 | Maske | Zustand | Befund und Vorschlag |
 |---|---|---|
-| `Form_Kosten` | nein | Einziger Öffner ist `Form_Start.btn_Kosten_Click`; `btn_Kosten` wird in `BaueBerichteKostenSeite` per `EntferneAltknopf` entfernt, der Handler ist zusätzlich nirgends angemeldet. Nachfolge ist der Reiter „Berichte & Kosten" (`UcBkKosten`) mit `Form_KostenKomponente`. **Stilllegen** — mit den beiden Masken darunter. |
-| `Form_KostenfaktorItem` | nein | Hängt allein an `Form_Kosten.AddKostenItem`. **Stilllegen** zusammen mit `Form_Kosten`. |
-| `ucKostenItem` (Klasse `ucKostenZeile`) | nein | Hängt allein an `Form_Kosten.UpdateDetailPanel`. **Stilllegen** zusammen mit `Form_Kosten`. |
-| `Form_Variantentest` | nein | Einziger Öffner ist `Form_Start.btn_Varianten_Click`; `btn_Varianten` wird im selben Zug entfernt. Der Quelltext sagt es selbst („Rückfallweg … nicht mehr verdrahtet"). Nachfolge ist der Reiter „Berichte & Kosten". **Stilllegen oder wieder verdrahten** — entscheiden, nicht liegen lassen. |
-| `Form_Simulation_Kurz` | verwaist | Kein einziger Öffner, und die Datei steht in `WindowsFormsApplication1.csproj` unter `Compile Remove` — sie wird nicht einmal übersetzt. **Löschen.** |
-| `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber in `Form_Gebaeude.cs:616` auf `Visible = false` gesetzt und nirgends wieder eingeschaltet wird. **Prüfen**, unter welcher Bedingung der Knopf noch erscheint. |
-| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden in einem Zweig auf `Enabled = false` gesetzt und nie wieder eingeschaltet. **Prüfen.** |
+| `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
+| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
 
-Die übrigen 111 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
+Die übrigen 103 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
 
 **Für die Wellenplanung iU9:** Eine Maske mit „nein" oder „verwaist" wird **nicht** nach Blazor
 umgestellt — sie wird stillgelegt. Eine Maske mit „unklar" wird vor der Umstellung geklärt. Vor
-jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte Maske senkt die Gesamtzahl.
+jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte und jede umgestellte Maske senkt
+die Gesamtzahl.
 
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 111 | Weg von MDIMainForm bzw. Form_Start vorhanden |
-| nein | 4 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
-| verwaist | 1 | die Maske wird nirgends erzeugt |
+| ja | 103 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
+| verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 2 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 118 | |
+| gesamt | 105 | |
 
 ## Alle Masken
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
-| Form_Kosten | nein | Öffner: Form_Start.btn_Kosten_Click (Form_Start.cs:2074) — gesperrt: Steuerelement btn_Kosten wird zur Laufzeit entfernt (EntferneAltknopf), der Handler ist nirgends angemeldet | `WindowsFormsApplication1/Views/Kosten/Form_Kosten.Designer.cs` |
-| Form_KostenfaktorItem | nein | Öffner: Form_Kosten.AddKostenItem (Form_Kosten.cs:1487) | `WindowsFormsApplication1/Views/Kosten/Form_KostenfaktorItem.Designer.cs` |
-| Form_Variantentest | nein | Öffner: Form_Start.btn_Varianten_Click (Form_Start.cs:2145) — gesperrt: Steuerelement btn_Varianten wird zur Laufzeit entfernt (EntferneAltknopf) | `WindowsFormsApplication1/Views/Varianten/Form_Variantentest.Designer.cs` |
-| ucKostenItem | nein | Öffner: Form_Kosten.UpdateDetailPanel (Form_Kosten.cs:954) | `WindowsFormsApplication1/Views/Kosten/ucKostenItem.Designer.cs` |
-| Form_Simulation_Kurz | verwaist | nicht übersetzt (Compile Remove in der .csproj) | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Kurz.Designer.cs` |
 | Form_GebWohnflaeche | unklar | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_Aendern → Form_GebWohnflaeche — Öffner: Form_Gebaeude.btn_Aendern_Click (Form_Gebaeude.cs:425) — zweifelhaft: Steuerelement btn_Aendern bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Gebäude/Form_GebWohnflaeche.designer.cs` |
 | Form_PufferSp_Bearbeiten | unklar | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin → btn_Bearbeiten → Form_PufferSp_Bearbeiten — Öffner: Form_PufferSp_Admin.btn_Bearbeiten_Click (Form_PufferSp_Admin.cs:164) — zweifelhaft: Steuerelement btn_Bearbeiten bleibt auf Visible/Enabled = false; Form_PufferSp_Admin.btn_Neu_Click (Form_PufferSp_Admin.cs:178) — zweifelhaft: Steuerelement btn_Neu bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Bearbeiten.designer.cs` |
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
@@ -78,7 +87,6 @@ jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte Maske senkt die 
 | Form_Brauchwasser | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser.designer.cs` |
 | Form_Brauchwasser_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Brauchwasser → Masken.BrauchwasserAdmin → Form_Brauchwasser_Admin | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser_Admin.designer.cs` |
 | Form_CECImport | ja | MDIMainForm → MenuItem_PV_Import_CEC → Main_PV_Test | `WindowsFormsApplication1/Views/Photovoltaik/Form_CECImport.Designer.cs` |
-| Form_CaseEingabe | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → Zeile_WorstBestAngefordert → Form_CaseEingabe | `WindowsFormsApplication1/Views/Kosten/Form_CaseEingabe.Designer.cs` |
 | Form_DBBHKW | ja | Form_Start → label2_pBox_BHKW → Form_BHKWEing → btn_DBBHKW_Edit → Form_DBBHKW | `WindowsFormsApplication1/Views/BHKW/Form_DBBHKW.designer.cs` |
 | Form_EingBrauchwasserTyp | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser → btn_ProzTypeDBedit → Form_EingBrauchwasserTyp | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingBrauchwasserTyp.designer.cs` |
 | Form_EingDBBrauchwasser | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser → btn_Prozess_DBedit → Form_EingDBBrauchwasser | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingDBBrauchwasser.designer.cs` |
@@ -109,11 +117,8 @@ jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte Maske senkt die 
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
 | Form_Klimadaten | ja | MDIMainForm → MenuItem_Klimadaten → Form_Klimadaten | `WindowsFormsApplication1/Views/Klimadaten/Form_Klimadaten.Designer.cs` |
 | Form_Klimazonenkarte | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuelleErdreich → _btnKarte → Form_Klimazonenkarte | `WindowsFormsApplication1/Views/Simulation/Form_Klimazonenkarte.Designer.cs` |
-| Form_KostenAdmin | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → btnKatalog → Form_KostenAdmin | `WindowsFormsApplication1/Views/Kosten/Form_KostenAdmin.Designer.cs` |
-| Form_KostenItemNeu | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → btnKatalog → Form_KostenAdmin → btnNeuKostenfaktor → Form_KostenItemNeu | `WindowsFormsApplication1/Views/Kosten/Form_KostenItemNeu.Designer.cs` |
 | Form_KostenKomponente | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente | `WindowsFormsApplication1/Views/Kosten/Form_KostenKomponente.Designer.cs` |
 | Form_Kostenprofil | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → Form_Kostenprofil | `WindowsFormsApplication1/Views/Kosten/Form_Kostenprofil.Designer.cs` |
-| Form_KwkgModule | ja | Form_Start → BaueBerichteKostenSeite → UcBerichteKosten → … → Form_WirtschaftlichkeitParameter → btnModule → Form_KwkgModule | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/Form_KwkgModule.Designer.cs` |
 | Form_LeistungspreisReihe | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueLeistungspreisZusatz → Form_LeistungspreisReihe | `WindowsFormsApplication1/Views/Kosten/Form_LeistungspreisReihe.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
 | Form_PV | ja | Form_Start → pBox_PV → Form_PV | `WindowsFormsApplication1/Views/Photovoltaik/Form_PV.Designer.cs` |
@@ -148,15 +153,11 @@ jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte Maske senkt die 
 | Form_StromspeicherItemNeu | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV → btn_Neu → Form_Sp_ItemNeu | `WindowsFormsApplication1/Views/Stromspeicher/Form_StromspeicherItemNeu.Designer.cs` |
 | Form_Stromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher.designer.cs` |
 | Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
-| Form_VariantenName | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → NeueVariante → Form_VariantenName | `WindowsFormsApplication1/Views/Kosten/Form_VariantenName.Designer.cs` |
-| Form_VorlagenPosition | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → Zeile_EditorAngefordert → Form_VorlagenPosition | `WindowsFormsApplication1/Views/Kosten/Form_VorlagenPosition.Designer.cs` |
-| Form_VorlagenUebernahme | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → btnUebernahme → Form_VorlagenUebernahme | `WindowsFormsApplication1/Views/Kosten/Form_VorlagenUebernahme.Designer.cs` |
 | Form_WP | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WP_Administration → Masken.WpAdministration → Form_WP | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP.Designer.cs` |
 | Form_WPAuswahl | ja | Form_Start → pBox_WP → Form_WPAuswahl | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WPAuswahl.designer.cs` |
 | Form_WPFilterAuswahl | ja | Form_Start → pBox_WP → Form_WPAuswahl → btn_Neu → Form_WpFilterAuswahl | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WPFilterAuswahl.Designer.cs` |
 | Form_WP_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WPImport → Masken.WpImport → Form_WP_einlesen | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP_einlesen.designer.cs` |
 | Form_Waermebedarf | ja | Form_Start → pBox_WBedarfDaten_Click → Form_Waermebedarf | `WindowsFormsApplication1/Views/Wärmebedarf/Form_Waermebedarf.designer.cs` |
-| Form_WirtschaftlichkeitVerlauf | ja | Form_Start → BaueBerichteKostenSeite → UcBerichteKosten → Wirtschaftlichkeit → UcWirtschaftlichkeit → btnVerlauf → Form_WirtschaftlichkeitVerlauf | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/Form_WirtschaftlichkeitVerlauf.Designer.cs` |
 | Kenndaten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WP_Administration → Masken.WpAdministration → Form_WP → btn_Kenndaten → Kenndaten | `WindowsFormsApplication1/Views/Wärmepumpe/Kenndaten.Designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
 | NavigatorStrom | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorStrom | `WindowsFormsApplication1/Views/Simulation/NavigatorStrom.Designer.cs` |
@@ -175,4 +176,3 @@ jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte Maske senkt die 
 | ucFuelSettings | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings | `WindowsFormsApplication1/Views/Kosten/ucFuelSettings.Designer.cs` |
 | ucStromAufschlaege | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueAufschlagsblock → ucStromAufschlaege | `WindowsFormsApplication1/Views/Kosten/ucStromAufschlaege.Designer.cs` |
 | ucVorlagenZeile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → ZeileBauen → ucVorlagenZeile | `WindowsFormsApplication1/Views/Kosten/ucVorlagenZeile.Designer.cs` |
-

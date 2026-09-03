@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     /// Oben die Verwaltung der Vergleichsgruppe — Stammprojekt-Auswahl, Filter
     /// „nur Stammprojekte", Liste aus Stamm und Varianten mit Simulationsstand,
     /// Variante anlegen/löschen, Simulation starten. Die Logik stammt aus dem
-    /// abgelösten Dialog „Projektvarianten" (<see cref="Form_Variantentest"/>) und
+    /// abgelösten Dialog „Projektvarianten" (mit iU9-W0 geloescht) und
     /// arbeitet unverändert über <see cref="VariantenCtrl"/>; die Spalte
     /// „Simulationsstand" kommt wie in Bericht und Wirtschaftlichkeit aus
     /// <see cref="BerichtsDatenSammler.ErmittleStatus"/>.
@@ -45,11 +45,11 @@ namespace WindowsFormsApplication1
         // Registry-Ablage der zuletzt gewählten Stamm-Auswahl (Pfad wie im Altdialog,
         // damit die zuletzt bearbeitete Gruppe erhalten bleibt).
         /// <summary>
-        /// Registry-Zweig der Variantenprobe — dieselbe Konstante wie in
-        /// <see cref="Form_Variantentest.RegPfad"/> und seit iU5 auch derselbe Wert:
-        /// Die Dublette ist aufgeloest.
+        /// Registry-Zweig der Variantenprobe — derselbe Pfad, den der mit iU9-W0
+        /// geloeschte Altdialog „Projektvarianten" benutzt hat, damit die zuletzt
+        /// bearbeitete Gruppe eines Bestandsstands erhalten bleibt.
         /// </summary>
-        private const string RegPfad = Form_Variantentest.RegPfad;
+        private const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
         private const string RegWertStamm = "LetzterStammID";
 
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();

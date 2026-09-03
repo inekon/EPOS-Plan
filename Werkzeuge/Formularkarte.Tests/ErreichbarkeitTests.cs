@@ -8,10 +8,12 @@ namespace Formularkarte.Tests;
 /// <para>
 /// Anlass ist der Befund vom 03.09.2026: Die Feldkarte wies fuer
 /// <c>Form_Kosten_Auswahl</c> einen Aufrufer aus (<c>Form_Kosten</c>), und daran
-/// wurde der erste Blazor-Dialog gehaengt - <c>Form_Kosten</c> selbst hat aber
-/// seit KD6a keinen Einstieg mehr. Die Tests halten genau diese Faelle fest:
-/// eine Maske mit Oeffner, aber ohne Weg dorthin; eine Maske mit Weg; und die
-/// beiden Wurzeln.
+/// wurde der erste Blazor-Dialog gehaengt - <c>Form_Kosten</c> selbst hatte aber
+/// seit KD6a keinen Einstieg mehr. Mit iU9-W0 ist diese Kette abgetragen
+/// (Anwenderentscheid iF29): Der Bestand fuehrt seither KEINE unerreichbare und
+/// keine verwaiste Maske mehr. Die Tests halten beides fest - den abgetragenen
+/// Zustand am echten Bestand und die Mechanik "Oeffner ohne Wurzel = nein" am
+/// eingefrorenen Pruefmuster.
 /// </para>
 /// </summary>
 public sealed class ErreichbarkeitTests
@@ -45,58 +47,84 @@ public sealed class ErreichbarkeitTests
     }
 
     // ==================================================================
-    //  Der Befund, der das Werkzeug ausgeloest hat
+    //  Der Befund, der das Werkzeug ausgeloest hat - abgetragen mit iU9-W0
     // ==================================================================
 
     [Fact]
-    public void FormKostenHatEinenOeffnerAberKeinenEinstieg()
+    public void DieStillgelegtenMaskenGibtEsNichtMehr()
     {
-        var knoten = Knoten("Form_Kosten");
+        // Anwenderentscheid iF29: Form_Kosten, sein Kostenfaktordialog, seine
+        // Positionszeile, die Variantenprobe, die Kurzansicht der Simulation und die
+        // KWKG-Modulmaske sind geloescht statt umgestellt. Der Graph darf sie nicht
+        // mehr kennen - sonst lebt eine Fassung wieder.
+        foreach (var klasse in new[] { "Form_Kosten", "Form_KostenfaktorItem", "ucKostenZeile",
+                                       "Form_Variantentest", "Form_Simulation_Kurz", "Form_KwkgModule" })
+        {
+            Assert.True(Graph.Fuer(klasse) is null, "Der Graph kennt " + klasse + " noch.");
+        }
+    }
 
-        Assert.Equal(Erreichbar.Nein, knoten.Status);
-        Assert.Equal("", knoten.Pfad);
+    [Fact]
+    public void KeineMaskeDesBestandsIstMehrUnerreichbarOderVerwaist()
+    {
+        // Das ist die Abnahme von iU9-W0: Was keinen Weg hatte, ist entweder
+        // umgestellt oder geloescht. Bleibt nur "ja" und das begruendete "unklar".
+        //
+        // Gezaehlt werden die MASKEN des Stapellaufs, nicht jede Klasse des Graphen:
+        // Basisklassen ohne Designer (BaseForm) sind keine Masken und stehen dort
+        // dauerhaft auf "verwaist", ohne dass jemand sie oeffnen sollte.
+        var offen = Stapel.Laufen(Projekt, ziel: null).Zeilen
+            .Where(z => z.Erreichbarkeit is not null &&
+                        z.Erreichbarkeit.Status is Erreichbar.Nein or Erreichbar.Verwaist)
+            .Select(z => z.Bezeichner + " (" + z.Erreichbarkeit!.StatusText + ")")
+            .ToArray();
 
-        // Der eine Oeffner ist Form_Start.btn_Kosten_Click - und der Knopf wird in
-        // BaueBerichteKostenSeite mit EntferneAltknopf aus der Maske genommen.
-        var oeffner = Assert.Single(knoten.Oeffner);
-        Assert.Contains("Form_Start.btn_Kosten_Click", oeffner, StringComparison.Ordinal);
-        Assert.Contains("gesperrt", oeffner, StringComparison.Ordinal);
-        Assert.Contains("EntferneAltknopf", oeffner, StringComparison.Ordinal);
-        Assert.Contains("btn_Kosten", oeffner, StringComparison.Ordinal);
+        Assert.True(offen.Length == 0, "Ohne Weg: " + string.Join(", ", offen));
     }
 
     [Fact]
     public void DerGrundStehtSoAuchImKopfDerFeldkarte()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/Form_Kosten.Designer.cs"), null, Projekt);
-        var karte = FeldkarteSchreiber.Schreiben(maske);
-
-        Assert.Contains("| Öffner erreichbar | nein", karte, StringComparison.Ordinal);
-        Assert.Contains("EntferneAltknopf", karte, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void WasAmEinstiegslosenFormKostenHaengtIstEbenfallsUnerreichbar()
-    {
-        // Die Karte nannte fuer beide einen Aufrufer - beide haengen aber an
-        // Form_Kosten. Genau diese Kette hat iU8-9 uebersehen.
-        foreach (var klasse in new[] { "Form_KostenfaktorItem", "ucKostenZeile" })
+        // Am eingefrorenen Pruefmuster: Form_KostenfaktorItem hat genau einen Oeffner
+        // (Form_Kosten.Auszug.cs), aber keine Wurzel darueber - die Karte sagt das im
+        // Kopf, statt einen Weg zu behaupten.
+        Erreichbarkeit.Vergessen();
+        try
         {
-            var knoten = Knoten(klasse);
-            Assert.Equal(Erreichbar.Nein, knoten.Status);
-            Assert.All(knoten.Oeffner, o => Assert.Contains("Form_Kosten.", o, StringComparison.Ordinal));
+            var maske = Kartenbau.Vollstaendig(Repowurzel.Pruefmuster("Kosten/Form_KostenfaktorItem.Designer.cs"),
+                                               null, Repowurzel.PruefmusterWurzel);
+            var karte = FeldkarteSchreiber.Schreiben(maske);
+
+            Assert.Contains("| Öffner erreichbar | nein", karte, StringComparison.Ordinal);
+            Assert.Contains("Form_Kosten.AddKostenItem", karte, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Erreichbarkeit.Vergessen();
         }
     }
 
     [Fact]
-    public void FormVariantentestHaengtAmZweitenEntferntenAltknopf()
+    public void WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar()
     {
-        var knoten = Knoten("Form_Variantentest");
+        // Die Karte nannte fuer Form_KostenfaktorItem einen Aufrufer - der hing aber
+        // selbst an Form_Kosten. Genau diese Kette hat iU8-9 uebersehen; sie wird am
+        // Pruefmuster weiter geprueft, nachdem der Bestand sie mit iU9-W0 los ist.
+        Erreichbarkeit.Vergessen();
+        try
+        {
+            var maske = Kartenbau.Vollstaendig(Repowurzel.Pruefmuster("Kosten/Form_KostenfaktorItem.Designer.cs"),
+                                               null, Repowurzel.PruefmusterWurzel);
+            var befund = maske.Erreichbarkeit;
 
-        Assert.Equal(Erreichbar.Nein, knoten.Status);
-        var oeffner = Assert.Single(knoten.Oeffner);
-        Assert.Contains("Form_Start.btn_Varianten_Click", oeffner, StringComparison.Ordinal);
-        Assert.Contains("btn_Varianten wird zur Laufzeit entfernt", oeffner, StringComparison.Ordinal);
+            Assert.NotNull(befund);
+            Assert.Equal(Erreichbar.Nein, befund!.Status);
+            Assert.All(befund.Oeffner, o => Assert.Contains("Form_Kosten.", o, StringComparison.Ordinal));
+        }
+        finally
+        {
+            Erreichbarkeit.Vergessen();
+        }
     }
 
     // ==================================================================
@@ -161,19 +189,8 @@ public sealed class ErreichbarkeitTests
     }
 
     // ==================================================================
-    //  Verwaist und unklar
+    //  Unklar
     // ==================================================================
-
-    [Fact]
-    public void FormSimulationKurzIstVerwaistUndWirdNichtEinmalUebersetzt()
-    {
-        var knoten = Knoten("Form_Simulation_Kurz");
-
-        Assert.Equal(Erreichbar.Verwaist, knoten.Status);
-        Assert.Empty(knoten.Oeffner);
-        Assert.False(knoten.Uebersetzt);
-        Assert.Contains(knoten.Hinweise, h => h.Contains("Compile Remove", StringComparison.Ordinal));
-    }
 
     [Fact]
     public void EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa()
@@ -234,17 +251,20 @@ public sealed class ErreichbarkeitTests
         Assert.Contains("| Öffner erreichbar | ", uebersicht, StringComparison.Ordinal);
         Assert.Contains("Öffner erreichbar | Datei |", uebersicht, StringComparison.Ordinal);
 
+        // Seit iU9-W0 ist die Zaehlung von "nein" und "verwaist" leer.
+        Assert.Equal(0, ergebnis.Erreichbar(Erreichbar.Nein));
+        Assert.Equal(0, ergebnis.Erreichbar(Erreichbar.Verwaist));
+
         var befund = Stapel.Erreichbarkeitsbefund(ergebnis, Projekt);
         Assert.Contains("# Öffner erreichbar — Befund aller Masken", befund, StringComparison.Ordinal);
-        Assert.Contains("| Form_Kosten | nein |", befund, StringComparison.Ordinal);
-        Assert.Contains("| Form_Simulation_Kurz | verwaist |", befund, StringComparison.Ordinal);
+        Assert.Contains("| Form_GebWohnflaeche | unklar |", befund, StringComparison.Ordinal);
         Assert.Contains("| gesamt | " + ergebnis.Masken + " | |", befund, StringComparison.Ordinal);
 
-        // Unerreichbares steht oben - die Liste wird von vorn abgearbeitet.
+        // Das Ungeklaerte steht oben - die Liste wird von vorn abgearbeitet.
         var kopf = befund.Substring(befund.IndexOf("| Maske |", StringComparison.Ordinal));
-        Assert.True(kopf.IndexOf("| Form_Kosten | nein |", StringComparison.Ordinal) <
+        Assert.True(kopf.IndexOf("| Form_GebWohnflaeche | unklar |", StringComparison.Ordinal) <
                     kopf.IndexOf("| Form_Heizkessel | ja |", StringComparison.Ordinal),
-                    "Die unerreichbaren Masken stehen nicht vorn.");
+                    "Die ungeklaerten Masken stehen nicht vorn.");
     }
 
     [Fact]

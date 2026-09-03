@@ -101,9 +101,6 @@ Form_Start.btn_Help_Strombedarf   = Strombedarf
 # --- Klimadaten ----------------------------------------------------------
 Form_Klimadaten.btn_Help          = Klimadaten
 
-# --- Kosten --------------------------------------------------------------
-Form_Kosten.btn_Help              = Kosten
-
 # ===========================================================================
 # Flaechendeckung: ein Infobutton je Bereich unter Views
 # ===========================================================================
@@ -147,14 +144,11 @@ Form_Simulation_Config.btn_Help     = Simulation
 
 # --- Wirtschaftlichkeit ---------------------------------------------------
 #
-# Das Praefix ist das UserControl, nicht das Formular: Form_Wirtschaftlichkeit
-# ist nur eine Huelle um UcWirtschaftlichkeit, und dasselbe UserControl haengt
-# auch im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
-# Zeile an beiden Orten (HilfeAutomatik, UnterPraefixeAnwenden).
+# Das Praefix ist das UserControl, nicht das Formular: UcWirtschaftlichkeit
+# haengt im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
+# Zeile dort (HilfeAutomatik, UnterPraefixeAnwenden). Die Dialoghuelle
+# Form_Wirtschaftlichkeit ist mit iU9-W0 entfallen.
 UcWirtschaftlichkeit.btn_Help       = Wirtschaftlichkeit
-
-# --- Varianten ------------------------------------------------------------
-Form_Variantentest.btn_Help         = Varianten
 
 # --- Projekt --------------------------------------------------------------
 Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
@@ -214,7 +208,6 @@ Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
-Form_Betriebskosten.btn_Help = Kosten
 Form_CaseEingabe.btn_Help = Kosten
 Form_Energietraeger.btn_Help = Kosten
 Form_KostenAdmin.btn_Help = Kosten
@@ -272,7 +265,6 @@ Form_WPAuswahl.btn_Help = Wärmepumpe
 Form_WpFilterAuswahl.btn_Help = Wärmepumpe
 Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
-Form_KwkgModule.btn_Help = Wirtschaftlichkeit
 Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit
 Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
 UcBericht.btn_Help = Bericht
@@ -307,8 +299,7 @@ Form_Emissionskatalog.btn_Help = Emissionen
 #
 # 3. NUR SICHTBARE Steuerelemente. Stillgelegtes bleibt aussen vor -
 #    Form_Simulation_Config.groupBox_Tools/groupBox_PufferSp/label12/label21
-#    (AltSteuerelementeStilllegen), Form_Kosten.tabEnergie samt Inhalt und die
-#    drei entsorgten Kopfleisten, Wizard_WPItem.groupBox1 und die entfernten
+#    (AltSteuerelementeStilllegen), Wizard_WPItem.groupBox1 und die entfernten
 #    Modulkostenfelder.
 #
 # 4. EIN Anker darf mehrfach vorkommen. Drei Schwellenbeschriftungen zeigen
@@ -369,15 +360,6 @@ Form_Klimadaten.label1           = Klimadaten#daten-einlesen
 Form_Klimadaten.panel1           = Klimadaten#regionsliste
 Form_Klimadaten.panel_KlimaGraph = Klimadaten#diagramme
 
-# --- Kosten ---------------------------------------------------------------
-# Der Dialog fuehrt seit KD4 nur noch Investition und Betrieb; Energietraeger
-# und Preise stehen in Form_Energietraeger (eigene Zeile weiter oben).
-Form_Kosten.panel3                      = Kosten#komponentenliste
-Form_Kosten.flpContainer                = Kosten#investitionspositionen
-Form_Kosten.panel4                      = Kosten#komponentenliste
-Form_Kosten.flpContainer_Betriebskosten = Kosten#betriebspositionen
-Form_Kosten.pnlFooter                   = Kosten#summen
-
 # --- Pufferspeicher: Form_PufferSp_Projekt --------------------------------
 # Fuehrend fuer die Nutzung ist das Klassen-Set (_lblKlassenSet), nicht das
 # Alt-Feld "Verwendung".
@@ -436,8 +418,8 @@ Form_Stromverbraucher.Label19   = Stromverbraucher#summe
 Form_Stromverbraucher.groupBox1 = Stromverbraucher#verbrauch-aendern
 
 # --- Bericht: UcBericht ---------------------------------------------------
-# Das UserControl haengt im Reiter "Berichte & Kosten" UND in der Dialoghuelle
-# Form_Bericht - die Zeilen gelten ueber sein eigenes Praefix an beiden Orten.
+# Das UserControl haengt im Reiter "Berichte & Kosten"; die Zeilen gelten ueber
+# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen.
 # Es fuehrt keine GroupBox; die Bereiche werden ueber ihre Leitbeschriftung
 # angesprochen.
 UcBericht.lblVarianten = Bericht#varianten
@@ -453,4 +435,3 @@ UcBericht.lblZiel      = Bericht#zielordner
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
 #                       ansprechbar.
-# ucKostenZeile         dito, die Kostenpositionszeile in Form_Kosten.

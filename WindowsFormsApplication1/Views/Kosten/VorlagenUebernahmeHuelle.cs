@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             var werte = new Dictionary<string, object>
             {
                 ["KontextText"] = name + " · " +
-                    (kategorieId == Form_Kosten.KATEGORIE_BETRIEB
+                    (kategorieId == KostenSummenCtrl.KATEGORIE_BETRIEB
                         ? Text_("KDLG_KAT_BETRIEB", "Betriebskosten")
                         : Text_("KDLG_KAT_INVEST", "Investitionskosten")),
 
@@ -150,9 +150,9 @@ namespace WindowsFormsApplication1
                            projekt, komponentenId, kategorieId, 0) +
                        KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
                            projekt, komponentenId,
-                           kategorieId == Form_Kosten.KATEGORIE_BETRIEB
-                               ? Form_Kosten.KATEGORIE_INVESTITION
-                               : Form_Kosten.KATEGORIE_BETRIEB, 0);
+                           kategorieId == KostenSummenCtrl.KATEGORIE_BETRIEB
+                               ? KostenSummenCtrl.KATEGORIE_INVESTITION
+                               : KostenSummenCtrl.KATEGORIE_BETRIEB, 0);
             if (lose > 0 || liste.Count == 0)
                 liste.Add(new ValueTuple<int, string>(0,
                     Text_("KDLG_UEB_QUELLE_LOSE", "(ohne Anlagenzuordnung)")));
