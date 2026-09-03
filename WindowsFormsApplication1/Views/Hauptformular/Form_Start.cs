@@ -1506,15 +1506,13 @@ namespace WindowsFormsApplication1
 
         private void pBox_PV_Click(object sender, EventArgs e)
         {
-            Form_PV frm = new Form_PV();
+            // iU9-W6.5: Der Dialog ist die Razor-Komponente PhotovoltaikDialog; die
+            // WinForms-Fassung Form_PV ist im selben Schritt GELOESCHT (Regel M1).
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
-            int id_type;
+            int id_type = WizardItemClass.PV_TYP;
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
 
-            frm.list_pvmodel.Clear();
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
-            id_type = WizardItemClass.PV_TYP;
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + id_type);
 
             // Vollstaendig gelesene Modelle durchreichen (siehe PhotovoltaikKontextMenuCtrl). Die
             // Teilkopie aus ID/ID_PV/ID_Type/Bezeichner/PV_Leistung/Azimut/Neigung hat beim
@@ -1525,21 +1523,16 @@ namespace WindowsFormsApplication1
             // rendeMix und Solaranteil.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_pvmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_szProjektname);
-            frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            if (PhotovoltaikHuelle.Oeffnen(this, m_ID_Projekt, id_type, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_pvmodel);
-                if (frm.list_pvmodel.Count > 0)
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
+                if (liste.Count > 0)
                     status |= 1024;
                 else status &= ~1024;
                 pBox_PV.Invalidate();

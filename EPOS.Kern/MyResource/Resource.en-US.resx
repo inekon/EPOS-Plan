@@ -10166,4 +10166,55 @@ Overwrite it anyway?</value>
   <data name="BHKWV_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>The selected CHP was not found in the master data.</value>
   </data>
+  <data name="PVD_TITEL" xml:space="preserve">
+    <value>Photovoltaic module management</value>
+  </data>
+  <data name="PVD_KOPFBAND" xml:space="preserve">
+    <value>Enter photovoltaic system data</value>
+  </data>
+  <data name="PVD_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>selected modules</value>
+  </data>
+  <data name="PVD_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Modules from database</value>
+  </data>
+  <data name="PVD_LBL_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filter by manufacturer:</value>
+  </data>
+  <data name="PVD_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit module...</value>
+  </data>
+  <data name="PVD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete module</value>
+  </data>
+  <data name="PVD_GRP_ANLAGE" xml:space="preserve">
+    <value>PV system properties:</value>
+  </data>
+  <data name="PVD_LBL_NEIGUNG" xml:space="preserve">
+    <value>Tilt [°]:</value>
+  </data>
+  <data name="PVD_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimuth [°]:</value>
+  </data>
+  <data name="PVD_LBL_ANZAHL" xml:space="preserve">
+    <value>Number of modules:</value>
+  </data>
+  <data name="PVD_GRP_MODUL" xml:space="preserve">
+    <value>Module properties:</value>
+  </data>
+  <data name="PVD_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="PVD_LBL_LEISTUNG" xml:space="preserve">
+    <value>Module power [kW]:</value>
+  </data>
+  <data name="PVD_LBL_GESAMTLEISTUNG" xml:space="preserve">
+    <value>Total power [kW]:</value>
+  </data>
+  <data name="PVD_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Do you really want to delete this module?</value>
+  </data>
+  <data name="PVD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The selected module was not found in the master data.</value>
+  </data>
 </root>

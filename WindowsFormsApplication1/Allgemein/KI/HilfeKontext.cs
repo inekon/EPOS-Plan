@@ -128,7 +128,6 @@ namespace WindowsFormsApplication1
             { "Form_Kosten_Auswahl",         B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
-            { "Form_PV",                     B_PHOTOVOLTAIK },
             { "Form_CECImport",              B_PHOTOVOLTAIK },
 
             // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE

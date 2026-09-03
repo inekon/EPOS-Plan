@@ -34,7 +34,7 @@ public sealed class StapelTests
         // 89 Dateien nach W5 (92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2,
         // 108 nach iU9-W0); Welle 6 senkt die Zahl weiter, der endgueltige Wert
         // steht in W6.9.
-        Assert.True(dateien.Count >= 85, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        Assert.True(dateien.Count >= 84, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class StapelTests
         // 88 Masken nach W5 (91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2,
         // 105 nach iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske senkt die
         // Zahl (Regel M1); der endgueltige Wert der Welle 6 steht in W6.9.
-        Assert.True(Lauf.Value.Masken >= 84, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        Assert.True(Lauf.Value.Masken >= 83, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }

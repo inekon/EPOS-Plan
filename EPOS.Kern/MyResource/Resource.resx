@@ -10173,4 +10173,55 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BHKWV_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Das ausgewählte BHKW wurde in den Stammdaten nicht gefunden.</value>
   </data>
+  <data name="PVD_TITEL" xml:space="preserve">
+    <value>Verwaltung Photovoltaik Module</value>
+  </data>
+  <data name="PVD_KOPFBAND" xml:space="preserve">
+    <value>Eingabe der Photovoltaik Anlagendaten</value>
+  </data>
+  <data name="PVD_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>ausgewählte Module</value>
+  </data>
+  <data name="PVD_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Module aus Datenbank</value>
+  </data>
+  <data name="PVD_LBL_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filtern nach Hersteller:</value>
+  </data>
+  <data name="PVD_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Modul Bearbeiten...</value>
+  </data>
+  <data name="PVD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Modul Löschen</value>
+  </data>
+  <data name="PVD_GRP_ANLAGE" xml:space="preserve">
+    <value>PV Anlage Eigenschaften:</value>
+  </data>
+  <data name="PVD_LBL_NEIGUNG" xml:space="preserve">
+    <value>Neigung [°]:</value>
+  </data>
+  <data name="PVD_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimut [°]:</value>
+  </data>
+  <data name="PVD_LBL_ANZAHL" xml:space="preserve">
+    <value>Anzahl Module:</value>
+  </data>
+  <data name="PVD_GRP_MODUL" xml:space="preserve">
+    <value>Modul Eigenschaften:</value>
+  </data>
+  <data name="PVD_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller:</value>
+  </data>
+  <data name="PVD_LBL_LEISTUNG" xml:space="preserve">
+    <value>Modul Leistung [KW]:</value>
+  </data>
+  <data name="PVD_LBL_GESAMTLEISTUNG" xml:space="preserve">
+    <value>Gesamtleistung [KW]:</value>
+  </data>
+  <data name="PVD_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Wollen Sie wirklich das Modul löschen?</value>
+  </data>
+  <data name="PVD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Das ausgewählte Modul wurde in den Stammdaten nicht gefunden.</value>
+  </data>
 </root>

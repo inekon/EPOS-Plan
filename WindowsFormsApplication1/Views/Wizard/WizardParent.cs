@@ -374,11 +374,6 @@ namespace WindowsFormsApplication1
                 ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
                 ((Form_SolarKollektoren)page).SetControls(projektID, true);
             }
-            else if (top == WizardItemClass.PV_ITEM)
-            {
-                ((Form_PV)page).list_pvmodel = list_werzmodel;
-                ((Form_PV)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
-            }
 
             btnBack.Enabled = true;
             btnCancel.Enabled = true;
