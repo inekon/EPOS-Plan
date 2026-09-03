@@ -1,4 +1,4 @@
-# Nachweisliste iU0 / iU1 / iU4 / iU6 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 — Abnahme auf Windows
 
 **Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`, iU6: `9cf6f86`..`27bc634`**
 
@@ -522,3 +522,114 @@ Excel-Import und kann einen Referenzlauf nur bewegen, wenn dieser Ganglinien aus
 Beim Zurücknehmen die Reihenfolge nicht verdrehen: `0ddc417` vor `3ba7d54` zurücknehmen, sonst
 bricht der Bau an der Kombination aus `net10.0`-Bibliotheken und Hüllen auf dem alten Framework
 (`NU1201`).
+
+---
+
+## Nachweise iU5 — Statics kappen, Dienste einziehen
+
+Sechs Commits auf der Basis `18f515f` (iU4-8). Jede Tranche ist einzeln zurücknehmbar
+(`git revert <sha>`); keine baut inhaltlich auf einer anderen auf, außer dass alle T0
+voraussetzen.
+
+**Nach jeder Tranche gefahren** (Linux, `dotnet` 10.0.400):
+
+```bash
+dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental   # 0 Fehler, 123 Warnungen
+dotnet build WP-Plan.Kern.slnf -c Release --no-incremental             # 0 Fehler, 89 Warnungen
+dotnet test  WP-Plan.Kern.slnf -c Release --no-build                   # 809 bzw. 810 Tests
+dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017 \
+  --ziel artifacts/reflauf/iU5-<Tn>
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  vergleich artifacts/reflauf/ref artifacts/reflauf/iU5-<Tn>           # GESAMT: PASS
+diff -rq artifacts/reflauf/ref artifacts/reflauf/iU5-<Tn>              # nur protokoll.txt extra
+```
+
+Ergebnis in **allen sechs** Tranchen: 0 Fehler, 123/89 Warnungen, alle Tests grün,
+**GESAMT PASS (815.043 Werte)**, `diff -rq` meldet nur die zusätzliche `protokoll.txt`.
+
+### `3a9dee3` — iU5-T0: Diensthalter, neun Schnittstellen, Windows-Adapter
+
+23 neue Kerndateien in `EPOS.Kern/Allgemein/Dienste/`, 10 Windows-Adapter in
+`WindowsFormsApplication1/Dienste/`, `DiensteTests.cs` (13 Tests). `Meldung` zeigt auf
+`Dienste.Dialog`; `Program.Main` belegt die neun Dienste vor
+`DataRepository.DatenbankVorhanden()` und **keinen** `Meldung`-Haken mehr.
+
+**Am Gerät zu prüfen:** Das Programm startet; eine erzwungene Startmeldung (Datenbank
+umbenennen) erscheint als Dialog und nicht auf der Konsole.
+
+### `5eae11f` — iU5-T1: Dialoge
+
+33 `MessageBox.Show` in 14 Dateien. Meldungstexte **byte-gleich**; `git diff` zeigt nur die
+Aufrufform.
+
+**Am Gerät zu prüfen:** Die 15 Schreibschutzhinweise der Stamm-Controller (Katalogeintrag mit
+`ReadOnly` speichern/löschen) — sie tragen wieder das **Informationssymbol**. Die vier
+Ja/Nein-Rückfragen in **beide** Richtungen: Speichervariante aktiv setzen, Speichervariante
+löschen, Projekt löschen (Fokus muss auf „Nein" stehen), Anlagenzeile mit doppelter Gerätekopie.
+
+### `7cda009` — iU5-T2: Pfade und Dateien
+
+13 Dateien. **Pfadgleichheit ist die eigentliche Anforderung.**
+
+**Am Gerät zu prüfen:** Nach dem Start liegen unverändert
+`%APPDATA%\wp-plan\lizenz.dat`, `…\ki-schluessel.dat`, `…\wiki-wissen\`,
+`…\semantik\index\`, `…\semantik\modell\`, `%APPDATA%\EPOS-Plan\help_cache.json`,
+`C:\ProgramData\WP-Plan`, `…\AppData\Local\WP-Plan` und
+`…\AppData\Local\CECModuleImporter\cec_modules.csv`. Excel-Import über `FileDlgClass`,
+CSV-Export, Word- und Excel-Bericht nach „Eigene Dokumente", Öffnen einer erzeugten Datei mit
+der Standardanwendung.
+
+### `c288461` — iU5-T3: Einstellungen, Lizenz, Geräte-ID
+
+11 Dateien, dazu der Rückbau (`System.Management`, `StartLocalWebServer`, `RegPfad`-Dublette).
+
+**Am Gerät zu prüfen — der heikelste Punkt der Etappe:** Die Lizenz bleibt **aktiviert**
+(DPAPI-Geltungsbereich `LocalMachine` unverändert); der hinterlegte KI-Schlüssel bleibt lesbar
+(`CurrentUser`); `HKCU\Software\wp-plan` wird unverändert gelesen — `Language`,
+`GeminiApiKey` (falls noch Altwert), `KiZaehler`, `KiZaehlerTag`, `KiModell`, `KiWegB`,
+`KiAktionen`, `KiHinweisBestaetigt`, `KiHinweisBestaetigtAm`, `KiDeaktiviert`,
+`CsvExportPfad`, `LizenzAnker`; ein maschinenweiter KI-Abschalter in
+`HKLM\Software\wp-plan\KiDeaktiviert` greift weiterhin. PVGIS-Abruf und Geokodierung
+arbeiten (Einstellwerte `PVGISUrl`, `GeoKodierung`).
+
+### `3ee613f` — iU5-T4: Sprache
+
+5 Dateien. `Program.nLanguage` bleibt Weiterleitung für die Masken.
+
+**Am Gerät zu prüfen:** Umschalten Deutsch ↔ Englisch im Menü — das Programm startet neu und
+kommt in der gewählten Sprache hoch; der Registry-Wert `Language` steht auf 0 bzw. 1; der
+Menüeintrag heißt „Lizenz…" bzw. „License…"; die Online-Dokumentation wird im englischen
+Modus über translate.goog geleitet.
+
+**Zur Kulturprobe (iT7):** `EPOS_REFLAUF_UICULTURE` wirkt auf `EPOS.Referenzlauf` **nicht** —
+das Werkzeug setzt Rechen- und Anzeigekultur in `KulturSetzen()` fest auf `de-DE`. Die
+Variable gehört dem älteren WinForms-Werkzeug `Referenzlauf\`. Der Lauf mit gesetzter Variable
+wurde trotzdem gefahren und ist byte-identisch.
+
+### `7d0752f` — iU5-T5: Navigation und Projektkontext
+
+21 Dateien. **Danach ist der Wächter leer:**
+
+```bash
+git grep -nE '\bProgram\.[A-Za-z]' -- 'EPOS.Kern/*.cs' \
+    'WindowsFormsApplication1/Allgemein/*.cs' \
+    'WindowsFormsApplication1/Controller/*.cs' \
+    'WindowsFormsApplication1/Model/*.cs' | grep -vP ':\s*(///|//|\*)'
+# → 0 Treffer  (Basis: 53)
+```
+
+**Am Gerät zu prüfen:** Alle **zwölf Gewerke** über das Kontextmenü des Detailformulars —
+anlegen, bearbeiten, löschen; die Liste muss sich danach auffrischen. Projekt öffnen (Auswahl
+und „zuletzt geöffnet"), „Speichern unter…", Projekt löschen; Assistent neu und bearbeiten
+(nach dem Speichern muss „Daten gespeichert" kommen); alle **19** Stammdaten- und
+Einlesemasken aus dem Menü; Lastspitzenkappung mit und ohne offenes Projekt; KI-Aktion
+„projekt_aktiv" bei geöffnetem und bei geschlossenem Projekt.
+
+### Wenn eine Tranche den Referenzlauf bewegt
+
+`git revert` der betroffenen Tranche. T1–T4 fassen nur blattnahe Stellen an; T5 dreht als
+einzige die Aufrufrichtung um und ist damit der erste Verdächtige, T0 der zweite (dort ändert
+sich das Verhalten der Melde-Haken).
+

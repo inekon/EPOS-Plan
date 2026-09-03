@@ -63,19 +63,36 @@ umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
 Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
 - **`Program.cs`** — `Main` startet die MDI-Oberfläche. Hält `mdifrm`, `mainfrm`, `startfrm`,
-  `menuectrl`, `wizardctrl`, `HelpCatalog`, `ApplicationPath_Common/_User`, `nLanguage`
-  (Sprache aus Registry `HKCU\Software\wp-plan`). Globaler veränderlicher Zustand — Seiteneffekte
-  bei Änderungen mitdenken. `nLanguage`, `ZahlParsen` und `GanzzahlParsen` sind seit iU4-1 nur
-  noch **Weiterleitungen** auf `Sprache` bzw. `ZahlText` im Kern; `Main` setzt außerdem die Haken
-  `Meldung.*` und `WErzeugerCtrl.GeraetewaisenAufraeumen`, über die Kern-Code Meldungen absetzt
-  und den Geräte-Aufräumlauf anstößt, ohne WinForms zu kennen.
+  `menuectrl`, `wizardctrl`. Globaler veränderlicher Zustand — Seiteneffekte bei Änderungen
+  mitdenken. **Weiterleitungen** (kein eigener Zustand mehr): `nLanguage`, `ZahlParsen` und
+  `GanzzahlParsen` auf `Sprache` bzw. `ZahlText` (iU4-1); `ApplicationPath_Common/_User` auf
+  `Dienste.Pfade`, `HelpCatalog` auf `WikiHelpCatalog.Aktueller`, `WIKI_STANDARD` auf
+  `WikiWissen.WIKI_STANDARD` (iU5). `Main` legt als **erstes** die neun Umgebungsdienste ein
+  (siehe `Dienste/`) und setzt danach den Haken
+  `WErzeugerCtrl.GeraetewaisenAufraeumen`. Die vier `Meldung.*`-Haken werden **nicht mehr**
+  belegt — sie zeigen seit iU5 selbst auf `Dienste.Dialog`.
+
+- **`Dienste/`** (**10** Dateien, iU5) — die **Windows-Fassungen** der neun Umgebungsdienste aus
+  `../EPOS.Kern/Allgemein/Dienste/`. Hier — und nur hier — kennt die Anwendung `MessageBox`,
+  `OpenFileDialog`/`SaveFileDialog`/`FolderBrowserDialog`, `Process.Start`, `Registry`,
+  `ProtectedData`, `Application.ProductName` und die Zuordnung von Masken- und
+  Gewerksschlüsseln zu Formularklassen:
+  `WindowsDialogDienst`, `WindowsDateiDienst`, `WindowsPfade`, `RegistryEinstellungen`,
+  `SettingsEinstellungen` (Brücke zu `Properties.Settings`), `DpapiLizenzAblage`,
+  `WindowsGeraeteId`, `WindowsSprache`, `WinFormsNavigation`, `FormStartProjektKontext`.
+  **Neue plattformabhängige Aufrufe gehören hierher, nicht in `Allgemein/` oder `Controller/`** —
+  dort läuft der Wächter aus `../EPOS.Kern/CLAUDE.md`.
 - **`Controller/`** (**49** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: Kontextmenüs als
   `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, die Stamm-Controller mit `MessageBox` und
   `WPCtrl`. Die übrigen **50** liegen seit iU4 in `../EPOS.Kern/Controller/`.
 - **`Model/`** — **keine `.cs` mehr**; alle 46 Modelle liegen in `../EPOS.Kern/Model/`.
 - **`Views/`** (185 `.cs`, 384 Dateien) — `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik,
   Wärmepumpe, Simulation, Wizard, Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …).
-- **`Allgemein/`** (**82** Dateien) — geteilte Infrastruktur, siehe unten. `Simulation/` (bis auf
+- **`Allgemein/`** (**82** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+  `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
+  (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
+  `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts
+  begründet. `Simulation/` (bis auf
   `SchemaModell.cs`), `Wirtschaftlichkeit/` (vollständig) und die Daten-Hälfte von `Bericht/`
   sind mit iU4 in den Kern gezogen; hier bleiben die Bericht-AUSGABE (7 Dateien),
   `Update/` (Schemamigration, Access-Zweig), `Katalog/`, `Import/`, `KI/`, `Hilfe/`,
@@ -92,7 +109,7 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | `Bericht/` | Die **AUSGABE**-Hälfte des Berichtsmoduls: `WordBerichtGenerator` (OpenXML, Vorlage `Vorlagen/Berichtsvorlage.docx`), `ExcelBerichtGenerator` (ClosedXML), `ChartRenderer` (GDI+/PNG), `Bausteine/` (konfigurierbare Berichtsteile), `BerichtsDatenSammler`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`, `IBerichtsBaustein`. Sie zieht bis iU7 nicht um. Die **DATEN**-Hälfte (`BerichtTexte` de/en, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`) liegt seit iU4 in `../EPOS.Kern/Allgemein/Bericht/` |
 | `Wirtschaftlichkeit/` | **vollständig in `../EPOS.Kern/Allgemein/Wirtschaftlichkeit/`** (iU4): `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` und 16 weitere |
 | `Simulation/` | **bis auf `SchemaModell.cs` (Schema-Ansicht) in `../EPOS.Kern/Allgemein/Simulation/`** (iU4). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
-| `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, DPAPI-Ablage, Zustände von `NichtAktiviert` bis `Lesemodus` |
+| `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, Zustände von `NichtAktiviert` bis `Lesemodus`. Die Ablage läuft seit iU5 über `Dienste.Lizenzablage`; **Geltungsbereich Gerät** (DPAPI `LocalMachine`) für Token und Zeitanker, **Benutzer** (`CurrentUser`) für den KI-Schlüssel — ein Wechsel entwertet jede installierte Lizenz |
 | `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
 | `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` |
@@ -186,6 +203,9 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   der Restore an Paketreferenzen mit eigener Version (NU1008).
 - **Läuft die Anwendung, ist `bin\` gesperrt** (EXE + DLL geladen) — Verifikations-Builds dann
   mit `-p:OutDir=<Ordner außerhalb>` umleiten; der Compile-Beweis bleibt vollwertig.
+- **`System.Management` ist mit iU5 aus der `.csproj` geflogen** — null Codetreffer im Repo, die
+  Geräte-ID lief nie über WMI. Der `PackageVersion`-Eintrag in `..\Directory.Packages.props`
+  steht noch; er schadet nicht.
 - **Assembly heißt `EPOS_Plan`, der Namespace weiter `WindowsFormsApplication1`**
   (Stufe 0, 29.08.2026). Folgen: In `bin\` kann eine alte `WindowsFormsApplication1.exe`
   als Leiche liegen (einmal bereinigen); Wegwerf-Harnesse unter `..\dev\` referenzieren

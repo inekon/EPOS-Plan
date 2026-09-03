@@ -261,6 +261,93 @@ neue OleDb-Kante mit; das Rest-Inventar für iR8 ist unverändert (`Solarkollekt
 `PufferSpCtrl` 30, `RecordSet` 9, `ApplikationCtrl` 7). `dotnet test WP-Plan.Kern.slnf`: **796**
 (787 + 9 neue in `EPOS.Kern.Tests`).
 
+### 2.6 Befund iU5 (Statics kappen, Dienste einziehen), 03.09.2026 — **hier erreicht**
+
+Sechs Commits `3a9dee3`…`7d0752f` auf der Basis `18f515f`.
+
+#### Die Entscheidung: statischer Halter, kein DI-Container
+
+Neun Umgebungsdienste liegen hinter kleinen deutschen Schnittstellen und werden von der
+statischen Klasse `Dienste` gehalten. Das war eine Wahl gegen den ersten Reflex — einen
+`ServiceCollection`-Container —, und zwar aus vier nachprüfbaren Gründen:
+
+1. **Es ist das Hausmuster.** `grep -rn "ServiceCollection\|BuildServiceProvider\|AddSingleton\|IServiceProvider"`
+   über das ganze Repo: **0 Treffer**. `Microsoft.Extensions.Http`/`.Logging` stehen nur als
+   Mindestversionsforderung von `Mscc.GenerativeAI` in der `.csproj`. Dagegen tragen **acht**
+   austauschbare Haken den Bestand: `Meldung.Zeigen/Hinweis/Warnung/Warten`,
+   `KiTexte.Lieferant`, `KiEinwilligung.Nachfragen`, `KiAusfuehrer.Uhr/Schreibrecht/ModalerDialog`,
+   `AnlagenEindeutigkeit.Frage/Hinweis`, `SimulationControl.Speicherlauf`,
+   `SimulationRunner.Speicherergebnismodell`, `WErzeugerCtrl.GeraetewaisenAufraeumen`.
+2. **Ein Container verlangt Konstruktoren.** Von den 22 Klassen, die `Program.*` riefen, sind
+   etliche **rein statisch**: `AnlagenEindeutigkeit`, `BerichtTexte`, `DokuUebersetzung`,
+   `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiChatService`, `KiEinwilligung`,
+   `LizenzManager`, `GeraeteId`, `CsvExportClass`. Ihnen eine Instanz zu reichen hieße, sie zu
+   Instanzklassen umzubauen — ein größerer Eingriff als die ganze Etappe, mit entsprechendem
+   Risiko für die Byte-Gleichheit.
+3. **Der Referenzlauf belegt die Haken heute schon ohne Container** und bleibt so.
+4. **Testbarkeit ist gegeben:** Feld setzen, Fall fahren, zurücksetzen — genau wie
+   `AnlagenEindeutigkeit.Frage` es vorsieht. `EPOS.Kern.Tests/DiensteTests.cs` fährt das für alle
+   neun Dienste.
+
+#### Die neun Schnittstellen und wo sie vom Vorschlag abweichen
+
+| Schnittstelle | Abweichung von Vermessung B.2 | Grund |
+|---|---|---|
+| `IDialogDienst` | `Frage` hat `warnend` und `vorgabeNein` als Vorgabeparameter | Zwei der vier Rückfragen tragen ein Warnsymbol; der Projekt-Löschdialog setzt den Fokus auf „Nein". Beides ist eine Aussage, kein Beiwerk |
+| `IPfade` | `Produktdaten` und `BenutzerLokalBasis` zusätzlich | Der Hilfe-Zwischenspeicher liegt unter `%APPDATA%\<Application.ProductName>` = `EPOS-Plan`, **nicht** unter `%APPDATA%\wp-plan`; der CEC-Modulcache unter `LocalApplicationData\CECModuleImporter` **ohne** Anwendungsordner. Ohne beide Wurzeln wären die Pfade nicht zeichengleich zu halten |
+| `IPfade` | `Verbinde` **und** `Unterordner` | Ein Teil der Fundstellen legte den Ordner beim Bilden des Pfades an, der andere nicht. Eine einzige Methode erzeugte leere Ordner, wo bisher keine entstanden |
+| `IEinstellungen` | `LiesMaschine` zusätzlich | Der maschinenweite KI-Abschalter steht in `HKLM` und wird in **beiden** Registry-Sichten gelesen (WOW6432Node-Umleitung der x86-Zeit) |
+| `ILizenzAblage` | Geltungsbereich als **Parameter**; `Loeschen`, `Vorhanden`, `Ablageort` zusätzlich | Die Vermessung ließ „zwei Instanzen oder Parameter" offen; alle drei Zusätze werden von den zwei Aufrufern gebraucht |
+| `IProjektKontext` | `Uebernehmen` liefert `bool`; `Vorhanden` zusätzlich | `MenueCtrl.ProjektAktivSetzen` wertet den Erfolg aus. `Vorhanden` unterscheidet „Oberfläche läuft, kein Projekt offen" von „keine Oberfläche" — nur so meldet `KiAktionenProjekt` weiterhin „keins" statt „das zuletzt geöffnete" |
+
+`IDrucken`/`ITeilen` bleiben außen vor — im Kern gibt es dafür null Fundstellen; sie entstehen
+mit iU7.
+
+#### Was nicht verhandelbar war
+
+**Die DPAPI-Geltungsbereiche.** `lizenz.dat` und `lizenz-zeit.dat` liegen im **Gerätebereich**
+(`DataProtectionScope.LocalMachine`), `ki-schluessel.dat` im **Benutzerbereich**
+(`CurrentUser`). Eine mit dem einen Bereich verschlüsselte Datei lässt sich mit dem anderen nicht
+entschlüsseln: Ein versehentlicher Wechsel entwertet jede installierte Lizenz. Der Bereich ist
+deshalb ein Aufrufparameter mit Kommentar an beiden Fundstellen, keine Voreinstellung des
+Adapters.
+
+**Die Pfade Zeichen für Zeichen.** Drei verschiedene `%APPDATA%`-Wurzeln bleiben getrennt (siehe
+Tabelle oben), ebenso `LocalApplicationData\WP-Plan` gegen das nackte `LocalApplicationData`.
+
+**Der Registry-Pfad der Sprache.** `Program.Main` und `MDIMainForm` schrieben seit jeher
+`@"Software\\wp-plan"` — mit doppeltem Gegenschrägstrich. Die Registry-Klasse von .NET fasst
+mehrfache Trennzeichen zusammen, der Wert liegt also im selben Schlüssel wie alle übrigen.
+Verlassen wird sich darauf **nicht**: `WindowsSprache` liest und schreibt mit genau derselben
+Zeichenkette, mit der der Wert angelegt wurde, `RegistryEinstellungen` mit der einfachen Form der
+übrigen Fundstellen. Sonst stünde nach dem Umbau möglicherweise jeder Anwender wieder auf Deutsch.
+
+#### Ein Verhaltensunterschied, bewusst in Kauf genommen
+
+`StandardSprache.Setzen` belegt zusätzlich `CultureInfo.DefaultThreadCurrentUICulture`. Bisher
+galt die eingestellte Sprache nur für den Faden, der `Program.Main` ausführt; ein
+Hintergrundfaden beantwortete Textabrufe in der Sprache des Betriebssystems. Im Bestand fiel das
+nicht auf, weil die Oberfläche einfädig arbeitet. Die **Rechenkultur** (`CurrentCulture`) wird
+ausdrücklich nicht angefasst — Drei-Schichten-Regel, Konzept 13.6.
+
+Zwei weitere Nebenwirkungen sind Verbesserungen: `WinFormsNavigation.OeffneGewerk` prüft
+`Program.mainfrm` auf `null` (der Bestand lief dort in eine `NullReferenceException`), und
+`LizenzManager.AnkerLesen` legt den Registry-Zweig nicht mehr beim **Lesen** an.
+
+#### Zahlen
+
+`dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental`: **0 Fehler, 123
+Warnungen** in jeder der sechs Tranchen — dieselbe Summe wie nach iU4, Verteilung App 34 / Kern
+89 unverändert. `dotnet test WP-Plan.Kern.slnf`: **810** (796 + 14 neue in `DiensteTests`).
+Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` nach **jeder** Tranche: GESAMT PASS,
+815.043 Werte, `diff -rq` nur `protokoll.txt` zusätzlich.
+
+Wächter `Program.*` im Kernsatz: **53 → 0**. Wächter Plattformmuster: **206 → 86**. Davon sind 15 Wortteile (`speicherRegistry`,
+`KatalogRegistry`) und 16 Kommentarzeilen; von den 55 verbliebenen Codezeilen entfallen **44** auf
+die Bearbeitungsdialoge der zwölf Kontextmenüs, 5 auf `StandardPfade` (die Standardfassung von
+`IPfade` selbst), 3 auf `DataRepository` (tabu, iU6), 2 auf `ErststartMigration` (Access-Zweig)
+und 1 auf `HelpExtender` (Oberflächenbaustein).
+
 ---
 
 ### 2.5 Befund iU6 (Datenzugriff plattformfrei), 03.09.2026 — **hier erreicht**
