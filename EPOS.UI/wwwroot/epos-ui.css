@@ -906,3 +906,56 @@ body {
         background: rgba(0, 0, 0, 0.6);
     }
 }
+
+
+/* --------------------------------------------------------------------------
+   Positionszeile der Kostenverwaltung (iU9-W4.1) und der Abschnitt
+   "Ertrag/Bonus".
+   -------------------------------------------------------------------------- */
+
+/* Ein Feld in einer Rasterzelle traegt keine eigene Beschriftung - die steht
+   im Spaltenkopf. Ohne diese Regel bliebe der Platz des Beschriftungstextes
+   als Luecke ueber dem Feld stehen. */
+.epos-zr-zelle .epos-feld {
+    margin: 0;
+}
+
+.epos-zr-aktionen {
+    display: flex;
+    gap: 4px;
+}
+
+/* Die Zeilenknoepfe tragen ein Zeichen, keinen Text - die Mindestbreite der
+   Knoepfe wuerde die Aktionsspalte auf 180 px treiben. */
+.epos-zr-knopf {
+    min-width: var(--epos-touchziel);
+    padding: 0;
+}
+
+.epos-zr-kette {
+    margin-right: 4px;
+    color: var(--epos-text-leise);
+}
+
+.epos-zr-betrag {
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-ertragbonus {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+/* Die Tranchentabelle des KWKG-Zuschlags baut ihre Spalten aus Leerzeichen -
+   dieselbe Begruendung wie beim Protokollfeld (epos-eingabe--festbreite). */
+.epos-ertrag-tabelle {
+    margin: 0;
+    font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
+    white-space: pre-wrap;
+}
+
+.epos-ertrag-absatz {
+    margin: 0;
+    white-space: pre-wrap;
+}
