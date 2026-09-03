@@ -102,25 +102,16 @@ namespace WindowsFormsApplication1
             if (indexes.Count > 0)
             {
                 ListViewItem lvitem = listView_WP.Items[indexes[0]];
-                Wizard_WPItem frm_wpitem = new Wizard_WPItem(lvitem.Text);
                 WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-                List<WErzeugerModel> list = new List<WErzeugerModel>();
-                WPCtrl wpctrl = new WPCtrl();
 
                 werzctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "' and ID_Projekt=" + m_ID_Projekt + " and ID=" + lvitem.SubItems[4].Text  + " and (ID_Type=" + WizardItemClass.WP_TYP + " Or ID_Type=" + WizardItemClass.REF_WP_TYP + ")");
-                wpctrl.ReadAll("ID=" + werzctrl.items[0].ID_WP);
-                werzctrl.items[0].Regelung = wpctrl.items[0].Regelung;
-                werzctrl.items[0].Nennleistung = wpctrl.items[0].Nennleistung;
-                werzctrl.items[0].Modulkosten = wpctrl.items[0].Modulkosten;
-                werzctrl.items[0].Baujahr = wpctrl.items[0].Baujahr;
-                werzctrl.items[0].Beschreibung = wpctrl.items[0].Beschreibung;
-                werzctrl.items[0].Firma = wpctrl.items[0].Firma;
-                werzctrl.items[0].Typ = wpctrl.items[0].Typ;
+                WaermepumpeGeraeteCtrl.GeraetedatenFuellen(werzctrl.items[0], werzctrl.items[0].ID_WP);
 
-                list.Add(werzctrl.items[0]);
-                frm_wpitem.m_werzitemlist = list;
-                frm_wpitem.SetControls(0);
-                frm_wpitem.ShowDialog();
+                // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+                // WaermepumpeAnlageDialog; Wizard_WPItem ist im selben Schritt
+                // GELOESCHT (Regel M1). Der Weg "Anzeigen" wertet das Ergebnis wie
+                // bisher nicht aus.
+                WaermepumpeAnlageHuelle.Oeffnen(null, werzctrl.items[0], m_ID_Projekt);
             }
         }
 
@@ -129,7 +120,9 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_WP.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Gebaeude frm = new Form_Gebaeude();
+            // iU9-W7.4: Das hier angelegte Form_Gebaeude wurde nie benutzt - eine
+            // fremde Maske, die beim Loeschen einer Waermepumpe nichts zu suchen hat
+            // (dieselbe Aufraeumung wie bei den fuenf Kontextmenues der Welle 6).
 
             if (indexes.Count > 0)
             {
@@ -150,11 +143,8 @@ namespace WindowsFormsApplication1
             if (indexes.Count > 0)
             {
                 ListViewItem lvitem = listView_WP.Items[indexes[0]];
-                Wizard_WPItem frm_wpitem = new Wizard_WPItem(lvitem.Text);
                 WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-                List<WErzeugerModel> list = new List<WErzeugerModel>();
                 List<WErzeugerModel> list_alle = new List<WErzeugerModel>();
-                WPCtrl wpctrl = new WPCtrl();
 
                // werzctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "' and ID_Projekt=" + m_ID_Projekt + " and ID=" + lvitem.SubItems[4].Text + " and (ID_Type=" + WizardItemClass.WP_TYP + " Or ID_Type=" + WizardItemClass.REF_WP_TYP + ")");
                 werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and (ID_Type=" + WizardItemClass.WP_TYP + " Or ID_Type=" + WizardItemClass.REF_WP_TYP + ")");
@@ -164,55 +154,33 @@ namespace WindowsFormsApplication1
                 {
                     if (werzctrl.items[i].Bezeichner == lvitem.Text && werzctrl.items[i].ID == Int32.Parse(lvitem.SubItems[4].Text))
                     {
-                        // WP Kenndaten lesen
-                        wpctrl.ReadAll("ID=" + werzctrl.items[i].ID_WP);
-                        werzctrl.items[i].Regelung = wpctrl.items[0].Regelung;
-                        werzctrl.items[i].Nennleistung = wpctrl.items[0].Nennleistung;
-                        werzctrl.items[i].Modulkosten = wpctrl.items[0].Modulkosten;
-                        werzctrl.items[i].Baujahr = wpctrl.items[0].Baujahr;
-                        werzctrl.items[i].Beschreibung = wpctrl.items[0].Beschreibung;
-                        werzctrl.items[i].Firma = wpctrl.items[0].Firma;
-                        werzctrl.items[i].Typ = wpctrl.items[0].Typ;
+                        // WP Kenndaten lesen - zweistufig wie ueberall sonst (Ä22).
                         // ID_Type gehoert nicht zum Stammdaten-Merge: er unterscheidet Plan-
                         // (WP_TYP) und Referenzliste (REF_WP_TYP) und steht nach ReadAllFilter
                         // je Zeile korrekt. Der fruehere Angleich an items[0] kippte bei
                         // Mischbestand den Typ der bearbeiteten Zeile.
-                        werzctrl.items[i].Heizung = wpctrl.items[0].Heizung;
-                        list.Add(werzctrl.items[i]);
+                        WaermepumpeGeraeteCtrl.GeraetedatenFuellen(werzctrl.items[i], werzctrl.items[i].ID_WP);
                         index = i;
                     }
                     list_alle.Add(werzctrl.items[i]);
                 }
-                frm_wpitem.m_werzitemlist = list;
 
-                frm_wpitem.SetControls(0);
-                frm_wpitem.ShowDialog();
-                if (!frm_wpitem.CloseWithOK) return;
+                // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+                // WaermepumpeAnlageDialog; Wizard_WPItem ist im selben Schritt
+                // GELOESCHT (Regel M1). Die Huelle bearbeitet die Zeile AN ORT UND
+                // STELLE - es ist dieselbe Instanz, die in list_alle steht.
+                if (!WaermepumpeAnlageHuelle.Oeffnen(null, list_alle[index], m_ID_Projekt)) return;
 
-                // Datenbank aktualisieren
-                list_alle[index].Bezeichner = frm_wpitem.item.Bezeichner; //(string)rs.Read("WPName");
-                list_alle[index].Abschaltpunkt = (double)frm_wpitem.item.Abschaltpunkt;
-                list_alle[index].Betriebsart = (string)frm_wpitem.item.Betriebsart;
-                list_alle[index].Bivalenter_Betrieb = frm_wpitem.item.Bivalenter_Betrieb;
-                list_alle[index].Nutzungszeit = frm_wpitem.item.Nutzungszeit;
-                list_alle[index].Ruecklauf = frm_wpitem.item.Ruecklauf;
-                list_alle[index].Sperrung = frm_wpitem.item.Sperrung;
-                list_alle[index].Sperrzeit_bis = frm_wpitem.item.Sperrzeit_bis;
-                list_alle[index].Sperrzeit_von = frm_wpitem.item.Sperrzeit_von;
-                list_alle[index].Vorlauf = frm_wpitem.item.Vorlauf;
-                list_alle[index].Heizstab = frm_wpitem.item.Heizstab;
-                list_alle[index].Volumen = frm_wpitem.item.Volumen;
-                list_alle[index].rendeMix = frm_wpitem.item.rendeMix;
-                list_alle[index].Solaranteil = frm_wpitem.item.Solaranteil;
-                list_alle[index].Baujahr = frm_wpitem.item.Baujahr;
-                list_alle[index].Regelung = frm_wpitem.item.Leistungsstufen;
-                list_alle[index].Typ = frm_wpitem.item.Typ;
-                list_alle[index].Firma = frm_wpitem.item.Firma;
-                list_alle[index].Modulkosten = frm_wpitem.item.Modulkosten;
-                list_alle[index].Nennleistung = frm_wpitem.item.Nennleistung;
-                list_alle[index].ID_Type = frm_wpitem.item.ID_Type;
-
-               // frm_wpitem.m_werzitemlist = list;
+                // Der frueher hier stehende Rueckschreibblock ist ersatzlos entfallen:
+                // Er kopierte 21 Felder von frm_wpitem.item nach list_alle[index] -
+                // und das war DASSELBE Objekt (list[0] == werzctrl.items[index] ==
+                // list_alle[index]). Zwanzig der Zuweisungen waren damit wirkungslos.
+                // Die einundzwanzigste war es NICHT und richtete Schaden an
+                // (Befund W7-O-4, Abweichung A-21):
+                //     list_alle[index].Regelung = frm_wpitem.item.Leistungsstufen;
+                // WPModel.Leistungsstufen wird im ganzen Bestand NIE geschrieben und
+                // steht auf ""; jedes "Bearbeiten" aus diesem Kontextmenue loeschte
+                // damit die Leistungsstufen der Anlage.
 
                 WizardCtrl wizctrl = new WizardCtrl();
 
@@ -235,39 +203,21 @@ namespace WindowsFormsApplication1
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
 
-            Wizard_WPItem frm_wpitem = new Wizard_WPItem();
-            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             List<WErzeugerModel> list = new List<WErzeugerModel>();
             WErzeugerModel werzmodel = new WErzeugerModel();
-
             list.Add(werzmodel);
-            frm_wpitem.m_werzitemlist = list;
-            frm_wpitem.SetControls(0);
-            frm_wpitem.ShowDialog();
-            if (!frm_wpitem.CloseWithOK) return;
+
+            // iU9-W7.4: Die Detailansicht ist die Razor-Komponente
+            // WaermepumpeAnlageDialog; Wizard_WPItem ist im selben Schritt GELOESCHT
+            // (Regel M1). Die Huelle bearbeitet werzmodel an Ort und Stelle - der
+            // frueher hier stehende Rueckschreibblock kopierte 19 Felder von
+            // frm_wpitem.item nach list[0], und das war DASSELBE Objekt.
+            if (!WaermepumpeAnlageHuelle.Oeffnen(null, werzmodel, m_ID_Projekt)) return;
 
             if (listView_WP.Name == "listView_WP_Ref") { list[0].ID_Type = WizardItemClass.REF_WP_TYP; }
             else { list[0].ID_Type = WizardItemClass.WP_TYP; }
-            
-            list[0].ID = frm_wpitem.item.ID;
-            list[0].ID_WP = frm_wpitem.item.ID_WP;
-            list[0].ID_Projekt = m_ID_Projekt;
-            list[0].Bezeichner = frm_wpitem.item.Bezeichner; //(string)rs.Read("WPName");
-            list[0].Abschaltpunkt = (double)frm_wpitem.item.Abschaltpunkt;
-            list[0].Betriebsart = (string)frm_wpitem.item.Betriebsart;
-            list[0].Bivalenter_Betrieb = frm_wpitem.item.Bivalenter_Betrieb;
-            list[0].Nutzungszeit = frm_wpitem.item.Nutzungszeit;
-            list[0].Ruecklauf = frm_wpitem.item.Ruecklauf;
-            list[0].Sperrung = frm_wpitem.item.Sperrung;
-            list[0].Sperrzeit_bis = frm_wpitem.item.Sperrzeit_bis;
-            list[0].Sperrzeit_von = frm_wpitem.item.Sperrzeit_von;
-            list[0].Vorlauf = frm_wpitem.item.Vorlauf;
-            list[0].Heizstab = frm_wpitem.item.Heizstab;
-            list[0].Volumen = frm_wpitem.item.Volumen;
-            list[0].rendeMix = frm_wpitem.item.rendeMix;
-            list[0].Solaranteil = frm_wpitem.item.Solaranteil;
 
-            frm_wpitem.m_werzitemlist = list;
+            list[0].ID_Projekt = m_ID_Projekt;
 
             WizardCtrl wizctrl = new WizardCtrl();
 

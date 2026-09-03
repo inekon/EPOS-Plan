@@ -8,6 +8,12 @@ namespace Formularkarte.Tests;
 /// sieht. Geprueft an zwei Masken: <c>Form_Kostenprofil</c>
 /// (TabControl mit drei Reitern, darin ein Chart) und <c>Wizard_WPItem</c>
 /// (GroupBox, darin ein TabControl mit zwei Reitern).
+///
+/// <para><b>Beide sind eingefrorene Pruefmuster.</b> Sie sind im Bestand geloescht -
+/// Form_Kostenprofil mit iU9-W3.4, Wizard_WPItem mit iU9-W7.4 -, taugen aber
+/// weiterhin als Analysegegenstand: Ein Behaelterbaum aus GroupBox, TabControl und
+/// TabPage ist genau das, was diese Tests pruefen. Das Rezept steht in
+/// <c>Werkzeuge/Formularkarte/LIESMICH.md</c>.</para>
 /// </summary>
 public sealed class AbschnittTests
 {
@@ -82,7 +88,7 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_HatDreiGruppenUndZweiReiter()
     {
-        var abschnitte = Abschnitte("Wizard/Wizard_WPItem.Designer.cs");
+        var abschnitte = Musterabschnitte("Wizard/Wizard_WPItem.Designer.cs");
 
         var kenndaten = abschnitte.Single(a => a.Traeger?.Name == "groupBox2");
         Assert.Equal("GroupBox", kenndaten.Traeger!.Typ);
@@ -101,7 +107,7 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_ErkenntGanzzahlfelderAusDerFormCs()
     {
-        var kenndaten = Abschnitte("Wizard/Wizard_WPItem.Designer.cs")
+        var kenndaten = Musterabschnitte("Wizard/Wizard_WPItem.Designer.cs")
             .Single(a => a.Traeger?.Name == "groupBox2");
 
         // Program.GanzzahlPruefen(textBox_PHeizstab, ...) in Wizard_WPItem.cs
@@ -146,7 +152,8 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_GruppenkoepfeSindDasZielDerBehaelter()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wizard/Wizard_WPItem.Designer.cs"));
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Wizard/Wizard_WPItem.Designer.cs"), null, Repowurzel.PruefmusterWurzel);
 
         Assert.Equal("Gruppenkopf", Kartenbau.Ziel(maske.Finden("groupBox2")!).Komponente);
         Assert.Equal("Gruppenkopf", Kartenbau.Ziel(maske.Finden("tabPage1")!).Komponente);

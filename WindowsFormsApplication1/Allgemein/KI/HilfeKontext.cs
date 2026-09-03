@@ -206,8 +206,7 @@ namespace WindowsFormsApplication1
             { "WizardParent",                B_ASSISTENT },
             { "Wizard_Projekt",              B_ASSISTENT },
             { "Wizard_Komponenten",          B_ASSISTENT },
-            { "Wizard_Stromlastgang",        B_ASSISTENT },
-            { "Wizard_WPItem",               B_ASSISTENT }
+            { "Wizard_Stromlastgang",        B_ASSISTENT }
         };
 
         /// <summary>
