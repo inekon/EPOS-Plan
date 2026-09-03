@@ -30243,5 +30243,122 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter-heiter ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_K1 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_K1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter-trübe ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_K2 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_K2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang-heiter ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_K3 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_K3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang-trübe ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_K4 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_K4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommertag ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_K5 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_K5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter-Wochentag ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L1 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter-Wochenende ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L2 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang1-Wochentag ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L3 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang1-Wochenende ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L4 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer-Wochentag ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L5 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer-Wochenende ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L6 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang2-Wochentag ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L7 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang2-Wochenende ähnelt.
+        /// </summary>
+        public static string GTYP_KURVE_L8 {
+            get {
+                return ResourceManager.GetString("GTYP_KURVE_L8", resourceCulture);
+            }
+        }
+        
     }
 }

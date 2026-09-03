@@ -10758,4 +10758,43 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="SGL_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung:</value>
   </data>
+  <data name="GTYP_KURVE_K1" xml:space="preserve">
+    <value>Winter-heiter</value>
+  </data>
+  <data name="GTYP_KURVE_K2" xml:space="preserve">
+    <value>Winter-trübe</value>
+  </data>
+  <data name="GTYP_KURVE_K3" xml:space="preserve">
+    <value>Übergang-heiter</value>
+  </data>
+  <data name="GTYP_KURVE_K4" xml:space="preserve">
+    <value>Übergang-trübe</value>
+  </data>
+  <data name="GTYP_KURVE_K5" xml:space="preserve">
+    <value>Sommertag</value>
+  </data>
+  <data name="GTYP_KURVE_L1" xml:space="preserve">
+    <value>Winter-Wochentag</value>
+  </data>
+  <data name="GTYP_KURVE_L2" xml:space="preserve">
+    <value>Winter-Wochenende</value>
+  </data>
+  <data name="GTYP_KURVE_L3" xml:space="preserve">
+    <value>Übergang1-Wochentag</value>
+  </data>
+  <data name="GTYP_KURVE_L4" xml:space="preserve">
+    <value>Übergang1-Wochenende</value>
+  </data>
+  <data name="GTYP_KURVE_L5" xml:space="preserve">
+    <value>Sommer-Wochentag</value>
+  </data>
+  <data name="GTYP_KURVE_L6" xml:space="preserve">
+    <value>Sommer-Wochenende</value>
+  </data>
+  <data name="GTYP_KURVE_L7" xml:space="preserve">
+    <value>Übergang2-Wochentag</value>
+  </data>
+  <data name="GTYP_KURVE_L8" xml:space="preserve">
+    <value>Übergang2-Wochenende</value>
+  </data>
 </root>
