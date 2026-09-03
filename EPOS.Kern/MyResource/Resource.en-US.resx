@@ -11814,4 +11814,10 @@ Please check all entries!</value>
   <data name="PSP_HERLEITUNG_VERWENDUNG" xml:space="preserve">
     <value>The derived legacy value „{0}“ is stored as well.</value>
   </data>
+  <data name="SIM_HERLEITUNG_SPEICHERLISTE" xml:space="preserve">
+    <value>All buffer tanks of the project are available. If a tank's class set does not cover this target's channel, the assignment is stored and reported as implausible.</value>
+  </data>
+  <data name="SIM_HERLEITUNG_VERBUNDLISTE" xml:space="preserve">
+    <value>Only tanks with the same use qualify for the parallel group — it is calculated as ONE heat store.</value>
+  </data>
 </root>

@@ -91,7 +91,7 @@ public class QuellePufferspeicherDialogTests : BunitContext
 
         Assert.Equal("Wärmequelle Pufferspeicher — WP Erdgeschoss",
                      cut.Find("h1.epos-dialog-titel").TextContent);
-        Assert.Equal(1, cut.FindAll("input[type=checkbox]").Count);        // "unbegrenzt"
+        Assert.Single(cut.FindAll("input[type=checkbox]"));                 // "unbegrenzt"
         Assert.Empty(cut.FindAll("input[type=radio]"));                    // kein Temperaturbezug
         // Quelltemperatur, Spreizung, Regeneration, Entnahmehoehe.
         Assert.Equal(4, cut.FindAll("input.epos-eingabe").Count);
@@ -109,7 +109,7 @@ public class QuellePufferspeicherDialogTests : BunitContext
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
         // Nur die Entnahmehoehe - die beiden Temperaturfelder erscheinen erst bei "fest".
-        Assert.Equal(1, cut.FindAll("input.epos-eingabe").Count);
+        Assert.Single(cut.FindAll("input.epos-eingabe"));
     }
 
     // ============================================================ Vorauswahl

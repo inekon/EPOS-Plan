@@ -736,27 +736,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void WaermesenkeBearbeiten(AnlagenInfo info)
         {
-            Form_Waermesenke frm = new Form_Waermesenke();
-            frm.ID_Projekt = m_ID_Projekt;
-            frm.ID_Anlage = info.ID;
-            frm.ID_Type = info.ID_Type;
-            frm.AnlagenName = info.Bezeichner;
-            frm.BM_Typ = info.BM_Typ;
-            frm.VerbundMitglieder = WaermesenkeClass.VerbundLesen(info.ID);
-            frm.SetControls();
-
-            DialogResult ergebnis = frm.ShowDialog(this);
-
-            if (ergebnis == DialogResult.OK)
+            // Die Maske ist seit iU9-W10a.7 eine Razor-Komponente
+            // (EPOS.UI/Dialoge/Simulation/WaermesenkeDialog). Sie SPEICHERT selbst;
+            // null heisst abgebrochen - dann wurde nichts geschrieben.
+            var senkenDaten = new EPOS.UI.Dialoge.Simulation.WaermesenkeDaten
             {
-                if (!frm.SpeichernOk)
+                IdProjekt = m_ID_Projekt,
+                IdAnlage = info.ID,
+                IdType = info.ID_Type,
+                AnlagenName = info.Bezeichner,
+                PvModus = string.Equals(info.BM_Typ, WaermequelleClass.MODUS_PV,
+                                        StringComparison.Ordinal),
+                VerbundMitglieder = WaermesenkeClass.VerbundLesen(info.ID)
+            };
+
+            EPOS.UI.Dialoge.Simulation.WaermesenkeErgebnis ergebnis =
+                WaermesenkeHuelle.Oeffnen(this, senkenDaten);
+
+            if (ergebnis != null)
+            {
+                if (!ergebnis.SpeichernOk)
                 {
                     ShowStatus(MyResource.Resource.SIM_STATUS_SENKE_FEHLER, Color.Firebrick);
                 }
                 else
                 {
-                    Z_AnlageSenkeModel rang1 =
-                        frm.Senkenliste.Count > 0 ? frm.Senkenliste[0] : null;
+                    // Die Kurzform der Rang-1-Senke fuer die Statuszeile. Die Komponente
+                    // kennt Z_AnlageSenkeModel nicht; das Modell entsteht deshalb hier.
+                    Z_AnlageSenkeModel rang1 = null;
+                    if (ergebnis.Zeilen.Count > 0)
+                    {
+                        EPOS.UI.Dialoge.Simulation.SenkenzeileDaten z = ergebnis.Zeilen[0];
+                        rang1 = new Z_AnlageSenkeModel
+                        {
+                            ID_Anlage = info.ID,
+                            Rang = 1,
+                            Ziel = z.Ziel,
+                            ID_Puffer = z.IdPuffer,
+                            Bedarfsart = z.Bedarfsart
+                        };
+                    }
 
                     ShowStatus(string.Format(MyResource.Resource.SIM_STATUS_SENKE_GESPEICHERT,
                                              WaermesenkeClass.SenkeAnzeige(rang1)),
@@ -764,6 +783,8 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // DANACH IMMER - der Dialog kann ueber "Pufferspeicher anlegen…" einen neuen
+            // Puffer erzeugt haben, auch wenn er abgebrochen wurde.
             AktualisiereErzeugerUebersicht();
         }
 

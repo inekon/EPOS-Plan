@@ -155,7 +155,7 @@ namespace WindowsFormsApplication1
             // iU9-W10a.6: Form_Quellprofil ist geloescht (Razor-Komponente).
             { "Form_Simulation_Config",      B_SIM_KONFIG },
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
-            { "Form_Waermesenke",            B_SIMULATION },
+            // iU9-W10a.7: Form_Waermesenke ist geloescht (Razor-Komponente).
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
             { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },

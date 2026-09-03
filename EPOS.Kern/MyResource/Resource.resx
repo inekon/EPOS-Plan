@@ -11821,4 +11821,10 @@ Alle Eingaben überprüfen!</value>
   <data name="PSP_HERLEITUNG_VERWENDUNG" xml:space="preserve">
     <value>Gespeichert wird zusätzlich der abgeleitete Altwert „{0}“.</value>
   </data>
+  <data name="SIM_HERLEITUNG_SPEICHERLISTE" xml:space="preserve">
+    <value>Zur Wahl stehen alle Pufferspeicher des Projekts. Führt das Klassen-Set eines Speichers den Kanal dieses Ziels nicht, wird die Zuordnung gespeichert und als unplausibel gemeldet.</value>
+  </data>
+  <data name="SIM_HERLEITUNG_VERBUNDLISTE" xml:space="preserve">
+    <value>Für den Verbund kommen nur Speicher derselben Verwendung in Frage — er rechnet als EIN Wärmevorrat.</value>
+  </data>
 </root>
