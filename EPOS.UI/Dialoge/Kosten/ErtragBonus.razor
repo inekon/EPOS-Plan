@@ -1,0 +1,177 @@
+﻿@* Abschnitt „Ertrag/Bonus" der Kostenverwaltung (iU9-W4.1).
+
+   Vorbild: Views/Kosten/ucErtragBonus.cs (217 Z.) und .Designer.cs — Etappe
+   KD5, Konzept Kostendialoge § 6. Der Abschnitt ist REINE ANZEIGE vorhandener
+   Wahrheiten, keine Zweitpflege:
+
+   * BHKW (§ 6.1): KWKG-Zuschlagstabelle, Sonderregel, selbst genutzter Strom,
+     Foerderdauer samt Jahresdeckel und die Steuerverguenstigungen — alles aus
+     DENSELBEN Katalogschluesseln, mit denen der KwkgSatzRechner rechnet
+     (Abnahmekriterium KD5). Dazu der Sprung in den Gesetzeskatalog.
+   * Photovoltaik (§ 6.2): der Einstieg in den Verguetungsdialog, stammprojekt-
+     bezogen; im Admin-Kontext waehlt eine Klappliste das Stammprojekt (eine
+     Verguetungswahrheit, V4/F7).
+   * Alle uebrigen Komponenten (§ 6.3, FK5): der Abschnitt erscheint gar nicht;
+     der Wirt fragt vorher HatInhalt.
+
+   DIE ZAHLEN KOMMEN FERTIG HEREIN. Der Vorlaeufer las den GesetzKatalog selbst
+   und baute daraus fuenf Textbloecke; das ist Datenseite und liegt jetzt in der
+   Huelle (Hausregel: keine Datenbank in EPOS.UI). Die Komponente bekommt die
+   fertigen Saetze und zeigt sie — auf iOS dieselbe Komponente mit denselben
+   Texten aus demselben Controller. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-ertragbonus">
+
+    @if (IstBhkw)
+    {
+        <Gruppenkopf Titel="@TitelKwkg">
+            <KindInhalt>
+                <p class="epos-untergruppe">@TitelEinspeisung</p>
+                <pre class="epos-ertrag-tabelle">@EinspeisungText</pre>
+                <Herleitungszeile Text="@SonderregelText" />
+                <Herleitungszeile Text="@EigenText" />
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@TitelDauer">
+            <KindInhalt>
+                <Herleitungszeile Text="@DauerText" />
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@TitelSteuern">
+            <KindInhalt>
+                <p class="epos-ertrag-absatz">@SteuernText</p>
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@TitelVerweise">
+            <KindInhalt>
+                @if (Sprung is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiGesetze">@GesetzeText</button>
+                }
+                <Herleitungszeile Text="@Fk7Text" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (IstPv)
+    {
+        <Gruppenkopf Titel="@TitelPv">
+            <KindInhalt>
+                <Herleitungszeile Text="@PvErklaerungText" />
+                <Auswahlfeld Bezeichnung="@LabelPvProjekt" Eintraege="@Projekte"
+                             Auswahl="@_projektId" AuswahlChanged="BeiProjekt" />
+                <button type="button" class="epos-knopf" disabled="@(Projekte.Count == 0)"
+                        @onclick="BeiPvOeffnen">@PvOeffnenText</button>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (!IstBhkw && !IstPv)
+    {
+        <Herleitungszeile Text="@LeerText" />
+    }
+</div>
+
+@code {
+    /// <summary>Der Traeger ist ein BHKW (<c>DbWerte.KOSTEN_KOMPONENTE_BHKW</c>).</summary>
+    [Parameter] public bool IstBhkw { get; set; }
+
+    /// <summary>Der Traeger ist eine Photovoltaikanlage.</summary>
+    [Parameter] public bool IstPv { get; set; }
+
+    // ---- BHKW: die fertigen Saetze aus dem Gesetzeskatalog ---------------
+
+    /// <summary>Die Tranchentabelle (<c>lblEinspeisung</c>), Zeile je Tranche.</summary>
+    [Parameter] public string EinspeisungText { get; set; } = "";
+
+    /// <summary>Sonderregel § 7 Abs. 3a (<c>lblSonderregel</c>).</summary>
+    [Parameter] public string SonderregelText { get; set; } = "";
+
+    /// <summary>Selbst genutzter KWK-Strom § 7 Abs. 2 (<c>lblEigen</c>).</summary>
+    [Parameter] public string EigenText { get; set; } = "";
+
+    /// <summary>Foerderkontingent und Jahresdeckel (<c>lblDauer</c>).</summary>
+    [Parameter] public string DauerText { get; set; } = "";
+
+    /// <summary>Die drei Steuerabsaetze (<c>lblSteuern</c>).</summary>
+    [Parameter] public string SteuernText { get; set; } = "";
+
+    /// <summary>Der FK7-Vermerk (<c>lblFk7</c>).</summary>
+    [Parameter] public string Fk7Text { get; set; } = "";
+
+    // ---- Photovoltaik ----------------------------------------------------
+
+    /// <summary>Die waehlbaren Stammprojekte (<c>cmbPvProjekt</c>).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Projekte { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorwahl in der Projektliste; <c>null</c> = das erste.</summary>
+    [Parameter] public int? ProjektVorwahl { get; set; }
+
+    /// <summary>Erklaerungssatz ueber der Liste (<c>lblPvErklaerung</c>).</summary>
+    [Parameter] public string PvErklaerungText { get; set; } = "";
+
+    /// <summary>„PV-Verguetungsdialog oeffnen…" mit dem gewaehlten Stammprojekt.</summary>
+    [Parameter] public EventCallback<int> PvOeffnen { get; set; }
+
+    // ---- Weiterfuehren ---------------------------------------------------
+
+    /// <summary>
+    /// Sprung in eine andere Maske (iU9-W2.2). Gerufen wird er mit
+    /// <c>Sprungziel.Gesetzesparameter</c>; ohne Delegat bleibt der Knopf weg
+    /// (A-18 aus Welle 2 — ein Knopf, der nichts tut, ist eine Behauptung, die
+    /// nicht stimmt).
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary>Der Gesetzeskatalog kann sich geaendert haben — der Wirt laedt neu.</summary>
+    [Parameter] public EventCallback KatalogGeaendert { get; set; }
+
+    // ---- Texte -----------------------------------------------------------
+
+    [Parameter] public string TitelKwkg { get; set; }
+        = "KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog";
+    [Parameter] public string TitelEinspeisung { get; set; } = "Eingespeister KWK-Strom (Tranchen):";
+    [Parameter] public string TitelDauer { get; set; } = "Förderdauer und Jahresdeckel";
+    [Parameter] public string TitelSteuern { get; set; }
+        = "Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)";
+    [Parameter] public string TitelVerweise { get; set; } = "Pflegeorte (eine Wahrheit je Größe)";
+    [Parameter] public string GesetzeText { get; set; } = "Gesetzesparameter…";
+    [Parameter] public string TitelPv { get; set; }
+        = "PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)";
+    [Parameter] public string LabelPvProjekt { get; set; } = "Stammprojekt:";
+    [Parameter] public string PvOeffnenText { get; set; } = "PV-Vergütungsdialog öffnen…";
+    [Parameter] public string LeerText { get; set; }
+        = "Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse "
+        + "laufen als Zuschuss-Position in den Investitionskosten (FK5).";
+
+    private int? _projektId;
+
+    /// <summary>Das gewaehlte Stammprojekt (Pruefhilfe fuer Tests).</summary>
+    public int? GewaehltesProjekt => _projektId;
+
+    protected override void OnParametersSet()
+    {
+        if (_projektId.HasValue) return;
+        _projektId = ProjektVorwahl ?? (Projekte.Count > 0 ? Projekte[0].Id : null);
+    }
+
+    private void BeiProjekt(int? id) => _projektId = id;
+
+    private Task BeiPvOeffnen()
+        => _projektId.HasValue ? PvOeffnen.InvokeAsync(_projektId.Value) : Task.CompletedTask;
+
+    /// <summary>Wie <c>btnGesetze_Click</c>: nach dem Katalog wird neu gelesen.</summary>
+    private async Task BeiGesetze()
+    {
+        if (Sprung is null) return;
+        await Sprung(Sprungziel.Gesetzesparameter);
+        await KatalogGeaendert.InvokeAsync();
+    }
+}
