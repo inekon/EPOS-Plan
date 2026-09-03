@@ -41,7 +41,7 @@ Dokumentenwähler, Teilen-Blatt), die Seed-Kopie der Datenbank beim Erststart un
 die CI. **Sie hat eine eigene Projektmappe `EPOS.iOS/EPOS.iOS.sln`** und steht bewusst weder in
 `WP-Plan.sln` noch im Solution-Filter — auf Windows und Linux gibt es die iOS-Workload nicht, jeder
 Restore dort bräche mit `NETSDK1147`. Gebaut und im Simulator geprüft wird sie **ausschließlich** im
-CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.400.1`, Xcode 26.6), den man von
+CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.0.400.1`, Xcode 26.6), den man von
 Hand auslöst: GitHub → Actions → iOS → *Run workflow*. Was ohne Mac nachweisbar ist und was nicht,
 steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
 

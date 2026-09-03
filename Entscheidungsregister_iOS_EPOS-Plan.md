@@ -698,7 +698,7 @@ in keinem Fall steuerbar. Mit `bundle_e_sqlite3` steht auf **allen vier Läufern
 beiden Zahlen beim Start ins Protokoll (`SQLite 3.53.3`, `STRICT=114`), und der CI-Job prüft sie.
 
 **Runner- und Xcode-Lage — beides muss gemeinsam gepinnt werden.** Das Workload-**Set**
-`10.400.1` bringt das iOS-Manifest **26.5.10315** mit, und dessen `WorkloadDependencies.json`
+`10.0.400.1` bringt das iOS-Manifest **26.5.10315** mit, und dessen `WorkloadDependencies.json`
 verlangt `"xcode": "[26.6,)"`. Der Job setzt deshalb `DEVELOPER_DIR=/Applications/Xcode_26.6.app`
 und läuft auf **`macos-26`** statt auf `macos-latest` — das Label wandert, und ein neuer
 Xcode-Standard bräche den Bau ohne eine einzige Codeänderung (iR-a). Das Abbild `macos-26` führt
