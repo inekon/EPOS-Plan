@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 und W1 umgesetzt | `43452a7` | 105 von 111 Masken offen; Stilllegung nach iF29 abgeschlossen |
+| **iU9** Masken in Wellen | 🔄 W0, W1 und W2 umgesetzt | `3fd320e` | 102 Designer-Masken offen (105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1402,6 +1402,46 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 2 umgesetzt (03.09.2026, Basis `b0d3d86`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W2: **sechs Masken →
+> vier Razor-Komponenten** (drei neue, eine erweiterte), jede WinForms-Fassung im selben
+> Schritt gelöscht (Regel M1). Acht Commits, einer je Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `f9b5016` | **W2.1** `Form_StromspeicherItemNeu` (28 Aufrufer), `Form_GebaeudetypNeu` und `Form_AlsVariante` → **eine** erweiterte `Dialoge/Allgemein/NamensDialog.razor`; der Variantenablauf steht als `Views/Varianten/AlsVarianteHuelle.cs` |
+> | `41db247` | **W2.2** **Sprungbrücke** — `Dialoge/Allgemein/Sprungziel.cs` (Schlüssel) + `Allgemein/Blazor/Sprungbruecke.cs` (Schlüssel → `Form`, modal aus dem Rückruf). Entscheid zu B5b‑O1 |
+> | `938947a` | **W2.3** `Form_Tarifstruktur` (K4, 588 Z.) → `Dialoge/Wirtschaftlichkeit/TarifstrukturDialog.razor` + `TarifstrukturHuelle`; `Zahlenfeld`/`Ganzzahlfeld` bekommen `Aktiv` |
+> | `a684fcd` | **W2.4** `Form_PhotovoltaikVerguetung` → `Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` + `PhotovoltaikVerguetungHuelle` |
+> | `8ef5b60` | **W2.5** `Form_WirtschaftlichkeitParameter` (K4, 740 Z.) → `Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor` + Hülle; **Ersteinsatz der Sprungbrücke** (Gesetzeskatalog) |
+> | `a2b3bd2` | **W2.6** Ressourcen-Sammelnachtrag: 78 Schlüssel (`NAMD_*`, `TARIF_*`, `PVV_*`, `WPAR_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `3fd320e` | **W2.7** Formularkarte-Tests: viertes Prüfmuster (`Form_StromspeicherItemNeu`, sechs Testbezüge), Stapellauf-Zähler 105 → 102 |
+> | *dieses Paket* | **W2.8** Protokoll, Statusblock, `CLAUDE.md` |
+>
+> **Die Sprungbrücke ist der eigentliche Gewinn.** Bis W2 konnte ein Blazor-Dialog nur
+> *nachgelagert* weiterführen (schließen → Ziel → wieder öffnen, B5b‑O1). Jetzt zeigt ein
+> Delegat mit sprachneutralem Schlüssel ein **WinForms**-Ziel modal über dem Dialog — dieselbe
+> verschachtelte Nachrichtenschleife wie ein `OpenFileDialog` im Click. Für Ziele, die selbst
+> Blazor-Hüllen sind, bleibt es beim nachgelagerten Sprung (Risiko R2), bis Welle 4 den
+> Baustein `Ueberlagerung` bringt. **Ob die Schleife am Gerät trägt, ist Abnahmepunkt W2‑7.**
+>
+> **Bausteinsatz.** Kein neuer Baustein — `Zahlenfeld` und `Ganzzahlfeld` bekommen nur den
+> Parameter `Aktiv` (additiv), dazu die CSS-Klasse `epos-untergruppe`. Der Namensdialog aus
+> W1 trägt jetzt fünf Masken statt zwei.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **28** Warnungen (Basis 28, unverändert) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 110** grün (1 036 vorher; 74 neue bunit-Tests) · Formularkarte **120** grün, Build 0/0 ·
+> Stapellauf **102** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 303 Texte, 0
+> Fundstellen · Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**,
+> `diff -rq` ohne Unterschied · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (6 Masken, alle vollständig), 18 Abweichungen
+> (A‑1…A‑18), Windows-Abnahmeliste mit elf fachlichen Proben und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W2_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
 
 > **Statusblock iU9 — Welle 1 umgesetzt (03.09.2026, Basis `aef9509`)**
 >
