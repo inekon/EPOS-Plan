@@ -96,6 +96,37 @@
                       Condition="$(TargetFramework.Contains('-ios')) Or $(TargetFramework.Contains('-maccatalyst'))" />
   </ItemGroup>
 
+  <!-- ================================================================== -->
+  <!-- DIAGRAMME DES BERICHTS (Paket iU7-5)                                -->
+  <!--                                                                    -->
+  <!-- Allgemein\Bericht\ChartRenderer.cs zeichnet seit iU7-2 mit          -->
+  <!-- SkiaSharp statt GDI+ und ist damit die erste Bericht-Datei ohne     -->
+  <!-- Windowsbindung. Sie liegt seit iU7-5 hier; die AUSGABE (Word,       -->
+  <!-- Excel, Bausteine) bleibt bis zu ihrer Etappe in der Anwendung.      -->
+  <!--                                                                    -->
+  <!-- WARUM DIE NATIVEN BIBLIOTHEKEN BEDINGT SIND. SkiaSharp ist zur      -->
+  <!-- Haelfte verwaltet und zur Haelfte nativ; das verwaltete Paket       -->
+  <!-- allein zeichnet nicht. Welche native Fassung passt, entscheidet     -->
+  <!-- das BAUSYSTEM, nicht das Ziel-Framework - deshalb                   -->
+  <!-- IsOSPlatform und nicht TargetFramework: derselbe Kern wird auf      -->
+  <!-- Linux (CI), macOS (CI) und Windows (Arbeitsplatz) gebaut, und       -->
+  <!-- jede Umgebung soll genau ihre eigene Native ziehen statt aller      -->
+  <!-- drei. Win32 steht mit dabei, weil windows.yml die Kerntests         -->
+  <!-- ausfuehrt (dotnet test WP-Plan.Kern.slnf) - dort gibt es die        -->
+  <!-- Native der Anwendung nicht, EPOS.Kern.Tests haengt allein an        -->
+  <!-- diesem Projekt. Fuer iOS/Mac Catalyst gilt das erst mit iU10:       -->
+  <!-- die dortigen Nativen kommen mit dem Multi-Targeting dazu.           -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
 
 
 
