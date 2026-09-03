@@ -14,7 +14,8 @@
         <span class="epos-feld-text">@Bezeichnung</span>
     }
     <span class="epos-feld-zeile">
-        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")" @onchange="BeiAuswahl">
+        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
+                disabled="@(!Aktiv)" @onchange="BeiAuswahl">
             @if (Platzhalter is not null)
             {
                 <option value="">@Platzhalter</option>
@@ -45,6 +46,18 @@
     /// <c>null</c> = keine leere Zeile.
     /// </summary>
     [Parameter] public string? Platzhalter { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt die Liste - dieselbe Eigenschaft, die
+    /// <see cref="Schalter"/> schon fuehrt.
+    ///
+    /// <para>Gebraucht wird sie von Feldern, die ANGEKUENDIGT, aber noch nicht
+    /// pflegbar sind: Der Dialog "BHKW-Wirtschaftlichkeit" zeigt so den Modus des
+    /// § 9 Abs. 1 Nr. 3, dessen Spalte erst mit Etappe B6 entsteht (Luecke K3).
+    /// Ein gesperrtes Feld ist ehrlicher als ein fehlendes - es sagt, dass die
+    /// Groesse existiert und wo sie hingehoert.</para>
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
 
     private Task BeiAuswahl(ChangeEventArgs e)
     {

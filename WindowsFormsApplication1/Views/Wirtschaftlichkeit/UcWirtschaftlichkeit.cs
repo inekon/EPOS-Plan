@@ -127,7 +127,10 @@ namespace WindowsFormsApplication1
         /// Einspeisung) — sichtbar, wenn die Gruppe ein BHKW führt.
         ///
         /// <para><b>ETAPPE B5 (K8 = c, Anwenderentscheid 03.09.2026):</b> Der Knopf
-        /// öffnet jetzt <see cref="Form_BhkwWirtschaftlichkeit"/>. Die Fußleiste ist
+        /// öffnet jetzt den Sammeldialog „BHKW-Wirtschaftlichkeit" — seit B5b die
+        /// Razor-Komponente <c>EPOS.UI/Dialoge/Wirtschaftlichkeit/</c>
+        /// <c>BhkwWirtschaftlichkeitDialog</c> in der Hülle
+        /// <see cref="BhkwWirtschaftlichkeitHuelle"/>. Die Fußleiste ist
         /// voll — ein fünfter Sichtknopf läge bei x = −50 —, deshalb übernimmt der
         /// vorhandene Knopf die neue Sicht. Die BHKW-Tarifsicht ist NICHT verloren: Der
         /// neue Dialog trägt einen Sprungknopf „BHKW-Tarif…" in seine Stromsteuergruppe.
@@ -249,18 +252,21 @@ namespace WindowsFormsApplication1
         /// der Datenbank nicht zu holen: die Kohärenzhinweise (B2-O4) und die
         /// KWKG-Modulnachweise mit der Mengenkette (E7/B3b). Hier liegen sie bereits im
         /// Speicher — der Dialog bekommt sie, statt sie ein zweites Mal zu rechnen.</para>
+        ///
+        /// <para><b>ETAPPE B5b (03.09.2026):</b> Der Dialog ist eine Razor-Komponente in
+        /// <c>EPOS.UI</c> (<c>BhkwWirtschaftlichkeitDialog</c>); die WinForms-Fassung
+        /// <c>Form_BhkwWirtschaftlichkeit</c> ist gelöscht (Regel M1). Angezeigt wird sie
+        /// von <see cref="BhkwWirtschaftlichkeitHuelle"/> — Vorbild
+        /// <c>Form_Kosten.CreateNewEnergyCarrier</c> (iU8-9). Für diesen Handler ändert
+        /// sich nur die Zeile, die den Dialog öffnet; Rückmeldung und Nachlauf bleiben.</para>
         /// </summary>
         private void btnBhkwWirtschaftlichkeit_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_BhkwWirtschaftlichkeit(_idStamm, _ergebnisse))
+            if (BhkwWirtschaftlichkeitHuelle.Oeffnen(Besitzer, _idStamm, _ergebnisse))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    ZeigeParameterzeile();
-                    Melde(T("BHW_MELD_GESPEICHERT",
-                            "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen."));
-                }
+                ZeigeParameterzeile();
+                Melde(T("BHW_MELD_GESPEICHERT",
+                        "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen."));
             }
         }
 

@@ -107,8 +107,10 @@ namespace WindowsFormsApplication1
             if (_erzeuger.Bhkw)
             {
                 // ETAPPE B5 (BW9): Beide BHKW-Gruppen ziehen in den neuen Dialog
-                // Form_BhkwWirtschaftlichkeit um. Sie werden hier UNVERÄNDERT weiter
-                // aufgebaut und unmittelbar danach ausgeblendet — siehe Bw9Ausblenden.
+                // „BHKW-Wirtschaftlichkeit“ um (seit B5b die Razor-Komponente
+                // EPOS.UI/Dialoge/Wirtschaftlichkeit/BhkwWirtschaftlichkeitDialog).
+                // Sie werden hier UNVERÄNDERT weiter aufgebaut und unmittelbar danach
+                // ausgeblendet — siehe Bw9Ausblenden.
                 int yVorBhkw = y;
                 int indexVorBhkw = this.Controls.Count;
 
@@ -474,11 +476,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>ETAPPE B5: öffnet den Sammeldialog. Die Werte DIESES Dialogs bleiben
         /// unberührt — der neue Dialog schreibt selbst und liest beim Öffnen den
-        /// gespeicherten Stand (dasselbe Verhältnis wie beim Gesetzeskatalog).</summary>
+        /// gespeicherten Stand (dasselbe Verhältnis wie beim Gesetzeskatalog).
+        ///
+        /// <para><b>ETAPPE B5b:</b> Der Sammeldialog ist seit dem Port eine
+        /// Razor-Komponente in <c>EPOS.UI</c>; geöffnet wird er über
+        /// <see cref="BhkwWirtschaftlichkeitHuelle"/>. Ohne Lauf im Speicher wird
+        /// nichts durchgereicht — der Dialog fällt dann auf den gebuchten Stand
+        /// zurück, genau wie die WinForms-Fassung mit ihrem einparametrigen
+        /// Konstruktor.</para></summary>
         private void btnBhkwWirtschaftlichkeit_Click(object sender, EventArgs e)
         {
-            using (var f = new Form_BhkwWirtschaftlichkeit(_parameter.IdStamm))
-                f.ShowDialog(this);
+            BhkwWirtschaftlichkeitHuelle.Oeffnen(this, _parameter.IdStamm, null);
         }
 
         // ------------------------------------------------------------- Layout-Helfer
@@ -752,8 +760,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Anzeigetext mit deutschem Rückfall (Drei-Schichten-Regel: Anzeige ausschließlich
         /// über den Katalog). Fehlt der Schlüssel, steht der deutsche Wortlaut — dasselbe
-        /// Muster wie in <c>Form_BhkwWirtschaftlichkeit</c>; dessen Helfer ist
-        /// <c>private</c> und deshalb hier nicht mitnutzbar.
+        /// Muster, das auf der Blazor-Seite <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.BhwTexte</c>
+        /// führt (Etappe B5b). Ein gemeinsamer Helfer wäre die richtige Antwort, sobald
+        /// diese Maske selbst umgestellt wird (iU9).
         /// </summary>
         private static string T(string schluessel, string rueckfall)
         {
