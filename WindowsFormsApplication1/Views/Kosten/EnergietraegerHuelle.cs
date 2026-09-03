@@ -105,8 +105,15 @@ namespace WindowsFormsApplication1
                 ["TraegerLaden"] = new Func<int, EnergietraegerAnsicht>(TraegerLaden),
                 ["Nachrechnen"] = new Func<EnergietraegerAnsicht>(Ansicht),
                 ["PreisbasisGewechselt"] = EventCallback.Factory.Create<int>(new object(), PreisbasisWechseln),
+                // Der Modus ist Katalogsache je Träger und wird SOFORT geschrieben
+                // (KD4 § 7.1) — ohne gewählten Träger gibt es nichts zu schreiben.
                 ["LeistungsModusGewechselt"] = EventCallback.Factory.Create<bool>(new object(),
-                    monat => EnergietraegerPreisCtrl.LeistungsModusSchreiben(_gewaehlt.ID, monat)),
+                    monat =>
+                    {
+                        if (_gewaehlt == null) return;
+                        EnergietraegerPreisCtrl.LeistungsModusSchreiben(_gewaehlt.ID, monat);
+                        if (_stand != null) _stand.ReihenStatus = ReihenStatus();
+                    }),
                 ["RegelNeu"] = EventCallback.Factory.Create(new object(), (Action)RegelNeu),
                 ["RegelAbschalten"] = new Func<UmrechnungsregelZeile, bool, bool>(DarfAbschalten),
                 ["InArbeitspreis"] = EventCallback.Factory.Create(new object(), (Action)ArbeitspreisAusBestandteilen),
