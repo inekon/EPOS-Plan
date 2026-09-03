@@ -1433,3 +1433,32 @@ body {
 .epos-kostenkopf {
     justify-content: flex-end;
 }
+
+/* --------------------------------------------------------------------------
+   Die Uebersichtsseite (iU9-W5.5).
+   -------------------------------------------------------------------------- */
+.epos-variantentabelle,
+.epos-vergleichstabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Das Gewerk steht nur in der ersten Zeile seines Blocks - und dort fett
+   (Vorbild UcBkUebersicht.SchreibeVergleichsZeile). */
+.epos-vergleich-gewerk {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Die Pflegespalte rechts der Liste (Vorlaeufer: 222 px Absolutspalte). */
+.epos-variantenpflege {
+    flex: 0 0 auto;
+    max-width: 260px;
+}
+
+/* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
+   mit Begruendung im Kurztext. */
+.epos-gesperrt {
+    color: var(--epos-text-sehr-leise);
+}
