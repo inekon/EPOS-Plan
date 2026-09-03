@@ -1088,74 +1088,56 @@ namespace WindowsFormsApplication1
                 case WaermequelleClass.TYP_ERDREICH:
                     {
                         // Erdreich nach VDI 4640 (Konzept 4.5): Kollektor oder Sonde.
-                        Form_QuelleErdreich frmErde = new Form_QuelleErdreich();
-                        frmErde.WPName = info.Bezeichner;
-
-                        // Projekt- und Anlagenbezug für den Simulationsknopf des Dialogs
-                        // (Abnahme Runde 4): Mit gesetzten IDs greift dessen Vorrangweg;
-                        // der Owner-/Namensrückfall in ProjektErmitteln/ErgebnisDesLaufs
-                        // bleibt nur Sicherheitsnetz für fremde Aufrufer.
-                        frmErde.ID_Projekt = m_ID_Projekt;
-                        frmErde.ID_Anlage = info.ID;
+                        // Die Maske ist seit iU9-W10a.3 eine Razor-Komponente
+                        // (EPOS.UI/Dialoge/Simulation/QuelleErdreichDialog). Aus achtzehn
+                        // einzeln gesetzten Feldern wird EIN Satz; die Ergebnisanbindung
+                        // der Auslegungspruefung baut die Huelle selbst (sie kennt die
+                        // Dreistufenlogik der Zuordnung).
+                        //
+                        // Die Klimazone ist eine Eigenschaft der REGION, nicht der Anlage
+                        // (Konzept 13.1) - deshalb wird sie hier vorher gemerkt und eine
+                        // Aenderung an die Region zurueckgeschrieben.
+                        int zoneVorher = KlimazoneDesProjekts();
 
                         string quellsystem = WaermequelleClass.WertLesen(info.ID, "WQ_Quellsystem") as string;
-                        if (!string.IsNullOrEmpty(quellsystem)) frmErde.Quellsystem = quellsystem;
-
                         object oTiefe = WaermequelleClass.WertLesen(info.ID, "WQ_Tiefe");
-                        if (oTiefe != null && Convert.ToDouble(oTiefe) > 0) frmErde.Tiefe = Convert.ToDouble(oTiefe);
                         object oFlaeche = WaermequelleClass.WertLesen(info.ID, "WQ_Flaeche");
-                        if (oFlaeche != null) frmErde.Flaeche = Convert.ToDouble(oFlaeche);
                         object oAnzahl = WaermequelleClass.WertLesen(info.ID, "WQ_Anzahl");
-                        if (oAnzahl != null && Convert.ToInt32(oAnzahl) > 0) frmErde.Anzahl = Convert.ToInt32(oAnzahl);
                         string bodentyp = WaermequelleClass.WertLesen(info.ID, "WQ_Bodentyp") as string;
-                        if (!string.IsNullOrEmpty(bodentyp)) frmErde.Bodentyp = bodentyp;
                         // Nutzbare Spreizung (Konzept 13.1) - dieselbe Spalte wie beim
                         // Pufferspeicher-Quellendialog, jetzt auch hier pflegbar.
                         object oSpreizErde = WaermequelleClass.WertLesen(info.ID, "WQ_Spreizung");
-                        if (oSpreizErde != null && Convert.ToDouble(oSpreizErde) > 0)
-                            frmErde.Spreizung = Convert.ToDouble(oSpreizErde);
 
-                        // Klimazone aus der Region vorbelegen (0 = nicht zugeordnet),
-                        // Außentemperaturvektor einmalig laden und gecacht übergeben.
-                        int zoneVorher = KlimazoneDesProjekts();
-                        frmErde.Klimazone = zoneVorher;
-                        frmErde.Aussentemperatur = AussentemperaturLaden();
-
-                        // Ergebnisanbindung der Auslegungsprüfung (Paket 7): Liegt für
-                        // diese Anlage ein Simulationslauf der Sitzung vor, bekommt der
-                        // Dialog die echten Werte statt "(noch kein Simulationslauf)".
-                        //
-                        // iU9-W10a.0b (Befund W10-B8): Die Zuordnung stand hier und noch
-                        // einmal wortgleich in Form_QuelleErdreich.ErgebnisUebernehmen.
-                        // Sie liegt jetzt als ErdreichAuswertung.ErgebnisZuordnen im Kern;
-                        // beide Stellen rufen sie.
-                        ErdreichAuswertung.ErdreichLaufErgebnis erdErg =
-                            ErdreichAuswertung.ErgebnisZuordnen(
-                                ErdreichAuswertung.FuerAnlage(m_ID_Projekt, info.ID));
-                        if (erdErg.Vorhanden)
+                        var erdDaten = new EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten
                         {
-                            frmErde.ErgebnisseVorhanden = erdErg.ErgebnisseVorhanden;
-                            frmErde.MaxEntzugW = erdErg.MaxEntzugW;
-                            frmErde.JahresentzugKWh = erdErg.JahresentzugKWh;
-                            frmErde.VolllastStunden = erdErg.VolllastStunden;
-                            frmErde.HinweisErgebnis = erdErg.HinweisErgebnis;
-                            frmErde.HinweisVorbehalt = erdErg.HinweisVorbehalt;
-                            frmErde.HinweisFrost = erdErg.HinweisFrost;
-                        }
+                            WPName = info.Bezeichner,
+                            IdProjekt = m_ID_Projekt,
+                            IdAnlage = info.ID,
+                            Quellsystem = string.IsNullOrEmpty(quellsystem) ? "" : quellsystem,
+                            Tiefe = (oTiefe != null && Convert.ToDouble(oTiefe) > 0)
+                                ? Convert.ToDouble(oTiefe) : 0.0,
+                            Flaeche = oFlaeche != null ? Convert.ToDouble(oFlaeche) : 0.0,
+                            Anzahl = (oAnzahl != null && Convert.ToInt32(oAnzahl) > 0)
+                                ? Convert.ToInt32(oAnzahl) : 0,
+                            Bodentyp = string.IsNullOrEmpty(bodentyp) ? "" : bodentyp,
+                            Klimazone = zoneVorher,
+                            Spreizung = (oSpreizErde != null && Convert.ToDouble(oSpreizErde) > 0)
+                                ? Convert.ToDouble(oSpreizErde) : 0.0,
+                            Aussentemperatur = AussentemperaturLaden()
+                        };
 
-                        frmErde.SetControls();
-                        if (frmErde.ShowDialog(this) != DialogResult.OK) return;
+                        EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten erdNeu =
+                            QuelleErdreichHuelle.Oeffnen(this, erdDaten);
+                        if (erdNeu == null) return;
 
-                        // Die Klimazone ist eine Eigenschaft der Region, nicht der Anlage
-                        // (Konzept 13.1) - eine Änderung im Dialog geht deshalb an die Region.
-                        if (frmErde.Klimazone != zoneVorher) KlimazoneSpeichern(frmErde.Klimazone);
+                        if (erdNeu.Klimazone != zoneVorher) KlimazoneSpeichern(erdNeu.Klimazone);
 
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Quellsystem", frmErde.Quellsystem);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Tiefe", frmErde.Tiefe);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Flaeche", frmErde.Flaeche);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Anzahl", frmErde.Anzahl);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Bodentyp", frmErde.Bodentyp);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmErde.Spreizung);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Quellsystem", erdNeu.Quellsystem);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Tiefe", erdNeu.Tiefe);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Flaeche", erdNeu.Flaeche);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Anzahl", erdNeu.Anzahl);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Bodentyp", erdNeu.Bodentyp);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", erdNeu.Spreizung);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                         break;
                     }

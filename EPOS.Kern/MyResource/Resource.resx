@@ -11809,4 +11809,13 @@ Alle Eingaben überprüfen!</value>
   <data name="WBX_TITEL" xml:space="preserve">
     <value>Wärmebedarf Extern</value>
   </data>
+  <data name="SIMQ_ERDREICH_GB_STANDORT" xml:space="preserve">
+    <value>Standort und Boden</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BILD_PLATZHALTER" xml:space="preserve">
+    <value>Noch kein Diagramm</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SIM_LAEUFT" xml:space="preserve">
+    <value>Simulation läuft …</value>
+  </data>
 </root>

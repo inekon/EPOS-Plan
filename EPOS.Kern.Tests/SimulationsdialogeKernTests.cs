@@ -307,8 +307,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(-1.5, w[3], 6);
         }
 
-        // ================================================================== Katalog
+    }
 
+    /// <summary>
+    /// Die Katalogfaelle brauchen die ARBEITSKOPIE der Datenbank und gehoeren deshalb
+    /// in die Sammlung „Testdatenbank" — sie legt <c>PfadUeberschreibung</c> um, und
+    /// das ist ein statisches Feld fuer den ganzen Testlauf.
+    /// </summary>
+    [Collection("Testdatenbank")]
+    public class SimulationsdialogeKatalogTests
+    {
         /// <summary>
         /// Der Auslieferungskatalog, nach Bezeichner sortiert — die Liste, die der
         /// Projektdialog in seine Klappliste haengt (Befund W10-B27).
@@ -328,14 +336,7 @@ namespace EPOS.Kern.Tests
             List<string> bezeichner = zeilen.Select(z => z.Bezeichner).ToList();
             Assert.Equal(bezeichner.OrderBy(b => b, StringComparer.Ordinal).ToList(), bezeichner);
         }
-    }
 
-    /// <summary>
-    /// Der Katalogfall braucht die Arbeitskopie und gehoert deshalb in die Sammlung.
-    /// </summary>
-    [Collection("Testdatenbank")]
-    public class SimulationsdialogeKatalogTests
-    {
         [Fact]
         public void Katalogzeilen_traegt_alle_sieben_Felder()
         {
