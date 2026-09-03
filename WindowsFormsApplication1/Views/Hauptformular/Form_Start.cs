@@ -2130,18 +2130,25 @@ namespace WindowsFormsApplication1
         //  und „Varianten"; beide sind mit iU9-W0 samt ihren Altdialogen entfallen
         //  (Anwenderentscheid iF29). Er trägt jetzt eine senkrechte Navigation mit
         //  vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht) —
-        //  siehe UcBerichteKosten.
+        //  siehe EPOS.UI/Seiten/Berichte/BerichteKostenSeite.razor.
         //
         //  Programmatisch angehängt, damit Form_Start.Designer.cs und die .resx
         //  unberührt bleiben (CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        //
+        //  SEIT iU9-W5.6 IST DIE SEITE EINE RAZOR-KOMPONENTE. Der Reiter trägt
+        //  eine BlazorSeite<BerichteKostenSeite> — EINE WebView für alle vier
+        //  Seiten (Risiko R5 des Wellenplans); umgeschaltet wird in der
+        //  Komponente. Die Datenseite liegt in BerichteKostenHuelle.
         // ============================================================
 
-        private UcBerichteKosten _berichteKosten;
+        private BerichteKostenHuelle _berichteKostenHuelle;
+        private BlazorSeite<EPOS.UI.Seiten.Berichte.BerichteKostenSeite> _berichteKosten;
 
         /// <summary>
         /// Baut die Reiterseite beim ersten Aufruf auf und übergibt ihr bei jedem
         /// weiteren Aufruf das aktuell geöffnete Projekt (es kann sich zwischenzeitlich
-        /// geändert haben).
+        /// geändert haben). Der Projektwechsel läuft über den Zustand der Hülle —
+        /// die WebView wird dabei NICHT neu gebaut.
         /// </summary>
         private void BaueBerichteKostenSeite()
         {
@@ -2149,16 +2156,34 @@ namespace WindowsFormsApplication1
 
             if (_berichteKosten == null)
             {
-                _berichteKosten = new UcBerichteKosten { Dock = DockStyle.Fill };
+                _berichteKostenHuelle = new BerichteKostenHuelle(() => this);
+                _berichteKosten = new BlazorSeite<EPOS.UI.Seiten.Berichte.BerichteKostenSeite>(
+                    new Dictionary<string, object>(_berichteKostenHuelle.Gaben()));
                 tabPage6.Controls.Add(_berichteKosten);
             }
 
-            _berichteKosten.SetzeProjekt(m_ID_Projekt);
+            _berichteKostenHuelle.SetzeProjekt(m_ID_Projekt, ProjektnameFuerReiter());
+        }
+
+        /// <summary>
+        /// Der Projektname für die Kopfzeile des Reiters. Er steht im Kopfband
+        /// der Startmaske; ohne offenes Projekt ist er leer.
+        /// </summary>
+        private string ProjektnameFuerReiter()
+        {
+            try
+            {
+                if (m_ID_Projekt <= 0) return "";
+                var pc = new ProjektCtrl();
+                pc.ReadSingle(m_ID_Projekt);
+                return pc.rows > 0 ? pc.m_szProjektname : "";
+            }
+            catch { return ""; }
         }
 
         /// <summary>
         /// Öffnet den Reiter „Berichte &amp; Kosten" und stellt ihn auf die gewünschte
-        /// Seite (Schlüssel aus <see cref="UcBerichteKosten"/>, null = zuletzt gewählte).
+        /// Seite (Schlüssel aus <c>BerichteKostenSeite</c>, null = zuletzt gewählte).
         /// Einstieg aus dem MDI-Menü (Projekte › Varianten und Bericht…).
         /// </summary>
         public void ZeigeBerichteKosten(string seite = null)
@@ -2171,7 +2196,7 @@ namespace WindowsFormsApplication1
             tabControl_Wizard.SelectedTab = tabPage6;
             BaueBerichteKostenSeite();
 
-            if (!string.IsNullOrEmpty(seite)) _berichteKosten?.ZeigeSeite(seite);
+            if (!string.IsNullOrEmpty(seite)) _berichteKostenHuelle?.ZeigeSeite(seite);
         }
 
         /// <summary>
@@ -2185,7 +2210,7 @@ namespace WindowsFormsApplication1
             if (this.DesignMode) return;
 
             FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
-            _berichteKosten?.SetzeProjekt(m_ID_Projekt);
+            _berichteKostenHuelle?.SetzeProjekt(m_ID_Projekt, ProjektnameFuerReiter());
         }
 
         /// <summary>

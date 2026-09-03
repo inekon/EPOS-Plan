@@ -295,6 +295,10 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     ucVorlagenZeile.Designer.cs         Stand vor iU9‑W4.2, unverändert — ohne .resx
     ucVorlagenZeile.cs                  dito
 
+Werkzeuge/Formularkarte.Tests/Pruefmuster/Bericht/
+    UcBericht.Designer.cs               Stand vor iU9‑W5.6, unverändert — ohne .resx
+    UcBericht.cs                        dito
+
 Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.Designer.cs   Stand f9b5016^, unverändert (iU9‑W2.1)
     Form_StromspeicherItemNeu.cs            dito
@@ -302,6 +306,12 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.de-DE.resx    dito — der lokalisierte Weg braucht alle drei
     Form_StromspeicherItemNeu.en-US.resx    dito
 ```
+
+Das **achte** Muster (`UcBericht`, mit **iU9‑W5.6** durch
+`EPOS.UI/Seiten/Berichte/BerichtSeite.razor` ersetzt) ist der **einzige Beleg für die
+`CheckedListBox`** — mit dem Löschen der Maske fällt der Typ aus der Typtabelle des
+Stapellaufs. Sie wandert wie `ucVorlagenZeile` mit **zwei** Dateien: Ein `UserControl`,
+dessen Texte vollständig im Code stehen, führt keine `.resx`.
 
 Das **siebte** Muster (`ucVorlagenZeile`, mit **iU9‑W4.2** durch
 `EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` ersetzt) ist die **einzige

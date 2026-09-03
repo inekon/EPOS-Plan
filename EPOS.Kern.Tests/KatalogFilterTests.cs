@@ -15,6 +15,7 @@ namespace EPOS.Kern.Tests
     /// die Proben festhalten, ist deshalb der BESTAND, einschliesslich seiner beiden
     /// Ungenauigkeiten (Befund W6-O-1).</para>
     /// </summary>
+    [Collection("Testdatenbank")]
     public class KatalogFilterTests
     {
         // =================================================================================

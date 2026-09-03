@@ -29,10 +29,11 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand nach iU9-W6.3: 91 Dateien (92 nach iU9-W4, 101 nach
-        // iU9-W3, 105 nach iU9-W2, 108 nach iU9-W0). Die Zahl sinkt mit jeder
-        // umgestellten Maske; der endgueltige Wert der Welle steht in W6.9.
-        Assert.True(dateien.Count >= 89, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand nach dem Zusammenfuehren von Welle 5 und Welle 6:
+        // 89 Dateien nach W5 (92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2,
+        // 108 nach iU9-W0); Welle 6 senkt die Zahl weiter, der endgueltige Wert
+        // steht in W6.9.
+        Assert.True(dateien.Count >= 86, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -55,10 +56,11 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand nach iU9-W6.3: 88 Masken (91 nach iU9-W4, 98 nach
-        // iU9-W3, 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Jede
-        // umgestellte Maske senkt die Zahl (Regel M1).
-        Assert.True(Lauf.Value.Masken >= 88, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand nach dem Zusammenfuehren von Welle 5 und Welle 6:
+        // 88 Masken nach W5 (91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2,
+        // 105 nach iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske senkt die
+        // Zahl (Regel M1); der endgueltige Wert der Welle 6 steht in W6.9.
+        Assert.True(Lauf.Value.Masken >= 85, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -66,12 +68,12 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand nach iU9-W6.3: 57 von 88 (59 von 91 nach iU9-W4). Die
-        // Welle 6 stellt lokalisierte Masken um - Form_Heizkessel und
-        // Form_Heizkessel_Bearbeiten trugen je eine .en-US.resx -, deshalb sinkt
-        // hier erstmals auch der Zaehler. Der ANTEIL bleibt bei rund zwei
-        // Dritteln: Der Leser muss weiterhin beide Wege koennen, nicht nur den
-        // Designer.
+        // Bis Welle 5 stand der Zaehler unveraendert bei 59: Keine der Masken der
+        // Wellen 2 bis 5 war lokalisiert, sie alle setzten ihre Texte im Code.
+        // Welle 6 stellt erstmals wieder LOKALISIERTE Masken um (Heizkessel,
+        // Heizkessel_Bearbeiten, Stromspeicher, PufferSp, BHKWEing), deshalb
+        // sinkt er hier mit. Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser
+        // muss weiterhin beide Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 57,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }

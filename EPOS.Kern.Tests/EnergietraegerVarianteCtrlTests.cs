@@ -16,6 +16,7 @@ namespace EPOS.Kern.Tests
     /// Aufrufer den Erzeuger aufnimmt (jeder Fall ausser <c>Fehler</c>) - deshalb sind es
     /// vier Faelle und nicht ein „hat geklappt".</para>
     /// </summary>
+    [Collection("Testdatenbank")]
     public class EnergietraegerVarianteCtrlTests
     {
         /// <summary>Erdgas E - Kategorie 1 (Gas), im Bestand der Testdatenbank.</summary>

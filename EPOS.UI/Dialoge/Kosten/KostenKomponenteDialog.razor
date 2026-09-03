@@ -19,10 +19,13 @@
    fuenf Methoden des Vorlaeufers (KopfAnzeigen, VariantenLaden, RasterAufbauen,
    SummenAnzeigen, ErtragReiterSteuern) in einer Antwort.
 
-   ZWEI ABSCHNITTE STATT ZWEIER REITER. Der Vorlaeufer trug ein TabControl mit
-   „Kosten Invest/Betrieb" und „Ertrag/Bonus"; einen Reiter-Baustein gibt es
-   erst in Welle 5 (Bausteinluecke 10). Bis dahin stehen beide untereinander —
-   dieselbe Entscheidung wie A-17 in Welle 3.
+   ZWEI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-2). Der
+   Vorlaeufer trug ein TabControl mit „Kosten Invest/Betrieb" und
+   „Ertrag/Bonus" und ENTFERNTE die zweite Seite zur Laufzeit, wenn das
+   Gewerk keinen Ertrag kennt (ErtragReiterSteuern). Welle 4 stellte beides
+   untereinander, weil es den Baustein Reiter noch nicht gab (offener Punkt
+   W4-O1); seit Welle 5 gibt es ihn - und das Weglassen der zweiten Seite ist
+   hier nur ein @if.
 
    TASTATUR: Esc schliesst zuerst eine offene Ueberlagerung, dann den Dialog.
    Enter ist nicht belegt: „Speichern", „Uebernahme" und „Katalog" schreiben
@@ -79,6 +82,12 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@ReadOnlyHinweis" />
     }
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+    <Reiterblatt Schluessel="KOSTEN" Titel="@TitelReiterKosten">
+        <KindInhalt>
 
     @* ------------------------------------------------------------- Raster *@
     <Zeilenraster Bezeichnung="@LabelRaster" Spaltenmass="@SPALTENMASS"
@@ -139,11 +148,21 @@
         <button type="button" class="epos-knopf" @onclick="KatalogOeffnen">@KatalogText</button>
     </div>
 
+        </KindInhalt>
+    </Reiterblatt>
+
     @* ------------------------------------------------------ Ertrag/Bonus *@
     @if (_stand.ErtragSichtbar && _stand.ErtragGaben is not null)
     {
-        <ErtragBonus @attributes="_stand.ErtragGaben" />
+        <Reiterblatt Schluessel="ERTRAG" Titel="@TitelReiterErtrag">
+            <KindInhalt>
+                <ErtragBonus @attributes="_stand.ErtragGaben" />
+            </KindInhalt>
+        </Reiterblatt>
     }
+
+        </KindInhalt>
+    </Reiter>
 
     <div class="epos-leiste">
         <span class="epos-status">@_status</span>
@@ -313,6 +332,15 @@
     [Parameter] public string ReadOnlyHinweis { get; set; }
         = "Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…\" verwenden.";
     [Parameter] public string LabelRaster { get; set; } = "Positionen";
+
+    /// <summary>Beschriftung des ersten Reiters (Vorlaeufer: „Kosten Invest/Betrieb").</summary>
+    [Parameter] public string TitelReiterKosten { get; set; } = "Kosten Invest/Betrieb";
+
+    /// <summary>Beschriftung des zweiten Reiters (Vorlaeufer: „Ertrag/Bonus").</summary>
+    [Parameter] public string TitelReiterErtrag { get; set; } = "Ertrag/Bonus";
+
+    /// <summary>Beschriftung der Reiterleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Kostenverwaltung";
     [Parameter] public string SpalteAktionen { get; set; } = "Aktionen";
     [Parameter] public string SpaltePosition { get; set; } = "Position";
     [Parameter] public string SpalteBemessung { get; set; } = "Bemessung";
@@ -380,6 +408,9 @@
     private bool _bannerOffen = true;
     private string _neuerName = "";
     private string _status = "";
+    /// <summary>Der sichtbare Reiter (Schluessel, kein Anzeigetext).</summary>
+    private string _reiter = "KOSTEN";
+
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Fehler;
 

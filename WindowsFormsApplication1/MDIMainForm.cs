@@ -561,7 +561,8 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_VariantenBericht_Click(object sender, EventArgs e)
         {
-            Program.startfrm?.ZeigeBerichteKosten(UcBerichteKosten.SEITE_UEBERSICHT);
+            Program.startfrm?.ZeigeBerichteKosten(
+                EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_UEBERSICHT);
         }
 
         private void MenuItem_zuletztGeöffnet_Click(object sender, EventArgs e)

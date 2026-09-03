@@ -9990,4 +9990,111 @@ Overwrite it anyway?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>The record could not be transferred into the project.</value>
   </data>
+  <!-- ==================================================================
+       iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
+       (Sammelnachtrag der Welle 5; Zugriff ueber
+       ResourceManager.GetString mit deutschem Rueckfall im Code).
+       ================================================================== -->
+  <data name="BKS_LBL_FORTSCHRITT" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="BKS_BTN_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="BKS_BTN_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="BKS_LBL_STAMM" xml:space="preserve">
+    <value>Master project:</value>
+  </data>
+  <data name="BKS_LBL_NUR_STAEMME" xml:space="preserve">
+    <value>master projects only</value>
+  </data>
+  <data name="BKS_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Identifier:</value>
+  </data>
+  <data name="BKS_BTN_ANLEGEN" xml:space="preserve">
+    <value>Create variant</value>
+  </data>
+  <data name="BKS_BTN_SIMULIEREN" xml:space="preserve">
+    <value>Run simulation</value>
+  </data>
+  <data name="BKS_WAHL_VERSION" xml:space="preserve">
+    <value>Select version</value>
+  </data>
+  <data name="BKS_WAHL_ANLAGE" xml:space="preserve">
+    <value>Select unit</value>
+  </data>
+  <data name="BK_KOSTEN_ANLAGE_OHNE_POSITIONEN" xml:space="preserve">
+    <value>This unit has no cost items of its own — use “Edit costs…” in the unit dialog or the cost management to maintain them per unit.</value>
+  </data>
+  <data name="PVW_MELD_GESPEICHERT" xml:space="preserve">
+    <value>PV remuneration saved — please recalculate.</value>
+  </data>
+  <data name="WIRT_TITEL" xml:space="preserve">
+    <value>Economics (net present value method, DIN EN 17463)</value>
+  </data>
+  <data name="WIRT_STAMM" xml:space="preserve">
+    <value>Master:</value>
+  </data>
+  <data name="WIRT_LBL_GRUPPE" xml:space="preserve">
+    <value>Comparison group (reference: master, always included):</value>
+  </data>
+  <data name="WIRT_LBL_SZENARIO" xml:space="preserve">
+    <value>Scenario:</value>
+  </data>
+  <data name="WIRT_BTN_PARAMETER" xml:space="preserve">
+    <value>Parameters…</value>
+  </data>
+  <data name="WIRT_BTN_VERLAUF" xml:space="preserve">
+    <value>Progression…</value>
+  </data>
+  <data name="WIRT_BTN_BERECHNEN" xml:space="preserve">
+    <value>Calculate</value>
+  </data>
+  <data name="WIRT_PARAM_KOPF" xml:space="preserve">
+    <value>Parameters:</value>
+  </data>
+  <data name="WIRT_PARAM_REFERENZ" xml:space="preserve">
+    <value>Reference: master project · residual value linear</value>
+  </data>
+  <data name="WIRT_SP_KENNZAHL" xml:space="preserve">
+    <value>Indicator</value>
+  </data>
+  <data name="WIRT_ZEILE_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="WIRT_STATUS_KEINE" xml:space="preserve">
+    <value>No economic calculation saved yet — please use “Calculate”.</value>
+  </data>
+  <data name="WIRT_STATUS_VERALTET" xml:space="preserve">
+    <value>⚠ Saved results no longer match the simulation state — please use “Calculate”.</value>
+  </data>
+  <data name="WIRT_STATUS_STAND" xml:space="preserve">
+    <value>Saved results from {0}.</value>
+  </data>
+  <data name="WIRT_STATUS_BERECHNET" xml:space="preserve">
+    <value>Calculated on {0} — results saved (basis for the report module “Economics”).</value>
+  </data>
+  <data name="WIRT_MSG_RECHENFEHLER" xml:space="preserve">
+    <value>Error during the economic calculation: {0}</value>
+  </data>
+  <data name="WIRT_MELD_TARIF" xml:space="preserve">
+    <value>Tariff structure saved — please recalculate.</value>
+  </data>
+  <data name="WIRT_MELD_PARAMETER" xml:space="preserve">
+    <value>Parameters saved — please recalculate.</value>
+  </data>
+  <data name="WIRT_MELD_VERLAUF_NEU" xml:space="preserve">
+    <value>⚠ The progression triggered a new simulation — saved results no longer match the simulation state, please use “Calculate”.</value>
+  </data>
+  <data name="WIRT_SZEN_ERWARTET" xml:space="preserve">
+    <value>Expected</value>
+  </data>
+  <data name="WIRT_SZEN_BEST" xml:space="preserve">
+    <value>Best case</value>
+  </data>
+  <data name="WIRT_SZEN_WORST" xml:space="preserve">
+    <value>Worst case</value>
+  </data>
 </root>

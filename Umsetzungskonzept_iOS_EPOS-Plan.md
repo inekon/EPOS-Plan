@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W3 umgesetzt | `4ea688c` | **98** Designer-Masken offen (102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert |
+| **iU9** Masken in Wellen | 🔄 W0 bis W5 umgesetzt | `f39b4a3` | **88** Designer-Masken offen (91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert, seit W5 steht die erste **Seite** (`BlazorSeite`) — der Reiter „Berichte & Kosten" ist vollständig Blazor |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1402,6 +1402,65 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W5: **sechs Masken →
+> sechs Razor-Komponenten**, jede WinForms-Fassung gelöscht (Regel M1). Es ist die
+> **erste Welle mit Seiten statt Dialogen** — der ganze Reiter „Berichte & Kosten"
+> der Startmaske ist jetzt Blazor, in **einer** WebView. Zehn Commits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `d95283c` | **W5.0** Bausteinlücken 9–11: `Allgemein/Blazor/BlazorSeite.cs` (nicht-modale Hülle), `EPOS.UI/Dienste/SeitenZustand.cs` (Projektwechsel ohne Neuaufbau der WebView), `Bausteine/Reiter.razor` + `Reiterblatt.razor`, `Kachelraster.razor`, `Kennzahlkachel.razor`; dazu der Nachzug von **A‑17 (W3)** und **A‑2 (W4)** — Kostenprofil, Kostenverwaltung und Trägerkarte bekommen ihre Reiterform zurück |
+> | `a39fe13` | **W5.1** `Form_BkUebernahme` → `Dialoge/Berichte/BkUebernahmeDialog.razor` (ein Dialog, zwei Füllungen — Wertgegenüberstellung oder Klartext) |
+> | `cd4213d` | **W5.2** `UcBericht` (508 Z.) → `Seiten/Berichte/BerichtSeite.razor` |
+> | `bf38fa6` | **W5.3** `UcWirtschaftlichkeit` (831 Z.) → `Seiten/Berichte/WirtschaftlichkeitSeite.razor`; die **fünf Unterdialoge** stehen jetzt in Überlagerungen desselben Fensters (W4‑O3 erledigt) |
+> | `47ea9e3` | **W5.4** `UcBkKosten` (1 311 Z., K4) → `Seiten/Berichte/KostenSeite.razor` |
+> | `8ea1e2e` | **W5.5** `UcBkUebersicht` (1 552 Z., K4) → `Seiten/Berichte/UebersichtSeite.razor` |
+> | `f59aed1` | **W5.6a** Sieben Hüllen liefern ihren Parametersatz (`Gaben`) — Voraussetzung dafür, dass ein Blazor-**Wirt** seine Unterdialoge ohne zweite WebView zeigt |
+> | `ff4e6f7` | **W5.6** `UcBerichteKosten` (810 Z., K4) → `Seiten/Berichte/BerichteKostenSeite.razor`; `Form_Start.tabPage6` trägt eine `BlazorSeite<T>`; sechs Masken gelöscht, fünf Windows-Datenseiten neu |
+> | `f5d660f` | **W5.7** Ressourcen-Sammelnachtrag: 34 Schlüssel (`BKS_*`, `WIRT_*`) in `Resource.resx` und `Resource.en-US.resx`; `help_mapping.txt` |
+> | `f39b4a3` | **W5.8** Formularkarte: Zähler 91 → 88, achtes Prüfmuster (`UcBericht` — einziger Beleg für die `CheckedListBox`) |
+>
+> **Die Seiten-Hülle ist der Ertrag.** `BlazorDialogForm<T>` ist ein eigenes modales
+> Fenster; eine SEITE sitzt in einer vorhandenen Maske und bleibt. `BlazorSeite<T>`
+> ist deshalb ein `UserControl` mit denselben `CreationProperties` — insbesondere
+> demselben `UserDataFolder`, also **einem gemeinsamen Browserprozess**. Die vier
+> Seiten laufen in **einer** WebView (Risiko **R5**); umgeschaltet wird in der
+> Komponente. Der Projektwechsel läuft über `SeitenZustand`: ein Objekt mit
+> Änderungsereignis, damit die WebView **nicht** neu gebaut wird.
+>
+> **DPI bleibt offen (Risiko R4, Entscheid iF21).** Die `DpiInsel` der Dialoghülle
+> wirkt nur für einen modalen Lauf mit eigenem Fenster. Eine eingebettete Seite
+> sitzt im Fenster der DpiUnaware-`Form_Start` und wird bei 125–200 % bitmapskaliert;
+> ein Fenster kann seinen DPI-Kontext nachträglich nicht wechseln. `BlazorSeite`
+> versucht es deshalb **gar nicht erst**, dokumentiert den Befund und setzt
+> `DefaultBackgroundColor` gegen das weiße Aufblitzen. **Die Schärfe der Seiten ist
+> damit ein Abnahmepunkt, keine Zusage** — und der eigentliche Entscheid der Welle
+> (W5‑O1).
+>
+> **H11 entfällt.** Die 110 Zeilen Messcode, mit denen `UcBerichteKosten` den
+> Infoknopf jeder eingebetteten Seite von der Kopfzeile abrückte, sind ersatzlos
+> weg: Die Kopfzeile trägt den Knopf des Behälters, jede Seite ihren eigenen im
+> Fluss ihres Inhalts.
+>
+> **Kein neuer Kern-Controller.** Alle vier Seiten riefen schon vorher ausschließlich
+> Kern-Controller (Hausmuster Ä9); die vier SQL-Anweisungen der Kostenseite sind
+> wortgleich in die Windows-Datenseite gewandert.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental`
+> → 0 Fehler, **20** Warnungen (Basis 22; WFO1000 16 → 14) · `dotnet test
+> WP-Plan.Kern.slnf` → **1 485** grün (1 352 vorher; 133 neue bunit-Tests) ·
+> Formularkarte **123** grün · Stapellauf **88** Masken, 0 × „nein", 0 × „verwaist" ·
+> SQL-Prüfer 1 301 Texte, 0 Fundstellen · ChartProben 10 Bilder, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**,
+> `diff -rq` ohne Unterschied · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (6 Masken), 18 Abweichungen (A‑1…A‑18),
+> Windows-Abnahmeliste mit 25 Punkten und acht offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W5_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >

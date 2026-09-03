@@ -215,15 +215,29 @@ public class EnergietraegerDialogTests : BunitContext
     // =====================================================================
 
     [Fact]
-    public void Die_Traegerkarte_zeigt_ihre_vier_Abschnitte()
+    public void Die_Traegerkarte_zeigt_ihre_zwei_Reiter_und_die_Historie()
     {
         var cut = Zeige();
 
-        // Preise, Umrechnung, Emissionen, Historie
-        Assert.Equal(4, cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf").Count);
+        // iU9-W5.0 (Nachzug A-2): zwei Reiter wie im Vorlaeufer,
+        // „Preise & Umrechnung" und „Emissionen"; die Historie samt
+        // Speichern-Knopf steht UNTER der Leiste und gilt fuer beide.
+        var reiter = cut.FindAll(".epos-traegerkarte .epos-reiter-knopf");
+        Assert.Equal(2, reiter.Count);
+        Assert.Equal("Preise & Umrechnung", reiter[0].TextContent.Trim());
+        Assert.Equal("Emissionen", reiter[1].TextContent.Trim());
+
+        // Der aktive Reiter zeigt Preise und Umrechnung, darunter die Historie.
+        Assert.Equal(2, cut.FindAll(".epos-reiter-blatt > .epos-gruppenkopf").Count);
+        Assert.Single(cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf"));
+
         Assert.Equal("Erdgas H  (VDI 3805 3)", cut.Find(".epos-traeger-name").TextContent);
         Assert.Equal("Gruppe: Gas", cut.Find(".epos-traeger-gruppe").TextContent);
     }
+
+    /// <summary>Stellt die Trägerkarte auf den Reiter „Emissionen".</summary>
+    private static void ZeigeEmissionen(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-traegerkarte .epos-reiter-knopf")[1].Click();
 
     [Fact]
     public void Ohne_Heizwert_fehlen_Heizwertfeld_und_Formel()
@@ -267,6 +281,7 @@ public class EnergietraegerDialogTests : BunitContext
         stand.EmissionenVerfuegbar = false;
         stand.AltCO2 = 201;
         var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+        ZeigeEmissionen(cut);
 
         Assert.Contains("CO2  [g/kWh]", cut.Markup);
         Assert.Contains("SO2  [g/kWh]", cut.Markup);
@@ -277,9 +292,11 @@ public class EnergietraegerDialogTests : BunitContext
     public void Eine_nur_lesende_Emissionszeile_sperrt_Feld_und_Katalogknopf()
     {
         var cut = Zeige();
+        ZeigeEmissionen(cut);
 
-        // Raster 0 = Umrechnungsregeln, 1 = Emissionen, 2 = Preishistorie.
-        var zeilen = cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr");
+        // Im Reiter „Emissionen": Raster 0 = Emissionen, 1 = Preishistorie
+        // (die Umrechnungsregeln stehen im anderen Reiter).
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr");
         Assert.Equal(2, zeilen.Length);
         Assert.False(zeilen[0].QuerySelector("input[type=text]")!.HasAttribute("disabled"));
         Assert.True(zeilen[1].QuerySelector("input[type=text]")!.HasAttribute("disabled"));
@@ -409,7 +426,8 @@ public class EnergietraegerDialogTests : BunitContext
             };
         }));
 
-        var zeilen = cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr");
+        ZeigeEmissionen(cut);
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr");
         zeilen[0].QuerySelector("button")!.Click();
 
         Assert.Equal("CO2", kuerzel);
