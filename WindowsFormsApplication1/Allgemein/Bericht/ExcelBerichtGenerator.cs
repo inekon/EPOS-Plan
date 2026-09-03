@@ -26,10 +26,136 @@ namespace WindowsFormsApplication1
         private static readonly XLColor STAMM = XLColor.FromHtml("#F2F2F2");
         private static readonly XLColor GRUPPE = XLColor.FromHtml("#EAEDED");
 
+        // =============================================================== Schriftrückfall
+        //
+        // PAKET iU7-4 (Entscheidung iF19) — die SCHRIFTFALLE VON ClosedXML.
+        //
+        // Diese Mappe ruft viermal Columns().AdjustToContents(...). Die Spaltenbreite
+        // ist dort keine Schätzung, sondern eine echte Textvermessung: ClosedXML fragt
+        // dafür sein Grafikmodul, und das ist SixLabors.Fonts. Das Modul braucht die
+        // Schrift der Zelle als DATEI — und die Zellen dieser Mappe tragen die
+        // Vorgabeschrift von Excel, also Calibri. Auf Windows liegt sie mit Office
+        // vor; auf Linux, in der CI und auf iOS nicht.
+        //
+        // BEFUND VOM 03.09.2026 (gemessen, nicht angenommen): ClosedXML 0.105.1 bringt
+        // eine eigene Schrift EINGEBETTET mit — das Feld heißt dort "CarlitoBare" —
+        // und vermisst damit weiter, wenn eine Familie fehlt. Ein Lauf ohne Calibri
+        // hat auf einem Linux mit 22 installierten Familien NICHT geworfen; auch eine
+        // ausdrücklich unsinnige Rückfallschrift fing ClosedXML selbst ab. Die Falle
+        // ist in DIESER Fassung also entschärft.
+        //
+        // Genau deshalb übersteuert diese Stelle NICHT blind:
+        //
+        //   1. Ist Calibri (Windows) oder das metrisch gleiche Carlito da, wird das
+        //      Grafikmodul ausdrücklich darauf festgelegt. Das ist die Schrift, mit der
+        //      bisher schon vermessen wurde — auf Windows ändert sich nichts.
+        //   2. Sonst wird zuerst GEPRÜFT, ob ClosedXML von sich aus messen kann. Kann
+        //      es das (eingebettetes Carlito), bleibt seine Vorgabe stehen: Carlito
+        //      passt metrisch zu Calibri, jede Systemschrift wäre schlechter und die
+        //      Spaltenbreiten liefen gegenüber Windows auseinander.
+        //   3. Erst wenn diese Messprobe wirklich wirft — der Fall, den iF19 im Blick
+        //      hatte, etwa auf einem Abbild ohne jede Schrift oder mit einer künftigen
+        //      ClosedXML-Fassung ohne eingebettete Schrift — wird die erste vorhandene
+        //      Familie aus der Liste unten gesetzt. Ein Bericht soll dann eine etwas
+        //      andere Spaltenbreite haben und nicht gar keine Datei.
+        //
+        // Die Reihenfolge der Liste ist dieselbe, die der ChartRenderer für seine
+        // Diagramme benutzt — Tabelle und Diagramm desselben Berichts sollen nicht in
+        // verschiedenen Schriften vermessen werden.
+
+        /// <summary>Gesuchte Schriftfamilien in dieser Reihenfolge; die erste vorhandene gewinnt.</summary>
+        private static readonly string[] SCHRIFT_RUECKFALL =
+        { "Calibri", "Carlito", "Liberation Sans", "DejaVu Sans", "Arial" };
+
+        /// <summary>Die Familien, die zu Calibri metrisch passen — nur sie dürfen die
+        /// Vorgabe von ClosedXML ohne weitere Prüfung übersteuern.</summary>
+        private static readonly string[] SCHRIFT_METRIKGLEICH = { "Calibri", "Carlito" };
+
+        private static readonly object _grafikSchloss = new object();
+        private static bool _grafikGesetzt;
+
+        /// <summary>
+        /// Legt das Grafikmodul von ClosedXML fest, falls nötig — einmal je Prozess,
+        /// vor der ersten Arbeitsmappe. Siehe den Block darüber.
+        /// </summary>
+        private static void GrafikModulSicherstellen()
+        {
+            lock (_grafikSchloss)
+            {
+                if (_grafikGesetzt) return;
+                _grafikGesetzt = true;      // auch ein Fehlschlag wird nicht wiederholt
+
+                try
+                {
+                    string schrift = RueckfallSchrift();
+
+                    // 1. Calibri/Carlito vorhanden -> ausdrücklich darauf festlegen.
+                    if (schrift != null && Array.IndexOf(SCHRIFT_METRIKGLEICH, schrift) >= 0)
+                    { Setze(schrift); return; }
+
+                    // 2. Kommt ClosedXML mit seiner eigenen (eingebetteten) Schrift
+                    //    zurecht, bleibt es dabei.
+                    if (MessprobeLaeuft()) return;
+
+                    // 3. Nur im Notfall auf eine Systemschrift ausweichen.
+                    if (schrift != null) Setze(schrift);
+                }
+                catch
+                {
+                    // Ein Bericht darf nicht an der Spaltenbreite scheitern.
+                }
+            }
+        }
+
+        private static void Setze(string schriftfamilie)
+        {
+            LoadOptions.DefaultGraphicEngine =
+                new ClosedXML.Graphics.DefaultGraphicEngine(schriftfamilie);
+        }
+
+        /// <summary>
+        /// Vermisst eine Wegwerf-Zelle mit der Vorgabeschrift der Mappe. Läuft sie
+        /// durch, kann ClosedXML auf diesem System messen und braucht keine Hilfe.
+        /// </summary>
+        private static bool MessprobeLaeuft()
+        {
+            try
+            {
+                using (var wb = new XLWorkbook())
+                {
+                    IXLWorksheet ws = wb.Worksheets.Add("Probe");
+                    ws.Cell(1, 1).Value = "Spaltenbreite";
+                    ws.Columns().AdjustToContents(1, 60);
+                }
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Erste vorhandene Familie aus <see cref="SCHRIFT_RUECKFALL"/>; ersatzweise
+        /// irgendeine installierte Familie. <c>null</c>, wenn das System gar keine
+        /// Schrift führt — dann bleibt es bei der Vorgabe von ClosedXML.
+        /// </summary>
+        private static string RueckfallSchrift()
+        {
+            SixLabors.Fonts.FontFamily familie;
+            foreach (string name in SCHRIFT_RUECKFALL)
+                if (SixLabors.Fonts.SystemFonts.Collection.TryGet(name, out familie))
+                    return name;
+
+            foreach (SixLabors.Fonts.FontFamily f in SixLabors.Fonts.SystemFonts.Families)
+                return f.Name;
+
+            return null;
+        }
+
         public string Erzeuge(BerichtsDaten daten, BerichtsKonfiguration konfig, string zielDatei)
         {
             if (daten == null || daten.Varianten.Count == 0)
                 throw new ArgumentException("Keine Berichtsdaten vorhanden.");
+
+            GrafikModulSicherstellen();
 
             using (var wb = new XLWorkbook())
             {
