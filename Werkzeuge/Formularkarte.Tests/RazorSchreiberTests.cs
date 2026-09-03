@@ -14,10 +14,22 @@ public sealed class RazorSchreiberTests
     private static string Skelett(string relativ) =>
         RazorSchreiber.Schreiben(Kartenbau.Vollstaendig(Repowurzel.Designer(relativ)));
 
+    /// <summary>
+    /// Dasselbe Skelett aus dem eingefrorenen Pruefmuster. Vorbild des Schreibers
+    /// ist EnergietraegerVarianteDialog.razor - also genau die Komponente, die
+    /// Form_Kosten_Auswahl seit iU8-9 (Stichtag iZ5) ersetzt. Geprueft wird
+    /// deshalb weiter an deren letzter WinForms-Fassung, die dazu unter
+    /// Pruefmuster/Kosten/ liegt. Der Ordnername ist der Fachbereich und damit
+    /// der Namensraum - "Kosten" muss er heissen, nicht anders.
+    /// </summary>
+    private static string Musterskelett(string relativ) =>
+        RazorSchreiber.Schreiben(
+            Kartenbau.Vollstaendig(Repowurzel.Pruefmuster(relativ), null, Repowurzel.PruefmusterWurzel));
+
     [Fact]
     public void NennteZielnamensraumUndBausteine()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("@namespace EPOS.UI.Dialoge.Kosten", razor, StringComparison.Ordinal);
         Assert.Contains("<Auswahlfeld ", razor, StringComparison.Ordinal);
@@ -29,7 +41,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void BindetAnDasWerteRecord()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("@bind-Auswahl=\"Werte.BrennstoffArt\"", razor, StringComparison.Ordinal);
         Assert.Contains("@bind-Wert=\"Werte.Variante\"", razor, StringComparison.Ordinal);
@@ -40,7 +52,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void MeldetDasErgebnisUeberEinenEventCallback()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("EventCallback<Form_Kosten_AuswahlErgebnis?> Geschlossen", razor, StringComparison.Ordinal);
         Assert.Contains("public sealed record Form_Kosten_AuswahlErgebnis(Form_Kosten_AuswahlWerte Werte);",
@@ -50,7 +62,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void TexteStehenDeutschMitHinweisAufDenRessourcenschluessel()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("public string TitelText { get; set; } = \"Energieträger Variante\"; // TODO Ressourcenschluessel",
                         razor, StringComparison.Ordinal);
@@ -60,7 +72,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void BeantwortetEnterUndEscSelbst()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("tabindex=\"-1\"", razor, StringComparison.Ordinal);
         Assert.Contains("@onkeydown=\"BeiTaste\"", razor, StringComparison.Ordinal);
@@ -70,7 +82,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void NenntJedenHandlerMitFundstelleUndUmfang()
     {
-        var razor = Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         // Die Zeilennummer wird nicht festgeschrieben - der Bestand bewegt sich.
         Assert.Matches(@"// TODO: btn_OK\.Click -> btnOk_Click aus Form_Kosten_Auswahl\.cs:\d+ \(\d+ Zeilen\)", razor);
@@ -80,7 +92,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void OhneHilfeknopfImDesignerKeinInfoKnopf()
     {
-        Assert.DoesNotContain("<InfoKnopf", Skelett("Kosten/Form_Kosten_Auswahl.Designer.cs"), StringComparison.Ordinal);
+        Assert.DoesNotContain("<InfoKnopf", Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs"), StringComparison.Ordinal);
         Assert.Contains("<InfoKnopf Schluessel=\"@HilfeSchluessel\" />",
                         Skelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
         Assert.Contains("HilfeSchluessel { get; set; } = \"Form_Klimadaten.btn_Help\"",

@@ -16,12 +16,12 @@ public sealed class StapelTests
     [Fact]
     public void FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise()
     {
-        // Der Bestand schreibt beides: Form_Kosten_Auswahl.Designer.cs und
+        // Der Bestand schreibt beides: Form_Kosten_VarAuswahl.Designer.cs und
         // Form_BHKWEing.designer.cs. Wer nur die grosse Schreibweise sucht,
         // uebersieht ueber ein Drittel der Masken.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
-        Assert.Contains(dateien, d => d.EndsWith("Form_Kosten_Auswahl.Designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("Form_Kosten_VarAuswahl.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
         Assert.True(dateien.Count >= 120, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
@@ -92,7 +92,7 @@ public sealed class StapelTests
         Assert.Contains("# Stapellauf Formularkarte", uebersicht, StringComparison.Ordinal);
         Assert.Contains("| davon Masken (mit InitializeComponent) | " + Lauf.Value.Masken + " |",
                         uebersicht, StringComparison.Ordinal);
-        Assert.Contains("Form_Kosten_Auswahl", uebersicht, StringComparison.Ordinal);
+        Assert.Contains("Form_Kosten_VarAuswahl", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -104,12 +104,12 @@ public sealed class StapelTests
             var ergebnis = Stapel.Laufen(Repowurzel.Designer("Kosten"), ziel);
 
             Assert.Empty(ergebnis.Fehler);
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_Auswahl.karte.md")));
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_Auswahl.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_VarAuswahl.karte.md")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Kosten_VarAuswahl.razor")));
             Assert.True(File.Exists(Path.Combine(ziel, "UcKostenItem.razor")));
 
             // UTF-8 mit BOM - Hausregel fuer neue Dateien.
-            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_Kosten_Auswahl.razor"))[..3];
+            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_Kosten_VarAuswahl.razor"))[..3];
             Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, kopf);
         }
         finally

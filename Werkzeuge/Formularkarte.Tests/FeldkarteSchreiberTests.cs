@@ -12,23 +12,32 @@ public sealed class FeldkarteSchreiberTests
     private static string Karte(string relativ) =>
         FeldkarteSchreiber.Schreiben(Kartenbau.Vollstaendig(Repowurzel.Designer(relativ)));
 
+    /// <summary>
+    /// Dieselbe Karte aus dem eingefrorenen Pruefmuster. Form_Kosten_Auswahl ist
+    /// seit iU8-9 (Stichtag iZ5) eine Blazor-Komponente; die Kopfzeilen der Karte
+    /// werden weiter an ihrer letzten WinForms-Fassung geprueft.
+    /// </summary>
+    private static string Musterkarte(string relativ) =>
+        FeldkarteSchreiber.Schreiben(
+            Kartenbau.Vollstaendig(Repowurzel.Pruefmuster(relativ), null, Repowurzel.PruefmusterWurzel));
+
     [Fact]
     public void KopfNenntMaskeTitelGroesseUndAufrufer()
     {
-        var karte = Karte("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var karte = Musterkarte("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("# Feldkarte Form_Kosten_Auswahl", karte, StringComparison.Ordinal);
         Assert.Contains("| Titel de | Energieträger Variante |", karte, StringComparison.Ordinal);
         Assert.Contains("| ClientSize | 356 x 185 |", karte, StringComparison.Ordinal);
         Assert.Contains("| MessageBox | 1 |", karte, StringComparison.Ordinal);
-        Assert.Contains("| Aufrufer (ShowDialog) | 1: `WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:",
+        Assert.Contains("| Aufrufer (ShowDialog) | 1: `Pruefmuster/Kosten/Form_Kosten.Auszug.cs:",
                         karte, StringComparison.Ordinal);
     }
 
     [Fact]
     public void TabellenkopfStehtWieVereinbart()
     {
-        var karte = Karte("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var karte = Musterkarte("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains(
             "| # | Steuerelement | Typ | Label/Text de | Text en | Feldtyp Ziel | " +
@@ -39,7 +48,7 @@ public sealed class FeldkarteSchreiberTests
     [Fact]
     public void JedeZeileEndetMitDerAbnahmeCheckbox()
     {
-        var karte = Karte("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var karte = Musterkarte("Kosten/Form_Kosten_Auswahl.Designer.cs");
         var zeilen = karte.Split('\n').Where(z => z.StartsWith("| 1 | `", StringComparison.Ordinal)
                                               || z.StartsWith("| 2 | `", StringComparison.Ordinal)).ToList();
 
@@ -72,7 +81,7 @@ public sealed class FeldkarteSchreiberTests
     [Fact]
     public void EreignishandlerStehenMitZeileUndUmfangImFuss()
     {
-        var karte = Karte("Kosten/Form_Kosten_Auswahl.Designer.cs");
+        var karte = Musterkarte("Kosten/Form_Kosten_Auswahl.Designer.cs");
 
         Assert.Contains("## Ereignishandler in `Form_Kosten_Auswahl.cs`", karte, StringComparison.Ordinal);
 

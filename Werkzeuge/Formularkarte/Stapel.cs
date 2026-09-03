@@ -77,12 +77,24 @@ public sealed class Stapelergebnis
 /// </summary>
 public static class Stapel
 {
-    /// <summary>Alle Designer-Dateien unterhalb eines Ordners, Gross-/Kleinschreibung egal.</summary>
+    /// <summary>Ordner, die nie zum Bestand zaehlen - Bauordner und die eingefrorenen Pruefmuster.</summary>
+    private static readonly string[] Uebergangen = { "obj", "bin", "Pruefmuster" };
+
+    /// <summary>
+    /// Alle Designer-Dateien unterhalb eines Ordners, Gross-/Kleinschreibung egal.
+    ///
+    /// <para>
+    /// <c>Pruefmuster/</c> bleibt aussen vor: Dort liegen eingefrorene Kopien
+    /// von Masken, die es im Bestand nicht mehr gibt (Werkzeuge/Formularkarte.Tests).
+    /// Sie sind Lesevorlagen fuer die Tests - wuerde der Stapellauf sie mitzaehlen,
+    /// meldete das Vollstaendigkeitsnetz mehr Masken, als das Programm hat.
+    /// </para>
+    /// </summary>
     public static List<string> Dateien(string ordner) =>
         Directory.EnumerateFiles(ordner, "*.cs", SearchOption.AllDirectories)
             .Where(d => d.EndsWith(".Designer.cs", StringComparison.OrdinalIgnoreCase))
-            .Where(d => !d.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-            .Where(d => !d.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            .Where(d => !Uebergangen.Any(o => d.Contains(
+                Path.DirectorySeparatorChar + o + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
             .OrderBy(d => d, StringComparer.Ordinal)
             .ToList();
 

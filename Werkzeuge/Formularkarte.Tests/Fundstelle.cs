@@ -28,12 +28,22 @@ public static class Fundstelle
     /// Zerlegt "WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:2092" und
     /// prueft, dass die genannte Zeile <paramref name="erwartet"/> enthaelt.
     /// </summary>
-    public static void Enthaelt(string fundstelle, string erwartet)
+    public static void Enthaelt(string fundstelle, string erwartet) =>
+        Enthaelt(Repowurzel.Pfad, fundstelle, erwartet);
+
+    /// <summary>
+    /// Dieselbe Pruefung fuer eine Fundstelle, die nicht auf die Repowurzel
+    /// bezogen ist: Das Werkzeug meldet sie relativ zum Elternordner seiner
+    /// Suchwurzel, bei den Pruefmustern also gegen
+    /// <c>Werkzeuge/Formularkarte.Tests</c> statt gegen das Repo.
+    /// </summary>
+    public static void Enthaelt(string bezug, string fundstelle, string erwartet)
     {
         var doppelpunkt = fundstelle.LastIndexOf(':');
         Assert.True(doppelpunkt > 0, "Keine Fundstelle der Form 'datei:zeile': " + fundstelle);
 
-        var datei = Repowurzel.Datei(fundstelle.Substring(0, doppelpunkt));
+        var datei = Path.Combine(bezug, fundstelle.Substring(0, doppelpunkt)
+                                                  .Replace('/', Path.DirectorySeparatorChar));
         var nummer = int.Parse(fundstelle.Substring(doppelpunkt + 1));
 
         Assert.True(File.Exists(datei), "Datei aus der Fundstelle fehlt: " + datei);
