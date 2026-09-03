@@ -483,6 +483,24 @@ diff -rq je Projekt
 
 **Byte-gleich, nicht nur innerhalb der Toleranz.**
 
+### 8.8 Alles noch einmal auf dem zusammengeführten Stand
+
+`origin/ios_migration` ist seit der Basis `04fc474` nur um **zwei
+Dokumentzeilen** gewachsen (der W9‑Statusblock im Umsetzungskonzept und der
+zehnte iOS-Lauf in der Nachweisliste iU10) — kein Quelltext, keine Konflikte.
+Nach dem Merge ist das ganze Netz neu gezogen:
+
+| Tor | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 17 Warnungen |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | 2 284 grün, 0 rot |
+| dasselbe mit `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | 2 284 grün, 0 rot (siehe W10a‑O‑8) |
+| `dotnet test Werkzeuge/Formularkarte.Tests` | 123 grün |
+| Stapellauf Formularkarte | 51 Designer, 50 Masken, 29 lokalisiert, 49 erreichbar, 0 unerreichbar, 0 verwaist, 1 unklar |
+| SQL-Dialektprüfer | 1 240 Texte, 0 Fundstellen; Selbsttest 32 / 0 |
+| ChartProben | 16 Bilder, 0 Verstöße |
+| Referenzlauf 1030/1007/1017 | PASS, 815 043 Werte, **alle drei byte-gleich** |
+
 ---
 
 ## 9. Grenzen
@@ -549,6 +567,7 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 | **W10‑B39 / W10a‑O‑5** | `Form_Simulation_Config` hat **keine `de-DE.resx`** (nur `.resx` + `.en-US.resx`), und der Ordner `Views/Simulation` steht nicht in der Lückenliste von `CLAUDE.md` | Erledigt sich mit **W10b**, wenn die Maske selbst geht. Bis dahin unverändert |
 | **W10a‑O‑6** | Der KI-Aufrufknopf fehlt in allen sieben Dialogen (A‑16) | Mit W15b, wenn `Gespraechsverlauf` steht — wie W6‑O‑6, W7‑O‑6, W8‑O‑6 und W9‑O‑6 |
 | **W10a‑O‑7** | Die Karte als **Überlagerung** statt als Fenster ändert die Fenstergröße: Der Erdreichdialog muss die 1 304 × 1 350 der Karte tragen | In der Komponente auf `max-height` gestellt und scrollbar; am Gerät bei 150 % prüfen (Abnahmepunkt 3) |
+| **W10a‑O‑8** | **Ein einzelner, nicht reproduzierbarer Testausfall.** In EINEM von dreizehn Läufen der Gesamtsuite unter `LANG=en_US.UTF-8` fiel ein Fall in `EPOS.UI.Tests` (1 268 von 1 269); zwölf weitere Läufe — davon zehn unmittelbar hintereinander — sind grün, `EPOS.UI.Tests` allein ebenfalls. Der Name ist nicht festgehalten worden | Kein Fall dieser Welle hängt an einer Zeit: Die neuen Testklassen kennen weder `Task.Delay` noch `WaitForAssertion` noch `DateTime.Now` (geprüft). **Der einzige zeitabhängige Satz der ganzen Suite ist `KapitalwertVerlaufDialogTests` aus Welle 1** — drei `WaitForAssertion` mit der Vorgabefrist von einer Sekunde, die unter Last (vier Testprojekte gleichzeitig) ablaufen kann. **Vorschlag:** dort eine ausdrückliche Frist setzen, statt der Vorgabe zu vertrauen. Ein eigener Schritt, keine Welle‑10a-Frage |
 
 ### Neue Befunde dieser Welle
 
