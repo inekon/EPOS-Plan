@@ -12,6 +12,100 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-03_M4_nach-Merge4/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem vierten Merge von `origin/ios_migration`** — nach **iU9 Welle 0**, der
+**Stilllegung** nach dem Anwenderentscheid **iF29**: neun Altmasken sind ersatzlos gelöscht
+(Kosteneditor `Form_Kosten` samt `ucKostenItem`, Betriebskostenpflege, Berichtsmaske,
+Kurzsimulation, Variantentest, KWKG-Module, Wirtschaftlichkeitsmaske), die Kostenstatics
+sind vorher nach `EPOS.Kern/Controller/KostenSummenCtrl.cs` gerettet. 25 Dateien weg,
+zwei neu — **90 Dateien, +860 / −10 877**.
+
+> **Sie ist byte-gleich zu M3 — und genau das ist ihr Zweck.** Welle 0 portiert nicht, sie
+> **löscht**; der einzige Code, der den Rechenweg berührt, ist die Rettung der Kostenstatics,
+> und die trägt `LiesKomponentenSummen`, `LiesAnlagenSummen` und `GetAllCarriers` unverändert
+> weiter.
+> **355/355 byte-/MD5-gleich gegen M3, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`b0d3d86`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 3**
+> (`908926a`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M3=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 20 und Remotes acht Commits
+> umfasst **sechs** Dateien (`SchemaKatalog.cs`, `WirtschaftlichkeitCtrl.cs`,
+> `HilfeKontext.cs`, `SchemaMigration.cs`, `WizardCtrl.cs`,
+> `Form_PhotovoltaikVerguetung.cs`), alle sechs automatisch zusammengelegt. Der Nachweis ist
+> hier schärfer als bei den Vorgängern: Für **jede** der sechs ist das Merge-Delta gegen
+> unseren Vorstand **zeilengleich** mit Remotes Delta gegen seinen — der Merge hat an ihnen
+> genau Remotes Änderung getan und **nichts** an unserer Seite. Keine der neun gelöschten
+> Masken stand in unserer Änderungsmenge.
+>
+> **Die Nummernprobe am Schema ist negativ ausgefallen — und das war die Sorge.** Remote
+> steht mit Welle 0 **weiter auf `ZIEL_VERSION = 61`** und führt **keinen** SQLite-Schritt;
+> seine 13 Zeilen an `SchemaMigration.cs` sind ausnahmslos Doku. **Keine Kollision** mit
+> unseren Schritten 62 (PV-Anlagenparameter) und 63 (PV-Modellwahl). Der Merge-Stand trägt
+> unverändert `ZIEL_VERSION = 63`, `FREEZE_VERSION_ACCESS = 61` und beide Schritte in
+> `SCHRITTE_SQLITE`.
+>
+> **Die eine echte Codeänderung an einer unserer Dateien:** `Form_PhotovoltaikVerguetung`
+> liest ihre Kostensummen jetzt über `KostenSummenCtrl.*` statt `Form_Kosten.*` (drei
+> Stellen; die Konstanten sind im Kern wertgleich definiert). Unser Degradationsfeld
+> (Stufe E2.4) sitzt in derselben Datei und ist unversehrt — 18 Fundstellen
+> `numDegradation` / `DegradationsfeldAnlegen` / `PVM_DEGRADATION`, und Remotes Hunks
+> berühren unsere nicht.
+>
+> **Codestand:** Merge-Commit `f6acb04` (Branch `ios_migration`; Eltern `83498dc` lokal und
+> `b0d3d86` remote), gebaut aus einem `git archive`-Export außerhalb des Repos
+> (`P:\merge4\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 22, NU1510 4,
+> CS0108 2, CS0109 2, WFO0003 1, CA2255 1), sondern in allen **30** datei- und
+> zeilengenauen Meldungen. Der Unterschied zu Merge 3 (34 / 29) ist restlos die
+> Stilllegung: die beiden `AlsDialog`-Meldungen aus `UcBericht` und `UcWirtschaftlichkeit`
+> entfallen mit den gelöschten Masken, zwei Meldungen in `UcBkKosten.cs` rücken um eine
+> Zeile (1304/1310 → 1305/1311).
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2/M3
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei den Merges 1–3. Weil Welle 0 `Form_PhotovoltaikVerguetung`
+> anfasst, sind die beiden Aussagen wieder eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und das Inventar der Stilllegung im
+> [Merge-4-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge4_ios_2026-09-03_Protokoll.md).
+>
+> **Noch nicht gebaut: der Hauptbaum.** `bin\x64\Debug` ist bewusst nicht neu erzeugt worden
+> — Visual Studio war offen, mit ungespeicherten Designer-Änderungen. Der Nachweis hängt
+> nicht daran (drei Builds, 0 Fehler, zeilengleiches Profil), die lauffähigen Binärdateien
+> im Hauptbaum schon. **Nachholen, sobald VS zu ist.**
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M3_nach-Merge3`
+
 **`2026-09-03_M3_nach-Merge3/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
 Der Stand **nach dem dritten Merge von `origin/ios_migration`** — nach **iU9 Welle 1**:
