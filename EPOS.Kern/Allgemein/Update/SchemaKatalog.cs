@@ -2628,7 +2628,7 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
         /// hinten an. Folgenlos: <c>Tab_ProjektWerte</c> wird ausschließlich
-        /// NAMENSBASIERT gelesen (<c>Form_Kosten.LoadKostenFaktoren</c> über
+        /// NAMENSBASIERT gelesen (die Kostenmasken lesen über
         /// <c>row["…"]</c>, <c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>/
         /// <c>LiesBetriebskosten</c> über <c>D(r, "…")</c>); eine
         /// <c>row[0…n]</c>-Kette gibt es hier nicht. Die gespeicherte Abfrage

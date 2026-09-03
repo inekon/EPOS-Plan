@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// Lädt die Daten von Stamm + Varianten lesend in BerichtsDaten-DTOs
     /// (Konzept Kap. 8.2) — das aktive Projekt der App wird dabei NICHT umgeschaltet.
     /// Optional wird je Projekt vorab headless simuliert (SimulationRunner, frische
-    /// Instanz je Projekt — Muster aus Form_Variantentest.btnSimulieren_Click).
+    /// Instanz je Projekt — Muster aus der Variantenseite UcBkUebersicht).
     /// Fehler eines einzelnen Projekts brechen den Lauf nicht ab (VariantenDaten.Fehler).
     ///
     /// Für einen BERICHTSLAUF (Word und/oder Excel) ist ausschließlich
@@ -355,7 +355,7 @@ namespace WindowsFormsApplication1
                 //
                 // NACHARBEIT PAKET 8, BEFUND N2: über SimuliereUndSpeichere statt über
                 // Simuliere + eigenem Save. Dieser Pfad läuft in Task.Run auf einem
-                // ThreadPool-Thread (Form_Bericht, Form_Wirtschaftlichkeit,
+                // ThreadPool-Thread (UcBericht, UcWirtschaftlichkeit,
                 // Form_WirtschaftlichkeitVerlauf); ein hier selbst gerufenes
                 // ErgebnisCtrl.Save stand AUSSERHALB des dialogfreien Engine-Modus und
                 // hätte bei einem Datenbankfehler eine MessageBox auf dem Worker-Thread

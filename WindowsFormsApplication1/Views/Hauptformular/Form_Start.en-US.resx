@@ -554,12 +554,6 @@
   <data name="label_Name.Text" xml:space="preserve">
     <value>Project</value>
   </data>
-  <data name="btn_Kosten.Text" xml:space="preserve">
-    <value>Costs</value>
-  </data>
-  <data name="btn_Varianten.Text" xml:space="preserve">
-    <value>Variants</value>
-  </data>
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Reports &amp;&amp; Costs</value>
   </data>

@@ -496,11 +496,12 @@ namespace WindowsFormsApplication1
         /// WinForms-Fassung <c>Form_Kosten_VarAuswahl</c> ist mit diesem Schritt
         /// GELOESCHT (Regel M1: keine zweite Fassung derselben Maske). Angezeigt wird
         /// die Komponente von der Huelle <see cref="BlazorDialogForm{TKomponente}"/> -
-        /// genau wie in <c>Views\Kosten\Form_Kosten.cs</c>.
+        /// genau wie in <c>Views\Kosten\Form_Energietraeger.cs</c>.
         /// </para>
         /// <para>
         /// <b>Befund 03.09.2026.</b> Die Umstellung in iU8-9 hing am Kosteneditor
-        /// <c>Form_Kosten</c> - der ist seit KD6a aber kein Einstieg mehr. Die beiden
+        /// die Altmaske „Kostenverwaltung" - die ist seit KD6a aber kein Einstieg
+        /// mehr und mit iU9-W0 geloescht. Die beiden
         /// ERREICHBAREN Aufrufer sind diese Maske und <c>Form_BHKWEing</c>; deshalb
         /// wurde die erste iU9-Welle vorgezogen.
         /// </para>

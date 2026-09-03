@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
@@ -103,7 +103,6 @@ namespace WindowsFormsApplication1
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
 
-            { "Form_Bericht",                B_BERICHT },
             { "UcBericht",                   B_BERICHT },
             { "Form_BkUebernahme",           B_BERICHT },
             { "UcBerichteKosten",            B_BERICHT },
@@ -137,9 +136,7 @@ namespace WindowsFormsApplication1
 
             { "Form_Klimadaten",             B_KLIMADATEN },
 
-            { "Form_Kosten",                 B_KOSTEN },
             { "Form_Kosten_Auswahl",         B_KOSTEN },
-            { "Form_KostenfaktorItem",       B_KOSTEN },
             { "Form_KostenKomponente",       B_KOSTEN },
             { "Form_Kostenprofil",           B_KOSTEN },
             { "Form_SpotpreisImport",        B_KOSTEN },
@@ -188,7 +185,6 @@ namespace WindowsFormsApplication1
             { "Form_Quellprofil",            B_SIMULATION },
             { "Form_Simulation_Config",      B_SIM_KONFIG },
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
-            { "Form_Simulation_Kurz",        B_SIMULATION },
             { "Form_Waermesenke",            B_SIMULATION },
 
             { "Form_SolarDB",                B_SOLARTHERMIE },
@@ -221,7 +217,6 @@ namespace WindowsFormsApplication1
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
             { "Form_AlsVariante",            B_VARIANTEN },   // H7 nachgetragen
-            { "Form_Variantentest",          B_VARIANTEN },
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
             { "Form_Waermebedarf",           B_WAERMEBEDARF },
@@ -235,8 +230,6 @@ namespace WindowsFormsApplication1
             { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
             { "Form_WP_einlesen",            B_WAERMEPUMPE },
 
-            { "Form_KwkgModule",                   B_WIRTSCHAFT },   // H7 nachgetragen
-            { "Form_Wirtschaftlichkeit",           B_WIRTSCHAFT },
             { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
             { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -7,8 +7,8 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die EINE Leseschicht für „was kostet die im Projekt verbaute Technik" — Grundlage
-    /// der Vorbelegung und der Abweichungsanzeige in der Kostenverwaltung
-    /// (<see cref="Form_Kosten"/>) und auf der Kostenseite von „Berichte &amp; Kosten"
+    /// der Vorbelegung und der Abweichungsanzeige im Kostendialog
+    /// (<c>Form_KostenKomponente</c>) und auf der Kostenseite von „Berichte &amp; Kosten"
     /// (<see cref="UcBkKosten"/>).
     ///
     /// <para>
@@ -494,8 +494,8 @@ namespace WindowsFormsApplication1
         // oben liefern EURO-Werte; hier geht es um die Größe selbst. Dieselbe
         // Gewerke-Landkarte (Plaene), dieselbe Verweislogik.
 
-        /// <summary><c>Tab_KostenKomponente.ID</c> (die festen Nummern 1…7 aus
-        /// <c>Form_Kosten.GetKomponentenID</c>) → Komponentenname der Landkarte.</summary>
+        /// <summary><c>Tab_KostenKomponente.ID</c> (die festen Nummern 1…7 der
+        /// Kostenkomponenten) → Komponentenname der Landkarte.</summary>
         private static string KomponentenName(int komponentenID)
         {
             switch (komponentenID)
