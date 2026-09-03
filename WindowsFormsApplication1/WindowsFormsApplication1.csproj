@@ -1,4 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    RAZOR-SDK statt Microsoft.NET.Sdk (Umsetzungskonzept iOS, Paket iU8,
+    Strang B). Das ist KEINE Web-Anwendung: Die Anwendung bleibt WinExe und
+    WinForms. Der Razor-SDK wird gebraucht, damit die statischen Web-Anteile
+    der Bibliothek EPOS.UI ueberhaupt hier ankommen - Komponenten-CSS,
+    help_icon.png, epos-ui.css und blazor.webview.js.
+
+    Belegt in der Vermessung zu iU8 (Gegenprobe b2): Mit dem einfachen
+    Microsoft.NET.Sdk uebersetzt alles fehlerfrei, aber der Veroeffentlichungs-
+    ordner enthaelt KEIN wwwroot - weder index.html noch _content noch
+    _framework/blazor.webview.js. Der erste Blazor-Dialog bliebe damit auf dem
+    Anwenderrechner leer. Der Razor-SDK bringt das StaticWebAssets-Ziel mit,
+    das die Anteile einsammelt.
+
+    Die Umstellung kostet keine Warnung: Der Bauvergleich vor/nach zeigt
+    dieselben Warnungscodes (WFO1000, CS0108, CS0109, WFO0003, CA2255).
+  -->
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -93,6 +111,13 @@
          seit S8 zusaetzlich in WP-Plan.sln eingetragen, damit Visual Studio die
          Referenz aufloest (MSBuild baut sie ueber diese ProjectReference ohnehin). -->
     <ProjectReference Include="..\EposSqliteMigrator\Kern\EposSqliteMigrator.Kern.csproj" />
+
+    <!-- DIE OBERFLAECHENBIBLIOTHEK (iU8). Razor-Komponenten ohne WinForms,
+         ohne System.Drawing und ohne Datenbank; sie laufen hier in einer
+         BlazorWebView und auf iOS unveraendert in einer WKWebView. Jeder NEUE
+         Dialog entsteht dort, diese Anwendung liefert nur noch die Huelle
+         (Allgemein\Blazor\BlazorDialogForm.cs). -->
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->
@@ -144,6 +169,12 @@
          einmalig nach %APPDATA%\wp-plan\semantik\ geholt (SemantikModell). -->
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
+
+    <!-- Blazor-Huelle (iU8): BlazorWebView fuer WinForms. Zieht
+         Microsoft.Web.WebView2 mit (SDK und WebView2Loader.dll) - NICHT die
+         Laufzeit selbst. Die Evergreen-Runtime bringt das Setup mit
+         (Setup\EPOS-Plan.iss, WebView2Vorhanden). -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
   </ItemGroup>
 
   <!-- Entwurfszeit-Verknuepfung. Properties\Settings.* und
@@ -229,6 +260,16 @@
       <Link>Vorlagen\Berichtsvorlage.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage.docx</TargetPath>
     </None>
+  </ItemGroup>
+
+  <!-- Die Startseite der Huelle. HostPage="wwwroot\index.html" sucht sie neben
+       der EXE; ohne diese Zeile stuende sie nur im Quellbaum. Die Anteile aus
+       EPOS.UI (_content\EPOS.UI\*) und das Blazor-Skript (_framework\*) legt
+       der Razor-SDK selbst daneben. -->
+  <ItemGroup>
+    <Content Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
