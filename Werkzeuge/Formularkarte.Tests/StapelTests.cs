@@ -28,10 +28,11 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W2: 105 Dateien (108 nach iU9-W0;
-        // Form_StromspeicherItemNeu, Form_GebaeudetypNeu und
-        // Form_PhotovoltaikVerguetung sind umgestellt und geloescht).
-        Assert.True(dateien.Count >= 105, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W3: 101 Dateien (105 nach iU9-W2,
+        // 108 nach iU9-W0). Die vier Designer-Masken der Welle 3
+        // (Form_LeistungspreisReihe, Form_SpotpreisImport, Form_Emissionskatalog,
+        // Form_Kostenprofil) sind umgestellt und geloescht.
+        Assert.True(dateien.Count >= 101, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -54,12 +55,10 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W2: 102 Masken (105 nach iU9-W0,
-        // 111 nach iU9-W1). Die drei Designer-Masken der Welle 2 sind auf
-        // Razor-Komponenten umgestellt und geloescht (Regel M1); die drei
-        // K4-Masken der Welle hatten nie einen Designer und wurden hier nie
-        // mitgezaehlt.
-        Assert.True(Lauf.Value.Masken >= 102, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W3: 98 Masken (102 nach iU9-W2,
+        // 105 nach iU9-W0, 111 nach iU9-W1). Die vier Designer-Masken der Welle 3
+        // sind auf Razor-Komponenten umgestellt und geloescht (Regel M1).
+        Assert.True(Lauf.Value.Masken >= 98, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -67,10 +66,10 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W2: 59 von 102 (Form_StromspeicherItemNeu
-        // und Form_GebaeudetypNeu waren die beiden lokalisierten Masken der Welle;
-        // Form_PhotovoltaikVerguetung war es nicht). Der Leser muss also beide Wege
-        // koennen, nicht nur den Designer.
+        // Gemessener Stand 03.09.2026 nach iU9-W3: 59 von 98 — unveraendert
+        // gegenueber iU9-W2, denn keine der vier Masken der Welle 3 war
+        // lokalisiert (alle vier setzten ihre Texte im Code). Der Leser muss also
+        // weiterhin beide Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 59,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }

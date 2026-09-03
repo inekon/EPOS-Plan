@@ -157,8 +157,9 @@ Der Dateiname bestimmt den Komponentennamen; er bekommt deshalb einen großen An
 * **Zahlenfelder erkennt es nur an der Prüfung.** Ein numerisches Feld ohne `Program.Zahl*`
   (z. B. `Form_KostenfaktorItem.textBox_Wert`, das der Aufrufer mit `Convert.ToDouble` liest) landet
   als `Textfeld` in der Karte. Das ist beabsichtigt: Der Leser rät nicht, er zeigt den Bestand.
-* **Zur Laufzeit erzeugte Steuerelemente fehlen.** `Form_Kostenprofil` legt 36 Textfelder in der
-  `Form_X.cs` an — im Designer stehen sie nicht, also auch nicht in der Karte.
+* **Zur Laufzeit erzeugte Steuerelemente fehlen.** `Form_Kostenprofil` (seit iU9‑W3.4 Prüfmuster)
+  legt 36 Textfelder in der `Form_X.cs` an — im Designer stehen sie nicht, also auch nicht in der
+  Karte. Beim Port waren sie deshalb von Hand nachzutragen (Regel F1 des Wellenplans).
 * **Die Abschnitte im Skelett stehen flach nebeneinander**, auch wenn die Maske sie schachtelt; die
   Schachtelung steht in der Karte (Überschriftenebene) und in der Spalte `Elter`.
 * **Optionsgruppen** (`RadioButton`) werden feldweise ausgegeben; sie zu **einem** `Auswahlfeld`
@@ -187,7 +188,7 @@ Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
 ### Knoten, Kanten, Wurzeln
 
 **Knoten** sind die Masken: Klassen, die von `Form`, `UserControl` oder `BaseForm` abstammen —
-über beliebig viele Stufen. Das sind mehr als die 102 Designer-Masken; die Reiter, Kacheln und
+über beliebig viele Stufen. Das sind mehr als die 98 Designer-Masken; die Reiter, Kacheln und
 Navigatoren des Hauptfensters (`Views/BerichteKosten/UcBk*`, `Views/Simulation/Navigator*`,
 `Views/Hauptformular/*`) sind Zwischenknoten und tragen den Weg mit.
 
@@ -285,6 +286,9 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_KostenfaktorItem.Designer.cs   Stand 16b106a^, unverändert (iU9‑W0)
     Form_KostenfaktorItem.cs            dito
     Form_KostenfaktorItem.resx          dito
+    Form_Kostenprofil.Designer.cs       Stand cb700f0^, unverändert (iU9‑W3.4)
+    Form_Kostenprofil.cs                dito
+    Form_Kostenprofil.resx              dito
 
 Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.Designer.cs   Stand f9b5016^, unverändert (iU9‑W2.1)
@@ -293,6 +297,13 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.de-DE.resx    dito — der lokalisierte Weg braucht alle drei
     Form_StromspeicherItemNeu.en-US.resx    dito
 ```
+
+Das **fünfte** Muster (`Form_Kostenprofil`, mit **iU9‑W3.4** durch
+`EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` ersetzt) ist der Beleg für die
+**Abschnittsbildung**: ein `TabControl` mit drei Reitern, darin ein `Chart`, eine `ListBox`
+mit eigenem Label und Beschriftungen, die nur innerhalb ihres Abschnitts wirken. Neun
+Testbezüge hängen daran (`AbschnittTests` fünf, `FeldkarteSchreiberTests` einer,
+`RazorSchreiberTests` einer, dazu zwei in Kommentaren).
 
 Das vierte Muster (`Form_StromspeicherItemNeu`, mit **iU9‑W2.1** durch
 `EPOS.UI/Dialoge/Allgemein/NamensDialog.razor` ersetzt) ist der Beleg für den **lokalisierten
