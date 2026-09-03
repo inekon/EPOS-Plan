@@ -1,0 +1,306 @@
+﻿@* Worst/Best Case einer Kostenposition (iU9-W1.3).
+
+   Vorbild: Views/Kosten/Form_CaseEingabe.cs (301 Z.) und .Designer.cs. Die
+   Feldkarte kennt nur die vier Drehfelder des Designers; VIER weitere Felder
+   entstanden im Vorlaeufer zur Laufzeit (Regel F1 des Wellenplans: solche
+   Felder von Hand nachtragen):
+
+     Designer   numBestCase, numWorstCase (Kosten [€])
+                numBestCase_Nutzungsdauer, numWorstCase_Nutzungsdauer ([a])
+     KD6 § 11   rbCaseAbsolut / rbCaseProzent  -> Optionsgruppe
+                lblCaseUmrechnung              -> Herleitungszeile
+                lblStartJahr + numStartJahr    -> Ganzzahlfeld
+     K5 § 7.4   chkZuschuss + lblZuschussHinweis (nur Investitions-
+                NEBENpositionen, siehe ZuschussMoeglich)
+
+   PROZENTMODUS. Woertlich aus ProzentModusGewechselt und ProzentZuBetrag: Beim
+   Umschalten auf % werden die Betraege in Abweichungen zum Erwartungswert
+   umgerechnet (0 bleibt 0 = "nicht gepflegt", eine Nachkommastelle), beim
+   Zurueckschalten wieder in Betraege (nicht unter 0). Gespeichert werden IMMER
+   Betraege (KL9). Ohne Erwartungswert bleibt der Modus gesperrt.
+
+   TEXTE. Sechs Schluessel des Vorlaeufers werden weiterverwendet
+   (KOSTEN_CASE_ABSOLUT, _PROZENT, _UMRECHNUNG, _STARTJAHR, KOSTEN_CHK_ZUSCHUSS,
+   _HINT); die Beschriftungen des Designers bekommen KCASE_* (W1.7). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using System.Globalization
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Optionsgruppe Bezeichnung="@LabelEingabeart"
+                   Eintraege="@_eingabearten"
+                   Auswahl="@(_prozentModus ? MODUS_PROZENT : MODUS_ABSOLUT)"
+                   Gesperrt="@_gesperrteModi"
+                   AuswahlChanged="BeiEingabeart" />
+
+    @if (_prozentModus)
+    {
+        <Herleitungszeile Text="@Umrechnungstext" />
+    }
+
+    <Gruppenkopf Titel="@LabelKosten">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelBestKosten" Einheit="@EinheitKosten"
+                        Wert="@_best" Min="@MinKosten" Max="@MaxKosten"
+                        WertChanged="BeiBest" />
+            <Zahlenfeld Bezeichnung="@LabelWorstKosten" Einheit="@EinheitKosten"
+                        Wert="@_worst" Min="@MinKosten" Max="@MaxKosten"
+                        WertChanged="BeiWorst" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@LabelNutzungsdauer">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelBestNutzung" Wert="@_bestNutzung"
+                        Min="0" Max="99999" WertChanged="@(w => _bestNutzung = w ?? 0)" />
+            <Zahlenfeld Bezeichnung="@LabelWorstNutzung" Wert="@_worstNutzung"
+                        Min="0" Max="99999" WertChanged="@(w => _worstNutzung = w ?? 0)" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Ganzzahlfeld Bezeichnung="@LabelStartJahr" Wert="@_startJahr"
+                  Min="0" Max="50" WertChanged="@(w => _startJahr = w ?? 0)" />
+
+    @if (ZuschussMoeglich)
+    {
+        <Schalter Bezeichnung="@LabelZuschuss" Wert="@_istZuschuss"
+                  WertChanged="@(w => _istZuschuss = w)" />
+        <Herleitungszeile Text="@HinweisZuschuss" />
+    }
+
+    @if (IstErloes)
+    {
+        <Herleitungszeile Text="@HinweisErloes" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Id der Option "Eingabe absolut [€]".</summary>
+    public const int MODUS_ABSOLUT = 0;
+
+    /// <summary>Id der Option "Eingabe in % vom Erwartungswert".</summary>
+    public const int MODUS_PROZENT = 1;
+
+    /// <summary>
+    /// Der Erwartungswert der Position (<c>KostenPosition.Betrag</c>). Er ist die
+    /// Basis des Prozentmodus; ist er 0, bleibt der Modus gesperrt — wie
+    /// <c>_rbProzent.Enabled = _daten.Betrag != 0</c>.
+    /// </summary>
+    [Parameter] public double Betrag { get; set; }
+
+    /// <summary>Bester Fall [€] beim Oeffnen.</summary>
+    [Parameter] public double BestCase { get; set; }
+
+    /// <summary>Schlechtester Fall [€] beim Oeffnen.</summary>
+    [Parameter] public double WorstCase { get; set; }
+
+    /// <summary>Nutzungsdauer im besten Fall [a] beim Oeffnen.</summary>
+    [Parameter] public double BestNutzungsdauer { get; set; }
+
+    /// <summary>Nutzungsdauer im schlechtesten Fall [a] beim Oeffnen.</summary>
+    [Parameter] public double WorstNutzungsdauer { get; set; }
+
+    /// <summary>Startjahr beim Oeffnen (0 = sofort).</summary>
+    [Parameter] public int StartJahr { get; set; }
+
+    /// <summary>Zuschuss-Kennzeichen beim Oeffnen.</summary>
+    [Parameter] public bool IstZuschuss { get; set; }
+
+    /// <summary>
+    /// Zeigt den Zuschuss-Schalter. Ob er angeboten wird, entscheidet der
+    /// Aufrufer nach der Regel von <c>ZuschussSchalterAnlegen</c>: keine
+    /// Hauptkomponente UND Kostenart leer, kapitalgebunden oder bereits
+    /// Zuschuss.
+    /// </summary>
+    [Parameter] public bool ZuschussMoeglich { get; set; }
+
+    /// <summary>
+    /// Erlösposition? Dann steht unter den Feldern eine Zeile, die das
+    /// Vorzeichen erklaert. Der Vorlaeufer sagte dazu nichts.
+    /// </summary>
+    [Parameter] public bool IstErloes { get; set; }
+
+    /// <summary>Das Ergebnis bei OK, <c>null</c> bei Abbrechen.</summary>
+    [Parameter] public EventCallback<CaseEingabeErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Fenstertitel (Designer: Form.Text).</summary>
+    [Parameter] public string TitelText { get; set; } = "Eingabe Worst/Best Case";
+
+    /// <summary>Titel der Optionsgruppe. Der Vorlaeufer hatte keinen — die beiden
+    /// Schalter standen ohne Ueberschrift ueber den Feldern.</summary>
+    [Parameter] public string LabelEingabeart { get; set; } = "";
+
+    /// <summary>Erste Option (Designer-Nachbau: rbCaseAbsolut).</summary>
+    [Parameter] public string LabelAbsolut { get; set; } = "Eingabe absolut [€]";
+
+    /// <summary>Zweite Option (rbCaseProzent).</summary>
+    [Parameter] public string LabelProzent { get; set; } = "Eingabe in % vom Erwartungswert";
+
+    /// <summary>Vorlage der Umrechnungszeile (lblCaseUmrechnung), zwei Platzhalter.</summary>
+    [Parameter] public string VorlageUmrechnung { get; set; } = "ergibt: Best {0:N2} € · Worst {1:N2} €";
+
+    /// <summary>Gruppentitel der Kostenfelder (Designer: label2).</summary>
+    [Parameter] public string LabelKosten { get; set; } = "Kosten:";
+
+    /// <summary>Gruppentitel der Nutzungsdauerfelder (Designer: label3).</summary>
+    [Parameter] public string LabelNutzungsdauer { get; set; } = "Nutzungsdauer:";
+
+    /// <summary>Beschriftung numBestCase.</summary>
+    [Parameter] public string LabelBestKosten { get; set; } = "Best Case [€]:";
+
+    /// <summary>Beschriftung numWorstCase.</summary>
+    [Parameter] public string LabelWorstKosten { get; set; } = "Worst Case [€]:";
+
+    /// <summary>Beschriftung numBestCase_Nutzungsdauer.</summary>
+    [Parameter] public string LabelBestNutzung { get; set; } = "Best Case [a]:";
+
+    /// <summary>Beschriftung numWorstCase_Nutzungsdauer.</summary>
+    [Parameter] public string LabelWorstNutzung { get; set; } = "Worst Case [a]:";
+
+    /// <summary>Beschriftung des Startjahrfeldes (lblStartJahr).</summary>
+    [Parameter] public string LabelStartJahr { get; set; }
+        = "Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X):";
+
+    /// <summary>Beschriftung des Zuschuss-Schalters (KOSTEN_CHK_ZUSCHUSS).</summary>
+    [Parameter] public string LabelZuschuss { get; set; } = "Diese Position ist ein Zuschuss";
+
+    /// <summary>Erlaeuterung unter dem Zuschuss-Schalter (KOSTEN_CHK_ZUSCHUSS_HINT).</summary>
+    [Parameter] public string HinweisZuschuss { get; set; } = "";
+
+    /// <summary>Erlaeuterung fuer Erlöspositionen.</summary>
+    [Parameter] public string HinweisErloes { get; set; }
+        = "Erlösposition: Die Werte werden als Betrag eingegeben; das negative Vorzeichen setzt die Rechnung.";
+
+    /// <summary>Beschriftung des OK-Knopfes.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_CaseEingabe.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private double? _best;
+    private double? _worst;
+    private double _bestNutzung;
+    private double _worstNutzung;
+    private int _startJahr;
+    private bool _istZuschuss;
+    private bool _prozentModus;
+
+    private (int Id, string Text)[] _eingabearten = Array.Empty<(int, string)>();
+    private int[]? _gesperrteModi;
+
+    /// <summary>Steht der Dialog im Prozentmodus? (Pruefhilfe fuer Tests.)</summary>
+    public bool ProzentModus => _prozentModus;
+
+    /// <summary>Der Einheitenzusatz hinter den Kostenfeldern.</summary>
+    private string EinheitKosten => _prozentModus ? "%" : "€";
+
+    /// <summary>Grenzen der Kostenfelder — im Prozentmodus ±1000 (ProzentModusGewechselt),
+    /// sonst der Designerbereich 0…99 999.</summary>
+    private double MinKosten => _prozentModus ? -1000 : 0;
+
+    private double MaxKosten => _prozentModus ? 1000 : 99999;
+
+    /// <summary>Die Umrechnungszeile des Prozentmodus (lblCaseUmrechnung).</summary>
+    private string Umrechnungstext => string.Format(CultureInfo.CurrentCulture, VorlageUmrechnung,
+        ProzentZuBetrag(_best ?? 0), ProzentZuBetrag(_worst ?? 0));
+
+    protected override void OnInitialized()
+    {
+        _best = BestCase;
+        _worst = WorstCase;
+        _bestNutzung = BestNutzungsdauer;
+        _worstNutzung = WorstNutzungsdauer;
+        _startJahr = StartJahr;
+        _istZuschuss = IstZuschuss;
+
+        _eingabearten = new[]
+        {
+            (MODUS_ABSOLUT, LabelAbsolut),
+            (MODUS_PROZENT, LabelProzent)
+        };
+        // rbCaseAbsolut.Checked = true; rbCaseProzent.Enabled = Betrag != 0.
+        _gesperrteModi = Betrag != 0 ? null : new[] { MODUS_PROZENT };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void BeiBest(double? wert) => _best = wert;
+
+    private void BeiWorst(double? wert) => _worst = wert;
+
+    /// <summary>
+    /// Woertlich aus <c>ProzentModusGewechselt</c>: Betraege werden zu
+    /// %-Abweichungen und zurueck. Ohne Erwartungswert geschieht nichts.
+    /// </summary>
+    private void BeiEingabeart(int? id)
+    {
+        bool prozent = id == MODUS_PROZENT;
+        if (prozent == _prozentModus) return;
+        if (Betrag == 0) return;
+
+        double basis = Math.Abs(Betrag);
+        if (prozent)
+        {
+            // 0 bleibt 0 = "nicht gepflegt".
+            _best = (_best ?? 0) == 0 ? 0 : Math.Round(((_best ?? 0) - Betrag) / basis * 100.0, 1);
+            _worst = (_worst ?? 0) == 0 ? 0 : Math.Round(((_worst ?? 0) - Betrag) / basis * 100.0, 1);
+        }
+        else
+        {
+            _best = Math.Max(0, ProzentZuBetrag(_best ?? 0));
+            _worst = Math.Max(0, ProzentZuBetrag(_worst ?? 0));
+        }
+        _prozentModus = prozent;
+    }
+
+    /// <summary>Woertlich aus <c>ProzentZuBetrag</c>: 0 = nicht gepflegt.</summary>
+    private double ProzentZuBetrag(double prozent)
+    {
+        if (Betrag == 0 || prozent == 0) return 0;
+        return Math.Round(Betrag * (1.0 + prozent / 100.0), 2);
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        // btn_OK_Click: im %-Modus in Betraege uebersetzen, nie unter 0.
+        double best = _prozentModus ? Math.Max(0, ProzentZuBetrag(_best ?? 0)) : (_best ?? 0);
+        double worst = _prozentModus ? Math.Max(0, ProzentZuBetrag(_worst ?? 0)) : (_worst ?? 0);
+
+        await Geschlossen.InvokeAsync(new CaseEingabeErgebnis(
+            best, worst, _bestNutzung, _worstNutzung,
+            _startJahr > 1 ? _startJahr : 0,          // wie btn_OK_Click
+            ZuschussMoeglich ? _istZuschuss : IstZuschuss));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => BeiErgebnis(true),
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

@@ -28,7 +28,9 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        Assert.True(dateien.Count >= 120, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W1: 114 Dateien (121 vor der Welle,
+        // sieben Masken umgestellt und geloescht).
+        Assert.True(dateien.Count >= 113, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -51,7 +53,11 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        Assert.True(Lauf.Value.Masken >= 118, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W1: 111 Masken (118 vor der Welle;
+        // VorlagenPosition, VariantenName, KostenItemNeu, CaseEingabe,
+        // VorlagenUebernahme, KostenAdmin, WirtschaftlichkeitVerlauf sind
+        // Razor-Komponenten geworden).
+        Assert.True(Lauf.Value.Masken >= 111, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -59,8 +65,9 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-1: 63 von 118. Der Leser muss
-        // also beide Wege koennen, nicht nur den Designer.
+        // Gemessener Stand 03.09.2026 nach iU9-W1: 62 von 111 (Form_KostenItemNeu
+        // war die eine lokalisierte Maske der Welle). Der Leser muss also beide
+        // Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 60,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }

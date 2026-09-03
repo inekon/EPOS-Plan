@@ -105,7 +105,12 @@ public sealed class FeldkarteSchreiberTests
     {
         // Der Designer schreibt Minimum/Maximum als new decimal(new int[]{...}) -
         // in der Karte muss wieder eine Zahl stehen.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/Form_CaseEingabe.Designer.cs"));
+        //
+        // iU9-W1.3 (03.09.2026): Form_CaseEingabe ist umgestellt und geloescht
+        // (Regel M1); ihr letzter Stand liegt als Pruefmuster daneben. Die vier
+        // Drehfelder mit ihrem Maximum sind genau der Fall, den dieser Test
+        // braucht - eine lebende Maske mit derselben Eigenart gibt es nicht.
+        var maske = Kartenbau.Vollstaendig(Repowurzel.Pruefmuster("Kosten/Form_CaseEingabe.Designer.cs"));
         var zeilen = Kartenbau.Abschnitte(maske).SelectMany(a => a.Zeilen)
             .Where(z => z.Element.Typ == "NumericUpDown").ToList();
 
