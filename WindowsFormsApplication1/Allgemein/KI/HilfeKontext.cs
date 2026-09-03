@@ -144,7 +144,6 @@ namespace WindowsFormsApplication1
             { "Form_Kosten_Auswahl",         B_KOSTEN },
             { "Form_KostenfaktorItem",       B_KOSTEN },
             { "Form_KostenKomponente",       B_KOSTEN },
-            { "Form_VorlagenPosition",       B_KOSTEN },
             { "Form_VorlagenUebernahme",     B_KOSTEN },
             { "Form_VariantenName",          B_KOSTEN },
             { "Form_Kostenprofil",           B_KOSTEN },
