@@ -464,7 +464,8 @@ namespace WindowsFormsApplication1
 
             // PAKET FX3 (Anwenderentscheid R-2): Die Spalte „Betrieb" trägt seither
             // zwei verschieden fortgeschriebene Anteile — den Betriebs-Topf mit p_B und
-            // den Endenergie-Topf mit p_E (Hilfsenergie „x % der Endenergie…").
+            // den Endenergie-Topf mit p_E (Hilfsenergie „x % der Endenergie…", seit
+            // PAKET FX4-b auch „% der Brennstoff-/Stromkosten").
             // KapitalwertRechner.BetriebJeJahr liefert die SUMME beider, genau damit
             // diese Tabelle unverändert bleibt: Die Summe der Positionsspalten ist
             // weiterhin die Spalte „Netto nominal", und die Selbstprüfung darunter
