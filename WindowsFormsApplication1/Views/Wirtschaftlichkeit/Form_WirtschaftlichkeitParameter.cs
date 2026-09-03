@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     /// (WirtschaftlichkeitCtrl.ErzeugerDerGruppe). Werte ausgeblendeter Gruppen
     /// bleiben beim Speichern unverändert erhalten.
     ///
-    /// Komplett im Code aufgebaut (kein Designer/.resx nötig) — Muster Form_Bericht.
+    /// Komplett im Code aufgebaut (kein Designer/.resx nötig).
     /// </summary>
     public class Form_WirtschaftlichkeitParameter : Form
     {
@@ -43,8 +43,6 @@ namespace WindowsFormsApplication1
         private NumericUpDown numBilanzJahr;
         private ComboBox cbEmissionsMethode, cbBiomasseKonvention;
         private CheckBox chkNachhaltigkeit;
-        // ETAPPE E6 — Einstieg in die Angaben je BHKW-Modul.
-        private Button btnModule;
         // ETAPPE K6 — KWKG-Tatbestand § 6 Abs. 3, Anlagenart § 8, Pauschale § 9
         // und der Sprungknopf in die Pflege des CO₂-Preispfads.
         private ComboBox cbKwkgTatbestand, cbKwkgAnlagenart;
@@ -166,19 +164,6 @@ namespace WindowsFormsApplication1
                 // und damit über den Heizöl-Ausschluss. Die Beschriftung sagt das jetzt.
                 dtStichtag = DatumZeile("Stichtag, Vorgabe je Anlage:", ref y, _parameter.KwkgStichtag);
                 dtInbetriebnahme = DatumZeile("Inbetriebnahme, Vorgabe je Anlage:", ref y, _parameter.KwkgInbetriebnahme);
-
-                // ETAPPE E6 — die Angaben JE MODUL. Der Zuschlag wird seit E6 je Anlage
-                // gerechnet; die Felder darüber sind die Vorgabe für alle Anlagen ohne
-                // eigenen Wert.
-                btnModule = new Button
-                {
-                    Location = new Point(28, y),
-                    Size = new Size(402, 28),
-                    Text = "⚙ Werte je BHKW-Modul (Satz, Vbh, Kontingent, Datum)…"
-                };
-                btnModule.Click += new EventHandler(btnModule_Click);
-                this.Controls.Add(btnModule);
-                y += 36;
 
                 // ---------------- BHKW — Energie- und Stromsteuer (Etappe E4) --------
                 // Die gesetzlichen Bedingungen werden ERFASST statt angenommen. Jeder
@@ -697,26 +682,6 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        /// <summary>
-        /// ETAPPE E6 — öffnet die Angaben je BHKW-Modul. Die Projektwerte dieses Dialogs
-        /// bleiben unberührt; der Modul-Dialog schreibt ausschließlich nach
-        /// <c>Tab_Energieanlagen</c> und liest die Projektangaben nur als Vorgabe.
-        /// </summary>
-        private void btnModule_Click(object sender, EventArgs e)
-        {
-            // Die beiden Daten dieses Dialogs sind die VORGABE des Modul-Dialogs und
-            // gehen in seinen Katalogvorschlag ein. Sie werden deshalb vorher aus den
-            // Steuerelementen übernommen — sonst zeigte der Vorschlag den zuletzt
-            // GESPEICHERTEN Stand, während auf dem Bildschirm schon ein anderer steht.
-            // Gespeichert wird dadurch nichts; das tut erst „Speichern".
-            _parameter.KwkgStichtag = dtStichtag.Checked ? (DateTime?)dtStichtag.Value.Date : null;
-            _parameter.KwkgInbetriebnahme = dtInbetriebnahme.Checked
-                                          ? (DateTime?)dtInbetriebnahme.Value.Date : null;
-
-            using (var f = new Form_KwkgModule(_parameter.IdStamm, "", _parameter))
-                f.ShowDialog(this);
-        }
-
         /// <summary>Steuerwert der Auswahl; ohne Auswahl gilt die Vorgabe (Etappe E4).</summary>
         private static string Gewaehlt(ComboBox cb, string vorgabe)
         {
@@ -727,7 +692,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE K6 — öffnet die Pflege der gesetzlichen Parameter mit dem CO₂-Preispfad.
         /// Die Werte dieses Dialogs bleiben unberührt: Der Katalog ist eine eigene
-        /// Tabelle ohne Projektbezug (dasselbe Verhältnis wie beim Modul-Dialog aus E6).
+        /// Tabelle ohne Projektbezug.
         /// </summary>
         private void btnGesetzeskatalog_Click(object sender, EventArgs e)
         {

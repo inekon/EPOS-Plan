@@ -1161,7 +1161,7 @@ namespace WindowsFormsApplication1
             if (_idProjekt <= 0) return;
             Form f = this.FindForm();
             // KD6a (§ 3.2): Der Einstieg führt in den NEUEN Kostendialog im
-            // Projektmodus — der alte Editor Form_Kosten ist kein Einstieg mehr.
+            // Projektmodus — der alte Kosteneditor ist mit iU9-W0 entfallen.
             using (var dlg = new Form_KostenKomponente())
             {
                 // Ä19: vorgewählt wird die Komponente der GEWÄHLTEN Anlagenzeile —

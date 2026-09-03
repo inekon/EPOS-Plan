@@ -201,8 +201,8 @@ namespace WindowsFormsApplication1
             // auf eine andere Version derselben Gruppe umschaltete, liess Uebersicht, Kosten,
             // Wirtschaftlichkeit und Bericht auf dem VORHERIGEN Projekt stehen: Das Kopfband
             // zeigte "Woehler - Test1", die Kostenseite weiter "Projekt: Woehler" samt dessen
-            // Zahlen - und "Kostenverwaltung oeffnen..." startete Form_Kosten mit derselben
-            // falschen ID. VariantenAnzeigeAktualisieren() macht beides an einer Stelle und
+            // Zahlen - und "Kostenverwaltung oeffnen..." startete Form_KostenKomponente mit
+            // derselben falschen ID. VariantenAnzeigeAktualisieren() macht beides an einer Stelle und
             // ist genau dafuer schon da (Menueweg "Als Variante speichern...").
             VariantenAnzeigeAktualisieren();
             return true;
@@ -2069,15 +2069,6 @@ namespace WindowsFormsApplication1
             MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionGespeichert, MyResource.Resource.Text_Hinweis);
         }
 
-        private void btn_Kosten_Click(object sender, EventArgs e)
-        {
-            using (var form = new Form_Kosten(m_ID_Projekt))
-            {
-                form.m_ID_Projekt = m_ID_Projekt;
-                form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
-            }
-        }
-
         private void InitEventDictionary()
         {
             // Die sechs Kacheln des Reiters "Projekt" stehen NICHT mehr in diesem
@@ -2136,26 +2127,17 @@ namespace WindowsFormsApplication1
             this.panelKlima.Focus();
         }
 
-        private void btn_Varianten_Click(object sender, EventArgs e)
-        {
-            // Rückfallweg: der Dialog ist seit dem Umbau des Reiters „Berichte & Kosten"
-            // nicht mehr verdrahtet (die Schaltfläche wird in BaueBerichteKostenSeite
-            // entfernt). Handler und Formular bleiben stehen, falls der Dialog wieder
-            // gebraucht wird.
-            new Form_Variantentest(m_ID_Projekt).ShowDialog();
-        }
-
         // ============================================================
         //  Reiter „Berichte & Kosten" (tabPage6)
         //
         //  Der Reiter enthielt bis zum Umbau nur die zwei Schaltflächen „Kosten"
-        //  und „Varianten". Er trägt jetzt eine senkrechte Navigation mit vier
-        //  Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht) —
+        //  und „Varianten"; beide sind mit iU9-W0 samt ihren Altdialogen entfallen
+        //  (Anwenderentscheid iF29). Er trägt jetzt eine senkrechte Navigation mit
+        //  vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht) —
         //  siehe UcBerichteKosten.
         //
         //  Programmatisch angehängt, damit Form_Start.Designer.cs und die .resx
-        //  unberührt bleiben (CLAUDE.md: Designer-Dateien nicht von Hand
-        //  editieren) — dasselbe Vorgehen wie bei Form_Kosten.BaueKostenprofilReiter.
+        //  unberührt bleiben (CLAUDE.md: Designer-Dateien nicht von Hand editieren).
         // ============================================================
 
         private UcBerichteKosten _berichteKosten;
@@ -2171,10 +2153,6 @@ namespace WindowsFormsApplication1
 
             if (_berichteKosten == null)
             {
-                // Die zwei Altknöpfe entfallen (Designer bleibt unberührt).
-                EntferneAltknopf(btn_Kosten);
-                EntferneAltknopf(btn_Varianten);
-
                 _berichteKosten = new UcBerichteKosten { Dock = DockStyle.Fill };
                 tabPage6.Controls.Add(_berichteKosten);
             }
@@ -2212,13 +2190,6 @@ namespace WindowsFormsApplication1
 
             FuelleVariantenCombo(comboBox_Varianten, m_ID_Projekt, true);
             _berichteKosten?.SetzeProjekt(m_ID_Projekt);
-        }
-
-        private static void EntferneAltknopf(Control knopf)
-        {
-            if (knopf == null || knopf.Parent == null) return;
-            knopf.Parent.Controls.Remove(knopf);
-            knopf.Dispose();
         }
 
         /// <summary>

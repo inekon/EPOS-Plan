@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     /// Razor-Komponente <see cref="BhkwWirtschaftlichkeitDialog"/> in
     /// <c>EPOS.UI</c>; die WinForms-Fassung <c>Form_BhkwWirtschaftlichkeit</c> ist
     /// mit demselben Schritt GELOESCHT (Regel M1: keine zweite Fassung derselben
-    /// Maske). Vorbild dieser Klasse ist <c>Views/Kosten/Form_Kosten.cs</c>,
+    /// Maske). Vorbild dieser Klasse ist <c>Views/Heizkessel/Form_Heizkessel.cs</c>,
     /// <c>CreateNewEnergyCarrier</c> (iU8-9): Parameterwoerterbuch bauen,
     /// <c>Geschlossen</c>-Rueckruf auf <see cref="BlazorDialogForm{T}.Schliessen"/>
     /// legen, <c>ShowDialog()</c> wie bisher auswerten.</para>

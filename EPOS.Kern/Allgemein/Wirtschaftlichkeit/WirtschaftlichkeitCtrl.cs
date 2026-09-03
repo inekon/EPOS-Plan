@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1
     ///
     /// Liest ausschließlich Tab_ProjektWerte, Tab_Ergebnis*, energy_* und
     /// Tab_ProjektWirtschaftlichkeit; schreibt Tab_ErgebnisWirtschaftlichkeit —
-    /// keine UI-Abhängigkeit. Der UI-Reiter (Form_Wirtschaftlichkeit) und der
+    /// keine UI-Abhängigkeit. Die Seite „Wirtschaftlichkeit" (UcWirtschaftlichkeit) und der
     /// Berichts-Baustein lesen dieselben persistierten Ergebnisse.
     ///
     /// Zahlungsgerüst W1 je Projekt und Szenario (Worst/Erwartet/Best):

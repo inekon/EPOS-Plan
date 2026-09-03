@@ -68,20 +68,11 @@
   <None Remove=".claude\**" />
 </ItemGroup>
 
-  <!-- Dateien auf der Platte, die nie ins alte Projekt aufgenommen waren -->
-  <ItemGroup>
-    <Compile Remove="Allgemein\GrafikTools\ChartManagerNeu.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Detail - Kopie.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Detail.Designer - Kopie.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.Designer.cs" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.de-DE - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.en-US - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.de-DE.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.en-US.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
-  </ItemGroup>
+  <!-- Die Ausschlussliste "Dateien auf der Platte, die nie ins alte Projekt
+       aufgenommen waren" ist mit iU9-W0 entfallen: Die Kurzansicht der Simulation,
+       die "- Kopie"-Dateien und der zweite Diagrammverwalter sind geloescht
+       (Anwenderentscheid iF29). Was nicht uebersetzt werden soll, liegt damit auch
+       nicht mehr im Baum. -->
 
   <!-- Projektreferenzen -->
   <ItemGroup>

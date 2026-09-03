@@ -815,8 +815,8 @@ namespace WindowsFormsApplication1
         ///   <item><description><b>27b</b>: je Gruppe eine HAUPTposition in
         ///     <c>Tab_Kostenfaktor</c> (<c>IsMainComponent = True</c>, gleicher Wortlaut
         ///     wie die Komponente) — ohne sie fände
-        ///     <c>KostenPositionCtrl.StammIdHaupt</c> nichts, und
-        ///     <c>Form_Kosten.EnsureMainComponentExists</c> bräche wortlos ab.</description></item>
+        ///     <c>KostenPositionCtrl.StammIdHaupt</c> nichts, und die Vorsorge der
+        ///     Kostenmasken bräche wortlos ab.</description></item>
         ///   <item><description><b>27c</b>: die Nebenpositionen des Katalogs
         ///     (<see cref="SchemaKatalog.Schritt27_Erfassungsgruppen"/>), Original-
         ///     Beschriftungen der Altanwendung.</description></item>
@@ -831,8 +831,8 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Kostenfaktor</c> vor. Der Befund vom 20.08.2026: Sie existieren bereits —
         /// als Felder <c>EmpfehlungVon</c>/<c>EmpfehlungBis</c> des VDI-Katalogs in
         /// <c>BetriebskostenCtrl.Katalog</c>, mit exakt den sieben Wertepaaren aus § 7.6,
-        /// und <c>Form_Betriebskosten.Bezugstext</c> zeigt sie seit Etappe E3 am Satzfeld
-        /// an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
+        /// und der Bezugstext der Betriebskostenpflege zeigt sie seit Etappe E3 am
+        /// Satzfeld an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
         /// Zahl — und zwar die schlechtere, weil die VDI-Positionen ihren
         /// Empfehlungsbereich aus der Norm beziehen und nicht je Datenbank abweichen
         /// dürfen. Der Schritt legt sie deshalb bewusst nicht an.
@@ -1045,8 +1045,8 @@ namespace WindowsFormsApplication1
         /// Access-Abfragen verweisen aber weiter darauf. Der Doc-Kommentar an Schritt 29
         /// hat das ausdruecklich in Kauf genommen („Gespeicherte Access-Abfragen
         /// blockieren die Drops nicht … sie bleiben Philipps manuelle Checkliste"). Die
-        /// Rechnung war richtig, die Folge nicht: <c>Form_Kosten.LoadKostenFaktoren</c>
-        /// liest <c>Abfrage_Kostenfaktoren</c>, und die joint <c>Tab_KostenKategorie</c>.
+        /// Rechnung war richtig, die Folge nicht: Die Kostenmasken lesen
+        /// <c>Abfrage_Kostenfaktoren</c>, und die joint <c>Tab_KostenKategorie</c>.
         /// Seit dem Drop bricht der Kosteneditor bei JEDEM Gewerk mit „cannot find the
         /// input table or query 'Tab_KostenKategorie'" ab. Eine manuelle Checkliste
         /// erreicht keine Bestandsinstallation — deshalb dieser Schritt.
@@ -1080,7 +1080,7 @@ namespace WindowsFormsApplication1
         /// <b><c>CREATE PROCEDURE</c>, nicht <c>CREATE VIEW</c>.</b> Die Sortierung der
         /// Abfrage ist fachlich tragend: Sie stellt die Hauptposition an den Anfang, die
         /// Nebenzeilen folgen darunter (<c>Kostenuebernahme_Protokoll.md</c>), und
-        /// <c>Form_Kosten</c> setzt selbst KEIN <c>ORDER BY</c>. ACE laesst in einem
+        /// die Kostenmasken setzen selbst KEIN <c>ORDER BY</c>. ACE laesst in einem
         /// <c>CREATE VIEW</c> aber kein <c>ORDER BY</c> zu — nur <c>CREATE PROCEDURE</c>
         /// kann es. Beides ist ueber OLE DB verfuegbar (und nur dort, nicht in der
         /// Access-Oberflaeche); DAO ueber COM braucht es deshalb nicht, die Migration
@@ -5979,7 +5979,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Soll-SQL von <see cref="ABFRAGE_KOSTENFAKTOREN"/>.</b> Es liefert exakt die
-        /// Spalten, die <c>Form_Kosten.LoadKostenFaktoren</c> auswaehlt und filtert —
+        /// Spalten, die die Kostenmasken auswaehlen und filtern —
         /// <c>ID</c>, <c>ProjektID</c>, <c>StammID</c>, <c>KategorieName</c>,
         /// <c>Komponente</c>, <c>Bezeichnung</c>, <c>Gruppe</c>, <c>EingegebenerWert</c>,
         /// <c>WorstCase</c>, <c>BestCase</c>, <c>Nutzungsdauer</c>,
@@ -5993,12 +5993,12 @@ namespace WindowsFormsApplication1
         ///     die Tabelle gibt es seit Schritt 29 nicht mehr.</description></item>
         ///   <item><description><c>KategorieName</c> entsteht stattdessen aus
         ///     <c>Tab_ProjektWerte.KategorieID</c>. Die Abbildung 1/2/3 → Name ist
-        ///     dieselbe, die <c>Form_Kosten</c> in seinen drei Reiterzweigen fuehrt; die
+        ///     dieselbe, die die Kostenmasken fuehren; die
         ///     Namen stehen als Persistenzwerte im
         ///     <see cref="SchemaKatalog.KATEGORIE_NAME_INVESTITION">Schemakatalog</see>.
-        ///     Die Spalte MUSS bleiben: <c>Form_Kosten</c> filtert ueber sie
+        ///     Die Spalte bleibt: Bestandsinstallationen filtern ueber sie
         ///     (<c>WHERE KategorieName = ?</c>), sie liesse sich also nicht streichen,
-        ///     ohne den Aufrufer zu aendern.</description></item>
+        ///     ohne die Abfrage unvertraeglich zu machen.</description></item>
         ///   <item><description><c>KategorieID</c> kommt als ZUSAETZLICHE Spalte mit.
         ///     Sie kostet nichts (der Aufrufer zaehlt seine Spalten namentlich auf) und
         ///     macht den kuenftigen Umbau auf einen sprachneutralen Filter moeglich, ohne
@@ -9511,8 +9511,8 @@ namespace WindowsFormsApplication1
         /// am 29.08.2026 ist der <b>Altkatalogname</b>.
         ///
         /// <para><b>Zwei Fälle.</b> Existiert der Zielname noch nicht — der Regelfall, weil
-        /// der Altkatalogeintrag erst bei Benutzung des abgelösten Dialogs
-        /// <c>Form_Betriebskosten</c> entsteht —, wird der vorhandene Eintrag schlicht
+        /// der Altkatalogeintrag erst bei Benutzung des abgelösten
+        /// Betriebskostendialogs entstand —, wird der vorhandene Eintrag schlicht
         /// <b>umbenannt</b>. Alle Verweise über <c>StammID</c> bleiben damit gültig, im
         /// Projekt ändert sich nichts als der angezeigte Wortlaut. Existieren beide, wird
         /// nichts zusammengelegt: Der Vorgang hängt Vorlagen- und Projektzeilen auf die
