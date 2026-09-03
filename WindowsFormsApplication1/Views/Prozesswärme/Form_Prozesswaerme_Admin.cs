@@ -162,11 +162,14 @@ namespace WindowsFormsApplication1
         private void btn_Prozess_DBneu_Click(object sender, EventArgs e)
         {
             Form_EingDBProzess frm = new Form_EingDBProzess();
-            Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
-            
-            if (frm_item.ShowDialog() == DialogResult.OK)
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+
+            if (szName != null)
             {
-                frm.m_szProzessname = frm_item.m_szName;
+                frm.m_szProzessname = szName;
                 frm.mode = "Neu";
                 frm.SetControls();
                 frm.ShowDialog();

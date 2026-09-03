@@ -224,17 +224,14 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            System.Drawing.Point p1 = btn_Speichern_Unter.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
-
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
-                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                if (string.IsNullOrEmpty(szName))
                 {
                     MessageBox.Show("Bitte einen gültigen Kollektorname eingeben!");
                     return;
@@ -243,15 +240,15 @@ namespace WindowsFormsApplication1
                 try
                 {
                     SolarkollektorenStammCtrl ctrl = new SolarkollektorenStammCtrl();
-                    if (ctrl.Exists(frmLabel.m_szName)) { MessageBox.Show("Name existiert bereits!"); return; }
+                    if (ctrl.Exists(szName)) { MessageBox.Show("Name existiert bereits!"); return; }
 
                     // Erst pruefen, dann den neuen Namen uebernehmen - so bleibt bei
                     // einer Fehleingabe auch das Namensfeld unveraendert.
                     SolarkollektorenModel m = InitDatensatzUpdate();
                     if (m == null) return;
 
-                    textBox_Name.Text = frmLabel.m_szName;
-                    m.m_szKollektorname = frmLabel.m_szName;
+                    textBox_Name.Text = szName;
+                    m.m_szKollektorname = szName;
 
                     if (ctrl.InsertFrom(m))
                     {

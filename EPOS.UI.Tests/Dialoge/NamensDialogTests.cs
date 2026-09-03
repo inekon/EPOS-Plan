@@ -157,4 +157,109 @@ public class NamensDialogTests : BunitContext
 
         Assert.Empty(cut.FindAll(".epos-infoknopf"));
     }
+
+    // ------------------------------------------------------------ iU9-W2.1
+
+    [Fact]
+    public void Ohne_Hinweistext_steht_keine_Herleitungszeile()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.Empty(cut.FindAll(".epos-herleitung"));
+    }
+
+    [Fact]
+    public void Der_Hinweistext_steht_ueber_dem_Feld()
+    {
+        // Form_AlsVariante.lblHinweis: "Der aktuelle Stand wird als eigenstaendige
+        // Variante des Stammprojekts ... gesichert."
+        var cut = Render<NamensDialog>(p => p
+            .Add(x => x.TitelText, "Als Variante speichern")
+            .Add(x => x.HinweisText, "Der aktuelle Stand wird gesichert.")
+            .Add(x => x.Geschlossen, (Action<string?>)(_ => { })));
+
+        Assert.Equal("Der aktuelle Stand wird gesichert.",
+                     cut.Find(".epos-herleitung-text").TextContent);
+    }
+
+    [Fact]
+    public void Ohne_Zusatzfrage_gibt_es_nur_ein_Textfeld()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.Single(cut.FindAll("input[type=text]"));
+    }
+
+    [Fact]
+    public void Die_Beschreibung_ist_ein_zweites_Feld_mit_eigener_Vorbelegung()
+    {
+        // Form_GebaeudetypNeu: Bezeichner UND Beschreibung.
+        var cut = Render<NamensDialog>(p => p
+            .Add(x => x.FrageText, "Bezeichner")
+            .Add(x => x.ZusatzFrageText, "Beschreibung:")
+            .Add(x => x.ZusatzVorbelegung, "Bürogebäude")
+            .Add(x => x.Geschlossen, (Action<string?>)(_ => { })));
+
+        var felder = cut.FindAll("input[type=text]");
+        Assert.Equal(2, felder.Count);
+        Assert.Equal("Bürogebäude", felder[1].GetAttribute("value"));
+        Assert.Equal("Beschreibung:", cut.FindAll(".epos-feld-text")[1].TextContent);
+    }
+
+    [Fact]
+    public void OK_meldet_die_Beschreibung_vor_dem_Namen()
+    {
+        // Reihenfolge ist Pflicht: Geschlossen nimmt der Huelle das Fenster weg.
+        var reihenfolge = new List<string>();
+        string? name = null;
+        string? beschreibung = null;
+
+        var cut = Render<NamensDialog>(p => p
+            .Add(x => x.ZusatzFrageText, "Beschreibung:")
+            .Add(x => x.ZusatzGeschlossen,
+                 (Action<string>)(t => { beschreibung = t; reihenfolge.Add("zusatz"); }))
+            .Add(x => x.Geschlossen,
+                 (Action<string?>)(t => { name = t; reihenfolge.Add("name"); })));
+
+        cut.FindAll("input[type=text]")[0].Input("Werkhalle");
+        cut.FindAll("input[type=text]")[1].Input("Halle 3, unbeheizt");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal("Werkhalle", name);
+        Assert.Equal("Halle 3, unbeheizt", beschreibung);
+        Assert.Equal(new[] { "zusatz", "name" }, reihenfolge);
+    }
+
+    [Fact]
+    public void OkNurMitText_sperrt_den_Knopf_solange_das_Feld_leer_ist()
+    {
+        // Form_AlsVariante: btnAnlegen.Enabled = Bezeichner.Length > 0.
+        var cut = Render<NamensDialog>(p => p
+            .Add(x => x.OkNurMitText, true)
+            .Add(x => x.Geschlossen, (Action<string?>)(_ => { })));
+
+        Assert.False(cut.Instance.OkErlaubt);
+        Assert.True(cut.Find(".epos-knopf--primaer").HasAttribute("disabled"));
+
+        cut.Find("input[type=text]").Input("Sommerbetrieb");
+
+        Assert.True(cut.Instance.OkErlaubt);
+        Assert.False(cut.Find(".epos-knopf--primaer").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Enter_bestaetigt_nicht_solange_OK_gesperrt_ist()
+    {
+        bool gemeldet = false;
+        var cut = Render<NamensDialog>(p => p
+            .Add(x => x.OkNurMitText, true)
+            .Add(x => x.Geschlossen, (Action<string?>)(_ => gemeldet = true)));
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.False(gemeldet);
+
+        // Esc bleibt frei - Abbrechen darf nie gesperrt sein.
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(gemeldet);
+    }
 }

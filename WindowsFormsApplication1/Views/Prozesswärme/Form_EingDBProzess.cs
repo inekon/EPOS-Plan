@@ -114,21 +114,18 @@ namespace WindowsFormsApplication1
             double[] monat;
             if (!MonatswertePruefen(out monat)) return;
 
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this, textBox_Prozessname.Text);
 
-            frm.m_szName = textBox_Prozessname.Text;
-            frm.SetControl();
-            Point p1 = btn_Speichern_Unter.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-
-            if (frm.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
                 RecordSet rs = new RecordSet();
-                rs.Open("select Bezeichner from Tab_Prozesswaerme_STAMM where Bezeichner='" + frm.m_szName + "'");
+                rs.Open("select Bezeichner from Tab_Prozesswaerme_STAMM where Bezeichner='" + szName + "'");
                 if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
                 rs.Close(); 
-                textBox_Prozessname.Text = frm.m_szName;
+                textBox_Prozessname.Text = szName;
 
                 string sqlI = "INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, Typ, Beschreibung, Monat_1, Monat_2, Monat_3, Monat_4, Monat_5, Monat_6, Monat_7, Monat_8, Monat_9, Monat_10, Monat_11, Monat_12, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 DbParam[] psI = new DbParam[16];

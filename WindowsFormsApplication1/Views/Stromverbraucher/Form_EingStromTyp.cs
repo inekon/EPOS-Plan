@@ -277,14 +277,11 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-
-            Point p1 = btn_Neu.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-
-            // Fehler korrigiert: Im Original wurde ShowDialog() zweimal aufgerufen!
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (szName == null) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
@@ -295,44 +292,42 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            if (StromverbraucherStammCtrl.TypNew(frm.m_szName) <= 0) return;
+            if (StromverbraucherStammCtrl.TypNew(szName) <= 0) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    if (!Update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
+                    if (!Update(szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
                 }
             }
 
-            Update("", frm.m_szName);
+            Update("", szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;
+            listBox_Typname.Text = szName;
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
         {
-            Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
+            if (szName == null) return;
 
-            Point p1 = btn_Neu.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
-
-            if (StromverbraucherStammCtrl.TypNew(frm.m_szName) <= 0) return;
+            if (StromverbraucherStammCtrl.TypNew(szName) <= 0) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    Update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
+                    Update(szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
                 }
             }
 
-            Update(textBox_Beschreibung.Text, frm.m_szName);
+            Update(textBox_Beschreibung.Text, szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;
+            listBox_Typname.Text = szName;
         }
 
     }

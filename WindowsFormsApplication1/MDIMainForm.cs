@@ -564,8 +564,10 @@ namespace WindowsFormsApplication1
         private void MenuItem_AlsVariante_Click(object sender, EventArgs e)
         {
             Form_Start start = Program.startfrm;
-            Form_AlsVariante.Zeige(this, start == null ? 0 : start.m_ID_Projekt,
-                                         start == null ? "" : start.m_szProjektname);
+            // iU9-W2.1: Der Ablauf liegt in AlsVarianteHuelle; die Namensabfrage
+            // stellt die Razor-Komponente NamensDialog (Form_AlsVariante geloescht).
+            AlsVarianteHuelle.Zeige(this, start == null ? 0 : start.m_ID_Projekt,
+                                          start == null ? "" : start.m_szProjektname);
         }
 
         private void MenuItem_VariantenBericht_Click(object sender, EventArgs e)

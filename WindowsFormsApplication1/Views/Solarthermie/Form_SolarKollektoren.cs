@@ -460,19 +460,16 @@ namespace WindowsFormsApplication1
         private void btn_Kollektor_DB_neu_Click(object sender, EventArgs e)
         {
             Form_SolarDB frm = new Form_SolarDB();
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
+            // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
+            // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
+            // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
+            string szName = NamensDialogHuelle.Bezeichner(this);
 
-            System.Drawing.Point p1 = btn_Kollektor_DB_neu.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
-
-            if (frmLabel.ShowDialog() == DialogResult.OK)
+            if (szName != null)
             {
                 frm.m_mode = Form_SolarDB.MODE_NEU;
-                frm.SetControls(frmLabel.m_szName);
-                frm.m_szName = frmLabel.m_szName;
+                frm.SetControls(szName);
+                frm.m_szName = szName;
                 frm.ShowDialog();
                 SetDBList();
             }

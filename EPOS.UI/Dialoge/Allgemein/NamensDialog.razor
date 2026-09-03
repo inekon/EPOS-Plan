@@ -16,7 +16,19 @@
    Textfeld, nicht auf dem Wurzel-div: Die Masken taten das ebenso
    (txtName.SelectAll() in SetControls), und bei EINEM Feld gibt es nichts, was
    der Fokus sonst erklaeren koennte. Esc und Enter beantwortet trotzdem das
-   Wurzel-div - Tastendruecke steigen aus dem Feld dorthin auf. *@
+   Wurzel-div - Tastendruecke steigen aus dem Feld dorthin auf.
+
+   iU9-W2.1 - DREI ZUSAETZE fuer die letzten drei Namensmasken:
+   * HinweisText - der erklaerende Satz ueber dem Feld. Form_AlsVariante trug
+     ihn als lblHinweis ("Der aktuelle Stand wird als eigenstaendige Variante
+     des Stammprojekts ... gesichert").
+   * ZusatzFrageText/ZusatzVorbelegung - ein ZWEITES, freiwilliges Textfeld.
+     Form_GebaeudetypNeu fragte neben dem Bezeichner auch eine Beschreibung ab;
+     ein eigener Dialog fuer ein zweites Textfeld waere eine dritte Fassung
+     derselben Maske. Leer = kein zweites Feld, also genau der Bestand.
+   * OkNurMitText - der OK-Knopf bleibt gesperrt, solange das Feld leer ist.
+     Form_AlsVariante tat das (btnAnlegen.Enabled = Bezeichner.Length > 0);
+     die uebrigen vier Masken meldeten stattdessen. Beides bleibt moeglich. *@
 
 @namespace EPOS.UI.Dialoge.Allgemein
 
@@ -30,6 +42,11 @@
         }
     </div>
 
+    @if (!string.IsNullOrEmpty(HinweisText))
+    {
+        <Herleitungszeile Text="@HinweisText" />
+    }
+
     <label class="epos-feld">
         <span class="epos-feld-text">@FrageText</span>
         <span class="epos-feld-zeile">
@@ -38,12 +55,24 @@
         </span>
     </label>
 
+    @if (!string.IsNullOrEmpty(ZusatzFrageText))
+    {
+        <label class="epos-feld">
+            <span class="epos-feld-text">@ZusatzFrageText</span>
+            <span class="epos-feld-zeile">
+                <input class="epos-eingabe" type="text" value="@_zusatz"
+                       @oninput="BeiZusatzEingabe" />
+            </span>
+        </label>
+    }
+
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
 
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@OkErlaubt" Ergebnis="BeiErgebnis" />
 </div>
 
 @code {
@@ -61,6 +90,35 @@
     /// schliessen - das Verhalten von <c>Form_VariantenName</c>.
     /// </summary>
     [Parameter] public string MeldungLeer { get; set; } = "";
+
+    /// <summary>
+    /// Erklaerender Satz ueber dem Feld; leer = keiner. Vorbild
+    /// <c>Form_AlsVariante.lblHinweis</c>.
+    /// </summary>
+    [Parameter] public string HinweisText { get; set; } = "";
+
+    /// <summary>
+    /// Beschriftung eines ZWEITEN, freiwilligen Textfeldes; leer = kein zweites
+    /// Feld. Vorbild <c>Form_GebaeudetypNeu.Label2</c> ("Beschreibung:").
+    /// </summary>
+    [Parameter] public string ZusatzFrageText { get; set; } = "";
+
+    /// <summary>Vorbelegung des zweiten Feldes.</summary>
+    [Parameter] public string ZusatzVorbelegung { get; set; } = "";
+
+    /// <summary>
+    /// Der Inhalt des zweiten Feldes bei OK - gemeldet UNMITTELBAR VOR
+    /// <see cref="Geschlossen"/>, weil dieser Rueckruf das Fenster schliesst.
+    /// </summary>
+    [Parameter] public EventCallback<string> ZusatzGeschlossen { get; set; }
+
+    /// <summary>
+    /// <c>true</c>: Der OK-Knopf bleibt gesperrt, solange das Feld leer ist
+    /// (<c>Form_AlsVariante</c>). <c>false</c> (Vorgabe): Der Knopf bleibt
+    /// anklickbar und ein leerer Name meldet sich ueber
+    /// <see cref="MeldungLeer"/> - das Verhalten der uebrigen vier Masken.
+    /// </summary>
+    [Parameter] public bool OkNurMitText { get; set; }
 
     /// <summary>Der getrimmte Name bei OK, <c>null</c> bei Abbrechen.</summary>
     [Parameter] public EventCallback<string?> Geschlossen { get; set; }
@@ -82,14 +140,22 @@
     private bool _ersterAufbau = true;
 
     private string _name = "";
+    private string _zusatz = "";
     private string _meldung = "";
 
     /// <summary>Der aktuelle Feldinhalt (Pruefhilfe fuer Tests).</summary>
     public string Name => _name;
 
+    /// <summary>Der Inhalt des zweiten Feldes (Pruefhilfe fuer Tests).</summary>
+    public string Zusatz => _zusatz;
+
+    /// <summary>Ist OK gerade anklickbar? (Pruefhilfe fuer Tests.)</summary>
+    public bool OkErlaubt => !OkNurMitText || !string.IsNullOrWhiteSpace(_name);
+
     protected override void OnInitialized()
     {
         _name = Vorbelegung ?? "";
+        _zusatz = ZusatzVorbelegung ?? "";
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -103,6 +169,11 @@
     {
         _name = e.Value?.ToString() ?? "";
         if (!string.IsNullOrWhiteSpace(_name)) _meldung = "";
+    }
+
+    private void BeiZusatzEingabe(ChangeEventArgs e)
+    {
+        _zusatz = e.Value?.ToString() ?? "";
     }
 
     private async Task BeiErgebnis(bool ok)
@@ -120,12 +191,17 @@
             return;
         }
 
+        // Erst das zweite Feld melden, dann schliessen: Geschlossen nimmt der
+        // Huelle das Fenster weg, danach kommt nichts mehr an.
+        if (ZusatzGeschlossen.HasDelegate) await ZusatzGeschlossen.InvokeAsync(_zusatz);
         await Geschlossen.InvokeAsync(_name.Trim());
     }
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {
-        "Enter" => BeiErgebnis(true),
+        // Enter tut nichts, solange OK gesperrt ist - sonst umginge die Taste
+        // genau die Regel, die der Knopf sichtbar macht.
+        "Enter" => OkErlaubt ? BeiErgebnis(true) : Task.CompletedTask,
         "Escape" => BeiErgebnis(false),
         _ => Task.CompletedTask
     };
