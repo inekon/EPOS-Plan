@@ -60,6 +60,39 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die WÄRME-Kennlinien eines Stammgeräts für den Renderer (iU9-W7.0c): je
+        /// Vorlauftemperatur eine COP- und eine Ptherm-Reihe über der Außentemperatur.
+        ///
+        /// <para><b>Zwei Abfragen, woertlich aus <c>Form_WP.InitChart</c> (Z. 243-331).</b>
+        /// Erst die Vorlaufstufen (<c>GROUP BY Vorlauf, ID_WP HAVING ID_WP = …</c>),
+        /// dann EINMAL alle Stuetzstellen des Geraets, nach Temperatur aufsteigend. Der
+        /// Vorlaeufer teilte die Tabelle danach mit <c>DataTable.Select("Vorlauf=…")</c>
+        /// auf; hier tut das eine Schleife ueber dieselben Zeilen — dieselbe Reihenfolge,
+        /// eine Abfrage weniger je Reihe.</para>
+        ///
+        /// <para>Die Reihenfolge der REIHEN ist die der Vorlaufabfrage, die Reihenfolge
+        /// der PUNKTE die der Datenabfrage. Beides bleibt so, weil daran die
+        /// Farbzuordnung der Legende haengt.</para>
+        /// </summary>
+        public static KennlinienSatz Reihen(int idWp)
+        {
+            var vorlaeufe = new List<int>();
+            DataTable dtv = DataRepository.GetDataTable(
+                "SELECT Vorlauf, ID_WP FROM " + WPStammCtrl.CURVE + " GROUP BY Vorlauf, ID_WP HAVING ID_WP = ?",
+                new DbParam("@id", idWp));
+            if (dtv != null)
+                foreach (DataRow r in dtv.Rows)
+                    vorlaeufe.Add(r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0);
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Vorlauf, Temperatur, COP, Ptherm FROM " + WPStammCtrl.CURVE +
+                " WHERE ID_WP = ? ORDER BY Temperatur ASC",
+                new DbParam("@id", idWp));
+
+            return KennlinienSatz.Bauen(vorlaeufe, dt, "Ptherm");
+        }
+
         #endregion
 
         #region --- DATABASE WRITE OPERATIONS ---

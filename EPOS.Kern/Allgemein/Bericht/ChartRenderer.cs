@@ -767,6 +767,218 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================== Kennlinien
+
+        /// <summary>
+        /// EINE Kennlinie — die Stützstellen einer Vorlauftemperatur (iU9-W7.0c).
+        /// </summary>
+        /// <param name="Vorlauf">Vorlauftemperatur [°C]; sie beschriftet die Reihe.</param>
+        /// <param name="Punkte">
+        /// Die Stützstellen (Außentemperatur, Wert) in Anzeigereihenfolge. Der Renderer
+        /// sortiert NICHT — das tut die Abfrage (<c>ORDER BY Temperatur ASC</c>), wie im
+        /// Vorläufer.
+        /// </param>
+        public sealed record KennlinienReihe(int Vorlauf, IReadOnlyList<(double Temperatur, double Wert)> Punkte);
+
+        /// <summary>Die Punktmarke einer Kennlinie — Kreis für COP, Kreuz für die Leistung.</summary>
+        public enum Kennlinienmarke
+        {
+            /// <summary>Kreis (<c>MarkerStyle.Circle</c> des Vorläufers, Form_WP:314).</summary>
+            Kreis,
+
+            /// <summary>Kreuz (<c>MarkerStyle.Cross</c> des Vorläufers, Form_WP:321).</summary>
+            Kreuz
+        }
+
+        /// <summary>
+        /// Kennliniendiagramm einer Wärmepumpe (Paket iU9-W7.0c): COP bzw. Leistung über
+        /// der Außentemperatur, EINE Linie je Vorlauftemperatur.
+        ///
+        /// <para><b>Vorbild.</b> Die vier <c>Chart</c>-Steuerelemente von
+        /// <c>Form_WP</c> (<c>InitChart</c>, Z. 243-331) und <c>Wizard_WPItem</c>
+        /// (<c>listBox_WP_SelectedIndexChanged</c>, Z. 333-383) — je zwei in einem
+        /// <c>TabControl</c> mit den Blättern „COP" und „Leistung". Beide Masken bauten
+        /// dieselben Reihen aus denselben Abfragen auf; sie unterscheiden sich nur darin,
+        /// dass <c>Form_WP</c> zwischen Wärme- und Kühlkennlinien umschalten kann.</para>
+        ///
+        /// <para><b>Bildmaß 968 × 520.</b> Der breitere der vier Vorläufer-Charts maß
+        /// 484 × 195 (<c>Form_WP.chart1</c>); doppelte Zielauflösung wie bei allen Bildern
+        /// dieser Datei ergibt 968 × 390. Dazu kommen 130 px für die Legende, die hier
+        /// UNTER dem Diagramm steht statt wie im WinForms-Chart darin — bei acht Reihen
+        /// verdeckte sie dort die Linien.</para>
+        ///
+        /// <para><b>Die x-Achse trägt echte Werte</b>, nicht Stützstellennummern: Die
+        /// Außentemperaturen zweier Vorlauf-Kennlinien müssen nicht dieselben sein, und
+        /// bei ungleichen Reihen läge sonst -15 °C der einen über -7 °C der anderen.
+        /// Beide Achsen bekommen die „schöne" Stufung der übrigen Liniendiagramme.</para>
+        ///
+        /// <para><b>Die y-Achse schließt die Null ein.</b> COP und Leistung sind
+        /// positiv; ein Diagramm, das erst bei 2,8 beginnt, macht aus einem Unterschied
+        /// von 10 % optisch einen von 80 %. Dasselbe hält der Kapitalwert-Verlauf so
+        /// (Abweichung A-4 des Protokolls W7 — das WinForms-Chart skalierte
+        /// selbsttätig).</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Kennlinien COP".</param>
+        /// <param name="yTitel">Beschriftung der y-Achse — „COP" bzw. „Leistung".</param>
+        /// <param name="xTitel">Beschriftung der x-Achse — „Temperatur".</param>
+        /// <param name="reihen">Eine Reihe je Vorlauftemperatur.</param>
+        /// <param name="marke">Punktmarke: Kreis für COP, Kreuz für die Leistung.</param>
+        public static byte[] Kennlinien(string titel, string yTitel, string xTitel,
+                                        IReadOnlyList<KennlinienReihe> reihen,
+                                        Kennlinienmarke marke)
+        {
+            int W = 968, H = 520;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel, W);
+                // Rechts bleiben 150 px stehen: Dort steht die Beschriftung der x-Achse,
+                // und die letzte Rasterzahl braucht ihre halbe Breite (der Bericht setzt
+                // den Achsentitel genauso, KapitalwertVerlauf mit „Jahr").
+                var rc = SKRect.Create(90f, 76f, W - 240f, 296f);
+
+                var gueltig = new List<KennlinienReihe>();
+                if (reihen != null)
+                    foreach (KennlinienReihe r in reihen)
+                        if (r != null && r.Punkte != null && r.Punkte.Count > 0 &&
+                            r.Punkte.All(p => !double.IsNaN(p.Temperatur) && !double.IsInfinity(p.Temperatur) &&
+                                              !double.IsNaN(p.Wert) && !double.IsInfinity(p.Wert)))
+                            gueltig.Add(r);
+
+                if (gueltig.Count == 0)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, BerichtTexte.T("Keine Kennlinien vorhanden."), f, SKColors.DimGray,
+                             rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                double xMin = gueltig.Min(r => r.Punkte.Min(p => p.Temperatur));
+                double xMax = gueltig.Max(r => r.Punkte.Max(p => p.Temperatur));
+                double yMin = Math.Min(0, gueltig.Min(r => r.Punkte.Min(p => p.Wert)));
+                double yMax = Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Wert)));
+
+                double xSchritt = Stufe(ref xMin, ref xMax);
+                double ySchritt = Stufe(ref yMin, ref yMax);
+
+                // y-Raster und -Beschriftung.
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (double wert = yMin; wert <= yMax + ySchritt / 2; wert += ySchritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("0.###", DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+
+                // x-Raster und -Beschriftung.
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (double wert = xMin; wert <= xMax + xSchritt / 2; wert += xSchritt)
+                    {
+                        float x = (float)(rc.Left + (wert - xMin) / (xMax - xMin) * rc.Width);
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = wert.ToString("0.###", DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+
+                // Achsen, Achsentitel und - falls die Skala unter null reicht - die Nulllinie.
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                using (var f = Schrift(15f))
+                {
+                    // 26 px statt der 10 px des Kapitalwert-Verlaufs: Dort steht rechts
+                    // eine einstellige Jahreszahl, hier eine zweistellige Temperatur mit
+                    // Vorzeichen - bei 10 px stiessen Zahl und Titel aneinander.
+                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right + 26f, rc.Bottom + 8f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                }
+                if (yMin < 0)
+                {
+                    float y0 = (float)(rc.Bottom - (0 - yMin) / (yMax - yMin) * rc.Height);
+                    using (var strichel = SKPathEffect.CreateDash(new[] { 6f, 2f }, 0f))
+                    using (var stift = Strich(SKColors.DimGray, 2f))
+                    {
+                        stift.PathEffect = strichel;
+                        g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
+                    }
+                }
+
+                // Die Linien samt Punktmarken. Die Farbe kommt aus C_SERIEN und
+                // wiederholt sich, wenn ein Gerät mehr Vorläufe führt als Farben da sind.
+                for (int i = 0; i < gueltig.Count; i++)
+                {
+                    SKColor farbe = C_SERIEN[i % C_SERIEN.Length];
+                    var punkte = new SKPoint[gueltig[i].Punkte.Count];
+                    for (int t = 0; t < punkte.Length; t++)
+                    {
+                        var p = gueltig[i].Punkte[t];
+                        float x = (float)(rc.Left + (p.Temperatur - xMin) / (xMax - xMin) * rc.Width);
+                        float y = (float)(rc.Bottom - (p.Wert - yMin) / (yMax - yMin) * rc.Height);
+                        punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                    }
+
+                    using (var stift = Strich(farbe, 3f))
+                    {
+                        stift.StrokeJoin = SKStrokeJoin.Round;
+                        Linienzug(g, punkte, stift);
+                    }
+                    Punktmarken(g, punkte, farbe, marke);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(
+                            r.Vorlauf.ToString(DE) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+                        .ToList(), 90f, H - 96f, W - 30f);
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>
+        /// Die Punktmarken einer Kennlinie. <c>MarkerSize = 5</c> des Vorläufers bei
+        /// einfacher Auflösung sind hier 10 px — dieselbe optische Größe.
+        /// </summary>
+        private static void Punktmarken(SKCanvas g, SKPoint[] punkte, SKColor farbe, Kennlinienmarke marke)
+        {
+            const float R = 5f;
+            if (marke == Kennlinienmarke.Kreis)
+            {
+                using (var b = Fuellung(farbe))
+                    foreach (SKPoint p in punkte) g.DrawCircle(p, R, b);
+                return;
+            }
+
+            using (var stift = Strich(farbe, 2.5f))
+                foreach (SKPoint p in punkte)
+                {
+                    g.DrawLine(p.X - R, p.Y - R, p.X + R, p.Y + R, stift);
+                    g.DrawLine(p.X - R, p.Y + R, p.X + R, p.Y - R, stift);
+                }
+        }
+
+        /// <summary>
+        /// Die „schöne" Achsenstufung der Liniendiagramme (5 Rasterlinien), aus
+        /// <see cref="KapitalwertVerlauf"/> herausgezogen, weil die Kennlinien sie für
+        /// BEIDE Achsen brauchen. Rundet <paramref name="min"/> ab und
+        /// <paramref name="max"/> auf und liefert die Schrittweite.
+        /// </summary>
+        private static double Stufe(ref double min, ref double max)
+        {
+            if (max - min < 1e-9) max = min + 1;
+            double roh = (max - min) / 5.0;
+            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+            double schritt = zehner;
+            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                if (zehner * f >= roh) { schritt = zehner * f; break; }
+            min = Math.Floor(min / schritt) * schritt;
+            max = Math.Ceiling(max / schritt) * schritt;
+            return schritt;
+        }
+
         // =================================================================== Schrift
 
         // ---------------------------------------------------------------------

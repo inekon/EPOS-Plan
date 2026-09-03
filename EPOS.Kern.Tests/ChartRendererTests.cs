@@ -201,5 +201,81 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(780, bild.Height);
             }
         }
+
+        // =============================================================== Kennlinien (W7.0c)
+
+        /// <summary>Drei Vorlaufstufen mit je vier Stuetzstellen — genug fuer Farbe und Marke.</summary>
+        private static System.Collections.Generic.List<ChartRenderer.KennlinienReihe> Kennlinienproben()
+        {
+            var l = new System.Collections.Generic.List<ChartRenderer.KennlinienReihe>();
+            foreach (int vorlauf in new[] { 35, 45, 55 })
+            {
+                var p = new System.Collections.Generic.List<(double, double)>();
+                for (int t = -15; t <= 15; t += 10) p.Add((t, 5.0 - (vorlauf - 35) * 0.02 + t * 0.1));
+                l.Add(new ChartRenderer.KennlinienReihe(vorlauf, p));
+            }
+            return l;
+        }
+
+        [Fact]
+        public void Kennlinien_zeichnet_in_der_festgelegten_Groesse_und_deterministisch()
+        {
+            var reihen = Kennlinienproben();
+
+            byte[] a = ChartRenderer.Kennlinien("Kennlinien COP", "COP", "Temperatur",
+                                                reihen, ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] b = ChartRenderer.Kennlinien("Kennlinien COP", "COP", "Temperatur",
+                                                reihen, ChartRenderer.Kennlinienmarke.Kreis);
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);   // zweimal zeichnen = byte-gleich
+
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(968, bild.Width);
+                Assert.Equal(520, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Die beiden Punktmarken sollen SICHTBAR verschieden sein — sonst waeren die
+        /// Reiterblaetter „COP" und „Leistung" bei gleichen Werten nicht zu unterscheiden.
+        /// </summary>
+        [Fact]
+        public void Kreis_und_Kreuz_ergeben_verschiedene_Bilder()
+        {
+            var reihen = Kennlinienproben();
+
+            byte[] kreis = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                                                    reihen, ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] kreuz = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                                                    reihen, ChartRenderer.Kennlinienmarke.Kreuz);
+
+            Assert.NotEqual(kreis, kreuz);
+        }
+
+        /// <summary>
+        /// Ohne Reihen liefert der Renderer ein Bild in voller Groesse mit Hinweis —
+        /// dieselbe Zusage wie beim Kostenprofil: Der Dialog braucht in jedem Fall
+        /// etwas zum Anzeigen. Das trifft die Waermepumpen ohne Kennlinien.
+        /// </summary>
+        [Fact]
+        public void Kennlinien_ohne_Reihen_liefert_ein_leeres_Bild_statt_null()
+        {
+            byte[] leer = ChartRenderer.Kennlinien("K", "COP", "Temperatur", null,
+                                                   ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] ohnePunkte = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                new[] { new ChartRenderer.KennlinienReihe(35, System.Array.Empty<(double, double)>()) },
+                ChartRenderer.Kennlinienmarke.Kreis);
+
+            Assert.NotNull(leer);
+            Assert.NotNull(ohnePunkte);
+
+            using (SKBitmap bild = SKBitmap.Decode(leer))
+            {
+                Assert.Equal(968, bild.Width);
+                Assert.Equal(520, bild.Height);
+            }
+        }
     }
 }
