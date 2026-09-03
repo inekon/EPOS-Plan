@@ -10751,4 +10751,43 @@ Overwrite it anyway?</value>
   <data name="SGL_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Description:</value>
   </data>
+  <data name="GTYP_KURVE_K1" xml:space="preserve">
+    <value>Winter - clear</value>
+  </data>
+  <data name="GTYP_KURVE_K2" xml:space="preserve">
+    <value>Winter - overcast</value>
+  </data>
+  <data name="GTYP_KURVE_K3" xml:space="preserve">
+    <value>Transition - clear</value>
+  </data>
+  <data name="GTYP_KURVE_K4" xml:space="preserve">
+    <value>Transition - overcast</value>
+  </data>
+  <data name="GTYP_KURVE_K5" xml:space="preserve">
+    <value>Summer day</value>
+  </data>
+  <data name="GTYP_KURVE_L1" xml:space="preserve">
+    <value>Winter - weekday</value>
+  </data>
+  <data name="GTYP_KURVE_L2" xml:space="preserve">
+    <value>Winter - weekend</value>
+  </data>
+  <data name="GTYP_KURVE_L3" xml:space="preserve">
+    <value>Transition 1 - weekday</value>
+  </data>
+  <data name="GTYP_KURVE_L4" xml:space="preserve">
+    <value>Transition 1 - weekend</value>
+  </data>
+  <data name="GTYP_KURVE_L5" xml:space="preserve">
+    <value>Summer - weekday</value>
+  </data>
+  <data name="GTYP_KURVE_L6" xml:space="preserve">
+    <value>Summer - weekend</value>
+  </data>
+  <data name="GTYP_KURVE_L7" xml:space="preserve">
+    <value>Transition 2 - weekday</value>
+  </data>
+  <data name="GTYP_KURVE_L8" xml:space="preserve">
+    <value>Transition 2 - weekend</value>
+  </data>
 </root>
