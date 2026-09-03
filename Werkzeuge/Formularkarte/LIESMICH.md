@@ -163,11 +163,73 @@ Der Dateiname bestimmt den Komponentennamen; er bekommt deshalb einen großen An
 * **Der Fachbereich kommt aus dem Ordnernamen.** Liegt eine Maske woanders, ist der `@namespace` von
   Hand zu setzen.
 
+## Prüfmuster
+
+Die Tests lesen die **echten** Designer-Dateien des Bestands — das ist der Sinn der Sache und bleibt
+so. Nur: Eine Maske, die umgestellt ist, gibt es nicht mehr. Mit **iU8‑9 (Stichtag iZ5)** hat
+`Form_Kosten_Auswahl` ihre WinForms-Fassung verloren (Regel M1: keine zweite Fassung derselben
+Maske) und läuft seither als `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor`. Genau
+diese Maske war aber die **Handkarte aus dem Umsetzungsplan iU8, Abschnitt D**, an der 19 Tests die
+Grundmechanik prüfen: Designer ohne `this.`, Zeilenregel, Zielkomponenten, Kopf der Feldkarte,
+Aufbau des Razor-Skeletts.
+
+Deshalb liegt ihr letzter Stand **eingefroren** unter
+
+```
+Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
+    Form_Kosten_Auswahl.Designer.cs     Stand 92380ea^, unverändert
+    Form_Kosten_Auswahl.cs              dito
+    Form_Kosten_Auswahl.resx            dito
+    Form_Kosten.Auszug.cs               die eine Methode, die den Dialog modal öffnete
+```
+
+Jede Datei nennt im Kopfkommentar Herkunft und Nachfolge. `Form_Kosten.Auszug.cs` ist
+`CreateNewEnergyCarrier` aus `Views/Kosten/Form_Kosten.cs` (Zeilen 2089–2196 im Stand `92380ea^`),
+Rumpf unverändert, ergänzt nur um Namensraum und Klassenhülle — sonst wäre es kein gültiges C# und
+Roslyn fände den Aufrufer nicht. So findet die Aufrufersuche im Prüfmuster **genau einen** Treffer,
+wie im Bestand vor dem Stichtag auch.
+
+Drei Regeln halten die Muster von allem anderen fern:
+
+* **Sie werden nie übersetzt.** `Formularkarte.Tests.csproj` nimmt `Pruefmuster/**` aus `Compile`
+  und `EmbeddedResource` heraus; sie wandern nur als Inhalt ins Ausgabeverzeichnis.
+* **Sie zählen nicht zum Bestand.** `Stapel.Dateien` übergeht jeden Pfad mit einem Ordner
+  `Pruefmuster` — genau wie `bin` und `obj`. Sonst meldete das Vollständigkeitsnetz mehr Masken,
+  als das Programm hat.
+* **Der Ordnername ist der Fachbereich.** Er wird zum `@namespace` des Skeletts, deshalb heißt der
+  Ordner `Kosten` und nicht wie die Maske. Das Prüfmuster liegt damit so, wie die Maske im Bestand
+  lag.
+
+`PruefmusterTests` hält den Stichtag fest: die Blazor-Nachfolge steht im Repo, die WinForms-Fassung
+nicht mehr, das Prüfmuster ist vollständig da und zählt nicht mit.
+
+### Ein weiteres Muster anlegen
+
+Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
+
+1. Die drei Dateien aus dem letzten Stand **vor** dem Löschcommit holen (`<sha>^:<pfad>` aus der
+   Historie), unverändert bis auf einen Kopfkommentar „Prüfmuster für Formularkarte — Stand vor
+   \<Paket\> (\<sha\>^); die Maske wurde durch \<Pfad der Razor-Komponente\> ersetzt". In der
+   `.resx` steht er als XML-Kommentar hinter der XML-Deklaration, sonst als `//`-Zeilen ganz oben.
+   Ziel ist `Werkzeuge/Formularkarte.Tests/Pruefmuster/<Fach>/`, wobei `<Fach>` der **Fachordner**
+   des Bestands ist, nicht der Maskenname.
+2. Gab es einen `ShowDialog`-Aufrufer, dessen Methode als `<Aufrufer>.Auszug.cs` danebenlegen, in
+   `namespace` und Klasse gehüllt.
+3. Die betroffenen Tests auf `Repowurzel.Pruefmuster(...)` umstellen und als **Suchwurzel**
+   `Repowurzel.PruefmusterWurzel` mitgeben; Fundstellen prüft
+   `Fundstelle.Enthaelt(Repowurzel.PruefmusterBezug, …)`.
+4. Tests, die die Maske nur als Beispiel brauchen (Stapellauf über alle Masken), auf eine
+   **lebende** Maske umhängen statt auf das Muster — beim Stichtag iZ5 war das
+   `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester mit zwei `ComboBox` statt `ComboBox` und
+   `TextBox`.
+5. `PruefmusterTests` um die neue Maske ergänzen.
+
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **100 Tests grün**. Die Tests
-laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen Nachbauten.
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **101 Tests grün**. Die Tests
+laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen Nachbauten — mit der einen
+Ausnahme, die der Abschnitt „Prüfmuster" beschreibt.
 
 **Übersetzt das Skelett?** Nachgewiesen am 03.09.2026: eine Kopie von `EPOS.UI/` im Scratchpad, alle
 **120** erzeugten Skelette in `Dialoge/` gelegt, `dotnet build -c Release` → **0 Fehler,
@@ -184,6 +246,12 @@ laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen Nachbauten.
 | lokalisiert (`ApplyResources`) | 63 |
 | Kartenzeilen gesamt | 2377 |
 | Felder ohne Beschriftung | 178 |
+
+**Nachgemessen nach dem Stichtag iZ5** (Löschung von `Form_Kosten_Auswahl`, iU8‑9): 122
+Designer-Dateien, **119** Masken, 3 ohne `InitializeComponent`, 0 nicht lesbar, 63 lokalisiert,
+2373 Kartenzeilen, 178 Felder ohne Beschriftung; unter `WindowsFormsApplication1/Views` allein 117
+Masken. Die vier Dateien des Prüfmusters sind darin **nicht** enthalten. Jede weitere umgestellte
+Maske senkt diese Zahl um eins — das ist der Fortschritt von iU9, nicht ein Loch im Netz.
 
 Steuerelemente je Typ (Auszug): `Label` 1551, `TextBox` 732, `Button` 504, `ComboBox` 108,
 `GroupBox` 83, `TabPage` 74, `Panel` 69, `CheckBox` 59, `NumericUpDown` 57, `ListBox` 50,

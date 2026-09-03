@@ -26,4 +26,18 @@
     <ProjectReference Include="..\Formularkarte\Formularkarte.csproj" />
   </ItemGroup>
 
+  <!--
+    Pruefmuster: eingefrorene Kopien von Masken, die es im Bestand nicht mehr
+    gibt (siehe Werkzeuge/Formularkarte/LIESMICH.md, Abschnitt "Pruefmuster").
+    Sie werden NIE uebersetzt - es sind Lesevorlagen fuer den Designer-Leser,
+    kein Code dieses Projekts. Ihr .resx darf auch nicht als Ressource in die
+    Testbaugruppe wandern.
+  -->
+  <ItemGroup>
+    <Compile Remove="Pruefmuster/**" />
+    <EmbeddedResource Remove="Pruefmuster/**" />
+    <None Remove="Pruefmuster/**" />
+    <None Include="Pruefmuster/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

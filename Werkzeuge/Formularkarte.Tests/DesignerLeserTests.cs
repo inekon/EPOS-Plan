@@ -7,6 +7,14 @@ namespace Formularkarte.Tests;
 /// von Hand steht - Abschnitt D. Stimmen sie, stimmt die Grundmechanik:
 /// beide Schreibweisen des Designers, die Zeilenregel fuer Beschriftungen und
 /// die Zuordnung der Zielkomponenten.
+///
+/// <para>
+/// Form_Kosten_Auswahl gibt es im Bestand seit iU8-9 (Stichtag iZ5) nicht mehr;
+/// sie laeuft als EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor. Die
+/// Handkarte aus dem Plan wird deshalb gegen das eingefrorene Pruefmuster unter
+/// Pruefmuster/Kosten/ geprueft - Zeile fuer Zeile dieselbe Aussage wie vorher,
+/// nur an einer Vorlage, die sich nicht mehr bewegt.
+/// </para>
 /// </summary>
 public sealed class DesignerLeserTests
 {
@@ -16,12 +24,19 @@ public sealed class DesignerLeserTests
     private static Maske Lesen(string relativ) =>
         Kartenbau.Vollstaendig(Repowurzel.Designer(relativ));
 
+    /// <summary>
+    /// Eine Maske aus dem Pruefmuster-Ordner. Die Suche nach dem ShowDialog-
+    /// Aufrufer laeuft ueber genau diesen Ordner, nicht ueber den Bestand.
+    /// </summary>
+    private static Maske Muster(string relativ) =>
+        Kartenbau.Vollstaendig(Repowurzel.Pruefmuster(relativ), null, Repowurzel.PruefmusterWurzel);
+
     // ---- Form_Kosten_Auswahl: die Handkarte aus dem Plan --------------------
 
     [Fact]
     public void KostenAuswahl_HatVierZeilen()
     {
-        var abschnitte = Kartenbau.Abschnitte(Lesen(KostenAuswahl));
+        var abschnitte = Kartenbau.Abschnitte(Muster(KostenAuswahl));
 
         var abschnitt = Assert.Single(abschnitte);
         Assert.Equal("Fenster", abschnitt.Titel);
@@ -31,7 +46,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_ZeilenStehenInTabIndexReihenfolge()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenAuswahl))[0].Zeilen;
 
         Assert.Equal(
             new[] { "cmbBrennstoffArt", "TextBox_Variante", "btn_Abbrechen", "btn_OK" },
@@ -41,7 +56,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_BeschriftungenStehenLinksInDerselbenZeile()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenAuswahl))[0].Zeilen;
 
         Assert.Equal("Energieträger:", zeilen[0].TextDe);
         Assert.Equal("Energieträger Varianten Bezeichnung:", zeilen[1].TextDe);
@@ -50,7 +65,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_ZielkomponentenStimmen()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenAuswahl))[0].Zeilen;
 
         Assert.Equal("Auswahlfeld", zeilen[0].Komponente);
         Assert.Equal("Textfeld", zeilen[1].Komponente);
@@ -61,7 +76,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_BeideKnoepfeHabenEinenClickHandler()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenAuswahl))[0].Zeilen;
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenAuswahl))[0].Zeilen;
         var knoepfe = zeilen.Where(z => z.Element.Typ == "Button").Select(z => z.Element).ToList();
 
         Assert.Equal(2, knoepfe.Count);
@@ -73,7 +88,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_LiestFormulareigenschaftenOhneThis()
     {
-        var maske = Lesen(KostenAuswahl);
+        var maske = Muster(KostenAuswahl);
 
         Assert.Equal("Energieträger Variante", maske.Titel);
         Assert.Equal(new Paar(356, 185), maske.Fenstergroesse);
@@ -84,20 +99,22 @@ public sealed class DesignerLeserTests
     [Fact]
     public void KostenAuswahl_KenntMeldungUndAufrufer()
     {
-        var maske = Lesen(KostenAuswahl);
+        var maske = Muster(KostenAuswahl);
 
         Assert.True(maske.QuelltextGefunden);
         Assert.Equal(1, maske.Meldungen);
 
+        // Der Aufrufer steht als Auszug im Pruefmuster - genau einer, wie im
+        // Bestand vor iU8-9 auch.
         var aufrufer = Assert.Single(maske.Aufrufer);
-        Assert.StartsWith("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:", aufrufer, StringComparison.Ordinal);
-        Fundstelle.Enthaelt(aufrufer, "new Form_Kosten_Auswahl");
+        Assert.StartsWith("Pruefmuster/Kosten/Form_Kosten.Auszug.cs:", aufrufer, StringComparison.Ordinal);
+        Fundstelle.Enthaelt(Repowurzel.PruefmusterBezug, aufrufer, "new Form_Kosten_Auswahl");
     }
 
     [Fact]
     public void KostenAuswahl_NenntZeileUndUmfangDerHandler()
     {
-        var maske = Lesen(KostenAuswahl);
+        var maske = Muster(KostenAuswahl);
 
         Assert.Equal(4, maske.Handler.Count);
         foreach (var handler in new[] { "btnOk_Click", "btn_Abbrechen_Click",
