@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
+using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
@@ -292,6 +293,421 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        // =================================================================================
+        // W6.4 - Projektdialog
+        // =================================================================================
+
+        /// <summary>Gewünschtes Innenmaß des Projektdialogs (Vorläufer: 1 022 × 610).</summary>
+        private static readonly Size PROJEKT_MASS = new Size(1100, 760);
+
+        /// <summary>
+        /// Zeigt den Projektdialog als eigenes Fenster — der Weg von
+        /// <c>Form_Start.pBox_BHKW_Click</c> und
+        /// <c>BHKWKontextMenuCtrl.ContextMenuItemNeu_Click</c>.
+        /// </summary>
+        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
+        /// <param name="projektId">Projekt; 0 = keines (dann keine Projektkopien).</param>
+        /// <param name="idType"><c>BHKW_TYP</c> oder <c>REF_BHKW_TYP</c>.</param>
+        /// <param name="modelle">Die geteilte Erzeugerliste — sie wird in place bearbeitet.</param>
+        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
+        internal static bool Oeffnen(IWin32Window besitzer, int projektId, int idType,
+                                     List<WErzeugerModel> modelle)
+        {
+            bool ok = false;
+            BlazorDialogForm<BhkwDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(
+                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
+                {
+                    ok = b;
+                    if (dlg != null) dlg.Schliessen(b);
+                })
+            };
+
+            dlg = new BlazorDialogForm<BhkwDialog>(
+                Text_("BHKWV_TITEL", "Verwaltung BHKW"), PROJEKT_MASS, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ok;
+        }
+
+        /// <summary>
+        /// Die BHKW-Seite des ASSISTENTEN — dieselbe Komponente, randlose Hülle,
+        /// <c>Wizard = true</c>.
+        /// </summary>
+        internal static Form AssistentSeite()
+        {
+            return new BlazorAssistentSeite<BhkwDialog>(
+                (projektId, projektName, modelle) =>
+                    new Dictionary<string, object>(
+                        Gaben(null, projektId, WizardItemClass.BHKW_TYP, modelle, wizard: true)),
+                PROJEKT_MASS);
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Projektdialogs. Aufbau und Begründung wie in
+        /// <see cref="HeizkesselHuelle"/>; hier stehen nur die BHKW-Eigenheiten.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            IWin32Window besitzer, int projektId, int idType,
+            List<WErzeugerModel> modelle, bool wizard)
+        {
+            var stamm = new BHKWStammCtrl();
+            var projekt = new BHKWCtrl();
+
+            var zeilen = new List<ErzeugerZeile>();
+            var zuModell = new Dictionary<int, WErzeugerModel>();
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                zeilen.Add(ZeileZu(m));
+                zuModell[m.ID] = m;
+            }
+
+            var zaehler = new Zaehler();
+            foreach (var m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
+
+            return new Dictionary<string, object>
+            {
+                ["Zeilen"] = zeilen,
+                ["Wizard"] = wizard,
+                ["Gruppen"] = Gruppen(stamm),
+                ["Leistungsstufen"] = Leistungsstufen(),
+
+                ["Filtern"] = new Func<string, int, IReadOnlyList<KatalogZeile>>(
+                    (gruppe, stufe) => KatalogZeilen(stamm.Filtern(gruppe, stufe))),
+
+                ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
+                    name => DetailZu(BHKWCtrl.StammDetail(name))),
+
+                // FillDetailsFromProjekt: Im Assistenten (kein persistiertes Projekt)
+                // stammen die Werte aus den Stammdaten - dieselbe Weiche wie im Bestand.
+                ["ProjektDetail"] = new Func<string, ErzeugerDetail>(
+                    name => DetailZu(projektId > 0 ? BHKWCtrl.ProjektDetail(name, projektId)
+                                                   : BHKWCtrl.StammDetail(name))),
+
+                ["Varianten"] = new Func<int, IReadOnlyList<(int Id, string Text)>>(
+                    carrierId =>
+                    {
+                        var (_, liste) = EnergietraegerVarianteCtrl.VariantenDerGruppe(carrierId);
+                        var eintraege = new List<(int, string)>();
+                        foreach (var v in liste) eintraege.Add((v.Id, v.Name));
+                        return eintraege;
+                    }),
+
+                ["Vorbereiten"] = new Func<int, TraegerVorbereitung>(
+                    stammId => Vorbereiten(stamm, stammId)),
+
+                ["Aufnehmen"] = new Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>(
+                    (stammId, ergebnis) => Aufnehmen(stamm, projektId, idType, wizard, modelle,
+                                                     zuModell, zaehler, stammId, ergebnis)),
+
+                ["Entfernen"] = new Action<ErzeugerZeile>(
+                    zeile => Entfernen(projektId, idType, modelle, zuModell, zeile)),
+
+                ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
+                    (zeile, neu) =>
+                    {
+                        EnergietraegerVarianteCtrl.TraegerUmhaengen(projektId, zeile.CarrierId, neu);
+                        if (zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) m.ID_Carrier = neu;
+                    }),
+
+                ["Uebernehmen"] = new Action<ErzeugerZeile>(
+                    zeile =>
+                    {
+                        if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+                        m.Grenzleistung = zeile.Grenzleistung ?? 0;
+                        m.Vorlauf = zeile.Vorlauf ?? 0;
+                        m.Ruecklauf = zeile.Ruecklauf ?? 0;
+                    }),
+
+                ["SummePtherm"] = new Func<string>(
+                    () => SummeLeistung(projektId, idType, modelle).ToString()),
+
+                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    name => KatalogGaben(name, neu: false)),
+
+                ["EditorGabenNeu"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    name => KatalogGaben(name, neu: true)),
+
+                ["TraegerGaben"] = new Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>(
+                    TraegerGaben),
+
+                ["KatalogLoeschen"] = new Func<int, string>(id => KatalogLoeschen(stamm, id)),
+
+                ["TitelText"] = Text_("BHKWV_TITEL", "Verwaltung BHKW"),
+                ["KopfbandText"] = Text_("BHKWV_KOPFBAND", "Geben Sie Daten zu BHKW ein"),
+                ["LabelProjektliste"] = Text_("BHKWV_LBL_PROJEKTLISTE", "Ausgewählte Module:"),
+                ["LabelKatalogliste"] = Text_("BHKWV_LBL_KATALOGLISTE", "Module in Datenbank:"),
+                ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
+                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
+                ["SpalteEigenschaften"] = Text_("BHKWV_SP_EIGENSCHAFTEN", "Eigenschaften"),
+                ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
+                ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
+                ["LabelSumme"] = Text_("BHKWV_LBL_SUMME", "Summe aller ausgewählten Module [kWth]:"),
+                ["LabelFilterBrennstoff"] = Text_("BHKWV_LBL_FILTER_BRENNSTOFF", "Filtern nach Brennstoffart"),
+                ["LabelFilterLeistung"] = Text_("BHKWV_LBL_FILTER_LEISTUNG", "Filtern nach Leistung"),
+                ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
+                ["BtnNeuText"] = Text_("BHKWV_BTN_NEU", "Neu.."),
+                ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
+                ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
+                ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
+                ["LabelTraeger"] = Text_("BHKWV_LBL_TRAEGER", "Brennstoff:"),
+                ["LabelGrenzleistung"] = Text_("BHKWV_LBL_GRENZLEISTUNG",
+                    "Untere Grenzleistung des ausgewählten Moduls:"),
+                ["LabelVorlauf"] = Text_("BHKWV_LBL_VORLAUF", "Vorlauf"),
+                ["LabelRuecklauf"] = Text_("BHKWV_LBL_RUECKLAUF", "Rücklauf"),
+                ["TraegerTitel"] = MyResource.Resource.KAUSW_TITEL,
+                ["EditorTitel"] = Text_("BHKWK_TITEL", "BHKW Eigenschaften"),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
+                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
+                ["FrageLoeschen"] = Text_("BHKWV_FRAGE_LOESCHEN", "Wollen Sie wirklich das BHKW löschen?"),
+                ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
+                ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!"),
+
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
+                ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
+            };
+        }
+
+        // =================================================================================
+        // Die Schreibwege hinter den Delegaten
+        // =================================================================================
+
+        private static TraegerVorbereitung Vorbereiten(BHKWStammCtrl stamm, int stammId)
+        {
+            stamm.ReadSingle(stammId);
+            if (stamm.rows == 0)
+                return new TraegerVorbereitung(Array.Empty<(int, string)>(), null,
+                    Text_("BHKWV_MSG_NICHT_GEFUNDEN",
+                          "Das ausgewählte BHKW wurde in den Stammdaten nicht gefunden."));
+
+            int nBrennstoff = stamm.m_Brennstoff;
+            var liste = EnergietraegerVarianteCtrl.Energietraeger(
+                EnergietraegerVarianteCtrl.KategorieZu(nBrennstoff));
+
+            return new TraegerVorbereitung(liste, nBrennstoff > 0 ? (int?)nBrennstoff : null);
+        }
+
+        /// <summary>
+        /// Nimmt das BHKW auf. Reihenfolge und Abbruchbedingungen wie in
+        /// <c>btn_Hinzu_Click</c> (Z. 412).
+        /// </summary>
+        private static AufnahmeErgebnis Aufnehmen(
+            BHKWStammCtrl stamm, int projektId, int idType, bool wizard,
+            List<WErzeugerModel> modelle, Dictionary<int, WErzeugerModel> zuModell,
+            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis)
+        {
+            stamm.ReadSingle(stammId);
+            if (stamm.rows == 0)
+                return new AufnahmeErgebnis(null,
+                    Text_("BHKWV_MSG_NICHT_GEFUNDEN",
+                          "Das ausgewählte BHKW wurde in den Stammdaten nicht gefunden."), true);
+
+            EnergietraegerVarianteCtrl.VariantenErgebnis traeger =
+                EnergietraegerVarianteCtrl.Anlegen(projektId, wizard,
+                    ergebnis.BrennstoffId, ergebnis.BrennstoffName, ergebnis.VariantenName);
+
+            if (traeger.CarrierId <= 0)
+                return new AufnahmeErgebnis(null, traeger.Meldung, true);
+
+            var model = new WErzeugerModel
+            {
+                ID = zaehler.Naechster++,
+                ID_Projekt = projektId,
+                ID_Type = idType,
+                Bezeichner = stamm.m_szBezeichner,
+                Vorlauf = stamm.m_Vorlauf,
+                Ruecklauf = stamm.m_Ruecklauf,
+                ID_Carrier = traeger.CarrierId
+            };
+
+            // Anders als beim Heizkessel prueft der Vorlaeufer hier NUR m_ID_Projekt > 0
+            // und nicht zusaetzlich den Assistentenbetrieb - im Assistenten ist die
+            // Projekt-Id 0, das laeuft also auf dasselbe hinaus.
+            if (projektId > 0)
+            {
+                int projektKopie = new BHKWCtrl().CopyFromStamm(stammId, projektId);
+                if (projektKopie <= 0)
+                    return new AufnahmeErgebnis(null,
+                        Text_("HZK_MSG_KOPIE_FEHLER",
+                              "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
+                model.ID_BHKW = projektKopie;
+            }
+            else
+            {
+                model.ID_BHKW = stammId;
+            }
+
+            modelle.Add(model);
+            zuModell[model.ID] = model;
+
+            return new AufnahmeErgebnis(ZeileZu(model), traeger.Meldung, false);
+        }
+
+        private static void Entfernen(int projektId, int idType,
+                                      List<WErzeugerModel> modelle,
+                                      Dictionary<int, WErzeugerModel> zuModell,
+                                      ErzeugerZeile zeile)
+        {
+            if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+
+            modelle.Remove(m);
+            zuModell.Remove(zeile.Schluessel);
+
+            // Projekt-Kopie nur entfernen, wenn keine weitere Auswahl mehr darauf
+            // verweist (mehrere Instanzen desselben BHKW teilen sich eine Tab_BHKW-Kopie).
+            bool nochReferenziert = false;
+            foreach (WErzeugerModel it in modelle)
+                if (it.ID_Type == idType && it.ID_BHKW == m.ID_BHKW) { nochReferenziert = true; break; }
+
+            if (projektId > 0 && !nochReferenziert)
+                new BHKWCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
+        }
+
+        /// <summary>
+        /// Die Summe der thermischen Leistungen (<c>SummeLeistung</c>, Z. 765).
+        /// <c>ID_BHKW</c> zeigt bei vorhandenem Projekt auf <c>Tab_BHKW</c>, im
+        /// Assistenten auf die Stammdaten.
+        /// </summary>
+        private static double SummeLeistung(int projektId, int idType, List<WErzeugerModel> modelle)
+        {
+            double summe = 0;
+            var projekt = new BHKWCtrl();
+            var stamm = new BHKWStammCtrl();
+
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+
+                if (projektId > 0) { projekt.ReadSingle(m.ID_BHKW); summe += projekt.m_Ptherm; }
+                else { stamm.ReadSingle(m.ID_BHKW); summe += stamm.m_Ptherm; }
+            }
+            return summe;
+        }
+
+        /// <summary>
+        /// Löscht einen Katalogsatz. Leere Rückgabe = gelöscht; sonst der Grund.
+        /// ReadOnly-Stammdatensätze dürfen nicht gelöscht werden
+        /// (<c>btn_DBBHKW_Löschen_Click</c>, Z. 866).
+        /// </summary>
+        private static string KatalogLoeschen(BHKWStammCtrl stamm, int id)
+        {
+            if (stamm.IsReadOnly(id))
+                return Text_("BHKWV_MSG_SCHREIBGESCHUETZT",
+                    "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.");
+
+            stamm.ReadSingle(id);
+            if (stamm.rows == 0 || !stamm.Delete(stamm.m_szBezeichner))
+                return Text_("BHKWV_MSG_LOESCHFEHLER", "Der Katalogeintrag konnte nicht gelöscht werden.");
+
+            return "";
+        }
+
+        // =================================================================================
+        // Abbildungen
+        // =================================================================================
+
+        private static ErzeugerZeile ZeileZu(WErzeugerModel m)
+        {
+            return new ErzeugerZeile
+            {
+                Schluessel = m.ID,
+                Bezeichner = m.Bezeichner ?? "",
+                GeraetId = m.ID_BHKW,
+                CarrierId = m.ID_Carrier,
+                Grenzleistung = m.Grenzleistung,
+                Vorlauf = m.Vorlauf,
+                Ruecklauf = m.Ruecklauf
+            };
+        }
+
+        /// <summary>Der Detailblock (<c>FillDetailControls</c>, Z. 350).</summary>
+        private static ErzeugerDetail DetailZu(BHKWCtrl.BhkwDetail d)
+        {
+            if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
+
+            var felder = new List<(string, string)>
+            {
+                (Text_("BHKWV_LBL_HERSTELLER", "Hersteller:"), d.Firma),
+                (Text_("BHKWV_LBL_PTHERM", "thermische Leistung [kWth]:"), d.Ptherm.ToString()),
+                (Text_("BHKWV_LBL_PEL", "elektrische Leistung [kWel]:"), d.Pel.ToString())
+            };
+
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+        }
+
+        /// <summary>
+        /// Die Katalogzeilen samt der zweiten Spalte „Eigenschaften" — vier Zeilen in
+        /// einer Zelle, genau wie im <c>DataGridView</c> des Vorläufers (Z. 205-209).
+        /// </summary>
+        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
+            IReadOnlyList<BHKWStammCtrl.KatalogZeile> quelle)
+        {
+            var liste = new List<KatalogZeile>();
+            foreach (var z in quelle)
+                liste.Add(new KatalogZeile(z.Id, z.Bezeichner,
+                    z.Firma + "\n" + Text_("BHKWV_ZELLE_BRENNSTOFF", "Brennstoff:") + " " + z.Brennstoff +
+                    "\nPtherm: " + z.Ptherm + " kW" +
+                    "\nPel: " + z.Pel + " kW"));
+            return liste;
+        }
+
+        /// <summary>„Alle" voran, dann die Brennstoffgruppen — wie <c>SetControls</c>.</summary>
+        private static IReadOnlyList<string> Gruppen(BHKWStammCtrl stamm)
+        {
+            var liste = new List<string> { "Alle" };
+            liste.AddRange(stamm.Brennstoffart_Gruppe);
+            return liste;
+        }
+
+        /// <summary>
+        /// „Alle" voran, dann die acht Stufen aus <c>BHKWStammCtrl.LeistungText</c> —
+        /// der Index passt damit auf <c>LeistungFilterText</c>.
+        /// </summary>
+        private static IReadOnlyList<string> Leistungsstufen()
+        {
+            var liste = new List<string> { Text_("HZK_STUFE_ALLE", "Alle") };
+            foreach (string t in BHKWStammCtrl.LeistungText)
+                if (t.Length > 0) liste.Add(t);
+            return liste;
+        }
+
+        private static IReadOnlyDictionary<string, object> TraegerGaben(TraegerVorbereitung vor)
+        {
+            return new Dictionary<string, object>
+            {
+                ["Energietraeger"] = vor.Energietraeger,
+                ["VorwahlId"] = vor.VorwahlId,
+                ["TitelText"] = MyResource.Resource.KAUSW_TITEL,
+                ["LabelEnergietraeger"] = MyResource.Resource.KAUSW_LBL_ENERGIETRAEGER,
+                ["LabelVariante"] = MyResource.Resource.KAUSW_LBL_VARIANTE,
+                ["MeldungNameFehlt"] = MyResource.Resource.KAUSW_MSG_NAME_FEHLT,
+                ["MeldungTraegerFehlt"] = MyResource.Resource.KAUSW_MSG_TRAEGER_FEHLT,
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+            };
+        }
+
+        /// <summary>
+        /// Der Zeilenzähler eines Dialoglaufs — das Gegenstück zu <c>startindex</c> des
+        /// Vorläufers. Als Objekt, weil die Delegaten ihn gemeinsam fortschreiben.
+        /// </summary>
+        private sealed class Zaehler
+        {
+            /// <summary>Der nächste freie Zeilenschlüssel.</summary>
+            internal int Naechster = 100000;
         }
     }
 }

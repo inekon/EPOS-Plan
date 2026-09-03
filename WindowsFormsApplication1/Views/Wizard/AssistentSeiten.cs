@@ -47,7 +47,8 @@ namespace WindowsFormsApplication1
             // iU9-W6.3: Die Kesselseite ist eine Razor-Komponente; die Huelle baut ihre
             // WebView erst in Bestuecken (siehe BlazorAssistentSeite).
             /* 11 KESSEL_ITEM        */ () => HeizkesselHuelle.AssistentSeite(),
-            /* 12 BHKW_ITEM          */ () => new Form_BHKWEing()
+            // iU9-W6.4: dieselbe Bauart wie die Kesselseite (W6.3).
+            /* 12 BHKW_ITEM          */ () => BhkwHuelle.AssistentSeite()
         };
 
         private static readonly ReadOnlyCollection<Type> _typen = new ReadOnlyCollection<Type>(new[]
@@ -57,7 +58,7 @@ namespace WindowsFormsApplication1
             typeof(Wizard_Stromlastgang), typeof(Form_WPAuswahl), typeof(Form_SolarKollektoren),
             typeof(Form_PV), typeof(Form_Stromspeicher),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.HeizkesselDialog>),
-            typeof(Form_BHKWEing)
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.BhkwDialog>)
         });
 
         /// <summary>Anzahl der Assistentenseiten (13).</summary>

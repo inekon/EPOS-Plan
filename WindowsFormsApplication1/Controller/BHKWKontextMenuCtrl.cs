@@ -84,7 +84,6 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Heizkessel.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_BHKWEing frm = new Form_BHKWEing();
 
             if (indexes.Count > 0)
             {
@@ -101,14 +100,13 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_BHKWEing frm = new Form_BHKWEing();
+            // iU9-W6.4: Der Dialog ist die Razor-Komponente BhkwDialog; die
+            // WinForms-Fassung Form_BHKWEing ist im selben Schritt GELOESCHT (Regel M1).
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
-            int id_type;
+            int id_type = WizardItemClass.BHKW_TYP;
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
 
-            frm.list_werzmodel.Clear();
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
-            id_type = WizardItemClass.BHKW_TYP;
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + id_type);
 
             // Vollstaendig gelesene Modelle durchreichen - wie im Karten-Weg
             // (Form_Start.pBox_BHKW_Click). Eine Teilkopie aus ID/ID_BHKW/ID_Type/Bezeichner
@@ -119,20 +117,15 @@ namespace WindowsFormsApplication1
             // Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_werzmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_szProjektname);
-            frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            if (BhkwHuelle.Oeffnen(null, m_ID_Projekt, id_type, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle(m_szProjektname);
