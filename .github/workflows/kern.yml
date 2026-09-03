@@ -3,6 +3,10 @@
 # seit iU4 EPOS.Kern.Tests).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
 # WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
+# Dazu kommen zwei Laeufe, die NICHT im Filter stehen, weil sie ausfuehrbar
+# und keine Testprojekte sind: der Referenzlauf (iU3) und seit iU7-7 die
+# ChartProben - der Nachweis, dass der Diagramm-Renderer des Berichts ohne
+# Windows zeichnet.
 #
 # Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
 # plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
@@ -38,6 +42,25 @@ jobs:
 
       - name: Testen
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+
+      # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
+      # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
+      # PNG-Signatur, Bildmasse, Farbvorkommen und Determinismus - ohne
+      # Datenbank, ohne Oberflaeche. Sie faellt rot aus, sobald der Renderer
+      # eine Windows-API braucht ODER sich das Bild aendert. Eigene .sln,
+      # deshalb nicht im Solution-Filter; gebaut wird sie vom dotnet run.
+      - name: ChartProben (Renderer plattformfrei)
+        run: dotnet run --project Proben/ChartProben -c Release
+
+      # Die Bilder selbst als Artefakt - bei einer Abweichung will man sie
+      # ansehen und nicht nur die Byte-Zahl lesen.
+      - name: ChartProben-Bilder als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chartproben-${{ matrix.os }}
+          path: artifacts/chartproben
+          retention-days: 14
 
       # iU3: Der Rechenkern soll nicht nur uebersetzen, sondern rechnen. Der
       # Referenzlauf gehoert nicht in den Solution-Filter (er ist eine Exe, kein
