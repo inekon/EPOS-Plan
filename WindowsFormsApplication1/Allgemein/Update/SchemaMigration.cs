@@ -3523,7 +3523,7 @@ namespace WindowsFormsApplication1
         /// <see cref="DataRepository.GetConnectionString"/></b> - der liefert seit S4a den
         /// SQLite-String. Statt dessen wird ein ACE-Verbindungsstring auf
         /// <paramref name="accdbPfad"/> gebaut; ebenso lesen und schreiben Versionsmarker
-        /// hier über <c>ApplikationCtrl.GetSchemaVersionOleDb</c> /
+        /// hier über <c>SchemaVersionAccess.GetSchemaVersionOleDb</c> /
         /// <c>SetSchemaVersionOleDb</c> auf genau dieser Verbindung.</para>
         ///
         /// <para><b>Rührt <see cref="MigrationOk"/>, <see cref="Ausgefuehrt"/> und damit
@@ -3737,7 +3737,7 @@ namespace WindowsFormsApplication1
             l.Zeile("Bootstrap Schemamarker Tab_Applikation.SchemaVersion: OK");
             l.Detail();
 
-            int version = ApplikationCtrl.GetSchemaVersionOleDb(l.Conn);
+            int version = SchemaVersionAccess.GetSchemaVersionOleDb(l.Conn);
             StandVorher = version;
             StandNachher = version;
             l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
@@ -3773,7 +3773,7 @@ namespace WindowsFormsApplication1
                 }
 
                 // Marker erst NACH nachgewiesenem Erfolg anheben.
-                if (!ApplikationCtrl.SetSchemaVersionOleDb(l.Conn, s.Nr))
+                if (!SchemaVersionAccess.SetSchemaVersionOleDb(l.Conn, s.Nr))
                 {
                     l.Zeile("Schritt " + s.Nr + "  " + s.Name +
                             ": ausgeführt, aber der Schemamarker konnte nicht fortgeschrieben werden.");

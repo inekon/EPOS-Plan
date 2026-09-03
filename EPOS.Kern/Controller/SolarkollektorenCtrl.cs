@@ -1,40 +1,33 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
+    // =====================================================================================
+    // ARBEITSPAKET iU6-T2: DER TOTE OleDb-ZWEIG IST GESTRICHEN.
+    //
+    // Bis hierher trug diese Klasse ein eigenes "public OleDbCommand DBCommand" samt
+    // lazy angelegtem Feld, Finalizer und einer Update()-Methode, die dieses Kommando
+    // fuellte und "DBCommand.ExecuteNonQuery()" aufrief. Das war seit der
+    // SQLite-Umstellung (6486c36) TOTER CODE:
+    //
+    //   - Update() hatte 0 Aufrufer. Alle fuenf Instanzen der Klasse lesen nur oder
+    //     kopieren: SimulationSolarthermie.cs:230 (ReadSingle), FormMain.cs:1239
+    //     (ReadSingle), WizardCtrl.cs:1006 (CopyFromStamm), Form_SolarKollektoren.cs:233
+    //     (CopyFromStamm) und :271 (DeleteFromProjekt).
+    //   - Das DBCommand bekam nie eine Verbindung; niemand griff von aussen darauf zu.
+    //     Auf Windows waere ExecuteNonQuery() also in die InvalidOperationException und
+    //     damit in den catch-Zweig gelaufen - stilles "return false".
+    //
+    // Geschrieben wird der Solarkollektorkatalog ueber SolarkollektorenStammCtrl
+    // (Form_SolarKollektoren, Form_SolarKollektorenAdmin); der ist OleDb-frei und
+    // laeuft ueber DataRepository/DbParam. Ein Ersatz fuer Update() war deshalb nicht
+    // noetig - er haette eine Schreibmoeglichkeit vorgetaeuscht, die es hier nie gab.
+    // =====================================================================================
+
     class SolarkollektorenCtrl : SolarkollektorenModel
     {
-        // iU3 SCHRITT 3: LAZY. Der Typ und die oeffentliche Flaeche bleiben - die
-        // Parametersammlung dieses Kommandos wird unten noch gefuellt. Es entsteht aber
-        // erst beim ersten Zugriff, weil der Konstruktor des net10.0-Stubs von
-        // System.Data.OleDb PlatformNotSupportedException wirft. Ein Rechenlauf, der
-        // diese Klasse nur liest, ruehrt das Kommando nie an.
-        private OleDbCommand _cmd;
-
-        public OleDbCommand DBCommand
-        {
-            get { return _cmd ??= new OleDbCommand(); }
-            set { _cmd = value; }
-        }
         public SolarkollektorenModel model = new SolarkollektorenModel();
-
-        public SolarkollektorenCtrl()
-        {
-            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
-            // Wird dieses Control in einer Transaktion genutzt, ueberschreibt die Form
-            // die Connection und die Transaction dieses Objekts weiterhin von aussen.
-        }
-
-        ~SolarkollektorenCtrl()
-        {
-            // Nullsicher UND ohne die lazy Eigenschaft anzufassen.
-            if (_cmd != null)
-            {
-                _cmd.Dispose();
-            }
-        }
 
         public void ReadAll(string szFilter = "")
         {
@@ -117,57 +110,6 @@ namespace WindowsFormsApplication1
 
                 rows = 1;
             }
-        }
-
-        public bool Update()
-        {
-            try
-            {
-                // Vollständig parametrisiertes SQL-Statement (schützt vor SQL-Injections)
-                string sql = @"UPDATE Tab_Solarkollektoren SET 
-                                Firma = ?, 
-                                Beschreibung = ?, 
-                                Kollektortyp = ?, 
-                                Modulflaeche = ?, 
-                                Aperturflaeche = ?, 
-                                h0 = ?, 
-                                k1 = ?, 
-                                k2 = ?, 
-                                Kdir = ?, 
-                                Kdfu = ?, 
-                                Investitionskosten = ? 
-                                WHERE Bezeichner = ?";
-
-                DBCommand.CommandText = sql;
-                DBCommand.Parameters.Clear(); // Wichtig: Alte Parameter bei Wiederverwendung leeren
-
-                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
-                // OleDbParameterCollection, die unmittelbar darunter mit
-                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
-                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
-                // Die Reihenfolge der Parameter MUSS exakt der Reihenfolge der '?' im SQL entsprechen!
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szFirma ?? (object)DBNull.Value));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szBeschreibung ?? (object)DBNull.Value));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szKollektortyp ?? (object)DBNull.Value));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_Modulfläche));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_Aperturfläche));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_h0));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_k1));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_k2));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_Kdir));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_Kdfu));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_Kosten));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.m_szKollektorname));
-
-                // Führt den Befehl auf der von außen gesetzten Verbindung & Transaktion aus
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren des Solarkollektors: " + ex.Message);
-                return false;
-            }
-            return true;
         }
 
         // --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/PhotovoltaikCtrl) ---

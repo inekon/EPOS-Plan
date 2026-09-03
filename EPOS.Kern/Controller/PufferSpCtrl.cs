@@ -1,11 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
 {
+    // =====================================================================================
+    // ARBEITSPAKET iU6-T2: DER TOTE OleDb-ZWEIG IST GESTRICHEN.
+    //
+    // Bis hierher trug diese Klasse ein eigenes "public OleDbCommand DBCommand" samt
+    // lazy angelegtem Feld, Finalizer sowie Delete(string) und Update(), die dieses
+    // Kommando fuellten und "DBCommand.ExecuteNonQuery()" aufriefen. Das war seit der
+    // SQLite-Umstellung (6486c36) TOTER CODE:
+    //
+    //   - Delete(string) und Update() hatten 0 Aufrufer. Alle fuenf Instanzen der Klasse
+    //     lesen, kopieren oder raeumen auf: PufferSpKontextMenuCtrl.cs:98 und :142
+    //     (ProjektWaisenEntfernen), WizardCtrl.cs:968 (CopyFromStamm), FormMain.cs:1207
+    //     (ReadAll) und Form_Start.cs:1807 (ProjektWaisenEntfernen).
+    //   - Das DBCommand bekam nie eine Verbindung; niemand griff von aussen darauf zu.
+    //     Auf Windows waere ExecuteNonQuery() also in die InvalidOperationException und
+    //     damit in den catch-Zweig gelaufen - stilles "return false".
+    //
+    // Geschrieben wird der Pufferspeicherkatalog ueber PufferSpStammCtrl (Form_PufferSp,
+    // Form_PufferSp_Admin); der ist OleDb-frei und laeuft ueber DataRepository/DbParam.
+    // Die Projektseite schreibt ueber ProjektPufferAnlegen/-Aendern/-Entfernen. Ein
+    // Ersatz fuer Delete(string)/Update() war deshalb nicht noetig.
+    //
+    // Der Referenzvorlauf, den Delete(string) vor dem DELETE fuhr (ReferenzenLoesen ueber
+    // BetroffeneIds), bleibt unangetastet - DeleteFromProjekt und
+    // ProjektWaisenEntfernen benutzen ihn weiterhin.
+    // =====================================================================================
+
     class PufferSpCtrl : PufferSpModel
     {
         public const string TABLE = "Tab_Pufferspeicher";
@@ -20,33 +45,11 @@ namespace WindowsFormsApplication1
         // Simuliert das alte 'items' Array als Liste
         public List<PufferSpModel> items => _internalList;
 
-        // iU3 SCHRITT 3: LAZY. Der Typ und die oeffentliche Flaeche bleiben - die
-        // Parametersammlung dieses Kommandos wird unten noch gefuellt. Es entsteht aber
-        // erst beim ersten Zugriff, weil der Konstruktor des net10.0-Stubs von
-        // System.Data.OleDb PlatformNotSupportedException wirft. Ein Rechenlauf, der
-        // diese Klasse nur liest, ruehrt das Kommando nie an.
-        private OleDbCommand _cmd;
-
-        public OleDbCommand DBCommand
-        {
-            get { return _cmd ??= new OleDbCommand(); }
-            set { _cmd = value; }
-        }
         public PufferSpModel model;
 
         public PufferSpCtrl()
         {
-            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
             model = new PufferSpModel();
-        }
-
-        ~PufferSpCtrl()
-        {
-            // Nullsicher UND ohne die lazy Eigenschaft anzufassen.
-            if (_cmd != null)
-            {
-                _cmd.Dispose();
-            }
         }
 
         public void ReadAll(string filter = "")
@@ -97,83 +100,6 @@ namespace WindowsFormsApplication1
                     _internalList.Add(item);
                 }
             }
-        }
-
-        /// <summary>
-        /// Löscht ALLE Zeilen dieses Bezeichners - projektübergreifend.
-        ///
-        /// Seit Schritt 4 der SchemaMigration sind die vier Anlagen-Referenzen auf
-        /// Tab_Pufferspeicher.ID erzwungen und RESTRIKTIV; ohne vorheriges Lösen lehnt
-        /// Access das DELETE ab ("includes related records"). Deshalb hier derselbe
-        /// Vorlauf wie in <see cref="DeleteFromProjekt"/>.
-        ///
-        /// Achtung: der Aufrufkreis dieser Methode ist heute leer (Form_PufferSp_Admin
-        /// und Form_PufferSp arbeiten auf den STAMM-Tabellen). Sie bleibt trotzdem
-        /// stehen und wird mitgepflegt, damit ein späterer Aufruf nicht in die
-        /// Beziehung läuft.
-        /// </summary>
-        public bool Delete(string szName)
-        {
-            ReferenzenLoesen(BetroffeneIds(
-                "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ?",
-                new DbParam("@bez", szName ?? (object)DBNull.Value)));
-
-            try
-            {
-                string sql = "DELETE FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
-
-                DBCommand.CommandText = sql;
-                DBCommand.Parameters.Clear();
-                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
-                // OleDbParameterCollection, die unmittelbar darunter mit
-                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
-                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
-                DBCommand.Parameters.Add(new OleDbParameter("?", szName ?? (object)DBNull.Value));
-
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Löschen des Pufferspeichers: " + ex.Message);
-                return false;
-            }
-            return true;
-        }
-
-        public bool Update()
-        {
-            try
-            {
-                string sql = "UPDATE Tab_Pufferspeicher SET " +
-                             "Hersteller = ?, " +
-                             "Speichertyp = ?, " +
-                             "Bereitschaftsverluste = ?, " +
-                             "Investitionskosten = ?, " +
-                             "Gesamtvolumen = ? " +
-                             "WHERE Bezeichner = ?";
-
-                DBCommand.CommandText = sql;
-                DBCommand.Parameters.Clear();
-
-                // iU6: HIER BLEIBT OleDbParameter. Das DBCommand ist eine echte
-                // OleDbParameterCollection, die unmittelbar darunter mit
-                // DBCommand.ExecuteNonQuery() ausgefuehrt wird - kein Weg ueber die
-                // Zugriffsschicht, also auch kein DbParam. Unveraendert gelassen.
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Firma ?? (object)DBNull.Value));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Speichertyp ?? (object)DBNull.Value));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Betriebsbereitschaftverlust));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Investitionskosten));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Gesamtvolumen));
-                DBCommand.Parameters.Add(new OleDbParameter("?", model.Name ?? (object)DBNull.Value));
-
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren des Pufferspeichers: " + ex.Message);
-                return false;
-            }
-            return true;
         }
 
         // --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/BHKWCtrl) ---
