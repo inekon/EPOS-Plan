@@ -270,9 +270,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ablageordner der beiden Modelldateien.</summary>
         public static string Ordner()
         {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "wp-plan", "semantik", "modell");
+            return Dienste.Pfade.Verbinde(Dienste.Pfade.Anwendungsdaten, "semantik", "modell");
         }
 
         /// <summary>Belegter Plattenplatz der Modelldateien in Byte; 0, wenn nichts liegt.</summary>

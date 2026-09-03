@@ -17,8 +17,24 @@ namespace WindowsFormsApplication1
         public static Form_Start startfrm = null;
         public static MenueCtrl menuectrl = null;
         public static WizardCtrl wizardctrl = null;
-        public static string ApplicationPath_Common = "";
-        public static string ApplicationPath_User = "";
+        /// <summary>
+        /// <c>C:\ProgramData\WP-Plan</c> — seit iU5 nur noch eine Weiterleitung auf
+        /// <c>Dienste.Pfade.Gemeinsam</c>. Die Masken lesen unveraendert weiter; wer neu
+        /// schreibt, nimmt den Dienst.
+        /// </summary>
+        public static string ApplicationPath_Common
+        {
+            get { return Dienste.Pfade.Gemeinsam; }
+        }
+
+        /// <summary>
+        /// <c>LocalApplicationData\WP-Plan</c> — Weiterleitung auf
+        /// <c>Dienste.Pfade.BenutzerLokal</c>, siehe <see cref="ApplicationPath_Common"/>.
+        /// </summary>
+        public static string ApplicationPath_User
+        {
+            get { return Dienste.Pfade.BenutzerLokal; }
+        }
         /// <summary>
         /// 0=de, 1=en — der Wert liegt seit iU4-1 in <see cref="Sprache.Nummer"/>,
         /// damit Kern-Code (Berichtstexte) ihn ohne <c>Program</c> lesen kann. Diese
@@ -209,11 +225,6 @@ namespace WindowsFormsApplication1
             // erreicht den Assistenten-Controller ueber WizardCtrl.Aktueller und nicht
             // mehr ueber Program.wizardctrl.
             WizardCtrl.Aktueller = wizardctrl;
-
-            ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
-            ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
-            ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
 
             // Katalog-Objekt einmalig erstellen
             //

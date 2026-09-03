@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
         {
             string ordner = konfig != null && !string.IsNullOrWhiteSpace(konfig.ZielOrdner)
                 ? konfig.ZielOrdner
-                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                : Dienste.Pfade.Dokumente;
             Directory.CreateDirectory(ordner);
 
             string basis = BereinigeDateiname(daten.Stammprojektname) + "_Bericht_" +
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
         {
             string ordner = konfig != null && !string.IsNullOrWhiteSpace(konfig.ZielOrdner)
                 ? konfig.ZielOrdner
-                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                : Dienste.Pfade.Dokumente;
             Directory.CreateDirectory(ordner);
 
             string basis = BereinigeDateiname(daten.Stammprojektname) + "_Bericht_" +
