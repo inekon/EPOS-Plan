@@ -8846,4 +8846,13 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BHW_MSG_FEHLER_TITEL" xml:space="preserve">
     <value>Fehler</value>
   </data>
+  <data name="BHW_PARAM_GRUPPE" xml:space="preserve">
+    <value>BHKW — KWKG, Energie- und Stromsteuer</value>
+  </data>
+  <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
+    <value>Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.</value>
+  </data>
+  <data name="BHW_PARAM_KNOPF" xml:space="preserve">
+    <value>⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…</value>
+  </data>
 </root>

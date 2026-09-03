@@ -443,11 +443,12 @@ namespace WindowsFormsApplication1
         /// beiden ausgezogenen Gruppen tritt (Konzept § 6.1).</summary>
         private void Bw9Verweis(ref int y)
         {
-            Gruppe("BHKW — KWKG, Energie- und Stromsteuer", ref y);
+            Gruppe(T("BHW_PARAM_GRUPPE", "BHKW — KWKG, Energie- und Stromsteuer"), ref y);
 
-            string text = "Diese Angaben stehen seit Etappe B5 im eigenen Dialog " +
-                          "„BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je " +
-                          "BHKW-Modul, den Herleitungen und der Vorschau.";
+            string text = T("BHW_PARAM_VERWEIS",
+                            "Diese Angaben stehen seit Etappe B5 im eigenen Dialog " +
+                            "„BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je " +
+                            "BHKW-Modul, den Herleitungen und der Vorschau.");
             var lbl = new Label
             {
                 Location = new Point(28, y + 3),
@@ -463,7 +464,8 @@ namespace WindowsFormsApplication1
             {
                 Location = new Point(28, y),
                 Size = new Size(402, 28),
-                Text = "⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…"
+                Text = T("BHW_PARAM_KNOPF",
+                         "⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…")
             };
             btn.Click += new EventHandler(btnBhkwWirtschaftlichkeit_Click);
             this.Controls.Add(btn);
@@ -745,6 +747,20 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return 2028;
+        }
+
+        /// <summary>
+        /// Anzeigetext mit deutschem Rückfall (Drei-Schichten-Regel: Anzeige ausschließlich
+        /// über den Katalog). Fehlt der Schlüssel, steht der deutsche Wortlaut — dasselbe
+        /// Muster wie in <c>Form_BhkwWirtschaftlichkeit</c>; dessen Helfer ist
+        /// <c>private</c> und deshalb hier nicht mitnutzbar.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
     }
 }
