@@ -39,7 +39,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | offen | | |
 | **iF8** | **Modell C beschließen** (Strangler-Regel M1) | ja | **iU8 — ohne diesen Beschluss ist iU8 gegenstandslos** | offen | | |
 | ~~**iF9**~~ | ~~SQLite auch auf Windows, mit Stichtag~~ | ja | — | **beschieden und ausgeführt 02.09.2026 (`6486c36`)** | ja | 02.09.2026 |
-| **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | offen | | |
+| **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | **Weg (b) ausgeführt 03.09.2026** (`9cf6f86`…`27bc634`, § 2.5); Weg (a) hat sich mit dem Masken-Sweep iU6-T3a miterledigt. Entscheid des Anwenders steht noch aus | | |
 | **iF11** | Mac-Hardware sofort beschaffen — oder Spike auf `macos-latest`-CI-Runner? | **CI-Runner** für den Spike, Mac erst mit iU10 | iU3 | offen | | |
 | **iF12** | Vertriebsweg der Auslieferung (Custom Apps / Unlisted / App Store) und Behandlung des Lizenzverkaufs gegenüber Apples Kaufregeln | **Custom Apps** über Apple Business Manager prüfen; Klärung **vor** iU13, nicht im Review | vor iU13 | offen | | |
 | **iF13** | Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenennen? | **nein** — eigener mechanischer Schritt danach | iU4 | offen | | |
@@ -260,6 +260,103 @@ App 35, jetzt Kern 89 / App 34): Die neue CA2255 kommt hinzu, und CS0108 zu
 neue OleDb-Kante mit; das Rest-Inventar für iR8 ist unverändert (`SolarkollektorenCtrl` 41,
 `PufferSpCtrl` 30, `RecordSet` 9, `ApplikationCtrl` 7). `dotnet test WP-Plan.Kern.slnf`: **796**
 (787 + 9 neue in `EPOS.Kern.Tests`).
+
+---
+
+### 2.5 Befund iU6 (Datenzugriff plattformfrei), 03.09.2026 — **hier erreicht**
+
+Sechs Commits `9cf6f86`…`27bc634` auf der Basis `18f515f`.
+
+**Das Ergebnis.** `EPOS.Kern` nennt `System.Data.OleDb` nicht mehr — weder im Quelltext noch als
+`PackageReference`. **CA1416: 87 → 0.** Der Datenzugriff liegt hinter `IDatenzugriff`;
+`DataRepository` bleibt die Fassade davor, und keine der rund 160 Aufruferdateien wurde dafür
+angefasst.
+
+| Tranche | Commit | Inhalt | CA1416 |
+|---|---|---|---|
+| iU6-T1 | `9cf6f86` | `RecordSet.DBCommand` ersatzlos gestrichen (iR8) | 87 → 78 |
+| iU6-T2 | `5836b8c` | toter OleDb-Code in zwei Controllern; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
+| iU6-T3a | `99e5a68` | Masken-Sweep `OleDbParameter` → `DbParam`, 46 Views | 0 |
+| iU6-T3b | `7fb4bfd` | Brücke aus dem Kern; OleDb-Paket aus `EPOS.Kern.csproj` | 0 |
+| iU6-T4 | `64c06d7` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
+| iU6-T5 | `27bc634` | `bundle_green` für iOS vorbereitet | 0 |
+
+**iR8 war eine Streichung.** Das Konzept hatte zwei Wege offen gelassen: die Eigenschaft auf einen
+providerfreien Typ heben oder `RecordSet` mit seinen Masken in iU9 ablösen. Die Vermessung vom
+03.09.2026 macht beide gegenstandslos:
+
+```
+git grep -n "\.DBCommand" -- '*.cs'
+  EPOS.Kern/Allgemein/DbParam.cs:32   (Kommentar)
+  EPOS.Kern/Allgemein/DbParam.cs:45   (Kommentar)
+```
+
+**Null Codestellen** — repositoryweit, einschließlich Referenzlauf, Proben und `KiKern`. Niemand
+setzte `Connection`, `Transaction`, `CommandText` oder `Parameters`. Seit iU3 entstand das
+Kommando nur noch lazy **im Getter** und blieb damit immer `null`: `MerkeSql()` schrieb in ein
+Objekt, das es nie gab, und `Parameter()` lieferte ausnahmslos `null`. Die „47 Nutzer" aus dem
+Konzept hingen an `Open`, `Next`, `Read` und `Close` — nie am Kommando. Ein Ersatztyp wäre eine
+Fassade für null Nutzer gewesen; es gibt deshalb **keinen `DbBefehl`**.
+
+**Derselbe Befund in zwei Controllern — 71 der 87 Warnungen.**
+
+| Methode | Aufrufer | Instanzen der Klasse |
+|---|---|---|
+| `SolarkollektorenCtrl.Update()` | **0** | `SimulationSolarthermie.cs:230`, `WizardCtrl.cs:1006`, `FormMain.cs:1239`, `Form_SolarKollektoren.cs:233` und `:271` |
+| `PufferSpCtrl.Delete(string)` | **0** | `PufferSpKontextMenuCtrl.cs:98` und `:142`, `WizardCtrl.cs:968`, `FormMain.cs:1207`, `Form_Start.cs:1807` |
+| `PufferSpCtrl.Update()` | **0** | dieselben fünf |
+
+Alle Instanzen lesen, kopieren oder räumen auf. Geschrieben wird über `SolarkollektorenStammCtrl`
+und `PufferSpStammCtrl` — beide OleDb-frei. Zur Laufzeit waren die drei Methoden ohnehin
+folgenlos: Das lazy angelegte `DBCommand` bekam nie eine Verbindung, `ExecuteNonQuery()` wäre auf
+Windows in die `InvalidOperationException` und damit still in `return false` gelaufen.
+
+**Kein `partial` über Assemblygrenzen.** Der Access-Zweig `GetSchemaVersionOleDb` /
+`SetSchemaVersionOleDb` sollte laut Plan als `partial`-Hälfte in der Anwendung landen. Das trägt
+nicht: `ApplikationCtrl` liegt seit iU4 in `EPOS.Kern`, und eine `partial`-Hälfte lässt sich über
+eine Assemblygrenze hinweg nicht beisteuern. Beide Methoden sind ohnehin `static` und berühren
+keinen Instanzzustand; sie stehen jetzt wörtlich in der statischen Anwendungsklasse
+`WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs`
+(`[SupportedOSPlatform("windows")]`). Aus `ApplikationCtrl` brauchen sie nur die Namenskonstante
+`SPALTE_SCHEMAVERSION`.
+
+**Der Masken-Sweep musste vor die Streichung.** Die Views hängen an genau dem impliziten Operator
+und an `DbParam.Von()`, die T3b entfernt — in der geplanten Reihenfolge wäre der Zwischenstand
+nicht übersetzbar gewesen. Das Skript hat in 46 Dateien ersetzt:
+
+| Regel | Stellen |
+|---|---|
+| `OleDbParameter` → `DbParam` (davon 34 voll qualifiziert, 365 `new …(`, 39 Array-, 26 Listendeklarationen) | 434 |
+| `DbParam.Von(<ausdruck>)` → `<ausdruck>`, mit Klammerbalance über Zeilengrenzen | 54 |
+| `OleDbType` → `DbParamTyp` (im Bestand fünf Werte: Boolean 7, Date 6, Double 6, Integer 15, VarWChar 2; drei weitere Treffer in Kommentaren) | 39 |
+| Objektinitialisierer `{ Value = }` → `{ Wert = }` | 36 |
+| `using System.Data.OleDb;` entfernt | 38 |
+
+Die 36 Objektinitialisierer waren der einzige Fall, den die Vermessung nicht gelistet hatte —
+`DbParam` heißt die Eigenschaft `Wert`, nicht `Value`. Verhaltensgleich: Der Setter macht aus
+`null` ein `DBNull.Value`, und genau das tat `DataRepository.NormalisiereWert` mit einem
+`null`-Value bisher auch. Die dokumentierte Überladungsfalle `new DbParam("x", 0)` wurde vor dem
+Lauf erneut geprüft — **0 Stellen**. Von Hand nachgearbeitet wurde nichts.
+
+**Was von OleDb übrig ist.** In der Anwendung: `DbParamOleDb` (die verschobene Brücke),
+`SchemaVersionAccess`, `SchemaMigration`, `GeraeteWaisen`, `ErststartMigration` — der eingefrorene
+Access-Zweig, der einen `.accdb`-Bestand vor der Erstmigration auf Zielstand 61 hebt. Dazu drei
+`catch (OleDbException)` aus der Access-Zeit (`KiAktionenProjekt`, `KiAktionenSchreiben`,
+`PeakShavingCtrl`) — kein Parameterweg, deshalb nicht Teil von iU6. `DbParamOleDb.Aus()` und
+`.Von()` haben nach dem Sweep **keinen** Nutzer mehr und bleiben nur als Rückfalltür stehen;
+getragen wird allein `.Nach()` mit vier Aufrufstellen.
+
+**`EPOS.Daten` entsteht nicht.** Der Vertrag ist ein Interface und eine Klasse. Ein eigenes Projekt
+hätte den Kern von seiner Zugriffsschicht getrennt, ohne dass ein zweiter Anbieter in Sicht wäre —
+das Umsetzungskonzept hält in § 1.5 ausdrücklich fest, dass es **einen** Dialekt gibt.
+`IDatenzugriff.cs` und `SqliteDatenzugriff.cs` liegen in `EPOS.Kern/Allgemein/`.
+
+**Zahlen des Nachweises.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64`: **0 Fehler, 36
+Warnungen** (vorher 123 — die 87 CA1416 sind weg). `EPOS.Kern` allein: **0 Fehler, 2 Warnungen**
+(CA2255 zum `ModuleInitializer`, CS0108 zu `WErzeugerModel.ID_Projekt` — beide aus dem Bestand).
+`dotnet test WP-Plan.Kern.slnf`: **805** (796 + 9 neue). Referenzlauf 1030/1007/1017 gegen
+`2026-08-30_B3-Kaskade`: **GESAMT PASS (815.043 Werte), byte-gleich nach jeder Tranche**.
+`dotnet list EPOS.Kern package | grep -c OleDb`: **0**.
 
 ---
 
