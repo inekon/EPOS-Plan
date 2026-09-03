@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Components;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Bedarfs-Stammköpfe (iU9-W8.1) — sie löst
-    /// <c>Form_EingDBStromverbraucher</c>, <c>Form_EingDBProzess</c> und
-    /// <c>Form_EingDBBrauchwasser</c> ab.
+    /// Die WINDOWS-HÜLLE der Bedarfs-Stammköpfe (iU9-W8.1) UND ihrer Typprofile
+    /// (iU9-W8.3) — sie löst SECHS Masken ab: <c>Form_EingDBStromverbraucher</c>,
+    /// <c>Form_EingDBProzess</c>, <c>Form_EingDBBrauchwasser</c>,
+    /// <c>Form_EingStromTyp</c>, <c>Form_EingProzTyp</c> und
+    /// <c>Form_EingBrauchwasserTyp</c>.
     ///
     /// <para><b>Eine Hülle für drei Masken.</b> Die drei sind zeichengleich (659 × 426,
     /// je 31 Kartenzeilen) und unterscheiden sich in Titel, Typbeschriftung, Meldung und
@@ -133,6 +135,186 @@ namespace WindowsFormsApplication1
                 bezeichner);
         }
 
+
+        // =================================================================================
+        // W8.3 - das Wochen-Stundenprofil (Form_EingStromTyp / -ProzTyp / -BrauchwasserTyp)
+        // =================================================================================
+
+        /// <summary>Gewünschtes Innenmaß des Profildialogs (Vorläufer: 607 × 544).</summary>
+        private static readonly Size MASS_PROFIL = new Size(960, 700);
+
+        /// <summary>
+        /// „Typ ändern" — die Wochen-Stundenverteilung eines Typkatalogs. Der Vorläufer
+        /// gab kein Ergebnis zurück; der Aufrufer lädt danach nichts nach.
+        /// </summary>
+        internal static void ProfilOeffnen(IWin32Window besitzer, BedarfsArt art)
+        {
+            var daten = new TypProfilDaten { Art = art };
+            BlazorDialogForm<TypProfilDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>
+            {
+                ["Daten"] = daten,
+                ["Typen"] = new Func<IReadOnlyList<string>>(() => TypProfilCtrl.Typen(art)),
+                ["Lies"] = new Func<string, (string, double[,])?>(typ => TypProfilCtrl.Lies(art, typ)),
+                ["Speichern"] = new Func<string, double[,], string, bool>(
+                    (typ, w, beschr) => TypProfilCtrl.Speichern(art, typ, w, beschr)),
+                ["Neu"] = new Func<string, bool>(name => TypProfilCtrl.Neu(art, name)),
+                ["SpeichernUnter"] = new Func<string, double[,], string, bool>(
+                    (name, w, beschr) => TypProfilCtrl.SpeichernUnter(art, name, w, beschr)),
+                ["Loeschen"] = new Func<string, bool>(typ => TypProfilCtrl.Loeschen(art, typ)),
+                ["IstReadOnly"] = new Func<string, bool>(typ => TypProfilCtrl.IstReadOnly(art, typ)),
+                ["Bild"] = new Func<double[], byte[]>(Wochenbild),
+
+                ["TitelText"] = ProfilTitel(art),
+                ["LabelTypliste"] = ProfilListenBeschriftung(art),
+                ["LabelBeschreibung"] = ProfilBeschreibungsBeschriftung(art),
+                ["LabelWochentag"] = Text_("BPRO_LBL_WOCHENTAG", "Auswahl Wochentag"),
+                ["LabelName"] = Text_("BTYP_LBL_NAME", "Name:"),
+                ["GruppeStunden"] = Text_("BPRO_GRP_STUNDEN", "Stundenwerte [KW, KWh oder %]"),
+                ["ReiterWochenwerte"] = Text_("BPRO_REITER_WOCHE", "Wochenwerte"),
+                ["ReiterGrafik"] = Text_("BPRO_REITER_GRAFIK", "Grafik"),
+                ["Wochentage"] = Wochentage(),
+                ["Feldnamen"] = ProfilFeldnamen(art),
+                ["Nachkommastellen"] = ProfilNachkommastellen(art),
+
+                ["BtnUebernehmenText"] = Text_("BPRO_BTN_UEBERNEHMEN", "Änderungen Übernehmen"),
+                ["BtnTagKopierenText"] = Text_("BPRO_BTN_TAG_KOPIEREN", "Tag kopieren"),
+                ["BtnTagEinfuegenText"] = Text_("BPRO_BTN_TAG_EINFUEGEN", "Tag einfügen"),
+                ["BtnNeuText"] = Text_("BPRO_BTN_NEU", "Neu"),
+                ["BtnLoeschenText"] = Text_("BPRO_BTN_LOESCHEN", "Löschen"),
+                ["BtnSpeichernUnterText"] = Text_("BTYP_BTN_SPEICHERN_UNTER", "Speichern unter"),
+                ["BtnSpeichernText"] = Text_("BPRO_BTN_SPEICHERN", "Speichern in DB"),
+                ["BtnSchliessenText"] = Text_("BPRO_BTN_SCHLIESSEN", "Schließen"),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+                ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
+                ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
+
+                ["MeldungZahlFehlt"] = Text_("BTYP_MSG_ZAHL", "Bitte {0} als Zahl eingeben."),
+                ["MeldungNameFehlt"] = Text_("BTYP_MSG_NAME_LEER", "Bitte einen Namen eingeben!"),
+                ["MeldungReadOnly"] = Text_("BPRO_MSG_READONLY",
+                    "Dieser Typ ist schreibgeschützt und kann nicht geändert werden."),
+                ["MeldungGespeichert"] = Text_("BPRO_MSG_GESPEICHERT", "Datensatz gespeichert!"),
+                ["MeldungUebernommen"] = Text_("BPRO_MSG_UEBERNOMMEN", "Änderungen übernommen."),
+                ["MeldungFehler"] = Text_("BPRO_MSG_FEHLER", "Speichern nicht möglich!"),
+                ["FrageLoeschen"] = Text_("BPRO_FRAGE_LOESCHEN", "Soll {0} wirklich gelöscht werden ?"),
+
+                ["HilfeSchluessel"] = ProfilHilfeSchluessel(art),
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
+                    _ => { if (dlg != null) dlg.Schliessen(true); })
+            };
+
+            dlg = new BlazorDialogForm<TypProfilDialog>(ProfilTitel(art), MASS_PROFIL, werte);
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// Das 168-Stunden-Bild. Intervall 24 = Tagesgrenzen, wörtlich aus
+        /// <c>ChartAktualisieren</c> (<c>xAchse.Interval = 24</c>).
+        /// </summary>
+        private static byte[] Wochenbild(double[] werte)
+            => ChartRenderer.Stundenprofil("", werte, 24,
+                   Text_("BPRO_ACHSE_X", "Wochenstunde (1..168)"),
+                   Text_("BPRO_ACHSE_Y", "Verteilung"));
+
+        internal static string ProfilTitel(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    return Text_("BPRO_TITEL_STROM", "Stromverbrauchertyp Stundenverteilung");
+                case BedarfsArt.Prozesswaerme:
+                    return Text_("BPRO_TITEL_PROZESS", "Prozesstypen Stundenverteilung");
+                default:
+                    return Text_("BPRO_TITEL_BRAUCHWASSER", "Brauchwassertypen Stundenverteilung");
+            }
+        }
+
+        private static string ProfilListenBeschriftung(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    return Text_("BPRO_LBL_LISTE_STROM", "Liste der Typen in der DB:");
+                case BedarfsArt.Prozesswaerme:
+                    return Text_("BPRO_LBL_LISTE_PROZESS", "Liste der Prozesstypen in der DB:");
+                default:
+                    return Text_("BPRO_LBL_LISTE_BRAUCHWASSER", "Brauchwassertypen in der DB:");
+            }
+        }
+
+        private static string ProfilBeschreibungsBeschriftung(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    return Text_("BPRO_LBL_BESCHR_STROM", "Beschreibung des ausgewählten Typs:");
+                case BedarfsArt.Prozesswaerme:
+                    return Text_("BPRO_LBL_BESCHR_PROZESS", "Beschreibung des ausgewählten Prozesstyps:");
+                default:
+                    return Text_("BPRO_LBL_BESCHR_BRAUCHWASSER",
+                                 "Beschreibung des ausgewählten Brauchwassertyps:");
+            }
+        }
+
+        /// <summary>
+        /// Die Nachkommastellen der 24 Stundenfelder — je Ausprägung verschieden:
+        /// <c>F2</c> beim Stromverbraucher, <c>F4</c> beim Brauchwasser, beim Prozess gar
+        /// kein Format (<c>ToString()</c>). Wörtlich aus <c>Tagesdaten</c>.
+        /// </summary>
+        private static int? ProfilNachkommastellen(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return 2;
+                case BedarfsArt.Prozesswaerme:    return null;
+                default:                          return 4;
+            }
+        }
+
+        /// <summary>
+        /// Die 24 Feldnamen der Prüfmeldung: „Stundenwert 7" beim Stromverbraucher,
+        /// „Stunde 7" bei den beiden anderen — wörtlich je Ausprägung (Befund W8‑O‑1).
+        /// </summary>
+        private static string[] ProfilFeldnamen(BedarfsArt art)
+        {
+            string vorsatz = art == BedarfsArt.Stromverbraucher
+                ? Text_("BPRO_FELD_STUNDENWERT", "Stundenwert")
+                : Text_("BPRO_FELD_STUNDE", "Stunde");
+
+            var namen = new string[24];
+            for (int s = 0; s < 24; s++) namen[s] = vorsatz + " " + (s + 1);
+            return namen;
+        }
+
+        private static string ProfilHilfeSchluessel(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return "Form_EingStromTyp.btn_Help";
+                case BedarfsArt.Prozesswaerme:    return "Form_EingProzTyp.btn_Help";
+                default:                          return "Form_EingBrauchwasserTyp.btn_Help";
+            }
+        }
+
+        /// <summary>
+        /// Die sieben Wochentage — Anzeigetexte, die in allen drei Masken als
+        /// <c>listBox_Tag.Items…</c> in den <c>.resx</c> standen.
+        /// </summary>
+        internal static string[] Wochentage()
+        {
+            var namen = new string[7];
+            for (int t = 0; t < 7; t++)
+                namen[t] = Text_("ALLG_WOCHENTAG_" + (t + 1), WOCHENTAGE_DE[t]);
+            return namen;
+        }
+
+        internal static readonly string[] WOCHENTAGE_DE =
+        { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag" };
         // =================================================================================
         // Die Texte je Ausprägung
         // =================================================================================

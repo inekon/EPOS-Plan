@@ -350,9 +350,8 @@ namespace WindowsFormsApplication1
 
         private void btn_StromtypDBedit_Click(object sender, EventArgs e)
         {
-            Form_EingStromTyp frm = new Form_EingStromTyp();
-            frm.SetControls();
-            frm.ShowDialog(); 
+            // iU9-W8.3: Blazor-Huelle statt Form_EingStromTyp.
+            TypStammHuelle.ProfilOeffnen(this, BedarfsArt.Stromverbraucher);
         }
 
         private void btn_neuerWert_Click(object sender, EventArgs e)

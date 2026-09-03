@@ -504,9 +504,8 @@ namespace WindowsFormsApplication1
 
         private void btn_ProzTypeDBedit_Click(object sender, EventArgs e)
         {
-            Form_EingProzTyp frm = new Form_EingProzTyp();
-            frm.SetControls();
-            frm.ShowDialog(); 
+            // iU9-W8.3: Blazor-Huelle statt Form_EingProzTyp.
+            TypStammHuelle.ProfilOeffnen(this, BedarfsArt.Prozesswaerme);
         }
 
         private void btn_neuerWert_Click(object sender, EventArgs e)

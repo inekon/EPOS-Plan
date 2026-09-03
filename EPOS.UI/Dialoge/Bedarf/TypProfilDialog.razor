@@ -1,0 +1,487 @@
+﻿@* Wochen-Stundenprofil eines Bedarfstyps (iU9-W8.3).
+
+   VORBILD. DREI zeichengleiche Masken, alle 607 x 544:
+   Views/Stromverbraucher/Form_EingStromTyp (334 Z.),
+   Views/Prozesswaerme/Form_EingProzTyp (366 Z.) und
+   Views/Brauchwasser/Form_EingBrauchwasserTyp (257 Z.). Links die Typliste,
+   darunter die Beschreibung, rechts zwei Reiter - "Wochenwerte" mit der
+   Wochentagsliste und 24 Stundenfeldern, "Grafik" mit dem 168-Stunden-Bild -
+   und darunter fuenf Knoepfe.
+
+   ZWEI STAENDE, NICHT EINER. "Werte" sind die UEBERNOMMENEN 7 x 24 Werte, die
+   24 Felder sind der Arbeitsstand EINES Tages. "Aenderungen Uebernehmen"
+   traegt die Felder in die Werte ein - genau wie im Vorlaeufer. Und genau wie
+   dort verwirft ein Tageswechsel nicht uebernommene Eingaben: Tagesdaten()
+   ueberschrieb die 24 Felder aus arr, ohne vorher zu fragen.
+
+   SPEICHERN NIMMT DIE UEBERNOMMENEN WERTE. btn_Speichern_Click ruft in allen
+   drei Masken KEIN VerteilungUebernehmen - was im Feld steht und nicht
+   uebernommen wurde, geht nicht mit. Woertlich uebernommen; Befund W8-O-2.
+
+   DIE 24 STUNDENWERTE SIND PFLICHT. btn_WocheUebernehmen prueft sie mit
+   ZahlPruefen ohne leerErlaubt und nennt in der Meldung das Feld - beim
+   Stromverbraucher "Stundenwert 7", bei den beiden anderen "Stunde 7"
+   (woertlich je Auspraegung, Befund W8-O-1).
+
+   TAG KOPIEREN / TAG EINFUEGEN. Die beiden Knoepfe stehen im Designer aller
+   drei Masken, haben dort aber KEINEN Handler - sie tun heute nichts (Befund
+   W8-B1). Hier sind sie ein Kopierpuffer: "kopieren" merkt sich die 24 Felder
+   des Tages, "einfuegen" setzt sie in den gewaehlten Tag. Eingefuegt wird in
+   die FELDER, nicht in die Werte - erst "Uebernehmen" schreibt sie fest.
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt - vier der fuenf Knoepfe
+   schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelTypliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <tbody>
+                        @foreach (string typ in _typen)
+                        {
+                            string t = typ;
+                            <tr class="@(t == Daten.Typ ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(t == Daten.Typ)" Kurztext="@LabelTypliste"
+                                                Gewaehltwerden="() => TypWaehlen(t)" />
+                                </td>
+                                <td>@t</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+                <KindInhalt>
+
+                    <Reiterblatt Schluessel="WOCHE" Titel="@ReiterWochenwerte">
+                        <KindInhalt>
+                            <Optionsgruppe Bezeichnung="@LabelWochentag" Eintraege="@Wochentagswahl"
+                                           Auswahl="@_tag" AuswahlChanged="TagWaehlen" />
+
+                            <Gruppenkopf Titel="@GruppeStunden">
+                                <KindInhalt>
+                                    @for (int s = 0; s < 24; s++)
+                                    {
+                                        int stunde = s;
+                                        <Zahlenfeld Bezeichnung="@((stunde + 1).ToString())"
+                                                    Feldname="@Feldname(stunde)"
+                                                    Nachkommastellen="@Nachkommastellen"
+                                                    Wert="@_felder[stunde]"
+                                                    WertChanged="w => _felder[stunde] = w" />
+                                    }
+                                </KindInhalt>
+                            </Gruppenkopf>
+
+                            <div class="epos-leiste">
+                                <button type="button" class="epos-knopf"
+                                        @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
+                                <button type="button" class="epos-knopf"
+                                        @onclick="BeiTagKopieren">@BtnTagKopierenText</button>
+                                <button type="button" class="epos-knopf" disabled="@(_puffer is null)"
+                                        @onclick="BeiTagEinfuegen">@BtnTagEinfuegenText</button>
+                            </div>
+                        </KindInhalt>
+                    </Reiterblatt>
+
+                    <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
+                        <KindInhalt>
+                            <ChartBild Png="@_bild" Alt="@GruppeStunden"
+                                       PlatzhalterText="@PlatzhalterBild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+
+                </KindInhalt>
+            </Reiter>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="() => OeffneNamensfrage(false)">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
+                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
+                @onclick="() => OeffneNamensfrage(true)">@BtnSpeichernUnterText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!TypGewaehlt)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnSchliessenText</button>
+    </div>
+
+    @* "Neu" und "Speichern unter" fragen den Namen im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
+                          FrageText="@LabelName" MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiNamensfrage" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText"
+                Frage="@string.Format(FrageLoeschen, Daten.Typ)"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    /// <summary>Der Arbeitsstand: Typ, Beschreibung und die 7 × 24 übernommenen Werte.</summary>
+    [Parameter] public TypProfilDaten Daten { get; set; } = new();
+
+    /// <summary>Die Typliste (<c>SetControls</c> des Vorläufers).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Typen { get; set; }
+
+    /// <summary>Lädt Beschreibung und Werte eines Typs; <c>null</c> = es gibt ihn nicht.</summary>
+    [Parameter] public Func<string, (string Beschreibung, double[,] Werte)?>? Lies { get; set; }
+
+    /// <summary>Schreibt 168 Werte und die Beschreibung eines VORHANDENEN Typs.</summary>
+    [Parameter] public Func<string, double[,], string, bool>? Speichern { get; set; }
+
+    /// <summary>Legt einen Typ mit 168 Nullen an („Neu").</summary>
+    [Parameter] public Func<string, bool>? Neu { get; set; }
+
+    /// <summary>Legt einen Typ mit den aktuellen Werten an („Speichern unter").</summary>
+    [Parameter] public Func<string, double[,], string, bool>? SpeichernUnter { get; set; }
+
+    /// <summary>Löscht einen Typ.</summary>
+    [Parameter] public Func<string, bool>? Loeschen { get; set; }
+
+    /// <summary>Ist der Typ Auslieferungsbestand?</summary>
+    [Parameter] public Func<string, bool>? IstReadOnly { get; set; }
+
+    /// <summary>Zeichnet die 168 Wochenwerte; ohne Delegat bleibt das Blatt leer.</summary>
+    [Parameter] public Func<double[], byte[]>? Bild { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Schließen"/Esc) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Stromverbrauchertyp Stundenverteilung";
+    [Parameter] public string LabelTypliste { get; set; } = "Liste der Typen in der DB:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung des ausgewählten Typs:";
+    [Parameter] public string LabelWochentag { get; set; } = "Auswahl Wochentag";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string GruppeStunden { get; set; } = "Stundenwerte [KW, KWh oder %]";
+    [Parameter] public string ReiterWochenwerte { get; set; } = "Wochenwerte";
+    [Parameter] public string ReiterGrafik { get; set; } = "Grafik";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
+
+    [Parameter] public string BtnUebernehmenText { get; set; } = "Änderungen Übernehmen";
+    [Parameter] public string BtnTagKopierenText { get; set; } = "Tag kopieren";
+    [Parameter] public string BtnTagEinfuegenText { get; set; } = "Tag einfügen";
+    [Parameter] public string BtnNeuText { get; set; } = "Neu";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern in DB";
+    [Parameter] public string BtnSchliessenText { get; set; } = "Schließen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Die sieben Wochentage — Anzeigetexte, die Hülle holt sie aus den Ressourcen.</summary>
+    [Parameter]
+    public IReadOnlyList<string> Wochentage { get; set; } = new[]
+    { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag" };
+
+    /// <summary>
+    /// Die 24 Namen der Prüfmeldung. Je Ausprägung verschieden: „Stundenwert 7" beim
+    /// Stromverbraucher, „Stunde 7" bei den beiden anderen (Befund W8‑O‑1).
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Feldnamen { get; set; }
+
+    /// <summary>Nachkommastellen der Stundenfelder (Strom 2, Prozess frei, Brauchwasser 4).</summary>
+    [Parameter] public int? Nachkommastellen { get; set; } = 2;
+
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
+    [Parameter] public string MeldungReadOnly { get; set; }
+        = "Dieser Typ ist schreibgeschützt und kann nicht geändert werden.";
+    [Parameter] public string MeldungGespeichert { get; set; } = "Datensatz gespeichert!";
+    [Parameter] public string MeldungUebernommen { get; set; } = "Änderungen übernommen.";
+    [Parameter] public string MeldungFehler { get; set; } = "Speichern nicht möglich!";
+    [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_EingStromTyp.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<string> _typen = Array.Empty<string>();
+    private string _reiter = "";
+    private int _tag;
+    private readonly double?[] _felder = new double?[TypProfilDaten.STUNDEN];
+    private double?[]? _puffer;
+    private byte[]? _bild;
+
+    private bool _namensfrage;
+    private bool _alsKopie;
+    private bool _loeschfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die Typliste — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<string> Typliste => _typen;
+
+    /// <summary>Der gewählte Wochentag (0 = Montag) — Prüfhilfe für die Tests.</summary>
+    public int Wochentag => _tag;
+
+    /// <summary>Die 24 Felder des gewählten Tages — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<double?> Felder => _felder;
+
+    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Steht die Löschrückfrage? Prüfhilfe für die Tests.</summary>
+    public bool Loeschfrage => _loeschfrage;
+
+    /// <summary>Ist gerade ein Tag im Kopierpuffer? Prüfhilfe für die Tests.</summary>
+    public bool PufferGefuellt => _puffer is not null;
+
+    private bool TypGewaehlt => !string.IsNullOrEmpty(Daten.Typ);
+
+    private IReadOnlyList<(int Id, string Text)> Wochentagswahl
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int t = 0; t < TypProfilDaten.TAGE; t++)
+                l.Add((t, t < Wochentage.Count ? Wochentage[t] : (t + 1).ToString()));
+            return l;
+        }
+    }
+
+    private string Feldname(int stunde)
+        => (Feldnamen is not null && Feldnamen.Count > stunde)
+            ? Feldnamen[stunde] : "Stundenwert " + (stunde + 1);
+
+    protected override void OnInitialized()
+    {
+        ListeLaden();
+
+        // SetControls: die erste Wahl steht vorn und laedt ihre Werte mit.
+        if (_typen.Count > 0) TypWaehlen(_typen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void ListeLaden() => _typen = Typen?.Invoke() ?? Array.Empty<string>();
+
+    /// <summary>
+    /// Typwahl: Werte und Beschreibung laden, Bild neu, Tag auf Montag —
+    /// <c>listBox_Typname_SelectedIndexChanged</c> in allen drei Masken.
+    /// </summary>
+    private void TypWaehlen(string typ)
+    {
+        Daten.Typ = typ ?? "";
+        _meldung = "";
+
+        var gelesen = Lies?.Invoke(Daten.Typ);
+        if (gelesen is not null)
+        {
+            Daten.Beschreibung = gelesen.Value.Beschreibung ?? "";
+            Daten.Werte = gelesen.Value.Werte;
+        }
+        else
+        {
+            Daten.Beschreibung = "";
+            Daten.Werte = new double[TypProfilDaten.TAGE, TypProfilDaten.STUNDEN];
+        }
+
+        BildNeu();
+        TagWaehlen(0);
+    }
+
+    /// <summary>
+    /// Tagwahl: die 24 Felder zeigen den ÜBERNOMMENEN Stand dieses Tages. Nicht
+    /// übernommene Eingaben gehen dabei verloren — wie in <c>Tagesdaten</c>.
+    /// </summary>
+    private void TagWaehlen(int? tag)
+    {
+        _tag = tag ?? 0;
+        double[] werte = Daten.Tag(_tag);
+        for (int s = 0; s < TypProfilDaten.STUNDEN; s++) _felder[s] = werte[s];
+    }
+
+    private void BildNeu() => _bild = Bild?.Invoke(Daten.Wochenreihe());
+
+    // =================================================================================
+    // Übernehmen, Kopierpuffer
+    // =================================================================================
+
+    /// <summary>
+    /// „Änderungen Übernehmen": erst alle 24 Felder prüfen, dann übernehmen. Beim ersten
+    /// leeren oder ungültigen Feld bleibt der Tag unverändert.
+    /// </summary>
+    private void BeiUebernehmen()
+    {
+        _meldung = "";
+        for (int s = 0; s < TypProfilDaten.STUNDEN; s++)
+            if (_felder[s] is null)
+            {
+                _meldung = string.Format(MeldungZahlFehlt, Feldname(s));
+                _meldungStufe = WarnStufe.Warnung;
+                return;
+            }
+
+        for (int s = 0; s < TypProfilDaten.STUNDEN; s++) Daten.Werte[_tag, s] = _felder[s]!.Value;
+
+        // Der Vorlaeufer blitzte hier 500 ms lang ein Bild auf und hielt dafuer den
+        // Oberflaechenfaden mit Thread.Sleep an (A-5). An seiner Stelle steht die
+        // Meldung - und das Diagramm wird neu gezeichnet, damit es zu den soeben
+        // uebernommenen Werten passt.
+        BildNeu();
+        _meldung = MeldungUebernommen;
+        _meldungStufe = WarnStufe.Hinweis;
+    }
+
+    /// <summary>„Tag kopieren": die 24 FELDER in den Puffer (Befund W8‑B1, A‑6).</summary>
+    private void BeiTagKopieren()
+    {
+        _puffer = (double?[])_felder.Clone();
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// „Tag einfügen": der Puffer in die 24 Felder. Fest wird er erst mit
+    /// „Übernehmen" — so bleibt der Weg derselbe wie beim Tippen.
+    /// </summary>
+    private void BeiTagEinfuegen()
+    {
+        if (_puffer is null) return;
+        for (int s = 0; s < TypProfilDaten.STUNDEN; s++) _felder[s] = _puffer[s];
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Speichern, Neu, Speichern unter, Löschen
+    // =================================================================================
+
+    /// <summary>
+    /// „Speichern in DB": ReadOnly sperrt, sonst gehen die ÜBERNOMMENEN Werte und die
+    /// Beschreibung in die Datenbank. Nicht übernommene Feldeingaben gehen NICHT mit —
+    /// so tat es der Vorläufer (Befund W8‑O‑2).
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (!TypGewaehlt || Speichern is null) return;
+
+        if (IstReadOnly is not null && IstReadOnly(Daten.Typ))
+        {
+            _meldung = MeldungReadOnly;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        if (!Speichern(Daten.Typ, Daten.Werte, Daten.Beschreibung))
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _meldung = MeldungGespeichert;
+        _meldungStufe = WarnStufe.Hinweis;
+        BildNeu();
+    }
+
+    private void OeffneNamensfrage(bool alsKopie)
+    {
+        _alsKopie = alsKopie;
+        _namensfrage = true;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// „Neu" legt 168 Nullen an, „Speichern unter" die aktuellen Werte samt Beschreibung.
+    /// Danach ist die Liste neu gezogen und der neue Typ gewählt — wie im Vorläufer.
+    /// </summary>
+    private void BeiNamensfrage(string? name)
+    {
+        _namensfrage = false;
+        if (string.IsNullOrEmpty(name)) return;
+
+        bool ok = _alsKopie
+            ? (SpeichernUnter?.Invoke(name, Daten.Werte, Daten.Beschreibung) ?? false)
+            : (Neu?.Invoke(name) ?? false);
+
+        if (!ok)
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        ListeLaden();
+        TypWaehlen(name);
+    }
+
+    /// <summary>
+    /// „Löschen": erst die Rückfrage, dann die ReadOnly-Sperre. Nach dem Löschen zieht
+    /// der Vorläufer die Liste neu und wählt wieder den ersten Typ (<c>SetControls</c>).
+    /// </summary>
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        if (ja != true || !TypGewaehlt || Loeschen is null) return;
+
+        if (IstReadOnly is not null && IstReadOnly(Daten.Typ))
+        {
+            _meldung = MeldungReadOnly;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        if (!Loeschen(Daten.Typ))
+        {
+            _meldung = MeldungFehler;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        ListeLaden();
+        if (_typen.Count > 0) TypWaehlen(_typen[0]);
+        else { Daten.Typ = ""; Daten.Beschreibung = ""; TagWaehlen(0); }
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Ueberlagerung und Rueckfrage werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _namensfrage || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(true);
+    }
+}

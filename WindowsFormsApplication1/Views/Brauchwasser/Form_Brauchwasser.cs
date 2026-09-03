@@ -366,9 +366,8 @@ namespace WindowsFormsApplication1
 
         private void btn_ProzTypeDBedit_Click(object sender, EventArgs e)
         {
-            Form_EingBrauchwasserTyp frm = new Form_EingBrauchwasserTyp();
-            frm.SetControls();
-            frm.ShowDialog(); 
+            // iU9-W8.3: Blazor-Huelle statt Form_EingBrauchwasserTyp.
+            TypStammHuelle.ProfilOeffnen(this, BedarfsArt.Brauchwasser);
         }
 
         private void btn_neuerWert_Click(object sender, EventArgs e)
