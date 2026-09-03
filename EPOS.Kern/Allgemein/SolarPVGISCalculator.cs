@@ -101,8 +101,10 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // 1. Basis-URL holen und absichern
-                string baseUrl = Properties.Settings.Default.PVGISUrl;
+                // 1. Basis-URL holen und absichern. Der Einstellwert liegt weiter in
+                //    Properties.Settings; gelesen wird er seit iU5 ueber den Dienst,
+                //    damit der Kern die Ablage nicht kennen muss.
+                string baseUrl = Dienste.Einstellungen.Lies("PVGISUrl");
                 if (string.IsNullOrWhiteSpace(baseUrl))
                 {
                     throw new InvalidOperationException("Die PVGIS-API URL ist in den Einstellungen leer.");
@@ -197,8 +199,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // 1. Basis-URL aus den Settings holen
-                string baseUrl = Properties.Settings.Default.GeoKodierung;
+                // 1. Basis-URL aus den Einstellungen holen (siehe GetTMY)
+                string baseUrl = Dienste.Einstellungen.Lies("GeoKodierung");
 
                 // Sicherheitsprüfung: Falls gar nichts eingetragen ist
                 if (string.IsNullOrWhiteSpace(baseUrl))

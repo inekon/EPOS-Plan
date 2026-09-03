@@ -54,9 +54,13 @@ namespace WindowsFormsApplication1
             return Dienste.Pfade.Unterordner(Dienste.Pfade.Anwendungsdaten);
         }
 
-        private static string TokenDatei() => Path.Combine(Verzeichnis(), "lizenz.dat");
-        private static string AnkerDatei() => Path.Combine(Verzeichnis(), "lizenz-zeit.dat");
-        private const string REGISTRY_PFAD = @"Software\wp-plan";
+        /// <summary>Name der Ablage mit dem signierten Lizenztoken.</summary>
+        private const string TOKEN_ABLAGE = "lizenz.dat";
+
+        /// <summary>Name der Ablage mit dem Datumsanker (Schutz gegen Zurueckdrehen der Uhr).</summary>
+        private const string ANKER_ABLAGE = "lizenz-zeit.dat";
+
+        /// <summary>Name des zweiten Datumsankers in den Einstellungen.</summary>
         private const string REGISTRY_ANKER = "LizenzAnker";
 
         // ------------------------------------------------------------------
@@ -253,9 +257,14 @@ namespace WindowsFormsApplication1
                 _geladen = true;
                 try
                 {
-                    if (!File.Exists(TokenDatei())) return;
-                    byte[] verschluesselt = File.ReadAllBytes(TokenDatei());
-                    byte[] klartext = ProtectedData.Unprotect(verschluesselt, null, DataProtectionScope.LocalMachine);
+                    // nurDiesesGeraet: true = Geraetebereich (DPAPI LocalMachine). NUR so
+                    // gilt eine einmal aktivierte Lizenz fuer alle Windows-Konten
+                    // desselben Rechners. Wird der Bereich je umgestellt, ist jede
+                    // installierte Lizenz entwertet - der Inhalt ist dann nicht mehr zu
+                    // entschluesseln.
+                    byte[] klartext = Dienste.Lizenzablage.Lesen(TOKEN_ABLAGE, true);
+                    if (klartext == null) return;
+
                     string fehler;
                     _token = LizenzToken.Laden(Encoding.UTF8.GetString(klartext), out fehler);
                 }
@@ -268,8 +277,7 @@ namespace WindowsFormsApplication1
             lock (_sperre)
             {
                 byte[] klartext = Encoding.UTF8.GetBytes(token.RohJson);
-                byte[] verschluesselt = ProtectedData.Protect(klartext, null, DataProtectionScope.LocalMachine);
-                File.WriteAllBytes(TokenDatei(), verschluesselt);
+                Dienste.Lizenzablage.Schreiben(TOKEN_ABLAGE, klartext, true);
                 _token = token;
                 _geladen = true;
             }
@@ -279,7 +287,7 @@ namespace WindowsFormsApplication1
         {
             lock (_sperre)
             {
-                try { if (File.Exists(TokenDatei())) File.Delete(TokenDatei()); } catch { }
+                try { Dienste.Lizenzablage.Loeschen(TOKEN_ABLAGE); } catch { }
                 _token = null;
                 _geladen = true;
             }
@@ -291,18 +299,14 @@ namespace WindowsFormsApplication1
             DateTime wert = DateTime.MinValue;
             try
             {
-                if (File.Exists(AnkerDatei()))
-                {
-                    byte[] roh = ProtectedData.Unprotect(File.ReadAllBytes(AnkerDatei()), null, DataProtectionScope.LocalMachine);
-                    if (long.TryParse(Encoding.UTF8.GetString(roh), out long ticks))
-                        wert = new DateTime(ticks, DateTimeKind.Utc).Date;
-                }
+                byte[] roh = Dienste.Lizenzablage.Lesen(ANKER_ABLAGE, true);
+                if (roh != null && long.TryParse(Encoding.UTF8.GetString(roh), out long ticks))
+                    wert = new DateTime(ticks, DateTimeKind.Utc).Date;
             }
             catch { }
             try
             {
-                using RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_PFAD);
-                if (key?.GetValue(REGISTRY_ANKER) is string s && long.TryParse(s, out long ticks2))
+                if (long.TryParse(Dienste.Einstellungen.Lies(REGISTRY_ANKER), out long ticks2))
                 {
                     DateTime reg = new DateTime(ticks2, DateTimeKind.Utc).Date;
                     if (reg > wert) wert = reg;
@@ -318,13 +322,12 @@ namespace WindowsFormsApplication1
             try
             {
                 byte[] roh = Encoding.UTF8.GetBytes(heuteUtc.Ticks.ToString());
-                File.WriteAllBytes(AnkerDatei(), ProtectedData.Protect(roh, null, DataProtectionScope.LocalMachine));
+                Dienste.Lizenzablage.Schreiben(ANKER_ABLAGE, roh, true);
             }
             catch { }
             try
             {
-                using RegistryKey key = Registry.CurrentUser.CreateSubKey(REGISTRY_PFAD);
-                key?.SetValue(REGISTRY_ANKER, heuteUtc.Ticks.ToString());
+                Dienste.Einstellungen.Schreib(REGISTRY_ANKER, heuteUtc.Ticks.ToString());
             }
             catch { }
         }

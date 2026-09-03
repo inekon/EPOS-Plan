@@ -92,11 +92,7 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static bool AbschalterMaschine
         {
-            get
-            {
-                return Ist(LesenMaschine(RegistryView.Registry64, REG_ABSCHALTER))
-                    || Ist(LesenMaschine(RegistryView.Registry32, REG_ABSCHALTER));
-            }
+            get { return Ist(Dienste.Einstellungen.LiesMaschine(REG_ABSCHALTER)); }
         }
 
         /// <summary>
@@ -105,7 +101,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool Abgeschaltet
         {
-            get { return AbschalterMaschine || Ist(Lesen(Registry.CurrentUser, REG_ABSCHALTER)); }
+            get { return AbschalterMaschine || Ist(Lesen(REG_ABSCHALTER)); }
             set { Schreiben(REG_ABSCHALTER, value ? "1" : "0"); }
         }
 
@@ -119,7 +115,7 @@ namespace WindowsFormsApplication1
             get
             {
                 int n;
-                string wert = Lesen(Registry.CurrentUser, REG_BESTAETIGT);
+                string wert = Lesen(REG_BESTAETIGT);
                 return int.TryParse(wert, NumberStyles.Integer, CultureInfo.InvariantCulture, out n) ? n : 0;
             }
         }
@@ -127,7 +123,7 @@ namespace WindowsFormsApplication1
         /// <summary>Zeitpunkt der Bestätigung als Text; leer, wenn keine vorliegt.</summary>
         public static string BestaetigtAm
         {
-            get { return Lesen(Registry.CurrentUser, REG_BESTAETIGT_AM) ?? ""; }
+            get { return Lesen(REG_BESTAETIGT_AM) ?? ""; }
         }
 
         /// <summary>
@@ -186,51 +182,24 @@ namespace WindowsFormsApplication1
             return string.Equals(wert, "1", StringComparison.Ordinal);
         }
 
-        private static string Lesen(RegistryKey wurzel, string wert)
-        {
-            try
-            {
-                using (RegistryKey key = wurzel.OpenSubKey(REG_SCHLUESSEL))
-                    return key == null ? null : key.GetValue(wert) as string;
-            }
-            catch { return null; }
-        }
+        // Die drei Helfer bedienen unter Windows unveraendert HKCU\Software\wp-plan;
+        // der Weg dorthin liegt seit iU5 in Dienste.Einstellungen. Die zwei
+        // Registry-Sichten des maschinenweiten Abschalters (WOW6432Node-Umleitung der
+        // x86-Zeit) sind dorthin mitgewandert - siehe RegistryEinstellungen.LiesMaschine.
 
-        /// <summary>
-        /// Liest aus HKLM in einer ausdrücklich gewählten Registry-Sicht. Auf
-        /// 32-bit-Windows liefert <see cref="RegistryView.Registry64"/> die einzige
-        /// vorhandene Sicht - ein Sonderfall ist deshalb nicht nötig, doppeltes Lesen
-        /// derselben Sicht schadet nicht.
-        /// </summary>
-        private static string LesenMaschine(RegistryView sicht, string wert)
+        private static string Lesen(string wert)
         {
-            try
-            {
-                using (RegistryKey basis = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, sicht))
-                using (RegistryKey key = basis.OpenSubKey(REG_SCHLUESSEL))
-                    return key == null ? null : key.GetValue(wert) as string;
-            }
-            catch { return null; }
+            return Dienste.Einstellungen.Lies(wert, null);
         }
 
         private static void Schreiben(string wert, string inhalt)
         {
-            try
-            {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(REG_SCHLUESSEL))
-                    if (key != null) key.SetValue(wert, inhalt ?? "");
-            }
-            catch { }
+            Dienste.Einstellungen.Schreib(wert, inhalt ?? "");
         }
 
         private static void Loeschen(string wert)
         {
-            try
-            {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL, true))
-                    if (key != null && key.GetValue(wert) != null) key.DeleteValue(wert, false);
-            }
-            catch { }
+            Dienste.Einstellungen.Loesche(wert);
         }
     }
 }
