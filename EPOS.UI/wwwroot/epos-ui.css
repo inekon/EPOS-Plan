@@ -1354,3 +1354,23 @@ body {
     font-weight: 700;
     color: #1f4e79;
 }
+
+/* Die Vergleichsmatrix der Wirtschaftlichkeitsseite (iU9-W5.3). Ihre Spalten
+   entstehen zur Laufzeit - eine je Version -, deshalb ist sie eine
+   gewoehnliche Tabelle mit der Hausklasse epos-raster. Der Zeilentitel steht
+   fett (Vorbild UcWirtschaftlichkeit.Zeile), die Werte rechts. */
+.epos-matrix {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-matrix-titel {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.epos-matrix-zelle {
+    text-align: right;
+    white-space: nowrap;
+}
