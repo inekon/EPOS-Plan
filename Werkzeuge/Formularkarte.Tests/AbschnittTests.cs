@@ -14,12 +14,17 @@ public sealed class AbschnittTests
     private static List<Abschnitt> Abschnitte(string relativ) =>
         Kartenbau.Abschnitte(Kartenbau.Vollstaendig(Repowurzel.Designer(relativ)));
 
+    /// <summary>Dasselbe aus einem eingefrorenen Pruefmuster (iU9-W3.6).</summary>
+    private static List<Abschnitt> Musterabschnitte(string relativ) =>
+        Kartenbau.Abschnitte(Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster(relativ), null, Repowurzel.PruefmusterWurzel));
+
     // ---- Form_Kosten/Form_Kostenprofil: TabControl mit drei Reitern --------
 
     [Fact]
     public void Kostenprofil_HatFensterUndDreiReiter()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
 
         Assert.Equal(new[] { "Fenster", "Monatswerte", "Wochenwerte", "Grafik" },
                      abschnitte.Select(a => a.Titel).ToArray());
@@ -30,7 +35,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ReiterHaengenAmTabControl()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
 
         // Das TabControl selbst hat keine eigenen Zeilen und faellt deshalb
         // aus der Liste; seine Reiter stehen eine Stufe tiefer.
@@ -41,7 +46,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ChartWirdZuChartBild()
     {
-        var grafik = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Grafik");
+        var grafik = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Grafik");
 
         var zeile = Assert.Single(grafik.Zeilen);
         Assert.Equal("chart", zeile.Element.Name);
@@ -52,7 +57,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ListBoxWirdAuswahlfeldUndBekommtSeinLabel()
     {
-        var woche = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Wochenwerte");
+        var woche = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Wochenwerte");
         var zeile = woche.Zeilen.Single(z => z.Element.Name == "lbTag");
 
         Assert.Equal("Auswahlfeld", zeile.Komponente);
@@ -62,7 +67,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_BeschriftungWirktNurInnerhalbDesAbschnitts()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
         var fenster = abschnitte[0];
 
         // lblName steht im Fenster und beschriftet tbBezeichner; die Label in
