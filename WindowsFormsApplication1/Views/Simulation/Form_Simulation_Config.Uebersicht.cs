@@ -887,43 +887,53 @@ namespace WindowsFormsApplication1
                         // Auswahl des Pufferspeichers, der als Wärmequelle dient.
                         // E0: Der Dialog arbeitet mit den PROJEKT-Puffern und liefert die
                         // ID; der Bezeichner wird nur noch mitgeführt.
-                        Form_QuellePufferspeicher frmQuelle = new Form_QuellePufferspeicher();
-                        frmQuelle.WPName = info.Bezeichner;
-                        frmQuelle.ID_Projekt = m_ID_Projekt;
-                        // D5b: Der Dialog bedient jetzt zwei Erzeugerarten - beim Kessel
-                        // beschreibt er die KASKADE statt der Verdampferwärme und blendet
+                        // Die Maske ist seit iU9-W10a.5 eine Razor-Komponente
+                        // (EPOS.UI/Dialoge/Simulation/QuellePufferspeicherDialog); die
+                        // Pufferverwaltung erscheint darin als UEBERLAGERUNG.
+                        //
+                        // D5b: Der Dialog bedient zwei Erzeugerarten - beim Kessel
+                        // beschreibt er die KASKADE statt der Verdampferwaerme und blendet
                         // die Verdampfer-Parameter aus.
-                        frmQuelle.ID_Type = info.ID_Type;
                         object oIdPuffer = WaermequelleClass.WertLesen(info.ID, "WQ_ID_Puffer");
-                        if (oIdPuffer != null) frmQuelle.ID_Puffer = Convert.ToInt32(oIdPuffer);
-                        frmQuelle.Pufferspeicher = WaermequelleClass.WertLesen(info.ID, "WQ_Puffer") as string;
-
                         object oTemp = WaermequelleClass.WertLesen(info.ID, "WQ_Temp");
-                        if (oTemp != null) frmQuelle.Quelltemperatur = Convert.ToDouble(oTemp);
                         object oSpreiz = WaermequelleClass.WertLesen(info.ID, "WQ_Spreizung");
-                        if (oSpreiz != null && Convert.ToDouble(oSpreiz) > 0) frmQuelle.Spreizung = Convert.ToDouble(oSpreiz);
                         object oReg = WaermequelleClass.WertLesen(info.ID, "WQ_Regeneration");
-                        if (oReg != null) frmQuelle.Regeneration = Convert.ToDouble(oReg);
                         object oUnb = WaermequelleClass.WertLesen(info.ID, "WQ_Unbegrenzt");
-                        if (oUnb != null) frmQuelle.Unbegrenzt = Convert.ToBoolean(oUnb);
-                        // PAKET Q1: die Quell-Entnahmehöhe (Schema-Schritt 54); NULL
-                        // bleibt NULL und heißt „oben".
+                        // PAKET Q1: die Quell-Entnahmehoehe (Schema-Schritt 54); NULL
+                        // bleibt NULL und heisst "oben".
                         object oHoehe = WaermequelleClass.WertLesen(info.ID, "WQ_Anschlusshoehe");
-                        if (oHoehe != null) frmQuelle.Anschlusshoehe = Convert.ToDouble(oHoehe);
 
-                        // PAKET B2 (Schema-Schritt 55): Temperaturbezug der Kessel-Kaskade
-                        // und - als seine feste Vorgabe - das Temperaturpaar der ANLAGE.
-                        // Der Dialog zeigt beides nur beim Heizkessel; gelesen wird es
-                        // trotzdem für beide Arten, damit eine Wärmepumpen-Bearbeitung die
-                        // Werte unverändert zurückschreibt statt sie zu leeren.
-                        frmQuelle.TemperaturModus = DbWerte.TemperaturModusOderDefault(
-                            WaermequelleClass.WertLesen(info.ID,
-                                SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS));
-                        frmQuelle.VorlaufAnlage = info.Vorlauf;
-                        frmQuelle.RuecklaufAnlage = info.Ruecklauf;
+                        var quellDaten = new EPOS.UI.Dialoge.Simulation.QuellePufferspeicherDaten
+                        {
+                            WPName = info.Bezeichner,
+                            IdProjekt = m_ID_Projekt,
+                            IstKessel = !info.IstWaermepumpe,
+                            IdPuffer = oIdPuffer != null ? Convert.ToInt32(oIdPuffer) : 0,
+                            Pufferspeicher =
+                                WaermequelleClass.WertLesen(info.ID, "WQ_Puffer") as string ?? "",
+                            Quelltemperatur = oTemp != null ? Convert.ToDouble(oTemp) : 10.0,
+                            Spreizung = (oSpreiz != null && Convert.ToDouble(oSpreiz) > 0)
+                                ? Convert.ToDouble(oSpreiz) : 5.0,
+                            Regeneration = oReg != null ? Convert.ToDouble(oReg) : 0.0,
+                            Unbegrenzt = oUnb != null && Convert.ToBoolean(oUnb),
+                            Anschlusshoehe = oHoehe != null ? Convert.ToDouble(oHoehe) : (double?)null,
 
-                        frmQuelle.SetControls();
-                        if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
+                            // PAKET B2 (Schema-Schritt 55): Temperaturbezug der
+                            // Kessel-Kaskade und - als seine feste Vorgabe - das
+                            // Temperaturpaar der ANLAGE. Der Dialog zeigt beides nur beim
+                            // Heizkessel; gelesen wird es trotzdem fuer beide Arten, damit
+                            // eine Waermepumpen-Bearbeitung die Werte unveraendert
+                            // zurueckschreibt statt sie zu leeren.
+                            TemperaturModus = DbWerte.TemperaturModusOderDefault(
+                                WaermequelleClass.WertLesen(info.ID,
+                                    SchemaKatalog.SPALTE_ANLAGE_WQ_TEMPERATURMODUS)),
+                            VorlaufAnlage = info.Vorlauf,
+                            RuecklaufAnlage = info.Ruecklauf
+                        };
+
+                        EPOS.UI.Dialoge.Simulation.QuellePufferspeicherDaten frmQuelle =
+                            QuellePufferspeicherHuelle.Oeffnen(this, quellDaten);
+                        if (frmQuelle == null) return;
 
                         // ETAPPE D5b — die beiden Dialogprüfungen aus Konzept Abschnitt 7,
                         // BEVOR irgendetwas geschrieben wird (Konzept 4.6 Kurzschluss,
@@ -932,7 +942,7 @@ namespace WindowsFormsApplication1
                         // entstehen, statt später mit Warnung wirkungslos zu bleiben (E-K2-1)
                         // oder den ganzen Lauf abzubrechen (Zyklus-Guard).
                         WaermesenkeClass.QuellPruefErgebnis pruef =
-                            WaermesenkeClass.QuellePruefen(m_ID_Projekt, info.ID, frmQuelle.ID_Puffer);
+                            WaermesenkeClass.QuellePruefen(m_ID_Projekt, info.ID, frmQuelle.IdPuffer);
                         if (!pruef.Ok)
                         {
                             MessageBox.Show(pruef.Fehler,
@@ -948,7 +958,7 @@ namespace WindowsFormsApplication1
                         // WaermesenkeClass.Schreiben).
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Puffer",
                             DbParamTyp.Integer,
-                            frmQuelle.ID_Puffer > 0 ? (object)frmQuelle.ID_Puffer : DBNull.Value);
+                            frmQuelle.IdPuffer > 0 ? (object)frmQuelle.IdPuffer : DBNull.Value);
                         // Der Bezeichner wird MITGESCHRIEBEN: Anzeigen und die
                         // Rückfallkette der Engine (Stufe 2/3) lesen ihn weiter.
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Puffer", frmQuelle.Pufferspeicher);

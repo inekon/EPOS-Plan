@@ -151,7 +151,7 @@ namespace WindowsFormsApplication1
             // B_QUELLE_ERDREICH bleibt - die HUELLE QuelleErdreichHuelle setzt ihn
             // ueber SetzeBereich, solange der Blazor-Dialog steht, und nimmt ihn
             // danach mit Zuruecksetzen wieder weg.
-            { "Form_QuellePufferspeicher",   B_SIMULATION },
+            // iU9-W10a.5: Form_QuellePufferspeicher ist geloescht (Razor-Komponente).
             { "Form_Quellprofil",            B_SIMULATION },
             { "Form_Simulation_Config",      B_SIM_KONFIG },
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
