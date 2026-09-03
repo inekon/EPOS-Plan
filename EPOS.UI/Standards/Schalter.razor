@@ -1,0 +1,31 @@
+﻿@* Ja/Nein-Schalter in Kaestchenoptik (CheckBox des Bestands).
+
+   Die Beschriftung liegt im <label>, das Kaestchen darin - damit schaltet
+   auch ein Klick auf den Text, und die Mindestgroesse von 44 px gilt fuer die
+   ganze Zeile statt nur fuer das Kaestchen (M2, Touchbetrieb). *@
+
+<label class="epos-schalter">
+    <input class="epos-schalter-kasten" type="checkbox" checked="@Wert"
+           disabled="@(!Aktiv)" @onchange="BeiAenderung" />
+    <span class="epos-feld-text">@Bezeichnung</span>
+</label>
+
+@code {
+    /// <summary>Beschriftung rechts neben dem Kaestchen.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der Zustand. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public bool Wert { get; set; }
+
+    /// <summary>Meldet jede Umschaltung.</summary>
+    [Parameter] public EventCallback<bool> WertChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt das Kaestchen.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    private Task BeiAenderung(ChangeEventArgs e)
+    {
+        Wert = e.Value is bool b && b;
+        return WertChanged.InvokeAsync(Wert);
+    }
+}
