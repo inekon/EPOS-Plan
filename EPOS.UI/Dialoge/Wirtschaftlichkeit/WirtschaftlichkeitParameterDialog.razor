@@ -1,0 +1,305 @@
+﻿@* Dialog "Wirtschaftlichkeits-Parameter" - die Razor-Fassung (iU9-W2.5).
+
+   HERKUNFT. Die WinForms-Fassung Views/Wirtschaftlichkeit/
+   Form_WirtschaftlichkeitParameter.cs (740 Zeilen, K4 - programmatisch
+   aufgebaut) ist mit dieser Komponente GELOESCHT - Regel M1. Uebernommen sind
+   Feldbestand, Reihenfolge, Wertebereiche, die Nullsemantik und die
+   Sichtbarkeitsregel wortgleich.
+
+   KATEGORISIERT (Vorgabe 12.08.2026): "Allgemein" und "Strom" immer sichtbar;
+   die Erzeuger-Gruppen erscheinen NUR, wenn der Erzeugertyp in der
+   Vergleichsgruppe vorkommt (WirtschaftlichkeitCtrl.ErzeugerDerGruppe). Werte
+   ausgeblendeter Gruppen bleiben beim Speichern unveraendert erhalten - das
+   ergibt sich hier von selbst: Der Parametersatz kommt vollstaendig herein und
+   geht vollstaendig zurueck; die Komponente aendert nur, was sie zeigt.
+
+   DER BHKW-AUSZUG (Etappe B5/BW9). Die beiden BHKW-Gruppen sind mit B5 in den
+   Dialog "BHKW-Wirtschaftlichkeit" gezogen. Die WinForms-Fassung baute sie
+   trotzdem weiter auf und blendete sie unmittelbar danach aus, damit ihr
+   Speicherweg dieselben Steuerelemente auslesen konnte (Bw9Ausblenden). Hier
+   entfaellt dieser Umweg: Was nicht gebaut wird, wird auch nicht geschrieben,
+   und der geladene Satz traegt die Werte unveraendert weiter. Uebrig bleibt der
+   Verweis mit dem Sprungknopf.
+
+   ZWEI SPRUENGE, ZWEI WEGE. Der Gesetzeskatalog ist eine WinForms-Maske und
+   erscheint ueber die Sprungbruecke (iU9-W2.2) MODAL ueber diesem Dialog. Der
+   Dialog "BHKW-Wirtschaftlichkeit" ist selbst eine Blazor-Huelle; er bleibt
+   NACHGELAGERT (Risiko R2) - die Komponente meldet den Wunsch im Ergebnis.
+
+   ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Parametersatz, Erzeugerflags,
+   Kraftwerksparkliste, die Referenzkesselzeile und das Prognosejahr des
+   CO2-Pfads kommen fertig geladen als [Parameter] herein.
+
+   TASTATUR. Esc schliesst, Enter bleibt unbelegt (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+
+@using System.Globalization
+@using WindowsFormsApplication1
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@_t.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @* ------------------------------------------------------- Allgemein *@
+    <Gruppenkopf Titel="@_t.GAllgemein" Symbol="∑">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@_t.Zins" Wert="@Parameter.Zinssatz"
+                        WertChanged="@(w => Parameter.Zinssatz = w ?? Parameter.Zinssatz)"
+                        Min="0" Max="15" Nachkommastellen="2" Einheit="%" />
+            <Ganzzahlfeld Bezeichnung="@_t.Jahre" Wert="@Parameter.Betrachtungszeitraum"
+                          WertChanged="@(w => Parameter.Betrachtungszeitraum = w ?? Parameter.Betrachtungszeitraum)"
+                          Min="1" Max="50" Einheit="a" />
+            <Zahlenfeld Bezeichnung="@_t.PreisEnergie" Wert="@Parameter.PreissteigerungEnergie"
+                        WertChanged="@(w => Parameter.PreissteigerungEnergie = w ?? Parameter.PreissteigerungEnergie)"
+                        Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+            <Zahlenfeld Bezeichnung="@_t.PreisBetrieb" Wert="@Parameter.PreissteigerungBetrieb"
+                        WertChanged="@(w => Parameter.PreissteigerungBetrieb = w ?? Parameter.PreissteigerungBetrieb)"
+                        Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------------------ Strom *@
+    <Gruppenkopf Titel="@_t.GStrom" Symbol="⚡">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@_t.EinspeisungPv" Wert="@Parameter.Einspeiseverguetung"
+                        WertChanged="@(w => Parameter.Einspeiseverguetung = w ?? Parameter.Einspeiseverguetung)"
+                        Min="0" Max="2" Nachkommastellen="4" />
+
+            @* Ein KWK-Preis von 0 heisst "nicht gepflegt" - die Unterscheidung ist
+               wichtig, weil eine gepflegte 0 sonst wie ein Preis wirkte. *@
+            <Zahlenfeld Bezeichnung="@_t.EinspeisungKwk"
+                        Wert="@(Parameter.EinspeiseverguetungKWK ?? 0)"
+                        WertChanged="@(w => Parameter.EinspeiseverguetungKWK = w > 0 ? w : null)"
+                        Min="0" Max="2" Nachkommastellen="4" />
+
+            @* Ae16: Die AUSWAHL liegt im Energietraegerdialog; hier nur noch Anzeige. *@
+            <Schalter Bezeichnung="@_t.Aufschlaege" Wert="@Parameter.AufschlaegeAnwenden"
+                      Aktiv="false" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------------------- BHKW *@
+    @if (HatBhkw)
+    {
+        <Gruppenkopf Titel="@_t.GBhkw" Symbol="⚙">
+            <KindInhalt>
+                <Herleitungszeile Text="@_t.BhkwVerweis" />
+                <button type="button" class="epos-knopf epos-sprung"
+                        @onclick="BhkwKlick">@_t.BhkwKnopf</button>
+                <Herleitungszeile Text="@_t.SprungHinweis" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* ------------------------------------------------------- Brennstoff *@
+    @if (HatBrennstoff)
+    {
+        <Gruppenkopf Titel="@_t.GBrennstoff" Symbol="🔥">
+            <KindInhalt>
+                @* K6: Der CO2-Preis kommt jahresgenau aus dem Gesetzeskatalog;
+                   dieses Feld ist nur noch der Override "konstanter Preis". *@
+                <Zahlenfeld Bezeichnung="@_t.Co2" Wert="@Parameter.CO2Preis"
+                            WertChanged="@(w => Parameter.CO2Preis = w ?? Parameter.CO2Preis)"
+                            Min="0" Max="500" Nachkommastellen="0" Einheit="€/t" />
+                <Herleitungszeile Text="@Co2Zeile" />
+
+                @if (Sprung is not null)
+                {
+                    <button type="button" class="epos-knopf epos-sprung"
+                            @onclick="KatalogKlick">@_t.Co2Katalog</button>
+                }
+
+                <Auswahlfeld Bezeichnung="@_t.Park" Eintraege="@Kraftwerksparks"
+                             Auswahl="@Parameter.IdKraftwerkspark"
+                             AuswahlChanged="@(n => Parameter.IdKraftwerkspark = n ?? 0)" />
+
+                @* Referenzkessel kommt seit Phase 11 aus der DB - hier nur Anzeige. *@
+                <Herleitungszeile Text="@ReferenzkesselZeile" />
+
+                <h3 class="epos-untergruppe">@_t.GBilanz</h3>
+                <Ganzzahlfeld Bezeichnung="@_t.BilanzJahr" Wert="@Parameter.BilanzJahr"
+                              WertChanged="@(w => Parameter.BilanzJahr = w ?? Parameter.BilanzJahr)"
+                              Min="0" Max="2100" />
+                <Auswahlfeld Bezeichnung="@_t.Methode"
+                             Eintraege="@TarifWahlen.Eintraege(_methoden)"
+                             Auswahl="@TarifWahlen.NummerZu(_methoden, Parameter.EmissionsMethode)"
+                             AuswahlChanged="@(n => Parameter.EmissionsMethode = TarifWahlen.WertZu(_methoden, n))" />
+                <Auswahlfeld Bezeichnung="@_t.Biomasse"
+                             Eintraege="@TarifWahlen.Eintraege(_biomasse)"
+                             Auswahl="@TarifWahlen.NummerZu(_biomasse, Parameter.BiomasseKonvention)"
+                             AuswahlChanged="@(n => Parameter.BiomasseKonvention = TarifWahlen.WertZu(_biomasse, n))" />
+                <Schalter Bezeichnung="@_t.Nachweis"
+                          Wert="@Parameter.NachhaltigkeitsnachweisBiomasse"
+                          WertChanged="@(w => Parameter.NachhaltigkeitsnachweisBiomasse = w)" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    <Herleitungszeile Text="@Hinweis" />
+
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    <SpeichernLeiste OkText="@_t.BtnSpeichern" AbbrechenText="@_t.BtnAbbrechen"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Was hereinkommt
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz des Stammprojekts
+    /// (<c>WirtschaftlichkeitCtrl.LadeParameter</c>), fertig geladen. Der Dialog
+    /// schreibt seine Eingaben in DIESES Objekt zurück; alles, was er nicht
+    /// zeigt — die BHKW-Angaben, der Referenzkessel —, bleibt unverändert
+    /// stehen und geht wertgleich mit in die Zeile.
+    /// </summary>
+    [Parameter] public WirtschaftlichkeitParameter Parameter { get; set; }
+        = new WirtschaftlichkeitParameter();
+
+    /// <summary>Führt die Vergleichsgruppe ein BHKW? (<c>ErzeugerFlags.Bhkw</c>)</summary>
+    [Parameter] public bool HatBhkw { get; set; }
+
+    /// <summary>Führt sie einen Brennstoff-Erzeuger? (<c>ErzeugerFlags.Brennstoff</c>)</summary>
+    [Parameter] public bool HatBrennstoff { get; set; }
+
+    /// <summary>
+    /// Die Referenz-Kraftwerksparks (<c>EmissionsBilanzRechner.LadeKatalog</c>),
+    /// mit „(keine Emissionsbilanz)" als Id 0 an erster Stelle.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Kraftwerksparks { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Die fertig formulierte Referenzkesselzeile
+    /// (<c>WirtschaftlichkeitCtrl.LiesReferenzkessel</c>) — reine Anzeige.</summary>
+    [Parameter] public string ReferenzkesselZeile { get; set; } = "";
+
+    /// <summary>Erstes Kalenderjahr des CO₂-Pfads mit dem Status PROGNOSE.</summary>
+    [Parameter] public int Co2PrognoseAb { get; set; } = 2028;
+
+    /// <summary>
+    /// Die Sprungbrücke (iU9-W2.2): Schlüssel → Fenster, Antwort = mit OK
+    /// geschlossen. <c>null</c> = diese Umgebung kennt das Ziel nicht; dann
+    /// fehlt der Katalogknopf. Ein Knopf, der nichts tut, wäre eine Behauptung,
+    /// die nicht stimmt.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary>Schreibt den Parametersatz fort. <c>true</c> = gespeichert.</summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>Was der Dialog beim Schließen meldet.</summary>
+    [Parameter] public EventCallback<WirtParameterErgebnis> Geschlossen { get; set; }
+
+    /// <summary>Schlüssel des Hilfeknopfes — dieselbe Wikiseite wie bisher.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; }
+        = "Form_WirtschaftlichkeitParameter.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private readonly WirtschaftlichkeitParameterTexte _t = new();
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<Steuerwahl> _methoden = Array.Empty<Steuerwahl>();
+    private IReadOnlyList<Steuerwahl> _biomasse = Array.Empty<Steuerwahl>();
+
+    private string _fehler = "";
+    private bool _gespeichert;
+
+    protected override void OnInitialized()
+    {
+        _methoden = WirtParameterWahlen.Methode(_t);
+        _biomasse = WirtParameterWahlen.Biomasse(_t);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static CultureInfo Kultur => BhwTexte.Kultur;
+
+    /// <summary>
+    /// Die Zeile unter dem CO₂-Feld: 0 heißt seit K6 nicht mehr „aus", sondern
+    /// „Pfad" — der Satz sagt, welcher der beiden Fälle gilt.
+    /// </summary>
+    public string Co2Zeile => Parameter.CO2Preis > 0
+        ? string.Format(Kultur, _t.Co2Konstant, Parameter.CO2Preis.ToString("N0", Kultur))
+        : string.Format(Kultur, _t.Co2Pfad, Co2PrognoseAb.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>Der Schlusshinweis — je nach Erzeugerlage um zwei Absätze länger.</summary>
+    public string Hinweis
+    {
+        get
+        {
+            string s = _t.Hinweis;
+            if (HatBhkw)
+            {
+                s += " " + _t.HinweisKwkg;
+                if (!string.IsNullOrEmpty(_t.HinweisKwkgKatalog)) s += " " + _t.HinweisKwkgKatalog;
+                if (!string.IsNullOrEmpty(_t.HinweisSteuerformulare)) s += " " + _t.HinweisSteuerformulare;
+            }
+            if (HatBrennstoff && !string.IsNullOrEmpty(_t.HinweisBilanz)) s += " " + _t.HinweisBilanz;
+            return s;
+        }
+    }
+
+    // =====================================================================
+    // Sprünge
+    // =====================================================================
+
+    /// <summary>
+    /// Der Gesetzeskatalog — MODAL über diesem Dialog, über die Sprungbrücke.
+    /// Die Werte dieses Dialogs bleiben unberührt: Der Katalog ist eine eigene
+    /// Tabelle ohne Projektbezug.
+    /// </summary>
+    private async Task KatalogKlick()
+    {
+        if (Sprung is null) return;
+        _fehler = "";
+        await Sprung(Sprungziel.GesetzesparameterCo2);
+        StateHasChanged();
+    }
+
+    /// <summary>Der Sammeldialog — nachgelagert, siehe Kopf.</summary>
+    private Task BhkwKlick() => Schliessen(WirtParameterSprung.BhkwWirtschaftlichkeit);
+
+    // =====================================================================
+    // Speichern
+    // =====================================================================
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Schliessen(WirtParameterSprung.Keiner); return; }
+
+        _fehler = "";
+        if (Speichern is null || !Speichern())
+        {
+            _fehler = _t.MsgSpeicherfehler;
+            return;
+        }
+
+        _gespeichert = true;
+        await Schliessen(WirtParameterSprung.Keiner);
+    }
+
+    private Task Schliessen(WirtParameterSprung sprung) =>
+        Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert, sprung));
+
+    private Task BeiTaste(KeyboardEventArgs e) =>
+        e.Key == "Escape" ? Schliessen(WirtParameterSprung.Keiner) : Task.CompletedTask;
+}

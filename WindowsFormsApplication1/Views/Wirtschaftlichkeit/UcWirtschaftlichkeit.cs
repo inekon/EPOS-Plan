@@ -445,14 +445,13 @@ namespace WindowsFormsApplication1
 
         private void btnParameter_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_WirtschaftlichkeitParameter(_idStamm))
+            // iU9-W2.5: der Parameterdialog als Razor-Komponente ueber
+            // WirtschaftlichkeitParameterHuelle; Form_WirtschaftlichkeitParameter
+            // ist geloescht (Regel M1).
+            if (WirtschaftlichkeitParameterHuelle.Oeffnen(Besitzer, _idStamm))
             {
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                {
-                    ZeigeParameterzeile();
-                    Melde("Parameter gespeichert — bitte neu berechnen.");
-                }
+                ZeigeParameterzeile();
+                Melde("Parameter gespeichert — bitte neu berechnen.");
             }
         }
 
