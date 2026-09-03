@@ -232,6 +232,14 @@ längere Dauer kommt aus dem gewachsenen Bau (785 statt 528 bunit-Tests werden n
 wohl aber die neuen Razor-Komponenten). Ausgelöst per `workflow_dispatch` unter der pauschalen
 Freigabe bis Migrationsende.
 
+**Zehnter Lauf 33809247370 (`ios.yml`, `macos-26`, 03.09.2026, 21:41–21:46 UTC, 4 min 53 s)** auf
+`21ab680` — der Stand **nach den Wellen 7, 8 und 9**: grün. Derselbe Weg; EPOS.UI trägt jetzt
+alle elf Kacheln des Startbilds, zehn Assistentenseiten und die Bedarfstyp-Dialoge, der Kern die
+drei Bedarfsbilder des Renderers, `WPCtrl`, `Ferienzeit` und die Projektlisten der Bedarfsgewerke.
+Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Der Lauf
+war mit knapp fünf Minuten halb so lang wie der neunte, weil der Läufer den Workload aus dem
+Cache zog. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
