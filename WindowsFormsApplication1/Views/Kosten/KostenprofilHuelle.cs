@@ -38,12 +38,15 @@ namespace WindowsFormsApplication1
         private static readonly Size FENSTER = new Size(900, 860);
 
         /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn gespeichert wurde.
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Energieträgerverwaltung selbst
+        /// eine Razor-Komponente ist, erscheint der Dialog in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
         /// <param name="idProjekt">Projekt, dem das Profil gehört.</param>
         /// <param name="idProfil">Vorhandenes Profil, oder 0 für ein neues.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, int idProjekt, int idProfil = 0)
+        internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt, int idProfil = 0)
         {
             KostenprofilCtrl.StelleTabelleSicher();
 
@@ -58,10 +61,7 @@ namespace WindowsFormsApplication1
             double[] monat = MonateLesen(modell.Monatswerte);
             double[] woche = WochenwerteLesen(modell.Wochenwerte);
 
-            bool gespeichert = false;
-            BlazorDialogForm<KostenprofilDialog> dlg = null;
-
-            var parameter = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Bezeichner"] = modell.Bezeichner ?? "",
                 ["Monatswerte"] = (IReadOnlyList<double>)new List<double>(monat),
@@ -95,9 +95,7 @@ namespace WindowsFormsApplication1
                         modell.Monatswerte = Kette(Feld(m, 12));
                         modell.Wochenwerte = Kette(Feld(w, 168));
 
-                        bool ok = modell.ID > 0 ? ctrl.Update(modell) : ctrl.Insert(modell) > 0;
-                        if (ok) gespeichert = true;
-                        return ok;
+                        return modell.ID > 0 ? ctrl.Update(modell) : ctrl.Insert(modell) > 0;
                     }),
 
                 ["TitelText"] = MyResource.Resource.PREIS_PROFIL_TITEL,
@@ -121,22 +119,8 @@ namespace WindowsFormsApplication1
                 ["MeldungErstKopieren"] = MyResource.Resource.PREIS_PROFIL_MSG_ERST_KOPIEREN,
                 ["MeldungNichtGespeichert"] = MyResource.Resource.PREIS_PROFIL_MSG_NICHT_GESPEICHERT,
                 ["OkText"] = MyResource.Resource.SIM_BTN_OK,
-                ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
+                ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN
             };
-
-            dlg = new BlazorDialogForm<KostenprofilDialog>(
-                MyResource.Resource.PREIS_PROFIL_TITEL, FENSTER, parameter);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return gespeichert;
         }
 
         // =================================================================== Ablageformat

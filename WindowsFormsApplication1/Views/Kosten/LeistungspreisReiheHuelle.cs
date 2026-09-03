@@ -34,15 +34,17 @@ namespace WindowsFormsApplication1
         private static readonly Size FENSTER = new Size(680, 700);
 
         /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn geschrieben oder gelöscht
-        /// wurde (der Vorläufer schloss dann mit <c>DialogResult.OK</c>).
+        /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
+        /// Hülle ein eigenes Fenster; seit die Trägerkarte selbst eine
+        /// Razor-Komponente ist, erscheint der Editor in einer
+        /// <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe WebView
+        /// (Risiko R2). <c>Geschlossen</c> setzt der Wirt.
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
         /// <param name="projektId">Projekt; 0 = Katalogkontext (Stammreihe).</param>
         /// <param name="idTraeger">Energieträger der Reihe.</param>
         /// <param name="traegerName">Anzeigename für die Kontextzeile.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, int projektId, int idTraeger,
-                                     string traegerName)
+        internal static IReadOnlyDictionary<string, object> Gaben(int projektId, int idTraeger,
+                                                                 string traegerName)
         {
             int projekt = projektId > 0 ? projektId : 0;
             string name = traegerName ?? "";
@@ -81,12 +83,9 @@ namespace WindowsFormsApplication1
                 ? Text_("KDLG_LPR_EBENE_PROJEKT", "Projektreihe")
                 : Text_("KDLG_LPR_EBENE_STAMM", "Stammreihe (Katalog)"));
 
-            bool geaendert = false;
-            BlazorDialogForm<LeistungspreisReiheDialog> dlg = null;
-
             var werteliste = new List<double>(werte);
 
-            var parameter = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Werte"] = (IReadOnlyList<double>)werteliste,
                 ["Jahr"] = jahr,
@@ -117,7 +116,6 @@ namespace WindowsFormsApplication1
                     if (ctrl.Insert(kopf, zwoelf) <= 0) return false;
 
                     eigene = kopf;
-                    geaendert = true;
                     return true;
                 }),
 
@@ -126,7 +124,6 @@ namespace WindowsFormsApplication1
                     if (eigene == null) return false;
                     if (!ctrl.Delete(eigene.ID)) return false;
                     eigene = null;
-                    geaendert = true;
                     return true;
                 }),
 
@@ -144,21 +141,8 @@ namespace WindowsFormsApplication1
                 ["MeldungSpeicherfehler"] = Text_("LPR_MSG_SPEICHERFEHLER",
                     "Die Reihe konnte nicht gespeichert werden."),
                 ["MeldungLoeschfehler"] = Text_("LPR_MSG_LOESCHFEHLER",
-                    "Die Reihe konnte nicht gelöscht werden."),
-
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
+                    "Die Reihe konnte nicht gelöscht werden.")
             };
-
-            dlg = new BlazorDialogForm<LeistungspreisReiheDialog>(Titel(), FENSTER, parameter);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return geaendert;
         }
 
         /// <summary>Die zwölf Monatsnamen der laufenden Kultur — wie im Vorläufer

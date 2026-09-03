@@ -79,14 +79,7 @@ namespace WindowsFormsApplication1
 
                 ToolStripMenuItem eintragEt = new ToolStripMenuItem(textEt);
                 eintragEt.Name = "MenuItem_Energietraeger";
-                eintragEt.Click += (s, e) =>
-                {
-                    using (Form_Energietraeger frm = new Form_Energietraeger())
-                    {
-                        frm.SetControls(0);
-                        frm.ShowDialog(this);
-                    }
-                };
+                eintragEt.Click += (s, e) => EnergietraegerHuelle.Oeffnen(this, 0);
                 MenuItem_KostenVerwaltung.DropDownItems.Add(eintragEt);
             }
             catch (Exception ex)

@@ -1052,3 +1052,89 @@ body {
 .epos-schnellwahl-knopf--empfohlen {
     font-weight: 700;
 }
+
+/* --------------------------------------------------------------------------
+   Energietraegerverwaltung (iU9-W4.4): Liste links, Traegerkarte rechts.
+   -------------------------------------------------------------------------- */
+
+.epos-traeger-flaeche {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-karte-rand);
+    align-items: flex-start;
+}
+
+.epos-traeger-liste {
+    flex: 0 0 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.epos-traeger-inhalt {
+    flex: 1 1 520px;
+    min-width: 0;
+}
+
+/* Ein Gruppenkopf ist nicht waehlbar - im Bestand sprang die Liste vom Kopf
+   auf den naechsten Traeger weiter. Hier ist er schlicht kein Knopf. */
+.epos-traeger-gruppenkopf {
+    margin: 8px 0 2px 0;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+/* Die Traegereintraege stehen linksbuendig und fuellen die Spalte - eine
+   Liste, kein Knopfraster. */
+.epos-traeger-eintrag {
+    min-width: 0;
+    text-align: left;
+    padding-left: 20px;
+}
+
+.epos-traegerkarte {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+.epos-traeger-name {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-traeger-gruppe {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-feldpaar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+}
+
+.epos-kachelreihe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-rand);
+}
+
+.epos-mehrfachauswahl {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-mehrfachauswahl-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 48vh;
+    overflow: auto;
+}
