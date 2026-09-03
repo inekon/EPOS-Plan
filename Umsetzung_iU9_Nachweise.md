@@ -176,6 +176,13 @@ daran.
 
 ---
 
+**Entscheid des Anwenders (03.09.2026, iF21):** die Empfehlung ist angenommen — die
+DPI-Insel bleibt für alle modalen Dialoge, die Anwendung wird **mit Welle 16** insgesamt
+DPI-fähig geschaltet, wenn nur noch der Rahmen WinForms ist. Bis dahin sind die
+eingebetteten Seiten (Berichte & Kosten aus W5, die Assistentenseiten aus W6 und W7, später
+die Simulationsreiter) bei 125–200 % bitmapskaliert; auf 100 % und auf dem iPad sind sie
+scharf. Der Gerätebefund der Insel bei 125 % und 150 % (Punkt 1 oben) bleibt zu führen.
+
 ## 8. Offene Punkte aller fünf Wellen (Kurzfassung)
 
 | Welle | offen | Kurz |
