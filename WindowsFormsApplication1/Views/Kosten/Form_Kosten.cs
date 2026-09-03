@@ -618,66 +618,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Summen je Komponente aus <c>Tab_ProjektWerte</c> — <b>getrennt nach Kategorie</b>
-        /// (1 Investition, 2 Betrieb, 3 Energie). Spalten der Rückgabe: <c>Komponente</c>,
-        /// <c>Summe</c>.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Befund D1 (18.08.2026): Beide Aufrufer lasen zuvor die gespeicherte Abfrage
-        /// <c>Abfrage_KostenKomponenten</c>. Die summiert <c>EingegebenerWert</c> nur über
-        /// ProjektID und Komponente und filtert <b>nicht</b> nach <c>KategorieID</c> —
-        /// Investitions-, Betriebs- und Energiepositionen derselben Komponente landeten in
-        /// einer Zahl. Nachweis Projekt 1024: Wärmepumpe 6.100 € = 6.001 € (Investition) +
-        /// 99 € (Betrieb), während die Investitions-Kachel der Kostenseite korrekt
-        /// 12.001,00 € zeigte und die Tabelle darunter 12.100,00 €.
-        /// </para>
-        /// <para>
-        /// Bewusst als eigenes parametrisiertes SQL statt einer Korrektur der gespeicherten
-        /// Abfrage: Die Datenbank liegt außerhalb des Repos, eine Abfrageänderung erreicht
-        /// Bestandsinstallationen nur über einen Migrationsschritt.
-        /// </para>
-        /// <para>
-        /// <c>internal</c>, damit die Kompaktanzeige der Seite „Kosten"
-        /// (<see cref="UcBkKosten"/>) dieselbe Leselogik verwendet und keine zweite entsteht —
-        /// gleiche Begründung wie bei <see cref="WirtschaftlichkeitCtrl.LiesInvestitionen"/>.
-        /// </para>
-        /// </remarks>
-        internal static DataTable LiesKomponentenSummen(int projektID, int kategorieID)
-        {
-            string sql = @"SELECT k.Komponente, Sum(w.EingegebenerWert) AS Summe
-                           FROM Tab_KostenKomponente AS k
-                                INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
-                           WHERE w.ProjektID = ? AND w.KategorieID = ?
-                           GROUP BY k.Komponente";
-
-            return DataRepository.GetDataTable(sql,
-                new DbParam("@pid", projektID),
-                new DbParam("@kat", kategorieID));
-        }
-
-        /// <summary>Ä20: dieselbe Summe je ANLAGENZEILE (Spalten Komponente,
-        /// ID_Anlage, Summe; ID_Anlage NULL = ohne Anlagenzuordnung). <c>null</c>,
-        /// wenn die Spalte auf dieser Datenbank nicht anlegbar ist — der Aufrufer
-        /// fällt dann auf die Komponentensummen zurück.</summary>
-        internal static DataTable LiesAnlagenSummen(int projektID, int kategorieID)
-        {
-            bool spalteDa = false;
-            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
-            if (!spalteDa) return null;
-
-            string sql = @"SELECT k.Komponente, w.ID_Anlage, Sum(w.EingegebenerWert) AS Summe
-                           FROM Tab_KostenKomponente AS k
-                                INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
-                           WHERE w.ProjektID = ? AND w.KategorieID = ?
-                           GROUP BY k.Komponente, w.ID_Anlage";
-
-            return DataRepository.GetDataTable(sql,
-                new DbParam("@pid", projektID),
-                new DbParam("@kat", kategorieID));
-        }
-
-        /// <summary>
         /// Energiekosten p. a. des Projekts [€/a] aus <see cref="KostenEmissionRechner"/> —
         /// <c>null</c>, wenn kein Simulationsergebnis vorliegt oder der Rechner keine
         /// vollständige Summe bilden kann.
@@ -769,7 +709,7 @@ namespace WindowsFormsApplication1
             {
                 // Die Gesamtsumme der GERADE ANGEZEIGTEN Kategorie aus der Datenbank.
                 decimal summeGesamt = 0;
-                DataTable dt = LiesKomponentenSummen(m_ID_Projekt, kat.Value);
+                DataTable dt = KostenSummenCtrl.LiesKomponentenSummen(m_ID_Projekt, kat.Value);
 
                 // Durch die Zeilen loopen (ersetzt den Reader)
                 foreach (DataRow row in dt.Rows)
@@ -1979,71 +1919,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public static List<EnergyCarrier> GetAllCarriers(int ID_Projekt)
-        {
-            List<EnergyCarrier> carriers = new List<EnergyCarrier>();
-
-            //string sql = "SELECT * FROM ENERGY_CARRIER WHERE is_active = true ORDER BY name ASC";
-
-            string sql = @"SELECT
-                            energy_project_settings.ID_Projekt,
-                            ec.*, 
-                            pm.has_hi, 
-                            pm.has_hs, 
-                            pm.has_powerprice
-                        FROM
-                            energy_project_settings
-                            INNER JOIN (
-                                energy_carrier AS ec
-                                LEFT JOIN
-                                pricing_model AS pm ON ec.pricing_model = pm.code
-                            ) ON energy_project_settings.ID_Energieträger = ec.id
-                        WHERE energy_project_settings.ID_Projekt=?";
-
-            DbParam[] ps = {
-                new DbParam("@p", ID_Projekt),
-            };
-
-            // KD6a-Nachtrag (Befund 26.08.2026): Im KATALOGkontext (Projekt 0)
-            // lieferte der Zuordnungs-Join eine leere Liste — die
-            // Energieträgerverwaltung unter Administration blieb leer. Der
-            // Katalog listet alle Träger direkt (der Mapper liest nur ec.* + Flags).
-            if (ID_Projekt <= 0)
-                sql = @"SELECT ec.*, pm.has_hi, pm.has_hs, pm.has_powerprice
-                        FROM energy_carrier AS ec
-                             LEFT JOIN pricing_model AS pm ON ec.pricing_model = pm.code
-                        ORDER BY ec.name";
-
-            DataTable dt = ID_Projekt <= 0
-                ? DataRepository.GetDataTable(sql)
-                : DataRepository.GetDataTable(sql, ps);
-
-            foreach (DataRow row in dt.Rows)
-            {
-                carriers.Add(new EnergyCarrier
-                {
-                    ID = Convert.ToInt32(row["id"]),
-                    Code = row["code"].ToString(),
-                    Name = row["name"].ToString(),
-                    GroupCode = row["group_code"].ToString(),
-                    PricingModel = row["pricing_model"].ToString(),
-                    BillingUnit = row["billing_unit"].ToString(),
-                    HiKwhPerUnit = row["hi_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hi_kwh_per_unit"]) : 0,
-                    HsKwhPerUnit = row["hs_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hs_kwh_per_unit"]) : 0,
-                    ID_Brennstoff = Convert.ToInt32(row["id_brennstoff"]),
-                    price_base = row["price_base"] != DBNull.Value ? Convert.ToDouble(row["price_base"]) : 0,
-                    price_work = row["price_work"] != DBNull.Value ? Convert.ToDouble(row["price_work"]) : 0,
-                    CO2 = row["co2"] != DBNull.Value ? Convert.ToDouble(row["co2"]) : 0,
-                    SO2 = row["so2"] != DBNull.Value ? Convert.ToDouble(row["so2"]) : 0,
-                    NOx = row["nox"] != DBNull.Value ? Convert.ToDouble(row["nox"]) : 0,
-                    HasHi = row["has_hi"] != DBNull.Value ? Convert.ToBoolean(row["has_hi"]) : false,
-                    HasHs = row["has_hs"] != DBNull.Value ? Convert.ToBoolean(row["has_hs"]) : false,
-                    HasPowerPrice = row["has_powerprice"] != DBNull.Value ? Convert.ToBoolean(row["has_powerprice"]) : false
-                });
-            }
-            return carriers;
-        }
-
         /// <summary>
         /// Füllt die Energieträgerliste des Projekts — <b>ohne</b> Auswahl und damit
         /// ohne Energieträger-Block im Panel.
@@ -2073,7 +1948,7 @@ namespace WindowsFormsApplication1
         private void FillCarrierComboBox()
         {
             // Daten holen
-            List<EnergyCarrier> allCarriers = GetAllCarriers(m_ID_Projekt);
+            List<EnergyCarrier> allCarriers = KostenSummenCtrl.GetAllCarriers(m_ID_Projekt);
 
             _traegerlisteWirdGefuellt = true;
             try
@@ -2340,39 +2215,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-    }
-
-    public class EnergyCarrier
-    {
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public string PricingModel { get; set; } // GAS, FUEL, GRID
-        public string Code { get; set; }                                      // Das ist der Standard-Heizwert aus der Tabelle ENERGY_CARRIER
-        public double HiKwhPerUnit { get; set; }
-        public double HsKwhPerUnit { get; set; }
-        public string GroupCode { get; set; }
-        public string BillingUnit { get; set; }
-        public int ID_Brennstoff { get; set; }
-        public double price_work { get; set; }
-        public double price_base { get; set; }
-        public double price_power { get; set; }
-        public double CO2 { get; set; }
-        public double SO2 { get; set; }
-        public double NOx { get; set; }
-        public bool HasPowerPrice { get; set; }
-        public bool HasHi { get; set; }
-        public bool HasHs { get; set; }
-    }
-
-    public class EnergyConversion
-    {
-        public int IDBrennstoff { get; set; }
-        public string FromUnit { get; set; }
-        public string ToUnitCode { get; set; } // z.B. "kg", "L"
-        public double Factor { get; set; }
-
-        // Hilfseigenschaft für die ComboBox-Anzeige
-        public string ToUnitLabel => $"{ToUnitCode} (Faktor: {Factor})";
     }
 
 }

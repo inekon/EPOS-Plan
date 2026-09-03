@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             {
                 // Ä13 (Nutzerauftrag 26.08.2026): Die Liste zeigt die Träger unter
                 // ihren GRUPPEN (group_code) — Köpfe sind nicht wählbar.
-                List<EnergyCarrier> traeger = Form_Kosten.GetAllCarriers(_projektId);
+                List<EnergyCarrier> traeger = KostenSummenCtrl.GetAllCarriers(_projektId);
                 traeger.Sort((a, b) =>
                 {
                     int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
