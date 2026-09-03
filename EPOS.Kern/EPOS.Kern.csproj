@@ -97,6 +97,20 @@
   </ItemGroup>
 
   <!-- ================================================================== -->
+  <!-- LIZENZ UND KATALOGIMPORT (Paket iU5-U1)                             -->
+  <!--                                                                    -->
+  <!-- BouncyCastle prueft die Ed25519-Signatur des Lizenztokens           -->
+  <!-- (Allgemein\Lizenz\LizenzToken.cs); ClosedXML liest Excel-Mappen im  -->
+  <!-- Ganglinienimport (Allgemein\Import\GanglinienDatei.cs). Beide       -->
+  <!-- Pakete sind plattformfrei - sie standen bisher nur deshalb in der   -->
+  <!-- Anwendung, weil die Dateien dort lagen.                             -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
   <!-- DIAGRAMME DES BERICHTS (Paket iU7-5)                                -->
   <!--                                                                    -->
   <!-- Allgemein\Bericht\ChartRenderer.cs zeichnet seit iU7-2 mit          -->
