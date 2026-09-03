@@ -108,18 +108,14 @@ namespace WindowsFormsApplication1
             simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
             simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
             
-            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
-            frm.Init(simulation);
-            frm.SetPage(1); 
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgStromverbraucher (Reiter 1 = monatlich).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, 1);
         }
 
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
-            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
-            frm.Init(simulation);
-            frm.SetPage(1);
-            frm.ShowDialog(); 
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgStromverbraucher (Reiter 1 = monatlich).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, 1);
         }
 
         private void btn_Prozess_DBedit_Click(object sender, EventArgs e)

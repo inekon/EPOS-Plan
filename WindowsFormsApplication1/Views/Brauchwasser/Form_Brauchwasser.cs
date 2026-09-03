@@ -304,20 +304,18 @@ namespace WindowsFormsApplication1
             //simulation.com.I_monats_summe(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
             WPPlan.Core.BhkwPlan.MonatsSumme(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
 
-            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
-            frm.Text = frm.Text + " - " + textBox_Name.Text;   
-            frm.Init(simulation);
-            frm.SetPage(2); 
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgBrauchwasserwaerme. Reiter 2 = Grafik
+            // und damit zugleich die Brauchwassersicht (SetPage:421); der Name haengt wie
+            // bisher am Fenstertitel.
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: true,
+                                        startReiter: 2, titelZusatz: textBox_Name.Text);
             btn_ErgebnisseVerbrauch.Enabled = true;
         }
 
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
-            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
-            frm.Init(simulation);
-            frm.SetPage(2);
-            frm.ShowDialog(); 
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgBrauchwasserwaerme (Reiter 2 = Grafik).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: true, startReiter: 2);
         }
 
         private void btn_Prozess_DBedit_Click(object sender, EventArgs e)

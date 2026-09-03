@@ -169,10 +169,10 @@ namespace WindowsFormsApplication1
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)
         {
-            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
-            frm.Init(sim.simulation_Waermebedarf);
-            frm.SetPage(2);
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgBrauchwasserwaerme (Reiter 2 = Grafik,
+            // beim Brauchwasser zugleich die Brauchwassersicht - wie SetPage:421).
+            BedarfErgebnisHuelle.Zeigen(this, sim.simulation_Waermebedarf,
+                                        mitBrauchwasser: true, startReiter: 2);
         }
 
         private void SetupDataGridViewLook(DataGridView dgvErgebnisse)

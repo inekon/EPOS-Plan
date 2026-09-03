@@ -109,7 +109,6 @@ namespace WindowsFormsApplication1
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
             { "Form_EingBrauchwasserTyp",    B_BRAUCHWASSER },
             { "Form_EingDBBrauchwasser",     B_BRAUCHWASSER },
-            { "Form_ErgBrauchwasserwaerme",  B_BRAUCHWASSER },
 
             { "Form_EingGebTyp",             B_GEBAEUDE },
             { "Form_GebWohnflaeche",         B_GEBAEUDE },
@@ -145,7 +144,6 @@ namespace WindowsFormsApplication1
 
             { "Form_EingDBProzess",          B_PROZESSWAERME },
             { "Form_EingProzTyp",            B_PROZESSWAERME },
-            { "Form_ErgProzesswaerme",       B_PROZESSWAERME },
             { "Form_Prozesswaerme",          B_PROZESSWAERME },
             { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
 
@@ -182,7 +180,6 @@ namespace WindowsFormsApplication1
 
             { "Form_EingDBStromverbraucher", B_STROMVERBRAUCHER },
             { "Form_EingStromTyp",           B_STROMVERBRAUCHER },
-            { "Form_ErgStromverbraucher",    B_STROMVERBRAUCHER },
             { "Form_GanglinieImportOptionen",B_STROMVERBRAUCHER },
             { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
             { "Form_Stromganglinie",         B_STROMVERBRAUCHER },
