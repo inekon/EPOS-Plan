@@ -11,9 +11,18 @@
 
     net10.0 OHNE -windows und OHNE ProjectReference auf die Anwendung: Ein Verweis
     auf WindowsFormsApplication1 haette die halbe Windows-Welt mitgezogen und den
-    Nachweis wertlos gemacht. Verlinkt wird deshalb GENAU EINE Datei aus dem
-    Bestand - der Renderer selbst. Was er sonst noch braucht, steht als schmaler
-    Ersatz daneben (siehe Stubs im Projektordner).
+    Nachweis wertlos gemacht.
+
+    SEIT iU7-6 HAENGT DIE PROBE AM KERN. Bis iU7-5 verlinkte sie ChartRenderer.cs
+    einzeln und stellte ZeitreihenSatz, VerlaufSerie und BerichtTexte als schmale
+    Ersatzklassen daneben - der Renderer lag damals noch in der Anwendung, und
+    seine Nachbardateien zogen ProjektModel, DataTable und Program.nLanguage nach
+    sich. Beides ist erledigt: Der Renderer liegt seit iU7-5 in EPOS.Kern, und
+    BerichtTexte entscheidet seit iU4 ueber Sprache.Nummer statt ueber Program.
+    Die Probe referenziert deshalb jetzt EPOS.Kern und misst die ECHTEN Typen;
+    die Ersatzklassen sind ersatzlos entfallen. Der Nachweis wird dadurch
+    schaerfer, nicht schwaecher - EPOS.Kern traegt kein -windows, jede
+    Windowsbindung im Kern braeche diesen Bau genauso wie den eigenen.
 
     EIGENE Projektmappe, BEWUSST NICHT in WP-Plan.sln - dasselbe Muster wie
     Proben\ZugriffsschichtProben: Die Proben sollen den Ausrollstand nicht
@@ -44,23 +53,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Der Pruefling - EINE Quelle, verlinkt statt kopiert. -->
-    <Compile Include="..\..\EPOS.Kern\Allgemein\Bericht\ChartRenderer.cs"
-             Link="ChartRenderer.cs" />
-
-    <!-- Die Probe selbst und der schmale Ersatz fuer das, was der Renderer
-         ausserhalb seiner eigenen Datei anfasst. -->
+    <!-- Nur noch die Probe selbst; der Pruefling kommt aus EPOS.Kern. -->
     <Compile Include="Program.cs" />
-    <Compile Include="ZeitreihenSatzStub.cs" />
-    <Compile Include="BerichtTexteStub.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Der Pruefling samt seiner Nachbarn: ChartRenderer, ZeitreihenSatz,
+         VerlaufSerie, BerichtTexte. -->
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- SkiaSharp und die passende Native kaemen ueber EPOS.Kern ohnehin mit;
+         hier stehen sie trotzdem, weil DIESES Projekt das ausfuehrbare ist -
+         wer das Bild erzeugt, soll seine Laufzeit selbst benennen. -->
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
                       Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
     <PackageReference Include="SkiaSharp.NativeAssets.macOS"
                       Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
 </Project>
