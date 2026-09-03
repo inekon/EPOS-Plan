@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SkiaSharp;
 using WindowsFormsApplication1;
 using Xunit;
@@ -356,6 +357,93 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(ChartRenderer.MonatsSaeulen("M", new double[3], SKColors.Red, "MWh"));
             Assert.NotNull(ChartRenderer.Stundenprofil("P", null, 24, "x", "y"));
             Assert.NotNull(ChartRenderer.Jahresverlauf("J", null, "kW", SKColors.SteelBlue));
+        }
+
+        // -----------------------------------------------------------------------------
+        // 7 — Jahresgang, zweireihig (iU9-W10a.0d)
+        // -----------------------------------------------------------------------------
+
+        private static List<ChartRenderer.Reihe> Jahresgangreihen()
+        {
+            var quelle = new double[8760];
+            var aussen = new double[8760];
+            for (int i = 0; i < 8760; i++)
+            {
+                double jahr = 2.0 * Math.PI * i / 8760.0;
+                quelle[i] = 9 + 4 * Math.Sin(jahr - Math.PI / 2);
+                aussen[i] = 9 + 14 * Math.Sin(jahr - Math.PI / 2);
+            }
+            return new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Quelltemperatur", quelle, ChartRenderer.C_QUELLTEMPERATUR),
+                new ChartRenderer.Reihe("Aussentemperatur", aussen, ChartRenderer.C_AUSSENTEMPERATUR)
+            };
+        }
+
+        /// <summary>
+        /// Das Bild des Erdreich-Dialogs misst 1304x440 — die doppelte Zielaufloesung des
+        /// abgeloesten WinForms-Chart (652x170) plus 100 px fuer die Legende, die dort
+        /// INNERHALB der Zeichenflaeche stand und den Jahresanfang verdeckte.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_zeichnet_deterministisch_in_1304x440()
+        {
+            List<ChartRenderer.Reihe> reihen = Jahresgangreihen();
+
+            byte[] a = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur");
+            byte[] b = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur");
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(1304, bild.Width);
+                Assert.Equal(440, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Die beiden Farben stehen woertlich im Vorlaeufer (SaddleBrown mit Deckung 200,
+        /// SteelBlue mit Deckung 90). Die dickere Braunlinie muss im fertigen Bild
+        /// ankommen — ueber Weiss gemischt ergibt sie 164/109/70.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_traegt_die_Quelltemperatur_in_SaddleBrown()
+        {
+            Assert.Equal(new SKColor(0x8B, 0x45, 0x13, 200), ChartRenderer.C_QUELLTEMPERATUR);
+            Assert.Equal(new SKColor(0x46, 0x82, 0xB4, 90), ChartRenderer.C_AUSSENTEMPERATUR);
+
+            byte[] png = ChartRenderer.Jahresgang("Jahresgang", Jahresgangreihen(),
+                                                  "Monat", "Temperatur");
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                var vorhanden = new HashSet<uint>();
+                foreach (SKColor p in bild.Pixels) vorhanden.Add((uint)p);
+                Assert.Contains((uint)new SKColor(164, 109, 70), vorhanden);
+            }
+        }
+
+        /// <summary>
+        /// EINE Reihe geht auch: Der Vorlaeufer zeichnete die Aussentemperatur nur, wenn
+        /// das Projekt Klimadaten fuehrt. Ohne Reihen kommt ein Bild MIT HINWEIS zurueck,
+        /// nicht <c>null</c> — dieselbe Zusage wie bei allen Bildern dieser Datei.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_traegt_eine_Reihe_und_meldet_keine()
+        {
+            List<ChartRenderer.Reihe> eine = Jahresgangreihen();
+            eine.RemoveAt(1);
+            Assert.NotNull(ChartRenderer.Jahresgang("J", eine, "Monat", "Temperatur"));
+
+            Assert.NotNull(ChartRenderer.Jahresgang("J", null, "Monat", "Temperatur"));
+            Assert.NotNull(ChartRenderer.Jahresgang(
+                "J", new List<ChartRenderer.Reihe>(), "Monat", "Temperatur"));
+
+            // Eine Reihe mit weniger als zwei Werten ist keine Linie und faellt weg.
+            Assert.NotNull(ChartRenderer.Jahresgang("J", new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("kurz", new double[1], ChartRenderer.C_QUELLTEMPERATUR)
+            }, "Monat", "Temperatur"));
         }
     }
 }

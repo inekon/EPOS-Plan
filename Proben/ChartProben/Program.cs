@@ -51,6 +51,21 @@ namespace ChartProben
         /// </summary>
         private static readonly SKColor PROFILFLAECHE_AUF_WEISS = new SKColor(155, 155, 255);
 
+        /// <summary>
+        /// Die QUELLTEMPERATUR-Linie des Jahresgangs, wie sie im fertigen Bild ANKOMMT
+        /// (iU9-W10a.0d). <c>ChartRenderer.C_QUELLTEMPERATUR</c> ist SaddleBrown mit der
+        /// Deckung 200 von 255 (woertlich aus <c>Form_QuelleErdreich</c>:
+        /// <c>Color.FromArgb(200, Color.SaddleBrown)</c>); ueber der weissen Flaeche
+        /// entsteht daraus 164/109/70 - derselbe Grund wie bei den beiden Farben darueber.
+        ///
+        /// <para>Die zweite Reihe (Aussentemperatur, SteelBlue mit Deckung 90 und
+        /// Strichstaerke 1) wird NICHT geprueft: Eine ein Pixel breite, stark
+        /// durchscheinende Linie geht in der Kantenglaettung auf - es gibt kein Pixel, das
+        /// die Mischfarbe exakt traegt. Dasselbe Zugestaendnis macht die Pruefung bei den
+        /// Speichertemperaturen.</para>
+        /// </summary>
+        private static readonly SKColor QUELLTEMPERATUR_AUF_WEISS = new SKColor(164, 109, 70);
+
         private static int _verstoesse;
         private static int _bilder;
 
@@ -188,6 +203,24 @@ namespace ChartProben
                    new[] { SKColors.SteelBlue },
                    () => ChartRenderer.Jahresverlauf("Jahresuebersicht", jahresverlauf,
                             "Waermebedarf [kW]", SKColors.SteelBlue));
+
+            // 16 - Jahresgang zweireihig (iU9-W10a.0d): Quelltemperatur und
+            // Aussentemperatur ueber der Monatsachse 0…12, Legende oben. Er loest das
+            // Chart des Erdreich-Dialogs ab. Beide Reihen sind TEMPERATUREN und laufen
+            // deshalb ins Negative - damit wird die gestrichelte Nulllinie mitgeprueft.
+            double[] quelltemperatur = Temperaturreihe(9, 4, 0, -Math.PI / 2);
+            double[] aussentemperatur = Temperaturreihe(9, 14, 3, -Math.PI / 2);
+            Pruefe(ziel, "jahresgang_erdreich", 1304, 440,
+                   new[] { QUELLTEMPERATUR_AUF_WEISS },
+                   () => ChartRenderer.Jahresgang("Jahresgang der Quelltemperatur",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Quelltemperatur", quelltemperatur,
+                                                        ChartRenderer.C_QUELLTEMPERATUR),
+                                new ChartRenderer.Reihe("Aussentemperatur", aussentemperatur,
+                                                        ChartRenderer.C_AUSSENTEMPERATUR)
+                            },
+                            "Monat", "Temperatur [°C]"));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

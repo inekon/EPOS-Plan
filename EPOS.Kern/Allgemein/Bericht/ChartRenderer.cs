@@ -767,6 +767,186 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================== Jahresgang
+
+        /// <summary>
+        /// Quelltemperatur im Jahresgang — <c>Color.FromArgb(200, Color.SaddleBrown)</c>
+        /// aus <c>Form_QuelleErdreich.ChartAufbauen</c>:634. SkiaSharp nimmt die Deckung
+        /// als vierten Wert.
+        /// </summary>
+        public static readonly SKColor C_QUELLTEMPERATUR = new SKColor(0x8B, 0x45, 0x13, 200);
+
+        /// <summary>
+        /// Außentemperatur im Jahresgang — <c>Color.FromArgb(90, Color.SteelBlue)</c>
+        /// (ebenda :647). Sie ist die BEZUGSlinie und deshalb blasser und dünner als die
+        /// Quelltemperatur; das war im Vorläufer eine Entscheidung und keine Zufälligkeit.
+        /// </summary>
+        public static readonly SKColor C_AUSSENTEMPERATUR = new SKColor(0x46, 0x82, 0xB4, 90);
+
+        /// <summary>
+        /// Liniendiagramm „Jahresgang" (Paket iU9‑W10a.0d): MEHRERE Stundenreihen über
+        /// einer Monatsachse 0…12, mit Legende oben.
+        ///
+        /// <para><b>Vorbild.</b> Das <c>Chart</c> der Maske <c>Form_QuelleErdreich</c>
+        /// (652 × 170, <c>ChartAufbauen</c> :611-659): ein Diagrammbereich „Jahr",
+        /// x-Achse 0…12 im Abstand 1, beide Raster gepunktet, Legende oben und zentriert,
+        /// ZWEI Reihen <c>FastLine</c> — Quelltemperatur in halbtransparentem SaddleBrown
+        /// mit Stärke 2, Außentemperatur in stark transparentem SteelBlue mit Stärke 1.
+        /// Die Punkte entstanden dort aus <c>x = i * 12 / 8760</c>; dieselbe Abbildung
+        /// steht hier.</para>
+        ///
+        /// <para><b>Warum nicht <see cref="Jahresverlauf"/>.</b> Jenes Bild aus Welle 8
+        /// zeichnet EINE Reihe, führt keine Legende und beschriftet die x-Achse mit
+        /// Monatsnamen statt mit den Zahlen 0…12. Der Erdreich-Dialog braucht die zweite
+        /// Reihe: Die Quelltemperatur ist nur im Vergleich zur Außentemperatur zu lesen —
+        /// gedämpft und phasenverschoben ist eine Aussage ÜBER die Außentemperatur.</para>
+        ///
+        /// <para><b>Bildmaß 1304 × 440.</b> Die Breite und die Diagrammhöhe sind die
+        /// doppelte Zielauflösung des Vorläufers (2 × 652 × 170), wie bei allen Bildern
+        /// dieser Datei. Dazu kommen 100 px für die Legende: Sie stand im WinForms-Chart
+        /// INNERHALB der Zeichenfläche (<c>Docking.Top</c>) und verdeckte dort den
+        /// Jahresanfang beider Linien.</para>
+        ///
+        /// <para><b>Die y-Achse ist vorzeichenfähig.</b> Eine Quelltemperatur unter 0 °C
+        /// ist der Normalfall, nicht die Ausnahme; die Nulllinie wird dann gestrichelt
+        /// hervorgehoben — dieselbe Regel wie beim Kostenprofil.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift ohne Einheit.</param>
+        /// <param name="reihen">
+        /// Die Reihen in Zeichenreihenfolge; jede mit eigener Farbe und eigenem Namen für
+        /// die Legende. Reihen ohne Werte fallen still weg — der Vorläufer zeichnete die
+        /// Außentemperatur ebenfalls nur, wenn es Klimadaten gab.
+        /// </param>
+        /// <param name="xTitel">Beschriftung der x-Achse (Resource CHART_ACHSE_MONAT).</param>
+        /// <param name="yTitel">Beschriftung der y-Achse (Resource CHART_ACHSE_QUELLTEMPERATUR).</param>
+        public static byte[] Jahresgang(string titel, IReadOnlyList<Reihe> reihen,
+                                        string xTitel, string yTitel)
+        {
+            int W = 1304, H = 440;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                // Legende OBEN wie im Vorlaeufer, aber ueber der Zeichenflaeche statt
+                // darin - sonst verdeckt sie bei zwei Reihen den Jahresanfang.
+                var gueltig = (reihen ?? new List<Reihe>())
+                    .Where(r => r != null && r.Werte != null && r.Werte.Length >= 2 &&
+                                r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
+                    .ToList();
+
+                var rc = SKRect.Create(110f, 130f, W - 150f, 240f);
+
+                if (gueltig.Count == 0)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, BerichtTexte.T("Kein Jahresgang vorhanden."), f, SKColors.DimGray,
+                             rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        110f, 76f, W - 30f);
+
+                // Vorzeichenfaehige Skala mit "schoenen" Stufen (5 Rasterlinien) -
+                // dieselbe Rechnung wie in KapitalwertVerlauf und Kostenprofil.
+                double min = gueltig.Min(r => r.Werte.Min());
+                double max = gueltig.Max(r => r.Werte.Max());
+                if (min > 0) min = 0;              // die Null gehoert ins Bild
+                if (max < 0) max = 0;
+                if (max - min < 1e-9) { max = min + 1; }
+                double roh = (max - min) / 5.0;
+                double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+                double schritt = zehner;
+                foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                    if (zehner * f >= roh) { schritt = zehner * f; break; }
+                min = Math.Floor(min / schritt) * schritt;
+                max = Math.Ceiling(max / schritt) * schritt;
+
+                // Raster + y-Beschriftung. GEPUNKTET wie im Vorlaeufer
+                // (ChartDashStyle.Dot auf beiden Achsen).
+                using (var punktiert = SKPathEffect.CreateDash(new[] { 2f, 4f }, 0f))
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                {
+                    raster.PathEffect = punktiert;
+                    for (double wert = min; wert <= max + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("0.###", DE);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    }
+                }
+
+                // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1).
+                using (var punktiert = SKPathEffect.CreateDash(new[] { 2f, 4f }, 0f))
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                {
+                    raster.PathEffect = punktiert;
+                    for (int m = 0; m <= 12; m++)
+                    {
+                        float x = rc.Left + m / 12f * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = m.ToString(DE);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                    }
+                }
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                }
+
+                // Achsen + Nulllinie, wenn die Skala unter null reicht.
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                if (min < 0)
+                {
+                    float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
+                    using (var strichel = SKPathEffect.CreateDash(new[] { 3f * 2f, 1f * 2f }, 0f))
+                    using (var stift = Strich(SKColors.DimGray, 2f))
+                    {
+                        stift.PathEffect = strichel;
+                        g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
+                    }
+                }
+
+                // Die Linien. Der Vorlaeufer legte die Reihen mit x = i * 12 / 8760 auf
+                // die Monatsachse; ueber die eigene Laenge gerechnet ist das dasselbe und
+                // traegt zusaetzlich kuerzere Reihen. Mehr Punkte als Bildpunkte zeichnen
+                // dasselbe Bild langsamer - deshalb jeder n-te Wert.
+                foreach (Reihe r in gueltig)
+                {
+                    // Strichstaerke woertlich: die erste Reihe 2, jede weitere 1
+                    // (BorderWidth 2 fuer die Quelltemperatur, 1 fuer die Aussentemperatur).
+                    float staerke = ReferenceEquals(r, gueltig[0]) ? 2f : 1f;
+
+                    int schrittweite = Math.Max(1, r.Werte.Length / (int)rc.Width);
+                    var punkte = new List<SKPoint>();
+                    for (int i = 0; i < r.Werte.Length; i += schrittweite)
+                    {
+                        float x = rc.Left + (float)i / (r.Werte.Length - 1) * rc.Width;
+                        float y = (float)(rc.Bottom - (r.Werte[i] - min) / (max - min) * rc.Height);
+                        punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                    }
+                    using (var stift = Strich(r.Farbe, staerke))
+                    {
+                        stift.StrokeJoin = SKStrokeJoin.Round;
+                        Linienzug(g, punkte.ToArray(), stift);
+                    }
+                }
+
+                return Png(flaeche);
+            }
+        }
+
         // =================================================================== Kennlinien
 
         /// <summary>
