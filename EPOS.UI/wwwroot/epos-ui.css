@@ -1530,3 +1530,18 @@ body {
 .epos-gesperrt {
     color: var(--epos-text-sehr-leise);
 }
+
+/* Der Anlagenblock des PV-Dialogs (iU9-W6.5). Der Vorlaeufer zog um dieses
+   Panel einen GESTRICHELTEN Rahmen von Hand (Form_PV_Paint, vier
+   DrawLine-Aufrufe mit DashPattern 5/2). Hier macht es CSS - und weil der
+   Block ohnehin nur bei gewaehlter Projektzeile erscheint, sagt der Rahmen
+   dasselbe wie dort: "diese Werte gehoeren zur markierten Anlage". */
+.epos-anlagenblock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+    padding: var(--epos-rand);
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}

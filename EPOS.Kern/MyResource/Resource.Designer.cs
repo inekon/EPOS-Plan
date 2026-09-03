@@ -28488,5 +28488,158 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Photovoltaik Module ähnelt.
+        /// </summary>
+        public static string PVD_TITEL {
+            get {
+                return ResourceManager.GetString("PVD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Photovoltaik Anlagendaten ähnelt.
+        /// </summary>
+        public static string PVD_KOPFBAND {
+            get {
+                return ResourceManager.GetString("PVD_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählte Module ähnelt.
+        /// </summary>
+        public static string PVD_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("PVD_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module aus Datenbank ähnelt.
+        /// </summary>
+        public static string PVD_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("PVD_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Hersteller: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVD_LBL_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Bearbeiten... ähnelt.
+        /// </summary>
+        public static string PVD_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("PVD_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Löschen ähnelt.
+        /// </summary>
+        public static string PVD_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("PVD_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV Anlage Eigenschaften: ähnelt.
+        /// </summary>
+        public static string PVD_GRP_ANLAGE {
+            get {
+                return ResourceManager.GetString("PVD_GRP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung [°]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_NEIGUNG {
+            get {
+                return ResourceManager.GetString("PVD_LBL_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut [°]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_AZIMUT {
+            get {
+                return ResourceManager.GetString("PVD_LBL_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Module: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_ANZAHL {
+            get {
+                return ResourceManager.GetString("PVD_LBL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Eigenschaften: ähnelt.
+        /// </summary>
+        public static string PVD_GRP_MODUL {
+            get {
+                return ResourceManager.GetString("PVD_GRP_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVD_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Leistung [KW]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PVD_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtleistung [KW]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_GESAMTLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVD_LBL_GESAMTLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das Modul löschen? ähnelt.
+        /// </summary>
+        public static string PVD_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("PVD_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das ausgewählte Modul wurde in den Stammdaten nicht gefunden. ähnelt.
+        /// </summary>
+        public static string PVD_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("PVD_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
     }
 }

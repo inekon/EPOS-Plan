@@ -500,5 +500,21 @@ namespace WindowsFormsApplication1
                 r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
                 r["Leistung"] == DBNull.Value ? 0 : Convert.ToDouble(r["Leistung"]));
         }
+
+        /// <summary>
+        /// Der Bezeichner eines Katalogmoduls ueber seinen Primaerschluessel; leer, wenn
+        /// es ihn nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer <c>Form_PV.btn_Hinzu_Click</c> nahm den Namen aus der ListBox
+        /// und suchte damit den Satz; die Zeile fuehrt seit iU9-W6.5 ihre Id, und die
+        /// ist eindeutig - der Katalog kann gleichnamige Module fuehren.
+        /// </remarks>
+        public static string BezeichnerZu(int id)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM " + TABLE + " WHERE ID = ?", new DbParam("@id", id));
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
     }
 }
