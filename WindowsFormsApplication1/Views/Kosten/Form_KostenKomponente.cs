@@ -844,18 +844,18 @@ namespace WindowsFormsApplication1
         /// Klartext-Vorschau, Schreiben über <see cref="KostenVorlagenUebernahmeCtrl"/>.</summary>
         private void btnUebernahme_Click(object sender, EventArgs e)
         {
-            string name = AktuelleKomponente;
-            using (var dlg = new Form_VorlagenUebernahme())
-            {
-                // Ä11: Im Projektmodus steht das Ziel fest; die Quellvorlage
-                // (Standard oder Variante des Admin-Katalogs) wählt der Dialog.
-                // Ä20: übernommen wird in die GEWÄHLTE Anlage.
-                dlg.SetControls(KomponentenId, name, KategorieId,
-                                ProjektModus ? null : Variante,
-                                ProjektModus ? _idProjekt : 0,
-                                ProjektModus ? AnlagenId : 0);
-                dlg.ShowDialog(this);
-            }
+            // iU9-W1.4: der Übernahme-Dialog als Razor-Komponente über
+            // VorlagenUebernahmeHuelle; Form_VorlagenUebernahme ist im selben
+            // Schritt gelöscht (Regel M1).
+            //
+            // Ä11: Im Projektmodus steht das Ziel fest; die Quellvorlage
+            // (Standard oder Variante des Admin-Katalogs) wählt der Dialog.
+            // Ä20: übernommen wird in die GEWÄHLTE Anlage.
+            VorlagenUebernahmeHuelle.Oeffnen(this, KomponentenId, AktuelleKomponente, KategorieId,
+                                             ProjektModus ? null : Variante,
+                                             ProjektModus ? _idProjekt : 0,
+                                             ProjektModus ? AnlagenId : 0);
+
             // Projektmodus: Übernommene Positionen sofort zeigen (§ 8-Fluss).
             if (ProjektModus) RasterAufbauen();
         }

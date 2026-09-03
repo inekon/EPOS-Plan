@@ -440,6 +440,15 @@ body {
     height: 20px;
 }
 
+/* Kontextzeile unter dem Dialogkopf: „‹Komponente› · ‹Kategorie›" - sie sagt,
+   worauf sich der Dialog bezieht (Vorbild lblKontext in
+   Form_VorlagenUebernahme, fett). */
+.epos-kontextzeile {
+    margin: 0;
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
 /* Optionsgruppe (RadioButton-Gruppe des Bestands). Das <fieldset> traegt
    bewusst keinen Rahmen: Die Masken zeigten die Gruppen als blosse Zeilen
    untereinander, ein Kasten waere neu. Die <legend> bleibt als Titel. */
