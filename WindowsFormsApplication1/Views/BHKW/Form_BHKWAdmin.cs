@@ -229,18 +229,16 @@ namespace WindowsFormsApplication1
 
             string szName = SelectedBezeichner();
 
-            // Editor ist auch für schreibgeschützte (ReadOnly) Datensätze aufrufbar;
-            // dort ist lediglich der "Überschreiben"-Button gesperrt.
-            Form_DBBHKW frm = new Form_DBBHKW();
-            frm.m_mode = Form_DBBHKW.MODE_EDIT;
-            frm.SetControls(szName);
-            frm.ShowDialog();
+            // iU9-W6.2: Der Editor ist die Razor-Komponente BhkwKatalogDialog; die
+            // WinForms-Fassung Form_DBBHKW ist im selben Schritt GELOESCHT (Regel M1).
+            // Er ist auch fuer schreibgeschuetzte (ReadOnly) Datensaetze aufrufbar; dort
+            // fragt "Ueberschreiben" ausdruecklich nach.
+            BhkwHuelle.KatalogBearbeiten(this, szName, neu: false);
             SetFilter();
         }
 
         private void btn_DBBHKW_Neu_Click(object sender, EventArgs e)
         {
-            Form_DBBHKW frm = new Form_DBBHKW();
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -248,10 +246,7 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_mode = Form_DBBHKW.MODE_NEU;
-                frm.SetControls(szName);
-                frm.m_szName = szName;
-                frm.ShowDialog();
+                BhkwHuelle.KatalogBearbeiten(this, szName, neu: true);
                 SetFilter();
             }
         }

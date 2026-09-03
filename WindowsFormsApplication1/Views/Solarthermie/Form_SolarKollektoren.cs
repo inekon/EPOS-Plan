@@ -445,7 +445,10 @@ namespace WindowsFormsApplication1
         private void btn_Kollektor_DB_Edit_Click(object sender, EventArgs e)
         {
             Form_SolarDB frm = new Form_SolarDB();
-            frm.m_mode = Form_DBBHKW.MODE_EDIT;
+            // iU9-W6.2: Bis hierher stand hier Form_DBBHKW.MODE_EDIT - die Konstante
+            // einer FREMDEN Maske, die zufaellig denselben Wert trug. Mit deren
+            // Loeschung ist die eigene Konstante ohnehin die richtige.
+            frm.m_mode = Form_SolarDB.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
             if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
 

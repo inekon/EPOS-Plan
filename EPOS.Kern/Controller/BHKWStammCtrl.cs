@@ -456,5 +456,154 @@ namespace WindowsFormsApplication1
                 new DbParam("@nam", szBezeichner ?? ""));
             return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
         }
+
+        // =================================================================================
+        // W6.2 - die beiden Schreibeinstiege des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat - Gegenstueck zu
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c>.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck - der Weg des Knopfes
+        /// „Überschreiben" (<c>Form_DBBHKW.btn_Überschreiben_Click</c>, Z. 255).
+        /// </summary>
+        /// <param name="daten">Der Feldsatz aus der Maske.</param>
+        /// <param name="schreibschutzUebergehen">
+        /// <c>true</c> hebt den ReadOnly-Schutz fuer GENAU diesen Schreibvorgang auf. Der
+        /// Vorlaeufer setzte das nach einer ausdruecklichen Ja/Nein-Rueckfrage; die
+        /// Rueckfrage selbst steht jetzt in der Komponente (<c>Rueckfrage</c>-Baustein),
+        /// die Antwort kommt hier an.
+        /// </param>
+        public static SpeicherErgebnis Ueberschreiben(BHKWStammModel daten, bool schreibschutzUebergehen)
+        {
+            if (daten == null)
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                var ctrl = new BHKWStammCtrl { model = daten, SchreibschutzUebergehen = schreibschutzUebergehen };
+
+                // Ohne diese Freigabe prueft Update() selbst erneut auf ReadOnly. Es
+                // meldet den Grund ueber Meldung.* - hier zaehlt nur, ob geschrieben
+                // wurde; die Oberflaeche sagt es danach.
+                if (!ctrl.Update())
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_NICHT_GESCHRIEBEN",
+                        "Der Datensatz konnte nicht überschrieben werden."), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), daten.m_szBezeichner);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an - der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Transaktion, ein Ort.</b> Der Vorlaeufer trug die Anlage ZWEIMAL:
+        /// <c>btn_Speichern_Unter_Click</c> (Z. 403, Existenzpruefung ueber ein
+        /// zusammengesetztes <c>RecordSet</c>-SQL) und <c>btn_Speichern_Click</c>
+        /// (Z. 483, dieselbe Pruefung als parametrisiertes <c>COUNT(*)</c>). Beide
+        /// legten den Satz mit <c>INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly)</c>
+        /// an und fuellten ihn dann ueber <see cref="Update"/> im selben
+        /// <see cref="DbVorgang"/>. Hier steht das einmal - mit der parametrisierten
+        /// Pruefung, die auch einen Namen mit Hochkomma vertraegt.
+        /// </para>
+        /// <para>
+        /// <c>ReadOnly = false</c> ist Pflicht: Die Spalte ist NOT NULL, und ein neu
+        /// angelegter Satz gehoert nie zur Auslieferung.
+        /// </para>
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(BHKWStammModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_NAME_FEHLT",
+                    "Bitte einen gültigen Namen eingeben!"), "");
+
+            string bezeichner = name.Trim();
+
+            try
+            {
+                // 1./2. ARBEITSPAKET S4e: Verbindung UND Transaktion sind EIN
+                // Datenbankvorgang. Ohne Commit rollt sein Dispose beim Verlassen zurueck.
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    // Existenzpruefung IM Vorgang, damit sie die noch nicht
+                    // festgeschriebenen Zeilen sieht.
+                    int vorhanden = Convert.ToInt32(v.Skalar(
+                        "SELECT COUNT(*) FROM " + TABLE + " WHERE Bezeichner = ?",
+                        new DbParam("@nam", bezeichner)));
+                    if (vorhanden > 0)
+                    {
+                        v.Rollback();
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_NAME_BELEGT",
+                            "Name existiert bereits!"), "");
+                    }
+
+                    // INSERT inkl. ReadOnly = false (Feld ist NOT NULL).
+                    v.Ausfuehren("INSERT INTO " + TABLE + " (Bezeichner, ReadOnly) VALUES (?, ?)",
+                                 new DbParam("@nam", bezeichner),
+                                 new DbParam("@ro", false));
+
+                    daten.m_szBezeichner = bezeichner;
+                    var ctrl = new BHKWStammCtrl { model = daten, Vorgang = v };
+
+                    if (!ctrl.Update())
+                    {
+                        v.Rollback();
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER_ANLEGEN",
+                            "Fehler beim Speichern des Datensatzes!"), "");
+                    }
+
+                    v.Commit();
+                    return new SpeicherErgebnis(true,
+                        Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), bezeichner);
+                }
+            }
+            catch
+            {
+                // Zurueckgerollt hat bereits DbVorgang.Dispose beim Verlassen des using.
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER_ANLEGEN",
+                    "Fehler beim Speichern des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Alle Katalognamen in Anzeigereihenfolge - die Auswahlliste
+        /// <c>comboBox_Name</c> des Editors (<c>FillComboBox</c>).
+        /// </summary>
+        public static IReadOnlyList<string> Namen()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+                liste.Add(row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString());
+            return liste;
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }

@@ -27543,5 +27543,491 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW Eigenschaften ähnelt.
+        /// </summary>
+        public static string BHKWK_TITEL {
+            get {
+                return ResourceManager.GetString("BHKWK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
+        /// </summary>
+        public static string BHKWK_GRP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_GRP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulname: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_NAME {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Motortyp: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_MOTORTYP {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_MOTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technische Daten ähnelt.
+        /// </summary>
+        public static string BHKWK_GRP_TECHNIK {
+            get {
+                return ResourceManager.GetString("BHKWK_GRP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermische Leistung: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_PTHERM {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermische Leistung ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_PTHERM {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Leistung: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_PEL {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Leistung ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_PEL {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ges. Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwirkungsgrad ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 0,85) ähnelt.
+        /// </summary>
+        public static string BHKWK_HINT_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BHKWK_HINT_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenzleistung: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die untere Grenzleistung ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_ENERGIETRAEGER {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_VORLAUF {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
+        /// </summary>
+        public static string BHKWK_GRP_KOSTEN {
+            get {
+                return ResourceManager.GetString("BHKWK_GRP_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_MODUL {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Modul ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_MODUL {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Montage und Inbetriebnahme: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_MONTAGE {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_MONTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Montage und Inbetriebnahme ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_MONTAGE {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_MONTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lieferung (50 km Umkreis): ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_LIEFERUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_LIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Lieferung ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_LIEFERUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_LIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schallschutzhaube: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_SCHALLSCHUTZ {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_SCHALLSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Schallschutzhaube ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_SCHALLSCHUTZ {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_SCHALLSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgasreinigung, z. B. Kat: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_ABGASREINIGUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_ABGASREINIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Abgasreinigung ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_ABGASREINIGUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_ABGASREINIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten [€ / kWel]: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_RAUMBEDARF {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_RAUMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_RAUMBEDARF {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_RAUMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungskosten: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_WARTUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_WARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungskosten ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_WARTUNG {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_WARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
+        /// </summary>
+        public static string BHKWK_EINHEIT_JAHRE {
+            get {
+                return ResourceManager.GetString("BHKWK_EINHEIT_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen nach BEHG-V ähnelt.
+        /// </summary>
+        public static string BHKWK_GRP_BEHG {
+            get {
+                return ResourceManager.GetString("BHKWK_GRP_BEHG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Staub-Emission ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_STAUB {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_STAUB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit SCR ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_SCR {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_SCR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintragen ähnelt.
+        /// </summary>
+        public static string BHKWK_BTN_EINTRAGEN {
+            get {
+                return ResourceManager.GetString("BHKWK_BTN_EINTRAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.  Soll er trotzdem überschrieben werden? ähnelt.
+        /// </summary>
+        public static string BHKWK_FRAGE_SCHREIBSCHUTZ {
+            get {
+                return ResourceManager.GetString("BHKWK_FRAGE_SCHREIBSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
+        /// </summary>
+        public static string BHKWK_TITEL_SCHREIBSCHUTZ {
+            get {
+                return ResourceManager.GetString("BHKWK_TITEL_SCHREIBSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz gespeichert ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz konnte nicht überschrieben werden. ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_NICHT_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_NICHT_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Überschreiben des Datensatzes! ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name existiert bereits! ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen gültigen Namen eingeben! ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern des Datensatzes! ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_FEHLER_ANLEGEN {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_FEHLER_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja ähnelt.
+        /// </summary>
+        public static string ALLG_BTN_JA {
+            get {
+                return ResourceManager.GetString("ALLG_BTN_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein ähnelt.
+        /// </summary>
+        public static string ALLG_BTN_NEIN {
+            get {
+                return ResourceManager.GetString("ALLG_BTN_NEIN", resourceCulture);
+            }
+        }
+        
     }
 }

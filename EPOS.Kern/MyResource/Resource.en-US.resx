@@ -9742,4 +9742,168 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="HZKK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
     <value>Error while saving the record.</value>
   </data>
+  <data name="BHKWK_TITEL" xml:space="preserve">
+    <value>CHP properties</value>
+  </data>
+  <data name="BHKWK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="BHKWK_LBL_NAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
+  <data name="BHKWK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="BHKWK_LBL_MOTORTYP" xml:space="preserve">
+    <value>Engine type:</value>
+  </data>
+  <data name="BHKWK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="BHKWK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technical data</value>
+  </data>
+  <data name="BHKWK_LBL_PTHERM" xml:space="preserve">
+    <value>Thermal performance:</value>
+  </data>
+  <data name="BHKWK_FELD_PTHERM" xml:space="preserve">
+    <value>thermal performance</value>
+  </data>
+  <data name="BHKWK_LBL_PEL" xml:space="preserve">
+    <value>Electrical performance:</value>
+  </data>
+  <data name="BHKWK_FELD_PEL" xml:space="preserve">
+    <value>electrical performance</value>
+  </data>
+  <data name="BHKWK_LBL_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Total efficiency:</value>
+  </data>
+  <data name="BHKWK_FELD_WIRKUNGSGRAD" xml:space="preserve">
+    <value>total efficiency</value>
+  </data>
+  <data name="BHKWK_HINT_WIRKUNGSGRAD" xml:space="preserve">
+    <value>(e.g. 0.85)</value>
+  </data>
+  <data name="BHKWK_LBL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Lower limit output:</value>
+  </data>
+  <data name="BHKWK_FELD_GRENZLEISTUNG" xml:space="preserve">
+    <value>lower limit output</value>
+  </data>
+  <data name="BHKWK_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energy source:</value>
+  </data>
+  <data name="BHKWK_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow:</value>
+  </data>
+  <data name="BHKWK_FELD_VORLAUF" xml:space="preserve">
+    <value>flow temperature</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return:</value>
+  </data>
+  <data name="BHKWK_FELD_RUECKLAUF" xml:space="preserve">
+    <value>return temperature</value>
+  </data>
+  <data name="BHKWK_GRP_KOSTEN" xml:space="preserve">
+    <value>Input data for calculating costs</value>
+  </data>
+  <data name="BHKWK_LBL_MODUL" xml:space="preserve">
+    <value>Module:</value>
+  </data>
+  <data name="BHKWK_FELD_MODUL" xml:space="preserve">
+    <value>module costs</value>
+  </data>
+  <data name="BHKWK_LBL_MONTAGE" xml:space="preserve">
+    <value>Assembly and commissioning:</value>
+  </data>
+  <data name="BHKWK_FELD_MONTAGE" xml:space="preserve">
+    <value>assembly and commissioning costs</value>
+  </data>
+  <data name="BHKWK_LBL_LIEFERUNG" xml:space="preserve">
+    <value>Delivery (50 km radius):</value>
+  </data>
+  <data name="BHKWK_FELD_LIEFERUNG" xml:space="preserve">
+    <value>delivery costs</value>
+  </data>
+  <data name="BHKWK_LBL_SCHALLSCHUTZ" xml:space="preserve">
+    <value>Acoustic enclosure:</value>
+  </data>
+  <data name="BHKWK_FELD_SCHALLSCHUTZ" xml:space="preserve">
+    <value>acoustic enclosure costs</value>
+  </data>
+  <data name="BHKWK_LBL_ABGASREINIGUNG" xml:space="preserve">
+    <value>Exhaust treatment, e.g. catalyst:</value>
+  </data>
+  <data name="BHKWK_FELD_ABGASREINIGUNG" xml:space="preserve">
+    <value>exhaust treatment costs</value>
+  </data>
+  <data name="BHKWK_LBL_INVEST" xml:space="preserve">
+    <value>Investment costs [€ / kWel]:</value>
+  </data>
+  <data name="BHKWK_LBL_RAUMBEDARF" xml:space="preserve">
+    <value>Space requirements:</value>
+  </data>
+  <data name="BHKWK_FELD_RAUMBEDARF" xml:space="preserve">
+    <value>space requirements</value>
+  </data>
+  <data name="BHKWK_LBL_WARTUNG" xml:space="preserve">
+    <value>Maintenance costs:</value>
+  </data>
+  <data name="BHKWK_FELD_WARTUNG" xml:space="preserve">
+    <value>maintenance costs</value>
+  </data>
+  <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Duration of use:</value>
+  </data>
+  <data name="BHKWK_FELD_NUTZUNGSDAUER" xml:space="preserve">
+    <value>duration of use</value>
+  </data>
+  <data name="BHKWK_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Years</value>
+  </data>
+  <data name="BHKWK_GRP_BEHG" xml:space="preserve">
+    <value>Emissions according to BEHG-V</value>
+  </data>
+  <data name="BHKWK_FELD_STAUB" xml:space="preserve">
+    <value>dust emission</value>
+  </data>
+  <data name="BHKWK_LBL_SCR" xml:space="preserve">
+    <value>with SCR</value>
+  </data>
+  <data name="BHKWK_BTN_EINTRAGEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>This record comes from the delivery catalogue and is write-protected.
+
+Overwrite it anyway?</value>
+  </data>
+  <data name="BHKWK_TITEL_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Write-protected record</value>
+  </data>
+  <data name="BHKWK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Record saved</value>
+  </data>
+  <data name="BHKWK_MSG_NICHT_GESCHRIEBEN" xml:space="preserve">
+    <value>The record could not be overwritten.</value>
+  </data>
+  <data name="BHKWK_MSG_FEHLER" xml:space="preserve">
+    <value>Error while overwriting the record.</value>
+  </data>
+  <data name="BHKWK_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name already exists.</value>
+  </data>
+  <data name="BHKWK_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Please enter a valid name.</value>
+  </data>
+  <data name="BHKWK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
+    <value>Error while saving the record.</value>
+  </data>
+  <data name="ALLG_BTN_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="ALLG_BTN_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
 </root>

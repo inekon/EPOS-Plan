@@ -9749,4 +9749,168 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="HZKK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
     <value>Fehler beim Speichern des Datensatzes!</value>
   </data>
+  <data name="BHKWK_TITEL" xml:space="preserve">
+    <value>BHKW Eigenschaften</value>
+  </data>
+  <data name="BHKWK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="BHKWK_LBL_NAME" xml:space="preserve">
+    <value>Modulname:</value>
+  </data>
+  <data name="BHKWK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller:</value>
+  </data>
+  <data name="BHKWK_LBL_MOTORTYP" xml:space="preserve">
+    <value>Motortyp:</value>
+  </data>
+  <data name="BHKWK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="BHKWK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technische Daten</value>
+  </data>
+  <data name="BHKWK_LBL_PTHERM" xml:space="preserve">
+    <value>Thermische Leistung:</value>
+  </data>
+  <data name="BHKWK_FELD_PTHERM" xml:space="preserve">
+    <value>thermische Leistung</value>
+  </data>
+  <data name="BHKWK_LBL_PEL" xml:space="preserve">
+    <value>Elektrische Leistung:</value>
+  </data>
+  <data name="BHKWK_FELD_PEL" xml:space="preserve">
+    <value>elektrische Leistung</value>
+  </data>
+  <data name="BHKWK_LBL_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Ges. Wirkungsgrad:</value>
+  </data>
+  <data name="BHKWK_FELD_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Gesamtwirkungsgrad</value>
+  </data>
+  <data name="BHKWK_HINT_WIRKUNGSGRAD" xml:space="preserve">
+    <value>(z. B. 0,85)</value>
+  </data>
+  <data name="BHKWK_LBL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Untere Grenzleistung:</value>
+  </data>
+  <data name="BHKWK_FELD_GRENZLEISTUNG" xml:space="preserve">
+    <value>untere Grenzleistung</value>
+  </data>
+  <data name="BHKWK_LBL_ENERGIETRAEGER" xml:space="preserve">
+    <value>Energieträger:</value>
+  </data>
+  <data name="BHKWK_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf:</value>
+  </data>
+  <data name="BHKWK_FELD_VORLAUF" xml:space="preserve">
+    <value>Vorlauftemperatur</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf:</value>
+  </data>
+  <data name="BHKWK_FELD_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauftemperatur</value>
+  </data>
+  <data name="BHKWK_GRP_KOSTEN" xml:space="preserve">
+    <value>Eingabedaten zur Berechnung der Kosten</value>
+  </data>
+  <data name="BHKWK_LBL_MODUL" xml:space="preserve">
+    <value>Modul:</value>
+  </data>
+  <data name="BHKWK_FELD_MODUL" xml:space="preserve">
+    <value>Kosten Modul</value>
+  </data>
+  <data name="BHKWK_LBL_MONTAGE" xml:space="preserve">
+    <value>Montage und Inbetriebnahme:</value>
+  </data>
+  <data name="BHKWK_FELD_MONTAGE" xml:space="preserve">
+    <value>Kosten Montage und Inbetriebnahme</value>
+  </data>
+  <data name="BHKWK_LBL_LIEFERUNG" xml:space="preserve">
+    <value>Lieferung (50 km Umkreis):</value>
+  </data>
+  <data name="BHKWK_FELD_LIEFERUNG" xml:space="preserve">
+    <value>Kosten Lieferung</value>
+  </data>
+  <data name="BHKWK_LBL_SCHALLSCHUTZ" xml:space="preserve">
+    <value>Schallschutzhaube:</value>
+  </data>
+  <data name="BHKWK_FELD_SCHALLSCHUTZ" xml:space="preserve">
+    <value>Kosten Schallschutzhaube</value>
+  </data>
+  <data name="BHKWK_LBL_ABGASREINIGUNG" xml:space="preserve">
+    <value>Abgasreinigung, z. B. Kat:</value>
+  </data>
+  <data name="BHKWK_FELD_ABGASREINIGUNG" xml:space="preserve">
+    <value>Kosten Abgasreinigung</value>
+  </data>
+  <data name="BHKWK_LBL_INVEST" xml:space="preserve">
+    <value>Investitionskosten [€ / kWel]:</value>
+  </data>
+  <data name="BHKWK_LBL_RAUMBEDARF" xml:space="preserve">
+    <value>Raumbedarf:</value>
+  </data>
+  <data name="BHKWK_FELD_RAUMBEDARF" xml:space="preserve">
+    <value>Raumbedarf</value>
+  </data>
+  <data name="BHKWK_LBL_WARTUNG" xml:space="preserve">
+    <value>Wartungskosten:</value>
+  </data>
+  <data name="BHKWK_FELD_WARTUNG" xml:space="preserve">
+    <value>Wartungskosten</value>
+  </data>
+  <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer:</value>
+  </data>
+  <data name="BHKWK_FELD_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="BHKWK_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="BHKWK_GRP_BEHG" xml:space="preserve">
+    <value>Emissionen nach BEHG-V</value>
+  </data>
+  <data name="BHKWK_FELD_STAUB" xml:space="preserve">
+    <value>Staub-Emission</value>
+  </data>
+  <data name="BHKWK_LBL_SCR" xml:space="preserve">
+    <value>mit SCR</value>
+  </data>
+  <data name="BHKWK_BTN_EINTRAGEN" xml:space="preserve">
+    <value>Eintragen</value>
+  </data>
+  <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
+
+Soll er trotzdem überschrieben werden?</value>
+  </data>
+  <data name="BHKWK_TITEL_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Schreibgeschützter Datensatz</value>
+  </data>
+  <data name="BHKWK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Datensatz gespeichert</value>
+  </data>
+  <data name="BHKWK_MSG_NICHT_GESCHRIEBEN" xml:space="preserve">
+    <value>Der Datensatz konnte nicht überschrieben werden.</value>
+  </data>
+  <data name="BHKWK_MSG_FEHLER" xml:space="preserve">
+    <value>Fehler beim Überschreiben des Datensatzes!</value>
+  </data>
+  <data name="BHKWK_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name existiert bereits!</value>
+  </data>
+  <data name="BHKWK_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen gültigen Namen eingeben!</value>
+  </data>
+  <data name="BHKWK_MSG_FEHLER_ANLEGEN" xml:space="preserve">
+    <value>Fehler beim Speichern des Datensatzes!</value>
+  </data>
+  <data name="ALLG_BTN_JA" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="ALLG_BTN_NEIN" xml:space="preserve">
+    <value>Nein</value>
+  </data>
 </root>
