@@ -111,6 +111,36 @@
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />
+
+    <!-- Die Zuordnungsdatei der Hilfe - DIESELBE Datei, die auch die
+         Windows-Huelle als eingebettete Ressource mitliefert. Sie ist die
+         einzige Stelle, an der Hilfe gepflegt wird; zwei Fassungen waeren zwei
+         Wahrheiten. -->
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Hilfe\help_mapping.txt"
+               LogicalName="help_mapping.txt" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- PRUEFMODUS FUER DIE CI (iU10-6, Abnahmeziel iZ6)                    -->
+  <!--                                                                    -->
+  <!-- Die beiden Bausteine des Referenzlaufs werden VERLINKT, nicht       -->
+  <!-- kopiert - genau wie EPOS.Referenzlauf sie verlinkt. Damit gibt es   -->
+  <!-- weiterhin EINE Fassung des CSV-Exports; ein iOS-Ergebnis, das       -->
+  <!-- anders aussieht, ist dann eine Plattformabweichung und kein         -->
+  <!-- anderer Exportweg.                                                  -->
+  <!--                                                                    -->
+  <!-- ZWEI WARNUNGEN BLEIBEN STEHEN. Beide Dateien sind - wie das         -->
+  <!-- Werkzeug, aus dem sie stammen - ohne Nullbarkeitsangaben            -->
+  <!-- geschrieben (Referenzlauf.csproj setzt Nullable=disable). In diesem -->
+  <!-- Projekt gilt Nullable=enable; daraus entstehen genau zwei           -->
+  <!-- Warnungen, CS8602 in Ergebnisexport und CS8604 in Protokoll. Ein    -->
+  <!-- NoWarn dagegen gaelte fuer die GANZE Huelle - die soll scharf       -->
+  <!-- bleiben. Die zwei Zeilen sind der Preis dafuer, dass es weiterhin   -->
+  <!-- nur EINE Fassung des Exports gibt.                                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <Compile Include="..\Referenzlauf\Ergebnisexport.cs" Link="Pruefung\Ergebnisexport.cs" />
+    <Compile Include="..\Referenzlauf\Protokoll.cs" Link="Pruefung\Protokoll.cs" />
   </ItemGroup>
 
 </Project>
