@@ -86,4 +86,13 @@ public static class Sprungziel
     /// iU9-W7.0f). Die Verwaltung selbst bleibt bis Welle 14b eine WinForms-Maske.
     /// </summary>
     public const string SolarganglinieAdmin = "SOLARGANGLINIE_ADMIN";
+
+    /// <summary>
+    /// Katalog „Wärmebedarfsganglinien einlesen" — der Knopf „Bearbeiten" des
+    /// Dialogs „Wärmebedarf extern" (Vorläufer:
+    /// <c>Form_Waermebedarf.btn_Bearbeiten_Click</c>:257, iU9-W9.0f). Dieselbe
+    /// Maske, die <c>Dienste.Navigation</c> für <c>Masken.WaermebedarfExternAdmin</c>
+    /// zeigt (<c>Form_AdminWaermeeinlesen</c>); sie bleibt bis Welle 13 WinForms.
+    /// </summary>
+    public const string WaermebedarfExternAdmin = "WAERMEBEDARF_EXTERN_ADMIN";
 }
