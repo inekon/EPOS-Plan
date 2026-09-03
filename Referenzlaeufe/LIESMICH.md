@@ -12,10 +12,69 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-03_PB1_nach-PaketB/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach** Paket B desselben Konzepts (Stufe **E2**, Nachtrag 2: Modellwahl je
+Anlage, Hay-Davies, Huld-Schwachlichtmodell, Wechselrichter-Teillastkennlinie mit
+Clipping, Degradation).
+
+> **Sie ist byte-gleich zu PA1 — und genau das ist ihr Zweck.** Paket B fügt eine
+> ZWEITE Rechentiefe hinzu, ohne die erste anzutasten: Alle Bestandsanlagen stehen auf
+> `PV_Modell = NULL`, und NULL heißt EINFACH, also der Rechenweg aus Paket A.
+> **355/355 byte-/MD5-gleich, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**, keine
+> Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+> Das ist Kriterium 1 der Abnahme (Konzept N2.5): „das vereinfachte Modell bleibt
+> zulässig".
+>
+> Der Nachweis deckt sechs Umbauten auf einmal ab, die alle den PV-Rechenweg berühren:
+> Migrationsschritt **63** (acht Spalten, kein DML), die **Modellweiche** in
+> `SimulationPV`, die Auslagerung der Sonnengeometrie in `SolarCalculator` (die
+> byte-gleichen CSV belegen, dass sie nicht einmal im letzten Bit etwas verschoben hat),
+> der **Degradationsfaktor** in `PvErloesRechner` (bei NULL exakt 1,0), fünf zusätzlich
+> gelesene und geschriebene Anlagenspalten und die neue Katalogspalte `Technologie`.
+>
+> **Codestand:** `36acbf1` (Branch `ios_migration`; Paketcommits `f1d16e3` → `4bd8752` →
+> `74f9acf` → `36acbf1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pb1\src`; **0 Fehler**). Das Warnungsprofil ist zum PA1-Export identisch — beide
+> wurden dafür mit demselben Befehl neu gebaut (CS0108 2, CS0109 2, NU1510 4, WFO0003 1,
+> WFO1000 30). **Datenquelle:** derselbe Snapshot wie PA0/PA1
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Dass das neue Modell auch rechnet**, zeigen zwei Smoke-Läufe auf präparierten
+> Kopien (Projekt 1026, 5,20 kWp): mit `Technologie = C_SI` und 4,16 kW
+> Wechselrichter-Nennleistung **−3,94 %** Jahresertrag, DC/AC 1,25, Clipping 40,1 kWh,
+> Eigenverbrauchsquote **64,68 → 66,20 %**; ohne Technologie und ohne
+> Wechselrichterdaten **+3,37 %** (reiner Hay-Davies-Gewinn) und EVQ **62,97 %**. Alle
+> Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
+> abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
+> [Laufprotokoll der Basis](2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) und im
+> [Paket-B-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
+>
+> **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
+> Modus `pv6`) ist gegen den Paket-B-Build **28 PASS / 0 FAIL** und Zahl für Zahl
+> unverändert (I3 −0,76 %, I4 −0,47 %) — die Degradation steht auf NULL.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Diese Basis gilt, solange keine Anlage produktiv auf ERWEITERT steht.** Sobald der
+> Anwender das Modell umstellt, ist ein Basiswechsel fällig.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-02_PA1_nach-PaketA`
+
 **`2026-09-02_PA1_nach-PaketA/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **62**.
 Der Stand **nach** Paket A des `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`
-(Befund B1 Zeitbasis UTC→Ortszeit, Stufe E1 „Eine Wahrheit").
+(Befund B1 Zeitbasis UTC→Ortszeit, Stufe E1 „Eine Wahrheit") — und **byte-gleich zu
+PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austauschbar.
 
 > **Anlass: Paket A ändert den Rechenkern in ALLEN Projekten.** Die Solarreihe wird beim
 > Lesen von UTC auf Ortszeit verschoben (+1 h MEZ / +2 h MESZ,
@@ -44,11 +103,13 @@ Der Stand **nach** Paket A des `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`
 > [Laufprotokoll der Basis](2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) und im
 > [Paket-A-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
 >
-> **Diese Basis ist zugleich die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
-> EINFACH muss gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1).
+> **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
+> EINFACH musste gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1) — **erfüllt,
+> 355/355** (siehe „Aktuelle Basis").
 >
-> **ACHTUNG Schemastand 62.** Die Arbeitskopie jedes Folgelaufs wandert auf 62. `.wpx`-Pakete
-> mit Stand 61 werden von `ProjektExportImportCtrl` abgewiesen — systemimmanent.
+> **ACHTUNG Schemastand 62.** `.wpx`-Pakete mit Stand 61 werden von
+> `ProjektExportImportCtrl` abgewiesen — systemimmanent. Seit Paket B liegt der Zielstand
+> bei **63**.
 >
 > **Die feste Projektliste (vierzehn IDs):**
 >
