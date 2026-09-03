@@ -264,6 +264,18 @@ namespace WindowsFormsApplication1
             if (top == WizardItemClass.PROJEKT_ITEM)
             {
                 page = listPages.ElementAt(top).wizardform;
+
+                // Nutzerauftrag 02.09.2026: Pflichtfelder und Namensdoppel schon beim
+                // Verlassen der Seite prüfen — bisher erst beim Speichern, viele
+                // Seiten später.
+                string grund;
+                if (!((Wizard_Projekt)page).Pruefe(out grund))
+                {
+                    MessageBox.Show(grund, MyResource.Resource.Text_Hinweis,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 m_Projektmodel.m_szProjektname = ((Wizard_Projekt)page).GetProjektName();
                 m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)page).GetBeschreibung();
                 m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)page).GetBearbeiter();

@@ -20,6 +20,121 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             comboBox_Klima.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             comboBox_Klima.AutoCompleteSource = AutoCompleteSource.ListItems;
+            HandhabungEinrichten();
+        }
+
+        // ------------------------------------------------------------------
+        //  Handhabung (Nutzerauftrag 02.09.2026): Pflichtfelder sichtbar, Namens-
+        //  doppel live gemeldet, sinnvolle Vorbelegungen, Fokus im Namensfeld.
+        // ------------------------------------------------------------------
+
+        private Label lblNameHinweis;
+        private bool _neuModus;
+        private readonly HashSet<string> _vorhandeneNamen = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+
+        // Ressourcen-Helfer mit deutschem Fallback (Drei-Schichten-Regel; die
+        // generierten Resource-Eigenschaften entstehen erst im VS-Designer).
+        private static string TWz(string key, string fallback)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(key);
+                return string.IsNullOrEmpty(s) ? fallback : s;
+            }
+            catch { return fallback; }
+        }
+
+        private void HandhabungEinrichten()
+        {
+            // Pflichtfelder markieren — Beschriftungen kommen aus den .resx, der
+            // Stern wird sprachneutral angehängt.
+            label1.Text = label1.Text.TrimEnd() + " *";
+            label8.Text = label8.Text.TrimEnd() + " *";
+            label6.AutoSize = true;
+            label6.Text = label6.Text.TrimEnd() + "   " + TWz("WZP_PFLICHT", "(* = Pflichtfeld)");
+            textBox_Beschreibung.PlaceholderText =
+                TWz("WZP_BESCHREIBUNG_HINT", "Kurzbeschreibung: Vorhaben, Standort, Besonderheiten …");
+
+            // Live-Hinweis unter dem Namensfeld (Doppel / leer).
+            lblNameHinweis = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.Firebrick,
+                Font = new Font(Font.FontFamily, 8.25f),
+                Location = new Point(textBox_Name.Left, textBox_Name.Bottom + 2),
+                Visible = false
+            };
+            Controls.Add(lblNameHinweis);
+            lblNameHinweis.BringToFront();
+            textBox_Name.TextChanged += (s, e) => NameHinweisNachziehen();
+            VisibleChanged += (s, e) => { if (Visible && textBox_Name.Enabled) textBox_Name.Focus(); };
+        }
+
+        private void NameHinweisNachziehen()
+        {
+            string grund;
+            bool ok = NamePruefen(out grund);
+            lblNameHinweis.Text = ok ? "" : grund;
+            // Ein leeres Feld wird erst beim „Weiter" gemeldet — nicht schon beim Tippen.
+            lblNameHinweis.Visible = !ok && (textBox_Name.Text ?? "").Trim().Length > 0;
+        }
+
+        private bool NamePruefen(out string grund)
+        {
+            grund = "";
+            string name = (textBox_Name.Text ?? "").Trim();
+            if (name.Length == 0)
+            { grund = TWz("WZP_NAME_LEER", "Bitte einen Projektnamen eingeben."); return false; }
+            if (_neuModus && _vorhandeneNamen.Contains(name))
+            { grund = TWz("WZP_NAME_VORHANDEN", "Ein Projekt mit diesem Namen existiert bereits."); return false; }
+            return true;
+        }
+
+        /// <summary>
+        /// Prüfung beim Verlassen der Seite (Assistent „Weiter"): Projektname
+        /// gefüllt und — im Neu-Modus — noch nicht vergeben; Klimaregion gewählt.
+        /// </summary>
+        public bool Pruefe(out string meldung)
+        {
+            if (!NamePruefen(out meldung)) return false;
+            if ((comboBox_Klima.Text ?? "").Trim().Length == 0)
+            { meldung = TWz("WZP_KLIMA_LEER", "Bitte eine Klimaregion wählen."); return false; }
+            return true;
+        }
+
+        // Klimaregion des zuletzt aktiven Projekts als Vorbelegung (Neu-Modus) —
+        // Tab_Applikation -> Tab_Projekt.ID_Klimaregion -> Projektkopie.Bezeichner.
+        private void KlimaregionVorbelegen()
+        {
+            try
+            {
+                RecordSet rs = new RecordSet();
+                int idProjekt = 0, idKlima = 0;
+                rs.Open("select * from Tab_Applikation");
+                if (rs.Next())
+                {
+                    object o = rs.Read("ID_Projekt");
+                    if (o != null && o != DBNull.Value) idProjekt = Convert.ToInt32(o);
+                }
+                rs.Close();
+                if (idProjekt <= 0) return;
+
+                rs.Open("select * from Tab_Projekt where ID = " + idProjekt);
+                if (rs.Next())
+                {
+                    object o = rs.Read("ID_Klimaregion");
+                    if (o != null && o != DBNull.Value) idKlima = Convert.ToInt32(o);
+                }
+                rs.Close();
+                if (idKlima <= 0) return;
+
+                string name = "";
+                rs.Open("select * from Tab_Klimaregion where ID = " + idKlima);
+                if (rs.Next()) name = Convert.ToString(rs.Read("Bezeichner")) ?? "";
+                rs.Close();
+                if (name.Length > 0 && comboBox_Klima.Items.Contains(name)) comboBox_Klima.Text = name;
+            }
+            catch { /* Vorbelegung ist Komfort, kein Muss */ }
         }
 
         public void SetProjektbezeichner(String Projektname)
@@ -76,11 +191,35 @@ namespace WindowsFormsApplication1
             {
                 textBox_Aenderungsdatum.Text = DateTime.Now.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
                 textBox_Erstelldatum.Text = DateTime.Now.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
+
+                // Vorbelegungen (Nutzerauftrag 02.09.2026) — nur in leere Felder, damit
+                // Eingaben beim erneuten Betreten der Seite erhalten bleiben.
+                if ((textBox_Bearbeiter.Text ?? "").Trim().Length == 0)
+                    textBox_Bearbeiter.Text = Environment.UserName;
+                if ((comboBox_Klima.Text ?? "").Trim().Length == 0)
+                    KlimaregionVorbelegen();
+
+                // Vorhandene Namen einmal lesen — die Doppelprüfung läuft dann beim
+                // Tippen ohne Datenbankzugriff.
+                _vorhandeneNamen.Clear();
+                try
+                {
+                    projctrl.ReadAll();
+                    for (int i = 0; i < projctrl.rows; i++)
+                        if (!string.IsNullOrEmpty(projctrl.items[i].m_szProjektname))
+                            _vorhandeneNamen.Add(projctrl.items[i].m_szProjektname.Trim());
+                }
+                catch { }
+                NameHinweisNachziehen();
             }
             projctrl = null;
         }
 
-        public void SetEditProjektName(bool value) { textBox_Name.Enabled = value; }
+        public void SetEditProjektName(bool value)
+        {
+            textBox_Name.Enabled = value;
+            _neuModus = value;   // nur ein frei benennbares Projekt ist ein neues
+        }
         public string GetProjektName() { return textBox_Name.Text; }
         public string GetBeschreibung() { return textBox_Beschreibung.Text; }
         public string GetBearbeiter() { return textBox_Bearbeiter.Text; }

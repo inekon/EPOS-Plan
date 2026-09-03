@@ -8633,6 +8633,73 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte.</value>
   </data>
+  <data name="PDLG_TITEL" xml:space="preserve">
+    <value>Projekte löschen</value>
+  </data>
+  <data name="PDLG_HINWEIS" xml:space="preserve">
+    <value>Wählen Sie die zu löschenden Projekte per Häkchen. Ein Stammprojekt nimmt seine Varianten mit. Das Löschen ist unwiderruflich.</value>
+  </data>
+  <data name="PDLG_ALLE" xml:space="preserve">
+    <value>Alle sichtbaren auswählen</value>
+  </data>
+  <data name="PDLG_KEINE" xml:space="preserve">
+    <value>Auswahl aufheben</value>
+  </data>
+  <data name="PDLG_SICHERUNG" xml:space="preserve">
+    <value>Sicherungskopie der Datenbank vor dem Löschen anlegen</value>
+  </data>
+  <data name="PDLG_LOESCHEN" xml:space="preserve">
+    <value>Löschen…</value>
+  </data>
+  <data name="PDLG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PDLG_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="PDLG_WEITERE" xml:space="preserve">
+    <value>… und {0} weitere</value>
+  </data>
+  <data name="PDLG_RUECKFRAGE" xml:space="preserve">
+    <value>{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:
+
+{1}
+Fortfahren?</value>
+  </data>
+  <data name="PDLG_ERFOLG" xml:space="preserve">
+    <value>{0} Projekt(e) gelöscht.</value>
+  </data>
+  <data name="PDLG_FEHLER" xml:space="preserve">
+    <value>Fehler bei:
+{0}</value>
+  </data>
+  <data name="PDLG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>Die Sicherungskopie konnte nicht angelegt werden:
+{0}
+
+Trotzdem löschen?</value>
+  </data>
+  <data name="PA_AUSGEWAEHLT" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="PA_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von: {0}</value>
+  </data>
+  <data name="WZP_PFLICHT" xml:space="preserve">
+    <value>(* = Pflichtfeld)</value>
+  </data>
+  <data name="WZP_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Projektnamen eingeben.</value>
+  </data>
+  <data name="WZP_NAME_VORHANDEN" xml:space="preserve">
+    <value>Ein Projekt mit diesem Namen existiert bereits.</value>
+  </data>
+  <data name="WZP_KLIMA_LEER" xml:space="preserve">
+    <value>Bitte eine Klimaregion wählen.</value>
+  </data>
+  <data name="WZP_BESCHREIBUNG_HINT" xml:space="preserve">
+    <value>Kurzbeschreibung: Vorhaben, Standort, Besonderheiten …</value>
+  </data>
   <data name="PV_ANLAGE_LABEL_SYSTEMVERLUSTE" xml:space="preserve">
     <value>Systemverluste [%]:</value>
   </data>
