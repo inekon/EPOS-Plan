@@ -1,0 +1,253 @@
+﻿@* Verwaltung Stromspeicher - der PROJEKTDIALOG (iU9-W6.6).
+
+   VORBILD. Views/Stromspeicher/Form_Stromspeicher (354 Z., lokalisiert de/en,
+   16 Kartenzeilen, KEINE einzige MessageBox). Die schmalste der fuenf
+   Erzeugermasken: keine Traegervariante, keine Projektkopie, kein Filter, kein
+   Katalogeditor. Der Detailblock ist reine Anzeige - gepflegt wird in
+   Form_AdminStromspeicher.
+
+   JE KLICK EINE EIGENE ZEILE. btn_Hinzu_Click legt seit AP2b bewusst eine
+   NEUE Modellinstanz an: Bis dahin landete immer dasselbe Feldobjekt in der
+   Liste, mehrfaches Hinzufuegen legte n Verweise auf einen Datensatz ab, und
+   jede spaetere Aenderung schlug auf alle Eintraege durch. Zweimal derselbe
+   Speicher sind also zwei Zeilen.
+
+   DAS DETAIL KOMMT IMMER AUS DEM KATALOG. Beide Listen lesen denselben
+   Stammsatz ueber den Bezeichner (listBox_SP_SelectedIndexChanged und
+   dataGridView1_Click sind zeichengleich); es gibt keine Projektkopie, die
+   abweichen koennte.
+
+   ZWEI BESCHRIFTUNGEN KOMMEN AUS DEM RESSOURCENKATALOG, nicht aus dem
+   Designer: "Energie (Kapazitaet) [kWh]" und "Modulkosten [EUR/kWh]". Der
+   Designer trug dort "Energie [kW]" und "Modulkosten" - beides fachlich falsch
+   (Abnahmebefund 1 zum ersten App-Start, EinheitenBeschriftungKorrigieren).
+   Die Huelle setzt SP_LABEL_ENERGIE und SP_LABEL_MODULKOSTEN ein.
+
+   TASTATUR wie in den uebrigen Erzeugerdialogen: Esc schliesst, Enter ist
+   nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                </KindInhalt>
+            </Raster>
+        </div>
+
+        <div class="epos-auswahlpfeile">
+            <button type="button" class="epos-knopf" title="@LabelHinzu"
+                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">◀</button>
+            <button type="button" class="epos-knopf" title="@LabelEntfernen"
+                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">▶</button>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
+
+            <Raster TZeile="KatalogZeile" Zeilen="@_katalog.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_katalogZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => KatalogZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="KatalogZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@SpalteName" />
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteEigenschaften">
+                        <span class="epos-mehrzeilig">@context.Eigenschaften</span>
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            @if (Sprung is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+</div>
+
+@code {
+    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Katalogliste (<c>StromspeicherStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Der Detailblock zu einem Speicher — für beide Listen dieselbe Quelle.</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
+
+    /// <summary>Nimmt den Speicher auf — je Klick eine EIGENE Zeile.</summary>
+    [Parameter] public Func<int, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Weiterführung in die Speicherverwaltung; ohne Delegat kein Knopf.</summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Verwaltung Stromspeicher";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie Daten der Stromspeicher ein";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Stromspeicher:";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Stromspeicher aus Datenbank:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteEigenschaften { get; set; } = "Eigenschaften";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string GruppeModul { get; set; } = "Modul";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromspeicher.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    protected override void OnInitialized()
+    {
+        KatalogNeuLaden();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogNeuLaden()
+    {
+        if (Katalog is null) return;
+        _katalog = Katalog();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private static ErzeugerDetail Leer(string name)
+        => new(name, "", Array.Empty<(string, string)>());
+
+    /// <summary>„◀": je Klick eine eigene Zeile (AP2b).</summary>
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(_katalogZeile.Id);
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        ProjektZeileWaehlen(aufnahme.Zeile);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWAEHLTE Zeile geht. Der Vorlaeufer nahm die erste Zeile gleichen
+    /// Namens - bei zwei gleichen Speichern also nicht zwingend die markierte
+    /// (Abweichung A-17). Bleibt nichts uebrig, wandert die Auswahl in die rechte
+    /// Liste, wie es <c>btn_Entfernen_Click</c> ueber einen nachgebauten Mausklick tat.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _detail = Leer("");
+
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0]);
+    }
+
+    private async Task BeiBearbeiten()
+    {
+        if (Sprung is null) return;
+
+        // Der Vorlaeufer lud die Liste nur bei DialogResult.OK neu; hier ist es billig
+        // genug, sie immer zu ziehen - der Anwender kann im Katalog etwas geaendert und
+        // dann mit Abbrechen geschlossen haben.
+        await Sprung(Sprungziel.StromspeicherAdmin);
+        KatalogNeuLaden();
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

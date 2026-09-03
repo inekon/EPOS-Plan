@@ -244,7 +244,7 @@ public sealed class ErreichbarkeitTests
         // 86 von 88 nach W5 (89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die
         // zwei uebrigen sind "unklar". Die Zahl sinkt mit jeder Welle, der
         // Anteil bleibt; der endgueltige Wert der Welle 6 steht in W6.9.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 81,
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 80,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

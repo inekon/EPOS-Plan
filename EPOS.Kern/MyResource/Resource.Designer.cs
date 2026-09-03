@@ -28641,5 +28641,86 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Stromspeicher ähnelt.
+        /// </summary>
+        public static string SPD_TITEL {
+            get {
+                return ResourceManager.GetString("SPD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie Daten der Stromspeicher ein ähnelt.
+        /// </summary>
+        public static string SPD_KOPFBAND {
+            get {
+                return ResourceManager.GetString("SPD_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählte Stromspeicher: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("SPD_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher aus Datenbank: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("SPD_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_TYP {
+            get {
+                return ResourceManager.GetString("SPD_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW]: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SPD_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Degradation [%/a]: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_DEGRADATION {
+            get {
+                return ResourceManager.GetString("SPD_LBL_DEGRADATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand [%]: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_LADEZUSTAND {
+            get {
+                return ResourceManager.GetString("SPD_LBL_LADEZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ausgewählte Stromspeicher wurde in den Stammdaten nicht gefunden. ähnelt.
+        /// </summary>
+        public static string SPD_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("SPD_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
     }
 }

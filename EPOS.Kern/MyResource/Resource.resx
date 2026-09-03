@@ -10224,4 +10224,31 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="PVD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Das ausgewählte Modul wurde in den Stammdaten nicht gefunden.</value>
   </data>
+  <data name="SPD_TITEL" xml:space="preserve">
+    <value>Verwaltung Stromspeicher</value>
+  </data>
+  <data name="SPD_KOPFBAND" xml:space="preserve">
+    <value>Geben Sie Daten der Stromspeicher ein</value>
+  </data>
+  <data name="SPD_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>ausgewählte Stromspeicher:</value>
+  </data>
+  <data name="SPD_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Stromspeicher aus Datenbank:</value>
+  </data>
+  <data name="SPD_LBL_TYP" xml:space="preserve">
+    <value>Typ:</value>
+  </data>
+  <data name="SPD_LBL_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]:</value>
+  </data>
+  <data name="SPD_LBL_DEGRADATION" xml:space="preserve">
+    <value>Degradation [%/a]:</value>
+  </data>
+  <data name="SPD_LBL_LADEZUSTAND" xml:space="preserve">
+    <value>Ladezustand [%]:</value>
+  </data>
+  <data name="SPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Der ausgewählte Stromspeicher wurde in den Stammdaten nicht gefunden.</value>
+  </data>
 </root>

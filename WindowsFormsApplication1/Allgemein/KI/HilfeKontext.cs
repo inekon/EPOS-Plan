@@ -179,7 +179,6 @@ namespace WindowsFormsApplication1
             { "Form_PeakShaving",            B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
             { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
-            { "Form_Stromspeicher",          B_STROMSPEICHER },
 
             // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
             // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
