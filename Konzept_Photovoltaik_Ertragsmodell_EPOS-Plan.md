@@ -476,3 +476,105 @@ oder entfallen.
    neuer Basiswechsel fällig.
 
 Paket B (Stufe E2, Nachtrag 2) kann auf diesem Stand beginnen.
+
+---
+
+## Nachtrag 4 (03.09.2026) — Umsetzung Paket B (Stufe E2 als wählbares Modell)
+
+**Paket B ist umgesetzt, verifiziert und mit Referenzlauf belegt.** Branch `ios_migration`,
+fünf Commits:
+
+| Commit | Inhalt |
+|---|---|
+| `f1d16e3` | **PB1a** — Migrationsschritt **63** (`PV_Modell`, `PV_WrNennleistungKw`, `PV_WrEta10/50/100` an `Tab_Energieanlagen`; `Technologie` an `Tab_PV` und `Tab_PV_STAMM`; `Degradation` an `Tab_ProjektPhotovoltaik`) und das Datenmodell dazu — `WErzeugerModel`, `WErzeugerCtrl.AusZeile`, `WizardCtrl.SQL_ANLAGE_INSERT`/`AnlagenParameter`, `PhotovoltaikModel`/`-Ctrl`/`-StammCtrl`, `ProjektPhotovoltaikCtrl`, `SchemaKatalog`, `KatalogRegistry`, `AbweichungsErmittler`, `DbWerte` |
+| `4bd8752` | **PB1b** — Rechenmodell ERWEITERT: `PvErweitertesModell` (neu), Hay-Davies in `SolarCalculator`, Modellweiche und ERWEITERT-Zweig in `SimulationPV` |
+| `74f9acf` | **PB1c** — Degradation in `PvErloesRechner` und `WirtschaftlichkeitCtrl`, Feld im PV-Vergütungsdialog |
+| `36acbf1` | **PB1d** — `Form_PV` (Modellwahl, Panel-Umbau), `Form_PVModell` (neu), `Form_AdminPV` (Technologie), CEC-/PAN-Import, PV-Karte, 31 Ressourcenschlüssel de + en |
+| (dieser) | **PB1** — Referenzlauf `Referenzlaeufe/2026-09-03_PB1_nach-PaketB/`, Umsetzungsprotokoll, LIESMICH |
+
+Umsetzungsprotokoll mit allen Zahlen, Fundstellen und Nebenbefunden:
+`WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md`.
+
+### N4.1 Das zentrale Abnahmekriterium ist erfüllt
+
+**Kriterium 1 aus N2.5 — „EINFACH ist bitgleich zum Paket-A-Stand": 355 von 355 CSV
+byte-/MD5-gleich** zu `2026-09-02_PA1_nach-PaketA`, Toleranzvergleich 14/14 PASS
+(3 882 476 Werte), keine Datei nur auf einer Seite, `pruefen` plausibel.
+
+Der eine Nachweis trägt sechs Umbauten, die alle den PV-Rechenweg berühren: den
+Migrationsschritt 63, die Modellweiche in `SimulationPV`, die **Auslagerung der
+Sonnengeometrie** in `SolarCalculator` (der heikelste Eingriff — er hätte im letzten Bit
+abweichen können), den Degradationsfaktor, fünf zusätzlich gelesene und geschriebene
+Anlagenspalten und die neue Katalogspalte `Technologie`.
+
+**Kriterium 3** ist einzeln nachgerechnet (Prüfstand, 58 PASS / 0 FAIL): Huld
+`η_rel(1, 0) = 1` **exakt** für alle drei Koeffizientensätze; Hay-Davies gleich isotrop
+bei DNI = 0 über **45 792 Fälle mit maximaler Abweichung 0** (nicht 1e-9); Clipping-Verlust
+gleich `Σ max(0, P_DC·η − P_AC,nenn)`; Kennlinie an den Stützstellen exakt; die
+Wirtschaftlichkeits-Referenz „INEKON Schulung 01" unverändert (28 PASS / 0 FAIL, I3
+−0,76 %, I4 −0,47 %). **Kriterium 2** (Rückfallebenen einzeln benannt) und **Kriterium 4**
+(Migration idempotent — Zweitlauf ohne DDL; CEC-/PAN-Import schreibt `Technologie`; die
+Dublettenprüfung führt die Spalte mit) ebenfalls erfüllt.
+
+### N4.2 Was dieses Papier anders erwartet hatte
+
+1. **Der Prüfwert in N2.5 ist leicht falsch.** Dort steht „d = 0,5 → Jahr 20 Faktor
+   0,9088"; nachgerechnet ist `(1 − 0,005)^19 = 0,909156`, also **0,9092**. Die Formel
+   stimmt, die Zahl nicht — **N2.5 sollte auf 0,9092 berichtigt werden.**
+2. **Der „vermiedene Bezug" brauchte eine Auslegung.** N2.2 verlangt den Faktor auch auf
+   ihn, sagt aber nicht, wo er hingehört: Die Stundenreihe und damit der Reststrom des
+   Kapitalwerts sind über alle Jahre konstant, und `PvErloesRechner` kannte den
+   vermiedenen Bezug gar nicht. Umgesetzt ist er als **negativer Beitrag in der Reihe
+   `PV_VERGUETUNG`** — `EV_Basisjahr · (1 − Faktor(t)) · Arbeitspreis` —, die Kostenseite
+   bleibt unberührt. Kein Doppelansatz: Die Kostenseite rechnet die Ersparnis des
+   Basisjahres, dieser Posten nur ihren Schwund. Ohne Degradation ist er exakt 0.
+   **Diese Auslegung gehört fachlich bestätigt.**
+3. **Die Oberfläche brauchte mehr als „ein Dropdown und einen Knopf".** Das Panel „PV
+   Anlage Eigenschaften" war nach Paket A nicht nur voll, sondern hatte eine
+   **Überlappung**: Die dritte Spalte begann bei x = 252, das AutoSize-Label „Anzahl
+   Module:" reicht bis x = 282. Horizontal ist ab x = 449 die Modulliste im Weg, vertikal
+   der Modulblock. Umgesetzt ist deshalb ein Umbau auf **zwei Spalten und vier Zeilen**
+   (420 × 71 → 420 × 128); alles darunter rückt 57 px nach unten, die Maske wächst
+   entsprechend. Im Assistenten passt sich der Rahmen selbst an.
+4. **`HIT`, `PERC` und `TOPCon` fallen auf `C_SI`**, nicht auf `SONSTIGE`. N2.2 nennt sie
+   nicht; es sind kristalline Siliziumzellen, und sie unter „SONSTIGE" zu führen hätte
+   ihnen ohne Not den Koeffizientensatz genommen.
+5. **Die Koeffizienten sind gegen pvlib gegengeprüft** (Auftrag aus N2.3): Der Satz von
+   N2.3 ist zeichengleich mit `pvlib._infer_k_huld` **PVGIS 5**. pvlib führt daneben einen
+   neueren **PVGIS-6**-Satz, den dieses Papier nicht vorgibt — er ist bewusst nicht
+   umgesetzt.
+
+### N4.3 Was ERWEITERT tatsächlich bewegt
+
+Zwei Smoke-Läufe auf Kopien, Projekt 1026 (5,20 kWp, Neigung 30°, Süd):
+
+| | EINFACH | C_SI + WR 4,16 kW | ohne WR-Daten, Technologie NULL |
+|---|---:|---:|---:|
+| Jahresertrag | 6,71 MWh | **6,45 (−3,94 %)** | **6,94 (+3,37 %)** |
+| Eigenverbrauchsquote | 64,68 % | **66,20 %** | **62,97 %** |
+| DC/AC · Clipping | — | **1,25 · 40,1 kWh** | — · 0 |
+
+Die Größenordnungen aus Abschnitt 5 sind getroffen: WR-Kennlinie + Clipping und
+Schwachlicht zusammen **−3,9 %** (angesagt −1 … −4 % bzw. −1 … −3 %), Hay-Davies allein
+**+3,4 %** (angesagt +1 … +3 %). Auch die Vorzeichen der Eigenverbrauchsquote stimmen:
+Clipping trifft die Einspeisespitzen, die EVQ **steigt** um 1,5 Punkte; ohne Schwachlicht
+sinkt sie. Die maximale Einstrahlung steigt in beiden Läufen von 1 058,9 auf 1 080,5 W/m²
+— der circumsolare Anteil, den das isotrope Modell nicht kennt.
+
+> Ein Teil der −3,9 % ist **nicht** Schwachlicht: Das Jinkosolar-Modul führt
+> `gamma_PMP = 0`, im einfachen Modell rechnet die Anlage also ohne Temperaturgang,
+> während Huld ihn über k3…k6 zurückbringt. Bei einem Modul mit gepflegtem γ fiele die
+> Differenz kleiner aus.
+
+### N4.4 Offen
+
+1. **Sichtabnahme** der drei Masken (`Form_PV`, `Form_PVModell`, `Form_AdminPV`) — die
+   Maße sind gerechnet, nicht gesehen.
+2. **Bestätigung der Auslegung „vermiedener Bezug"** (N4.2 Punkt 2).
+3. **Berichtigung des Prüfwerts in N2.5** auf 0,9092 (N4.2 Punkt 1).
+4. **Katalogpflege `Technologie`** für die sechs Referenzmodule; erst danach wird das
+   Schwachlichtmodell in der Referenzmenge wirksam. (Die Pflege von `T_NOCT`, `alpha_SC`
+   und `beta_OC` steht aus Paket A ohnehin an — Reparaturskript unter `sql/pv_katalog/`.)
+5. **Basiswechsel**, sobald eine Anlage produktiv auf ERWEITERT steht —
+   `2026-09-03_PB1_nach-PaketB` gilt nur, solange alle Anlagen EINFACH rechnen.
+6. **Neue Migrationsschritte beginnen bei 64.**
