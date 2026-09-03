@@ -222,13 +222,11 @@ namespace WindowsFormsApplication1
 
         private void btnPhotovoltaik_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_PhotovoltaikVerguetung())
-            {
-                dlg.SetControls(_idStamm);
-                dlg.ShowDialog(Besitzer);
-                if (dlg.Gespeichert)
-                    Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
-            }
+            // iU9-W2.4: der PV-Verguetungsdialog als Razor-Komponente ueber
+            // PhotovoltaikVerguetungHuelle; Form_PhotovoltaikVerguetung ist
+            // geloescht (Regel M1).
+            if (PhotovoltaikVerguetungHuelle.Oeffnen(Besitzer, _idStamm))
+                Melde("PV-Vergütung gespeichert — bitte neu berechnen.");
         }
 
         /// <summary>
