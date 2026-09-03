@@ -497,6 +497,52 @@ body {
 }
 
 /* ==========================================================================
+   Seiten: die Wurzelansichten der iOS-Huelle (iU10-2)
+
+   Eine "Seite" ist keine Karte und kein Dialog: Sie fuellt die ganze Flaeche
+   der BlazorWebView und rollt selbst. epos-dialog kann das nicht - es ist auf
+   Fenstergroesse gebaut (BlazorDialogForm gibt sie unter Windows vor).
+   ========================================================================== */
+
+.epos-seite {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    background: var(--epos-flaeche);
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.epos-seite-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-seite-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+/* Die Zahl neben der Ueberschrift - dieselbe Rolle wie die Summe im
+   Gruppenkopf: leise, rechts, ohne eigene Beschriftung. */
+.epos-seite-anzahl {
+    color: var(--epos-text-leise);
+}
+
+/* Die beiden Knoepfe je Projektzeile bleiben schmal, aber beruehrbar: Die
+   Mindesthoehe kommt von .epos-knopf, die Mindestbreite von 88 px wuerde die
+   Tabelle auf dem iPad sprengen. */
+.epos-projekt-energie,
+.epos-projekt-bhkw {
+    min-width: 0;
+    margin-right: 6px;
+}
+
+/* ==========================================================================
    Hochkontrast (Windows-Kontrastthema)
 
    KartenStil meidet Systemfarben bewusst; im erzwungenen Farbmodus ersetzt
