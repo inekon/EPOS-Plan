@@ -66,30 +66,48 @@ public class KostenprofilDialogTests : BunitContext
         });
     }
 
-    /// <summary>Die Zahlenfelder des Monatsgitters (erstes epos-zahlenraster).</summary>
+    /// <summary>
+    /// Stellt einen Reiter ein (0 = Monat, 1 = Woche, 2 = Grafik). Seit
+    /// iU9-W5.0 stehen die drei Abschnitte als REITER (Nachzug von W3-A-17) —
+    /// es ist immer nur einer gezeichnet.
+    /// </summary>
+    private static void Reiter(IRenderedComponent<KostenprofilDialog> cut, int nr)
+        => cut.FindAll(".epos-reiter-knopf")[nr].Click();
+
+    /// <summary>Die Zahlenfelder des Monatsgitters (Reiter „Monat").</summary>
     private static IHtmlCollection<IElement> Monatsfelder(IRenderedComponent<KostenprofilDialog> cut)
-        => cut.FindAll(".epos-zahlenraster")[0].QuerySelectorAll("input");
+    {
+        Reiter(cut, 0);
+        return cut.Find(".epos-zahlenraster").QuerySelectorAll("input");
+    }
 
-    /// <summary>Die Zahlenfelder des Stundengitters (zweites epos-zahlenraster).</summary>
+    /// <summary>Die Zahlenfelder des Stundengitters (Reiter „Woche").</summary>
     private static IHtmlCollection<IElement> Stundenfelder(IRenderedComponent<KostenprofilDialog> cut)
-        => cut.FindAll(".epos-zahlenraster")[1].QuerySelectorAll("input");
+    {
+        Reiter(cut, 1);
+        return cut.Find(".epos-zahlenraster").QuerySelectorAll("input");
+    }
 
-    /// <summary>Die vier Knöpfe der Wochengruppe.</summary>
+    /// <summary>Die vier Knöpfe des Reiters „Woche".</summary>
     private static IReadOnlyList<IElement> Wochenknoepfe(IRenderedComponent<KostenprofilDialog> cut)
-        => cut.FindAll(".epos-gruppenkopf")[1].QuerySelectorAll(".epos-leiste button");
+    {
+        Reiter(cut, 1);
+        return cut.Find(".epos-reiter-blatt").QuerySelectorAll(".epos-leiste button");
+    }
 
     // =====================================================================
     // Feldbestand: Karte UND Laufzeitfelder
     // =====================================================================
 
     [Fact]
-    public void Der_Dialog_zeigt_die_drei_Abschnitte_und_die_Schlussleiste()
+    public void Der_Dialog_zeigt_die_drei_Reiter_und_die_Schlussleiste()
     {
         var cut = Zeige();
 
         Assert.Equal("Kostenprofil", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal(3, cut.FindAll(".epos-gruppenkopf").Count);          // Monat, Woche, Grafik
-        Assert.Equal(2, cut.FindAll(".epos-zahlenraster").Count);
+        Assert.Equal(3, cut.FindAll(".epos-reiter-knopf").Count);          // Monat, Woche, Grafik
+        Assert.Single(cut.FindAll(".epos-reiter-blatt"));                  // nur der aktive
+        Assert.Single(cut.FindAll(".epos-zahlenraster"));                  // Monatsgitter
         Assert.Equal(2, cut.FindAll(".epos-dialog > .epos-leiste button").Count);
     }
 
@@ -110,6 +128,8 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige();
 
         foreach (string monat in MONATE) Assert.Contains(monat + ":", cut.Markup);
+
+        Reiter(cut, 1);
         Assert.Contains("1.", cut.Markup);
         Assert.Contains("24.", cut.Markup);
     }
@@ -119,6 +139,7 @@ public class KostenprofilDialogTests : BunitContext
     {
         var cut = Zeige();
 
+        Reiter(cut, 1);
         var eintraege = cut.Find("select").QuerySelectorAll("option");
         Assert.Equal(7, eintraege.Length);
         Assert.Equal("Montag", eintraege[0].TextContent);
@@ -130,10 +151,12 @@ public class KostenprofilDialogTests : BunitContext
     {
         var cut = Zeige();
 
-        // Monatsgruppe 1, Wochengruppe 4, Grafik 1, Schlussleiste 2
-        Assert.Single(cut.FindAll(".epos-gruppenkopf")[0].QuerySelectorAll(".epos-leiste button"));
+        // Reiter Monat 1, Reiter Woche 4, Reiter Grafik 1, Schlussleiste 2
+        Reiter(cut, 0);
+        Assert.Single(cut.Find(".epos-reiter-blatt").QuerySelectorAll(".epos-leiste button"));
         Assert.Equal(4, Wochenknoepfe(cut).Count);
-        Assert.Single(cut.FindAll(".epos-gruppenkopf")[2].QuerySelectorAll(".epos-leiste button"));
+        Reiter(cut, 2);
+        Assert.Single(cut.Find(".epos-reiter-blatt").QuerySelectorAll(".epos-leiste button"));
     }
 
     // =====================================================================
@@ -184,7 +207,7 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige();
 
         Monatsfelder(cut)[0].Input("18,5");
-        cut.FindAll(".epos-gruppenkopf")[0].QuerySelectorAll(".epos-leiste button")[0].Click();
+        cut.Find(".epos-reiter-blatt").QuerySelectorAll(".epos-leiste button")[0].Click();
 
         for (int m = 0; m < 12; m++) Assert.Equal(18.5, cut.Instance.Monatsfelder[m]);
     }
@@ -255,7 +278,12 @@ public class KostenprofilDialogTests : BunitContext
 
         Assert.Equal(1, laeufe);
         Assert.NotNull(cut.Instance.Bild);
+
+        // Das Bild steht im Reiter „Grafik"; sein Betreten zeichnet erneut
+        // (der Vorlaeufer tat dasselbe bei jedem Reiterwechsel).
+        Reiter(cut, 2);
         Assert.Single(cut.FindAll("img.epos-chartbild"));
+        Assert.Equal(2, laeufe);
     }
 
     [Fact]
@@ -286,9 +314,10 @@ public class KostenprofilDialogTests : BunitContext
             return Task.FromResult<byte[]?>(new byte[] { 9 });
         });
 
-        cut.FindAll(".epos-gruppenkopf")[2].QuerySelectorAll(".epos-leiste button")[0].Click();
+        Reiter(cut, 2);                            // Betreten zeichnet (1 -> 2)
+        cut.Find(".epos-reiter-blatt").QuerySelectorAll(".epos-leiste button")[0].Click();
 
-        Assert.Equal(2, laeufe);
+        Assert.Equal(3, laeufe);
     }
 
     [Fact]

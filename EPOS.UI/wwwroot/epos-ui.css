@@ -1138,3 +1138,100 @@ body {
     max-height: 48vh;
     overflow: auto;
 }
+
+/* --------------------------------------------------------------------------
+   Reiterleiste (iU9-W5.0) - der Ersatz fuer TabControl/TabPage. Die Knoepfe
+   sind Beruehrungsziele (44 px) und tragen ihren Zustand ueber die Farbe UND
+   ueber den Unterstrich: Im Hochkontrastmodus faellt die Flaeche weg, der
+   Rahmen bleibt.
+   -------------------------------------------------------------------------- */
+.epos-reiter {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.epos-reiter-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    border-bottom: 1px solid var(--epos-rahmen);
+    margin-bottom: var(--epos-rand);
+}
+
+.epos-reiter-knopf {
+    min-height: var(--epos-touchziel);
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    cursor: pointer;
+}
+
+.epos-reiter-knopf:hover:not(:disabled) {
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-text);
+}
+
+.epos-reiter-knopf:disabled {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+.epos-reiter-knopf--aktiv {
+    color: var(--epos-quelle-text);
+    border-bottom-color: var(--epos-quelle-rahmen);
+    font-weight: 600;
+}
+
+/* Das Blatt fuellt den Rest und rollt fuer sich - so bleibt die Leiste beim
+   Blaettern eines langen Inhalts stehen. */
+.epos-reiter-blatt {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.epos-reiter-blatt:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* --------------------------------------------------------------------------
+   Kachelraster und Kennzahlkachel (iU9-W5.0). Statt der gerechneten
+   Prozentspalten der TableLayoutPanels (UcBkKosten.pnlKacheln,
+   UcWirtschaftlichkeit.KachelnBauen) legt das Raster so viele Karten
+   nebeneinander, wie bei --epos-kachel-min Platz haben.
+   -------------------------------------------------------------------------- */
+.epos-kachelraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--epos-kachel-min, 220px), 1fr));
+    gap: var(--epos-rand);
+}
+
+.epos-kennzahlkachel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #f4f6fa;
+}
+
+.epos-kennzahlkachel-titel {
+    font-weight: 600;
+    color: #333333;
+}
+
+.epos-kennzahlkachel-wert {
+    font-size: 19px;
+    color: #0073aa;
+}
+
+.epos-kennzahlkachel-quelle {
+    color: var(--epos-text-leise);
+}
