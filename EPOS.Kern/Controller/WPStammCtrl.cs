@@ -72,6 +72,63 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
         }
 
+        /// <summary>
+        /// Die Zeilen des WAERMEPUMPEN-KATALOGS (iU9-W7.0b) — der ganze Stammkatalog,
+        /// angereichert um kleinsten und groessten Vorlauf je Geraet.
+        ///
+        /// <para><b>Herkunft.</b> Woertlich aus <c>WPDataCtrl.ReadAll</c>, das bis
+        /// hierher AM ENDE der Formulardatei <c>Form_WPFilterAuswahl.cs</c> stand
+        /// (Z. 281-323). Zwei Abfragen wie dort: der Katalog ueber
+        /// <see cref="ReadAll()"/> (nach Bezeichner sortiert), dazu EINE Gruppenabfrage
+        /// ueber alle Kennlinien. Je Geraet einzeln zu fragen waere bei einigen hundert
+        /// Stammsaetzen genau das, was diese eine Abfrage vermeidet.</para>
+        ///
+        /// <para><b>Ohne Kennlinien bleibt es bei 0/0.</b> Ein Stammsatz ohne Zeile in
+        /// <c>Tab_Kenndaten_STAMM</c> steht mit Vorlauf 0 im Katalog — er faellt damit
+        /// aus jedem Bereichsfilter mit einer Untergrenze &gt; 0 heraus. Das ist das
+        /// Verhalten des Vorlaeufers.</para>
+        /// </summary>
+        public IReadOnlyList<WaermepumpenKatalogZeile> KatalogZeilen()
+        {
+            ReadAll();   // alle Stamm-WP (Tab_WP_STAMM), sortiert nach Bezeichner
+
+            var kleinster = new Dictionary<int, int>();
+            var groesster = new Dictionary<int, int>();
+
+            DataTable dtv = DataRepository.GetDataTable(
+                "SELECT ID_WP, Min(Vorlauf) AS MinV, Max(Vorlauf) AS MaxV FROM " + CURVE + " GROUP BY ID_WP");
+            if (dtv != null)
+            {
+                foreach (DataRow r in dtv.Rows)
+                {
+                    if (r["ID_WP"] == DBNull.Value) continue;
+                    int idWp = Convert.ToInt32(r["ID_WP"]);
+                    kleinster[idWp] = r["MinV"] != DBNull.Value ? Convert.ToInt32(r["MinV"]) : 0;
+                    groesster[idWp] = r["MaxV"] != DBNull.Value ? Convert.ToInt32(r["MaxV"]) : 0;
+                }
+            }
+
+            var liste = new List<WaermepumpenKatalogZeile>();
+            foreach (WPModel m in _internalList)
+            {
+                liste.Add(new WaermepumpenKatalogZeile(
+                    Hersteller: m.Firma,
+                    Bezeichnung: m.WPName,
+                    Bauart: m.Bauart,
+                    Aufstellung: m.Aufstellung,
+                    MaxVorlauf: groesster.ContainsKey(m.ID) ? groesster[m.ID] : 0,
+                    MinVorlauf: kleinster.ContainsKey(m.ID) ? kleinster[m.ID] : 0,
+                    MaxLeistung: m.Nennleistung,
+                    ElZuheizung: m.Heizung,
+                    Funktionsprinzip: m.Typ,
+                    Regelung: m.Regelung,
+                    Auslegung: m.Kuehlleistung > 0
+                        ? WaermepumpenKatalogZeile.AUSLEGUNG_HEIZEN_KUEHLEN
+                        : WaermepumpenKatalogZeile.AUSLEGUNG_HEIZEN));
+            }
+            return liste;
+        }
+
         #endregion
 
         #region --- ADMIN WRITE (Tab_WP_STAMM) ---
