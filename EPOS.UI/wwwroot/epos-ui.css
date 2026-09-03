@@ -440,6 +440,42 @@ body {
     height: 20px;
 }
 
+/* Optionsgruppe (RadioButton-Gruppe des Bestands). Das <fieldset> traegt
+   bewusst keinen Rahmen: Die Masken zeigten die Gruppen als blosse Zeilen
+   untereinander, ein Kasten waere neu. Die <legend> bleibt als Titel. */
+.epos-optionsgruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.epos-optionsgruppe-titel {
+    padding: 0;
+    color: var(--epos-text);
+}
+
+.epos-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-option-kasten {
+    width: 20px;
+    height: 20px;
+}
+
+/* Eine gesperrte Option bleibt sichtbar - sie sagt, dass es die Moeglichkeit
+   gibt, und dass sie hier gerade nicht offensteht (Vorbild rbQuelleVorlage
+   .Enabled = false in Form_VorlagenUebernahme). */
+.epos-option-kasten:disabled + .epos-feld-text {
+    color: var(--epos-text-sehr-leise);
+}
+
 /* ==========================================================================
    Standards: Raster und Chartbild
    ========================================================================== */
