@@ -13,9 +13,11 @@
 
 @typeparam TZeile
 
-<QuickGrid Items="@Zeilen" Class="epos-raster">
-    @KindInhalt
-</QuickGrid>
+<div class="epos-raster-huelle">
+    <QuickGrid Items="@Zeilen" Class="epos-raster">
+        @KindInhalt
+    </QuickGrid>
+</div>
 
 @code {
     /// <summary>Die anzuzeigenden Zeilen.</summary>
