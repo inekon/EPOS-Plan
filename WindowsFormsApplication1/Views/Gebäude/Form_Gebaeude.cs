@@ -422,49 +422,51 @@ namespace WindowsFormsApplication1
         {
             if (textBox_Gebäudename.Text == "") return;
 
-            Form_GebWohnflaeche frm = new Form_GebWohnflaeche();
-            frm.ctrl.Gebaeudename = textBox_Gebäudename.Text;
-            frm.ctrl.Beschreibung = textBox_Beschreibung.Text;
-            frm.ctrl.Gebaeudeart = textBox_Gebaeudeart.Text;
-            frm.ctrl.Baualtersklasse = textBox_Baujahr.Text;
-            string Baualtersklasse = textBox_Baujahr.Text.Substring(0, 1);
-            int index = (int)Baualtersklasse[0] -(int)'A';
-            if (index < 0) index = 0;
+            // iU9-W9.3: Blazor-Huelle statt Form_GebWohnflaeche. Der Feldsatz geht als
+            // Z_ProjGebModel hinein und kommt als Ergebnis-Record zurueck - die Komponente
+            // kennt die Fachklassen des Kerns nicht.
+            Z_ProjGebModel gaben = new Z_ProjGebModel();
+            gaben.Gebaeudename = textBox_Gebäudename.Text;
+            gaben.Beschreibung = textBox_Beschreibung.Text;
+            gaben.Gebaeudeart = textBox_Gebaeudeart.Text;
+            gaben.Einheit = textBox_TypEinheit.Text;
+            gaben.DezentralWarmwasser = checkBox_dezWarmwasser.Checked;
 
-            frm.ctrl.Baualtersklasse = list_geb[index];
-            if (textBox_Wohnflaeche.Text != "")
-            frm.ctrl.Wohnflaeche = double.Parse(textBox_Wohnflaeche.Text);
-            frm.ctrl.Einheit = textBox_TypEinheit.Text;
-            frm.ctrl.DezentralWarmwasser = checkBox_dezWarmwasser.Checked;
-            if(textBox_Jahresnutzungsgrad.Text != "")
-            frm.ctrl.Jahresnutzungsgrad = double.Parse(textBox_Jahresnutzungsgrad.Text);
+            double dWert;
+            if (Program.ZahlParsen(textBox_Wohnflaeche.Text, out dWert)) gaben.Wohnflaeche = dWert;
+            double dNutzungsgrad;
+            if (Program.ZahlParsen(textBox_Jahresnutzungsgrad.Text, out dNutzungsgrad))
+                gaben.Jahresnutzungsgrad = dNutzungsgrad;
 
-            frm.SetControls();
-            frm.ShowDialog();
+            // Das Baujahrfeld traegt den KLARTEXT; die Abbildung Buchstabe -> Text steht
+            // seit W9.0b im Kern (GebaeudeStammCtrl.KlassenIndex).
+            string baujahrText =
+                GebaeudeStammCtrl.BAUALTERSKLASSEN_DE[
+                    GebaeudeStammCtrl.KlassenIndex(textBox_Baujahr.Text)];
 
-            if (frm.DialogResult == DialogResult.OK)
+            var ergebnis = GebaeudeWohnflaecheHuelle.Oeffnen(this, gaben, baujahrText);
+            if (ergebnis == null) return;
+
+            for (int i = 0; i < list_gebmodel.Count; i++)
             {
-                for (int i = 0; i < list_gebmodel.Count; i++)
+                if (list_gebmodel[i].ID_Z == zprojGeb_id)
                 {
-                    if (list_gebmodel[i].ID_Z == zprojGeb_id)
-                    {
-                        Z_ProjGebModel model;
-                        model = list_gebmodel[i];
-                        model.ID_Z = zprojGeb_id;
-                        model.ID_Gebaeude = list_gebmodel[i].ID_Gebaeude;
-                        model.ID_Projekt = m_ID_Projekt;
-                        model.Wohnflaeche = frm.ctrl.Wohnflaeche;
-                        model.Einheit = frm.ctrl.Einheit;
-                        model.Jahresnutzungsgrad = frm.ctrl.Jahresnutzungsgrad;
-                        model.DezentralWarmwasser = frm.ctrl.DezentralWarmwasser;
-                        list_gebmodel[i] = model;
+                    Z_ProjGebModel model = list_gebmodel[i];
+                    model.ID_Z = zprojGeb_id;
+                    model.ID_Gebaeude = list_gebmodel[i].ID_Gebaeude;
+                    model.ID_Projekt = m_ID_Projekt;
+                    model.Wohnflaeche = ergebnis.Wert;
+                    model.Einheit = ergebnis.Einheit;
+                    model.Jahresnutzungsgrad = ergebnis.Jahresnutzungsgrad;
+                    // Befund W9-B3: Der Vorlaeufer schrieb den Schalter NICHT zurueck.
+                    model.DezentralWarmwasser = ergebnis.DezentralWarmwasser;
+                    list_gebmodel[i] = model;
 
-                        textBox_Jahresnutzungsgrad.Text = model.Jahresnutzungsgrad.ToString();
-                        textBox_TypEinheit.Text = model.Einheit;
-                        textBox_Wohnflaeche.Text = model.Wohnflaeche.ToString();
-                        checkBox_dezWarmwasser.Checked = model.DezentralWarmwasser;
-                        break;
-                    }
+                    textBox_Jahresnutzungsgrad.Text = model.Jahresnutzungsgrad.ToString();
+                    textBox_TypEinheit.Text = model.Einheit;
+                    textBox_Wohnflaeche.Text = model.Wohnflaeche.ToString();
+                    checkBox_dezWarmwasser.Checked = model.DezentralWarmwasser;
+                    break;
                 }
             }
         }
