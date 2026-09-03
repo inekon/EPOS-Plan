@@ -1,0 +1,39 @@
+﻿@* Diagramm als fertiges Bild.
+
+   Gezeichnet wird im Rechenkern (Skia-Renderer, iF16); die Oberflaeche zeigt
+   nur noch das PNG. Das haelt EPOS.UI frei von jeder Zeichenbibliothek und
+   liefert unter Windows und auf iOS dasselbe Bild.
+
+   Das PNG wird als data:-URL eingebettet statt ueber eine Adresse geladen: In
+   der WebView gibt es keinen Webserver, der eine Datei ausliefern koennte. *@
+
+@if (Png is { Length: > 0 })
+{
+    <img class="epos-chartbild" src="data:image/png;base64,@Convert.ToBase64String(Png)"
+         alt="@Alt" width="@Breite" height="@Hoehe" />
+}
+else
+{
+    <div class="epos-chartbild-platzhalter">@PlatzhalterText</div>
+}
+
+@code {
+    /// <summary>Das fertige Bild. <c>null</c> oder leer zeigt den Platzhalter.</summary>
+    [Parameter] public byte[]? Png { get; set; }
+
+    /// <summary>Anzeigebreite in px; <c>null</c> = die des Bildes.</summary>
+    [Parameter] public int? Breite { get; set; }
+
+    /// <summary>Anzeigehoehe in px; <c>null</c> = die des Bildes.</summary>
+    [Parameter] public int? Hoehe { get; set; }
+
+    /// <summary>
+    /// Was das Diagramm zeigt - fuer Sprachausgabe und fuer den Fall, dass das
+    /// Bild fehlt. Ein Diagramm ohne diesen Text ist fuer blinde Anwender
+    /// nicht vorhanden.
+    /// </summary>
+    [Parameter] public string Alt { get; set; } = "";
+
+    /// <summary>Text, solange es noch kein Bild gibt.</summary>
+    [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
+}

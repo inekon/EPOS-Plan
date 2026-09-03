@@ -1,0 +1,103 @@
+﻿@* Eingabefeld fuer eine Dezimalzahl.
+
+   Semantik aus WindowsFormsApplication1/Program.cs (ZahlParsen ab Z. 449,
+   ZahlFaerben ab Z. 486): Komma ODER Punkt, kein Tausendertrennzeichen,
+   invariant. Eine Fehleingabe FAERBT das Feld (rgb(255,235,235)), sie meldet
+   nicht - gemeldet wird erst beim OK-Knopf, und das entscheidet der Dialog
+   ueber OkErlaubt der SpeichernLeiste. Abbrechen bleibt dadurch immer frei.
+
+   Ein leeres Feld ist neutral, kein Fehler: Ob leer erlaubt ist, weiss nur
+   der jeweilige Dialog. Ein Wert ausserhalb von Min/Max gilt wie eine
+   Fehleingabe - er faerbt und wird nicht nach aussen gemeldet.
+
+   inputmode="decimal" blendet auf Touchgeraeten die Zifferntastatur ein,
+   type bleibt "text": type="number" wuerde je nach Browsersprache genau eines
+   der beiden Trennzeichen verweigern. *@
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
+               type="text" inputmode="decimal" value="@_text"
+               aria-invalid="@(Fehlerhaft ? "true" : null)"
+               @oninput="BeiEingabe" />
+        @if (!string.IsNullOrEmpty(Einheit))
+        {
+            <span class="epos-einheit">@Einheit</span>
+        }
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der Wert; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public double? Wert { get; set; }
+
+    /// <summary>Meldet jeden gueltigen neuen Wert - auch <c>null</c> beim Leeren.</summary>
+    [Parameter] public EventCallback<double?> WertChanged { get; set; }
+
+    /// <summary>Einheit hinter dem Feld, z. B. "kWh". Leer = keine.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Kleinster zulaessiger Wert; <c>null</c> = keine Untergrenze.</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie noetig.</summary>
+    [Parameter] public int? Nachkommastellen { get; set; }
+
+    private string _text = "";
+
+    /// <summary>Der Text im Feld ist gerade keine gueltige Zahl (Pruefhilfe fuer Tests).</summary>
+    public bool Fehlerhaft { get; private set; }
+
+    protected override void OnParametersSet()
+    {
+        // Die Anzeige nur dann neu setzen, wenn sie den Wert noch nicht meint -
+        // sonst springt der Text waehrend der Eingabe zurueck. Eine laufende
+        // Fehleingabe bleibt ebenfalls stehen; der Anwender soll sehen, was er
+        // getippt hat.
+        if (Fehlerhaft) return;
+        if (!Wert.HasValue && _text.Trim().Length == 0) return;
+        if (Wert.HasValue && Zahlen.ZahlParsen(_text, out double dVorhanden) && dVorhanden == Wert.Value) return;
+
+        _text = Zahlen.Anzeigetext(Wert, Nachkommastellen);
+    }
+
+    private async Task BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+
+        if (_text.Trim().Length == 0)
+        {
+            Fehlerhaft = false;
+            Wert = null;
+            await WertChanged.InvokeAsync(null);
+            return;
+        }
+
+        if (Zahlen.ZahlParsen(_text, out double dWert) && ImBereich(dWert))
+        {
+            Fehlerhaft = false;
+            Wert = dWert;
+            await WertChanged.InvokeAsync(dWert);
+            return;
+        }
+
+        Fehlerhaft = true;
+    }
+
+    private bool ImBereich(double dWert)
+    {
+        if (Min.HasValue && dWert < Min.Value) return false;
+        if (Max.HasValue && dWert > Max.Value) return false;
+        return true;
+    }
+}
