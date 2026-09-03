@@ -607,9 +607,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Baut beide Kartenspalten neu auf.
         ///
-        /// Der Name ist der der abgelösten ListView-Methode geblieben: Er steht an acht
-        /// Aufrufstellen in <c>Form_Simulation_Config.cs</c> und
-        /// <c>…Uebersicht.cs</c>, und jede davon meint dasselbe — „die Anzeige stimmt
+        /// Der Name ist der der abgelösten ListView-Methode geblieben: Er steht an neun
+        /// Aufrufstellen in <c>Form_Simulation_Config.cs</c>, <c>…Karten.cs</c> und
+        /// <c>…Uebersicht.cs</c> (Befund W10‑B40 — der Kommentar sprach von acht;
+        /// gezählt sind neun), und jede davon meint dasselbe — „die Anzeige stimmt
         /// nicht mehr, bau sie neu". Die Speicherkarten hängen an denselben Daten
         /// (Ladereihenfolge, Senken) und müssen deshalb mitlaufen.
         /// </summary>
