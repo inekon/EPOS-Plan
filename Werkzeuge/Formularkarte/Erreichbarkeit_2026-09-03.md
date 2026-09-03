@@ -1,4 +1,4 @@
-﻿# Öffner erreichbar — Befund aller Masken (03.09.2026)
+# Öffner erreichbar — Befund aller Masken (03.09.2026)
 
 Die **K6-Liste** für iU9: Welche der WinForms-Masken sind vom Einstieg der Anwendung aus
 überhaupt noch zu erreichen — und welche nicht? Erzeugt mit
