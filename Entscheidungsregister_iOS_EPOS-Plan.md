@@ -1,6 +1,7 @@
 # Entscheidungsregister: EPOS-Plan auf iOS
 
-**Stand 02.09.2026 — Arbeitsliste zu iU0 (Klärung, Sicherung, Rückbau)**
+**Stand 03.09.2026 — nach der Kette iU4…iU8** (Ausgangspunkt: Arbeitsliste zu iU0 —
+Klärung, Sicherung, Rückbau)
 
 > **Verhältnis zum Umsetzungskonzept**
 > [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) (Rev. 2, 02.09.2026)
@@ -22,22 +23,22 @@ ausgebreitet.
 
 ---
 
-## 1 Entscheidungsregister iF1–iF18
+## 1 Entscheidungsregister iF1–iF23
 
 iF1–iF9 stammen aus [`Konzept_iOS-Portierung_EPOS-Plan.md`](Konzept_iOS-Portierung_EPOS-Plan.md)
-§ 7, iF10–iF18 aus dem Umsetzungskonzept § 8.2. Die Spalte **benötigt ab** nennt das Paket, das ohne
+§ 7, iF10–iF18 aus dem Umsetzungskonzept § 8.2; iF19–iF23 sind in der Umsetzung entstanden. Die Spalte **benötigt ab** nennt das Paket, das ohne
 die Entscheidung nicht begonnen werden kann.
 
 | Nr. | Frage (Kurzform) | Empfehlung laut Konzept | benötigt ab | Status | Entscheid (Anwender) | Datum |
 |---|---|---|---|---|---|---|
 | **iF1** | S0-Spike (Kernrechnung im Simulator, Projekt 1030) beauftragen? | ja | iU3 | offen | | |
 | **iF2** | Voller Funktionsumfang — oder erste Auslieferung ohne Katalog-Admin? | ohne Katalog-Admin | iU11 | offen | | |
-| **iF3** | UI-Technologie: Blazor Hybrid oder MAUI-XAML? | Blazor Hybrid | iU8 | offen | | |
+| **iF3** | UI-Technologie: Blazor Hybrid oder MAUI-XAML? | Blazor Hybrid | iU8 | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — `EPOS.UI` ist eine Razor-Bibliothek, die Hülle `BlazorDialogForm` ein `BlazorWebView` (iU8-2/iU8-6, § 2.8) | | |
 | **iF4** | Kern-Herauslösung unabhängig vom iOS-Ziel einplanen? | ja | iU1 | offen | | |
 | **iF5** | Vertriebsweg im Grundsatz | zunächst TestFlight — im Umsetzungskonzept § 3.4 präzisiert: TestFlight ist **kein** Auslieferungsweg (90 Tage) | iU13 | offen — geht sachlich in iF12 auf | | |
 | **iF6** | Windows-Charts ebenfalls auf ScottPlot? | mittelfristig vereinheitlichen, **nicht** Teil dieses Vorhabens | iU7 | offen | | |
-| **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | offen | | |
-| **iF8** | **Modell C beschließen** (Strangler-Regel M1) | ja | **iU8 — ohne diesen Beschluss ist iU8 gegenstandslos** | offen | | |
+| **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — `Werkzeuge/Formularkarte` (iU8-12a…d), Stapellauf über **123** Designer-Dateien / **120** Masken (§ 2.8) | | |
+| **iF8** | **Modell C beschließen** (Strangler-Regel M1) | ja | **iU8 — ohne diesen Beschluss ist iU8 gegenstandslos** | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — Stichtag iZ5 mit `92380ea`: `Form_Kosten_Auswahl` gelöscht, der Dialog lebt als Komponente | | |
 | ~~**iF9**~~ | ~~SQLite auch auf Windows, mit Stichtag~~ | ja | — | **beschieden und ausgeführt 02.09.2026 (`6486c36`)** | ja | 02.09.2026 |
 | **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | **Weg (b) ausgeführt 03.09.2026** (`22fb7eb`…`2387abf`, § 2.5); Weg (a) hat sich mit dem Masken-Sweep iU6-T3a miterledigt. Entscheid des Anwenders steht noch aus | | |
 | **iF11** | Mac-Hardware sofort beschaffen — oder Spike auf `macos-latest`-CI-Runner? | **CI-Runner** für den Spike, Mac erst mit iU10 | iU3 | offen | | |
@@ -45,10 +46,14 @@ die Entscheidung nicht begonnen werden kann.
 | **iF13** | Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenennen? | **nein** — eigener mechanischer Schritt danach | iU4 | offen | | |
 | **iF14** | `Kenndaten_Test.sqlite` mit den 13 Referenzprojekten versionieren? | **ja** — sonst ist die Kern-CI nur ein Kompilierungstest (iR6). Befund 02.09.: siehe § 2.1 | iU3 (Baustein iE6) | **beschieden** | **ja — Anwender bestätigt 02.09.2026: die Datenbank enthält nirgends Kundendaten.** Anonymisierung entfällt; Reduzierung auf die 13 Projekte nur wegen der Dateigröße (GitHub-Grenze 100 MB) | 02.09.2026 |
 | **iF15** | Wie ist „wertgleich" zwischen x64 und ARM64 definiert? | bestehende Toleranz (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; **Byte-Gleichheit** bleibt Maßstab für Windows-interne Umbauten | vor iU3 | **beschieden** | Toleranz wie heute (rel. 1e-4 / abs. 0,01) für den Plattformvergleich; Befund 02.09.: 1030 auf x64-Linux **und** arm64-macOS byte-gleich — die Toleranz wird bisher nicht einmal gebraucht | 02.09.2026 |
-| **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JS-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm | iU7 | offen | | |
+| **iF16** | Chart-Weg in Blazor Hybrid: ScottPlot als Bild, JS-Bibliothek oder natives Steuerelement? | **ScottPlot als Bild** — ein Stack für Bericht und Bildschirm | iU7 | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — **Bild aus dem Kern-Renderer**: `ChartRenderer` (SkiaSharp) liefert PNG-Bytes, `EPOS.UI/Standards/ChartBild` zeigt sie an. Durch **iF22** präzisiert | | |
 | **iF17** | iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragen? | **ja** — Support-Frist 10.11.2026, einzige Antwort auf iR9 | iU1 | **beschieden** | **ja — iU1 läuft seit 02.09.2026 auf Branch `ios_migration`** | 02.09.2026 |
 | **iF18** | Welche VS-2026-Edition? (VS 2022 kann `net10.0` nicht targeten) | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt; sonst Professional | vor iU1 | **beschieden** | **Community 2026 — installiert unter `C:\Program Files\Microsoft Visual Studio\18\Community`** | 02.09.2026 |
 | **iF19** | Schrift der Berichts-Charts nach der SkiaSharp-Portierung (iU7): mitgelieferte Schrift (plattformgleiche Bilder) oder Systemschrift (plattformpassend)? | Konzept offen; Vermessung iU7: `"Calibri"` steht 15× hart im `ChartRenderer`, Legendenumbruch hängt an Textmaßen | iU7 | **beschieden** | **Systemschrift, flexibel** — Rückfallkette Calibri (Windows) → Systemschrift (macOS/iOS) → Sans (Linux) über `SKFontManager`; Layout bleibt metrikgetrieben, Textbreiten dürfen je Plattform abweichen. Folge: Bildvergleich Windows↔Linux ist Struktur-/Histogrammvergleich, kein Pixelvergleich | 02.09.2026 |
+| **iF20** | **Verteilung der WebView2-Laufzeit.** Online-Bootstrapper (~2 MB, braucht beim Setup Internet), Standalone-Installer (~150 MB, offline) oder Fixed-Version-Verteilung (Laufzeit im Programmordner, Aktualisierung liegt dann bei uns)? | Bootstrapper, solange kein Kunde ohne Internet installiert; sonst den Standalone-Installer beilegen | vor der Auslieferung von iU8 | **offen — Anwenderentscheid.** Umgesetzt ist der **Bootstrapper** (iU8-10, `eafbc1f`): das Setup nimmt ihn nur mit, wenn die Laufzeit fehlt, und läuft weiter, wenn er scheitert. Offen als **S10** in `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md` § 5.5 | | |
+| **iF21** | **DPI.** Die Anwendung ist bewusst `DpiUnaware`; die WebView2 wäre darin bei 125–200 % bitmapskaliert und sichtbar unscharf. Bleibt die Hülle eine **DPI-Insel** (`PER_MONITOR_AWARE_V2` nur für die Dauer des modalen Laufs) — oder wird die Anwendung als Ganzes DPI-fähig? | Insel; die Umstellung der 120 Masken ist ein eigenes Vorhaben | iU8, spätestens iU9 | **hier gebaut** (`DpiInsel` in `Allgemein/Blazor/BlazorDialogForm.cs`, iU8-6). **Windows-Befund offen:** 125 % und 150 % sind noch nicht am Gerät gesehen worden; auf Windows vor 10/1803 greift die Insel nicht. Prüfpunkte in `Umsetzung_iU8_Nachweise.md` | | |
+| **iF22** | **Präzisierung zu iF16 — wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten** | iU7/iU8 | **Bericht und Blazor** bekommen ein **Bild aus dem Kern-Renderer** (`EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs`, seit iU7-2 SkiaSharp statt GDI+); die **interaktiven Bildschirmmasken** bleiben bei **ScottPlot** — und das ist heute genau **eine** Maske, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp: es bleibt bei **einer** Grafikbibliothek, nur bei zwei Nutzungsarten. iF16 ist damit präzisiert, nicht ersetzt | | |
+| **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** Der wortgleiche GDI+-Stand aus iU7-1 ist der Gegenpart des Windows-Bildvergleichs — eine zweite, nicht gepflegte Fassung desselben Renderers | **ersatzlos löschen**, sobald der Bildvergleich abgenommen ist | nach der Windows-Abnahme von iU7 | **wartet auf den Anwender.** Er führt `Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>` aus; steht in `bildvergleich.md` PASS, wird die Datei gelöscht — sie ist bis dahin die einzige verbliebene GDI+-Stelle der Berichtskette | | |
 
 **Was zuerst gebraucht wird.** Vor dem Beginn von iU3 müssen **iF1, iF11, iF14 und iF15** stehen —
 sie definieren, was der Spike ist und woran er gemessen wird; ohne sie ist das Go/No-Go-Gate iZ3
@@ -187,6 +192,16 @@ kostenlosen Runner, mit jedem Push wiederholt. Die Ergebnis-CSV liegen je OS als
 (14 Tage).
 
 
+**Zu den Commit-Angaben in §§ 2.4–2.8.** „Auf der Basis X" nennt die **Entwicklungsbasis** —
+iU5 bis iU8 sind in eigenen Worktrees entstanden und per Cherry-Pick nach `ios_migration`
+übernommen worden; die SHAs sind dabei neu vergeben worden und hier berichtigt. Auf dem Zweig
+stehen die Pakete deshalb in einer anderen Reihenfolge als in der Planung: nach `18f515f`
+(iU4-8) folgen iU8-1…5/8a/5b, dann iU7-1…4, dann iU6, dann iU8-5c und iU8-12, dann iU7-5…8,
+dann iU5-T0…T5, dann iU8-6…13, zuletzt iU5-U1…U5 mit iU7-9. Die Reihenfolge ist für die
+Nachweise ohne Belang — jede Tranche ist für sich gebaut, getestet und gegen die Referenzbasis
+gefahren worden —, aber sie erklärt, warum die genannten Basis-SHAs nicht die Elternteile der
+Commits auf dem Zweig sind.
+
 ### 2.4 Befund iU4 (`EPOS.Kern` herauslösen), 03.09.2026 — **hier erreicht**
 
 Sieben Commits `4a0a4e2`…`616dff4` auf der Basis `9fe9c71`.
@@ -260,95 +275,6 @@ App 35, jetzt Kern 89 / App 34): Die neue CA2255 kommt hinzu, und CS0108 zu
 neue OleDb-Kante mit; das Rest-Inventar für iR8 ist unverändert (`SolarkollektorenCtrl` 41,
 `PufferSpCtrl` 30, `RecordSet` 9, `ApplikationCtrl` 7). `dotnet test WP-Plan.Kern.slnf`: **796**
 (787 + 9 neue in `EPOS.Kern.Tests`).
-
-### 2.6 Befund iU5 (Statics kappen, Dienste einziehen), 03.09.2026 — **hier erreicht**
-
-Sechs Commits `35be81f`…`9235a92` auf der Basis `18f515f`.
-
-#### Die Entscheidung: statischer Halter, kein DI-Container
-
-Neun Umgebungsdienste liegen hinter kleinen deutschen Schnittstellen und werden von der
-statischen Klasse `Dienste` gehalten. Das war eine Wahl gegen den ersten Reflex — einen
-`ServiceCollection`-Container —, und zwar aus vier nachprüfbaren Gründen:
-
-1. **Es ist das Hausmuster.** `grep -rn "ServiceCollection\|BuildServiceProvider\|AddSingleton\|IServiceProvider"`
-   über das ganze Repo: **0 Treffer**. `Microsoft.Extensions.Http`/`.Logging` stehen nur als
-   Mindestversionsforderung von `Mscc.GenerativeAI` in der `.csproj`. Dagegen tragen **acht**
-   austauschbare Haken den Bestand: `Meldung.Zeigen/Hinweis/Warnung/Warten`,
-   `KiTexte.Lieferant`, `KiEinwilligung.Nachfragen`, `KiAusfuehrer.Uhr/Schreibrecht/ModalerDialog`,
-   `AnlagenEindeutigkeit.Frage/Hinweis`, `SimulationControl.Speicherlauf`,
-   `SimulationRunner.Speicherergebnismodell`, `WErzeugerCtrl.GeraetewaisenAufraeumen`.
-2. **Ein Container verlangt Konstruktoren.** Von den 22 Klassen, die `Program.*` riefen, sind
-   etliche **rein statisch**: `AnlagenEindeutigkeit`, `BerichtTexte`, `DokuUebersetzung`,
-   `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiChatService`, `KiEinwilligung`,
-   `LizenzManager`, `GeraeteId`, `CsvExportClass`. Ihnen eine Instanz zu reichen hieße, sie zu
-   Instanzklassen umzubauen — ein größerer Eingriff als die ganze Etappe, mit entsprechendem
-   Risiko für die Byte-Gleichheit.
-3. **Der Referenzlauf belegt die Haken heute schon ohne Container** und bleibt so.
-4. **Testbarkeit ist gegeben:** Feld setzen, Fall fahren, zurücksetzen — genau wie
-   `AnlagenEindeutigkeit.Frage` es vorsieht. `EPOS.Kern.Tests/DiensteTests.cs` fährt das für alle
-   neun Dienste.
-
-#### Die neun Schnittstellen und wo sie vom Vorschlag abweichen
-
-| Schnittstelle | Abweichung von Vermessung B.2 | Grund |
-|---|---|---|
-| `IDialogDienst` | `Frage` hat `warnend` und `vorgabeNein` als Vorgabeparameter | Zwei der vier Rückfragen tragen ein Warnsymbol; der Projekt-Löschdialog setzt den Fokus auf „Nein". Beides ist eine Aussage, kein Beiwerk |
-| `IPfade` | `Produktdaten` und `BenutzerLokalBasis` zusätzlich | Der Hilfe-Zwischenspeicher liegt unter `%APPDATA%\<Application.ProductName>` = `EPOS-Plan`, **nicht** unter `%APPDATA%\wp-plan`; der CEC-Modulcache unter `LocalApplicationData\CECModuleImporter` **ohne** Anwendungsordner. Ohne beide Wurzeln wären die Pfade nicht zeichengleich zu halten |
-| `IPfade` | `Verbinde` **und** `Unterordner` | Ein Teil der Fundstellen legte den Ordner beim Bilden des Pfades an, der andere nicht. Eine einzige Methode erzeugte leere Ordner, wo bisher keine entstanden |
-| `IEinstellungen` | `LiesMaschine` zusätzlich | Der maschinenweite KI-Abschalter steht in `HKLM` und wird in **beiden** Registry-Sichten gelesen (WOW6432Node-Umleitung der x86-Zeit) |
-| `ILizenzAblage` | Geltungsbereich als **Parameter**; `Loeschen`, `Vorhanden`, `Ablageort` zusätzlich | Die Vermessung ließ „zwei Instanzen oder Parameter" offen; alle drei Zusätze werden von den zwei Aufrufern gebraucht |
-| `IProjektKontext` | `Uebernehmen` liefert `bool`; `Vorhanden` zusätzlich | `MenueCtrl.ProjektAktivSetzen` wertet den Erfolg aus. `Vorhanden` unterscheidet „Oberfläche läuft, kein Projekt offen" von „keine Oberfläche" — nur so meldet `KiAktionenProjekt` weiterhin „keins" statt „das zuletzt geöffnete" |
-
-`IDrucken`/`ITeilen` bleiben außen vor — im Kern gibt es dafür null Fundstellen; sie entstehen
-mit iU7.
-
-#### Was nicht verhandelbar war
-
-**Die DPAPI-Geltungsbereiche.** `lizenz.dat` und `lizenz-zeit.dat` liegen im **Gerätebereich**
-(`DataProtectionScope.LocalMachine`), `ki-schluessel.dat` im **Benutzerbereich**
-(`CurrentUser`). Eine mit dem einen Bereich verschlüsselte Datei lässt sich mit dem anderen nicht
-entschlüsseln: Ein versehentlicher Wechsel entwertet jede installierte Lizenz. Der Bereich ist
-deshalb ein Aufrufparameter mit Kommentar an beiden Fundstellen, keine Voreinstellung des
-Adapters.
-
-**Die Pfade Zeichen für Zeichen.** Drei verschiedene `%APPDATA%`-Wurzeln bleiben getrennt (siehe
-Tabelle oben), ebenso `LocalApplicationData\WP-Plan` gegen das nackte `LocalApplicationData`.
-
-**Der Registry-Pfad der Sprache.** `Program.Main` und `MDIMainForm` schrieben seit jeher
-`@"Software\\wp-plan"` — mit doppeltem Gegenschrägstrich. Die Registry-Klasse von .NET fasst
-mehrfache Trennzeichen zusammen, der Wert liegt also im selben Schlüssel wie alle übrigen.
-Verlassen wird sich darauf **nicht**: `WindowsSprache` liest und schreibt mit genau derselben
-Zeichenkette, mit der der Wert angelegt wurde, `RegistryEinstellungen` mit der einfachen Form der
-übrigen Fundstellen. Sonst stünde nach dem Umbau möglicherweise jeder Anwender wieder auf Deutsch.
-
-#### Ein Verhaltensunterschied, bewusst in Kauf genommen
-
-`StandardSprache.Setzen` belegt zusätzlich `CultureInfo.DefaultThreadCurrentUICulture`. Bisher
-galt die eingestellte Sprache nur für den Faden, der `Program.Main` ausführt; ein
-Hintergrundfaden beantwortete Textabrufe in der Sprache des Betriebssystems. Im Bestand fiel das
-nicht auf, weil die Oberfläche einfädig arbeitet. Die **Rechenkultur** (`CurrentCulture`) wird
-ausdrücklich nicht angefasst — Drei-Schichten-Regel, Konzept 13.6.
-
-Zwei weitere Nebenwirkungen sind Verbesserungen: `WinFormsNavigation.OeffneGewerk` prüft
-`Program.mainfrm` auf `null` (der Bestand lief dort in eine `NullReferenceException`), und
-`LizenzManager.AnkerLesen` legt den Registry-Zweig nicht mehr beim **Lesen** an.
-
-#### Zahlen
-
-`dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental`: **0 Fehler, 123
-Warnungen** in jeder der sechs Tranchen — dieselbe Summe wie nach iU4, Verteilung App 34 / Kern
-89 unverändert. `dotnet test WP-Plan.Kern.slnf`: **810** (796 + 14 neue in `DiensteTests`).
-Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` nach **jeder** Tranche: GESAMT PASS,
-815.043 Werte, `diff -rq` nur `protokoll.txt` zusätzlich.
-
-Wächter `Program.*` im Kernsatz: **53 → 0**. Wächter Plattformmuster: **206 → 86**. Davon sind 15 Wortteile (`speicherRegistry`,
-`KatalogRegistry`) und 16 Kommentarzeilen; von den 55 verbliebenen Codezeilen entfallen **44** auf
-die Bearbeitungsdialoge der zwölf Kontextmenüs, 5 auf `StandardPfade` (die Standardfassung von
-`IPfade` selbst), 3 auf `DataRepository` (tabu, iU6), 2 auf `ErststartMigration` (Access-Zweig)
-und 1 auf `HelpExtender` (Oberflächenbaustein).
-
----
 
 ### 2.5 Befund iU6 (Datenzugriff plattformfrei), 03.09.2026 — **hier erreicht**
 
@@ -444,6 +370,255 @@ Warnungen** (vorher 123 — die 87 CA1416 sind weg). `EPOS.Kern` allein: **0 Feh
 `dotnet test WP-Plan.Kern.slnf`: **805** (796 + 9 neue). Referenzlauf 1030/1007/1017 gegen
 `2026-08-30_B3-Kaskade`: **GESAMT PASS (815.043 Werte), byte-gleich nach jeder Tranche**.
 `dotnet list EPOS.Kern package | grep -c OleDb`: **0**.
+
+---
+
+### 2.6 Befund iU5 (Statics kappen, Dienste einziehen), 03.09.2026 — **hier erreicht**
+
+Sechs Commits `35be81f`…`9235a92` auf der Basis `18f515f`.
+
+#### Die Entscheidung: statischer Halter, kein DI-Container
+
+Neun Umgebungsdienste liegen hinter kleinen deutschen Schnittstellen und werden von der
+statischen Klasse `Dienste` gehalten. Das war eine Wahl gegen den ersten Reflex — einen
+`ServiceCollection`-Container —, und zwar aus vier nachprüfbaren Gründen:
+
+1. **Es ist das Hausmuster.** `grep -rn "ServiceCollection\|BuildServiceProvider\|AddSingleton\|IServiceProvider"`
+   über das ganze Repo: **0 Treffer**. `Microsoft.Extensions.Http`/`.Logging` stehen nur als
+   Mindestversionsforderung von `Mscc.GenerativeAI` in der `.csproj`. Dagegen tragen **acht**
+   austauschbare Haken den Bestand: `Meldung.Zeigen/Hinweis/Warnung/Warten`,
+   `KiTexte.Lieferant`, `KiEinwilligung.Nachfragen`, `KiAusfuehrer.Uhr/Schreibrecht/ModalerDialog`,
+   `AnlagenEindeutigkeit.Frage/Hinweis`, `SimulationControl.Speicherlauf`,
+   `SimulationRunner.Speicherergebnismodell`, `WErzeugerCtrl.GeraetewaisenAufraeumen`.
+2. **Ein Container verlangt Konstruktoren.** Von den 22 Klassen, die `Program.*` riefen, sind
+   etliche **rein statisch**: `AnlagenEindeutigkeit`, `BerichtTexte`, `DokuUebersetzung`,
+   `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiChatService`, `KiEinwilligung`,
+   `LizenzManager`, `GeraeteId`, `CsvExportClass`. Ihnen eine Instanz zu reichen hieße, sie zu
+   Instanzklassen umzubauen — ein größerer Eingriff als die ganze Etappe, mit entsprechendem
+   Risiko für die Byte-Gleichheit.
+3. **Der Referenzlauf belegt die Haken heute schon ohne Container** und bleibt so.
+4. **Testbarkeit ist gegeben:** Feld setzen, Fall fahren, zurücksetzen — genau wie
+   `AnlagenEindeutigkeit.Frage` es vorsieht. `EPOS.Kern.Tests/DiensteTests.cs` fährt das für alle
+   neun Dienste.
+
+#### Die neun Schnittstellen und wo sie vom Vorschlag abweichen
+
+| Schnittstelle | Abweichung von Vermessung B.2 | Grund |
+|---|---|---|
+| `IDialogDienst` | `Frage` hat `warnend` und `vorgabeNein` als Vorgabeparameter | Zwei der vier Rückfragen tragen ein Warnsymbol; der Projekt-Löschdialog setzt den Fokus auf „Nein". Beides ist eine Aussage, kein Beiwerk |
+| `IPfade` | `Produktdaten` und `BenutzerLokalBasis` zusätzlich | Der Hilfe-Zwischenspeicher liegt unter `%APPDATA%\<Application.ProductName>` = `EPOS-Plan`, **nicht** unter `%APPDATA%\wp-plan`; der CEC-Modulcache unter `LocalApplicationData\CECModuleImporter` **ohne** Anwendungsordner. Ohne beide Wurzeln wären die Pfade nicht zeichengleich zu halten |
+| `IPfade` | `Verbinde` **und** `Unterordner` | Ein Teil der Fundstellen legte den Ordner beim Bilden des Pfades an, der andere nicht. Eine einzige Methode erzeugte leere Ordner, wo bisher keine entstanden |
+| `IEinstellungen` | `LiesMaschine` zusätzlich | Der maschinenweite KI-Abschalter steht in `HKLM` und wird in **beiden** Registry-Sichten gelesen (WOW6432Node-Umleitung der x86-Zeit) |
+| `ILizenzAblage` | Geltungsbereich als **Parameter**; `Loeschen`, `Vorhanden`, `Ablageort` zusätzlich | Die Vermessung ließ „zwei Instanzen oder Parameter" offen; alle drei Zusätze werden von den zwei Aufrufern gebraucht |
+| `IProjektKontext` | `Uebernehmen` liefert `bool`; `Vorhanden` zusätzlich | `MenueCtrl.ProjektAktivSetzen` wertet den Erfolg aus. `Vorhanden` unterscheidet „Oberfläche läuft, kein Projekt offen" von „keine Oberfläche" — nur so meldet `KiAktionenProjekt` weiterhin „keins" statt „das zuletzt geöffnete" |
+
+`IDrucken`/`ITeilen` bleiben außen vor — im Kern gibt es dafür null Fundstellen; sie entstehen
+mit iU7.
+
+#### Was nicht verhandelbar war
+
+**Die DPAPI-Geltungsbereiche.** `lizenz.dat` und `lizenz-zeit.dat` liegen im **Gerätebereich**
+(`DataProtectionScope.LocalMachine`), `ki-schluessel.dat` im **Benutzerbereich**
+(`CurrentUser`). Eine mit dem einen Bereich verschlüsselte Datei lässt sich mit dem anderen nicht
+entschlüsseln: Ein versehentlicher Wechsel entwertet jede installierte Lizenz. Der Bereich ist
+deshalb ein Aufrufparameter mit Kommentar an beiden Fundstellen, keine Voreinstellung des
+Adapters.
+
+**Die Pfade Zeichen für Zeichen.** Drei verschiedene `%APPDATA%`-Wurzeln bleiben getrennt (siehe
+Tabelle oben), ebenso `LocalApplicationData\WP-Plan` gegen das nackte `LocalApplicationData`.
+
+**Der Registry-Pfad der Sprache.** `Program.Main` und `MDIMainForm` schrieben seit jeher
+`@"Software\\wp-plan"` — mit doppeltem Gegenschrägstrich. Die Registry-Klasse von .NET fasst
+mehrfache Trennzeichen zusammen, der Wert liegt also im selben Schlüssel wie alle übrigen.
+Verlassen wird sich darauf **nicht**: `WindowsSprache` liest und schreibt mit genau derselben
+Zeichenkette, mit der der Wert angelegt wurde, `RegistryEinstellungen` mit der einfachen Form der
+übrigen Fundstellen. Sonst stünde nach dem Umbau möglicherweise jeder Anwender wieder auf Deutsch.
+
+#### Ein Verhaltensunterschied, bewusst in Kauf genommen
+
+`StandardSprache.Setzen` belegt zusätzlich `CultureInfo.DefaultThreadCurrentUICulture`. Bisher
+galt die eingestellte Sprache nur für den Faden, der `Program.Main` ausführt; ein
+Hintergrundfaden beantwortete Textabrufe in der Sprache des Betriebssystems. Im Bestand fiel das
+nicht auf, weil die Oberfläche einfädig arbeitet. Die **Rechenkultur** (`CurrentCulture`) wird
+ausdrücklich nicht angefasst — Drei-Schichten-Regel, Konzept 13.6.
+
+Zwei weitere Nebenwirkungen sind Verbesserungen: `WinFormsNavigation.OeffneGewerk` prüft
+`Program.mainfrm` auf `null` (der Bestand lief dort in eine `NullReferenceException`), und
+`LizenzManager.AnkerLesen` legt den Registry-Zweig nicht mehr beim **Lesen** an.
+
+#### Zahlen
+
+`dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental`: **0 Fehler, 123
+Warnungen** in jeder der sechs Tranchen — dieselbe Summe wie nach iU4, Verteilung App 34 / Kern
+89 unverändert. `dotnet test WP-Plan.Kern.slnf`: **810** (796 + 14 neue in `DiensteTests`).
+Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` nach **jeder** Tranche: GESAMT PASS,
+815.043 Werte, `diff -rq` nur `protokoll.txt` zusätzlich.
+
+Wächter `Program.*` im Kernsatz: **53 → 0**. Wächter Plattformmuster: **206 → 86**. Davon sind 15 Wortteile (`speicherRegistry`,
+`KatalogRegistry`) und 16 Kommentarzeilen; von den 55 verbliebenen Codezeilen entfallen **44** auf
+die Bearbeitungsdialoge der zwölf Kontextmenüs, 5 auf `StandardPfade` (die Standardfassung von
+`IPfade` selbst), 3 auf `DataRepository` (tabu, iU6), 2 auf `ErststartMigration` (Access-Zweig)
+und 1 auf `HelpExtender` (Oberflächenbaustein).
+
+---
+
+### 2.7 Befund iU7 (Charts und Berichte plattformfrei), 03.09.2026 — **hier erreicht**
+
+Neun Commits in zwei Wellen: `c6b32eb`…`f84932b` (iU7-1…iU7-4, vor iU6 eingereiht) und
+`6604c05`…`0759b37` (iU7-5…iU7-8) sowie `0af6421` (iU7-9, im zweiten Umzug nachgezogen).
+
+**Der Renderer ist 8 Bilderzeuger für 9 Bilder.** `ChartRenderer` hat acht öffentliche
+`byte[]`-Methoden — `Kuchen`, `BalkenHorizontal`, `JahresverlaufWaerme`, `DauerlinieWaerme`,
+`StrombilanzMonate`, `Speicherverlauf`, `Speichertemperaturen`, `KapitalwertVerlauf`. Die
+letzte liefert zwei Bilder (`kapitalwert_differenz` und `kapitalwert_absolut`); daher neun
+Bilder in `Proben/ChartProben`. Das ist keine Wortklauberei: Die Probe zählt Bilder, die
+Testliste zählt Methoden, und ohne diesen Satz laufen die beiden Zahlen als Widerspruch durch
+die Dokumente.
+
+**Keine einzige Aufruferanpassung.** Die Portierung GDI+ → SkiaSharp (`17d2c1a`) hat nur
+`ChartRenderer.cs` angefasst. Möglich war das, weil sämtliche Aufrufer — `BausteineVergleich`,
+`BausteineProjekt`, `BausteineWirtschaftlichkeit`, `Form_WirtschaftlichkeitVerlauf`,
+`ExcelBerichtGenerator` — die Farben ausschließlich als `ChartRenderer.C_*` durchreichen und
+nie ein `System.Drawing.Color` selbst bilden. Die Farbfelder und die geschachtelten Typen
+`Segment`/`Balken`/`Reihe` tragen seither `SKColor`; die öffentliche Fläche ist unverändert.
+
+**Die Schriftkette hat eine Zwischenstufe bekommen, die die Vorgabe nicht kannte.** iF19
+beschied „Calibri → Systemschrift → irgendeine Sans". Der Probelauf unter Linux zeigte, dass
+die native SkiaSharp-Fassung ohne fontconfig bei `"Calibri"` nichts liefert und als
+Systemschrift **DejaVu *Serif*** zurückgibt — eine Serifenschrift in Achsen und Legenden wäre
+gegenüber Calibri ein sichtbarer Rückschritt. Dazwischen stehen deshalb vier serifenlose
+Familien: **Carlito, Liberation Sans, DejaVu Sans**, dazu Helvetica/Arial. Ergebnis auf dem
+Prüfsystem: **Liberation Sans**. Windows bleibt bei Calibri, macOS/iOS bei Helvetica bzw. SF.
+Die Reihenfolge ist dieselbe, die iU7-4 für die Spaltenbreiten des Excel-Berichts benutzt —
+Tabelle und Diagramm desselben Berichts sollen nicht in verschiedenen Schriften vermessen
+werden.
+
+**Die ClosedXML-Schriftfalle ist in dieser Fassung nicht real.** Das Umsetzungskonzept führte
+„ClosedXML-Standardschrift für Nicht-Windows setzen" als offene Aufgabe. Nachgemessen gegen
+ClosedXML 0.105.1 (Wegwerf-Harnisch außerhalb des Repos, Linux ohne Calibri und ohne Carlito):
+`AdjustToContents` läuft durch, und selbst eine ausdrücklich unsinnige Rückfallschrift fängt
+ClosedXML selbst ab — das Paket bringt **Carlito eingebettet** mit („CarlitoBare"), den
+metrisch zu Calibri passenden Ersatz. Eine erzwungene Systemschrift hätte die Spaltenbreiten
+**schlechter** gemacht (Liberation Sans trägt Arial-Metrik, nicht Calibri-Metrik). Deshalb
+entscheidet `GrafikModulSicherstellen()` **dreistufig**, einmal je Prozess:
+
+| Stufe | Bedingung | Folge |
+|---|---|---|
+| 1 | Calibri oder das metrisch gleiche Carlito ist installiert | `DefaultGraphicEngine(<diese>)`; auf Windows ändert sich nichts |
+| 2 | sonst: **Messprobe** — eine Wegwerf-Mappe mit `AdjustToContents` | läuft sie durch, bleibt die Vorgabe von ClosedXML stehen (eingebettetes Carlito) |
+| 3 | wirft sie — Abbild ohne Schriften, oder eine künftige ClosedXML-Fassung ohne eingebettete Schrift | erste vorhandene Familie aus Calibri, Carlito, Liberation Sans, DejaVu Sans, Arial; sonst irgendeine installierte |
+
+Das ist die einzige Abweichung von der Vorgabe (sie verlangte den Rückfall bedingungslos) und
+sie ist begründet: Stufe 2 verhindert eine Verschlechterung, die niemand bestellt hatte.
+
+**Der Bildvergleich ist ein Modus der Referenzlauf-Suite, kein Skript.** `Referenzlauf.exe
+bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>` rechnet je Projekt
+frisch, holt den `ZeitreihenSatz` über `ZeitreihenExtraktor.AusLauf` und rendert die neun
+Bilder **zweimal** — einmal mit `ChartRendererGdi` (der wortgleichen GDI+-Kopie aus `c6b32eb`),
+einmal mit dem neuen `ChartRenderer`. Gemessen werden Bildmaße (Pflicht), der Anteil
+abweichender Pixel bei 24/255 Toleranz je Kanal und ein Farbhistogramm über die Palette;
+Ergebnis ist eine `bildvergleich.md` mit PASS oder PRUEFEN. Der Pixelvergleich läuft
+absichtlich über SkiaSharp und nicht über `System.Drawing` — die Messung soll nicht dieselbe
+Bibliothek benutzen, die sie beurteilen soll. **Der Modus läuft nur unter Windows** (die
+GDI+-Seite gibt es nur dort); hier wurde er ausschließlich übersetzt. Er ist die Vorbedingung
+von **iF23**.
+
+**Zahlen des Nachweises.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64`: 0 Fehler, in
+der ersten Welle **123 Warnungen** (unverändert zur Basis `9fe9c71`), nach iU6 **36**.
+`dotnet test WP-Plan.Kern.slnf -c Release` nach iU7-8: **872** (869 + 3 Renderer-Tests).
+`dotnet run --project Proben/ChartProben -c Release`: *9 Bilder geprueft, 0 Verstoesse*, alle
+neun PNG byte-gleich zum Stand vor dem Umzug. Referenzlauf 1030/1007/1017 gegen
+`2026-08-30_B3-Kaskade`: **GESAMT PASS**, `diff -rq` ohne Unterschied.
+
+---
+
+### 2.8 Befund iU8 (`EPOS.UI` und der erste Blazor-Dialog), 03.09.2026 — **iZ5 hier erreicht**
+
+Drei Stränge, sechzehn Commits: Strang A `8574911`…`8f5a28e` mit `45a21dc`/`f5fb05c`,
+Strang B `4369fdb`…`eafbc1f` mit `eff82aa`/`e3d1e5b`, Strang C `479fcf9`…`0af7ca7`.
+
+**Die Paketlage.** Eine eigene Gruppe „Blazor Hybrid (iU8)" in `Directory.Packages.props`:
+
+| Paket | Fassung | Wofür |
+|---|---|---|
+| `Microsoft.AspNetCore.Components.Web` | 10.0.11 | die Komponenten selbst |
+| `Microsoft.AspNetCore.Components.QuickGrid` | 10.0.11 | `EPOS.UI/Standards/Raster` |
+| `Microsoft.AspNetCore.Components.WebView.WindowsForms` | **10.0.100** | nur die Windows-Hülle; eigene Zählung, nicht die des .NET-Majors |
+| `bunit` | 2.9.0 | `EPOS.UI.Tests` (`BunitContext`, `Render<T>`) |
+| `Microsoft.CodeAnalysis.CSharp` | 5.9.0 | Roslyn für `Werkzeuge/Formularkarte` |
+
+**Der Razor-SDK ist keine Kosmetik.** `WindowsFormsApplication1.csproj` steht seit `4369fdb`
+auf `Microsoft.NET.Sdk.Razor`. Die Gegenprobe mit dem einfachen `Microsoft.NET.Sdk` übersetzt
+fehlerfrei, liefert im Veröffentlichungsordner aber **kein `wwwroot`** — weder `index.html`
+noch `_content` noch `_framework/blazor.webview.js`; der Dialog bliebe beim Anwender leer. Die
+Umstellung kostet keine neue Warnung (Codes vor und nach identisch). Aus der Anwendung wird
+dadurch keine Webanwendung: Sie bleibt `WinExe` und WinForms.
+
+**Der Name der Scoped-CSS-Datei folgt dem Host, nicht der Bibliothek.** Erwartet worden war
+`EPOS.UI.styles.css`; erzeugt wird **`EPOS_Plan.styles.css`**, und sie liegt **in `wwwroot\`**,
+nicht neben der EXE. Wer sie neben der EXE sucht, hält einen ungestalteten Dialog für einen
+Fehler der Bibliothek.
+
+**Der erste Dialog.** `Form_Kosten` → „Energieträger anlegen" öffnet nicht mehr
+`Form_Kosten_Auswahl`, sondern `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor` in
+der Hülle `BlazorDialogForm`. Die WinForms-Fassung ist im selben Schritt **gelöscht** (`.cs`,
+`.Designer.cs`, `.resx`) — Regel M1, kein Schalter, kein „bis auf Weiteres". Die Datenbankseite
+liegt in `EPOS.Kern/Controller/EnergietraegerVarianteCtrl.cs`, die Texte in
+`MyResource.Resource.*` (`KAUSW_*`, `ALLG_BTN_*`); der Dialog spricht damit erstmals auch
+Englisch. Die Validierungs-MessageBox ist ein Warnbanner **im** Dialog geworden.
+
+**64 bunit-Tests.** `EPOS.UI.Tests` prüft die sieben Bausteine, die acht Standardfelder und den
+Dialog — ohne Datenbank, ohne WebView2, ohne Windows. Zusammen mit KiKern (450),
+SpeicherEngine (337) und `EPOS.Kern` (35) sind das **886** Tests im Kernfilter.
+
+**Die Formularkarte korrigiert die Vorvermessung.** Der Stapellauf über den ganzen Baum
+(`0af7ca7`) findet **123 Designer-Dateien, davon 120 Masken (mit `InitializeComponent`) und 63
+lokalisiert (`ApplyResources`)** — nicht 79/74/21. Der Fehler der Vorvermessung war die
+Beachtung der Groß-/Kleinschreibung: Der Bestand schreibt beides,
+`Form_Kosten_Auswahl.Designer.cs` **und** `Form_BHKWEing.designer.cs`. Die Konzeptzahl 118 war
+damit näher an der Wahrheit als die Nachmessung. Nach dem Löschen von `Form_Kosten_Auswahl`
+sind es 122/119. Gezählt wurden dabei 2 377 Kartenzeilen, 178 Felder ohne Beschriftung und vier
+selbstgebaute Steuerelemente ohne Zielkomponente (`AktionsKarte`, `ProjektAuswahl`,
+`HeaderGradientPanel`, `KlimazonenKarte`).
+
+**Das Raster „Label x28 / Control x270" gibt es nicht.** `Point(28,` und `Point(270,` kommen in
+je einer Datei vor. Tragfähig ist die Zeilenregel: das nächste Label **links in derselben
+Zeile** (|Δy| ≤ 8 px). Sie trägt den Stapellauf über alle Masken.
+
+**Die CI-Läufer rechnen englisch.** Zwei `SpeichernLeiste`-Tests fielen auf `macos-latest` und
+auf dem Windows-Runner aus, weil die Leiste dort die englischen Ressourcen zog: Beide Läufer
+laufen mit **en-US**-UI-Kultur, Ubuntu und der Entwicklungsarbeitsplatz zufällig deutsch.
+Reproduziert mit `LANG=en_US.UTF-8` (2 von 64 rot). Die Testklasse pinnt die UI-Kultur seit
+`f5fb05c` im Konstruktor auf `de-DE` und stellt sie in `Dispose` zurück; die Komponente ist
+unverändert. **Die Lehre gilt über iU8 hinaus:** Ein Test, der Anzeigetext vergleicht, muss
+seine Kultur selbst setzen — sonst prüft er die Sprache des Läufers.
+
+**Zwei Fundstücke für K6 (stilllegen statt mitnehmen).**
+
+| Fund | Befund | Beleg |
+|---|---|---|
+| `bOhneVariante` in `Form_Kosten_VarAuswahl` | **totes Feature.** Die Eigenschaft wird an genau zwei Stellen gesetzt (`Form_Heizkessel.cs:282`, `Form_BHKWEing.cs:513`) — beide Male auf `false`, also auf den Vorgabewert. Der `true`-Zweig ist unerreichbar | `git grep bOhneVariante` — drei Treffer, keiner setzt `true` |
+| `SectionPanel` in `Views/Kosten/` | **ohne Nutzer.** `new SectionPanel` kommt im ganzen Repo **null**-mal vor; die Klasse lebt nur noch als Optikvorbild des Blazor-Bausteins `Gruppenkopf` und wird in `EinstiegsKarte` ausdrücklich *nicht* beerbt | `git grep "new SectionPanel"` — 0 Treffer |
+
+Beides gehört in die K6-Liste von iU9 — nicht in die Umstellung. Eine tote Eigenschaft zweimal
+zu bauen ist teurer, als sie einmal zu begraben.
+
+**Zahlen des Nachweises (Linux, SDK 10.0.400).** `dotnet build WP-Plan.sln -c Release
+-p:Platform=x64 --no-incremental`: **0 Fehler, 34 Warnungen** (vorher 36; die beiden
+entfallenen WFO1000 sind `bOhneVariante` und `m_szBVrennstoff` des gelöschten Formulars), keine
+neuen Warnungscodes. `EPOS.Kern` allein: 0 Fehler, **3 Warnungen**. `dotnet test
+WP-Plan.Kern.slnf -c Release`: **886**. Referenzlauf 1030/1007/1017 gegen
+`2026-08-30_B3-Kaskade`: **GESAMT PASS** (815 043 Werte), `diff -rq` nur `protokoll.txt`.
+`dotnet publish -r win-x64 --self-contained` enthält `wwwroot/index.html`,
+`wwwroot/EPOS_Plan.styles.css`, `wwwroot/_content/EPOS.UI/`, `wwwroot/_framework/blazor.webview.js`,
+`EPOS.UI.dll`, `Microsoft.Web.WebView2.{Core,WinForms}.dll` und
+`runtimes/win-x64/native/WebView2Loader.dll`.
+
+**Was Windows-seitig offen ist:** die Abnahme von iZ5 selbst — Maus *und* Finger, deutsch *und*
+englisch, Hochkontrast, 125 %/150 % (iF21), Enter/Esc, Infoknopf, WebView2-Profilordner, Setup
+in der Sandbox ohne WebView2 und ohne Internet (iF20), VS-2026-Designer unter dem Razor-SDK.
+Die Punkte stehen einzeln in
+[`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
 
 ---
 
