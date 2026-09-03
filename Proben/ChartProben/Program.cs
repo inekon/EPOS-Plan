@@ -31,6 +31,17 @@ namespace ChartProben
     {
         private const int STUNDEN = 8760;
 
+        /// <summary>
+        /// Die Kostenprofil-Linie, wie sie im fertigen Bild ANKOMMT.
+        /// <c>ChartRenderer.C_PROFIL</c> ist halbtransparent (Deckung 180 von 255,
+        /// woertlich aus <c>Form_Kostenprofil</c>); ueber der weissen Flaeche
+        /// entsteht daraus 75/146/75. Die Pixelpruefung vergleicht exakt, deshalb
+        /// steht hier die gemischte Farbe und nicht die Palettenfarbe - dasselbe
+        /// Thema wie bei den halbtransparenten Speichertemperaturen, dort ist die
+        /// untere Schicht deshalb gar nicht geprueft.
+        /// </summary>
+        private static readonly SKColor PROFILLINIE_AUF_WEISS = new SKColor(75, 146, 75);
+
         private static int _verstoesse;
         private static int _bilder;
 
@@ -120,6 +131,15 @@ namespace ChartProben
                    new[] { ChartRenderer.C_STAMM, ChartRenderer.C_SERIEN[0], ChartRenderer.C_SERIEN[1] },
                    () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Projekt",
                             ChartRenderer.VerlaufsReihen(serien, true), null));
+
+            // 10 - Kostenprofil (iU9-W3.4): 8 760 Stundenpreise ueber der Monatsachse.
+            // Die Reihe laeuft ins Negative, damit die gestrichelte Nulllinie mitgeprueft
+            // wird - ein Wochenwert ist eine Abweichung und darf den Monatswert
+            // unter null ziehen.
+            double[] profil = Preisprofil();
+            Pruefe(ziel, "kostenprofil", 1296, 780,
+                   new[] { PROFILLINIE_AUF_WEISS },
+                   () => ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat"));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -296,6 +316,38 @@ namespace ChartProben
             z.Reihen[schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN] =
                 Temperaturreihe(tUnten, 5, 3, phase);
             z.Beschriftungen[schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN] = beschriftung + " unten";
+        }
+
+        /// <summary>
+        /// Ein Kostenprofil, wie es <c>PreisModell.AusMonatsUndWochenwerten</c>
+        /// baut (iU9-W3.4): Monatsniveau plus Wochenwert je Wochentag und Stunde.
+        /// Der Dezember liegt hier UNTER null - damit prueft das Bild auch die
+        /// gestrichelte Nulllinie und die vorzeichenfaehige Skala.
+        /// </summary>
+        private static double[] Preisprofil()
+        {
+            var monat = new double[12];
+            for (int m = 0; m < 12; m++) monat[m] = 25.0 + 6.0 * Math.Sin(2.0 * Math.PI * m / 12.0);
+            monat[11] = -4.0;
+
+            var woche = new double[168];
+            for (int t = 0; t < 7; t++)
+                for (int h = 0; h < 24; h++)
+                    woche[t * 24 + h] = (t < 5 ? 3.0 : -2.0) * Math.Sin(2.0 * Math.PI * h / 24.0);
+
+            // Dieselbe Zuordnung wie die Engine: Stunde -> Monat, Stunde -> Wochenstunde.
+            var profil = new double[STUNDEN];
+            int[] tageJeMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+            int stunde = 0;
+            for (int m = 0; m < 12; m++)
+                for (int d = 0; d < tageJeMonat[m]; d++)
+                    for (int h = 0; h < 24; h++)
+                    {
+                        if (stunde >= STUNDEN) break;
+                        profil[stunde] = monat[m] + woche[(stunde / 24 % 7) * 24 + h];
+                        stunde++;
+                    }
+            return profil;
         }
 
         /// <summary>Drei Kapitalwertlinien ueber 21 Stuetzstellen; sie laufen durch die Null.</summary>

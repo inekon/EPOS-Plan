@@ -639,6 +639,133 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================== Kostenprofil
+
+        /// <summary>
+        /// Die Linienfarbe des Kostenprofils — halbtransparentes Dunkelgrün.
+        /// Wortgleich aus <c>Form_Kostenprofil.ChartKonfigurieren</c>
+        /// (<c>Color.FromArgb(180, Color.DarkGreen)</c>); SkiaSharp nimmt die
+        /// Deckung als vierten Wert.
+        /// </summary>
+        public static readonly SKColor C_PROFIL = new SKColor(0x00, 0x64, 0x00, 180);
+
+        /// <summary>
+        /// Liniendiagramm „Kostenprofil im Jahresverlauf" (Paket iU9-W3.4):
+        /// das aus zwölf Monatsniveaus und 168 Wochenwerten konstruierte
+        /// Jahresprofil (8 760 Stunden) über einer Monatsachse 0…12.
+        ///
+        /// <para><b>Vorbild.</b> Das <c>Chart</c> der Maske
+        /// <c>Form_Kostenprofil</c> (648 × 390): ein Diagrammbereich „Jahr",
+        /// x-Achse 0…12 im Abstand 1, beide Raster gepunktet, eine Linie
+        /// „KOSTENPROFIL" in halbtransparentem Dunkelgrün, Stärke 2. Die Punkte
+        /// entstanden dort aus <c>x = i * 12 / 8760</c> — dieselbe Abbildung
+        /// steht hier. Das Bildmaß ist die doppelte Zielauflösung des
+        /// Vorläufers (1296 × 780), wie bei allen Bildern dieser Datei.</para>
+        ///
+        /// <para><b>Die y-Achse ist vorzeichenfähig</b> — wie beim
+        /// Kapitalwert-Verlauf und aus demselben Grund: Ein Wochenwert ist eine
+        /// ABWEICHUNG und darf den Monatswert unter null ziehen. Die Nulllinie
+        /// wird dann gestrichelt hervorgehoben.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift ohne Einheit.</param>
+        /// <param name="stundenwerte">Das Jahresprofil; kürzere Reihen werden
+        /// über ihre eigene Länge auf die Monatsachse gelegt.</param>
+        /// <param name="einheit">Einheit für Überschrift und y-Achse, z. B. „ct/kWh".</param>
+        /// <param name="achseMonat">Beschriftung der x-Achse (Resource CHART_ACHSE_MONAT).</param>
+        public static byte[] Kostenprofil(string titel, double[] stundenwerte,
+                                          string einheit, string achseMonat)
+        {
+            int W = 1296, H = 780;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+                var rc = SKRect.Create(110f, 80f, W - 150f, 560f);
+
+                if (stundenwerte == null || stundenwerte.Length < 2)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, "Kein Profil vorhanden.", f, SKColors.DimGray, rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                // Vorzeichenfähige Skala mit „schönen" Stufen (5 Rasterlinien) —
+                // dieselbe Rechnung wie in KapitalwertVerlauf.
+                double min = Math.Min(0, stundenwerte.Min());
+                double max = Math.Max(0, stundenwerte.Max());
+                if (max - min < 1e-9) { max = min + 1; }
+                double roh = (max - min) / 5.0;
+                double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+                double schritt = zehner;
+                foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                    if (zehner * f >= roh) { schritt = zehner * f; break; }
+                min = Math.Floor(min / schritt) * schritt;
+                max = Math.Ceiling(max / schritt) * schritt;
+
+                // Raster + y-Beschriftung.
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (double wert = min; wert <= max + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("0.###", DE);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    }
+
+                // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1).
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int m = 0; m <= 12; m++)
+                    {
+                        float x = rc.Left + m / 12f * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = m.ToString(DE);
+                        float breite = f.MeasureText(lab);
+                        Text(g, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                    }
+                using (var f = Schrift(15f))
+                    Text(g, achseMonat ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+
+                // Achsen + Nulllinie, wenn die Skala unter null reicht.
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                if (min < 0)
+                {
+                    float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
+                    using (var strichel = SKPathEffect.CreateDash(new[] { 3f * 2f, 1f * 2f }, 0f))
+                    using (var stift = Strich(SKColors.DimGray, 2f))
+                    {
+                        stift.PathEffect = strichel;
+                        g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
+                    }
+                }
+
+                // Die Linie. 8 760 Punkte auf 1 146 Bildpunkte: jeder n-te Wert
+                // genügt — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
+                int schrittweite = Math.Max(1, stundenwerte.Length / (int)rc.Width);
+                var punkte = new List<SKPoint>();
+                for (int i = 0; i < stundenwerte.Length; i += schrittweite)
+                {
+                    float x = rc.Left + (float)i / (stundenwerte.Length - 1) * rc.Width;
+                    float y = (float)(rc.Bottom - (stundenwerte[i] - min) / (max - min) * rc.Height);
+                    punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                }
+                using (var stift = Strich(C_PROFIL, 2f))
+                {
+                    stift.StrokeJoin = SKStrokeJoin.Round;
+                    Linienzug(g, punkte.ToArray(), stift);
+                }
+
+                Legende(g, new List<Segment> { new Segment(titel, 0, C_PROFIL) }, 110f, H - 56f);
+                return Png(flaeche);
+            }
+        }
+
         // =================================================================== Schrift
 
         // ---------------------------------------------------------------------

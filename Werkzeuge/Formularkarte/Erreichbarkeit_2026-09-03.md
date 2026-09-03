@@ -49,7 +49,7 @@ nur `Form_Variantentest` geöffnet hat:
 | `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
 | `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
 
-Die übrigen 100 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
+Die übrigen 96 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
 
 **Für die Wellenplanung iU9:** Eine Maske mit „nein" oder „verwaist" wird **nicht** nach Blazor
@@ -75,15 +75,31 @@ unverändert **2 × „unklar"**. Die drei K4-Masken hatten nie eine Designer-Da
 dieser Zählung deshalb nie erschienen; sichtbar wird ihr Verschwinden nur in der
 Erreichbarkeitstabelle unten.
 
+## Stand nach iU9-W3 (Nachtrag 03.09.2026)
+
+Welle 3 hat vier Masken umgestellt und gelöscht, alle vier mit Designer:
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_LeistungspreisReihe` | K1 | `EPOS.UI/Dialoge/Kosten/LeistungspreisReiheDialog.razor` mit `LeistungspreisReiheHuelle` |
+| `Form_SpotpreisImport` | K1 | `EPOS.UI/Dialoge/Kosten/SpotpreisImportDialog.razor` mit `SpotpreisImportHuelle` |
+| `Form_Emissionskatalog` | K2 (zwei Raster) | `EPOS.UI/Dialoge/Kosten/EmissionskatalogDialog.razor` mit `EmissionskatalogHuelle` |
+| `Form_Kostenprofil` | K3 (Chart + 36 Laufzeitfelder) | `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` mit `KostenprofilHuelle` |
+
+Der Stapellauf zählt seither **98 Masken** (102 nach iU9‑W2, 105 nach iU9‑W0),
+**0 × „nein"**, **0 × „verwaist"**, unverändert **2 × „unklar"**.
+`Form_Kostenprofil` liegt als fünftes Prüfmuster unter
+`Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/` — neun Testbezüge hängen an ihr.
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 100 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 96 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 2 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 102 | |
+| gesamt | 98 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -111,7 +127,6 @@ Erreichbarkeitstabelle unten.
 | Form_EingGebTyp | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.GebaeudetypenBearbeiten → Masken.GebaeudetypenAdmin → Form_EingGebTyp | `WindowsFormsApplication1/Views/Gebäude/Form_EingGebTyp.designer.cs` |
 | Form_EingProzTyp | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_ProzTypeDBedit → Form_EingProzTyp | `WindowsFormsApplication1/Views/Prozesswärme/Form_EingProzTyp.designer.cs` |
 | Form_EingStromTyp | ja | Form_Start → pBox_StromProfilEigenes_Click → Form_EingStromTyp | `WindowsFormsApplication1/Views/Stromverbraucher/Form_EingStromTyp.designer.cs` |
-| Form_Emissionskatalog | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → KatalogFuerZeile → Form_Emissionskatalog | `WindowsFormsApplication1/Views/Kosten/Form_Emissionskatalog.Designer.cs` |
 | Form_Energietraeger | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger | `WindowsFormsApplication1/Views/Kosten/Form_Energietraeger.Designer.cs` |
 | Form_ErgBrauchwasserwaerme | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_Details → Form_ErgBrauchwasserwaerme | `WindowsFormsApplication1/Views/Brauchwasser/Form_ErgBrauchwasserwaerme.designer.cs` |
 | Form_ErgProzesswaerme | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_Simulation → Form_ErgProzesswaerme | `WindowsFormsApplication1/Views/Prozesswärme/Form_ErgProzesswaerme.designer.cs` |
@@ -133,8 +148,6 @@ Erreichbarkeitstabelle unten.
 | Form_Klimadaten | ja | MDIMainForm → MenuItem_Klimadaten → Form_Klimadaten | `WindowsFormsApplication1/Views/Klimadaten/Form_Klimadaten.Designer.cs` |
 | Form_Klimazonenkarte | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuelleErdreich → _btnKarte → Form_Klimazonenkarte | `WindowsFormsApplication1/Views/Simulation/Form_Klimazonenkarte.Designer.cs` |
 | Form_KostenKomponente | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente | `WindowsFormsApplication1/Views/Kosten/Form_KostenKomponente.Designer.cs` |
-| Form_Kostenprofil | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → Form_Kostenprofil | `WindowsFormsApplication1/Views/Kosten/Form_Kostenprofil.Designer.cs` |
-| Form_LeistungspreisReihe | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueLeistungspreisZusatz → Form_LeistungspreisReihe | `WindowsFormsApplication1/Views/Kosten/Form_LeistungspreisReihe.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
 | Form_PV | ja | Form_Start → pBox_PV → Form_PV | `WindowsFormsApplication1/Views/Photovoltaik/Form_PV.Designer.cs` |
 | Form_PeakShaving | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving | `WindowsFormsApplication1/Views/Stromspeicher/Form_PeakShaving.Designer.cs` |
@@ -158,7 +171,6 @@ Erreichbarkeitstabelle unten.
 | Form_Solarganglinie | ja | Form_Start → pBox_Solarthermie → Form_Solarganglinie | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie.designer.cs` |
 | Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
 | Form_SpeicherVariantenVergleich | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_SpVariantenVergleich → Form_SpeicherVariantenVergleich | `WindowsFormsApplication1/Views/Stromspeicher/Form_SpeicherVariantenVergleich.Designer.cs` |
-| Form_SpotpreisImport | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → Form_SpotpreisImport | `WindowsFormsApplication1/Views/Kosten/Form_SpotpreisImport.Designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
 | Form_Stromganglinie | ja | Form_Start → pBox_StromMessdaten_Click → Form_Stromganglinie | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie.designer.cs` |
@@ -189,3 +201,4 @@ Erreichbarkeitstabelle unten.
 | ucFuelSettings | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings | `WindowsFormsApplication1/Views/Kosten/ucFuelSettings.Designer.cs` |
 | ucStromAufschlaege | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueAufschlagsblock → ucStromAufschlaege | `WindowsFormsApplication1/Views/Kosten/ucStromAufschlaege.Designer.cs` |
 | ucVorlagenZeile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → ZeileBauen → ucVorlagenZeile | `WindowsFormsApplication1/Views/Kosten/ucVorlagenZeile.Designer.cs` |
+

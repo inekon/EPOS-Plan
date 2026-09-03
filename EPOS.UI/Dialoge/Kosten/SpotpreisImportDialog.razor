@@ -1,0 +1,297 @@
+﻿@* Import einer Spotmarktpreis-Datei (iU9-W3.2).
+
+   Vorbild: Views/Kosten/Form_SpotpreisImport.cs (219 Z.) und .Designer.cs
+   (Fachkonzept Stromspeicher 4.1 a, Arbeitspaket AP4).
+
+   ZWEI SCHRITTE, MIT ABSICHT GETRENNT - die Regel des Vorlaeufers, woertlich
+   uebernommen: "Datei waehlen" liest und bereitet auf, OHNE zu speichern;
+   erst "Uebernehmen" legt die Reihe an. Der Anwender sieht das vollstaendige
+   Validierungsprotokoll, BEVOR 8 760 Zeilen in die Datenbank gehen.
+
+   DER DIALOG RECHNET NICHTS. Zerlegen macht SpotpreisLeser, den Kalender die
+   Engine, das Zusammenfuegen SpotpreisImportCtrl - alles im Kern, gerufen von
+   der Huelle. Hier stehen Dateiwahl, Anzeige und die beiden Fachknoepfe.
+
+   ZWEI FACHKNOEPFE STATT OK/ABBRECHEN: "Uebernehmen" ist keine Bestaetigung,
+   sondern der Schreibvorgang selbst und erst nach erfolgreicher Pruefung
+   freigeschaltet - eine Beschriftung "OK" wuerde genau das verdecken. Die
+   Begruendung steht so schon im Vorlaeufer.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@InfoText" />
+
+    <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@WaehlenText" Filter="@Dateifilter"
+               Pfad="@_pfad" Waehlen="@Waehlen" PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
+
+    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+              WertChanged="@(w => _bezeichner = w)" />
+
+    <Schalter Bezeichnung="@LabelStamm" Wert="@_stamm" Aktiv="@(!_laeuft)"
+              WertChanged="@(w => _stamm = w)" />
+
+    <Textfeld Bezeichnung="@LabelProtokoll" Wert="@_protokoll"
+              Mehrzeilig="true" Zeilen="@ProtokollZeilen" NurLesen="true" Festbreite="true" />
+
+    @if (_statusFehler)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_status" />
+    }
+    else if (!string.IsNullOrEmpty(_status))
+    {
+        <Kohaerenzzeile Text="@_status" Zustand="KohaerenzZustand.Ok" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!UebernehmenErlaubt)" @onclick="BeiUebernehmen">@UebernehmenText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Der Dateiwaehler der Plattform (Huelle: <c>Dienste.Datei.DateiOeffnen</c>).
+    /// Ohne ihn erscheint kein Knopf - dann bleibt der Dialog eine Anzeige.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? Waehlen { get; set; }
+
+    /// <summary>
+    /// Prueft die Datei, ohne zu schreiben (<c>SpotpreisImportCtrl.Pruefe</c>).
+    /// Die Huelle laesst den Lauf auf einem eigenen Faden laufen.
+    /// </summary>
+    [Parameter] public Func<string, Task<SpotpreisPruefung>>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Schreibt die geprueften Werte: Bezeichner, Ziel (<c>true</c> = Stamm,
+    /// allen Projekten) und ein Fortschrittsmelder, der die Zahl der bereits
+    /// geschriebenen Zeilen nennt (<c>SpotpreisImportCtrl.Speichere</c>).
+    /// </summary>
+    [Parameter] public Func<string, bool, Action<int>, Task<SpotpreisSpeicherung>>? Speichern { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. <c>true</c>, wenn eine Reihe angelegt wurde.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte (Huelle setzt sie auf PREIS_IMPORT_* bzw. SPOT_*)
+    // =====================================================================
+
+    /// <summary>Fenstertitel (PREIS_IMPORT_TITEL).</summary>
+    [Parameter] public string TitelText { get; set; } = "Spotmarktpreise importieren";
+
+    /// <summary>Der Hinweis ueber der Dateizeile (PREIS_IMPORT_INFO).</summary>
+    [Parameter] public string InfoText { get; set; } = "";
+
+    /// <summary>Beschriftung des Pfadfeldes (PREIS_IMPORT_LABEL_DATEI).</summary>
+    [Parameter] public string LabelDatei { get; set; } = "Datei:";
+
+    /// <summary>Beschriftung des Waehlknopfes (PREIS_IMPORT_BTN_DATEI).</summary>
+    [Parameter] public string WaehlenText { get; set; } = "Datei wählen …";
+
+    /// <summary>Dateifilter fuer den Waehler (PREIS_IMPORT_DATEIFILTER).</summary>
+    [Parameter] public string Dateifilter { get; set; } = "";
+
+    /// <summary>Beschriftung des Bezeichnerfeldes (PREIS_IMPORT_LABEL_BEZEICHNER).</summary>
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichnung:";
+
+    /// <summary>Beschriftung des Stammschalters (PREIS_IMPORT_CHK_STAMM).</summary>
+    [Parameter] public string LabelStamm { get; set; } = "allen Projekten zur Verfügung stellen";
+
+    /// <summary>Beschriftung des Protokollfeldes (PREIS_IMPORT_LABEL_PROTOKOLL).</summary>
+    [Parameter] public string LabelProtokoll { get; set; } = "Validierungsprotokoll:";
+
+    /// <summary>Sichtbare Zeilen des Protokolls (Designer: 300 px hoch).</summary>
+    [Parameter] public int ProtokollZeilen { get; set; } = 14;
+
+    /// <summary>Beschriftung des Schreibknopfes (PREIS_IMPORT_BTN_UEBERNEHMEN).</summary>
+    [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+
+    /// <summary>Beschriftung des zweiten Knopfes (SIM_BTN_ABBRECHEN).</summary>
+    [Parameter] public string SchliessenText { get; set; } = "Abbrechen";
+
+    /// <summary>Statuszeile nach erfolgreicher Pruefung, ein Platzhalter fuer das Jahr.</summary>
+    [Parameter] public string VorlageBereit { get; set; } = "Datei geprüft: Jahr {0} — bereit.";
+
+    /// <summary>Statuszeile, wenn die Datei unbrauchbar ist.</summary>
+    [Parameter] public string TextUnbrauchbar { get; set; } = "Datei unbrauchbar — siehe Protokoll.";
+
+    /// <summary>Statuszeile waehrend des Schreibens, ein Platzhalter fuer die Zeilenzahl.</summary>
+    [Parameter] public string VorlageSchreibt { get; set; } = "schreibt … {0} Werte";
+
+    /// <summary>Statuszeile nach dem Schreiben, Platzhalter fuer Id und Zeilenzahl.</summary>
+    [Parameter] public string VorlageGespeichert { get; set; } = "Reihe {0} mit {1} Werten gespeichert.";
+
+    /// <summary>Statuszeile, wenn nichts geschrieben wurde.</summary>
+    [Parameter] public string TextNichtGespeichert { get; set; } = "Die Reihe konnte nicht gespeichert werden.";
+
+    /// <summary>Statuszeile waehrend der Pruefung (SPOT_STATUS_PRUEFT).</summary>
+    [Parameter] public string TextPrueft { get; set; } = "Datei wird geprüft …";
+
+    /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpotpreisImport.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private string _pfad = "";
+    private string _bezeichner = "";
+    private bool _stamm = true;          // Designer: _chkStamm.Checked = true
+    private string _protokoll = "";
+    private string _status = "";
+    private bool _statusFehler;
+    private bool _geprueftOk;
+    private bool _laeuft;
+
+    /// <summary>Der Text der Statuszeile (Pruefhilfe fuer Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Ist die Statuszeile eine Fehlermeldung? (Pruefhilfe fuer Tests.)</summary>
+    public bool StatusIstFehler => _statusFehler;
+
+    /// <summary>Das angezeigte Protokoll (Pruefhilfe fuer Tests).</summary>
+    public string Protokoll => _protokoll;
+
+    /// <summary>Darf geschrieben werden? Wie <c>_btnUebernehmen.Enabled</c>.</summary>
+    private bool UebernehmenErlaubt => _geprueftOk && !_laeuft;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Datei waehlen und pruefen (btnWaehlen_Click + DateiPruefen)
+    // =====================================================================
+
+    private async Task BeiDatei(string pfad)
+    {
+        _pfad = pfad;
+
+        // Wie im Vorlaeufer: Ein leeres Bezeichnerfeld bekommt den Dateinamen.
+        if (_bezeichner.Trim().Length == 0) _bezeichner = OhneEndung(pfad);
+
+        await Pruefen_(pfad);
+    }
+
+    private async Task Pruefen_(string pfad)
+    {
+        if (Pruefen is null) return;
+
+        _geprueftOk = false;
+        _laeuft = true;
+        Melden(TextPrueft, false);
+
+        try
+        {
+            SpotpreisPruefung lauf = await Pruefen(pfad);
+
+            _protokoll = lauf.Protokoll ?? "";
+            _geprueftOk = lauf.Erfolgreich;
+            Melden(lauf.Erfolgreich
+                       ? string.Format(VorlageBereit, lauf.Jahr)
+                       : TextUnbrauchbar,
+                   !lauf.Erfolgreich);
+        }
+        catch (Exception ex)
+        {
+            // Wie der catch-Zweig von DateiPruefen: Die Meldung IST das Protokoll.
+            _protokoll = ex.Message;
+            _geprueftOk = false;
+            Melden(TextUnbrauchbar, true);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    // =====================================================================
+    // Uebernehmen (btnUebernehmen_Click)
+    // =====================================================================
+
+    private async Task BeiUebernehmen()
+    {
+        if (!UebernehmenErlaubt || Speichern is null) return;
+
+        _laeuft = true;
+        try
+        {
+            SpotpreisSpeicherung erg = await Speichern(_bezeichner.Trim(), _stamm, Fortschritt);
+
+            if (erg.ReiheId <= 0)
+            {
+                Melden(TextNichtGespeichert, true);
+                return;
+            }
+
+            Melden(string.Format(VorlageGespeichert, erg.ReiheId, erg.Werte), false);
+            await Geschlossen.InvokeAsync(true);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    /// <summary>
+    /// Fortschritt beim Schreiben. 8 760 Einzel-INSERTs dauern auf einer
+    /// Netzwerkdatenbank sichtbar lange; ohne Rueckmeldung wirkt das Programm
+    /// eingefroren. Der Melder kommt vom Rechenfaden, deshalb ueber
+    /// <c>InvokeAsync</c> zurueck in den Zeichenfaden.
+    /// </summary>
+    private void Fortschritt(int geschrieben)
+    {
+        _status = string.Format(VorlageSchreibt, geschrieben);
+        _statusFehler = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(false);
+
+    private void Melden(string text, bool fehler)
+    {
+        _status = text;
+        _statusFehler = fehler;
+    }
+
+    /// <summary>Dateiname ohne Endung - ohne <c>System.IO</c> (das kennt iOS auch,
+    /// aber ein Pfadtrenner ist plattformabhaengig; beide werden geprueft).</summary>
+    private static string OhneEndung(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return "";
+
+        int trenner = Math.Max(pfad.LastIndexOf('\\'), pfad.LastIndexOf('/'));
+        string name = trenner >= 0 ? pfad.Substring(trenner + 1) : pfad;
+
+        int punkt = name.LastIndexOf('.');
+        return punkt > 0 ? name.Substring(0, punkt) : name;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter ist NICHT belegt: "Uebernehmen" schreibt 8 760 Zeilen.
+        "Escape" => BeiSchliessen(),
+        _ => Task.CompletedTask
+    };
+}

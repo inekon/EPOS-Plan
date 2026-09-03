@@ -1,18 +1,39 @@
-﻿@* Einzeiliges Textfeld - Bezeichner, Codes, Variantennamen.
+﻿@* Textfeld - Bezeichner, Codes, Variantennamen und (mehrzeilig) Protokolle.
 
    Bewusst ohne Pruefung: Was ein gueltiger Text ist, weiss nur der Dialog
-   (meist "nicht leer"), und er sagt es ueber OkErlaubt der SpeichernLeiste. *@
+   (meist "nicht leer"), und er sagt es ueber OkErlaubt der SpeichernLeiste.
 
-<label class="epos-feld">
-    @if (!string.IsNullOrEmpty(Bezeichnung))
-    {
-        <span class="epos-feld-text">@Bezeichnung</span>
-    }
-    <span class="epos-feld-zeile">
-        <input class="epos-eingabe" type="text" value="@Wert" maxlength="@Hoechstlaenge"
-               placeholder="@Platzhalter" @oninput="BeiEingabe" />
-    </span>
-</label>
+   MEHRZEILIG (iU9-W3.0) ist dasselbe Feld mit <textarea> statt <input>: der
+   Ersatz fuer die MultiLine-TextBox des Bestands - das Validierungsprotokoll
+   des Spotpreis-Imports, das Ganglinienprotokoll, die Freitextfelder. Ein
+   zweiter Baustein waere ein zweiter Ort fuer dieselben Regeln (Beschriftung,
+   Hoechstlaenge, NurLesen). *@
+
+@if (Mehrzeilig)
+{
+    <label class="epos-feld">
+        @if (!string.IsNullOrEmpty(Bezeichnung))
+        {
+            <span class="epos-feld-text">@Bezeichnung</span>
+        }
+        <textarea class="epos-eingabe epos-eingabe--mehrzeilig @(Festbreite ? "epos-eingabe--festbreite" : "")"
+                  rows="@Zeilen" maxlength="@Hoechstlaenge" placeholder="@Platzhalter"
+                  readonly="@NurLesen" @oninput="BeiEingabe">@Wert</textarea>
+    </label>
+}
+else
+{
+    <label class="epos-feld">
+        @if (!string.IsNullOrEmpty(Bezeichnung))
+        {
+            <span class="epos-feld-text">@Bezeichnung</span>
+        }
+        <span class="epos-feld-zeile">
+            <input class="epos-eingabe" type="text" value="@Wert" maxlength="@Hoechstlaenge"
+                   placeholder="@Platzhalter" readonly="@NurLesen" @oninput="BeiEingabe" />
+        </span>
+    </label>
+}
 
 @code {
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
@@ -30,8 +51,35 @@
     /// <summary>Hoechstzahl der Zeichen; <c>null</c> = unbegrenzt.</summary>
     [Parameter] public int? Hoechstlaenge { get; set; }
 
+    /// <summary>
+    /// Mehrzeiliges Feld (<c>textarea</c>) statt einzeiligem Eingabefeld -
+    /// Vorbild <c>TextBox.Multiline = true</c> mit Rollbalken
+    /// (<c>Form_SpotpreisImport._tbProtokoll</c>, iU9-W3.0).
+    /// </summary>
+    [Parameter] public bool Mehrzeilig { get; set; }
+
+    /// <summary>Sichtbare Zeilen im mehrzeiligen Feld; ohne Wirkung sonst.</summary>
+    [Parameter] public int Zeilen { get; set; } = 6;
+
+    /// <summary>
+    /// Feste Zeichenbreite (Schreibmaschinenschrift) im mehrzeiligen Feld -
+    /// fuer Protokolle, die ihre Spalten aus Leerzeichen bauen
+    /// (<c>Form_SpotpreisImport._tbProtokoll</c> stand in Consolas 9 pt).
+    /// Nachgetragen in iU9-W3.2; ohne Wirkung im einzeiligen Feld.
+    /// </summary>
+    [Parameter] public bool Festbreite { get; set; }
+
+    /// <summary>
+    /// Nur lesbar? Das Feld bleibt sichtbar, waehlbar und rollbar, nimmt aber
+    /// keine Eingabe an (<c>TextBox.ReadOnly</c> des Bestands). Anders als ein
+    /// gesperrtes Feld laesst sich sein Inhalt weiter markieren und kopieren -
+    /// genau das braucht ein Protokoll.
+    /// </summary>
+    [Parameter] public bool NurLesen { get; set; }
+
     private Task BeiEingabe(ChangeEventArgs e)
     {
+        if (NurLesen) return Task.CompletedTask;
         Wert = e.Value?.ToString() ?? "";
         return WertChanged.InvokeAsync(Wert);
     }

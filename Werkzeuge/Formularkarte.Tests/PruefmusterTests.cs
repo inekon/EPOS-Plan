@@ -41,6 +41,13 @@ public sealed class PruefmusterTests
         // Dateinamen. Sechs Tests haengen daran.
         { "Stromspeicher", "Form_StromspeicherItemNeu",
           "EPOS.UI/Dialoge/Allgemein/NamensDialog.razor" },
+
+        // iU9-W3.4: Form_Kostenprofil ist der Beleg fuer die Abschnittsbildung -
+        // ein TabControl mit drei Reitern, darin ein Chart, eine ListBox mit
+        // eigenem Label und Beschriftungen, die nur innerhalb ihres Abschnitts
+        // wirken. Neun Testbezuege haengen daran.
+        { "Kosten", "Form_Kostenprofil",
+          "EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor" },
     };
 
     /// <summary>

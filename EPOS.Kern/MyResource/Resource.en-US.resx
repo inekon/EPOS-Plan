@@ -9232,4 +9232,205 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WPAR_ZINS" xml:space="preserve">
     <value>Discount rate i [%]:</value>
   </data>
+  <data name="EMK_AKTIV" xml:space="preserve">
+    <value>◆ in force</value>
+  </data>
+  <data name="EMK_ART_ABWAEHLEN_FRAGE" xml:space="preserve">
+    <value>Deselect the type instead? It then disappears from the emission fields and from the CO₂e total; its values are kept.</value>
+  </data>
+  <data name="EMK_ART_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="EMK_ART_DLG_BEARB" xml:space="preserve">
+    <value>Edit emission type</value>
+  </data>
+  <data name="EMK_ART_DLG_NEU" xml:space="preserve">
+    <value>New emission type</value>
+  </data>
+  <data name="EMK_ART_F_EINHEIT" xml:space="preserve">
+    <value>Unit:</value>
+  </data>
+  <data name="EMK_ART_F_GWP" xml:space="preserve">
+    <value>CO₂ equivalent (GWP₁₀₀):</value>
+  </data>
+  <data name="EMK_ART_F_KUERZEL" xml:space="preserve">
+    <value>Code:</value>
+  </data>
+  <data name="EMK_ART_F_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="EMK_ART_F_QUELLE" xml:space="preserve">
+    <value>Source of the factor:</value>
+  </data>
+  <data name="EMK_ART_GWP_UNGUELTIG" xml:space="preserve">
+    <value>The equivalence factor must be a number (comma or dot).</value>
+  </data>
+  <data name="EMK_ART_KUERZEL_LEER" xml:space="preserve">
+    <value>The code must not be empty.</value>
+  </data>
+  <data name="EMK_ART_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="EMK_ART_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Delete emission type “{0}”?</value>
+  </data>
+  <data name="EMK_ART_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="EMK_ART_PFLICHT_HINWEIS" xml:space="preserve">
+    <value>CO₂ is the mandatory type: the equivalence factor stays 1.</value>
+  </data>
+  <data name="EMK_GRP_ARTEN" xml:space="preserve">
+    <value>Emission types</value>
+  </data>
+  <data name="EMK_GRP_WERTE" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="EMK_GRP_WERTE_ART" xml:space="preserve">
+    <value>Values: {0}{1}</value>
+  </data>
+  <data name="EMK_HINWEIS_TRAEGER" xml:space="preserve">
+    <value>“Apply” copies the selected value as the carrier value in force and records its origin. A later catalogue change does NOT propagate back. Values without a carrier are templates for all carriers.</value>
+  </data>
+  <data name="EMK_HINWEIS_VERWALTUNG" xml:space="preserve">
+    <value>Without a carrier context the catalogue shows the types and the carrier-independent templates. Shipped entries are read-only — deselect instead of deleting.</value>
+  </data>
+  <data name="EMK_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="EMK_KONTEXT_TRAEGER" xml:space="preserve">
+    <value>Carrier: {0}</value>
+  </data>
+  <data name="EMK_KONTEXT_VERWALTUNG" xml:space="preserve">
+    <value>Management mode — types and carrier-independent templates</value>
+  </data>
+  <data name="EMK_MODUS" xml:space="preserve">
+    <value>CO₂ calculation:</value>
+  </data>
+  <data name="EMK_MODUS_CO2" xml:space="preserve">
+    <value>CO₂</value>
+  </data>
+  <data name="EMK_MODUS_CO2E" xml:space="preserve">
+    <value>CO₂ equivalent (GWP₁₀₀)</value>
+  </data>
+  <data name="EMK_MODUS_ORT" xml:space="preserve">
+    <value>[global default]</value>
+  </data>
+  <data name="EMK_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="EMK_SP_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="EMK_SP_AUSWAHL" xml:space="preserve">
+    <value>Selected types appear as a field in the emissions tab and count towards the CO₂e total.</value>
+  </data>
+  <data name="EMK_SP_AUSWAHL_KOPF" xml:space="preserve">
+    <value>in tab</value>
+  </data>
+  <data name="EMK_SP_CO2E" xml:space="preserve">
+    <value>already CO₂e?</value>
+  </data>
+  <data name="EMK_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="EMK_SP_GWP" xml:space="preserve">
+    <value>GWP₁₀₀</value>
+  </data>
+  <data name="EMK_SP_KUERZEL" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="EMK_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="EMK_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="EMK_SP_WAHL" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="EMK_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="EMK_TIP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Shipped type — can be deselected but not deleted.</value>
+  </data>
+  <data name="EMK_TIP_PFLICHT" xml:space="preserve">
+    <value>Mandatory type — cannot be deselected or deleted.</value>
+  </data>
+  <data name="EMK_TIP_UNVERAENDERLICH" xml:space="preserve">
+    <value>Shipped catalogue value — read-only. Applying it is possible.</value>
+  </data>
+  <data name="EMK_TITEL" xml:space="preserve">
+    <value>Emission factor catalogue</value>
+  </data>
+  <data name="EMK_TRAEGER" xml:space="preserve">
+    <value>Carrier</value>
+  </data>
+  <data name="EMK_UEBERNAHME_LEER" xml:space="preserve">
+    <value>The selected entry does not carry a numeric value.</value>
+  </data>
+  <data name="EMK_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="EMK_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="EMK_WERT_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="EMK_WERT_CO2E" xml:space="preserve">
+    <value>Value is already a CO₂ equivalent (do not add up again)</value>
+  </data>
+  <data name="EMK_WERT_DLG_BEARB" xml:space="preserve">
+    <value>Edit own value</value>
+  </data>
+  <data name="EMK_WERT_DLG_NEU" xml:space="preserve">
+    <value>New own value</value>
+  </data>
+  <data name="EMK_WERT_F_TEXT" xml:space="preserve">
+    <value>Label/source:</value>
+  </data>
+  <data name="EMK_WERT_F_WERT" xml:space="preserve">
+    <value>Value:</value>
+  </data>
+  <data name="EMK_WERT_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="EMK_WERT_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Delete value “{0}”?</value>
+  </data>
+  <data name="EMK_WERT_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="EMK_WERT_UNGUELTIG" xml:space="preserve">
+    <value>The value must be a number ≥ 0 (comma or dot).</value>
+  </data>
+  <data name="EMK_WERT_UNVERAENDERLICH" xml:space="preserve">
+    <value>Shipped catalogue values are read-only — they are carried forward through new annual rows of the statutory parameters. Please create an own value.</value>
+  </data>
+  <data name="EMK_WERT_VORLAGE" xml:space="preserve">
+    <value>Template for ALL carriers (not bound to a carrier)</value>
+  </data>
+  <data name="KPROF_BILD_ALT" xml:space="preserve">
+    <value>Annual profile of electricity prices over 8760 hours</value>
+  </data>
+  <data name="KPROF_BTN_VORSCHAU" xml:space="preserve">
+    <value>Refresh preview</value>
+  </data>
+  <data name="KPROF_KEIN_BILD" xml:space="preserve">
+    <value>No chart yet</value>
+  </data>
+  <data name="LPR_KOPF_MONATE" xml:space="preserve">
+    <value>Monthly rates</value>
+  </data>
+  <data name="LPR_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>The series could not be deleted.</value>
+  </data>
+  <data name="LPR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>The series could not be saved.</value>
+  </data>
+  <data name="SPOT_STATUS_PRUEFT" xml:space="preserve">
+    <value>Checking file …</value>
+  </data>
 </root>

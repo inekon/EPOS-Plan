@@ -3846,6 +3846,546 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ◆ geltend ähnelt.
+        /// </summary>
+        public static string EMK_AKTIV {
+            get {
+                return ResourceManager.GetString("EMK_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art stattdessen abwählen? Sie verschwindet dann aus den Emissionsfeldern und aus der CO₂e-Summe, ihre Werte bleiben erhalten. ähnelt.
+        /// </summary>
+        public static string EMK_ART_ABWAEHLEN_FRAGE {
+            get {
+                return ResourceManager.GetString("EMK_ART_ABWAEHLEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
+        /// </summary>
+        public static string EMK_ART_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("EMK_ART_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsart bearbeiten ähnelt.
+        /// </summary>
+        public static string EMK_ART_DLG_BEARB {
+            get {
+                return ResourceManager.GetString("EMK_ART_DLG_BEARB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Emissionsart ähnelt.
+        /// </summary>
+        public static string EMK_ART_DLG_NEU {
+            get {
+                return ResourceManager.GetString("EMK_ART_DLG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit: ähnelt.
+        /// </summary>
+        public static string EMK_ART_F_EINHEIT {
+            get {
+                return ResourceManager.GetString("EMK_ART_F_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Äquivalent (GWP₁₀₀): ähnelt.
+        /// </summary>
+        public static string EMK_ART_F_GWP {
+            get {
+                return ResourceManager.GetString("EMK_ART_F_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kürzel: ähnelt.
+        /// </summary>
+        public static string EMK_ART_F_KUERZEL {
+            get {
+                return ResourceManager.GetString("EMK_ART_F_KUERZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string EMK_ART_F_NAME {
+            get {
+                return ResourceManager.GetString("EMK_ART_F_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle des Faktors: ähnelt.
+        /// </summary>
+        public static string EMK_ART_F_QUELLE {
+            get {
+                return ResourceManager.GetString("EMK_ART_F_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Äquivalenzfaktor muss eine Zahl sein (Komma oder Punkt). ähnelt.
+        /// </summary>
+        public static string EMK_ART_GWP_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("EMK_ART_GWP_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kürzel darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string EMK_ART_KUERZEL_LEER {
+            get {
+                return ResourceManager.GetString("EMK_ART_KUERZEL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string EMK_ART_LOESCHEN {
+            get {
+                return ResourceManager.GetString("EMK_ART_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsart „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string EMK_ART_LOESCHEN_FRAGE {
+            get {
+                return ResourceManager.GetString("EMK_ART_LOESCHEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string EMK_ART_NEU {
+            get {
+                return ResourceManager.GetString("EMK_ART_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ ist die Pflichtart: Der Äquivalenzfaktor bleibt 1. ähnelt.
+        /// </summary>
+        public static string EMK_ART_PFLICHT_HINWEIS {
+            get {
+                return ResourceManager.GetString("EMK_ART_PFLICHT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsarten ähnelt.
+        /// </summary>
+        public static string EMK_GRP_ARTEN {
+            get {
+                return ResourceManager.GetString("EMK_GRP_ARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
+        /// </summary>
+        public static string EMK_GRP_WERTE {
+            get {
+                return ResourceManager.GetString("EMK_GRP_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte: {0}{1} ähnelt.
+        /// </summary>
+        public static string EMK_GRP_WERTE_ART {
+            get {
+                return ResourceManager.GetString("EMK_GRP_WERTE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Übernehmen“ kopiert den markierten Wert als geltenden Trägerwert und vermerkt die Herkunft. Eine spätere Katalogänderung wirkt NICHT zurück. Werte ohne Träger sind Vorlagen für alle Träger. ähnelt.
+        /// </summary>
+        public static string EMK_HINWEIS_TRAEGER {
+            get {
+                return ResourceManager.GetString("EMK_HINWEIS_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Trägerkontext zeigt der Katalog die Arten und die trägerunabhängigen Vorlagen. Ausgelieferte Einträge sind unveränderlich — abwählen statt löschen. ähnelt.
+        /// </summary>
+        public static string EMK_HINWEIS_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("EMK_HINWEIS_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string EMK_JA {
+            get {
+                return ResourceManager.GetString("EMK_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Träger: {0} ähnelt.
+        /// </summary>
+        public static string EMK_KONTEXT_TRAEGER {
+            get {
+                return ResourceManager.GetString("EMK_KONTEXT_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltungsmodus — Arten und trägerunabhängige Vorlagen ähnelt.
+        /// </summary>
+        public static string EMK_KONTEXT_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("EMK_KONTEXT_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Berechnung: ähnelt.
+        /// </summary>
+        public static string EMK_MODUS {
+            get {
+                return ResourceManager.GetString("EMK_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ ähnelt.
+        /// </summary>
+        public static string EMK_MODUS_CO2 {
+            get {
+                return ResourceManager.GetString("EMK_MODUS_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Äquivalent (GWP₁₀₀) ähnelt.
+        /// </summary>
+        public static string EMK_MODUS_CO2E {
+            get {
+                return ResourceManager.GetString("EMK_MODUS_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die [globale Vorgabe] ähnelt.
+        /// </summary>
+        public static string EMK_MODUS_ORT {
+            get {
+                return ResourceManager.GetString("EMK_MODUS_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string EMK_NEIN {
+            get {
+                return ResourceManager.GetString("EMK_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv ähnelt.
+        /// </summary>
+        public static string EMK_SP_AKTIV {
+            get {
+                return ResourceManager.GetString("EMK_SP_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Arten erscheinen als Feld im Emissions-Tab und gehen in die CO₂e-Summe ein. ähnelt.
+        /// </summary>
+        public static string EMK_SP_AUSWAHL {
+            get {
+                return ResourceManager.GetString("EMK_SP_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Tab ähnelt.
+        /// </summary>
+        public static string EMK_SP_AUSWAHL_KOPF {
+            get {
+                return ResourceManager.GetString("EMK_SP_AUSWAHL_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bereits CO₂e? ähnelt.
+        /// </summary>
+        public static string EMK_SP_CO2E {
+            get {
+                return ResourceManager.GetString("EMK_SP_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string EMK_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("EMK_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP₁₀₀ ähnelt.
+        /// </summary>
+        public static string EMK_SP_GWP {
+            get {
+                return ResourceManager.GetString("EMK_SP_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kürzel ähnelt.
+        /// </summary>
+        public static string EMK_SP_KUERZEL {
+            get {
+                return ResourceManager.GetString("EMK_SP_KUERZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string EMK_SP_NAME {
+            get {
+                return ResourceManager.GetString("EMK_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string EMK_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("EMK_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahl ähnelt.
+        /// </summary>
+        public static string EMK_SP_WAHL {
+            get {
+                return ResourceManager.GetString("EMK_SP_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string EMK_SP_WERT {
+            get {
+                return ResourceManager.GetString("EMK_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferte Art — abwählbar, aber nicht löschbar. ähnelt.
+        /// </summary>
+        public static string EMK_TIP_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("EMK_TIP_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflichtart — nicht abwählbar, nicht löschbar. ähnelt.
+        /// </summary>
+        public static string EMK_TIP_PFLICHT {
+            get {
+                return ResourceManager.GetString("EMK_TIP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferter Katalogwert — unveränderlich. Übernehmen ist möglich. ähnelt.
+        /// </summary>
+        public static string EMK_TIP_UNVERAENDERLICH {
+            get {
+                return ResourceManager.GetString("EMK_TIP_UNVERAENDERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktor-Katalog ähnelt.
+        /// </summary>
+        public static string EMK_TITEL {
+            get {
+                return ResourceManager.GetString("EMK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Träger ähnelt.
+        /// </summary>
+        public static string EMK_TRAEGER {
+            get {
+                return ResourceManager.GetString("EMK_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Eintrag trägt keinen Zahlenwert. ähnelt.
+        /// </summary>
+        public static string EMK_UEBERNAHME_LEER {
+            get {
+                return ResourceManager.GetString("EMK_UEBERNAHME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string EMK_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("EMK_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string EMK_VORLAGE {
+            get {
+                return ResourceManager.GetString("EMK_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
+        /// </summary>
+        public static string EMK_WERT_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("EMK_WERT_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ist bereits ein CO₂-Äquivalent (nicht weiter aufsummieren) ähnelt.
+        /// </summary>
+        public static string EMK_WERT_CO2E {
+            get {
+                return ResourceManager.GetString("EMK_WERT_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenen Wert bearbeiten ähnelt.
+        /// </summary>
+        public static string EMK_WERT_DLG_BEARB {
+            get {
+                return ResourceManager.GetString("EMK_WERT_DLG_BEARB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer eigener Wert ähnelt.
+        /// </summary>
+        public static string EMK_WERT_DLG_NEU {
+            get {
+                return ResourceManager.GetString("EMK_WERT_DLG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung/Quelle: ähnelt.
+        /// </summary>
+        public static string EMK_WERT_F_TEXT {
+            get {
+                return ResourceManager.GetString("EMK_WERT_F_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert: ähnelt.
+        /// </summary>
+        public static string EMK_WERT_F_WERT {
+            get {
+                return ResourceManager.GetString("EMK_WERT_F_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string EMK_WERT_LOESCHEN {
+            get {
+                return ResourceManager.GetString("EMK_WERT_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string EMK_WERT_LOESCHEN_FRAGE {
+            get {
+                return ResourceManager.GetString("EMK_WERT_LOESCHEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string EMK_WERT_NEU {
+            get {
+                return ResourceManager.GetString("EMK_WERT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert muss eine Zahl ≥ 0 sein (Komma oder Punkt). ähnelt.
+        /// </summary>
+        public static string EMK_WERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("EMK_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferte Katalogwerte sind unveränderlich — sie werden über neue Jahreszeilen der gesetzlichen Parameter fortgeschrieben. Legen Sie einen eigenen Wert an. ähnelt.
+        /// </summary>
+        public static string EMK_WERT_UNVERAENDERLICH {
+            get {
+                return ResourceManager.GetString("EMK_WERT_UNVERAENDERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage für ALLE Träger (ohne Trägerbindung) ähnelt.
+        /// </summary>
+        public static string EMK_WERT_VORLAGE {
+            get {
+                return ResourceManager.GetString("EMK_WERT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten – Raumtemperaturen, Wärmebrücken und Ferienzeiten ähnelt.
         /// </summary>
         public static string GEB2_TITEL {
@@ -10943,6 +11483,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresprofil der Strompreise über 8760 Stunden ähnelt.
+        /// </summary>
+        public static string KPROF_BILD_ALT {
+            get {
+                return ResourceManager.GetString("KPROF_BILD_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau aktualisieren ähnelt.
+        /// </summary>
+        public static string KPROF_BTN_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KPROF_BTN_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preisniveau je Monat und Tagesgang je Woche [ct/kWh] — Grundlage der Speicher-Wirtschaftlichkeit. ähnelt.
         /// </summary>
         public static string KPROF_KARTE_PROFIL_INFO {
@@ -10975,6 +11533,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KPROF_KARTE_SPOT_TITEL {
             get {
                 return ResourceManager.GetString("KPROF_KARTE_SPOT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Diagramm ähnelt.
+        /// </summary>
+        public static string KPROF_KEIN_BILD {
+            get {
+                return ResourceManager.GetString("KPROF_KEIN_BILD", resourceCulture);
             }
         }
         
@@ -11366,6 +11933,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string LIZ_TITEL {
             get {
                 return ResourceManager.GetString("LIZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatssätze ähnelt.
+        /// </summary>
+        public static string LPR_KOPF_MONATE {
+            get {
+                return ResourceManager.GetString("LPR_KOPF_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string LPR_MSG_LOESCHFEHLER {
+            get {
+                return ResourceManager.GetString("LPR_MSG_LOESCHFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string LPR_MSG_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("LPR_MSG_SPEICHERFEHLER", resourceCulture);
             }
         }
         
@@ -21398,6 +21992,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_W6_SCHICHTUNG_AM_VERBUND {
             get {
                 return ResourceManager.GetString("SIMWARN_W6_SCHICHTUNG_AM_VERBUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei wird geprüft … ähnelt.
+        /// </summary>
+        public static string SPOT_STATUS_PRUEFT {
+            get {
+                return ResourceManager.GetString("SPOT_STATUS_PRUEFT", resourceCulture);
             }
         }
         
