@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -73,9 +72,9 @@ namespace WindowsFormsApplication1
                        INNER JOIN Tab_BrennstoffKategorien k ON s.ID_Kategorie = k.ID
                        WHERE s.ID = ?";
 
-            var tb = DataRepository.GetDataTable(sql, DbParam.Von(new OleDbParameter[] {
-                new OleDbParameter("@id", SelectedBrennstoffID)
-            }));
+            var tb = DataRepository.GetDataTable(sql, new DbParam[] {
+                new DbParam("@id", SelectedBrennstoffID)
+            });
             var row = tb.Rows.Count > 0 ? tb.Rows[0] : null;
             if (row != null)
             {
@@ -99,12 +98,12 @@ namespace WindowsFormsApplication1
             if (selectedItem is EnergyConversion conv)
             {
                 string sql = "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@cid", conv.IDBrennstoff),
-                    new OleDbParameter("@fu", conv.FromUnit),
-                    new OleDbParameter("@tu", conv.ToUnitCode)
+                DbParam[] ps = {
+                    new DbParam("@cid", conv.IDBrennstoff),
+                    new DbParam("@fu", conv.FromUnit),
+                    new DbParam("@tu", conv.ToUnitCode)
                 };
-                DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
+                DataTable dt = DataRepository.GetDataTable(sql, ps);
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     return Convert.ToInt32(dt.Rows[0]["ID"]);

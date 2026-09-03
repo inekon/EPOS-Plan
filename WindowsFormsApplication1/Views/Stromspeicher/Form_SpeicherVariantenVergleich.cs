@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -368,8 +367,8 @@ namespace WindowsFormsApplication1
                 return DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND ID_Type = ? ORDER BY ID",
-                    new OleDbParameter("@proj", m_ID_Projekt),
-                    new OleDbParameter("@typ", WizardItemClass.SP_TYP));
+                    new DbParam("@proj", m_ID_Projekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP));
             }
             catch (Exception ex)
             {

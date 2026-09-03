@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -202,7 +201,7 @@ namespace WindowsFormsApplication1
             model.m_szBezeichner = textBox_Bezeichner.Text;
 
             string sql = "SELECT * FROM Tab_Stromspeicher_STAMM WHERE Bezeichner = ?";
-            OleDbParameter parameter = new OleDbParameter("?", listBox_Stromspeicher.Text);
+            DbParam parameter = new DbParam("?", listBox_Stromspeicher.Text);
             DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
             if (dt != null && dt.Rows.Count > 0)

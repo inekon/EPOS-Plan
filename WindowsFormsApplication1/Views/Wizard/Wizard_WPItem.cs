@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -332,7 +331,7 @@ namespace WindowsFormsApplication1
 
             // Sicher, sauber und ohne SQL-Injection (Verwendung von ? als Parameter)
             string sql = "SELECT * FROM Tab_Kenndaten_STAMM WHERE ID_WP = ? ORDER BY Temperatur ASC";
-            OleDbParameter parameter = new OleDbParameter("?", wpctrl.ID);
+            DbParam parameter = new DbParam("?", wpctrl.ID);
 
             // Das DataRepository übernimmt das Erstellen, Öffnen und Befüllen automatisch
             DataTable dt = DataRepository.GetDataTable(sql, parameter);
@@ -476,7 +475,7 @@ namespace WindowsFormsApplication1
                 {
                     object p = DataRepository.ExecuteScalar(
                         "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = ?",
-                        new OleDbParameter("@id", item.ID));
+                        new DbParam("@id", item.ID));
                     if (p != null && p != DBNull.Value && Convert.ToInt32(p) > 0)
                     {
                         item.ID_Projekt = Convert.ToInt32(p);
@@ -558,9 +557,9 @@ namespace WindowsFormsApplication1
             object o = DataRepository.ExecuteScalar(
                 "SELECT SUM(EingegebenerWert) FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KategorieID = ? AND ID_Anlage = ?",
-                new OleDbParameter("@p", item.ID_Projekt),
-                new OleDbParameter("@k", kategorie),
-                new OleDbParameter("@a", item.ID));
+                new DbParam("@p", item.ID_Projekt),
+                new DbParam("@k", kategorie),
+                new DbParam("@a", item.ID));
             return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o);
         }
 

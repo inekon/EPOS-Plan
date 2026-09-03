@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -68,8 +67,8 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT eff_hi, eff_hs, billing_unit FROM Abfrage_Energietraeger_Effektiv " +
                 "WHERE ID_Projekt = ? AND carrier_id = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
             if (dt == null || dt.Rows.Count == 0) return 0;
 
             DataRow r = dt.Rows[0];

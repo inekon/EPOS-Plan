@@ -92,12 +92,12 @@ namespace WindowsFormsApplication1
             }
 
             string sqlU = "UPDATE Tab_Prozesswaerme_STAMM SET Typ=?, Beschreibung=?, Monat_1=?, Monat_2=?, Monat_3=?, Monat_4=?, Monat_5=?, Monat_6=?, Monat_7=?, Monat_8=?, Monat_9=?, Monat_10=?, Monat_11=?, Monat_12=? WHERE Bezeichner=?";
-            System.Data.OleDb.OleDbParameter[] psU = new System.Data.OleDb.OleDbParameter[15];
-            psU[0] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
-            psU[1] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-            for (int i = 1; i <= 12; i++) psU[1 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
-            psU[14] = new System.Data.OleDb.OleDbParameter("@bez", (object)m_szProzessname ?? DBNull.Value);
-            if (DataRepository.ExecuteSQL(sqlU, DbParam.Von(psU)))
+            DbParam[] psU = new DbParam[15];
+            psU[0] = new DbParam("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
+            psU[1] = new DbParam("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
+            for (int i = 1; i <= 12; i++) psU[1 + i] = new DbParam("@m" + i, monat[i - 1]);
+            psU[14] = new DbParam("@bez", (object)m_szProzessname ?? DBNull.Value);
+            if (DataRepository.ExecuteSQL(sqlU, psU))
                 MessageBox.Show("Daten aktualisiert!");
             else
                 MessageBox.Show("Fehler beim Aktualisieren der Daten!");
@@ -131,13 +131,13 @@ namespace WindowsFormsApplication1
                 textBox_Prozessname.Text = frm.m_szName;
 
                 string sqlI = "INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, Typ, Beschreibung, Monat_1, Monat_2, Monat_3, Monat_4, Monat_5, Monat_6, Monat_7, Monat_8, Monat_9, Monat_10, Monat_11, Monat_12, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                System.Data.OleDb.OleDbParameter[] psI = new System.Data.OleDb.OleDbParameter[16];
-                psI[0] = new System.Data.OleDb.OleDbParameter("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
-                psI[1] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
-                psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-                for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
-                psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
-                if (DataRepository.ExecuteSQL(sqlI, DbParam.Von(psI)))
+                DbParam[] psI = new DbParam[16];
+                psI[0] = new DbParam("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
+                psI[1] = new DbParam("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
+                psI[2] = new DbParam("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
+                for (int i = 1; i <= 12; i++) psI[2 + i] = new DbParam("@m" + i, monat[i - 1]);
+                psI[15] = new DbParam("@ro", false);
+                if (DataRepository.ExecuteSQL(sqlI, psI))
                     MessageBox.Show("Daten gespeichert!");
                 else
                     MessageBox.Show("Fehler beim Aktualisieren der Daten!");
@@ -159,13 +159,13 @@ namespace WindowsFormsApplication1
             if (!MonatswertePruefen(out monat)) return;
 
             string sqlI = "INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, Typ, Beschreibung, Monat_1, Monat_2, Monat_3, Monat_4, Monat_5, Monat_6, Monat_7, Monat_8, Monat_9, Monat_10, Monat_11, Monat_12, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            System.Data.OleDb.OleDbParameter[] psI = new System.Data.OleDb.OleDbParameter[16];
-            psI[0] = new System.Data.OleDb.OleDbParameter("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
-            psI[1] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
-            psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-            for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
-            psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
-            if (DataRepository.ExecuteSQL(sqlI, DbParam.Von(psI)))
+            DbParam[] psI = new DbParam[16];
+            psI[0] = new DbParam("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
+            psI[1] = new DbParam("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
+            psI[2] = new DbParam("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
+            for (int i = 1; i <= 12; i++) psI[2 + i] = new DbParam("@m" + i, monat[i - 1]);
+            psI[15] = new DbParam("@ro", false);
+            if (DataRepository.ExecuteSQL(sqlI, psI))
                 MessageBox.Show("Daten gespeichert!");
             else
                 MessageBox.Show("Fehler beim Aktualisieren der Daten!");

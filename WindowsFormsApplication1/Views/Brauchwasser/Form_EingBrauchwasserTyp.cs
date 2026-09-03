@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -165,8 +164,8 @@ namespace WindowsFormsApplication1
             // DataRepository zeigt bei einem Fehler bereits eine Meldung und liefert -1 zurueck.
             int n = DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_Brauchwassertyp_STAMM SET Beschreibung = ? WHERE Bezeichner = ?",
-                new OleDbParameter("?", szBeschreibung ?? ""),
-                new OleDbParameter("?", szTyp ?? ""));
+                new DbParam("?", szBeschreibung ?? ""),
+                new DbParam("?", szTyp ?? ""));
             return n >= 0;
         }
 
@@ -176,8 +175,8 @@ namespace WindowsFormsApplication1
             // Wert + Bezeichner als Parameter: der Provider setzt den Dezimalpunkt korrekt (keine Kultur-Formatierung noetig).
             int n = DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_Brauchwassertyp_STAMM SET [" + feld + "] = ? WHERE Bezeichner = ?",
-                new OleDbParameter("?", value),
-                new OleDbParameter("?", typ ?? ""));
+                new DbParam("?", value),
+                new DbParam("?", typ ?? ""));
             return n >= 0;
         }
 

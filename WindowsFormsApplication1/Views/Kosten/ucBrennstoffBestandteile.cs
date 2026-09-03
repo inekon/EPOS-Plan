@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
@@ -764,7 +763,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT billing_unit, eff_hi, eff_hs FROM Abfrage_Energietraeger_Effektiv " +
                     "WHERE ID_Projekt = ? AND carrier_id = ?",
-                    new OleDbParameter("@p", idProjekt), new OleDbParameter("@c", idEnergietraeger));
+                    new DbParam("@p", idProjekt), new DbParam("@c", idEnergietraeger));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     DataRow r = dt.Rows[0];
@@ -781,7 +780,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT id_brennstoff, billing_unit, hi_kwh_per_unit, hs_kwh_per_unit " +
                     "FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@c", idEnergietraeger));
+                    new DbParam("@c", idEnergietraeger));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     DataRow r = dt.Rows[0];

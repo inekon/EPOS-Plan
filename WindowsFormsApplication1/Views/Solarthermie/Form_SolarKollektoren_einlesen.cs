@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.OleDb;
 using System.IO;
 using System.Windows.Forms;
 
@@ -224,7 +223,7 @@ namespace WindowsFormsApplication1
             // Duplikatpruefung direkt am Listeneintrag statt am Anzeigefeld -
             // beim Mehrfachladen ist textBox_Name nur eine Momentaufnahme.
             string checkSql = "SELECT COUNT(*) FROM [Tab_Solarkollektoren_STAMM] WHERE Bezeichner = ?";
-            OleDbParameter checkParam = new OleDbParameter("?", ctrl._list[index].m_szName);
+            DbParam checkParam = new DbParam("?", ctrl._list[index].m_szName);
             object checkResult = DataRepository.ExecuteScalar(checkSql, checkParam);
 
             if (checkResult != null && Convert.ToInt32(checkResult) > 0) return VdiUebernahmeErgebnis.Duplikat;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -234,8 +233,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(
                 felder + "Tab_Pufferspeicher WHERE ID=? AND ID_Projekt=?",
-                new OleDbParameter("@id", idPuffer),
-                new OleDbParameter("@proj", m_ID_Projekt));
+                new DbParam("@id", idPuffer),
+                new DbParam("@proj", m_ID_Projekt));
 
             // Frisch hinzugefuegte Eintraege haben noch keine Projektkopie - dort steht in
             // ID_PUFFER die STAMM-ID (siehe btn_PufferSp_Hinzu_Click); die Kopie legt erst
@@ -243,7 +242,7 @@ namespace WindowsFormsApplication1
             if (dt.Rows.Count == 0)
                 dt = DataRepository.GetDataTable(
                     felder + "Tab_Pufferspeicher_STAMM WHERE ID=?",
-                    new OleDbParameter("@id", idPuffer));
+                    new DbParam("@id", idPuffer));
 
             if (dt.Rows.Count == 0) return;
 

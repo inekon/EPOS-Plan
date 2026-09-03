@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -226,7 +225,7 @@ namespace WindowsFormsApplication1
                 // (ersetzt den gegen Access nicht funktionierenden OdbcCommandBuilder).
                 DataTable dt = DataRepository.GetDataTable(
                     "select ID from Tab_DBTagVDaten_STAMM where ID_TagV = ? order by ID",
-                    new OleDbParameter("@id", id_tagv));
+                    new DbParam("@id", id_tagv));
                 if (dt == null) return false;
 
                 for (int n = 0; n < AnzalTagV / 24; n++)
@@ -238,8 +237,8 @@ namespace WindowsFormsApplication1
                         int rowId = Convert.ToInt32(dt.Rows[pos]["ID"]);
                         DataRepository.ExecuteSQL(
                             "update Tab_DBTagVDaten_STAMM set Verteilung = ? where ID = ?",
-                            new OleDbParameter("@vv", OleDbType.Double) { Value = Verteilung[n, i] },
-                            new OleDbParameter("@rid", OleDbType.Integer) { Value = rowId });
+                            new DbParam("@vv", DbParamTyp.Double) { Wert = Verteilung[n, i] },
+                            new DbParam("@rid", DbParamTyp.Integer) { Wert = rowId });
                     }
                 }
                 return true;
@@ -268,14 +267,14 @@ namespace WindowsFormsApplication1
                 // Kopf im Katalog Tab_DBTagV_STAMM anlegen (ID explizit, Veraenderbar=true, ReadOnly=false)
                 int nID = DataRepository.GetMaxID("Tab_DBTagV_STAMM") + 1;
                 string sqlInsertTyp = "INSERT INTO Tab_DBTagV_STAMM (ID, Bezeichner, Beschreibung, Veraenderbar, ReadOnly) VALUES (?, ?, ?, ?, ?)";
-                OleDbParameter[] paramsTyp = {
-                    new OleDbParameter("@nid", OleDbType.Integer) { Value = nID },
-                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = (object)(frm.m_szName ?? "") },
-                    new OleDbParameter("@besch", OleDbType.VarWChar) { Value = (object)(frm.m_szBeschreibung ?? "") },
-                    new OleDbParameter("@ver", OleDbType.Boolean) { Value = true },
-                    new OleDbParameter("@ro", OleDbType.Boolean) { Value = false }
+                DbParam[] paramsTyp = {
+                    new DbParam("@nid", DbParamTyp.Integer) { Wert = nID },
+                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = (object)(frm.m_szName ?? "") },
+                    new DbParam("@besch", DbParamTyp.VarWChar) { Wert = (object)(frm.m_szBeschreibung ?? "") },
+                    new DbParam("@ver", DbParamTyp.Boolean) { Wert = true },
+                    new DbParam("@ro", DbParamTyp.Boolean) { Wert = false }
                 };
-                if (!DataRepository.ExecuteSQL(sqlInsertTyp, DbParam.Von(paramsTyp)))
+                if (!DataRepository.ExecuteSQL(sqlInsertTyp, paramsTyp))
                 {
                     MessageBox.Show("Speichern des Gebäudetyps fehlgeschlagen!");
                     return;
@@ -286,13 +285,13 @@ namespace WindowsFormsApplication1
                 string sqlInsertDaten = "INSERT INTO Tab_DBTagVDaten_STAMM (ID, ID_TagV, Verteilung, ReadOnly) VALUES (?, ?, ?, ?)";
                 for (int i = 0; i < 192; i++)
                 {
-                    OleDbParameter[] pd = {
-                        new OleDbParameter("@did", OleDbType.Integer) { Value = nextDid++ },
-                        new OleDbParameter("@dtag", OleDbType.Integer) { Value = nID },
-                        new OleDbParameter("@dv", OleDbType.Double) { Value = 0.0 },
-                        new OleDbParameter("@dro", OleDbType.Boolean) { Value = false }
+                    DbParam[] pd = {
+                        new DbParam("@did", DbParamTyp.Integer) { Wert = nextDid++ },
+                        new DbParam("@dtag", DbParamTyp.Integer) { Wert = nID },
+                        new DbParam("@dv", DbParamTyp.Double) { Wert = 0.0 },
+                        new DbParam("@dro", DbParamTyp.Boolean) { Wert = false }
                     };
-                    if (!DataRepository.ExecuteSQL(sqlInsertDaten, DbParam.Von(pd)))
+                    if (!DataRepository.ExecuteSQL(sqlInsertDaten, pd))
                     {
                         MessageBox.Show($"Fehler beim Erstellen der Verteilungsdaten im Schritt {i + 1}!");
                         return;
@@ -324,9 +323,9 @@ namespace WindowsFormsApplication1
 
             // Detail vor Kopf löschen (typisiert statt fehlerhaftem DELETE-Statement)
             DataRepository.ExecuteSQL("DELETE FROM Tab_DBTagVDaten_STAMM WHERE ID_TagV = ?",
-                new OleDbParameter("@idt", ID_TagV));
+                new DbParam("@idt", ID_TagV));
             DataRepository.ExecuteSQL("DELETE FROM Tab_DBTagV_STAMM WHERE ID = ?",
-                new OleDbParameter("@idk", ID_TagV));
+                new DbParam("@idk", ID_TagV));
 
             listBox_Typename.Items.Remove(listBox_Typename.Text);
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -217,7 +216,7 @@ namespace WindowsFormsApplication1
             // Default in Tab_Energieanlagen (Vorlauf, Ruecklauf) beim Speichern.
             DataTable dtStamm = DataRepository.GetDataTable(
                 "SELECT * FROM " + SolarkollektorenStammCtrl.TABLE + " WHERE ID = ?",
-                new OleDbParameter("@id", stammId));
+                new DbParam("@id", stammId));
             if (dtStamm != null && dtStamm.Rows.Count > 0)
             {
                 DataRow sr = dtStamm.Rows[0];

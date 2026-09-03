@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
                 if (string.IsNullOrEmpty(projekt)) return;
                 object id = DataRepository.ExecuteScalar(
                     "SELECT ID FROM Tab_Projekt WHERE Projektname = ?",
-                    new System.Data.OleDb.OleDbParameter("@n", projekt));
+                    new DbParam("@n", projekt));
                 if (id == null || id == DBNull.Value) return;
                 var dt = DataRepository.GetDataTable(
                     "SELECT p.Projektname FROM Tab_Variante AS v INNER JOIN Tab_Projekt AS p " +

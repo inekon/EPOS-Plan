@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -632,7 +631,7 @@ namespace WindowsFormsApplication1
             {
                 object anz = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM [" + vp.Tabelle + "] WHERE [" + vp.Spalte + "] = ?",
-                    new OleDbParameter("@wert", vp.UeberName ? (object)(satz.Name ?? "") : (object)satz.Id));
+                    new DbParam("@wert", vp.UeberName ? (object)(satz.Name ?? "") : (object)satz.Id));
                 return anz == null || anz is DBNull ? 0 : Convert.ToInt32(anz);
             }
             catch
@@ -666,8 +665,8 @@ namespace WindowsFormsApplication1
 
             bool ok = DataRepository.ExecuteSQL(
                 "UPDATE [" + k.Tabelle + "] SET [" + k.NamensSpalte + "] = ? WHERE [" + k.IdSpalte + "] = ?",
-                new OleDbParameter("@name", neu),
-                new OleDbParameter("@id", satz.Id));
+                new DbParam("@name", neu),
+                new DbParam("@id", satz.Id));
 
             Protokoll(k.Tabelle + ", ID " + satz.Id + ": \"" + satz.Name + "\" -> \"" + neu + "\"" +
                       (ok ? "" : " (Umbenennen fehlgeschlagen)"));
