@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W6 umgesetzt, W7 in Arbeit | `198506f` | **81** Designer-Masken offen (88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6 die fünf Erzeugerkacheln des Startbilds und die ersten vier **Assistentenseiten** als Razor-Komponenten |
+| **iU9** Masken in Wellen | 🔄 W0 bis W7 umgesetzt, W8 in Arbeit | `e5114e1` | **73** Designer-Masken offen (81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil und Kennlinien erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6/W7 alle sieben Erzeugerkacheln des Startbilds und **sechs der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl` im Kern |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,54 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W7, Arbeitsanweisung
+> `iU9_W7_Arbeitsanweisung.md` (Scratchpad der Sitzung): **acht Masken der Gewerke
+> Wärmepumpe (5) und Solarthermie (3) → acht Razor-Komponenten** in
+> `EPOS.UI/Dialoge/Waermepumpe/` und `EPOS.UI/Dialoge/Solarthermie/`, jede WinForms-Fassung
+> gelöscht (Regel M1) — 3 065 Zeilen Oberflächencode, 43 `MessageBox`. Zwei davon sind die
+> Assistentenseiten 7 und 8; damit laufen **sechs der dreizehn Assistentenseiten** als
+> Razor-Komponenten. Sechzehn Sachcommits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `2cd898a` | **W7.0a** `WPCtrl` (Projektgeräte `Tab_WP`) aus der Anwendung in den Kern; `FillListBox` entfällt |
+> | `0872196` `7fc9419` `0d1e6e4` `7da4f33` `808837b` | **W7.0b–f** Katalogzeile und Katalogfilter im Kern (die Filterlogik des Wärmepumpen-Katalogs, testbar ohne Oberfläche), **`ChartRenderer.Kennlinien`** mit zwei Proben (COP und Leistung über der Außentemperatur, eine Reihe je Vorlauf), `KenndatenCtrl.Abgleichen` (Kennlinien-Rückschreiben in **einer** Transaktion statt RowState-Schleife), sieben Datenwege in Kern-Controller, Sprungziel `SolarganglinieAdmin` |
+> | `29a1bf3` `555e770` | **W7.1/W7.2** die Blätter `WaermepumpenKatalogDialog` (Filterleiste mit Wildcard-Suche) und `KennlinienEditorDialog` (Stützstellen je Vorlauf) — beide nur als Überlagerung |
+> | `5e71c49` | **W7.6** `SolarkollektorKatalogDialog` |
+> | `b30f6bd` `b98cf35` `a371328` | **W7.3–W7.5** `WaermepumpeStammDialog` (zwei Kennlinienbilder, Wärme/Kühlung), `WaermepumpeAnlageDialog` (47 Felder, Bivalenzlogik, Kostenzeile) und `WaermepumpenDialog` (Host mit **vier Ebenen** Überlagerung: Verwaltung → Anlage → Stammdialog → Kennlinien-Editor) |
+> | `0ad0a59` `3655bce` | **W7.7/W7.8** `SolarkollektorenDialog` (Assistentenseite 8) und `SolarganglinieDialog` |
+> | `35188f7` `0077533` `e5114e1` | **W7.9–W7.11** 157 Textschlüssel de/en, Formularkarte-Tests (Prüfmuster `Wizard_WPItem`, Sprungtabellen-Test auf `Form_AdminStromspeicher`), Protokoll, drei CLAUDE.md, STAND.md |
+>
+> **Der Ertrag ist die Kennlinie im Kern.** Vier WinForms-Charts mit je eigenem
+> Aufbaucode sind **eine** Renderer-Methode mit zwei Proben; Wärme und Kühlung
+> (`Tab_Kenndaten_STAMM`, `Tab_Kenndaten_Kuehlung_STAMM` mit `MAX(Last)`) laufen über
+> dieselbe Datenseite. Der Projektgeräte-Controller `WPCtrl` liegt jetzt im Kern — bis W7 der
+> letzte Erzeuger-Controller in der Anwendung.
+>
+> **Ein echter Befund (W7‑O‑4, behoben):** „Bearbeiten" im Kontextmenü der WP-Liste schrieb
+> `Regelung = Leistungsstufen`, und `Leistungsstufen` wird im ganzen Bestand nie gesetzt —
+> jedes Bearbeiten aus dem Kontextmenü **löschte die Leistungsstufen** des Geräts. Dazu
+> zwei Entscheide für den Anwender: die Baujahrliste (2024 doppelt, 2022 fehlte; mit A‑15
+> lückenlos) und die nie greifende Vorlauf-/Rücklaufprüfung der Solarkollektoren (W7‑O‑5).
+>
+> **Nachweise** (auf dem gemergten Stand `e5114e1`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **1 820** grün (1 636 nach W6; +155 bunit,
+> +29 Kern) · Formularkarte **123** grün · Stapellauf **73** Masken (81 − 8), 71 erreichbar,
+> 0 × „nein" · SQL-Prüfer 1 272 Texte, 0 Fundstellen · **ChartProben 12 Bilder**, 0 Verstöße
+> · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit
+> vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (8 Masken), 30 Abweichungen (A‑1…A‑30),
+> Windows-Abnahmeliste mit 13 Punkten und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W7_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die vier Überlagerungsebenen mit Esc und Fokusfalle je
+> Ebene, die Kennlinienbilder gegen die alten Charts (der Bildvergleich ist mit iF23 gelöscht),
+> Wärme/Kühlung, „Kosten bearbeiten…" als zweites Fenster, Assistentenseiten 7 und 8 (jetzt
+> sechs WebViews im Assistenten), beide Solarthermie-Zweige, W7‑O‑4 auf einer Anlage mit
+> gepflegter Regelung.
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
