@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests der Oberflaechenbibliothek EPOS.UI (Paket iU8).
+
+    bunit rendert die Komponenten ohne Browser: Darstellung, Ereignisse und
+    Zustand lassen sich damit auf jedem Betriebssystem pruefen - die Laeufe auf
+    ubuntu und macos brauchen weder WebView2 noch Windows.
+
+    Die Paketversionen stehen zentral in Directory.Packages.props; hier steht
+    bewusst kein Version=.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+  </ItemGroup>
+
+</Project>
