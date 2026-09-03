@@ -1,0 +1,26 @@
+﻿@* Leise Zeile unter einem Wert, die sagt, woher er kommt.
+
+   Im Bestand steht das als Inline-Label in acht Masken (u. a.
+   Views/Kosten/ucStromAufschlaege.cs, Views/Wirtschaftlichkeit/
+   UcWirtschaftlichkeit.cs, Form_KwkgModule.cs) - jedes Mal von Hand in
+   TEXT_LEISE gesetzt. Hier ist es ein Baustein; der Fachinhalt kommt mit
+   iU9. *@
+
+<p class="epos-herleitung">
+    <span class="epos-herleitung-text">@Text</span>
+    @if (!string.IsNullOrEmpty(Formel))
+    {
+        <span class="epos-herleitung-formel">@Formel</span>
+    }
+</p>
+
+@code {
+    /// <summary>Die Herleitung in Worten.</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>
+    /// Die Rechnung dazu, z. B. "12,5 ct/kWh x 3.400 kWh". Leer = nur Text.
+    /// Fertig formatiert; die Komponente rechnet nicht.
+    /// </summary>
+    [Parameter] public string Formel { get; set; } = "";
+}

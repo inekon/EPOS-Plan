@@ -1,0 +1,21 @@
+﻿@* Zeile, die meldet, ob ein Wert zu seiner Herleitung passt.
+
+   Gegenstueck zur Herleitungszeile: Diese sagt, WOHER ein Wert kommt, jene,
+   OB er dazu passt. Abweichend wird amber gesetzt (KartenStil.WARN_TEXT) -
+   eine Abweichung ist ein Hinweis zum Nachsehen, kein Fehler, der den Dialog
+   sperrt. *@
+
+<p class="epos-kohaerenz epos-kohaerenz--@(Zustand == KohaerenzZustand.Ok ? "ok" : "abweichend")">
+    <span class="epos-kohaerenz-zeichen" aria-hidden="true">@Zeichen</span>
+    <span class="epos-kohaerenz-text">@Text</span>
+</p>
+
+@code {
+    /// <summary>Was geprueft wurde, in Worten.</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>Ergebnis der Pruefung.</summary>
+    [Parameter] public KohaerenzZustand Zustand { get; set; } = KohaerenzZustand.Ok;
+
+    private string Zeichen => Zustand == KohaerenzZustand.Ok ? "✓" : "≠";
+}

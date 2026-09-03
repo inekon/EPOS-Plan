@@ -1,0 +1,52 @@
+﻿@* Anklickbare Einstiegskarte: Titel, Beschreibung, Statuszeile.
+
+   Vorbild: Views/Kosten/EinstiegsKarte.cs und die davon abstammende
+   Views/GemeinsameBausteine/AktionsKarte.cs. Begruendung dort: Beide Einstiege
+   fuehren in einen eigenen Dialog und tragen einen Zustand, der schon vor dem
+   Klick interessiert - eine Karte zeigt den Bestand gleich mit und erspart das
+   Oeffnen zum Nachsehen.
+
+   Als <button>, nicht als <div>: So ist die Kachel mit der Tastatur
+   erreichbar, meldet sich einer Sprachausgabe als Schaltflaeche und
+   beantwortet Enter und Leertaste ohne eigenes Zutun. *@
+
+<button type="button" class="epos-kachel" @onclick="Geklickt">
+    @if (!string.IsNullOrEmpty(Bild))
+    {
+        <img class="epos-kachel-bild" src="@Bild" alt="" />
+    }
+    <span class="epos-kachel-titel">@Titel</span>
+    @if (!string.IsNullOrEmpty(Beschreibung))
+    {
+        <span class="epos-kachel-beschreibung">@Beschreibung</span>
+    }
+    @if (!string.IsNullOrEmpty(Status))
+    {
+        <span class="epos-kachel-status">
+            <span class="epos-kachel-statuspunkt" aria-hidden="true"></span>@Status
+        </span>
+    }
+</button>
+
+@code {
+    /// <summary>Ueberschrift der Kachel.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Erlaeuterung, wohin der Klick fuehrt.</summary>
+    [Parameter] public string Beschreibung { get; set; } = "";
+
+    /// <summary>
+    /// Der gepflegte Bestand in einem Satz - leer, solange es nichts zu melden
+    /// gibt. Nur mit Text erscheint auch der gruene Statuspunkt.
+    /// </summary>
+    [Parameter] public string Status { get; set; } = "";
+
+    /// <summary>
+    /// Adresse des Sinnbilds - eine Datei unter "_content/EPOS.UI/..." oder eine
+    /// eingebettete data:-URL. Leer = keine Grafik.
+    /// </summary>
+    [Parameter] public string? Bild { get; set; }
+
+    /// <summary>Die Kachel wurde angeklickt.</summary>
+    [Parameter] public EventCallback Geklickt { get; set; }
+}
