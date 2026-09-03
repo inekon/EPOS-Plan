@@ -979,6 +979,38 @@ Referenzlauf über `IDatenzugriff` wertgleich.
 
 ### iU7 — Charts und Berichte plattformfrei · M · Windows
 
+> **Status 03.09.2026 — der Renderer ist im Kern, die Ausgabe steht noch aus.** Vier
+> weitere Commits (`6c797df` iU7-5 … iU7-8) auf der Basis `300a354`, aufbauend auf
+> iU7-1…iU7-4 (`c6b32eb`…`f84932b`).
+>
+> | Tranche | Commit | Inhalt |
+> |---|---|---|
+> | iU7-5 | `6c797df` | **`ChartRenderer.cs` von `WindowsFormsApplication1` nach `EPOS.Kern/Allgemein/Bericht/`** — verschoben, nicht verlinkt. `SkiaSharp` im `EPOS.Kern.csproj`, die nativen Bibliotheken **bedingt über `IsOSPlatform`** (Linux, macOS, Win32). Namespace bleibt `WindowsFormsApplication1`, alle Aufrufer der Anwendung und `Referenzlauf/Bildvergleich.cs` übersetzen unverändert |
+> | iU7-6 | `525db95` | **`Proben/ChartProben` hängt am Kern** statt an Ersatzklassen: `ProjectReference` auf `EPOS.Kern` statt `Compile Include`; `ZeitreihenSatzStub.cs` und `BerichtTexteStub.cs` gelöscht. Die Probe misst jetzt die echten `ZeitreihenSatz`/`VerlaufSerie`/`BerichtTexte` |
+> | iU7-7 | `343a549` | **ChartProben in `kern.yml`** — nach dem Test-Schritt, auf ubuntu **und** macos; die neun PNG als Artefakt `chartproben-<os>` (14 Tage) |
+> | iU7-8 | dieser Commit | **Drei Renderer-Tests in `EPOS.Kern.Tests`**: `TagesMittel`/`MonatsSummenMWh` exakt, `Kuchen` liefert PNG in 960×600, `BalkenHorizontal` zweimal byte-gleich. **869 → 872 Tests** |
+>
+> **Der Renderer war die Eintrittskarte, nicht der ganze Bericht.** Im Kern liegt jetzt
+> die **Zeichnung**; die **Ausgabe** — `WordBerichtGenerator`, `ExcelBerichtGenerator`,
+> `Bausteine/`, `BerichtsDatenSammler`, `ZeitreihenExtraktor` — bleibt in der Anwendung,
+> bis sie ihre eigene Etappe bekommt: Sie hängt an `IDateiDienst`/`ITeilen` (iU5), nicht
+> an GDI+. `ChartRendererGdi` bleibt ebenfalls dort; er ist nur noch der Gegenpart des
+> Windows-Bildvergleichs aus iU7-1.
+>
+> **Damit steht die Vorlage für iF16.** Der Kern liefert PNG-Bytes, die Oberfläche zeigt
+> sie an — genau der Weg, den `EPOS.UI/Standards/ChartBild` (iU8-4) schon annimmt. Ein
+> Chart-Stack für Bericht *und* Bildschirm, ohne SkiaSharp-Komponente in der WebView
+> (iR3).
+>
+> **Nachweis:** `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → 0 Fehler,
+> **36 Warnungen** (unverändert); `EPOS.Kern` allein 0 Fehler, **2 Warnungen**.
+> `dotnet test WP-Plan.Kern.slnf -c Release` → **872** (869 + 3).
+> `dotnet run --project Proben/ChartProben -c Release` → *9 Bilder geprueft, 0
+> Verstoesse*; alle neun PNG **byte-gleich** zum Stand vor dem Umzug (Schrift auf dem
+> Prüfsystem: Liberation Sans). Referenzlauf **1030, 1007, 1017** gegen
+> `2026-08-30_B3-Kaskade`: **GESAMT PASS** (815 043 Werte), `diff -rq` meldet für alle
+> drei Projekte **keinen** Unterschied.
+
 **Voraussetzung:** iU4. **Block D1, D2, M5.** Läuft **parallel** zu iU5/iU6 — ohne UI testbar.
 
 | Inhalt | Detail |

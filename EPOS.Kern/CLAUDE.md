@@ -1,6 +1,6 @@
 # CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **170 Dateien**, `net10.0` **ohne** `-windows`, AnyCPU.
+Der plattformfreie Kern von EPOS-Plan: **171 Dateien**, `net10.0` **ohne** `-windows`, AnyCPU.
 Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
 `../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
 auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
@@ -13,7 +13,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 2 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 805 Tests
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 872 Tests
 ```
 
 ## Was hier liegt
@@ -23,7 +23,7 @@ dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 805 Tests
 | `Allgemein/` | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog), `Import/AnsiEncoding.cs` |
 | `Allgemein/Simulation/` | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb` |
 | `Allgemein/Wirtschaftlichkeit/` | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
-| `Allgemein/Bericht/` | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler` |
+| `Allgemein/Bericht/` | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler` — dazu seit iU7-5 der **Renderer** `ChartRenderer` |
 | `Allgemein/Update/` | `Anlagenzeilen`, `ProjektPuffer`, `SchemaKatalog`, `SchemaStand` (Ergebniszustand der Migration und die DDL-Konstanten, die Controller zur Selbstanlage brauchen) |
 | `Controller/` | 50 Controller ohne Oberflächenbezug |
 | `Model/` | alle 46 Modelle |
@@ -40,9 +40,11 @@ Quelle ist `sql/tools/Erzeuge-Schema.ps1`, nicht dieses Projekt.
 ## Was mit Absicht NICHT hier liegt
 
 `SchemaModell.cs` (Schema-**Ansicht**), `SchemaMigration.cs` samt Access-Zweig, `GeraeteWaisen`,
-`ErststartMigration`, `AnlagenEindeutigkeit`, die Bericht-**Ausgabe** (`ChartRenderer`,
-`Bausteine/`, `BerichtsDatenSammler`, `BerichtsKonfiguration`, `ExcelBerichtGenerator`,
-`WordBerichtGenerator`, `ZeitreihenExtraktor`, `IBerichtsBaustein` — **bis iU7**), `Katalog/`,
+`ErststartMigration`, `AnlagenEindeutigkeit`, die Bericht-**Ausgabe** (`Bausteine/`,
+`BerichtsDatenSammler`, `BerichtsKonfiguration`, `ExcelBerichtGenerator`,
+`WordBerichtGenerator`, `ZeitreihenExtraktor`, `IBerichtsBaustein` — **bis iU7**),
+`ChartRendererGdi` (der eingefrorene GDI+-Stand, nur noch Gegenpart des
+Windows-Bildvergleichs), `Katalog/`,
 `Import/` außer `AnsiEncoding`, `WizardCtrl`, die `*KontextMenuCtrl`, `MenueCtrl`, die
 Stamm-Controller mit `MessageBox`, `KI/`, `Hilfe/`, `GrafikTools/`, `Export/`, `Lizenz/`,
 `WPCtrl` und alle `*.WinForms.cs`.
@@ -107,6 +109,40 @@ Sichtbarkeitsanhebung, nur weil die Anwendung sie sieht.
 Tagesstunden; Vektoren `float` mit Zwischenrechnung in `double`; Arrays werden **in-place**
 überschrieben, der Rückgabewert fast überall ignoriert. Diese Konventionen beim Erweitern
 beibehalten.
+
+## Bericht: Renderer hier, Ausgabe in der Anwendung
+
+**Der Diagramm-Renderer liegt seit iU7-5 hier** — `Allgemein/Bericht/ChartRenderer.cs`,
+SkiaSharp statt GDI+ (iU7-2), ohne eine einzige Windows-API. Er ist die Vorlage für iF16
+(`EPOS.UI/Standards/ChartBild`): Der Kern liefert PNG-Bytes, die Oberfläche zeigt sie an —
+ein Chart-Stack für Bericht *und* Bildschirm.
+
+**Die AUSGABE bleibt bis zu ihrer Etappe in der Anwendung:** `WordBerichtGenerator`,
+`ExcelBerichtGenerator`, `Bausteine/`, `BerichtsDatenSammler`, `ZeitreihenExtraktor`. Sie
+hängen an `IDateiDienst`/`ITeilen` und ziehen erst mit dem Rest des Berichts um. Der
+eingefrorene GDI+-Stand `ChartRendererGdi` bleibt ebenfalls dort — er ist nur noch der
+Gegenpart des Windows-Bildvergleichs (`Referenzlauf/Bildvergleich.cs`, iU7-1).
+
+**Schriftregel iF19 — Systemschrift, flexibel.** Der Renderer bindet keine Schrift ein,
+sondern fragt `SKFontManager` eine Rückfallkette ab: Calibri (Windows) → Carlito/Liberation
+Sans/DejaVu Sans (Linux) → Helvetica/Arial (macOS/iOS). Das Layout ist **metrikgetrieben**:
+Umbrüche und Legendenbreiten folgen den gemessenen Textmaßen, nicht festen Pixelwerten.
+Folge, und das ist Absicht: **Textbreiten dürfen je Plattform abweichen.** Ein Vergleich
+Windows↔Linux ist deshalb ein Struktur- und Histogrammvergleich, kein Pixelvergleich; ein
+Pixelvergleich ist nur *innerhalb* einer Plattform sinnvoll (genau das macht der Modus
+`bildvergleich` der Referenzlauf-Suite gegen `ChartRendererGdi`).
+
+**Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
+Verdichtungen exakt und dass gezeichnet wird — drei Tests, in jedem Kern-Lauf dabei.
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet neun Bilder und
+prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
+`.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
+Pixelvergleich gegen GDI+ läuft unter Windows.
+
+**Die nativen SkiaSharp-Bibliotheken sind bedingt** — `Condition="$([MSBuild]::IsOSPlatform(…))"`
+in `EPOS.Kern.csproj` und in `EPOS.Kern.Tests.csproj`. Welche Native passt, entscheidet die
+Bauumgebung und nicht das TargetFramework; jede Umgebung zieht genau ihre eigene statt aller
+drei. Win32 steht mit dabei, weil `windows.yml` `dotnet test WP-Plan.Kern.slnf` fährt.
 
 ## Nachweis
 
