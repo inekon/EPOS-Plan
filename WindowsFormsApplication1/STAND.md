@@ -1,9 +1,9 @@
-# STAND.md — datierte Stände des Anwendungsprojekts
+﻿# STAND.md — datierte Stände des Anwendungsprojekts
 
 Hier steht, was altert: Schemanummern, Etappen, Zahlen, Basen. Wer etwas hieraus verwendet, prüft
 das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur bei Bedarf gelesen.
 
-**Stand 02.09.2026**, Branch `ios_migration` (HEAD `d46e200`).
+**Stand 03.09.2026**, Branch `ios_migration` (nach iU9 Welle 6).
 
 ## Datenhaltung
 
@@ -36,6 +36,14 @@ das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur b
   432 Altaufrufe unter `Views/` lauffähig bis iU9. `RecordSet` hat 47 echte Nutzer (iR8).
 - Die Altkopien `..\WindowsFormsApplication1 - Kopie` und `..\mit_Puffer_KI_Lösungsversuch` sind
   seit 29.08.2026 entsorgt.
+- **Maskenumstellung nach Blazor (Paket iU9), Stand nach Welle 6 (03.09.2026):** Der Stapellauf
+  der Formularkarte zählt **81 Masken** (88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2,
+  105 nach W0, 111 nach W1, 118 davor), davon **54 lokalisiert** und **79 über einen Öffner
+  erreichbar** — 0 × „nein", 0 × „verwaist". Die Warnzahl der Mappe steht bei **20**
+  (14 WFO1000, 2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255). Welle 6 hat die sieben
+  Erzeugereingaben der Startkacheln umgestellt (4 202 Zeilen) und dabei erstmals
+  **Assistentenseiten** auf Razor gehoben (`BlazorAssistentSeite<T>`, vier von dreizehn
+  Seiten). Portprotokoll `Allgemein/Reporting/iU9_W6_Blazor_Port_Protokoll.md`.
 
 ## Simulation (`Allgemein/Simulation/`)
 
