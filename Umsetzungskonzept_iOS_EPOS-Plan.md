@@ -269,7 +269,7 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | `SpeicherEngine.Tests`, `KiKern.Tests` | xUnit | `net10.0` | AnyCPU | ihre Engine | ✔ **angehoben** (iU1) — 337 bzw. 450 Tests |
 | `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige (COM ist mit iU1-P1.1 entfallen) | **bleibt** — schrumpft über iU9; `ProjectReference` auf `EPOS.Kern` **und** `EPOS.UI`, SDK seit iU8-6 `Microsoft.NET.Sdk.Razor`. Von 585 `.cs` sind **356** übrig; unter `Allgemein/` und `Controller/` noch **62** von 133 |
 | `Referenzlauf` | Konsole | `net10.0-windows` | x64 | WinForms-App | **bleibt**, bis iU9 abgeschlossen ist |
-| `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 16 `.cs`, **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml`, **per Hand auszulösen** |
+| `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 19 `.cs` (davon 12 Dienstadapter), **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml`, **per Hand auszulösen** |
 | `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
 | `CSExeCOMServer` | — | — | — | — | ~~stilllegen (iU0)~~ — **erledigt** (`c3a8233`), aus dem Repo entfernt |
 | `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt seit iU9-1 an der lebenden **und erreichbaren** `Form_KostenKomponente` |
@@ -584,7 +584,7 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 | `SpeicherEngine`, `KiKern` (+ Tests) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `WindowsFormsApplication1` — SDK `Microsoft.NET.Sdk.Razor` (iU8-6) | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
 | `Referenzlauf` | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
-| `EPOS.iOS` — 16 `.cs`, eigene `.sln`; Bau **nur** mit Workload-Set `10.400.1` und Xcode 26.6 | ❌ | ❌ | ✅ *(Simulator, seit iU10-6 im Job `ios.yml`)* | ✅ **signiert, `.ipa` — offen, iU13** |
+| `EPOS.iOS` — 19 `.cs`, eigene `.sln`; Bau **nur** mit Workload-Set `10.400.1` und Xcode 26.6 | ❌ | ❌ | ✅ *(Simulator, seit iU10-6 im Job `ios.yml`)* | ✅ **signiert, `.ipa` — offen, iU13** |
 
 Summe der Lösung am 03.09.2026 (`f95fc34`, Linux, SDK 10.0.400): `dotnet build WP-Plan.sln -c
 Release -p:Platform=x64 --no-incremental` → **0 Fehler, 34 Warnungen**; `dotnet test

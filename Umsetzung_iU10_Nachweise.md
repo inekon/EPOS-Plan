@@ -1,6 +1,7 @@
 # Nachweisliste iU10 — die iOS-Hülle
 
-**Stand 03.09.2026 · Branch `ios_migration` · `d4d5e20`…`6b4ba46` (Basis `6f67a32`)**
+**Stand 03.09.2026 · Branch `ios_migration` · `d4d5e20`…`b10491b` (Basis `6f67a32`) —
+sieben Schritte iU10-1…iU10-7, dazu die Doku iU10-8**
 
 Paket iU10 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) (§ 4) ist
 umgesetzt, soweit es ohne Mac geht: `EPOS.iOS` steht als MAUI-Blazor-Hybrid-App, die neun
@@ -114,7 +115,9 @@ hätte den ersten iOS-Restore mit `NU1102` gebrochen. Einzelheiten im Entscheidu
       `IosNavigation`, `IosProjektKontext`, `IosHilfeDienst`) → **0 Fehler, 0 eigene Warnungen**.
 - [x] **Attrappenprobe.** Alle `.cs`-Dateien der Hülle außer den beiden iOS-Einstiegspunkten
       (`Platforms/iOS/Main.cs`, `AppDelegate.cs`) gegen **Attrappen** der MAUI-, UIKit- und
-      Foundation-API → **0 Fehler, 0 Warnungen**.
+      Foundation-API → **0 Fehler, 0 Warnungen**. Am Ende von iU10 sind das **17 Dateien**
+      (19 minus die beiden Einstiegspunkte) plus die beiden verlinkten Bausteine des
+      Referenzlaufs.
 
 > **Was die Attrappenprobe beweist und was nicht.** Sie belegt, dass der eigene Programmtext in
 > sich stimmt: Namen, Typen, Überladungen, Nullbarkeit, Sichtbarkeiten. Sie belegt **nicht**, dass
