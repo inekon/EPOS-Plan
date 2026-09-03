@@ -333,11 +333,6 @@ namespace WindowsFormsApplication1
                 erzeugerSeite.Modelle = list_werzmodel;
                 erzeugerSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
             }
-            else if (top == WizardItemClass.WP_ITEM)
-            {
-                ((Form_WPAuswahl)page).list_werzmodel = list_werzmodel;
-                ((Form_WPAuswahl)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
-            }
             else if (top == WizardItemClass.GEBAEUDE_ITEM)
             {
                 ((Form_Gebaeude)page).list_gebmodel = list_gebmodel;

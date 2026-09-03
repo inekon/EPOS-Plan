@@ -66,7 +66,7 @@
                             <tr class="@(z.Bezeichner == Daten.Bezeichner ? "epos-zeile--markiert" : null)">
                                 <td>
                                     <Zeilenwahl Gewaehlt="@(z.Bezeichner == Daten.Bezeichner)"
-                                                Kurztext="@SpalteWahl"
+                                                Kurztext="@SpalteWahl" Aktiv="@(!NurLesen)"
                                                 Gewaehltwerden="() => WaermepumpeWaehlen(z)" />
                                 </td>
                                 <td>@z.Bezeichner</td>
@@ -77,7 +77,8 @@
             </div>
 
             <div class="epos-leiste">
-                <button type="button" class="epos-knopf" @onclick="BeiKatalog">@BtnKatalogText</button>
+                <button type="button" class="epos-knopf" disabled="@NurLesen"
+                        @onclick="BeiKatalog">@BtnKatalogText</button>
             </div>
         </div>
 
@@ -98,14 +99,14 @@
                                   NurLesen="true" />
                         <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
                                       Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
-                                      WertChanged="w => Daten.HeizstabLeistung = w" />
+                                      WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
                     </div>
 
                     @* --- Ä19: die Kostenzeile statt der Modulkosten ---------------- *@
                     <div class="epos-kostenleiste">
                         @if (KostenOeffnen is not null)
                         {
-                            <button type="button" class="epos-knopf" disabled="@(!_kostenBereit)"
+                            <button type="button" class="epos-knopf" disabled="@(NurLesen || !_kostenBereit)"
                                     title="@(_kostenBereit ? TipKosten : TipKostenNeu)"
                                     @onclick="BeiKosten">@BtnKostenText</button>
                         }
@@ -117,7 +118,8 @@
                     }
 
                     <div class="epos-leiste">
-                        <button type="button" class="epos-knopf" @onclick="BeiStammdialog">@BtnParameterText</button>
+                        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                                @onclick="BeiStammdialog">@BtnParameterText</button>
                     </div>
                 </KindInhalt>
             </Gruppenkopf>
@@ -128,10 +130,11 @@
         <KindInhalt>
             <div class="epos-feldpaar">
                 <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
-                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w" />
+                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
+                             Aktiv="@(!NurLesen)" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
                               Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                              WertChanged="w => Daten.Ruecklauf = w" />
+                              WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
             </div>
             <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
         </KindInhalt>
@@ -141,35 +144,35 @@
         <KindInhalt>
             <Herleitungszeile Text="@HinweisSpitzenlast" />
             <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
-                      WertChanged="w => Daten.Heizstab = w" />
+                      WertChanged="w => Daten.Heizstab = w" Aktiv="@(!NurLesen)" />
 
             <Schalter Bezeichnung="@LabelSperrzeit" Wert="@Daten.Sperrung"
-                      WertChanged="w => Daten.Sperrung = w" />
+                      WertChanged="w => Daten.Sperrung = w" Aktiv="@(!NurLesen)" />
             <div class="epos-feldpaar">
                 <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon" Wert="@Daten.SperrzeitVon"
-                              WertChanged="w => Daten.SperrzeitVon = w" />
+                              WertChanged="w => Daten.SperrzeitVon = w" Aktiv="@(!NurLesen)" />
                 <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis" Wert="@Daten.SperrzeitBis"
-                              WertChanged="w => Daten.SperrzeitBis = w" />
+                              WertChanged="w => Daten.SperrzeitBis = w" Aktiv="@(!NurLesen)" />
             </div>
             <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitStundeTag"
                           Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
-                          WertChanged="w => Daten.Nutzungszeit = w" />
+                          WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
 
             <Herleitungszeile Text="@HinweisBetrieb" />
             <Schalter Bezeichnung="@LabelBivalent" Wert="@Daten.BivalenterBetrieb"
-                      WertChanged="BivalentSetzen" />
+                      WertChanged="BivalentSetzen" Aktiv="@(!NurLesen)" />
 
             @if (Daten.BivalenterBetrieb)
             {
                 <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarten"
-                             Auswahl="@BetriebsartIndex"
+                             Auswahl="@BetriebsartIndex" Aktiv="@(!NurLesen)"
                              AuswahlChanged="BetriebsartSetzen" Platzhalter="" />
 
                 @if (BivalenztemperaturSichtbar)
                 {
                     <Zahlenfeld Bezeichnung="@LabelAbschalttemp" Einheit="@EinheitGrad"
                                 Feldname="@LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
-                                WertChanged="w => Daten.Abschaltpunkt = w" />
+                                WertChanged="w => Daten.Abschaltpunkt = w" Aktiv="@(!NurLesen)" />
                 }
                 <Herleitungszeile Text="@BetriebsartErlaeuterung" />
             }
@@ -194,7 +197,18 @@
         </KindInhalt>
     </Reiter>
 
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    @if (NurLesen)
+    {
+        @* Nur ansehen: EIN Knopf, der schliesst - kein OK, das nichts uebernimmt. *@
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="() => Geschlossen.InvokeAsync(false)">@SchliessenText</button>
+        </div>
+    }
+    else
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
 
     @* --- Ueberlagerung 1: der Stammdialog ("Parameter Bearbeiten...") ------- *@
     <Ueberlagerung Offen="@(_stammGaben is not null)" Schliessbar="false"
@@ -257,6 +271,15 @@
     /// <summary>Der Parametersatz des Stammdialogs für „Parameter Bearbeiten…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? StammGaben { get; set; }
 
+    /// <summary>
+    /// Nur ansehen, nicht ändern (iU9-W7.5). Der Weg „Ansicht" der Verwaltung zeigt
+    /// damit die Zeile, ohne dass ein Klick sie ändern kann; der Vorläufer öffnete
+    /// dafür denselben Dialog voll bedienbar und WARF das Ergebnis weg
+    /// (<c>listView_WP_MouseDoubleClick</c>:292 wertete <c>CloseWithOK</c> nicht aus) —
+    /// ein Formular, dessen Eingaben still verfallen (A-22).
+    /// </summary>
+    [Parameter] public bool NurLesen { get; set; }
+
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -311,6 +334,7 @@
     [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string SchliessenText { get; set; } = "Schließen";
 
     [Parameter] public string HinweisSpitzenlast { get; set; } =
         "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:";
