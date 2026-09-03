@@ -121,6 +121,20 @@ namespace WindowsFormsApplication1
                         using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
                             return MitOk(f, besitzer);
 
+                    // --- iU9-W10a.0c: derselbe Katalog, aber NUR ZUM ANSEHEN -----------
+                    // Der Knopf "Katalog ansehen" der Pufferspeicher-Verwaltung auf
+                    // Projektebene (Form_PufferSp_Projekt.btnKatalog_Click:1596) setzte
+                    // m_bReadOnly = true, bevor er die Maske zeigte. Ohne dieses
+                    // Kennzeichen waere aus dem Nachschlagen das Bearbeiten des
+                    // Auslieferungskatalogs geworden (Befund W10-B28) - deshalb ein
+                    // eigener Zweig und nicht der Schluessel darueber.
+                    case Sprungziel.PufferSpAdminNurLesen:
+                        using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
+                        {
+                            f.m_bReadOnly = true;
+                            return MitOk(f, besitzer);
+                        }
+
                     // --- iU9-W7.0f: die Stammdaten der Solarthermieganglinien ----------
                     // Dieselbe Maske, die Dienste.Navigation fuer Masken.SolarganglinieAdmin
                     // zeigt; der Vorlaeufer rief sie ueber MenueCtrl.Solarganglinie(). Sie

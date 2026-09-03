@@ -80,6 +80,20 @@ public static class Sprungziel
     public const string PufferSpAdmin = "PUFFERSP_ADMIN";
 
     /// <summary>
+    /// Dieselbe Maske NUR ZUM ANSEHEN — der Knopf „Katalog ansehen" der
+    /// Pufferspeicher-Verwaltung auf Projektebene (Vorläufer:
+    /// <c>Form_PufferSp_Projekt.btnKatalog_Click</c>:1596, iU9‑W10a.0c).
+    ///
+    /// <para><b>Warum ein eigener Schlüssel (Befund W10‑B28).</b> Der Vorläufer
+    /// setzte <c>m_bReadOnly = true</c>, bevor er die Maske zeigte — sie ist an
+    /// dieser Stelle ein Katalog<i>browser</i>, kein Katalog<i>editor</i>.
+    /// <see cref="PufferSpAdmin"/> öffnet sie OHNE dieses Kennzeichen; würde der
+    /// Projektdialog denselben Schlüssel nehmen, wäre aus dem Nachschlagen
+    /// unversehens das Bearbeiten des Auslieferungskatalogs geworden.</para>
+    /// </summary>
+    public const string PufferSpAdminNurLesen = "PUFFERSP_ADMIN_NUR_LESEN";
+
+    /// <summary>
     /// Katalog „Stammdaten Solarthermieganglinien" — der Knopf „Bearbeiten…" des
     /// Solarganglinien-Dialogs (Vorläufer:
     /// <c>Form_Solarganglinie.btn_Bearbeiten_Click</c> über <c>MenueCtrl.Solarganglinie()</c>,
