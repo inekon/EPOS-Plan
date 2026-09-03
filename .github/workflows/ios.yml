@@ -139,11 +139,14 @@ jobs:
       - name: Startmarken pruefen
         run: |
           grep -E "EPOS\.iOS bereit: Projekte=[0-9]+" artifacts/ios/start.log
-          grep -E "^SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
+          # Ohne Zeilenanker: simctl launch --console-pty stellt jeder Zeile Zeitstempel und
+          # Prozessnamen voran ("2026-09-03 10:37:08.121 EPOS.iOS[7814:28980] SQLite 3.53.3").
+          # Sechster Lauf 33744793453: alle Marken vorhanden, nur die Anker griffen nicht.
+          grep -E "SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
           # Das STRICT-Gate: Die Testdatenbank fuehrt 114 von 115 Tabellen als
           # STRICT. Steht hier eine kleinere Zahl, hat die App eine andere
           # SQLite-Fassung erwischt als Windows, Linux und macOS-CI.
-          grep -E "^STRICT=114$" artifacts/ios/start.log
+          grep -E "STRICT=114( |$)" artifacts/ios/start.log
           test -f artifacts/ios/pruefung/fertig.txt
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
