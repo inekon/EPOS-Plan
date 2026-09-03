@@ -28,9 +28,9 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W1: 114 Dateien (121 vor der Welle,
-        // sieben Masken umgestellt und geloescht).
-        Assert.True(dateien.Count >= 113, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W0: 108 Dateien (114 nach iU9-W1,
+        // sechs Designer-Masken stillgelegt).
+        Assert.True(dateien.Count >= 107, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -53,11 +53,10 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W1: 111 Masken (118 vor der Welle;
-        // VorlagenPosition, VariantenName, KostenItemNeu, CaseEingabe,
-        // VorlagenUebernahme, KostenAdmin, WirtschaftlichkeitVerlauf sind
-        // Razor-Komponenten geworden).
-        Assert.True(Lauf.Value.Masken >= 111, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W0: 105 Masken (111 nach iU9-W1;
+        // Form_Kosten, Form_KostenfaktorItem, ucKostenItem, Form_Variantentest,
+        // Form_Simulation_Kurz und Form_KwkgModule sind stillgelegt - iF29).
+        Assert.True(Lauf.Value.Masken >= 105, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -65,9 +64,9 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W1: 62 von 111 (Form_KostenItemNeu
-        // war die eine lokalisierte Maske der Welle). Der Leser muss also beide
-        // Wege koennen, nicht nur den Designer.
+        // Gemessener Stand 03.09.2026 nach iU9-W0: 61 von 105 (Form_Simulation_Kurz war
+        // die eine lokalisierte Maske der Stilllegung). Der Leser muss also beide Wege
+        // koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 60,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
@@ -118,7 +117,7 @@ public sealed class StapelTests
             Assert.Empty(ergebnis.Fehler);
             Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.karte.md")));
             Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.razor")));
-            Assert.True(File.Exists(Path.Combine(ziel, "UcKostenItem.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "UcVorlagenZeile.razor")));
 
             // UTF-8 mit BOM - Hausregel fuer neue Dateien.
             var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_KostenKomponente.razor"))[..3];

@@ -9,20 +9,18 @@ namespace Formularkarte.Tests;
 /// die Zuordnung der Zielkomponenten.
 ///
 /// <para>
-/// Form_Kosten_Auswahl gibt es im Bestand seit iU8-9 (Stichtag iZ5) nicht mehr;
-/// sie laeuft als EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor. Die
-/// Handkarte aus dem Plan wird deshalb gegen das eingefrorene Pruefmuster unter
+/// Beide Masken gibt es im Bestand nicht mehr: Form_Kosten_Auswahl laeuft seit
+/// iU8-9 (Stichtag iZ5) als EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor,
+/// Form_KostenfaktorItem ist mit iU9-W0 stillgelegt (Anwenderentscheid iF29). Die
+/// Handkarten aus dem Plan werden deshalb gegen die eingefrorenen Pruefmuster unter
 /// Pruefmuster/Kosten/ geprueft - Zeile fuer Zeile dieselbe Aussage wie vorher,
-/// nur an einer Vorlage, die sich nicht mehr bewegt.
+/// nur an Vorlagen, die sich nicht mehr bewegen.
 /// </para>
 /// </summary>
 public sealed class DesignerLeserTests
 {
     private const string KostenAuswahl = "Kosten/Form_Kosten_Auswahl.Designer.cs";
     private const string KostenfaktorItem = "Kosten/Form_KostenfaktorItem.Designer.cs";
-
-    private static Maske Lesen(string relativ) =>
-        Kartenbau.Vollstaendig(Repowurzel.Designer(relativ));
 
     /// <summary>
     /// Eine Maske aus dem Pruefmuster-Ordner. Die Suche nach dem ShowDialog-
@@ -129,14 +127,14 @@ public sealed class DesignerLeserTests
     [Fact]
     public void Kostenfaktor_HatSiebenZeilen()
     {
-        var abschnitt = Assert.Single(Kartenbau.Abschnitte(Lesen(KostenfaktorItem)));
+        var abschnitt = Assert.Single(Kartenbau.Abschnitte(Muster(KostenfaktorItem)));
         Assert.Equal(7, abschnitt.Zeilen.Count);
     }
 
     [Fact]
     public void Kostenfaktor_OrdnetAlleFuenfLabelZu()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenfaktorItem))[0].Zeilen
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenfaktorItem))[0].Zeilen
             .ToDictionary(z => z.Element.Name, z => z.TextDe, StringComparer.Ordinal);
 
         Assert.Equal("Kostenfaktor", zeilen["comboBox1"]);
@@ -149,7 +147,7 @@ public sealed class DesignerLeserTests
     [Fact]
     public void Kostenfaktor_LiestDieSchreibweiseMitThis()
     {
-        var maske = Lesen(KostenfaktorItem);
+        var maske = Muster(KostenfaktorItem);
 
         // Der Designer schreibt hier durchgaengig "this.x = new ...".
         Assert.Equal(12, maske.Steuerelemente.Count(s => s.Art != Art.Beiwerk));
@@ -161,19 +159,19 @@ public sealed class DesignerLeserTests
     [Fact]
     public void Kostenfaktor_KeinVerbrauchtesLabelStehtNochAlsZeile()
     {
-        var zeilen = Kartenbau.Abschnitte(Lesen(KostenfaktorItem))[0].Zeilen;
+        var zeilen = Kartenbau.Abschnitte(Muster(KostenfaktorItem))[0].Zeilen;
         Assert.DoesNotContain(zeilen, z => z.Element.Art == Art.Beschriftung);
     }
 
     [Fact]
     public void Kostenfaktor_HatKeineMeldungUndEinenAufrufer()
     {
-        var maske = Lesen(KostenfaktorItem);
+        var maske = Muster(KostenfaktorItem);
 
         Assert.Equal(0, maske.Meldungen);
 
         var aufrufer = Assert.Single(maske.Aufrufer);
-        Assert.StartsWith("WindowsFormsApplication1/Views/Kosten/Form_Kosten.cs:", aufrufer, StringComparison.Ordinal);
-        Fundstelle.Enthaelt(aufrufer, "new Form_KostenfaktorItem");
+        Assert.StartsWith("Pruefmuster/Kosten/Form_Kosten.Auszug.cs:", aufrufer, StringComparison.Ordinal);
+        Fundstelle.Enthaelt(Repowurzel.PruefmusterBezug, aufrufer, "new Form_KostenfaktorItem");
     }
 }
