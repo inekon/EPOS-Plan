@@ -19,11 +19,14 @@
    und die Huelle ruft denselben Controller. Die Komponente kennt nicht einmal
    den Controller: Sie bekommt Zeilen und ruft Delegaten.
 
-   DIE BEIDEN UNTEREDITOREN SIND EINGERUECKTE BLOECKE, keine zweiten Fenster.
-   Der Vorlaeufer baute fuer "Neu ..." und "Bearbeiten ..." je ein Form zur
-   Laufzeit; ein zweites Blazor-Fenster ueber diesem waere eine zweite WebView
-   (Risiko R2 des Wellenplans) - dieselbe Entscheidung wie A-13 in Welle 1.
-   Solange ein Editor offen steht, ruht der Rest des Dialogs.
+   DIE BEIDEN UNTEREDITOREN STEHEN IN EINER UEBERLAGERUNG (iU9-W4.0). Der
+   Vorlaeufer baute fuer "Neu ..." und "Bearbeiten ..." je ein Form zur
+   Laufzeit; ein zweites Blazor-FENSTER darueber waere eine zweite WebView
+   (Risiko R2 des Wellenplans). Bis Welle 3 wichen sie deshalb auf eingerueckte
+   Bloecke aus (A-10); seit Welle 4 gibt es den Baustein Ueberlagerung - ein
+   modaler Bereich IM selben Fenster, also derselbe Eindruck wie beim
+   Vorlaeufer ohne die zweite WebView. Solange ein Editor offen steht, ruht
+   der Rest des Dialogs.
 
    TASTATUR: Esc schliesst den offenen Editor, sonst den Dialog. Enter ist
    nicht belegt - fast jeder Knopf hier schreibt sofort. *@
@@ -83,52 +86,16 @@
 
             <Herleitungszeile Text="@HinweisAuswahl" />
 
-            @if (_artEditor is null)
-            {
-                <div class="epos-leiste">
-                    <button type="button" class="epos-knopf" disabled="@EditorOffen"
-                            @onclick="ArtNeu">@ArtNeuText</button>
-                    <button type="button" class="epos-knopf"
-                            disabled="@(EditorOffen || GewaehlteArt is null)"
-                            @onclick="ArtBearbeiten">@ArtBearbeitenText</button>
-                    <button type="button" class="epos-knopf"
-                            disabled="@(EditorOffen || GewaehlteArt is null)"
-                            @onclick="ArtLoeschen">@ArtLoeschenText</button>
-                </div>
-            }
-            else
-            {
-                <div class="epos-editorblock">
-                    <p class="epos-untergruppe">@(_artNeu ? ArtDialogNeu : ArtDialogBearbeiten)</p>
-
-                    <Textfeld Bezeichnung="@FeldKuerzel" Wert="@_artKuerzel"
-                              WertChanged="@(w => _artKuerzel = w)"
-                              NurLesen="@(!_artNeu && _artEditor.IstAuslieferung)" />
-                    <Textfeld Bezeichnung="@FeldName" Wert="@_artName"
-                              WertChanged="@(w => _artName = w)" />
-                    <Auswahlfeld Bezeichnung="@FeldEinheit" Eintraege="@Einheiten"
-                                 Auswahl="@_artEinheit"
-                                 AuswahlChanged="@(id => _artEinheit = id ?? 0)" />
-                    <Zahlenfeld Bezeichnung="@FeldGwp" Wert="@_artGwp" Min="0"
-                                Aktiv="@(!_artEditor.IstPflicht)"
-                                WertChanged="@(w => _artGwp = w)" />
-                    <Textfeld Bezeichnung="@FeldQuelle" Wert="@_artQuelle"
-                              NurLesen="@_artEditor.IstPflicht"
-                              WertChanged="@(w => _artQuelle = w)" />
-
-                    @if (_artEditor.IstPflicht)
-                    {
-                        <Herleitungszeile Text="@PflichtHinweis" />
-                    }
-
-                    <div class="epos-leiste">
-                        <button type="button" class="epos-knopf"
-                                @onclick="EditorSchliessen">@AbbrechenText</button>
-                        <button type="button" class="epos-knopf epos-knopf--primaer"
-                                @onclick="ArtSpeichern">@OkText</button>
-                    </div>
-                </div>
-            }
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@EditorOffen"
+                        @onclick="ArtNeu">@ArtNeuText</button>
+                <button type="button" class="epos-knopf"
+                        disabled="@(EditorOffen || GewaehlteArt is null)"
+                        @onclick="ArtBearbeiten">@ArtBearbeitenText</button>
+                <button type="button" class="epos-knopf"
+                        disabled="@(EditorOffen || GewaehlteArt is null)"
+                        @onclick="ArtLoeschen">@ArtLoeschenText</button>
+            </div>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -159,50 +126,23 @@
                 </KindInhalt>
             </Raster>
 
-            @if (_wertEditor is null)
-            {
-                <div class="epos-leiste">
-                    @if (MitTraeger)
-                    {
-                        <button type="button" class="epos-knopf epos-knopf--primaer"
-                                disabled="@(EditorOffen || GewaehlterWert is null)"
-                                @onclick="WertUebernehmen">@UebernehmenText</button>
-                    }
-                    <button type="button" class="epos-knopf"
-                            disabled="@(EditorOffen || GewaehlteArt is null)"
-                            @onclick="WertNeu">@WertNeuText</button>
-                    <button type="button" class="epos-knopf"
-                            disabled="@(EditorOffen || !WertAenderbar)"
-                            @onclick="WertBearbeiten">@WertBearbeitenText</button>
-                    <button type="button" class="epos-knopf"
-                            disabled="@(EditorOffen || !WertAenderbar)"
-                            @onclick="WertLoeschen">@WertLoeschenText</button>
-                </div>
-            }
-            else
-            {
-                <div class="epos-editorblock">
-                    <p class="epos-untergruppe">@(_wertNeu ? WertDialogNeu : WertDialogBearbeiten)</p>
-
-                    <Textfeld Bezeichnung="@FeldWertText" Wert="@_wertText"
-                              WertChanged="@(w => _wertText = w)" />
-                    <Zahlenfeld Bezeichnung="@FeldWert" Wert="@_wertZahl" Min="0"
-                                Einheit="@(GewaehlteArt?.Einheit ?? "")"
-                                WertChanged="@(w => _wertZahl = w)" />
-                    <Schalter Bezeichnung="@FeldCo2e" Wert="@_wertCo2e"
-                              WertChanged="@(w => _wertCo2e = w)" />
-                    <Schalter Bezeichnung="@FeldVorlage" Wert="@_wertVorlage"
-                              Aktiv="@(_wertNeu && MitTraeger)"
-                              WertChanged="@(w => _wertVorlage = w)" />
-
-                    <div class="epos-leiste">
-                        <button type="button" class="epos-knopf"
-                                @onclick="EditorSchliessen">@AbbrechenText</button>
-                        <button type="button" class="epos-knopf epos-knopf--primaer"
-                                @onclick="WertSpeichern">@OkText</button>
-                    </div>
-                </div>
-            }
+            <div class="epos-leiste">
+                @if (MitTraeger)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--primaer"
+                            disabled="@(EditorOffen || GewaehlterWert is null)"
+                            @onclick="WertUebernehmen">@UebernehmenText</button>
+                }
+                <button type="button" class="epos-knopf"
+                        disabled="@(EditorOffen || GewaehlteArt is null)"
+                        @onclick="WertNeu">@WertNeuText</button>
+                <button type="button" class="epos-knopf"
+                        disabled="@(EditorOffen || !WertAenderbar)"
+                        @onclick="WertBearbeiten">@WertBearbeitenText</button>
+                <button type="button" class="epos-knopf"
+                        disabled="@(EditorOffen || !WertAenderbar)"
+                        @onclick="WertLoeschen">@WertLoeschenText</button>
+            </div>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -214,6 +154,75 @@
         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@EditorOffen"
                 @onclick="BeiOk">@OkText</button>
     </div>
+
+    @* Die beiden Untereditoren (iU9-W4.0, Nachzug zu A-10 aus Welle 3).
+       Bis W4 standen sie als eingerueckte Bloecke zwischen Liste und
+       Knopfleiste - ein Ausweichen davor, ein zweites Fenster oeffnen zu
+       muessen. Seit es die Ueberlagerung gibt, stehen sie da, wo der
+       Vorlaeufer sie hatte: ueber dem Dialog, im selben Fenster. Der Rest
+       ruht weiterhin (EditorOffen), und Esc schliesst zuerst sie. *@
+    <Ueberlagerung Offen="@(_artEditor is not null)" Schliessbar="false"
+                   Titel="@(_artNeu ? ArtDialogNeu : ArtDialogBearbeiten)"
+                   Geschlossen="EditorSchliessen">
+        <KindInhalt>
+            @if (_artEditor is not null)
+            {
+            <Textfeld Bezeichnung="@FeldKuerzel" Wert="@_artKuerzel"
+                      WertChanged="@(w => _artKuerzel = w)"
+                      NurLesen="@(!_artNeu && _artEditor.IstAuslieferung)" />
+            <Textfeld Bezeichnung="@FeldName" Wert="@_artName"
+                      WertChanged="@(w => _artName = w)" />
+            <Auswahlfeld Bezeichnung="@FeldEinheit" Eintraege="@Einheiten"
+                         Auswahl="@_artEinheit"
+                         AuswahlChanged="@(id => _artEinheit = id ?? 0)" />
+            <Zahlenfeld Bezeichnung="@FeldGwp" Wert="@_artGwp" Min="0"
+                        Aktiv="@(!_artEditor.IstPflicht)"
+                        WertChanged="@(w => _artGwp = w)" />
+            <Textfeld Bezeichnung="@FeldQuelle" Wert="@_artQuelle"
+                      NurLesen="@_artEditor.IstPflicht"
+                      WertChanged="@(w => _artQuelle = w)" />
+
+            @if (_artEditor.IstPflicht)
+            {
+                <Herleitungszeile Text="@PflichtHinweis" />
+            }
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="EditorSchliessen">@AbbrechenText</button>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="ArtSpeichern">@OkText</button>
+            </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_wertEditor is not null)" Schliessbar="false"
+                   Titel="@(_wertNeu ? WertDialogNeu : WertDialogBearbeiten)"
+                   Geschlossen="EditorSchliessen">
+        <KindInhalt>
+            @if (_wertEditor is not null)
+            {
+            <Textfeld Bezeichnung="@FeldWertText" Wert="@_wertText"
+                      WertChanged="@(w => _wertText = w)" />
+            <Zahlenfeld Bezeichnung="@FeldWert" Wert="@_wertZahl" Min="0"
+                        Einheit="@(GewaehlteArt?.Einheit ?? "")"
+                        WertChanged="@(w => _wertZahl = w)" />
+            <Schalter Bezeichnung="@FeldCo2e" Wert="@_wertCo2e"
+                      WertChanged="@(w => _wertCo2e = w)" />
+            <Schalter Bezeichnung="@FeldVorlage" Wert="@_wertVorlage"
+                      Aktiv="@(_wertNeu && MitTraeger)"
+                      WertChanged="@(w => _wertVorlage = w)" />
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="EditorSchliessen">@AbbrechenText</button>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="WertSpeichern">@OkText</button>
+            </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {

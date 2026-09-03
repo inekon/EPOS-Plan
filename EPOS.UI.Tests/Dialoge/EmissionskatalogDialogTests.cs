@@ -213,9 +213,9 @@ public class EmissionskatalogDialogTests : BunitContext
 
         ArtenKnoepfe(cut)[0].Click();                       // Neu…
         Assert.True(cut.Instance.EditorOffen);
-        Assert.Single(cut.FindAll(".epos-editorblock"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-inhalt"));
 
-        var block = cut.Find(".epos-editorblock");
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
         block.QuerySelectorAll("input[type=text]")[0].Input("N2O");
         block.QuerySelectorAll("input[type=text]")[1].Input("Lachgas");
         block.QuerySelector("input[inputmode=decimal]")!.Input("273");
@@ -238,7 +238,7 @@ public class EmissionskatalogDialogTests : BunitContext
             .Add(x => x.MeldungKuerzelLeer, "Kürzel darf nicht leer sein"));
 
         ArtenKnoepfe(cut)[0].Click();
-        cut.Find(".epos-editorblock").QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll(".epos-leiste button")[1].Click();
 
         Assert.False(angelegt);
         Assert.True(cut.Instance.EditorOffen);
@@ -253,7 +253,7 @@ public class EmissionskatalogDialogTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.ArtAendern, e => { gesehen = e; return null; }));
 
         ArtenKnoepfe(cut)[1].Click();                       // Bearbeiten… auf CO2
-        var block = cut.Find(".epos-editorblock");
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
 
         Assert.True(block.QuerySelector("input[inputmode=decimal]")!.HasAttribute("disabled"));
         // Kürzel, Name, GWP (mit inputmode), Quelle — die Quelle ist die vierte.
@@ -274,7 +274,7 @@ public class EmissionskatalogDialogTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.ArtVorwahl, "CH4"));
 
         ArtenKnoepfe(cut)[1].Click();
-        var block = cut.Find(".epos-editorblock");
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
 
         Assert.True(block.QuerySelectorAll("input[type=text]")[0].HasAttribute("readonly"));
     }
@@ -285,8 +285,8 @@ public class EmissionskatalogDialogTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.ArtAnlegen, e => "Das Kürzel gibt es schon."));
 
         ArtenKnoepfe(cut)[0].Click();
-        cut.Find(".epos-editorblock").QuerySelectorAll("input[type=text]")[0].Input("CO2");
-        cut.Find(".epos-editorblock").QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll("input[type=text]")[0].Input("CO2");
+        cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll(".epos-leiste button")[1].Click();
 
         Assert.True(cut.Instance.EditorOffen);
         Assert.Contains("gibt es schon", cut.Instance.Meldung);
@@ -423,7 +423,7 @@ public class EmissionskatalogDialogTests : BunitContext
            .QuerySelector("button.epos-anlagenwahl")!.Click();
 
         WerteKnoepfe(cut)[2].Click();                    // Bearbeiten…
-        var block = cut.Find(".epos-editorblock");
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
         block.QuerySelector("input[inputmode=decimal]")!.Input("77");
         block.QuerySelectorAll(".epos-leiste button")[1].Click();
 
@@ -442,7 +442,7 @@ public class EmissionskatalogDialogTests : BunitContext
             .Add(x => x.VorgabeQuelltext, "eigener Wert"));
 
         WerteKnoepfe(cut)[1].Click();                    // Neu…
-        var block = cut.Find(".epos-editorblock");
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
         block.QuerySelector("input[inputmode=decimal]")!.Input("12,5");
         block.QuerySelectorAll(".epos-leiste button")[1].Click();
 
@@ -463,7 +463,7 @@ public class EmissionskatalogDialogTests : BunitContext
             .Add(x => x.MeldungWertUngueltig, "Wert muss eine Zahl sein"));
 
         WerteKnoepfe(cut)[1].Click();
-        cut.Find(".epos-editorblock").QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll(".epos-leiste button")[1].Click();
 
         Assert.False(angelegt);
         Assert.Contains("Zahl", cut.Instance.Meldung);
@@ -475,15 +475,15 @@ public class EmissionskatalogDialogTests : BunitContext
         var cut = Zeige();
 
         WerteKnoepfe(cut)[1].Click();                    // Neu…
-        var kaesten = cut.Find(".epos-editorblock").QuerySelectorAll("input[type=checkbox]");
+        var kaesten = cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll("input[type=checkbox]");
         Assert.False(kaesten[1].HasAttribute("disabled"));
 
-        cut.Find(".epos-editorblock").QuerySelectorAll(".epos-leiste button")[0].Click();
+        cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll(".epos-leiste button")[0].Click();
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button.epos-anlagenwahl")!.Click();
         WerteKnoepfe(cut)[2].Click();                    // Bearbeiten…
-        kaesten = cut.Find(".epos-editorblock").QuerySelectorAll("input[type=checkbox]");
+        kaesten = cut.Find(".epos-ueberlagerung-inhalt").QuerySelectorAll("input[type=checkbox]");
         Assert.True(kaesten[1].HasAttribute("disabled"));
     }
 
