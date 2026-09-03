@@ -26,24 +26,14 @@ namespace WindowsFormsApplication1
     /// den Rahmen bisher selbst (<c>getWizardPage()</c> über den statischen Halter) und
     /// lasen ihm die Liste ab. Jetzt reicht der Rahmen sie herein — die Richtung stimmt
     /// damit wieder: Der Wirt kennt seine Seiten, nicht umgekehrt.</para>
+    ///
+    /// <para><b>Seit iU9-W9.0a nur noch ein NAME.</b> Die beiden Glieder stehen in
+    /// <see cref="IAssistentListenSeite{T}"/>; diese Schnittstelle ist deren
+    /// Spezialfall für <see cref="WErzeugerModel"/>. Sie bleibt, weil
+    /// <c>WizardParent</c> den Erzeugerzweig damit ohne Typparameter anspricht und
+    /// weil sie erklärt, WELCHE Liste gemeint ist.</para>
     /// </summary>
-    internal interface IAssistentErzeugerSeite
+    internal interface IAssistentErzeugerSeite : IAssistentListenSeite<WErzeugerModel>
     {
-        /// <summary>
-        /// Die geteilte Erzeugerliste des Assistentenlaufs. Wird VOR
-        /// <see cref="Bestuecken"/> gesetzt.
-        /// </summary>
-        List<WErzeugerModel> Modelle { get; set; }
-
-        /// <summary>
-        /// Baut die Seite mit dem laufenden Projekt auf — das Gegenstück zu
-        /// <c>SetControls(…, bWizard: true)</c> der WinForms-Fassungen.
-        /// </summary>
-        /// <param name="projektId">
-        /// Id des Projekts. Im Assistenten kann sie 0 sein (neues Projekt, noch nicht
-        /// gespeichert); die Seite legt dann keine Projektkopien an.
-        /// </param>
-        /// <param name="projektName">Name des Projekts für die Kopfzeile.</param>
-        void Bestuecken(int projektId, string projektName);
     }
 }

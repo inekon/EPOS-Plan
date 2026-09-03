@@ -43,9 +43,17 @@ namespace WindowsFormsApplication1
     /// Wunschgröße. Deshalb liefert <see cref="GetPreferredSize"/> das Maß, das die
     /// Hülle im Konstruktor bekommen hat: dieselbe Zahl, die der Dialogweg an
     /// <see cref="BlazorDialogForm{TKomponente}"/> gibt.</para>
+    ///
+    /// <para><b>Zwei Typparameter seit iU9-W9.0a.</b> Bis Welle 8 trug die Hülle
+    /// immer eine <c>List&lt;WErzeugerModel&gt;</c>, weil nur Erzeugerseiten Razor
+    /// waren. Die vier Bedarfsseiten der Welle 9 tragen vier andere Listentypen;
+    /// der Zeilentyp ist deshalb ein Typparameter geworden. Die einparametrige
+    /// Fassung darunter ist der Erzeugerfall und heißt weiterhin so, damit
+    /// <c>AssistentSeiten</c> und die sechs Erzeugerhüllen unverändert bleiben.</para>
     /// </summary>
     /// <typeparam name="TKomponente">Die anzuzeigende Razor-Komponente aus EPOS.UI.</typeparam>
-    internal sealed class BlazorAssistentSeite<TKomponente> : Form, IAssistentErzeugerSeite
+    /// <typeparam name="TModell">Der Zeilentyp der geteilten Liste.</typeparam>
+    internal class BlazorAssistentSeite<TKomponente, TModell> : Form, IAssistentListenSeite<TModell>
         where TKomponente : Microsoft.AspNetCore.Components.IComponent
     {
         /// <summary>
@@ -55,7 +63,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly Color Themaflaeche = Color.FromArgb(0xF5, 0xF4, 0xEF);
 
-        private readonly Func<int, string, List<WErzeugerModel>, IDictionary<string, object>> _gaben;
+        private readonly Func<int, string, List<TModell>, IDictionary<string, object>> _gaben;
         private readonly Size _wunschmass;
 
         private BlazorWebView _web;
@@ -70,7 +78,7 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="wunschmass">Wunschmaß der Seite im Assistentenfenster.</param>
         internal BlazorAssistentSeite(
-            Func<int, string, List<WErzeugerModel>, IDictionary<string, object>> gaben,
+            Func<int, string, List<TModell>, IDictionary<string, object>> gaben,
             Size wunschmass)
         {
             _gaben = gaben;
@@ -92,13 +100,13 @@ namespace WindowsFormsApplication1
         /// </remarks>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public List<WErzeugerModel> Modelle { get; set; }
+        public List<TModell> Modelle { get; set; }
 
         /// <inheritdoc />
         public void Bestuecken(int projektId, string projektName)
         {
             IDictionary<string, object> werte =
-                _gaben(projektId, projektName ?? "", Modelle ?? new List<WErzeugerModel>());
+                _gaben(projektId, projektName ?? "", Modelle ?? new List<TModell>());
 
             if (_web == null) { WebViewAufbauen(werte); return; }
 
@@ -162,6 +170,29 @@ namespace WindowsFormsApplication1
         {
             if (disposing) WebViewAbraeumen();
             base.Dispose(disposing);
+        }
+    }
+
+    /// <summary>
+    /// Die ERZEUGERFASSUNG der Assistentenhülle (iU9-W6.0e, seit W9.0a ein
+    /// Spezialfall von <see cref="BlazorAssistentSeite{TKomponente, TModell}"/>).
+    ///
+    /// <para>Sie trägt die geteilte <c>List&lt;WErzeugerModel&gt;</c> des
+    /// Assistentenlaufs und meldet sich zusätzlich als
+    /// <see cref="IAssistentErzeugerSeite"/> — der Zweig, den
+    /// <c>WizardParent.LoadNewForm</c> seit Welle 6 kennt.</para>
+    /// </summary>
+    /// <typeparam name="TKomponente">Die anzuzeigende Razor-Komponente aus EPOS.UI.</typeparam>
+    internal sealed class BlazorAssistentSeite<TKomponente>
+        : BlazorAssistentSeite<TKomponente, WErzeugerModel>, IAssistentErzeugerSeite
+        where TKomponente : Microsoft.AspNetCore.Components.IComponent
+    {
+        /// <inheritdoc cref="BlazorAssistentSeite{TKomponente, TModell}"/>
+        internal BlazorAssistentSeite(
+            Func<int, string, List<WErzeugerModel>, IDictionary<string, object>> gaben,
+            Size wunschmass)
+            : base(gaben, wunschmass)
+        {
         }
     }
 }
