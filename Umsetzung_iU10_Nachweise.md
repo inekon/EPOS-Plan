@@ -237,3 +237,5 @@ Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iP
   fehlen noch (iU11).
 - **Kein Geräte-Backup-Ausschluss.** Die Datenbank liegt unter `Application Support` und wird von
   iCloud gesichert. Das ist gewollt: Eine gerechnete Variante ist Arbeit, keine Zwischenablage.
+
+> **Regel (Anwender, 03.09.2026):** Vor jedem Aufruf des macOS-Läufers nachfragen; der Job startet nie von selbst.
