@@ -8554,4 +8554,289 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_HERKUNFT_ANLAGE" xml:space="preserve">
     <value>plant choice</value>
   </data>
+  <data name="BHW_TITEL" xml:space="preserve">
+    <value>CHP economics</value>
+  </data>
+  <data name="BHW_KNOPF" xml:space="preserve">
+    <value>CHP economics…</value>
+  </data>
+  <data name="BHW_MELD_GESPEICHERT" xml:space="preserve">
+    <value>CHP economics saved — please recalculate.</value>
+  </data>
+  <data name="BHW_G1" xml:space="preserve">
+    <value>Units</value>
+  </data>
+  <data name="BHW_G1B" xml:space="preserve">
+    <value>Settings of the selected unit — empty or 0 = project default</value>
+  </data>
+  <data name="BHW_G2" xml:space="preserve">
+    <value>CHP surcharge (project default)</value>
+  </data>
+  <data name="BHW_G3" xml:space="preserve">
+    <value>Energy tax (project default)</value>
+  </data>
+  <data name="BHW_G4" xml:space="preserve">
+    <value>Electricity tax (project default)</value>
+  </data>
+  <data name="BHW_G5" xml:space="preserve">
+    <value>Auxiliary power</value>
+  </data>
+  <data name="BHW_G6" xml:space="preserve">
+    <value>Preview — last recorded run</value>
+  </data>
+  <data name="BHW_G_KOHAERENZ" xml:space="preserve">
+    <value>Consistency check (energy and electricity tax)</value>
+  </data>
+  <data name="BHW_SP_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="BHW_SP_ANLAGE" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="BHW_SP_PEL" xml:space="preserve">
+    <value>P_el [kW]</value>
+  </data>
+  <data name="BHW_SP_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="BHW_SP_STICHTAG" xml:space="preserve">
+    <value>Cut-off date</value>
+  </data>
+  <data name="BHW_SP_IBN" xml:space="preserve">
+    <value>Commissioning</value>
+  </data>
+  <data name="BHW_SP_ANLAGENART" xml:space="preserve">
+    <value>Unit category</value>
+  </data>
+  <data name="BHW_A_STICHTAG" xml:space="preserve">
+    <value>Cut-off date (order/permit):</value>
+  </data>
+  <data name="BHW_A_IBN" xml:space="preserve">
+    <value>Commissioning:</value>
+  </data>
+  <data name="BHW_A_ANLAGENART" xml:space="preserve">
+    <value>Unit category:</value>
+  </data>
+  <data name="BHW_A_EIGENFALL" xml:space="preserve">
+    <value>Self-consumption under sec. 6 (3):</value>
+  </data>
+  <data name="BHW_A_SATZ_EINSP" xml:space="preserve">
+    <value>Feed-in rate [ct/kWh] (0 = project rate):</value>
+  </data>
+  <data name="BHW_A_SATZ_EIGEN" xml:space="preserve">
+    <value>Self-consumption rate [ct/kWh] (0 = project rate):</value>
+  </data>
+  <data name="BHW_A_KONTINGENT" xml:space="preserve">
+    <value>Full-load hour quota [h] (0 = project value):</value>
+  </data>
+  <data name="BHW_A_DECKEL" xml:space="preserve">
+    <value>Annual full-load hour cap [h/a] (0 = schedule):</value>
+  </data>
+  <data name="BHW_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax relief (unit):</value>
+  </data>
+  <data name="BHW_A_AUFTEILUNG" xml:space="preserve">
+    <value>Fuel split power/heat (unit):</value>
+  </data>
+  <data name="BHW_A_HILFSANTEIL" xml:space="preserve">
+    <value>Auxiliary power share [% of final energy demand] (0 = none):</value>
+  </data>
+  <data name="BHW_A_HILFS_BASIS" xml:space="preserve">
+    <value>Suggested 2–4 % for CHP. Measured against this unit's final energy demand (fuel) — not against cost.</value>
+  </data>
+  <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
+    <value>Self-consumption bonus [ct/kWh] (0 = off):</value>
+  </data>
+  <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
+    <value>Feed-in bonus [ct/kWh]:</value>
+  </data>
+  <data name="BHW_P_DECKEL" xml:space="preserve">
+    <value>Full-load hour cap override [h/a]:</value>
+  </data>
+  <data name="BHW_P_KONTINGENT" xml:space="preserve">
+    <value>Total full-load hour quota [h] (0 = automatic):</value>
+  </data>
+  <data name="BHW_P_ABSCHLAG" xml:space="preserve">
+    <value>Negative-price hour deduction [%]:</value>
+  </data>
+  <data name="BHW_P_TATBESTAND" xml:space="preserve">
+    <value>Self-consumption case (sec. 6 (3)):</value>
+  </data>
+  <data name="BHW_P_ANLAGENART" xml:space="preserve">
+    <value>Unit category (sec. 8):</value>
+  </data>
+  <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
+    <value>Share of new-build cost [%]:</value>
+  </data>
+  <data name="BHW_P_PAUSCHAL" xml:space="preserve">
+    <value>Lump sum under sec. 9 KWKG (up to 2 kWel, one-off)</value>
+  </data>
+  <data name="BHW_P_STICHTAG" xml:space="preserve">
+    <value>Cut-off date, default per unit:</value>
+  </data>
+  <data name="BHW_P_IBN" xml:space="preserve">
+    <value>Commissioning, default per unit:</value>
+  </data>
+  <data name="BHW_E_WAHL" xml:space="preserve">
+    <value>Energy tax relief:</value>
+  </data>
+  <data name="BHW_E_AUFTEILUNG" xml:space="preserve">
+    <value>Fuel split power/heat:</value>
+  </data>
+  <data name="BHW_E_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Annual efficiency [%] (0 = not recorded):</value>
+  </data>
+  <data name="BHW_E_OHNE_HERKUNFT" xml:space="preserve">
+    <value>No credit in the last recorded run — no rate was applied.</value>
+  </data>
+  <data name="BHW_S_UNTERNEHMENSART" xml:space="preserve">
+    <value>Type of business:</value>
+  </data>
+  <data name="BHW_S_RAEUMLICH" xml:space="preserve">
+    <value>Spatial connection (4.5 km) given</value>
+  </data>
+  <data name="BHW_S_HOCHEFFIZIENZ" xml:space="preserve">
+    <value>High efficiency demonstrated</value>
+  </data>
+  <data name="BHW_S_MODUS" xml:space="preserve">
+    <value>Mode under sec. 9 (1) no. 3:</value>
+  </data>
+  <data name="BHW_S_MODUS_B6" xml:space="preserve">
+    <value>from stage B6 — until then fixed to "disclosure" (not in the net present value).</value>
+  </data>
+  <data name="BHW_H_BASIS" xml:space="preserve">
+    <value>The share is maintained per unit above and measured against the unit's FINAL ENERGY DEMAND (fuel) — not against cost. The quantity reduces the eligible net power generation.</value>
+  </data>
+  <data name="BHW_H_KETTE1" xml:space="preserve">
+    <value>Gross power generation {0} MWh/a − auxiliary power {1} MWh/a = net power generation {2} MWh/a</value>
+  </data>
+  <data name="BHW_H_KETTE2" xml:space="preserve">
+    <value>of which self-consumption {0} MWh/a, feed-in {1} MWh/a</value>
+  </data>
+  <data name="BHW_H_OHNE_LAUF" xml:space="preserve">
+    <value>Quantity chain: no recorded result yet — please use "Calculate" in the economics view.</value>
+  </data>
+  <data name="BHW_H_KESSEL" xml:space="preserve">
+    <value>Boilers in the group: the auxiliary power share is included for boilers but not maintained here.</value>
+  </data>
+  <data name="BHW_K_LEER" xml:space="preserve">
+    <value>No findings in the last recorded run.</value>
+  </data>
+  <data name="BHW_V_ZUSCHLAG" xml:space="preserve">
+    <value>CHP surcharge p.a.</value>
+  </data>
+  <data name="BHW_V_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax p.a.</value>
+  </data>
+  <data name="BHW_V_STROMSTEUER" xml:space="preserve">
+    <value>Electricity tax p.a.</value>
+  </data>
+  <data name="BHW_V_EINSPEISUNG" xml:space="preserve">
+    <value>CHP feed-in revenue p.a.</value>
+  </data>
+  <data name="BHW_V_VERMIEDEN" xml:space="preserve">
+    <value>Avoided electricity cost p.a. (disclosure)</value>
+  </data>
+  <data name="BHW_V_STAND" xml:space="preserve">
+    <value>As of {0} — recalculate after saving.</value>
+  </data>
+  <data name="BHW_V_OHNE_LAUF" xml:space="preserve">
+    <value>No recorded result yet — the preview appears after "Calculate" in the economics view.</value>
+  </data>
+  <data name="BHW_HERLEITUNG_EINSP" xml:space="preserve">
+    <value>Feed-in {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_HERLEITUNG_EIGEN" xml:space="preserve">
+    <value>Self-consumption {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_W_AUSSCHREIBUNG" xml:space="preserve">
+    <value>Tendering under sec. 8a KWKG: {0} above {1} kW.</value>
+  </data>
+  <data name="BHW_W_STROMSTEUER" xml:space="preserve">
+    <value>Electricity tax exemption under sec. 9 (1) no. 3 does not apply: {0} above {1} kW.</value>
+  </data>
+  <data name="BHW_W_HEIZOEL" xml:space="preserve">
+    <value>Fuel oil exclusion from commissioning 2025: {0}.</value>
+  </data>
+  <data name="BHW_W_OFFEN" xml:space="preserve">
+    <value>(not specified)</value>
+  </data>
+  <data name="BHW_W_PROJEKTWERT" xml:space="preserve">
+    <value>(project value)</value>
+  </data>
+  <data name="BHW_W_ART_LEER" xml:space="preserve">
+    <value>(not recorded — treated as a new unit)</value>
+  </data>
+  <data name="BHW_W_ART_NEU" xml:space="preserve">
+    <value>new unit (sec. 8 (1))</value>
+  </data>
+  <data name="BHW_W_ART_MOD" xml:space="preserve">
+    <value>modernised (sec. 8 (2))</value>
+  </data>
+  <data name="BHW_W_ART_NACH" xml:space="preserve">
+    <value>retrofitted (sec. 8 (3))</value>
+  </data>
+  <data name="BHW_W_FALL_KEINER" xml:space="preserve">
+    <value>no qualifying case (no self-consumption surcharge)</value>
+  </data>
+  <data name="BHW_W_FALL_NR1" xml:space="preserve">
+    <value>no. 1 — unit up to 100 kW</value>
+  </data>
+  <data name="BHW_W_FALL_NR2" xml:space="preserve">
+    <value>no. 2 — customer installation / closed network</value>
+  </data>
+  <data name="BHW_W_FALL_NR3" xml:space="preserve">
+    <value>no. 3 — electricity-intensive</value>
+  </data>
+  <data name="BHW_W_ES_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="BHW_W_ES_53" xml:space="preserve">
+    <value>sec. 53 EnergieStG (form 1131)</value>
+  </data>
+  <data name="BHW_W_ES_53A" xml:space="preserve">
+    <value>sec. 53a (5) EnergieStG (1135)</value>
+  </data>
+  <data name="BHW_W_ES_54" xml:space="preserve">
+    <value>sec. 54 EnergieStG (form 1450)</value>
+  </data>
+  <data name="BHW_W_AUF_VOLL" xml:space="preserve">
+    <value>full CHP fuel (sec. 53 (2))</value>
+  </data>
+  <data name="BHW_W_AUF_ENERGETISCH" xml:space="preserve">
+    <value>energy-based (conservative)</value>
+  </data>
+  <data name="BHW_W_UA_KEIN" xml:space="preserve">
+    <value>not a manufacturing business</value>
+  </data>
+  <data name="BHW_W_UA_PROD" xml:space="preserve">
+    <value>manufacturing business</value>
+  </data>
+  <data name="BHW_W_UA_LAND" xml:space="preserve">
+    <value>agriculture and forestry</value>
+  </data>
+  <data name="BHW_W_MODUS_AUSWEIS" xml:space="preserve">
+    <value>disclosure (not in the net present value)</value>
+  </data>
+  <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
+    <value>revenue (in the net present value)</value>
+  </data>
+  <data name="BHW_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Apply suggestion to the rate fields</value>
+  </data>
+  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
+    <value>Electricity purchase…</value>
+  </data>
+  <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>CHP tariff…</value>
+  </data>
+  <data name="BHW_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="BHW_MSG_FEHLER" xml:space="preserve">
+    <value>{0} entr(y/ies) could not be saved.</value>
+  </data>
+  <data name="BHW_MSG_FEHLER_TITEL" xml:space="preserve">
+    <value>Error</value>
+  </data>
 </root>

@@ -8561,4 +8561,289 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_HERKUNFT_ANLAGE" xml:space="preserve">
     <value>Anlagenwahl</value>
   </data>
+  <data name="BHW_TITEL" xml:space="preserve">
+    <value>BHKW-Wirtschaftlichkeit</value>
+  </data>
+  <data name="BHW_KNOPF" xml:space="preserve">
+    <value>BHKW-Wirtschaftlichkeit…</value>
+  </data>
+  <data name="BHW_MELD_GESPEICHERT" xml:space="preserve">
+    <value>BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen.</value>
+  </data>
+  <data name="BHW_G1" xml:space="preserve">
+    <value>Anlagen</value>
+  </data>
+  <data name="BHW_G1B" xml:space="preserve">
+    <value>Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe</value>
+  </data>
+  <data name="BHW_G2" xml:space="preserve">
+    <value>KWK-Zuschlag (Projektvorgabe)</value>
+  </data>
+  <data name="BHW_G3" xml:space="preserve">
+    <value>Energiesteuer (Projektvorgabe)</value>
+  </data>
+  <data name="BHW_G4" xml:space="preserve">
+    <value>Stromsteuer (Projektvorgabe)</value>
+  </data>
+  <data name="BHW_G5" xml:space="preserve">
+    <value>Hilfsstrom</value>
+  </data>
+  <data name="BHW_G6" xml:space="preserve">
+    <value>Vorschau — zuletzt gebuchter Lauf</value>
+  </data>
+  <data name="BHW_G_KOHAERENZ" xml:space="preserve">
+    <value>Kohärenzprüfung (Energie- und Stromsteuer)</value>
+  </data>
+  <data name="BHW_SP_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="BHW_SP_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="BHW_SP_PEL" xml:space="preserve">
+    <value>P_el [kW]</value>
+  </data>
+  <data name="BHW_SP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="BHW_SP_STICHTAG" xml:space="preserve">
+    <value>Stichtag</value>
+  </data>
+  <data name="BHW_SP_IBN" xml:space="preserve">
+    <value>Inbetriebnahme</value>
+  </data>
+  <data name="BHW_SP_ANLAGENART" xml:space="preserve">
+    <value>Anlagenart</value>
+  </data>
+  <data name="BHW_A_STICHTAG" xml:space="preserve">
+    <value>Stichtag (Bestellung/Genehmigung):</value>
+  </data>
+  <data name="BHW_A_IBN" xml:space="preserve">
+    <value>Inbetriebnahme:</value>
+  </data>
+  <data name="BHW_A_ANLAGENART" xml:space="preserve">
+    <value>Anlagenart:</value>
+  </data>
+  <data name="BHW_A_EIGENFALL" xml:space="preserve">
+    <value>Eigenstrom nach § 6 Abs. 3:</value>
+  </data>
+  <data name="BHW_A_SATZ_EINSP" xml:space="preserve">
+    <value>Satz Einspeisung [ct/kWh] (0 = Projektsatz):</value>
+  </data>
+  <data name="BHW_A_SATZ_EIGEN" xml:space="preserve">
+    <value>Satz Eigenstrom [ct/kWh] (0 = Projektsatz):</value>
+  </data>
+  <data name="BHW_A_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent [h] (0 = Projektwert):</value>
+  </data>
+  <data name="BHW_A_DECKEL" xml:space="preserve">
+    <value>Vbh-Jahresdeckel [h/a] (0 = Staffel):</value>
+  </data>
+  <data name="BHW_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuerentlastung (Anlage):</value>
+  </data>
+  <data name="BHW_A_AUFTEILUNG" xml:space="preserve">
+    <value>Brennstoff auf Strom/Wärme (Anlage):</value>
+  </data>
+  <data name="BHW_A_HILFSANTEIL" xml:space="preserve">
+    <value>Hilfsenergieanteil [% des Endenergiebedarfs] (0 = keine):</value>
+  </data>
+  <data name="BHW_A_HILFS_BASIS" xml:space="preserve">
+    <value>Vorschlag BHKW 2–4 %. Bemessen wird am Endenergiebedarf (Brennstoff) dieser Anlage — nicht an den Kosten.</value>
+  </data>
+  <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
+    <value>Bonus Eigenstrom [ct/kWh] (0 = aus):</value>
+  </data>
+  <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
+    <value>Bonus Einspeisung [ct/kWh]:</value>
+  </data>
+  <data name="BHW_P_DECKEL" xml:space="preserve">
+    <value>Vbh-Deckel-Override [h/a]:</value>
+  </data>
+  <data name="BHW_P_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent gesamt [h] (0 = automatisch):</value>
+  </data>
+  <data name="BHW_P_ABSCHLAG" xml:space="preserve">
+    <value>Abschlag Negativstunden [%]:</value>
+  </data>
+  <data name="BHW_P_TATBESTAND" xml:space="preserve">
+    <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
+  </data>
+  <data name="BHW_P_ANLAGENART" xml:space="preserve">
+    <value>Anlagenart (§ 8):</value>
+  </data>
+  <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
+    <value>Anteil Neuherstellungskosten [%]:</value>
+  </data>
+  <data name="BHW_P_PAUSCHAL" xml:space="preserve">
+    <value>Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)</value>
+  </data>
+  <data name="BHW_P_STICHTAG" xml:space="preserve">
+    <value>Stichtag, Vorgabe je Anlage:</value>
+  </data>
+  <data name="BHW_P_IBN" xml:space="preserve">
+    <value>Inbetriebnahme, Vorgabe je Anlage:</value>
+  </data>
+  <data name="BHW_E_WAHL" xml:space="preserve">
+    <value>Energiesteuerentlastung:</value>
+  </data>
+  <data name="BHW_E_AUFTEILUNG" xml:space="preserve">
+    <value>Brennstoff auf Strom/Wärme:</value>
+  </data>
+  <data name="BHW_E_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Jahresnutzungsgrad [%] (0 = nicht erfasst):</value>
+  </data>
+  <data name="BHW_E_OHNE_HERKUNFT" xml:space="preserve">
+    <value>Keine Gutschrift im zuletzt gebuchten Lauf — es wurde kein Satz verwendet.</value>
+  </data>
+  <data name="BHW_S_UNTERNEHMENSART" xml:space="preserve">
+    <value>Unternehmensart:</value>
+  </data>
+  <data name="BHW_S_RAEUMLICH" xml:space="preserve">
+    <value>Räumlicher Zusammenhang (4,5 km) gegeben</value>
+  </data>
+  <data name="BHW_S_HOCHEFFIZIENZ" xml:space="preserve">
+    <value>Hocheffizienz nachgewiesen</value>
+  </data>
+  <data name="BHW_S_MODUS" xml:space="preserve">
+    <value>Modus § 9 Abs. 1 Nr. 3:</value>
+  </data>
+  <data name="BHW_S_MODUS_B6" xml:space="preserve">
+    <value>ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).</value>
+  </data>
+  <data name="BHW_H_BASIS" xml:space="preserve">
+    <value>Der Anteil wird je Anlage oben gepflegt und am ENDENERGIEBEDARF (Brennstoff) der Anlage bemessen — nicht an den Kosten. Die Menge mindert die zuschlagsfähige Nettostromerzeugung.</value>
+  </data>
+  <data name="BHW_H_KETTE1" xml:space="preserve">
+    <value>Stromerzeugung brutto {0} MWh/a − Hilfsstrom {1} MWh/a = Nettostromerzeugung {2} MWh/a</value>
+  </data>
+  <data name="BHW_H_KETTE2" xml:space="preserve">
+    <value>davon Eigenverbrauch {0} MWh/a, Einspeisung {1} MWh/a</value>
+  </data>
+  <data name="BHW_H_OHNE_LAUF" xml:space="preserve">
+    <value>Mengenkette: noch kein gebuchtes Ergebnis — bitte in der Wirtschaftlichkeit „Berechnen“.</value>
+  </data>
+  <data name="BHW_H_KESSEL" xml:space="preserve">
+    <value>Heizkessel der Gruppe: Der Hilfsenergieanteil wird für Kessel mitgerechnet, aber nicht hier gepflegt.</value>
+  </data>
+  <data name="BHW_K_LEER" xml:space="preserve">
+    <value>Keine Auffälligkeit im zuletzt gebuchten Lauf.</value>
+  </data>
+  <data name="BHW_V_ZUSCHLAG" xml:space="preserve">
+    <value>KWK-Zuschlag p. a.</value>
+  </data>
+  <data name="BHW_V_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer p. a.</value>
+  </data>
+  <data name="BHW_V_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteuer p. a.</value>
+  </data>
+  <data name="BHW_V_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeiseerlös KWK p. a.</value>
+  </data>
+  <data name="BHW_V_VERMIEDEN" xml:space="preserve">
+    <value>Vermiedene Stromkosten p. a. (Ausweis)</value>
+  </data>
+  <data name="BHW_V_STAND" xml:space="preserve">
+    <value>Stand: {0} — nach dem Speichern neu berechnen.</value>
+  </data>
+  <data name="BHW_V_OHNE_LAUF" xml:space="preserve">
+    <value>Noch kein gebuchtes Ergebnis — die Vorschau erscheint nach „Berechnen“ in der Wirtschaftlichkeit.</value>
+  </data>
+  <data name="BHW_HERLEITUNG_EINSP" xml:space="preserve">
+    <value>Einspeisung {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_HERLEITUNG_EIGEN" xml:space="preserve">
+    <value>Eigenstrom {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_W_AUSSCHREIBUNG" xml:space="preserve">
+    <value>Ausschreibung nach § 8a KWKG: {0} über {1} kW.</value>
+  </data>
+  <data name="BHW_W_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteuerbefreiung § 9 Abs. 1 Nr. 3 entfällt: {0} über {1} kW.</value>
+  </data>
+  <data name="BHW_W_HEIZOEL" xml:space="preserve">
+    <value>Heizöl-Ausschluss ab Inbetriebnahme 2025: {0}.</value>
+  </data>
+  <data name="BHW_W_OFFEN" xml:space="preserve">
+    <value>(nicht angegeben)</value>
+  </data>
+  <data name="BHW_W_PROJEKTWERT" xml:space="preserve">
+    <value>(Projektwert)</value>
+  </data>
+  <data name="BHW_W_ART_LEER" xml:space="preserve">
+    <value>(nicht erfasst — gilt als Neuanlage)</value>
+  </data>
+  <data name="BHW_W_ART_NEU" xml:space="preserve">
+    <value>neue Anlage (§ 8 Abs. 1)</value>
+  </data>
+  <data name="BHW_W_ART_MOD" xml:space="preserve">
+    <value>modernisiert (§ 8 Abs. 2)</value>
+  </data>
+  <data name="BHW_W_ART_NACH" xml:space="preserve">
+    <value>nachgerüstet (§ 8 Abs. 3)</value>
+  </data>
+  <data name="BHW_W_FALL_KEINER" xml:space="preserve">
+    <value>kein Tatbestand (kein Eigenstromzuschlag)</value>
+  </data>
+  <data name="BHW_W_FALL_NR1" xml:space="preserve">
+    <value>Nr. 1 — Anlage bis 100 kW</value>
+  </data>
+  <data name="BHW_W_FALL_NR2" xml:space="preserve">
+    <value>Nr. 2 — Kundenanlage / geschl. Netz</value>
+  </data>
+  <data name="BHW_W_FALL_NR3" xml:space="preserve">
+    <value>Nr. 3 — stromkostenintensiv</value>
+  </data>
+  <data name="BHW_W_ES_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="BHW_W_ES_53" xml:space="preserve">
+    <value>§ 53 EnergieStG (Formular 1131)</value>
+  </data>
+  <data name="BHW_W_ES_53A" xml:space="preserve">
+    <value>§ 53a Abs. 5 EnergieStG (1135)</value>
+  </data>
+  <data name="BHW_W_ES_54" xml:space="preserve">
+    <value>§ 54 EnergieStG (Formular 1450)</value>
+  </data>
+  <data name="BHW_W_AUF_VOLL" xml:space="preserve">
+    <value>voller BHKW-Brennstoff (§ 53 Abs. 2)</value>
+  </data>
+  <data name="BHW_W_AUF_ENERGETISCH" xml:space="preserve">
+    <value>energetisch (konservativ)</value>
+  </data>
+  <data name="BHW_W_UA_KEIN" xml:space="preserve">
+    <value>kein produzierendes Gewerbe</value>
+  </data>
+  <data name="BHW_W_UA_PROD" xml:space="preserve">
+    <value>produzierendes Gewerbe</value>
+  </data>
+  <data name="BHW_W_UA_LAND" xml:space="preserve">
+    <value>Land- und Forstwirtschaft</value>
+  </data>
+  <data name="BHW_W_MODUS_AUSWEIS" xml:space="preserve">
+    <value>Ausweis (nicht im Kapitalwert)</value>
+  </data>
+  <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
+    <value>Erlös (im Kapitalwert)</value>
+  </data>
+  <data name="BHW_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag in die Satzfelder übernehmen</value>
+  </data>
+  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
+    <value>Strombezug…</value>
+  </data>
+  <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
+    <value>BHKW-Tarif…</value>
+  </data>
+  <data name="BHW_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="BHW_MSG_FEHLER" xml:space="preserve">
+    <value>{0} Angabe(n) konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="BHW_MSG_FEHLER_TITEL" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
 </root>
