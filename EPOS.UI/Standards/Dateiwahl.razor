@@ -1,0 +1,92 @@
+﻿@* Dateiwahl - Pfadfeld und Knopf "Durchsuchen ...".
+
+   Vorbild: die sechs Importmasken des Bestands (Form_SpotpreisImport,
+   Form_Heizkessel_einlesen, Form_PufferSp_einlesen, Form_WP_einlesen,
+   Form_SolarKollektoren_einlesen, Form_ProjektExportImport). Alle bauen
+   dieselbe Zeile: ein nur lesbares Pfadfeld, daneben ein Knopf, der einen
+   OpenFileDialog oeffnet.
+
+   DIE KOMPONENTE OEFFNET NICHTS. Was ein Dateiwaehler ist, weiss nur die
+   Plattform - unter Windows Dienste.Datei.DateiOeffnen, auf iOS die
+   Dokumentenauswahl, im Test gar nichts. Deshalb kommt der Waehler als
+   Delegat Waehlen herein; ohne ihn bleibt der Knopf weg (dieselbe Regel wie
+   A-18 aus Welle 2: ein Knopf, der nichts tut, ist eine Behauptung, die
+   nicht stimmt).
+
+   Filter reicht die Komponente nur durch - sie wertet ihn nicht aus. *@
+
+@namespace EPOS.UI.Standards
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile epos-dateiwahl">
+        <input class="epos-eingabe" type="text" value="@Pfad" readonly="@NurLesen"
+               placeholder="@Platzhalter" aria-label="@Bezeichnung" @oninput="BeiEingabe" />
+        @if (Waehlen is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!Aktiv)"
+                    @onclick="BeiKlick">@KnopfText</button>
+        }
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung ueber dem Feld (Vorbild: lblDatei).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der gewaehlte Pfad. Bindbar ueber @@bind-Pfad.</summary>
+    [Parameter] public string Pfad { get; set; } = "";
+
+    /// <summary>Meldet jeden neuen Pfad - aus dem Waehler wie aus dem Feld.</summary>
+    [Parameter] public EventCallback<string> PfadChanged { get; set; }
+
+    /// <summary>
+    /// Der Dateifilter in der Windows-Schreibweise
+    /// (<c>"CSV (*.csv)|*.csv"</c>). Die Komponente reicht ihn nur an
+    /// <see cref="Waehlen"/> weiter; ausgewertet wird er von der Plattform.
+    /// </summary>
+    [Parameter] public string Filter { get; set; } = "";
+
+    /// <summary>
+    /// Der Dateiwaehler der Plattform. Liefert den Pfad oder <c>null</c>,
+    /// wenn abgebrochen wurde. OHNE diesen Delegaten erscheint kein Knopf.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? Waehlen { get; set; }
+
+    /// <summary>Beschriftung des Knopfes (Vorbild: btnWaehlen).</summary>
+    [Parameter] public string KnopfText { get; set; } = "Durchsuchen…";
+
+    /// <summary>Grauer Hinweistext im leeren Feld.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Pfadfeld nur lesbar? Vorgabe <c>true</c> - so hielten es alle sechs
+    /// Importmasken (<c>_tbPfad.ReadOnly = true</c>): Getippt wird ein Pfad
+    /// nicht, er wird gewaehlt.
+    /// </summary>
+    [Parameter] public bool NurLesen { get; set; } = true;
+
+    /// <summary>Bedienbar? <c>false</c> sperrt den Knopf.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    private async Task BeiEingabe(ChangeEventArgs e)
+    {
+        if (NurLesen) return;
+        Pfad = e.Value?.ToString() ?? "";
+        await PfadChanged.InvokeAsync(Pfad);
+    }
+
+    private async Task BeiKlick()
+    {
+        if (Waehlen is null) return;
+
+        string? gewaehlt = await Waehlen(Filter);
+        if (string.IsNullOrEmpty(gewaehlt)) return;   // abgebrochen: der alte Pfad bleibt
+
+        Pfad = gewaehlt;
+        await PfadChanged.InvokeAsync(Pfad);
+    }
+}

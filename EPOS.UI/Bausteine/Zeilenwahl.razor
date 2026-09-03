@@ -1,0 +1,39 @@
+﻿@* Wahlknopf einer Rasterzeile - das runde Ziel, mit dem eine Zeile markiert
+   wird.
+
+   WARUM ES DEN BAUSTEIN GIBT. Eine ListView und ein DataGridView markieren
+   die gewaehlte Zeile selbst; ein Raster (QuickGrid) kennt keine
+   Zeilenmarkierung. Seit B5b (Dialog "BHKW-Wirtschaftlichkeit", A-6) und
+   iU9-W1.5 (Kostenfaktor-Katalog) stand derselbe Knopf deshalb zweimal
+   wortgleich im Markup zweier Dialoge; der Emissionskatalog (iU9-W3.3)
+   waere der dritte und vierte gewesen. Hier steht er einmal.
+
+   Die Optik bleibt unveraendert (epos-anlagenwahl, 44 px rund): gewaehlt
+   traegt der Knopf zusaetzlich epos-knopf--primaer und aria-pressed="true",
+   damit ihn auch eine Sprachausgabe und der Hochkontrastmodus
+   auseinanderhalten. *@
+
+@namespace EPOS.UI.Bausteine
+
+<button type="button" class="@Klasse" aria-pressed="@(Gewaehlt ? "true" : "false")"
+        title="@Kurztext" disabled="@(!Aktiv)" @onclick="BeiKlick">@(Gewaehlt ? "●" : "○")</button>
+
+@code {
+    /// <summary>Ist die Zeile die gewaehlte?</summary>
+    [Parameter] public bool Gewaehlt { get; set; }
+
+    /// <summary>Meldet den Klick - der Dialog merkt sich, welche Zeile das war.</summary>
+    [Parameter] public EventCallback Gewaehltwerden { get; set; }
+
+    /// <summary>Kurztext des Knopfes; ueblich der Kopf der Wahlspalte.</summary>
+    [Parameter] public string Kurztext { get; set; } = "Wahl";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt den Knopf, laesst ihn aber sichtbar.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    private string Klasse => Gewaehlt
+        ? "epos-knopf epos-anlagenwahl epos-knopf--primaer"
+        : "epos-knopf epos-anlagenwahl";
+
+    private Task BeiKlick() => Gewaehltwerden.InvokeAsync();
+}

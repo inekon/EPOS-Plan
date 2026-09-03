@@ -550,6 +550,83 @@ body {
     color: var(--epos-text);
 }
 
+/* Bearbeitbares Raster (iU9-W3.0): In den Zellen stehen Bausteine, keine
+   Texte. Die senkrechte Polsterung faellt weg - sonst kaeme sie zu den 44 px
+   des Feldes hinzu und die Zeile waere 60 px hoch -, und die Felder fuellen
+   ihre Spalte. Vorbild: die editierbaren Spalten der DataGridViews
+   (Form_Emissionskatalog.dgvArten, ucFuelSettings). */
+.epos-raster--bearbeitbar td {
+    padding: 0 8px;
+}
+
+.epos-raster--bearbeitbar td .epos-feld,
+.epos-raster--bearbeitbar td .epos-feld-zeile {
+    width: 100%;
+}
+
+/* Ein Schalter in der Zelle steht mittig unter seinem Spaltenkopf und traegt
+   dort keine Beschriftung - die steht im Kopf. */
+.epos-raster--bearbeitbar td .epos-schalter {
+    justify-content: center;
+}
+
+/* Dateiwahl: Das Pfadfeld waechst, der Knopf bleibt so breit, wie er sein
+   muss (dieselbe Aufteilung wie epos-neuzeile). */
+.epos-dateiwahl > .epos-knopf {
+    flex: 0 0 auto;
+}
+
+/* Feld an Feld in Spalten - die Wertegitter der Preismasken (12 Monatssaetze
+   der Leistungspreis-Reihe, 12 Monats- und 24 Stundenwerte des
+   Kostenprofils). In WinForms waren das gerechnete Pixelspalten
+   (MonatsRasterBauen: m / 6 und m % 6); hier bestimmt die Fensterbreite, wie
+   viele Spalten Platz haben - unter 320 px steht eine, sonst so viele wie
+   passen. */
+.epos-zahlenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 6px 16px;
+}
+
+/* Mehrzeiliges Textfeld - Protokolle. Die Schrift ist dieselbe wie im
+   uebrigen Dialog; nur der Zeilenumbruch bleibt, wie er geliefert wurde,
+   damit ein Protokoll seine Spalten behaelt. */
+.epos-eingabe--mehrzeilig {
+    min-height: 0;
+    padding: 6px 8px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    resize: vertical;
+}
+
+/* Eingerueckter Bearbeitungsblock statt eines zweiten Fensters (iU9-W3.3,
+   Vorbild: die beiden zur Laufzeit gebauten Unterdialoge des
+   Emissionskatalogs). Der Rahmen sagt, dass hier gerade etwas anderes gilt;
+   solange er steht, ruht der Rest des Dialogs. */
+.epos-editorblock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 0 0;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke);
+}
+
+/* Der geltende Wert der Werteliste - im DataGridView war er fett. */
+.epos-wert-geltend {
+    font-weight: 700;
+}
+
+/* Ein Protokoll baut seine Spalten aus Leerzeichen - es braucht eine Schrift
+   fester Zeichenbreite (Vorbild: _tbProtokoll in Consolas 9 pt). Die Liste
+   nennt die ueblichen Schriften der drei Plattformen und endet bei der
+   generischen Familie. */
+.epos-eingabe--festbreite {
+    font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
+}
+
 .epos-chartbild {
     max-width: 100%;
     height: auto;

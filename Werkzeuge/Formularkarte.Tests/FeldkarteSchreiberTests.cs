@@ -72,7 +72,7 @@ public sealed class FeldkarteSchreiberTests
     [Fact]
     public void AbschnitteBekommenEigeneUeberschriftUndTabelle()
     {
-        var karte = Karte("Kosten/Form_Kostenprofil.Designer.cs");
+        var karte = Musterkarte("Kosten/Form_Kostenprofil.Designer.cs");
 
         Assert.Contains("#### Monatswerte (`tpMonat`, TabPage)", karte, StringComparison.Ordinal);
         Assert.Contains("#### Grafik (`tpGrafik`, TabPage)", karte, StringComparison.Ordinal);

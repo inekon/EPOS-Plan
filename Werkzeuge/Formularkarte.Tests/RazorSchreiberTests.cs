@@ -102,7 +102,7 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void AbschnitteWerdenZuGruppenkoepfen()
     {
-        var razor = Skelett("Kosten/Form_Kostenprofil.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kostenprofil.Designer.cs");
 
         Assert.Contains("<Gruppenkopf Titel=\"@MonatTitel\">", razor, StringComparison.Ordinal);
         // Gruppenkopf nimmt seinen Inhalt nicht als ChildContent, sondern als
