@@ -1,4 +1,4 @@
-# Formularkarte — der Formular-Generator
+﻿# Formularkarte — der Formular-Generator
 
 Konsolenwerkzeug (`net10.0`, Roslyn) zum Umsetzungskonzept iOS, **Paket iU8‑12**, Grundlage A7 /
 iF7. Es liest eine WinForms-Designer-Datei des Bestands und schreibt daraus
@@ -289,6 +289,11 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_Kostenprofil.Designer.cs       Stand cb700f0^, unverändert (iU9‑W3.4)
     Form_Kostenprofil.cs                dito
     Form_Kostenprofil.resx              dito
+    Form_KostenKomponente.Designer.cs   Stand vor iU9‑W4.2, unverändert
+    Form_KostenKomponente.cs            dito
+    Form_KostenKomponente.resx          dito
+    ucVorlagenZeile.Designer.cs         Stand vor iU9‑W4.2, unverändert — ohne .resx
+    ucVorlagenZeile.cs                  dito
 
 Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.Designer.cs   Stand f9b5016^, unverändert (iU9‑W2.1)
@@ -297,6 +302,20 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
     Form_StromspeicherItemNeu.de-DE.resx    dito — der lokalisierte Weg braucht alle drei
     Form_StromspeicherItemNeu.en-US.resx    dito
 ```
+
+Das **siebte** Muster (`ucVorlagenZeile`, mit **iU9‑W4.2** durch
+`EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` ersetzt) ist die **einzige
+kleingeschriebene Maske**, die der Bestand je geführt hat — und damit der einzige Beleg
+dafür, dass der Razor-Schreiber den Anfangsbuchstaben groß zieht (Razor lässt
+kleingeschriebene Komponentennamen nicht zu, RZ10011). Sie wandert ausnahmsweise mit **zwei**
+Dateien statt drei: Ein `UserControl`, dessen Texte vollständig im Code stehen, führt keine
+`.resx`.
+
+Das **sechste** Muster (`Form_KostenKomponente`, mit **iU9‑W4.2** durch
+`EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` ersetzt) war bis Welle 3 der **Anker des
+Stapellauf-Tests** — acht Testbezüge hingen an ihr. Sie ist der Beleg für ein `TabControl`, das
+eine Reiterseite ZUR LAUFZEIT entfernt (`ErtragReiterSteuern`), und für die große Schreibweise
+`.Designer.cs` in derselben Ablage wie `Form_BHKWEing.designer.cs`.
 
 Das **fünfte** Muster (`Form_Kostenprofil`, mit **iU9‑W3.4** durch
 `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` ersetzt) ist der Beleg für die
@@ -375,7 +394,7 @@ Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung ge
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **120 Tests grün** (101 vor
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **122 Tests grün** (101 vor
 iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft als
 `Theory` inzwischen **drei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht
 als eigener Test daneben; das dritte Muster kommt mit iU9‑W2.1). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
@@ -428,12 +447,29 @@ ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` eben
 Masken (100 mit erreichbarem Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die fünfzehn
 Dateien der vier Prüfmuster sind darin **nicht** enthalten.
 
-**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W2** über
-`--alle WindowsFormsApplication1` — **102** Masken:
+**Nachgemessen nach iU9‑W3** (vier weitere Designer-Masken umgestellt und gelöscht:
+`Form_LeistungspreisReihe`, `Form_SpotpreisImport`, `Form_Emissionskatalog`,
+`Form_Kostenprofil`): **101** Designer-Dateien, **98** Masken, 3 ohne
+`InitializeComponent`, 0 nicht lesbar, **59** lokalisiert, 2128 Kartenzeilen, 165 Felder ohne
+Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **98** Masken
+(96 mit erreichbarem Öffner, 0 unerreichbar, 0 verwaist, 2 unklar).
+
+**Nachgemessen nach iU9‑W4** (sieben weitere Designer-Masken umgestellt und gelöscht:
+`Form_KostenKomponente`, `Form_Energietraeger`, `ucFuelSettings`,
+`ucBrennstoffBestandteile`, `ucStromAufschlaege`, `ucVorlagenZeile`, `ucErtragBonus`):
+**92** Designer-Dateien, **91** Masken, **1** ohne `InitializeComponent`, 0 nicht lesbar,
+**59** lokalisiert, 1994 Kartenzeilen, 151 Felder ohne Beschriftung; über
+`--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **91** Masken (**89** mit
+erreichbarem Öffner, 0 unerreichbar, 0 verwaist, 2 unklar). Die zwanzig Dateien der sieben
+Prüfmuster sind darin **nicht** enthalten. `Views/Kosten` führt seither **keine**
+Designer-Maske mehr — der Stapellauf-Test läuft deshalb über `Views/Heizkessel`.
+
+**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W4** über
+`--alle WindowsFormsApplication1` — **91** Masken:
 
 | Öffner erreichbar | Masken |
 |---|---|
-| ja | 100 |
+| ja | 89 |
 | nein | 0 (die vier von iU8‑12f sind mit iU9‑W0 stillgelegt — Anwenderentscheid iF29) |
 | verwaist | 0 (`Form_Simulation_Kurz` ist gelöscht, mit ihr die `Compile Remove`-Liste) |
 | unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben, siehe iF29) |

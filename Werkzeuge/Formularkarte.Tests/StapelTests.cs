@@ -20,19 +20,20 @@ public sealed class StapelTests
         // Form_BHKWEing.designer.cs. Wer nur die grosse Schreibweise sucht,
         // uebersieht ueber ein Drittel der Masken.
         //
-        // iU9-1 (03.09.2026): Bis dahin stand hier Form_Kosten_VarAuswahl. Die Maske
-        // ist mit iU9-1 geloescht (Regel M1); der Zeuge fuer die grosse Schreibweise
-        // ist jetzt Form_KostenKomponente - dieselbe Ablage, und im Gegensatz zur
-        // Vorgaengerin ueber UcBkKosten.btnVerwaltung_Click auch erreichbar.
+        // iU9-W4 (03.09.2026): Bis dahin stand hier Form_KostenKomponente (davor
+        // Form_Kosten_VarAuswahl). Die Maske ist mit iU9-W4.2 geloescht (Regel M1);
+        // der Zeuge fuer die grosse Schreibweise ist jetzt Form_Heizkessel - eine
+        // ueber die Startseite erreichbare Maske, die bis Welle 6 im Bestand bleibt.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
-        Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("Form_Heizkessel.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W3: 101 Dateien (105 nach iU9-W2,
-        // 108 nach iU9-W0). Die vier Designer-Masken der Welle 3
-        // (Form_LeistungspreisReihe, Form_SpotpreisImport, Form_Emissionskatalog,
-        // Form_Kostenprofil) sind umgestellt und geloescht.
-        Assert.True(dateien.Count >= 101, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand 03.09.2026 nach iU9-W4: 92 Dateien (101 nach iU9-W3,
+        // 105 nach iU9-W2, 108 nach iU9-W0). Die sieben Designer-Masken der Welle 4
+        // (Form_KostenKomponente, Form_Energietraeger, ucFuelSettings,
+        // ucBrennstoffBestandteile, ucStromAufschlaege, ucVorlagenZeile,
+        // ucErtragBonus) sind umgestellt und geloescht.
+        Assert.True(dateien.Count >= 92, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -55,10 +56,11 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W3: 98 Masken (102 nach iU9-W2,
-        // 105 nach iU9-W0, 111 nach iU9-W1). Die vier Designer-Masken der Welle 3
-        // sind auf Razor-Komponenten umgestellt und geloescht (Regel M1).
-        Assert.True(Lauf.Value.Masken >= 98, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand 03.09.2026 nach iU9-W4: 91 Masken (98 nach iU9-W3,
+        // 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Die sieben
+        // Designer-Masken der Welle 4 sind auf Razor-Komponenten umgestellt und
+        // geloescht (Regel M1).
+        Assert.True(Lauf.Value.Masken >= 91, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -66,10 +68,11 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W3: 59 von 98 — unveraendert
-        // gegenueber iU9-W2, denn keine der vier Masken der Welle 3 war
-        // lokalisiert (alle vier setzten ihre Texte im Code). Der Leser muss also
-        // weiterhin beide Wege koennen, nicht nur den Designer.
+        // Gemessener Stand 03.09.2026 nach iU9-W4: 59 von 91 — unveraendert seit
+        // iU9-W2, denn auch keine der sieben Masken der Welle 4 war lokalisiert
+        // (sie alle setzten ihre Texte im Code). Der Anteil steigt damit von
+        // Welle zu Welle: Der Leser muss weiterhin beide Wege koennen, nicht nur
+        // den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 59,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
@@ -106,7 +109,7 @@ public sealed class StapelTests
         Assert.Contains("# Stapellauf Formularkarte", uebersicht, StringComparison.Ordinal);
         Assert.Contains("| davon Masken (mit InitializeComponent) | " + Lauf.Value.Masken + " |",
                         uebersicht, StringComparison.Ordinal);
-        Assert.Contains("Form_KostenKomponente", uebersicht, StringComparison.Ordinal);
+        Assert.Contains("Form_Heizkessel", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -115,15 +118,19 @@ public sealed class StapelTests
         var ziel = Path.Combine(Path.GetTempPath(), "formularkarte-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var ergebnis = Stapel.Laufen(Repowurzel.Designer("Kosten"), ziel);
+            // iU9-W4: Views/Kosten fuehrt seit Welle 4 keine Designer-Maske mehr
+            // (alle zwanzig sind umgestellt oder stillgelegt). Der Stapellauf
+            // laeuft jetzt ueber Views/Heizkessel - vier Masken, davon drei
+            // lokalisiert.
+            var ergebnis = Stapel.Laufen(Repowurzel.Designer("Heizkessel"), ziel);
 
             Assert.Empty(ergebnis.Fehler);
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.karte.md")));
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.razor")));
-            Assert.True(File.Exists(Path.Combine(ziel, "UcVorlagenZeile.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Heizkessel.karte.md")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Heizkessel.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Heizkessel_Admin.razor")));
 
             // UTF-8 mit BOM - Hausregel fuer neue Dateien.
-            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_KostenKomponente.razor"))[..3];
+            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_Heizkessel.razor"))[..3];
             Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, kopf);
         }
         finally
