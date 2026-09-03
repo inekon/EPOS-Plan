@@ -144,10 +144,11 @@ Form_Simulation_Config.btn_Help     = Simulation
 
 # --- Wirtschaftlichkeit ---------------------------------------------------
 #
-# Das Praefix ist das UserControl, nicht das Formular: UcWirtschaftlichkeit
-# haengt im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
-# Zeile dort (HilfeAutomatik, UnterPraefixeAnwenden). Die Dialoghuelle
-# Form_Wirtschaftlichkeit ist mit iU9-W0 entfallen.
+# Das Praefix war das UserControl, nicht das Formular: UcWirtschaftlichkeit
+# hing im Reiter "Berichte & Kosten". Die Dialoghuelle Form_Wirtschaftlichkeit
+# ist mit iU9-W0 entfallen, das UserControl mit iU9-W5.6; den Schluessel
+# traegt seither die Razor-Komponente WirtschaftlichkeitSeite (ihr Infoknopf
+# fragt IHilfeDienst mit genau diesem Text).
 UcWirtschaftlichkeit.btn_Help       = Wirtschaftlichkeit
 
 # --- Projekt --------------------------------------------------------------
@@ -258,6 +259,10 @@ Form_ErgStromverbraucher.btn_Help = Stromverbraucher
 Form_Stromverbraucher_Admin.btn_Help = Stromverbraucher
 UcBkUebersicht.btn_Help = Varianten
 UcBkKosten.btn_Help = Kosten
+# iU9-W5.1: Der Uebernahmedialog der Uebersichtsseite ist seither die
+# Razor-Komponente BkUebernahmeDialog. Sie fuehrt einen Infoknopf (die
+# WinForms-Fassung hatte keinen) und traegt den Schluessel der alten Maske.
+Form_BkUebernahme.btn_Help = Varianten
 Form_AdminWaermeeinlesen.btn_Help = Wärmebedarf
 Form_ErgProzesswaerme.btn_Help = Wärmebedarf
 Wizard_WPItem.btn_Help = Wärmepumpe
@@ -418,19 +423,27 @@ Form_Stromverbraucher.Label19   = Stromverbraucher#summe
 Form_Stromverbraucher.groupBox1 = Stromverbraucher#verbrauch-aendern
 
 # --- Bericht: UcBericht ---------------------------------------------------
-# Das UserControl haengt im Reiter "Berichte & Kosten"; die Zeilen gelten ueber
-# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen.
-# Es fuehrt keine GroupBox; die Bereiche werden ueber ihre Leitbeschriftung
-# angesprochen.
+# Das UserControl hing im Reiter "Berichte & Kosten"; die Zeilen galten ueber
+# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen,
+# das UserControl selbst mit iU9-W5.6 (Nachfolge: die Razor-Komponente
+# BerichtSeite).
+#
+# DIE VIER FELDZEILEN SIND SEITHER OHNE ANSCHRIFT. Der HelpExtender haengt
+# seine Anker an WinForms-Steuerelemente; eine Razor-Seite fuehrt EINEN
+# Infoknopf (UcBericht.btn_Help, oben) statt vier Feldanker. Die Zeilen bleiben
+# stehen, weil sie die Wikiabschnitte benennen - sie werden wieder gebraucht,
+# sobald die Seite je Abschnitt einen eigenen Infoknopf bekommt.
 UcBericht.lblVarianten = Bericht#varianten
 UcBericht.lblBausteine = Bericht#bausteine
 UcBericht.lblAusgabe   = Bericht#ausgabeformat
 UcBericht.lblZiel      = Bericht#zielordner
 
 # --- Nicht aufgenommen (Befunde, siehe H12-Protokoll) ---------------------
-# UcBkKosten            baut seine Oberflaeche im Code auf und setzt an KEINEM
-#                       Kind einen Namen - ohne Control.Name gibt es keine
-#                       Anschrift. Waere mit einem Namensnachtrag nachzuholen.
+# UcBkKosten            baute seine Oberflaeche im Code auf und setzte an
+#                       KEINEM Kind einen Namen - ohne Control.Name gab es
+#                       keine Anschrift. Mit iU9-W5.6 ist die Maske geloescht;
+#                       die Nachfolge KostenSeite traegt EINEN Infoknopf
+#                       (UcBkKosten.btn_Help).
 # ErzeugerKarte /       UserControls ohne Namen. Sie sind zugleich die Grenze
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
