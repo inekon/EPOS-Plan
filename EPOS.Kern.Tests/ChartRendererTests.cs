@@ -13,9 +13,9 @@ namespace EPOS.Kern.Tests
     /// Stundenreihen Diagrammreihen machen, und dass das Zeichnen selbst ein Bild in
     /// der festgelegten Groesse liefert — auf Linux und macOS genauso wie auf
     /// Windows. Die vollstaendige Bildpruefung (neun Bilder, Farbvorkommen, Masse)
-    /// macht die Probe <c>Proben\ChartProben</c>, den Pixelvergleich gegen den
-    /// eingefrorenen GDI+-Stand der Modus <c>bildvergleich</c> der
-    /// Referenzlauf-Suite unter Windows. Diese drei Tests sind die schnelle
+    /// macht die Probe <c>Proben\ChartProben</c> (der Pixelvergleich gegen den
+    /// eingefrorenen GDI+-Stand ist mit Entscheid iF23 am 03.09.2026 samt dem
+    /// GDI+-Renderer geloescht). Diese drei Tests sind die schnelle
     /// Sicherung dazwischen — sie laufen in JEDEM Kern-Lauf mit.</para>
     /// </summary>
     public class ChartRendererTests
@@ -115,8 +115,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Zwei Laeufe desselben Diagramms muessen byte-gleich sein. Ohne diese Zusage
-        /// waere ein Bericht zwischen zwei Erzeugungen nicht vergleichbar und der
-        /// Bildvergleich der Referenzlauf-Suite ohne Aussage.
+        /// waere ein Bericht zwischen zwei Erzeugungen nicht vergleichbar und die
+        /// Determinismuspruefung der ChartProben ohne Aussage.
         /// </summary>
         [Fact]
         public void Zweimal_gezeichnet_ergibt_dieselben_Bytes()
