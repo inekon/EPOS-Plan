@@ -34,6 +34,13 @@ public sealed class PruefmusterTests
         // Beleg fuer die Bereichsspalte einer NumericUpDown.
         { "Kosten", "Form_CaseEingabe",
           "EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor" },
+
+        // iU9-W2.1: Form_StromspeicherItemNeu ist der Beleg fuer den
+        // lokalisierten Weg - drei Ressourcendateien, Koordinaten und TabIndex
+        // nur in der .resx, Klassenname (Form_Sp_ItemNeu) abweichend vom
+        // Dateinamen. Sechs Tests haengen daran.
+        { "Stromspeicher", "Form_StromspeicherItemNeu",
+          "EPOS.UI/Dialoge/Allgemein/NamensDialog.razor" },
     };
 
     /// <summary>
