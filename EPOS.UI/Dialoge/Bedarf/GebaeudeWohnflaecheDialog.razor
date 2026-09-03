@@ -1,0 +1,262 @@
+﻿@* Wohn-/Nutzflaeche und Verbrauch EINES Projektgebaeudes (iU9-W9.3).
+
+   VORBILD. Views/Gebaeude/Form_GebWohnflaeche (66 Z., 849 x 478, lokalisiert
+   de/en, 15 Kartenzeilen, KEINE MessageBox). Aufgerufen aus genau einer
+   Stelle: Form_Gebaeude.btn_Aendern_Click:421 ("Aendern").
+
+   ZWEI BLOECKE. Oben steht, WELCHES Gebaeude gemeint ist - vier Felder, alle
+   nur lesbar. Unten steht, was der Anwender daran aendert: die Art der Angabe,
+   der Wert dazu, der Jahresnutzungsgrad und der Schalter fuer die dezentrale
+   Warmwasserbereitung.
+
+   DIE EINHEIT IST EIN AUSZUG AUS DER BEDARFSART. "Gasverbrauch [m3/a]" zeigt
+   im gesperrten Feld daneben "m3/a" - der Vorlaeufer schnitt dafuer zwischen
+   den eckigen Klammern aus (SetControls:26 und cmb_Bedarfsart:57). Genau so
+   steht es hier; die sechs Bedarfsarten sind Anzeigetexte und kommen als
+   Parameter herein.
+
+   BEFUND W9-B3 - DER SCHALTER GING VERLOREN. btn_OK_Click:42-49 schrieb
+   Wohnflaeche, Jahresnutzungsgrad und Einheit zurueck, NICHT aber
+   DezentralWarmwasser. Der Schalter wurde gezeigt, gelesen und verworfen,
+   obwohl Z_ProjektGebaeude.dezWarmwasserbereitung gespeichert wird. Behoben:
+   Er geht mit (A-2).
+
+   BEFUND W9-B4 - Double.Parse OHNE PRUEFUNG. Ein leeres oder ungueltiges Feld
+   warf im Vorlaeufer eine FormatException. Beide Zahlen sind hier
+   Pflichtfelder mit Warnbanner (A-3).
+
+   TASTATUR: Esc schliesst (Ergebnis null). Enter ist nicht belegt - der Dialog
+   traegt zwar nur OK und Abbrechen, aber OK schreibt in die Projektzeile
+   zurueck; die Hausregel laesst Enter nur in reinen Anzeigedialogen zu. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Gruppenkopf Titel="@GruppeInfo">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelGebaeudeart" Wert="@Gebaeudeart" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelGebaeudename" Wert="@Gebaeudename" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Beschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="3" />
+            <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Baujahr" NurLesen="true" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeEingabe">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelBedarfsart" Eintraege="@Bedarfsarteintraege"
+                         Auswahl="@_bedarfsart" AuswahlChanged="BedarfsartWaehlen" />
+
+            <Textfeld Bezeichnung="@LabelArtDerAngabe" Wert="@_einheit" NurLesen="true" />
+
+            <Zahlenfeld Bezeichnung="@LabelVerbrauch" Einheit="@Einheitszeichen"
+                        Feldname="@LabelVerbrauch" Wert="@_wert"
+                        WertChanged="w => _wert = w" />
+
+            <Herleitungszeile Text="@HinweisJahresnutzungsgrad" />
+
+            <Zahlenfeld Bezeichnung="@LabelJahresnutzungsgrad"
+                        Feldname="@LabelJahresnutzungsgrad" Wert="@_nutzungsgrad"
+                        WertChanged="w => _nutzungsgrad = w" />
+
+            <Schalter Bezeichnung="@LabelDezentralWarmwasser" Wert="@_dezentral"
+                      WertChanged="w => _dezentral = w" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Gebäudename der Projektzeile — nur Anzeige.</summary>
+    [Parameter] public string Gebaeudename { get; set; } = "";
+
+    /// <summary>Die Beschreibung aus dem Katalogsatz — nur Anzeige.</summary>
+    [Parameter] public string Beschreibung { get; set; } = "";
+
+    /// <summary>Die Gebäudeart — nur Anzeige.</summary>
+    [Parameter] public string Gebaeudeart { get; set; } = "";
+
+    /// <summary>
+    /// Das Baujahr als TEXT der Baualtersklasse („vor 1919" …). Der Aufrufer setzt ihn
+    /// aus dem gespeicherten Buchstaben um (<c>btn_Aendern_Click</c>:430-434).
+    /// </summary>
+    [Parameter] public string Baujahr { get; set; } = "";
+
+    /// <summary>Der Verbrauch bzw. die Wohnfläche beim Öffnen.</summary>
+    [Parameter] public double Wert { get; set; }
+
+    /// <summary>Der Jahresnutzungsgrad beim Öffnen.</summary>
+    [Parameter] public double Jahresnutzungsgrad { get; set; }
+
+    /// <summary>Die Bedarfsart samt Einheit beim Öffnen, z. B. „Wohnfläche [m²]".</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Dezentrale Warmwasserbereitung beim Öffnen.</summary>
+    [Parameter] public bool DezentralWarmwasser { get; set; }
+
+    /// <summary>
+    /// Die sechs Bedarfsarten der Klappliste (<c>SetControls</c>:30-36). Sie sind
+    /// Anzeigetexte UND der gespeicherte Wert der Spalte
+    /// <c>Einheit_Waermebedarf_Wohnflaeche</c> — deshalb stehen sie wörtlich so da,
+    /// einschließlich der beiden Leerzeichen in „Verbrauch  [MWh/a]".
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<string> Bedarfsarten { get; set; } = new[]
+    {
+        "Ölverbrauch [l/a]",
+        "Gasverbrauch [m³/a]",
+        "Gasverbrauch [MWh/a] (Ho)",
+        "Brennstoffverbrauch [MWh/a]",
+        "Verbrauch  [MWh/a]",
+        "Wohnfläche [m²]"
+    };
+
+    /// <summary>Das Ergebnis; <c>null</c> bei Abbruch oder Esc.</summary>
+    [Parameter] public EventCallback<GebaeudeWohnflaecheErgebnis?> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; }
+        = "Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes";
+    [Parameter] public string GruppeInfo { get; set; } = "Info ausgewähltes Gebäude";
+    [Parameter] public string GruppeEingabe { get; set; } = "Eingabe für das ausgewählte Gebäude";
+    [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart:";
+    [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr:";
+    [Parameter] public string LabelBedarfsart { get; set; } = "Bedarfsart:";
+    [Parameter] public string LabelArtDerAngabe { get; set; } = "Art der Angabe:";
+    [Parameter] public string LabelVerbrauch { get; set; } = "Wärmebedarf/Wohnfläche:";
+    [Parameter] public string LabelJahresnutzungsgrad { get; set; } = "Jahresnutzungsgrad:";
+    [Parameter] public string LabelDezentralWarmwasser { get; set; }
+        = "Dezentrale Warmwasserbereitung";
+    [Parameter] public string HinweisJahresnutzungsgrad { get; set; }
+        = "Bei Brennstoffangaben bitte Heizkessel Jahresnutzungsgrad eingeben: z.B. 0.85 für 85%";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Meldung bei fehlender Pflichtzahl; <c>{0}</c> ist die Feldbeschriftung.</summary>
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_GebWohnflaeche.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private double? _wert;
+    private double? _nutzungsgrad;
+    private bool _dezentral;
+    private int? _bedarfsart;
+    private string _einheit = "";
+    private string _meldung = "";
+
+    /// <summary>Die gewählte Bedarfsart samt Einheit. Prüfhilfe für die Tests.</summary>
+    public string GewaehlteEinheit => _einheit;
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>
+    /// Der Auszug zwischen den eckigen Klammern — das gesperrte Feld <c>txt_Einheit</c>
+    /// des Vorläufers. Ohne Klammer bleibt es leer statt zu werfen (der Vorläufer
+    /// schnitt blind mit <c>Substring</c>).
+    /// </summary>
+    public string Einheitszeichen => Auszug(_einheit);
+
+    private IReadOnlyList<(int Id, string Text)> Bedarfsarteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+
+            // Ein BESTANDSWERT, den die Liste nicht führt, wird vorangestellt - die
+            // ComboBox des Vorläufers war frei beschreibbar und zeigte ihn (A-16 aus
+            // Welle 7). Ein geschlossenes select würde ihn still verwerfen.
+            if (!string.IsNullOrEmpty(_einheit) && !Bedarfsarten.Contains(_einheit))
+                l.Add((-1, _einheit));
+
+            for (int i = 0; i < Bedarfsarten.Count; i++) l.Add((i, Bedarfsarten[i]));
+            return l;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _wert = Wert;
+        _nutzungsgrad = Jahresnutzungsgrad;
+        _dezentral = DezentralWarmwasser;
+        _einheit = Einheit ?? "";
+
+        for (int i = 0; i < Bedarfsarten.Count; i++)
+            if (string.Equals(Bedarfsarten[i], _einheit, StringComparison.Ordinal)) _bedarfsart = i;
+
+        if (_bedarfsart is null && !string.IsNullOrEmpty(_einheit)) _bedarfsart = -1;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Der Klapplistenwechsel schreibt Bedarfsart UND Einheitsanzeige um —
+    /// <c>cmb_Bedarfsart_SelectedIndexChanged</c>:57-63.
+    /// </summary>
+    private void BedarfsartWaehlen(int? index)
+    {
+        _bedarfsart = index;
+        if (index is null || index.Value < 0) return;          // der Bestandswert bleibt
+        if (index.Value < Bedarfsarten.Count) _einheit = Bedarfsarten[index.Value];
+    }
+
+    private static string Auszug(string bedarfsart)
+    {
+        if (string.IsNullOrEmpty(bedarfsart)) return "";
+        int auf = bedarfsart.IndexOf('[');
+        if (auf < 0) return "";
+        int zu = bedarfsart.IndexOf(']', auf + 1);
+        if (zu < 0) return "";
+        return bedarfsart.Substring(auf + 1, zu - auf - 1);
+    }
+
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Geschlossen.InvokeAsync(null);
+
+        // Befund W9-B4: Der Vorlaeufer rief hier zweimal Double.Parse ohne Pruefung.
+        if (_wert is null) return Meldet(LabelVerbrauch);
+        if (_nutzungsgrad is null) return Meldet(LabelJahresnutzungsgrad);
+
+        _meldung = "";
+        return Geschlossen.InvokeAsync(new GebaeudeWohnflaecheErgebnis(
+            _wert.Value, _nutzungsgrad.Value, _einheit, _dezentral));
+    }
+
+    private Task Meldet(string feld)
+    {
+        _meldung = string.Format(MeldungZahlFehlt, feld.TrimEnd(':'));
+        return Task.CompletedTask;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Geschlossen.InvokeAsync(null) : Task.CompletedTask;
+}

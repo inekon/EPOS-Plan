@@ -108,7 +108,6 @@ namespace WindowsFormsApplication1
             { "Form_Brauchwasser",           B_BRAUCHWASSER },
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
 
-            { "Form_GebWohnflaeche",         B_GEBAEUDE },
             { "Form_Gebaeude",               B_GEBAEUDE },
             { "Form_Gebaeude1",              B_GEBAEUDE },
             { "Form_Gebaeude2",              B_GEBAEUDE },
