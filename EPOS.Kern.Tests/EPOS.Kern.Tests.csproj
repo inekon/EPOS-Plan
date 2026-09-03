@@ -38,4 +38,26 @@
     <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
   </ItemGroup>
 
+  <!-- ================================================================== -->
+  <!-- DIAGRAMME (iU7-8)                                                   -->
+  <!--                                                                    -->
+  <!-- ChartRendererTests zeichnet wirklich - und dafuer reicht das        -->
+  <!-- verwaltete SkiaSharp nicht, es braucht die NATIVE Bibliothek der    -->
+  <!-- Bauumgebung. Sie kaeme ueber EPOS.Kern transitiv mit; hier steht    -->
+  <!-- sie noch einmal, weil DIESES Projekt das ausfuehrende ist: Wer      -->
+  <!-- laufen laesst, benennt seine Laufzeit selbst. Bedingt ueber         -->
+  <!-- IsOSPlatform, damit jede Umgebung genau ihre eigene zieht -         -->
+  <!-- Linux und macOS in kern.yml, Windows in windows.yml (dort laeuft    -->
+  <!-- "dotnet test WP-Plan.Kern.slnf" mit).                               -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
 </Project>
