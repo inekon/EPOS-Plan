@@ -177,7 +177,6 @@ namespace WindowsFormsApplication1
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
-            { "Form_Waermebedarf",           B_WAERMEBEDARF },
 
             // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
             // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der

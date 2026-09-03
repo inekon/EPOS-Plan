@@ -1,0 +1,381 @@
+﻿@* Waermebedarf EXTERN - die Ganglinien eines Projekts (iU9-W9.4).
+
+   VORBILD. Views/Waermebedarf/Form_Waermebedarf (324 Z., 828 x 443,
+   lokalisiert de/en, 11 Kartenzeilen + zwei Laufzeitfelder, 1 MessageBox).
+   Links "Ausgewaehlt im Projekt", rechts "Waermebedarf aus DB", dazwischen
+   die beiden Pfeile - dasselbe Muster wie die Erzeugerdialoge.
+
+   DER KANAL IST DAS ZWOELFTE FELD. Beschriftung und Klappliste stehen im
+   Vorlaeufer NICHT im Designer, sondern werden in KanalControlsAufbauen:72
+   zur Laufzeit angelegt - die Maske ist auch Assistentenseite, und ihre
+   Designer-Dateien sind vom Werkzeug erzeugt. Hier steht das Feld ganz
+   gewoehnlich im Markup.
+
+   DER KANAL GILT JE ZEILE. Er wirkt immer auf die MARKIERTE Zuordnung; ohne
+   Markierung ist die Klappliste gesperrt. Eine neue Zeile startet auf
+   Heizung - der altverhaltenserhaltende Wert (F18).
+
+   BEFUND W9-B2. Form_Waermebedarf.Einlesen:276-298 hatte KEINEN Aufrufer -
+   ein toter Importpfad mit Form_Hinweis. Er entfaellt ersatzlos.
+
+   "DB Ganglinie loeschen" FRAGT JETZT NACH. Der Vorlaeufer loeschte auf einen
+   Klick, und der Katalog gilt fuer ALLE Projekte (A-8, wie W6 A-4). Eine
+   Ganglinie mit Projektzuordnung bleibt gesperrt und nennt den Grund.
+
+   TASTATUR: Esc schliesst, aber erst, wenn die Rueckfrage weg ist. Enter ist
+   nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-auswahlspalten">
+
+        @* ------------------------------------------ links: Projektliste --- *@
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-abschnitt">@LabelProjektliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (WaermebedarfExternZeile zeile in Zeilen)
+                        {
+                            WaermebedarfExternZeile z = zeile;
+                            <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => _gewaehlt = z" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                         Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                         Aktiv="@(_gewaehlt is not null)" />
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(_katalogname is null)"
+                        @onclick="BeiHinzu">@BtnHinzuText</button>
+                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                        @onclick="BeiEntfernen">@BtnEntfernenText</button>
+            </div>
+        </div>
+
+        @* ------------------------------------------ rechts: Katalog ------- *@
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-abschnitt">@LabelKatalog</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (string name in _katalog)
+                        {
+                            string n = name;
+                            <tr class="@(n == _katalogname ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(n == _katalogname)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => _katalogname = n" />
+                                </td>
+                                <td>@n</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                @if (Sprung is not null)
+                {
+                    <button type="button" class="epos-knopf"
+                            @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                }
+                <button type="button" class="epos-knopf" disabled="@(_katalogname is null)"
+                        @onclick="BeiLoeschen">@BtnLoeschenText</button>
+            </div>
+        </div>
+    </div>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText" Frage="@Loeschfrage"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die Ganglinien-Zuordnungen des Projekts — die Liste gehört der Hülle und wird AN
+    /// ORT UND STELLE bearbeitet.
+    /// </summary>
+    [Parameter] public List<WaermebedarfExternZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Bezeichner des Ganglinienkatalogs (<c>Tab_Waermebedarf_STAMM</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Katalog { get; set; }
+
+    /// <summary>Legt aus einem Katalogbezeichner eine neue Zuordnung an („◀").</summary>
+    [Parameter] public Func<string, WaermebedarfExternZeile?>? Aufnehmen { get; set; }
+
+    /// <summary>
+    /// Gibt es zu dieser Ganglinie eine Projektzuordnung? Dann darf sie nicht aus dem
+    /// Katalog verschwinden (<c>btn_Loeschen_Click</c>:304).
+    /// </summary>
+    [Parameter] public Func<string, bool>? HatProjektzuordnung { get; set; }
+
+    /// <summary>Löscht einen Katalogsatz; <c>false</c> = abgelehnt (z. B. ReadOnly).</summary>
+    [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// „Einlesen/Bearbeiten.." — der Sprung in die Ganglinienverwaltung
+    /// (<see cref="Sprungziel.WaermebedarfExternAdmin"/>). Kein Delegat = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary>Meldet der Hülle, dass sich die Zuordnungsliste geändert hat.</summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmebedarf Extern";
+    [Parameter] public string KopfbandText { get; set; } = "Wärmebedarfsdaten (Ganglinien)";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählt im Projekt";
+    [Parameter] public string LabelKatalog { get; set; } = "Wärmebedarf aus DB";
+    [Parameter] public string KanalBezeichnung { get; set; } = "Kanal";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string BtnHinzuText { get; set; } = "◀";
+    [Parameter] public string BtnEntfernenText { get; set; } = "▶";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Einlesen/Bearbeiten..";
+    [Parameter] public string BtnLoeschenText { get; set; } = "DB Ganglinie löschen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>
+    /// Die drei Kanaleinträge: Steuerwert und Anzeigetext, in dieser Reihenfolge
+    /// (<c>KanalControlsAufbauen</c>:87-104).
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<(string Wert, string Text)> Kanaele { get; set; }
+        = new[] { ("HEIZUNG", "Heizung"), ("BRAUCHWASSER", "Brauchwasser"),
+                  ("PROZESS", "Prozesswärme") };
+
+    /// <summary>„Es existiert eine Projektzuordnung, Löschen nicht möglich!"</summary>
+    [Parameter] public string MeldungZuordnung { get; set; }
+        = "Es existiert eine Projektzuordnung, Löschen nicht möglich!";
+
+    /// <summary>„Soll {0} wirklich gelöscht werden ?"</summary>
+    [Parameter] public string MeldungLoeschfrage { get; set; }
+        = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Waermebedarf.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<string> _katalog = Array.Empty<string>();
+    private string? _katalogname;
+    private WaermebedarfExternZeile? _gewaehlt;
+    private bool _loeschfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die gewählte Zuordnung — Prüfhilfe für die Tests.</summary>
+    public WaermebedarfExternZeile? Gewaehlt => _gewaehlt;
+
+    /// <summary>Der gewählte Katalogsatz — Prüfhilfe für die Tests.</summary>
+    public string? Katalogname => _katalogname;
+
+    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogname ?? "");
+
+    /// <summary>
+    /// Der Kanal der markierten Zeile. Ein leerer oder unbekannter Wert fällt auf den
+    /// ERSTEN Eintrag zurück — Heizung, die Vorbelegung nach F18
+    /// (<c>KanalAnzeigeAktualisieren</c>:141-170).
+    /// </summary>
+    private int? Kanalindex
+    {
+        get
+        {
+            if (_gewaehlt is null) return 0;
+            for (int i = 0; i < Kanaele.Count; i++)
+                if (string.Equals(Kanaele[i].Wert, _gewaehlt.Kanal,
+                                  StringComparison.OrdinalIgnoreCase)) return i;
+            return 0;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Kanaleintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Kanaele.Count; i++) l.Add((i, Kanaele[i].Text));
+            return l;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        KatalogLaden();
+        if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogLaden()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<string>();
+        if (_katalogname is not null && !_katalog.Contains(_katalogname)) _katalogname = null;
+    }
+
+    // =================================================================================
+    // Kanal
+    // =================================================================================
+
+    private void KanalWaehlen(int? index)
+    {
+        if (_gewaehlt is null || index is null) return;
+        if (index.Value < 0 || index.Value >= Kanaele.Count) return;
+
+        _gewaehlt.Kanal = Kanaele[index.Value].Wert;
+        Geaendert?.Invoke();
+    }
+
+    // =================================================================================
+    // Uebernehmen und Entfernen
+    // =================================================================================
+
+    /// <summary>
+    /// „◀" — je Zuordnung ein EIGENES Modell; die neue Zeile steht auf Heizung und wird
+    /// markiert, damit die Kanalwahl sichtbar auf sie wirkt
+    /// (<c>btn_Hinzu_Click</c>:206-238).
+    /// </summary>
+    private void BeiHinzu()
+    {
+        if (_katalogname is null || Aufnehmen is null) return;
+
+        WaermebedarfExternZeile? neu = Aufnehmen(_katalogname);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        _gewaehlt = neu;
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// „▶" — entfernt GENAU die markierte Zeile. Der Vorläufer suchte die ERSTE Zeile
+    /// gleichen Namens; bei zwei Zuordnungen derselben Ganglinie traf er damit die
+    /// falsche (A-9, dieselbe Fehlerklasse wie W7 A-21).
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_gewaehlt is null) return;
+
+        Zeilen.Remove(_gewaehlt);
+        _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Katalog
+    // =================================================================================
+
+    private async Task BeiBearbeiten()
+    {
+        if (Sprung is null) return;
+        await Sprung(Sprungziel.WaermebedarfExternAdmin);
+        KatalogLaden();
+    }
+
+    /// <summary>
+    /// „DB Ganglinie löschen" — erst die Sperre, dann die Rückfrage. Der Vorläufer
+    /// löschte ohne Rückfrage (A-8).
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (_katalogname is null) return;
+
+        if (HatProjektzuordnung is not null && HatProjektzuordnung(_katalogname))
+        {
+            Melden(MeldungZuordnung, WarnStufe.Warnung);
+            return;
+        }
+
+        _meldung = "";
+        _loeschfrage = true;
+    }
+
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogname is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogname)) return;
+
+        _katalogname = null;
+        KatalogLaden();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

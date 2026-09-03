@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -83,8 +83,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_WaermebedarfExtern.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Waermebedarf frm = new Form_Waermebedarf();
-            
+
             if (indexes.Count > 0)
             {
                 ListViewItem item = listView_WaermebedarfExtern.Items[indexes[0]];
@@ -100,8 +99,6 @@ namespace WindowsFormsApplication1
 
                 listView_WaermebedarfExtern.Items[indexes[0]].Remove();
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
-                
-                frm.list_wbmodel.Clear();
 
                 for (int i = 0; i < listView_WaermebedarfExtern.Items.Count; i++)
                 {
@@ -116,9 +113,9 @@ namespace WindowsFormsApplication1
 
                     waelist.Add(model);
                 }
-                
+
                 wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, waelist);
-                
+
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
@@ -128,42 +125,19 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            //Form_Waermebedarf frm = new Form_Waermebedarf();
-            Form_Waermebedarf frm = new Form_Waermebedarf();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            RecordSet rs = new RecordSet();
 
-            frm.list_wbmodel.Clear();
+            // iU9-W9.0d: der JOIN samt Kanal steht im Kern.
+            List<Z_ProjWaermebedarfModel> liste =
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_ProjektWaermebedarf.ID_Z, Z_ProjektWaermebedarf.ID_Projekt, " +
-                  "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
-                  "FROM Z_ProjektWaermebedarf INNER JOIN Tab_Waermebedarf ON " +
-                  "Z_ProjektWaermebedarf.ID_Ganglinie = Tab_Waermebedarf.ID " +
-                  " where Z_ProjektWaermebedarf.ID_Projekt=" + m_ID_Projekt;
-   
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektGebGanglinieCtrl item = new Z_ProjektGebGanglinieCtrl();
-                item.m_ID_Z = (int)rs.Read("ID_Z");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Ganglinie = (int)rs.Read("ID_Ganglinie");
-                item.m_szBezeichner = (string)rs.Read("Bezeichner");//item.Text;
-                frm.list_wbmodel.Add(item);
-            }
-            rs.Close(); 
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            // iU9-W9.4: Blazor-Huelle statt Form_Waermebedarf.
+            if (WaermebedarfExternHuelle.Oeffnen(listView_WaermebedarfExtern, m_ID_Projekt,
+                                                 m_szProjektname, liste))
             {
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
-                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, frm.list_wbmodel);
-                Dienste.Navigation.OeffneGewerk(Gewerke.WaermebedarfExtern, m_ID_Projekt, m_szProjektname);
+                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
