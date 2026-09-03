@@ -278,7 +278,15 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_Kosten_Auswahl.cs              dito
     Form_Kosten_Auswahl.resx            dito
     Form_Kosten.Auszug.cs               die eine Methode, die den Dialog modal öffnete
+    Form_CaseEingabe.Designer.cs        Stand f6e9264^, unverändert (iU9‑W1.3)
+    Form_CaseEingabe.cs                 dito
+    Form_CaseEingabe.resx               dito
 ```
+
+Das zweite Muster (`Form_CaseEingabe`, mit **iU9‑W1.3** durch
+`EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor` ersetzt) trägt **keinen** `.Auszug.cs`: An ihm
+hängt genau ein Test — die Bereichsspalte einer `NumericUpDown` —, und der sucht keinen Aufrufer.
+Ein Auszug ohne Leser wäre eine Datei, die niemand pflegt.
 
 Jede Datei nennt im Kopfkommentar Herkunft und Nachfolge. `Form_Kosten.Auszug.cs` ist
 `CreateNewEnergyCarrier` aus `Views/Kosten/Form_Kosten.cs` (Zeilen 2089–2196 im Stand `92380ea^`),
@@ -328,10 +336,11 @@ Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **117 Tests grün** (101 vor
-iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen). Die Tests
-laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen Nachbauten — mit der einen
-Ausnahme, die der Abschnitt „Prüfmuster" beschreibt.
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **119 Tests grün** (101 vor
+iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft jetzt als
+`Theory` **zwei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht als eigener
+Test daneben). Die Tests laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen
+Nachbauten — mit der einen Ausnahme, die der Abschnitt „Prüfmuster" beschreibt.
 
 **Übersetzt das Skelett?** Nachgewiesen am 03.09.2026: eine Kopie von `EPOS.UI/` im Scratchpad, alle
 **120** erzeugten Skelette in `Dialoge/` gelegt, `dotnet build -c Release` → **0 Fehler,
@@ -359,6 +368,14 @@ Maske senkt diese Zahl um eins — das ist der Fortschritt von iU9, nicht ein Lo
 **118** Masken, 3 ohne `InitializeComponent`, 0 nicht lesbar, 63 lokalisiert, 2369 Kartenzeilen,
 178 Felder ohne Beschriftung; unter `WindowsFormsApplication1/Views` allein **116** Masken (62
 davon lokalisiert).
+
+**Nachgemessen nach iU9‑W1** (sieben Masken umgestellt: `Form_VorlagenPosition`,
+`Form_VariantenName`, `Form_KostenItemNeu`, `Form_CaseEingabe`, `Form_VorlagenUebernahme`,
+`Form_KostenAdmin`, `Form_WirtschaftlichkeitVerlauf`): **114** Designer-Dateien, **111** Masken,
+3 ohne `InitializeComponent`, 0 nicht lesbar, **62** lokalisiert, 2322 Kartenzeilen, 172 Felder
+ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **111** Masken
+(104 mit erreichbarem Öffner, 4 unerreichbar, 1 verwaist, 2 unklar). Die sieben Dateien der beiden
+Prüfmuster sind darin **nicht** enthalten.
 
 **Erreichbarkeit, gemessen am 03.09.2026 (iU8‑12f)** über
 `--alle WindowsFormsApplication1` — **118** Masken:
