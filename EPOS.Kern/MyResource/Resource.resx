@@ -9005,4 +9005,238 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WVERL_KEIN_BILD" xml:space="preserve">
     <value>Noch kein Diagramm</value>
   </data>
+  <data name="NAMD_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="NAMD_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="NAMD_MSG_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung eingeben!</value>
+  </data>
+  <data name="NAMD_TITEL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner eingeben</value>
+  </data>
+  <data name="TARIF_AKTIV" xml:space="preserve">
+    <value>Tarifstruktur aktiv (ersetzt die Flat-Strompreise der Kostenmaske)</value>
+  </data>
+  <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
+    <value>Arbeitspreis (Durchschnitt) [€/kWh]:</value>
+  </data>
+  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
+    <value>Einspeisepreis [€/kWh]:</value>
+  </data>
+  <data name="TARIF_GRUNDPREIS" xml:space="preserve">
+    <value>Grundpreis [€/a]:</value>
+  </data>
+  <data name="TARIF_GUELTIG_AB" xml:space="preserve">
+    <value>Preisstand (gültig ab):</value>
+  </data>
+  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
+    <value>Bezugspreise [€/kWh]</value>
+  </data>
+  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
+    <value>Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld)</value>
+  </data>
+  <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
+  </data>
+  <data name="TARIF_G_ROLLEN" xml:space="preserve">
+    <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
+  </data>
+  <data name="TARIF_G_STAFFEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
+  </data>
+  <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
+    <value>Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)</value>
+  </data>
+  <data name="TARIF_G_ZONEN" xml:space="preserve">
+    <value>Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel</value>
+  </data>
+  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
+    <value>Zonenmodell (Stufe W3) — Einspeisepreise</value>
+  </data>
+  <data name="TARIF_HT_BIS" xml:space="preserve">
+    <value>HT bis Stunde (exklusiv):</value>
+  </data>
+  <data name="TARIF_HT_VON" xml:space="preserve">
+    <value>HT von Stunde (nur Zonenmodell):</value>
+  </data>
+  <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
+    <value>Leistungspreismodell:</value>
+  </data>
+  <data name="TARIF_LM_JAHR" xml:space="preserve">
+    <value>Jahreshöchstlast (Staffel mit Winterpreisen)</value>
+  </data>
+  <data name="TARIF_LM_MONATLICH" xml:space="preserve">
+    <value>monatlich (Σ zwölf Monatsmaxima × €/kW·Monat)</value>
+  </data>
+  <data name="TARIF_LM_STAFFEL" xml:space="preserve">
+    <value>Staffel (Sommer- und Wintermaximum getrennt)</value>
+  </data>
+  <data name="TARIF_MODELL" xml:space="preserve">
+    <value>Tarifmodell:</value>
+  </data>
+  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
+    <value>Rollenmodell (Bezug / Reststrom / Einspeisung)</value>
+  </data>
+  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
+    <value>Zonenmodell (Winter/Sommer × HT/NT)</value>
+  </data>
+  <data name="TARIF_MONATSPREIS" xml:space="preserve">
+    <value>Monatlicher Leistungspreis [€/kW·Monat]:</value>
+  </data>
+  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
+    <value>Das HT-Fenster ist leer (von ≥ bis).</value>
+  </data>
+  <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
+    <value>Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
+  </data>
+  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
+    <value>Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
+  </data>
+  <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Tarifstruktur konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="TARIF_ROLLE_BEZUG" xml:space="preserve">
+    <value>Bezugstarif OHNE BHKW (Referenz)</value>
+  </data>
+  <data name="TARIF_ROLLE_REST" xml:space="preserve">
+    <value>Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer)</value>
+  </data>
+  <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
+    <value>Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und geteilte Preisfelder erscheinen in mehreren Sichten und meinen dieselben Werte.</value>
+  </data>
+  <data name="TARIF_SOMMER_HT" xml:space="preserve">
+    <value>Sommer HT:</value>
+  </data>
+  <data name="TARIF_SOMMER_NT" xml:space="preserve">
+    <value>Sommer NT:</value>
+  </data>
+  <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
+    <value>Obergrenze [kW]</value>
+  </data>
+  <data name="TARIF_SP_SOMMER" xml:space="preserve">
+    <value>Sommer [€/kW·a]</value>
+  </data>
+  <data name="TARIF_SP_WINTER" xml:space="preserve">
+    <value>Winter [€/kW·a]</value>
+  </data>
+  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Staffelgrenze [kW]:</value>
+  </data>
+  <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt bis 500 kW Stufe 1, 500–2.000 kW Stufe 2, 2.000–8.000 kW Stufe 3, darüber Stufe 4. Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind vor der Übernahme umzurechnen.</value>
+  </data>
+  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Preis bis Grenze [€/kW·a]:</value>
+  </data>
+  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Preis über Grenze [€/kW·a]:</value>
+  </data>
+  <data name="TARIF_STUFE" xml:space="preserve">
+    <value>Stufe {0}</value>
+  </data>
+  <data name="TARIF_STUFE_REST" xml:space="preserve">
+    <value>Stufe {0} (Rest)</value>
+  </data>
+  <data name="TARIF_TITEL" xml:space="preserve">
+    <value>Tarifstruktur Strom</value>
+  </data>
+  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
+    <value>Tarifstruktur Strombezug (Wärmepumpe &amp; Verbraucher)</value>
+  </data>
+  <data name="TARIF_TITEL_BHKW" xml:space="preserve">
+    <value>Tarifstruktur BHKW (Strom)</value>
+  </data>
+  <data name="TARIF_TITEL_PV" xml:space="preserve">
+    <value>Tarifstruktur PV-Einspeisung</value>
+  </data>
+  <data name="TARIF_WINTER_BIS" xml:space="preserve">
+    <value>Winter bis Monat:</value>
+  </data>
+  <data name="TARIF_WINTER_HT" xml:space="preserve">
+    <value>Winter HT:</value>
+  </data>
+  <data name="TARIF_WINTER_NT" xml:space="preserve">
+    <value>Winter NT:</value>
+  </data>
+  <data name="TARIF_WINTER_VON" xml:space="preserve">
+    <value>Winter von Monat:</value>
+  </data>
+  <data name="PVV_G_EINSPEISEART" xml:space="preserve">
+    <value>Einspeiseart</value>
+  </data>
+  <data name="PVV_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die PV-Vergütung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
+    <value>Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen.</value>
+  </data>
+  <data name="WPAR_AUFSCHLAEGE" xml:space="preserve">
+    <value>Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) berücksichtigen — Pflege im Energieträgerdialog (Strom)</value>
+  </data>
+  <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="WPAR_EINSP_KWK" xml:space="preserve">
+    <value>Einspeisevergütung KWK-Strom [€/kWh]:</value>
+  </data>
+  <data name="WPAR_EINSP_PV" xml:space="preserve">
+    <value>Einspeisevergütung PV [€/kWh]:</value>
+  </data>
+  <data name="WPAR_G_ALLGEMEIN" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="WPAR_G_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel)</value>
+  </data>
+  <data name="WPAR_G_STROM" xml:space="preserve">
+    <value>Strom — Einspeisung und Bezug</value>
+  </data>
+  <data name="WPAR_HINWEIS" xml:space="preserve">
+    <value>Die Parameter gelten für Stamm und alle Varianten der Vergleichsgruppe; Erzeuger-Gruppen erscheinen nur, wenn der Erzeugertyp in der Gruppe vorkommt (ausgeblendete Werte bleiben erhalten). Energie- und Strompreise kommen aus der Kostenmaske. Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten typischerweise um rund ein Drittel (Vorschlagswerte in Summe 11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; OB die Wirtschaftlichkeit sie ansetzt, wird im Energieträgerdialog (Strom) entschieden — der Haken hier zeigt die Wahl nur an.</value>
+  </data>
+  <data name="WPAR_HINWEIS_KWKG" xml:space="preserve">
+    <value>KWKG: Deckel-Override 0 = degressive Vbh-Staffel 2025 ab dem Inbetriebnahmejahr; förderfähig nur mit Stichtag bis 31.12.2026 + Realisierung bis Ablauf des 4. Folgejahres. Steuern: Ohne ausdrückliche Angabe entsteht KEINE Gutschrift — § 53 und § 53a schließen einander aus, die Sätze und Grenzwerte kommen aus dem Katalog „Gesetzliche Parameter“. Der Jahresnutzungsgrad wird nur für § 53a gebraucht (Schwelle 70 %).</value>
+  </data>
+  <data name="WPAR_JAHRE" xml:space="preserve">
+    <value>Betrachtungszeitraum T [a]:</value>
+  </data>
+  <data name="WPAR_MSG_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Parameter konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="WPAR_PARK" xml:space="preserve">
+    <value>Referenz-Kraftwerkspark:</value>
+  </data>
+  <data name="WPAR_PARK_KEINER" xml:space="preserve">
+    <value>(keine Emissionsbilanz)</value>
+  </data>
+  <data name="WPAR_PREIS_B" xml:space="preserve">
+    <value>Preissteigerung Betrieb [%/a]:</value>
+  </data>
+  <data name="WPAR_PREIS_E" xml:space="preserve">
+    <value>Preissteigerung Energie [%/a]:</value>
+  </data>
+  <data name="WPAR_REFKESSEL" xml:space="preserve">
+    <value>Referenzkessel (aus Projekt): {0} — η {1} %{2}</value>
+  </data>
+  <data name="WPAR_REFKESSEL_FEHLT" xml:space="preserve">
+    <value>Referenzkessel: kein Heizkessel im Stammprojekt gepflegt — Vorgabe η {0} % gilt.</value>
+  </data>
+  <data name="WPAR_REFKESSEL_VORGABE" xml:space="preserve">
+    <value>, Brennstoff aus Vorgabe</value>
+  </data>
+  <data name="WPAR_SPRUNG_HINWEIS" xml:space="preserve">
+    <value>Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern.</value>
+  </data>
+  <data name="WPAR_TITEL" xml:space="preserve">
+    <value>Wirtschaftlichkeits-Parameter</value>
+  </data>
+  <data name="WPAR_ZINS" xml:space="preserve">
+    <value>Kalkulationszinssatz i [%]:</value>
+  </data>
 </root>
