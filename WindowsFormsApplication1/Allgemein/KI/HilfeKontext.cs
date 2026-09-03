@@ -167,7 +167,6 @@ namespace WindowsFormsApplication1
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
             { "Form_Waermesenke",            B_SIMULATION },
 
-            { "Form_SolarDB",                B_SOLARTHERMIE },
             { "Form_SolarKollektoren",       B_SOLARTHERMIE },
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
             { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },

@@ -145,25 +145,21 @@ namespace WindowsFormsApplication1
 
         private void btn_Kollektor_DB_Edit_Click(object sender, EventArgs e)
         {
-            Form_SolarDB frm = new Form_SolarDB();
-            // iU9-W6.2: Bis hierher stand hier Form_DBBHKW.MODE_EDIT - die Konstante
-            // einer FREMDEN Maske, die zufaellig denselben Wert trug. Mit deren
-            // Loeschung ist die eigene Konstante ohnehin die richtige.
-            frm.m_mode = Form_SolarDB.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
             if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte einen Kollektor auswählen!"); return; }
 
-            frm.SetControls((string)dataGridView1.CurrentRow.Cells[0].Value);
-            System.Drawing.Point p1 = btn_Kollektor_DB_Edit.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            frm.ShowDialog();
+            // iU9-W7.6: Der Katalogeditor ist die Razor-Komponente
+            // SolarkollektorKatalogDialog; Form_SolarDB ist im selben Schritt
+            // GELOESCHT (Regel M1). Die Positionierung an der Knopfposition
+            // entfaellt - die Blazor-Huelle kennt kein PointToScreen und erscheint
+            // mittig ueber dieser Maske (dieselbe Umstellung wie iU9-W2.1).
+            SolarkollektorHuelle.KatalogBearbeiten(
+                this, (string)dataGridView1.CurrentRow.Cells[0].Value, neu: false);
             SetDBList();
         }
 
         private void btn_Kollektor_DB_neu_Click(object sender, EventArgs e)
         {
-            Form_SolarDB frm = new Form_SolarDB();
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -171,10 +167,7 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_mode = Form_SolarDB.MODE_NEU;
-                frm.SetControls(szName);
-                frm.m_szName = szName;
-                frm.ShowDialog();
+                SolarkollektorHuelle.KatalogBearbeiten(this, szName, neu: true);
                 SetDBList();
             }
         }
