@@ -277,5 +277,85 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(520, bild.Height);
             }
         }
+
+        // =========================================================== Bedarfsbilder (iU9-W8.0c)
+
+        private static double[] Monatsprobe()
+        {
+            var w = new double[12];
+            for (int m = 0; m < 12; m++) w[m] = 10.0 + m;
+            return w;
+        }
+
+        /// <summary>
+        /// Mass und Determinismus der drei neuen Bilder. Sie ersetzen die Charts der zehn
+        /// Bedarfsmasken der Welle 8; ohne diese Zusage koennte sich ein Bild zwischen zwei
+        /// Laeufen unterscheiden, und die ChartProben wuerden es erst spaeter melden.
+        /// </summary>
+        [Fact]
+        public void Die_drei_Bedarfsbilder_haben_ihr_Mass_und_sind_deterministisch()
+        {
+            byte[] saeulen = ChartRenderer.MonatsSaeulen("M", Monatsprobe(), SKColors.YellowGreen, "MWh");
+            byte[] saeulen2 = ChartRenderer.MonatsSaeulen("M", Monatsprobe(), SKColors.YellowGreen, "MWh");
+            Assert.Equal(saeulen, saeulen2);
+            using (SKBitmap bild = SKBitmap.Decode(saeulen))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+
+            var profil = new double[168];
+            for (int i = 0; i < 168; i++) profil[i] = 0.5 + 0.4 * System.Math.Sin(i / 4.0);
+            byte[] stunden = ChartRenderer.Stundenprofil("P", profil, 24, "Stunde", "Verteilung");
+            byte[] stunden2 = ChartRenderer.Stundenprofil("P", profil, 24, "Stunde", "Verteilung");
+            Assert.Equal(stunden, stunden2);
+            using (SKBitmap bild = SKBitmap.Decode(stunden))
+            {
+                Assert.Equal(1244, bild.Width);
+                Assert.Equal(464, bild.Height);
+            }
+
+            var jahr = new double[8760];
+            for (int i = 0; i < jahr.Length; i++) jahr[i] = 100 + 40 * System.Math.Sin(i / 700.0);
+            byte[] verlauf = ChartRenderer.Jahresverlauf("J", jahr, "kW", SKColors.SteelBlue);
+            byte[] verlauf2 = ChartRenderer.Jahresverlauf("J", jahr, "kW", SKColors.SteelBlue);
+            Assert.Equal(verlauf, verlauf2);
+            using (SKBitmap bild = SKBitmap.Decode(verlauf))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Der Rueckfall „alles null" der Vorlaeufer (<c>SkaliereYAchse</c>: Maximum 5,
+        /// Intervall 1) darf das Bild nicht zerstoeren — zwoelf Nullen sind ein
+        /// gueltiger Zustand, solange die Simulation noch nicht gelaufen ist.
+        /// </summary>
+        [Fact]
+        public void Monatssaeulen_mit_lauter_Nullen_bleiben_ein_Bild()
+        {
+            byte[] png = ChartRenderer.MonatsSaeulen("M", new double[12], SKColors.Red, "MWh");
+            Assert.NotNull(png);
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Zu kurze oder fehlende Reihen liefern ein Bild MIT HINWEIS, nicht <c>null</c> —
+        /// dieselbe Zusage wie bei Kostenprofil und Kennlinien. Der Ergebnisdialog bekommt
+        /// die Reihe direkt aus der Simulation und kann leer aufgerufen werden.
+        /// </summary>
+        [Fact]
+        public void Bedarfsbilder_ohne_Werte_liefern_ein_leeres_Bild_statt_null()
+        {
+            Assert.NotNull(ChartRenderer.MonatsSaeulen("M", null, SKColors.Red, "MWh"));
+            Assert.NotNull(ChartRenderer.MonatsSaeulen("M", new double[3], SKColors.Red, "MWh"));
+            Assert.NotNull(ChartRenderer.Stundenprofil("P", null, 24, "x", "y"));
+            Assert.NotNull(ChartRenderer.Jahresverlauf("J", null, "kW", SKColors.SteelBlue));
+        }
     }
 }
