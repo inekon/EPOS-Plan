@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
@@ -8,16 +7,38 @@ namespace WindowsFormsApplication1
     // =====================================================================================
     // ARBEITSPAKET S4b: NUR DIE INNENSEITE UMGESTELLT.
     //
-    // Die oeffentliche Flaeche bleibt Zeichen fuer Zeichen: DBCommand, Open, Insert, EOF,
-    // Next, Read(string), Read(int), GetString, Close, Dispose - 47 Nutzer haengen daran.
-    // Auch das OleDbCommand bleibt, weil es der DATENTRAEGER fuer CommandText und
-    // Parameter ist; ein Wechsel des Typs waere eine Aenderung an 47 Dateien.
+    // Die oeffentliche Flaeche bleibt Zeichen fuer Zeichen: Open, Insert, EOF, Next,
+    // Read(string), Read(int), GetString, Close, Dispose - 47 Nutzer haengen daran.
     //
     // ARBEITSPAKET S4e: Wer in einer laufenden Transaktion lesen oder schreiben will,
     // uebergibt den Vorgang jetzt AUSDRUECKLICH - Open(sql, DbVorgang) bzw.
     // Insert(sql, DbVorgang). Der frueher dafuer vorgesehene Weg (Verbindung und
-    // Transaktion am DBCommand setzen) ist entfallen; er hatte nur einen Nutzer
+    // Transaktion am Kommando setzen) ist entfallen; er hatte nur einen Nutzer
     // (Form_DBBHKW) und ging am Typ-Rueckweg D9 vorbei.
+    //
+    // ARBEITSPAKET iU6 / RISIKO iR8: "DBCommand" IST ERSATZLOS GESTRICHEN - UND ES TRITT
+    // BEWUSST KEIN EIGENER TYP AN SEINE STELLE.
+    //
+    // iR8 hatte zwei Wege offen gelassen: die Eigenschaft auf einen providerfreien Typ
+    // heben ODER RecordSet mit seinen Masken abloesen (iU9). Die Vermessung vom 03.09.2026
+    // hat den Posten zu einer STREICHUNG gemacht: Repositoryweit - Kern, Anwendung, Views,
+    // Referenzlauf, Proben, KiKern - greift KEINE Stelle ausserhalb dieser Datei auf
+    // RecordSet.DBCommand zu. Niemand setzte Connection, Transaction, CommandText oder
+    // Parameters. Seit iU3 entstand das Kommando ohnehin nur lazy IM GETTER und blieb
+    // deshalb immer null: MerkeSql() schrieb in ein Objekt, das es nie gab, und Parameter()
+    // lieferte ausnahmslos null.
+    //
+    // Ein Ersatztyp (etwa ein "DbBefehl") haette also eine Fassade fuer null Nutzer
+    // geschaffen und dabei den falschen Eindruck erweckt, RecordSet trage Parameter - was
+    // es seit der Umstellung auf Open(sql) / Open(sql, DbVorgang) nicht mehr tut. Wer
+    // parametrisiert arbeiten will, nimmt DataRepository bzw. DbVorgang mit DbParam; das
+    // ist der einzige Weg, den die Zugriffsschicht seit 6486c36 kennt. RecordSet bleibt
+    // damit genau das, was es faktisch laengst war: ein vorwaertslaufender Zeilenzeiger
+    // ueber ein fertiges SQL ohne Parameter.
+    //
+    // IDisposable BLEIBT - der Vertrag ist oeffentlich, und Dispose() gibt weiterhin das
+    // materialisierte Ergebnis frei; es tut das jetzt ueber Close(), weil es nichts
+    // anderes mehr freizugeben gibt.
     //
     // ZWEI AENDERUNGEN INNEN, beide bewusst:
     //
@@ -29,12 +50,11 @@ namespace WindowsFormsApplication1
     //     ueber die Tabelle. EOF()/Next() behalten dabei ihren eigenwilligen Vertrag:
     //     BEIDE ruecken den Zeiger vor (so verhielt sich der Reader auch).
     //
-    //  2. KEINE VERBINDUNG MEHR AM DBCommand. Frueher hat Open()/Insert() die selbst
-    //     geoeffnete Verbindung ins DBCommand gehaengt und Close() sie wieder
+    //  2. KEINE VERBINDUNG MEHR AM KOMMANDO. Frueher hat Open()/Insert() die selbst
+    //     geoeffnete Verbindung in das damalige DBCommand gehaengt und Close() sie wieder
     //     herausgenommen. Das entfaellt: Jeder Aufruf holt sich seine Verbindung aus dem
-    //     Pool und gibt sie sofort zurueck. Fuer die Aufrufer bleibt es gleich - sie
-    //     sahen diese Verbindung nur waehrend des Aufrufs, und "DBCommand.Connection ==
-    //     null" bedeutet weiterhin genau "niemand von aussen hat eine gesetzt".
+    //     Pool und gibt sie sofort zurueck. Fuer die Aufrufer bleibt es gleich - sie sahen
+    //     diese Verbindung ohnehin nur waehrend des Aufrufs.
     //
     // ABWEICHUNG, DIE SICH NICHT 1:1 HALTEN LAESST: Read()/GetString() ausserhalb einer
     // gueltigen Zeile oder auf einen unbekannten Spaltennamen warfen frueher
@@ -45,66 +65,11 @@ namespace WindowsFormsApplication1
 
     public class RecordSet : IDisposable
     {
-        // Auf OleDbCommand umgestellt, damit Zuweisungen aus dem UI-Code (z.B. transaction) ohne Cast funktionieren
-        //
-        // UMSETZUNGSKONZEPT iU3, SCHRITT 3: LAZY. Der Typ bleibt (iR8 ist ein eigenes
-        // Paket), die oeffentliche Flaeche auch - aber das Kommando entsteht erst beim
-        // ERSTEN Zugriff. Grund: Das Paket System.Data.OleDb liefert fuer net10.0 einen
-        // Stub, der in JEDEM Konstruktor PlatformNotSupportedException wirft. Ein
-        // RecordSet, das im Rechenpfad nur "Open(sql)" macht - und das sind alle -,
-        // haette sonst schon beim Anlegen geworfen. Wer das Kommando wirklich als
-        // Datentraeger benutzt (Parameter setzen), bekommt es wie bisher.
-        private OleDbCommand _cmd;
-
-        public OleDbCommand DBCommand
-        {
-            get { return _cmd ??= new OleDbCommand(); }
-            set { _cmd = value; }
-        }
-
         /// <summary>Das materialisierte Ergebnis des letzten <see cref="Open"/>.</summary>
         private DataTable _ergebnis;
 
         /// <summary>Zeilenzeiger; -1 = vor der ersten Zeile (wie ein frisch geoeffneter Reader).</summary>
         private int _zeile = -1;
-
-        public RecordSet()
-        {
-            // Kein "new OleDbCommand()" mehr - siehe die Begruendung bei DBCommand.
-        }
-
-        /// <summary>
-        /// Merkt sich das SQL am Datentraeger — aber nur, wenn es ihn schon gibt.
-        ///
-        /// <para>Frueher stand hier schlicht <c>DBCommand.CommandText = sql</c>. Mit der
-        /// lazy angelegten Eigenschaft haette genau diese Zeile das Kommando erzwungen
-        /// und damit den Zweck des Schrittes aufgehoben. Der <c>CommandText</c> ist reiner
-        /// Ablagewert: Ausgefuehrt wird das SQL ueber die Zugriffsschicht, und kein
-        /// Aufrufer liest ihn zurueck (geprueft — ausserhalb dieser Datei greift niemand
-        /// auf <see cref="DBCommand"/> eines RecordSets zu).</para>
-        /// </summary>
-        private void MerkeSql(string sql)
-        {
-            if (_cmd != null) _cmd.CommandText = sql;
-        }
-
-        /// <summary>
-        /// Die Parameter des DBCommand als Datentraeger-Array fuer die Zugriffsschicht.
-        ///
-        /// ARBEITSPAKET iU6: Die Zugriffsschicht nimmt jetzt <see cref="DbParam"/>. Das
-        /// <c>DBCommand</c> selbst BLEIBT ein <c>OleDbCommand</c> (Risiko iR8, eigenes
-        /// Paket) - es ist der Datentraeger, an dem 47 Nutzer haengen. Umgesetzt wird
-        /// deshalb hier, an genau einer Stelle, ueber die Bruecke
-        /// <see cref="DbParam.Von"/>. Reihenfolge und Werte bleiben unveraendert; die
-        /// Bindung laeuft ohnehin nach Position.
-        /// </summary>
-        private DbParam[] Parameter()
-        {
-            if (_cmd == null || _cmd.Parameters.Count == 0) return null;
-            OleDbParameter[] p = new OleDbParameter[_cmd.Parameters.Count];
-            _cmd.Parameters.CopyTo(p, 0);
-            return DbParam.Von(p);
-        }
 
         public bool Open(string sql)
         {
@@ -131,17 +96,15 @@ namespace WindowsFormsApplication1
 
             try
             {
-                MerkeSql(sql);
-
                 if (vorgang != null)
                 {
-                    _ergebnis = vorgang.Lese(sql, Parameter());
+                    _ergebnis = vorgang.Lese(sql);
                     return true;
                 }
 
                 // Andernfalls öffnen wir eine eigene, interne Verbindung für diese Abfrage.
                 using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, Parameter()))
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, null))
                 using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
                     _ergebnis = DataRepository.LadeTabelle(leser);
@@ -171,16 +134,14 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                MerkeSql(sql);
-
                 if (vorgang != null)
                 {
-                    vorgang.Ausfuehren(sql, Parameter());
+                    vorgang.Ausfuehren(sql);
                     return true;
                 }
 
                 using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, Parameter()))
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, null))
                 {
                     cmd.ExecuteNonQuery();
                 }
@@ -240,20 +201,13 @@ namespace WindowsFormsApplication1
             _zeile = -1;
         }
 
-        // Ermoeglicht "using (var rs = new RecordSet()) { ... }": gibt das Ergebnis frei
-        // und zusaetzlich das OleDbCommand (reiner Datentraeger fuer CommandText und
-        // Parameter). Ein uebergebener DbVorgang gehoert dem Aufrufer und wird hier
-        // weder abgeschlossen noch entsorgt.
+        // Ermoeglicht "using (var rs = new RecordSet()) { ... }": gibt das materialisierte
+        // Ergebnis frei. Seit iU6 ist das ALLES, was hier freizugeben ist - das
+        // OleDbCommand ist gestrichen (Begruendung im Kopf). Ein uebergebener DbVorgang
+        // gehoert dem Aufrufer und wird hier weder abgeschlossen noch entsorgt.
         public void Dispose()
         {
             Close();
-            // Nullsicher UND ohne die lazy Eigenschaft zu beruehren: Ein RecordSet, das
-            // nie ein Kommando gebraucht hat, darf hier keines mehr anlegen.
-            if (_cmd != null)
-            {
-                _cmd.Dispose();
-                _cmd = null;
-            }
         }
     }
 }
