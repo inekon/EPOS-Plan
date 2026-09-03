@@ -11187,4 +11187,626 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GTYP_ACHSE_Y" xml:space="preserve">
     <value>Tagesverteilung</value>
   </data>
+  <data name="BPF_BTN_DB_AENDERN_BW" xml:space="preserve">
+    <value>Profil in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_DB_AENDERN_PROZ" xml:space="preserve">
+    <value>Prozess in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_DB_AENDERN_STROM" xml:space="preserve">
+    <value>Stromverbraucher ändern...</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_BW" xml:space="preserve">
+    <value>Profil in DB löschen</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_PROZ" xml:space="preserve">
+    <value>Prozess in DB löschen</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_STROM" xml:space="preserve">
+    <value>Stromverbraucher löschen</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_BW" xml:space="preserve">
+    <value>Profil in DB neu</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_PROZ" xml:space="preserve">
+    <value>Prozess in DB neu</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_STROM" xml:space="preserve">
+    <value>Stromverbraucher neu...</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_BW" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_PROZ" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_STROM" xml:space="preserve">
+    <value>Simulation...</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_BW" xml:space="preserve">
+    <value>Typ in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_PROZ" xml:space="preserve">
+    <value>Typ in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_STROM" xml:space="preserve">
+    <value>Typ in DB ändern...</value>
+  </data>
+  <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
+    <value>monatlicher Verlauf</value>
+  </data>
+  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
+    <value>monatlicher Verlauf</value>
+  </data>
+  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
+    <value>monatlicher Verlauf...</value>
+  </data>
+  <data name="BPF_GRP_INFO" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="BPF_GRP_VERBRAUCH" xml:space="preserve">
+    <value>Ändern des Jahresverbrauchs</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_BW" xml:space="preserve">
+    <value>jährlicher Wärmebedarf:</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_PROZ" xml:space="preserve">
+    <value>jährlicher Prozesswärmebedarf:</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_STROM" xml:space="preserve">
+    <value>jährlicher Strombedarf:</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_BW" xml:space="preserve">
+    <value>Datenbank Profile</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_PROZ" xml:space="preserve">
+    <value>Datenbank Prozesswärme</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_STROM" xml:space="preserve">
+    <value>Datenbank Strombedarf</value>
+  </data>
+  <data name="BPF_LBL_NEUER_WERT" xml:space="preserve">
+    <value>neuer Wert</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_BW" xml:space="preserve">
+    <value>Ausgewählte Profile im Projekt</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_PROZ" xml:space="preserve">
+    <value>Ausgewählte Prozesse im Projekt</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_STROM" xml:space="preserve">
+    <value>Ausgewählte Strombedarfe im Projekt</value>
+  </data>
+  <data name="BPF_LBL_SUMME_BW" xml:space="preserve">
+    <value>Summe Brauchwasserprofile:</value>
+  </data>
+  <data name="BPF_LBL_SUMME_PROZ" xml:space="preserve">
+    <value>Summe aller ausgew. Prozesse:</value>
+  </data>
+  <data name="BPF_LBL_SUMME_STROM" xml:space="preserve">
+    <value>Summe aller ausgewählten Strombedarfe:</value>
+  </data>
+  <data name="BPF_LBL_TYP" xml:space="preserve">
+    <value>Typ:</value>
+  </data>
+  <data name="BPF_MSG_GELOESCHT" xml:space="preserve">
+    <value>Prozess erfolgreich gelöscht.</value>
+  </data>
+  <data name="BPF_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Bitte einen Eintrag aus der Liste auswählen!</value>
+  </data>
+  <data name="BPF_MSG_KEINE_ZEILE" xml:space="preserve">
+    <value>Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!</value>
+  </data>
+  <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Jahresverbrauch übernommen.</value>
+  </data>
+  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
+    <value>Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus.</value>
+  </data>
+  <data name="BPF_MSG_WERT_BW" xml:space="preserve">
+    <value>Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.</value>
+  </data>
+  <data name="BPF_MSG_WERT_PROZ" xml:space="preserve">
+    <value>Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.</value>
+  </data>
+  <data name="BPF_MSG_WERT_STROM" xml:space="preserve">
+    <value>Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.</value>
+  </data>
+  <data name="BPF_SP_TYP" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="BPF_TITEL_BW" xml:space="preserve">
+    <value>Brauchwasserwärme</value>
+  </data>
+  <data name="BPF_TITEL_PROZ" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="BPF_TITEL_STROM" xml:space="preserve">
+    <value>Standard Stromprofil</value>
+  </data>
+  <data name="GEBK_BAUART_LEICHT" xml:space="preserve">
+    <value>Leichte Bauart</value>
+  </data>
+  <data name="GEBK_BAUART_SCHWER" xml:space="preserve">
+    <value>Schwere Bauart</value>
+  </data>
+  <data name="GEBK_BAUART_SEHRSCHWER" xml:space="preserve">
+    <value>Sehr schwere Bauart</value>
+  </data>
+  <data name="GEBK_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="GEBK_BTN_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser...</value>
+  </data>
+  <data name="GEBK_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="GEBK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="GEBK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Werte übernehmen</value>
+  </data>
+  <data name="GEBK_BTN_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
+  <data name="GEBK_FELD_ANSCHLUSS_DACH" xml:space="preserve">
+    <value>Anschluß Wand-Dach</value>
+  </data>
+  <data name="GEBK_FELD_ANSCHLUSS_FENSTER" xml:space="preserve">
+    <value>Anschluß Fenster-Wand</value>
+  </data>
+  <data name="GEBK_FELD_ANSCHLUSS_KELLER" xml:space="preserve">
+    <value>Anschluß Außenwand-Keller</value>
+  </data>
+  <data name="GEBK_FELD_DACHFLAECHE" xml:space="preserve">
+    <value>Gebäude Dachfläche</value>
+  </data>
+  <data name="GEBK_FELD_FENSTERDURCHLASS" xml:space="preserve">
+    <value>Fensterdurchlaßgrad</value>
+  </data>
+  <data name="GEBK_FELD_FF_NORD" xml:space="preserve">
+    <value>Fensterfläche Nord</value>
+  </data>
+  <data name="GEBK_FELD_FF_OSTWEST" xml:space="preserve">
+    <value>Fensterfläche Ost + West</value>
+  </data>
+  <data name="GEBK_FELD_FF_SUED" xml:space="preserve">
+    <value>Fensterfläche Süd</value>
+  </data>
+  <data name="GEBK_FELD_FLAECHE_NUTZER" xml:space="preserve">
+    <value>Fläche / Nutzer</value>
+  </data>
+  <data name="GEBK_FELD_FL_AUSSENWAND" xml:space="preserve">
+    <value>Fläche Außenwand</value>
+  </data>
+  <data name="GEBK_FELD_GRUNDFLAECHE" xml:space="preserve">
+    <value>Gebäude Grundfläche</value>
+  </data>
+  <data name="GEBK_FELD_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe</value>
+  </data>
+  <data name="GEBK_FELD_SONST_FLAECHEN" xml:space="preserve">
+    <value>sonstige Flächen</value>
+  </data>
+  <data name="GEBK_FELD_U_AUSSENWAND" xml:space="preserve">
+    <value>U-Wert Außenwand</value>
+  </data>
+  <data name="GEBK_FELD_U_DACHFLAECHE" xml:space="preserve">
+    <value>U-Wert Dachfläche</value>
+  </data>
+  <data name="GEBK_FELD_U_FENSTER" xml:space="preserve">
+    <value>U-Wert Fenster</value>
+  </data>
+  <data name="GEBK_FELD_U_GRUNDFLAECHE" xml:space="preserve">
+    <value>U-Wert Grundfläche</value>
+  </data>
+  <data name="GEBK_FELD_U_SONSTIGES" xml:space="preserve">
+    <value>U-Wert Sonstiges</value>
+  </data>
+  <data name="GEBK_FELD_WAERMEGEWINNE" xml:space="preserve">
+    <value>Interne Wärmegewinne</value>
+  </data>
+  <data name="GEBK_FELD_WOHNFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="GEBK_FERIEN_HERBST" xml:space="preserve">
+    <value>Herbst :</value>
+  </data>
+  <data name="GEBK_FERIEN_OSTERN" xml:space="preserve">
+    <value>Ostern :</value>
+  </data>
+  <data name="GEBK_FERIEN_SOMMER" xml:space="preserve">
+    <value>Sommer :</value>
+  </data>
+  <data name="GEBK_FERIEN_WINTER" xml:space="preserve">
+    <value>Winter :</value>
+  </data>
+  <data name="GEBK_GRP_ANSCHLUSS" xml:space="preserve">
+    <value>Abmessung Anschluß [m]</value>
+  </data>
+  <data name="GEBK_GRP_FERIEN_ANFANG" xml:space="preserve">
+    <value>Ferien Anfang</value>
+  </data>
+  <data name="GEBK_GRP_FERIEN_ENDE" xml:space="preserve">
+    <value>Ferien Ende</value>
+  </data>
+  <data name="GEBK_GRP_FLAECHEN" xml:space="preserve">
+    <value>Flächen [m²]</value>
+  </data>
+  <data name="GEBK_GRP_KENNGROESSEN" xml:space="preserve">
+    <value>Kenngrößen</value>
+  </data>
+  <data name="GEBK_GRP_RAUMTEMPERATUREN" xml:space="preserve">
+    <value>Raumtemperaturen</value>
+  </data>
+  <data name="GEBK_GRP_SONSTIGES" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
+  <data name="GEBK_GRP_UWERTE" xml:space="preserve">
+    <value>U-Werte [W/m²K]</value>
+  </data>
+  <data name="GEBK_GRP_WAERMEBRUECKEN" xml:space="preserve">
+    <value>Wärmebrückenverlustkoeffizienten [W/(mK)]</value>
+  </data>
+  <data name="GEBK_HINWEIS_FENSTERDURCHLASS" xml:space="preserve">
+    <value>(z.B. 0,4)</value>
+  </data>
+  <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
+    <value>Außenwand-Keller :</value>
+  </data>
+  <data name="GEBK_LBL_BAUART" xml:space="preserve">
+    <value>Bauart :</value>
+  </data>
+  <data name="GEBK_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr :</value>
+  </data>
+  <data name="GEBK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung :</value>
+  </data>
+  <data name="GEBK_LBL_BRAUCHWASSERPROFILE" xml:space="preserve">
+    <value>Brauchwasserprofile :</value>
+  </data>
+  <data name="GEBK_LBL_DACHFLAECHE" xml:space="preserve">
+    <value>Gebäude Dachfläche :</value>
+  </data>
+  <data name="GEBK_LBL_FENSTERDURCHLASS" xml:space="preserve">
+    <value>Fensterdurchlaßgrad :</value>
+  </data>
+  <data name="GEBK_LBL_FENSTER_WAND" xml:space="preserve">
+    <value>Fenster-Wand :</value>
+  </data>
+  <data name="GEBK_LBL_FF_NORD" xml:space="preserve">
+    <value>Fensterfläche Nord :</value>
+  </data>
+  <data name="GEBK_LBL_FF_OSTWEST" xml:space="preserve">
+    <value>Fensterfläche Ost + West :</value>
+  </data>
+  <data name="GEBK_LBL_FF_SUED" xml:space="preserve">
+    <value>Fensterfläche Süd :</value>
+  </data>
+  <data name="GEBK_LBL_FLAECHE_NUTZER" xml:space="preserve">
+    <value>Fläche / Nutzer :</value>
+  </data>
+  <data name="GEBK_LBL_FL_AUSSENWAND" xml:space="preserve">
+    <value>Fläche Außenwand :</value>
+  </data>
+  <data name="GEBK_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart :</value>
+  </data>
+  <data name="GEBK_LBL_GEBAEUDETYP" xml:space="preserve">
+    <value>Gebäudetyp :</value>
+  </data>
+  <data name="GEBK_LBL_GRUNDFLAECHE" xml:space="preserve">
+    <value>Gebäude Grundfläche :</value>
+  </data>
+  <data name="GEBK_LBL_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechselrate :</value>
+  </data>
+  <data name="GEBK_LBL_MAXTEMPERATUR" xml:space="preserve">
+    <value>Maximalraumtemperatur :</value>
+  </data>
+  <data name="GEBK_LBL_MONAT" xml:space="preserve">
+    <value>Monat :</value>
+  </data>
+  <data name="GEBK_LBL_NACHTABSENKUNG" xml:space="preserve">
+    <value>Nachtabsenkung auf :</value>
+  </data>
+  <data name="GEBK_LBL_NAME" xml:space="preserve">
+    <value>Name :</value>
+  </data>
+  <data name="GEBK_LBL_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe :</value>
+  </data>
+  <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
+    <value>Soll in Ferien :</value>
+  </data>
+  <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
+    <value>Soll am Tag :</value>
+  </data>
+  <data name="GEBK_LBL_SONST_FLAECHEN" xml:space="preserve">
+    <value>sonstige Flächen :</value>
+  </data>
+  <data name="GEBK_LBL_TAG" xml:space="preserve">
+    <value>Tag :</value>
+  </data>
+  <data name="GEBK_LBL_U_AUSSENWAND" xml:space="preserve">
+    <value>Außenwand :</value>
+  </data>
+  <data name="GEBK_LBL_U_DACHFLAECHE" xml:space="preserve">
+    <value>Dachfläche :</value>
+  </data>
+  <data name="GEBK_LBL_U_FENSTER" xml:space="preserve">
+    <value>Fenster :</value>
+  </data>
+  <data name="GEBK_LBL_U_GRUNDFLAECHE" xml:space="preserve">
+    <value>Grundfläche :</value>
+  </data>
+  <data name="GEBK_LBL_U_SONSTIGES" xml:space="preserve">
+    <value>Sonstiges :</value>
+  </data>
+  <data name="GEBK_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung :</value>
+  </data>
+  <data name="GEBK_LBL_WAERMEGEWINNE" xml:space="preserve">
+    <value>Interne Wärmegewinne :</value>
+  </data>
+  <data name="GEBK_LBL_WAND_DACH" xml:space="preserve">
+    <value>Wand-Dach :</value>
+  </data>
+  <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
+    <value>Wochenendabsenkung :</value>
+  </data>
+  <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche :</value>
+  </data>
+  <data name="GEBK_MSG_FEHLER" xml:space="preserve">
+    <value>Fehler beim Speichern!
+Alle Eingaben überprüfen!</value>
+  </data>
+  <data name="GEBK_MSG_FERIEN_HERBST" xml:space="preserve">
+    <value>Fehler: Bei der Eingabe der Herbstferien!</value>
+  </data>
+  <data name="GEBK_MSG_FERIEN_OSTERN" xml:space="preserve">
+    <value>Fehler: Bei der Eingabe der Osterferien!</value>
+  </data>
+  <data name="GEBK_MSG_FERIEN_SOMMER" xml:space="preserve">
+    <value>Fehler: Bei der Eingabe der Sommerferien!</value>
+  </data>
+  <data name="GEBK_MSG_FERIEN_WINTER" xml:space="preserve">
+    <value>Die Ferien müssen über die Jahresgrenze gehen!</value>
+  </data>
+  <data name="GEBK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Gebäude ist gespeichert!</value>
+  </data>
+  <data name="GEBK_MSG_NAME_LEER" xml:space="preserve">
+    <value>Gebäudenamen eingeben!</value>
+  </data>
+  <data name="GEBK_MSG_READONLY" xml:space="preserve">
+    <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht überschrieben werden.</value>
+  </data>
+  <data name="GEBK_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Werte übernommen.</value>
+  </data>
+  <data name="GEBK_MSG_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Gebäude Datensatz ist überschrieben!</value>
+  </data>
+  <data name="GEBK_MSG_ZAHL" xml:space="preserve">
+    <value>Bitte {0} als Zahl eingeben.</value>
+  </data>
+  <data name="GEBK_REITER_FLAECHEN" xml:space="preserve">
+    <value>Flächen und U-Werte</value>
+  </data>
+  <data name="GEBK_TITEL" xml:space="preserve">
+    <value>Gebäudedaten: Flächen, U-Werte</value>
+  </data>
+  <data name="GEBK_VERWENDUNG_NICHTWOHN" xml:space="preserve">
+    <value>Nicht Wohngebäude</value>
+  </data>
+  <data name="GEBK_VERWENDUNG_WOHN" xml:space="preserve">
+    <value>Wohngebäude</value>
+  </data>
+  <data name="GEBW_GRP_EINGABE" xml:space="preserve">
+    <value>Eingabe für das ausgewählte Gebäude</value>
+  </data>
+  <data name="GEBW_GRP_INFO" xml:space="preserve">
+    <value>Info ausgewähltes Gebäude</value>
+  </data>
+  <data name="GEBW_HINWEIS_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Bei Brennstoffangaben bitte Heizkessel Jahresnutzungsgrad eingeben: z.B. 0.85 für 85%</value>
+  </data>
+  <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
+    <value>Art der Angabe:</value>
+  </data>
+  <data name="GEBW_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr:</value>
+  </data>
+  <data name="GEBW_LBL_BEDARFSART" xml:space="preserve">
+    <value>Bedarfsart:</value>
+  </data>
+  <data name="GEBW_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="GEBW_LBL_DEZ_WARMWASSER" xml:space="preserve">
+    <value>Dezentrale Warmwasserbereitung</value>
+  </data>
+  <data name="GEBW_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart:</value>
+  </data>
+  <data name="GEBW_LBL_GEBAEUDENAME" xml:space="preserve">
+    <value>Gebäudename:</value>
+  </data>
+  <data name="GEBW_LBL_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Jahresnutzungsgrad:</value>
+  </data>
+  <data name="GEBW_LBL_VERBRAUCH" xml:space="preserve">
+    <value>Wärmebedarf/Wohnfläche:</value>
+  </data>
+  <data name="GEBW_MSG_ZAHL" xml:space="preserve">
+    <value>Bitte {0} als Zahl eingeben.</value>
+  </data>
+  <data name="GEBW_TITEL" xml:space="preserve">
+    <value>Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes</value>
+  </data>
+  <data name="GEB_BAK_A" xml:space="preserve">
+    <value>vor 1919</value>
+  </data>
+  <data name="GEB_BAK_B" xml:space="preserve">
+    <value>1919 bis 1948</value>
+  </data>
+  <data name="GEB_BAK_C" xml:space="preserve">
+    <value>1949 bis 1957</value>
+  </data>
+  <data name="GEB_BAK_D" xml:space="preserve">
+    <value>1958 bis 1968</value>
+  </data>
+  <data name="GEB_BAK_E" xml:space="preserve">
+    <value>1969 bis 1978</value>
+  </data>
+  <data name="GEB_BAK_F" xml:space="preserve">
+    <value>1979 bis 1983</value>
+  </data>
+  <data name="GEB_BAK_G" xml:space="preserve">
+    <value>1984 bis 1994</value>
+  </data>
+  <data name="GEB_BAK_H" xml:space="preserve">
+    <value>1995 bis 2000</value>
+  </data>
+  <data name="GEB_BAK_I" xml:space="preserve">
+    <value>Niedrigenergiebauweise</value>
+  </data>
+  <data name="GEB_BAK_J" xml:space="preserve">
+    <value>Passivhaus</value>
+  </data>
+  <data name="GEB_BAK_K" xml:space="preserve">
+    <value>EnEv 2007</value>
+  </data>
+  <data name="GEB_BAK_L" xml:space="preserve">
+    <value>Eff. 70 (EnEV 2007)</value>
+  </data>
+  <data name="GEB_BAK_M" xml:space="preserve">
+    <value>EnEV 2009</value>
+  </data>
+  <data name="GEB_BAK_N" xml:space="preserve">
+    <value>Eff. 70 (EnEV 2009)</value>
+  </data>
+  <data name="GEB_BAK_O" xml:space="preserve">
+    <value>Eff. 55 (EnEV 2009)</value>
+  </data>
+  <data name="GEB_BAK_P" xml:space="preserve">
+    <value>EnEV 2014</value>
+  </data>
+  <data name="GEB_BAK_Q" xml:space="preserve">
+    <value>EnEV 2016</value>
+  </data>
+  <data name="GEB_BAK_R" xml:space="preserve">
+    <value>Eff. 100 (EnEV 2016)</value>
+  </data>
+  <data name="GEB_BAK_S" xml:space="preserve">
+    <value>Eff. 155 (EnEV 2016)</value>
+  </data>
+  <data name="GEB_BAK_T" xml:space="preserve">
+    <value>BEG 55</value>
+  </data>
+  <data name="GEB_BAK_U" xml:space="preserve">
+    <value>BEG 40</value>
+  </data>
+  <data name="GEB_BTN_AENDERN" xml:space="preserve">
+    <value>Ändern</value>
+  </data>
+  <data name="GEB_BTN_DB_AENDERN" xml:space="preserve">
+    <value>Gebäude in DB ändern...</value>
+  </data>
+  <data name="GEB_BTN_DB_LOESCHEN" xml:space="preserve">
+    <value>Gebäude in DB löschen</value>
+  </data>
+  <data name="GEB_BTN_DB_NEU" xml:space="preserve">
+    <value>Gebäude in DB neu...</value>
+  </data>
+  <data name="GEB_BTN_GEBTYP" xml:space="preserve">
+    <value>Gebäudetyp in DB ändern...</value>
+  </data>
+  <data name="GEB_GRP_FILTER" xml:space="preserve">
+    <value>Filter Gebäude DB</value>
+  </data>
+  <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
+    <value>Gebäude: Verbrauch</value>
+  </data>
+  <data name="GEB_KOPFBAND" xml:space="preserve">
+    <value>Eingabe der Energiedaten</value>
+  </data>
+  <data name="GEB_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="GEB_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="GEB_LBL_GEBAEUDEART" xml:space="preserve">
+    <value>Gebäudeart</value>
+  </data>
+  <data name="GEB_LBL_GEBAEUDENAME" xml:space="preserve">
+    <value>Gebäudename:</value>
+  </data>
+  <data name="GEB_LBL_KATALOG" xml:space="preserve">
+    <value>Gebäude in DB:</value>
+  </data>
+  <data name="GEB_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>ausgewählte Gebäude im Projekt:</value>
+  </data>
+  <data name="GEB_LBL_SUCHE" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche:</value>
+  </data>
+  <data name="GEB_MSG_GELOESCHT" xml:space="preserve">
+    <value>Gebäude gelöscht!</value>
+  </data>
+  <data name="GEB_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Gebäude in DB auswählen!</value>
+  </data>
+  <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
+    <value>Soll {0} wirklich gelöscht werden ?</value>
+  </data>
+  <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
+    <value>Suche, z. B. Haus*_1990*</value>
+  </data>
+  <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
+    <value>Typ/Wohnfläche</value>
+  </data>
+  <data name="GEB_TEXT_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="GEB_TEXT_SONSTIGE" xml:space="preserve">
+    <value>Gewerbe+Sonstige</value>
+  </data>
+  <data name="GEB_TITEL" xml:space="preserve">
+    <value>Eingabe der Gebäudedaten</value>
+  </data>
+  <data name="WBX_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Einlesen/Bearbeiten..</value>
+  </data>
+  <data name="WBX_BTN_LOESCHEN" xml:space="preserve">
+    <value>DB Ganglinie löschen</value>
+  </data>
+  <data name="WBX_KOPFBAND" xml:space="preserve">
+    <value>Wärmebedarfsdaten (Ganglinien)</value>
+  </data>
+  <data name="WBX_LBL_KATALOG" xml:space="preserve">
+    <value>Wärmebedarf aus DB</value>
+  </data>
+  <data name="WBX_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Ausgewählt im Projekt</value>
+  </data>
+  <data name="WBX_MSG_ZUORDNUNG" xml:space="preserve">
+    <value>Es existiert eine Projektzuordnung, Löschen nicht möglich!</value>
+  </data>
+  <data name="WBX_TITEL" xml:space="preserve">
+    <value>Wärmebedarf Extern</value>
+  </data>
 </root>

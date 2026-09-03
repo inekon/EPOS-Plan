@@ -31530,5 +31530,1868 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil in DB ändern ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_AENDERN_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_AENDERN_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess in DB ändern ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_AENDERN_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_AENDERN_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher ändern... ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_AENDERN_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_AENDERN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil in DB löschen ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_LOESCHEN_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_LOESCHEN_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess in DB löschen ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_LOESCHEN_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_LOESCHEN_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher löschen ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_LOESCHEN_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_LOESCHEN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil in DB neu ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_NEU_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_NEU_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess in DB neu ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_NEU_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_NEU_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher neu... ähnelt.
+        /// </summary>
+        public static string BPF_BTN_DB_NEU_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_DB_NEU_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string BPF_BTN_SIMULATION_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_SIMULATION_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string BPF_BTN_SIMULATION_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_SIMULATION_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
+        /// </summary>
+        public static string BPF_BTN_SIMULATION_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_SIMULATION_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern ähnelt.
+        /// </summary>
+        public static string BPF_BTN_TYP_AENDERN_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_TYP_AENDERN_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern ähnelt.
+        /// </summary>
+        public static string BPF_BTN_TYP_AENDERN_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_TYP_AENDERN_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern... ähnelt.
+        /// </summary>
+        public static string BPF_BTN_TYP_AENDERN_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_TYP_AENDERN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BPF_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BPF_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
+        /// </summary>
+        public static string BPF_BTN_VERLAUF_BW {
+            get {
+                return ResourceManager.GetString("BPF_BTN_VERLAUF_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
+        /// </summary>
+        public static string BPF_BTN_VERLAUF_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_BTN_VERLAUF_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf... ähnelt.
+        /// </summary>
+        public static string BPF_BTN_VERLAUF_STROM {
+            get {
+                return ResourceManager.GetString("BPF_BTN_VERLAUF_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string BPF_GRP_INFO {
+            get {
+                return ResourceManager.GetString("BPF_GRP_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern des Jahresverbrauchs ähnelt.
+        /// </summary>
+        public static string BPF_GRP_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("BPF_GRP_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Wärmebedarf: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_JAHRESVERBRAUCH_BW {
+            get {
+                return ResourceManager.GetString("BPF_LBL_JAHRESVERBRAUCH_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Prozesswärmebedarf: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_JAHRESVERBRAUCH_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_LBL_JAHRESVERBRAUCH_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Strombedarf: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_JAHRESVERBRAUCH_STROM {
+            get {
+                return ResourceManager.GetString("BPF_LBL_JAHRESVERBRAUCH_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Profile ähnelt.
+        /// </summary>
+        public static string BPF_LBL_KATALOG_BW {
+            get {
+                return ResourceManager.GetString("BPF_LBL_KATALOG_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Prozesswärme ähnelt.
+        /// </summary>
+        public static string BPF_LBL_KATALOG_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_LBL_KATALOG_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Strombedarf ähnelt.
+        /// </summary>
+        public static string BPF_LBL_KATALOG_STROM {
+            get {
+                return ResourceManager.GetString("BPF_LBL_KATALOG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neuer Wert ähnelt.
+        /// </summary>
+        public static string BPF_LBL_NEUER_WERT {
+            get {
+                return ResourceManager.GetString("BPF_LBL_NEUER_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Profile im Projekt ähnelt.
+        /// </summary>
+        public static string BPF_LBL_PROJEKTLISTE_BW {
+            get {
+                return ResourceManager.GetString("BPF_LBL_PROJEKTLISTE_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Prozesse im Projekt ähnelt.
+        /// </summary>
+        public static string BPF_LBL_PROJEKTLISTE_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_LBL_PROJEKTLISTE_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Strombedarfe im Projekt ähnelt.
+        /// </summary>
+        public static string BPF_LBL_PROJEKTLISTE_STROM {
+            get {
+                return ResourceManager.GetString("BPF_LBL_PROJEKTLISTE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Brauchwasserprofile: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_SUMME_BW {
+            get {
+                return ResourceManager.GetString("BPF_LBL_SUMME_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgew. Prozesse: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_SUMME_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_LBL_SUMME_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Strombedarfe: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_SUMME_STROM {
+            get {
+                return ResourceManager.GetString("BPF_LBL_SUMME_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
+        /// </summary>
+        public static string BPF_LBL_TYP {
+            get {
+                return ResourceManager.GetString("BPF_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess erfolgreich gelöscht. ähnelt.
+        /// </summary>
+        public static string BPF_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BPF_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Eintrag aus der Liste auswählen! ähnelt.
+        /// </summary>
+        public static string BPF_MSG_KEINE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("BPF_MSG_KEINE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Eintrag aus der Liste auswählen und einen Wer [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BPF_MSG_KEINE_ZEILE {
+            get {
+                return ResourceManager.GetString("BPF_MSG_KEINE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresverbrauch übernommen. ähnelt.
+        /// </summary>
+        public static string BPF_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("BPF_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt ist noch nicht gespeichert. Die Vorschau rech [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BPF_MSG_VORSCHAU {
+            get {
+                return ResourceManager.GetString("BPF_MSG_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BPF_MSG_WERT_BW {
+            get {
+                return ResourceManager.GetString("BPF_MSG_WERT_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BPF_MSG_WERT_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_MSG_WERT_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BPF_MSG_WERT_STROM {
+            get {
+                return ResourceManager.GetString("BPF_MSG_WERT_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string BPF_SP_TYP {
+            get {
+                return ResourceManager.GetString("BPF_SP_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserwärme ähnelt.
+        /// </summary>
+        public static string BPF_TITEL_BW {
+            get {
+                return ResourceManager.GetString("BPF_TITEL_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string BPF_TITEL_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_TITEL_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard Stromprofil ähnelt.
+        /// </summary>
+        public static string BPF_TITEL_STROM {
+            get {
+                return ResourceManager.GetString("BPF_TITEL_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leichte Bauart ähnelt.
+        /// </summary>
+        public static string GEBK_BAUART_LEICHT {
+            get {
+                return ResourceManager.GetString("GEBK_BAUART_LEICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwere Bauart ähnelt.
+        /// </summary>
+        public static string GEBK_BAUART_SCHWER {
+            get {
+                return ResourceManager.GetString("GEBK_BAUART_SCHWER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sehr schwere Bauart ähnelt.
+        /// </summary>
+        public static string GEBK_BAUART_SEHRSCHWER {
+            get {
+                return ResourceManager.GetString("GEBK_BAUART_SEHRSCHWER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser... ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte übernehmen ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschreiben ähnelt.
+        /// </summary>
+        public static string GEBK_BTN_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("GEBK_BTN_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschluß Wand-Dach ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_ANSCHLUSS_DACH {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_ANSCHLUSS_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschluß Fenster-Wand ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_ANSCHLUSS_FENSTER {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_ANSCHLUSS_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschluß Außenwand-Keller ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_ANSCHLUSS_KELLER {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_ANSCHLUSS_KELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude Dachfläche ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_DACHFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_DACHFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterdurchlaßgrad ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FENSTERDURCHLASS {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FENSTERDURCHLASS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Nord ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FF_NORD {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FF_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Ost + West ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FF_OSTWEST {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FF_OSTWEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Süd ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FF_SUED {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FF_SUED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche / Nutzer ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FLAECHE_NUTZER {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FLAECHE_NUTZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche Außenwand ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_FL_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_FL_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude Grundfläche ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_GRUNDFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_GRUNDFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstige Flächen ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_SONST_FLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_SONST_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert Außenwand ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_U_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_U_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert Dachfläche ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_U_DACHFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_U_DACHFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert Fenster ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_U_FENSTER {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_U_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert Grundfläche ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_U_GRUNDFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_U_GRUNDFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert Sonstiges ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_U_SONSTIGES {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_U_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Interne Wärmegewinne ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_WAERMEGEWINNE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_WAERMEGEWINNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche ähnelt.
+        /// </summary>
+        public static string GEBK_FELD_WOHNFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_FELD_WOHNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herbst : ähnelt.
+        /// </summary>
+        public static string GEBK_FERIEN_HERBST {
+            get {
+                return ResourceManager.GetString("GEBK_FERIEN_HERBST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ostern : ähnelt.
+        /// </summary>
+        public static string GEBK_FERIEN_OSTERN {
+            get {
+                return ResourceManager.GetString("GEBK_FERIEN_OSTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer : ähnelt.
+        /// </summary>
+        public static string GEBK_FERIEN_SOMMER {
+            get {
+                return ResourceManager.GetString("GEBK_FERIEN_SOMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter : ähnelt.
+        /// </summary>
+        public static string GEBK_FERIEN_WINTER {
+            get {
+                return ResourceManager.GetString("GEBK_FERIEN_WINTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abmessung Anschluß [m] ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_ANSCHLUSS {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_ANSCHLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Anfang ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_FERIEN_ANFANG {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_FERIEN_ANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Ende ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_FERIEN_ENDE {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_FERIEN_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen [m²] ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_FLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenngrößen ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_KENNGROESSEN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_KENNGROESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperaturen ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_RAUMTEMPERATUREN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_RAUMTEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_SONSTIGES {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Werte [W/m²K] ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_UWERTE {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_UWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebrückenverlustkoeffizienten [W/(mK)] ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_WAERMEBRUECKEN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_WAERMEBRUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (z.B. 0,4) ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_FENSTERDURCHLASS {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_FENSTERDURCHLASS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand-Keller : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_AUSSENWAND_KELLER {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_AUSSENWAND_KELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_BAUART {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserprofile : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_BRAUCHWASSERPROFILE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_BRAUCHWASSERPROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude Dachfläche : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_DACHFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_DACHFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterdurchlaßgrad : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FENSTERDURCHLASS {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FENSTERDURCHLASS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster-Wand : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FENSTER_WAND {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FENSTER_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Nord : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FF_NORD {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FF_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Ost + West : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FF_OSTWEST {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FF_OSTWEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche Süd : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FF_SUED {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FF_SUED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche / Nutzer : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FLAECHE_NUTZER {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FLAECHE_NUTZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche Außenwand : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_FL_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_FL_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_GEBAEUDEART {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetyp : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_GEBAEUDETYP {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_GEBAEUDETYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude Grundfläche : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_GRUNDFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_GRUNDFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximalraumtemperatur : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_MAXTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_MAXTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_MONAT {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung auf : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHTABSENKUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHTABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NAME {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_SOLL_FERIEN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_SOLL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Tag : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_SOLL_TAG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_SOLL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstige Flächen : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_SONST_FLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_SONST_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_TAG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_U_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_U_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dachfläche : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_U_DACHFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_U_DACHFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_U_FENSTER {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_U_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundfläche : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_U_GRUNDFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_U_GRUNDFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_U_SONSTIGES {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_U_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Interne Wärmegewinne : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_WAERMEGEWINNE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_WAERMEGEWINNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wand-Dach : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_WAND_DACH {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_WAND_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_WE_ABSENKUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_WE_ABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_WOHNFLAECHE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_WOHNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern! Alle Eingaben überprüfen! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: Bei der Eingabe der Herbstferien! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_FERIEN_HERBST {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_FERIEN_HERBST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: Bei der Eingabe der Osterferien! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_FERIEN_OSTERN {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_FERIEN_OSTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: Bei der Eingabe der Sommerferien! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_FERIEN_SOMMER {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_FERIEN_SOMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ferien müssen über die Jahresgrenze gehen! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_FERIEN_WINTER {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_FERIEN_WINTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ist gespeichert! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudenamen eingeben! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_READONLY {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte übernommen. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude Datensatz ist überschrieben! ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte {0} als Zahl eingeben. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_ZAHL {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen und U-Werte ähnelt.
+        /// </summary>
+        public static string GEBK_REITER_FLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBK_REITER_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten: Flächen, U-Werte ähnelt.
+        /// </summary>
+        public static string GEBK_TITEL {
+            get {
+                return ResourceManager.GetString("GEBK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht Wohngebäude ähnelt.
+        /// </summary>
+        public static string GEBK_VERWENDUNG_NICHTWOHN {
+            get {
+                return ResourceManager.GetString("GEBK_VERWENDUNG_NICHTWOHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude ähnelt.
+        /// </summary>
+        public static string GEBK_VERWENDUNG_WOHN {
+            get {
+                return ResourceManager.GetString("GEBK_VERWENDUNG_WOHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
+        /// </summary>
+        public static string GEBW_GRP_EINGABE {
+            get {
+                return ResourceManager.GetString("GEBW_GRP_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Info ausgewähltes Gebäude ähnelt.
+        /// </summary>
+        public static string GEBW_GRP_INFO {
+            get {
+                return ResourceManager.GetString("GEBW_GRP_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei Brennstoffangaben bitte Heizkessel Jahresnutzungsgrad [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string GEBW_HINWEIS_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("GEBW_HINWEIS_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Angabe: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_ART_ANGABE {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_ART_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_BEDARFSART {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_BEDARFSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Warmwasserbereitung ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_DEZ_WARMWASSER {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_DEZ_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_GEBAEUDEART {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudename: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_GEBAEUDENAME {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_GEBAEUDENAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresnutzungsgrad: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf/Wohnfläche: ähnelt.
+        /// </summary>
+        public static string GEBW_LBL_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("GEBW_LBL_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte {0} als Zahl eingeben. ähnelt.
+        /// </summary>
+        public static string GEBW_MSG_ZAHL {
+            get {
+                return ResourceManager.GetString("GEBW_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Ge [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string GEBW_TITEL {
+            get {
+                return ResourceManager.GetString("GEBW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vor 1919 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_A {
+            get {
+                return ResourceManager.GetString("GEB_BAK_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1919 bis 1948 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_B {
+            get {
+                return ResourceManager.GetString("GEB_BAK_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1949 bis 1957 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_C {
+            get {
+                return ResourceManager.GetString("GEB_BAK_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1958 bis 1968 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_D {
+            get {
+                return ResourceManager.GetString("GEB_BAK_D", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1969 bis 1978 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_E {
+            get {
+                return ResourceManager.GetString("GEB_BAK_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1979 bis 1983 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_F {
+            get {
+                return ResourceManager.GetString("GEB_BAK_F", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1984 bis 1994 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_G {
+            get {
+                return ResourceManager.GetString("GEB_BAK_G", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1995 bis 2000 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_H {
+            get {
+                return ResourceManager.GetString("GEB_BAK_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niedrigenergiebauweise ähnelt.
+        /// </summary>
+        public static string GEB_BAK_I {
+            get {
+                return ResourceManager.GetString("GEB_BAK_I", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Passivhaus ähnelt.
+        /// </summary>
+        public static string GEB_BAK_J {
+            get {
+                return ResourceManager.GetString("GEB_BAK_J", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EnEv 2007 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_K {
+            get {
+                return ResourceManager.GetString("GEB_BAK_K", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 70 (EnEV 2007) ähnelt.
+        /// </summary>
+        public static string GEB_BAK_L {
+            get {
+                return ResourceManager.GetString("GEB_BAK_L", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2009 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_M {
+            get {
+                return ResourceManager.GetString("GEB_BAK_M", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 70 (EnEV 2009) ähnelt.
+        /// </summary>
+        public static string GEB_BAK_N {
+            get {
+                return ResourceManager.GetString("GEB_BAK_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 55 (EnEV 2009) ähnelt.
+        /// </summary>
+        public static string GEB_BAK_O {
+            get {
+                return ResourceManager.GetString("GEB_BAK_O", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2014 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_P {
+            get {
+                return ResourceManager.GetString("GEB_BAK_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2016 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_Q {
+            get {
+                return ResourceManager.GetString("GEB_BAK_Q", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 100 (EnEV 2016) ähnelt.
+        /// </summary>
+        public static string GEB_BAK_R {
+            get {
+                return ResourceManager.GetString("GEB_BAK_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 155 (EnEV 2016) ähnelt.
+        /// </summary>
+        public static string GEB_BAK_S {
+            get {
+                return ResourceManager.GetString("GEB_BAK_S", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BEG 55 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_T {
+            get {
+                return ResourceManager.GetString("GEB_BAK_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BEG 40 ähnelt.
+        /// </summary>
+        public static string GEB_BAK_U {
+            get {
+                return ResourceManager.GetString("GEB_BAK_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern ähnelt.
+        /// </summary>
+        public static string GEB_BTN_AENDERN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB ändern... ähnelt.
+        /// </summary>
+        public static string GEB_BTN_DB_AENDERN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_DB_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB löschen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_DB_LOESCHEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_DB_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB neu... ähnelt.
+        /// </summary>
+        public static string GEB_BTN_DB_NEU {
+            get {
+                return ResourceManager.GetString("GEB_BTN_DB_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetyp in DB ändern... ähnelt.
+        /// </summary>
+        public static string GEB_BTN_GEBTYP {
+            get {
+                return ResourceManager.GetString("GEB_BTN_GEBTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter Gebäude DB ähnelt.
+        /// </summary>
+        public static string GEB_GRP_FILTER {
+            get {
+                return ResourceManager.GetString("GEB_GRP_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude: Verbrauch ähnelt.
+        /// </summary>
+        public static string GEB_GRP_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("GEB_GRP_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Energiedaten ähnelt.
+        /// </summary>
+        public static string GEB_KOPFBAND {
+            get {
+                return ResourceManager.GetString("GEB_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr ähnelt.
+        /// </summary>
+        public static string GEB_LBL_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEB_LBL_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("GEB_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart ähnelt.
+        /// </summary>
+        public static string GEB_LBL_GEBAEUDEART {
+            get {
+                return ResourceManager.GetString("GEB_LBL_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudename: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_GEBAEUDENAME {
+            get {
+                return ResourceManager.GetString("GEB_LBL_GEBAEUDENAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("GEB_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählte Gebäude im Projekt: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("GEB_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_SUCHE {
+            get {
+                return ResourceManager.GetString("GEB_LBL_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche: ähnelt.
+        /// </summary>
+        public static string GEB_LBL_WOHNFLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_LBL_WOHNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
+        /// </summary>
+        public static string GEB_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB auswählen! ähnelt.
+        /// </summary>
+        public static string GEB_MSG_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("GEB_MSG_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll {0} wirklich gelöscht werden ? ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHFRAGE {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche, z. B. Haus*_1990* ähnelt.
+        /// </summary>
+        public static string GEB_PLATZHALTER_SUCHE {
+            get {
+                return ResourceManager.GetString("GEB_PLATZHALTER_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ/Wohnfläche ähnelt.
+        /// </summary>
+        public static string GEB_SP_TYP_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEB_SP_TYP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_ALLE {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerbe+Sonstige ähnelt.
+        /// </summary>
+        public static string GEB_TEXT_SONSTIGE {
+            get {
+                return ResourceManager.GetString("GEB_TEXT_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Gebäudedaten ähnelt.
+        /// </summary>
+        public static string GEB_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einlesen/Bearbeiten.. ähnelt.
+        /// </summary>
+        public static string WBX_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("WBX_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DB Ganglinie löschen ähnelt.
+        /// </summary>
+        public static string WBX_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("WBX_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdaten (Ganglinien) ähnelt.
+        /// </summary>
+        public static string WBX_KOPFBAND {
+            get {
+                return ResourceManager.GetString("WBX_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf aus DB ähnelt.
+        /// </summary>
+        public static string WBX_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("WBX_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählt im Projekt ähnelt.
+        /// </summary>
+        public static string WBX_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("WBX_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es existiert eine Projektzuordnung, Löschen nicht möglich! ähnelt.
+        /// </summary>
+        public static string WBX_MSG_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("WBX_MSG_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Extern ähnelt.
+        /// </summary>
+        public static string WBX_TITEL {
+            get {
+                return ResourceManager.GetString("WBX_TITEL", resourceCulture);
+            }
+        }
+        
     }
 }
