@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0, W1 und W2 umgesetzt | `3fd320e` | 102 Designer-Masken offen (105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht |
+| **iU9** Masken in Wellen | 🔄 W0 bis W3 umgesetzt | `4ea688c` | **98** Designer-Masken offen (102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1402,6 +1402,54 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W3: **vier Masken →
+> vier Razor-Komponenten**, jede WinForms-Fassung im selben Schritt gelöscht (Regel M1).
+> Alle vier hängen am Energieträger — `Form_Energietraeger` öffnet zwei direkt,
+> `ucFuelSettings` die anderen beiden. Acht Commits, einer je Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `afd599d` | **W3.0** Bausteinlücken 4–6: `Standards/Dateiwahl.razor` (Pfad + Knopf, Wähler als Delegat), `Bausteine/Zeilenwahl.razor` (der Wahlknopf, der bisher zweimal wortgleich im Markup stand), `Textfeld` + `Mehrzeilig`/`Zeilen`/`NurLesen`, `Raster` + `Bearbeitbar` |
+> | `624ce28` | **W3.1** `Form_LeistungspreisReihe` → `Dialoge/Kosten/LeistungspreisReiheDialog.razor` + Hülle; zwölf Monatssätze im mitwachsenden Gitter, Ebenenregel Projekt-/Stammreihe unverändert |
+> | `b2a9511` | **W3.2** `Form_SpotpreisImport` → `Dialoge/Kosten/SpotpreisImportDialog.razor` + Hülle; Dateiwahl über `Dienste.Datei`, Prüfen und Schreiben in `Task.Run`, Protokoll mehrzeilig und festbreit |
+> | `15417a8` | **W3.3** `Form_Emissionskatalog` (767 Z., zwei Raster) → `Dialoge/Kosten/EmissionskatalogDialog.razor` + Hülle; die beiden zur Laufzeit gebauten Unterdialoge werden **eingerückte Blöcke** statt zweiter WebViews (R2) |
+> | `cb700f0` | **W3.4** `Form_Kostenprofil` (36 Laufzeitfelder + Chart) → `Dialoge/Kosten/KostenprofilDialog.razor` + Hülle; **neu im Kern:** `ChartRenderer.Kostenprofil` samt `C_PROFIL` |
+> | `5a25c1d` | **W3.5** Ressourcen-Sammelnachtrag: 67 Schlüssel (`LPR_*`, `SPOT_*`, `EMK_*`, `KPROF_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `4ea688c` | **W3.6** Formularkarte-Tests: fünftes Prüfmuster (`Form_Kostenprofil`, neun Testbezüge), Stapellauf-Zähler 102 → 98 |
+> | *dieses Paket* | **W3.7** Protokoll, Statusblock, `CLAUDE.md` ×3 |
+>
+> **Die Renderer-Erweiterung ist der eigentliche Gewinn.** `ChartRenderer.Kostenprofil` ist die
+> erste neue Methode seit der SkiaSharp-Portierung (iU7) — der Nachweis, dass der Weg
+> „Diagramm im Kern zeichnen, in der Oberfläche nur das PNG zeigen" auch für **Eingabemasken**
+> trägt, nicht nur für den Bericht. Bildmaß 1296 × 780 (doppelte Zielauflösung des abgelösten
+> WinForms-Chart), Linienfarbe wörtlich übernommen, y-Achse vorzeichenfähig. Die Probe
+> `Proben/ChartProben` prüft es als zehntes Bild.
+>
+> **Bausteinsatz.** Zwei neue Bausteine (`Dateiwahl`, `Zeilenwahl`), drei erweiterte Standards
+> (`Textfeld`, `Raster`, dazu `Zahlenfeld` unverändert) und sieben CSS-Klassen. Damit sind die
+> Bausteinlücken 4, 5 und 6 des Wellenplans geschlossen; `Dateiwahl` bedient ab Welle 13 die
+> sechs Importmasken.
+>
+> **Kein neuer Controller, keine neue SQL-Zeile.** Alle vier Masken riefen schon vorher
+> ausschließlich Kern-Controller (`PreisreiheCtrl`, `SpotpreisImportCtrl`,
+> `EmissionskatalogCtrl`/`EmissionenCtrl`, `KostenprofilCtrl`) — Hausmuster Ä9.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **26** Warnungen (Basis 28; WFO1000 22 → 20) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 217** grün (1 110 vorher; 105 neue bunit- und 2 neue Kern-Tests) · Formularkarte **121**
+> grün, Build 0/0 · Stapellauf **98** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 303
+> Texte, 0 Fundstellen · ChartProben **10** Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**, `diff -rq` ohne Unterschied ·
+> `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (4 Masken, alle vollständig, dazu die 36
+> Laufzeitfelder und die beiden Untereditoren), 22 Abweichungen (A‑1…A‑22),
+> Windows-Abnahmeliste mit vierzehn fachlichen Proben und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W3_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
 
 > **Statusblock iU9 — Welle 2 umgesetzt (03.09.2026, Basis `b0d3d86`)**
 >

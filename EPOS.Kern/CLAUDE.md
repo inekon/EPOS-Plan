@@ -204,6 +204,18 @@ SkiaSharp statt GDI+ (iU7-2), ohne eine einzige Windows-API. Er ist die Vorlage 
 (`EPOS.UI/Standards/ChartBild`): Der Kern liefert PNG-Bytes, die Oberfläche zeigt sie an —
 ein Chart-Stack für Bericht *und* Bildschirm.
 
+**Er zeichnet seit iU9-W3.4 auch für EINGABEMASKEN.** `ChartRenderer.Kostenprofil` (samt der
+Palettenfarbe `C_PROFIL`) ist die erste neue Methode seit der SkiaSharp-Portierung: das aus
+zwölf Monatsniveaus und 168 Wochenwerten konstruierte Jahresprofil (8 760 Stunden) über einer
+Monatsachse 0…12, Bildmaß **1296 × 780** — die doppelte Zielauflösung des abgelösten
+WinForms-Chart aus `Form_Kostenprofil` (648 × 390). Die y-Achse ist **vorzeichenfähig** wie
+beim Kapitalwert-Verlauf und aus demselben Grund: Ein Wochenwert ist eine *Abweichung* und
+darf den Monatswert unter null ziehen; die Nulllinie wird dann gestrichelt hervorgehoben. Der
+Dialog dazu ist `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor`, gerechnet wird in
+`Views/Kosten/KostenprofilHuelle.cs` (`PreisModell.AusMonatsUndWochenwerten` + Renderer, beides
+in `Task.Run`). Damit trägt der Weg „Diagramm im Kern zeichnen, in der Oberfläche nur das PNG
+zeigen" auch außerhalb des Berichts.
+
 **Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
 `ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
 `ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
@@ -240,8 +252,9 @@ Pixelvergleich ist nur *innerhalb* einer Plattform sinnvoll (genau das macht der
 `bildvergleich` der Referenzlauf-Suite gegen `ChartRendererGdi`).
 
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
-Verdichtungen exakt und dass gezeichnet wird — drei Tests, in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet neun Bilder und
+Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
+sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet **zehn** Bilder und
 prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
