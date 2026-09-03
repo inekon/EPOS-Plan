@@ -5,6 +5,12 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 
+// Der erste als Razor-Komponente geschriebene Dialog (iU8/iZ5). Bewusst NUR
+// dieser eine Namensraum: EventCallback wird unten ausgeschrieben, damit sich
+// Microsoft.AspNetCore.Components nicht mit System.Windows.Forms um Namen
+// streitet.
+using EPOS.UI.Dialoge.Kosten;
+
 namespace WindowsFormsApplication1
 {
     public partial class Form_Kosten : Form
@@ -2086,27 +2092,84 @@ namespace WindowsFormsApplication1
             flpContainer_Energiekosten.Controls.Clear();
         }
 
+        /// <summary>
+        /// Legt eine Energietraegervariante an - „Energieträger anlegen" (btn_Carrier).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Stichtag iZ5 (Umsetzungskonzept iOS, Paket iU8).</b> Der Dialog ist die
+        /// erste Maske von EPOS-Plan, die als Razor-Komponente in <c>EPOS.UI</c>
+        /// lebt statt als WinForms-Formular. <c>Form_Kosten_Auswahl</c> ist mit
+        /// dieser Umstellung GELOESCHT (Regel M1: keine zweite Fassung derselben
+        /// Maske). Angezeigt wird die Komponente von der Huelle
+        /// <see cref="BlazorDialogForm{TKomponente}"/>.
+        /// </para>
+        /// <para>
+        /// <b>Fuer diese Methode aendert sich wenig.</b> Sie bekommt weiterhin ein
+        /// <see cref="DialogResult"/> aus <c>ShowDialog()</c> und danach dieselben
+        /// neun Werte - nur aus zwei Quellen statt aus neun Eigenschaften des
+        /// Formulars: Was der Anwender EINGEGEBEN hat, steht im Ergebnis-Record;
+        /// die sechs daraus ABGELEITETEN Werte holt
+        /// <c>EnergietraegerVarianteCtrl.Ergaenzen</c> mit denselben Abfragen, die
+        /// der alte Dialog beim Schliessen selbst ausfuehrte. Alles danach -
+        /// Katalogsuche, INSERT, Preishistorie, Projektzuordnung - ist
+        /// unveraendert.
+        /// </para>
+        /// </remarks>
         private string CreateNewEnergyCarrier()
         {
-            using (var dlg = new Form_Kosten_Auswahl())
+            // Das Ergebnis kommt nicht als Rueckgabewert, sondern ueber den
+            // Rueckruf der Komponente; die Huelle schliesst daraufhin das Fenster.
+            EnergietraegerVarianteErgebnis ergebnis = null;
+            BlazorDialogForm<EnergietraegerVarianteDialog> dlg = null;
+
+            var parameter = new Dictionary<string, object>
             {
-                if (dlg.ShowDialog() != DialogResult.OK) return "";
+                // Die Komponente bleibt datenbankfrei: Sie bekommt die Liste fertig.
+                ["Energietraeger"] = EnergietraegerVarianteCtrl.Energietraeger(),
+
+                ["TitelText"] = MyResource.Resource.KAUSW_TITEL,
+                ["LabelEnergietraeger"] = MyResource.Resource.KAUSW_LBL_ENERGIETRAEGER,
+                ["LabelVariante"] = MyResource.Resource.KAUSW_LBL_VARIANTE,
+                ["MeldungNameFehlt"] = MyResource.Resource.KAUSW_MSG_NAME_FEHLT,
+                ["MeldungTraegerFehlt"] = MyResource.Resource.KAUSW_MSG_TRAEGER_FEHLT,
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+
+                ["Geschlossen"] = Microsoft.AspNetCore.Components.EventCallback.Factory
+                    .Create<EnergietraegerVarianteErgebnis>(this, e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null);
+                    })
+            };
+
+            dlg = new BlazorDialogForm<EnergietraegerVarianteDialog>(
+                MyResource.Resource.KAUSW_TITEL, new Size(460, 320), parameter);
+
+            using (dlg)
+            {
+                if (dlg.ShowDialog() != DialogResult.OK || ergebnis == null) return "";
+
+                // Die sechs abgeleiteten Werte - frueher FetchAdditionalData und
+                // GetConvID im Dialog selbst, jetzt derselbe Weg im Kern.
+                EnergietraegerDaten daten = EnergietraegerVarianteCtrl.Ergaenzen(ergebnis.BrennstoffId);
 
                 try
                 {
                     // Default-Werte aus dem Brennstoff-Stamm (Preise/Emissionen)
-                    double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", dlg.SelectedBrennstoffID));
-                    double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", dlg.SelectedBrennstoffID));
-                    double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", dlg.SelectedBrennstoffID));
-                    double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", dlg.SelectedBrennstoffID));
-                    double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", dlg.SelectedBrennstoffID));
-                    double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
+                    double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", ergebnis.BrennstoffId));
+                    double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", ergebnis.BrennstoffId));
+                    double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", ergebnis.BrennstoffId));
+                    double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", ergebnis.BrennstoffId));
+                    double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", ergebnis.BrennstoffId));
+                    double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", ergebnis.BrennstoffId));
 
                     // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet
                     int carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
-                        new DbParam[] { new DbParam("@name", dlg.SelectedName) });
+                        new DbParam[] { new DbParam("@name", ergebnis.VariantenName) });
                     if (existing != null && existing != DBNull.Value)
                         carrierId = Convert.ToInt32(existing);
 
@@ -2118,14 +2181,14 @@ namespace WindowsFormsApplication1
                               hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         DbParam[] ps = {
-                            new DbParam("@idB",   dlg.SelectedBrennstoffID),
-                            new DbParam("@code",  dlg.SelectedCode),
-                            new DbParam("@name",  dlg.SelectedName),
-                            new DbParam("@gc",    dlg.SelectedGroupCode),
-                            new DbParam("@pm",    dlg.SelectedBrennstoffCode),
-                            new DbParam("@unit",  dlg.SelectedBillingUnit),
-                            new DbParam("@shi",   dlg.SelectedHi),
-                            new DbParam("@shs",   dlg.SelectedHs),
+                            new DbParam("@idB",   ergebnis.BrennstoffId),
+                            new DbParam("@code",  ergebnis.BrennstoffName),
+                            new DbParam("@name",  ergebnis.VariantenName),
+                            new DbParam("@gc",    daten.GroupCode),
+                            new DbParam("@pm",    daten.Code),
+                            new DbParam("@unit",  daten.BillingUnit),
+                            new DbParam("@shi",   daten.Hi),
+                            new DbParam("@shs",   daten.Hs),
                             new DbParam("@defap", default_arbeitspreis),
                             new DbParam("@defgp", default_grundpreis),
                             new DbParam("@co2",   default_co2),
@@ -2145,8 +2208,8 @@ namespace WindowsFormsApplication1
                         }));
                     if (vorhanden > 0)
                     {
-                        MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
-                        return dlg.SelectedName;
+                        MessageBox.Show($"Die Energieträgervariante '{ergebnis.VariantenName}' ist diesem Projekt bereits zugeordnet.");
+                        return ergebnis.VariantenName;
                     }
 
                     // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen)
@@ -2159,10 +2222,10 @@ namespace WindowsFormsApplication1
                         new DbParam("@cid",  carrierId),
                         new DbParam("@prid", m_ID_Projekt),
                         new DbParam("@ap",   Math.Round(default_arbeitspreis, 4)),
-                        new DbParam("@hi",   Math.Round(dlg.SelectedHi, 4)),
+                        new DbParam("@hi",   Math.Round(daten.Hi, 4)),
                         new DbParam("@gp",   Math.Round(default_grundpreis, 4)),
                         new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now },
-                        new DbParam("@au",   dlg.SelectedBillingUnit),
+                        new DbParam("@au",   daten.BillingUnit),
                         new DbParam("@lp",   Math.Round(default_leistungspreis, 4))
                     });
 
@@ -2175,17 +2238,17 @@ namespace WindowsFormsApplication1
                         new DbParam("@eid",    carrierId),
                         new DbParam("@p",      Math.Round(default_arbeitspreis, 4)),
                         new DbParam("@pl",     Math.Round(default_leistungspreis, 4)),
-                        new DbParam("@h",      Math.Round(dlg.SelectedHi, 4)),
-                        new DbParam("@hs",     Math.Round(dlg.SelectedHs, 4)),
+                        new DbParam("@h",      Math.Round(daten.Hi, 4)),
+                        new DbParam("@hs",     Math.Round(daten.Hs, 4)),
                         new DbParam("@b",      Math.Round(default_grundpreis, 4)),
-                        new DbParam("@convid", dlg.SelectedConvID),
+                        new DbParam("@convid", daten.ConvID),
                         new DbParam("@co2",    default_co2),
                         new DbParam("@so2",    default_so2),
                         new DbParam("@nox",    default_nox)
                     });
 
                     MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
-                    return dlg.SelectedName;
+                    return ergebnis.VariantenName;
                 }
                 catch (Exception ex)
                 {

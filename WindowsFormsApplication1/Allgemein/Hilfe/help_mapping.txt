@@ -220,6 +220,11 @@ Form_Energietraeger.btn_Help = Kosten
 Form_KostenAdmin.btn_Help = Kosten
 Form_KostenKomponente.btn_Help = Kosten
 Form_Kostenprofil.btn_Help = Kosten
+# Erster Dialog als Razor-Komponente (iU8/iZ5). Der Schluessel steht in der
+# Komponente selbst (EnergietraegerVarianteDialog.razor, HilfeSchluessel);
+# gesucht wird er nicht ueber ein Steuerelement, sondern ueber
+# HelpExtender.ZielFuer.
+Form_Kosten_Auswahl.btn_Help = Kosten
 Form_LeistungspreisReihe.btn_Help = Kosten
 Form_SpotpreisImport.btn_Help = Kosten
 Form_VorlagenUebernahme.btn_Help = Kosten
