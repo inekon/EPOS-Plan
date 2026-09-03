@@ -238,7 +238,6 @@ namespace WindowsFormsApplication1
             { "Form_KwkgModule",                   B_WIRTSCHAFT },   // H7 nachgetragen
             { "Form_Wirtschaftlichkeit",           B_WIRTSCHAFT },
             { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
-            { "Form_WirtschaftlichkeitVerlauf",    B_WIRTSCHAFT },
             { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
             { "WizardParent",                B_ASSISTENT },

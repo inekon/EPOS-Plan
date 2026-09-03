@@ -483,14 +483,17 @@ namespace WindowsFormsApplication1
                 var st = it.Tag as BerichtsDatenSammler.VariantenStatus;
                 if (st != null && !st.IstStamm && it.Checked) variantenIds.Add(st.IdProjekt);
             }
-            using (var dlg = new Form_WirtschaftlichkeitVerlauf(_idStamm, _stammName, variantenIds))
+            // iU9-W1.6: der Verlaufsdialog als Razor-Komponente über
+            // KapitalwertVerlaufHuelle; Form_WirtschaftlichkeitVerlauf ist im
+            // selben Schritt gelöscht (Regel M1).
             {
-                dlg.ShowDialog(Besitzer);
+                bool datenNeuGesammelt =
+                    KapitalwertVerlaufHuelle.Oeffnen(Besitzer, _idStamm, _stammName, variantenIds);
 
                 // Der Verlaufsdialog kann neu simuliert haben (Stundenreihen) — dann
                 // passen die persistierten Ergebnisse nicht mehr zum Simulationsstand
                 // (Review Phase 11): Anzeige auffrischen und offen darauf hinweisen.
-                if (dlg.DatenNeuGesammelt)
+                if (datenNeuGesammelt)
                 {
                     AktualisiereListe(true);
                     _ergebnisse = _ctrl.LadeErgebnisse(GewaehlteIds(true));
