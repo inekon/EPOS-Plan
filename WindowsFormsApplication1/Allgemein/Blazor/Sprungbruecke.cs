@@ -131,6 +131,19 @@ namespace WindowsFormsApplication1
                         using (Form_Solarganglinie_Admin f = new Form_Solarganglinie_Admin())
                             return MitOk(f, besitzer);
 
+                    // --- iU9-W9.0f: die Verwaltung der externen Waermebedarfsganglinien -
+                    // Dieselbe Maske, die Dienste.Navigation fuer
+                    // Masken.WaermebedarfExternAdmin zeigt; der Vorlaeufer
+                    // (Form_Waermebedarf.btn_Bearbeiten_Click:257) rief sie unmittelbar
+                    // samt SetControls(). Sie bleibt bis Welle 13 WinForms. Nach der
+                    // Rueckkehr laedt der Dialog seine Katalogliste neu.
+                    case Sprungziel.WaermebedarfExternAdmin:
+                        using (Form_AdminWaermeeinlesen f = new Form_AdminWaermeeinlesen())
+                        {
+                            f.SetControls();
+                            return MitOk(f, besitzer);
+                        }
+
                     default:
                         return false;
                 }
