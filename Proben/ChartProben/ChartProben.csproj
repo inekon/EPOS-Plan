@@ -45,7 +45,7 @@
 
   <ItemGroup>
     <!-- Der Pruefling - EINE Quelle, verlinkt statt kopiert. -->
-    <Compile Include="..\..\WindowsFormsApplication1\Allgemein\Bericht\ChartRenderer.cs"
+    <Compile Include="..\..\EPOS.Kern\Allgemein\Bericht\ChartRenderer.cs"
              Link="ChartRenderer.cs" />
 
     <!-- Die Probe selbst und der schmale Ersatz fuer das, was der Renderer
