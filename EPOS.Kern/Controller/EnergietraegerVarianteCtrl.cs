@@ -41,10 +41,12 @@ namespace WindowsFormsApplication1
     /// <c>Hi</c> und <c>Hs</c> ist absichtlich uebernommen: Ein fehlender Heizwert
     /// soll auffallen und nicht als 0 durchrutschen.</para>
     ///
-    /// <para><b>Zweitnutzer in Sicht.</b> <c>Form_Kosten_VarAuswahl</c> traegt
-    /// dieselben drei Abfragen zeichengleich ein zweites Mal (Konzept
-    /// Einheitenbruch § 4.3). Wenn diese Maske in iU9 folgt, benutzt sie diesen
-    /// Controller mit — dann gibt es die Abfragen nur noch einmal.</para>
+    /// <para><b>Zweitnutzer eingeloest (iU9-1, 03.09.2026).</b> Die zeichengleiche
+    /// Schwester <c>Views\Kosten\Form_Kosten_VarAuswahl</c> trug dieselben drei
+    /// Abfragen ein zweites Mal (Konzept Einheitenbruch § 4.3). Sie ist geloescht;
+    /// ihre beiden Aufrufer <c>Form_Heizkessel</c> und <c>Form_BHKWEing</c> zeigen
+    /// jetzt dieselbe Razor-Komponente und holen die abgeleiteten Werte hier —
+    /// die Abfragen stehen damit nur noch einmal im Bestand.</para>
     /// </summary>
     public static class EnergietraegerVarianteCtrl
     {

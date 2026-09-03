@@ -2105,6 +2105,16 @@ namespace WindowsFormsApplication1
         /// <see cref="BlazorDialogForm{TKomponente}"/>.
         /// </para>
         /// <para>
+        /// <b>Befund 03.09.2026 (iU9-1).</b> Diese MASKE ist seit KD6a ohne Einstieg:
+        /// <c>Views\BerichteKosten\UcBkKosten.btnVerwaltung_Click</c> oeffnet
+        /// <c>Form_KostenKomponente</c>, und <c>Form_Start</c> raeumt den alten Knopf
+        /// mit <c>EntferneAltknopf(btn_Kosten)</c> ab. Der Blazor-Dialog war ueber sie
+        /// also gar nicht erreichbar. Die erreichbaren Aufrufer sind
+        /// <c>Views\Heizkessel\Form_Heizkessel</c> und <c>Views\BHKW\Form_BHKWEing</c>;
+        /// beide sind mit iU9-1 auf dieselbe Komponente umgestellt. Diese Methode
+        /// bleibt unveraendert stehen, solange die Maske selbst nicht geloescht ist.
+        /// </para>
+        /// <para>
         /// <b>Fuer diese Methode aendert sich wenig.</b> Sie bekommt weiterhin ein
         /// <see cref="DialogResult"/> aus <c>ShowDialog()</c> und danach dieselben
         /// neun Werte - nur aus zwei Quellen statt aus neun Eigenschaften des
