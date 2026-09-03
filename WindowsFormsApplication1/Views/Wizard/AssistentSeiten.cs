@@ -38,7 +38,8 @@ namespace WindowsFormsApplication1
             // iU9-W9.2: Die Gebaeudeseite ist eine Razor-Komponente; die Huelle baut
             // ihre WebView erst in Bestuecken (siehe BlazorAssistentSeite).
             /* 2  GEBAEUDE_ITEM      */ () => GebaeudeHuelle.AssistentSeite(),
-            /* 3  WAERMEBEDARF_ITEM  */ () => new Form_Waermebedarf(),
+            // iU9-W9.4: dieselbe Bauart wie die Gebaeudeseite (W9.2).
+            /* 3  WAERMEBEDARF_ITEM  */ () => WaermebedarfExternHuelle.AssistentSeite(),
             /* 4  PROZESS_ITEM       */ () => new Form_Prozesswaerme(),
             /* 5  STROMSTD_ITEM      */ () => new Form_Stromverbraucher(),
             /* 6  STROMLASTGANG_ITEM */ () => new Wizard_Stromlastgang(),
@@ -60,7 +61,9 @@ namespace WindowsFormsApplication1
         {
             typeof(Wizard_Komponenten), typeof(Wizard_Projekt),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.GebaeudeDialog, Z_ProjGebModel>),
-            typeof(Form_Waermebedarf), typeof(Form_Prozesswaerme), typeof(Form_Stromverbraucher),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.WaermebedarfExternDialog,
+                                        Z_ProjWaermebedarfModel>),
+            typeof(Form_Prozesswaerme), typeof(Form_Stromverbraucher),
             typeof(Wizard_Stromlastgang),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog>),

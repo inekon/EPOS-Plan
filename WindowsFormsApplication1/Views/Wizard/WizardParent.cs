@@ -367,11 +367,6 @@ namespace WindowsFormsApplication1
             {
                 ((Wizard_Stromlastgang)page).SetControls(ucProjektAuswahl.GewaehlterName);
             }
-            else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
-            {
-                ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
-                ((Form_Waermebedarf)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
-            }
             else if (top == WizardItemClass.STROMSTD_ITEM)
             {
                 ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;

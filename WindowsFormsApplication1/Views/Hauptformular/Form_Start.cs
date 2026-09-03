@@ -257,45 +257,23 @@ namespace WindowsFormsApplication1
 
         private void pBox_WBedarfDaten_Click(object sender, EventArgs e)
         {
-            Form_Waermebedarf frm = new Form_Waermebedarf();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            RecordSet rs = new RecordSet();
 
-            frm.list_wbmodel.Clear();
+            // iU9-W9.0d: der JOIN samt Kanal steht im Kern.
+            List<Z_ProjWaermebedarfModel> liste =
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_ProjektWaermebedarf.ID_Z, Z_ProjektWaermebedarf.ID_Projekt, " +
-                  "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
-                  "FROM Z_ProjektWaermebedarf INNER JOIN Tab_Waermebedarf ON " +
-                  "Z_ProjektWaermebedarf.ID_Ganglinie = Tab_Waermebedarf.ID " +
-                  " where Z_ProjektWaermebedarf.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektGebGanglinieCtrl item = new Z_ProjektGebGanglinieCtrl();
-                item.m_ID_Z = (int)rs.Read("ID_Z");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Ganglinie = (int)rs.Read("ID_Ganglinie");
-                item.m_szBezeichner = (string)rs.Read("Bezeichner");//item.Text;
-                frm.list_wbmodel.Add(item);
-            }
-            rs.Close();
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            // iU9-W9.4: Blazor-Huelle statt Form_Waermebedarf.
+            if (WaermebedarfExternHuelle.Oeffnen(this, m_ID_Projekt, m_szProjektname, liste))
             {
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
-                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, frm.list_wbmodel);
+                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, liste);
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
-                if (frm.list_wbmodel.Count > 0)
+                if (liste.Count > 0)
                     status |= 16;
                 else status &= ~16;
                 pBox_WBedarfDaten.Invalidate();
