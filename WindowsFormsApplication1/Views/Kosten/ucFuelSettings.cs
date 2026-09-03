@@ -215,11 +215,10 @@ namespace WindowsFormsApplication1
             };
             btnSaisonSaetze.Click += (s, e) =>
             {
-                using (Form_LeistungspreisReihe dlg = new Form_LeistungspreisReihe())
-                {
-                    dlg.SetControls(_projectId, _carrier.ID, _carrier.Name);
-                    dlg.ShowDialog(FindForm());
-                }
+                // iU9-W3.1: Der Editor der saisonalen Sätze ist eine Razor-Komponente
+                // (LeistungspreisReiheDialog); die Datenseite liegt in der Hülle.
+                LeistungspreisReiheHuelle.Oeffnen(FindForm(), _projectId,
+                                                  _carrier.ID, _carrier.Name);
                 ZeigeReihenStatus();
             };
             eltern.Controls.Add(btnSaisonSaetze);
