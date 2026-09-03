@@ -574,13 +574,9 @@ namespace WindowsFormsApplication1
                 if (pc.rows > 0) projektname = pc.m_szProjektname;
             }
             catch { }
-            using (var dlg = new Form_KostenKomponente())
-            {
-                // Ä20: direkt die Kosten DIESER Anlage (item.ID = Anlagenzeile).
-                dlg.SetProjekt(item.ID_Projekt, projektname, DbWerte.ERZEUGER_WAERMEPUMPE,
-                               false, item.ID);
-                dlg.ShowDialog(this);
-            }
+            // Ä20: direkt die Kosten DIESER Anlage (item.ID = Anlagenzeile).
+            KostenKomponenteHuelle.OeffnenProjekt(this, item.ID_Projekt, projektname,
+                                                  DbWerte.ERZEUGER_WAERMEPUMPE, false, item.ID);
             KostenSummenAnzeigen();
         }
 

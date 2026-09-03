@@ -2,72 +2,80 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Windows.Forms;
+using EPOS.UI.Dialoge.Allgemein;
+using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Inhalt des Reiters „Ertrag/Bonus" im Komponenten-Kostendialog (Etappe KD5,
-    /// Konzept Kostendialoge § 6) — reine ANZEIGE vorhandener Wahrheiten, keine
-    /// Zweitpflege:
+    /// Die DATENSEITE des Abschnitts „Ertrag/Bonus" (iU9-W4.1/W4.2) — Nachfolge
+    /// der gelöschten <c>Views/Kosten/ucErtragBonus.cs</c> (217 Z.), Etappe KD5,
+    /// Konzept Kostendialoge § 6.
     ///
-    /// <para><b>BHKW (§ 6.1):</b> KWKG-Zuschlagstabelle (Folie 10) und
-    /// Steuervergünstigungen aus dem Gesetzeskatalog — es sind exakt die
-    /// Katalogschlüssel, mit denen der <see cref="KwkgSatzRechner"/> rechnet
-    /// (Abnahmekriterium KD5); Förderdauer samt Jahresdeckel-Reihe; FK7-Vermerk:
-    /// der Strompreis-Teil der Einspeisung bleibt Tarifstruktur, die
-    /// Projekt-Parameter (Tatbestand, Anlagenart, Kontingent) bleiben in der
-    /// Wirtschaftlichkeits-/Anlagenpflege. Sprungknopf auf
-    /// <c>Form_Gesetzesparameter</c>.</para>
+    /// <para><b>Was hierher gehört und was nicht.</b> Der Abschnitt ist reine
+    /// ANZEIGE vorhandener Wahrheiten; die Zahlen kommen aus DENSELBEN
+    /// Katalogschlüsseln, mit denen der <c>KwkgSatzRechner</c> rechnet
+    /// (Abnahmekriterium KD5). Das Lesen des <see cref="GesetzKatalog"/> ist
+    /// Datenseite und steht deshalb hier — die Razor-Komponente
+    /// <c>ErtragBonus</c> bekommt die fertigen Sätze.</para>
     ///
-    /// <para><b>Photovoltaik (§ 6.2):</b> öffnet DENSELBEN Dialog wie der Knopf
-    /// der Wirtschaftlichkeit (seit iU9-W2.4 die Razor-Komponente
-    /// <c>PhotovoltaikVerguetungDialog</c> über
-    /// <see cref="PhotovoltaikVerguetungHuelle"/>) — stammprojektbezogen; im
-    /// Admin-Kontext wählt eine Klappliste das Stammprojekt (eine
-    /// Vergütungswahrheit, V4/F7).</para>
-    ///
-    /// <para><b>Übrige Komponenten (§ 6.3, FK5):</b> der Reiter wird vom
-    /// Eigner ausgeblendet (<see cref="HatInhalt"/>).</para>
+    /// <para><b>Der Sprung in den Gesetzeskatalog</b> läuft über die
+    /// Sprungbrücke (iU9-W2.2): <c>Form_Gesetzesparameter</c> ist bis Welle 14c
+    /// eine WinForms-Maske und erscheint modal über dem Blazor-Dialog.</para>
     /// </summary>
-    public partial class ucErtragBonus : UserControl
+    internal static class ErtragBonusGaben
     {
-        private IList<KeyValuePair<int, string>> _projekte;
-
-        public ucErtragBonus()
-        {
-            InitializeComponent();
-            TexteAnwenden();
-        }
-
-        /// <summary>FK5: nur BHKW und Photovoltaik führen den Reiter.</summary>
-        public static bool HatInhalt(string komponente)
+        /// <summary>FK5: nur BHKW und Photovoltaik führen den Abschnitt.</summary>
+        internal static bool HatInhalt(string komponente)
         {
             return string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BHKW, StringComparison.Ordinal) ||
                    string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, StringComparison.Ordinal);
         }
 
-        /// <summary>Inhalt für die gewählte Komponente aufbauen.</summary>
-        public void Zeige(string komponente)
+        /// <summary>Die Parameter der Komponente für die gewählte Komponente.</summary>
+        internal static IReadOnlyDictionary<string, object> Bauen(string komponente)
         {
-            bool bhkw = string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BHKW, StringComparison.Ordinal);
-            bool pv = string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, StringComparison.Ordinal);
+            bool bhkw = string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BHKW,
+                                      StringComparison.Ordinal);
+            bool pv = string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK,
+                                    StringComparison.Ordinal);
 
-            grpKwkg.Visible = grpDauer.Visible = grpSteuern.Visible = grpVerweise.Visible = bhkw;
-            grpPv.Visible = pv;
-            lblLeer.Visible = !bhkw && !pv;
+            var werte = new Dictionary<string, object>
+            {
+                ["IstBhkw"] = bhkw,
+                ["IstPv"] = pv,
+                ["TitelKwkg"] = T("KDLG_ERTRAG_G_KWKG",
+                    "KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog"),
+                ["TitelEinspeisung"] = T("KDLG_ERTRAG_EINSP_TITEL",
+                    "Eingespeister KWK-Strom (Tranchen):"),
+                ["TitelDauer"] = T("KDLG_ERTRAG_G_DAUER", "Förderdauer und Jahresdeckel"),
+                ["TitelSteuern"] = T("KDLG_ERTRAG_G_STEUERN",
+                    "Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)"),
+                ["TitelVerweise"] = T("KDLG_ERTRAG_G_VERWEISE", "Pflegeorte (eine Wahrheit je Größe)"),
+                ["GesetzeText"] = T("KDLG_ERTRAG_BTN_GESETZE", "Gesetzesparameter…"),
+                ["TitelPv"] = T("KDLG_ERTRAG_G_PV",
+                    "PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)"),
+                ["LabelPvProjekt"] = T("KDLG_ERTRAG_PV_PROJEKT", "Stammprojekt:"),
+                ["PvOeffnenText"] = T("KDLG_ERTRAG_PV_OEFFNEN", "PV-Vergütungsdialog öffnen…"),
+                ["LeerText"] = T("KDLG_ERTRAG_LEER",
+                    "Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse "
+                    + "laufen als Zuschuss-Position in den Investitionskosten (FK5).")
+            };
 
-            if (bhkw) BhkwFuellen();
-            if (pv) PvFuellen();
+            if (bhkw) BhkwFuellen(werte);
+            if (pv) PvFuellen(werte);
+            return werte;
         }
 
-        // ================================================================ BHKW ---
+        // =====================================================================
+        // BHKW (§ 6.1)
+        // =====================================================================
 
         /// <summary>
         /// Werte aus DENSELBEN Katalogschlüsseln, die der KwkgSatzRechner liest —
-        /// die Anzeige kann dem Rechner nicht davonlaufen (Abnahme KD5).
+        /// wortgleich aus <c>ucErtragBonus.BhkwFuellen</c>.
         /// </summary>
-        private void BhkwFuellen()
+        private static void BhkwFuellen(Dictionary<string, object> werte)
         {
             GesetzKatalog.StelleKatalogSicher();
             GesetzKatalog k = new GesetzKatalog();
@@ -80,7 +88,7 @@ namespace WindowsFormsApplication1
                 return wert.HasValue ? wert.Value.ToString("0.0#", ci) : "—";
             };
 
-            lblEinspeisung.Text =
+            werte["EinspeisungText"] =
                 Z("KDLG_ERTRAG_T50", "bis 50 kW", w(DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS50KW)) +
                 Z("KDLG_ERTRAG_T100", "über 50 bis 100 kW", w(DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS100KW)) +
                 Z("KDLG_ERTRAG_T250", "über 100 bis 250 kW", w(DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS250KW)) +
@@ -88,14 +96,14 @@ namespace WindowsFormsApplication1
                 Z("KDLG_ERTRAG_UE2MW", "über 2 MW (neu/modernisiert)", w(DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_UEBER2MW)) +
                 Z("KDLG_ERTRAG_UE2MWN", "über 2 MW (nachgerüstet)", w(DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_UEBER2MW_NACHGER));
 
-            lblSonderregel.Text = string.Format(ci,
+            werte["SonderregelText"] = string.Format(ci,
                 T("KDLG_ERTRAG_SONDERREGEL",
                   "Sonderregel neue Anlagen ≤ 50 kWel (§ 7 Abs. 3a): eingespeist {0} · " +
                   "nicht eingespeist {1} ct/kWh — geht Abs. 1 und 2 vor."),
                 w(DbWerte.GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EINSP),
                 w(DbWerte.GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EIGEN));
 
-            lblEigen.Text = string.Format(ci,
+            werte["EigenText"] = string.Format(ci,
                 T("KDLG_ERTRAG_EIGEN",
                   "Selbst genutzter KWK-Strom (§ 7 Abs. 2, nur in den Tatbeständen des " +
                   "§ 6 Abs. 3 — z. B. Anlage ≤ 100 kW): bis 50 kW {0} · 50–100 kW {1} ct/kWh. " +
@@ -109,13 +117,13 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<int, double> p in k.Reihe(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL))
                 deckel.AppendFormat(ci, "{0}: {1:N0} · ", p.Key, p.Value);
             double? vbh = k.Wert(DbWerte.GESETZ_KWKG_VBH_NEUANLAGE, jahr);
-            lblDauer.Text = string.Format(ci,
+            werte["DauerText"] = string.Format(ci,
                 T("KDLG_ERTRAG_DAUER",
                   "Neue Anlagen: {0} Vollbenutzungsstunden Förderkontingent. " +
                   "Jahresdeckel [Vbh/a]: {1}(Kontingent-Override je Anlage in der Wirtschaftlichkeit)."),
                 vbh.HasValue ? vbh.Value.ToString("N0", ci) : "—", deckel.ToString());
 
-            lblSteuern.Text =
+            werte["SteuernText"] =
                 string.Format(ci, T("KDLG_ERTRAG_ST_BEFREIUNG",
                     "Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 StromStG: hocheffiziente Anlagen " +
                     "≤ 2 MW im räumlichen Zusammenhang (4,5 km); ab 2026 CO₂-Kriterium.")) + "\n\n" +
@@ -131,13 +139,18 @@ namespace WindowsFormsApplication1
                     w(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B),
                     w(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B));
 
-            lblFk7.Text = T("KDLG_ERTRAG_FK7",
+            werte["Fk7Text"] = T("KDLG_ERTRAG_FK7",
                 "FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der " +
                 "Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt " +
                 "die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom " +
                 "KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. " +
                 "Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, " +
                 "Kontingent-Override) werden dort je Anlage gepflegt.");
+
+            // Der Katalog kann sich nach dem Sprung geändert haben — wie
+            // btnGesetze_Click, das danach BhkwFuellen erneut rief. Die Brücke
+            // führt nur WinForms-Ziele; Form_Gesetzesparameter ist bis W14c eines.
+            werte["Sprung"] = Sprungbruecke.Fuer(null);
         }
 
         private static string Z(string schluessel, string rueckfall, string wert)
@@ -146,61 +159,32 @@ namespace WindowsFormsApplication1
             return (beschriftung + ":").PadRight(34) + wert.PadLeft(6) + " ct/kWh\n";
         }
 
-        private void btnGesetze_Click(object sender, EventArgs e)
-        {
-            using (var dlg = new Form_Gesetzesparameter())
-                dlg.ShowDialog(FindForm());
-            BhkwFuellen();   // Katalog kann sich geändert haben
-        }
+        // =====================================================================
+        // Photovoltaik (§ 6.2)
+        // =====================================================================
 
-        // =========================================================== Photovoltaik ---
-
-        private void PvFuellen()
+        private static void PvFuellen(Dictionary<string, object> werte)
         {
-            lblPvErklaerung.Text = T("KDLG_ERTRAG_PV",
+            werte["PvErklaerungText"] = T("KDLG_ERTRAG_PV",
                 "Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — " +
-                "demselben Formular, das auch der Knopf „Photovoltaik…“ im " +
+                "demselben Formular, das auch der Knopf „Photovoltaik…\" im " +
                 "Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). " +
                 "Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung " +
                 "wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.");
 
-            if (_projekte == null)
-            {
-                _projekte = KostenVorlagenUebernahmeCtrl.Projekte();
-                cmbPvProjekt.Items.Clear();
-                foreach (KeyValuePair<int, string> p in _projekte)
-                    cmbPvProjekt.Items.Add(p.Value);
-                if (cmbPvProjekt.Items.Count > 0) cmbPvProjekt.SelectedIndex = 0;
-            }
-            btnPvOeffnen.Enabled = cmbPvProjekt.Items.Count > 0;
-        }
+            var eintraege = new List<ValueTuple<int, string>>();
+            foreach (KeyValuePair<int, string> p in KostenVorlagenUebernahmeCtrl.Projekte())
+                eintraege.Add(new ValueTuple<int, string>(p.Key, p.Value));
+            werte["Projekte"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege;
 
-        private void btnPvOeffnen_Click(object sender, EventArgs e)
-        {
-            int i = cmbPvProjekt.SelectedIndex;
-            if (_projekte == null || i < 0 || i >= _projekte.Count) return;
-            // iU9-W2.4: siehe PhotovoltaikVerguetungHuelle.
-            PhotovoltaikVerguetungHuelle.Oeffnen(FindForm(), _projekte[i].Key);
-        }
-
-        // ================================================================ Texte ---
-
-        private void TexteAnwenden()
-        {
-            grpKwkg.Text = T("KDLG_ERTRAG_G_KWKG",
-                "KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog");
-            lblKwkgTitel.Text = T("KDLG_ERTRAG_EINSP_TITEL", "Eingespeister KWK-Strom (Tranchen):");
-            grpDauer.Text = T("KDLG_ERTRAG_G_DAUER", "Förderdauer und Jahresdeckel");
-            grpSteuern.Text = T("KDLG_ERTRAG_G_STEUERN",
-                "Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)");
-            grpVerweise.Text = T("KDLG_ERTRAG_G_VERWEISE", "Pflegeorte (eine Wahrheit je Größe)");
-            btnGesetze.Text = T("KDLG_ERTRAG_BTN_GESETZE", "Gesetzesparameter…");
-            grpPv.Text = T("KDLG_ERTRAG_G_PV", "PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)");
-            lblPvProjekt.Text = T("KDLG_ERTRAG_PV_PROJEKT", "Stammprojekt:");
-            btnPvOeffnen.Text = T("KDLG_ERTRAG_PV_OEFFNEN", "PV-Vergütungsdialog öffnen…");
-            lblLeer.Text = T("KDLG_ERTRAG_LEER",
-                "Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse " +
-                "laufen als Zuschuss-Position in den Investitionskosten (FK5).");
+            // iU9-W2.4: der PV-Vergütungsdialog ist selbst eine Blazor-Hülle. Zwei
+            // WebViews übereinander sind Risiko R2 — der Sprung bleibt deshalb
+            // NACHGELAGERT (Muster BhkwWirtschaftlichkeitHuelle.TarifOeffnen): Der
+            // Kostendialog steht weiter, der Vergütungsdialog legt sich als
+            // eigenes Fenster darüber. Beim Anfassen von Welle 5 wird daraus eine
+            // Überlagerung.
+            werte["PvOeffnen"] = EventCallback.Factory.Create<int>(new object(),
+                id => PhotovoltaikVerguetungHuelle.Oeffnen(null, id));
         }
 
         private static string T(string schluessel, string rueckfall)

@@ -134,6 +134,29 @@ namespace WindowsFormsApplication1
                           zusatz: out zusatz);
         }
 
+        /// <summary>
+        /// Dieselbe Abfrage als PARAMETERSATZ statt als Fenster (iU9-W4.0).
+        ///
+        /// <para>Seit es den Baustein <c>Ueberlagerung</c> gibt, zeigt ein
+        /// Blazor-Dialog seine Unterdialoge im eigenen Fenster statt in einer
+        /// zweiten <c>BlazorWebView</c> (Risiko R2 des Wellenplans iU9). Er
+        /// braucht dafuer nur die Parameter; das Fenster entfaellt, und
+        /// <c>Geschlossen</c> setzt der Wirt selbst.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            string titel, string frage, string vorbelegung, string meldungLeer = null)
+        {
+            return new Dictionary<string, object>
+            {
+                ["TitelText"] = titel ?? "",
+                ["FrageText"] = frage ?? "",
+                ["Vorbelegung"] = vorbelegung ?? "",
+                ["MeldungLeer"] = meldungLeer ?? "",
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+            };
+        }
+
         /// <summary>Der eine Weg, den alle drei Einstiege nehmen.</summary>
         private static string Zeigen(IWin32Window besitzer, string titel, string frage,
                                      string vorbelegung, string meldungLeer, string hinweis,

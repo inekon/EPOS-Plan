@@ -1162,18 +1162,15 @@ namespace WindowsFormsApplication1
             Form f = this.FindForm();
             // KD6a (§ 3.2): Der Einstieg führt in den NEUEN Kostendialog im
             // Projektmodus — der alte Kosteneditor ist mit iU9-W0 entfallen.
-            using (var dlg = new Form_KostenKomponente())
-            {
-                // Ä19: vorgewählt wird die Komponente der GEWÄHLTEN Anlagenzeile —
-                // in einer Heizkessel-Variante öffnet der Dialog damit den Kessel,
-                // nicht mehr die erste Komponente der Katalogreihenfolge.
-                var aw = gridKomponenten.CurrentRow != null
-                    ? gridKomponenten.CurrentRow.Tag as ProjektEnergietraegerCtrl.AnlagenEintrag
-                    : null;
-                dlg.SetProjekt(_idProjekt, _projektname, aw != null ? aw.Komponente : null,
-                               false, aw != null ? aw.AnlageId : 0);
-                if (f != null) dlg.ShowDialog(f); else dlg.ShowDialog();
-            }
+            // Ä19: vorgewählt wird die Komponente der GEWÄHLTEN Anlagenzeile —
+            // in einer Heizkessel-Variante öffnet der Dialog damit den Kessel,
+            // nicht mehr die erste Komponente der Katalogreihenfolge.
+            var aw = gridKomponenten.CurrentRow != null
+                ? gridKomponenten.CurrentRow.Tag as ProjektEnergietraegerCtrl.AnlagenEintrag
+                : null;
+            KostenKomponenteHuelle.OeffnenProjekt(f, _idProjekt, _projektname,
+                                                  aw != null ? aw.Komponente : null,
+                                                  false, aw != null ? aw.AnlageId : 0);
             Aktualisiere();   // Kompaktwerte nach der Pflege auffrischen
         }
 

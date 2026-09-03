@@ -959,3 +959,35 @@ body {
     margin: 0;
     white-space: pre-wrap;
 }
+
+
+/* --------------------------------------------------------------------------
+   Kostenverwaltung (iU9-W4.2): Kontextleiste und Hinweisbanner mit Kreuz.
+   -------------------------------------------------------------------------- */
+
+.epos-kontextleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+}
+
+/* Der Netto-Hinweis des Bestands (pnlBanner) trug ein Kreuz zum Ausblenden. */
+.epos-bannerzeile {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.epos-bannerzeile > :first-child {
+    flex: 1 1 auto;
+}
+
+/* Die Abschlusszeile spannt sich ueber alle Spalten (epos-zr-neuzeile) und
+   traegt darin ein eigenes Raster mit denselben Spuren - sonst floehen ihre
+   Zellen aus der Reihe der gepflegten Zeilen. */
+.epos-zr-neuraster {
+    display: grid;
+    align-items: center;
+    column-gap: 8px;
+}
