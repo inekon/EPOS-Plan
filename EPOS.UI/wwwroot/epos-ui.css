@@ -113,6 +113,22 @@ body {
     outline: none;
 }
 
+/* Kopfzeile eines Dialogs: Titel links, Hilfeknopf rechts - dieselbe Lage,
+   die InfoKnopf.Anbringen in WinForms erzeugt (oben rechts, 28x28). */
+.epos-dialog-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-dialog-titel {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
 /* ==========================================================================
    Baustein: Gruppenkopf (Vorbild Views/Kosten/SectionPanel.cs)
    ========================================================================== */
