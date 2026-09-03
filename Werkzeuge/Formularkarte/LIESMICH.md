@@ -162,6 +162,16 @@ Der Dateiname bestimmt den Komponentennamen; er bekommt deshalb einen großen An
   keiner Komponente zu; die Menüführung ist Sache der Hülle, nicht eines Dialogs.
 * **Der Fachbereich kommt aus dem Ordnernamen.** Liegt eine Maske woanders, ist der `@namespace` von
   Hand zu setzen.
+* **Die Karte sagt nicht, ob die Maske erreichbar ist.** Sie nennt die `ShowDialog`-Aufrufer
+  (Spalte „Aufrufer"), aber nicht, ob diese Aufrufer selbst noch von einem Menüpunkt, einer
+  Kachel oder einem Reiter aus zu erreichen sind. Genau daran ist iU8-9 vorbeigelaufen:
+  `Form_Kosten` hat den ersten Blazor-Dialog geöffnet, war aber seit KD6a selbst ohne Einstieg
+  (Befund vom 03.09.2026, Entscheidungsregister § 2.8) — die Umstellung musste mit iU9-1 an
+  `Form_Heizkessel`/`Form_BHKWEing` nachgeholt werden.
+  **Folgepunkt (notiert, nicht umgesetzt): eine Spalte „Öffner erreichbar"** — vom Aufrufer aus
+  rückwärts weitersuchen, bis ein Einstieg gefunden ist oder die Kette abbricht, und in der
+  Übersicht des Stapellaufs mitschreiben. Die Aufrufer liegen bereits vor (`maske.Aufrufer`); es
+  fehlt allein der Schritt eine Ebene höher.
 
 ## Prüfmuster
 
@@ -219,9 +229,12 @@ Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
    `Repowurzel.PruefmusterWurzel` mitgeben; Fundstellen prüft
    `Fundstelle.Enthaelt(Repowurzel.PruefmusterBezug, …)`.
 4. Tests, die die Maske nur als Beispiel brauchen (Stapellauf über alle Masken), auf eine
-   **lebende** Maske umhängen statt auf das Muster — beim Stichtag iZ5 war das
-   `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester mit zwei `ComboBox` statt `ComboBox` und
-   `TextBox`.
+   **lebende** Maske umhängen statt auf das Muster. Beim Stichtag iZ5 war das
+   `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester; die ist mit **iU9-1** selbst gelöscht,
+   seither steht dort `Form_KostenKomponente`. **Nimm dafür eine Maske, deren Öffner erreichbar
+   ist** — sonst hängt der Test an der nächsten Löschung wieder. `Form_KostenKomponente` erfüllt
+   das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`, `KostenKnoepfe`, `Wizard_WPItem`);
+   `Form_KostenfaktorItem` läge im selben Ordner, hängt aber am einstiegslosen `Form_Kosten`.
 5. `PruefmusterTests` um die neue Maske ergänzen.
 
 ## Nachweis
@@ -252,6 +265,11 @@ Designer-Dateien, **119** Masken, 3 ohne `InitializeComponent`, 0 nicht lesbar, 
 2373 Kartenzeilen, 178 Felder ohne Beschriftung; unter `WindowsFormsApplication1/Views` allein 117
 Masken. Die vier Dateien des Prüfmusters sind darin **nicht** enthalten. Jede weitere umgestellte
 Maske senkt diese Zahl um eins — das ist der Fortschritt von iU9, nicht ein Loch im Netz.
+
+**Nachgemessen nach iU9‑1** (Löschung von `Form_Kosten_VarAuswahl`): **121** Designer-Dateien,
+**118** Masken, 3 ohne `InitializeComponent`, 0 nicht lesbar, 63 lokalisiert, 2369 Kartenzeilen,
+178 Felder ohne Beschriftung; unter `WindowsFormsApplication1/Views` allein **116** Masken (62
+davon lokalisiert).
 
 Steuerelemente je Typ (Auszug): `Label` 1551, `TextBox` 732, `Button` 504, `ComboBox` 108,
 `GroupBox` 83, `TabPage` 74, `Panel` 69, `CheckBox` 59, `NumericUpDown` 57, `ListBox` 50,
