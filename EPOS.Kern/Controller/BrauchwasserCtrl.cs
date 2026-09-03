@@ -75,7 +75,13 @@ namespace WindowsFormsApplication1
 
         private bool Insert()
         {
-            string sql = @"INSERT INTO Tab_Brauchwasser (Bezeichner, Typ, Beschreibung, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12) 
+            // SQL-Dialekt-Audit 03.09.2026: Die zwoelf Monatsspalten hiessen hier M1..M12,
+            // im Schema heissen sie Monat_1..Monat_12 - so, wie FillModelFromRow sie
+            // weiter unten auch LIEST. Der Satz konnte damit nie geschrieben werden
+            // ("table Tab_Brauchwasser has no column named M1"); unter Access war er
+            // ebenso falsch, nur ruft niemand diese Klasse auf (die Masken arbeiten mit
+            // Z_ProjektBrauchwasserCtrl), also fiel es nicht auf.
+            string sql = @"INSERT INTO Tab_Brauchwasser (Bezeichner, Typ, Beschreibung, Monat_1, Monat_2, Monat_3, Monat_4, Monat_5, Monat_6, Monat_7, Monat_8, Monat_9, Monat_10, Monat_11, Monat_12)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             // ARBEITSPAKET S4b, ALTFEHLER BEHOBEN: Bisher lief das INSERT über
@@ -93,9 +99,11 @@ namespace WindowsFormsApplication1
 
         private bool Update()
         {
-            string sql = @"UPDATE Tab_Brauchwasser SET 
-                            Bezeichner = ?, Typ = ?, Beschreibung = ?, 
-                            M1=?, M2=?, M3=?, M4=?, M5=?, M6=?, M7=?, M8=?, M9=?, M10=?, M11=?, M12=? 
+            // Spaltennamen wie im Schema (siehe Insert): Monat_1..Monat_12 statt M1..M12.
+            string sql = @"UPDATE Tab_Brauchwasser SET
+                            Bezeichner = ?, Typ = ?, Beschreibung = ?,
+                            Monat_1=?, Monat_2=?, Monat_3=?, Monat_4=?, Monat_5=?, Monat_6=?,
+                            Monat_7=?, Monat_8=?, Monat_9=?, Monat_10=?, Monat_11=?, Monat_12=?
                            WHERE ID = ?";
 
             return DataRepository.ExecuteSQL(sql, CreateParameters(true));

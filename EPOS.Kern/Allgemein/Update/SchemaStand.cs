@@ -101,10 +101,35 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Löschweitergabe vom Kopf auf die Werte - ohne sie blieben nach dem Löschen
         /// einer Reihe bis zu 35.040 Waisenzeilen stehen.
+        ///
+        /// <para><b>Nur der Access-Zweig.</b> <c>ALTER TABLE … ADD CONSTRAINT</c> ist
+        /// Access-DDL; SQLite kann einer bestehenden Tabelle keinen Fremdschlüssel mehr
+        /// anhängen — die Anweisung endet dort mit „near CONSTRAINT: syntax error"
+        /// (SQL-Dialekt-Audit 03.09.2026). Verwendet wird sie deshalb ausschließlich von
+        /// <c>SchemaMigration.PreisreiheTabellen</c>, dem Erststart-Weg über die
+        /// ACE-Engine. Die SQLite-Rückfallebene nimmt
+        /// <see cref="SQL_CREATE_PREISREIHEDATEN_MIT_FK"/>, das die Beziehung schon beim
+        /// Anlegen mitbringt.</para>
         /// </summary>
         public const string SQL_FK_PREISREIHEDATEN =
             "ALTER TABLE Tab_PreisreiheDaten ADD CONSTRAINT FK_PreisreiheDaten " +
             "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Dieselbe Tabelle wie <see cref="SQL_CREATE_PREISREIHEDATEN"/>, aber MIT der
+        /// Löschweitergabe im CREATE - die SQLite-Schreibweise derselben Absicht.
+        ///
+        /// <para>Angelegt am 03.09.2026 (SQL-Dialekt-Audit). Die Rückfallebene
+        /// <c>PreisreiheCtrl.StelleTabellenSicher</c> legte die Tabelle bisher ohne
+        /// Beziehung an und schob den Fremdschlüssel per ALTER nach; unter SQLite
+        /// scheiterte das lautlos (die Zeile steht in einem stillen catch), und
+        /// gelöschte Reihen ließen ihre Werte stehen. Der Migrator erzeugt die Tabelle
+        /// genau so, wie sie hier steht - beide Wege enden damit beim selben Schema.</para>
+        /// </summary>
+        public const string SQL_CREATE_PREISREIHEDATEN_MIT_FK =
+            "CREATE TABLE Tab_PreisreiheDaten (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Preisreihe LONG, Wert DOUBLE, " +
+            "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE)";
 
         /// <summary>
         /// DDL des Kostenprofils (Kante iU4-2). <c>KostenprofilCtrl</c> legt die Tabelle
