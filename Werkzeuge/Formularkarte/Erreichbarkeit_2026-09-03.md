@@ -1,4 +1,4 @@
-# Öffner erreichbar — Befund aller Masken (03.09.2026)
+﻿# Öffner erreichbar — Befund aller Masken (03.09.2026)
 
 Die **K6-Liste** für iU9: Welche der WinForms-Masken sind vom Einstieg der Anwendung aus
 überhaupt noch zu erreichen — und welche nicht? Erzeugt mit
@@ -49,7 +49,7 @@ nur `Form_Variantentest` geöffnet hat:
 | `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
 | `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
 
-Die übrigen 96 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
+Die übrigen 89 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
 
 **Für die Wellenplanung iU9:** Eine Maske mit „nein" oder „verwaist" wird **nicht** nach Blazor
@@ -86,20 +86,41 @@ Welle 3 hat vier Masken umgestellt und gelöscht, alle vier mit Designer:
 | `Form_Emissionskatalog` | K2 (zwei Raster) | `EPOS.UI/Dialoge/Kosten/EmissionskatalogDialog.razor` mit `EmissionskatalogHuelle` |
 | `Form_Kostenprofil` | K3 (Chart + 36 Laufzeitfelder) | `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` mit `KostenprofilHuelle` |
 
-Der Stapellauf zählt seither **98 Masken** (102 nach iU9‑W2, 105 nach iU9‑W0),
+Der Stapellauf zählte danach **98 Masken**.
+
+## Stand nach iU9-W4 (Kostenverwaltung und Energieträgerkatalog)
+
+Welle 4 hat die beiden **Hosts** der Kostenseite umgestellt und mit ihnen ihre fünf
+Unterbausteine — sieben Designer-Masken auf einmal, die größte Löschung seit iU9‑W0:
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_KostenKomponente` | K1 (Host, TabControl) | `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` mit `KostenKomponenteHuelle` |
+| `ucVorlagenZeile` | K1 (uc, dynamisch ×n) | `EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` |
+| `ucErtragBonus` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/ErtragBonus.razor` mit `ErtragBonusGaben` |
+| `Form_Energietraeger` | K1 (Host) | `EPOS.UI/Dialoge/Kosten/EnergietraegerDialog.razor` mit `EnergietraegerHuelle` |
+| `ucFuelSettings` | K2 (uc, 2 103 Z.) | `EPOS.UI/Dialoge/Kosten/EnergietraegerEinstellungen.razor` |
+| `ucStromAufschlaege` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/StromAufschlaege.razor` |
+| `ucBrennstoffBestandteile` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/BrennstoffBestandteile.razor` |
+
+Ohne Nutzer geblieben und mitgelöscht: `EinstiegsKarte.cs` (Nachfolge `Kachel`) und
+`SectionPanel.cs` (Nachfolge `Gruppenkopf`).
+
+Der Stapellauf zählt seither **91 Masken** (98 nach iU9‑W3, 102 nach iU9‑W2, 105 nach iU9‑W0),
 **0 × „nein"**, **0 × „verwaist"**, unverändert **2 × „unklar"**.
-`Form_Kostenprofil` liegt als fünftes Prüfmuster unter
-`Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/` — neun Testbezüge hängen an ihr.
+`Form_KostenKomponente` und `ucVorlagenZeile` liegen als sechstes und siebtes Prüfmuster unter
+`Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/`; **`Views/Kosten` führt seither keine
+Designer-Maske mehr** — der Stapellauf-Test des Werkzeugs läuft über `Views/Heizkessel`.
 
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 96 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 89 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 2 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 98 | |
+| gesamt | 91 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -127,7 +148,6 @@ Der Stapellauf zählt seither **98 Masken** (102 nach iU9‑W2, 105 nach iU9‑W
 | Form_EingGebTyp | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.GebaeudetypenBearbeiten → Masken.GebaeudetypenAdmin → Form_EingGebTyp | `WindowsFormsApplication1/Views/Gebäude/Form_EingGebTyp.designer.cs` |
 | Form_EingProzTyp | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_ProzTypeDBedit → Form_EingProzTyp | `WindowsFormsApplication1/Views/Prozesswärme/Form_EingProzTyp.designer.cs` |
 | Form_EingStromTyp | ja | Form_Start → pBox_StromProfilEigenes_Click → Form_EingStromTyp | `WindowsFormsApplication1/Views/Stromverbraucher/Form_EingStromTyp.designer.cs` |
-| Form_Energietraeger | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger | `WindowsFormsApplication1/Views/Kosten/Form_Energietraeger.Designer.cs` |
 | Form_ErgBrauchwasserwaerme | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_Details → Form_ErgBrauchwasserwaerme | `WindowsFormsApplication1/Views/Brauchwasser/Form_ErgBrauchwasserwaerme.designer.cs` |
 | Form_ErgProzesswaerme | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_Simulation → Form_ErgProzesswaerme | `WindowsFormsApplication1/Views/Prozesswärme/Form_ErgProzesswaerme.designer.cs` |
 | Form_ErgStromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher → btn_Simulation → Form_ErgStromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_ErgStromverbraucher.designer.cs` |
@@ -147,7 +167,6 @@ Der Stapellauf zählt seither **98 Masken** (102 nach iU9‑W2, 105 nach iU9‑W
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
 | Form_Klimadaten | ja | MDIMainForm → MenuItem_Klimadaten → Form_Klimadaten | `WindowsFormsApplication1/Views/Klimadaten/Form_Klimadaten.Designer.cs` |
 | Form_Klimazonenkarte | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuelleErdreich → _btnKarte → Form_Klimazonenkarte | `WindowsFormsApplication1/Views/Simulation/Form_Klimazonenkarte.Designer.cs` |
-| Form_KostenKomponente | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente | `WindowsFormsApplication1/Views/Kosten/Form_KostenKomponente.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
 | Form_PV | ja | Form_Start → pBox_PV → Form_PV | `WindowsFormsApplication1/Views/Photovoltaik/Form_PV.Designer.cs` |
 | Form_PeakShaving | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving | `WindowsFormsApplication1/Views/Stromspeicher/Form_PeakShaving.Designer.cs` |
@@ -196,9 +215,4 @@ Der Stapellauf zählt seither **98 Masken** (102 nach iU9‑W2, 105 nach iU9‑W
 | Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |
 | Wizard_WPItem | ja | Form_Start → pBox_WP → Form_WPAuswahl → btn_Uebernehmen → Wizard_WPItem | `WindowsFormsApplication1/Views/Wizard/Wizard_WPItem.Designer.cs` |
-| ucBrennstoffBestandteile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueBrennstoffblock → ucBrennstoffBestandteile | `WindowsFormsApplication1/Views/Kosten/ucBrennstoffBestandteile.Designer.cs` |
-| ucErtragBonus | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → .ctor → ucErtragBonus | `WindowsFormsApplication1/Views/Kosten/ucErtragBonus.Designer.cs` |
-| ucFuelSettings | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings | `WindowsFormsApplication1/Views/Kosten/ucFuelSettings.Designer.cs` |
-| ucStromAufschlaege | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueAufschlagsblock → ucStromAufschlaege | `WindowsFormsApplication1/Views/Kosten/ucStromAufschlaege.Designer.cs` |
-| ucVorlagenZeile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → ZeileBauen → ucVorlagenZeile | `WindowsFormsApplication1/Views/Kosten/ucVorlagenZeile.Designer.cs` |
 

@@ -48,6 +48,28 @@ public sealed class PruefmusterTests
         // wirken. Neun Testbezuege haengen daran.
         { "Kosten", "Form_Kostenprofil",
           "EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor" },
+
+        // iU9-W4.2: Form_KostenKomponente ist der Beleg fuer die grosse
+        // Schreibweise ".Designer.cs" in Verbindung mit einem TabControl, das
+        // eine Reiterseite ZUR LAUFZEIT entfernt (ErtragReiterSteuern) - und der
+        // Anker, an dem der Stapellauf-Test bis Welle 3 hing. Acht Testbezuege
+        // haengen daran.
+        { "Kosten", "Form_KostenKomponente",
+          "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
+    };
+
+    /// <summary>
+    /// Muster ohne eigene <c>.resx</c> (iU9-W4.2). Ein UserControl, dessen Texte
+    /// vollstaendig im Code stehen, fuehrt keine Ressourcendatei — das Muster
+    /// besteht deshalb nur aus zwei Dateien.
+    /// </summary>
+    public static TheoryData<string, string, string> MusterOhneRessource => new()
+    {
+        // iU9-W4.2: ucVorlagenZeile ist die EINZIGE kleingeschriebene Maske, die
+        // der Bestand je gefuehrt hat, und damit der einzige Beleg dafuer, dass
+        // der Razor-Schreiber den Anfangsbuchstaben gross zieht (RZ10011).
+        { "Kosten", "ucVorlagenZeile",
+          "EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor" },
     };
 
     /// <summary>
@@ -78,6 +100,27 @@ public sealed class PruefmusterTests
             var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
             Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(MusterOhneRessource))]
+    public void DieNachfolgeStehtImRepoUndDasMusterHatZweiDateien(
+        string fach, string maske, string nachfolge)
+    {
+        Assert.True(File.Exists(Repowurzel.Datei(nachfolge)),
+                    "Die Nachfolge " + nachfolge + " fehlt.");
+
+        foreach (var endung in new[] { ".Designer.cs", ".cs" })
+        {
+            var alt = Repowurzel.Designer(fach + "/" + maske + endung);
+            Assert.False(File.Exists(alt), "Die WinForms-Fassung lebt wieder: " + alt);
+
+            var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
+            Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
+        }
+
+        Assert.False(File.Exists(Repowurzel.Pruefmuster(fach + "/" + maske + ".resx")),
+                     "Das Muster fuehrt eine .resx, die es im Bestand nie gab.");
     }
 
     [Theory]

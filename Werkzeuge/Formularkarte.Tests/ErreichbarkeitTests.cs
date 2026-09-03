@@ -131,29 +131,22 @@ public sealed class ErreichbarkeitTests
     //  Masken mit Weg
     // ==================================================================
 
+    /// <summary>
+    /// iU9-W4: Die beiden Kostenmasken, an denen dieser Test bis Welle 3 hing
+    /// (Form_KostenKomponente, Form_Energietraeger), sind umgestellt und
+    /// geloescht. Ihre Nachfolge sind Huellen, keine Formulare — der Graph
+    /// kennt sie deshalb zu Recht nicht mehr. Der Test dreht sich um: Er
+    /// sichert, dass die Umstellung haelt.
+    /// </summary>
     [Fact]
-    public void FormKostenKomponenteIstUeberDenReiterBerichteUndKostenZuErreichen()
+    public void DieUmgestelltenKostenmaskenStehenNichtMehrImGraphen()
     {
-        var knoten = Knoten("Form_KostenKomponente");
-
-        Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.NotEqual("", knoten.Pfad);
-
-        // Der Weg, an dem die Nachfolge von Form_Kosten haengt: der Knopf
-        // "Kostenverwaltung oeffnen..." auf der Seite Kosten des Reiters.
-        Assert.Contains(knoten.Oeffner,
-                        o => o.StartsWith("UcBkKosten.btnVerwaltung_Click", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void FormEnergietraegerIstErreichbar()
-    {
-        var knoten = Knoten("Form_Energietraeger");
-
-        Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Contains("Form_Energietraeger", knoten.Pfad, StringComparison.Ordinal);
-        Assert.Contains(knoten.Oeffner,
-                        o => o.StartsWith("UcBkKosten.btnTraeger_Click", StringComparison.Ordinal));
+        foreach (var klasse in new[] { "Form_KostenKomponente", "Form_Energietraeger",
+                                       "ucFuelSettings", "ucVorlagenZeile", "ucErtragBonus",
+                                       "ucStromAufschlaege", "ucBrennstoffBestandteile" })
+        {
+            Assert.True(Graph.Fuer(klasse) is null, "Der Graph kennt " + klasse + " noch.");
+        }
     }
 
     [Fact]
@@ -244,10 +237,10 @@ public sealed class ErreichbarkeitTests
         Assert.Equal(ergebnis.Masken,
                      ergebnis.Erreichbar(Erreichbar.Ja) + ergebnis.Erreichbar(Erreichbar.Nein) +
                      ergebnis.Erreichbar(Erreichbar.Verwaist) + ergebnis.Erreichbar(Erreichbar.Unklar));
-        // Gemessener Stand nach iU9-W3: 96 von 98 (die zwei uebrigen sind
-        // "unklar"; nach iU9-W2 waren es 100 von 102). Die Zahl sinkt mit jeder
+        // Gemessener Stand nach iU9-W4: 89 von 91 (die zwei uebrigen sind
+        // "unklar"; nach iU9-W3 waren es 96 von 98). Die Zahl sinkt mit jeder
         // Welle - der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 96,
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 89,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -273,7 +266,7 @@ public sealed class ErreichbarkeitTests
     [Fact]
     public void OhneSchalterWirdDieErreichbarkeitNichtGerechnet()
     {
-        var ergebnis = Stapel.Laufen(Repowurzel.Designer("Kosten"), ziel: null, suchwurzel: Projekt,
+        var ergebnis = Stapel.Laufen(Repowurzel.Designer("Heizkessel"), ziel: null, suchwurzel: Projekt,
                                      erreichbarkeit: false);
 
         Assert.False(ergebnis.MitErreichbarkeit);

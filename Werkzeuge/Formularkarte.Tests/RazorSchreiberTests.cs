@@ -118,9 +118,12 @@ public sealed class RazorSchreiberTests
         //
         // iU9-W0 (03.09.2026): Bis dahin stand hier ucKostenItem. Die Maske haengt am
         // einstiegslosen Form_Kosten und ist mit ihm stillgelegt (Anwenderentscheid
-        // iF29); der Zeuge ist jetzt ucVorlagenZeile - dieselbe Ablage, und ueber
-        // Form_KostenKomponente auch erreichbar.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/ucVorlagenZeile.Designer.cs"));
+        // iF29); der Zeuge wurde ucVorlagenZeile.
+        //
+        // iU9-W4.2: Auch ucVorlagenZeile ist umgestellt und geloescht (Regel M1).
+        // Sie bleibt der Zeuge - als eingefrorenes Pruefmuster, denn sie ist die
+        // EINZIGE kleingeschriebene Maske, die der Bestand je gefuehrt hat.
+        var maske = Kartenbau.Vollstaendig(Repowurzel.Pruefmuster("Kosten/ucVorlagenZeile.Designer.cs"));
 
         Assert.Equal("UcVorlagenZeile.razor", RazorSchreiber.Dateiname(maske));
         Assert.Contains("public sealed record UcVorlagenZeileWerte", RazorSchreiber.Schreiben(maske),
