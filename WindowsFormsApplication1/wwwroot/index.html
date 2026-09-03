@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+
+    <!--
+        Startseite der Blazor-Huelle (Umsetzungskonzept iOS, Paket iU8).
+
+        Diese Seite wird NICHT im Browser aufgerufen. BlazorDialogForm laedt sie
+        ueber HostPage="wwwroot\index.html" in eine WebView2 und haengt die
+        Dialogkomponente an <div id="app"> - fuer jeden Blazor-Dialog dieselbe
+        Seite.
+
+        Die beiden Stilblaetter:
+          _content/EPOS.UI/epos-ui.css  Thema und Bausteine der Bibliothek
+                                        (KartenStil.cs als CSS-Variablen).
+          EPOS_Plan.styles.css          das gebuendelte Komponenten-CSS
+                                        (".razor.css"). Der Dateiname folgt dem
+                                        HOST-Assembly, nicht der Bibliothek -
+                                        die Anwendung heisst EPOS_Plan
+                                        (AssemblyName), der Punkt im
+                                        Bibliotheksnamen taeuscht hier.
+    -->
+    <link href="_content/EPOS.UI/epos-ui.css" rel="stylesheet" />
+    <link href="EPOS_Plan.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app"></div>
+    <script src="_framework/blazor.webview.js"></script>
+</body>
+</html>
