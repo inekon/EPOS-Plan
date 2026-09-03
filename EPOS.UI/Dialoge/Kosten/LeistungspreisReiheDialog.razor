@@ -1,0 +1,278 @@
+﻿@* Saisonale Leistungspreis-Saetze (iU9-W3.1).
+
+   Vorbild: Views/Kosten/Form_LeistungspreisReihe.cs (167 Z.) und
+   .Designer.cs (Etappe KD4, Konzept Kostendialoge § 7.1, Entscheidung FK6a).
+   Zwoelf Monatssaetze [EUR/(kW*Monat)] als Preisreihe, dazu das Jahr, die
+   Kontextzeile mit Traeger und Ebene, der Vorranghinweis und die drei
+   Knoepfe.
+
+   UEBERNOMMEN, WOERTLICH:
+   * die Bereiche der Feldkarte (Jahr 2000...2100, Monatssatz 0...100 000,
+     zwei Nachkommastellen),
+   * die Ebenenlogik: Im Projektkontext entsteht eine PROJEKTREIHE, im
+     Katalogkontext die STAMMREIHE; eine fremde Ebene wird als Ausgangspunkt
+     VORGELEGT, gespeichert wird immer die eigene (SetControls),
+   * "Reihe loeschen" nur bei eigener Ebene (btnLoeschen.Enabled),
+   * die Sperre "alle zwoelf Saetze sind 0" vor dem Uebernehmen.
+
+   DIE DATENSEITE LIEGT IN DER HUELLE. Der Vorlaeufer hielt einen
+   PreisreiheCtrl und rief Read/Insert/Delete selbst; die Komponente kennt
+   weder Tabelle noch Ebene, sondern nur die drei Delegaten Uebernehmen und
+   Loeschen und ihre Vorbelegung (Hausregel EPOS.UI/CLAUDE.md).
+
+   MONATSNAMEN kommen aus der Kultur, wie im Vorlaeufer ("keine zwoelf
+   Resource-Schluessel") - die Huelle kann sie ueberschreiben, damit ein Test
+   nicht an der Sprache des Laeufers haengt.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt - "Uebernehmen" schreibt
+   sofort (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KontextText</p>
+
+    <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@_jahr" WertChanged="BeiJahr"
+                  Min="2000" Max="2100" />
+
+    <p class="epos-untergruppe">@KopfMonate</p>
+
+    <div class="epos-zahlenraster">
+        @for (int i = 0; i < 12; i++)
+        {
+            int m = i;   // Schleifenvariable festhalten
+            <Zahlenfeld Bezeichnung="@Monatsname(m)" Einheit="@Einheit"
+                        Wert="@_werte[m]" WertChanged="@(w => BeiWert(m, w))"
+                        Min="0" Max="100000" Nachkommastellen="2" />
+        }
+    </div>
+
+    <Herleitungszeile Text="@HinweisText" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiUebernehmen">@UebernehmenText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Vorbelegung
+    // =====================================================================
+
+    /// <summary>
+    /// Die zwoelf Monatssaetze beim Oeffnen [EUR/(kW*Monat)]. Weniger als
+    /// zwoelf Werte fuellen den Anfang, der Rest bleibt 0 - wie die Schleife
+    /// des Vorlaeufers ueber <c>ReadWerte</c>.
+    /// </summary>
+    [Parameter] public IReadOnlyList<double> Werte { get; set; } = Array.Empty<double>();
+
+    /// <summary>Das Jahr der Reihe; Vorgabe = laufendes Jahr (numJahr.Value).</summary>
+    [Parameter] public int Jahr { get; set; } = DateTime.Now.Year;
+
+    /// <summary>
+    /// Gibt es eine Reihe der EIGENEN Ebene? Nur dann laesst sich loeschen
+    /// (<c>btnLoeschen.Enabled = _eigene != null</c>).
+    /// </summary>
+    [Parameter] public bool LoeschenErlaubt { get; set; }
+
+    /// <summary>
+    /// Die zwoelf Monatsnamen. Vorgabe: die Namen der laufenden Kultur -
+    /// derselbe Weg wie im Vorlaeufer.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Monatsnamen { get; set; } = KulturMonate();
+
+    // =====================================================================
+    // Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Schreibt die Reihe: Jahr und zwoelf Werte. <c>false</c> = nicht
+    /// geschrieben (der Dialog bleibt offen und zeigt den Fehler).
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<double>, bool>? Uebernehmen { get; set; }
+
+    /// <summary>Loescht die Reihe der eigenen Ebene. <c>false</c> = nichts geloescht.</summary>
+    [Parameter] public Func<bool>? Loeschen { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. <c>true</c>, wenn geschrieben oder geloescht
+    /// wurde (der Vorlaeufer schloss dann mit <c>DialogResult.OK</c>).
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte (Huelle setzt sie auf KDLG_LPR_* bzw. LPR_*)
+    // =====================================================================
+
+    /// <summary>Fenstertitel (KDLG_LPR_TITEL).</summary>
+    [Parameter] public string TitelText { get; set; } = "Saisonale Leistungspreis-Sätze";
+
+    /// <summary>Traeger und Ebene (lblTraeger).</summary>
+    [Parameter] public string KontextText { get; set; } = "";
+
+    /// <summary>Beschriftung des Jahresfeldes (KDLG_LPR_JAHR).</summary>
+    [Parameter] public string LabelJahr { get; set; } = "Jahr:";
+
+    /// <summary>Ueberschrift ueber den zwoelf Feldern.</summary>
+    [Parameter] public string KopfMonate { get; set; } = "Monatssätze";
+
+    /// <summary>Einheit hinter jedem Monatsfeld (lblEinheit).</summary>
+    [Parameter] public string Einheit { get; set; } = "€/(kW·Monat)";
+
+    /// <summary>Der leise Satz unter den Feldern (KDLG_LPR_HINWEIS_VORRANG bzw. _STAMM).</summary>
+    [Parameter] public string HinweisText { get; set; }
+        = "Eine gepflegte Reihe gilt vor dem konstanten Satz.";
+
+    /// <summary>Beschriftung von btnLoeschen (KDLG_LPR_LOESCHEN).</summary>
+    [Parameter] public string LoeschenText { get; set; } = "Reihe löschen";
+
+    /// <summary>Beschriftung von btnUebernehmen (KDLG_LPR_UEBERNEHMEN).</summary>
+    [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+
+    /// <summary>Beschriftung von btnAbbrechen (KDLG_LPR_ABBRECHEN).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Meldung, wenn alle zwoelf Saetze 0 sind (KDLG_LPR_ALLES_NULL).</summary>
+    [Parameter] public string MeldungAllesNull { get; set; }
+        = "Alle zwölf Sätze sind 0 — zum Entfernen der Reihe bitte „Reihe löschen“ verwenden.";
+
+    /// <summary>Meldung, wenn das Schreiben scheitert (LPR_MSG_SPEICHERFEHLER).</summary>
+    [Parameter] public string MeldungSpeicherfehler { get; set; }
+        = "Die Reihe konnte nicht gespeichert werden.";
+
+    /// <summary>Meldung, wenn das Loeschen scheitert (LPR_MSG_LOESCHFEHLER).</summary>
+    [Parameter] public string MeldungLoeschfehler { get; set; }
+        = "Die Reihe konnte nicht gelöscht werden.";
+
+    /// <summary>Schluessel des Hilfeknopfes - die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_LeistungspreisReihe.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private readonly double?[] _werte = new double?[12];
+    private int? _jahr;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die zwoelf Felder (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<double?> Felder => _werte;
+
+    /// <summary>Das Jahr im Feld (Pruefhilfe fuer Tests).</summary>
+    public int? JahrImFeld => _jahr;
+
+    /// <summary>Die stehende Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnInitialized()
+    {
+        for (int m = 0; m < 12; m++)
+            _werte[m] = m < Werte.Count ? Werte[m] : 0.0;
+        _jahr = Jahr;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private string Monatsname(int m)
+        => (m < Monatsnamen.Count ? Monatsnamen[m] : (m + 1).ToString()) + ":";
+
+    private void BeiJahr(int? wert)
+    {
+        // A-7 aus Welle 2: Ein geleertes Feld behaelt den geladenen Wert.
+        if (wert.HasValue) _jahr = wert;
+        _meldung = "";
+    }
+
+    private void BeiWert(int m, double? wert)
+    {
+        _werte[m] = wert ?? _werte[m];
+        _meldung = "";
+    }
+
+    /// <summary>Wie <c>btnUebernehmen_Click</c>: erst die Nullsumme pruefen, dann schreiben.</summary>
+    private async Task BeiUebernehmen()
+    {
+        var werte = new double[12];
+        double summe = 0;
+        for (int m = 0; m < 12; m++) { werte[m] = _werte[m] ?? 0.0; summe += werte[m]; }
+
+        if (summe <= 0)
+        {
+            Melden(MeldungAllesNull, WarnStufe.Hinweis);
+            return;
+        }
+
+        if (Uebernehmen is null) return;
+
+        if (!Uebernehmen(_jahr ?? Jahr, werte))
+        {
+            Melden(MeldungSpeicherfehler, WarnStufe.Fehler);
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>Wie <c>btnLoeschen_Click</c>: ohne eigene Reihe passiert nichts.</summary>
+    private async Task BeiLoeschen()
+    {
+        if (!LoeschenErlaubt || Loeschen is null) return;
+
+        if (!Loeschen())
+        {
+            Melden(MeldungLoeschfehler, WarnStufe.Fehler);
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter ist NICHT belegt: "Uebernehmen" und "Reihe loeschen" schreiben sofort.
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+
+    /// <summary>Die zwoelf Monatsnamen der laufenden Kultur.</summary>
+    private static string[] KulturMonate()
+    {
+        string[] namen = System.Globalization.CultureInfo.CurrentUICulture
+                             .DateTimeFormat.MonthNames;
+        var zwoelf = new string[12];
+        for (int m = 0; m < 12; m++) zwoelf[m] = m < namen.Length ? namen[m] : "";
+        return zwoelf;
+    }
+}

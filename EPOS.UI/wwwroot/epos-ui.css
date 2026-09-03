@@ -576,6 +576,18 @@ body {
     flex: 0 0 auto;
 }
 
+/* Feld an Feld in Spalten - die Wertegitter der Preismasken (12 Monatssaetze
+   der Leistungspreis-Reihe, 12 Monats- und 24 Stundenwerte des
+   Kostenprofils). In WinForms waren das gerechnete Pixelspalten
+   (MonatsRasterBauen: m / 6 und m % 6); hier bestimmt die Fensterbreite, wie
+   viele Spalten Platz haben - unter 320 px steht eine, sonst so viele wie
+   passen. */
+.epos-zahlenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 6px 16px;
+}
+
 /* Mehrzeiliges Textfeld - Protokolle. Die Schrift ist dieselbe wie im
    uebrigen Dialog; nur der Zeilenumbruch bleibt, wie er geliefert wurde,
    damit ein Protokoll seine Spalten behaelt. */
