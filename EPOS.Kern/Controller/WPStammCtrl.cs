@@ -129,6 +129,33 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// Der Name des Projekts, das diese Waermepumpe VERWENDET — oder <c>null</c>,
+        /// wenn keines sie verwendet (iU9-W7.0e).
+        ///
+        /// <para>Woertlich aus <c>Form_WP.btn_Loeschen_Click</c> (Z. 442-449): Der
+        /// Verbund <c>Tab_Projekt</c> × <c>Tab_Energieanlagen</c> ueber den BEZEICHNER
+        /// der Anlage. Ist er belegt, lehnt der Dialog das Loeschen ab und nennt das
+        /// Projekt.</para>
+        ///
+        /// <para><b>Der Bezeichner ist nicht eindeutig</b> — der Vorlaeufer nahm die
+        /// ERSTE Zeile, die der Lesezeiger lieferte, und das bleibt so (Regel F3). Der
+        /// Name dient der Meldung, nicht der Zuordnung; fuer die Sperre selbst genuegt,
+        /// DASS es ein Projekt gibt.</para>
+        /// </summary>
+        public string GesperrtDurchProjekt(string wpName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Tab_Projekt.ID, Tab_Projekt.Projektname FROM Tab_Projekt " +
+                "INNER JOIN Tab_Energieanlagen ON Tab_Projekt.ID = Tab_Energieanlagen.ID_Projekt " +
+                "WHERE Tab_Energieanlagen.Bezeichner = ?",
+                new DbParam("@bez", wpName ?? ""));
+
+            if (dt == null || dt.Rows.Count == 0) return null;
+            object name = dt.Rows[0]["Projektname"];
+            return name == DBNull.Value ? "" : name.ToString();
+        }
+
         #endregion
 
         #region --- ADMIN WRITE (Tab_WP_STAMM) ---
@@ -164,6 +191,94 @@ namespace WindowsFormsApplication1
                 return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex) { Console.WriteLine("Fehler bei Update (STAMM): " + ex.Message); return false; }
+        }
+
+        /// <summary>
+        /// Was ein Speicherversuch des Waermepumpen-Stammdialogs ergeben hat
+        /// (iU9-W7.0e; derselbe Zuschnitt wie
+        /// <see cref="HeizkesselStammCtrl.SpeicherErgebnis"/>).
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht — damit
+        /// waehlt der Dialog die Zeile in seiner neu geladenen Liste wieder aus.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt einen Stammsatz — der Weg von <c>Form_WP.btn_Speichern_Click</c>
+        /// (Z. 372-428), ohne <c>MessageBox</c>.
+        ///
+        /// <para><b>Drei Ausgaenge wie bisher.</b> Schreibgeschuetzt (nur beim Aendern),
+        /// gespeichert, oder Fehler. Der Vorlaeufer zeigte alle drei als schlichte
+        /// Meldung; hier stehen sie im Ergebnis und werden zum Banner.</para>
+        ///
+        /// <para><b>Der Datensatz kommt VOLLSTAENDIG herein.</b> Der Vorlaeufer las vor
+        /// dem Schreiben mit <c>ReadSingle</c> den Satz nach, weil das Formular
+        /// <c>maxPtherm</c>, <c>Bauart</c> und <c>Kuehlleistung</c> nicht bearbeitet —
+        /// ohne das haette <c>Update</c> sie genullt. Diese Felder traegt jetzt der
+        /// uebergebene <paramref name="daten"/>-Satz, den die Huelle aus der gewaehlten
+        /// Zeile aufbaut. Beim ANLEGEN ist er leer statt aus dem zuvor markierten Satz
+        /// gefuellt — siehe Abweichung A-6 des Protokolls W7.</para>
+        /// </summary>
+        /// <param name="daten">Der zu schreibende Satz.</param>
+        /// <param name="neu"><c>true</c> = anlegen (<c>Insert</c>), sonst aendern (<c>Update</c>).</param>
+        public SpeicherErgebnis Speichern(WPModel daten, bool neu)
+        {
+            if (daten == null)
+                return new SpeicherErgebnis(false, Text("WPS_MSG_FEHLER",
+                    "Speicherung nicht möglich, Fehler aufgetreten!"), "");
+
+            string name = (daten.WPName ?? "").Trim();
+            if (name.Length == 0)
+                return new SpeicherErgebnis(false, Text("WPS_MSG_NAME_FEHLT",
+                    "Bitte einen Namen für die Wärmepumpe eingeben!"), "");
+
+            if (!neu && IsReadOnly(name))
+                return new SpeicherErgebnis(false, Text("WPS_MSG_READONLY_SPEICHERN",
+                    "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+            if (neu && Exists(name))
+                return new SpeicherErgebnis(false, Text("WPS_MSG_NAME_BELEGT",
+                    "Name existiert bereits!"), "");
+
+            // Der Controller IST das Modell (er erbt WPModel) - Update und Insert lesen
+            // ihre Werte von sich selbst.
+            ID = daten.ID;
+            WPName = name;
+            Firma = daten.Firma;
+            Beschreibung = daten.Beschreibung;
+            Typ = daten.Typ;
+            Baujahr = daten.Baujahr;
+            Aufstellung = daten.Aufstellung;
+            Nennleistung = daten.Nennleistung;
+            maxPTherm = daten.maxPTherm;
+            Heizung = daten.Heizung;
+            Regelung = daten.Regelung;
+            Modulkosten = daten.Modulkosten;
+            Bauart = daten.Bauart;
+            Kuehlleistung = daten.Kuehlleistung;
+
+            bool ok;
+            try { ok = neu ? Insert() : Update(); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Speichern der Wärmepumpe: " + ex.Message);
+                ok = false;
+            }
+
+            return ok
+                ? new SpeicherErgebnis(true, Text("WPS_MSG_GESPEICHERT", "Gespeichert"), name)
+                : new SpeicherErgebnis(false, Text("WPS_MSG_FEHLER",
+                    "Speicherung nicht möglich, Fehler aufgetreten!"), "");
+        }
+
+        /// <summary>Ressourcentext mit deutschem Rueckfall (Drei-Schichten-Regel).</summary>
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
         // Loescht einen Stammdatensatz (per Bezeichner) samt Kennlinien, sofern nicht schreibgeschuetzt.
