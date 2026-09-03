@@ -10244,4 +10244,40 @@ Overwrite it anyway?</value>
   <data name="SPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>The selected power storage was not found in the master data.</value>
   </data>
+  <data name="PSPD_TITEL" xml:space="preserve">
+    <value>Buffer storage management</value>
+  </data>
+  <data name="PSPD_KOPFBAND" xml:space="preserve">
+    <value>Enter buffer storage data</value>
+  </data>
+  <data name="PSPD_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Selected in the project</value>
+  </data>
+  <data name="PSPD_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Buffer storage from database</value>
+  </data>
+  <data name="PSPD_LBL_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filter by manufacturer:</value>
+  </data>
+  <data name="PSPD_LBL_FILTER_VOLUMEN" xml:space="preserve">
+    <value>Filter by volume:</value>
+  </data>
+  <data name="PSPD_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="PSPD_LBL_TYP" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="PSPD_LBL_VERLUSTE" xml:space="preserve">
+    <value>Standby losses:</value>
+  </data>
+  <data name="PSPD_LBL_VOLUMEN" xml:space="preserve">
+    <value>Total volume [l]:</value>
+  </data>
+  <data name="PSPD_LBL_INVEST" xml:space="preserve">
+    <value>Investment costs [€]:</value>
+  </data>
+  <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The selected buffer storage was not found in the master data.</value>
+  </data>
 </root>

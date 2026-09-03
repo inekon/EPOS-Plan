@@ -149,7 +149,6 @@ namespace WindowsFormsApplication1
             { "Form_Prozesswaerme",          B_PROZESSWAERME },
             { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
 
-            { "Form_PufferSp",               B_PUFFERSPEICHER },
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
             { "Form_PufferSp_Projekt",       B_PUFFERSPEICHER },
