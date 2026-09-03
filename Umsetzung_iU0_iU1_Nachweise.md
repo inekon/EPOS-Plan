@@ -1,15 +1,29 @@
-# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
 
-**Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`, iU6: `22fb7eb`..`2387abf`**
+**Stand 03.09.2026 · Branch `ios_migration` · Kopfstand `f95fc34`**
+
+| Paket | Commits |
+|---|---|
+| iU0 / iU1 | `c3a8233`..`ce2dc9e`, P1.11 `0c83dba` |
+| iU4 | `4a0a4e2`..`18f515f` |
+| iU5 | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` |
+| iU6 | `22fb7eb`..`300a354` |
+| iU7 | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` |
+
+**iU8 steht in einer eigenen Liste:**
+[`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
 
 Die Pakete iU0 und iU1 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md)
-(§ 4, Rev. 2.1) sind umgesetzt. **Alle Nachweise wurden auf Linux geführt** — SDK 10.0.400, kein
-Visual Studio, keine Datenbank. Was dort nicht prüfbar ist, steht hier als abhakbare Liste: das
-Starten der Anwendung, das Rechnen gegen echte Projektdaten, der Designer, das Setup.
+(§ 4, Rev. 2.2) sind umgesetzt, ebenso iU4 bis iU7. **Alle Nachweise wurden auf Linux geführt** —
+SDK 10.0.400, kein Visual Studio, keine produktive Datenbank. Was dort nicht prüfbar ist, steht
+hier als abhakbare Liste: das Starten der Anwendung, das Rechnen gegen echte Projektdaten, der
+Designer, das Setup, der Bildvergleich der Berichts-Diagramme.
 
 Ergebnis der Linux-Nachweise in einem Satz: **`dotnet build WP-Plan.sln -c Release -p:Platform=x64`
-übersetzt alle 7 Projekte mit 0 Fehlern, `dotnet test WP-Plan.Kern.slnf` meldet 787/787, und der
-CI-Lauf `kern.yml` ist auf ubuntu *und* macos grün.**
+übersetzt alle 12 Projekte mit 0 Fehlern und 34 Warnungen, `dotnet test WP-Plan.Kern.slnf` meldet
+886/886, der Referenzlauf 1030/1007/1017 ist byte-gleich zur Basis, und der CI-Lauf `kern.yml` ist
+auf ubuntu *und* macos grün.** (Die Zahlen 7 Projekte und 787 Tests weiter unten sind der Stand
+von iU1 und bleiben als Messpunkt der damaligen Commits stehen.)
 
 Dazu der Nachweis auf einem echten Windows-Runner: **Der Workflow `windows.yml` (`dotnet build
 WP-Plan.sln`, Migrator-sln, Proben-sln, 787 Tests) ist auf `0ddc417` und `dab063a` grün** — die
@@ -484,23 +498,62 @@ Auch hier halbieren. Die Reihenfolge der Verdächtigen:
 
 ## Reihenfolge der Abnahme
 
-Von billig nach teuer — jeder Schritt setzt den vorigen voraus.
+Von billig nach teuer — und in der Reihenfolge, in der ein Fehlschlag am meisten aussagt. Der
+Bezugsstand ist **`f95fc34`**; alles davor ist darin enthalten.
 
-1. **VS 2026 öffnet `WP-Plan.sln`** und zeigt seit iU4 **9 Projekte** (bei iU1 waren es 7);
-   `Debug|x64` baut durch. Danach `WP-Plan.Kern.slnf` öffnen: seit iU4-6 genau **sechs**
-   Projekte (bei iU1 vier).
-2. **Anwendung starten, ein Projekt laden.** Bricht es hier ab, ist alles Weitere sinnlos.
-3. **Referenzlauf gegen `Referenzlaeufe\2026-08-30_B3-Kaskade` → 332/332 byte-gleich (iT1).**
-   *Das ist der eigentliche iZ1-Nachweis.* Frameworksprung, Kodierungswechsel und `UseWPF`-Rückbau
-   dürfen kein einziges Ergebnis bewegen — sitzt dieser Schritt, sind die Pakete P1.3, P1.4, P1.6
-   und P1.12 als Ganzes abgenommen.
-4. **Proben 16/16** (`Proben/ZugriffsschichtProben`) — belegt, dass sich `Microsoft.Data.Sqlite`
-   10.0.11 wie die 8er-Fassung verhält.
-5. **Excel-Import-Tests** aus der Liste zu `d4b72c8` (P1.1) — die einzige echte
-   Verhaltensänderung der ganzen Serie.
-6. **Setup** (P1.10) — `.\Setup\build-setup.ps1 -Schnell`, einmal installieren.
-7. **`EPOS_REFLAUF_UICULTURE=en-US`** setzen und den Referenzlauf wiederholen (iT7); das Ergebnis
-   muss byte-identisch bleiben.
+**0. Vorlauf.** **VS 2026 öffnet `WP-Plan.sln`** und zeigt **12 Projekte** (bei iU4 waren es 10,
+bei iU1 sieben); `Debug|x64` baut durch. `WindowsFormsApplication1` lädt dabei unter dem
+**Razor-SDK** ohne Meldung, und der **WinForms-Designer** öffnet ein Formular (das ist zugleich
+der erste Punkt der iU8-Liste). Danach `WP-Plan.Kern.slnf` öffnen: **acht** Projekte (bei iU4
+sechs, bei iU1 vier). Anschließend die **Anwendung starten und ein Projekt laden** — bricht es
+hier ab, ist alles Weitere sinnlos.
+
+**1. Der Windows-Referenzlauf 332/332 auf `f95fc34` — das ist iZ4.** Referenzlauf gegen
+`Referenzlaeufe\2026-08-30_B3-Kaskade`, alle 13 Projekte, **byte-gleich** (iT1). Er nimmt die
+ganze Kette in einem Zug ab: Frameworksprung, Kodierungswechsel und `UseWPF`-Rückbau (iU1), den
+physischen Kern-Umzug (iU4), die Dienste (iU5), `IDatenzugriff` (iU6) und den Renderer-Umzug
+(iU7) dürfen zusammen **kein einziges Ergebnis** bewegen. Hier ist die Reihenfolge Absicht: Sitzt
+dieser Schritt, sind alle Bedienproben darunter nur noch Bedienproben und keine Fehlersuche.
+Danach **`EPOS_REFLAUF_UICULTURE=en-US`** setzen und wiederholen (iT7) — byte-identisch.
+
+**2. `Referenzlauf.exe bildvergleich` — die Abnahme von iU7.** Aufruf:
+`Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>`. Er
+rendert die neun Berichtsbilder je einmal mit dem alten `ChartRendererGdi` und einmal mit dem
+neuen SkiaSharp-`ChartRenderer` und schreibt eine `bildvergleich.md`. **Nur unter Windows
+lauffähig** (die GDI+-Seite gibt es nur dort). Steht dort PASS, wird `ChartRendererGdi.cs`
+ersatzlos gelöscht (Entscheidungsregister **iF23**); bis dahin ist die Datei eine zweite,
+ungepflegte Fassung desselben Renderers.
+
+**3. App-Start, Sprachumschaltung und Setup — die Abnahme von iU4 und iU5.**
+   - Alle zwölf Gewerke über das Kontextmenü öffnen und speichern; die vier Ja/Nein-Rückfragen in
+     beide Richtungen; die 19 Stammdaten- und Einlesemasken aus dem Menü.
+   - **Sprachumschaltung de↔en** (`HKCU\Software\wp-plan`, Wert `Language`, Neustart) — sie ist
+     der Kulturnachweis auf der Oberfläche, nachdem `Sprache` in den Kern gezogen ist.
+   - Registry-Werte und DPAPI-Geltungsbereiche unverändert (Lizenz bleibt aktiviert, KI-Schlüssel
+     lesbar); Hilfe-Zwischenspeicher unter `%APPDATA%\EPOS-Plan`, Lizenz unter `%APPDATA%\wp-plan`.
+   - **Bericht erzeugen** (Word *und* Excel), Deckblattfassung `1.1.0.0`, Vorlage gefunden;
+     Katalogimporte VDI 3805 / CEC / PAN; Ganglinien aus CSV *und* Excel-Mappe; CSV-Export.
+   - **Proben 16/16** (`Proben/ZugriffsschichtProben`) und die **Excel-Import-Tests** aus der
+     Liste zu `d4b72c8` (P1.1) — die einzige echte Verhaltensänderung der iU1-Serie.
+   - **Setup** (P1.10) — `.\Setup\build-setup.ps1 -Schnell`, einmal installieren. **Achtung:**
+     Seit iU8-10 braucht der Bau `MicrosoftEdgeWebview2Setup.exe` in der Repowurzel, siehe die
+     iU8-Liste.
+   Die vollständigen Einzelpunkte stehen unten je Commit und im Abschnitt „Am Gerät zu prüfen".
+
+**4. Die iU6-Punkte — was der Referenzlauf nicht abdeckt.** Er deckt den Rechenpfad ab, nicht die
+Bedienung:
+   - **Erststart-Migration aus einem `.accdb`-Bestand** — der einzige verbliebene Nutzer der
+     OleDb-Brücke (`DbParamOleDb.Nach`, `SchemaVersionAccess`).
+   - Die **Solarkollektoren- und Pufferspeicherdialoge**, deren toter OleDb-Code gestrichen wurde:
+     Sie müssen sich „unverändert" verhalten.
+   - Die **36 Views mit `RecordSet`** (FormMain 13, Form_Start 10, Form_PV 6, Form_Gebäude 6,
+     Form_WP 4, `Form_DBBHKW.cs:436/450`) und die Sweep-Dateien mit den meisten Stellen:
+     `Form_Kosten.cs` (83), `ucFuelSettings.cs` (80), `Form_BHKWEing.cs` (50),
+     `Form_Heizkessel.cs` (46), `Form_Heizkessel_einlesen.cs` (20).
+
+**5. Die iU8-Liste** in [`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md) — der
+Blazor-Dialog mit Maus *und* Finger, beide Sprachen, Hochkontrast, DPI, WebView2 und Setup. Sie
+ist bewusst getrennt: Sie prüft nichts am Rechenweg, sondern eine neue Oberflächentechnik.
 
 ### Wenn der Referenzlauf abweicht
 

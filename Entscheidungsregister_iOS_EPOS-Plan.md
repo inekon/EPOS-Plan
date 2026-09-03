@@ -37,7 +37,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF4** | Kern-Herauslösung unabhängig vom iOS-Ziel einplanen? | ja | iU1 | offen | | |
 | **iF5** | Vertriebsweg im Grundsatz | zunächst TestFlight — im Umsetzungskonzept § 3.4 präzisiert: TestFlight ist **kein** Auslieferungsweg (90 Tage) | iU13 | offen — geht sachlich in iF12 auf | | |
 | **iF6** | Windows-Charts ebenfalls auf ScottPlot? | mittelfristig vereinheitlichen, **nicht** Teil dieses Vorhabens | iU7 | offen | | |
-| **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — `Werkzeuge/Formularkarte` (iU8-12a…d), Stapellauf über **123** Designer-Dateien / **120** Masken (§ 2.8) | | |
+| **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — `Werkzeuge/Formularkarte` (iU8-12a…e), Stapellauf über **123** Designer-Dateien / **120** Masken vor dem Stichtag, **122 / 119** danach (§ 2.8) | | |
 | **iF8** | **Modell C beschließen** (Strangler-Regel M1) | ja | **iU8 — ohne diesen Beschluss ist iU8 gegenstandslos** | **umgesetzt, vorläufig** — durch den Auftrag „fahre fort bis iU8" vom 03.09.2026 gedeckt; förmlicher Entscheid des Anwenders offen — Stichtag iZ5 mit `92380ea`: `Form_Kosten_Auswahl` gelöscht, der Dialog lebt als Komponente | | |
 | ~~**iF9**~~ | ~~SQLite auch auf Windows, mit Stichtag~~ | ja | — | **beschieden und ausgeführt 02.09.2026 (`6486c36`)** | ja | 02.09.2026 |
 | **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | **Weg (b) ausgeführt 03.09.2026** (`22fb7eb`…`2387abf`, § 2.5); Weg (a) hat sich mit dem Masken-Sweep iU6-T3a miterledigt. Entscheid des Anwenders steht noch aus | | |
@@ -534,8 +534,9 @@ neun PNG byte-gleich zum Stand vor dem Umzug. Referenzlauf 1030/1007/1017 gegen
 
 ### 2.8 Befund iU8 (`EPOS.UI` und der erste Blazor-Dialog), 03.09.2026 — **iZ5 hier erreicht**
 
-Drei Stränge, sechzehn Commits: Strang A `8574911`…`8f5a28e` mit `45a21dc`/`f5fb05c`,
-Strang B `4369fdb`…`eafbc1f` mit `eff82aa`/`e3d1e5b`, Strang C `479fcf9`…`0af7ca7`.
+Drei Stränge, neunzehn Commits: Strang A `8574911`…`8f5a28e` mit `45a21dc`/`f5fb05c` (Basis
+`18f515f`), Strang B `4369fdb`…`eafbc1f` mit `eff82aa`/`e3d1e5b` (Basis `c477523`), Strang C
+`479fcf9`…`0af7ca7` und `4aa6b15` (Basis `f5fb05c`).
 
 **Die Paketlage.** Eine eigene Gruppe „Blazor Hybrid (iU8)" in `Directory.Packages.props`:
 
@@ -576,10 +577,22 @@ SpeicherEngine (337) und `EPOS.Kern` (35) sind das **886** Tests im Kernfilter.
 lokalisiert (`ApplyResources`)** — nicht 79/74/21. Der Fehler der Vorvermessung war die
 Beachtung der Groß-/Kleinschreibung: Der Bestand schreibt beides,
 `Form_Kosten_Auswahl.Designer.cs` **und** `Form_BHKWEing.designer.cs`. Die Konzeptzahl 118 war
-damit näher an der Wahrheit als die Nachmessung. Nach dem Löschen von `Form_Kosten_Auswahl`
-sind es 122/119. Gezählt wurden dabei 2 377 Kartenzeilen, 178 Felder ohne Beschriftung und vier
-selbstgebaute Steuerelemente ohne Zielkomponente (`AktionsKarte`, `ProjektAuswahl`,
-`HeaderGradientPanel`, `KlimazonenKarte`).
+damit näher an der Wahrheit als die Nachmessung. Gezählt wurden dabei 2 377 Kartenzeilen, 178
+Felder ohne Beschriftung und vier selbstgebaute Steuerelemente ohne Zielkomponente
+(`AktionsKarte`, `ProjektAuswahl`, `HeaderGradientPanel`, `KlimazonenKarte`).
+
+**Nach dem Stichtag iZ5 sind es 122 Designer-Dateien und 119 Masken**, davon **117 unter
+`Views/`** — `Form_Kosten_Auswahl` ist gelöscht. Das war zugleich das Problem des Werkzeugs: 22
+seiner 100 Tests lasen genau diese Maske live aus dem Repo und waren seit `92380ea` rot.
+**iU8-12e (`4aa6b15`) löst das durch eine Trennung, nicht durch eine andere Probemaske.** Der
+letzte Stand der Maske liegt eingefroren unter `Formularkarte.Tests/Pruefmuster/Kosten/`
+(Designer, `.cs`, `.resx` und der Aufrufer-Auszug aus `Form_Kosten.cs`, wortgleich aus
+`92380ea^`); die Muster werden **nie übersetzt** und vom Stapellauf **übergangen** wie `bin` und
+`obj`, damit sie das Vollständigkeitsnetz nicht verfälschen. Die `StapelTests` prüfen weiterhin
+den lebenden Bestand, jetzt an der zeichengleichen Schwester `Form_Kosten_VarAuswahl`. **101
+Tests, alle grün.** Die Regel dahinter ist allgemein: **Ein Test, der das Werkzeug prüft, gehört
+an ein eingefrorenes Muster; ein Test, der den Bestand prüft, an den Bestand.** Mit jeder
+weiteren umgestellten Maske wäre sonst dasselbe wieder passiert.
 
 **Das Raster „Label x28 / Control x270" gibt es nicht.** `Point(28,` und `Point(270,` kommen in
 je einer Datei vor. Tragfähig ist die Zeilenregel: das nächste Label **links in derselben

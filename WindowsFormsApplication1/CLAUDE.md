@@ -4,13 +4,14 @@ Kontext zum **Code** dieses Projekts. Fachdomäne, Datenmodell, Migration und Um
 `Kenndaten.accdb` stehen in der [`CLAUDE.md` der Repo-Wurzel](../CLAUDE.md) — hier nicht wiederholen.
 Antworten und Code-Kommentare auf Deutsch.
 
-> **Der Rechenkern steht nicht mehr hier.** Seit Paket iU4 (03.09.2026) liegen 168 Kerndateien —
-> `Allgemein/Simulation/`, `Allgemein/Wirtschaftlichkeit/`, `Model/`, die Zugriffsschicht, die
-> Daten-Hälfte des Berichts und 50 Controller — im Projekt
-> [`../EPOS.Kern/`](../EPOS.Kern/CLAUDE.md). Dieses Projekt referenziert es und übersetzt sie
-> nicht mehr mit. **Regel: eine Fachänderung am Rechenkern wird EINMAL gemacht, im Kern.** Wer
-> eine Datei hier sucht und nicht findet, sucht sie dort — die Ordnerstruktur ist dieselbe
-> geblieben.
+> **Der Rechenkern steht nicht mehr hier.** Seit Paket iU4 (03.09.2026) liegen die Kerndateien
+> im Projekt [`../EPOS.Kern/`](../EPOS.Kern/CLAUDE.md) — erst 168, nach dem zweiten Umzug
+> (iU5-U1…U5) und `ChartRenderer` (iU7-5) **268 `.cs`**: `Allgemein/Simulation/`,
+> `Allgemein/Wirtschaftlichkeit/`, `Model/`, die Zugriffsschicht, der **ganze** Bericht
+> (Daten, Ausgabe und Renderer), `Lizenz/`, `Import/`, `Katalog/`, `Export/`, das KI-**Wissen**
+> und 80 Controller. Dieses Projekt referenziert es und übersetzt sie nicht mehr mit.
+> **Regel: eine Fachänderung am Rechenkern wird EINMAL gemacht, im Kern.** Wer eine Datei hier
+> sucht und nicht findet, sucht sie dort — die Ordnerstruktur ist dieselbe geblieben.
 
 ## Build
 
@@ -97,21 +98,29 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**49** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: Kontextmenüs als
-  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, die Stamm-Controller mit `MessageBox` und
-  `WPCtrl`. Die übrigen **50** liegen seit iU4 in `../EPOS.Kern/Controller/`.
+- **`Controller/`** (**20** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
+  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `KlimaregionStammCtrl`,
+  `EnergietraegerKatalogCtrl`, `PeakShavingCtrl`, `ProjektExportImportCtrl` und `WPCtrl`
+  (+ `.WinForms.cs`). Die übrigen **80** liegen in `../EPOS.Kern/Controller/` — 50 seit iU4,
+  29 seit iU5-U4, einer seit iU8-8b.
 - **`Model/`** — **keine `.cs` mehr**; alle 46 Modelle liegen in `../EPOS.Kern/Model/`.
-- **`Views/`** (185 `.cs`, 384 Dateien) — `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik,
-  Wärmepumpe, Simulation, Wizard, Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …).
-- **`Allgemein/`** (**82** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+- **`Views/`** (**279 `.cs`**, davon 162 ohne Designer-Datei; **492 Dateien** mit `.resx`) —
+  `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
+  Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). Vom Build ausgenommen sind die
+  „- Kopie"-Dateien und `Form_Simulation_Kurz.*`.
+- **`Allgemein/`** (**42** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts
-  begründet. `Simulation/` (bis auf
-  `SchemaModell.cs`), `Wirtschaftlichkeit/` (vollständig) und die Daten-Hälfte von `Bericht/`
-  sind mit iU4 in den Kern gezogen; hier bleiben die Bericht-AUSGABE (7 Dateien),
-  `Update/` (Schemamigration, Access-Zweig), `Katalog/`, `Import/`, `KI/`, `Hilfe/`,
-  `GrafikTools/`, `Export/` und `Lizenz/`.
+  begründet. `Simulation/` (bis auf `SchemaModell.cs`), `Wirtschaftlichkeit/`, `Bericht/`
+  (Daten **und** Ausgabe), `Lizenz/`, `Import/`, `Katalog/`, `Export/` und das KI-Wissen sind
+  in den Kern gezogen. Hier bleiben: `Blazor/` (die Hülle, iU8), `Update/` (Schemamigration und
+  Access-Zweig samt `DbParamOleDb`, `SchemaVersionAccess`, `GeraeteWaisen`), `GrafikTools/`,
+  `Hilfe/`, die WinForms-nahen Teile von `KI/` (was der Assistent **bedient**),
+  `Bericht/ChartRendererGdi.cs` und `Bericht/BerichtsDatenSammler.cs`, dazu `BaseForm`,
+  `Form_Hinweis`, `FensterEinpassung`, `SpeichernLeiste`, `IAssistentRahmen`, `StromTestClass`
+  und `Simulation/SchemaModell.cs`. Die vollständige Begründung je Datei steht in
+  [`../EPOS.Kern/CLAUDE.md`](../EPOS.Kern/CLAUDE.md).
 
 Die Aufteilung im Einzelnen — was im Kern liegt und was mit Absicht hier geblieben ist — steht im
 Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.csproj) und in
@@ -121,12 +130,12 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 
 | Ordner | Inhalt |
 |---|---|
-| `Bericht/` | Die **AUSGABE**-Hälfte des Berichtsmoduls: `WordBerichtGenerator` (OpenXML, Vorlage `Vorlagen/Berichtsvorlage.docx`), `ExcelBerichtGenerator` (ClosedXML), `ChartRenderer` (GDI+/PNG), `Bausteine/` (konfigurierbare Berichtsteile), `BerichtsDatenSammler`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`, `IBerichtsBaustein`. Sie zieht bis iU7 nicht um. Die **DATEN**-Hälfte (`BerichtTexte` de/en, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`) liegt seit iU4 in `../EPOS.Kern/Allgemein/Bericht/` |
+| `Bericht/` | **Nur noch zwei Dateien.** `ChartRendererGdi` — der eingefrorene GDI+-Stand, Gegenpart des Windows-Bildvergleichs (`../Referenzlauf/Bildvergleich.cs`), wird nach dessen Abnahme gelöscht — und `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft. Alles andere liegt in `../EPOS.Kern/Allgemein/Bericht/`: die DATEN-Hälfte seit iU4, der Renderer `ChartRenderer` (SkiaSharp) seit iU7-5, die AUSGABE (`WordBerichtGenerator`, `ExcelBerichtGenerator`, `Bausteine/`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`, `IBerichtsBaustein`) seit iU5-U3. Die `.docx`-Vorlage bleibt hier und wird neben die EXE kopiert |
 | `Wirtschaftlichkeit/` | **vollständig in `../EPOS.Kern/Allgemein/Wirtschaftlichkeit/`** (iU4): `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` und 16 weitere |
 | `Simulation/` | **bis auf `SchemaModell.cs` (Schema-Ansicht) in `../EPOS.Kern/Allgemein/Simulation/`** (iU4). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
-| `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, Zustände von `NichtAktiviert` bis `Lesemodus`. Die Ablage läuft seit iU5 über `Dienste.Lizenzablage`; **Geltungsbereich Gerät** (DPAPI `LocalMachine`) für Token und Zeitanker, **Benutzer** (`CurrentUser`) für den KI-Schlüssel — ein Wechsel entwertet jede installierte Lizenz |
-| `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
-| `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
+| ~~`Lizenz/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Lizenz/`**: `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, Zustände von `NichtAktiviert` bis `Lesemodus`. Die Ablage läuft über `Dienste.Lizenzablage`; **Geltungsbereich Gerät** (DPAPI `LocalMachine`) für Token und Zeitanker, **Benutzer** (`CurrentUser`) für den KI-Schlüssel — ein Wechsel entwertet jede installierte Lizenz |
+| `KI/` | **geteilt seit iU5-U2:** Was der Assistent **weiß** (`HilfeWissen`, `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiEinwilligung`, `KiSchreibschutz`, `KiSicherungspunkt`, die Textkataloge) liegt im Kern; was er **bedient**, bleibt hier — `KiChatService`, `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` und die `Aktionen/`. Inhaltlich unverändert: `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
+| ~~`Import/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Import/`**: `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `GanglinienDatei`, `AnsiEncoding`. Ebenso `Katalog/` und `Export/` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Blazor/` | **Die Hülle für Razor-Dialoge (iU8).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut. Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
@@ -138,14 +147,18 @@ spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kennda
 Die Ausführungsmethoden nehmen seit 02.09.2026 `params DbParam[]` (`Allgemein/DbParam.cs`, eigener
 Parametertyp mit `DbParamTyp`-Enum) — **nicht mehr `OleDbParameter`**, das auf Nicht-Windows schon im
 Konstruktor `PlatformNotSupportedException` wirft. Übersetzt wird innen (`?` → `@pN`,
-`UebersetzeParameterzeichen`). Eine implizite Brücke `OleDbParameter → DbParam` (und `DbParam.Von(…)`
-für Arrays) hält die 432 Altaufrufe unter `Views/` lauffähig, bis sie mit ihren Masken umgestellt
-werden (iU9); **neuer Code nutzt ausschließlich `new DbParam(…)`**. `System.Data.OleDb` bleibt nur
-noch wegen der Brücke, `RecordSet.DBCommand` (iR8) und des `.accdb`-Migrationspfads referenziert. Transaktionen
-laufen über `DbVorgang`. `RecordSet.cs` (string-konkateniertes SQL, 47 echte Nutzer) ist Altbestand,
-innen ebenfalls auf SQLite, die Property `DBCommand` bleibt `OleDbCommand`. Neuer Code
-ausschließlich über `DataRepository`; das Ziel `IDatenzugriff`/`DbParam` steht im
-`Umsetzungskonzept_iOS_EPOS-Plan.md` (iU6). Betrieb: `BETRIEB_SQLITE.md`.
+`UebersetzeParameterzeichen`). Die frühere implizite Brücke `OleDbParameter → DbParam` ist mit **iU6-T3a** gegenstandslos
+geworden: Ein Skript hat die 434 Altaufrufe in 46 Views maschinell auf `DbParam` gezogen, T3b hat
+die Brücke aus dem Kern genommen. **Neuer Code nutzt ausschließlich `new DbParam(…)`.**
+`System.Data.OleDb` wird in diesem Projekt nur noch vom eingefrorenen **Access-Zweig** gebraucht
+(`DbParamOleDb`, `SchemaVersionAccess`, `SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`);
+`../EPOS.Kern` nennt es **gar nicht mehr**, weder im Quelltext noch als `PackageReference`
+(CA1416: 87 → 0). Transaktionen laufen über `DbVorgang`. `RecordSet.cs` (string-konkateniertes
+SQL) ist Altbestand, innen ebenfalls auf SQLite und seit **iU6-T1** ein reiner vorwärtslaufender
+Zeilenzeiger — `DBCommand`, `MerkeSql()` und `Parameter()` sind ersatzlos gestrichen (iR8: null
+externe Nutzer). Seit **iU6-T4** ist `DataRepository` eine **Fassade** vor `IDatenzugriff`
+(`SqliteDatenzugriff`); für die rund 160 Aufruferdateien ändert das nichts. Neuer Code
+ausschließlich über `DataRepository`. Betrieb: `BETRIEB_SQLITE.md`.
 
 **Rechenkern:** vollständig verwaltet in `../EPOS.Kern/Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`, seit iU4 dort), aufgerufen
 aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
@@ -196,11 +209,16 @@ Diese Konventionen beim Erweitern beibehalten.
 
 ## Wichtige Pakete
 
-`WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` + `SkiaSharp`
-· `MathNet.Numerics` · `DocumentFormat.OpenXml` und `ClosedXML` (Berichte ohne Office) ·
-`BouncyCastle.Cryptography` + `System.Security.Cryptography.ProtectedData` (Lizenz) ·
-`System.Data.OleDb` ·
-`Mscc.GenerativeAI`.
+`WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` —
+seit iU7/iU8 nur noch für **interaktive** Bildschirm-Charts, heute genau eine Maske
+(`Form_SpeicherOptimierung`); Bericht und Blazor bekommen PNG-Bytes aus dem Kern-Renderer ·
+`SkiaSharp` · `MathNet.Numerics` · `System.Security.Cryptography.ProtectedData` (DPAPI hinter
+`Dienste.Lizenzablage`) · `System.Data.OleDb` (**nur** noch für den Access-Zweig der
+Erststart-Migration) · `Mscc.GenerativeAI` · seit iU8
+`Microsoft.AspNetCore.Components.WebView.WindowsForms` (10.0.100) und die Projektreferenz auf
+`../EPOS.UI`. `DocumentFormat.OpenXml`, `ClosedXML`, `BouncyCastle.Cryptography` und
+`SixLabors.Fonts` stehen seit iU5-U auch im Kern — die konsumierenden Dateien sind dorthin
+gewandert, die Referenzen hier sind noch nicht aufgeräumt.
 
 **`SixLabors.Fonts` ist bewusst auf 1.0.1 gepinnt** — ab 2.x gilt die Six Labors Split License.
 Vor Releases `dotnet list package --include-transitive` prüfen.

@@ -1,8 +1,9 @@
 # CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **267 Dateien** (168 aus iU4, dazu `IDatenzugriff`/`SqliteDatenzugriff`
-aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien aus iU5 und die **74 Dateien des
-zweiten Umzugs** iU5-U1…U5), `net10.0` **ohne** `-windows`, AnyCPU.
+Der plattformfreie Kern von EPOS-Plan: **268 `.cs`-Dateien** (168 aus iU4, dazu
+`IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
+aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b und die **74 Dateien des zweiten Umzugs**
+iU5-U1…U5), `net10.0` **ohne** `-windows`, AnyCPU.
 Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
 `../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
 auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
@@ -19,8 +20,9 @@ dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 886 Tests
 ```
 
 Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
-mitgewandert (CS0108, `items` verdeckt `StromverbraucherModel.items`) — sie ist nicht neu, die
-Gesamtzahl der Lösung bleibt bei 36.
+mitgewandert (CS0108, `items` verdeckt `StromverbraucherModel.items`) — sie ist nicht neu. Die
+Gesamtzahl der Lösung liegt bei **34** (sie war 36, bis iU8-9 das Formular `Form_Kosten_Auswahl`
+mit seinen beiden WFO1000 löschte).
 
 ## Was hier liegt
 
@@ -38,7 +40,7 @@ Gesamtzahl der Lösung bleibt bei 36.
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (79) | 79 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4 |
+| `Controller/` (80) | 80 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs) |
 | `Model/` (46) | alle 46 Modelle |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
@@ -52,13 +54,14 @@ Quelle ist `sql/tools/Erzeuge-Schema.ps1`, nicht dieses Projekt.
 
 ## Was mit Absicht NICHT hier liegt
 
-Nach dem zweiten Umzug (iU5-U1…U5) sind es noch **59 Dateien** unter
-`../WindowsFormsApplication1/Allgemein/` (39) und `../WindowsFormsApplication1/Controller/` (20).
+Nach dem zweiten Umzug (iU5-U1…U5) sind es noch **62 Dateien** unter
+`../WindowsFormsApplication1/Allgemein/` (42) und `../WindowsFormsApplication1/Controller/` (20).
 Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie übersehen worden wäre:
 
 | Was | Warum |
 |---|---|
 | `BaseForm`, `Form_Hinweis` (+ Designer), `FensterEinpassung`, `SpeichernLeiste`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`) | Oberflächenbausteine — WinForms und GDI+ |
+| `Blazor/BlazorDialogForm`, `Blazor/BlazorDienste`, `Hilfe/WindowsHilfeDienst` | die Blazor-Hülle selbst (iU8-6/iU8-7): ein modales `Form` mit `BlazorWebView`, sein Dienstverzeichnis und die Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`. Sie **sind** die Oberfläche und können nie in den Kern |
 | `ChartRendererGdi` | der eingefrorene GDI+-Stand, nur noch Gegenpart des Windows-Bildvergleichs (`Referenzlauf/Bildvergleich.cs`) |
 | `Simulation/SchemaModell.cs` | Schema-**Ansicht**; ruft `Form_Waermesenke` |
 | `Update/SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb` |
