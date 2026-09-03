@@ -121,8 +121,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(m_szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             string sql = "UPDATE " + TAB_REGION_STAMM + " SET Name = ?, Longitude = ?, Latitude = ?, Details = ? WHERE ID_Klimaregion = ?";
@@ -141,8 +141,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
+                    "Schreibgeschützt");
                 return false;
             }
             string sql = "DELETE FROM " + TAB_REGION_STAMM + " WHERE Name = ?";
@@ -226,7 +226,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Kopieren der Klimaregion in das Projekt: " + ex.Message);
                     return 0;
                 }
             }

@@ -123,7 +123,7 @@ namespace WindowsFormsApplication1
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt = null)
         {
             int srcId = _dup.GetProjektId(projektName);
-            if (srcId <= 0) { MessageBox.Show("Projekt '" + projektName + "' nicht gefunden."); return false; }
+            if (srcId <= 0) { Meldung.Zeigen("Projekt '" + projektName + "' nicht gefunden."); return false; }
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Export: " + ex.Message); return false;
+                    Meldung.Zeigen("Fehler beim Export: " + ex.Message); return false;
                 }
             }
         }

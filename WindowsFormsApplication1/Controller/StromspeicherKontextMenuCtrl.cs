@@ -455,9 +455,8 @@ namespace WindowsFormsApplication1
 
             int idAnlage = AnlagenId(zeile);
 
-            if (MessageBox.Show(string.Format(MyResource.Resource.VAR_MSG_AKTIV_FRAGE, zeile.Text),
-                                MyResource.Resource.VAR_TITEL,
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (!Dienste.Dialog.Frage(string.Format(MyResource.Resource.VAR_MSG_AKTIV_FRAGE, zeile.Text),
+                                      MyResource.Resource.VAR_TITEL))
                 return;
 
             StromspeicherVarianteCtrl variantenCtrl = new StromspeicherVarianteCtrl();
@@ -497,9 +496,9 @@ namespace WindowsFormsApplication1
 
             int idAnlage = AnlagenId(zeile);
 
-            if (MessageBox.Show(string.Format(MyResource.Resource.VAR_MSG_LOESCHEN_FRAGE, zeile.Text),
-                                MyResource.Resource.VAR_TITEL,
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            // warnend: das Warnsymbol der Löschfrage ist eine Aussage.
+            if (!Dienste.Dialog.Frage(string.Format(MyResource.Resource.VAR_MSG_LOESCHEN_FRAGE, zeile.Text),
+                                      MyResource.Resource.VAR_TITEL, warnend: true))
                 return;
 
             // Die Geraetekopie MERKEN, solange die Anlagenzeile sie noch nennt.
@@ -691,8 +690,7 @@ namespace WindowsFormsApplication1
 
         private void Melden(string text)
         {
-            MessageBox.Show(text, MyResource.Resource.VAR_TITEL,
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Dienste.Dialog.Warnung(text, MyResource.Resource.VAR_TITEL);
         }
     }
 }

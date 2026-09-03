@@ -82,8 +82,8 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szBezeichner))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.",
-                    "Schreibgeschuetzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.",
+                    "Schreibgeschuetzt");
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
@@ -249,8 +249,8 @@ namespace WindowsFormsApplication1
             {
                 if (IsReadOnly(bez))
                 {
-                    MessageBox.Show("Dieser Stammdatensatz ist schreibgeschuetzt (ReadOnly) und kann nicht ueberschrieben werden.",
-                        "Schreibgeschuetzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschuetzt (ReadOnly) und kann nicht ueberschrieben werden.",
+                        "Schreibgeschuetzt");
                     return false;
                 }
                 var set = new StringBuilder("Typ = ?, Beschreibung = ?");
@@ -293,8 +293,8 @@ namespace WindowsFormsApplication1
         {
             if (TypIsReadOnly(typname))
             {
-                MessageBox.Show("Dieser Typ ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.",
-                    "Schreibgeschuetzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Meldung.Hinweis("Dieser Typ ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.",
+                    "Schreibgeschuetzt");
                 return false;
             }
             return DataRepository.ExecuteSQL("DELETE FROM " + TYP_STAMM + " WHERE Typname = ?",

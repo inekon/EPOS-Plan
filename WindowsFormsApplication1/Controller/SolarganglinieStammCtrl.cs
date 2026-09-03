@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                MessageBox.Show("Diese Solarganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.", "Hinweis");
+                Meldung.Hinweis("Diese Solarganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.", "Hinweis");
                 return false;
             }
             int id = GetStammId(szName);
@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
                     return false;
                 }
             }
@@ -161,7 +161,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    MessageBox.Show("Fehler beim Kopieren der Solarganglinie ins Projekt: " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Kopieren der Solarganglinie ins Projekt: " + ex.Message);
                     return 0;
                 }
             }

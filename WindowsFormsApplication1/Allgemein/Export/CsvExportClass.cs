@@ -98,8 +98,7 @@ namespace WindowsFormsApplication1
         {
             if (spalten == null || spalten.Count == 0)
             {
-                MessageBox.Show("Keine Datenreihe für den Export ausgewählt!", "CSV Export",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Dienste.Dialog.Meldung("Keine Datenreihe für den Export ausgewählt!", "CSV Export");
                 return;
             }
 
@@ -127,13 +126,11 @@ namespace WindowsFormsApplication1
             try
             {
                 Schreiben(dlg.FileName, temperaturStuendlich, spalten, viertelstundenwerte);
-                MessageBox.Show("CSV-Datei wurde erstellt:\n" + dlg.FileName, "CSV Export",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dlg.FileName, "CSV Export");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
             }
         }
 

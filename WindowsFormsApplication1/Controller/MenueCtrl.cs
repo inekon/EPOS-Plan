@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
 
             if (wizparent.gespeichert)
             {
-                MessageBox.Show("Daten gespeichert");
+                Dienste.Dialog.Meldung("Daten gespeichert");
             }
         }
 
@@ -237,17 +237,18 @@ namespace WindowsFormsApplication1
             DialogResult ret = frm.ShowDialog();
             if (ret == DialogResult.OK && frm.szProjekt != "")
             {
-                // --- NEU: MessageBox Sicherheitsabfrage vor dem tatsächlichen Löschen ---
-                DialogResult dialogResult = MessageBox.Show(
+                // --- Sicherheitsabfrage vor dem tatsächlichen Löschen ---
+                // warnend: das Warnsymbol ist hier eine Aussage.
+                // vorgabeNein: der Fokus liegt zur Sicherheit auf "Nein", damit die
+                // Eingabetaste kein Projekt löscht.
+                bool loeschen = Dienste.Dialog.Frage(
                     $"Sind Sie sicher, dass Sie das Projekt '{frm.szProjekt}' und alle dazugehörigen Daten unwiderruflich löschen möchten?",
                     "Projekt löschen bestätigen",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning,
-                    MessageBoxDefaultButton.Button2 // Fokus liegt zur Sicherheit auf "Nein"
-                );
+                    warnend: true,
+                    vorgabeNein: true);
 
                 // Wenn der Nutzer nicht auf "Ja" klickt, wird der Löschvorgang abgebrochen
-                if (dialogResult != DialogResult.Yes)
+                if (!loeschen)
                 {
                     return "";
                 }
@@ -274,7 +275,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
-                    MessageBox.Show($"Fehler beim Zurücksetzen der Applikationsdaten: {ex.Message}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Dienste.Dialog.Fehler($"Fehler beim Zurücksetzen der Applikationsdaten: {ex.Message}", "Fehler");
                     return "";
                 }
 
@@ -286,7 +287,7 @@ namespace WindowsFormsApplication1
                 szProjekt = frm.szProjekt;
 
                 // --- NEU: Erfolgsmeldung nach erfolgreichem Löschen ---
-                MessageBox.Show($"Das Projekt '{szProjekt}' wurde erfolgreich gelöscht.", "Projekt gelöscht", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Dienste.Dialog.Meldung($"Das Projekt '{szProjekt}' wurde erfolgreich gelöscht.", "Projekt gelöscht");
             }
             return szProjekt;
         }
