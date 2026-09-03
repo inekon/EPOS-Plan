@@ -16,7 +16,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 3 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 636 Tests (Stand iU9-W6)
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 820 Tests (Stand iU9-W7)
 ```
 
 Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
@@ -40,7 +40,7 @@ mit seinen beiden WFO1000 löschte).
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor |
+| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor. **Mit iU9‑W7** kommen `WPCtrl` (Umzug), `WaermepumpeGeraeteCtrl` (die zweistufige Geräteauskunft Ä22) und die Datenwege der acht Wärmepumpen- und Solarmasken dazu: `WPStammCtrl.KatalogZeilen`/`GesperrtDurchProjekt`/`Speichern`, `KenndatenCtrl.Reihen`/`LiesStamm`/`Abgleichen` (transaktional), `KenndatenKuehlungCtrl.Reihen`/`HatKenndaten`, `WErzeugerCtrl.AnlagenzeileNachziehen`, `KostenSummenCtrl.AnlagenSumme`, `Z_ProjektSolarganglinieCtrl.LiesProjekt` und `SolarkollektorenStammCtrl.IdZu`/`ReadById` |
 | `Model/` (46) | alle 46 Modelle |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
@@ -67,9 +67,8 @@ Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie ü
 | `Bericht/BerichtsDatenSammler` | `EnergieMengen` aus `Views/Varianten/` |
 | `KI/KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` | greifen auf lebende `Control`/`Form` zu |
 | `KI/KiChatService`, `KiAktionen` (trägt `KiHilfe`), `KiAktionenDialog`, `-Energie`, `-Lastgang`, `-Projekt`, `-Schreiben`, `-Sitzung`, `-Uebernahme`, `-Wirtschaft` | hängen an den vier obigen, an `HelpEntry` oder an `OleDbException` |
-| `IAssistentRahmen`, `StromTestClass` | `WizardSeite` aus `Views/Wizard/` bzw. `WPCtrl` |
+| `IAssistentRahmen`, `StromTestClass` | `WizardSeite` aus `Views/Wizard/` bzw. Testgerüst am Rechenweg |
 | die 12 `*KontextMenuCtrl` | `ListView`/`ContextMenuStrip` |
-| `WPCtrl` + `WPCtrl.WinForms.cs` | `partial` über zwei Dateien, die zweite ist WinForms — eine Klasse darf nicht halb hier liegen |
 | `KlimaregionStammCtrl` | `ComboBox`/`ListBox` in `FillComboBox`/`FillListBox` |
 | `WizardCtrl`, `MenueCtrl` | `WizardParent` aus `Views/Wizard/` |
 | `EnergietraegerKatalogCtrl` | `EnergyCarrier`, deklariert in `Views/Kosten/Form_Kosten.cs` |
@@ -80,8 +79,10 @@ wird über `<None Update … CopyToOutputDirectory>` neben die EXE gelegt, und g
 `WordBerichtGenerator.FindeVorlage()` (`AppDomain.CurrentDomain.BaseDirectory`).
 
 **Die `partial`-Falle.** Vor jedem weiteren Umzug prüfen, ob die Klasse noch eine zweite Hälfte
-in der Anwendung hat. `SimulationControl` liegt mit beiden Hälften hier, `WPCtrl` mit beiden
-dort — dazwischen gibt es nichts.
+in der Anwendung hat. `SimulationControl` liegt mit beiden Hälften hier; `WPCtrl` lag mit beiden
+dort, bis iU9‑W7.0a seine WinForms-Hälfte STRICH — `WPCtrl.WinForms.cs` trug genau eine Methode
+(`FillListBox(ListBox)`), und die hatte im ganzen Bestand keinen Aufrufer. Erst danach konnte
+die Klasse hierher; dazwischen gibt es nichts.
 
 ## Regeln für Änderungen hier
 
@@ -215,6 +216,22 @@ Dialog dazu ist `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor`, gerechnet wir
 in `Task.Run`). Damit trägt der Weg „Diagramm im Kern zeichnen, in der Oberfläche nur das PNG
 zeigen" auch außerhalb des Berichts.
 
+**Seit iU9‑W7.0c zeichnet er die WÄRMEPUMPEN-KENNLINIEN.** `ChartRenderer.Kennlinien`
+ist die zweite Methode für eine EINGABEMASKE: COP bzw. Leistung über der
+Außentemperatur, eine Linie je Vorlauftemperatur, Bildmaß **968 × 520** (die doppelte
+Zielauflösung des breitesten der vier abgelösten WinForms-Charts, 484 × 195, plus
+130 px für die Legende — sie steht hier UNTER dem Diagramm statt darin, weil sie bei
+acht Reihen die Linien verdeckte). Punktmarken wie im Vorläufer: Kreis für den COP,
+Kreuz für die Leistung. Die x-Achse trägt echte Temperaturen statt
+Stützstellennummern — zwei Vorlauf-Kennlinien müssen nicht dieselben
+Außentemperaturen haben; die „schöne" Achsenstufung ist dafür aus
+`KapitalwertVerlauf` als `Stufe(ref min, ref max)` herausgezogen. Die Datenseite
+liefern `KenndatenCtrl.Reihen` und `KenndatenKuehlungCtrl.Reihen` als **ein**
+`KennlinienSatz` mit beiden Reihenlisten. Die Dialoge dazu sind
+`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` und
+`…/WaermepumpeAnlageDialog.razor`, gezeichnet wird in den Hüllen
+`Views/Wärmepumpe/WaermepumpeStammHuelle.cs` (`BilderZu`).
+
 **Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
 `ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
 `ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
@@ -254,7 +271,7 @@ Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
 sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet **zehn** Bilder und
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W7.0c **zwölf** Bilder und
 prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
