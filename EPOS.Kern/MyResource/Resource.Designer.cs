@@ -28281,5 +28281,212 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung BHKW ähnelt.
+        /// </summary>
+        public static string BHKWV_TITEL {
+            get {
+                return ResourceManager.GetString("BHKWV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie Daten zu BHKW ein ähnelt.
+        /// </summary>
+        public static string BHKWV_KOPFBAND {
+            get {
+                return ResourceManager.GetString("BHKWV_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Module: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Datenbank: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string BHKWV_SP_NAME {
+            get {
+                return ResourceManager.GetString("BHKWV_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenschaften ähnelt.
+        /// </summary>
+        public static string BHKWV_SP_EIGENSCHAFTEN {
+            get {
+                return ResourceManager.GetString("BHKWV_SP_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff: ähnelt.
+        /// </summary>
+        public static string BHKWV_ZELLE_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("BHKWV_ZELLE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Module [kWth]: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Brennstoffart ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_FILTER_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_FILTER_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Leistung ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_FILTER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_FILTER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu.. ähnelt.
+        /// </summary>
+        public static string BHKWV_BTN_NEU {
+            get {
+                return ResourceManager.GetString("BHKWV_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul-Name: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_NAME {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermische Leistung [kWth]: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_PTHERM {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Leistung [kWel]: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_PEL {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenzleistung des ausgewählten Moduls: ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string BHKWV_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BHKWV_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das BHKW löschen? ähnelt.
+        /// </summary>
+        public static string BHKWV_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BHKWV_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BHKWV_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BHKWV_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BHKWV_MSG_LOESCHFEHLER {
+            get {
+                return ResourceManager.GetString("BHKWV_MSG_LOESCHFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das ausgewählte BHKW wurde in den Stammdaten nicht gefunden. ähnelt.
+        /// </summary>
+        public static string BHKWV_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("BHKWV_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
     }
 }

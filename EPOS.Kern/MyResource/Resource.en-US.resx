@@ -10097,4 +10097,73 @@ Overwrite it anyway?</value>
   <data name="WIRT_SZEN_WORST" xml:space="preserve">
     <value>Worst case</value>
   </data>
+  <data name="BHKWV_TITEL" xml:space="preserve">
+    <value>CHP management</value>
+  </data>
+  <data name="BHKWV_KOPFBAND" xml:space="preserve">
+    <value>Enter CHP data</value>
+  </data>
+  <data name="BHKWV_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Selected modules:</value>
+  </data>
+  <data name="BHKWV_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Modules in database:</value>
+  </data>
+  <data name="BHKWV_SP_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BHKWV_SP_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="BHKWV_ZELLE_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel:</value>
+  </data>
+  <data name="BHKWV_LBL_SUMME" xml:space="preserve">
+    <value>Total of all selected modules [kWth]:</value>
+  </data>
+  <data name="BHKWV_LBL_FILTER_BRENNSTOFF" xml:space="preserve">
+    <value>Filter by fuel type</value>
+  </data>
+  <data name="BHKWV_LBL_FILTER_LEISTUNG" xml:space="preserve">
+    <value>Filter by performance</value>
+  </data>
+  <data name="BHKWV_BTN_NEU" xml:space="preserve">
+    <value>New..</value>
+  </data>
+  <data name="BHKWV_LBL_NAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
+  <data name="BHKWV_LBL_TRAEGER" xml:space="preserve">
+    <value>Fuel:</value>
+  </data>
+  <data name="BHKWV_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="BHKWV_LBL_PTHERM" xml:space="preserve">
+    <value>thermal performance [kWth]:</value>
+  </data>
+  <data name="BHKWV_LBL_PEL" xml:space="preserve">
+    <value>electrical performance [kWel]:</value>
+  </data>
+  <data name="BHKWV_LBL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Lower limit output of the selected module:</value>
+  </data>
+  <data name="BHKWV_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="BHKWV_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Do you really want to delete this CHP?</value>
+  </data>
+  <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This master record is write-protected (ReadOnly) and cannot be deleted.</value>
+  </data>
+  <data name="BHKWV_MSG_LOESCHFEHLER" xml:space="preserve">
+    <value>The catalogue entry could not be deleted.</value>
+  </data>
+  <data name="BHKWV_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The selected CHP was not found in the master data.</value>
+  </data>
 </root>

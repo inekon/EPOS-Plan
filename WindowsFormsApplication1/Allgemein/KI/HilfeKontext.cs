@@ -104,7 +104,6 @@ namespace WindowsFormsApplication1
             { "Form_Lizenz",                 B_LIZENZ },
 
             { "Form_BHKWAdmin",              B_BHKW },
-            { "Form_BHKWEing",               B_BHKW },
 
             { "Form_Brauchwasser",           B_BRAUCHWASSER },
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },

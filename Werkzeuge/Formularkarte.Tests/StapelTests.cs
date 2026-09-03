@@ -16,24 +16,25 @@ public sealed class StapelTests
     [Fact]
     public void FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise()
     {
-        // Der Bestand schreibt beides: Form_KostenKomponente.Designer.cs und
-        // Form_BHKWEing.designer.cs. Wer nur die grosse Schreibweise sucht,
-        // uebersieht ueber ein Drittel der Masken.
+        // Der Bestand schreibt beides: gross (.Designer.cs) und klein
+        // (.designer.cs). Wer nur die grosse Schreibweise sucht, uebersieht ueber
+        // ein Drittel der Masken.
         //
-        // iU9-W6 (03.09.2026): Bis dahin stand hier Form_Heizkessel (davor
-        // Form_KostenKomponente, davor Form_Kosten_VarAuswahl). Die Maske ist mit
-        // iU9-W6.3 geloescht (Regel M1); der Zeuge fuer die grosse Schreibweise ist
-        // jetzt Form_Klimadaten - sie wird erst in Welle 14c umgestellt und haelt
-        // damit laenger als jeder bisherige Zeuge.
+        // iU9-W6 (03.09.2026): Beide Zeugen sind neu. Bis dahin standen hier
+        // Form_Heizkessel (gross; davor Form_KostenKomponente, davor
+        // Form_Kosten_VarAuswahl) und Form_BHKWEing (klein) - beide sind mit
+        // iU9-W6.3 bzw. W6.4 geloescht (Regel M1). Die neuen Zeugen halten
+        // laenger: Form_Klimadaten kommt erst in Welle 14c an die Reihe,
+        // Form_Brauchwasser_Admin in Welle 14b.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
-        Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("Form_Brauchwasser_Admin.designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach dem Zusammenfuehren von Welle 5 und Welle 6:
         // 89 Dateien nach W5 (92 nach iU9-W4, 101 nach iU9-W3, 105 nach iU9-W2,
         // 108 nach iU9-W0); Welle 6 senkt die Zahl weiter, der endgueltige Wert
         // steht in W6.9.
-        Assert.True(dateien.Count >= 86, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        Assert.True(dateien.Count >= 85, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public sealed class StapelTests
         // 88 Masken nach W5 (91 nach iU9-W4, 98 nach iU9-W3, 102 nach iU9-W2,
         // 105 nach iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske senkt die
         // Zahl (Regel M1); der endgueltige Wert der Welle 6 steht in W6.9.
-        Assert.True(Lauf.Value.Masken >= 85, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        Assert.True(Lauf.Value.Masken >= 84, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -74,7 +75,7 @@ public sealed class StapelTests
         // Heizkessel_Bearbeiten, Stromspeicher, PufferSp, BHKWEing), deshalb
         // sinkt er hier mit. Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser
         // muss weiterhin beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 57,
+        Assert.True(Lauf.Value.Lokalisierte >= 56,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
