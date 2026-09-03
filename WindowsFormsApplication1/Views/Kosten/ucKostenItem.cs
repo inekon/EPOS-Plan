@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Kosten;
 using WindowsFormsApplication1;
 
 
@@ -146,32 +147,101 @@ public partial class ucKostenZeile : UserControl
         return wert;
     }
 
+    /// <summary>
+    /// Worst/Best Case dieser Zeile — seit iU9-W1.3 die Razor-Komponente
+    /// <c>CaseEingabeDialog</c>; die WinForms-Maske <c>Form_CaseEingabe</c> ist im
+    /// selben Schritt gelöscht (Regel M1).
+    ///
+    /// <para><b>Zum Stand dieser Datei.</b> <c>ucKostenZeile</c> hängt an
+    /// <c>Form_Kosten</c> und ist seit KD6a über die Oberfläche nicht mehr
+    /// erreichbar (K6-Erreichbarkeitsbefund vom 03.09.2026); nach dem
+    /// Anwenderentscheid iF29 wird die Maske stillgelegt. Bis dahin bleibt dieser
+    /// Aufruf funktionsgleich: Er ist der EINZIGE, der das Zuschuss-Kennzeichen
+    /// wirklich zurückliest, und schreibt wie bisher in <c>this.Daten</c>.</para>
+    /// </summary>
     private void btnOpenCases_Click(object sender, EventArgs e)
     {
-        // Wir öffnen ein neues kleines Formular und übergeben das Datenobjekt
-        using (var frm = new Form_CaseEingabe(this.Daten))
+        KostenPosition daten = this.Daten;
+
+        // ZuschussSchalterAnlegen: keine Hauptkomponente UND Kostenart leer,
+        // kapitalgebunden oder bereits Zuschuss. Eine LEERE Kostenart zählt mit —
+        // sonst bliebe der Schalter in einer nie migrierten Datenbank verborgen.
+        bool zuschussMoeglich = !daten.IsMainComponent &&
+            (daten.IstZuschuss ||
+             string.IsNullOrEmpty(daten.Kostenart) ||
+             string.Equals(daten.Kostenart, DbWerte.KOSTENART_KAPITALGEBUNDEN,
+                           StringComparison.OrdinalIgnoreCase));
+
+        CaseEingabeErgebnis ergebnis = null;
+        BlazorDialogForm<CaseEingabeDialog> dlg = null;
+
+        var werte = new System.Collections.Generic.Dictionary<string, object>
         {
-            // Die Position des Buttons auf dem Bildschirm berechnen
-            // PointToScreen wandelt die (0,0) Koordinate des Buttons in globale Bildschirm-Pixel um
-            Point btnLocation = btnOpenCases.PointToScreen(Point.Empty);
+            ["Betrag"] = (double)daten.Betrag,
+            ["BestCase"] = (double)daten.BestCase,
+            ["WorstCase"] = (double)daten.WorstCase,
+            ["BestNutzungsdauer"] = (double)daten.BestCase_Nutzungsdauer,
+            ["WorstNutzungsdauer"] = (double)daten.WorstCase_Nutzungsdauer,
+            ["StartJahr"] = daten.StartJahr,
+            ["IstZuschuss"] = daten.IstZuschuss,
+            ["ZuschussMoeglich"] = zuschussMoeglich,
+            ["IstErloes"] = daten.IstErloes,
 
-            // StartPosition des Formulars auf "Manual" setzen
-            frm.StartPosition = FormStartPosition.Manual;
+            ["TitelText"] = Text_("KCASE_TITEL", "Eingabe Worst/Best Case"),
+            ["LabelAbsolut"] = Text_("KOSTEN_CASE_ABSOLUT", "Eingabe absolut [€]"),
+            ["LabelProzent"] = Text_("KOSTEN_CASE_PROZENT", "Eingabe in % vom Erwartungswert"),
+            ["VorlageUmrechnung"] = Text_("KOSTEN_CASE_UMRECHNUNG", "ergibt: Best {0:N2} € · Worst {1:N2} €"),
+            ["LabelKosten"] = Text_("KCASE_G_KOSTEN", "Kosten:"),
+            ["LabelNutzungsdauer"] = Text_("KCASE_G_NUTZUNGSDAUER", "Nutzungsdauer:"),
+            ["LabelBestKosten"] = Text_("KCASE_BEST_EUR", "Best Case [€]:"),
+            ["LabelWorstKosten"] = Text_("KCASE_WORST_EUR", "Worst Case [€]:"),
+            ["LabelBestNutzung"] = Text_("KCASE_BEST_A", "Best Case [a]:"),
+            ["LabelWorstNutzung"] = Text_("KCASE_WORST_A", "Worst Case [a]:"),
+            ["LabelStartJahr"] = Text_("KOSTEN_CASE_STARTJAHR",
+                "Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X):"),
+            ["LabelZuschuss"] = WindowsFormsApplication1.MyResource.Resource.KOSTEN_CHK_ZUSCHUSS,
+            ["HinweisZuschuss"] = WindowsFormsApplication1.MyResource.Resource.KOSTEN_CHK_ZUSCHUSS_HINT,
+            ["HinweisErloes"] = Text_("KCASE_ERLOES_HINWEIS",
+                "Erlösposition: Die Werte werden als Betrag eingegeben; das negative Vorzeichen setzt die Rechnung."),
+            ["OkText"] = WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_OK,
+            ["AbbrechenText"] = WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_ABBRECHEN,
 
-            // Das Fenster knapp unterhalb des Buttons positionieren
-            // X-Position des Buttons 5px nach unten
-            frm.Location = new Point(btnLocation.X, btnLocation.Y + btnOpenCases.Height + 5);
-     
-            if (frm.ShowDialog() == DialogResult.OK)
-            {
-                // Den Tooltip sofort aktualisieren
-                UpdateTooltip();
-                // Wenn der User im Formular auf OK drückt, sind die Werte
-                // bereits im "this.Daten" Objekt aktualisiert.
-                // WICHTIG: Event feuern, damit das Hauptformular weiß: "Hier hat sich was geändert!"
-                OnValueChanged();
-            }
+            ["Geschlossen"] = Microsoft.AspNetCore.Components.EventCallback.Factory
+                .Create<CaseEingabeErgebnis>(this, erg =>
+                {
+                    ergebnis = erg;
+                    if (dlg != null) dlg.Schliessen(erg != null);
+                })
+        };
+
+        dlg = new BlazorDialogForm<CaseEingabeDialog>(
+            Text_("KCASE_TITEL", "Eingabe Worst/Best Case"), new Size(560, 620), werte);
+
+        using (dlg)
+        {
+            if (dlg.ShowDialog() != DialogResult.OK || ergebnis == null) return;
+
+            // Wortgleich zu btn_OK_Click der gelöschten Maske.
+            daten.BestCase = (decimal)ergebnis.BestCase;
+            daten.WorstCase = (decimal)ergebnis.WorstCase;
+            daten.BestCase_Nutzungsdauer = (decimal)ergebnis.BestNutzungsdauer;
+            daten.WorstCase_Nutzungsdauer = (decimal)ergebnis.WorstNutzungsdauer;
+            daten.IstZuschuss = ergebnis.IstZuschuss;
+            daten.StartJahr = ergebnis.StartJahr;
+
+            // Den Tooltip sofort aktualisieren
+            UpdateTooltip();
+            // WICHTIG: Event feuern, damit das Hauptformular weiß: "Hier hat sich was geändert!"
+            OnValueChanged();
         }
+    }
+
+    private static string Text_(string schluessel, string rueckfall)
+    {
+        string t = null;
+        try { t = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel); }
+        catch { }
+        return string.IsNullOrEmpty(t) ? rueckfall : t;
     }
 
     public void UpdateTooltip()

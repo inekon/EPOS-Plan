@@ -9060,4 +9060,133 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHW_PARAM_KNOPF" xml:space="preserve">
     <value>⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…</value>
   </data>
+  <data name="VPOS_TITEL" xml:space="preserve">
+    <value>Position bearbeiten</value>
+  </data>
+  <data name="VPOS_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="VPOS_LBL_KOSTENART" xml:space="preserve">
+    <value>Kostenart:</value>
+  </data>
+  <data name="VPOS_CHK_ERLOES" xml:space="preserve">
+    <value>Erlös/Zuschuss (negativer Ausweis)</value>
+  </data>
+  <data name="VPOS_LBL_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung von/bis:</value>
+  </data>
+  <data name="VPOS_LBL_BIS" xml:space="preserve">
+    <value>bis</value>
+  </data>
+  <data name="VPOS_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte eine Bezeichnung eingeben.</value>
+  </data>
+  <data name="NAMD_MSG_LEER" xml:space="preserve">
+    <value>Bitte einen Namen eingeben.</value>
+  </data>
+  <data name="KCASE_TITEL" xml:space="preserve">
+    <value>Eingabe Worst/Best Case</value>
+  </data>
+  <data name="KCASE_G_KOSTEN" xml:space="preserve">
+    <value>Kosten:</value>
+  </data>
+  <data name="KCASE_G_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer:</value>
+  </data>
+  <data name="KCASE_BEST_EUR" xml:space="preserve">
+    <value>Best Case [€]:</value>
+  </data>
+  <data name="KCASE_WORST_EUR" xml:space="preserve">
+    <value>Worst Case [€]:</value>
+  </data>
+  <data name="KCASE_BEST_A" xml:space="preserve">
+    <value>Best Case [a]:</value>
+  </data>
+  <data name="KCASE_WORST_A" xml:space="preserve">
+    <value>Worst Case [a]:</value>
+  </data>
+  <data name="KCASE_ERLOES_HINWEIS" xml:space="preserve">
+    <value>Erlösposition: Die Werte werden als Betrag eingegeben; das negative Vorzeichen setzt die Rechnung.</value>
+  </data>
+  <data name="KUEB_TITEL" xml:space="preserve">
+    <value>Übernahme ins Projekt</value>
+  </data>
+  <data name="KUEB_LBL_ZIEL" xml:space="preserve">
+    <value>Zielprojekt:</value>
+  </data>
+  <data name="KUEB_LBL_QUELLVORLAGE" xml:space="preserve">
+    <value>Vorlage/Variante:</value>
+  </data>
+  <data name="KUEB_LBL_QUELLPROJEKT" xml:space="preserve">
+    <value>Quellprojekt:</value>
+  </data>
+  <data name="KUEB_LBL_QUELLANLAGE" xml:space="preserve">
+    <value>Quellanlage:</value>
+  </data>
+  <data name="KFAK_TITEL" xml:space="preserve">
+    <value>Administration Kostenfaktoren</value>
+  </data>
+  <data name="KFAK_FRAGE_TITEL" xml:space="preserve">
+    <value>Kostenfaktoren</value>
+  </data>
+  <data name="KFAK_EINLEITUNG" xml:space="preserve">
+    <value>Verwalten Sie hier die Kostenfaktoren</value>
+  </data>
+  <data name="KFAK_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Kostenfaktoren:</value>
+  </data>
+  <data name="KFAK_SP_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="KFAK_LBL_NEU" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="KFAK_BTN_NEU" xml:space="preserve">
+    <value>➕ Neu</value>
+  </data>
+  <data name="KFAK_BTN_LOESCHEN" xml:space="preserve">
+    <value>🗑️ Löschen</value>
+  </data>
+  <data name="KFAK_MSG_LOESCHEN" xml:space="preserve">
+    <value>Kostenfaktor '{0}' wirklich löschen?</value>
+  </data>
+  <data name="KFAK_MSG_NEU_FEHLER" xml:space="preserve">
+    <value>Der Kostenfaktor konnte nicht angelegt werden.</value>
+  </data>
+  <data name="KFAK_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Kostenfaktor konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="WVERL_TITEL" xml:space="preserve">
+    <value>Kapitalwert-Verlauf über den Nutzungszeitraum</value>
+  </data>
+  <data name="WVERL_LBL_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum [Jahre]:</value>
+  </data>
+  <data name="WVERL_LBL_SZENARIO" xml:space="preserve">
+    <value>Szenario:</value>
+  </data>
+  <data name="WVERL_BTN_ZEICHNEN" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="WVERL_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="WVERL_STATUS_LAEUFT" xml:space="preserve">
+    <value>Berechnung läuft …</value>
+  </data>
+  <data name="WVERL_STATUS_ABBRUCH" xml:space="preserve">
+    <value>Vorgang abgebrochen.</value>
+  </data>
+  <data name="WVERL_MSG_FEHLER" xml:space="preserve">
+    <value>Fehler beim Berechnen des Verlaufs: {0}</value>
+  </data>
+  <data name="WVERL_BILD_DIFF" xml:space="preserve">
+    <value>Kapitalwert-Verlauf: Differenz zur Stamm-Referenz</value>
+  </data>
+  <data name="WVERL_BILD_ABS" xml:space="preserve">
+    <value>Kapitalwert-Verlauf: kumulierte Barwerte je Projekt</value>
+  </data>
+  <data name="WVERL_KEIN_BILD" xml:space="preserve">
+    <value>Noch kein Diagramm</value>
+  </data>
 </root>

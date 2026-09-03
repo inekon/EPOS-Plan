@@ -5319,6 +5319,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Best Case [a]: ähnelt.
+        /// </summary>
+        public static string KCASE_BEST_A {
+            get {
+                return ResourceManager.GetString("KCASE_BEST_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Best Case [€]: ähnelt.
+        /// </summary>
+        public static string KCASE_BEST_EUR {
+            get {
+                return ResourceManager.GetString("KCASE_BEST_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlösposition: Die Werte werden als Betrag eingegeben; das negative Vorzeichen setzt die Rechnung. ähnelt.
+        /// </summary>
+        public static string KCASE_ERLOES_HINWEIS {
+            get {
+                return ResourceManager.GetString("KCASE_ERLOES_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten: ähnelt.
+        /// </summary>
+        public static string KCASE_G_KOSTEN {
+            get {
+                return ResourceManager.GetString("KCASE_G_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer: ähnelt.
+        /// </summary>
+        public static string KCASE_G_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("KCASE_G_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe Worst/Best Case ähnelt.
+        /// </summary>
+        public static string KCASE_TITEL {
+            get {
+                return ResourceManager.GetString("KCASE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst Case [a]: ähnelt.
+        /// </summary>
+        public static string KCASE_WORST_A {
+            get {
+                return ResourceManager.GetString("KCASE_WORST_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst Case [€]: ähnelt.
+        /// </summary>
+        public static string KCASE_WORST_EUR {
+            get {
+                return ResourceManager.GetString("KCASE_WORST_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
         /// </summary>
         public static string KDLG_AUFSCHLAG_ANWENDEN {
@@ -6541,6 +6613,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KESSEL_WARTUNG_LBL {
             get {
                 return ResourceManager.GetString("KESSEL_WARTUNG_LBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🗑️ Löschen ähnelt.
+        /// </summary>
+        public static string KFAK_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KFAK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ➕ Neu ähnelt.
+        /// </summary>
+        public static string KFAK_BTN_NEU {
+            get {
+                return ResourceManager.GetString("KFAK_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwalten Sie hier die Kostenfaktoren ähnelt.
+        /// </summary>
+        public static string KFAK_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("KFAK_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktoren ähnelt.
+        /// </summary>
+        public static string KFAK_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("KFAK_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string KFAK_LBL_NEU {
+            get {
+                return ResourceManager.GetString("KFAK_LBL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktor '{0}' wirklich löschen? ähnelt.
+        /// </summary>
+        public static string KFAK_MSG_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KFAK_MSG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenfaktor konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string KFAK_MSG_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KFAK_MSG_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenfaktor konnte nicht angelegt werden. ähnelt.
+        /// </summary>
+        public static string KFAK_MSG_NEU_FEHLER {
+            get {
+                return ResourceManager.GetString("KFAK_MSG_NEU_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktoren: ähnelt.
+        /// </summary>
+        public static string KFAK_SP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KFAK_SP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahl ähnelt.
+        /// </summary>
+        public static string KFAK_SP_WAHL {
+            get {
+                return ResourceManager.GetString("KFAK_SP_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Kostenfaktoren ähnelt.
+        /// </summary>
+        public static string KFAK_TITEL {
+            get {
+                return ResourceManager.GetString("KFAK_TITEL", resourceCulture);
             }
         }
         
@@ -10871,6 +11042,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellanlage: ähnelt.
+        /// </summary>
+        public static string KUEB_LBL_QUELLANLAGE {
+            get {
+                return ResourceManager.GetString("KUEB_LBL_QUELLANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt: ähnelt.
+        /// </summary>
+        public static string KUEB_LBL_QUELLPROJEKT {
+            get {
+                return ResourceManager.GetString("KUEB_LBL_QUELLPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage/Variante: ähnelt.
+        /// </summary>
+        public static string KUEB_LBL_QUELLVORLAGE {
+            get {
+                return ResourceManager.GetString("KUEB_LBL_QUELLVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielprojekt: ähnelt.
+        /// </summary>
+        public static string KUEB_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("KUEB_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ins Projekt ähnelt.
+        /// </summary>
+        public static string KUEB_TITEL {
+            get {
+                return ResourceManager.GetString("KUEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt aktivieren ähnelt.
         /// </summary>
         public static string LIZ_BTN_AKTIVIEREN {
@@ -11213,6 +11429,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string NACHT_OHNE_EXCEL_REFERENZ {
             get {
                 return ResourceManager.GetString("NACHT_OHNE_EXCEL_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen eingeben. ähnelt.
+        /// </summary>
+        public static string NAMD_MSG_LEER {
+            get {
+                return ResourceManager.GetString("NAMD_MSG_LEER", resourceCulture);
             }
         }
         
@@ -23741,6 +23966,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlös/Zuschuss (negativer Ausweis) ähnelt.
+        /// </summary>
+        public static string VPOS_CHK_ERLOES {
+            get {
+                return ResourceManager.GetString("VPOS_CHK_ERLOES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string VPOS_LBL_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("VPOS_LBL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis ähnelt.
+        /// </summary>
+        public static string VPOS_LBL_BIS {
+            get {
+                return ResourceManager.GetString("VPOS_LBL_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung von/bis: ähnelt.
+        /// </summary>
+        public static string VPOS_LBL_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("VPOS_LBL_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenart: ähnelt.
+        /// </summary>
+        public static string VPOS_LBL_KOSTENART {
+            get {
+                return ResourceManager.GetString("VPOS_LBL_KOSTENART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Bezeichnung eingeben. ähnelt.
+        /// </summary>
+        public static string VPOS_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("VPOS_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position bearbeiten ähnelt.
+        /// </summary>
+        public static string VPOS_TITEL {
+            get {
+                return ResourceManager.GetString("VPOS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
@@ -25269,5 +25557,104 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WPI_TIP_KOSTEN_NEU", resourceCulture);
             }
         }
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf: kumulierte Barwerte je Projekt ähnelt.
+        /// </summary>
+        public static string WVERL_BILD_ABS {
+            get {
+                return ResourceManager.GetString("WVERL_BILD_ABS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf: Differenz zur Stamm-Referenz ähnelt.
+        /// </summary>
+        public static string WVERL_BILD_DIFF {
+            get {
+                return ResourceManager.GetString("WVERL_BILD_DIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string WVERL_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("WVERL_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktualisieren ähnelt.
+        /// </summary>
+        public static string WVERL_BTN_ZEICHNEN {
+            get {
+                return ResourceManager.GetString("WVERL_BTN_ZEICHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Diagramm ähnelt.
+        /// </summary>
+        public static string WVERL_KEIN_BILD {
+            get {
+                return ResourceManager.GetString("WVERL_KEIN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
+        /// </summary>
+        public static string WVERL_LBL_SZENARIO {
+            get {
+                return ResourceManager.GetString("WVERL_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum [Jahre]: ähnelt.
+        /// </summary>
+        public static string WVERL_LBL_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WVERL_LBL_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Berechnen des Verlaufs: {0} ähnelt.
+        /// </summary>
+        public static string WVERL_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("WVERL_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgang abgebrochen. ähnelt.
+        /// </summary>
+        public static string WVERL_STATUS_ABBRUCH {
+            get {
+                return ResourceManager.GetString("WVERL_STATUS_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnung läuft … ähnelt.
+        /// </summary>
+        public static string WVERL_STATUS_LAEUFT {
+            get {
+                return ResourceManager.GetString("WVERL_STATUS_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf über den Nutzungszeitraum ähnelt.
+        /// </summary>
+        public static string WVERL_TITEL {
+            get {
+                return ResourceManager.GetString("WVERL_TITEL", resourceCulture);
+            }
+        }
+        
     }
 }

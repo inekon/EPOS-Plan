@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Prüfmuster für Formularkarte — Stand vor iU9-W1.3 (f6e9264^); die Maske wurde durch
+// EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor ersetzt.
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
