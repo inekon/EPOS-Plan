@@ -27066,5 +27066,50 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger konnte nicht angelegt werden. ähnelt.
+        /// </summary>
+        public static string ETVAR_MSG_ANLAGE_FEHLER {
+            get {
+                return ResourceManager.GetString("ETVAR_MSG_ANLAGE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze werden beim Speichern des Projekts angelegt. ähnelt.
+        /// </summary>
+        public static string ETVAR_MSG_VORGEMERKT {
+            get {
+                return ResourceManager.GetString("ETVAR_MSG_VORGEMERKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energieträgervariante '{0}' ist diesem Projekt bereits zugeordnet. ähnelt.
+        /// </summary>
+        public static string ETVAR_MSG_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("ETVAR_MSG_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgervariante erfolgreich angelegt. ähnelt.
+        /// </summary>
+        public static string ETVAR_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("ETVAR_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern:  ähnelt.
+        /// </summary>
+        public static string ETVAR_MSG_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("ETVAR_MSG_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
     }
 }
