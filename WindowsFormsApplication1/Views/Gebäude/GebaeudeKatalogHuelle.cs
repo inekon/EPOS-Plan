@@ -88,6 +88,10 @@ namespace WindowsFormsApplication1
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
 
+            // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
+            // Oeffnen der Ueberlagerung gelesen und bei OK zurueckgeschrieben.
+            var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
+
             var werte = new Dictionary<string, object>
             {
                 ["Daten"] = AusModell(geladen),
@@ -104,6 +108,15 @@ namespace WindowsFormsApplication1
                     n => { GebaeudeModel m = Laden(n); return m == null ? null : AusModell(m); }),
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
                     (d, istNeu, bez) => Schreiben(d, istNeu, bez)),
+
+                // iU9-W9.5: "Brauchwasser..." auf dem zweiten Reiter zeigt die
+                // Brauchwasser-Profilliste des LAUFENDEN Projekts als Ueberlagerung.
+                // Der Vorlaeufer holte sich Projekt-Id und -Name ueber Program.startfrm;
+                // hier kommt beides aus Dienste.Projekt.
+                ["BrauchwasserGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => BrauchwasserGaben(besitzer, brauchwasser)),
+                ["BrauchwasserFertig"] = new Action<bool>(
+                    ok => BrauchwasserSchreiben(ok, brauchwasser)),
 
                 ["TitelText"] = Titel(),
                 ["ReiterFlaechen"] = Text_("GEBK_REITER_FLAECHEN", "Flächen und U-Werte"),
@@ -225,6 +238,62 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Datenseite
         // =================================================================================
+
+        /// <summary>
+        /// Der Parametersatz der Brauchwasser-Profilliste. Die Zuordnungen des laufenden
+        /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
+            IWin32Window besitzer, List<Z_ProjektBrauchwasserModel> ziel)
+        {
+            int projektId = Dienste.Projekt.Id;
+
+            ziel.Clear();
+            ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
+
+            var zeilen = new List<EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile>();
+            foreach (Z_ProjektBrauchwasserModel m in ziel)
+                zeilen.Add(new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile
+                {
+                    IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
+                    Name = m.szBezeichner ?? "", Summe = m.Summe
+                });
+
+            Action geaendert = () =>
+            {
+                ziel.Clear();
+                foreach (EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile z in zeilen)
+                    ziel.Add(new Z_ProjektBrauchwasserModel
+                    {
+                        ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
+                        szBezeichner = z.Name, Summe = z.Summe
+                    });
+            };
+
+            return BedarfsProfileHuelle.Gaben(besitzer, BedarfsArt.Brauchwasser, projektId,
+                                              zeilen, geaendert, wizard: false);
+        }
+
+        /// <summary>
+        /// Nach OK wird die Zuordnung geschrieben — Löschen + Neuanlegen samt
+        /// Änderungsdatum, wörtlich aus <c>btn_Brauchwasser_Click</c>:246-254.
+        /// </summary>
+        private static void BrauchwasserSchreiben(bool ok, List<Z_ProjektBrauchwasserModel> liste)
+        {
+            if (!ok) return;
+
+            int projektId = Dienste.Projekt.Id;
+            string projektName = Dienste.Projekt.Name;
+
+            var wizctrl = new WizardCtrl();
+            wizctrl.Del_Projekt_Brauchwasser(projektId);
+            wizctrl.Add_Projekt_Brauchwasser(projektId, liste);
+
+            var projctrl = new ProjektCtrl();
+            projctrl.ReadSingle(projektName);
+            projctrl.m_Aenderungsdatum = DateTime.Now;
+            projctrl.Update();
+        }
 
         private static GebaeudeModel Laden(string bezeichner)
         {

@@ -255,7 +255,7 @@
                                         Feldname="@LabelLuftwechsel" Wert="@_luftwechsel"
                                         WertChanged="w => _luftwechsel = w" />
 
-                            @if (Brauchwasser is not null)
+                            @if (BrauchwasserGaben is not null)
                             {
                                 <Herleitungszeile Text="@LabelBrauchwasserprofile" />
                                 <button type="button" class="epos-knopf"
@@ -274,6 +274,18 @@
 
         </KindInhalt>
     </Reiter>
+
+    @* --- Ueberlagerung: die Brauchwasser-Profilliste des Projekts (W9.5) ---- *@
+    <Ueberlagerung Offen="@(_brauchwasserGaben is not null)" Schliessbar="false"
+                   Titel="@BtnBrauchwasserText" Geschlossen="() => BrauchwasserGeschlossen(false)">
+        <KindInhalt>
+            @if (_brauchwasserGaben is not null)
+            {
+                <BedarfsProfileDialog @attributes="_brauchwasserGaben"
+                                      Geschlossen="BrauchwasserGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf"
@@ -317,10 +329,17 @@
     public Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? Speichern { get; set; }
 
     /// <summary>
-    /// Öffnet die Brauchwasser-Profilliste des laufenden Projekts
-    /// (<c>btn_Brauchwasser_Click</c>:213). Kein Delegat = kein Knopf.
+    /// Der Parametersatz der Brauchwasser-Profilliste des laufenden Projekts
+    /// (<c>btn_Brauchwasser_Click</c>:213). Sie erscheint als ÜBERLAGERUNG im selben
+    /// Fenster (Risiko R2). Kein Delegat = kein Knopf.
     /// </summary>
-    [Parameter] public Func<Task<bool>>? Brauchwasser { get; set; }
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BrauchwasserGaben { get; set; }
+
+    /// <summary>
+    /// Meldet, wie die Brauchwasserliste geschlossen wurde — die Hülle schreibt bei
+    /// <c>true</c> die Zuordnungen zurück (<c>btn_Brauchwasser_Click</c>:246-254).
+    /// </summary>
+    [Parameter] public Action<bool>? BrauchwasserFertig { get; set; }
 
     /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -443,6 +462,7 @@
     private IReadOnlyList<string> _arten = Array.Empty<string>();
     private IReadOnlyList<string> _namen = Array.Empty<string>();
     private int? _namensindex;
+    private IReadOnlyDictionary<string, object>? _brauchwasserGaben;
 
     /// <summary>Der Name, den „Überschreiben" trifft — der Stand beim Öffnen bzw. Laden.</summary>
     private string _ursprungsname = "";
@@ -466,6 +486,9 @@
 
     /// <summary>Der gewählte Reiter. Prüfhilfe für die Tests.</summary>
     public string AktiverReiter => _reiter;
+
+    /// <summary>Steht die Brauchwasserliste? Prüfhilfe für die Tests.</summary>
+    public bool BrauchwasserOffen => _brauchwasserGaben is not null;
 
     /// <summary>„Speichern unter" im Modus Bearbeiten, „Speichern" im Modus Neu.</summary>
     private string SpeichernKnopftext
@@ -705,10 +728,16 @@
         _ => MeldungFerienHerbst
     };
 
-    private async Task BeiBrauchwasser()
+    private void BeiBrauchwasser()
     {
-        if (Brauchwasser is null) return;
-        await Brauchwasser();
+        if (BrauchwasserGaben is null) return;
+        _brauchwasserGaben = BrauchwasserGaben();
+    }
+
+    private void BrauchwasserGeschlossen(bool ok)
+    {
+        _brauchwasserGaben = null;
+        BrauchwasserFertig?.Invoke(ok);
     }
 
     // =================================================================================
@@ -800,7 +829,11 @@
     }
 
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" ? Geschlossen.InvokeAsync(true) : Task.CompletedTask;
+    {
+        // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _brauchwasserGaben is not null) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(true);
+    }
 
     // =================================================================================
     // Die 17 FELDNAMEN der Pflichtmeldung - sie sind NICHT die Beschriftungen

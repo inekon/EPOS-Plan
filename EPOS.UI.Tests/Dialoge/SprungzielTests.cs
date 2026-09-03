@@ -69,13 +69,16 @@ public sealed class SprungzielTests
 
         // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
         Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
+
+        // iU9-W9.0f: die Verwaltung der externen Waermebedarfsganglinien.
+        Assert.Equal("WAERMEBEDARF_EXTERN_ADMIN", Sprungziel.WaermebedarfExternAdmin);
     }
 
     [Fact]
-    public void Alle_sieben_Ziele_sind_da()
+    public void Alle_acht_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
-        Assert.Equal(7, Schluessel().Length);
+        Assert.Equal(8, Schluessel().Length);
     }
 }

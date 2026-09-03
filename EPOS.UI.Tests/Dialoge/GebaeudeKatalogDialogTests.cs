@@ -77,7 +77,7 @@ public class GebaeudeKatalogDialogTests : BunitContext
         GebaeudeKatalogModus modus = GebaeudeKatalogModus.Bearbeiten,
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
         Func<string, GebaeudeKatalogDaten?>? lies = null,
-        Func<Task<bool>>? brauchwasser = null,
+        Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
         Action<bool>? geschlossen = null)
         => Render<GebaeudeKatalogDialog>(p => p
             .Add(x => x.Daten, daten ?? Satz())
@@ -88,7 +88,7 @@ public class GebaeudeKatalogDialogTests : BunitContext
             .Add(x => x.Katalognamen, () => NAMEN)
             .Add(x => x.Lies, lies ?? (n => Satz(n)))
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))
-            .Add(x => x.Brauchwasser, brauchwasser)
+            .Add(x => x.BrauchwasserGaben, brauchwasser)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Knopf(IRenderedComponent<GebaeudeKatalogDialog> cut, string text)
@@ -416,15 +416,20 @@ public class GebaeudeKatalogDialogTests : BunitContext
     }
 
     [Fact]
-    public void Mit_Delegat_ruft_der_Brauchwasserknopf_ihn_auf()
+    public void Mit_Delegat_oeffnet_der_Brauchwasserknopf_die_Ueberlagerung()
     {
         bool gerufen = false;
-        var cut = Aufbauen(brauchwasser: () => { gerufen = true; return Task.FromResult(true); });
+        var cut = Aufbauen(brauchwasser: () =>
+        {
+            gerufen = true;
+            return new Dictionary<string, object>();
+        });
         ReiterWaehlen(cut, "Temperaturen, Ferien, Luftwechsel");
 
         Knopf(cut, "Brauchwasser...").Click();
 
         Assert.True(gerufen);
+        Assert.True(cut.Instance.BrauchwasserOffen);
     }
 
     [Fact]
