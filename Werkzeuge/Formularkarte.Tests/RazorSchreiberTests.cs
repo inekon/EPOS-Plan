@@ -133,7 +133,10 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void UmlauteImOrdnernamenWerdenUmschrieben()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wärmepumpe/Form_WPFilterAuswahl.Designer.cs"));
+        // Der Zeuge stand bis iU9-W7.10 auf Form_WPFilterAuswahl; die Maske ist mit
+        // W7.5 geloescht. Form_WP_einlesen liegt im selben Ordner mit Umlaut und
+        // kommt erst mit den Importmasken an die Reihe.
+        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wärmepumpe/Form_WP_einlesen.designer.cs"));
 
         Assert.Equal("EPOS.UI.Dialoge.Waermepumpe", RazorSchreiber.Namensraum(maske));
     }
