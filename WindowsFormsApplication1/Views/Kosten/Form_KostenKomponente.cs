@@ -452,27 +452,70 @@ namespace WindowsFormsApplication1
             KostenProjektPositionenCtrl.Zeile pz = ProjektZeileZu(raster);
             if (pz == null) return;
 
-            var daten = new KostenPosition
+            // iU9-W1.3: der KD6-Dialog als Razor-Komponente; Form_CaseEingabe ist
+            // im selben Schritt gelöscht (Regel M1).
+            //
+            // OHNE Zuschuss-Schalter (Befund iU9-W1.3, A-6): Die Maske zeigte ihn
+            // hier zwar — der Konstruktor bekam eine frische KostenPosition mit
+            // leerer Kostenart, und eine leere Kostenart zählt als Investition —,
+            // aber dieser Aufrufer las `daten.IstZuschuss` danach nie zurück; er
+            // schreibt über `pz` (KostenProjektPositionenCtrl.Zeile), das die
+            // Größe gar nicht führt. Der Haken war also folgenlos. Der einzige
+            // Aufrufer, der ihn auswertet, ist ucKostenItem.
+            CaseEingabeErgebnis ergebnis = null;
+            BlazorDialogForm<CaseEingabeDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>
             {
-                ID = raster.Id,
-                Name = raster.Bezeichnung,
-                Betrag = (decimal)(raster.BetragNetto ?? 0),
-                BestCase = (decimal)pz.Best,
-                WorstCase = (decimal)pz.Worst,
-                BestCase_Nutzungsdauer = (decimal)pz.BestNutzung,
-                WorstCase_Nutzungsdauer = (decimal)pz.WorstNutzung,
-                Nutzungsdauer = (decimal)(raster.Nutzungsdauer ?? 0),
-                IstErloes = raster.IstErloes,
-                StartJahr = pz.StartJahr
+                ["Betrag"] = raster.BetragNetto ?? 0,
+                ["BestCase"] = pz.Best,
+                ["WorstCase"] = pz.Worst,
+                ["BestNutzungsdauer"] = pz.BestNutzung,
+                ["WorstNutzungsdauer"] = pz.WorstNutzung,
+                ["StartJahr"] = pz.StartJahr,
+                ["IstZuschuss"] = false,
+                ["ZuschussMoeglich"] = false,
+                ["IstErloes"] = raster.IstErloes,
+
+                ["TitelText"] = Text_("KCASE_TITEL", "Eingabe Worst/Best Case"),
+                ["LabelAbsolut"] = Text_("KOSTEN_CASE_ABSOLUT", "Eingabe absolut [€]"),
+                ["LabelProzent"] = Text_("KOSTEN_CASE_PROZENT", "Eingabe in % vom Erwartungswert"),
+                ["VorlageUmrechnung"] = Text_("KOSTEN_CASE_UMRECHNUNG", "ergibt: Best {0:N2} € · Worst {1:N2} €"),
+                ["LabelKosten"] = Text_("KCASE_G_KOSTEN", "Kosten:"),
+                ["LabelNutzungsdauer"] = Text_("KCASE_G_NUTZUNGSDAUER", "Nutzungsdauer:"),
+                ["LabelBestKosten"] = Text_("KCASE_BEST_EUR", "Best Case [€]:"),
+                ["LabelWorstKosten"] = Text_("KCASE_WORST_EUR", "Worst Case [€]:"),
+                ["LabelBestNutzung"] = Text_("KCASE_BEST_A", "Best Case [a]:"),
+                ["LabelWorstNutzung"] = Text_("KCASE_WORST_A", "Worst Case [a]:"),
+                ["LabelStartJahr"] = Text_("KOSTEN_CASE_STARTJAHR",
+                    "Startjahr (0 = sofort; Jahr X: Zahlung/Betrieb ab X):"),
+                ["LabelZuschuss"] = MyResource.Resource.KOSTEN_CHK_ZUSCHUSS,
+                ["HinweisZuschuss"] = MyResource.Resource.KOSTEN_CHK_ZUSCHUSS_HINT,
+                ["HinweisErloes"] = Text_("KCASE_ERLOES_HINWEIS",
+                    "Erlösposition: Die Werte werden als Betrag eingegeben; das negative Vorzeichen setzt die Rechnung."),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+
+                ["Geschlossen"] = Microsoft.AspNetCore.Components.EventCallback.Factory
+                    .Create<CaseEingabeErgebnis>(this, e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null);
+                    })
             };
-            using (var frm = new Form_CaseEingabe(daten))
+
+            dlg = new BlazorDialogForm<CaseEingabeDialog>(
+                Text_("KCASE_TITEL", "Eingabe Worst/Best Case"),
+                new System.Drawing.Size(560, 620), werte);
+
+            using (dlg)
             {
-                if (frm.ShowDialog(this) != DialogResult.OK) return;
-                pz.Best = (double)daten.BestCase;
-                pz.Worst = (double)daten.WorstCase;
-                pz.BestNutzung = (double)daten.BestCase_Nutzungsdauer;
-                pz.WorstNutzung = (double)daten.WorstCase_Nutzungsdauer;
-                pz.StartJahr = daten.StartJahr;
+                if (dlg.ShowDialog(this) != DialogResult.OK || ergebnis == null) return;
+                pz.Best = ergebnis.BestCase;
+                pz.Worst = ergebnis.WorstCase;
+                pz.BestNutzung = ergebnis.BestNutzungsdauer;
+                pz.WorstNutzung = ergebnis.WorstNutzungsdauer;
+                pz.StartJahr = ergebnis.StartJahr;
                 KostenProjektPositionenCtrl.CaseSichern(pz);
             }
         }

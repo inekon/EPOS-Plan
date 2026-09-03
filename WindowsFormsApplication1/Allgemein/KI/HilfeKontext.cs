@@ -137,7 +137,6 @@ namespace WindowsFormsApplication1
 
             { "Form_Klimadaten",             B_KLIMADATEN },
 
-            { "Form_CaseEingabe",            B_KOSTEN },
             { "Form_Kosten",                 B_KOSTEN },
             { "Form_KostenAdmin",            B_KOSTEN },
             { "Form_Kosten_Auswahl",         B_KOSTEN },
