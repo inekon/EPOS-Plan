@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Formularkarte - der Formular-Generator von EPOS-Plan
+    (Umsetzungskonzept iOS, Paket iU8-12, Grundlage A7 / iF7).
+
+    Konsolenwerkzeug: liest eine WinForms-Designer-Datei mit Roslyn und
+    schreibt daraus die Feldkarte (Markdown-Abnahmecheckliste je Maske) und
+    ein Razor-Skelett fuer EPOS.UI. Es ist das Vollstaendigkeitsnetz fuer die
+    Maskenumstellung iU9.
+
+    Das Werkzeug gehoert bewusst NICHT in WP-Plan.sln - es hat mit
+    Werkzeuge\Formularkarte\Formularkarte.sln eine eigene Projektmappe
+    (Muster: Proben\ZugriffsschichtProben). Es referenziert nichts aus dem
+    Bestand, sondern liest dessen Quelltext als Text.
+
+    net10.0 ohne Windows-Bindung: Der Leser braucht kein WinForms, er parst
+    nur. Damit laeuft er auch in der Linux-CI.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Formularkarte</AssemblyName>
+    <RootNamespace>Formularkarte</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+</Project>
