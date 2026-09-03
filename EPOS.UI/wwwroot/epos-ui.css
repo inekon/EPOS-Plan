@@ -991,3 +991,64 @@ body {
     align-items: center;
     column-gap: 8px;
 }
+
+/* --------------------------------------------------------------------------
+   Preisbloecke des Energietraegers (iU9-W4.3): Aufschlaege (Strom) und
+   Preisbestandteile (Brennstoff). Beide bauen dieselbe Zeile - Schalter,
+   Wertfeld, optional Schnellwahlknoepfe.
+   -------------------------------------------------------------------------- */
+
+.epos-preisblock {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-preiszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+/* Der Schalter traegt die Beschriftung der Zeile und bekommt deshalb die
+   Breite einer Spalte; im Bestand waren es 228 px. */
+.epos-preiszeile > :first-child {
+    flex: 0 0 240px;
+}
+
+.epos-preisblock-summe {
+    margin: 6px 0 0 0;
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-preisblock-rest {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* Ein negativer Rest heisst: Die ausgewiesenen Bestandteile sind zusammen
+   teurer als der Preis. Im Bestand stand er in Firebrick. */
+.epos-preisblock-rest--negativ {
+    color: var(--epos-senke-text);
+    font-weight: 700;
+}
+
+.epos-schnellwahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.epos-schnellwahl-knopf {
+    min-width: 0;
+    padding: 0 10px;
+}
+
+/* Der Satz, der zur Unternehmensart des Projekts passt, steht fett (BW4).
+   Bewusst nicht farbig: Firebrick ist im selben Block schon fuer den
+   negativen Rest belegt. */
+.epos-schnellwahl-knopf--empfohlen {
+    font-weight: 700;
+}
