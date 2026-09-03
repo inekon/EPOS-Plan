@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿// Prüfmuster für Formularkarte — Stand vor iU9-W1.3 (f6e9264^); die Maske wurde durch
+// EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor ersetzt.
+namespace WindowsFormsApplication1
 {
     partial class Form_CaseEingabe
     {

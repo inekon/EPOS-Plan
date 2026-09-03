@@ -315,15 +315,15 @@ namespace WindowsFormsApplication1
             var btnNeu = KatalogKnopf(T("KDLG_ET_BTN_NEU", "Neu…"), 4);
             btnNeu.Click += (s, e) =>
             {
-                using (var dlg = new Form_VariantenName())
-                {
-                    dlg.SetControls(T("KDLG_ET_NEU_TITEL", "Neuer Energieträger"),
-                        T("KDLG_ET_NEU_NAME", "Bezeichnung des neuen Trägers:"),
-                        T("KDLG_ET_NEU_VORGABE", "Neuer Energieträger"));
-                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                    int id = EnergietraegerKatalogCtrl.Neu(dlg.Ergebnis, null);
-                    if (id > 0) ListeNeuLaden(id);
-                }
+                // iU9-W1.2: Namensabfrage als Razor-Komponente (NamensDialog).
+                string name = NamensDialogHuelle.Fragen(this,
+                    T("KDLG_ET_NEU_TITEL", "Neuer Energieträger"),
+                    T("KDLG_ET_NEU_NAME", "Bezeichnung des neuen Trägers:"),
+                    T("KDLG_ET_NEU_VORGABE", "Neuer Energieträger"),
+                    T("NAMD_MSG_LEER", "Bitte einen Namen eingeben."));
+                if (name == null) return;
+                int id = EnergietraegerKatalogCtrl.Neu(name, null);
+                if (id > 0) ListeNeuLaden(id);
             };
             var btnVariante = KatalogKnopf(T("KDLG_ET_BTN_VARIANTE", "Variante"), 78);
             btnVariante.Click += (s, e) =>

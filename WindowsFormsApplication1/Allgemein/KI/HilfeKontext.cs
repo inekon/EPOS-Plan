@@ -137,16 +137,10 @@ namespace WindowsFormsApplication1
 
             { "Form_Klimadaten",             B_KLIMADATEN },
 
-            { "Form_CaseEingabe",            B_KOSTEN },
             { "Form_Kosten",                 B_KOSTEN },
-            { "Form_KostenAdmin",            B_KOSTEN },
-            { "Form_KostenItemNeu",          B_KOSTEN },
             { "Form_Kosten_Auswahl",         B_KOSTEN },
             { "Form_KostenfaktorItem",       B_KOSTEN },
             { "Form_KostenKomponente",       B_KOSTEN },
-            { "Form_VorlagenPosition",       B_KOSTEN },
-            { "Form_VorlagenUebernahme",     B_KOSTEN },
-            { "Form_VariantenName",          B_KOSTEN },
             { "Form_Kostenprofil",           B_KOSTEN },
             { "Form_SpotpreisImport",        B_KOSTEN },
             { "Form_Energietraeger",         B_KOSTEN },
@@ -248,7 +242,6 @@ namespace WindowsFormsApplication1
             { "Form_KwkgModule",                   B_WIRTSCHAFT },   // H7 nachgetragen
             { "Form_Wirtschaftlichkeit",           B_WIRTSCHAFT },
             { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
-            { "Form_WirtschaftlichkeitVerlauf",    B_WIRTSCHAFT },
             { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
             { "WizardParent",                B_ASSISTENT },

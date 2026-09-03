@@ -1,0 +1,132 @@
+﻿@* Namensabfrage - ein Feld, eine Frage, OK/Abbrechen (iU9-W1.2).
+
+   EINE Komponente fuer fuenf zeichengleiche Masken des Bestands:
+   Form_VariantenName (Kostenvarianten und Energietraeger), Form_KostenItemNeu
+   (Kostenfaktoren), Form_StromspeicherItemNeu (28 Aufrufer, ab W2),
+   Form_GebaeudetypNeu und Form_AlsVariante. Sie unterscheiden sich nur in
+   Titel, Frage und Vorbelegung - also sind das die Parameter.
+
+   Uebernommen ist das Verhalten von Form_VariantenName.btnOk_Click: Ein leerer
+   Name schliesst den Dialog NICHT. Der Vorlaeufer setzte dabei nur den Fokus
+   zurueck ins Feld und sagte nichts; Form_KostenItemNeu zeigte an derselben
+   Stelle eine MessageBox ("Bezeichnung eingeben!"). Hier gilt der gesagte Weg:
+   ein Warnbanner im Dialog, dessen Text die Huelle mitgibt.
+
+   FOKUS. Anders als in den uebrigen Dialogen (A-7) liegt der Erstfokus im
+   Textfeld, nicht auf dem Wurzel-div: Die Masken taten das ebenso
+   (txtName.SelectAll() in SetControls), und bei EINEM Feld gibt es nichts, was
+   der Fokus sonst erklaeren koennte. Esc und Enter beantwortet trotzdem das
+   Wurzel-div - Tastendruecke steigen aus dem Feld dorthin auf. *@
+
+@namespace EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
+    </div>
+
+    <label class="epos-feld">
+        <span class="epos-feld-text">@FrageText</span>
+        <span class="epos-feld-zeile">
+            <input class="epos-eingabe" type="text" value="@_name" @ref="_feld"
+                   @oninput="BeiEingabe" />
+        </span>
+    </label>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Fenstertitel und Kopfzeile (Form_VariantenName: Text und lblKopfTitel).</summary>
+    [Parameter] public string TitelText { get; set; } = "Neue Variante";
+
+    /// <summary>Die Frage ueber dem Feld (Form_VariantenName: lblFrage).</summary>
+    [Parameter] public string FrageText { get; set; } = "Name der neuen Variante:";
+
+    /// <summary>Vorbelegung des Feldes; leer = leeres Feld.</summary>
+    [Parameter] public string Vorbelegung { get; set; } = "";
+
+    /// <summary>
+    /// Meldung bei leerer Eingabe. Leer heisst: nicht melden, nur nicht
+    /// schliessen - das Verhalten von <c>Form_VariantenName</c>.
+    /// </summary>
+    [Parameter] public string MeldungLeer { get; set; } = "";
+
+    /// <summary>Der getrimmte Name bei OK, <c>null</c> bei Abbrechen.</summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    /// <summary>Beschriftung des OK-Knopfes.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>
+    /// Schluessel des Hilfeknopfes. Leer = kein Knopf: Die Namensabfrage ist je
+    /// nach Aufrufer eine andere Maske, und ein Knopf, der immer dieselbe
+    /// Wikiseite zeigt, waere in vier von fuenf Faellen falsch.
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private ElementReference _feld;
+    private bool _ersterAufbau = true;
+
+    private string _name = "";
+    private string _meldung = "";
+
+    /// <summary>Der aktuelle Feldinhalt (Pruefhilfe fuer Tests).</summary>
+    public string Name => _name;
+
+    protected override void OnInitialized()
+    {
+        _name = Vorbelegung ?? "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _feld.FocusAsync();
+    }
+
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        _name = e.Value?.ToString() ?? "";
+        if (!string.IsNullOrWhiteSpace(_name)) _meldung = "";
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        // btnOk_Click: name.Length == 0 -> Dialog bleibt offen.
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            _meldung = MeldungLeer;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(_name.Trim());
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => BeiErgebnis(true),
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}
