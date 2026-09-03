@@ -1,0 +1,496 @@
+﻿@* Die SEITE "Bericht" des Reiters "Berichte & Kosten" (iU9-W5.2).
+
+   Vorbild: Views/Bericht/UcBericht.cs (508 Z.) und .Designer.cs (15
+   Kartenzeilen) - Konzept_Berichtserstellung_EPOS-Plan.md, Kap. 3.1.
+
+   AUFBAU WIE IM VORLAEUFER. Links die Variantenliste mit "Alle"/"Keine",
+   rechts die Bausteinliste; darunter Ausgabeformat, Zielordner und
+   "Erstellen". Der Satz "Jeder Bericht rechnet neu" ist ein HINWEIS und
+   keine Option: Simulation und Wirtschaftlichkeit laufen vor JEDER Ausgabe
+   neu (Nutzeranforderung 15.08.2026) - der frueher vorhandene Schalter "Vor
+   Ausgabe neu rechnen" ist bewusst weg.
+
+   DIE STAMMZEILE BLEIBT ANGEHAKT. Sie ist die Referenz der Vergleichsgruppe;
+   der Vorlaeufer drehte ein Abwaehlen im ItemCheck zurueck und meldete es.
+   Hier ist ihr Haken gesperrt und die Meldung steht in der Statuszeile.
+
+   DIE SEITE RECHNET NICHT UND SCHREIBT NICHT. Laden, Simulieren, Word- und
+   Excel-Erzeugung, Ordnerwahl und das Oeffnen einer Datei liegen in der
+   Huelle (BerichtGaben -> BerichtCtrl, BerichtsDatenSammler,
+   Dienste.Datei). Die Seite zeigt an, sammelt die Auswahl und meldet
+   Fortschritt.
+
+   DIE FUENF MESSAGEBOX DES VORLAEUFERS werden zu zwei Rueckfragen
+   (Baustein Rueckfrage, im selben Fenster) und zwei Warnbannern; die
+   fuenfte war die Erfolgsmeldung und steht jetzt als Meldung im Fenster.
+
+   FORTSCHRITT: Der Baustein Fortschritt kommt mit Welle 11. Bis dahin steht
+   hier das HTML-Element <progress> - es deckt die ProgressBar der Feldkarte
+   ab und braucht keine Bibliothek. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+
+<div class="epos-seite" tabindex="-1" @ref="_wurzel">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    <div class="epos-seite-spalten">
+
+        @* --------------------------------------------------- Varianten *@
+        <section class="epos-seite-spalte">
+            <p class="epos-untergruppe">@LabelVarianten</p>
+
+            <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()"
+                    Bearbeitbar="true">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="VarianteZeile" Title="">
+                        <Schalter Bezeichnung="" Wert="@Gewaehlt(context.IdProjekt)"
+                                  Aktiv="@(!context.IstStamm && !_laeuft)"
+                                  WertChanged="@(w => VarianteUmschalten(context, w))" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                    Property="@(z => z.Art)" Title="@SpalteArt" />
+                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
+                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                    Property="@(z => z.Projektname)" Title="@SpalteProjektname" />
+                    <TemplateColumn TGridItem="VarianteZeile" Title="@SpalteSimulation">
+                        <span class="@(context.Auffaellig ? "epos-veraltet" : "")">@context.SimStand</span>
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="AlleWaehlen">@AlleText</button>
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="KeineWaehlen">@KeineText</button>
+            </div>
+        </section>
+
+        @* --------------------------------------------------- Bausteine *@
+        <section class="epos-seite-spalte">
+            <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
+                             Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
+                             MitSammelknoepfen="false"
+                             GewaehltChanged="BausteineGesetzt" />
+            <Herleitungszeile Text="@LabelRechnen" />
+        </section>
+    </div>
+
+    @* ------------------------------------------------------- Ausgabe *@
+    <div class="epos-seite-zeile">
+        <Optionsgruppe Bezeichnung="@LabelAusgabe" Eintraege="@Ausgabeformen"
+                       Auswahl="@_stand.AusgabeId" Aktiv="@(!_laeuft)"
+                       AuswahlChanged="BeiAusgabe" />
+    </div>
+
+    <Dateiwahl Bezeichnung="@LabelZiel" Pfad="@_stand.Zielordner" NurLesen="false"
+               Aktiv="@(!_laeuft)" KnopfText="@DurchsuchenText"
+               Waehlen="@OrdnerWaehler" PfadChanged="BeiZielordner" />
+
+    @if (_laeuft)
+    {
+        <div class="epos-fortschritt">
+            <progress class="epos-fortschritt-balken" max="@_gesamt" value="@_aktuell"
+                      aria-label="@LabelFortschritt"></progress>
+            <span class="epos-status">@_status</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_status))
+    {
+        <p class="epos-status">@_status</p>
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                @onclick="VergleichFragen">@VergleichAltText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="ErstellenFragen">@ErstellenText</button>
+        @if (_laeuft)
+        {
+            <button type="button" class="epos-knopf" @onclick="LaufAbbrechen">@AbbrechenText</button>
+        }
+    </div>
+
+    @* --------------------------------------------------- Rueckfragen *@
+    <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
+                TitelText="@_fragetitel" Beantwortet="Beantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    // =====================================================================
+    // Vorbelegung und Datenseite
+    // =====================================================================
+
+    /// <summary>Der Anzeigestand; die Hülle liefert ihn über <see cref="Laden"/>.</summary>
+    [Parameter] public Func<BerichtStand>? Laden { get; set; }
+
+    /// <summary>
+    /// Erzeugt den Bericht. Der zweite Parameter ist der Fortschrittsmelder —
+    /// die Hülle ruft ihn aus ihrem <c>Progress&lt;T&gt;</c>.
+    /// </summary>
+    [Parameter] public Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>? Erstellen { get; set; }
+
+    /// <summary>Der Bestandsweg „Projektvergleich + Bericht (alt)".</summary>
+    [Parameter] public Func<BerichtAuftrag, Task<LaufErgebnis>>? VergleichAlt { get; set; }
+
+    /// <summary>Bricht einen laufenden Lauf ab (die Hülle kennt die Marke).</summary>
+    [Parameter] public Action? Abbrechen { get; set; }
+
+    /// <summary>Die Ordnerwahl der Plattform; ohne sie bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? OrdnerWaehler { get; set; }
+
+    /// <summary>Öffnet eine erzeugte Datei mit dem Systemprogramm.</summary>
+    [Parameter] public Func<string, Task>? DateiOeffnen { get; set; }
+
+    /// <summary>Hilfeschlüssel — der der alten Maske, damit die Wikiseite bleibt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBericht.btn_Help";
+
+    // ---- Texte ----------------------------------------------------------
+
+    /// <summary>Überschrift der Seite (BK_BER_TITEL mit dem Stammnamen).</summary>
+    [Parameter] public string TitelText { get; set; } = "Bericht";
+
+    [Parameter] public string LabelVarianten { get; set; }
+        = "Varianten (Referenz: Stamm, fest gewählt):";
+    [Parameter] public string LabelBausteine { get; set; } = "Berichtsbausteine:";
+    [Parameter] public string LabelRechnen { get; set; }
+        = "Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet.";
+    [Parameter] public string LabelAusgabe { get; set; } = "Ausgabe:";
+    [Parameter] public string LabelZiel { get; set; } = "Zielordner:";
+    [Parameter] public string LabelFortschritt { get; set; } = "Fortschritt";
+
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+    [Parameter] public string SpalteBezeichner { get; set; } = "Bezeichner";
+    [Parameter] public string SpalteProjektname { get; set; } = "Projektname";
+    [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
+
+    [Parameter] public string AlleText { get; set; } = "Alle";
+    [Parameter] public string KeineText { get; set; } = "Keine";
+    [Parameter] public string WordText { get; set; } = "Word";
+    [Parameter] public string ExcelText { get; set; } = "Excel";
+    [Parameter] public string BeideText { get; set; } = "Beide";
+    [Parameter] public string DurchsuchenText { get; set; } = "Durchsuchen…";
+    [Parameter] public string ErstellenText { get; set; } = "Erstellen";
+    [Parameter] public string VergleichAltText { get; set; } = "Projektvergleich + Bericht (alt)";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen (BK_BER_MSG_STAMM_REFERENZ).</summary>
+    [Parameter] public string MeldungStammReferenz { get; set; }
+        = "Das Stammprojekt ist die Referenz und immer enthalten.";
+
+    /// <summary>Hinweis beim Anhaken der Wirtschaftlichkeit (BK_BER_MSG_WIRTSCHAFT_HINWEIS).</summary>
+    [Parameter] public string MeldungWirtschaftHinweis { get; set; } = "";
+
+    /// <summary>Schlüssel des Bausteins „Wirtschaftlichkeit" (für den Hinweis).</summary>
+    [Parameter] public string BausteinWirtschaft { get; set; } = "";
+
+    /// <summary>Rückfrage vor dem Lauf, {0} = Anzahl (BK_BER_FRAGE_START).</summary>
+    [Parameter] public string FrageStart { get; set; }
+        = "{0} Version(en) werden neu simuliert und bewertet. Fortfahren?";
+
+    /// <summary>Titel der Startrückfrage (BK_BER_TITEL_ERSTELLEN).</summary>
+    [Parameter] public string TitelErstellen { get; set; } = "Bericht erstellen";
+
+    /// <summary>Titel der Vergleichsrückfrage (BK_BER_TITEL_VERGLEICH).</summary>
+    [Parameter] public string TitelVergleich { get; set; } = "Projektvergleich";
+
+    /// <summary>Meldung „abgebrochen" (BK_BER_STATUS_ABGEBROCHEN).</summary>
+    [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private BerichtStand _stand = new();
+    private readonly List<int> _gewaehlt = new();
+    private readonly List<string> _bausteine = new();
+
+    private bool _laeuft;
+    private int _aktuell, _gesamt = 1;
+    private string _status = "";
+    private string _meldung = "";
+    private string _fehler = "";
+
+    private enum Frageart { Keine, Erstellen, Oeffnen, Vergleich }
+    private Frageart _frage = Frageart.Keine;
+    private string _fragetext = "";
+    private string _fragetitel = "";
+    private string _oeffnen = "";
+
+    /// <summary>Läuft gerade ein Bericht? (Prüfhilfe und Wirt: dann nicht schließen.)</summary>
+    public bool Beschaeftigt => _laeuft;
+
+    /// <summary>Statuszeile (Prüfhilfe).</summary>
+    public string Status => _status;
+
+    /// <summary>Die angehakten Versionen inklusive Stamm (Prüfhilfe).</summary>
+    public IReadOnlyList<int> Gewaehlte => _gewaehlt;
+
+    private IReadOnlyList<(int Id, string Text)> Ausgabeformen
+        => new[] { (0, WordText), (1, ExcelText), (2, BeideText) };
+
+    private IReadOnlyList<(int Id, string Text)> Bausteineintraege
+    {
+        get
+        {
+            var liste = new List<(int, string)>(_stand.Bausteine.Count);
+            for (int i = 0; i < _stand.Bausteine.Count; i++)
+                liste.Add((i, _stand.Bausteine[i].Titel));
+            return liste;
+        }
+    }
+
+    private IReadOnlyList<int> GewaehlteBausteine
+    {
+        get
+        {
+            var liste = new List<int>();
+            for (int i = 0; i < _stand.Bausteine.Count; i++)
+                if (_bausteine.Contains(_stand.Bausteine[i].Schluessel)) liste.Add(i);
+            return liste;
+        }
+    }
+
+    protected override void OnInitialized() => Auffrischen();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Liest Konfiguration, Variantenliste und Bausteine neu ein (Vorbild
+    /// <c>UcBericht.LadeDaten</c>; nach jedem Lauf erneut gerufen).
+    /// </summary>
+    public void Auffrischen()
+    {
+        _stand = Laden?.Invoke() ?? new BerichtStand();
+
+        _gewaehlt.Clear();
+        foreach (int id in _stand.GewaehlteVarianten) _gewaehlt.Add(id);
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (z.IstStamm && !_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt);
+
+        _bausteine.Clear();
+        foreach (string s in _stand.AktiveBausteine) _bausteine.Add(s);
+
+        _status = "";
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Auswahl
+    // =====================================================================
+
+    private bool Gewaehlt(int id) => _gewaehlt.Contains(id);
+
+    private void VarianteUmschalten(VarianteZeile z, bool an)
+    {
+        if (z.IstStamm)
+        {
+            // Der Haken ist gesperrt; kommt es doch hierher, gilt derselbe Satz
+            // wie im ItemCheck des Vorlaeufers.
+            _status = MeldungStammReferenz;
+            return;
+        }
+
+        if (an) { if (!_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt); }
+        else _gewaehlt.Remove(z.IdProjekt);
+    }
+
+    private void AlleWaehlen()
+    {
+        _gewaehlt.Clear();
+        foreach (VarianteZeile z in _stand.Varianten) _gewaehlt.Add(z.IdProjekt);
+    }
+
+    private void KeineWaehlen()
+    {
+        _gewaehlt.Clear();
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (z.IstStamm) _gewaehlt.Add(z.IdProjekt);
+    }
+
+    private void BausteineGesetzt(IReadOnlyList<int> nummern)
+    {
+        bool wirtschaftNeu = false;
+        var neu = new List<string>();
+        foreach (int n in nummern)
+        {
+            if (n < 0 || n >= _stand.Bausteine.Count) continue;
+            string schluessel = _stand.Bausteine[n].Schluessel;
+            neu.Add(schluessel);
+            if (!string.IsNullOrEmpty(BausteinWirtschaft)
+                && string.Equals(schluessel, BausteinWirtschaft, StringComparison.Ordinal)
+                && !_bausteine.Contains(schluessel))
+                wirtschaftNeu = true;
+        }
+
+        _bausteine.Clear();
+        _bausteine.AddRange(neu);
+
+        // Hinweis beim Aktivieren der Wirtschaftlichkeit: der Berichtslauf
+        // rechnet sie selbst mit (Vorbild clbBausteine_ItemCheck).
+        if (wirtschaftNeu && !string.IsNullOrEmpty(MeldungWirtschaftHinweis))
+            _status = MeldungWirtschaftHinweis;
+    }
+
+    private void BeiAusgabe(int? id) => _stand.AusgabeId = id ?? 0;
+
+    private void BeiZielordner(string pfad) => _stand.Zielordner = pfad ?? "";
+
+    // =====================================================================
+    // Läufe
+    // =====================================================================
+
+    private BerichtAuftrag Auftrag()
+    {
+        var varianten = new List<int>();
+        int mitStamm = 0;
+        foreach (VarianteZeile z in _stand.Varianten)
+        {
+            if (!_gewaehlt.Contains(z.IdProjekt)) continue;
+            mitStamm++;
+            if (!z.IstStamm) varianten.Add(z.IdProjekt);
+        }
+
+        return new BerichtAuftrag
+        {
+            VariantenIds = varianten,
+            Bausteine = new List<string>(_bausteine),
+            AusgabeId = _stand.AusgabeId,
+            Zielordner = _stand.Zielordner,
+            AnzahlMitStamm = mitStamm
+        };
+    }
+
+    private void ErstellenFragen()
+    {
+        if (_laeuft || Erstellen is null) return;
+        _frage = Frageart.Erstellen;
+        _fragetitel = TitelErstellen;
+        _fragetext = string.Format(FrageStart, Auftrag().AnzahlMitStamm);
+    }
+
+    private void VergleichFragen()
+    {
+        if (_laeuft || VergleichAlt is null) return;
+        // Der Vorlaeufer fragte hier NICHT vor dem Lauf, sondern erst danach
+        // ("oeffnen?"). Der Weg beginnt deshalb sofort.
+        _ = VergleichLaufen();
+    }
+
+    private async Task Beantwortet(bool? antwort)
+    {
+        Frageart war = _frage;
+        _frage = Frageart.Keine;
+
+        if (antwort != true) return;
+
+        switch (war)
+        {
+            case Frageart.Erstellen:
+                await ErstellenLaufen();
+                break;
+            case Frageart.Oeffnen:
+                if (DateiOeffnen is not null && !string.IsNullOrEmpty(_oeffnen))
+                    await DateiOeffnen(_oeffnen);
+                break;
+        }
+    }
+
+    private async Task ErstellenLaufen()
+    {
+        if (Erstellen is null) return;
+
+        LaufBeginnen();
+        try
+        {
+            LaufErgebnis erg = await Erstellen(Auftrag(), Melden);
+            Auffrischen();          // Zeitstempel in der Liste auffrischen
+            ErgebnisZeigen(erg);    // NACH dem Auffrischen, das die Statuszeile leert
+        }
+        finally { LaufBeenden(); }
+    }
+
+    private async Task VergleichLaufen()
+    {
+        if (VergleichAlt is null) return;
+
+        LaufBeginnen();
+        try
+        {
+            LaufErgebnis erg = await VergleichAlt(Auftrag());
+            ErgebnisZeigen(erg);
+        }
+        finally { LaufBeenden(); }
+    }
+
+    private void LaufBeginnen()
+    {
+        _laeuft = true;
+        _aktuell = 0;
+        _gesamt = 1;
+        _meldung = "";
+        _fehler = "";
+        StateHasChanged();
+    }
+
+    private void LaufBeenden()
+    {
+        _laeuft = false;
+        StateHasChanged();
+    }
+
+    private void ErgebnisZeigen(LaufErgebnis erg)
+    {
+        if (erg.Abgebrochen) { _status = StatusAbgebrochen; return; }
+
+        _status = erg.Statuszeile ?? "";
+        _fehler = erg.Fehler ?? "";
+        _meldung = erg.Meldung ?? "";
+
+        if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null)
+        {
+            _oeffnen = erg.Datei ?? "";
+            _frage = Frageart.Oeffnen;
+            _fragetitel = TitelErstellen;
+            _fragetext = erg.Frage;
+        }
+    }
+
+    private void Melden(Laufschritt s)
+    {
+        _ = InvokeAsync(() =>
+        {
+            if (s.Gesamt > 0) { _gesamt = s.Gesamt; _aktuell = Math.Min(s.Aktuell, s.Gesamt); }
+            _status = s.Gesamt > 0 ? $"({s.Aktuell}/{s.Gesamt}) {s.Text}" : s.Text;
+            StateHasChanged();
+        });
+    }
+
+    private void LaufAbbrechen() => Abbrechen?.Invoke();
+}

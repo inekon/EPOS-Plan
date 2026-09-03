@@ -1235,3 +1235,122 @@ body {
 .epos-kennzahlkachel-quelle {
     color: var(--epos-text-leise);
 }
+
+/* --------------------------------------------------------------------------
+   Seiten des Reiters "Berichte & Kosten" (iU9-W5).
+
+   Der Bestand rechnete seine Flaechen mit TableLayoutPanels und
+   Prozentspalten (UcBkKosten.tl 30/70, UcBkUebersicht.tl mit 222 px
+   Absolutspalte, UcBerichteKosten mit 208 px Navigation). Hier machen das
+   Flex und Grid: Zwei Spalten nebeneinander, solange Platz ist, sonst
+   untereinander.
+   -------------------------------------------------------------------------- */
+.epos-seite-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--epos-rand);
+    align-items: start;
+}
+
+.epos-seite-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-seite-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-rand);
+    align-items: flex-end;
+}
+
+/* Ein Simulationsstand, der fehlt oder veraltet ist. Der Vorlaeufer faerbte
+   die ganze Listenzeile ziegelrot (ForeColor = Color.Firebrick); hier traegt
+   die Zelle die Farbe - sie ist die Aussage, nicht die Zeile. */
+.epos-veraltet {
+    color: var(--epos-senke-text);
+    font-weight: 600;
+}
+
+/* Der Fortschritt eines langen Laufs. Der Baustein Fortschritt kommt mit
+   Welle 11; bis dahin traegt das HTML-Element <progress> die ProgressBar der
+   Feldkarte. */
+.epos-fortschritt {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-fortschritt-balken {
+    flex: 1 1 auto;
+    height: 14px;
+}
+
+/* Die linke Navigation des Reiters (UcBerichteKosten.lvNav, 208 px, dunkel).
+   Die Farben sind die der Detailsimulation - dieselbe Palette wie dort, damit
+   die zwei senkrechten Menues der Anwendung gleich aussehen. */
+.epos-navigation {
+    display: flex;
+    min-height: 100%;
+    align-items: stretch;
+}
+
+.epos-navigation-liste {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 208px;
+    background: #23282d;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.epos-navigation-knopf {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    color: #eeeeee;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-navigation-knopf:hover:not(:disabled) {
+    background: #191e23;
+    color: #00b9eb;
+}
+
+.epos-navigation-knopf--aktiv {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.epos-navigation-symbol {
+    flex: 0 0 auto;
+    width: 22px;
+    text-align: center;
+}
+
+/* Die Inhaltsflaeche rechts der Navigation rollt fuer sich. */
+.epos-navigation-inhalt {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto;
+}
+
+/* Die Kopfzeile des Reiters (UcBerichteKosten.lblKopf, 30 px hoch). */
+.epos-navigation-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+    padding: 6px var(--epos-karte-rand);
+    font-weight: 700;
+    color: #1f4e79;
+}
