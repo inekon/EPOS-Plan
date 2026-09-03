@@ -134,4 +134,20 @@ public class SpeichernLeisteTests : BunitContext
         cut.InvokeAsync(() => cut.Instance.Leeren());
         Assert.Equal("", cut.Find(".epos-status").TextContent);
     }
+
+    [Fact]
+    public void Ohne_MitAbbrechen_bleiben_Speichern_und_OK()
+    {
+        // Eine Maske, die schon beim Speichern schreibt, kennt kein Verwerfen mehr -
+        // der Dialog "BHKW-Wirtschaftlichkeit" hat nur "Speichern" und "Schliessen".
+        var cut = Render<SpeichernLeiste>(p => p
+            .Add(x => x.MitSpeichern, true)
+            .Add(x => x.MitAbbrechen, false)
+            .Add(x => x.OkText, "Schließen"));
+
+        var knoepfe = cut.FindAll(".epos-leiste button");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Equal("Speichern", knoepfe[0].TextContent);
+        Assert.Equal("Schließen", knoepfe[1].TextContent);
+    }
 }

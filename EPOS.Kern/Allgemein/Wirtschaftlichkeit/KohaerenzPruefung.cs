@@ -15,7 +15,8 @@ namespace WindowsFormsApplication1
         /// <summary>Entlastung gebucht, Belastung im Preis fehlt (Fall 2 des Konzepts § 4.1).</summary>
         public const string WARNUNG = "WARNUNG";
 
-        /// <summary>Belastung ohne Entlastung bzw. abweichender Satz (Fälle 3 und 4).</summary>
+        /// <summary>Belastung ohne Entlastung bzw. abweichender Satz (Fälle 3 und 4);
+        /// seit FX5-b auch die Mischlage § 53/§ 53a neben § 54 (Fall 5).</summary>
         public const string HINWEIS = "HINWEIS";
     }
 
@@ -93,6 +94,13 @@ namespace WindowsFormsApplication1
     ///         genannt; Toleranz <see cref="TOLERANZ_CT_KWH"/>.</item>
     /// </list></para>
     ///
+    /// <para><b>PAKET FX5-b (Anwenderentscheid 03.09.2026, offener Punkt S-2) — Fall 5
+    /// neben den vieren des Konzepts:</b> Stehen im selben Projekt eine Entlastung nach
+    /// § 53 / § 53a Abs. 5 EnergieStG und eine nach § 54 nebeneinander (Projekt- oder
+    /// Anlagenwahl, seit B3a je Anlage möglich), erscheint ein <b>HINWEIS</b> mit den
+    /// beteiligten Anlagen und ihren Wahlen — ohne Betrag, ohne Sperre, ohne
+    /// Zahlenänderung (<see cref="MischlageEnergiesteuer"/>).</para>
+    ///
     /// <para><b>Zwei Preisseiten mit zwei Leseregeln.</b> Für Brennstoffe gilt
     /// <see cref="BrennstoffBestandteilCtrl"/>: <c>NULL</c> heißt „kein Anteil erfasst"
     /// und bleibt <c>null</c>. Für Strom gilt der ältere <see cref="StromAufschlagCtrl"/>,
@@ -140,6 +148,11 @@ namespace WindowsFormsApplication1
             // Jede Seite für sich gekapselt: Ein Fehlschlag der Brennstoffseite darf die
             // Stromseite nicht mitnehmen — und keiner von beiden den Lauf.
             try { Brennstoffseite(idProjekt, lauf, kultur, liste); } catch { }
+            // PAKET FX5-b (Anwenderentscheid 03.09.2026, offener Punkt S-2): Fall 5.
+            // Eigener Schritt, nicht Teil von Brennstoffseite — er braucht weder
+            // Energieträger noch Preiszerlegung, sondern allein die Normwahlen, und
+            // dürfte deshalb nicht an deren Vorabfiltern hängenbleiben.
+            try { MischlageEnergiesteuer(lauf, kultur, liste); } catch { }
             try { Stromseite(idProjekt, lauf, kultur, liste); } catch { }
 
             return liste;
@@ -455,6 +468,110 @@ namespace WindowsFormsApplication1
                     jahr.ToString(CultureInfo.InvariantCulture),
                     katalogCt.Value.ToString("N4", kultur))
             });
+        }
+
+        // =====================================================================
+        // Fall 5 — Mischlage § 53 / § 53a Abs. 5 neben § 54
+        // =====================================================================
+
+        /// <summary>
+        /// PAKET FX5-b (Anwenderentscheid 03.09.2026, offener Punkt S-2) —
+        /// <b>Fall 5: zwei Entlastungswelten im selben Projekt.</b>
+        ///
+        /// <para>Seit B3a wählt jede Anlage ihre Entlastungsnorm selbst (Rückfall:
+        /// Projektwahl). Damit ist eine Lage möglich, die es vorher nicht gab: eine
+        /// Anlage rechnet nach § 53 / § 53a Abs. 5 EnergieStG (Entlastung für die
+        /// Stromerzeugung bzw. die gekoppelte Erzeugung), eine andere nach § 54
+        /// (Heizstoffe im produzierenden Gewerbe). Rechnerisch ist das sauber — jede
+        /// Anlage bringt ihre eigene Brennstoffmenge mit, nichts wird zweimal
+        /// entlastet. Im ANTRAG ist es eine Stolperstelle: § 54 nimmt Mengen aus, die
+        /// bereits nach § 53 / § 53a entlastet wurden, und die Verfahren laufen als
+        /// getrennte Anträge beim Hauptzollamt.</para>
+        ///
+        /// <para><b>Nur melden, nichts sperren, nichts verrechnen</b> — dieselbe Haltung
+        /// wie in der ganzen Klasse (BF2). Die Zeile ändert keine Zahl; sie benennt die
+        /// beteiligten Anlagen samt ihrer Wahl und deren Herkunft (Projekt- oder
+        /// Anlagenwahl).</para>
+        ///
+        /// <para><b>Angesetzt wird an der WAHL, nicht am gebuchten Betrag</b> — genau wie
+        /// in Fall 3. Eine gewählte Norm, die an einer Bedingung scheitert
+        /// (Unternehmensart, Nutzungsgrad, Sockelbetrag), begründet der
+        /// <see cref="SteuerGutschriftRechner"/> bereits selbst; eine zweite Meldung
+        /// darüber wäre Rauschen. Ein Betrag steht deshalb NICHT an der Zeile: Die
+        /// gebuchte Energiesteuer-Entlastung ist die Summe BEIDER Seiten und würde als
+        /// „betroffener Betrag" in die Irre führen.</para>
+        ///
+        /// <para><b>Ohne Brennstoffeinsatz keine Zeile.</b> Eine Anlage mit
+        /// <c>BrennstoffMWh = 0</c> bringt keine Menge mit, die doppelt entlastet werden
+        /// könnte — dieselbe Vorbedingung wie in <see cref="Brennstoffseite"/>.</para>
+        /// </summary>
+        private static void MischlageEnergiesteuer(KohaerenzLauf lauf, CultureInfo kultur,
+                                                   List<KohaerenzHinweis> liste)
+        {
+            var seiteStrom = new List<string>();   // § 53 / § 53a Abs. 5
+            var seiteGewerbe = new List<string>(); // § 54
+
+            foreach (SteuerAnlage a in lauf.Steuer.Anlagen)
+            {
+                if (a == null || a.BrennstoffMWh <= 0) continue;
+
+                bool eigen;
+                string wahl = WirksameWahl(a, lauf.Steuer, out eigen);
+                if (!Gewaehlt(wahl)) continue;
+
+                string herkunft = eigen
+                    ? T("KOH_HERKUNFT_ANLAGE", "Anlagenwahl")
+                    : T("KOH_HERKUNFT_PROJEKT", "Projektwahl");
+
+                if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal))
+                    seiteStrom.Add(MitGrund(AnlagenName(a),
+                        T("KOH_NORM_53", "§ 53") + ", " + herkunft));
+                else if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal))
+                    seiteStrom.Add(MitGrund(AnlagenName(a),
+                        T("KOH_NORM_53A", "§ 53a Abs. 5") + ", " + herkunft));
+                else if (string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal))
+                    seiteGewerbe.Add(MitGrund(AnlagenName(a),
+                        T("KOH_NORM_54", "§ 54") + ", " + herkunft));
+            }
+
+            // Beide Welten müssen wirklich besetzt sein; eine Seite allein ist der
+            // Normalfall und schweigt.
+            if (seiteStrom.Count == 0 || seiteGewerbe.Count == 0) return;
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.HINWEIS,
+                Text = string.Format(kultur, T("KOH_FALL5_MISCHLAGE",
+                        "Im Projekt stehen zwei Entlastungswelten nebeneinander: {0} gegen {1}. " +
+                        "§ 54 EnergieStG nimmt Mengen aus, die bereits nach § 53 / § 53a Abs. 5 " +
+                        "entlastet wurden — dieselbe Brennstoffmenge darf nicht zweimal entlastet " +
+                        "werden; die Anträge laufen als getrennte Verfahren beim Hauptzollamt. " +
+                        "Gerechnet wird unverändert je Anlage nach ihrer Wahl."),
+                    string.Join(", ", seiteStrom.ToArray()),
+                    string.Join(", ", seiteGewerbe.ToArray()))
+            });
+        }
+
+        /// <summary>
+        /// PAKET FX5-b — die für eine Anlage GELTENDE Entlastungsnorm: ihr eigener Wert,
+        /// ersatzweise der Projektwert (B3a, BF6). <paramref name="eigen"/> sagt, welcher
+        /// der beiden es war.
+        /// <para><b>Spiegelt <c>SteuerGutschriftRechner.Wahl</c></b>, das dort privat ist.
+        /// Dieselbe Regel, dieselbe Behandlung von <c>null</c> und Leerstring — wer eine
+        /// von beiden ändert, muss die andere mitziehen.</para>
+        /// </summary>
+        private static string WirksameWahl(SteuerAnlage a, SteuerEingabe e, out bool eigen)
+        {
+            string wahl = a.EnergiesteuerWahl == null ? null : a.EnergiesteuerWahl.Trim();
+            eigen = !string.IsNullOrEmpty(wahl);
+            return eigen ? wahl : e.EnergiesteuerWahl;
+        }
+
+        /// <summary>Anzeigename einer Anlagenzeile; ohne Bezeichner der Trägername.</summary>
+        private static string AnlagenName(SteuerAnlage a)
+        {
+            string s = (a.Bezeichner ?? "").Trim();
+            return s.Length > 0 ? s : TraegerName(a.CarrierId);
         }
 
         // =====================================================================

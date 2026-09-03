@@ -478,13 +478,24 @@ namespace WindowsFormsApplication1
         public const string BEMESSUNG_PROZENT_INVESTITION = "PROZENT_INVESTITION";
 
         /// <summary>
-        /// Betrag je Vollbenutzungsstunde [€/h]: <c>Menge</c> = Vollbenutzungsstunden
-        /// [h/a], <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
+        /// Betrag je Stunde [€/h]: <c>Menge</c> = Stundenzahl [h/a],
+        /// <c>Einheitpreis</c> = Satz [€/h]. Betrag = Menge × Satz.
         /// <para>
-        /// <b>Naeherung.</b> Bezugsgroesse ist <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
-        /// — <c>Waerme / P_therm</c>. Echte Betriebsstunden bildet der Rechenkern nicht
-        /// ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat 8.760
-        /// Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das am Feld.
+        /// <b>PAKET FX2 (Anwenderentscheid B-4, 02.09.2026): Der SATZ ist Eingabe, die
+        /// MENGE kommt frisch aus dem juengsten Lauf</b>
+        /// (<c>EndenergieAufloeser.BetriebsstundenH</c>) — dasselbe Muster wie
+        /// „je kWh elektrisch". Die gespeicherte Menge bleibt Konserve, wenn frisch
+        /// nichts zu holen ist.
+        /// </para>
+        /// <para>
+        /// <b>Was die Menge je Komponente ist.</b> Waermepumpe: ECHTE Betriebsstunden
+        /// (<c>Tab_ErgebnisWaermepumpeModul.Betriebsstunden</c>). BHKW: benannte
+        /// NAEHERUNG ueber <c>Tab_ErgebnisBHKWModul.VbhThermisch</c>
+        /// (<c>Waerme / P_therm</c>) — echte Betriebsstunden bildet der Rechenkern dort
+        /// nicht ab (Taktung und Teillast fehlen); ein Modul mit halber Modulation hat
+        /// 8.760 Betriebsstunden und 4.380 thermische Vbh. Der Dialog kennzeichnet das
+        /// am Feld. Heizkessel und alle uebrigen Komponenten: KEINE Stundengroesse im
+        /// Ergebnis — der Aufloeser liefert null, es gilt die Konserve.
         /// </para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
@@ -502,6 +513,8 @@ namespace WindowsFormsApplication1
         /// Anteil der Brennstoffkosten [%/a]: <c>Menge</c> = Summe Brennstoffkosten
         /// [€/a], <c>Einheitpreis</c> = Satz [%]. Betrag = Menge × Satz / 100.
         /// Bemessung der Hilfsenergiekosten nach VDI 2067.
+        /// <para><b>PAKET FX4-b:</b> eskaliert in der Mehrjahresrechnung mit p_E
+        /// (Endenergie-Topf), nicht mehr mit p_B — siehe den Block zu Etappe H1.</para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN = "PROZENT_BRENNSTOFFKOSTEN";
@@ -571,6 +584,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anteil der Stromkosten des Trägerbezugs [%] — Basis kommt DIREKT aus
         /// der Energieträgerwelt (KL7/FK3: keine Positionszeile im Betriebskosten-Raster).
+        /// <para><b>PAKET FX4-b:</b> eskaliert in der Mehrjahresrechnung mit p_E
+        /// (Endenergie-Topf), nicht mehr mit p_B — siehe den Block zu Etappe H1.</para>
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
         public const string BEMESSUNG_PROZENT_STROMKOSTEN = "PROZENT_STROMKOSTEN";
 
@@ -607,6 +622,32 @@ namespace WindowsFormsApplication1
         //
         //   LAENGE: beide Werte haben 24 Zeichen wie PROZENT_BRENNSTOFFKOSTEN - die
         //   Spaltenbreite TEXT(30) reicht weiterhin.
+        //
+        //   PAKET FX3 (Anwenderentscheid R-2, 02.09.2026): DIESE BEIDEN ARTEN
+        //   ESKALIEREN IN DER MEHRJAHRESRECHNUNG MIT DER ENERGIEPREISSTEIGERUNG p_E,
+        //   nicht mit der Betriebspreissteigerung p_B. Eine Position "x % der
+        //   Endenergiekosten" ist der Sache nach ein Anteil der Energiekosten und
+        //   waechst mit den Energiepreisen (VDI 2067 / DIN EN 17463: bedarfsgebundene
+        //   Kosten). Umgesetzt ueber den ZWEITEN Betriebstopf in
+        //   WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe und den Parameter
+        //   endenergieJahr von KapitalwertRechner.Rechne.
+        //
+        //   PAKET FX4-b (Anwenderentscheid 02.09.2026): DIE ZWEI ALT-VORLAEUFER
+        //   ZIEHEN GLEICH. PROZENT_BRENNSTOFFKOSTEN und PROZENT_STROMKOSTEN
+        //   eskalieren seither EBENFALLS mit p_E - sie sind derselben Sache nach ein
+        //   Anteil der Energiekosten, nur projektweit statt anlagenscharf bemessen.
+        //   FX3 hatte sie noch ausgenommen ("sie laufen aus"); der Anwender hat das
+        //   revidiert. Die Zuordnung trifft WirtschaftlichkeitCtrl.IstEnergiepreisArt;
+        //   ihre MENGENermittlung bleibt unveraendert Konserve (IstEndenergieArt).
+        //
+        //   PAKET FX4-c: Der Sensitivitaets-Ausschlag "Energiekosten +-10 %" skaliert
+        //   den p_E-Topf mit demselben Faktor wie die Energiekosten
+        //   (WirtschaftlichkeitCtrl.RechneBild).
+        //
+        //   AUSDRUECKLICH NICHT umgestellt (Grenze des Anwenderentscheids, Stand FX4):
+        //     - "Weg C" der Hilfsenergie, also der feste Jahresbetrag
+        //       (JAHRESBETRAG/BETRAG), bleibt bei p_B - ein fester Betrag traegt
+        //       keine Endenergie-Bemessung.
         // =====================================================================
 
         /// <summary>

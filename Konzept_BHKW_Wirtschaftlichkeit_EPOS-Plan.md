@@ -296,10 +296,24 @@ C  fester Jahresbetrag        Betrag [€/a] = Eingabe
 > **Die Menge ist ein Ergebniswert, kein Eingabewert** (Festlegung 29.08.2026). Endenergiebedarf und
 > Endenergiekosten stehen erst nach dem Simulationslauf fest. **Im Dialog wird ausschließlich der
 > Satz gepflegt** — oder der absolute Jahresbetrag, und der ist der einzige Weg, der **ohne
-> Simulation** funktioniert. Daraus folgt für den Rechenweg: Die Menge wird bei jedem Lesen frisch
+> Simulation** funktioniert. Ohne Lauf entsteht auf den Wegen A und B deshalb **keine ermittelte
+> Menge**; für den **Betrag** der Zeile gilt der Grundsatz seit FX2 nicht mehr uneingeschränkt —
+> dazu die Fußnote unten. Daraus folgt für den Rechenweg: Die Menge wird bei jedem Lesen frisch
 > aus dem jüngsten Lauf geholt, nicht aus der Datenbank. Die Spalte `Tab_ProjektWerte.Menge` bleibt
 > Ausweisgröße („Stand des Laufs vom …"), sie ist nicht die Rechenwahrheit — sonst rechnet die
 > Anwendung nach einer neuen Simulation stillschweigend mit der alten Bezugsgröße weiter.
+
+> **Nicht-rechenbar-Fußnote (FX2 / Entscheid I-2, 02.09.2026):** Der Grundsatz oben gilt für die
+> **Menge** unverändert — für den **Betrag** einer Zeile unterscheidet `BetriebskostenCtrl.Betrag`
+> seit Paket FX2 (Commit `5d86655`) zwei Fälle. Ist die Basis einer abgeleiteten Bemessung **nicht
+> rechenbar** (Menge ODER Satz fehlt — etwa eine Endenergie-Zeile ohne Simulationslauf), trägt die
+> Zeile den **erfassten Wert** (`EingegebenerWert`) statt 0; ist die Ableitung **echt** und ergibt
+> Menge 0, bleibt der Betrag 0 („ermittelt und null"). Anwenderentscheid I-2: „wenn eine
+> Bemessungsart 0 ergibt, nimm den erfassten Wert." Bestandsneutral gemessen (0 Zeilen mit
+> abgeleiteter Art und Wert > 0 bei fehlender Basis); Proben: Endenergie-Zeile ohne Lauf, erfasste
+> 1.234 → vorher 0,00, nachher **1.234,00**; Gegenprobe Satz 653,60 bei Menge 0 → **0,00** in
+> beiden Ständen. Messwerte:
+> [`FX2_Rechenwege_Befunde_Protokoll.md`](WindowsFormsApplication1/Allgemein/Reporting/FX2_Rechenwege_Befunde_Protokoll.md) § 1.
 
 **Die Endenergie ist je Komponente eine andere Größe — und nicht jede Komponente hat eine:**
 
