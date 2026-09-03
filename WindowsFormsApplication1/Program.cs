@@ -85,6 +85,15 @@ namespace WindowsFormsApplication1
             Meldung.Warten = an =>
                 Cursor.Current = an ? Cursors.WaitCursor : Cursors.Default;
 
+            // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
+            // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
+            // GeraeteWaisen zieht dafuer aber die Oberflaeche mit. Unter Windows soll sich
+            // nichts aendern - deshalb hier, vor dem ersten moeglichen Loeschvorgang.
+            // Lambda, nicht Methodengruppe: Aufraeumen hat einen Vorgabeparameter
+            // (OleDbConnection) und liefert einen Bericht zurueck, den der Loeschweg
+            // wie bisher verwirft.
+            WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
+
             // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
             if (Environment.OSVersion.Version.Major >= 10)
             {

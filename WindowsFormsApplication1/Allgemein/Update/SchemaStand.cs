@@ -60,6 +60,65 @@ namespace WindowsFormsApplication1
             "CREATE INDEX idx_AnlagePufferVerbund ON Z_AnlagePufferVerbund (ID_Anlage)";
 
         /// <summary>
+        /// Nummer des Migrationsschritts „Einheitenkonsistenz" (Kante iU4-2). Der
+        /// Prüfer <c>EnergieEinheitenPruefung</c> nennt die Nummer nur in seiner
+        /// Meldung „Migrationsschritt N steht aus" — eine reine Zahl, für die er die
+        /// Migration mit ihrem Access-Zweig nicht braucht.
+        ///
+        /// <para><see cref="SchemaMigration.SCHRITT_25_EINHEITENKONSISTENZ"/> verweist
+        /// hierher; die vollständige Begründung des Schritts steht dort.</para>
+        /// </summary>
+        public const int SCHRITT_25_EINHEITENKONSISTENZ = 25;
+
+        /// <summary>
+        /// DDL der Preisreihe (Kante iU4-2, Muster <see cref="SQL_CREATE_ANLAGEPUFFERVERBUND"/>).
+        /// <c>PreisreiheCtrl.StelleTabellenSicher</c> legt Kopf- und Wertetabelle bei
+        /// Bedarf still selbst an, wenn die Migration sie noch nicht gebaut hat; dafür
+        /// genügt der SQL-Text, nicht die Migration.
+        ///
+        /// <para><c>ID_Energietraeger</c> ist seit Schritt 40 Teil des CREATE, damit auch
+        /// diese tolerante Rückfallebene die Spalte mitbringt; Bestandstabellen rüstet
+        /// Schritt 40 nach.</para>
+        /// </summary>
+        public const string SQL_CREATE_PREISREIHE =
+            "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
+            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+
+        /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
+        public const string SQL_INDEX_PREISREIHE =
+            "CREATE INDEX idx_Preisreihe ON Tab_Preisreihe (ID_Projekt)";
+
+        /// <summary>Werte einer Preisreihe: eine Zeile je Intervall, Reihenfolge = ID-Reihenfolge.</summary>
+        public const string SQL_CREATE_PREISREIHEDATEN =
+            "CREATE TABLE Tab_PreisreiheDaten (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Preisreihe LONG, Wert DOUBLE)";
+
+        /// <summary>Index über den Kopfverweis - der einzige Suchweg auf die Werte.</summary>
+        public const string SQL_INDEX_PREISREIHEDATEN =
+            "CREATE INDEX idx_PreisreiheDaten ON Tab_PreisreiheDaten (ID_Preisreihe)";
+
+        /// <summary>
+        /// Löschweitergabe vom Kopf auf die Werte - ohne sie blieben nach dem Löschen
+        /// einer Reihe bis zu 35.040 Waisenzeilen stehen.
+        /// </summary>
+        public const string SQL_FK_PREISREIHEDATEN =
+            "ALTER TABLE Tab_PreisreiheDaten ADD CONSTRAINT FK_PreisreiheDaten " +
+            "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// DDL des Kostenprofils (Kante iU4-2). <c>KostenprofilCtrl</c> legt die Tabelle
+        /// bei Bedarf still selbst an - wie bei der Preisreihe genügt dafür der SQL-Text.
+        /// </summary>
+        public const string SQL_CREATE_KOSTENPROFIL =
+            "CREATE TABLE Tab_Kostenprofil (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Monatswerte TEXT(255), Wochenwerte MEMO)";
+
+        /// <summary>Index über den Projektbezug.</summary>
+        public const string SQL_INDEX_KOSTENPROFIL =
+            "CREATE INDEX idx_Kostenprofil ON Tab_Kostenprofil (ID_Projekt)";
+
+        /// <summary>
         /// false, sobald ein Lauf einen Schritt nicht abschließen konnte. Vor dem ersten
         /// Lauf true - Werkzeuge, die die Migration gar nicht anstoßen (Referenzlauf-Suite),
         /// sollen dadurch nicht blockiert werden.

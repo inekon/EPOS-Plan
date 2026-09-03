@@ -837,9 +837,18 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Export-/Import-Dialog. Der Rumpf stand bis iU4-2 als
+        /// <c>ProjektDuplizierenCtrl.ZeigeExportImportDialog</c> im Controller und war
+        /// dessen einzige WinForms-Kante - bei genau diesem einen Aufrufer. Er steht
+        /// deshalb jetzt hier, wo das Fenster ohnehin zu Hause ist.
+        /// </summary>
         private void MenuItem_ExportImport_Click(object sender, EventArgs e)
         {
-            ProjektDuplizierenCtrl.ZeigeExportImportDialog(this);
+            using (var dlg = new Form_ProjektExportImport())
+            {
+                dlg.ShowDialog(this);
+            }
         }
     }
 }

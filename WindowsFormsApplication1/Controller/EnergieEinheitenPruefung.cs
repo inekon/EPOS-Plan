@@ -366,7 +366,7 @@ namespace WindowsFormsApplication1
                             "Die Tabelle energy_conversion führt die Spalten " +
                             SchemaKatalog.SPALTE_EC_FAKTOR_NAME + " und " +
                             SchemaKatalog.SPALTE_EC_AKTIV + " noch nicht — " +
-                            "Migrationsschritt " + SchemaMigration.SCHRITT_25_EINHEITENKONSISTENZ +
+                            "Migrationsschritt " + SchemaStand.SCHRITT_25_EINHEITENKONSISTENZ +
                             " steht aus. Bis dahin wird die Einheitenkette nicht geprüft."));
                         return befunde;
                     }

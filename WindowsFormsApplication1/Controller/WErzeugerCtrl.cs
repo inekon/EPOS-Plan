@@ -5,10 +5,32 @@ using System.Data;
 namespace WindowsFormsApplication1
 {
     // Die Klasse ist seit iU3 partial: Der PROJEKT-LOESCHWEG (Delete) steht in
-    // WErzeugerCtrl.Aufraeumen.cs und zieht ueber GeraeteWaisen die Oberflaeche mit -
-    // der Rechenkern verlinkt diese Partial-Datei bewusst NICHT (Kante K6).
+    // WErzeugerCtrl.Aufraeumen.cs. Er zog ueber GeraeteWaisen die Oberflaeche mit;
+    // seit iU4-2 laeuft der Aufraeumlauf ueber den Haken GeraetewaisenAufraeumen,
+    // beide Haelften ziehen damit in den Kern.
     partial class WErzeugerCtrl : WErzeugerModel
     {
+        /// <summary>
+        /// Der HAKEN auf den Geraete-Aufraeumlauf (Umsetzungskonzept iU4, Schritt 2).
+        ///
+        /// <para><b>Warum ein Haken.</b> <see cref="Delete"/> - der Projekt-Loeschweg -
+        /// raeumt nach dem DELETE die verwaisten Geraetezeilen weg. Der Aufraeumlauf
+        /// <c>GeraeteWaisen</c> zieht dafuer die Oberflaeche mit und bleibt deshalb in
+        /// der Anwendung; die Loeschmethode selbst gehoert aber zum Controller und zieht
+        /// mit ihm in den Kern.</para>
+        ///
+        /// <para><b>Vorbelegung <c>null</c> = kein Aufraeumlauf - und das ist zulaessig.</b>
+        /// Der Aufraeumlauf darf das Loeschen ohnehin nicht scheitern lassen: Er laeuft
+        /// NACH dem erfolgreichen DELETE, sein Ergebnis geht nicht in den Rueckgabewert
+        /// ein, und was er nicht wegraeumt, holt der Migrationsschritt beim naechsten
+        /// Programmstart nach (siehe die Begruendung an <see cref="Delete"/>). Ohne
+        /// Oberflaeche - Referenzlauf - wird ohnehin kein Projekt geloescht.</para>
+        ///
+        /// <para><c>Program.Main</c> belegt ihn direkt nach den <c>Meldung</c>-Haken mit
+        /// <c>GeraeteWaisen.Aufraeumen</c>.</para>
+        /// </summary>
+        public static Action<int> GeraetewaisenAufraeumen = null;
+
         private List<WErzeugerModel> _internalList = new List<WErzeugerModel>();
         public int rows => _internalList.Count;
         public new List<WErzeugerModel> items => _internalList;
@@ -27,7 +49,7 @@ namespace WindowsFormsApplication1
         /// pflegen <c>WaermesenkeClass.Schreiben</c> und
         /// <c>WaermequelleClass.WertSchreiben</c> gezielt je Anlage. Verlustbehaftet ist
         /// allein der Weg Löschen + Neuanlegen - der geht über
-        /// <see cref="Insert"/> bzw. <see cref="WizardCtrl.SQL_ANLAGE_INSERT"/>.
+        /// <see cref="Insert"/> bzw. <c>WizardCtrl.SQL_ANLAGE_INSERT</c>.
         /// </para>
         /// </summary>
         public bool Update()
@@ -142,7 +164,7 @@ namespace WindowsFormsApplication1
         /// bereits auseinandergelaufen (in <c>ReadAllFilter</c> stand bei <c>Azimut</c>
         /// ein nicht kurzschließendes <c>&amp;</c>, das bei fehlender Spalte geworfen
         /// hätte). Eine Abbildung bedeutet: Was gelesen wird, wird auch geschrieben -
-        /// die Symmetrie zu <see cref="WizardCtrl.SQL_ANLAGE_INSERT"/> ist an einer
+        /// die Symmetrie zu <c>WizardCtrl.SQL_ANLAGE_INSERT</c> ist an einer
         /// einzigen Stelle prüfbar.
         /// </para>
         ///

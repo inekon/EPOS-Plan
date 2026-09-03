@@ -725,7 +725,9 @@ namespace WindowsFormsApplication1
         /// ununterscheidbar. Sie läuft deshalb NUR, wenn die Spalte in eben diesem Lauf
         /// entstanden ist (Muster <c>WirtschaftlichkeitCtrl.SpalteSicher</c>).
         /// </summary>
-        public const int SCHRITT_25_EINHEITENKONSISTENZ = 25;
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const int SCHRITT_25_EINHEITENKONSISTENZ = SchemaStand.SCHRITT_25_EINHEITENKONSISTENZ;
 
         /// <summary>
         /// Nummer der Etappe <b>K3</b> aus
@@ -11494,17 +11496,17 @@ namespace WindowsFormsApplication1
         /// Viertelstunde), <c>Einheit</c> die Anzeige- und Rechen-Einheit (ct/kWh).
         /// Beide sind eingefrorene Persistenzwerte, keine Anzeigetexte.
         /// </summary>
-        public const string SQL_CREATE_PREISREIHE =
-            "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
-            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_PREISREIHE = SchemaStand.SQL_CREATE_PREISREIHE;
         // ID_Energietraeger: seit Schritt 40 (Etappe KD4, FK6a) Teil des CREATE, damit
         // auch die tolerante Rueckfallebene (PreisreiheCtrl.StelleTabellenSicher) die
         // Spalte mitbringt; Bestandstabellen ruestet Schritt 40 nach.
 
         /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
-        public const string SQL_INDEX_PREISREIHE =
-            "CREATE INDEX idx_Preisreihe ON Tab_Preisreihe (ID_Projekt)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_PREISREIHE = SchemaStand.SQL_INDEX_PREISREIHE;
 
         /// <summary>
         /// Werte einer Preisreihe, Muster <c>Tab_StromganglinieDaten</c>: eine Zeile je
@@ -11517,13 +11519,14 @@ namespace WindowsFormsApplication1
         /// hängt dann nicht mehr davon ab, dass der Provider AutoWerte aufsteigend
         /// vergibt.
         /// </summary>
-        public const string SQL_CREATE_PREISREIHEDATEN =
-            "CREATE TABLE Tab_PreisreiheDaten (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Preisreihe LONG, Wert DOUBLE)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_PREISREIHEDATEN = SchemaStand.SQL_CREATE_PREISREIHEDATEN;
 
         /// <summary>Index über den Kopfverweis - der einzige Suchweg auf die Werte.</summary>
-        public const string SQL_INDEX_PREISREIHEDATEN =
-            "CREATE INDEX idx_PreisreiheDaten ON Tab_PreisreiheDaten (ID_Preisreihe)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_PREISREIHEDATEN = SchemaStand.SQL_INDEX_PREISREIHEDATEN;
 
         /// <summary>
         /// Löschweitergabe vom Kopf auf die Werte - ohne sie blieben nach dem Löschen
@@ -11531,9 +11534,9 @@ namespace WindowsFormsApplication1
         /// MAX(ID)+1-Vergabe später auf eine FREMDE Reihe zeigen würden (dieselbe
         /// Begründung wie bei <c>FK_ErgPuffer</c>, Konzept 13.7).
         /// </summary>
-        public const string SQL_FK_PREISREIHEDATEN =
-            "ALTER TABLE Tab_PreisreiheDaten ADD CONSTRAINT FK_PreisreiheDaten " +
-            "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_FK_PREISREIHEDATEN = SchemaStand.SQL_FK_PREISREIHEDATEN;
 
         /// <summary>
         /// Kostenprofil (Fachkonzept 4.1 b): 12 Monats- und 7 × 24 Wochenwerte als
@@ -11544,13 +11547,14 @@ namespace WindowsFormsApplication1
         /// <b>TEXT(255) und MEMO</b> wie im Spaltenkatalog: 12 Werte passen in 255
         /// Zeichen, 168 nicht.
         /// </summary>
-        public const string SQL_CREATE_KOSTENPROFIL =
-            "CREATE TABLE Tab_Kostenprofil (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Projekt LONG, Bezeichner TEXT(255), Monatswerte TEXT(255), Wochenwerte MEMO)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_KOSTENPROFIL = SchemaStand.SQL_CREATE_KOSTENPROFIL;
 
         /// <summary>Index über den Projektbezug.</summary>
-        public const string SQL_INDEX_KOSTENPROFIL =
-            "CREATE INDEX idx_Kostenprofil ON Tab_Kostenprofil (ID_Projekt)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_KOSTENPROFIL = SchemaStand.SQL_INDEX_KOSTENPROFIL;
 
         private const string CARRIER_STROM = "ELECTRICITY";
 
