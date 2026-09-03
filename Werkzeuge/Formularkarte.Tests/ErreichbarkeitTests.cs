@@ -150,13 +150,16 @@ public sealed class ErreichbarkeitTests
     }
 
     [Fact]
-    public void FormHeizkesselIstUeberDieStartseiteZuErreichen()
+    public void FormGebaeudeIstUeberDieStartseiteZuErreichen()
     {
-        var knoten = Knoten("Form_Heizkessel");
+        // iU9-W6: Bis dahin stand hier Form_Heizkessel; die Maske ist mit iU9-W6.3
+        // geloescht (Regel M1). Form_Gebaeude haengt genauso an einer Kachel der
+        // Startseite und bleibt bis Welle 9 im Bestand.
+        var knoten = Knoten("Form_Gebaeude");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
         Assert.StartsWith("Form_Start", knoten.Pfad, StringComparison.Ordinal);
-        Assert.EndsWith("Form_Heizkessel", knoten.Pfad, StringComparison.Ordinal);
+        Assert.EndsWith("Form_Gebaeude", knoten.Pfad, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -237,10 +240,10 @@ public sealed class ErreichbarkeitTests
         Assert.Equal(ergebnis.Masken,
                      ergebnis.Erreichbar(Erreichbar.Ja) + ergebnis.Erreichbar(Erreichbar.Nein) +
                      ergebnis.Erreichbar(Erreichbar.Verwaist) + ergebnis.Erreichbar(Erreichbar.Unklar));
-        // Gemessener Stand nach iU9-W4: 89 von 91 (die zwei uebrigen sind
-        // "unklar"; nach iU9-W3 waren es 96 von 98). Die Zahl sinkt mit jeder
-        // Welle - der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 89,
+        // Gemessener Stand nach iU9-W6.3: 86 von 88 (die zwei uebrigen sind
+        // "unklar"; 89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3). Die Zahl sinkt
+        // mit jeder Welle - der Anteil bleibt.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 86,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -259,14 +262,14 @@ public sealed class ErreichbarkeitTests
         // Das Ungeklaerte steht oben - die Liste wird von vorn abgearbeitet.
         var kopf = befund.Substring(befund.IndexOf("| Maske |", StringComparison.Ordinal));
         Assert.True(kopf.IndexOf("| Form_GebWohnflaeche | unklar |", StringComparison.Ordinal) <
-                    kopf.IndexOf("| Form_Heizkessel | ja |", StringComparison.Ordinal),
+                    kopf.IndexOf("| Form_Gebaeude | ja |", StringComparison.Ordinal),
                     "Die ungeklaerten Masken stehen nicht vorn.");
     }
 
     [Fact]
     public void OhneSchalterWirdDieErreichbarkeitNichtGerechnet()
     {
-        var ergebnis = Stapel.Laufen(Repowurzel.Designer("Heizkessel"), ziel: null, suchwurzel: Projekt,
+        var ergebnis = Stapel.Laufen(Repowurzel.Designer("Klimadaten"), ziel: null, suchwurzel: Projekt,
                                      erreichbarkeit: false);
 
         Assert.False(ergebnis.MitErreichbarkeit);

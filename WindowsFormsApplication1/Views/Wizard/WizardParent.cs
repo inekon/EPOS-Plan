@@ -358,11 +358,6 @@ namespace WindowsFormsApplication1
             {
                 ((Wizard_Stromlastgang)page).SetControls(ucProjektAuswahl.GewaehlterName);
             }
-            else if (top == WizardItemClass.KESSEL_ITEM)
-            {
-                ((Form_Heizkessel)page).list_heizkesselmodel = list_werzmodel;
-                ((Form_Heizkessel)page).SetControls(projektID, true);
-            }
             else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
             {
                 ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;

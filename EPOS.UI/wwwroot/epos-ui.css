@@ -1162,3 +1162,41 @@ body {
     color: var(--epos-senke-text);          /* Color.Firebrick des Vorlaeufers */
     font-size: var(--epos-schriftgroesse);
 }
+
+/* ==================================================================== */
+/* AUSWAHLPAAR (iU9-W6.3)                                               */
+/*                                                                      */
+/* Das Muster der fuenf Erzeugerdialoge: links "ausgewaehlt im Projekt", */
+/* rechts "aus Datenbank", dazwischen die beiden Pfeile ◀ und ▶. Im     */
+/* Bestand standen die drei Teile auf festen Pixelkoordinaten           */
+/* nebeneinander; hier teilen sich die beiden Listen den Platz und die   */
+/* Pfeilspalte bleibt so schmal, wie sie sein muss.                      */
+/*                                                                      */
+/* Auf schmalen Schirmen bricht die Reihe um: Dann stehen die Listen     */
+/* untereinander und die Pfeile dazwischen - sie zeigen dort in die      */
+/* falsche Richtung, aber ihr Kurztext sagt, was sie tun (M2).           */
+/* ==================================================================== */
+
+.epos-auswahlpaar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-auswahlspalte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 260px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+
+.epos-auswahlpfeile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}

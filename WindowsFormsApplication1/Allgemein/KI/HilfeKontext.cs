@@ -124,7 +124,6 @@ namespace WindowsFormsApplication1
             { "Form_Gebaeude1",              B_GEBAEUDE },
             { "Form_Gebaeude2",              B_GEBAEUDE },
 
-            { "Form_Heizkessel",             B_HEIZKESSEL },
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
             { "Form_Heizkessel_einlesen",    B_HEIZKESSEL },
 

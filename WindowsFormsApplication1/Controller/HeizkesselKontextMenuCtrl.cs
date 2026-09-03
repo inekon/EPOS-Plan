@@ -83,7 +83,6 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Heizkessel.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Heizkessel frm = new Form_Heizkessel();
 
             if (indexes.Count > 0)
             {
@@ -100,12 +99,12 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Heizkessel frm = new Form_Heizkessel();
+            // iU9-W6.3: Der Dialog ist die Razor-Komponente HeizkesselDialog; die
+            // WinForms-Fassung Form_Heizkessel ist im selben Schritt GELOESCHT (Regel M1).
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
             int id_type;
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
 
-            frm.list_heizkesselmodel.Clear();
             if (listView_Heizkessel.Name == "listView_Heizkessel_REF")
             {
                 werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.REF_KESSEL_TYP);
@@ -125,20 +124,15 @@ namespace WindowsFormsApplication1
             // Bivalenter_Betrieb, Abschaltpunkt und Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_heizkesselmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_ID_Projekt);
-            frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            if (HeizkesselHuelle.Oeffnen(null, m_ID_Projekt, id_type, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle(m_szProjektname);

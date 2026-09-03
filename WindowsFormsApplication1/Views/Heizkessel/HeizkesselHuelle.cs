@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
+using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
@@ -319,6 +320,418 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        // =================================================================================
+        // W6.3 - Projektdialog
+        // =================================================================================
+
+        /// <summary>Gewünschtes Innenmaß des Projektdialogs (Vorläufer: 769 × 527).</summary>
+        private static readonly Size PROJEKT_MASS = new Size(1000, 720);
+
+        /// <summary>
+        /// Zeigt den Projektdialog als eigenes Fenster — der Weg von
+        /// <c>Form_Start.pBox_Heizkessel_Click</c> und
+        /// <c>HeizkesselKontextMenuCtrl.ContextMenuItemNeu_Click</c>.
+        /// </summary>
+        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
+        /// <param name="projektId">Projekt; 0 = keines (dann keine Projektkopien).</param>
+        /// <param name="idType">
+        /// <c>KESSEL_TYP</c> oder <c>REF_KESSEL_TYP</c>. Er entscheidet, welche Zeilen der
+        /// geteilten Liste gezeigt werden UND welchen Typ eine neue Zeile bekommt.
+        /// </param>
+        /// <param name="modelle">
+        /// Die geteilte Erzeugerliste. Sie wird AN ORT UND STELLE bearbeitet; der Aufrufer
+        /// schreibt sie danach wie bisher über <c>WizardCtrl</c> zurück.
+        /// </param>
+        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
+        internal static bool Oeffnen(IWin32Window besitzer, int projektId, int idType,
+                                     List<WErzeugerModel> modelle)
+        {
+            bool ok = false;
+            BlazorDialogForm<HeizkesselDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(
+                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
+                {
+                    ok = b;
+                    if (dlg != null) dlg.Schliessen(b);
+                })
+            };
+
+            dlg = new BlazorDialogForm<HeizkesselDialog>(
+                Text_("HZK_TITEL", "Verwaltung Heizkessel"), PROJEKT_MASS, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ok;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Projektdialogs — auch die Assistentenseite baut sich
+        /// daraus (<see cref="BlazorAssistentSeite{TKomponente}"/>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Die Zeilenliste ist ein SPIEGEL der geteilten Modellliste.</b> Die Komponente
+        /// bearbeitet <see cref="ErzeugerZeile"/>-Objekte; die Zuordnung zum
+        /// <see cref="WErzeugerModel"/> hält diese Hülle über
+        /// <c>ErzeugerZeile.Schluessel</c> = <c>WErzeugerModel.ID</c>. Jede Änderung wird
+        /// über die Delegaten sofort in die Modellliste zurückgeschrieben — genau so, wie
+        /// der Vorläufer sein <c>ListViewItem.Tag</c> benutzte.
+        /// </remarks>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            IWin32Window besitzer, int projektId, int idType,
+            List<WErzeugerModel> modelle, bool wizard)
+        {
+            var stamm = new HeizkesselStammCtrl();
+            var projekt = new HeizkesselCtrl();
+
+            // Zeilen des eigenen Typs spiegeln. BEFUND W6-O-3: SetControls filterte hart
+            // auf KESSEL_TYP, auch wenn der Aufrufer REF_KESSEL_TYP meinte - im
+            // Referenzfall blieb die linke Liste deshalb leer, obwohl Zeilen vorhanden
+            // waren. Hier gilt der übergebene Typ (Abweichung A-14).
+            var zeilen = new List<ErzeugerZeile>();
+            var zuModell = new Dictionary<int, WErzeugerModel>();
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                zeilen.Add(ZeileZu(m));
+                zuModell[m.ID] = m;
+            }
+
+            // Zähler für neue Zeilen - wie startindex im Vorläufer. Als Objekt, damit
+            // die Delegaten ihn TEILEN: Ein ref-Parameter ließe sich in einem Lambda
+            // nicht einfangen, und zwei Zähler vergäben denselben Schlüssel zweimal.
+            var zaehler = new Zaehler();
+            foreach (var m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
+
+            return new Dictionary<string, object>
+            {
+                ["Zeilen"] = zeilen,
+                ["Wizard"] = wizard,
+
+                // Filter: "Alle" voran, dann die Gruppen bzw. die fünf Leistungsstufen -
+                // dieselbe Reihenfolge wie Form_Heizkessel_Load.
+                ["Gruppen"] = Gruppen(stamm),
+                ["Leistungsstufen"] = Leistungsstufen(),
+
+                ["Filtern"] = new Func<string, int, IReadOnlyList<KatalogZeile>>(
+                    (gruppe, stufe) => KatalogZeilen(stamm.Filtern(gruppe, stufe))),
+
+                ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
+                    name => DetailZu(projekt.KatalogDetail(name))),
+
+                ["ProjektDetail"] = new Func<int, ErzeugerDetail>(
+                    id => DetailZu(projekt.ProjektDetail(id))),
+
+                ["Varianten"] = new Func<int, IReadOnlyList<(int Id, string Text)>>(
+                    carrierId =>
+                    {
+                        var (_, liste) = EnergietraegerVarianteCtrl.VariantenDerGruppe(carrierId);
+                        var eintraege = new List<(int, string)>();
+                        foreach (var v in liste) eintraege.Add((v.Id, v.Name));
+                        return eintraege;
+                    }),
+
+                ["Vorbereiten"] = new Func<int, TraegerVorbereitung>(
+                    stammId => Vorbereiten(stamm, stammId)),
+
+                ["Aufnehmen"] = new Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>(
+                    (stammId, ergebnis) => Aufnehmen(stamm, projektId, idType, wizard, modelle,
+                                                     zuModell, zaehler, stammId, ergebnis)),
+
+                ["Entfernen"] = new Action<ErzeugerZeile>(
+                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile)),
+
+                ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
+                    (zeile, neu) =>
+                    {
+                        EnergietraegerVarianteCtrl.TraegerUmhaengen(projektId, zeile.CarrierId, neu);
+                        if (zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) m.ID_Carrier = neu;
+                    }),
+
+                ["Uebernehmen"] = new Action<ErzeugerZeile>(
+                    zeile =>
+                    {
+                        if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+                        m.Vorlauf = zeile.Vorlauf ?? 0;
+                        m.Ruecklauf = zeile.Ruecklauf ?? 0;
+                    }),
+
+                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    name => Gaben(name, "", neu: false)),
+
+                ["TraegerGaben"] = new Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>(
+                    TraegerGaben),
+
+                ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+
+                // Die Katalogverwaltung ist bis Welle 14 eine WinForms-Maske - sie geht
+                // deshalb über die Sprungbrücke, nicht über eine zweite WebView.
+                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+
+                ["TitelText"] = Text_("HZK_TITEL", "Verwaltung Heizkessel"),
+                ["KopfbandText"] = Text_("HZK_KOPFBAND", "Geben Sie Daten des Spitzenlastkessels ein"),
+                ["LabelProjektliste"] = Text_("HZK_LBL_PROJEKTLISTE", "ausgewählt im Projekt"),
+                ["LabelKatalogliste"] = Text_("HZK_LBL_KATALOGLISTE", "Kessel aus Datenbank"),
+                ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
+                ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
+                ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
+                ["LabelFilterBrennstoff"] = Text_("HZK_LBL_FILTER_BRENNSTOFF", "Filtern nach Brennstoffart:"),
+                ["LabelFilterLeistung"] = Text_("HZK_LBL_FILTER_LEISTUNG", "Filtern nach Leistung:"),
+                ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
+                ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
+                ["BtnAdminText"] = Text_("HZK_BTN_ADMIN", "Administration..."),
+                ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
+                ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
+                ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),
+                ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
+                ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
+                ["TraegerTitel"] = MyResource.Resource.KAUSW_TITEL,
+                ["EditorTitel"] = Text_("HZKK_TITEL", "Administration Heizkessel"),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
+                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
+                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
+                ["FrageLoeschen"] = Text_("HZK_FRAGE_LOESCHEN",
+                    "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
+                ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
+                ["MeldungLoeschFehler"] = Text_("HZK_MSG_LOESCHFEHLER",
+                    "Der Katalogeintrag konnte nicht gelöscht werden."),
+
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
+                ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
+            };
+        }
+
+        // =================================================================================
+        // Die Schreibwege hinter den Delegaten
+        // =================================================================================
+
+        /// <summary>
+        /// Die Werte, die <c>btn_Kessel_Hinzu_Click</c> aus dem Stammsatz las, plus die
+        /// Auswahlliste des Trägerdialogs.
+        /// </summary>
+        private static TraegerVorbereitung Vorbereiten(HeizkesselStammCtrl stamm, int stammId)
+        {
+            stamm.ReadById(stammId);
+            if (stamm.rows == 0)
+                return new TraegerVorbereitung(Array.Empty<(int, string)>(), null,
+                    Text_("HZK_MSG_NICHT_GEFUNDEN",
+                          "Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden."));
+
+            int nBrennstoff = stamm.Brennstoff;
+
+            // Nur die Kategorie des Kessels anbieten (Befund 03.09.2026) - dieselbe
+            // Einengung wie im gelöschten CreateNewEnergyCarrier.
+            var liste = EnergietraegerVarianteCtrl.Energietraeger(
+                EnergietraegerVarianteCtrl.KategorieZu(nBrennstoff));
+
+            return new TraegerVorbereitung(liste, nBrennstoff > 0 ? (int?)nBrennstoff : null);
+        }
+
+        /// <summary>
+        /// Nimmt den Kessel auf: Träger anlegen, Projektkopie ziehen, Modell in die
+        /// geteilte Liste. Reihenfolge und Abbruchbedingungen wie in
+        /// <c>btn_Kessel_Hinzu_Click</c>.
+        /// </summary>
+        private static AufnahmeErgebnis Aufnehmen(
+            HeizkesselStammCtrl stamm, int projektId, int idType, bool wizard,
+            List<WErzeugerModel> modelle, Dictionary<int, WErzeugerModel> zuModell,
+            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis)
+        {
+            stamm.ReadById(stammId);
+            if (stamm.rows == 0)
+                return new AufnahmeErgebnis(null,
+                    Text_("HZK_MSG_NICHT_GEFUNDEN",
+                          "Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden."), true);
+
+            // Punkt 2: Energieträgervariante ZUERST. Schlägt das Anlegen fehl, wird KEIN
+            // Kessel hinzugefügt - kein verwaister Eintrag mit ID_Carrier = 0.
+            EnergietraegerVarianteCtrl.VariantenErgebnis traeger =
+                EnergietraegerVarianteCtrl.Anlegen(projektId, wizard,
+                    ergebnis.BrennstoffId, ergebnis.BrennstoffName, ergebnis.VariantenName);
+
+            if (traeger.CarrierId <= 0)
+                return new AufnahmeErgebnis(null, traeger.Meldung, true);
+
+            var model = new WErzeugerModel
+            {
+                ID = zaehler.Naechster++,
+                ID_Projekt = projektId,
+                ID_Type = idType,
+                Bezeichner = stamm.Name,
+                Vorlauf = stamm.Vorlauf,
+                Ruecklauf = stamm.Ruecklauf,
+                ID_Carrier = traeger.CarrierId
+            };
+
+            // Außerhalb des Assistenten den Stammsatz sofort in die Projekttabelle
+            // kopieren (idempotent) und die PROJEKT-Id referenzieren; im Wizard nur die
+            // Stamm-Id als Platzhalter - die Kopie macht WizardCtrl beim Speichern.
+            if (!wizard && projektId > 0)
+            {
+                int projektKopie = new HeizkesselCtrl().CopyFromStamm(stammId, projektId);
+                if (projektKopie <= 0)
+                    return new AufnahmeErgebnis(null,
+                        Text_("HZK_MSG_KOPIE_FEHLER",
+                              "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
+                model.ID_Kessel = projektKopie;
+            }
+            else
+            {
+                model.ID_Kessel = stammId;
+            }
+
+            modelle.Add(model);
+            zuModell[model.ID] = model;
+
+            return new AufnahmeErgebnis(ZeileZu(model), traeger.Meldung, false);
+        }
+
+        /// <summary>
+        /// Entfernt die Zeile aus der geteilten Liste. Die Projektkopie geht nur mit,
+        /// wenn keine zweite Zeile mehr darauf verweist — mehrere Instanzen desselben
+        /// Kessels teilen sich EINE <c>Tab_Heizkessel</c>-Kopie.
+        /// </summary>
+        private static void Entfernen(int projektId, int idType, bool wizard,
+                                      List<WErzeugerModel> modelle,
+                                      Dictionary<int, WErzeugerModel> zuModell,
+                                      ErzeugerZeile zeile)
+        {
+            if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+
+            modelle.Remove(m);
+            zuModell.Remove(zeile.Schluessel);
+
+            bool nochReferenziert = false;
+            foreach (WErzeugerModel it in modelle)
+                if (it.ID_Type == idType && it.ID_Kessel == m.ID_Kessel) { nochReferenziert = true; break; }
+
+            if (!wizard && projektId > 0 && !nochReferenziert)
+                new HeizkesselCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
+        }
+
+        // =================================================================================
+        // Abbildungen
+        // =================================================================================
+
+        private static ErzeugerZeile ZeileZu(WErzeugerModel m)
+        {
+            return new ErzeugerZeile
+            {
+                Schluessel = m.ID,
+                Bezeichner = m.Bezeichner ?? "",
+                GeraetId = m.ID_Kessel,
+                CarrierId = m.ID_Carrier,
+                Vorlauf = m.Vorlauf,
+                Ruecklauf = m.Ruecklauf
+            };
+        }
+
+        /// <summary>
+        /// Der Detailblock. Reihenfolge und Formatierung wie in
+        /// <c>ApplySelectedKessel</c>: Leistung und Investition mit zwei
+        /// Nachkommastellen.
+        /// </summary>
+        private static ErzeugerDetail DetailZu(HeizkesselCtrl.KesselDetail d)
+        {
+            if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
+
+            var felder = new List<(string, string)>
+            {
+                (Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"), d.Brennstoff),
+                (Text_("HZK_LBL_LEISTUNG", "Leistung [kW]:"), d.Ptherm.ToString("F2")),
+                (Text_("HZK_LBL_INVEST", "Investitionskosten [€]:"), d.Investitionskosten.ToString("F2"))
+            };
+
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert));
+        }
+
+        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
+            IReadOnlyList<HeizkesselStammCtrl.KatalogZeile> quelle)
+        {
+            var liste = new List<KatalogZeile>();
+            foreach (var z in quelle) liste.Add(new KatalogZeile(z.Id, z.Bezeichner));
+            return liste;
+        }
+
+        /// <summary>„Alle" voran, dann die Brennstoffgruppen — wie <c>Form_Heizkessel_Load</c>.</summary>
+        private static IReadOnlyList<string> Gruppen(HeizkesselStammCtrl stamm)
+        {
+            var liste = new List<string> { "Alle" };
+            liste.AddRange(stamm.Brennstoffart_Gruppe);
+            return liste;
+        }
+
+        /// <summary>Die sechs Leistungsstufen in der Reihenfolge von <c>LEISTUNG_SQL</c>.</summary>
+        private static IReadOnlyList<string> Leistungsstufen()
+        {
+            return new[]
+            {
+                Text_("HZK_STUFE_ALLE", "Alle"),
+                Text_("HZK_STUFE_BIS50", "bis 50 kW"),
+                Text_("HZK_STUFE_50_200", ">50 bis 200 kW"),
+                Text_("HZK_STUFE_200_500", ">200 bis 500 kW"),
+                Text_("HZK_STUFE_500_1000", ">500 bis 1.000 kW"),
+                Text_("HZK_STUFE_UEBER1000", "über 1.000 kW")
+            };
+        }
+
+        /// <summary>
+        /// Der Parametersatz des Trägerdialogs — dieselben Werte, die
+        /// <c>CreateNewEnergyCarrier</c> dem Fenster mitgab (Z. 314-333).
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> TraegerGaben(TraegerVorbereitung vor)
+        {
+            return new Dictionary<string, object>
+            {
+                ["Energietraeger"] = vor.Energietraeger,
+                ["VorwahlId"] = vor.VorwahlId,
+                ["TitelText"] = MyResource.Resource.KAUSW_TITEL,
+                ["LabelEnergietraeger"] = MyResource.Resource.KAUSW_LBL_ENERGIETRAEGER,
+                ["LabelVariante"] = MyResource.Resource.KAUSW_LBL_VARIANTE,
+                ["MeldungNameFehlt"] = MyResource.Resource.KAUSW_MSG_NAME_FEHLT,
+                ["MeldungTraegerFehlt"] = MyResource.Resource.KAUSW_MSG_TRAEGER_FEHLT,
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+            };
+        }
+
+        /// <summary>
+        /// Der Zeilenzähler eines Dialoglaufs — das Gegenstück zu <c>startindex</c> des
+        /// Vorläufers. Als Objekt, weil die Delegaten ihn gemeinsam fortschreiben.
+        /// </summary>
+        private sealed class Zaehler
+        {
+            /// <summary>Der nächste freie Zeilenschlüssel.</summary>
+            internal int Naechster = 100000;
+        }
+
+        /// <summary>
+        /// Die Kesselseite des ASSISTENTEN (iU9-W6.3) — dieselbe Komponente, andere
+        /// Hülle: randlos, <c>TopLevel = false</c>-tauglich, ohne OK/Abbrechen und ohne
+        /// Kostenleiste (<c>Wizard = true</c>).
+        /// </summary>
+        /// <remarks>
+        /// Der Parametersatz wird erst in <c>Bestuecken</c> erfragt, weil Projekt-Id,
+        /// Projektname und die geteilte Liste erst dort feststehen —
+        /// <c>AssistentSeiten.Erzeugen</c> baut alle dreizehn Seiten im Voraus.
+        /// </remarks>
+        internal static Form AssistentSeite()
+        {
+            return new BlazorAssistentSeite<HeizkesselDialog>(
+                (projektId, projektName, modelle) =>
+                    new Dictionary<string, object>(
+                        Gaben(null, projektId, WizardItemClass.KESSEL_TYP, modelle, wizard: true)),
+                PROJEKT_MASS);
         }
     }
 }
