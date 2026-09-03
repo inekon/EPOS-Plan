@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -977,6 +977,337 @@ namespace WindowsFormsApplication1
             min = Math.Floor(min / schritt) * schritt;
             max = Math.Ceiling(max / schritt) * schritt;
             return schritt;
+        }
+
+        // =================================================================== Bedarfsbilder (iU9-W8.0c)
+
+        /// <summary>
+        /// Die zwölf Monatsnamen, wie die Bedarfsmasken sie an der x-Achse trugen
+        /// (<c>Form_ErgStromverbraucher.monate</c>). „Mrz" statt des „Mär" der
+        /// Berichtsbilder — wörtlich aus dem Vorläufer, weil dieses Bild ihn ersetzt.
+        /// </summary>
+        private static readonly string[] MONATE_KURZ =
+        { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+
+        /// <summary>
+        /// Die Füllfarbe des Stundenprofils — halbtransparentes Blau, wörtlich aus
+        /// <c>Form_EingStromTyp.ChartAktualisieren</c> (<c>Color.FromArgb(100, Color.Blue)</c>).
+        /// </summary>
+        public static readonly SKColor C_PROFILFLAECHE = new SKColor(0x00, 0x00, 0xFF, 100);
+
+        /// <summary>Die Randlinie des Stundenprofils — dasselbe Blau, deckend.</summary>
+        public static readonly SKColor C_PROFILLINIE = new SKColor(0x00, 0x00, 0xFF);
+
+        /// <summary>
+        /// Die „schönen" Schrittweiten der Bedarfsmasken. Wörtlich aus
+        /// <c>Form_ErgBrauchwasserwaerme.SkaliereYAchse</c>:288 — eine andere Reihe als die
+        /// des Kapitalwert-Verlaufs (dort 1/2/2,5/5/10), weil die Bedarfsbilder auch
+        /// Zehntel brauchen.
+        /// </summary>
+        private static readonly double[] SCHOENE_SCHRITTE =
+        { 0.1, 0.2, 0.25, 0.5, 1.0, 2.0, 2.5, 5.0, 10.0 };
+
+        /// <summary>
+        /// Die y-Achse der Bedarfsbilder: Schrittweite, Obergrenze und Zahlenformat aus dem
+        /// Größtwert. Wörtlich aus <c>SkaliereYAchse</c> (dreimal gleichlautend in den drei
+        /// Ergebnismasken) — samt dem Rückfall „Maximum 5, Intervall 1", wenn alle Werte
+        /// null sind, und der Sicherung gegen eine Schrittweite ≤ 0.
+        /// </summary>
+        private static (double Schritt, double Max, string Format) BedarfsSkala(double maxWert)
+        {
+            if (maxWert <= 0) return (1.0, 5.0, "N0");
+
+            double zielSchrittweite = (maxWert * 1.1) / 4.5;
+            double groessenordnung = Math.Pow(10, Math.Floor(Math.Log10(zielSchrittweite)));
+            double normiert = zielSchrittweite / groessenordnung;
+
+            double gewaehlt = SCHOENE_SCHRITTE[SCHOENE_SCHRITTE.Length - 1];
+            foreach (double schritt in SCHOENE_SCHRITTE)
+                if (normiert <= schritt) { gewaehlt = schritt; break; }
+
+            double finale = gewaehlt * groessenordnung;
+            double obergrenze = Math.Round(Math.Ceiling((maxWert * 1.05) / finale) * finale, 4);
+            if (finale <= 0) { finale = 0.5; obergrenze = 2.0; }
+
+            string format = finale >= 1.0 ? "N0" : finale >= 0.1 ? "N1" : "N2";
+            return (finale, obergrenze, format);
+        }
+
+        /// <summary>Zeichnet Raster, y-Beschriftung und die beiden Achsen einer Bedarfsskala.</summary>
+        private static void BedarfsRaster(SKCanvas g, SKRect rc, double schritt, double max, string format)
+        {
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var f = Schrift(15f))
+                for (double wert = 0; wert <= max + schritt / 2; wert += schritt)
+                {
+                    float y = (float)(rc.Bottom - wert / max * rc.Height);
+                    g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                    string lab = wert.ToString(format, DE);
+                    Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
+                }
+
+            using (var achse = Strich(SKColors.DimGray, 2f))
+            {
+                g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+            }
+        }
+
+        /// <summary>
+        /// Senkrechte Monatssäulen (Paket iU9-W8.0c) — das Bild der drei Ergebnismasken
+        /// <c>Form_ErgStromverbraucher</c>, <c>Form_ErgProzesswaerme</c> und
+        /// <c>Form_ErgBrauchwasserwaerme</c>.
+        ///
+        /// <para><b>Vorbild.</b> <c>ZeigeStromGrafik</c>:83 bzw. <c>ZeigeMonatsGrafik</c>: ein
+        /// <c>SeriesChartType.Column</c> auf einer x-Achse, die STARR von 1 bis 12 läuft
+        /// (<c>Minimum = 1</c>, <c>Maximum = 12</c>, <c>Interval = 1</c>), y ab 0, keine
+        /// Legende. Dieselbe Starrheit steht hier: zwölf gleich breite Fächer, jedes mit
+        /// seinem Monatsnamen, unabhängig davon, wie viele Werte ungleich null sind.</para>
+        ///
+        /// <para><b>Bildmaß 978 × 542.</b> Der größte der drei Vorläufer-Charts maß 489 × 271
+        /// (<c>Form_ErgBrauchwasserwaerme.chart1</c>); doppelte Zielauflösung wie bei allen
+        /// Bildern dieser Datei.</para>
+        ///
+        /// <para><b>Die Farbe kommt von außen</b>, weil sie die SICHT benennt: gelbgrün für
+        /// den Strombedarf, rot für die Prozesse, blau für die Gebäude, orange für das
+        /// Brauchwasser — wörtlich die vier Farben der Vorläufer.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Strombedarf Monatsübersicht".</param>
+        /// <param name="werte">Die zwölf Monatswerte; kürzere Reihen zeichnen nur den Hinweis.</param>
+        /// <param name="farbe">Säulenfarbe der Sicht.</param>
+        /// <param name="einheit">Einheit für die Überschrift, z. B. „MWh"; leer = ohne.</param>
+        /// <param name="monatsnamen">Die zwölf Beschriftungen; <c>null</c> = die deutschen des Vorläufers.</param>
+        public static byte[] MonatsSaeulen(string titel, double[] werte, SKColor farbe,
+                                           string einheit, IReadOnlyList<string> monatsnamen = null)
+        {
+            int W = 978, H = 542;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+                var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
+
+                if (werte == null || werte.Length < 12)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, BerichtTexte.T("Keine Monatswerte vorhanden."), f, SKColors.DimGray,
+                             rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                double maxWert = 0;
+                for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
+                (double schritt, double max, string format) = BedarfsSkala(maxWert);
+
+                BedarfsRaster(g, rc, schritt, max, format);
+
+                float fach = rc.Width / 12f;
+                float breite = fach * 0.6f;
+                using (var f = Schrift(15f))
+                using (var pinsel = Fuellung(farbe))
+                    for (int m = 0; m < 12; m++)
+                    {
+                        float mitte = rc.Left + (m + 0.5f) * fach;
+
+                        double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
+                        float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
+                        if (hoehe > 0) g.DrawRect(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, pinsel);
+
+                        string lab = (monatsnamen != null && monatsnamen.Count > m)
+                            ? monatsnamen[m] : MONATE_KURZ[m];
+                        Text(g, lab, f, SKColors.DimGray, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>
+        /// Stundenprofil als Fläche über einer numerischen Stundenachse (Paket iU9-W8.0c) —
+        /// das Bild der drei Typprofilmasken (168 Wochenstunden) UND das der
+        /// Gebäudetypmaske (24 Tagesstunden).
+        ///
+        /// <para><b>Zwei Vorbilder, ein Bild.</b> <c>Form_EingStromTyp.ChartAktualisieren</c>:37
+        /// zeichnete eine halbtransparent blaue FLÄCHE über x 0…168 mit Tagesgrenzen alle
+        /// 24 Stunden und y bis 1,1 × Größtwert; <c>Form_EingGebTyp.init_Chart</c>:171 eine
+        /// LINIE über x 0…24 im Abstand 2 mit gepunktetem Raster. Beides ist dieselbe
+        /// Darstellung in zwei Auflösungen; der Unterschied Fläche/Linie war keine
+        /// Entscheidung, sondern die Voreinstellung zweier verschiedener Diagrammverwalter.
+        /// Hier steht immer die Fläche mit ihrer Randlinie — bei 24 Punkten ist sie so gut
+        /// lesbar wie die reine Linie, bei 168 deutlich besser.</para>
+        ///
+        /// <para><b>Bildmaß 1244 × 464</b> — die doppelte Zielauflösung des breiteren der
+        /// beiden Vorläufer (<c>Form_EingGebTyp.chart1</c>, 622 × 203) bei der Höhe des
+        /// höheren (<c>Form_EingStromTyp.chart1</c>, 537 × 232).</para>
+        ///
+        /// <para><b>Die y-Achse endet bei 1,1 × Größtwert</b> (<c>ChartAktualisieren</c>:39),
+        /// mit demselben Rückfall auf 1, wenn alle Werte null sind — der abgelöste
+        /// Diagrammverwalter hätte dort 100 angenommen.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift; leer = ohne.</param>
+        /// <param name="werte">Die Stundenwerte — 24 oder 168, aber jede Länge ≥ 2 geht.</param>
+        /// <param name="intervall">Abstand der x-Beschriftung: 24 (Tagesgrenzen) bzw. 2.</param>
+        /// <param name="xTitel">Beschriftung der x-Achse, z. B. „Wochenstunde (1..168)".</param>
+        /// <param name="yTitel">Beschriftung der y-Achse, z. B. „Verteilung".</param>
+        public static byte[] Stundenprofil(string titel, double[] werte, int intervall,
+                                           string xTitel, string yTitel)
+        {
+            int W = 1244, H = 464;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                if (!string.IsNullOrEmpty(titel)) Titel(g, titel, W);
+                var rc = SKRect.Create(100f, 76f, W - 200f, 300f);
+
+                if (werte == null || werte.Length < 2)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, BerichtTexte.T("Kein Profil vorhanden."), f, SKColors.DimGray,
+                             rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                double maxWert = 0;
+                foreach (double w in werte) if (w > maxWert) maxWert = w;
+                double max = (maxWert > 0 ? maxWert : 1) * 1.1;
+
+                // y-Raster in fünf Stufen; die Zahlen tragen so viele Stellen, wie der
+                // Größtwert braucht (bei Verteilungen unter 1 sonst lauter Nullen).
+                string format = max >= 10 ? "0" : max >= 1 ? "0.0" : "0.000";
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int i = 0; i <= 5; i++)
+                    {
+                        double wert = max * i / 5.0;
+                        float y = rc.Bottom - (float)(i / 5.0) * rc.Height;
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString(format, DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+
+                // x-Raster: die Stundenmarken des Vorläufers (Intervall 24 bzw. 2).
+                int schrittX = intervall > 0 ? intervall : Math.Max(1, werte.Length / 6);
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int h = 0; h <= werte.Length; h += schrittX)
+                    {
+                        float x = rc.Left + (float)h / werte.Length * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = h.ToString(DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                }
+
+                // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
+                // steht für das Intervall (n-1, n], wie im Vorläufer.
+                var punkte = new SKPoint[werte.Length];
+                for (int i = 0; i < werte.Length; i++)
+                {
+                    float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
+                    punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+
+                var flaechenzug = new SKPoint[punkte.Length + 3];
+                flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
+                flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
+                Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+
+                using (var fuellung = Fuellung(C_PROFILFLAECHE)) Vieleck(g, flaechenzug, fuellung);
+                using (var stift = Strich(C_PROFILLINIE, 2f))
+                {
+                    stift.StrokeJoin = SKStrokeJoin.Round;
+                    Linienzug(g, punkte, stift);
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>
+        /// Jahresverlauf über alle 8 760 Stunden (Paket iU9-W8.0c) — die Jahresansicht des
+        /// Brauchwasser-Ergebnisdialogs (<c>ZeigeJahresGrafik</c>:166).
+        ///
+        /// <para><b>OHNE den Mausrad-Zoom des Vorläufers.</b> Der abgelöste
+        /// Diagrammverwalter spreizte die Achse am Mausrad und passte die Beschriftung mit;
+        /// ein PNG kann das nicht. Ein Bild bleibt ein Bild — Zoomen ist W3-O2/W11
+        /// (Abweichung A-1 der Welle 8). Dafür trägt die x-Achse hier die MONATSGRENZEN
+        /// statt der Stundenzahlen: „Stunde 5 832" sagt nichts, „Sep" schon.</para>
+        ///
+        /// <para><b>Bildmaß 978 × 542</b> wie die Monatssäulen — beide teilen sich in der
+        /// Maske dieselbe Fläche und wechseln über einen Schalter.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Jahresübersicht".</param>
+        /// <param name="stundenwerte">Der Jahresverlauf; jede Länge ≥ 2 geht.</param>
+        /// <param name="yTitel">Beschriftung der y-Achse, z. B. „Wärmebedarf [kW]".</param>
+        /// <param name="farbe">Linienfarbe (Vorläufer: <c>SteelBlue</c>).</param>
+        public static byte[] Jahresverlauf(string titel, double[] stundenwerte, string yTitel, SKColor farbe)
+        {
+            int W = 978, H = 542;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel, W);
+                var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
+
+                if (stundenwerte == null || stundenwerte.Length < 2)
+                {
+                    using (var f = Schrift(18f))
+                        Text(g, BerichtTexte.T("Kein Jahresverlauf vorhanden."), f, SKColors.DimGray,
+                             rc.Left, rc.Top + 20f);
+                    return Png(flaeche);
+                }
+
+                double maxWert = 0;
+                foreach (double w in stundenwerte) if (w > maxWert) maxWert = w;
+                (double schritt, double max, string format) = BedarfsSkala(maxWert);
+
+                BedarfsRaster(g, rc, schritt, max, format);
+
+                // Monatsgrenzen statt Stundenzahlen (siehe Kopf).
+                KeyValuePair<int[], string[]> ticks = MonatsTicks365();
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int m = 0; m < 12; m++)
+                    {
+                        float x = rc.Left + (float)(ticks.Key[m] * 24) / stundenwerte.Length * rc.Width;
+                        if (x > rc.Right) break;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        Text(g, ticks.Value[m], f, SKColors.DimGray, x + 4f, rc.Bottom + 8f);
+                    }
+                using (var f = Schrift(15f))
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+
+                // 8 760 Punkte auf rund 840 Bildpunkte: jeder n-te genügt (wie beim
+                // Kostenprofil) — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
+                int schrittweite = Math.Max(1, stundenwerte.Length / (int)rc.Width);
+                var punkte = new List<SKPoint>();
+                for (int i = 0; i < stundenwerte.Length; i += schrittweite)
+                {
+                    float x = rc.Left + (float)i / (stundenwerte.Length - 1) * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, stundenwerte[i]) / max * rc.Height);
+                    punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                }
+                using (var stift = Strich(farbe, 2f))
+                {
+                    stift.StrokeJoin = SKStrokeJoin.Round;
+                    Linienzug(g, punkte.ToArray(), stift);
+                }
+
+                return Png(flaeche);
+            }
         }
 
         // =================================================================== Schrift

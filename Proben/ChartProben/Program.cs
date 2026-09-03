@@ -42,6 +42,15 @@ namespace ChartProben
         /// </summary>
         private static readonly SKColor PROFILLINIE_AUF_WEISS = new SKColor(75, 146, 75);
 
+        /// <summary>
+        /// Die Flaeche des Stundenprofils, wie sie im fertigen Bild ANKOMMT (iU9-W8.0c).
+        /// <c>ChartRenderer.C_PROFILFLAECHE</c> ist Blau mit der Deckung 100 von 255
+        /// (woertlich aus <c>Form_EingStromTyp</c>: <c>Color.FromArgb(100, Color.Blue)</c>);
+        /// ueber der weissen Flaeche entsteht daraus 155/155/255 - derselbe Grund wie bei
+        /// der Kostenprofil-Linie darueber.
+        /// </summary>
+        private static readonly SKColor PROFILFLAECHE_AUF_WEISS = new SKColor(155, 155, 255);
+
         private static int _verstoesse;
         private static int _bilder;
 
@@ -157,6 +166,28 @@ namespace ChartProben
                    new[] { ChartRenderer.C_SERIEN[0], ChartRenderer.C_SERIEN[1], ChartRenderer.C_SERIEN[2] },
                    () => ChartRenderer.Kennlinien("Kennlinien Leistung", "Leistung", "Temperatur",
                             kennlinienLeistung, ChartRenderer.Kennlinienmarke.Kreuz));
+
+            // 13/14/15 - Bedarfsbilder (iU9-W8.0c): Monatssaeulen, Stundenprofil und
+            // Jahresverlauf. Sie ersetzen die Charts der zehn Bedarfsmasken der Welle 8.
+            double[] monatswerte = Monatsreihe();
+            Pruefe(ziel, "monatssaeulen", 978, 542,
+                   new[] { SKColors.YellowGreen },
+                   () => ChartRenderer.MonatsSaeulen("Strombedarf Monatsuebersicht", monatswerte,
+                            SKColors.YellowGreen, "MWh"));
+
+            // Das Stundenprofil traegt eine HALBTRANSPARENTE Flaeche; geprueft wird die
+            // Randlinie (deckend) und die Mischfarbe der Flaeche ueber Weiss.
+            double[] wochenprofil = Wochenprofil();
+            Pruefe(ziel, "stundenprofil_woche", 1244, 464,
+                   new[] { ChartRenderer.C_PROFILLINIE, PROFILFLAECHE_AUF_WEISS },
+                   () => ChartRenderer.Stundenprofil("Wochenwerte", wochenprofil, 24,
+                            "Wochenstunde (1..168)", "Verteilung"));
+
+            double[] jahresverlauf = Jahresreihe(140, 90, 30, 0, Math.PI / 2);
+            Pruefe(ziel, "jahresverlauf_bedarf", 978, 542,
+                   new[] { SKColors.SteelBlue },
+                   () => ChartRenderer.Jahresverlauf("Jahresuebersicht", jahresverlauf,
+                            "Waermebedarf [kW]", SKColors.SteelBlue));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -341,6 +372,39 @@ namespace ChartProben
         /// Der Dezember liegt hier UNTER null - damit prueft das Bild auch die
         /// gestrichelte Nulllinie und die vorzeichenfaehige Skala.
         /// </summary>
+        /// <summary>
+        /// Zwoelf Monatswerte (iU9-W8.0c) - Winterberg, Sommertal, dazu ein Monat auf
+        /// genau 0. Der Nullmonat gehoert dazu: Die Achsenrechnung der Bedarfsmasken hat
+        /// einen eigenen Rueckfall fuer "alles null", und eine EINZELNE Null darf ihn
+        /// gerade nicht ausloesen.
+        /// </summary>
+        private static double[] Monatsreihe()
+        {
+            var w = new double[12];
+            for (int m = 0; m < 12; m++)
+                w[m] = Math.Round(42.0 + 18.0 * Math.Cos(2.0 * Math.PI * m / 12.0), 3);
+            w[6] = 0.0;
+            return w;
+        }
+
+        /// <summary>
+        /// 168 Wochenwerte (iU9-W8.0c) - fuenf Werktage mit Tagesgang, zwei ruhigere
+        /// Wochenendtage. Genau die Form, die ein Verbrauchertyp-Profil hat.
+        /// </summary>
+        private static double[] Wochenprofil()
+        {
+            var w = new double[168];
+            for (int t = 0; t < 7; t++)
+                for (int h = 0; h < 24; h++)
+                {
+                    double grund = t < 5 ? 0.55 : 0.25;
+                    double tagesgang = 0.45 * Math.Sin(2.0 * Math.PI * (h - 6) / 24.0);
+                    double v = grund + (t < 5 ? tagesgang : 0.5 * tagesgang);
+                    w[t * 24 + h] = Math.Round(v > 0 ? v : 0, 4);
+                }
+            return w;
+        }
+
         private static double[] Preisprofil()
         {
             var monat = new double[12];
