@@ -41,6 +41,39 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die STROMVERBRAUCHER-ZUORDNUNGEN eines Projekts (iU9-W9.0d) — der JOIN aus
+        /// <c>Form_Start.pBox_StdLastProfil_Click</c> (:494-509) und
+        /// <c>StrombedarfKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>.
+        /// </summary>
+        public static List<Z_ProjektStromverbraucherModel> LiesProjekt(int idProjekt)
+        {
+            var liste = new List<Z_ProjektStromverbraucherModel>();
+
+            const string sql =
+                "SELECT Z_Projekt_Stromverbraucher.ID, Z_Projekt_Stromverbraucher.ID_Projekt, " +
+                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Z_Projekt_Stromverbraucher.Summe, " +
+                "Tab_Stromverbraucher.Bezeichner " +
+                "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
+                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
+                "WHERE Z_Projekt_Stromverbraucher.ID_Projekt = ?";
+
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new Z_ProjektStromverbraucherModel();
+                item.m_ID_Z = Convert.ToInt32(row["ID"]);
+                item.m_ID_Projekt = idProjekt;
+                item.m_ID_Stromverbraucher = Convert.ToInt32(row["ID_Stromverbraucher"]);
+                item.m_szVerbraucher = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
+                item.m_Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                liste.Add(item);
+            }
+            return liste;
+        }
+
         public void ReadAll(string sql)
         {
             // Daten abrufen über DataRepository

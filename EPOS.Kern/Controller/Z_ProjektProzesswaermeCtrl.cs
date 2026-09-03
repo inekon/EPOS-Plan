@@ -39,6 +39,39 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die PROZESSWAERME-ZUORDNUNGEN eines Projekts (iU9-W9.0d) — der JOIN aus
+        /// <c>Form_Start.pBox_Prozess_Click</c> (:213-229) und
+        /// <c>ProzesswaermeKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>.
+        /// </summary>
+        public static List<Z_ProjektProzesswaermeModel> LiesProjekt(int idProjekt)
+        {
+            var liste = new List<Z_ProjektProzesswaermeModel>();
+
+            const string sql =
+                "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
+                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Bezeichner, " +
+                "Z_Projekt_Prozesswaerme.Summe " +
+                "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
+                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
+                "WHERE Z_Projekt_Prozesswaerme.ID_Projekt = ?";
+
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new Z_ProjektProzesswaermeModel();
+                item.ID_Z = Convert.ToInt32(row["ID"]);
+                item.ID_Projekt = idProjekt;
+                item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
+                item.szProzessname = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
+                item.Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                liste.Add(item);
+            }
+            return liste;
+        }
+
         public void ReadAll(string sql)
         {
             // Daten abrufen über das zentrale DataRepository

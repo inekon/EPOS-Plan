@@ -39,6 +39,39 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die BRAUCHWASSER-ZUORDNUNGEN eines Projekts (iU9-W9.0d) — der JOIN aus
+        /// <c>Form_Start.pBox_Brauchwasser_Click</c> (:1863-1879) und aus
+        /// <c>Form_Gebaeude2.btn_Brauchwasser_Click</c> (:224-241), dort wortgleich.
+        /// </summary>
+        public static List<Z_ProjektBrauchwasserModel> LiesProjekt(int idProjekt)
+        {
+            var liste = new List<Z_ProjektBrauchwasserModel>();
+
+            const string sql =
+                "SELECT Z_Projekt_Brauchwasser.ID, Z_Projekt_Brauchwasser.ID_Projekt, " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser, Tab_Brauchwasser.Bezeichner, " +
+                "Z_Projekt_Brauchwasser.Summe " +
+                "FROM Z_Projekt_Brauchwasser INNER JOIN Tab_Brauchwasser ON " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser = Tab_Brauchwasser.ID " +
+                "WHERE Z_Projekt_Brauchwasser.ID_Projekt = ?";
+
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new Z_ProjektBrauchwasserModel();
+                item.ID_Z = Convert.ToInt32(row["ID"]);
+                item.ID_Projekt = idProjekt;
+                item.ID_Brauchwasser = Convert.ToInt32(row["ID_Brauchwasser"]);
+                item.szBezeichner = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
+                item.Summe = row["Summe"] == DBNull.Value ? 0.0 : Convert.ToDouble(row["Summe"]);
+                liste.Add(item);
+            }
+            return liste;
+        }
+
         public void ReadAll(string sql)
         {
             // Daten abrufen über das zentrale DataRepository
