@@ -98,18 +98,14 @@ namespace WindowsFormsApplication1
             //simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
             WPPlan.Core.BhkwPlan.MonatsSumme(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
 
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
-            frm.Init(simulation);
-            frm.SetPage(1); 
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgProzesswaerme (Waerme ohne Brauchwassersicht).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: false, startReiter: 1);
         }
 
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
-            frm.Init(simulation);
-            frm.SetPage(1);
-            frm.ShowDialog(); 
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgProzesswaerme (Waerme ohne Brauchwassersicht).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: false, startReiter: 1);
         }
 
         private void btn_Prozess_DBedit_Click(object sender, EventArgs e)

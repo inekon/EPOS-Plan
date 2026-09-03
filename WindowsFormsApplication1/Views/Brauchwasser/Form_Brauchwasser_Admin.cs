@@ -84,18 +84,17 @@ namespace WindowsFormsApplication1
             //simulation.com.I_monats_summe(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
             WPPlan.Core.BhkwPlan.MonatsSumme(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
 
-            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
-            frm.Init(simulation);
-            frm.SetPage(2);
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgBrauchwasserwaerme (Reiter 2 = Grafik).
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: true, startReiter: 2);
         }
 
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
-            frm.Init(simulation);
-            frm.SetPage(1);
-            frm.ShowDialog();
+            // BEFUND W8-B3, woertlich uebernommen: Dieser Knopf der BRAUCHWASSER-Verwaltung
+            // oeffnete den PROZESS-Ergebnisdialog - also die Waermeansicht OHNE
+            // Brauchwassersicht und ohne den Teiler 1000. Die Frage an den Anwender steht
+            // im Protokoll iU9_W8_Blazor_Port_Protokoll.md.
+            BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: false, startReiter: 1);
         }
 
         private void btn_DBedit_Click(object sender, EventArgs e)

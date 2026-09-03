@@ -3382,9 +3382,8 @@ namespace WindowsFormsApplication1
 
         private void btn_StromDetails_Click(object sender, EventArgs e)
         {
-            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
-            frm.Init(simulation_Strombedarf);
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgStromverbraucher (ohne Startreiter).
+            BedarfErgebnisHuelle.Zeigen(this, simulation_Strombedarf);
         }
 
         /// <summary>
@@ -4099,10 +4098,8 @@ namespace WindowsFormsApplication1
 
         private void btn_Details_Click(object sender, EventArgs e)
         {
-            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
-            frm.Init(simulation_Waermebedarf);
-            frm.SetPage(1);
-            frm.ShowDialog();
+            // iU9-W8.2: Blazor-Huelle statt Form_ErgBrauchwasserwaerme (Reiter 1 = monatlich).
+            BedarfErgebnisHuelle.Zeigen(this, simulation_Waermebedarf, mitBrauchwasser: true, startReiter: 1);
         }
 
         private void btn_Konfiguration_Click(object sender, EventArgs e)
