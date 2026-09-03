@@ -223,6 +223,15 @@ Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
 ---
 
+**Neunter Lauf 33785012663 (`ios.yml`, `macos-26`, 03.09.2026, 17:31–17:41 UTC, 9 min 52 s)** auf
+`f1d387b` — der Stand **nach den Wellen 5 und 6**: grün. Derselbe Weg wie im achten Lauf;
+EPOS.UI mit den Berichtsseiten (W5), den sieben Erzeugerdialogen und der Assistentenseite (W6)
+sowie der Kern mit den neuen Controller-Methoden bauen für `net10.0-ios`, der Prüfmodus rechnet
+Projekt 1030 im Simulator und der iZ6-Vergleich meldet PASS (der Job wäre sonst rot). Die
+längere Dauer kommt aus dem gewachsenen Bau (785 statt 528 bunit-Tests werden nicht gebaut,
+wohl aber die neuen Razor-Komponenten). Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
