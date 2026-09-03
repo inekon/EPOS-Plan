@@ -58,6 +58,26 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
 
+      # 03.09.2026: SQL-Dialekt-Audit. Der Referenzlauf weiter unten deckt den
+      # RECHENWEG ab - Dialog- und Pflegepfade nicht. Genau dort sassen zwei
+      # Access-Altlasten, die erst Wochen nach dem Cutover beim Anwender
+      # auffielen: "id_ENERGIETRÄGER" gegen die Spalte "ID_Energieträger"
+      # (c288e1c; SQLite faltet Gross/Klein nur bei ASCII) und ein
+      # "UPDATE ... INNER JOIN ... SET" in Access-Schreibweise (dd4113f).
+      # Der Pruefer haelt JEDEN SQL-Text des Bestands mit EXPLAIN gegen die
+      # Testdatenbank und gegen die Verbotsliste aus BETRIEB_SQLITE.md 6.2;
+      # er endet mit 1, sobald eine Fundstelle bleibt.
+      # NUR ubuntu: reines Python, plattformfrei - ein zweiter Lauf auf macOS
+      # zeigte nichts Neues und kostet Minutenkontingent (Faktor 10).
+      # Der Selbsttest laeuft immer, auch ohne Testdatenbank: er belegt, dass
+      # die Regeln greifen - ein Pruefer, der nichts findet, ist erst dann eine
+      # gute Nachricht, wenn er etwas finden WUERDE.
+      - name: SQL-Dialekt gegen SQLite
+        if: matrix.os == 'ubuntu-latest' && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite --selbsttest
+          python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
+
       # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
       # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
       # PNG-Signatur, Bildmasse, Farbvorkommen und Determinismus - ohne
