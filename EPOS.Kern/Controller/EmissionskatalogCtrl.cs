@@ -13,8 +13,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para>UI-frei und testbar — Hausmuster Ä9
     /// (<see cref="EnergietraegerKatalogCtrl"/>). Der Dialog
-    /// <c>Form_Emissionskatalog</c> ruft ausschließlich hierher; er kennt keine
-    /// einzige SQL-Zeile.</para>
+    /// (seit iU9-W3.3 die Razor-Komponente <c>EmissionskatalogDialog</c> mit
+    /// ihrer Hülle <c>EmissionskatalogHuelle</c>) ruft ausschließlich hierher;
+    /// er kennt keine einzige SQL-Zeile.</para>
     ///
     /// <para><b>Drei Schutzregeln, alle mit Klartextgrund statt stiller
     /// Verweigerung:</b></para>

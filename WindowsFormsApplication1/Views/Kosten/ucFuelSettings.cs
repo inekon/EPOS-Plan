@@ -1417,19 +1417,19 @@ namespace WindowsFormsApplication1
         /// im Objekt (Ä12/Ä14).</summary>
         private void KatalogFuerZeile(EmissionsFeld feld)
         {
-            using (var dlg = new Form_Emissionskatalog())
-            {
-                dlg.SetControls(_carrier.ID, _carrier.Name, feld.Zeile.Kuerzel, true);
-                dlg.ShowDialog(FindForm());
+            // iU9-W3.3: Der Katalog ist eine Razor-Komponente
+            // (EmissionskatalogDialog); die Hülle reicht dieselben drei
+            // Ergebnisse zurück wie zuvor die Maske.
+            EmissionskatalogHuelle.Ergebnis erg = EmissionskatalogHuelle.Oeffnen(
+                FindForm(), _carrier.ID, _carrier.Name, feld.Zeile.Kuerzel, true);
 
-                if (dlg.Uebernommen != null)
-                    _emissionen.KatalogwertUebernehmen(feld.Zeile, dlg.Uebernommen);
-                if (dlg.ArtenGeaendert || dlg.WerteGeaendert)
-                    _emissionen.NeuLadenMitBearbeitungsstand();
+            if (erg.Uebernommen != null)
+                _emissionen.KatalogwertUebernehmen(feld.Zeile, erg.Uebernommen);
+            if (erg.ArtenGeaendert || erg.WerteGeaendert)
+                _emissionen.NeuLadenMitBearbeitungsstand();
 
-                ZeigeEmissionszeilen();
-                SpiegelKernwerte();
-            }
+            ZeigeEmissionszeilen();
+            SpiegelKernwerte();
         }
 
         /// <summary>„Emissionsarten &amp; Katalog verwalten…": derselbe Dialog im
@@ -1437,11 +1437,9 @@ namespace WindowsFormsApplication1
         /// sich geändert haben, F5) — der Bearbeitungsstand bleibt erhalten.</summary>
         private void KatalogVerwalten()
         {
-            using (var dlg = new Form_Emissionskatalog())
-            {
-                dlg.SetControls(_carrier.ID, _carrier.Name, null, false);
-                dlg.ShowDialog(FindForm());
-            }
+            // iU9-W3.3: derselbe Blazor-Dialog im Verwaltungsmodus.
+            EmissionskatalogHuelle.Oeffnen(FindForm(), _carrier.ID, _carrier.Name, null, false);
+
             _emissionen.NeuLadenMitBearbeitungsstand();
             ZeigeEmissionszeilen();
             SpiegelKernwerte();

@@ -1,0 +1,936 @@
+﻿@* Emissionsfaktor-Katalog (iU9-W3.3).
+
+   Vorbild: Views/Kosten/Form_Emissionskatalog.cs (767 Z.) und .Designer.cs
+   (Etappe E4, Konzept_Emissionsarten_CO2-Aequivalent § 4.2). Ein Dialog, zwei
+   Aufgaben: links die Emissionsarten (Auswahl, Anlegen, Aendern, Loeschen),
+   rechts die Werte der markierten Art fuer den uebergebenen Traeger samt den
+   traegerunabhaengigen Vorlagen.
+
+   ZWEI AUFRUFWEGE, unveraendert:
+   * Rueckgabemodus (aus dem Emissions-Tab, "Katalog ..." einer Zeile):
+     vorgefiltert auf Art und Traeger; "Uebernehmen" reicht den Wert ZURUECK
+     statt zu schreiben - sonst braeche die deferred-Semantik des
+     Traegerdialogs (Ae12/Ae14).
+   * Verwaltungsmodus: "Uebernehmen" schreibt sofort; ohne Traegerkontext
+     bleiben nur Artenverwaltung und Vorlagen sichtbar.
+
+   DIE REGELN STEHEN NICHT HIER, sondern in EmissionskatalogCtrl - der Dialog
+   kannte schon als WinForms-Maske keine einzige SQL-Zeile (Hausmuster Ae9),
+   und die Huelle ruft denselben Controller. Die Komponente kennt nicht einmal
+   den Controller: Sie bekommt Zeilen und ruft Delegaten.
+
+   DIE BEIDEN UNTEREDITOREN SIND EINGERUECKTE BLOECKE, keine zweiten Fenster.
+   Der Vorlaeufer baute fuer "Neu ..." und "Bearbeiten ..." je ein Form zur
+   Laufzeit; ein zweites Blazor-Fenster ueber diesem waere eine zweite WebView
+   (Risiko R2 des Wellenplans) - dieselbe Entscheidung wie A-13 in Welle 1.
+   Solange ein Editor offen steht, ruht der Rest des Dialogs.
+
+   TASTATUR: Esc schliesst den offenen Editor, sonst den Dialog. Enter ist
+   nicht belegt - fast jeder Knopf hier schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KontextText</p>
+
+    <div class="epos-neuzeile">
+        <Optionsgruppe Bezeichnung="@LabelModus" Eintraege="@ModusEintraege"
+                       Auswahl="@(_modusCo2e ? 1 : 0)" Aktiv="@(!EditorOffen)"
+                       AuswahlChanged="@(id => _modusCo2e = id == 1)" />
+        <Herleitungszeile Text="@ModusOrtText" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* ================================================================ Arten *@
+    <Gruppenkopf Titel="@GruppeArten">
+        <KindInhalt>
+            <Raster TZeile="EmissionsartZeile" Zeilen="@_arten.AsQueryable()" Bearbeitbar="true">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_artId == context.Id)" Kurztext="@SpalteWahl"
+                                    Aktiv="@(!EditorOffen)"
+                                    Gewaehltwerden="@(() => ArtWaehlen(context.Id))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteAuswahl">
+                        <Schalter Wert="@context.Ausgewaehlt"
+                                  Aktiv="@(!context.IstPflicht && !EditorOffen)"
+                                  WertChanged="@(w => AuswahlUmschalten(context, w))" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteKuerzel">
+                        <span title="@Kurztext(context)">@context.Kuerzel</span>
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteName">
+                        @context.Name
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteEinheit">
+                        @context.Einheit
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionsartZeile" Title="@SpalteGwp">
+                        @context.GwpText
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            @if (_artEditor is null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@EditorOffen"
+                            @onclick="ArtNeu">@ArtNeuText</button>
+                    <button type="button" class="epos-knopf"
+                            disabled="@(EditorOffen || GewaehlteArt is null)"
+                            @onclick="ArtBearbeiten">@ArtBearbeitenText</button>
+                    <button type="button" class="epos-knopf"
+                            disabled="@(EditorOffen || GewaehlteArt is null)"
+                            @onclick="ArtLoeschen">@ArtLoeschenText</button>
+                </div>
+            }
+            else
+            {
+                <div class="epos-editorblock">
+                    <p class="epos-untergruppe">@(_artNeu ? ArtDialogNeu : ArtDialogBearbeiten)</p>
+
+                    <Textfeld Bezeichnung="@FeldKuerzel" Wert="@_artKuerzel"
+                              WertChanged="@(w => _artKuerzel = w)"
+                              NurLesen="@(!_artNeu && _artEditor.IstAuslieferung)" />
+                    <Textfeld Bezeichnung="@FeldName" Wert="@_artName"
+                              WertChanged="@(w => _artName = w)" />
+                    <Auswahlfeld Bezeichnung="@FeldEinheit" Eintraege="@Einheiten"
+                                 Auswahl="@_artEinheit"
+                                 AuswahlChanged="@(id => _artEinheit = id ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@FeldGwp" Wert="@_artGwp" Min="0"
+                                Aktiv="@(!_artEditor.IstPflicht)"
+                                WertChanged="@(w => _artGwp = w)" />
+                    <Textfeld Bezeichnung="@FeldQuelle" Wert="@_artQuelle"
+                              NurLesen="@_artEditor.IstPflicht"
+                              WertChanged="@(w => _artQuelle = w)" />
+
+                    @if (_artEditor.IstPflicht)
+                    {
+                        <Herleitungszeile Text="@PflichtHinweis" />
+                    }
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf"
+                                @onclick="EditorSchliessen">@AbbrechenText</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                @onclick="ArtSpeichern">@OkText</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ================================================================ Werte *@
+    <Gruppenkopf Titel="@WerteTitel">
+        <KindInhalt>
+            <Raster TZeile="EmissionswertZeile" Zeilen="@_werte.AsQueryable()" Bearbeitbar="true">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="EmissionswertZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_wertId == context.Id)" Kurztext="@SpalteWahl"
+                                    Aktiv="@(!EditorOffen)"
+                                    Gewaehltwerden="@(() => _wertId = context.Id)" />
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionswertZeile" Title="@SpalteQuelle">
+                        <span class="@(context.IstAktiv ? "epos-wert-geltend" : null)"
+                              title="@(context.AenderungErlaubt ? null : UnveraenderlichKurz)">@context.Herkunftstext</span>
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionswertZeile" Title="@SpalteWert">
+                        @context.WertText
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionswertZeile" Title="@SpalteCo2e">
+                        @(context.IstCo2e ? TextJa : TextNein)
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="EmissionswertZeile" Title="@SpalteAktiv">
+                        @(context.IstAktiv ? TextGeltend
+                          : context.IstTraegerwert ? TextTraeger : TextVorlage)
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            @if (_wertEditor is null)
+            {
+                <div class="epos-leiste">
+                    @if (MitTraeger)
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                disabled="@(EditorOffen || GewaehlterWert is null)"
+                                @onclick="WertUebernehmen">@UebernehmenText</button>
+                    }
+                    <button type="button" class="epos-knopf"
+                            disabled="@(EditorOffen || GewaehlteArt is null)"
+                            @onclick="WertNeu">@WertNeuText</button>
+                    <button type="button" class="epos-knopf"
+                            disabled="@(EditorOffen || !WertAenderbar)"
+                            @onclick="WertBearbeiten">@WertBearbeitenText</button>
+                    <button type="button" class="epos-knopf"
+                            disabled="@(EditorOffen || !WertAenderbar)"
+                            @onclick="WertLoeschen">@WertLoeschenText</button>
+                </div>
+            }
+            else
+            {
+                <div class="epos-editorblock">
+                    <p class="epos-untergruppe">@(_wertNeu ? WertDialogNeu : WertDialogBearbeiten)</p>
+
+                    <Textfeld Bezeichnung="@FeldWertText" Wert="@_wertText"
+                              WertChanged="@(w => _wertText = w)" />
+                    <Zahlenfeld Bezeichnung="@FeldWert" Wert="@_wertZahl" Min="0"
+                                Einheit="@(GewaehlteArt?.Einheit ?? "")"
+                                WertChanged="@(w => _wertZahl = w)" />
+                    <Schalter Bezeichnung="@FeldCo2e" Wert="@_wertCo2e"
+                              WertChanged="@(w => _wertCo2e = w)" />
+                    <Schalter Bezeichnung="@FeldVorlage" Wert="@_wertVorlage"
+                              Aktiv="@(_wertNeu && MitTraeger)"
+                              WertChanged="@(w => _wertVorlage = w)" />
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf"
+                                @onclick="EditorSchliessen">@AbbrechenText</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                @onclick="WertSpeichern">@OkText</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Herleitungszeile Text="@HinweisText" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@EditorOffen"
+                @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@EditorOffen"
+                @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Vorbelegung
+    // =====================================================================
+
+    /// <summary>Die Arten des Katalogs, fertig geladen und sortiert.</summary>
+    [Parameter] public IReadOnlyList<EmissionsartZeile> Arten { get; set; }
+        = Array.Empty<EmissionsartZeile>();
+
+    /// <summary>Kuerzel der Art, auf die vorgewaehlt wird; leer = die erste.</summary>
+    [Parameter] public string ArtVorwahl { get; set; } = "";
+
+    /// <summary>Gibt es einen Traegerkontext? Ohne ihn fehlt „Uebernehmen"
+    /// (<c>btnUebernehmen.Visible = _carrierId &gt; 0</c>).</summary>
+    [Parameter] public bool MitTraeger { get; set; }
+
+    /// <summary>Stand des Modus-Schalters beim Oeffnen (CO2e statt CO2).</summary>
+    [Parameter] public bool ModusCo2e { get; set; }
+
+    /// <summary>Die beiden Einheiten der Artenliste (g/kWh, mg/kWh) — Id = Index.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Einheiten { get; set; }
+        = new[] { (0, "g/kWh"), (1, "mg/kWh") };
+
+    /// <summary>Vorgabetext eines neu angelegten Wertes (<c>TEXT_EIGENER_WERT</c>).</summary>
+    [Parameter] public string VorgabeQuelltext { get; set; } = "eigener Wert";
+
+    // =====================================================================
+    // Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Laedt die Artenliste neu.</summary>
+    [Parameter] public Func<IReadOnlyList<EmissionsartZeile>>? ArtenLaden { get; set; }
+
+    /// <summary>Laedt die Werte einer Art (samt traegerunabhaengiger Vorlagen).</summary>
+    [Parameter] public Func<int, IReadOnlyList<EmissionswertZeile>>? WerteLaden { get; set; }
+
+    /// <summary>Setzt das Auswahlhaekchen. Rueckgabe: Grund des Scheiterns, sonst <c>null</c>.</summary>
+    [Parameter] public Func<int, bool, string?>? AuswahlSetzen { get; set; }
+
+    /// <summary>Legt eine Art an. Rueckgabe: Grund des Scheiterns, sonst <c>null</c>.</summary>
+    [Parameter] public Func<EmissionsartEingabe, string?>? ArtAnlegen { get; set; }
+
+    /// <summary>Aendert eine Art. Rueckgabe: Grund des Scheiterns, sonst <c>null</c>.</summary>
+    [Parameter] public Func<EmissionsartEingabe, string?>? ArtAendern { get; set; }
+
+    /// <summary>Loescht eine Art. Rueckgabe: Grund des Scheiterns, sonst <c>null</c>.</summary>
+    [Parameter] public Func<int, string?>? ArtLoeschenDelegat { get; set; }
+
+    /// <summary>Legt einen eigenen Wert an.</summary>
+    [Parameter] public Func<EmissionswertEingabe, string?>? WertAnlegen { get; set; }
+
+    /// <summary>Aendert einen eigenen Wert.</summary>
+    [Parameter] public Func<EmissionswertEingabe, string?>? WertAendern { get; set; }
+
+    /// <summary>Loescht einen eigenen Wert.</summary>
+    [Parameter] public Func<int, string?>? WertLoeschenDelegat { get; set; }
+
+    /// <summary>
+    /// Schreibt den markierten Katalogwert als geltenden Traegerwert
+    /// (Verwaltungsmodus). Im Rueckgabemodus bleibt der Delegat leer — dann
+    /// reicht der Dialog die Id nur zurueck.
+    /// </summary>
+    [Parameter] public Func<int, string?>? WertUebernehmenDelegat { get; set; }
+
+    /// <summary>Rueckfrage vor dem Loeschen (Huelle: <c>Dienste.Dialog.Frage</c>).</summary>
+    [Parameter] public Func<string, bool>? Rueckfrage { get; set; }
+
+    /// <summary>
+    /// Rueckgabemodus: „Uebernehmen" reicht den Wert zurueck und schliesst,
+    /// statt ihn zu schreiben (Aufruf aus dem Emissions-Tab).
+    /// </summary>
+    [Parameter] public bool Rueckgabemodus { get; set; }
+
+    /// <summary>
+    /// Das Ergebnis. Es kommt auf JEDEM Weg — auch bei Abbrechen —, weil die
+    /// beiden Aenderungsmerker dann ebenfalls gelten; <c>Bestaetigt</c> sagt,
+    /// welcher Weg es war. Geschlossen wird das Fenster von der Huelle.
+    /// </summary>
+    [Parameter] public EventCallback<EmissionskatalogErgebnis> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    /// <summary>Fenstertitel (EMK_TITEL).</summary>
+    [Parameter] public string TitelText { get; set; } = "Emissionsfaktor-Katalog";
+
+    /// <summary>Traegerzeile bzw. Verwaltungshinweis (EMK_KONTEXT_*).</summary>
+    [Parameter] public string KontextText { get; set; } = "";
+
+    /// <summary>Beschriftung der Modusgruppe (EMK_MODUS).</summary>
+    [Parameter] public string LabelModus { get; set; } = "CO₂-Berechnung:";
+
+    /// <summary>Erste Option (EMK_MODUS_CO2).</summary>
+    [Parameter] public string ModusCo2Text { get; set; } = "CO₂";
+
+    /// <summary>Zweite Option (EMK_MODUS_CO2E).</summary>
+    [Parameter] public string ModusCo2eText { get; set; } = "CO₂-Äquivalent (GWP₁₀₀)";
+
+    /// <summary>Der Ortsvermerk hinter der Modusgruppe (EMK_MODUS_ORT).</summary>
+    [Parameter] public string ModusOrtText { get; set; } = "[globale Vorgabe]";
+
+    /// <summary>Titel der Artengruppe (EMK_GRP_ARTEN).</summary>
+    [Parameter] public string GruppeArten { get; set; } = "Emissionsarten";
+
+    /// <summary>Titel der Wertegruppe ohne Art (EMK_GRP_WERTE).</summary>
+    [Parameter] public string GruppeWerte { get; set; } = "Werte";
+
+    /// <summary>Titel der Wertegruppe mit Art — zwei Platzhalter (EMK_GRP_WERTE_ART).</summary>
+    [Parameter] public string VorlageGruppeWerteArt { get; set; } = "Werte: {0}{1}";
+
+    /// <summary>Zusatz hinter dem Artnamen im Wertetitel („ — Erdgas").</summary>
+    [Parameter] public string WerteTitelZusatz { get; set; } = "";
+
+    /// <summary>Kopf der Wahlspalte.</summary>
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+
+    /// <summary>Kopf der Haekchenspalte (EMK_SP_AUSWAHL).</summary>
+    [Parameter] public string SpalteAuswahl { get; set; } = "aktiv";
+
+    /// <summary>Kopf der Kuerzelspalte (EMK_SP_KUERZEL).</summary>
+    [Parameter] public string SpalteKuerzel { get; set; } = "Kürzel";
+
+    /// <summary>Kopf der Namensspalte (EMK_SP_NAME).</summary>
+    [Parameter] public string SpalteName { get; set; } = "Name";
+
+    /// <summary>Kopf der Einheitenspalte (EMK_SP_EINHEIT).</summary>
+    [Parameter] public string SpalteEinheit { get; set; } = "Einheit";
+
+    /// <summary>Kopf der Faktorspalte (EMK_SP_GWP).</summary>
+    [Parameter] public string SpalteGwp { get; set; } = "GWP₁₀₀";
+
+    /// <summary>Kopf der Quellspalte (EMK_SP_QUELLE).</summary>
+    [Parameter] public string SpalteQuelle { get; set; } = "Quelle";
+
+    /// <summary>Kopf der Wertespalte (EMK_SP_WERT).</summary>
+    [Parameter] public string SpalteWert { get; set; } = "Wert";
+
+    /// <summary>Kopf der CO₂e-Spalte (EMK_SP_CO2E).</summary>
+    [Parameter] public string SpalteCo2e { get; set; } = "bereits CO₂e?";
+
+    /// <summary>Kopf der Geltungsspalte (EMK_SP_AKTIV).</summary>
+    [Parameter] public string SpalteAktiv { get; set; } = "aktiv";
+
+    /// <summary>„ja" in der CO₂e-Spalte (EMK_JA).</summary>
+    [Parameter] public string TextJa { get; set; } = "ja";
+
+    /// <summary>„nein" in der CO₂e-Spalte (EMK_NEIN).</summary>
+    [Parameter] public string TextNein { get; set; } = "nein";
+
+    /// <summary>Der geltende Wert (EMK_AKTIV).</summary>
+    [Parameter] public string TextGeltend { get; set; } = "◆ geltend";
+
+    /// <summary>Ein Traegerwert (EMK_TRAEGER).</summary>
+    [Parameter] public string TextTraeger { get; set; } = "Träger";
+
+    /// <summary>Eine Vorlage (EMK_VORLAGE).</summary>
+    [Parameter] public string TextVorlage { get; set; } = "Vorlage";
+
+    /// <summary>Kurztext einer Pflichtart (EMK_TIP_PFLICHT).</summary>
+    [Parameter] public string PflichtKurz { get; set; } = "Pflichtart — nicht abwählbar, nicht löschbar.";
+
+    /// <summary>Kurztext einer ausgelieferten Art (EMK_TIP_AUSLIEFERUNG).</summary>
+    [Parameter] public string AuslieferungKurz { get; set; }
+        = "Ausgelieferte Art — abwählbar, aber nicht löschbar.";
+
+    /// <summary>Kurztext eines unveraenderlichen Wertes (EMK_TIP_UNVERAENDERLICH).</summary>
+    [Parameter] public string UnveraenderlichKurz { get; set; }
+        = "Ausgelieferter Katalogwert — unveränderlich. Übernehmen ist möglich.";
+
+    /// <summary>Der leise Satz unten (EMK_HINWEIS_*).</summary>
+    [Parameter] public string HinweisText { get; set; } = "";
+
+    /// <summary>Beschriftung „Neu…" der Artenleiste (EMK_ART_NEU).</summary>
+    [Parameter] public string ArtNeuText { get; set; } = "Neu…";
+
+    /// <summary>Beschriftung „Bearbeiten…" der Artenleiste (EMK_ART_BEARBEITEN).</summary>
+    [Parameter] public string ArtBearbeitenText { get; set; } = "Bearbeiten…";
+
+    /// <summary>Beschriftung „Löschen" der Artenleiste (EMK_ART_LOESCHEN).</summary>
+    [Parameter] public string ArtLoeschenText { get; set; } = "Löschen";
+
+    /// <summary>Beschriftung „Übernehmen" (EMK_UEBERNEHMEN).</summary>
+    [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+
+    /// <summary>Beschriftung „Neu…" der Werteleiste (EMK_WERT_NEU).</summary>
+    [Parameter] public string WertNeuText { get; set; } = "Neu…";
+
+    /// <summary>Beschriftung „Bearbeiten…" der Werteleiste (EMK_WERT_BEARBEITEN).</summary>
+    [Parameter] public string WertBearbeitenText { get; set; } = "Bearbeiten…";
+
+    /// <summary>Beschriftung „Löschen" der Werteleiste (EMK_WERT_LOESCHEN).</summary>
+    [Parameter] public string WertLoeschenText { get; set; } = "Löschen";
+
+    /// <summary>Kopfzeile des Arteneditors beim Anlegen (EMK_ART_DLG_NEU).</summary>
+    [Parameter] public string ArtDialogNeu { get; set; } = "Neue Emissionsart";
+
+    /// <summary>Kopfzeile des Arteneditors beim Ändern (EMK_ART_DLG_BEARB).</summary>
+    [Parameter] public string ArtDialogBearbeiten { get; set; } = "Emissionsart bearbeiten";
+
+    /// <summary>Beschriftung Kürzel (EMK_ART_F_KUERZEL).</summary>
+    [Parameter] public string FeldKuerzel { get; set; } = "Kürzel:";
+
+    /// <summary>Beschriftung Name (EMK_ART_F_NAME).</summary>
+    [Parameter] public string FeldName { get; set; } = "Name:";
+
+    /// <summary>Beschriftung Einheit (EMK_ART_F_EINHEIT).</summary>
+    [Parameter] public string FeldEinheit { get; set; } = "Einheit:";
+
+    /// <summary>Beschriftung GWP (EMK_ART_F_GWP).</summary>
+    [Parameter] public string FeldGwp { get; set; } = "CO₂-Äquivalent (GWP₁₀₀):";
+
+    /// <summary>Beschriftung Quelle (EMK_ART_F_QUELLE).</summary>
+    [Parameter] public string FeldQuelle { get; set; } = "Quelle des Faktors:";
+
+    /// <summary>Hinweis unter dem Arteneditor bei der Pflichtart (EMK_ART_PFLICHT_HINWEIS).</summary>
+    [Parameter] public string PflichtHinweis { get; set; }
+        = "CO₂ ist die Pflichtart: Der Äquivalenzfaktor bleibt 1.";
+
+    /// <summary>Kopfzeile des Werteeditors beim Anlegen (EMK_WERT_DLG_NEU).</summary>
+    [Parameter] public string WertDialogNeu { get; set; } = "Neuer eigener Wert";
+
+    /// <summary>Kopfzeile des Werteeditors beim Ändern (EMK_WERT_DLG_BEARB).</summary>
+    [Parameter] public string WertDialogBearbeiten { get; set; } = "Eigenen Wert bearbeiten";
+
+    /// <summary>Beschriftung Bezeichnung/Quelle (EMK_WERT_F_TEXT).</summary>
+    [Parameter] public string FeldWertText { get; set; } = "Bezeichnung/Quelle:";
+
+    /// <summary>Beschriftung Wert (EMK_WERT_F_WERT).</summary>
+    [Parameter] public string FeldWert { get; set; } = "Wert:";
+
+    /// <summary>Beschriftung des CO₂e-Schalters (EMK_WERT_CO2E).</summary>
+    [Parameter] public string FeldCo2e { get; set; }
+        = "Wert ist bereits ein CO₂-Äquivalent (nicht weiter aufsummieren)";
+
+    /// <summary>Beschriftung des Vorlagenschalters (EMK_WERT_VORLAGE).</summary>
+    [Parameter] public string FeldVorlage { get; set; }
+        = "Vorlage für ALLE Träger (ohne Trägerbindung)";
+
+    /// <summary>Meldung: leeres Kürzel (EMK_ART_KUERZEL_LEER).</summary>
+    [Parameter] public string MeldungKuerzelLeer { get; set; } = "Das Kürzel darf nicht leer sein.";
+
+    /// <summary>Meldung: GWP keine Zahl (EMK_ART_GWP_UNGUELTIG).</summary>
+    [Parameter] public string MeldungGwpUngueltig { get; set; }
+        = "Der Äquivalenzfaktor muss eine Zahl sein (Komma oder Punkt).";
+
+    /// <summary>Meldung: Wert keine Zahl ≥ 0 (EMK_WERT_UNGUELTIG).</summary>
+    [Parameter] public string MeldungWertUngueltig { get; set; }
+        = "Der Wert muss eine Zahl ≥ 0 sein (Komma oder Punkt).";
+
+    /// <summary>Meldung: Katalogwert unveränderlich (EMK_WERT_UNVERAENDERLICH).</summary>
+    [Parameter] public string MeldungUnveraenderlich { get; set; }
+        = "Ausgelieferte Katalogwerte sind unveränderlich — sie werden über neue " +
+          "Jahreszeilen der gesetzlichen Parameter fortgeschrieben. Legen Sie " +
+          "einen eigenen Wert an.";
+
+    /// <summary>Meldung: übernommener Eintrag ohne Zahl (EMK_UEBERNAHME_LEER).</summary>
+    [Parameter] public string MeldungUebernahmeLeer { get; set; }
+        = "Der gewählte Eintrag trägt keinen Zahlenwert.";
+
+    /// <summary>Rückfrage vor dem Löschen einer Art (EMK_ART_LOESCHEN_FRAGE).</summary>
+    [Parameter] public string VorlageArtLoeschen { get; set; } = "Emissionsart „{0}“ löschen?";
+
+    /// <summary>Rückfrage vor dem Löschen eines Wertes (EMK_WERT_LOESCHEN_FRAGE).</summary>
+    [Parameter] public string VorlageWertLoeschen { get; set; } = "Wert „{0}“ löschen?";
+
+    /// <summary>Angebot, statt zu löschen abzuwählen (EMK_ART_ABWAEHLEN_FRAGE).</summary>
+    [Parameter] public string FrageAbwaehlen { get; set; }
+        = "Die Art stattdessen abwählen? Sie verschwindet dann aus den " +
+          "Emissionsfeldern und aus der CO₂e-Summe, ihre Werte bleiben erhalten.";
+
+    /// <summary>Beschriftung des OK-Knopfes (KDLG_BTN_OK).</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes (PVW_ABBRECHEN).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Emissionskatalog.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<EmissionsartZeile> _arten = new();
+    private List<EmissionswertZeile> _werte = new();
+    private int _artId;
+    private int _wertId;
+
+    private bool _modusCo2e;
+    private bool _artenGeaendert;
+    private bool _werteGeaendert;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    // Arteneditor
+    private EmissionsartZeile? _artEditor;
+    private bool _artNeu;
+    private string _artKuerzel = "";
+    private string _artName = "";
+    private int _artEinheit;
+    private double? _artGwp;
+    private string _artQuelle = "";
+
+    // Werteeditor
+    private EmissionswertZeile? _wertEditor;
+    private bool _wertNeu;
+    private string _wertText = "";
+    private double? _wertZahl;
+    private bool _wertCo2e;
+    private bool _wertVorlage;
+
+    /// <summary>Die angezeigten Arten (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<EmissionsartZeile> AngezeigteArten => _arten;
+
+    /// <summary>Die angezeigten Werte (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<EmissionswertZeile> AngezeigteWerte => _werte;
+
+    /// <summary>Die markierte Art (Pruefhilfe fuer Tests).</summary>
+    public int GewaehlteArtId => _artId;
+
+    /// <summary>Die stehende Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht ein Editor offen? Dann ruht der Rest des Dialogs.</summary>
+    public bool EditorOffen => _artEditor is not null || _wertEditor is not null;
+
+    private EmissionsartZeile? GewaehlteArt
+    {
+        get
+        {
+            foreach (EmissionsartZeile a in _arten) if (a.Id == _artId) return a;
+            return null;
+        }
+    }
+
+    private EmissionswertZeile? GewaehlterWert
+    {
+        get
+        {
+            foreach (EmissionswertZeile w in _werte) if (w.Id == _wertId) return w;
+            return null;
+        }
+    }
+
+    private bool WertAenderbar => GewaehlterWert is { AenderungErlaubt: true };
+
+    private string WerteTitel
+    {
+        get
+        {
+            EmissionsartZeile? a = GewaehlteArt;
+            return a is null ? GruppeWerte
+                             : string.Format(VorlageGruppeWerteArt, a.Name, WerteTitelZusatz);
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> ModusEintraege
+        => new[] { (0, ModusCo2Text), (1, ModusCo2eText) };
+
+    private string? Kurztext(EmissionsartZeile a)
+        => a.IstPflicht ? PflichtKurz : a.IstAuslieferung ? AuslieferungKurz : null;
+
+    protected override void OnInitialized()
+    {
+        _modusCo2e = ModusCo2e;
+        _arten = new List<EmissionsartZeile>(Arten);
+        ArtVorwaehlen(ArtVorwahl);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Arten
+    // =====================================================================
+
+    /// <summary>Wie <c>ZeigeArten</c>: Liste neu holen, Vorwahl setzen, Werte nachziehen.</summary>
+    private void ArtenNeuLaden(string? vorwahlKuerzel)
+    {
+        if (ArtenLaden is not null) _arten = new List<EmissionsartZeile>(ArtenLaden());
+        ArtVorwaehlen(vorwahlKuerzel);
+    }
+
+    private void ArtVorwaehlen(string? kuerzel)
+    {
+        if (_arten.Count == 0) { _artId = 0; WerteNeuLaden(); return; }
+
+        int ziel = _arten[0].Id;
+        if (!string.IsNullOrEmpty(kuerzel))
+        {
+            foreach (EmissionsartZeile a in _arten)
+            {
+                if (string.Equals(a.Kuerzel, kuerzel, StringComparison.OrdinalIgnoreCase))
+                { ziel = a.Id; break; }
+            }
+        }
+        _artId = ziel;
+        WerteNeuLaden();
+    }
+
+    private void ArtWaehlen(int id)
+    {
+        if (_artId == id) return;
+        _artId = id;
+        WerteNeuLaden();
+    }
+
+    /// <summary>
+    /// Wie <c>DgvArten_CellValueChanged</c>: Scheitert das Setzen, wird der
+    /// Grund genannt und das Haekchen bleibt, wo es war.
+    /// </summary>
+    private void AuswahlUmschalten(EmissionsartZeile a, bool neu)
+    {
+        if (a.IstPflicht || AuswahlSetzen is null) return;
+
+        string? grund = AuswahlSetzen(a.Id, neu);
+        if (grund is not null) { Melden(grund, WarnStufe.Hinweis); ArtenNeuLaden(a.Kuerzel); return; }
+
+        Melden("", WarnStufe.Hinweis);
+        _artenGeaendert = true;
+        ArtenNeuLaden(a.Kuerzel);
+    }
+
+    private void ArtNeu()
+    {
+        // Wie ArtNeu(): mg/kWh als Vorgabe, alles Uebrige leer.
+        _artNeu = true;
+        _artEditor = new EmissionsartZeile(0, "", "", "", 0, "", "", false, false, false);
+        _artKuerzel = "";
+        _artName = "";
+        _artEinheit = EinheitIndex("mg/kWh");
+        _artGwp = 0;
+        _artQuelle = "";
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    private void ArtBearbeiten()
+    {
+        EmissionsartZeile? a = GewaehlteArt;
+        if (a is null) return;
+
+        _artNeu = false;
+        _artEditor = a;
+        _artKuerzel = a.Kuerzel;
+        _artName = a.Name;
+        _artEinheit = EinheitIndex(a.Einheit);
+        _artGwp = a.Gwp;
+        _artQuelle = a.AequivalentQuelle;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Prueft wie <c>ArtBearbeitenDialog</c> und schreibt dann.</summary>
+    private void ArtSpeichern()
+    {
+        if (_artEditor is null) return;
+
+        if (string.IsNullOrWhiteSpace(_artKuerzel))
+        {
+            Melden(MeldungKuerzelLeer, WarnStufe.Warnung);
+            return;
+        }
+
+        // Bei der Pflichtart bleibt der Faktor 1 (F1/F2).
+        if (!_artEditor.IstPflicht && !_artGwp.HasValue)
+        {
+            Melden(MeldungGwpUngueltig, WarnStufe.Warnung);
+            return;
+        }
+        double gwp = _artEditor.IstPflicht ? 1.0 : _artGwp!.Value;
+
+        string kuerzel = _artKuerzel.Trim();
+        var eingabe = new EmissionsartEingabe(
+            _artNeu ? 0 : _artEditor.Id,
+            kuerzel,
+            string.IsNullOrWhiteSpace(_artName) ? kuerzel : _artName.Trim(),
+            EinheitText(_artEinheit),
+            gwp,
+            (_artQuelle ?? "").Trim());
+
+        string? grund = _artNeu ? ArtAnlegen?.Invoke(eingabe) : ArtAendern?.Invoke(eingabe);
+        if (grund is not null) { Melden(grund, WarnStufe.Fehler); return; }
+
+        _artEditor = null;
+        _artenGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        ArtenNeuLaden(kuerzel);
+    }
+
+    /// <summary>Wie <c>ArtLoeschen</c> samt <c>AbwaehlenAnbieten</c>.</summary>
+    private void ArtLoeschen()
+    {
+        EmissionsartZeile? a = GewaehlteArt;
+        if (a is null || ArtLoeschenDelegat is null) return;
+
+        // Pflicht- und Auslieferungsarten: erst den Grund holen, dann das
+        // Abwaehlen anbieten - der Vorlaeufer rief dafuer denselben Weg.
+        if (a.IstPflicht || a.IstAuslieferung)
+        {
+            AbwaehlenAnbieten(a, ArtLoeschenDelegat(a.Id));
+            return;
+        }
+
+        if (Rueckfrage is not null &&
+            !Rueckfrage(string.Format(VorlageArtLoeschen, a.Name))) return;
+
+        string? grund = ArtLoeschenDelegat(a.Id);
+        if (grund is not null) { AbwaehlenAnbieten(a, grund); return; }
+
+        _artenGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        ArtenNeuLaden(null);
+    }
+
+    /// <summary>
+    /// „Abwaehlen statt loeschen" (§ 4.2): Der Grund wird genannt UND der
+    /// gangbare Weg gleich angeboten — bei der Pflichtart CO₂ gibt es ihn
+    /// nicht, dort bleibt es beim Hinweis.
+    /// </summary>
+    private void AbwaehlenAnbieten(EmissionsartZeile a, string? grund)
+    {
+        if (a.IstPflicht || !a.Ausgewaehlt) { Melden(grund ?? "", WarnStufe.Hinweis); return; }
+
+        if (Rueckfrage is null ||
+            !Rueckfrage((grund ?? "") + Environment.NewLine + Environment.NewLine + FrageAbwaehlen))
+        {
+            Melden(grund ?? "", WarnStufe.Hinweis);
+            return;
+        }
+
+        string? fehler = AuswahlSetzen?.Invoke(a.Id, false);
+        if (fehler is not null) { Melden(fehler, WarnStufe.Hinweis); return; }
+
+        _artenGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        ArtenNeuLaden(a.Kuerzel);
+    }
+
+    private int EinheitIndex(string einheit)
+    {
+        for (int i = 0; i < Einheiten.Count; i++)
+            if (string.Equals(Einheiten[i].Text, einheit, StringComparison.OrdinalIgnoreCase))
+                return Einheiten[i].Id;
+        return Einheiten.Count > 1 ? Einheiten[1].Id : 0;
+    }
+
+    private string EinheitText(int id)
+    {
+        foreach (var e in Einheiten) if (e.Id == id) return e.Text;
+        return "";
+    }
+
+    // =====================================================================
+    // Werte
+    // =====================================================================
+
+    private void WerteNeuLaden()
+    {
+        _werte = _artId > 0 && WerteLaden is not null
+            ? new List<EmissionswertZeile>(WerteLaden(_artId))
+            : new List<EmissionswertZeile>();
+
+        // Die Markierung ueberlebt einen Artwechsel nicht.
+        _wertId = 0;
+    }
+
+    private void WertNeu()
+    {
+        if (GewaehlteArt is null) return;
+
+        _wertNeu = true;
+        _wertEditor = new EmissionswertZeile(0, "", VorgabeQuelltext, null, "", false, false,
+                                             MitTraeger, true);
+        _wertText = VorgabeQuelltext;
+        _wertZahl = null;
+        _wertCo2e = false;
+        _wertVorlage = !MitTraeger;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    private void WertBearbeiten()
+    {
+        EmissionswertZeile? w = GewaehlterWert;
+        if (w is null) return;
+        if (!w.AenderungErlaubt) { Melden(MeldungUnveraenderlich, WarnStufe.Hinweis); return; }
+
+        _wertNeu = false;
+        _wertEditor = w;
+        _wertText = w.QuelleText;
+        _wertZahl = w.Wert;
+        _wertCo2e = w.IstCo2e;
+        _wertVorlage = !w.IstTraegerwert;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Prueft wie <c>WertBearbeitenDialog</c> (Zahl ≥ 0) und schreibt dann.</summary>
+    private void WertSpeichern()
+    {
+        if (_wertEditor is null || GewaehlteArt is null) return;
+
+        if (!_wertZahl.HasValue || _wertZahl.Value < 0)
+        {
+            Melden(MeldungWertUngueltig, WarnStufe.Warnung);
+            return;
+        }
+
+        var eingabe = new EmissionswertEingabe(
+            _wertNeu ? 0 : _wertEditor.Id,
+            GewaehlteArt.Id,
+            string.IsNullOrWhiteSpace(_wertText) ? VorgabeQuelltext : _wertText.Trim(),
+            _wertZahl.Value,
+            _wertCo2e,
+            _wertNeu && _wertVorlage);
+
+        string? grund = _wertNeu ? WertAnlegen?.Invoke(eingabe) : WertAendern?.Invoke(eingabe);
+        if (grund is not null) { Melden(grund, WarnStufe.Fehler); return; }
+
+        _wertEditor = null;
+        _werteGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        WerteNeuLaden();
+    }
+
+    private void WertLoeschen()
+    {
+        EmissionswertZeile? w = GewaehlterWert;
+        if (w is null || WertLoeschenDelegat is null) return;
+        if (!w.AenderungErlaubt) { Melden(MeldungUnveraenderlich, WarnStufe.Hinweis); return; }
+
+        if (Rueckfrage is not null &&
+            !Rueckfrage(string.Format(VorlageWertLoeschen, w.Herkunftstext))) return;
+
+        string? grund = WertLoeschenDelegat(w.Id);
+        if (grund is not null) { Melden(grund, WarnStufe.Fehler); return; }
+
+        _werteGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        WerteNeuLaden();
+    }
+
+    /// <summary>
+    /// UEBERNEHMEN (F8). Im Rueckgabemodus wird der Wert nur zurueckgereicht —
+    /// der Emissions-Tab traegt ihn in seine Zeile ein und speichert ihn mit
+    /// seinem eigenen „Speichern" (Ae12/Ae14). Im Verwaltungsmodus schreibt der
+    /// Delegat sofort.
+    /// </summary>
+    private async Task WertUebernehmen()
+    {
+        EmissionswertZeile? w = GewaehlterWert;
+        if (w is null || !MitTraeger) return;
+
+        if (!w.Wert.HasValue) { Melden(MeldungUebernahmeLeer, WarnStufe.Hinweis); return; }
+
+        if (Rueckgabemodus)
+        {
+            // Der Vorlaeufer schloss hier ohne Beenden() - die globale Vorgabe
+            // wird auf diesem Weg NICHT geschrieben.
+            await Geschlossen.InvokeAsync(new EmissionskatalogErgebnis(
+                w.Id, _artenGeaendert, _werteGeaendert, ModusCo2e, true));
+            return;
+        }
+
+        string? grund = WertUebernehmenDelegat?.Invoke(w.Id);
+        if (grund is not null) { Melden(grund, WarnStufe.Fehler); return; }
+
+        _werteGeaendert = true;
+        Melden("", WarnStufe.Hinweis);
+        WerteNeuLaden();
+    }
+
+    // =====================================================================
+    // Abschluss
+    // =====================================================================
+
+    private void EditorSchliessen()
+    {
+        _artEditor = null;
+        _wertEditor = null;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>OK: Der Modus-Schalter trifft die GLOBALE VORGABE (F7).</summary>
+    private Task BeiOk()
+        => Geschlossen.InvokeAsync(new EmissionskatalogErgebnis(
+            0, _artenGeaendert, _werteGeaendert, _modusCo2e, true));
+
+    /// <summary>
+    /// Abbrechen. Alles Geschriebene bleibt geschrieben — nur der Modus-Schalter
+    /// wird nicht uebernommen (deshalb geht der EINGANGSwert zurueck). Die beiden
+    /// Aenderungsmerker gehen mit: Der Aufrufer las sie schon in der
+    /// WinForms-Fassung unabhaengig vom DialogResult.
+    /// </summary>
+    private Task BeiAbbrechen()
+        => Geschlossen.InvokeAsync(new EmissionskatalogErgebnis(
+            0, _artenGeaendert, _werteGeaendert, ModusCo2e, false));
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        // Esc schliesst zuerst den offenen Editor - wie das Abbrechen des
+        // frueheren Unterdialogs, das die Maske ebenfalls stehen liess.
+        if (EditorOffen) { EditorSchliessen(); return Task.CompletedTask; }
+        return BeiAbbrechen();
+    }
+}
