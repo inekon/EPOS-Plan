@@ -172,6 +172,14 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Erzeuger/PhotovoltaikDialog` | `Form_PV` (iU9‑W6.5) | `PhotovoltaikHuelle` → `PhotovoltaikStammCtrl` |
 | `Erzeuger/StromspeicherDialog` | `Form_Stromspeicher` (iU9‑W6.6) | `StromspeicherHuelle` → `StromspeicherStammCtrl` (keine neue SQL) |
 | `Erzeuger/PufferspeicherDialog` | `Form_PufferSp` (iU9‑W6.7) | `PufferspeicherHuelle` → `PufferSpStammCtrl`/`PufferSpCtrl`, `AnlagenEindeutigkeit` |
+| `Waermepumpe/WaermepumpenKatalogDialog` | `Form_WpFilterAuswahl` (iU9‑W7.1) | keine Hülle — `WaermepumpenKatalogFilter` im Kern |
+| `Waermepumpe/KennlinienEditorDialog` | `Kenndaten` (iU9‑W7.2) | keine Hülle — `KenndatenCtrl.Abgleichen` im Kern |
+| `Waermepumpe/WaermepumpeStammDialog` | `Form_WP` (iU9‑W7.3) | `WaermepumpeStammHuelle` → `WPStammCtrl`, `KenndatenCtrl`, `ChartRenderer.Kennlinien`; **zwei** Unterdialoge in Überlagerungen |
+| `Waermepumpe/WaermepumpeAnlageDialog` | `Wizard_WPItem` (iU9‑W7.4) | `WaermepumpeAnlageHuelle` → `WErzeugerCtrl`, `KostenSummenCtrl`, `ProjektPuffer.TemperaturenPruefen`; **zwei** Unterdialoge, `NurLesen` für den Ansichtsweg |
+| `Waermepumpe/WaermepumpenDialog` | `Form_WPAuswahl` (iU9‑W7.5) | `WaermepumpenHuelle`; Assistentenseite 7 |
+| `Solarthermie/SolarkollektorKatalogDialog` | `Form_SolarDB` (iU9‑W7.6) | `SolarkollektorHuelle` → `SolarkollektorenStammCtrl` |
+| `Solarthermie/SolarkollektorenDialog` | `Form_SolarKollektoren` (iU9‑W7.7) | dieselbe Hülle; Assistentenseite 8 |
+| `Solarthermie/SolarganglinieDialog` | `Form_Solarganglinie` (iU9‑W7.8) | `SolarganglinieHuelle` → `SolarganglinieStammCtrl`, `Z_ProjektSolarganglinieCtrl`; Sprungbrücke zur Ganglinienverwaltung |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -183,6 +191,19 @@ Projekt teilen sich eine Kopie in `Tab_Heizkessel`, und daran hängt die Regel, 
 „▶" die Kopie nur entfernt, wenn keine zweite Zeile mehr darauf verweist. Die
 geteilte Liste gehört der Hülle und wird **an Ort und Stelle** bearbeitet; jede
 Änderung geht über einen Delegaten sofort ins Modell zurück.
+
+**Zwei Gewerke mehr am selben Muster** (iU9‑W7): `SolarkollektorenDialog` und
+`SolarganglinieDialog` teilen sich `ErzeugerAuswahlDaten` mit den fünf Masken der
+Welle 6 — die Trennung von `Schluessel` und `GeraetId` ist dort dieselbe Fachlage:
+Zwei gleiche Kollektoren teilen sich eine Kopie in `Tab_Solarkollektoren`, und
+dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein. Die
+Wärmepumpenseite hat ihre eigene Form (`WaermepumpeAnlageDaten`), weil ihre Zeile
+vierzehn Felder trägt und nicht zwei.
+
+**Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
+Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
+Überlagerungsschalter, bevor er Esc für sich auswertet — so schließt Esc immer nur
+die oberste Ebene.
 
 **Ein Dialog IN einem Dialog** (iU9‑W4.0): Seit es `Ueberlagerung` gibt, öffnet ein
 Blazor-Dialog seine Unterdialoge **im selben Fenster** statt in einer zweiten
