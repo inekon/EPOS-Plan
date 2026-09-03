@@ -19,6 +19,15 @@ Antworten und Code-Kommentare auf Deutsch.
 Ausgabename; Stufe 1 = Namespace-Umstellung bräuchte ein eigenes Konzept).
 Solution: `..\WP-Plan.sln` (Debug/Release × x64).
 
+**Das Projekt-SDK ist seit iU8 `Microsoft.NET.Sdk.Razor`**, nicht mehr
+`Microsoft.NET.Sdk`. Das macht aus der Anwendung keine Webanwendung — sie bleibt `WinExe`
+und WinForms. Gebraucht wird es, damit die statischen Web-Anteile von
+[`../EPOS.UI/`](../EPOS.UI/CLAUDE.md) überhaupt hier ankommen: Mit dem einfachen SDK
+übersetzt alles fehlerfrei, der Veröffentlichungsordner enthält aber **kein `wwwroot`** —
+weder `index.html` noch `_content` noch `_framework/blazor.webview.js`, und jeder
+Blazor-Dialog bliebe beim Anwender leer. Der Bau ändert sich dadurch nicht; der Razor-SDK
+steckt im .NET-SDK, ein Workload ist nicht nötig.
+
 ```powershell
 dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x64
 ```
@@ -82,6 +91,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `WindowsGeraeteId`, `WindowsSprache`, `WinFormsNavigation`, `FormStartProjektKontext`.
   **Neue plattformabhängige Aufrufe gehören hierher, nicht in `Allgemein/` oder `Controller/`** —
   dort läuft der Wächter aus `../EPOS.Kern/CLAUDE.md`.
+  Zwei benannte Ausnahmen seit iU8, beide sind ihrem Wesen nach Windows-Hülle und tauchen
+  deshalb im Wächter W2 auf: `Allgemein/Blazor/` (`ShowDialog` — die Hülle *ist* das modale
+  Fenster) und `Allgemein/Hilfe/WindowsHilfeDienst.cs` (`new Form_HelpPopup` — die
+  Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
+  liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
+  bedienen, sondern die Oberfläche selbst.
 - **`Controller/`** (**49** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: Kontextmenüs als
   `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, die Stamm-Controller mit `MessageBox` und
   `WPCtrl`. Die übrigen **50** liegen seit iU4 in `../EPOS.Kern/Controller/`.
@@ -114,6 +129,7 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
+| `Blazor/` | **Die Hülle für Razor-Dialoge (iU8).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut. Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
 | `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
@@ -149,6 +165,23 @@ Diese Konventionen beim Erweitern beibehalten.
 - Pro Formular bis zu 5 Dateien: `X.cs`, `X.Designer.cs`, `X.resx`, `X.de-DE.resx`, `X.en-US.resx`.
   **Designer- und `.resx`-Dateien nicht von Hand editieren** — über den WinForms-Designer pflegen,
   Strings über die Satelliten-`.resx` lokalisieren.
+- **Jeder NEUE und jeder ohnehin anzufassende Dialog entsteht in `../EPOS.UI/` als
+  Razor-Komponente; diese Anwendung liefert nur noch die Hülle.** Das ist die Arbeitsregel seit
+  iU8/iZ5, nicht eine Empfehlung: Ein zweites Mal dieselbe Maske zu bauen, heißt sie zweimal zu
+  pflegen — und beim ersten Fachwechsel laufen die beiden Fassungen auseinander. Ein
+  umgestellter Dialog wird im **selben Schritt** gelöscht (Regel M1), es gibt keinen Schalter
+  und kein „bis auf Weiteres". Vorbild ist `Views/Kosten/Form_Kosten.cs`
+  (`CreateNewEnergyCarrier`): Parameterwörterbuch bauen, `Geschlossen`-Rückruf auf
+  `BlazorDialogForm.Schliessen` legen, `ShowDialog()` wie bisher auswerten. Die Datenbankseite
+  gehört dabei in einen Controller im Kern, nicht in die Komponente
+  (`EPOS.Kern/Controller/EnergietraegerVarianteCtrl.cs`), und die Texte in
+  `MyResource.Resource.*`.
+- **Vor jeder Maskenumstellung die Feldkarte ziehen:**
+  `dotnet run --project ../Werkzeuge/Formularkarte -- <Designer.cs>`. Sie listet aus
+  `InitializeComponent` (und aus der `.resx`, wenn die Maske mit `ApplyResources` lokalisiert
+  ist) Name, Typ, Beschriftung beider Sprachen, Wertebereiche, Tab-Reihenfolge und die
+  Ereignishandler mit Fundstelle — die Abnahmecheckliste der Umstellung. Von Hand vergisst man
+  ein Feld; die Karte nicht.
 - Vom Build ausgeschlossen (`.csproj`): `ChartManagerNeu.cs`, `Form_Simulation_Kurz.*`
   und die „- Kopie"-Dateien unter `Views/Simulation/`.
 - **Drei-Schichten-Regel für Texte** (Konzept 13.6, umgesetzt mit Paket 9): **Persistenz** —
@@ -183,7 +216,18 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
   (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
 - **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
-  in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch.
+  in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch. **Ausnahme seit iU8:**
+  `BlazorDialogForm.ShowDialog()` stellt den Faden für die Dauer des modalen Laufs auf
+  `PER_MONITOR_AWARE_V2` und danach zurück (`DpiInsel`) — sonst wäre der WebView2-Inhalt bei
+  125–200 % bitmapskaliert und sichtbar unscharf. Die WinForms-Masken dahinter bleiben
+  unberührt. Auf einem Windows vor 10 (1803) greift die Insel nicht; das ist ein
+  Schönheitsfehler, kein Fehlschlag.
+- **WebView2 ist ab iU8 eine Laufzeitvoraussetzung.** `dotnet publish` bringt nur das SDK
+  (`Microsoft.Web.WebView2.Core.dll`, `WebView2Loader.dll`); die Evergreen-Laufzeit installiert
+  das Setup nach (`../Setup/EPOS-Plan.iss`, `WebView2Vorhanden`). Fehlt sie, startet die
+  Anwendung — nur die Blazor-Dialoge bleiben leer. Der Profilordner der WebView2 liegt
+  ausdrücklich unter `%LOCALAPPDATA%\WP-Plan\WebView2`; die Vorgabe „neben der EXE" ist unter
+  `C:\Program Files` für Standardbenutzer nicht beschreibbar.
 - **`app.config`** enthält einen toten absoluten Beispielpfad zur `.accdb`; der echte Pfad wird zur
   Laufzeit über `DataRepository.GetDBPath()` gesetzt.
 - **Lokalisierung lückenhaft:** `Admin`, `BHKW`, `Bericht`, `Brauchwasser`, `Help`, `Klimadaten`,

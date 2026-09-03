@@ -1124,6 +1124,83 @@ zeilengleich.
 
 ### iU8 — `EPOS.UI` und der erste Blazor-Dialog unter Windows · L · Windows
 
+> **Status 03.09.2026 — iZ5 hier erreicht, Windows-Abnahme offen.** Drei Stränge, dreizehn
+> Commits auf der Basis `c477523`. **Ein vollständiger Dialog von EPOS-Plan lebt in
+> plattformfreiem Code**: `Form_Kosten` öffnet „Energieträger anlegen" als
+> Razor-Komponente; die WinForms-Fassung ist gelöscht.
+>
+> **Strang A — `EPOS.UI`, die Bibliothek**
+>
+> | Tranche | Commit | Inhalt |
+> |---|---|---|
+> | iU8-1 | `8574911` | Paketgruppe „Blazor Hybrid (iU8)" in `Directory.Packages.props`: Components.Web/QuickGrid 10.0.11, WebView.WindowsForms 10.0.100, bunit 2.9.0, CodeAnalysis.CSharp 5.9.0 |
+> | iU8-2 | `a1b4df6` | `EPOS.UI` als Razor-Klassenbibliothek, `net10.0`, `EnableWindowsTargeting=false` — derselbe Wächter wie im Kern |
+> | iU8-3 | `bbb7d42` | Thema aus `KartenStil.cs` als CSS-Variablen; die sieben Bausteine (Gruppenkopf, Warnbanner, SpeichernLeiste, InfoKnopf, Kachel, Herleitungs- und Kohärenzzeile) |
+> | iU8-4 | `f690466` | Standardfelder: Zahl, Ganzzahl, Text, Auswahl, Datum, Schalter, Raster (QuickGrid), ChartBild |
+> | iU8-5 / 5b / 5c | `cace2db`, `45a21dc`, `f5fb05c` | `EPOS.UI.Tests` mit bunit; Aufnahme in `WP-Plan.sln` und `WP-Plan.Kern.slnf`; UI-Kultur der Tests auf `de-DE` gepinnt |
+> | iU8-8a | `8f5a28e` | `EnergietraegerVarianteDialog.razor` — der erste Dialog als Komponente, datenbankfrei |
+>
+> **Strang B — die Windows-Hülle und der Stichtag**
+>
+> | Tranche | Commit | Inhalt |
+> |---|---|---|
+> | iU8-6 | `4369fdb` | **`WindowsFormsApplication1.csproj` auf `Microsoft.NET.Sdk.Razor`**, Projektreferenz auf `EPOS.UI`, `wwwroot/index.html`, `Allgemein/Blazor/BlazorDialogForm.cs` + `BlazorDienste.cs` |
+> | iU8-7 | `b12e910` | Hilfe-Brücke: `HelpExtender.ZielFuer(schluessel)` und `Allgemein/Hilfe/WindowsHilfeDienst.cs` |
+> | iU8-8b | `1e2a44c` | Sieben Ressourcenschlüssel (`KAUSW_*`, `ALLG_BTN_*`) und `EPOS.Kern/Controller/EnergietraegerVarianteCtrl.cs` |
+> | iU8-9 | `92380ea` | **iZ5** — `Form_Kosten` öffnet die Komponente; `Form_Kosten_Auswahl.cs/.Designer.cs/.resx` **gelöscht** (M1) |
+> | iU8-10 | `eafbc1f` | WebView2 als zweite Setup-Voraussetzung (`.iss`, `build-setup.ps1`, Setup-Konzept 5.5) |
+>
+> **Strang C — der Formular-Generator** (`479fcf9` iU8-12a … `0af7ca7` iU8-12d):
+> `Werkzeuge/Formularkarte`, Roslyn-Leser, `resx`-Leser mit Label-Zeilenregel, Razor-Skelett,
+> Stapellauf über alle Designer-Dateien.
+>
+> **Der Razor-SDK ist keine Kosmetik, sondern die einzige Möglichkeit.** Die Gegenprobe mit
+> dem einfachen `Microsoft.NET.Sdk` übersetzt fehlerfrei, liefert im
+> Veröffentlichungsordner aber **kein `wwwroot`** — weder `index.html` noch `_content` noch
+> `_framework/blazor.webview.js`. Der Dialog bliebe beim Anwender leer. Die Umstellung
+> kostet **keine** neue Warnung (Codes vor und nach identisch).
+>
+> **Drei Korrekturen an diesem Konzept**, gemessen statt geschätzt:
+>
+> | Stelle | Bisher | Befund 03.09.2026 |
+> |---|---|---|
+> | Zahl der Designer-Dateien (iU8, Formular-Generator) | „**118**" bzw. 79/74/21 aus der Vorvermessung | **123 Dateien, 120 Masken, 63 davon lokalisiert** — die Vorvermessung suchte nur `*.Designer.cs`; der Bestand schreibt auch `*.designer.cs` (`Form_BHKWEing.designer.cs`). Nach dem Löschen von `Form_Kosten_Auswahl` sind es 122/119 |
+> | Name der Scoped-CSS-Datei | `EPOS.UI.styles.css` erwartet | **`EPOS_Plan.styles.css`** — das Bündel folgt dem **Host**-Assembly, nicht der Bibliothek, und liegt in `wwwroot\`, nicht neben der EXE |
+> | „ClosedXML-Standardschrift für Nicht-Windows setzen" (iU7-Tabelle) | als offene Aufgabe geführt | **nicht nötig.** iU7-4 (`f84932b`) hat nachgemessen: ClosedXML 0.105.1 bringt Carlito eingebettet mit; eine erzwungene Systemschrift machte die Spaltenbreiten schlechter. Gesetzt wird nur noch, wenn eine Messprobe fehlschlägt |
+>
+> **Das Raster „Label x28 / Control x270" gibt es nicht.** `Point(28,` und `Point(270,`
+> kommen in je einer Datei vor. Tragfähig ist die Zeilenregel: das nächste Label **links in
+> derselben Zeile** (|Δy| ≤ 8 px) — sie trägt den Stapellauf über alle Masken (iU8-12b).
+>
+> **Nachweis (Linux, SDK 10.0.400):** `dotnet build WP-Plan.sln -c Release -p:Platform=x64
+> --no-incremental` → 0 Fehler, **34 Warnungen** (vorher 36; die beiden entfallenen WFO1000
+> gehören dem gelöschten Formular), **keine neuen Warnungscodes**.
+> `dotnet test WP-Plan.Kern.slnf -c Release` → **886** (KiKern 450, SpeicherEngine 337,
+> EPOS.UI 64, EPOS.Kern 35). Referenzlauf **1030, 1007, 1017** gegen
+> `2026-08-30_B3-Kaskade`: **GESAMT PASS** (815 043 Werte), `diff -rq` nur `protokoll.txt`.
+> `dotnet run --project Proben/ChartProben -c Release` grün. `dotnet publish -r win-x64
+> --self-contained` enthält `wwwroot/index.html`, `wwwroot/EPOS_Plan.styles.css`,
+> `wwwroot/_content/EPOS.UI/{epos-ui.css,help_icon.png}`,
+> `wwwroot/_content/…QuickGrid/QuickGrid.razor.js`, `wwwroot/_framework/blazor.webview.js`,
+> `EPOS.UI.dll`, `Microsoft.Web.WebView2.{Core,WinForms}.dll` und
+> `runtimes/win-x64/native/WebView2Loader.dll`.
+>
+> **Was noch offen ist.**
+>
+> 1. **Die Windows-Abnahme von iZ5** — Maus *und* Finger (M2), deutsch *und* englisch,
+>    Hochkontrast, 125 %/150 % DPI (greift die DPI-Insel?), Enter/Esc, Infoknopf,
+>    WebView2-Profilordner, Setup in der Windows-Sandbox ohne WebView2, VS-2026-Designer
+>    unter dem Razor-SDK. Die Punkte stehen einzeln in
+>    [`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
+> 2. **Der Stapellauf des Generators liest den gelöschten Dialog.** 22 der 100 Tests in
+>    `Werkzeuge/Formularkarte.Tests` hängen an `Form_Kosten_Auswahl.Designer.cs` bzw. an
+>    `new Form_Kosten_Auswahl` in `Form_Kosten.cs` und scheitern seit iU8-9 (vorher 100/100
+>    grün). Das Werkzeug steht weder in `WP-Plan.sln` noch in einem CI-Lauf; der Bau bleibt
+>    unberührt. Nächster Schritt: die Probemaske auf `Form_Kosten_VarAuswahl` umstellen —
+>    die zeichengleiche Kopie, die als Nächste an der Reihe ist.
+> 3. **WebView2-Verteilung online oder offline** — Bootstrapper (heute), Standalone-Installer
+>    oder Fixed Version. Anwenderentscheidung, offen als S10 im Setup-Konzept.
+
 **Voraussetzung:** iU5, iU7. **Block A5, A6, A7; M1, M2, M6, M9.** **Das ist der Modell-C-Stichtag.**
 
 | Inhalt | Detail |
