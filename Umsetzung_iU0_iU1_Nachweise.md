@@ -1,15 +1,29 @@
-# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
 
-**Stand 03.09.2026 · Branch `ios_migration` · `c3a8233`..`ce2dc9e` (+ P1.11), iU4: `4a0a4e2`..`616dff4`, iU6: `9cf6f86`..`27bc634`**
+**Stand 03.09.2026 · Branch `ios_migration` · Kopfstand `f95fc34`**
+
+| Paket | Commits |
+|---|---|
+| iU0 / iU1 | `c3a8233`..`ce2dc9e`, P1.11 `0c83dba` |
+| iU4 | `4a0a4e2`..`18f515f` |
+| iU5 | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` |
+| iU6 | `22fb7eb`..`300a354` |
+| iU7 | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` |
+
+**iU8 steht in einer eigenen Liste:**
+[`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md).
 
 Die Pakete iU0 und iU1 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md)
-(§ 4, Rev. 2.1) sind umgesetzt. **Alle Nachweise wurden auf Linux geführt** — SDK 10.0.400, kein
-Visual Studio, keine Datenbank. Was dort nicht prüfbar ist, steht hier als abhakbare Liste: das
-Starten der Anwendung, das Rechnen gegen echte Projektdaten, der Designer, das Setup.
+(§ 4, Rev. 2.2) sind umgesetzt, ebenso iU4 bis iU7. **Alle Nachweise wurden auf Linux geführt** —
+SDK 10.0.400, kein Visual Studio, keine produktive Datenbank. Was dort nicht prüfbar ist, steht
+hier als abhakbare Liste: das Starten der Anwendung, das Rechnen gegen echte Projektdaten, der
+Designer, das Setup, der Bildvergleich der Berichts-Diagramme.
 
 Ergebnis der Linux-Nachweise in einem Satz: **`dotnet build WP-Plan.sln -c Release -p:Platform=x64`
-übersetzt alle 7 Projekte mit 0 Fehlern, `dotnet test WP-Plan.Kern.slnf` meldet 787/787, und der
-CI-Lauf `kern.yml` ist auf ubuntu *und* macos grün.**
+übersetzt alle 12 Projekte mit 0 Fehlern und 34 Warnungen, `dotnet test WP-Plan.Kern.slnf` meldet
+886/886, der Referenzlauf 1030/1007/1017 ist byte-gleich zur Basis, und der CI-Lauf `kern.yml` ist
+auf ubuntu *und* macos grün.** (Die Zahlen 7 Projekte und 787 Tests weiter unten sind der Stand
+von iU1 und bleiben als Messpunkt der damaligen Commits stehen.)
 
 Dazu der Nachweis auf einem echten Windows-Runner: **Der Workflow `windows.yml` (`dotnet build
 WP-Plan.sln`, Migrator-sln, Proben-sln, 787 Tests) ist auf `0ddc417` und `dab063a` grün** — die
@@ -342,7 +356,7 @@ Auch hier halbieren. Die Reihenfolge der Verdächtigen ist eine andere als bei i
 
 ## Nachweise iU6 — Datenzugriff plattformfrei
 
-**Stand 03.09.2026 · Branch `ios_migration` · `9cf6f86`..`27bc634` auf Basis `18f515f`.**
+**Stand 03.09.2026 · Branch `ios_migration` · `22fb7eb`..`2387abf` auf Basis `18f515f`.**
 
 Alle Nachweise auf Linux geführt (SDK 10.0.400, kein Visual Studio). Nach **jeder** der sechs
 Tranchen wurden gefahren: Build (`WP-Plan.sln`, Release, x64, `--no-incremental`), Kern-Build
@@ -353,12 +367,12 @@ allein mit CA1416-Zählung, Tests (`WP-Plan.Kern.slnf`), Referenzlauf **1030/100
 | Tranche | Warnungen Lösung | Warnungen `EPOS.Kern` | CA1416 | Tests |
 |---|---|---|---|---|
 | Basis `18f515f` | 123 | 89 | 87 | 796 |
-| iU6-T1 `9cf6f86` | 114 | 80 | 78 | 796 |
-| iU6-T2 `5836b8c` | 36 | 2 | **0** | 796 |
-| iU6-T3a `99e5a68` | 36 | 2 | 0 | 796 |
-| iU6-T3b `7fb4bfd` | 36 | 2 | 0 | 796 |
-| iU6-T4 `64c06d7` | 36 | 2 | 0 | **805** |
-| iU6-T5 `27bc634` | 36 | 2 | 0 | 805 |
+| iU6-T1 `22fb7eb` | 114 | 80 | 78 | 796 |
+| iU6-T2 `582844c` | 36 | 2 | **0** | 796 |
+| iU6-T3a `35de91d` | 36 | 2 | 0 | 796 |
+| iU6-T3b `fe28cb2` | 36 | 2 | 0 | 796 |
+| iU6-T4 `7780df6` | 36 | 2 | 0 | **805** |
+| iU6-T5 `2387abf` | 36 | 2 | 0 | 805 |
 
 Die zwei verbleibenden Kern-Warnungen stammen aus dem Bestand: CA2255
 (`SimulationControl.Stromspeicher.cs:24`, `ModuleInitializer`) und CS0108
@@ -368,7 +382,7 @@ Ein Hinweis zum `diff -rq`: Das Laufwerkzeug legt im Zielordner ein `protokoll.t
 eingefrorene Referenzstand nicht enthält. Das ist der einzige gemeldete Unterschied; alle
 Ergebnisdateien sind byte-gleich.
 
-### `9cf6f86` — iU6-T1: `RecordSet.DBCommand` ersatzlos gestrichen (iR8)
+### `22fb7eb` — iU6-T1: `RecordSet.DBCommand` ersatzlos gestrichen (iR8)
 
 **Nachweis hier:** 114 Warnungen, CA1416 87 → 78, 796 Tests, 1030/1007/1017 byte-gleich.
 
@@ -381,7 +395,7 @@ Ergebnisdateien sind byte-gleich.
       **einzigen** Nutzer der `DbVorgang`-Überladungen `Open(sql, vorgang)` / `Insert(sql, vorgang)`;
       ein Abbruch mitten im Speichern muss weiterhin vollständig zurückrollen
 
-### `5836b8c` — iU6-T2: toter OleDb-Code in drei Kern-Controllern
+### `582844c` — iU6-T2: toter OleDb-Code in drei Kern-Controllern
 
 **Nachweis hier:** 36 Warnungen (Lösung) bzw. 2 (Kern), **CA1416 = 0**, 796 Tests,
 1030/1007/1017 byte-gleich.
@@ -399,7 +413,7 @@ Ergebnisdateien sind byte-gleich.
       Schemamarker wird jetzt über `SchemaVersionAccess` (neue App-Datei) gelesen und je Schritt
       fortgeschrieben. Der Lauf muss dieselbe Schrittfolge und dasselbe Protokoll liefern wie vorher
 
-### `99e5a68` — iU6-T3a: Masken-Sweep `OleDbParameter` → `DbParam` (46 Views)
+### `35de91d` — iU6-T3a: Masken-Sweep `OleDbParameter` → `DbParam` (46 Views)
 
 **Nachweis hier:** 36 Warnungen, CA1416 = 0, 796 Tests, byte-gleich. BOM- und
 Zeilenenden-Zustand der 281 View-Dateien vor und nach dem Lauf identisch (237 mit BOM, 44 ohne,
@@ -417,7 +431,7 @@ Nach Dichte der Änderungen:
       (`Boolean`, `Double`, `Integer`, `VarWChar`) und NULL-fähigen Spalten
 - [ ] Stichprobe über die übrigen Masken: Speichern, Anlegen, Löschen, Katalogimport
 
-### `7fb4bfd` — iU6-T3b: Brücke aus dem Kern, OleDb-Paket raus
+### `fe28cb2` — iU6-T3b: Brücke aus dem Kern, OleDb-Paket raus
 
 **Nachweis hier:** `dotnet list EPOS.Kern package | grep -c OleDb` → **0**; im Kern kein `using`,
 kein Typ, keine `PackageReference` mehr. 36 Warnungen, CA1416 = 0, 796 Tests, byte-gleich.
@@ -432,7 +446,7 @@ kein Typ, keine `PackageReference` mehr. 36 Warnungen, CA1416 = 0, 796 Tests, by
       die Zugriffsschicht **und** der aus der Migration hereingereichte über eine offene
       `OleDbConnection`
 
-### `64c06d7` — iU6-T4: `IDatenzugriff`, `SqliteDatenzugriff`, Fassade
+### `7780df6` — iU6-T4: `IDatenzugriff`, `SqliteDatenzugriff`, Fassade
 
 **Nachweis hier:** `dotnet test WP-Plan.Kern.slnf` → **805** (796 + 9 neue in
 `EPOS.Kern.Tests/DatenzugriffTests.cs`). `git diff --stat` der Tranche zeigt genau vier Dateien:
@@ -454,7 +468,7 @@ schlägt (der Lauf arbeitet ausschließlich über diesen Haken).
       unverändert übernommen)
 - [ ] Test-Explorer in VS 2026: dieselben 805 grün
 
-### `27bc634` — iU6-T5: `bundle_green` vorbereitet
+### `2387abf` — iU6-T5: `bundle_green` vorbereitet
 
 **Nachweis hier:** `dotnet list EPOS.Kern package` zeigt unverändert nur
 `Microsoft.Data.Sqlite 10.0.11` und `System.Configuration.ConfigurationManager 10.0.11` — die
@@ -469,38 +483,77 @@ Bedingung `-ios`/`-maccatalyst` ist auf `net10.0` falsch. Build und Tests unver�
 
 Auch hier halbieren. Die Reihenfolge der Verdächtigen:
 
-- **`64c06d7` (iU6-T4)** ist der einzige Commit, der den Rechenpfad anfasst — jeder
+- **`7780df6` (iU6-T4)** ist der einzige Commit, der den Rechenpfad anfasst — jeder
   Datenbankzugriff geht seitdem durch eine Weiterleitung. Sollte per Konstruktion nichts bewegen
   (die Rümpfe sind wörtlich verschoben); wenn doch, dann in `NormalisiereWert`,
   `UebersetzeParameterzeichen` oder im Typ-Rückweg `LadeTabelle`.
-- **`5836b8c` (iU6-T2)** kann ein Rechenergebnis nicht bewegen, wohl aber den **Datenbestand**
+- **`582844c` (iU6-T2)** kann ein Rechenergebnis nicht bewegen, wohl aber den **Datenbestand**
   nach einer Erststart-Migration (`SchemaVersionAccess`).
-- **`99e5a68` (iU6-T3a)** betrifft ausschließlich Bedienpfade; ein Referenzlauf kann davon nicht
+- **`35de91d` (iU6-T3a)** betrifft ausschließlich Bedienpfade; ein Referenzlauf kann davon nicht
   abweichen, eine gespeicherte Eingabe schon.
-- `9cf6f86`, `7fb4bfd` und `27bc634` können ein Rechenergebnis nicht bewegen — gestrichener toter
+- `22fb7eb`, `fe28cb2` und `2387abf` können ein Rechenergebnis nicht bewegen — gestrichener toter
   Code, verschobene Brücke, eine unwirksame Paketzeile.
 
 ---
 
 ## Reihenfolge der Abnahme
 
-Von billig nach teuer — jeder Schritt setzt den vorigen voraus.
+Von billig nach teuer — und in der Reihenfolge, in der ein Fehlschlag am meisten aussagt. Der
+Bezugsstand ist **`f95fc34`**; alles davor ist darin enthalten.
 
-1. **VS 2026 öffnet `WP-Plan.sln`** und zeigt seit iU4 **9 Projekte** (bei iU1 waren es 7);
-   `Debug|x64` baut durch. Danach `WP-Plan.Kern.slnf` öffnen: seit iU4-6 genau **sechs**
-   Projekte (bei iU1 vier).
-2. **Anwendung starten, ein Projekt laden.** Bricht es hier ab, ist alles Weitere sinnlos.
-3. **Referenzlauf gegen `Referenzlaeufe\2026-08-30_B3-Kaskade` → 332/332 byte-gleich (iT1).**
-   *Das ist der eigentliche iZ1-Nachweis.* Frameworksprung, Kodierungswechsel und `UseWPF`-Rückbau
-   dürfen kein einziges Ergebnis bewegen — sitzt dieser Schritt, sind die Pakete P1.3, P1.4, P1.6
-   und P1.12 als Ganzes abgenommen.
-4. **Proben 16/16** (`Proben/ZugriffsschichtProben`) — belegt, dass sich `Microsoft.Data.Sqlite`
-   10.0.11 wie die 8er-Fassung verhält.
-5. **Excel-Import-Tests** aus der Liste zu `d4b72c8` (P1.1) — die einzige echte
-   Verhaltensänderung der ganzen Serie.
-6. **Setup** (P1.10) — `.\Setup\build-setup.ps1 -Schnell`, einmal installieren.
-7. **`EPOS_REFLAUF_UICULTURE=en-US`** setzen und den Referenzlauf wiederholen (iT7); das Ergebnis
-   muss byte-identisch bleiben.
+**0. Vorlauf.** **VS 2026 öffnet `WP-Plan.sln`** und zeigt **12 Projekte** (bei iU4 waren es 10,
+bei iU1 sieben); `Debug|x64` baut durch. `WindowsFormsApplication1` lädt dabei unter dem
+**Razor-SDK** ohne Meldung, und der **WinForms-Designer** öffnet ein Formular (das ist zugleich
+der erste Punkt der iU8-Liste). Danach `WP-Plan.Kern.slnf` öffnen: **acht** Projekte (bei iU4
+sechs, bei iU1 vier). Anschließend die **Anwendung starten und ein Projekt laden** — bricht es
+hier ab, ist alles Weitere sinnlos.
+
+**1. Der Windows-Referenzlauf 332/332 auf `f95fc34` — das ist iZ4.** Referenzlauf gegen
+`Referenzlaeufe\2026-08-30_B3-Kaskade`, alle 13 Projekte, **byte-gleich** (iT1). Er nimmt die
+ganze Kette in einem Zug ab: Frameworksprung, Kodierungswechsel und `UseWPF`-Rückbau (iU1), den
+physischen Kern-Umzug (iU4), die Dienste (iU5), `IDatenzugriff` (iU6) und den Renderer-Umzug
+(iU7) dürfen zusammen **kein einziges Ergebnis** bewegen. Hier ist die Reihenfolge Absicht: Sitzt
+dieser Schritt, sind alle Bedienproben darunter nur noch Bedienproben und keine Fehlersuche.
+Danach **`EPOS_REFLAUF_UICULTURE=en-US`** setzen und wiederholen (iT7) — byte-identisch.
+
+**2. `Referenzlauf.exe bildvergleich` — die Abnahme von iU7.** Aufruf:
+`Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>`. Er
+rendert die neun Berichtsbilder je einmal mit dem alten `ChartRendererGdi` und einmal mit dem
+neuen SkiaSharp-`ChartRenderer` und schreibt eine `bildvergleich.md`. **Nur unter Windows
+lauffähig** (die GDI+-Seite gibt es nur dort). Steht dort PASS, wird `ChartRendererGdi.cs`
+ersatzlos gelöscht (Entscheidungsregister **iF23**); bis dahin ist die Datei eine zweite,
+ungepflegte Fassung desselben Renderers.
+
+**3. App-Start, Sprachumschaltung und Setup — die Abnahme von iU4 und iU5.**
+   - Alle zwölf Gewerke über das Kontextmenü öffnen und speichern; die vier Ja/Nein-Rückfragen in
+     beide Richtungen; die 19 Stammdaten- und Einlesemasken aus dem Menü.
+   - **Sprachumschaltung de↔en** (`HKCU\Software\wp-plan`, Wert `Language`, Neustart) — sie ist
+     der Kulturnachweis auf der Oberfläche, nachdem `Sprache` in den Kern gezogen ist.
+   - Registry-Werte und DPAPI-Geltungsbereiche unverändert (Lizenz bleibt aktiviert, KI-Schlüssel
+     lesbar); Hilfe-Zwischenspeicher unter `%APPDATA%\EPOS-Plan`, Lizenz unter `%APPDATA%\wp-plan`.
+   - **Bericht erzeugen** (Word *und* Excel), Deckblattfassung `1.1.0.0`, Vorlage gefunden;
+     Katalogimporte VDI 3805 / CEC / PAN; Ganglinien aus CSV *und* Excel-Mappe; CSV-Export.
+   - **Proben 16/16** (`Proben/ZugriffsschichtProben`) und die **Excel-Import-Tests** aus der
+     Liste zu `d4b72c8` (P1.1) — die einzige echte Verhaltensänderung der iU1-Serie.
+   - **Setup** (P1.10) — `.\Setup\build-setup.ps1 -Schnell`, einmal installieren. **Achtung:**
+     Seit iU8-10 braucht der Bau `MicrosoftEdgeWebview2Setup.exe` in der Repowurzel, siehe die
+     iU8-Liste.
+   Die vollständigen Einzelpunkte stehen unten je Commit und im Abschnitt „Am Gerät zu prüfen".
+
+**4. Die iU6-Punkte — was der Referenzlauf nicht abdeckt.** Er deckt den Rechenpfad ab, nicht die
+Bedienung:
+   - **Erststart-Migration aus einem `.accdb`-Bestand** — der einzige verbliebene Nutzer der
+     OleDb-Brücke (`DbParamOleDb.Nach`, `SchemaVersionAccess`).
+   - Die **Solarkollektoren- und Pufferspeicherdialoge**, deren toter OleDb-Code gestrichen wurde:
+     Sie müssen sich „unverändert" verhalten.
+   - Die **36 Views mit `RecordSet`** (FormMain 13, Form_Start 10, Form_PV 6, Form_Gebäude 6,
+     Form_WP 4, `Form_DBBHKW.cs:436/450`) und die Sweep-Dateien mit den meisten Stellen:
+     `Form_Kosten.cs` (83), `ucFuelSettings.cs` (80), `Form_BHKWEing.cs` (50),
+     `Form_Heizkessel.cs` (46), `Form_Heizkessel_einlesen.cs` (20).
+
+**5. Die iU8-Liste** in [`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md) — der
+Blazor-Dialog mit Maus *und* Finger, beide Sprachen, Hochkontrast, DPI, WebView2 und Setup. Sie
+ist bewusst getrennt: Sie prüft nichts am Rechenweg, sondern eine neue Oberflächentechnik.
 
 ### Wenn der Referenzlauf abweicht
 
@@ -549,7 +602,7 @@ diff -rq artifacts/reflauf/ref artifacts/reflauf/iU5-<Tn>              # nur pro
 Ergebnis in **allen sechs** Tranchen: 0 Fehler, 123/89 Warnungen, alle Tests grün,
 **GESAMT PASS (815.043 Werte)**, `diff -rq` meldet nur die zusätzliche `protokoll.txt`.
 
-### `3a9dee3` — iU5-T0: Diensthalter, neun Schnittstellen, Windows-Adapter
+### `35be81f` — iU5-T0: Diensthalter, neun Schnittstellen, Windows-Adapter
 
 23 neue Kerndateien in `EPOS.Kern/Allgemein/Dienste/`, 10 Windows-Adapter in
 `WindowsFormsApplication1/Dienste/`, `DiensteTests.cs` (13 Tests). `Meldung` zeigt auf
@@ -559,7 +612,7 @@ Ergebnis in **allen sechs** Tranchen: 0 Fehler, 123/89 Warnungen, alle Tests gr�
 **Am Gerät zu prüfen:** Das Programm startet; eine erzwungene Startmeldung (Datenbank
 umbenennen) erscheint als Dialog und nicht auf der Konsole.
 
-### `5eae11f` — iU5-T1: Dialoge
+### `4118ed0` — iU5-T1: Dialoge
 
 33 `MessageBox.Show` in 14 Dateien. Meldungstexte **byte-gleich**; `git diff` zeigt nur die
 Aufrufform.
@@ -569,7 +622,7 @@ Aufrufform.
 Ja/Nein-Rückfragen in **beide** Richtungen: Speichervariante aktiv setzen, Speichervariante
 löschen, Projekt löschen (Fokus muss auf „Nein" stehen), Anlagenzeile mit doppelter Gerätekopie.
 
-### `7cda009` — iU5-T2: Pfade und Dateien
+### `8add154` — iU5-T2: Pfade und Dateien
 
 13 Dateien. **Pfadgleichheit ist die eigentliche Anforderung.**
 
@@ -581,7 +634,7 @@ löschen, Projekt löschen (Fokus muss auf „Nein" stehen), Anlagenzeile mit do
 CSV-Export, Word- und Excel-Bericht nach „Eigene Dokumente", Öffnen einer erzeugten Datei mit
 der Standardanwendung.
 
-### `c288461` — iU5-T3: Einstellungen, Lizenz, Geräte-ID
+### `d477a77` — iU5-T3: Einstellungen, Lizenz, Geräte-ID
 
 11 Dateien, dazu der Rückbau (`System.Management`, `StartLocalWebServer`, `RegPfad`-Dublette).
 
@@ -594,7 +647,7 @@ der Standardanwendung.
 `HKLM\Software\wp-plan\KiDeaktiviert` greift weiterhin. PVGIS-Abruf und Geokodierung
 arbeiten (Einstellwerte `PVGISUrl`, `GeoKodierung`).
 
-### `3ee613f` — iU5-T4: Sprache
+### `b9fecf0` — iU5-T4: Sprache
 
 5 Dateien. `Program.nLanguage` bleibt Weiterleitung für die Masken.
 
@@ -608,7 +661,7 @@ das Werkzeug setzt Rechen- und Anzeigekultur in `KulturSetzen()` fest auf `de-DE
 Variable gehört dem älteren WinForms-Werkzeug `Referenzlauf\`. Der Lauf mit gesetzter Variable
 wurde trotzdem gefahren und ist byte-identisch.
 
-### `7d0752f` — iU5-T5: Navigation und Projektkontext
+### `9235a92` — iU5-T5: Navigation und Projektkontext
 
 21 Dateien. **Danach ist der Wächter leer:**
 
@@ -637,7 +690,7 @@ sich das Verhalten der Melde-Haken).
 
 ## Nachweise iU5-Abschluss (zweiter Umzug) und iU7-9
 
-**Stand 03.09.2026 · `7204224`..`57d7cc8` auf der Basis `c477523`.** Sechs Commits: fünf
+**Stand 03.09.2026 · `a546af9`..`0af6421` auf der Basis `c477523`.** Sechs Commits: fünf
 Umzugstranchen (`iU5-U1`…`iU5-U5`) und die Berichtsausgabe über `Dienste.Datei` (`iU7-9`).
 Der Kern wächst von **193 auf 267** `.cs`-Dateien; unter `WindowsFormsApplication1/Allgemein/`
 und `/Controller/` bleiben **59** von 133.

@@ -22,11 +22,8 @@
                 disabled="@(!SpeichernErlaubt)" @onclick="BeimSpeichern">@SpeichernText</button>
     }
 
-    @if (MitAbbrechen)
-    {
-        <button type="button" class="epos-knopf"
-                @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
-    }
+    <button type="button" class="epos-knopf"
+            @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
 
     <button type="button" class="epos-knopf epos-knopf--primaer"
             disabled="@(!OkErlaubt)" @onclick="() => Ergebnis.InvokeAsync(true)">@OkText</button>
@@ -47,17 +44,6 @@
 
     /// <summary>Zeigt den Speichern-Knopf. Ohne ihn bleibt die Leiste OK/Abbrechen.</summary>
     [Parameter] public bool MitSpeichern { get; set; }
-
-    /// <summary>
-    /// Zeigt den Abbrechen-Knopf.
-    ///
-    /// <para>Nicht jede Maske hat zwei Ausgaenge. Eine Maske, die schon beim
-    /// Speichern schreibt - der Dialog "BHKW-Wirtschaftlichkeit" ist die erste -,
-    /// kennt kein Verwerfen mehr: Sie hat nur "Speichern" und "Schliessen". Ein
-    /// zweiter Knopf, der nichts anderes tut als der erste, waere dort eine
-    /// Behauptung, die nicht stimmt.</para>
-    /// </summary>
-    [Parameter] public bool MitAbbrechen { get; set; } = true;
 
     /// <summary>Ist links ein Datensatz markiert? (Vorbild: Zustand, erster Parameter.)</summary>
     [Parameter] public bool SatzMarkiert { get; set; }

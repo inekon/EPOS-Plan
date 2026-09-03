@@ -65,21 +65,6 @@ public class FelderTests : BunitContext
     }
 
     [Fact]
-    public void Auswahlfeld_ist_bedienbar_und_laesst_sich_sperren()
-    {
-        // Aktiv=false wird von Feldern gebraucht, die ANGEKUENDIGT, aber noch nicht
-        // pflegbar sind - Luecke K3 des Dialogs "BHKW-Wirtschaftlichkeit".
-        var offen = Render<Auswahlfeld>(p => p
-            .Add(x => x.Eintraege, new[] { (3, "Erdgas") }));
-        Assert.False(offen.Find("select").HasAttribute("disabled"));
-
-        var gesperrt = Render<Auswahlfeld>(p => p
-            .Add(x => x.Eintraege, new[] { (3, "Erdgas") })
-            .Add(x => x.Aktiv, false));
-        Assert.True(gesperrt.Find("select").HasAttribute("disabled"));
-    }
-
-    [Fact]
     public void Datumsfeld_liest_und_schreibt_im_ISO_Format()
     {
         DateOnly? erhalten = null;

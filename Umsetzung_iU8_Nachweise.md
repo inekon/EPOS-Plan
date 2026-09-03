@@ -1,7 +1,8 @@
 # Nachweisliste iU8 — der erste Blazor-Dialog, Abnahme auf Windows
 
-**Stand 03.09.2026 · Branch `ios_migration` · Basis `c477523` · Strang A `8574911`..`f5fb05c`,
-Strang B `4369fdb`..`eafbc1f`, Strang C `479fcf9`..`0af7ca7`**
+**Stand 03.09.2026 · Branch `ios_migration` · Strang A `8574911`..`8f5a28e` mit `45a21dc`,
+`f5fb05c` (Basis `18f515f`) · Strang B `4369fdb`..`eafbc1f` mit `eff82aa`, `e3d1e5b`
+(Basis `c477523`) · Strang C `479fcf9`..`0af7ca7`, `4aa6b15` (Basis `f5fb05c`)**
 
 Paket iU8 des [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) (§ 4) ist
 umgesetzt: `Form_Kosten` öffnet „Energieträger anlegen" als Razor-Komponente aus `EPOS.UI`, die
@@ -22,6 +23,22 @@ Ergebnis der Linux-Nachweise in einem Satz: **`dotnet build WP-Plan.sln -c Relea
 > Windows-10- oder LTSC-Rechner zuerst prüfen:
 > `reg query "HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" /v pv`
 > — steht dort nichts oder `0.0.0.0`, fehlt sie.
+
+## Vorbedingungen, bevor die Liste beginnt
+
+Zwei Dinge liegen **nicht** im Repo und müssen vom Anwender bereitgestellt werden. Ohne sie
+brechen die Punkte weiter unten nicht sinnvoll ab, sondern gar nicht erst an.
+
+- [ ] **`MicrosoftEdgeWebview2Setup.exe` in die Repowurzel legen** — der Online-Bootstrapper von
+      <https://go.microsoft.com/fwlink/p/?LinkId=2124703> (~2 MB). `Setup\build-setup.ps1` kopiert
+      ihn von dort nach `Setup\Voraussetzungen\`; **fehlt er, bricht der Setup-Bau ab.** Die
+      Datei wird **nie eingecheckt**: `.gitignore` schließt `/MicrosoftEdgeWebview2Setup.exe`
+      seit `e3d1e5b` aus, damit `GitHub_Sync.bat` sie mit `git add -A` nicht mitnimmt (S9 des
+      Setup-Konzepts ist damit erledigt). Offen bleibt allein die Grundsatzfrage, ob der
+      Bootstrapper der richtige Weg ist — **iF20** / S10.
+- [ ] **Eine Datenbank mit echten Projektdaten** (`Kenndaten.sqlite`) für alles, was der Dialog
+      schreibt und liest, und ein `.accdb`-Bestand, falls die Erststart-Migration mitgeprüft
+      werden soll.
 
 ---
 
@@ -94,7 +111,7 @@ KI-Kontexteintrag; Publish-Probe vollständig.
 
 *Grundfunktion*
 
-- [ ] `Form_Kosten` → Reiter Energie → **„Energieträger anlegen"** öffnet den Dialog, mittig über
+- [ ] Startseite **Kosten** → Knopf **„Energieträgerverwaltung…"** (Fenster „Kosteneditor") → Reiter **„Energiekosten"** → Knopf **„➕ Hinzufügen…"** neben der Energieträgerliste öffnet den Dialog, mittig über
       dem Elternfenster, feste Größe, ohne Minimier-, Maximier- und Taskleistenknopf
 - [ ] **Kein weißes Aufblitzen** beim Öffnen (die Hülle steht auf der Themafläche `#f5f4ef`, bis
       die WebView2 aufgebaut ist)
@@ -164,8 +181,8 @@ beide Sprachen je `CustomMessage`, kein `}` in einem Pascal-Kommentar, kein `^` 
 
 **Nachweis Windows:**
 
-- [ ] `MicrosoftEdgeWebview2Setup.exe` aus <https://go.microsoft.com/fwlink/p/?LinkId=2124703> in
-      die Repowurzel legen (offener Punkt S8 des Setup-Konzepts)
+- [ ] `MicrosoftEdgeWebview2Setup.exe` liegt in der Repowurzel (siehe **Vorbedingungen** oben;
+      offener Punkt S8 des Setup-Konzepts)
 - [ ] `Setup\build-setup.ps1` läuft durch, kopiert den Bootstrapper nach
       `Setup\Voraussetzungen\` und übersetzt ohne ISCC-Fehler
 - [ ] Das erzeugte Setup enthält `wwwroot\_content\EPOS.UI\` (Prüfung z. B. mit `innounp` oder nach
@@ -177,28 +194,32 @@ beide Sprachen je `CustomMessage`, kein `}` in einem Pascal-Kommentar, kein `^` 
       Blazor-Dialog bleibt leer
 - [ ] Rechner **mit** vorhandener Laufzeit: Der Bootstrapper wird gar nicht erst mitgenommen
       (`Check: not WebView2Vorhanden`)
-- [ ] `.gitignore` um `/MicrosoftEdgeWebview2Setup.exe` ergänzen, bevor `GitHub_Sync.bat` das
-      nächste Mal mit `git add -A` läuft (offener Punkt S9)
+- [x] ~~`.gitignore` um `/MicrosoftEdgeWebview2Setup.exe` ergänzen, bevor `GitHub_Sync.bat` das
+      nächste Mal mit `git add -A` läuft (offener Punkt S9)~~ — **erledigt mit `e3d1e5b`**
 
 ---
 
 ## Offen aus anderen Strängen
 
-### Der Stapellauf des Formular-Generators liest den gelöschten Dialog
+### ~~Der Stapellauf des Formular-Generators liest den gelöschten Dialog~~ — erledigt
 
-`Werkzeuge/Formularkarte.Tests` liest absichtlich die **echten** Designer-Dateien des Bestands.
+`Werkzeuge/Formularkarte.Tests` las die **echten** Designer-Dateien des Bestands.
 `Form_Kosten_Auswahl.Designer.cs` ist mit iU8-9 gelöscht, `new Form_Kosten_Auswahl` aus
-`Form_Kosten.cs` verschwunden — **22 der 100 Tests scheitern seitdem** (vorher 100/100 grün,
-nachgemessen).
+`Form_Kosten.cs` verschwunden — **22 der 100 Tests scheiterten seitdem**.
 
-Das Werkzeug steht weder in `WP-Plan.sln` noch in `WP-Plan.Kern.slnf` noch in einem CI-Lauf; der
-Bau und die 886 Tests bleiben unberührt.
+**Gelöst mit iU8-12e (`4aa6b15`)**, und zwar durch eine Trennung statt durch eine andere
+Probemaske: Der letzte Stand der gelöschten Maske liegt **eingefroren** unter
+`Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/` (Designer, `.cs`, `.resx` und der
+Aufrufer-Auszug aus `Form_Kosten.cs`, wortgleich aus `92380ea^`). Das Muster wird **nie
+übersetzt** und vom Stapellauf **übergangen** wie `bin` und `obj`; die `StapelTests` prüfen
+weiterhin den lebenden Bestand, jetzt an `Form_Kosten_VarAuswahl`. **101 Tests, alle grün.**
+Nachgemessen nach iZ5: **122 Designer-Dateien, 119 Masken** im Repo, davon **117 unter `Views/`**.
 
-- [ ] Probemaske der Tests auf **`Form_Kosten_VarAuswahl`** umstellen — die zeichengleiche Kopie,
-      die als Nächste an der Reihe ist (`DesignerLeserTests`, `FeldkarteSchreiberTests`,
-      `RazorSchreiberTests`, `StapelTests`)
-- [ ] Danach `dotnet test Werkzeuge/Formularkarte.Tests/Formularkarte.Tests.csproj -c Release`
-      wieder 100/100
+Das Werkzeug steht weder in `WP-Plan.sln` noch in `WP-Plan.Kern.slnf`; Bau und die 886 Tests
+bleiben davon unberührt. **Offen bleibt nur die Aufnahme in die CI** — sie ist Gegenstand des
+`kern.yml`-Schritts „Formularkarte-Tests" und läuft nur auf `ubuntu-latest`.
+
+- [ ] `dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` auf Windows → 101/101
 
 ### Verteilung der WebView2-Laufzeit
 
