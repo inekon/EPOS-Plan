@@ -279,6 +279,11 @@ Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich
 # einziger der Simulationsdialoge keinen Hilfeeinstieg. Die Razor-Fassung traegt
 # einen; die Zeile hier ist sein Ziel.
 Form_Betriebsmodus.btn_Help = Simulation
+# iU9-W10a.2 (Befund W10-B2): dasselbe fuer die Klimazonenkarte.
+Form_Klimazonenkarte.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.5 (Befund W10-B13): Der Quellendialog "Pufferspeicher" hatte einen
+# HilfeKontext-Eintrag, aber keine Zeile hier - der Infoknopf lief ins Leere.
+Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Gesetzesparameter
