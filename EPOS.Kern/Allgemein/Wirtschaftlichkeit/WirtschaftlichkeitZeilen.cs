@@ -461,6 +461,18 @@ namespace WindowsFormsApplication1
                                   ? -b.ErsatzJeJahr[t] : 0;
 
             m.Nimm("INVEST_ERSATZ", MyResource.Resource.WIRT_MJ_INVEST_ERSATZ, investErsatz);
+
+            // PAKET FX3 (Anwenderentscheid R-2): Die Spalte „Betrieb" trägt seither
+            // zwei verschieden fortgeschriebene Anteile — den Betriebs-Topf mit p_B und
+            // den Endenergie-Topf mit p_E (Hilfsenergie „x % der Endenergie…", seit
+            // PAKET FX4-b auch „% der Brennstoff-/Stromkosten").
+            // KapitalwertRechner.BetriebJeJahr liefert die SUMME beider, genau damit
+            // diese Tabelle unverändert bleibt: Die Summe der Positionsspalten ist
+            // weiterhin die Spalte „Netto nominal", und die Selbstprüfung darunter
+            // (kumuliert(T) + Restwert = Kapitalwert) bleibt gültig. Der p_E-Anteil ist
+            // in KapitalwertRechner.Zahlungsbild.EndenergieAnteilJeJahr einzeln
+            // ausgewiesen; eine eigene Spalte bekäme er erst mit einem eigenen
+            // Anzeigetext (offener Punkt FX3-1).
             m.Nimm("BETRIEB", MyResource.Resource.WIRT_MJ_BETRIEB, Negativ(b.BetriebJeJahr, T));
             m.Nimm("ENERGIE", MyResource.Resource.WIRT_MJ_ENERGIE, Negativ(b.EnergieJeJahr, T));
             m.Nimm("BEHG", MyResource.Resource.WIRT_MJ_BEHG, Negativ(b.BehgJeJahr, T));
