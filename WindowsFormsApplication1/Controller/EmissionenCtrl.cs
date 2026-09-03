@@ -279,7 +279,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// HANDEINGABE (F8): Der getippte Text wird geprüft (Komma ODER Punkt,
-        /// Hausmuster <see cref="Program.ZahlParsen"/>) und übernommen; leerer
+        /// Hausmuster <see cref="ZahlText.Parsen"/>) und übernommen; leerer
         /// Text heißt „nicht gepflegt". Eine echte Änderung setzt die Herkunft auf
         /// „Eigener Wert" und löscht das Kennzeichen <c>ist_co2e</c> — wer die Zahl
         /// selbst tippt, hat keine Fundstelle dafür, dass sie schon ein Äquivalent
@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
             else
             {
                 double d;
-                if (!Program.ZahlParsen(text, out d)) return false;
+                if (!ZahlText.Parsen(text, out d)) return false;
                 if (d < 0) return false;
                 neu = d;
             }

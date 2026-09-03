@@ -4,7 +4,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Berichtssprache = UI-Sprache (Konzept Eckpunkt 10; Program.nLanguage: 0=de, 1=en).
+    /// Berichtssprache = UI-Sprache (Konzept Eckpunkt 10; <see cref="Sprache.Nummer"/>: 0=de, 1=en).
     ///
     /// Übersetzt bekannte Berichtstexte per Wörterbuch: T(text) liefert bei
     /// englischer UI die Übersetzung, sonst den Eingabetext unverändert — unbekannte
@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
     {
         public static bool Englisch
         {
-            get { try { return Program.nLanguage == 1; } catch { return false; } }
+            get { try { return Sprache.Nummer == 1; } catch { return false; } }
         }
 
         /// <summary>Kultur der Berichtssprache (Zahlen-/Datumsformate).</summary>
