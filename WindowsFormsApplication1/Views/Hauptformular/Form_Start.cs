@@ -1351,7 +1351,6 @@ namespace WindowsFormsApplication1
 
         private void pBox_Solarthermie_Click(object sender, EventArgs e)
         {
-            Form_SolarKollektoren frm = new Form_SolarKollektoren();
             Form_Solarganglinie frm2 = new Form_Solarganglinie();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             WizardCtrl wizctrl = new WizardCtrl();
@@ -1369,24 +1368,23 @@ namespace WindowsFormsApplication1
 
             if (radioButton_KollektorProfil.Checked)
             {
-                frm.list_werzmodel.Clear();
-                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+                // iU9-W7.7: Der Kollektordialog ist die Razor-Komponente
+                // SolarkollektorenDialog; Form_SolarKollektoren ist im selben Schritt
+                // GELOESCHT (Regel M1). Die Positionierung ueber p1 entfaellt - die
+                // Blazor-Huelle erscheint mittig ueber dieser Maske.
                 id_type = WizardItemClass.SOLAR_TYP;
+                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
 
-                WErzeugerModel item = new WErzeugerModel();
+                List<WErzeugerModel> liste = new List<WErzeugerModel>();
                 for (int i = 0; i < werzctrl.rows; i++)
                 {
-                    frm.list_werzmodel.Add(werzctrl.items[i]);
+                    liste.Add(werzctrl.items[i]);
                 }
 
-                frm.SetControls(m_ID_Projekt);
-                frm.Location = p1;
-                DialogResult result = frm.ShowDialog();
-
-                if (result == DialogResult.OK)
+                if (SolarkollektorHuelle.Oeffnen(this, m_ID_Projekt, liste))
                 {
                     wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
 
                     projctrl.ReadSingle(m_szProjektname);
                     projctrl.m_Aenderungsdatum = DateTime.Now;

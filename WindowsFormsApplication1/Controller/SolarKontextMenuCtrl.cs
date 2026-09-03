@@ -84,7 +84,9 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Solar.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_SolarKollektoren frm = new Form_SolarKollektoren();
+            // iU9-W7.7: Das hier angelegte Form_SolarKollektoren wurde nie benutzt -
+            // dieselbe Aufraeumung wie bei den fuenf Kontextmenues der Welle 6 und
+            // beim WP-Loeschweg (W7.4).
 
             if (indexes.Count > 0)
             {
@@ -101,14 +103,10 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_SolarKollektoren frm = new Form_SolarKollektoren();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
-            int id_type;
+            int id_type = WizardItemClass.SOLAR_TYP;
 
-            frm.list_werzmodel.Clear();
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
-            id_type = WizardItemClass.SOLAR_TYP;
 
             // Vollstaendig gelesene Modelle durchreichen - wie im Karten-Weg
             // (Form_Start.pBox_Solarthermie_Click, Zweig Kollektorprofil). Die Teilkopie hat
@@ -117,22 +115,21 @@ namespace WindowsFormsApplication1
             // schreibt - genullt wurden dabei ID_Carrier, Vorlauf/Ruecklauf, Grenzleistung,
             // Betriebsart, Sperrung/Sperrzeiten, Bivalenter_Betrieb, Abschaltpunkt und
             // Nutzungszeit.
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_werzmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_ID_Projekt);
-            frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W7.7: Der Kollektordialog ist die Razor-Komponente
+            // SolarkollektorenDialog; Form_SolarKollektoren ist im selben Schritt
+            // GELOESCHT (Regel M1).
+            if (SolarkollektorHuelle.Oeffnen(null, m_ID_Projekt, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle(m_szProjektname);

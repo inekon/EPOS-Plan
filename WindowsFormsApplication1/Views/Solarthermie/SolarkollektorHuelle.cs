@@ -123,7 +123,286 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Die Wege hinter den Delegaten
+        // W7.7 - Projektdialog
+        // =================================================================================
+
+        /// <summary>Gewünschtes Innenmaß des Projektdialogs (Vorläufer: 825 × 616).</summary>
+        private static readonly Size PROJEKT_MASS = new Size(1000, 720);
+
+        /// <summary>
+        /// Zeigt den Projektdialog als eigenes Fenster — der Weg von
+        /// <c>Form_Start.pBox_Solarthermie_Click</c> (Zweig Kollektorprofil) und
+        /// <c>SolarKontextMenuCtrl.ContextMenuItemNeu_Click</c>.
+        /// </summary>
+        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
+        internal static bool Oeffnen(IWin32Window besitzer, int projektId,
+                                     List<WErzeugerModel> modelle)
+        {
+            bool ok = false;
+            BlazorDialogForm<SolarkollektorenDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(
+                ProjektGaben(projektId, modelle, wizard: false))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
+                {
+                    ok = b;
+                    if (dlg != null) dlg.Schliessen(b);
+                })
+            };
+
+            dlg = new BlazorDialogForm<SolarkollektorenDialog>(
+                Text_("SKV_TITEL", "Eingabe der Solarkollektoren"), PROJEKT_MASS, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ok;
+        }
+
+        /// <summary>Die Solarseite des ASSISTENTEN — dieselbe Komponente, randlose Hülle.</summary>
+        internal static Form AssistentSeite()
+        {
+            return new BlazorAssistentSeite<SolarkollektorenDialog>(
+                (projektId, projektName, modelle) =>
+                    new Dictionary<string, object>(ProjektGaben(projektId, modelle, wizard: true)),
+                PROJEKT_MASS);
+        }
+
+        /// <summary>Der PARAMETERSATZ des Projektdialogs.</summary>
+        internal static IReadOnlyDictionary<string, object> ProjektGaben(
+            int projektId, List<WErzeugerModel> modelle, bool wizard)
+        {
+            var zeilen = new List<ErzeugerZeile>();
+            var zuModell = new Dictionary<int, WErzeugerModel>();
+
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != WizardItemClass.SOLAR_TYP) continue;
+                zeilen.Add(ZeileZu(m));
+                zuModell[m.ID] = m;
+            }
+
+            var zaehler = new Zaehler();
+            foreach (WErzeugerModel m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
+
+            return new Dictionary<string, object>
+            {
+                ["Zeilen"] = zeilen,
+                ["Wizard"] = wizard,
+
+                ["Katalog"] = new Func<IReadOnlyList<KatalogZeile>>(Katalogzeilen),
+                ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
+                ["Modulflaeche"] = new Func<string, double>(ModulflaecheZu),
+
+                ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
+                    stammId => Aufnehmen(projektId, modelle, zuModell, zaehler, stammId, wizard)),
+
+                ["Entfernen"] = new Action<ErzeugerZeile>(
+                    zeile => Entfernen(projektId, modelle, zuModell, zeile, wizard)),
+
+                ["Uebernehmen"] = new Action<ErzeugerZeile>(
+                    zeile =>
+                    {
+                        if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+                        m.Kollektormodulanzahl = (int)(zeile.AnzahlModule ?? 0);
+                        m.m_Neigung = zeile.Neigung ?? 0;
+                        m.m_Azimut = zeile.Azimut ?? 0;
+                        m.Vorlauf = zeile.Vorlauf ?? 0;
+                        m.Ruecklauf = zeile.Ruecklauf ?? 0;
+                    }),
+
+                ["EditorGaben"] = new Func<string, bool, IReadOnlyDictionary<string, object>>(KatalogGaben),
+                ["KatalogLoeschen"] = new Func<string, bool>(
+                    name => new SolarkollektorenStammCtrl().Delete(name)),
+
+                ["TitelText"] = Text_("SKV_TITEL", "Eingabe der Solarkollektoren"),
+                ["KopfbandText"] = Text_("SKV_KOPFBAND", "Eingabe der Solarkollektoren"),
+                ["LabelProjektliste"] = Text_("SKV_LBL_PROJEKTLISTE", "Auswahl in Projekt:"),
+                ["LabelKatalogliste"] = Text_("SKV_LBL_KATALOGLISTE", "Auswahl in DB:"),
+                ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
+                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
+                ["SpalteEigenschaften"] = Text_("BHKWV_SP_EIGENSCHAFTEN", "Eigenschaften"),
+                ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
+                ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
+                ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["GruppeKollektor"] = Text_("SKV_GRP_KOLLEKTOR", "Kollektor"),
+                ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
+                ["LabelAnzahl"] = Text_("SKV_LBL_ANZAHL", "Modulanzahl:"),
+                ["LabelAperturflaeche"] = Text_("SKV_LBL_APERTURFLAECHE", "Aperturfläche [m²]:"),
+                ["LabelNeigung"] = Text_("SKV_LBL_NEIGUNG", "Neigung [°]:"),
+                ["LabelAzimut"] = Text_("SKV_LBL_AZIMUT", "Azimut [°]:"),
+                ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
+                ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
+                ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
+                ["BtnKatalogAendernText"] = Text_("SKV_BTN_DB_AENDERN", "Kollektor in DB ändern..."),
+                ["BtnKatalogNeuText"] = Text_("SKV_BTN_DB_NEU", "Kollektor in DB neu..."),
+                ["BtnKatalogLoeschenText"] = Text_("SKV_BTN_DB_LOESCHEN", "Kollektor in DB löschen"),
+                ["FrageLoeschen"] = Text_("SKV_FRAGE_LOESCHEN",
+                    "Wollen Sie wirklich den Solarkollektor löschen?"),
+                ["MeldungUebernommen"] = Text_("SKV_MSG_UEBERNOMMEN", "Die Angaben sind übernommen."),
+                ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
+                ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+            };
+        }
+
+        /// <summary>
+        /// „◀" (<c>btn_Hinzzu_Click</c>:193): Vor- und Rücklauf kommen aus dem
+        /// Stammsatz, die Modulanzahl steht auf 1, Neigung und Azimut auf 0. Im
+        /// PROJEKTMODUS wird der Stammsatz sofort in die Projekttabelle kopiert und die
+        /// PROJEKT-Id referenziert; im Assistenten bleibt es bei der Stamm-Id als
+        /// Platzhalter — die Kopie macht dort <c>WizardCtrl</c> beim Speichern.
+        /// </summary>
+        private static AufnahmeErgebnis Aufnehmen(int projektId, List<WErzeugerModel> modelle,
+                                                  Dictionary<int, WErzeugerModel> zuModell,
+                                                  Zaehler zaehler, int stammId, bool wizard)
+        {
+            SolarkollektorenModel stamm = SolarkollektorenStammCtrl.ReadById(stammId);
+            if (stamm == null)
+                return new AufnahmeErgebnis(null, Text_("SKV_MSG_NICHT_GEFUNDEN",
+                    "Der ausgewählte Solarkollektor wurde in den Stammdaten nicht gefunden."), true);
+
+            var model = new WErzeugerModel
+            {
+                ID = zaehler.Naechster++,
+                ID_Projekt = projektId,
+                Bezeichner = stamm.m_szKollektorname,
+                ID_Type = WizardItemClass.SOLAR_TYP,
+                Kollektormodulanzahl = 1,
+                m_Azimut = 0,
+                m_Neigung = 0,
+                Vorlauf = (int)stamm.m_Vorlauf,
+                Ruecklauf = (int)stamm.m_Ruecklauf
+            };
+
+            if (!wizard && projektId > 0)
+            {
+                int kopieId = new SolarkollektorenCtrl().CopyFromStamm(stammId, projektId);
+                if (kopieId <= 0)
+                    return new AufnahmeErgebnis(null, Text_("SKV_MSG_KOPIE_FEHLER",
+                        "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
+                model.ID_Solar = kopieId;
+            }
+            else
+            {
+                model.ID_Solar = stammId;
+            }
+
+            modelle.Add(model);
+            zuModell[model.ID] = model;
+            return new AufnahmeErgebnis(ZeileZu(model));
+        }
+
+        /// <summary>
+        /// „▶" (<c>btn_Entfernen_Click</c>:251): Die Projektkopie geht nur mit, wenn
+        /// keine zweite Zeile mehr auf sie verweist — zwei gleiche Kollektoren im
+        /// Projekt teilen sich EINE Kopie in <c>Tab_Solarkollektoren</c>.
+        /// </summary>
+        private static void Entfernen(int projektId, List<WErzeugerModel> modelle,
+                                      Dictionary<int, WErzeugerModel> zuModell,
+                                      ErzeugerZeile zeile, bool wizard)
+        {
+            if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+
+            modelle.Remove(m);
+            zuModell.Remove(zeile.Schluessel);
+
+            bool nochReferenziert = false;
+            foreach (WErzeugerModel it in modelle)
+                if (it.ID_Type == WizardItemClass.SOLAR_TYP && it.ID_Solar == m.ID_Solar)
+                { nochReferenziert = true; break; }
+
+            if (!wizard && projektId > 0 && !nochReferenziert)
+                new SolarkollektorenCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
+        }
+
+        // =================================================================================
+        // Abbildungen des Projektdialogs
+        // =================================================================================
+
+        private static ErzeugerZeile ZeileZu(WErzeugerModel m)
+        {
+            return new ErzeugerZeile
+            {
+                Schluessel = m.ID,
+                Bezeichner = m.Bezeichner ?? "",
+                GeraetId = m.ID_Solar,
+                Vorlauf = m.Vorlauf,
+                Ruecklauf = m.Ruecklauf,
+                Neigung = m.m_Neigung,
+                Azimut = m.m_Azimut,
+                AnzahlModule = m.Kollektormodulanzahl
+            };
+        }
+
+        /// <summary>
+        /// Die Katalogzeilen samt der zweiten Spalte — im Vorläufer Firma, Kollektortyp,
+        /// Modulfläche und Aperturfläche untereinander (<c>SetDBList</c>:181).
+        /// </summary>
+        private static IReadOnlyList<KatalogZeile> Katalogzeilen()
+        {
+            var ctrl = new SolarkollektorenStammCtrl();
+            ctrl.ReadAll();
+
+            var liste = new List<KatalogZeile>();
+            for (int i = 0; i < ctrl.rows; i++)
+            {
+                SolarkollektorenModel k = ctrl.items[i];
+                liste.Add(new KatalogZeile(k.m_ID, k.m_szKollektorname,
+                    k.m_szFirma + "\nKollektortyp: " + k.m_szKollektortyp +
+                    "\nModulfläche: " + k.m_Modulfläche + " m²" +
+                    "\nAperturfläche: " + k.m_Aperturfläche + " m²"));
+            }
+            return liste;
+        }
+
+        /// <summary>Der Detailblock (<c>ApplySelectedSolar</c>:324) — immer aus dem Katalog.</summary>
+        private static ErzeugerDetail DetailZu(string name)
+        {
+            var ctrl = new SolarkollektorenStammCtrl();
+            ctrl.ReadSingle(name);
+            if (ctrl.rows == 0) return new ErzeugerDetail("", "", new List<(string, string)>());
+
+            SolarkollektorenModel k = ctrl.items[0];
+            var felder = new List<(string, string)>
+            {
+                (Text_("SKV_LBL_KOLLEKTOR", "Kollektor:"), k.m_szKollektortyp ?? ""),
+                (Text_("SKK_LBL_HERSTELLER", "Hersteller :"), k.m_szFirma ?? ""),
+                (Text_("SKK_LBL_BESCHREIBUNG", "Beschreibung :"), k.m_szBeschreibung ?? ""),
+                (Text_("SKV_LBL_MODULAPERTUR", "Aperturfläche:"), k.m_Aperturfläche.ToString())
+            };
+            return new ErzeugerDetail(k.m_szKollektorname ?? "", "", felder);
+        }
+
+        /// <summary>
+        /// Die Fläche EINES Moduls. Der Vorläufer las dafür die Spalte
+        /// <c>Aperturflaeche</c> des Stammsatzes — die lokale Variable dort heißt
+        /// <c>modulflaeche</c>, gelesen wird aber die Aperturfläche
+        /// (<c>ApplySelectedSolar</c>:344). Wörtlich übernommen.
+        /// </summary>
+        private static double ModulflaecheZu(string name)
+        {
+            var ctrl = new SolarkollektorenStammCtrl();
+            ctrl.ReadSingle(name);
+            return ctrl.rows == 0 ? 0 : ctrl.items[0].m_Aperturfläche;
+        }
+
+        /// <summary>
+        /// Der Zeilenzähler eines Dialoglaufs — dieselbe Rolle wie im Stromspeicher
+        /// (W6.6): Zwei gleiche Kollektoren wären ohne eindeutigen Schlüssel für die
+        /// Hülle ununterscheidbar. Der Vorläufer zählte ab 100000.
+        /// </summary>
+        private sealed class Zaehler
+        {
+            /// <summary>Der nächste freie Zeilenschlüssel.</summary>
+            internal int Naechster = 100000;
+        }
+
+        // =================================================================================
+        // Die Wege hinter den Delegaten des Katalogeditors
         // =================================================================================
 
         /// <summary>„Überschreiben" (<c>btn_Überschreiben_Click</c>:115).</summary>

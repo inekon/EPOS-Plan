@@ -359,11 +359,6 @@ namespace WindowsFormsApplication1
                 ((Form_Stromverbraucher)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
                 ((Form_Stromverbraucher)page).m_ID_Projekt = projektID;
             }
-            else if (top == WizardItemClass.SOLAR_ITEM)
-            {
-                ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
-                ((Form_SolarKollektoren)page).SetControls(projektID, true);
-            }
 
             btnBack.Enabled = true;
             btnCancel.Enabled = true;

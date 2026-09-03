@@ -43,7 +43,8 @@ namespace WindowsFormsApplication1
             // iU9-W7.5: Die WP-Seite ist eine Razor-Komponente; die Huelle baut ihre
             // WebView erst in Bestuecken (siehe BlazorAssistentSeite).
             /* 7  WP_ITEM            */ () => WaermepumpenHuelle.AssistentSeite(),
-            /* 8  SOLAR_ITEM         */ () => new Form_SolarKollektoren(),
+            // iU9-W7.7: dieselbe Bauart wie die WP-Seite (W7.5).
+            /* 8  SOLAR_ITEM         */ () => SolarkollektorHuelle.AssistentSeite(),
             /* 9  PV_ITEM            */ () => PhotovoltaikHuelle.AssistentSeite(),
             /* 10 SP_ITEM            */ () => StromspeicherHuelle.AssistentSeite(),
             // iU9-W6.3: Die Kesselseite ist eine Razor-Komponente; die Huelle baut ihre
@@ -59,7 +60,7 @@ namespace WindowsFormsApplication1
             typeof(Form_Waermebedarf), typeof(Form_Prozesswaerme), typeof(Form_Stromverbraucher),
             typeof(Wizard_Stromlastgang),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>),
-            typeof(Form_SolarKollektoren),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.PhotovoltaikDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.StromspeicherDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.HeizkesselDialog>),
