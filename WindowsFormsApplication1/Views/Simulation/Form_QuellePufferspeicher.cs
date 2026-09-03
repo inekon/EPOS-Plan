@@ -966,14 +966,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void btnPufferAnlegen_Click(object sender, EventArgs e)
         {
-            Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
-            frm.ID_Projekt = ID_Projekt;
+            // Die Verwaltung ist seit iU9-W10a.4 eine Razor-Komponente. In W10a.5 wird
+            // sie eine UEBERLAGERUNG dieses Dialogs; bis dahin zeigt die Huelle sie als
+            // zweites Fenster - derselbe Aufruf, dasselbe Ergebnis.
+            //
             // Keine Verwendungsvorgabe: die Quellseite legt den Kanal nicht fest.
-            frm.Verwendung = null;
-            frm.SetControls();
-            frm.ShowDialog(this);
-
-            int neu = frm.ID_Puffer;
+            int neu = PufferSpProjektHuelle.Oeffnen(this, ID_Projekt, null, 0);
             PufferListeLaden();
             if (neu > 0) ID_Puffer = neu;
             VorauswahlSetzen();

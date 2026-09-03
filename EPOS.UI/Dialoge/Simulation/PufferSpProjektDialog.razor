@@ -1,0 +1,1093 @@
+﻿@* PUFFERSPEICHER-VERWALTUNG auf PROJEKTEBENE (iU9-W10a.4, Konzept 4.3).
+
+   VORBILD. Views/Pufferspeicher/Form_PufferSp_Projekt (2 067 Z., Designer 492 Z.,
+   700 x 662, rund 60 Steuerelemente, neun MessageBox, 102 Ressourcenschluessel) -
+   die groesste Maske dieser Welle. Kataloguebernahme oder freie Eingabe,
+   Pflichtangabe Nutzung (Klassen-Set), Betriebsparameter, vier Schwellen,
+   Entladeprioritaet, Schichtung und Leistungsgrenzen; dazu die beiden
+   Kontrollanzeigen "Ladereihenfolge dieses Speichers" und "Wird als n. von m …
+   entladen".
+
+   KEIN ABBRECHEN (Befund W10-B29). Anlegen, Aendern und Entfernen wirken SOFORT;
+   der Dialog hat nur "Schliessen", und Esc nimmt nichts zurueck. Ein zweiter
+   Knopf, der nichts anderes taete als der erste, waere eine Behauptung, die
+   nicht stimmt - dieselbe Ueberlegung wie beim Dialog "BHKW-Wirtschaftlichkeit"
+   (B5b).
+
+   DREI ROLLEN, EIN DELEGATENSATZ. Der Dialog erscheint als eigenes Fenster (aus
+   der Simulationskonfiguration), als Ueberlagerung im Quellendialog (W10a.5) und
+   als Ueberlagerung im Senkendialog (W10a.7). Alle drei bekommen denselben
+   PufferSpProjektDienste-Satz; die Huelle baut ihn einmal.
+
+   DAS KLASSEN-SET IST DIE FUEHRENDE WAHRHEIT (Paket K2). Die drei Haekchen
+   Heizung/Brauchwasser/Prozess bestimmen, was gespeichert wird; die Verwendung
+   ist der davon ABGELEITETE Altwert. Die Klappliste des Vorlaeufers zeigte ihn
+   und liess sich bedienen - hier steht statt ihrer eine Mehrfachauswahl mit
+   einer Herleitungszeile, die den abgeleiteten Altwert nennt. Damit faellt das
+   gegenseitige Nachziehen (_klassenSetSpiegelt) weg, das im Vorlaeufer nur
+   noetig war, weil zwei Bedienelemente dieselbe Sache sagten.
+
+   DIE PFLICHTPRUEFUNG SITZT IM UEBERNEHMEN, nicht im Klicken: Wer von
+   {Heizung} auf {Brauchwasser} umstellt, muss zwischendurch durch das leere Set
+   gehen (Kommentar KlassenSet_Geaendert).
+
+   WOERTLICH TROTZ BEFUND: W10-B29 (kein Abbrechen), W10-B32 (die
+   Klassen-Set-Rueckfrage sitzt im DIALOG und nicht im Controller - die
+   Ctrl-Bausteine sind dialogfrei, damit Referenzlauf und Proben headless
+   laufen).
+
+   ENTFALLEN (Befund W10-B30): Verwendung war Ein- UND Ausgabefeld, wurde aber
+   von keinem der drei Aufrufer zurueckgelesen. Sie geht nur noch hinein.
+
+   ENTFALLEN (Befund W10-B31): rund zwanzig Steuerelemente entstanden zur
+   Laufzeit in zwei Gruppen mit eigener Pixelarithmetik. Der ganze Block faellt
+   weg; die SICHTBARKEITSREGEL "kompakt <-> erweitert" bleibt fachlich - die
+   Schichtfelder erscheinen erst ab zwei Schichten.
+
+   TASTATUR: Esc schliesst - erst eine Rueckfrage, dann der Dialog. Enter ist
+   NICHT belegt: "Uebernehmen" schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Bestand ----------------------------------------------------------- *@
+    <Gruppenkopf Titel="@TitelText">
+        <KindInhalt>
+            <Zeilenraster Bezeichnung="@LabelBestand" Spaltenmass="44px 1fr"
+                          Spalten="@Bestandsspalten" MitZeilenwahl="false">
+                <KindInhalt>
+                    @foreach (PspProjektzeile z in _projekt)
+                    {
+                        <div class="epos-zr-zeile">
+                            <div class="epos-zr-zelle">
+                                <Zeilenwahl Gewaehlt="@(z.Id == _bearbeiteteId)"
+                                            Kurztext="@z.Anzeige"
+                                            Gewaehltwerden="() => PufferWaehlen(z.Id)" />
+                            </div>
+                            <div class="epos-zr-zelle">@z.Anzeige</div>
+                        </div>
+                    }
+                </KindInhalt>
+            </Zeilenraster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="NeuVorbereiten">@BtnNeu</button>
+                <button type="button" class="epos-knopf" disabled="@(_bearbeiteteId <= 0)"
+                        @onclick="EntfernenStarten">@BtnEntfernen</button>
+                @if (Sprung is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="KatalogAnsehen">@BtnKatalog</button>
+                }
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Eigenschaften ------------------------------------------------------ *@
+    <Gruppenkopf Titel="@GruppeEigenschaften">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelAusKatalog" Eintraege="@Katalogeintraege"
+                         Auswahl="@_katalogzeile" AuswahlChanged="KatalogWaehlen"
+                         Aktiv="@(_bearbeiteteId <= 0)" />
+
+            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                      WertChanged="w => _bezeichner = w" />
+
+            <Mehrfachauswahl Bezeichnung="@LabelVerwendung" Eintraege="@Nutzungen"
+                             Gewaehlt="@_klassenSet" GewaehltChanged="KlassenSetSetzen"
+                             MitSammelknoepfen="false" />
+            <Herleitungszeile Text="@Nutzungsherleitung" />
+
+            <Ganzzahlfeld Bezeichnung="@LabelGesamtvolumen" Einheit="l" Feldname="@LabelGesamtvolumen"
+                          Wert="@_volumen" WertChanged="w => Setzen(() => _volumen = w)" />
+            <Zahlenfeld Bezeichnung="@LabelBereitschaftsverluste" Einheit="kWh/24h"
+                        Feldname="@LabelBereitschaftsverluste" Wert="@_verluste"
+                        WertChanged="w => _verluste = w" />
+
+            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                          Wert="@_vorlauf" WertChanged="w => Setzen(() => _vorlauf = w)" />
+            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                          Wert="@_ruecklauf" WertChanged="w => Setzen(() => _ruecklauf = w)" />
+            <Herleitungszeile Text="@_qmax" />
+
+            <Zahlenfeld Bezeichnung="@LabelEinschaltschwelle" Einheit="%" Feldname="@LabelEinschaltschwelle"
+                        Wert="@_schwelleEin" WertChanged="w => _schwelleEin = w" />
+            <Zahlenfeld Bezeichnung="@LabelAbschaltschwelle" Einheit="%" Feldname="@LabelAbschaltschwelle"
+                        Wert="@_schwelleAus" WertChanged="w => _schwelleAus = w" />
+            <Zahlenfeld Bezeichnung="@LabelSchwelleNachrangig" Einheit="%" Feldname="@LabelSchwelleNachrangig"
+                        Wert="@_schwelleNachrang" WertChanged="w => _schwelleNachrang = w" />
+            <Zahlenfeld Bezeichnung="@LabelMindestfuellstand" Einheit="%" Feldname="@LabelMindestfuellstand"
+                        Wert="@_schwelleReserve" WertChanged="w => _schwelleReserve = w" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Schichtung --------------------------------------------------------- *@
+    <Gruppenkopf Titel="@GruppeSchichtung">
+        <KindInhalt>
+            <Ganzzahlfeld Bezeichnung="@LabelSchichten" Feldname="@LabelSchichten"
+                          Min="1" Wert="@_schichten"
+                          WertChanged="w => Setzen(() => _schichten = w)" />
+
+            <Zahlenfeld Bezeichnung="@LabelLadeleistung" Einheit="kW" Feldname="@LabelLadeleistung"
+                        Wert="@_ladeleistung" WertChanged="w => _ladeleistung = w" />
+            <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
+                        Wert="@_entladeleistung" WertChanged="w => _entladeleistung = w" />
+
+            @* Die Sichtbarkeitsregel des Vorlaeufers: erst ab zwei Schichten hat
+               eine Schichthoehe, ein Waermeleitwert und eine Nutztemperatur ueberhaupt
+               eine Bedeutung (SchichtSichtbarkeitSetzen:867-931). *@
+            @if (Erweitert)
+            {
+                <Zahlenfeld Bezeichnung="@LabelHoehe" Einheit="m" Feldname="@LabelHoehe"
+                            Wert="@_hoehe" WertChanged="w => _hoehe = w" />
+                <Zahlenfeld Bezeichnung="@LabelLambda" Einheit="W/(m·K)" Feldname="@LabelLambda"
+                            Wert="@_lambda" WertChanged="w => _lambda = w" />
+                <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
+                            Wert="@_tNutzBW" WertChanged="w => _tNutzBW = w" />
+
+                <Herleitungszeile Text="@LabelEntnahmeKopf" />
+                <Zahlenfeld Bezeichnung="@LabelEntnahmeHeizung" Feldname="@LabelEntnahmeHeizung"
+                            Wert="@_entnahmeHeizung" WertChanged="w => _entnahmeHeizung = w" />
+                <Zahlenfeld Bezeichnung="@LabelEntnahmeBW" Feldname="@LabelEntnahmeBW"
+                            Wert="@_entnahmeBW" WertChanged="w => _entnahmeBW = w" />
+                <Zahlenfeld Bezeichnung="@LabelEntnahmeProzess" Feldname="@LabelEntnahmeProzess"
+                            Wert="@_entnahmeProzess" WertChanged="w => _entnahmeProzess = w" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Ladereihenfolge und Entladeposition -------------------------------- *@
+    <Gruppenkopf Titel="@GruppeLadereihenfolge">
+        <KindInhalt>
+            <Zeilenraster Bezeichnung="@GruppeLadereihenfolge"
+                          Spaltenmass="40px 2fr 2fr 1fr 1fr 1fr"
+                          Spalten="@Ladespalten">
+                <KindInhalt>
+                    @foreach (PspLadezeile z in _laden)
+                    {
+                        <div class="epos-zr-zeile">
+                            <div class="epos-zr-zelle">@z.Nummer</div>
+                            <div class="epos-zr-zelle">@z.Bezeichner</div>
+                            <div class="epos-zr-zelle">@z.Erzeuger</div>
+                            <div class="epos-zr-zelle">@z.Rolle</div>
+                            <div class="epos-zr-zelle">@z.Ladeprio</div>
+                            <div class="epos-zr-zelle">@z.Obergrenze</div>
+                        </div>
+                    }
+                </KindInhalt>
+            </Zeilenraster>
+
+            <Auswahlfeld Bezeichnung="@LabelEntladeprioritaet" Eintraege="@Prioritaeten"
+                         Auswahl="@_entladeprio" AuswahlChanged="PrioWaehlen" />
+            <Herleitungszeile Text="@_automatik" />
+            <Herleitungszeile Text="@_entladeposition" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* Nur SCHLIESSEN neben "Uebernehmen" - ein Abbrechen gibt es nicht
+       (Befund W10-B29). SatzMarkiert und Geaendert stehen fest auf true: Der
+       Uebernehmen-Knopf des Vorlaeufers war NIE gesperrt, und die Pruefkette sitzt
+       hinter ihm, nicht davor. *@
+    <SpeichernLeiste OkText="@BtnSchliessen" MitAbbrechen="false"
+                     MitSpeichern="true" SpeichernText="@Uebernehmentext"
+                     SatzMarkiert="true" Geaendert="true"
+                     Gespeichertwerden="Uebernehmen"
+                     Ergebnis="_ => Schliessen()" />
+
+    @* --- Rückfragen --------------------------------------------------------- *@
+    <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
+                TitelText="@_fragetitel" Beantwortet="Beantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Welche Rückfrage gerade steht.</summary>
+    private enum Frageart
+    {
+        /// <summary>Keine.</summary>
+        Keine,
+
+        /// <summary>Nutzungswechsel an einem referenzierten Speicher (W10‑B32).</summary>
+        Klassenset,
+
+        /// <summary>Entfernen bestätigen.</summary>
+        Entfernen
+    }
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Das Projekt, dessen Speicher verwaltet werden.</summary>
+    [Parameter] public int IdProjekt { get; set; }
+
+    /// <summary>
+    /// Die gewünschte Verwendung beim Öffnen — NUR EINGANG (Befund W10‑B30).
+    /// <c>null</c> oder leer heißt „kein Wunsch": dann wird der erste Speicher des
+    /// Bestands gewählt. Sonst der erste mit dieser Verwendung; gibt es keinen,
+    /// geht es direkt in die Neuanlage.
+    /// </summary>
+    [Parameter] public string? Verwendung { get; set; }
+
+    /// <summary>Der vorzuwählende Speicher; <c>0</c> = keiner. Er hat VORRANG.</summary>
+    [Parameter] public int IdPuffer { get; set; }
+
+    /// <summary>Die Datenseite — ohne sie zeigt der Dialog nur leere Listen.</summary>
+    [Parameter] public PufferSpProjektDienste? Dienste { get; set; }
+
+    /// <summary>
+    /// Sprung in den Auslieferungskatalog (nur zum Ansehen). Ohne Delegat fehlt der
+    /// Knopf — Hausregel.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+
+    /// <summary>Der Schlüssel für <see cref="Sprung"/>.</summary>
+    [Parameter] public string SprungzielKatalog { get; set; } = "PUFFERSP_ADMIN_NUR_LESEN";
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. Geliefert wird der ZULETZT angelegte oder gewählte
+    /// Speicher (<c>ID_Puffer</c>), <c>0</c> wenn keiner (mehr) dasteht.
+    /// </summary>
+    [Parameter] public EventCallback<int> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Pufferspeicher im Projekt";
+    [Parameter] public string LabelBestand { get; set; } = "Pufferspeicher";
+    [Parameter] public string BtnNeu { get; set; } = "Neuer Pufferspeicher";
+    [Parameter] public string BtnEntfernen { get; set; } = "Entfernen";
+    [Parameter] public string BtnKatalog { get; set; } = "Katalog ansehen…";
+    [Parameter] public string GruppeEigenschaften { get; set; } = "Eigenschaften";
+    [Parameter] public string GruppeSchichtung { get; set; } = "Schichtung und Leistungsgrenzen";
+    [Parameter] public string GruppeLadereihenfolge { get; set; } = "Ladereihenfolge dieses Speichers";
+    [Parameter] public string LabelAusKatalog { get; set; } = "Aus Katalog:";
+    [Parameter] public string KatalogFreieEingabe { get; set; } = "(freie Eingabe)";
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+    [Parameter] public string LabelVerwendung { get; set; } = "Nutzung:";
+    [Parameter] public string LabelGesamtvolumen { get; set; } = "Gesamtvolumen:";
+    [Parameter] public string LabelBereitschaftsverluste { get; set; } = "Bereitschaftsverluste:";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
+    [Parameter] public string LabelEinschaltschwelle { get; set; } = "Einschaltschwelle:";
+    [Parameter] public string LabelAbschaltschwelle { get; set; } = "Abschaltschwelle:";
+    [Parameter] public string LabelSchwelleNachrangig { get; set; } = "Abschaltschwelle nachrangig:";
+    [Parameter] public string LabelMindestfuellstand { get; set; } = "Mindestfüllstand:";
+    [Parameter] public string LabelSchichten { get; set; } = "Schichten:";
+    [Parameter] public string LabelHoehe { get; set; } = "Höhe:";
+    [Parameter] public string LabelLambda { get; set; } = "λ effektiv:";
+    [Parameter] public string LabelTNutzBW { get; set; } = "Nutztemperatur Brauchwasser:";
+    [Parameter] public string LabelEntnahmeKopf { get; set; } = "Entnahmehöhen (0 = unten, 1 = oben):";
+    [Parameter] public string LabelEntnahmeHeizung { get; set; } = "Heizung:";
+    [Parameter] public string LabelEntnahmeBW { get; set; } = "Brauchwasser:";
+    [Parameter] public string LabelEntnahmeProzess { get; set; } = "Prozesswärme:";
+    [Parameter] public string LabelLadeleistung { get; set; } = "Ladeleistung max.:";
+    [Parameter] public string LabelEntladeleistung { get; set; } = "Entladeleistung max.:";
+    [Parameter] public string LabelEntladeprioritaet { get; set; } = "Entladepriorität:";
+    [Parameter] public string PrioAutomatisch { get; set; } = "automatisch";
+    [Parameter] public string SpalteAnlage { get; set; } = "Anlage";
+    [Parameter] public string SpalteErzeuger { get; set; } = "Erzeuger";
+    [Parameter] public string SpalteSenke { get; set; } = "Senke";
+    [Parameter] public string SpalteLadeprio { get; set; } = "Ladeprio";
+    [Parameter] public string SpalteLaedtBis { get; set; } = "lädt bis";
+    [Parameter] public string BtnAnlegen { get; set; } = "Anlegen";
+    [Parameter] public string BtnUebernehmen { get; set; } = "Übernehmen";
+    [Parameter] public string BtnSchliessen { get; set; } = "Schließen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Nutzungsnamen der Mehrfachauswahl — Heizung, Brauchwasser, Prozesswärme.</summary>
+    [Parameter] public string NutzungHeizung { get; set; } = "Heizung";
+    [Parameter] public string NutzungBrauchwasser { get; set; } = "Brauchwasser";
+    [Parameter] public string NutzungProzess { get; set; } = "Prozesswärme";
+
+    /// <summary>Herleitung unter der Mehrfachauswahl; <c>{0}</c> ist der Altwert.</summary>
+    [Parameter] public string HerleitungVerwendung { get; set; }
+        = "Gespeichert wird zusätzlich der abgeleitete Altwert „{0}“.";
+
+    /// <summary>Anzeige der nutzbaren Kapazität; <c>{0}</c> ist der Wert in kWh.</summary>
+    [Parameter] public string AnzeigeQmax { get; set; } = "Nutzbare Kapazität: {0} kWh";
+
+    [Parameter] public string LadenNochNichtAngelegt { get; set; }
+        = "(der Speicher ist noch nicht angelegt)";
+    [Parameter] public string LadenKeineAnlage { get; set; } = "(keine Anlage lädt diesen Speicher)";
+
+    // Die zwölf Prüfregeln aus EingabenLesen:1914-2037, wörtlich.
+    [Parameter] public string FehlerBezeichnerFehlt { get; set; }
+        = "Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen.";
+    [Parameter] public string FehlerKlassenSetLeer { get; set; }
+        = "Mindestens eine Nutzung muss angehakt sein: Heizung, Brauchwasser oder " +
+          "Prozesswärme. Einen Speicher ohne Nutzung entlädt keine Anlage (Konzept 6.1).";
+    [Parameter] public string FehlerVolumen { get; set; }
+        = "Bitte ein Gesamtvolumen in Litern eintragen (ganze Zahl größer 0).";
+    [Parameter] public string FehlerVerluste { get; set; }
+        = "Die Bereitschaftsverluste müssen eine Zahl ≥ 0 sein [kWh/24h].";
+    [Parameter] public string FehlerSchwelleZahl { get; set; } = "Die {0} muss eine Zahl sein [%].";
+    [Parameter] public string FehlerSchwelleBereich { get; set; }
+        = "Die {0} muss zwischen 0 und 100 % liegen.";
+    [Parameter] public string FehlerEinKleinerAus { get; set; }
+        = "Die Einschaltschwelle muss kleiner als die Abschaltschwelle sein.";
+    [Parameter] public string FehlerNachrangUeberAus { get; set; }
+        = "Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle nicht " +
+          "überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4).";
+    [Parameter] public string FehlerNachrangUnterEin { get; set; }
+        = "Die Abschaltschwelle für nachrangige Erzeuger muss über der Einschaltschwelle liegen.";
+    [Parameter] public string FehlerReserveUeberAus { get; set; }
+        = "Der Mindestfüllstand muss unter der Abschaltschwelle liegen - sonst könnte der " +
+          "Speicher keinen Bedarf mehr decken.";
+    [Parameter] public string FehlerHoehe { get; set; } = "Die Schichthöhe muss eine Zahl größer 0 sein [m].";
+    [Parameter] public string FehlerLambdaEff { get; set; }
+        = "Der effektive Wärmeleitwert muss eine Zahl größer 0 sein [W/(m·K)].";
+    [Parameter] public string FehlerTNutzBW { get; set; }
+        = "Die Nutztemperatur Brauchwasser muss eine Zahl größer 0 sein [°C].";
+    [Parameter] public string FehlerEntnahmehoehe { get; set; }
+        = "Die Entnahmehöhe {0} muss zwischen 0 und 1 liegen.";
+    [Parameter] public string FehlerLeistung { get; set; }
+        = "Die {0} muss eine Zahl ≥ 0 sein [kW].";
+    [Parameter] public string FehlerSchichtungAmVerbund { get; set; }
+        = "Der Speicher „{0}“ ist Leitspeicher eines Parallelverbunds und kann deshalb " +
+          "keine Schichtung führen.";
+
+    [Parameter] public string NameEinschaltschwelle { get; set; } = "Einschaltschwelle";
+    [Parameter] public string NameAbschaltschwelle { get; set; } = "Abschaltschwelle";
+    [Parameter] public string NameAbschaltschwelleNachrang { get; set; }
+        = "Abschaltschwelle für nachrangige Erzeuger";
+    [Parameter] public string NameMindestfuellstand { get; set; } = "Mindestfüllstand";
+    [Parameter] public string NameLadeleistungMax { get; set; } = "maximale Ladeleistung";
+    [Parameter] public string NameEntladeleistungMax { get; set; } = "maximale Entladeleistung";
+
+    [Parameter] public string MeldungAnlegenFehlgeschlagen { get; set; }
+        = "Der Pufferspeicher konnte nicht angelegt werden.";
+    [Parameter] public string MeldungAendernFehlgeschlagen { get; set; }
+        = "Die Änderungen konnten nicht gespeichert werden.";
+    [Parameter] public string MeldungEntfernenFehlgeschlagen { get; set; }
+        = "Der Pufferspeicher konnte nicht entfernt werden.";
+    [Parameter] public string MeldungEntfernenBlockiert { get; set; }
+        = "Der Pufferspeicher „{0}“ kann nicht entfernt werden - er ist noch zugeordnet:\n\n  • {1}\n\n" +
+          "Bitte zuerst die Wärmequelle bzw. Wärmesenke dieser Anlagen ändern.";
+    [Parameter] public string MeldungEntfernenBestaetigen { get; set; }
+        = "Den Pufferspeicher „{0}“ aus dem Projekt entfernen?\n" +
+          "Die Anlagenzeile im Projektbaum wird mit entfernt.";
+    [Parameter] public string MeldungKlassensetwechsel { get; set; }
+        = "Der Pufferspeicher „{0}“ wechselt die Nutzung von {1} auf {2}.\n\n" +
+          "Betroffen sind:\n\n  • {3}\n\nTrotzdem fortfahren?";
+    [Parameter] public string TitelKlassenSetAendern { get; set; } = "Nutzung ändern";
+    [Parameter] public string TitelPufferEntfernen { get; set; } = "Pufferspeicher entfernen";
+
+    [Parameter] public string StatusAngelegt { get; set; } = "Pufferspeicher angelegt.";
+    [Parameter] public string StatusAenderungenUebernommen { get; set; } = "Änderungen übernommen.";
+    [Parameter] public string StatusEntfernt { get; set; } = "Pufferspeicher entfernt.";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferSp_Projekt.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<PspKatalogzeile> _katalog = Array.Empty<PspKatalogzeile>();
+    private IReadOnlyList<PspProjektzeile> _projekt = Array.Empty<PspProjektzeile>();
+    private IReadOnlyList<PspLadezeile> _laden = Array.Empty<PspLadezeile>();
+
+    /// <summary><c>0</c> = Neuanlage, sonst die Id des gerade bearbeiteten Speichers.</summary>
+    private int _bearbeiteteId;
+
+    /// <summary>Das Ergebnis: zuletzt angelegter oder gewählter Speicher.</summary>
+    private int _idPuffer;
+
+    private int? _katalogzeile = -1;
+    private string _bezeichner = "";
+    private IReadOnlyList<int> _klassenSet = Array.Empty<int>();
+    private int? _volumen;
+    private double? _verluste;
+    private int? _vorlauf;
+    private int? _ruecklauf;
+    private double? _schwelleEin;
+    private double? _schwelleAus;
+    private double? _schwelleNachrang;
+    private double? _schwelleReserve;
+    private int? _entladeprio = 0;
+
+    private int? _schichten = 1;
+    private double? _hoehe;
+    private double? _lambda;
+    private double? _tNutzBW;
+    private double? _entnahmeHeizung;
+    private double? _entnahmeBW;
+    private double? _entnahmeProzess;
+    private double? _ladeleistung;
+    private double? _entladeleistung;
+
+    private string _qmax = "";
+    private string _automatik = "";
+    private string _entladeposition = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private Frageart _frage = Frageart.Keine;
+    private string _fragetext = "";
+    private string _fragetitel = "";
+    private PspEingaben? _wartendeEingaben;
+
+    // --- Prüfhilfen für die Tests -----------------------------------------------
+
+    /// <summary><c>0</c> = Neuanlage.</summary>
+    public int BearbeiteteId => _bearbeiteteId;
+
+    /// <summary>Der Rückgabewert des Dialogs.</summary>
+    public int Ergebnis => _idPuffer;
+
+    /// <summary>Die stehende Meldung.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Stufe der stehenden Meldung.</summary>
+    public WarnStufe MeldungStufe => _meldungStufe;
+
+    /// <summary>Die angehakten Nutzungen (0 = Heizung, 1 = Brauchwasser, 2 = Prozess).</summary>
+    public IReadOnlyList<int> KlassenSet => _klassenSet;
+
+    /// <summary>Der Bezeichner im Feld.</summary>
+    public string Bezeichner => _bezeichner;
+
+    /// <summary>Das Volumen im Feld.</summary>
+    public int? Volumen => _volumen;
+
+    /// <summary>Die Verluste im Feld.</summary>
+    public double? Verluste => _verluste;
+
+    /// <summary>Die vier Schwellen.</summary>
+    public (double? Ein, double? Aus, double? Nachrang, double? Reserve) Schwellen
+        => (_schwelleEin, _schwelleAus, _schwelleNachrang, _schwelleReserve);
+
+    /// <summary>Die Kapazitätszeile.</summary>
+    public string Qmax => _qmax;
+
+    /// <summary>Die Zeile „wird als n. von m entladen".</summary>
+    public string Entladeposition => _entladeposition;
+
+    /// <summary>Steht eine Rückfrage?</summary>
+    public bool FrageSteht => _frage != Frageart.Keine;
+
+    /// <summary>Der Text der stehenden Rückfrage.</summary>
+    public string Fragetext => _fragetext;
+
+    /// <summary>Sind die Schichtfelder ab zwei Schichten sichtbar?</summary>
+    public bool Erweitert => (_schichten ?? 1) > 1;
+
+    // --- Listen -----------------------------------------------------------------
+
+    /// <summary>Beschriftung des Übernahmeknopfes — „Anlegen" oder „Übernehmen".</summary>
+    public string Uebernehmentext => _bearbeiteteId <= 0 ? BtnAnlegen : BtnUebernehmen;
+
+    /// <summary>Der Spaltenkopf der Bestandsliste: Wahlspalte und Bezeichnung.</summary>
+    private IReadOnlyList<string> Bestandsspalten => new[] { "", LabelBestand };
+
+    /// <summary>Die sechs Spaltenköpfe der Ladereihenfolge; „#" ist ein Symbol.</summary>
+    private IReadOnlyList<string> Ladespalten => new[]
+    {
+        "#", SpalteAnlage, SpalteErzeuger, SpalteSenke, SpalteLadeprio, SpalteLaedtBis
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Katalogeintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (-1, KatalogFreieEingabe) };
+            for (int i = 0; i < _katalog.Count; i++) l.Add((i, _katalog[i].Bezeichner));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Nutzungen => new[]
+    {
+        (0, NutzungHeizung),
+        (1, NutzungBrauchwasser),
+        (2, NutzungProzess)
+    };
+
+    /// <summary>
+    /// Der Entladeprioritäts-Katalog: 0 = automatisch, danach 1…9
+    /// (<c>EntladeprioListeFuellen</c>:1168-1175). Die Grenzen kommen als Text, damit
+    /// der Kern-Bereich <c>Ladeordnung.PRIO_MIN/MAX</c> in der Hülle bleibt.
+    /// </summary>
+    [Parameter] public int PrioMin { get; set; } = 1;
+
+    /// <summary>Größte wählbare Entladepriorität.</summary>
+    [Parameter] public int PrioMax { get; set; } = 9;
+
+    private IReadOnlyList<(int Id, string Text)> Prioritaeten
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, PrioAutomatisch) };
+            for (int p = PrioMin; p <= PrioMax; p++)
+                l.Add((p, p.ToString(System.Globalization.CultureInfo.CurrentCulture)));
+            return l;
+        }
+    }
+
+    private bool Hat(int nutzung) => _klassenSet.Contains(nutzung);
+
+    /// <summary>Die Herleitungszeile unter der Mehrfachauswahl — der abgeleitete Altwert.</summary>
+    private string Nutzungsherleitung
+        => Dienste is null
+            ? ""
+            : string.Format(HerleitungVerwendung,
+                            Dienste.KlassenSetAnzeige(Hat(0), Hat(1), Hat(2)));
+
+    // --- Aufbau -----------------------------------------------------------------
+
+    protected override void OnInitialized() => Laden();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// <c>SetControls</c>:1063-1104 — Katalog und Bestand laden, dann die
+    /// VORWAHLREGEL: Id vor Verwendung vor „erster" vor Neuanlage.
+    /// </summary>
+    private void Laden()
+    {
+        if (Dienste is null) return;
+
+        _katalog = Dienste.Katalogzeilen();
+        _projekt = Dienste.Projektliste();
+        _idPuffer = IdPuffer;
+
+        int gewaehlt = 0;
+        if (IdPuffer > 0 && _projekt.Any(z => z.Id == IdPuffer))
+        {
+            gewaehlt = IdPuffer;
+        }
+        else if (!string.IsNullOrEmpty(Verwendung))
+        {
+            // Der Absprung aus dem Senkendialog gibt die gesuchte Verwendung mit; die
+            // Huelle hat die Liste bereits danach beurteilt und stellt den passenden
+            // Speicher voran (siehe ErsterMitVerwendung in der Huelle).
+            gewaehlt = ErsterPassender();
+        }
+        else if (_projekt.Count > 0)
+        {
+            gewaehlt = _projekt[0].Id;
+        }
+
+        if (gewaehlt > 0) PufferWaehlen(gewaehlt);
+        else NeuVorbereiten();
+    }
+
+    /// <summary>
+    /// Der erste Speicher mit der gewünschten Verwendung. Die Zuordnung trifft die
+    /// Hülle: Sie kennt <c>WaermesenkeClass.WirksameVerwendung</c>; hier steht nur die
+    /// Reihenfolge.
+    /// </summary>
+    [Parameter] public IReadOnlyList<int> PasstZurVerwendung { get; set; } = Array.Empty<int>();
+
+    private int ErsterPassender()
+    {
+        foreach (PspProjektzeile z in _projekt)
+            if (PasstZurVerwendung.Contains(z.Id)) return z.Id;
+        return 0;
+    }
+
+    // --- Bestand ----------------------------------------------------------------
+
+    /// <summary>Einen vorhandenen Speicher laden (<c>PufferAnzeigen</c>:1242-1300).</summary>
+    private void PufferWaehlen(int id)
+    {
+        PspPufferstand? p = Dienste?.PufferLesen(id);
+        if (p is null) return;
+
+        _bearbeiteteId = p.Id;
+        _idPuffer = p.Id;
+
+        _katalogzeile = -1;                        // ein vorhandener Speicher wird nicht neu uebernommen
+        _bezeichner = p.Bezeichner;
+        _volumen = p.Gesamtvolumen;
+        _verluste = p.Bereitschaftsverluste;
+        _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess);
+
+        _vorlauf = p.Vorlauf > 0 ? p.Vorlauf : null;
+        _ruecklauf = p.Ruecklauf > 0 ? p.Ruecklauf : null;
+
+        _schwelleEin = p.SchwelleEin;
+        _schwelleAus = p.SchwelleAus;
+        _schwelleNachrang = p.SchwelleAusNachrang;
+        _schwelleReserve = p.SchwelleReserve;
+        _entladeprio = p.Entladeprio;
+
+        SchichtdatenAnzeigen(p.Schicht);
+        AnzeigenAktualisieren();
+    }
+
+    /// <summary>
+    /// <c>NeuVorbereiten</c>:1178-1239 — die Vorbelegung eines neuen Speichers,
+    /// wörtlich: Verluste „0", Vorlauf/Rücklauf aus den Systemvorgaben oder LEER,
+    /// die vier Schwellen auf ihre Vorgaben, Priorität automatisch.
+    /// </summary>
+    private void NeuVorbereiten()
+    {
+        _bearbeiteteId = 0;
+        _katalogzeile = -1;
+        _bezeichner = "";
+        _volumen = null;
+        _verluste = 0;
+
+        // Die Vorbelegung der Nutzung folgt dem Wunsch des Absprungs; ohne Wunsch
+        // Heizung (VerwendungWaehlen:1193-1199 samt KlassenSetSetzen:1205).
+        _klassenSet = VorbelegteNutzung;
+
+        // Aus den SYSTEMVORGABEN des Projekts. Fehlen sie, bleiben die Felder LEER -
+        // eine erfundene Vorbelegung waere bei einem Niedertemperatursystem falsch.
+        (int? v, int? r) = Dienste?.Systemvorgaben() ?? (null, null);
+        _vorlauf = v;
+        _ruecklauf = r;
+
+        _schwelleEin = SchwelleEinVorgabe;
+        _schwelleAus = SchwelleAusVorgabe;
+        _schwelleNachrang = SchwelleAusVorgabe;
+        _schwelleReserve = SchwelleReserveVorgabe;
+        _entladeprio = 0;
+
+        SchichtdatenAnzeigen(new PspSchichtdaten());
+        AnzeigenAktualisieren();
+    }
+
+    /// <summary>Die drei Schwellenvorgaben — sie stehen im Kern, die Hülle reicht sie herein.</summary>
+    [Parameter] public double SchwelleEinVorgabe { get; set; } = 10.0;
+
+    /// <summary>Vorgabe der Abschaltschwelle (auch für die nachrangige).</summary>
+    [Parameter] public double SchwelleAusVorgabe { get; set; } = 95.0;
+
+    /// <summary>Vorgabe des Mindestfüllstands.</summary>
+    [Parameter] public double SchwelleReserveVorgabe { get; set; } = 10.0;
+
+    /// <summary>Die Nutzung, mit der ein NEUER Speicher aufgeht (aus <see cref="Verwendung"/>).</summary>
+    [Parameter] public IReadOnlyList<int> VorbelegteNutzung { get; set; } = new[] { 0 };
+
+    private static IReadOnlyList<int> Set(bool h, bool b, bool p)
+    {
+        var l = new List<int>();
+        if (h) l.Add(0);
+        if (b) l.Add(1);
+        if (p) l.Add(2);
+        return l;
+    }
+
+    private void SchichtdatenAnzeigen(PspSchichtdaten d)
+    {
+        _schichten = d.Schichten < 1 ? 1 : d.Schichten;
+        _hoehe = d.Hoehe;
+        _lambda = d.LambdaEff;
+        _tNutzBW = d.TNutzBW;
+        _entnahmeHeizung = d.EntnahmeHeizung;
+        _entnahmeBW = d.EntnahmeBW;
+        _entnahmeProzess = d.EntnahmeProzess;
+
+        // 0 = unbegrenzt und wird als LEERES Feld gezeigt: Eine "0" in einem
+        // Leistungsfeld liest sich wie "keine Leistung" und meint das Gegenteil.
+        _ladeleistung = d.LadeleistungMax > 0 ? d.LadeleistungMax : null;
+        _entladeleistung = d.EntladeleistungMax > 0 ? d.EntladeleistungMax : null;
+    }
+
+    private void KatalogWaehlen(int? zeile)
+    {
+        _katalogzeile = zeile;
+        if (zeile is null || zeile.Value < 0 || zeile.Value >= _katalog.Count) return;
+
+        // cbKatalog_SelectedIndexChanged:1566-1591 - drei Felder aus der Katalogzeile.
+        PspKatalogzeile k = _katalog[zeile.Value];
+        _bezeichner = k.Bezeichner;
+        _volumen = k.Gesamtvolumen;
+        _verluste = k.Bereitschaftsverluste;
+
+        AnzeigenAktualisieren();
+    }
+
+    private void KlassenSetSetzen(IReadOnlyList<int> set)
+    {
+        // Das LEERE Set wird hier NICHT abgefangen: Wer von "nur Heizung" auf "nur
+        // Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Die
+        // Pflichtpruefung sitzt im Uebernehmen.
+        _klassenSet = set;
+        AnzeigenAktualisieren();
+    }
+
+    private void PrioWaehlen(int? prio)
+    {
+        _entladeprio = prio ?? 0;
+        AnzeigenAktualisieren();
+    }
+
+    private void Setzen(Action was)
+    {
+        was();
+        AnzeigenAktualisieren();
+    }
+
+    /// <summary>
+    /// <c>AnzeigenAktualisieren</c>:1360-1365 — Kapazität, Ladereihenfolge und
+    /// Entladeposition.
+    /// </summary>
+    private void AnzeigenAktualisieren()
+    {
+        QmaxAnzeigen();
+
+        _laden = _bearbeiteteId > 0 && Dienste is not null
+            ? Dienste.Ladereihenfolge(_bearbeiteteId)
+            : Array.Empty<PspLadezeile>();
+
+        if (_laden.Count == 0)
+            _laden = new[]
+            {
+                new PspLadezeile("", _bearbeiteteId <= 0 ? LadenNochNichtAngelegt : LadenKeineAnlage,
+                                 "", "", "", "")
+            };
+
+        _automatik = _bearbeiteteId > 0 && Dienste is not null
+            ? Dienste.Automatiktext(_bearbeiteteId) : "";
+        _entladeposition = _bearbeiteteId > 0 && Dienste is not null
+            ? Dienste.Entladeposition(_bearbeiteteId, Hat(0), Hat(1), Hat(2)) : "";
+    }
+
+    /// <summary>
+    /// <c>QmaxAnzeigen</c>:1368-1382 — leer, sobald Volumen ≤ 0 oder Vorlauf ≤ Rücklauf.
+    /// </summary>
+    private void QmaxAnzeigen()
+    {
+        int v = _volumen ?? 0;
+        int vl = _vorlauf ?? 0;
+        int rl = _ruecklauf ?? 0;
+
+        if (Dienste is null || v <= 0 || vl <= rl) { _qmax = ""; return; }
+
+        _qmax = string.Format(AnzeigeQmax,
+            Dienste.Kapazitaet(v, vl - rl)
+                   .ToString("0.0", System.Globalization.CultureInfo.CurrentCulture));
+    }
+
+    // --- Übernehmen -------------------------------------------------------------
+
+    /// <summary>
+    /// <c>btnUebernehmen_Click</c>:1605-1684 — Prüfkette, dann Kriterium W6 (hart),
+    /// dann Anlegen oder Ändern, dann Kriterium W4 (weich, NACH dem Speichern).
+    /// </summary>
+    private Task Uebernehmen()
+    {
+        if (Dienste is null) return Task.CompletedTask;
+
+        PspEingaben? eingaben = EingabenLesen(out string? fehler);
+        if (eingaben is null)
+        {
+            Melden(fehler ?? "", WarnStufe.Warnung);
+            return Task.CompletedTask;
+        }
+
+        // KRITERIUM W6 - HART, ABGEWIESEN (Konzept 6.2/6.3, Entscheidung F8).
+        if (eingaben.Schicht.Schichten > 1 && _bearbeiteteId > 0 &&
+            Dienste.IstLeitspeicher(_bearbeiteteId))
+        {
+            Melden(string.Format(FehlerSchichtungAmVerbund, eingaben.Bezeichner), WarnStufe.Fehler);
+            return Task.CompletedTask;
+        }
+
+        if (_bearbeiteteId > 0 && WechselBraucthRueckfrage(eingaben, out string frage))
+        {
+            _wartendeEingaben = eingaben;
+            _fragetext = frage;
+            _fragetitel = TitelKlassenSetAendern;
+            _frage = Frageart.Klassenset;
+            return Task.CompletedTask;
+        }
+
+        Speichern(eingaben);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Kriterium W10‑B32: Der Nutzungswechsel an einem REFERENZIERTEN Speicher wird
+    /// zurückgefragt. Verglichen werden die drei Flags, nicht der abgeleitete Altwert —
+    /// ein Wechsel von {H} auf {H, P} ändert diesen nämlich nicht.
+    /// </summary>
+    private bool WechselBraucthRueckfrage(PspEingaben neu, out string frage)
+    {
+        frage = "";
+        if (Dienste is null) return false;
+
+        PspPufferstand? alt = Dienste.PufferLesen(_bearbeiteteId);
+        if (alt is null) return false;
+        if (alt.Heizung == neu.Heizung && alt.Brauchwasser == neu.Brauchwasser &&
+            alt.Prozess == neu.Prozess) return false;
+
+        IReadOnlyList<string> referenzen = Dienste.Referenzen(_bearbeiteteId);
+        if (referenzen.Count == 0) return false;
+
+        frage = string.Format(MeldungKlassensetwechsel,
+            alt.Bezeichner,
+            Dienste.KlassenSetAnzeige(alt.Heizung, alt.Brauchwasser, alt.Prozess),
+            Dienste.KlassenSetAnzeige(neu.Heizung, neu.Brauchwasser, neu.Prozess),
+            string.Join("\n  • ", referenzen));
+        return true;
+    }
+
+    private void Speichern(PspEingaben eingaben)
+    {
+        if (Dienste is null) return;
+
+        if (_bearbeiteteId <= 0)
+        {
+            int neueId = Dienste.Anlegen(eingaben);
+            if (neueId <= 0) { Melden(MeldungAnlegenFehlgeschlagen, WarnStufe.Warnung); return; }
+
+            _idPuffer = neueId;
+            _bearbeiteteId = neueId;
+            Melden(StatusAngelegt, WarnStufe.Erfolg);
+        }
+        else
+        {
+            if (!Dienste.Aendern(_bearbeiteteId, eingaben))
+            { Melden(MeldungAendernFehlgeschlagen, WarnStufe.Warnung); return; }
+
+            _idPuffer = _bearbeiteteId;
+            Melden(StatusAenderungenUebernommen, WarnStufe.Erfolg);
+        }
+
+        BestandNeuLaden(_idPuffer);
+
+        // KRITERIUM W4 - WEICH, NACH dem Speichern (Konzept 7.2). Die Angabe ist
+        // zulaessig und wurde gespeichert; der Anwender erfaehrt nur, was der Lauf
+        // damit macht.
+        string? klemm = Dienste.Klemmhinweis(_idPuffer, eingaben);
+        if (!string.IsNullOrEmpty(klemm)) Melden(klemm, WarnStufe.Warnung);
+    }
+
+    private void BestandNeuLaden(int auswahlId)
+    {
+        if (Dienste is null) return;
+        _projekt = Dienste.Projektliste();
+
+        if (auswahlId > 0 && _projekt.Any(z => z.Id == auswahlId)) PufferWaehlen(auswahlId);
+        else NeuVorbereiten();
+    }
+
+    // --- Entfernen --------------------------------------------------------------
+
+    private void EntfernenStarten()
+    {
+        if (Dienste is null || _bearbeiteteId <= 0) return;
+
+        IReadOnlyList<string> referenzen = Dienste.Referenzen(_bearbeiteteId);
+        if (referenzen.Count > 0)
+        {
+            Melden(string.Format(MeldungEntfernenBlockiert, _bezeichner,
+                                 string.Join("\n  • ", referenzen)), WarnStufe.Warnung);
+            return;
+        }
+
+        _fragetext = string.Format(MeldungEntfernenBestaetigen, _bezeichner);
+        _fragetitel = TitelPufferEntfernen;
+        _frage = Frageart.Entfernen;
+    }
+
+    private void Beantwortet(bool? ja)
+    {
+        Frageart was = _frage;
+        _frage = Frageart.Keine;
+
+        if (ja != true) { _wartendeEingaben = null; return; }
+
+        if (was == Frageart.Klassenset)
+        {
+            PspEingaben? e = _wartendeEingaben;
+            _wartendeEingaben = null;
+            if (e is not null) Speichern(e);
+            return;
+        }
+
+        if (was == Frageart.Entfernen && Dienste is not null)
+        {
+            if (!Dienste.Entfernen(_bearbeiteteId))
+            { Melden(MeldungEntfernenFehlgeschlagen, WarnStufe.Warnung); return; }
+
+            if (_idPuffer == _bearbeiteteId) _idPuffer = 0;
+            Melden(StatusEntfernt, WarnStufe.Erfolg);
+            BestandNeuLaden(0);
+        }
+    }
+
+    // --- Katalog ----------------------------------------------------------------
+
+    private async Task KatalogAnsehen()
+    {
+        if (Sprung is null) return;
+        await Sprung(SprungzielKatalog);
+
+        // Nach der Rueckkehr den Katalog neu lesen - der Anwender kann dort etwas
+        // geaendert haben (btnKatalog_Click:1593-1603).
+        if (Dienste is not null) _katalog = Dienste.Katalogzeilen();
+    }
+
+    // --- Prüfkette --------------------------------------------------------------
+
+    /// <summary>
+    /// <c>EingabenLesen</c>:1914-2037 — die zwölf Regeln in derselben Reihenfolge.
+    /// <c>null</c> heißt „Fehler"; der Grund steht in <paramref name="fehler"/>.
+    /// </summary>
+    private PspEingaben? EingabenLesen(out string? fehler)
+    {
+        fehler = null;
+
+        string bezeichner = (_bezeichner ?? "").Trim();
+        if (bezeichner.Length == 0) { fehler = FehlerBezeichnerFehlt; return null; }
+
+        bool h = Hat(0), b = Hat(1), p = Hat(2);
+        if (!h && !b && !p) { fehler = FehlerKlassenSetLeer; return null; }
+
+        if (_volumen is null || _volumen.Value <= 0) { fehler = FehlerVolumen; return null; }
+
+        double verluste = _verluste ?? 0;
+        if (verluste < 0) { fehler = FehlerVerluste; return null; }
+
+        // Temperaturen: das leere PAAR ist erlaubt (dann greift der Engine-Rueckfall),
+        // ein vollstaendiges laeuft durch die gemeinsame Pruefung des Kerns.
+        int? vorlauf = null, ruecklauf = null;
+        if (_vorlauf is not null || _ruecklauf is not null)
+        {
+            string vt = Zahltext(_vorlauf);
+            string rt = Zahltext(_ruecklauf);
+            fehler = Dienste?.TemperaturenPruefen(vt, rt);
+            if (!string.IsNullOrEmpty(fehler)) return null;
+            fehler = null;
+            vorlauf = _vorlauf;
+            ruecklauf = _ruecklauf;
+        }
+
+        if (!SchwelleLesen(_schwelleEin, NameEinschaltschwelle, false, out double ein, out fehler))
+            return null;
+        if (!SchwelleLesen(_schwelleAus, NameAbschaltschwelle, false, out double aus, out fehler))
+            return null;
+        if (!SchwelleLesen(_schwelleNachrang, NameAbschaltschwelleNachrang, false,
+                           out double nachrang, out fehler)) return null;
+
+        if (ein >= aus) { fehler = FehlerEinKleinerAus; return null; }
+        if (nachrang > aus) { fehler = FehlerNachrangUeberAus; return null; }
+        if (nachrang <= ein) { fehler = FehlerNachrangUnterEin; return null; }
+
+        // Der Mindestfuellstand darf ausdruecklich 0 sein - "dieser Speicher darf
+        // leergefahren werden".
+        if (!SchwelleLesen(_schwelleReserve, NameMindestfuellstand, true,
+                           out double reserve, out fehler)) return null;
+        if (reserve >= aus) { fehler = FehlerReserveUeberAus; return null; }
+
+        // Schichtung ZULETZT - ihre Felder stehen in der Maske unter allen anderen.
+        PspSchichtdaten? schicht = SchichtdatenLesen(out fehler);
+        if (schicht is null) return null;
+
+        return new PspEingaben(bezeichner, _volumen.Value, verluste, vorlauf, ruecklauf,
+                               ein, aus, nachrang, reserve, _entladeprio ?? 0,
+                               h, b, p, schicht, _katalogzeile ?? -1);
+    }
+
+    private static string Zahltext(int? wert)
+        => wert is null ? "" : wert.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// <c>SchwelleLesen</c>:2044-2065 — Bereich 0…100, wobei die 0 nur mit
+    /// <paramref name="nullErlaubt"/> durchgeht.
+    /// </summary>
+    private bool SchwelleLesen(double? feld, string name, bool nullErlaubt,
+                               out double wert, out string? fehler)
+    {
+        wert = 0;
+        fehler = null;
+
+        if (feld is null) { fehler = string.Format(FehlerSchwelleZahl, name); return false; }
+
+        double f = feld.Value;
+        if (f < 0 || (f == 0 && !nullErlaubt) || f > 100)
+        { fehler = string.Format(FehlerSchwelleBereich, name); return false; }
+
+        wert = f;
+        return true;
+    }
+
+    /// <summary>
+    /// <c>SchichtdatenLesen</c>:981-1020 — LEER ist überall zulässig und bedeutet
+    /// „Vorbelegung"; geprüft wird nur, was dasteht. Die Trennung „0 ist gültig" gegen
+    /// „0 ist Unsinn" ist wörtlich übernommen.
+    /// </summary>
+    private PspSchichtdaten? SchichtdatenLesen(out string? fehler)
+    {
+        fehler = null;
+
+        if (!ZahlOderLeer(_hoehe, FehlerHoehe, 0, double.MaxValue, false, out double? hoehe, out fehler))
+            return null;
+        if (!ZahlOderLeer(_lambda, FehlerLambdaEff, 0, double.MaxValue, false, out double? lambda, out fehler))
+            return null;
+        if (!ZahlOderLeer(_tNutzBW, FehlerTNutzBW, 0, double.MaxValue, false, out double? tNutz, out fehler))
+            return null;
+
+        if (!ZahlOderLeer(_entnahmeHeizung, string.Format(FehlerEntnahmehoehe, NutzungHeizung),
+                          0, 1, true, out double? eH, out fehler)) return null;
+        if (!ZahlOderLeer(_entnahmeBW, string.Format(FehlerEntnahmehoehe, NutzungBrauchwasser),
+                          0, 1, true, out double? eB, out fehler)) return null;
+        if (!ZahlOderLeer(_entnahmeProzess, string.Format(FehlerEntnahmehoehe, NutzungProzess),
+                          0, 1, true, out double? eP, out fehler)) return null;
+
+        if (!ZahlOderLeer(_ladeleistung, string.Format(FehlerLeistung, NameLadeleistungMax),
+                          0, double.MaxValue, true, out double? lade, out fehler)) return null;
+        if (!ZahlOderLeer(_entladeleistung, string.Format(FehlerLeistung, NameEntladeleistungMax),
+                          0, double.MaxValue, true, out double? entlade, out fehler)) return null;
+
+        return new PspSchichtdaten(_schichten ?? 1, hoehe, lambda, tNutz, eH, eB, eP,
+                                   lade ?? 0, entlade ?? 0);
+    }
+
+    private static bool ZahlOderLeer(double? feld, string fehlertext, double min, double max,
+                                     bool nullErlaubt, out double? wert, out string? fehler)
+    {
+        wert = null;
+        fehler = null;
+
+        if (feld is null) return true;                     // leer bleibt leer
+
+        double f = feld.Value;
+        if (f < min || f > max || (f == 0 && !nullErlaubt)) { fehler = fehlertext; return false; }
+
+        wert = f;
+        return true;
+    }
+
+    // --- Schluss ----------------------------------------------------------------
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync(_idPuffer);
+
+    /// <summary>
+    /// Esc: erst eine stehende Rückfrage, dann der Dialog. Zurückgenommen wird nichts
+    /// (Befund W10‑B29) — der Dialog hat sein Werk längst geschrieben.
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_frage != Frageart.Keine) { _frage = Frageart.Keine; _wartendeEingaben = null; return Task.CompletedTask; }
+        return Schliessen();
+    }
+}

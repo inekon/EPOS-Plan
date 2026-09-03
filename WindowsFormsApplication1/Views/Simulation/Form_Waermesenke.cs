@@ -1748,23 +1748,24 @@ namespace WindowsFormsApplication1
             Z_AnlageSenkeModel z = AktuelleZeile();
             string ziel = z != null ? z.Ziel : DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
 
-            Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
-            frm.ID_Projekt = ID_Projekt;
-
             // Vorbelegung der Verwendung passend zur gerade gewählten Senke.
             // D5a: Die Puffer-VERWALTUNG kennt „Kombi" seit der Nacharbeit I-K2-4 als
             // reguläre dritte Option — die Vorbelegung kommt dort also an und wird beim
             // Übernehmen unverändert zurückgeschrieben. Für das S1-Ziel PufferProzess
             // gibt es keinen Altwert; dort bleibt es bei der Heizungs-Vorbelegung, den
             // Kanal stellt das Klassen-Set des Speichers ein (Konzept 6.1).
+            string verwendung;
             if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
-                frm.Verwendung = WaermesenkeClass.VERWENDUNG_KOMBI;
+                verwendung = WaermesenkeClass.VERWENDUNG_KOMBI;
             else if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
-                frm.Verwendung = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
+                verwendung = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
             else
-                frm.Verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
-            frm.SetControls();
-            frm.ShowDialog(this);
+                verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
+
+            // Die Verwaltung ist seit iU9-W10a.4 eine Razor-Komponente. In W10a.7 wird
+            // sie eine UEBERLAGERUNG dieses Dialogs; bis dahin zeigt die Huelle sie als
+            // zweites Fenster - derselbe Aufruf, dasselbe Ergebnis.
+            int neuerPuffer = PufferSpProjektHuelle.Oeffnen(this, ID_Projekt, verwendung, 0);
 
             // Die Verwaltung schreibt sofort in die Datenbank (siehe Klassenkommentar
             // dort) - die Dropdowns werden deshalb UNABHÄNGIG vom DialogResult neu
@@ -1778,8 +1779,8 @@ namespace WindowsFormsApplication1
                 if (index >= 0)
                 {
                     PufferListeFuerZiel(_zeilen[index].Ziel);
-                    if (frm.ID_Puffer > 0)
-                        PufferWaehlen(_cbPuffer, frm.ID_Puffer);
+                    if (neuerPuffer > 0)
+                        PufferWaehlen(_cbPuffer, neuerPuffer);
                 }
 
                 // PAKET PARALLELVERBUND: Ein gerade angelegter Puffer soll auch als
