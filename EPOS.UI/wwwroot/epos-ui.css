@@ -1374,3 +1374,62 @@ body {
     text-align: right;
     white-space: nowrap;
 }
+
+/* --------------------------------------------------------------------------
+   Die beiden Tabellen der Kostenseite (iU9-W5.4). Sie tragen Zeilenfarben,
+   Kurztexte je Zelle und eine Summenzeile - die Farben sind die des
+   Vorlaeufers (UcBkKosten: FFE6E6 rosa, FFF4CC gelb).
+   -------------------------------------------------------------------------- */
+.epos-kostentabelle,
+.epos-traegertabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Zehn Spalten passen bei keiner Fensterbreite in ihre Mindestbreiten; die
+   Koepfe brechen deshalb um (dieselbe Entscheidung wie WrapMode = True im
+   Vorlaeufer), und die Tabelle blaettert notfalls waagerecht. */
+.epos-traegertabelle th {
+    white-space: normal;
+}
+
+.epos-zahl {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.epos-zellenaktionen {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Ein verbautes Gewerk ohne Kostenposition bzw. ein verwendeter Traeger ohne
+   Zuordnung: eine FEHLENDE EINGABE, kein Nullbetrag. */
+.epos-zeile--fehlt > td {
+    background: #ffe6e6;
+}
+
+/* Positionen ohne (gueltige) Anlagenzuordnung - sie rechnen mit. */
+.epos-zeile--lose > td {
+    background: #fff4cc;
+}
+
+.epos-zeile--summe > td {
+    font-weight: 700;
+}
+
+.epos-zeile--hinweis > td {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+/* Ä19: Die gewaehlte Anlage kennzeichnet ihren Energietraeger rechts. */
+.epos-zeile--markiert > td {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+.epos-kostenkopf {
+    justify-content: flex-end;
+}
