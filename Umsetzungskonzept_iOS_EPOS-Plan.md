@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W8 umgesetzt, W9 in Arbeit | `8995d3e` | **63** Designer-Masken offen (73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder (Monatssäulen, Stundenprofil, Jahresverlauf) erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6/W7 alle sieben Erzeugerkacheln des Startbilds und **sechs der dreizehn Assistentenseiten** als Razor-Komponenten, seit W8 die vier Bedarfstyp-Dialoge (Ergebnis, Stammkopf, Typprofil, Gebäudetyp) als Blätter für W9; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl` im Kern |
+| **iU9** Masken in Wellen | 🔄 W0 bis W9 umgesetzt, W10a in Arbeit | `04fc474` | **55** Designer-Masken offen (63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,59 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 9 umgesetzt (03.09.2026, Basis `8995d3e` nach W8, zusammengeführt mit `1cf3dbf`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W9, Arbeitsanweisung
+> `iU9_W9_Arbeitsanweisung.md` (Scratchpad der Sitzung): **acht Masken der Bedarfskacheln des
+> Startbilds → fünf Razor-Komponenten** in `EPOS.UI/Dialoge/Bedarf/` — Gebäudekatalog auf zwei
+> Reitern (`Form_Gebaeude1` + `Form_Gebaeude2`), Gebäudeverwaltung mit Admin-Modus, Wohnflächendialog,
+> externer Wärmebedarf mit Kanalwahl und **ein** Dialog `BedarfsProfileDialog` für die Drillinge
+> Prozesswärme, Stromverbraucher und Brauchwasser; jede WinForms-Fassung gelöscht (Regel M1),
+> 3 289 Zeilen Oberflächencode, 42 `MessageBox`. Mit den Assistentenseiten 2 bis 5 laufen **zehn der
+> dreizehn Assistentenseiten** als Razor-Komponenten; alle elf Kacheln des Startbilds sind Blazor.
+> Fünfzehn Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `b24e5da` | **W9.0a** Assistentenseiten mit beliebigem Listentyp (`IAssistentListenSeite<T>`, vier Listentypen statt nur `WErzeugerModel`) |
+> | `53aa3f1` `af4dba5` `fd97501` `01701c6` `04ce2ba` | **W9.0b–f** Katalogfilter, Baualtersklassen und Bauart-Ableitung der Gebäudemasken im Kern; **`Ferienzeit`** (Jahrestag ↔ Tag/Monat, vier Prüfregeln); die fünf Projektlisten der Bedarfsgewerke als Controller-Methoden statt inline-JOINs in Startbild und Kontextmenüs; **ein** Suchmuster im Haus (Wildcard-Filter aus W7 verallgemeinert); Sprungziel `WaermebedarfExternAdmin` |
+> | `e384853` `7f59398` `f960151` | **W9.3/W9.1/W9.2** `GebaeudeWohnflaecheDialog`, `GebaeudeKatalogDialog` (zwei Reiter, drei Modi, 78 Felder), `GebaeudeDialog` (Host mit Wohn-/Nichtwohn-Umschalter, vier Filterzweigen, Wildcard-Suche, Admin-Modus, Assistentenseite 2) |
+> | `ae1c097` `3c89b6c` `59d984d` | **W9.4/W9.5** `WaermebedarfExternDialog` (Kanal je Zuordnung, Assistentenseite 3), `BedarfsProfileDialog` (Ausprägung `BedarfsArt`, Simulation in der Hülle, W8-Blätter als Überlagerungen, Assistentenseiten 4 und 5), Brauchwasser-Überlagerung im Gebäudekatalog |
+> | `ecbbdc0` `6c174e3` `d04a056` | **W9.6–W9.8** 207 Textschlüssel de/en, Formularkarte-Tests (Anker auf `Form_Stromganglinie` und `Form_PufferSp_Bearbeiten` umgehängt), Protokoll, drei CLAUDE.md, STAND.md |
+> | `04fc474` | Merge `origin/ios_migration` (Statusblock W8, de-DE-Festlegung der Kurvennamen-Tests) |
+>
+> **Der Ertrag sind die Projektlisten im Kern und die generische Assistentenseite.** Fünf
+> inline-JOINs, die in Startbild, Kontextmenü und Gebäudekatalog je dreimal wortgleich standen,
+> sind fünf Controller-Methoden; die Assistentenschnittstelle aus W6 trägt jetzt jeden Listentyp.
+> **Vier Befunde behoben:** die Checkbox „Dezentrale Warmwasserbereitung“ wurde gezeigt und nie
+> gespeichert (W9‑B3, stiller Datenverlust, A‑2); zwei ungesicherte `Double.Parse` (B4); in
+> englischer Oberfläche lief der Verwendungsfilter ins Leere, weil der Steuerwert übersetzt wurde
+> (B8); „Überschreiben“ traf nach Umbenennen keine Zeile (B9). **Drei wörtlich übernommen, Entscheid
+> beim Anwender** (W9‑O‑1…O‑3): der Filterzweig ohne Verwendung, die Bauweise am Index der
+> Gebäudeart-Liste, kWh gegen MWh in derselben Meldung. Dazu W9‑O‑4 (darf „Überschreiben“
+> umbenennen?), W9‑O‑5 (Admin-Modus des Katalogeditors hat keinen Aufrufer) und W9‑O‑7
+> (Speicherbedarf von zehn WebViews im Assistenten).
+>
+> **Windows-Läufer seit W8 mit en-US:** Drei Kern-Tests der Welle 8 verglichen deutsche
+> Ressourcentexte und fielen auf dem Windows-Läufer (Lauf 33801244655); seit `1cf3dbf` legt jeder
+> Texttest die Oberflächensprache fest, und die Wellen laufen zusätzlich unter `en_US` durch.
+>
+> **Nachweise** (auf dem gemergten Stand `04fc474`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **2 066** grün (1 906 nach W8; +98 bunit,
+> +62 Kern), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf
+> **55** Masken (63 − 8), 54 erreichbar, 0 × „nein“ · SQL-Prüfer 1 241 Texte, 0 Fundstellen ·
+> ChartProben 15 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich**
+> (815 043 Werte) · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (8 Masken, Drillinge je Ausprägung), 15 Abweichungen
+> (A‑1…A‑15), Windows-Abnahmeliste mit 14 Aufrufwegen und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W9_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die vier Filterkombinationen und die Wildcard-Suche, „Ändern“
+> schreibt vier Werte zurück, der Katalogeditor über zwei Reiter mit Ferienregeln, „Brauchwasser…“
+> als Überlagerung, Gebäudeverwaltung ohne Projektteil, Kanalwahl beim externen Wärmebedarf, die
+> drei Bedarfsblätter mit Simulation → Ergebnis → DB ändern/neu → Typ ändern, **Assistent Seiten 2–5
+> mit Speichermessung** (zehn WebViews), de/en, 125 %, Finger/Maus, Esc/Tab.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
