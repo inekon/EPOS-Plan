@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetGebaeudeControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Gebaeude, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetGebaeudeControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Gebaeude, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetGebaeudeControl(m_szProjektname);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Gebaeude, m_ID_Projekt, m_szProjektname);
             }
         }
 

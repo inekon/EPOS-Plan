@@ -19,6 +19,15 @@ namespace WindowsFormsApplication1
         private int _id;
         private string _name = "";
 
+        /// <summary>
+        /// Immer <c>false</c>: Ohne Oberflaeche gibt es keinen fuehrenden Kontext,
+        /// und Aufrufer duerfen ersatzweise die Datenbank fragen.
+        /// </summary>
+        public bool Vorhanden
+        {
+            get { return false; }
+        }
+
         /// <inheritdoc/>
         public int Id
         {

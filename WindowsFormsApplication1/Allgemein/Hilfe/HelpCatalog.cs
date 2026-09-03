@@ -60,6 +60,23 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public class WikiHelpCatalog
     {
+        /// <summary>
+        /// Der eine Hilfekatalog des laufenden Programms.
+        ///
+        /// <para><b>Wozu.</b> Bis iU5 lag er als <c>Program.HelpCatalog</c> im
+        /// WinForms-Einstiegspunkt; Kern-naher Programmtext, der einen Hilfetext
+        /// nachschlagen wollte (<c>KiAktionenDialog</c>), kam nur ueber <c>Program</c>
+        /// dorthin. Die Anmeldung hier ist dasselbe Hausmuster wie
+        /// <c>WizardCtrl.Aktueller</c>: EIN statischer Halter, gesetzt von
+        /// <c>Program.Main</c>; <c>Program.HelpCatalog</c> ist seither nur noch die
+        /// Weiterleitung fuer die Masken.</para>
+        ///
+        /// <para><c>null</c> ist ein zulaessiger Zustand — im Aktionsharnisch und in
+        /// Prueflaeufen gibt es keinen Katalog. Ein fehlender Hilfetext ist ein
+        /// Schoenheitsfehler und kein Grund, eine Erklaerung scheitern zu lassen.</para>
+        /// </summary>
+        public static WikiHelpCatalog Aktueller { get; set; }
+
         private readonly HttpClient _http = new();
 
         // -------------------------------------------------------------------

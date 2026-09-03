@@ -55,8 +55,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string WIKI_STANDARD = WikiWissen.WIKI_STANDARD;
 
-        // Der globale Katalog, auf den alle Formulare zugreifen können
-        public static WikiHelpCatalog HelpCatalog { get; private set; }
+        /// <summary>
+        /// Der globale Hilfekatalog, auf den alle Formulare zugreifen — seit iU5 nur
+        /// noch eine Weiterleitung auf <see cref="WikiHelpCatalog.Aktueller"/>, damit
+        /// Kern-naher Programmtext ihn ohne <c>Program</c> erreicht.
+        /// </summary>
+        public static WikiHelpCatalog HelpCatalog
+        {
+            get { return WikiHelpCatalog.Aktueller; }
+        }
 
         /// <summary>
         /// Der anwendungsweite Infobutton-Extender (Konzept Hilfesystem, F5).
@@ -227,7 +234,7 @@ namespace WindowsFormsApplication1
             string dokuBasis = Dienste.Einstellungen.Lies(WikiWissen.EINSTELLUNG_BASIS);
             if (string.IsNullOrWhiteSpace(dokuBasis)) dokuBasis = WIKI_STANDARD;
 
-            HelpCatalog = new WikiHelpCatalog(dokuBasis);
+            WikiHelpCatalog.Aktueller = new WikiHelpCatalog(dokuBasis);
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
             // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load

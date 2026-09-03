@@ -21,6 +21,16 @@ namespace WindowsFormsApplication1
     public sealed class FormStartProjektKontext : IProjektKontext
     {
         /// <inheritdoc/>
+        public bool Vorhanden
+        {
+            get
+            {
+                try { return Program.startfrm != null; }
+                catch { return false; }
+            }
+        }
+
+        /// <inheritdoc/>
         public int Id
         {
             get
