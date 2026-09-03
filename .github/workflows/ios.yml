@@ -1,0 +1,178 @@
+# =====================================================================================
+# iOS-Lauf: baut EPOS.iOS fuer den Simulator, startet die App und laesst sie das
+# Referenzprojekt 1030 rechnen (Umsetzungskonzept iOS, Paket iU10-6, Abnahmeziel iZ6).
+#
+# WOZU. Der iOS-Bau ist auf Windows und Linux unmoeglich (NETSDK1147 - die Workload
+# gibt es dort nicht). Dieser Job ist deshalb der EINZIGE Ort, an dem sich die Huelle
+# ueberhaupt uebersetzen laesst; alles, was ohne Mac nachweisbar ist, steht in
+# Umsetzung_iU10_Nachweise.md.
+#
+# WARUM VON HAND. macOS-Laeufer werden mit Faktor 10 auf das Minutenkontingent
+# angerechnet, und ein Lauf dauert 15-20 Minuten (Workload 3-6, Bau 5-8, Simulator
+# 3-5). Der Job laeuft deshalb ueber "Run workflow" und zusaetzlich nur dann von
+# selbst, wenn die HUELLE selbst angefasst wurde. Kern und Oberflaeche stehen
+# absichtlich NICHT im Pfadfilter: Sie werden bei jedem Push von kern.yml auf ubuntu
+# und macos gebaut, getestet und gegen dieselbe Referenzbasis gerechnet.
+#
+# WAS DER JOB BEWEIST. Dass die Huelle uebersetzt und paketiert; dass die App im
+# Simulator startet; dass die statisch gelinkte SQLite die STRICT-Tabellen der
+# Datenbank vertraegt; dass der Rechenkern auf ARM64/iOS dieselben Zahlen liefert wie
+# die eingefrorene Windows-Basis. WAS ER NICHT BEWEISEN KANN: das Verhalten auf einem
+# ECHTEN Geraet - AOT statt JIT, Signierung, Speichergrenzen, Bedienung mit dem
+# Finger. Das ist iU13.
+# =====================================================================================
+name: iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios_migration]
+    paths:
+      - 'EPOS.iOS/**'
+      - '.github/workflows/ios.yml'
+      - 'Directory.Packages.props'
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  # iR-a: Xcode ist an das Workload-Set gebunden. 10.400.1 bringt das
+  # iOS-Manifest 26.5.10315 mit, und dessen WorkloadDependencies.json verlangt
+  # "xcode": "[26.6,)". Beides wird deshalb GEMEINSAM gepinnt - ein wanderndes
+  # macos-latest oder ein neuer Xcode-Standard bricht den Bau sonst ohne eine
+  # einzige Codeaenderung.
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app
+  BUNDLE: de.inekon.eposplan
+  SEED: Referenzlaeufe/Kenndaten_Test.sqlite
+
+jobs:
+  simulator:
+    # NICHT macos-latest: Das Label wandert. macos-26 ist arm64, bringt .NET 10.0.400
+    # vorinstalliert mit (aber keine Workloads) und fuehrt iOS-Simulatorlaufzeiten 26.x.
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # SDK-Fassung aus global.json (10.0.400), damit CI und Arbeitsplatz nicht
+      # auseinanderlaufen. setup-dotnet legt es nach ~/.dotnet - damit braucht die
+      # Workload-Installation weiter unten kein sudo.
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Werkzeuglage protokollieren
+        run: |
+          dotnet --info
+          xcodebuild -version
+          ls /Applications | grep -i '^Xcode' || true
+
+      # Das Workload-SET pinnt iOS-SDK und MAUI gemeinsam (10.400.1 ->
+      # iOS 26.5.10315, MAUI 10.0.20). Ohne Angabe zoege "dotnet workload install"
+      # den jeweils neuesten Satz - genau die Drift, die iR-a beschreibt.
+      - name: Workload maui-ios (Set 10.400.1)
+        run: |
+          dotnet workload install maui-ios --version 10.400.1 --skip-sign-check
+          dotnet workload list
+
+      # Der Simulator braucht KEINE Signatur; deshalb laeuft dieser Job ohne
+      # Apple-Konto und ohne Geheimnisse (iF24).
+      - name: Bauen (Simulator, ohne Signatur)
+        run: >
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release
+          -f net10.0-ios -r iossimulator-arm64
+          -p:SeedDb=../${{ env.SEED }}
+
+      - name: Simulator waehlen und starten
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json,sys
+          geraete = json.load(sys.stdin)['devices']
+          for laufzeit, liste in geraete.items():
+              if 'iOS-26' not in laufzeit:
+                  continue
+              for g in liste:
+                  if 'iPad' in g['name'] and g.get('isAvailable'):
+                      print(g['udid']); sys.exit(0)
+          sys.exit('kein verfuegbarer iPad-Simulator mit iOS 26')")
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+      - name: Installieren und Pruefmodus fahren
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/ios
+          APP=$(ls -d EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app)
+          echo "App: $APP"
+          xcrun simctl install "${{ steps.sim.outputs.udid }}" "$APP"
+
+          # Der Pruefmodus wird ueber eine Umgebungsvariable geschaltet - eine
+          # iOS-App bekommt keine Befehlszeile. simctl reicht Variablen mit dem
+          # Praefix SIMCTL_CHILD_ in den Kindprozess durch.
+          SIMCTL_CHILD_EPOS_PRUEFLAUF=1 \
+            xcrun simctl launch --console-pty "${{ steps.sim.outputs.udid }}" "$BUNDLE" \
+            > artifacts/ios/start.log 2>&1 &
+
+          DATA=$(xcrun simctl get_app_container "${{ steps.sim.outputs.udid }}" "$BUNDLE" data)
+          echo "Datenbereich: $DATA"
+
+          # Bis zu fuenf Minuten auf die Fertigmarke warten. Sie entsteht ZULETZT,
+          # nach Protokoll und CSV - eher darf sie nicht gelesen werden.
+          for i in $(seq 1 60); do
+            [ -f "$DATA/Documents/pruefung/fertig.txt" ] && break
+            sleep 5
+          done
+
+          echo "--- Startprotokoll ---"
+          cat artifacts/ios/start.log || true
+
+          cp -r "$DATA/Documents/pruefung" artifacts/ios/pruefung 2>/dev/null || true
+          xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot artifacts/ios/oberflaeche.png || true
+
+      # Erst JETZT gepruefte Marken - so liegen Protokoll und Bildschirmabzug auch
+      # dann als Artefakt vor, wenn eine der Zeilen fehlt.
+      - name: Startmarken pruefen
+        run: |
+          grep -E "EPOS\.iOS bereit: Projekte=[0-9]+" artifacts/ios/start.log
+          grep -E "^SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
+          # Das STRICT-Gate: Die Testdatenbank fuehrt 114 von 115 Tabellen als
+          # STRICT. Steht hier eine kleinere Zahl, hat die App eine andere
+          # SQLite-Fassung erwischt als Windows, Linux und macOS-CI.
+          grep -E "^STRICT=114$" artifacts/ios/start.log
+          test -f artifacts/ios/pruefung/fertig.txt
+
+      # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
+      # (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den Job rot.
+      - name: iZ6-Vergleich Projekt 1030 gegen 2026-08-30_B3-Kaskade
+        run: |
+          dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+          mkdir -p artifacts/reflauf/ref
+          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+            vergleich artifacts/reflauf/ref artifacts/ios/pruefung
+          echo "--- Byte-Diff (nur Information) ---"
+          if diff -rq artifacts/reflauf/ref/Projekt_1030 artifacts/ios/pruefung/Projekt_1030; then
+            echo "BYTE-GLEICH (iOS-Simulator arm64)"
+          else
+            echo "byte-verschieden - der Toleranzvergleich oben ist massgeblich (iF15)"
+          fi
+
+      - name: Startprotokoll, CSV und Bildschirmabzug als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator
+          path: artifacts/ios
+          retention-days: 14
+
+      # Das Paket selbst - fuer den Blick hinein (Groesse, mitgelieferte Datenbank,
+      # statisch gelinkte Nativbibliotheken) und als Ausgangspunkt fuer iU13.
+      - name: App-Paket als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          retention-days: 14
