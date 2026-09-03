@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Globalization;
+using Bunit;
 using EPOS.UI.Bausteine;
 using Xunit;
 
@@ -6,9 +7,27 @@ namespace EPOS.UI.Tests.Bausteine;
 
 /// <summary>
 /// SpeichernLeiste - Regeln und Texte aus Allgemein/SpeichernLeiste.cs.
+///
+/// Die Leiste zieht ihre Texte aus MyResource.Resource (ADM_*). Zwei Tests pruefen
+/// den deutschen Wortlaut; die UI-Kultur wird deshalb je Test auf de-DE gesetzt und
+/// danach zurueckgestellt - die CI-Laeufer auf macOS und Windows laufen englisch,
+/// Ubuntu und die Entwicklungsumgebung zufaellig deutsch (Befund 03.09.2026).
 /// </summary>
 public class SpeichernLeisteTests : BunitContext
 {
+    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
+
+    public SpeichernLeisteTests()
+    {
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        CultureInfo.CurrentUICulture = _kulturVorher;
+        base.Dispose(disposing);
+    }
+
     [Fact]
     public void OK_meldet_true()
     {
