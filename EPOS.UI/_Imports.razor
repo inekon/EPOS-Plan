@@ -3,6 +3,11 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.QuickGrid
 
+@* Eigene Bausteine und Dienste - damit ein Dialog <Warnbanner> schreiben kann,
+   ohne den Ordner zu nennen, in dem der Baustein liegt. *@
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Dienste
+
 @* Ressourcentexte. Die Klasse Resource wird von EPOS.Kern per Link kompiliert
    (EPOS.Kern.csproj:199, LogicalName WindowsFormsApplication1.MyResource.Resource);
    damit steht @Resource.<SCHLUESSEL> in jeder Komponente zur Verfuegung. *@

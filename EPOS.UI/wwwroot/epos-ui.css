@@ -1,24 +1,88 @@
 /* ==========================================================================
-   epos-ui.css - Grundlage der Oberflaechenbibliothek EPOS.UI (Paket iU8).
+   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
+   EPOS.UI (Umsetzungskonzept iOS, Paket iU8).
 
    Diese Datei wird als statisches Web-Asset ausgeliefert und von der Huelle
    ueber "_content/EPOS.UI/epos-ui.css" eingebunden. Sie enthaelt ausschliesslich
    Gestaltung - keine Fachlogik.
 
-   Das Farb- und Massthema aus WindowsFormsApplication1/Allgemein/GrafikTools/
-   KartenStil.cs kommt in iU8-3 als Custom Properties hinzu.
+   HERKUNFT DER FARBEN UND MASSE:
+   WindowsFormsApplication1/Allgemein/GrafikTools/KartenStil.cs - die zentrale
+   Token-Sammlung der WinForms-Karten. Die Werte sind unveraendert uebernommen,
+   damit Blazor-Dialog und WinForms-Maske im selben Fenster nicht auseinander-
+   laufen. Wie dort bewusst KEINE Systemfarben: blau = Quelle, koralle =
+   Senke/Speicher, amber = Warnung - genau diese Zuordnung traegt die Aussage.
+   Fuer den Hochkontrastbetrieb siehe den Block "forced-colors" ganz unten.
    ========================================================================== */
 
 :root {
-    /* Schrift der Dialoge: Segoe UI 9,75 pt entspricht 13 px (Designer-Vorgabe
-       aller Masken, z. B. Form_Kosten_Auswahl.Designer.cs). Der Rueckfall greift
-       auf iOS und ueberall dort, wo Segoe UI fehlt. */
+    /* ---- Schrift ------------------------------------------------------
+       Segoe UI 9,75 pt ist die Dialogschrift aller Masken (Designer-Vorgabe,
+       z. B. Form_Kosten_Auswahl.Designer.cs) und entspricht 13 px. Der
+       Rueckfall greift auf iOS und ueberall dort, wo Segoe UI fehlt. */
     --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
-    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse: 13px;            /* 9,75 pt - Dialoge            */
+    --epos-schriftgroesse-gruppenkopf: 13px; /* 10 pt fett - Abschnittsbalken */
+    --epos-schriftgroesse-kartentitel: 16px; /* 12 pt fett - Kacheltitel    */
+
+    /* ---- Karten und Chips (KartenStil, erster Block) ------------------ */
+    --epos-rahmen: #b4b2a9;                 /* RAHMEN                       */
+    --epos-rahmen-speicher: #D85A30;        /* RAHMEN_SPEICHER              */
+    --epos-rahmen-leise: #d9d7cf;           /* RAHMEN_LEISE / CHIP_RAHMEN   */
+
+    --epos-text: #2c2c2a;                   /* TEXT                         */
+    --epos-text-leise: #5f5e5a;             /* TEXT_LEISE                   */
+    --epos-text-sehr-leise: #888780;        /* TEXT_SEHR_LEISE              */
+
+    --epos-flaeche: #f5f4ef;                /* FLAECHE                      */
+
+    --epos-quelle-rahmen: #378ADD;          /* QUELLE_RAHMEN                */
+    --epos-quelle-text: #185FA5;            /* QUELLE_TEXT                  */
+
+    --epos-senke-rahmen: #D85A30;           /* SENKE_RAHMEN                 */
+    --epos-senke-text: #993C1D;             /* SENKE_TEXT                   */
+
+    --epos-badge-flaeche: #FAECE7;          /* BADGE_FLAECHE                */
+    --epos-badge-text: #712B13;             /* BADGE_TEXT                   */
+
+    --epos-warn-rahmen: rgb(200, 138, 0);   /* WARN_RAHMEN                  */
+    --epos-warn-flaeche: rgb(255, 246, 224);/* WARN_FLAECHE                 */
+    --epos-warn-text: rgb(138, 91, 0);      /* WARN_TEXT                    */
+
+    /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
+    --epos-fehleingabe: rgb(255, 235, 235);
+
+    /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
+    --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
+    --epos-karte-rahmen-hover: #3B82F6;     /* KARTE_RAHMEN_HOVER           */
+    --epos-karte-flaeche: #ffffff;          /* KARTE_FLAECHE                */
+    --epos-karte-flaeche-hover: #EFF6FF;    /* KARTE_FLAECHE_HOVER          */
+    --epos-karte-titel: #0F1F3D;            /* KARTE_TITEL                  */
+    --epos-karte-text: #5A6270;             /* KARTE_TEXT                   */
+    --epos-karte-status: rgba(0, 255, 0, 0.353); /* KARTE_STATUS (Alpha 90) */
+
+    /* Abschnittsbalken - SectionPanel.cs: 40 px, #0F1F3D, weiss fett,
+       Summe in #93C5FD. */
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-summe: #93C5FD;
+    --epos-gruppenkopf-hoehe: 40px;
+    --epos-gruppenkopf-symbolbreite: 30px;
+
+    /* ---- Masse (KartenStil) ------------------------------------------ */
+    --epos-rand: 10px;                      /* RAND                         */
+    --epos-ecke: 6px;                       /* ECKE                         */
+    --epos-karte-rand: 16px;                /* KARTE_RAND                   */
+    --epos-karte-statuspunkt: 14px;         /* KARTE_STATUSPUNKT            */
+    --epos-infoknopf: 28px;                 /* InfoKnopf.GROESSE            */
 
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
 }
+
+/* ==========================================================================
+   Grundlage
+   ========================================================================== */
 
 html {
     box-sizing: border-box;
@@ -35,4 +99,419 @@ body {
     font-family: var(--epos-schrift);
     font-size: var(--epos-schriftgroesse);
     line-height: 1.4;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+}
+
+/* Wurzel eines Dialogs. tabindex="-1" traegt die Tastenbehandlung
+   (Enter = OK, Esc = Abbrechen), der Rahmen darf dabei nicht aufblitzen. */
+.epos-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    outline: none;
+}
+
+/* ==========================================================================
+   Baustein: Gruppenkopf (Vorbild Views/Kosten/SectionPanel.cs)
+   ========================================================================== */
+
+.epos-gruppenkopf {
+    background: var(--epos-karte-flaeche);
+    margin-bottom: 15px;
+}
+
+.epos-gruppenkopf-balken {
+    display: flex;
+    align-items: center;
+    min-height: var(--epos-gruppenkopf-hoehe);
+    background: var(--epos-gruppenkopf-flaeche);
+    color: var(--epos-gruppenkopf-text);
+}
+
+.epos-gruppenkopf-symbol {
+    flex: 0 0 var(--epos-gruppenkopf-symbolbreite);
+    text-align: center;
+}
+
+.epos-gruppenkopf-titel {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-gruppenkopf);
+    font-weight: 700;
+}
+
+.epos-gruppenkopf-summe {
+    flex: 0 0 auto;
+    padding-right: var(--epos-rand);
+    color: var(--epos-gruppenkopf-summe);
+    text-align: right;
+}
+
+.epos-gruppenkopf-koerper {
+    padding: var(--epos-rand);
+}
+
+/* ==========================================================================
+   Baustein: Warnbanner
+   ========================================================================== */
+
+.epos-warnbanner {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: var(--epos-rand);
+    border: 1px solid transparent;
+    border-radius: var(--epos-ecke);
+}
+
+.epos-warnbanner-symbol {
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+/* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
+.epos-warnbanner--hinweis {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-karte-titel);
+}
+
+/* Warnung: WARN_* aus KartenStil. */
+.epos-warnbanner--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+/* Fehler: der Korallenklang der Senke, Flaeche wie ein fehlerhaftes Feld. */
+.epos-warnbanner--fehler {
+    border-color: var(--epos-senke-rahmen);
+    background: var(--epos-fehleingabe);
+    color: var(--epos-senke-text);
+}
+
+/* ==========================================================================
+   Baustein: SpeichernLeiste (Vorbild Allgemein/SpeichernLeiste.cs)
+   ========================================================================== */
+
+.epos-leiste {
+    display: flex;
+    align-items: center;
+    gap: 12px;                              /* SpeichernLeiste.ABSTAND      */
+    margin-top: var(--epos-rand);
+}
+
+.epos-status {
+    flex: 1 1 auto;
+    text-align: right;
+    color: var(--epos-text-leise);          /* SystemColors.GrayText        */
+}
+
+.epos-status--fehler {
+    color: var(--epos-senke-text);          /* Color.Firebrick              */
+    font-weight: 700;
+}
+
+.epos-knopf {
+    min-height: var(--epos-touchziel);
+    min-width: 88px;                        /* Knopfbreite der Designer     */
+    padding: 0 12px;
+    font: inherit;
+    color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-knopf:hover:not(:disabled) {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-knopf:disabled {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+.epos-knopf--primaer {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel);
+    border-color: var(--epos-karte-titel);
+}
+
+.epos-knopf--primaer:hover:not(:disabled) {
+    background: var(--epos-quelle-text);
+    border-color: var(--epos-quelle-text);
+}
+
+.epos-knopf--primaer:disabled {
+    color: var(--epos-text-sehr-leise);
+    background: var(--epos-rahmen-leise);
+    border-color: var(--epos-rahmen-leise);
+}
+
+/* ==========================================================================
+   Baustein: InfoKnopf (Vorbild Allgemein/Hilfe/InfoKnopf.cs - 28x28)
+   ========================================================================== */
+
+.epos-infoknopf {
+    width: var(--epos-infoknopf);
+    height: var(--epos-infoknopf);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.epos-infoknopf:hover {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-infoknopf img {
+    width: var(--epos-infoknopf);
+    height: var(--epos-infoknopf);
+}
+
+/* ==========================================================================
+   Baustein: Kachel (Vorbild Views/Kosten/EinstiegsKarte.cs)
+   ========================================================================== */
+
+.epos-kachel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: var(--epos-karte-rand);
+    font: inherit;
+    text-align: left;
+    color: var(--epos-karte-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-kachel:hover {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-kachel-bild {
+    align-self: flex-start;
+    max-height: 48px;
+}
+
+.epos-kachel-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-kachel-beschreibung {
+    color: var(--epos-karte-text);
+}
+
+.epos-kachel-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-kachel-statuspunkt {
+    flex: 0 0 auto;
+    width: var(--epos-karte-statuspunkt);
+    height: var(--epos-karte-statuspunkt);
+    background: var(--epos-karte-status);
+    border-radius: 50%;
+}
+
+/* ==========================================================================
+   Bausteine: Herleitungszeile und Kohaerenzzeile
+   ========================================================================== */
+
+.epos-herleitung {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-herleitung-formel {
+    margin-left: 6px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-kohaerenz {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+}
+
+.epos-kohaerenz--ok {
+    color: var(--epos-text-leise);
+}
+
+.epos-kohaerenz--abweichend {
+    color: var(--epos-warn-text);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Standards: Eingabefelder
+   ========================================================================== */
+
+.epos-feld {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-feld-text {
+    color: var(--epos-text);
+}
+
+.epos-feld-zeile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-eingabe {
+    flex: 1 1 auto;
+    min-height: var(--epos-touchziel);
+    padding: 0 8px;
+    font: inherit;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-eingabe:focus {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 1px;
+}
+
+/* Eine Fehleingabe faerbt - sie meldet nicht (Program.ZahlFaerben). */
+.epos-fehleingabe {
+    background: var(--epos-fehleingabe);
+}
+
+.epos-einheit {
+    flex: 0 0 auto;
+    color: var(--epos-text-leise);
+}
+
+.epos-schalter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-schalter-kasten {
+    width: 20px;
+    height: 20px;
+}
+
+/* ==========================================================================
+   Standards: Raster und Chartbild
+   ========================================================================== */
+
+.epos-raster {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-raster th,
+.epos-raster td {
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-raster th {
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
+.epos-chartbild {
+    max-width: 100%;
+    height: auto;
+}
+
+.epos-chartbild-platzhalter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--epos-karte-rand);
+    color: var(--epos-text-sehr-leise);
+    background: var(--epos-flaeche);
+    border: 1px dashed var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+
+/* ==========================================================================
+   Hochkontrast (Windows-Kontrastthema)
+
+   KartenStil meidet Systemfarben bewusst; im erzwungenen Farbmodus ersetzt
+   das System jede Farbe. Ohne Gegenmassnahme verschwinden damit genau die
+   Unterschiede, die Warnung und Fehler tragen. forced-color-adjust: none
+   haelt die Warnflaechen; alles Uebrige folgt dem Systemthema, und die
+   Bausteine bekommen einen sichtbaren Rahmen statt einer Flaeche.
+   ========================================================================== */
+
+@media (forced-colors: active) {
+    .epos-warnbanner {
+        forced-color-adjust: none;
+        border-width: 2px;
+    }
+
+    .epos-warnbanner--hinweis {
+        border-color: rgb(59, 130, 246);
+        background: rgb(239, 246, 255);
+        color: rgb(15, 31, 61);
+    }
+
+    .epos-warnbanner--warnung {
+        border-color: rgb(200, 138, 0);
+        background: rgb(255, 246, 224);
+        color: rgb(138, 91, 0);
+    }
+
+    .epos-warnbanner--fehler {
+        border-color: rgb(216, 90, 48);
+        background: rgb(255, 235, 235);
+        color: rgb(153, 60, 29);
+    }
+
+    .epos-fehleingabe {
+        forced-color-adjust: none;
+        background: rgb(255, 235, 235);
+        color: rgb(44, 44, 42);
+        border: 2px solid rgb(216, 90, 48);
+    }
+
+    .epos-kachel-statuspunkt {
+        forced-color-adjust: none;
+        background: rgb(0, 160, 0);
+    }
+
+    .epos-knopf,
+    .epos-kachel {
+        border: 1px solid ButtonBorder;
+    }
+
+    .epos-kohaerenz--abweichend {
+        forced-color-adjust: none;
+        color: rgb(138, 91, 0);
+    }
 }

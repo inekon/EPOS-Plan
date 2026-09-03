@@ -1,0 +1,110 @@
+﻿@* Abschlusszeile eines Dialogs: Statustext links, dann - optional - der
+   nicht schliessende Speichern-Knopf, dann Abbrechen und OK.
+
+   Vorbild: Allgemein/SpeichernLeiste.cs. Von dort stammen
+   - die Regel, wann Speichern aktiv ist (markierter Satz UND Aenderung),
+   - die drei Kurztexte, die den gesperrten Knopf erklaeren,
+   - die Rueckmeldung als Statuszeile statt als MessageBox (mehrfaches
+     Speichern soll keine Meldungskette ausloesen),
+   - und die Ressourcenschluessel ADM_*.
+
+   Neu gegenueber dem Vorbild sind OK und Abbrechen: In WinForms lagen sie im
+   Designer der jeweiligen Maske, hier gehoeren sie in denselben Baustein. Der
+   Dialog erfaehrt das Ergebnis ueber Ergebnis (true = OK, false = Abbrechen);
+   geschlossen wird er von der Huelle, nicht von der Komponente. *@
+
+<div class="epos-leiste">
+    <span class="epos-status @(_statusFehler ? "epos-status--fehler" : "")" role="status">@_statusText</span>
+
+    @if (MitSpeichern)
+    {
+        <button type="button" class="epos-knopf" title="@SpeichernKurztext"
+                disabled="@(!SpeichernErlaubt)" @onclick="BeimSpeichern">@SpeichernText</button>
+    }
+
+    <button type="button" class="epos-knopf"
+            @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
+
+    <button type="button" class="epos-knopf epos-knopf--primaer"
+            disabled="@(!OkErlaubt)" @onclick="() => Ergebnis.InvokeAsync(true)">@OkText</button>
+</div>
+
+@code {
+    /// <summary>Beschriftung des OK-Knopfes.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Beschriftung des nicht schliessenden Speichern-Knopfes.</summary>
+    [Parameter] public string SpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
+
+    /// <summary>OK anklickbar? Der Dialog entscheidet, was eine gueltige Eingabe ist.</summary>
+    [Parameter] public bool OkErlaubt { get; set; } = true;
+
+    /// <summary>Zeigt den Speichern-Knopf. Ohne ihn bleibt die Leiste OK/Abbrechen.</summary>
+    [Parameter] public bool MitSpeichern { get; set; }
+
+    /// <summary>Ist links ein Datensatz markiert? (Vorbild: Zustand, erster Parameter.)</summary>
+    [Parameter] public bool SatzMarkiert { get; set; }
+
+    /// <summary>Wurde seit dem letzten Speichern etwas geaendert? (zweiter Parameter.)</summary>
+    [Parameter] public bool Geaendert { get; set; }
+
+    /// <summary>true = OK, false = Abbrechen. Das Schliessen erledigt die Huelle.</summary>
+    [Parameter] public EventCallback<bool> Ergebnis { get; set; }
+
+    /// <summary>Klick auf Speichern. Der Dialog bleibt dabei offen.</summary>
+    [Parameter] public EventCallback Gespeichertwerden { get; set; }
+
+    private string _statusText = "";
+    private bool _statusFehler;
+
+    /// <summary>
+    /// Der Speichern-Knopf ist nur aktiv, wenn es etwas zu speichern gibt:
+    /// ein markierter Satz UND mindestens eine Aenderung.
+    /// </summary>
+    public bool SpeichernErlaubt => SatzMarkiert && Geaendert;
+
+    /// <summary>Der angezeigte Statustext (Pruefhilfe fuer Tests).</summary>
+    public string StatusText => _statusText;
+
+    /// <summary>Ist der Statustext eine Fehlermeldung? (Pruefhilfe fuer Tests.)</summary>
+    public bool StatusIstFehler => _statusFehler;
+
+    /// <summary>Der Kurztext nennt den Grund, damit der gesperrte Knopf nicht raetselhaft bleibt.</summary>
+    private string SpeichernKurztext =>
+        !SatzMarkiert ? Resource.ADM_TIP_SPEICHERN_LEER
+        : !Geaendert ? Resource.ADM_TIP_SPEICHERN_UNVERAENDERT
+        : Resource.ADM_TIP_SPEICHERN;
+
+    /// <summary>Erfolgsmeldung mit Uhrzeit in der Statuszeile.</summary>
+    public void Gespeichert()
+    {
+        Melden(string.Format(Resource.ADM_STATUS_GESPEICHERT, DateTime.Now.ToString("T")), false);
+    }
+
+    /// <summary>
+    /// Kurzhinweis, dass NICHT geschrieben wurde. Die Begruendung steht bereits
+    /// im Warnbanner, das der Dialog davor gezeigt hat.
+    /// </summary>
+    public void Fehler()
+    {
+        Melden(Resource.ADM_STATUS_FEHLER, true);
+    }
+
+    /// <summary>Loescht die Statuszeile (neue Eingabe, neuer Satz).</summary>
+    public void Leeren()
+    {
+        Melden("", false);
+    }
+
+    private void Melden(string szText, bool bFehler)
+    {
+        _statusText = szText;
+        _statusFehler = bFehler;
+        StateHasChanged();
+    }
+
+    private Task BeimSpeichern() => Gespeichertwerden.InvokeAsync();
+}
