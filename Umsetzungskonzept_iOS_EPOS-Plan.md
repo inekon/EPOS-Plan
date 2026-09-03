@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W5 umgesetzt | `f39b4a3` | **88** Designer-Masken offen (91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert, seit W5 steht die erste **Seite** (`BlazorSeite`) — der Reiter „Berichte & Kosten" ist vollständig Blazor |
+| **iU9** Masken in Wellen | 🔄 W0 bis W6 umgesetzt, W7 in Arbeit | `198506f` | **81** Designer-Masken offen (88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um das Kostenprofil erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6 die fünf Erzeugerkacheln des Startbilds und die ersten vier **Assistentenseiten** als Razor-Komponenten |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1406,6 +1406,61 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
 
+> **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W6, Arbeitsanweisung
+> `iU9_W6_Arbeitsanweisung.md` (Scratchpad der Sitzung): **sieben Masken der
+> Erzeugerkacheln → sieben Razor-Komponenten** in `EPOS.UI/Dialoge/Erzeuger/`, jede
+> WinForms-Fassung gelöscht (Regel M1) — 4 202 Zeilen Oberflächencode, 55 `MessageBox`.
+> **Vier davon sind zugleich Assistentenseiten** (PV, Stromspeicher, Heizkessel, BHKW),
+> die ersten Razor-Komponenten im Assistentenrahmen. Vierzehn Sachcommits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `c825649` | **W6.0a/b** `EnergietraegerVarianteCtrl.Anlegen` (die 185 Zeilen Trägeranlage aus Heizkessel und BHKW, zweimal wortgleich, jetzt **einmal** im Kern, eine Transaktion), `VariantenDerGruppe`, `TraegerUmhaengen` |
+> | `68f3634` | **W6.0c** Katalogfilter und Detailblöcke der fünf Projektdialoge in die Stamm-Controller (Heizkessel, BHKW, Photovoltaik, Pufferspeicher); `PufferSpFilter` aus der App in den Kern |
+> | `9991259` | **W6.0d** vier Sprungziele (`HeizkesselAdmin`, `StromspeicherAdmin`, `PvAdmin`, `PufferSpAdmin`) — die Katalogverwaltungen bleiben WinForms bis W14a |
+> | `ca73a39` | **W6.0f** `KostenKnoepfeLeiste.razor` — der KD6-Kostenblock als Razor-Teilstück; die Ziele sind selbst Blazor-Hüllen und öffnen als **zweites Fenster** (A‑1, wie W4‑O3) |
+> | `8fc101e` | **W6.0e** `BlazorAssistentSeite<T>` + `IAssistentErzeugerSeite`: eine randlose, `TopLevel=false`-taugliche Hüllenform mit einer verzögert gebauten WebView; `WizardParent` bedient die vier Seiten über **einen** Zweig statt vier |
+> | `bd9151f` `dd11c2b` | **W6.1/W6.2** die Katalogeditoren `HeizkesselKatalogDialog` (42 Felder, 3 Speicherwege) und `BhkwKatalogDialog` (58 Felder, abgeleitete Investition, Katalogsatz-Rückfrage) |
+> | `448d4c5` `1bb2c19` `ef28099` | **W6.3/W6.4** die Hosts `HeizkesselDialog` und `BhkwDialog` — Trägerwahl, Katalogeditor und Namensdialog als Überlagerungen im selben Fenster; `ErzeugerAuswahlDaten.cs` als gemeinsame Datenform (`Schluessel` ≠ `GeraetId`: zwei gleiche Kessel teilen eine Projektkopie) |
+> | `329a1be` `fa670fc` `6e2a2f5` | **W6.5–W6.7** `PhotovoltaikDialog`, `StromspeicherDialog`, `PufferspeicherDialog` (Eindeutigkeitsrückfrage als `Rueckfrage`-Baustein statt `Dienste.Dialog`) |
+> | `18a3eb9` | **W6.8/W6.10** Ressourcen-Sammelnachtrag, Protokoll, drei CLAUDE.md, STAND.md |
+>
+> **Der Ertrag ist die Assistentenseite.** Bis W5 saß jede Razor-Komponente in einem
+> modalen Fenster oder in einer `BlazorSeite` einer bestehenden Maske. Der Assistent
+> hält seine 13 Seiten als `Func<Form>` und zeigt sie randlos in seinem Panel — dafür
+> brauchte es eine **Form**, die eine WebView trägt und erst beim Anzeigen baut
+> (Risiko R5: vier WebViews im Voraus). `AssistentSeiten.ERZEUGER[9..12]` zeigen jetzt
+> auf `BlazorAssistentSeite<…>`; Welle 7 hängt Wärmepumpe und Solar auf demselben Weg ein.
+>
+> **Zwei Befunde für den Anwender** (W6‑O‑1, W6‑O‑2, wörtlich übernommen nach Regel F3):
+> die Gruppen→`Brennstoff`-Ketten von Heizkessel und BHKW sind uneinheitlich („Sonstige"
+> trifft beim Heizkessel nie, ist auf `23` = Fernwärme abgebildet; Fernwärme und
+> Wasserstoff fehlen der Kesselkette), und die Filterstufe „Alle" (`Ptherm Like '%'`)
+> lässt Katalogsätze ohne Ptherm herausfallen. Vorschlag: künftig über
+> `Tab_Brennstoff_Stamm.ID_Kategorie` filtern, dann gibt es die Ketten nicht mehr.
+>
+> **Nachweise** (auf dem gemergten Stand `198506f`, Linux): `dotnet build WP-Plan.sln
+> -c Release -p:Platform=x64` → 0 Fehler, **20** Warnungen · `dotnet test
+> WP-Plan.Kern.slnf` → **1 636** grün (1 485 nach W5; +91 bunit, +27 Kern-Tests für die
+> neuen Controller-Methoden gegen `Kenndaten_Test.sqlite`) · Formularkarte **123** grün
+> (Anker von Heizkessel/BHKWEing auf Klimadaten, Gebäude und Brauchwasser umgehängt) ·
+> Stapellauf **81** Masken (88 − 7), 79 erreichbar, 0 × „nein", 0 × „verwaist" ·
+> SQL-Prüfer 1 283 Texte, 0 Fundstellen (Prüfer: lokale Variablen werden nicht mehr gegen
+> fremde Konstanten aufgelöst, W6‑O‑4) · ChartProben 10 Bilder, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS, byte-gleich**
+> (815 043 Werte) · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken), 20 Abweichungen (A‑1…A‑20),
+> Windows-Abnahmeliste mit zehn Aufrufwegen und sechs offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W6_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die fünf Startkacheln, das Kontextmenü der
+> Übersichtslisten (auch REF-Liste), Assistentenseiten 9–12 (Wechsel unter 1 s, kein
+> Aufblitzen, Speicher der Browserprozesse), Heizkessel-/BHKW-Admin → Bearbeiten/Neu,
+> die Sprungbrücke in die vier Katalogverwaltungen (W2‑7) und die Kostenleiste als
+> zweites Fenster.
+
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
 > Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W5: **sechs Masken →
@@ -1700,7 +1755,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
@@ -1933,8 +1988,8 @@ setzen sie voraus:**
 | **iF17** | Wird iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragt? | **Ja.** Die Support-Frist läuft am 10.11.2026 ab; das Paket ist auch ohne iOS vollständig gerechtfertigt und die einzige Antwort auf iR9 |
 | **iF18** | **Welche VS-2026-Edition?** VS 2022 kann `net10.0` nicht targeten, der Umstieg ist zwingend. Heute läuft **Community 2022** | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt (≤ 250 PCs/Nutzer **und** ≤ 1 Mio. USD Umsatz) und höchstens 5 Entwickler daran arbeiten — dann kostenneutral. Sonst Professional (Abo oder neue Standalone-Lizenz; die 2022er-Dauerlizenz gilt nicht weiter). Vor iU1 einordnen |
 | **iF19** | Schrift der Berichts-Charts nach der SkiaSharp-Portierung: mitgelieferte Schrift oder Systemschrift? | **Systemschrift, flexibel** — beschieden 02.09.2026. Umgesetzt mit einer Zwischenstufe, die die Vorgabe nicht kannte: Calibri → **Carlito, Liberation Sans, DejaVu Sans** → Helvetica/Arial → Systemschrift. Ohne sie liefert SkiaSharp unter Linux eine **Serifen**schrift |
-| **iF20** | **WebView2-Verteilung:** Online-Bootstrapper (heute), Standalone-Installer (~150 MB) oder Fixed Version? | Bootstrapper, solange kein Kunde ohne Internet installiert. **Anwenderentscheid, offen** — S10 im Setup-Konzept § 5.5 |
-| **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel** — gebaut mit iU8-6 (`DpiInsel`). Der Windows-Befund bei 125 % und 150 % steht aus; die Umstellung der ganzen Anwendung wäre ein eigenes Vorhaben mit Layoutwirkung auf 120 Masken |
+| **iF20** | **WebView2-Verteilung:** Online-Bootstrapper (heute), Standalone-Installer (~150 MB) oder Fixed Version? | **Bootstrapper** — entschieden 03.09.2026; der Standalone-Installer kommt erst dazu, wenn ein Kunde ohne Internet installiert (S10 geschlossen) |
+| **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
 
