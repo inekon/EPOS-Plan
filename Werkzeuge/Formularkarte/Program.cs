@@ -4,9 +4,9 @@ using Formularkarte;
 // Werkzeug "Formularkarte" - Aufruf siehe LIESMICH.md im selben Ordner.
 //
 //   dotnet run --project Werkzeuge/Formularkarte -- <Form_X.Designer.cs>
-//        [--resx <pfad>] [--karte <ausgabe.md>]
+//        [--resx <pfad>] [--karte <ausgabe.md>] [--razor <ausgabe.razor>]
 //
-// Ohne --karte geht die Feldkarte nach stdout.
+// Ohne --karte/--razor geht die Feldkarte nach stdout.
 
 Console.OutputEncoding = Encoding.UTF8;
 
@@ -16,7 +16,7 @@ if (args.Length == 0 || args[0] is "--hilfe" or "-h" or "--help")
     return 0;
 }
 
-string? quelle = null, resx = null, karte = null, wurzel = null;
+string? quelle = null, resx = null, karte = null, razor = null, wurzel = null;
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -24,6 +24,7 @@ for (var i = 0; i < args.Length; i++)
     {
         case "--resx": resx = Naechstes(args, ref i); break;
         case "--karte": karte = Naechstes(args, ref i); break;
+        case "--razor": razor = Naechstes(args, ref i); break;
         case "--wurzel": wurzel = Naechstes(args, ref i); break;
         default:
             if (args[i].StartsWith("--", StringComparison.Ordinal))
@@ -55,15 +56,32 @@ try
 
     var maske = Kartenbau.Vollstaendig(quelle, resx, wurzel);
 
-    if (karte is null)
+    if (karte is null && razor is null)
     {
         Console.WriteLine(FeldkarteSchreiber.Schreiben(maske));
         return 0;
     }
+    if (karte is not null)
+    {
+        Verzeichnis(karte);
+        File.WriteAllText(karte, FeldkarteSchreiber.Schreiben(maske), bom);
+        Console.WriteLine("Feldkarte: " + karte);
+    }
+    if (razor is not null)
+    {
+        Verzeichnis(razor);
+        File.WriteAllText(razor, RazorSchreiber.Schreiben(maske), bom);
+        Console.WriteLine("Skelett:   " + razor);
 
-    Verzeichnis(karte);
-    File.WriteAllText(karte, FeldkarteSchreiber.Schreiben(maske), bom);
-    Console.WriteLine("Feldkarte: " + karte);
+        // Razor leitet den Komponentennamen aus dem Dateinamen ab und laesst
+        // dabei keinen kleinen Anfangsbuchstaben zu (RZ10011).
+        var stamm = Path.GetFileNameWithoutExtension(razor);
+        if (stamm.Length > 0 && char.IsLower(stamm[0]))
+        {
+            Console.WriteLine("Hinweis:   '" + stamm + "' faengt klein an - Razor braucht einen grossen " +
+                              "Anfangsbuchstaben (RZ10011). Vorschlag: " + RazorSchreiber.Dateiname(maske));
+        }
+    }
     return 0;
 }
 catch (Exception fehler)
@@ -87,12 +105,14 @@ static void Verzeichnis(string pfad)
 static void Hilfe()
 {
     Console.WriteLine("""
-        Formularkarte - Feldkarte aus einer WinForms-Designer-Datei.
+        Formularkarte - Feldkarte und Razor-Skelett aus einer WinForms-Designer-Datei.
 
-          Formularkarte <Form_X.Designer.cs> [--resx <pfad>] [--karte <ausgabe.md>]
+          Formularkarte <Form_X.Designer.cs> [--resx <pfad>]
+                        [--karte <ausgabe.md>] [--razor <ausgabe.razor>]
 
           --resx    abweichende neutrale .resx (sonst die neben dem Designer)
-          --karte   Feldkarte als Markdown; ohne --karte geht sie nach stdout
+          --karte   Feldkarte als Markdown; ohne --karte/--razor geht sie nach stdout
+          --razor   Razor-Skelett fuer EPOS.UI/Dialoge/
           --wurzel  Projektordner fuer die Suche nach ShowDialog-Aufrufern
         """);
 }
