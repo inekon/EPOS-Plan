@@ -64,9 +64,11 @@ public static class MauiProgram
         // AddWindowsFormsBlazorWebView in der Windows-Huelle.
         bauer.Services.AddMauiBlazorWebView();
 
-        // Die beiden Aussenschnittstellen von EPOS.UI.
+        // Die beiden Aussenschnittstellen von EPOS.UI - ihre Fassungen holen
+        // sich alles ueber dieselben Kern-Controller, die auch die
+        // Windows-Huelle ruft.
         bauer.Services.AddSingleton<IHilfeDienst>(new IosHilfeDienst(PaketZuordnungen, AdresseOeffnen));
-        bauer.Services.AddSingleton<IProjektQuelle, KeineProjekte>();
+        bauer.Services.AddSingleton<IProjektQuelle, IosProjektQuelle>();
 
         MauiApp anwendung = bauer.Build();
 
