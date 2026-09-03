@@ -78,4 +78,12 @@ public static class Sprungziel
     /// iU9-W6.7).
     /// </summary>
     public const string PufferSpAdmin = "PUFFERSP_ADMIN";
+
+    /// <summary>
+    /// Katalog „Stammdaten Solarthermieganglinien" — der Knopf „Bearbeiten…" des
+    /// Solarganglinien-Dialogs (Vorläufer:
+    /// <c>Form_Solarganglinie.btn_Bearbeiten_Click</c> über <c>MenueCtrl.Solarganglinie()</c>,
+    /// iU9-W7.0f). Die Verwaltung selbst bleibt bis Welle 14b eine WinForms-Maske.
+    /// </summary>
+    public const string SolarganglinieAdmin = "SOLARGANGLINIE_ADMIN";
 }
