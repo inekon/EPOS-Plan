@@ -547,7 +547,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(text)) return text ?? "";
             try
             {
-                string projekt = Program.startfrm != null ? Program.startfrm.m_szProjektname : null;
+                string projekt = Dienste.Projekt.Name;
                 if (!string.IsNullOrWhiteSpace(projekt) && projekt.Trim().Length >= 3)
                     text = text.Replace(projekt.Trim(), "(entfernt)");
             }

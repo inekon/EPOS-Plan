@@ -16,6 +16,19 @@ namespace WindowsFormsApplication1
     /// </summary>
     public interface IProjektKontext
     {
+        /// <summary>
+        /// <c>true</c>, wenn es ueberhaupt einen fuehrenden Projektkontext gibt —
+        /// unter Windows die Startmaske.
+        ///
+        /// <para><b>Der Unterschied zu <c>Id == 0</c> ist wichtig.</b> Laeuft die
+        /// Oberflaeche, gilt ihr Stand auch dann, wenn gerade KEIN Projekt offen ist:
+        /// Die Antwort lautet dann „keins", und nicht „das zuletzt geoeffnete". Erst
+        /// wenn es gar keinen Kontext gibt — Pruefharnisch, Konsole —, duerfen
+        /// Aufrufer ersatzweise <c>Tab_Applikation</c> lesen. Genau diese Fallgabelung
+        /// trifft <c>KiAktionenProjekt.AktivesProjektErmitteln</c>.</para>
+        /// </summary>
+        bool Vorhanden { get; }
+
         /// <summary><c>Tab_Projekt.ID</c> des offenen Projekts; <c>0</c> = keins offen.</summary>
         int Id { get; }
 

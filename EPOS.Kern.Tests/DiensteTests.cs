@@ -132,6 +132,52 @@ namespace EPOS.Kern.Tests
             nav.AnsichtAktualisieren(Ansichten.Varianten);
         }
 
+        /// <summary>
+        /// Gewerks-, Masken- und Bereichsschluessel sind sprachneutrales ASCII
+        /// (Drei-Schichten-Regel, Konzept 13.6) - kein Anzeigetext, kein Umlaut.
+        /// Ein Verstoss faellt sonst erst auf, wenn eine Oberflaeche in einer anderen
+        /// Sprache laeuft.
+        /// </summary>
+        [Fact]
+        public void Navigationsschluessel_sind_sprachneutrales_ASCII()
+        {
+            string[] schluessel =
+            {
+                Gewerke.Waermepumpe, Gewerke.Bhkw, Gewerke.Stromspeicher, Gewerke.Heizkessel,
+                Gewerke.Gebaeude, Gewerke.WaermebedarfExtern, Gewerke.Prozesswaerme,
+                Gewerke.Strombedarf, Gewerke.Stromganglinie, Gewerke.Photovoltaik,
+                Gewerke.Pufferspeicher, Gewerke.Solarthermie,
+                Masken.WpAdministration, Masken.StromspeicherAdmin, Masken.PeakShaving,
+                Masken.GebaeudeAdmin, Masken.GebaeudetypenAdmin, Masken.WaermebedarfExternAdmin,
+                Masken.ProzesswaermeAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
+                Masken.SolarganglinieAdmin, Masken.WpImport, Masken.HeizkesselAdmin,
+                Masken.BhkwAdmin, Masken.SolarkollektorenAdmin, Masken.PvAdmin,
+                Masken.HeizkesselImport, Masken.PufferSpImport, Masken.PufferSpAdmin,
+                Masken.BrauchwasserAdmin, Masken.SolarkollektorenImport,
+                Masken.ProjektSpeichernUnter, Masken.ProjektAuswahl, Masken.ProjektDelete,
+                Masken.Assistent, Masken.ProjektDetail,
+                Ansichten.Varianten, Ansichten.BerichteKosten, Ansichten.ProjektDetail
+            };
+
+            foreach (string s in schluessel)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(s));
+                foreach (char c in s)
+                    Assert.True(c < 128, "Nicht-ASCII in Schluessel '" + s + "'");
+            }
+
+            // Die zwoelf Gewerke muessen verschieden sein, sonst frischt ein Kontextmenue
+            // die Liste eines anderen Gewerks auf.
+            var gewerke = new System.Collections.Generic.HashSet<string>
+            {
+                Gewerke.Waermepumpe, Gewerke.Bhkw, Gewerke.Stromspeicher, Gewerke.Heizkessel,
+                Gewerke.Gebaeude, Gewerke.WaermebedarfExtern, Gewerke.Prozesswaerme,
+                Gewerke.Strombedarf, Gewerke.Stromganglinie, Gewerke.Photovoltaik,
+                Gewerke.Pufferspeicher, Gewerke.Solarthermie
+            };
+            Assert.Equal(12, gewerke.Count);
+        }
+
         [Fact]
         public void LeererProjektKontext_haelt_und_meldet()
         {
@@ -139,6 +185,10 @@ namespace EPOS.Kern.Tests
             int gewechselt = 0;
             kontext.Gewechselt += () => gewechselt++;
 
+            // Vorhanden ist ohne Oberflaeche IMMER false - erst daran erkennt ein
+            // Aufrufer, dass er ersatzweise die Datenbank fragen darf. Id == 0 allein
+            // heisst nur "gerade keins offen".
+            Assert.False(kontext.Vorhanden);
             Assert.Equal(0, kontext.Id);
             Assert.Equal("", kontext.Name);
             Assert.Equal("", kontext.Klimazone);
@@ -150,6 +200,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1030, kontext.Id);
             Assert.Equal("Kesselhaus Nord", kontext.Name);
             Assert.Equal(1, gewechselt);
+            Assert.False(kontext.Vorhanden);
         }
 
         // ==================================================================

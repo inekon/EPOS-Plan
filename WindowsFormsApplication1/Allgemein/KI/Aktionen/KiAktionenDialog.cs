@@ -152,8 +152,8 @@ namespace WindowsFormsApplication1
         /// gar keine Antwort.
         /// </para>
         /// <para>
-        /// <b>Der Hilfekatalog darf fehlen.</b> <c>Program.HelpCatalog</c> wird erst in
-        /// <c>Program.Main</c> angelegt; im Aktionsharnisch und in Prueflaeufen gibt es ihn
+        /// <b>Der Hilfekatalog darf fehlen.</b> <c>WikiHelpCatalog.Aktueller</c> wird erst
+        /// in <c>Program.Main</c> belegt; im Aktionsharnisch und in Prueflaeufen gibt es ihn
         /// nicht. Ein fehlender Hilfetext ist ein Schoenheitsfehler und kein Grund, die
         /// Erklaerung scheitern zu lassen.
         /// </para>
@@ -701,7 +701,7 @@ namespace WindowsFormsApplication1
             if (!feld.HatHilfe) return null;
             try
             {
-                WikiHelpCatalog katalog = Program.HelpCatalog;
+                WikiHelpCatalog katalog = WikiHelpCatalog.Aktueller;
                 return katalog != null ? katalog.Get(feld.HilfeSlug) : null;
             }
             catch
