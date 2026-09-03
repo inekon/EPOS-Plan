@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    // Controller fuer die Waermebedarf-STAMMDATEN (Tab_Waermebedarf_STAMM + Tab_WaermebedarfDaten_STAMM).
-    // Aufbau exakt wie StromganglinieStammCtrl: Kopf-Schluessel = ID, Name = Bezeichner, Feld ReadOnly;
-    // die Daten sind ueber ID_Ganglinie = Kopf-ID gruppiert. Enthaelt Admin-Import/-Loeschen (mit
-    // ReadOnly-Schutz) sowie die Kopierlogik STAMM -> Projekt (Ganglinie + 8760 Daten).
-    class WaermebedarfStammCtrl
+    // Controller fuer die Solarganglinie-STAMMDATEN
+    // (Tab_Solarganglinie_STAMM + Tab_SolarganglinieDaten_STAMM).
+    // Kopf-Schluessel = ID, Name = Bezeichner, zusaetzlich Beschreibung; Feld ReadOnly.
+    // Enthaelt die Admin-Operationen (Import/Loeschen) sowie die zentrale Kopierlogik
+    // STAMM -> Projekt (Ganglinie-Kopf + Daten). Analog zu StromganglinieStammCtrl.
+    class SolarganglinieStammCtrl
     {
-        public const string HEAD_STAMM = "Tab_Waermebedarf_STAMM";
-        public const string DATA_STAMM = "Tab_WaermebedarfDaten_STAMM";
-        public const string HEAD_PROJ  = "Tab_Waermebedarf";
-        public const string DATA_PROJ  = "Tab_WaermebedarfDaten";
+        public const string HEAD_STAMM = "Tab_Solarganglinie_STAMM";
+        public const string DATA_STAMM = "Tab_SolarganglinieDaten_STAMM";
+        public const string HEAD_PROJ  = "Tab_Solarganglinie";
+        public const string DATA_PROJ  = "Tab_SolarganglinieDaten";
 
-        private List<WaermebedarfModel> _internalList = new List<WaermebedarfModel>();
+        private List<SolarganglinieModel> _internalList = new List<SolarganglinieModel>();
         public int rows => _internalList.Count;
-        public List<WaermebedarfModel> items => _internalList;
+        public List<SolarganglinieModel> items => _internalList;
 
         // Liest alle Stamm-Ganglinien (Kopfdaten) in die Liste.
         public void ReadAll()
@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow row in dt.Rows)
             {
-                WaermebedarfModel item = new WaermebedarfModel();
+                SolarganglinieModel item = new SolarganglinieModel();
                 if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
                 {
                     item.ID = Convert.ToInt32(row["ID"]);
@@ -37,6 +37,8 @@ namespace WindowsFormsApplication1
                 }
                 if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
                     item.m_szBezeichner = row["Bezeichner"].ToString();
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    item.m_szBeschreibung = row["Beschreibung"].ToString();
                 _internalList.Add(item);
             }
         }
@@ -62,7 +64,7 @@ namespace WindowsFormsApplication1
         {
             if (IsReadOnly(szName))
             {
-                Meldung.Hinweis("Diese Waermebedarf-Ganglinie ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.", "Hinweis");
+                Meldung.Hinweis("Diese Solarganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.", "Hinweis");
                 return false;
             }
             int id = GetStammId(szName);
@@ -75,8 +77,8 @@ namespace WindowsFormsApplication1
         }
 
         // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
-        // Kopf-ID und Daten-IDs explizit (MAX+1), ID_Ganglinie = Kopf-ID, ReadOnly=false. Alles in einer Transaktion.
-        public bool ImportGanglinie(string szBezeichner, List<string> roheWerte)
+        // Kopf-ID und Daten-IDs explizit (MAX+1), ReadOnly = false. Alles in einer Transaktion.
+        public bool ImportGanglinie(string szBezeichner, string szBeschreibung, List<string> roheWerte)
         {
             if (roheWerte == null || roheWerte.Count == 0) return false;
 
@@ -84,7 +86,7 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    int neueId;
+                    int neueId = 1;
                     {
                         object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
                         neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
@@ -94,25 +96,26 @@ namespace WindowsFormsApplication1
                         List<DbParam> p = new List<DbParam>();
                         p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
                         p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
+                        p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = szBeschreibung ?? (object)DBNull.Value });
                         p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
-                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, ReadOnly) VALUES (?, ?, ?)", p.ToArray());
+                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Beschreibung, ReadOnly) VALUES (?, ?, ?, ?)", p.ToArray());
                     }
 
-                    int neueDatenId;
+                    int datenId = 1;
                     {
                         object m = v.Skalar("SELECT MAX(ID) FROM " + DATA_STAMM);
-                        neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        datenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
                     foreach (string s in roheWerte)
                     {
                         v.Ausfuehren(
                             "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
-                            new DbParam("@did", DbParamTyp.Integer) { Wert = neueDatenId++ },
-                            new DbParam("@dg", DbParamTyp.Integer) { Wert = neueId },
-                            new DbParam("@dw", DbParamTyp.Double)
+                            new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
+                            new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
+                            new DbParam("@w", DbParamTyp.Double)
                             { Wert = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
-                            new DbParam("@dr", DbParamTyp.Boolean) { Wert = false });
+                            new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
                     }
 
                     v.Commit();
@@ -121,13 +124,13 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    Meldung.Zeigen("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
                     return false;
                 }
             }
         }
 
-        // Projekt-Ganglinie-ID (Tab_Waermebedarf.ID) zu einem Bezeichner im Projekt, oder 0.
+        // Projekt-Ganglinie-ID (Tab_Solarganglinie.ID) zu einem Bezeichner im Projekt, oder 0.
         public static int GetProjektGanglinieId(string szName, int idProjekt)
         {
             object v = DataRepository.ExecuteScalar(
@@ -137,7 +140,8 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
-        // Liefert die Projekt-Ganglinie-ID; kopiert bei Bedarf die Stamm-Ganglinie (+ Daten) ins Projekt.
+        // Zentrale Anwendung (per Bezeichner): liefert die Projekt-Ganglinie-ID; kopiert bei Bedarf die
+        // Stamm-Ganglinie (+ Daten) ins Projekt. Rueckgabe: Projekt-Ganglinie-ID, 0 bei Fehler.
         public static int ApplyGanglinieToProjekt(string szBezeichner, int idProjekt)
         {
             if (string.IsNullOrEmpty(szBezeichner) || idProjekt <= 0) return 0;
@@ -156,7 +160,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    Meldung.Zeigen("Fehler beim Kopieren der Waermebedarf-Ganglinie ins Projekt: " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Kopieren der Solarganglinie ins Projekt: " + ex.Message);
                     return 0;
                 }
             }
@@ -164,33 +168,38 @@ namespace WindowsFormsApplication1
 
         // Kopiert eine Stamm-Ganglinie (per Bezeichner) samt Daten in die Projekt-Tabellen.
         // Kopf-ID und Daten-IDs im Projekt explizit (MAX+1); ID_Ganglinie = neue Kopf-ID.
+        // Die Daten werden in Stamm-Reihenfolge (nach ID) kopiert, damit die Zeitreihe erhalten bleibt.
         private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v)
         {
             int stammId;
+            string beschreibung;
             {
                 DataTable dtKopf = v.Lese(
-                    "SELECT ID FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                    "SELECT ID, Beschreibung FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
                     new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 if (dtKopf.Rows.Count == 0) return 0;
-                stammId = Convert.ToInt32(dtKopf.Rows[0]["ID"]);
+                DataRow r = dtKopf.Rows[0];
+                stammId = Convert.ToInt32(r["ID"]);
+                beschreibung = r["Beschreibung"] != DBNull.Value ? r["Beschreibung"].ToString() : "";
             }
 
+            // Neue Projekt-Kopf-ID
             int neueId;
             {
                 object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_PROJ);
                 neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
             }
 
-            // Projekt-Kopf (Tab_Waermebedarf) ohne ReadOnly.
             {
                 List<DbParam> p = new List<DbParam>();
                 p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
                 p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
                 p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
-                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner) VALUES (?, ?, ?)", p.ToArray());
+                p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") });
+                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, ?, ?, ?)", p.ToArray());
             }
 
-            // Daten der Stamm-Ganglinie in Reihenfolge lesen ...
+            // Daten der Stamm-Ganglinie einlesen (in Reihenfolge) ...
             List<double> werte = new List<double>();
             {
                 DataTable dtWerte = v.Lese(
@@ -200,19 +209,21 @@ namespace WindowsFormsApplication1
                     werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
             }
 
-            int neueDatenId;
+            // Naechste freie Daten-ID im Projekt
+            int datenId;
             {
                 object m = v.Skalar("SELECT MAX(ID) FROM " + DATA_PROJ);
-                neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                datenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
             }
 
+            // ... und in die Projekt-Datentabelle schreiben (explizite IDs, Reihenfolge = Einfuegereihenfolge).
             foreach (double w in werte)
             {
                 v.Ausfuehren(
                     "INSERT INTO " + DATA_PROJ + " (ID, ID_Ganglinie, Wert) VALUES (?, ?, ?)",
-                    new DbParam("@did", DbParamTyp.Integer) { Wert = neueDatenId++ },
-                    new DbParam("@dg", DbParamTyp.Integer) { Wert = neueId },
-                    new DbParam("@dw", DbParamTyp.Double) { Wert = w });
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
+                    new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
+                    new DbParam("@w", DbParamTyp.Double) { Wert = w });
             }
 
             return neueId;
