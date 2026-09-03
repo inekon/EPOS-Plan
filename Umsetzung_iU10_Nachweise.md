@@ -236,8 +236,14 @@ Freigabe bis Migrationsende.
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
 
-**iF24 — entschieden am 03.09.2026: Konto beschaffen.** Die Schritte, die nur der Anwender gehen
-kann (die CI übernimmt danach die Signierkette, iE9):
+**iF24 — entschieden am 03.09.2026: Konto beschaffen.** Gemeint ist die **Mitgliedschaft im
+Apple Developer Program** (99 US-Dollar/Jahr), nicht die kostenlose Apple ID: Die Apple ID ist
+nur das Benutzerkonto, an das die Mitgliedschaft gebunden wird. Ohne Mitgliedschaft signiert
+Xcode höchstens für eigene Geräte („Personal Team“, Signatur läuft nach 7 Tagen ab, 3 Apps);
+TestFlight, App Store Connect, Bundle-ID-Registrierung, Distribution-Zertifikat und Apple
+Business Manager gibt es erst mit dem Programm. Das Enterprise Program (299 US-Dollar) ist für
+rein interne Apps und für den Verkauf an Kunden ungeeignet. Die Schritte, die nur der Anwender
+gehen kann (die CI übernimmt danach die Signierkette, iE9):
 
 1. Apple ID der Firma mit Zwei-Faktor-Anmeldung anlegen (nicht die private ID eines
    Mitarbeiters — das Konto trägt später die App).
