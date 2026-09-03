@@ -10790,4 +10790,394 @@ Overwrite it anyway?</value>
   <data name="GTYP_KURVE_L8" xml:space="preserve">
     <value>Transition 2 - weekend</value>
   </data>
+  <data name="ALLG_MONAT_1" xml:space="preserve">
+    <value>January</value>
+  </data>
+  <data name="ALLG_MONAT_2" xml:space="preserve">
+    <value>February</value>
+  </data>
+  <data name="ALLG_MONAT_3" xml:space="preserve">
+    <value>March</value>
+  </data>
+  <data name="ALLG_MONAT_4" xml:space="preserve">
+    <value>April</value>
+  </data>
+  <data name="ALLG_MONAT_5" xml:space="preserve">
+    <value>May</value>
+  </data>
+  <data name="ALLG_MONAT_6" xml:space="preserve">
+    <value>June</value>
+  </data>
+  <data name="ALLG_MONAT_7" xml:space="preserve">
+    <value>July</value>
+  </data>
+  <data name="ALLG_MONAT_8" xml:space="preserve">
+    <value>August</value>
+  </data>
+  <data name="ALLG_MONAT_9" xml:space="preserve">
+    <value>September</value>
+  </data>
+  <data name="ALLG_MONAT_10" xml:space="preserve">
+    <value>October</value>
+  </data>
+  <data name="ALLG_MONAT_11" xml:space="preserve">
+    <value>November</value>
+  </data>
+  <data name="ALLG_MONAT_12" xml:space="preserve">
+    <value>December</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_1" xml:space="preserve">
+    <value>Jan</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_2" xml:space="preserve">
+    <value>Feb</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_3" xml:space="preserve">
+    <value>Mar</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_4" xml:space="preserve">
+    <value>Apr</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_5" xml:space="preserve">
+    <value>May</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_6" xml:space="preserve">
+    <value>Jun</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_7" xml:space="preserve">
+    <value>Jul</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_8" xml:space="preserve">
+    <value>Aug</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_9" xml:space="preserve">
+    <value>Sep</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_10" xml:space="preserve">
+    <value>Oct</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_11" xml:space="preserve">
+    <value>Nov</value>
+  </data>
+  <data name="ALLG_MONAT_KURZ_12" xml:space="preserve">
+    <value>Dec</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_1" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_2" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_3" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_4" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_5" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_6" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="ALLG_WOCHENTAG_7" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="BERG_TITEL" xml:space="preserve">
+    <value>Simulation results</value>
+  </data>
+  <data name="BERG_REITER_STROM_ERG" xml:space="preserve">
+    <value>Electricity requirements results</value>
+  </data>
+  <data name="BERG_REITER_STROM_MONAT" xml:space="preserve">
+    <value>Electricity requirement monthly</value>
+  </data>
+  <data name="BERG_REITER_STROM_GRAFIK" xml:space="preserve">
+    <value>Graphic power requirement</value>
+  </data>
+  <data name="BERG_REITER_WAERME_ERG" xml:space="preserve">
+    <value>Heat requirement results</value>
+  </data>
+  <data name="BERG_REITER_MONAT" xml:space="preserve">
+    <value>Monthly overview</value>
+  </data>
+  <data name="BERG_REITER_GRAFIK" xml:space="preserve">
+    <value>Graphic</value>
+  </data>
+  <data name="BERG_GRP_STROM_MONAT" xml:space="preserve">
+    <value>Monthly electricity requirements:</value>
+  </data>
+  <data name="BERG_GRP_MONAT" xml:space="preserve">
+    <value>monthly history:</value>
+  </data>
+  <data name="BERG_LBL_MAX_STROM" xml:space="preserve">
+    <value>Max. power requirement:</value>
+  </data>
+  <data name="BERG_LBL_STROM_GESAMT" xml:space="preserve">
+    <value>Total power requirement:</value>
+  </data>
+  <data name="BERG_LBL_STROMGANGLINIE" xml:space="preserve">
+    <value>Current curve:</value>
+  </data>
+  <data name="BERG_LBL_STROM_GEBAEUDE" xml:space="preserve">
+    <value>Electricity requirement building:</value>
+  </data>
+  <data name="BERG_LBL_NETZVERLUSTE" xml:space="preserve">
+    <value>Network losses:</value>
+  </data>
+  <data name="BERG_LBL_WAERME_GESAMT" xml:space="preserve">
+    <value>Total heat requirement:</value>
+  </data>
+  <data name="BERG_LBL_WAERME_EXTERN" xml:space="preserve">
+    <value>External heat requirement:</value>
+  </data>
+  <data name="BERG_LBL_WAERME_PROZESS" xml:space="preserve">
+    <value>Heat requirement process:</value>
+  </data>
+  <data name="BERG_LBL_WAERME_GEBAEUDE" xml:space="preserve">
+    <value>Heat requirement building:</value>
+  </data>
+  <data name="BERG_LBL_MAX_WAERMELAST" xml:space="preserve">
+    <value>max. heat load:</value>
+  </data>
+  <data name="BERG_LBL_DAVON_BRAUCHWASSER" xml:space="preserve">
+    <value>of which process water:</value>
+  </data>
+  <data name="BERG_LBL_WAERME_BRAUCHWASSER" xml:space="preserve">
+    <value>Heat requirement domestic hot water:</value>
+  </data>
+  <data name="BERG_OPT_STROM" xml:space="preserve">
+    <value>Electricity requirement</value>
+  </data>
+  <data name="BERG_OPT_PROZESSE" xml:space="preserve">
+    <value>Processes</value>
+  </data>
+  <data name="BERG_OPT_GEBAEUDE" xml:space="preserve">
+    <value>Building (including external heat requirements)</value>
+  </data>
+  <data name="BERG_OPT_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="BERG_SCH_JAHRESVERLAUF" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="BERG_BILD_STROM" xml:space="preserve">
+    <value>Electricity requirement monthly overview</value>
+  </data>
+  <data name="BERG_BILD_PROZESS" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE" xml:space="preserve">
+    <value>Building heat</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water heat</value>
+  </data>
+  <data name="BERG_BILD_JAHR" xml:space="preserve">
+    <value>Annual overview</value>
+  </data>
+  <data name="BERG_ACHSE_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat requirement [kW]</value>
+  </data>
+  <data name="BTYP_TITEL_STROM" xml:space="preserve">
+    <value>Enter electricity consumers</value>
+  </data>
+  <data name="BTYP_TITEL_PROZESS" xml:space="preserve">
+    <value>Entry process</value>
+  </data>
+  <data name="BTYP_TITEL_BRAUCHWASSER" xml:space="preserve">
+    <value>Enter domestic hot water data</value>
+  </data>
+  <data name="BTYP_GRP_KOPF" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="BTYP_GRP_MONATE" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="BTYP_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="BTYP_LBL_TYP_STROM" xml:space="preserve">
+    <value>Consumer type:</value>
+  </data>
+  <data name="BTYP_LBL_TYP_PROZESS" xml:space="preserve">
+    <value>Process type:</value>
+  </data>
+  <data name="BTYP_LBL_TYP_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water type:</value>
+  </data>
+  <data name="BTYP_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="BTYP_BTN_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="BTYP_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="BTYP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="BTYP_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="BTYP_FELD_MONATSWERT" xml:space="preserve">
+    <value>Monthly value</value>
+  </data>
+  <data name="BTYP_FELD_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BTYP_MSG_ZAHL" xml:space="preserve">
+    <value>Please enter {0} as a number.</value>
+  </data>
+  <data name="BTYP_MSG_TYP_STROM" xml:space="preserve">
+    <value>Select consumer type!</value>
+  </data>
+  <data name="BTYP_MSG_TYP_PROZESS" xml:space="preserve">
+    <value>Select process type!</value>
+  </data>
+  <data name="BTYP_MSG_TYP_BRAUCHWASSER" xml:space="preserve">
+    <value>Select domestic hot water type!</value>
+  </data>
+  <data name="BTYP_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name already exists!</value>
+  </data>
+  <data name="BTYP_MSG_NAME_LEER" xml:space="preserve">
+    <value>Please enter a name!</value>
+  </data>
+  <data name="BTYP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Data saved!</value>
+  </data>
+  <data name="BTYP_MSG_AKTUALISIERT" xml:space="preserve">
+    <value>Data updated!</value>
+  </data>
+  <data name="BTYP_MSG_READONLY" xml:space="preserve">
+    <value>This master record is read-only and cannot be overwritten.</value>
+  </data>
+  <data name="BTYP_MSG_FEHLER" xml:space="preserve">
+    <value>Error updating the data!</value>
+  </data>
+  <data name="BPRO_TITEL_STROM" xml:space="preserve">
+    <value>Electricity consumer type hourly distribution</value>
+  </data>
+  <data name="BPRO_TITEL_PROZESS" xml:space="preserve">
+    <value>Process types hour distribution</value>
+  </data>
+  <data name="BPRO_TITEL_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water types hourly distribution</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_STROM" xml:space="preserve">
+    <value>List of types in the DB:</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_PROZESS" xml:space="preserve">
+    <value>List of process types in the DB:</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water types in the DB:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_STROM" xml:space="preserve">
+    <value>Description of the selected type:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_PROZESS" xml:space="preserve">
+    <value>Description of the selected process type:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_BRAUCHWASSER" xml:space="preserve">
+    <value>Description of the selected domestic hot water type:</value>
+  </data>
+  <data name="BPRO_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Selection of the day of the week</value>
+  </data>
+  <data name="BPRO_GRP_STUNDEN" xml:space="preserve">
+    <value>Hourly values [KW, KWh or %]</value>
+  </data>
+  <data name="BPRO_REITER_WOCHE" xml:space="preserve">
+    <value>Weekly values</value>
+  </data>
+  <data name="BPRO_REITER_GRAFIK" xml:space="preserve">
+    <value>Graphic</value>
+  </data>
+  <data name="BPRO_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply changes</value>
+  </data>
+  <data name="BPRO_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy tag</value>
+  </data>
+  <data name="BPRO_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Insert tag</value>
+  </data>
+  <data name="BPRO_BTN_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="BPRO_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BPRO_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save to DB</value>
+  </data>
+  <data name="BPRO_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="BPRO_FELD_STUNDENWERT" xml:space="preserve">
+    <value>Hourly value</value>
+  </data>
+  <data name="BPRO_FELD_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="BPRO_MSG_READONLY" xml:space="preserve">
+    <value>This type is read-only and cannot be changed.</value>
+  </data>
+  <data name="BPRO_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Record saved!</value>
+  </data>
+  <data name="BPRO_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Changes applied.</value>
+  </data>
+  <data name="BPRO_MSG_FEHLER" xml:space="preserve">
+    <value>Saving not possible!</value>
+  </data>
+  <data name="BPRO_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Do you really want to delete {0}?</value>
+  </data>
+  <data name="BPRO_ACHSE_X" xml:space="preserve">
+    <value>Hour of the week (1..168)</value>
+  </data>
+  <data name="BPRO_ACHSE_Y" xml:space="preserve">
+    <value>Distribution</value>
+  </data>
+  <data name="GTYP_TITEL" xml:space="preserve">
+    <value>Building types administration</value>
+  </data>
+  <data name="GTYP_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="GTYP_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="GTYP_LBL_KURVE" xml:space="preserve">
+    <value>Curve course for the day:</value>
+  </data>
+  <data name="GTYP_GRP_STUNDEN" xml:space="preserve">
+    <value>Hourly value entry [kW, kWh or %]</value>
+  </data>
+  <data name="GTYP_BTN_NEU" xml:space="preserve">
+    <value>Add type</value>
+  </data>
+  <data name="GTYP_BTN_LOESCHEN" xml:space="preserve">
+    <value>Type Delete</value>
+  </data>
+  <data name="GTYP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Type Save</value>
+  </data>
+  <data name="GTYP_MSG_GESPERRT" xml:space="preserve">
+    <value>The building types supplied by the software manufacturer cannot be changed</value>
+  </data>
+  <data name="GTYP_MSG_FEHLER" xml:space="preserve">
+    <value>Saving not possible!</value>
+  </data>
+  <data name="GTYP_ACHSE_X" xml:space="preserve">
+    <value>Hour of the day</value>
+  </data>
+  <data name="GTYP_ACHSE_Y" xml:space="preserve">
+    <value>Daily distribution</value>
+  </data>
 </root>
