@@ -114,7 +114,10 @@
                     </div>
                 }
 
-                <EnergietraegerEinstellungen Stand="@_ansicht.Stand"
+                <EnergietraegerEinstellungen @attributes="KarteTexte"
+                                             AufschlagTexte="@AufschlagTexte"
+                                             BestandteilTexte="@BestandteilTexte"
+                                             Stand="@_ansicht.Stand"
                                              AufschlagAnzeige="@_ansicht.AufschlagAnzeige"
                                              BestandteilAnzeige="@_ansicht.BestandteilAnzeige"
                                              ArbeitspreisCtKwh="@_ansicht.ArbeitspreisCtKwh"
@@ -312,6 +315,15 @@
 
     /// <summary>Der Dialog ist zu Ende; <c>true</c> = OK.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Texte der Trägerkarte — als Satz, wie die der Preisblöcke.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? KarteTexte { get; set; }
+
+    /// <summary>Die Texte des Aufschlagsblocks (<c>PREIS_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? AufschlagTexte { get; set; }
+
+    /// <summary>Die Texte der Preiszerlegung (<c>BB_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BestandteilTexte { get; set; }
 
     // =====================================================================
     // Texte
