@@ -5,7 +5,17 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    public partial class WizardItemClass
+    /// <summary>
+    /// Der TYP- UND NUMMERNKATALOG des Assistenten - Anlagentypen (<c>ID_Type</c>),
+    /// Seitennummern und die Untergrenze der vorlaeufigen Ids.
+    ///
+    /// <para>Bis iU4-3 war die Klasse partial; die Oberflaechenhaelfte
+    /// (<c>wizardform</c> + Konstruktor) steht seither als eigener abgeleiteter Typ
+    /// <c>WizardSeite</c> in <c>Views\Wizard\WizardSeite.cs</c>. Eine partielle Klasse
+    /// laesst sich nicht ueber eine Assemblygrenze hinweg zusammensetzen, und dieser
+    /// Katalog gehoert in den Kern.</para>
+    /// </summary>
+    public class WizardItemClass
     {
         public const int KOMPONENTEN_ITEM = 0;
         public const int PROJEKT_ITEM = 1;

@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     public interface IAssistentRahmen
     {
         /// <summary>Die Seiten des Assistenten in ihrer festen Reihenfolge (siehe <see cref="AssistentSeiten"/>).</summary>
-        List<WizardItemClass> Seiten { get; }
+        List<WizardSeite> Seiten { get; }
 
         /// <summary>Betriebsart: <see cref="WizardParent.WIZARD_MODE_NEU"/> oder <see cref="WizardParent.WIZARD_MODE_BEARBEITEN"/>.</summary>
         int Betriebsart { get; }
