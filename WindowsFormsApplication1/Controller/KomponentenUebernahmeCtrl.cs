@@ -25,8 +25,8 @@ namespace WindowsFormsApplication1
     /// Quell-IDs werden nie übernommen), deren gewerkspezifische Kindtabellen
     /// (Wärmepumpe: <c>Tab_Kenndaten</c> und <c>Tab_Kenndaten_Kuehlung</c>), die
     /// zugehörigen Zeilen in <c>Tab_Energieanlagen</c> über
-    /// <see cref="WizardCtrl.SQL_ANLAGE_INSERT"/> mit
-    /// <see cref="WizardCtrl.AnlagenParameter"/> — dieselbe eine Einfügeanweisung wie
+    /// <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/> mit
+    /// <see cref="AnlagenSql.AnlagenParameter"/> — dieselbe eine Einfügeanweisung wie
     /// Wizard, Karten und Kontextmenüs — und beim Stromspeicher zusätzlich die
     /// Betriebsführung in <c>Tab_StromspeicherVariante</c>.
     /// </para>
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
         /// Die vier Spalten, über die eine Anlagenzeile auf einen Pufferspeicher zeigt.
         ///
         /// <para>
-        /// ÖFFENTLICH, weil <see cref="GeraeteWaisen"/> dieselbe Liste braucht: Ob eine
+        /// ÖFFENTLICH, weil <c>GeraeteWaisen</c> dieselbe Liste braucht: Ob eine
         /// Speicherzeile noch verbaut ist, entscheidet sich nicht an <c>ID_PUFFER</c>
         /// allein, sondern an allen vieren - der Senkenspeicher einer Wärmepumpe steht in
         /// <c>WS_ID_Puffer</c> IHRER Anlagenzeile, nicht in einer Puffer-Zeile. Eine
@@ -407,8 +407,8 @@ namespace WindowsFormsApplication1
                     PufferverweiseUmschreiben(a, pufferAbbildung, warnungen);
                     GeraetefkSetzen(plan, a, fkZiel);
 
-                    Ausfuehren(v, WizardCtrl.SQL_ANLAGE_INSERT,
-                               WizardCtrl.AnlagenParameter(idZiel, a, pufferCache));
+                    Ausfuehren(v, AnlagenSql.SQL_ANLAGE_INSERT,
+                               AnlagenSql.AnlagenParameter(idZiel, a, pufferCache));
                 }
 
                 v.Commit();
@@ -598,7 +598,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Eine Anlagenzeile als Modell. Bewusst über <c>WErzeugerCtrl.ReadSingle</c>:
-        /// dort liegt die EINE Leseabbildung, die zu <see cref="WizardCtrl.AnlagenParameter"/>
+        /// dort liegt die EINE Leseabbildung, die zu <see cref="AnlagenSql.AnlagenParameter"/>
         /// symmetrisch ist. Die ID stammt aus der Datenbank, nicht aus einer Eingabe.
         /// </summary>
         private static WErzeugerCtrl AnlageLesen(int idAnlage)
@@ -917,7 +917,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Vorbelegter Existenz-Zwischenspeicher für <see cref="WizardCtrl.AnlagenParameter"/>.
+        /// Vorbelegter Existenz-Zwischenspeicher für <see cref="AnlagenSql.AnlagenParameter"/>.
         /// NÖTIG, WEIL DIE PRÜFUNG AUSSERHALB DER TRANSAKTION LÄUFT: die eben angelegten
         /// Speicherzeilen sind für sie noch unsichtbar, sie würde die Verweise als
         /// verwaist leeren. Alle Verweise sind zu diesem Zeitpunkt bereits auf gültige

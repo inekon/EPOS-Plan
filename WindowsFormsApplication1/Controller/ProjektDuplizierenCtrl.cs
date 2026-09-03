@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -223,11 +222,11 @@ namespace WindowsFormsApplication1
         public int Duplizieren(string quelleName, string neuerName, IProgress<Fortschritt> fortschritt = null)
         {
             if (string.IsNullOrWhiteSpace(quelleName) || string.IsNullOrWhiteSpace(neuerName))
-            { MessageBox.Show("Quell- und Zielprojektname duerfen nicht leer sein."); return -1; }
+            { Meldung.Zeigen("Quell- und Zielprojektname duerfen nicht leer sein."); return -1; }
 
             int srcId = GetProjektId(quelleName);
-            if (srcId <= 0) { MessageBox.Show("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
-            if (GetProjektId(neuerName) > 0) { MessageBox.Show("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
+            if (srcId <= 0) { Meldung.Zeigen("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
+            if (GetProjektId(neuerName) > 0) { Meldung.Zeigen("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
 
             // ARBEITSPAKET S4e: Der Vorgang (Verbindung + Transaktion) wird bewusst
             // INNERHALB des try geoeffnet - genau dort stand bisher der Aufruf, der das
@@ -251,7 +250,7 @@ namespace WindowsFormsApplication1
                     if (BerechneOffset(v, s, srcId, out o)) offset[s.Tabelle] = o;
                 }
                 if (!offset.ContainsKey("Tab_Projekt"))
-                { try { v.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
+                { try { v.Rollback(); } catch { } Meldung.Zeigen("Projekt konnte nicht gelesen werden."); return -1; }
 
                 // 2b) DIE NEUE PROJEKT-ID MUSS IN JEDER PROJEKTTABELLE FREI SEIN, nicht nur in
                 //     Tab_Projekt (Befund 27.08.2026, Fehler D-a).
@@ -318,7 +317,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 if (v != null) { try { v.Rollback(); } catch { } }
-                MessageBox.Show("Fehler beim Duplizieren des Projekts: " + ex.Message);
+                Meldung.Zeigen("Fehler beim Duplizieren des Projekts: " + ex.Message);
                 return -1;
             }
             finally
@@ -764,14 +763,6 @@ namespace WindowsFormsApplication1
             string ziel;
             if (FK_MAP.TryGetValue(col, out ziel)) return ziel;                                          // interner FK
             return null;                                                                                 // unbekannt -> unveraendert lassen
-        }
-
-        public static int ZeigeExportImportDialog(IWin32Window owner = null)
-        {
-            using (var dlg = new Form_ProjektExportImport())
-            {
-                return dlg.ShowDialog(owner) == DialogResult.OK ? dlg.ImportierteProjektId : -1;
-            }
         }
     }
 }

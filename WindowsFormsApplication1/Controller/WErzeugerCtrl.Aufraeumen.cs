@@ -4,12 +4,12 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Der PROJEKT-LOESCHWEG von <see cref="WErzeugerCtrl"/> - abgetrennt, weil er als
-    /// einziger Teil der Klasse den Aufraeumlauf <see cref="GeraeteWaisen"/> braucht und
-    /// der wiederum die Oberflaeche (Umsetzungskonzept iU3, Kante K6).
+    /// einziger Teil der Klasse den Aufraeumlauf <c>GeraeteWaisen</c> braucht und der
+    /// wiederum die Oberflaeche (Umsetzungskonzept iU3, Kante K6).
     ///
-    /// <para><b>Der Kern verlinkt diese Datei NICHT.</b> Ein Referenzlauf loescht keine
-    /// Projekte; er liest sie und rechnet. Alles Uebrige von <see cref="WErzeugerCtrl"/>
-    /// - Lesen, Aendern, Einfuegen - bleibt in <c>WErzeugerCtrl.cs</c> und damit im
+    /// <para><b>Seit iU4-2 laeuft der Aufraeumlauf ueber den Haken
+    /// <see cref="WErzeugerCtrl.GeraetewaisenAufraeumen"/>.</b> Damit haengt diese Datei
+    /// nicht mehr an der Oberflaeche und zieht mit dem uebrigen Controller in den
     /// Kern.</para>
     /// </summary>
     partial class WErzeugerCtrl
@@ -22,8 +22,8 @@ namespace WindowsFormsApplication1
         /// DIESE METHODE IST DER PROJEKT-LÖSCHWEG, nicht der Speicherweg. Ihre beiden
         /// Aufrufer sind <c>MenueCtrl.ProjektDelete</c> und
         /// <c>VariantenCtrl.LoescheVariante</c>; gespeichert wird über
-        /// <see cref="WizardCtrl.Del_Projekt_Waermeerzeuger"/> +
-        /// <see cref="WizardCtrl.Add_WP_Waermeerzeuger"/>. Weil hier alle Anlagenzeilen
+        /// <c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> +
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c>. Weil hier alle Anlagenzeilen
         /// fallen, ist danach JEDE Gerätezeile des Projekts verwaist.
         /// </para>
         ///
@@ -53,7 +53,11 @@ namespace WindowsFormsApplication1
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
 
-                GeraeteWaisen.Aufraeumen(ID_Projekt);
+                // Ueber den Haken, weil GeraeteWaisen die Oberflaeche mitzieht und in der
+                // Anwendung bleibt (iU4-2). Nicht belegt = kein Aufraeumlauf; das ist
+                // nach der Begruendung oben zulaessig.
+                var aufraeumen = GeraetewaisenAufraeumen;
+                if (aufraeumen != null) aufraeumen(ID_Projekt);
                 return true;
             }
             catch (Exception ex)

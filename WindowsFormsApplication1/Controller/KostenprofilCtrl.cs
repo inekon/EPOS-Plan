@@ -44,8 +44,8 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_CREATE_KOSTENPROFIL);
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_INDEX_KOSTENPROFIL);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_CREATE_KOSTENPROFIL);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_INDEX_KOSTENPROFIL);
                 }
                 catch { /* der eigentliche Zugriff meldet den Fehler */ }
             }

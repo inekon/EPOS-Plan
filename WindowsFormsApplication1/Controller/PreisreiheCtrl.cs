@@ -63,15 +63,15 @@ namespace WindowsFormsApplication1
             {
                 if (!TabelleVorhanden(TABLE_KOPF))
                 {
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_CREATE_PREISREIHE);
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_INDEX_PREISREIHE);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_CREATE_PREISREIHE);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_INDEX_PREISREIHE);
                 }
 
                 if (!TabelleVorhanden(TABLE_DATEN))
                 {
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_CREATE_PREISREIHEDATEN);
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_INDEX_PREISREIHEDATEN);
-                    DataRepository.ExecuteSQL(SchemaMigration.SQL_FK_PREISREIHEDATEN);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_CREATE_PREISREIHEDATEN);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_INDEX_PREISREIHEDATEN);
+                    DataRepository.ExecuteSQL(SchemaStand.SQL_FK_PREISREIHEDATEN);
                 }
             }
             catch { /* der eigentliche Zugriff meldet den Fehler */ }
