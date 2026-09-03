@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
                 // Die Rückfrage von btnDeleteKostenfaktor_Click — derselbe Text,
                 // dieselbe Vorgabe (Ja/Nein mit Fragezeichen).
                 ["Rueckfrage"] = new Func<string, bool>(
-                    text => Dienste.Dialog.Frage(text, Text_("KFAK_TITEL", "Kostenfaktoren"))),
+                    text => Dienste.Dialog.Frage(text, Text_("KFAK_FRAGE_TITEL", "Kostenfaktoren"))),
 
                 ["TitelText"] = Text_("KFAK_TITEL", "Administration Kostenfaktoren"),
                 ["EinleitungText"] = Text_("KFAK_EINLEITUNG", "Verwalten Sie hier die Kostenfaktoren"),
