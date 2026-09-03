@@ -10217,4 +10217,31 @@ Overwrite it anyway?</value>
   <data name="PVD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>The selected module was not found in the master data.</value>
   </data>
+  <data name="SPD_TITEL" xml:space="preserve">
+    <value>Power storage management</value>
+  </data>
+  <data name="SPD_KOPFBAND" xml:space="preserve">
+    <value>Enter electricity storage data</value>
+  </data>
+  <data name="SPD_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>selected power storage:</value>
+  </data>
+  <data name="SPD_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Power storage from database:</value>
+  </data>
+  <data name="SPD_LBL_TYP" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="SPD_LBL_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]:</value>
+  </data>
+  <data name="SPD_LBL_DEGRADATION" xml:space="preserve">
+    <value>Degradation [%/a]:</value>
+  </data>
+  <data name="SPD_LBL_LADEZUSTAND" xml:space="preserve">
+    <value>Charge level [%]:</value>
+  </data>
+  <data name="SPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The selected power storage was not found in the master data.</value>
+  </data>
 </root>

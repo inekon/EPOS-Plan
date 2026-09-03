@@ -343,11 +343,6 @@ namespace WindowsFormsApplication1
                 ((Form_Gebaeude)page).list_gebmodel = list_gebmodel;
                 ((Form_Gebaeude)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
             }
-            else if (top == WizardItemClass.SP_ITEM)
-            {
-                ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
-                ((Form_Stromspeicher)page).SetControls(ucProjektAuswahl.GewaehlterName, true);
-            }
             else if (top == WizardItemClass.PROZESS_ITEM)
             {
                 ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;

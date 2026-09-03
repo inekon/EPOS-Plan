@@ -180,12 +180,13 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Stromspeicher frm = new Form_Stromspeicher();
+            // iU9-W6.6: Der Dialog ist die Razor-Komponente StromspeicherDialog; die
+            // WinForms-Fassung Form_Stromspeicher ist im selben Schritt GELOESCHT
+            // (Regel M1).
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
             int id_type;
+            List<WErzeugerModel> liste = new List<WErzeugerModel>();
 
-            frm.list_werzmodel.Clear();
             if (listView_SP.Name == "listView_SP_REF")
             {
                 werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.REF_SP_TYP);
@@ -206,20 +207,15 @@ namespace WindowsFormsApplication1
             // Bivalenter_Betrieb, Abschaltpunkt und Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                frm.list_werzmodel.Add(werzctrl.items[i]);
+                liste.Add(werzctrl.items[i]);
             }
 
-            frm.SetControls(m_szProjektname);
-            frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            if (StromspeicherHuelle.Oeffnen(null, m_ID_Projekt, id_type, liste))
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, liste);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle(m_szProjektname);
