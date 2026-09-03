@@ -882,7 +882,7 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 ### iU5 — Statics kappen, Dienste einziehen · L · Windows
 
 > **Status 03.09.2026 — Abnahmekriterium erreicht, Windows-Bedienprobe offen.** Sechs
-> Commits (`3a9dee3` iU5-T0 … `7d0752f` iU5-T5) auf der Basis `18f515f`.
+> Commits (`35be81f` iU5-T0 … `9235a92` iU5-T5) auf der Basis `18f515f`.
 >
 > **Das Abnahmekriterium ist maschinell erfüllt:**
 > ```bash
@@ -912,12 +912,12 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 >
 > | Tranche | Commit | Dateien | Fundstellen | Warnungen | Tests | Referenzlauf |
 > |---|---|---|---|---|---|---|
-> | T0 Halter, Schnittstellen, Adapter | `3a9dee3` | 33 neu + 4 | — | 123 / 89 | 809 | PASS |
-> | T1 Dialoge | `5eae11f` | 14 | 33 `MessageBox.Show` | 123 / 89 | 809 | PASS |
-> | T2 Pfade und Dateien | `7cda009` | 13 | 12 `SpecialFolder`, 2 Dateidialoge, 1 `Process.Start` | 123 / 89 | 809 | PASS |
-> | T3 Einstellungen und Lizenz | `c288461` | 11 | ~30 Registry, 10 DPAPI, 3 `Settings` | 123 / 89 | 809 | PASS |
-> | T4 Sprache | `3ee613f` | 5 | 5 `nLanguage` | 123 / 89 | 809 | PASS |
-> | T5 Navigation und Kontext | `7d0752f` | 21 | 32 `Set*Control`, 25 `ShowDialog`, 9 `startfrm` | 123 / 89 | 810 | PASS |
+> | T0 Halter, Schnittstellen, Adapter | `35be81f` | 33 neu + 4 | — | 123 / 89 | 809 | PASS |
+> | T1 Dialoge | `4118ed0` | 14 | 33 `MessageBox.Show` | 123 / 89 | 809 | PASS |
+> | T2 Pfade und Dateien | `8add154` | 13 | 12 `SpecialFolder`, 2 Dateidialoge, 1 `Process.Start` | 123 / 89 | 809 | PASS |
+> | T3 Einstellungen und Lizenz | `d477a77` | 11 | ~30 Registry, 10 DPAPI, 3 `Settings` | 123 / 89 | 809 | PASS |
+> | T4 Sprache | `b9fecf0` | 5 | 5 `nLanguage` | 123 / 89 | 809 | PASS |
+> | T5 Navigation und Kontext | `9235a92` | 21 | 32 `Set*Control`, 25 `ShowDialog`, 9 `startfrm` | 123 / 89 | 810 | PASS |
 >
 > Warnungen „App / Kern"; die Summe **123** ist unverändert die Basis von iU4.
 > Referenzlauf jeweils **1030, 1007, 1017** gegen `2026-08-30_B3-Kaskade`:
@@ -965,8 +965,8 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 > **Offen nach iU5:** der Windows-Vollreferenzlauf 332/332, die Eingabehelfer
 > `Program.Zahl*`/`Ganzzahl*` mit ihren Masken (iU9) und die genannten Ausnahmen.
 >
-> **iU5-Abschluss: der zweite Umzug (03.09.2026).** Fünf Commits (`7204224` iU5-U1 …
-> `dc7d182` iU5-U5) auf der Basis `c477523`. Nachdem iU5 den Kernkandidaten die Umgebung
+> **iU5-Abschluss: der zweite Umzug (03.09.2026).** Fünf Commits (`a546af9` iU5-U1 …
+> `a9e5c16` iU5-U5) auf der Basis `c477523`. Nachdem iU5 den Kernkandidaten die Umgebung
 > abgenommen hatte, ist die Frage „was kann noch mit?" nicht mehr geschätzt, sondern
 > **gemessen worden**: Jede Datei unter `Allgemein/` und `Controller/` wurde nach
 > `EPOS.Kern/` verschoben und der Kernbau mit `EnableWindowsTargeting=false` als Wächter
@@ -975,11 +975,11 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 >
 > | Tranche | Commit | Verschoben | Zurück (Grund) |
 > |---|---|---|---|
-> | iU5-U1 | `7204224` | **20** — `Lizenz/` (4), `Export/` (1), `Import/` (12), `Katalog/` (3) | keine |
-> | iU5-U2 | `b65a451` | **11** von 25 aus `KI/` — Wissen, Semantik, Texte, Schutzstufen, Einwilligung | **14**: `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` (lebende `Control`/`Form`); `KiAktionenDialog` (+ `HelpEntry`); `KiAktionenProjekt`/`-Schreiben` (`OleDbException`); `KiChatService`, `KiAktionenSitzung`, `KiAktionen` (+ `KiHilfe`), `-Energie`, `-Uebernahme`, `-Wirtschaft`, `KiAktionenLastgang` (`GanglinienEintrag`) |
-> | iU5-U3 | `f5e099c` | **9** — die Bericht-AUSGABE: Word, Excel, `Bausteine/` (4), `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` | **2**: `ChartRendererGdi` (GDI+, von vornherein ausgenommen), `BerichtsDatenSammler` (`EnergieMengen` aus `Views/Varianten/`) |
-> | iU5-U4 | `d502963` | **29** von 47 Controllern — sieben Stamm-, vierzehn Projekt-, fünf Zuordnungs-Controller, `BerichtCtrl`, `SpotpreisImportCtrl`, `SpotpreisLeser` | **18**: die 12 `*KontextMenuCtrl`, `WPCtrl` (+ `.WinForms.cs`, `partial`), `KlimaregionStammCtrl` (`ComboBox`/`ListBox`), `WizardCtrl`/`MenueCtrl` (`WizardParent`), `EnergietraegerKatalogCtrl` (`EnergyCarrier`), `PeakShavingCtrl` (`OleDbException`), `ProjektExportImportCtrl` (`SchemaMigration`) |
-> | iU5-U5 | `dc7d182` | **5** — `ToolsClass`, `FileDlgClass`, `Hilfe/DokuUebersetzung`, `Update/AnlagenEindeutigkeit`, `chart_test` | **3**: `StromTestClass` (`WPCtrl`), `IAssistentRahmen` (`WizardSeite`), `Simulation/SchemaModell` (`Form_Waermesenke`) |
+> | iU5-U1 | `a546af9` | **20** — `Lizenz/` (4), `Export/` (1), `Import/` (12), `Katalog/` (3) | keine |
+> | iU5-U2 | `5cb807c` | **11** von 25 aus `KI/` — Wissen, Semantik, Texte, Schutzstufen, Einwilligung | **14**: `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` (lebende `Control`/`Form`); `KiAktionenDialog` (+ `HelpEntry`); `KiAktionenProjekt`/`-Schreiben` (`OleDbException`); `KiChatService`, `KiAktionenSitzung`, `KiAktionen` (+ `KiHilfe`), `-Energie`, `-Uebernahme`, `-Wirtschaft`, `KiAktionenLastgang` (`GanglinienEintrag`) |
+> | iU5-U3 | `82807f4` | **9** — die Bericht-AUSGABE: Word, Excel, `Bausteine/` (4), `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` | **2**: `ChartRendererGdi` (GDI+, von vornherein ausgenommen), `BerichtsDatenSammler` (`EnergieMengen` aus `Views/Varianten/`) |
+> | iU5-U4 | `c67fe36` | **29** von 47 Controllern — sieben Stamm-, vierzehn Projekt-, fünf Zuordnungs-Controller, `BerichtCtrl`, `SpotpreisImportCtrl`, `SpotpreisLeser` | **18**: die 12 `*KontextMenuCtrl`, `WPCtrl` (+ `.WinForms.cs`, `partial`), `KlimaregionStammCtrl` (`ComboBox`/`ListBox`), `WizardCtrl`/`MenueCtrl` (`WizardParent`), `EnergietraegerKatalogCtrl` (`EnergyCarrier`), `PeakShavingCtrl` (`OleDbException`), `ProjektExportImportCtrl` (`SchemaMigration`) |
+> | iU5-U5 | `a9e5c16` | **5** — `ToolsClass`, `FileDlgClass`, `Hilfe/DokuUebersetzung`, `Update/AnlagenEindeutigkeit`, `chart_test` | **3**: `StromTestClass` (`WPCtrl`), `IAssistentRahmen` (`WizardSeite`), `Simulation/SchemaModell` (`Form_Waermesenke`) |
 >
 > **Ein einziger inhaltlicher Eingriff.** `Bausteine/BausteineStandard.cs` las die
 > Programmfassung über `System.Windows.Forms.Application.ProductVersion`; an ihre Stelle tritt
@@ -1028,7 +1028,7 @@ Windows und der Vollreferenzlauf 332/332 stehen aus.
 ### iU6 — Datenzugriff plattformfrei · S–M · Windows
 
 > **Status 03.09.2026 — hier erreicht, Windows-Nachweis offen.** Sechs Commits
-> (`9cf6f86` iU6-T1 … `27bc634` iU6-T5) auf `origin/ios_migration` = `18f515f`.
+> (`22fb7eb` iU6-T1 … `2387abf` iU6-T5) auf `origin/ios_migration` = `18f515f`.
 >
 > **Das Ergebnis in einem Satz: `EPOS.Kern` nennt `System.Data.OleDb` nicht mehr — weder
 > im Quelltext noch als `PackageReference` —, und `CA1416` ist von 87 auf 0 gefallen.**
@@ -1037,12 +1037,12 @@ Windows und der Vollreferenzlauf 332/332 stehen aus.
 >
 > | Tranche | Commit | Inhalt | CA1416 |
 > |---|---|---|---|
-> | iU6-T1 | `9cf6f86` | `RecordSet.DBCommand` **ersatzlos gestrichen** (iR8) | 87 → 78 |
-> | iU6-T2 | `5836b8c` | toter OleDb-Code in `SolarkollektorenCtrl`, `PufferSpCtrl`; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
-> | iU6-T3a | `99e5a68` | Masken-Sweep: `OleDbParameter` → `DbParam` in 46 Views | 0 |
-> | iU6-T3b | `7fb4bfd` | Brücke aus dem Kern; `System.Data.OleDb` aus `EPOS.Kern.csproj` | 0 |
-> | iU6-T4 | `64c06d7` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
-> | iU6-T5 | `27bc634` | `bundle_green` für iOS vorbereitet (greift erst mit Multi-Targeting) | 0 |
+> | iU6-T1 | `22fb7eb` | `RecordSet.DBCommand` **ersatzlos gestrichen** (iR8) | 87 → 78 |
+> | iU6-T2 | `582844c` | toter OleDb-Code in `SolarkollektorenCtrl`, `PufferSpCtrl`; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
+> | iU6-T3a | `35de91d` | Masken-Sweep: `OleDbParameter` → `DbParam` in 46 Views | 0 |
+> | iU6-T3b | `fe28cb2` | Brücke aus dem Kern; `System.Data.OleDb` aus `EPOS.Kern.csproj` | 0 |
+> | iU6-T4 | `7780df6` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
+> | iU6-T5 | `2387abf` | `bundle_green` für iOS vorbereitet (greift erst mit Multi-Targeting) | 0 |
 >
 > **iR8 war eine Streichung, kein Umbau.** Die Vermessung fand repositoryweit **null**
 > Zugriffe auf `RecordSet.DBCommand` außerhalb von `RecordSet.cs`. Das Kommando wurde
@@ -1112,18 +1112,18 @@ Referenzlauf über `IDatenzugriff` wertgleich.
 ### iU7 — Charts und Berichte plattformfrei · M · Windows
 
 > **Status 03.09.2026 — Renderer und Ausgabe sind im Kern.** Fünf
-> weitere Commits (`6c797df` iU7-5 … `57d7cc8` iU7-9) auf der Basis `300a354`, aufbauend auf
+> weitere Commits (`6604c05` iU7-5 … `0af6421` iU7-9) auf der Basis `300a354`, aufbauend auf
 > iU7-1…iU7-4 (`c6b32eb`…`f84932b`). Die Ausgabe selbst ist im zweiten Umzug gewandert
-> (iU5-U3, `f5e099c`); iU7-9 hat den letzten Rest — die Systemdialoge der Berichtsansicht —
+> (iU5-U3, `82807f4`); iU7-9 hat den letzten Rest — die Systemdialoge der Berichtsansicht —
 > auf `Dienste.Datei` gelegt.
 >
 > | Tranche | Commit | Inhalt |
 > |---|---|---|
-> | iU7-5 | `6c797df` | **`ChartRenderer.cs` von `WindowsFormsApplication1` nach `EPOS.Kern/Allgemein/Bericht/`** — verschoben, nicht verlinkt. `SkiaSharp` im `EPOS.Kern.csproj`, die nativen Bibliotheken **bedingt über `IsOSPlatform`** (Linux, macOS, Win32). Namespace bleibt `WindowsFormsApplication1`, alle Aufrufer der Anwendung und `Referenzlauf/Bildvergleich.cs` übersetzen unverändert |
-> | iU7-6 | `525db95` | **`Proben/ChartProben` hängt am Kern** statt an Ersatzklassen: `ProjectReference` auf `EPOS.Kern` statt `Compile Include`; `ZeitreihenSatzStub.cs` und `BerichtTexteStub.cs` gelöscht. Die Probe misst jetzt die echten `ZeitreihenSatz`/`VerlaufSerie`/`BerichtTexte` |
-> | iU7-7 | `343a549` | **ChartProben in `kern.yml`** — nach dem Test-Schritt, auf ubuntu **und** macos; die neun PNG als Artefakt `chartproben-<os>` (14 Tage) |
+> | iU7-5 | `6604c05` | **`ChartRenderer.cs` von `WindowsFormsApplication1` nach `EPOS.Kern/Allgemein/Bericht/`** — verschoben, nicht verlinkt. `SkiaSharp` im `EPOS.Kern.csproj`, die nativen Bibliotheken **bedingt über `IsOSPlatform`** (Linux, macOS, Win32). Namespace bleibt `WindowsFormsApplication1`, alle Aufrufer der Anwendung und `Referenzlauf/Bildvergleich.cs` übersetzen unverändert |
+> | iU7-6 | `6737dd4` | **`Proben/ChartProben` hängt am Kern** statt an Ersatzklassen: `ProjectReference` auf `EPOS.Kern` statt `Compile Include`; `ZeitreihenSatzStub.cs` und `BerichtTexteStub.cs` gelöscht. Die Probe misst jetzt die echten `ZeitreihenSatz`/`VerlaufSerie`/`BerichtTexte` |
+> | iU7-7 | `dc97916` | **ChartProben in `kern.yml`** — nach dem Test-Schritt, auf ubuntu **und** macos; die neun PNG als Artefakt `chartproben-<os>` (14 Tage) |
 > | iU7-8 | `0759b37` | **Drei Renderer-Tests in `EPOS.Kern.Tests`**: `TagesMittel`/`MonatsSummenMWh` exakt, `Kuchen` liefert PNG in 960×600, `BalkenHorizontal` zweimal byte-gleich. **869 → 872 Tests** |
-> | iU7-9 | `57d7cc8` | **Berichtsausgabe über `Dienste.Datei`**: `Views/Bericht/UcBericht.cs` (Ordnerwahl, Speicherziel, zweimal Öffnen) und `Views/Varianten/Form_Variantentest.cs` (Speicherziel, Öffnen) rufen `OrdnerWaehlen`, `DateiSpeichern` und `MitSystemOeffnen` statt `FolderBrowserDialog`, `SaveFileDialog` und `Process.Start`. `WordBerichtGenerator.FindeVorlage()` brauchte nichts — sie sucht schon über `AppDomain.CurrentDomain.BaseDirectory`. Eine bewusste Abweichung: die Dialoge bekommen kein Besitzerfenster mehr, weil `IDateiDienst` keines kennt |
+> | iU7-9 | `0af6421` | **Berichtsausgabe über `Dienste.Datei`**: `Views/Bericht/UcBericht.cs` (Ordnerwahl, Speicherziel, zweimal Öffnen) und `Views/Varianten/Form_Variantentest.cs` (Speicherziel, Öffnen) rufen `OrdnerWaehlen`, `DateiSpeichern` und `MitSystemOeffnen` statt `FolderBrowserDialog`, `SaveFileDialog` und `Process.Start`. `WordBerichtGenerator.FindeVorlage()` brauchte nichts — sie sucht schon über `AppDomain.CurrentDomain.BaseDirectory`. Eine bewusste Abweichung: die Dialoge bekommen kein Besitzerfenster mehr, weil `IDateiDienst` keines kennt |
 >
 > **Der Renderer war die Eintrittskarte, der Rest kam mit iU5-U3 und iU7-9.** Im Kern liegt
 > jetzt die **Zeichnung** *und* die **Ausgabe** — `WordBerichtGenerator`,
@@ -1328,7 +1328,7 @@ Signierkette in der CI scharf; TestFlight-Feldtest (90-Tage-Grenze beachten); Ve
 | **iZ1** | Solution baut ohne Visual Studio | iU1 | `dotnet build`/`dotnet test` grün; Referenzlauf 332/332 byte-gleich — **hier erreicht 02.09.2026** (`0ddc417`, 7 Projekte 0 Fehler, 787 Tests); **Windows-Nachweis offen** |
 | **iZ2** | Entwicklungsumgebung steht | iU2 | Build-Matrix § 3.6 erfüllt; MAUI-Hallo-Welt mit Kernbibliothek im Simulator |
 | **iZ3** | **Go/No-Go** | iU3 | **erreicht 02.09.2026** — 1030 auf Linux byte-gleich zur Referenzbasis |
-| **iZ5a** | Statics gekappt | iU5 | Wächter `Program.*` im Kernsatz = 0 Treffer — **hier erreicht 03.09.2026** (`3a9dee3`…`7d0752f`); Referenzlauf 1030/1007/1017 byte-gleich, **Windows-Bedienprobe offen** |
+| **iZ5a** | Statics gekappt | iU5 | Wächter `Program.*` im Kernsatz = 0 Treffer — **hier erreicht 03.09.2026** (`35be81f`…`9235a92`); Referenzlauf 1030/1007/1017 byte-gleich, **Windows-Bedienprobe offen** |
 | **iZ4** | Kern herausgelöst | iU4 | Windows byte-gleich; `EPOS.Kern` baut und testet auf macOS — **hier erreicht 03.09.2026** (168 Dateien verschoben, 796 Tests, 1030/1007/1017 byte-gleich); **Windows-Nachweis 332/332 offen** |
 | **iZ5** | Modell-C-Stichtag | iU8 | erster Blazor-Dialog produktiv, Maus und Finger abgenommen |
 | **iZ6** | iPad rechnet ein Projekt vollständig | iU10 | Ergebnis wertgleich, Bericht zeilengleich |
@@ -1380,7 +1380,7 @@ dem Go/No-Go-Gate.
 | iU3 | **S0** | erledigt — die SQLite-Datenbasis steht bereits zur Verfügung |
 | iU4 | **S1**, A1, M10 | — |
 | iU5 | A2, A3, A4, M4 | — |
-| iU6 | B1 | **S4a–S8 erledigt**; `DbVorgang`, `PRAGMA`-Schemaauskunft und Dialekt-Sweep lagen vor. **Selbst erledigt 03.09.2026** (`9cf6f86`…`27bc634`) |
+| iU6 | B1 | **S4a–S8 erledigt**; `DbVorgang`, `PRAGMA`-Schemaauskunft und Dialekt-Sweep lagen vor. **Selbst erledigt 03.09.2026** (`22fb7eb`…`2387abf`) |
 | iU7 | D1, D2, M5 | — |
 | iU8 | A5, A6, A7, M1, M2, M6, M9 | — |
 | iU9 | Block C: K1–K6 | — |
@@ -1434,7 +1434,7 @@ Sichtabnahme der Masken. Beides bleibt Handarbeit.
 | **iR5** | **Parallelentwicklung.** Der Fachausbau läuft weiter; jede Etappe, die während iU4–iU9 in die WinForms-App fließt, ist Arbeit, die später wandern muss | Der Umbau holt den Bestand nie ein | Modell-C-Stichtag (iZ5) so früh wie möglich; ab dann fließt Neues in `EPOS.UI` statt in WinForms |
 | **iR6** | **Kein Testdatenbestand in der CI.** `.gitignore` schließt `*.accdb` aus; ohne Datenbank ist die Kern-CI nur ein Kompilierungstest | Der Wertgleichheitsnachweis läuft nicht automatisch, sondern nur von Hand | Anonymisierte `Kenndaten_Test.sqlite` versionieren (iE6, iF14) |
 | **iR7** | **Provisionsfrage beim Lizenzverkauf.** Ob Apple bei einer B2B-Fachanwendung In-App-Kauf verlangt, entscheidet über 15–30 % je Lizenz | Geschäftsmodell | Vor iU13 klären (iF12); Custom Apps über Apple Business Manager entschärfen die Frage |
-| ~~**iR8**~~ | ~~**`RecordSet` bleibt an OleDb gebunden.**~~ **Erledigt 03.09.2026 mit iU6-T1 (`9cf6f86`) — als STREICHUNG, nicht als Umbau.** Befund der Vermessung: repositoryweit **0 externe Nutzer** von `RecordSet.DBCommand`; das Kommando entstand seit iU3 nur lazy im Getter und blieb damit immer `null` — die 47 „Nutzer" hingen an `Open`, `Next`, `Read` und `Close`, nie am Kommando | entfallen | `DBCommand`, `_cmd`, `MerkeSql()` und `Parameter()` ersatzlos gestrichen; **kein Ersatztyp** (Begründung im Kopfkommentar von `RecordSet.cs`). `IDisposable` bleibt |
+| ~~**iR8**~~ | ~~**`RecordSet` bleibt an OleDb gebunden.**~~ **Erledigt 03.09.2026 mit iU6-T1 (`22fb7eb`) — als STREICHUNG, nicht als Umbau.** Befund der Vermessung: repositoryweit **0 externe Nutzer** von `RecordSet.DBCommand`; das Kommando entstand seit iU3 nur lazy im Getter und blieb damit immer `null` — die 47 „Nutzer" hingen an `Open`, `Next`, `Read` und `Close`, nie am Kommando | entfallen | `DBCommand`, `_cmd`, `MerkeSql()` und `Parameter()` ersatzlos gestrichen; **kein Ersatztyp** (Begründung im Kopfkommentar von `RecordSet.cs`). `IDisposable` bleibt |
 | **iR9** | **Nur ein Rechner, nur ein Mensch.** Tags, Referenzbasen und die einzige Buildumgebung hängen heute an einem Arbeitsplatz (`letzter-x86-stand` ist bis heute nicht gepusht) | Ausfallrisiko für das gesamte Vorhaben | Die CI ist zugleich die Antwort darauf: Sie macht den Build reproduzierbar und vom Einzelrechner unabhängig |
 | **iR10** | **`Form_Simulation_Detail`** wächst schneller als die Umstellung (6.200 → 7.773 Zeilen in vier Monaten) | Das größte Einzelstück wird nie fertig konvertiert | In iU9 nicht konvertieren, sondern zerlegen — und dafür einen eigenen Termin setzen, bevor es weiter wächst |
 

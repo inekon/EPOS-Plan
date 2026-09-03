@@ -39,7 +39,7 @@ die Entscheidung nicht begonnen werden kann.
 | **iF7** | Formular-Generator (Feldinventar aus den 118 `Designer.cs`) als Werkzeug? | ja | iU8 | offen | | |
 | **iF8** | **Modell C beschließen** (Strangler-Regel M1) | ja | **iU8 — ohne diesen Beschluss ist iU8 gegenstandslos** | offen | | |
 | ~~**iF9**~~ | ~~SQLite auch auf Windows, mit Stichtag~~ | ja | — | **beschieden und ausgeführt 02.09.2026 (`6486c36`)** | ja | 02.09.2026 |
-| **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | **Weg (b) ausgeführt 03.09.2026** (`9cf6f86`…`27bc634`, § 2.5); Weg (a) hat sich mit dem Masken-Sweep iU6-T3a miterledigt. Entscheid des Anwenders steht noch aus | | |
+| **iF10** | `IDatenzugriff` mit providerneutralem `DbParam` (Weg b) — oder ~2.300 `OleDbParameter`-Aufrufe maschinell ersetzen (Weg a)? | **Weg (b)**; Weg (a) bleibt spätere Aufräumoption | iU6 | **Weg (b) ausgeführt 03.09.2026** (`22fb7eb`…`2387abf`, § 2.5); Weg (a) hat sich mit dem Masken-Sweep iU6-T3a miterledigt. Entscheid des Anwenders steht noch aus | | |
 | **iF11** | Mac-Hardware sofort beschaffen — oder Spike auf `macos-latest`-CI-Runner? | **CI-Runner** für den Spike, Mac erst mit iU10 | iU3 | offen | | |
 | **iF12** | Vertriebsweg der Auslieferung (Custom Apps / Unlisted / App Store) und Behandlung des Lizenzverkaufs gegenüber Apples Kaufregeln | **Custom Apps** über Apple Business Manager prüfen; Klärung **vor** iU13, nicht im Review | vor iU13 | offen | | |
 | **iF13** | Root-Namespace `WindowsFormsApplication1` beim Kern-Umzug mit umbenennen? | **nein** — eigener mechanischer Schritt danach | iU4 | offen | | |
@@ -263,7 +263,7 @@ neue OleDb-Kante mit; das Rest-Inventar für iR8 ist unverändert (`Solarkollekt
 
 ### 2.6 Befund iU5 (Statics kappen, Dienste einziehen), 03.09.2026 — **hier erreicht**
 
-Sechs Commits `3a9dee3`…`7d0752f` auf der Basis `18f515f`.
+Sechs Commits `35be81f`…`9235a92` auf der Basis `18f515f`.
 
 #### Die Entscheidung: statischer Halter, kein DI-Container
 
@@ -352,7 +352,7 @@ und 1 auf `HelpExtender` (Oberflächenbaustein).
 
 ### 2.5 Befund iU6 (Datenzugriff plattformfrei), 03.09.2026 — **hier erreicht**
 
-Sechs Commits `9cf6f86`…`27bc634` auf der Basis `18f515f`.
+Sechs Commits `22fb7eb`…`2387abf` auf der Basis `18f515f`.
 
 **Das Ergebnis.** `EPOS.Kern` nennt `System.Data.OleDb` nicht mehr — weder im Quelltext noch als
 `PackageReference`. **CA1416: 87 → 0.** Der Datenzugriff liegt hinter `IDatenzugriff`;
@@ -361,12 +361,12 @@ angefasst.
 
 | Tranche | Commit | Inhalt | CA1416 |
 |---|---|---|---|
-| iU6-T1 | `9cf6f86` | `RecordSet.DBCommand` ersatzlos gestrichen (iR8) | 87 → 78 |
-| iU6-T2 | `5836b8c` | toter OleDb-Code in zwei Controllern; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
-| iU6-T3a | `99e5a68` | Masken-Sweep `OleDbParameter` → `DbParam`, 46 Views | 0 |
-| iU6-T3b | `7fb4bfd` | Brücke aus dem Kern; OleDb-Paket aus `EPOS.Kern.csproj` | 0 |
-| iU6-T4 | `64c06d7` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
-| iU6-T5 | `27bc634` | `bundle_green` für iOS vorbereitet | 0 |
+| iU6-T1 | `22fb7eb` | `RecordSet.DBCommand` ersatzlos gestrichen (iR8) | 87 → 78 |
+| iU6-T2 | `582844c` | toter OleDb-Code in zwei Controllern; Access-Zweig aus `ApplikationCtrl` in die Anwendung | 78 → **0** |
+| iU6-T3a | `35de91d` | Masken-Sweep `OleDbParameter` → `DbParam`, 46 Views | 0 |
+| iU6-T3b | `fe28cb2` | Brücke aus dem Kern; OleDb-Paket aus `EPOS.Kern.csproj` | 0 |
+| iU6-T4 | `7780df6` | `IDatenzugriff` + `SqliteDatenzugriff`; `DataRepository` wird Fassade | 0 |
+| iU6-T5 | `2387abf` | `bundle_green` für iOS vorbereitet | 0 |
 
 **iR8 war eine Streichung.** Das Konzept hatte zwei Wege offen gelassen: die Eigenschaft auf einen
 providerfreien Typ heben oder `RecordSet` mit seinen Masken in iU9 ablösen. Die Vermessung vom
