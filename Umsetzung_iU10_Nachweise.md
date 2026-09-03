@@ -165,7 +165,31 @@ BhkwDaten(0)=null
 
 ---
 
-## Nachweise, die nur die CI führen kann — offen
+## Nachweise, die nur die CI führen kann — **geführt, achter Lauf grün**
+
+**Lauf 33748736894 (`ios.yml`, `macos-26`, 03.09.2026, 11:16–11:21 UTC, 5 min 44 s)** auf `7f89425`:
+
+| Schritt | Ergebnis |
+|---|---|
+| Workload `maui-ios` Set `10.0.400.1` | installiert in 23 s (iOS 26.5.10315, MAUI 10.0.20/10.0.100) |
+| Bau `EPOS.iOS` Simulator (**Debug**, JIT, kein Linker) | 57 s |
+| Simulator (iPad, iOS 26.x) gestartet, App installiert | ja |
+| Erststart | Datenbank aus dem Paket kopiert, 73 MB |
+| Startmarken | `SQLite 3.53.3` · `STRICT=114` · `EPOS.iOS bereit: Projekte=23` |
+| Prüfmodus Projekt 1030 | Simulation in 5 s, 22 CSV, 150 Skalare, `fertig.txt` |
+| **iZ6-Vergleich gegen `2026-08-30_B3-Kaskade`** | **GESAMT: PASS, 236 670 Werte; `diff -rq`: BYTE-GLEICH (iOS-Simulator arm64)** |
+| Artefakte | `ios-simulator` (Startprotokoll, CSV, Bildschirmabzug, 1,1 MB), `ios-app` (86 MB) |
+
+Der Weg dorthin, acht Läufe: (1) Workload-Set in CLI-Schreibweise `10.0.400.1`; (2) `Microsoft.Maui.Controls`
+ausdrücklich referenzieren; (3) `INavigation` gegen MAUI qualifizieren; (4/5) Release-Bau lief 40 min in
+der Mono-AOT-Übersetzung → Simulator-Bau in Debug; (6/7) Startmarken hinter Zeitstempel und `\r` der
+pty-Ausgabe. Verbrauch aller Läufe zusammen ≈ 65 macOS-Minuten.
+
+**Damit belegt:** Der Kern rechnet auf iOS byte-gleich zur Windows-Basis (iZ6-Vorstufe im Simulator),
+die mitgelieferte SQLite ist auf allen vier Plattformen dieselbe (iF27 bestätigt), der Datenbankweg auf dem
+Gerät funktioniert. Offen bleibt der Gerätebau (iU13).
+
+### Ursprüngliche Liste (zur Nachvollziehbarkeit)
 
 Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
