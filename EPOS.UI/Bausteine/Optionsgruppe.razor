@@ -33,6 +33,10 @@
                    @onchange="@(() => BeiWahl(id))" />
             <span class="epos-feld-text">@eintrag.Text</span>
         </label>
+        @if (Beschreibung(id) is { Length: > 0 } erlaeuterung)
+        {
+            <p class="epos-option-beschreibung">@erlaeuterung</p>
+        }
     }
 </fieldset>
 
@@ -66,8 +70,29 @@
     /// </summary>
     [Parameter] public IReadOnlyList<int>? Gesperrt { get; set; }
 
+    /// <summary>
+    /// ERLAEUTERUNG unter einer Option, Schluessel ist die Id; ohne Eintrag steht
+    /// keine (iU9-W10a.1).
+    ///
+    /// <para>Der Betriebsmodus-Dialog stellt drei Moeglichkeiten nebeneinander, von
+    /// denen keine sich von selbst erklaert: „Laufzeitoptimiert" heisst volle Leistung
+    /// mit Speicherladung, „PV-optimiert" heisst erhoehte Leistung NUR bei
+    /// PV-Ueberschuss. Der Vorlaeufer <c>Form_Betriebsmodus</c> setzte deshalb unter
+    /// jeden RadioButton ein eigenes Label mit zwei bis drei Zeilen Text
+    /// (<c>_lblLaufzeit</c>/<c>_lblLeistung</c>/<c>_lblPV</c>, 460 px breit). Ohne
+    /// diese Saetze waere die Auswahl eine Ratefrage.</para>
+    ///
+    /// <para>Die Erlaeuterung steht AUSSERHALB des <c>label</c>: Ein Klick darauf soll
+    /// nicht umschalten - im Vorlaeufer waren es eigene Labels, die auf Klicks nicht
+    /// reagierten.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? Beschreibungen { get; set; }
+
     /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
     private readonly string _name = "og" + Guid.NewGuid().ToString("N");
+
+    private string Beschreibung(int id)
+        => Beschreibungen is not null && Beschreibungen.TryGetValue(id, out string? t) ? t : "";
 
     private bool IstWaehlbar(int id)
     {

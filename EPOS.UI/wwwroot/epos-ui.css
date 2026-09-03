@@ -510,6 +510,16 @@ body {
     color: var(--epos-text-sehr-leise);
 }
 
+/* Die Erlaeuterung unter einer Option (iU9-W10a.1). Sie steht eingerueckt unter
+   dem Wahlknopf, leise wie eine Herleitungszeile, und behaelt ihre Umbrueche:
+   Der Vorlaeufer setzte sie mit "\n" von Hand (SIM_BM_TEXT_*). */
+.epos-option-beschreibung {
+    margin: -4px 0 8px 28px;
+    color: var(--epos-text-leise);
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
 /* ==========================================================================
    Standards: Raster und Chartbild
    ========================================================================== */
