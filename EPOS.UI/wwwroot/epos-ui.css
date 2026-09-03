@@ -1,0 +1,38 @@
+/* ==========================================================================
+   epos-ui.css - Grundlage der Oberflaechenbibliothek EPOS.UI (Paket iU8).
+
+   Diese Datei wird als statisches Web-Asset ausgeliefert und von der Huelle
+   ueber "_content/EPOS.UI/epos-ui.css" eingebunden. Sie enthaelt ausschliesslich
+   Gestaltung - keine Fachlogik.
+
+   Das Farb- und Massthema aus WindowsFormsApplication1/Allgemein/GrafikTools/
+   KartenStil.cs kommt in iU8-3 als Custom Properties hinzu.
+   ========================================================================== */
+
+:root {
+    /* Schrift der Dialoge: Segoe UI 9,75 pt entspricht 13 px (Designer-Vorgabe
+       aller Masken, z. B. Form_Kosten_Auswahl.Designer.cs). Der Rueckfall greift
+       auf iOS und ueberall dort, wo Segoe UI fehlt. */
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+
+    /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
+    --epos-touchziel: 44px;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1.4;
+}

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    EPOS.UI - die plattformfreie Oberflaechenbibliothek von EPOS-Plan
+    (Umsetzungskonzept iOS, Paket iU8, Strang A).
+
+    Razor-Komponenten, die unter Windows in einer BlazorWebView laufen und auf
+    iOS/MAUI unveraendert weiterverwendet werden koennen. Hier steht KEIN
+    WinForms, KEIN System.Drawing und KEIN Datenbankzugriff - die Regeln stehen
+    in CLAUDE.md in diesem Ordner.
+
+    <EnableWindowsTargeting>false</EnableWindowsTargeting> hebt die Erlaubnis aus
+    Directory.Build.props (Nicht-Windows) wieder auf: Jede Windows-API in einer
+    Komponente soll den Build brechen, statt erst zur Laufzeit auf iOS
+    aufzufallen - dieselbe Absicherung wie in EPOS.Kern.
+
+    Die Projektreferenz auf EPOS.Kern bringt die Ressourcenklasse
+    WindowsFormsApplication1.MyResource.Resource mit (dort per Link kompiliert,
+    EPOS.Kern.csproj:199). Damit koennen Texte ueber Ressourcenschluessel
+    gesetzt werden, ohne dass eine Komponente die Windows-Huelle kennt.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EPOS.UI</RootNamespace>
+    <AssemblyName>EPOS.UI</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Zielplattform der Komponenten: der Browser (WebView2 bzw. WKWebView). -->
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+</Project>
