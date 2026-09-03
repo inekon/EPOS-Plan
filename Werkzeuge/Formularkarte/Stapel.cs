@@ -16,6 +16,9 @@ public sealed class Stapelzeile
     public string Bemerkung { get; init; } = "";
     public SortedDictionary<string, int> Typen { get; init; } = new(StringComparer.Ordinal);
     public SortedSet<string> Unbekannt { get; init; } = new(StringComparer.Ordinal);
+
+    /// <summary>Der Befund des Erreichbarkeitsgraphen; <c>null</c>, wenn nicht gerechnet wurde.</summary>
+    public Maskenknoten? Erreichbarkeit { get; init; }
 }
 
 /// <summary>Das Ergebnis eines Stapellaufs ueber einen ganzen Ordnerbaum.</summary>
@@ -34,6 +37,12 @@ public sealed class Stapelergebnis
     public int Lokalisierte => Zeilen.Count(z => z.Lokalisiert);
     public int Felder => Zeilen.Sum(z => z.Zeilen);
     public int OhneBeschriftung => Zeilen.Sum(z => z.OhneBeschriftung);
+
+    /// <summary>Wurde die Erreichbarkeit mitgerechnet?</summary>
+    public bool MitErreichbarkeit => Zeilen.Any(z => z.Erreichbarkeit is not null);
+
+    /// <summary>Zahl der Masken in einem Erreichbarkeitszustand.</summary>
+    public int Erreichbar(Erreichbar status) => Zeilen.Count(z => z.Erreichbarkeit?.Status == status);
 
     /// <summary>Zaehlung ueber alle Masken je Steuerelementtyp.</summary>
     public SortedDictionary<string, int> Typen
@@ -99,7 +108,12 @@ public static class Stapel
             .ToList();
 
     /// <summary>Laeuft ueber alle Designer-Dateien; <paramref name="ziel"/> null = nur zaehlen.</summary>
-    public static Stapelergebnis Laufen(string ordner, string? ziel, string? suchwurzel = null)
+    /// <param name="erreichbarkeit">
+    /// Den Erreichbarkeitsgraphen mitrechnen (Vorgabe). Er liest den ganzen
+    /// Projektbaum ein zweites Mal mit Roslyn - wer nur zaehlen will, spart ihn.
+    /// </param>
+    public static Stapelergebnis Laufen(string ordner, string? ziel, string? suchwurzel = null,
+                                        bool erreichbarkeit = true)
     {
         var ergebnis = new Stapelergebnis();
         if (ziel is not null) Directory.CreateDirectory(ziel);
@@ -118,6 +132,7 @@ public static class Stapel
                 ResxLeser.Anwenden(maske, null);
                 LabelRegel.Anwenden(maske);
                 QuelltextLeser.Anwenden(maske, suchwurzel);
+                if (erreichbarkeit) Erreichbarkeit.Anwenden(maske, suchwurzel);
 
                 var abschnitte = Kartenbau.Abschnitte(maske);
                 var zeilen = abschnitte.SelectMany(a => a.Zeilen).ToList();
@@ -131,7 +146,8 @@ public static class Stapel
                     Abschnitte = abschnitte.Count(a => a.Traeger is not null),
                     Lokalisiert = maske.Lokalisiert,
                     Gelesen = true,
-                    Typen = Kartenbau.Typzaehlung(maske)
+                    Typen = Kartenbau.Typzaehlung(maske),
+                    Erreichbarkeit = maske.Erreichbarkeit
                 };
                 foreach (var element in maske.Steuerelemente.Where(s => s.Art == Art.Sonstig))
                 {
@@ -184,7 +200,15 @@ public static class Stapel
         werkzeug.Append("| nicht lesbar | ").Append(ergebnis.Fehler.Count).Append(" |\n");
         werkzeug.Append("| lokalisiert (ApplyResources) | ").Append(ergebnis.Lokalisierte).Append(" |\n");
         werkzeug.Append("| Kartenzeilen gesamt | ").Append(ergebnis.Felder).Append(" |\n");
-        werkzeug.Append("| Felder ohne Beschriftung | ").Append(ergebnis.OhneBeschriftung).Append(" |\n\n");
+        werkzeug.Append("| Felder ohne Beschriftung | ").Append(ergebnis.OhneBeschriftung).Append(" |\n");
+        if (ergebnis.MitErreichbarkeit)
+        {
+            werkzeug.Append("| Öffner erreichbar | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Ja)).Append(" |\n");
+            werkzeug.Append("| Öffner unerreichbar | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Nein)).Append(" |\n");
+            werkzeug.Append("| verwaist (kein Öffner) | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Verwaist)).Append(" |\n");
+            werkzeug.Append("| unklar | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Unklar)).Append(" |\n");
+        }
+        werkzeug.Append('\n');
 
         werkzeug.Append("## Steuerelemente je Typ\n\n| Typ | Anzahl | Ziel |\n|---|---|---|\n");
         foreach (var (typ, anzahl) in ergebnis.Typen.OrderByDescending(p => p.Value).ThenBy(p => p.Key, StringComparer.Ordinal))
@@ -210,8 +234,9 @@ public static class Stapel
             werkzeug.Append('\n');
         }
 
-        werkzeug.Append("## Masken\n\n| Maske | Zeilen | Abschnitte | ohne Beschriftung | lokalisiert | Datei |\n");
-        werkzeug.Append("|---|---|---|---|---|---|\n");
+        werkzeug.Append("## Masken\n\n| Maske | Zeilen | Abschnitte | ohne Beschriftung | lokalisiert | ")
+                .Append("Öffner erreichbar | Datei |\n");
+        werkzeug.Append("|---|---|---|---|---|---|---|\n");
         foreach (var zeile in ergebnis.Zeilen.OrderBy(z => z.Bezeichner, StringComparer.Ordinal))
         {
             werkzeug.Append("| ").Append(zeile.Bezeichner)
@@ -219,6 +244,7 @@ public static class Stapel
                     .Append(" | ").Append(zeile.Abschnitte)
                     .Append(" | ").Append(zeile.OhneBeschriftung)
                     .Append(" | ").Append(zeile.Lokalisiert ? "ja" : "-")
+                    .Append(" | ").Append(zeile.Erreichbarkeit?.StatusText ?? "-")
                     .Append(" | `").Append(zeile.Datei).Append("` |\n");
         }
         werkzeug.Append('\n');
@@ -237,4 +263,74 @@ public static class Stapel
         }
         return werkzeug.ToString();
     }
+
+    /// <summary>
+    /// Die Befundliste "Öffner erreichbar" als Markdown - jede Maske mit Zustand
+    /// und Weg bzw. Öffner, die unerreichbaren, verwaisten und unklaren zuerst.
+    /// Das ist die Stilllegungsliste K6 fuer iU9.
+    /// </summary>
+    public static string Erreichbarkeitsbefund(Stapelergebnis ergebnis, string ordner)
+    {
+        var werkzeug = new StringBuilder();
+        werkzeug.Append("# Öffner erreichbar — Befund aller Masken\n\n");
+        werkzeug.Append("Gelesener Baum: `").Append(ordner.Replace('\\', '/')).Append("`  \n");
+        werkzeug.Append("Datum: ").Append(DateTime.Now.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture)).Append("  \n");
+        werkzeug.Append("Erzeugt von `Werkzeuge/Formularkarte` (`--alle … --erreichbarkeit`).\n\n");
+
+        werkzeug.Append("| Zustand | Masken | Bedeutung |\n|---|---|---|\n");
+        werkzeug.Append("| ja | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Ja))
+                .Append(" | Weg von MDIMainForm bzw. Form_Start vorhanden |\n");
+        werkzeug.Append("| nein | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Nein))
+                .Append(" | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |\n");
+        werkzeug.Append("| verwaist | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Verwaist))
+                .Append(" | die Maske wird nirgends erzeugt |\n");
+        werkzeug.Append("| unklar | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Unklar))
+                .Append(" | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |\n");
+        werkzeug.Append("| gesamt | ").Append(ergebnis.Masken).Append(" | |\n\n");
+
+        werkzeug.Append("| Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |\n|---|---|---|---|\n");
+        foreach (var zeile in ergebnis.Zeilen.OrderBy(z => Rang(z.Erreichbarkeit?.Status))
+                                             .ThenBy(z => z.Bezeichner, StringComparer.Ordinal))
+        {
+            var befund = zeile.Erreichbarkeit;
+            var erklaerung = befund is null
+                ? ""
+                : befund.Wurzel ? "Wurzel (Einstieg der Anwendung)" : Erklaerung(befund);
+
+            werkzeug.Append("| ").Append(zeile.Bezeichner)
+                    .Append(" | ").Append(befund?.StatusText ?? "-")
+                    .Append(" | ").Append(Zelle(erklaerung))
+                    .Append(" | `").Append(zeile.Datei).Append("` |\n");
+        }
+        werkzeug.Append('\n');
+        return werkzeug.ToString();
+    }
+
+    /// <summary>Unerreichbar zuerst - die Liste wird von oben abgearbeitet.</summary>
+    private static int Rang(Erreichbar? status) => status switch
+    {
+        Formularkarte.Erreichbar.Nein => 0,
+        Formularkarte.Erreichbar.Verwaist => 1,
+        Formularkarte.Erreichbar.Unklar => 2,
+        Formularkarte.Erreichbar.Ja => 3,
+        _ => 4
+    };
+
+    /// <summary>Pfad, Öffner und Hinweise in einer Zelle.</summary>
+    private static string Erklaerung(Maskenknoten befund)
+    {
+        var teile = new List<string>();
+        if (!string.IsNullOrEmpty(befund.Pfad)) teile.Add(befund.Pfad);
+        if (befund.Status is Formularkarte.Erreichbar.Nein or Formularkarte.Erreichbar.Unklar && befund.Oeffner.Count > 0)
+        {
+            teile.Add("Öffner: " + string.Join("; ", befund.Oeffner.Take(3)) +
+                      (befund.Oeffner.Count > 3 ? " … (" + befund.Oeffner.Count + ")" : ""));
+        }
+        teile.AddRange(befund.Hinweise);
+        return teile.Count == 0 ? "" : string.Join(" — ", teile);
+    }
+
+    /// <summary>Zellinhalt entschaerfen: Senkrechte und Umbrueche brechen die Tabelle.</summary>
+    private static string Zelle(string text) =>
+        text.Replace("|", "\\|").Replace("\r", " ").Replace("\n", " ").Trim();
 }

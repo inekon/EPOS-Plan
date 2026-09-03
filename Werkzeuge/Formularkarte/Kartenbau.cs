@@ -48,12 +48,14 @@ public sealed class Abschnitt
 public static class Kartenbau
 {
     /// <summary>Liest Designer, .resx und Form_X.cs und baut die Abschnitte.</summary>
-    public static Maske Vollstaendig(string designerPfad, string? resxPfad = null, string? suchwurzel = null)
+    public static Maske Vollstaendig(string designerPfad, string? resxPfad = null, string? suchwurzel = null,
+                                     bool erreichbarkeit = true)
     {
         var maske = DesignerLeser.Lesen(designerPfad);
         ResxLeser.Anwenden(maske, resxPfad);
         LabelRegel.Anwenden(maske);
         QuelltextLeser.Anwenden(maske, suchwurzel);
+        if (erreichbarkeit) Erreichbarkeit.Anwenden(maske, suchwurzel);
         return maske;
     }
 

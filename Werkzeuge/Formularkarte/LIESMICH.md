@@ -29,8 +29,11 @@ dotnet run --project Werkzeuge/Formularkarte -- \
     --razor  Form_Kosten_Auswahl.razor
 
 # Stapellauf über einen ganzen Baum (Karte + Skelett je Maske, dazu UEBERSICHT.md)
-dotnet run --project Werkzeuge/Formularkarte -- --alle WindowsFormsApplication1/Views --ziel dev/karten
+dotnet run --project Werkzeuge/Formularkarte -- --alle WindowsFormsApplication1 --ziel dev/karten
 ```
+
+Der Stapellauf schreibt neben `UEBERSICHT.md` die Befundliste `ERREICHBARKEIT.md` — die
+Stilllegungsliste K6 (siehe Abschnitt „Öffner erreichbar").
 
 | Angabe | Bedeutung |
 |---|---|
@@ -41,6 +44,8 @@ dotnet run --project Werkzeuge/Formularkarte -- --alle WindowsFormsApplication1/
 | `--alle <ordner>` | Stapellauf über alle `*.Designer.cs` unterhalb des Ordners |
 | `--ziel <ordner>` | Ausgabeordner des Stapellaufs; ohne ihn wird nur gezählt |
 | `--wurzel <ordner>` | Projektordner für die Suche nach `ShowDialog`-Aufrufern (sonst der nächste Ordner mit `.csproj`) |
+| `--erreichbarkeit` | die Spalte „Öffner erreichbar" mitrechnen — **Vorgabe**, die Angabe ist nur zur Deutlichkeit da |
+| `--ohne-erreichbarkeit` | sie weglassen; spart den Roslyn-Lauf über den ganzen Projektbaum |
 
 Rückgabewert: `0` in Ordnung, `1` Lesefehler, `2` falscher Aufruf.
 
@@ -162,16 +167,98 @@ Der Dateiname bestimmt den Komponentennamen; er bekommt deshalb einen großen An
   keiner Komponente zu; die Menüführung ist Sache der Hülle, nicht eines Dialogs.
 * **Der Fachbereich kommt aus dem Ordnernamen.** Liegt eine Maske woanders, ist der `@namespace` von
   Hand zu setzen.
-* **Die Karte sagt nicht, ob die Maske erreichbar ist.** Sie nennt die `ShowDialog`-Aufrufer
-  (Spalte „Aufrufer"), aber nicht, ob diese Aufrufer selbst noch von einem Menüpunkt, einer
-  Kachel oder einem Reiter aus zu erreichen sind. Genau daran ist iU8-9 vorbeigelaufen:
-  `Form_Kosten` hat den ersten Blazor-Dialog geöffnet, war aber seit KD6a selbst ohne Einstieg
-  (Befund vom 03.09.2026, Entscheidungsregister § 2.8) — die Umstellung musste mit iU9-1 an
-  `Form_Heizkessel`/`Form_BHKWEing` nachgeholt werden.
-  **Folgepunkt (notiert, nicht umgesetzt): eine Spalte „Öffner erreichbar"** — vom Aufrufer aus
-  rückwärts weitersuchen, bis ein Einstieg gefunden ist oder die Kette abbricht, und in der
-  Übersicht des Stapellaufs mitschreiben. Die Aufrufer liegen bereits vor (`maske.Aufrufer`); es
-  fehlt allein der Schritt eine Ebene höher.
+* **Wo der Erreichbarkeitsgraph aufhört**, steht im Abschnitt „Öffner erreichbar".
+
+## Öffner erreichbar
+
+Die Karte nennt seit jeher die `ShowDialog`-Aufrufer einer Maske. Sie sagte bis iU8‑12e aber
+nicht, ob diese Aufrufer **selbst** noch von einem Menüpunkt, einer Kachel oder einem Reiter aus
+zu erreichen sind. Genau daran ist iU8‑9 vorbeigelaufen: `Form_Kosten` hat den ersten
+Blazor-Dialog geöffnet, war aber seit KD6a ohne Einstieg (Befund vom 03.09.2026,
+Entscheidungsregister § 2.8) — die Umstellung musste mit iU9‑1 an
+`Form_Heizkessel`/`Form_BHKWEing` nachgeholt werden.
+
+Seit **iU8‑12f** rechnet das Werkzeug deshalb einen Erreichbarkeitsgraphen über den ganzen
+Projektbaum (`Erreichbarkeit.cs`). Er steht als Zeile **„Öffner erreichbar"** im Kopf jeder
+Feldkarte, als Spalte in `UEBERSICHT.md` und vollständig in `ERREICHBARKEIT.md` — der
+Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
+[`Erreichbarkeit_2026-09-03.md`](Erreichbarkeit_2026-09-03.md) daneben.
+
+### Knoten, Kanten, Wurzeln
+
+**Knoten** sind die Masken: Klassen, die von `Form`, `UserControl` oder `BaseForm` abstammen —
+über beliebig viele Stufen. Das sind mehr als die 118 Designer-Masken; die Reiter, Kacheln und
+Navigatoren des Hauptfensters (`Views/BerichteKosten/UcBk*`, `Views/Simulation/Navigator*`,
+`Views/Hauptformular/*`) sind Zwischenknoten und tragen den Weg mit.
+
+**Kanten** heißen „A öffnet B" und entstehen aus
+
+* `new B(…)` — die Maske wird erzeugt;
+* `B.Irgendwas(…)` und `variable.Irgendwas(…)` — angesteuert wird das **Mitglied**, nicht die
+  Maske. `Form_ImportKonflikte.Zeigen(…)` und `Form_KiChat.Oeffnen(…)` erzeugen ihre Maske im
+  Rumpf, dort greift die erste Regel; `Form_Kosten.LiesAnlagenSummen(…)` liest nur eine Tabelle
+  und macht `Form_Kosten` deshalb **nicht** erreichbar;
+* `Dienste.Navigation.OeffneMaske(Masken.X)` — der Schlüssel wird über die Sprungtabelle in
+  `WindowsFormsApplication1/Dienste/WinFormsNavigation.cs` aufgelöst: je `case Masken.X:` die
+  Masken und Methoden, die dieser Zweig anfasst. Die Tabelle selbst ist keine Kante, sonst
+  öffnete jeder Aufruf von `OeffneMaske` alle Masken auf einmal.
+
+Wer eine Maske öffnet, ist häufig kein Formular, sondern ein **Vermittler**: `MenueCtrl`, die
+`*KontextMenuCtrl`, `AssistentSeiten`. Solche Klassen sind Zwischenknoten — wer einen von ihnen
+mit `new` erzeugt, erbt **alle** seine Mitglieder (ein Kontextmenü-Controller meldet seine
+Menüpunkte selbst an). Feldinitialisierer laufen mit, sobald irgendein Mitglied der Klasse läuft;
+nur so werden die dreizehn Assistentenseiten gefunden, die in `AssistentSeiten` als statisches
+Erzeugerfeld stehen.
+
+**Wurzeln** sind `MDIMainForm` und `Form_Start`. Erst wenn von dort nichts mehr zu holen ist,
+kommt die Einsprungklasse `Program` dazu — sie zeigt den Erststart-Dialog, bevor es ein Fenster
+gibt. Die Reihenfolge ist Absicht: So nennt der Pfad den Weg, den der Anwender geht, und nicht
+den Umweg über `Program.Main`.
+
+### Was abgezogen wird
+
+Ein Weg, den es zur Laufzeit nicht mehr gibt, zählt nicht:
+
+* **Handler eines entfernten Steuerelements.** `Form_Start.BaueBerichteKostenSeite` nimmt
+  `btn_Kosten` und `btn_Varianten` mit `EntferneAltknopf` aus der Maske. Erkannt wird sowohl
+  `X.Controls.Remove(y)` unmittelbar als auch über eine Hilfsmethode, die ihren Parameter
+  entfernt.
+* **Handler, die nirgends angemeldet sind.** `btn_Kosten_Click` steht noch in `Form_Start.cs`,
+  wird aber weder im Designer noch im Quelltext je erwähnt. Nennt der Handlername ein
+  entferntes Steuerelement (`<Steuerelement>_<Ereignis>`), sagt der Grund beides.
+* **Dauerhaft abgeschaltete Steuerelemente** machen den Weg nicht ungültig, sondern **unklar**:
+  `Visible`/`Enabled = false` ohne späteres `= true` irgendwo in derselben Klasse. Im Zweifel
+  wird nicht behauptet, die Maske sei erreichbar.
+* **Dateien mit `Compile Remove`** in der `.csproj` öffnen gar nichts — sie werden nicht
+  übersetzt. Das ist der härteste Befund: `Form_Simulation_Kurz` ist so verwaist.
+
+### Die vier Zustände
+
+| Zustand | Bedeutung | Was damit zu tun ist |
+|---|---|---|
+| **ja** | Es gibt einen Weg von einer Wurzel; er steht daneben (`Form_Start → btnTraeger → Form_Energietraeger`) | umstellen |
+| **nein** | Öffner stehen im Quelltext, sind aber selbst nicht zu erreichen; die Öffner werden mit Grund genannt | stilllegen — **nicht** umstellen |
+| **verwaist** | Gar kein Öffner im Quelltext | löschen |
+| **unklar** | Nur über einen zweifelhaften Weg (verborgener oder dauerhaft gesperrter Knopf) | vor der Umstellung klären |
+
+Ein langer Pfad wird in der Mitte mit `…` gekürzt; die vollen Öffnerlisten stehen im Programm
+(`Maskenknoten.Oeffner`), in der Ausgabe die ersten drei bzw. vier.
+
+### Grenzen
+
+* **Reflexion sieht der Graph nicht.** Im Bestand gibt es sie an dieser Stelle nicht
+  (`AssistentSeiten` sagt selbst, warum es `Func<Form>` statt `Activator.CreateInstance` nutzt) —
+  käme sie dazu, fiele die Maske fälschlich als „verwaist" auf.
+* **Zeichenketten löst er nur bei `Masken.*` auf.** Ein Maskenschlüssel, der über eine Variable
+  oder aus der Datenbank käme, bliebe unsichtbar.
+* **Er zählt großzügig in Richtung „ja".** Ein `new Vermittler()` schaltet alle Mitglieder des
+  Vermittlers frei, ein unbekanntes Mitglied einer bekannten Vermittlerklasse ebenso. Das ist
+  Absicht: Eine Maske, die man fälschlich für erreichbar hält, bleibt stehen — eine, die man
+  fälschlich für tot hält, wird abgeräumt.
+* **Er prüft nicht, ob der Knopf sichtbar ist.** Ob ein Menüpunkt zur Laufzeit freigeschaltet
+  wird (Projektkontext, Lizenz), steht nicht im Graphen; „ja" heißt „es gibt einen Weg im
+  Quelltext", nicht „der Anwender kommt heute dorthin".
+* **Er kennt keine Bedingungen.** Ein `if`, das den Öffner nie durchlässt, sieht er nicht.
 
 ## Prüfmuster
 
@@ -232,15 +319,17 @@ Wenn die nächste Maske umgestellt und ihre WinForms-Fassung gelöscht ist:
    **lebende** Maske umhängen statt auf das Muster. Beim Stichtag iZ5 war das
    `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester; die ist mit **iU9-1** selbst gelöscht,
    seither steht dort `Form_KostenKomponente`. **Nimm dafür eine Maske, deren Öffner erreichbar
-   ist** — sonst hängt der Test an der nächsten Löschung wieder. `Form_KostenKomponente` erfüllt
-   das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`, `KostenKnoepfe`, `Wizard_WPItem`);
-   `Form_KostenfaktorItem` läge im selben Ordner, hängt aber am einstiegslosen `Form_Kosten`.
+   ist** — sonst hängt der Test an der nächsten Löschung wieder; die Spalte „Öffner erreichbar"
+   sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`,
+   `KostenKnoepfe`, `Wizard_WPItem`); `Form_KostenfaktorItem` läge im selben Ordner, steht aber
+   selbst auf „nein" — es hängt am einstiegslosen `Form_Kosten`.
 5. `PruefmusterTests` um die neue Maske ergänzen.
 
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **101 Tests grün**. Die Tests
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **117 Tests grün** (101 vor
+iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen). Die Tests
 laufen gegen die **echten** Designer-Dateien des Repos, nicht gegen Nachbauten — mit der einen
 Ausnahme, die der Abschnitt „Prüfmuster" beschreibt.
 
@@ -270,6 +359,19 @@ Maske senkt diese Zahl um eins — das ist der Fortschritt von iU9, nicht ein Lo
 **118** Masken, 3 ohne `InitializeComponent`, 0 nicht lesbar, 63 lokalisiert, 2369 Kartenzeilen,
 178 Felder ohne Beschriftung; unter `WindowsFormsApplication1/Views` allein **116** Masken (62
 davon lokalisiert).
+
+**Erreichbarkeit, gemessen am 03.09.2026 (iU8‑12f)** über
+`--alle WindowsFormsApplication1` — **118** Masken:
+
+| Öffner erreichbar | Masken |
+|---|---|
+| ja | 111 |
+| nein | 4 (`Form_Kosten`, `Form_KostenfaktorItem`, `ucKostenItem`, `Form_Variantentest`) |
+| verwaist | 1 (`Form_Simulation_Kurz` — steht unter `Compile Remove`) |
+| unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten`) |
+
+Der vollständige Befund mit Pfad bzw. Öffner je Maske steht in
+[`Erreichbarkeit_2026-09-03.md`](Erreichbarkeit_2026-09-03.md).
 
 Steuerelemente je Typ (Auszug): `Label` 1551, `TextBox` 732, `Button` 504, `ComboBox` 108,
 `GroupBox` 83, `TabPage` 74, `Panel` 69, `CheckBox` 59, `NumericUpDown` 57, `ListBox` 50,
