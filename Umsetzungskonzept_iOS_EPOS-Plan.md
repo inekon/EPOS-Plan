@@ -584,7 +584,7 @@ Das Zielbild — und zugleich die Abnahmecheckliste des Kapitels:
 | `SpeicherEngine`, `KiKern` (+ Tests) | ✅ | ✅ **testet** | ✅ **testet** | – |
 | `WindowsFormsApplication1` — SDK `Microsoft.NET.Sdk.Razor` (iU8-6) | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
 | `Referenzlauf` | ✅ | ✅ *(seit `0ddc417`)* | ❌ | – |
-| `EPOS.iOS` — 19 `.cs`, eigene `.sln`; Bau **nur** mit Workload-Set `10.400.1` und Xcode 26.6 | ❌ | ❌ | ✅ *(Simulator, seit iU10-6 im Job `ios.yml`)* | ✅ **signiert, `.ipa` — offen, iU13** |
+| `EPOS.iOS` — 19 `.cs`, eigene `.sln`; Bau **nur** mit Workload-Set `10.0.400.1` und Xcode 26.6 | ❌ | ❌ | ✅ *(Simulator, seit iU10-6 im Job `ios.yml`)* | ✅ **signiert, `.ipa` — offen, iU13** |
 
 Summe der Lösung am 03.09.2026 (`f95fc34`, Linux, SDK 10.0.400): `dotnet build WP-Plan.sln -c
 Release -p:Platform=x64 --no-incremental` → **0 Fehler, 34 Warnungen**; `dotnet test
@@ -624,7 +624,7 @@ Plattformen ist es der sichere Weg in eine unbemerkte Kerndrift (M8).
 |---|---|---|---|
 | `kern.yml` | `ubuntu-latest` **und** `macos-latest` | `dotnet build` + `dotnet test` über `WP-Plan.Kern.slnf` (Kern, UI, SpeicherEngine, KiKern und ihre Tests); seit iU7-7 die **ChartProben** mit den neun PNG als Artefakt; seit iU8-12 die **Formularkarte-Tests** (nur `ubuntu-latest` — das Werkzeug ist plattformfrei); Kern-Referenzlauf 1030/1007/1017 gegen die eingecheckte Testdatenbank und Vergleich gegen die Referenzbasis | jeder Push, jeder PR |
 | `windows.yml` | `windows-latest` | vollständige Solution mit VS-MSBuild (bis Schritt 5 abgeschlossen ist), danach `dotnet`; Referenzlauf-Vergleich gegen die eingefrorene Basis | Push auf Hauptzweige, nächtlich |
-| `ios.yml` | **`macos-26`** (nicht `-latest`: das Label wandert) | Workload-Set `10.400.1` + `DEVELOPER_DIR=/Applications/Xcode_26.6.app`; `EPOS.iOS` für `iossimulator-arm64` bauen (ohne Signatur), im Simulator starten, Startmarken prüfen (`EPOS.iOS bereit: Projekte=n`, `SQLite …`, `STRICT=114`), Prüflauf 1030 und Toleranzvergleich gegen `2026-08-30_B3-Kaskade`; Artefakte: Startprotokoll, CSV, Bildschirmabzug, `.app` | **`workflow_dispatch`** und Pushes, die `EPOS.iOS/**`, `ios.yml` oder `Directory.Packages.props` berühren (seit iU10-6) |
+| `ios.yml` | **`macos-26`** (nicht `-latest`: das Label wandert) | Workload-Set `10.0.400.1` + `DEVELOPER_DIR=/Applications/Xcode_26.6.app`; `EPOS.iOS` für `iossimulator-arm64` bauen (ohne Signatur), im Simulator starten, Startmarken prüfen (`EPOS.iOS bereit: Projekte=n`, `SQLite …`, `STRICT=114`), Prüflauf 1030 und Toleranzvergleich gegen `2026-08-30_B3-Kaskade`; Artefakte: Startprotokoll, CSV, Bildschirmabzug, `.app` | **`workflow_dispatch`** und Pushes, die `EPOS.iOS/**`, `ios.yml` oder `Directory.Packages.props` berühren (seit iU10-6) |
 
 **Der ungelöste Punkt: die Testdatenbank.** `.gitignore` schließt `*.accdb` aus — „Änderungen an der
 Datenbank landen nie in einem Commit". Eine CI ohne Datenbank kann den Kern nicht rechnen lassen.

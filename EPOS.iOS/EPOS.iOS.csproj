@@ -39,7 +39,7 @@
          Info.plist, AppDelegate und die Ressourcen an ihrem MAUI-ueblichen Ort. -->
     <SingleProject>true</SingleProject>
     <!-- Implizite MAUI-Referenzen auf die CPM-Fassung von WebView.Maui heben:
-         Das Workload-Set 10.400.1 bringt MAUI 10.0.20 mit, die letzte stabile
+         Das Workload-Set 10.0.400.1 bringt MAUI 10.0.20 mit, die letzte stabile
          WebView.Maui-Fassung ist 10.0.100 und haengt an Microsoft.Maui.Controls
          DERSELBEN Fassung - ohne Angleich NU1605 (iR-b). -->
     <MauiVersion>10.0.100</MauiVersion>

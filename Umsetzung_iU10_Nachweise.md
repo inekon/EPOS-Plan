@@ -169,7 +169,7 @@ BhkwDaten(0)=null
 
 Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
-- [ ] **Die Workload installiert sich.** `dotnet workload install maui-ios --version 10.400.1`
+- [ ] **Die Workload installiert sich.** `dotnet workload install maui-ios --version 10.0.400.1`
       läuft durch, `dotnet workload list` zeigt `maui-ios`.
 - [ ] **Xcode passt zur Workload.** Kein Fehler „requires Xcode …"; `xcodebuild -version` meldet
       26.6. (Läuft es hier auf, ist `DEVELOPER_DIR` oder das Runner-Label zu ziehen — iR-a.)
