@@ -30,13 +30,15 @@ public sealed class StapelTests
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("Form_Brauchwasser_Admin.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand nach Welle 9: 56 Dateien (66 nach W8, 76 nach W7,
-        // 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3, 105 nach
-        // iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die Zahl
-        // (Regel M1); Welle 9 nimmt ACHT Masken samt ihren Designer-Dateien mit
-        // - und zwei weitere Dateien, weil Form_Gebaeude1 und Form_Gebaeude2
-        // zusammen EINE Komponente werden.
-        Assert.True(dateien.Count >= 56, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
+        // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
+        // 105 nach iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die
+        // Zahl (Regel M1); Welle 10a nimmt FUENF Designer-Dateien mit -
+        // Form_Betriebsmodus, Form_Klimazonenkarte, Form_QuelleErdreich,
+        // Form_QuellePufferspeicher und Form_PufferSp_Projekt. Ihre beiden
+        // Geschwister Form_Quellprofil und Form_Waermesenke hatten nie einen
+        // Designer (Befund W10-B38) und zaehlen hier deshalb nicht mit.
+        Assert.True(dateien.Count >= 53, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -59,15 +61,13 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand nach Welle 9: 55 Masken (63 nach W8, 73 nach W7,
-        // 81 nach W6, 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3, 102 nach
-        // iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Jede umgestellte Maske
-        // senkt die Zahl (Regel M1); die ACHT der Welle 9 sind die vier
-        // Bedarfskacheln des Startbilds samt ihren Katalogeditoren -
-        // Form_Gebaeude, Form_Gebaeude1, Form_Gebaeude2, Form_GebWohnflaeche,
-        // Form_Waermebedarf, Form_Prozesswaerme, Form_Stromverbraucher und
-        // Form_Brauchwasser.
-        Assert.True(Lauf.Value.Masken >= 55, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand nach Welle 10a: 50 Masken (55 nach W9, 63 nach W8,
+        // 73 nach W7, 81 nach W6, 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3,
+        // 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Welle 10a stellt
+        // SIEBEN Masken um, aber nur FUENF davon hatte die Karte je gesehen:
+        // Form_Quellprofil und Form_Waermesenke bauen ihre Oberflaeche im Code
+        // auf und haben keinen Designer (Befund W10-B38).
+        Assert.True(Lauf.Value.Masken >= 50, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
