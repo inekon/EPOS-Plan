@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -96,7 +95,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
 
             string sql = "SELECT * FROM Tab_Stromverbrauchertyp_STAMM WHERE Typname = ?";
-            OleDbParameter parameter = new OleDbParameter("?", listBox_Typname.Text);
+            DbParam parameter = new DbParam("?", listBox_Typname.Text);
             DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -205,15 +204,15 @@ namespace WindowsFormsApplication1
         private bool Update(string szBeschreibung, string szTyp)
         {
             string sql = "UPDATE Tab_Stromverbrauchertyp_STAMM SET Beschreibung = ? WHERE Typname = ?";
-            OleDbParameter[] parameters = new OleDbParameter[]
+            DbParam[] parameters = new DbParam[]
             {
-                new OleDbParameter("?", szBeschreibung ?? (object)DBNull.Value),
-                new OleDbParameter("?", szTyp)
+                new DbParam("?", szBeschreibung ?? (object)DBNull.Value),
+                new DbParam("?", szTyp)
             };
 
             try
             {
-                DataRepository.ExecuteNonQuery(sql, DbParam.Von(parameters));
+                DataRepository.ExecuteNonQuery(sql, parameters);
             }
             catch (Exception ex)
             {
@@ -230,15 +229,15 @@ namespace WindowsFormsApplication1
             // Die eckigen Klammern [ ] schützen rein numerische Spaltennamen (z.B. [1], [2]) unter Access/OleDb.
             string sql = $"UPDATE Tab_Stromverbrauchertyp_STAMM SET [{feld}] = ? WHERE Typname = ?";
 
-            OleDbParameter[] parameters = new OleDbParameter[]
+            DbParam[] parameters = new DbParam[]
             {
-                new OleDbParameter("?", value),
-                new OleDbParameter("?", typ)
+                new DbParam("?", value),
+                new DbParam("?", typ)
             };
 
             try
             {
-                DataRepository.ExecuteNonQuery(sql, DbParam.Von(parameters));
+                DataRepository.ExecuteNonQuery(sql, parameters);
             }
             catch (Exception ex)
             {

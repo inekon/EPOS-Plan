@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -603,8 +602,8 @@ namespace WindowsFormsApplication1
                     int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
                         "SELECT COUNT(*) FROM energy_project_settings " +
                         "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                        new OleDbParameter("@p", m_ID_Projekt),
-                        new OleDbParameter("@c", uc.CarrierId)));
+                        new DbParam("@p", m_ID_Projekt),
+                        new DbParam("@c", uc.CarrierId)));
                     if (zugeordnet > 0) uc.SaveProjectAndHistory();
                 }
             }
@@ -647,8 +646,8 @@ namespace WindowsFormsApplication1
                            GROUP BY k.Komponente";
 
             return DataRepository.GetDataTable(sql,
-                new OleDbParameter("@pid", projektID),
-                new OleDbParameter("@kat", kategorieID));
+                new DbParam("@pid", projektID),
+                new DbParam("@kat", kategorieID));
         }
 
         /// <summary>Ä20: dieselbe Summe je ANLAGENZEILE (Spalten Komponente,
@@ -668,8 +667,8 @@ namespace WindowsFormsApplication1
                            GROUP BY k.Komponente, w.ID_Anlage";
 
             return DataRepository.GetDataTable(sql,
-                new OleDbParameter("@pid", projektID),
-                new OleDbParameter("@kat", kategorieID));
+                new DbParam("@pid", projektID),
+                new DbParam("@kat", kategorieID));
         }
 
         /// <summary>
@@ -1181,9 +1180,9 @@ namespace WindowsFormsApplication1
                 string sqlDeleteProjektWerte = "DELETE FROM Tab_ProjektWerte WHERE Gruppe = ? AND ProjektID = ? AND KategorieID=?";
 
                 DataRepository.ExecuteSQL(sqlDeleteProjektWerte,
-                    new OleDbParameter("@gName", gruppenName),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@pIDkat", kategorieID));
+                    new DbParam("@gName", gruppenName),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@pIDkat", kategorieID));
 
                 // Cleanup Katalog: Lösche Gruppe nur, wenn sie nirgendwo mehr verwendet wird
                 // Hinweis: Access braucht den Parameter hier 2x, weil 2 Fragezeichen im SQL sind
@@ -1192,8 +1191,8 @@ namespace WindowsFormsApplication1
                                      AND NOT EXISTS (SELECT 1 FROM Tab_ProjektWerte WHERE Gruppe = ?)";
 
                 DataRepository.ExecuteSQL(sqlCleanupKatalog,
-                    new OleDbParameter("@g1", gruppenName),
-                    new OleDbParameter("@g2", gruppenName));
+                    new DbParam("@g1", gruppenName),
+                    new DbParam("@g2", gruppenName));
 
                 // Optional: UI Logik zum Refresh danach aufrufen
             }
@@ -1218,7 +1217,7 @@ namespace WindowsFormsApplication1
                 // Datenbank-Löschung
                 string sql = "DELETE FROM Tab_ProjektWerte WHERE ID = ?";
 
-                bool erfolg = DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", datensatzID));
+                bool erfolg = DataRepository.ExecuteSQL(sql, new DbParam("@id", datensatzID));
 
                 if (erfolg)
                 {
@@ -1272,14 +1271,14 @@ namespace WindowsFormsApplication1
             WHERE (KategorieName = ?) AND (Komponente = ?) AND (ProjektID = ?)";
 
             // Parameter vorbereiten
-            OleDbParameter[] ps = {
-                new OleDbParameter("@kat", kategorie),
-                new OleDbParameter("@komp", komponente),
-                new OleDbParameter("@pID", projektID)
+            DbParam[] ps = {
+                new DbParam("@kat", kategorie),
+                new DbParam("@komp", komponente),
+                new DbParam("@pID", projektID)
             };
 
             // Repository nutzen, um die Daten zu holen
-            DataTable dt = DataRepository.GetDataTable(sql, DbParam.Von(ps));
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             // Kostenart, Bemessung und Erlöskennzeichen kommen aus einem ZWEITEN Zugriff
             // direkt auf Tab_ProjektWerte und werden über die ID zusammengeführt:
@@ -1502,8 +1501,8 @@ namespace WindowsFormsApplication1
                               WHERE CheckTbl.[Expr1000] = 0";
 
                 DataRepository.ExecuteSQL(sqlKatalog,
-                    new OleDbParameter("@g1", gewaehlteGruppe),
-                    new OleDbParameter("@g2", gewaehlteGruppe));
+                    new DbParam("@g1", gewaehlteGruppe),
+                    new DbParam("@g2", gewaehlteGruppe));
 
                 // 4. INSERT in Tab_ProjektWerte
                 string sqlInsert = @"INSERT INTO Tab_ProjektWerte
@@ -1511,14 +1510,14 @@ namespace WindowsFormsApplication1
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DataRepository.ExecuteSQL(sqlInsert,
-                    new OleDbParameter("@pid", m_ID_Projekt),
-                    new OleDbParameter("@sid", stammID),
-                    new OleDbParameter("@val", betrag),
-                    new OleDbParameter("@nd", nutzungsdauer),
-                    new OleDbParameter("@ein", einheit),
-                    new OleDbParameter("@grp", gewaehlteGruppe),
-                    new OleDbParameter("@kid", GetKomponentenID(komponenete)),
-                    new OleDbParameter("@kat", kat.Value)
+                    new DbParam("@pid", m_ID_Projekt),
+                    new DbParam("@sid", stammID),
+                    new DbParam("@val", betrag),
+                    new DbParam("@nd", nutzungsdauer),
+                    new DbParam("@ein", einheit),
+                    new DbParam("@grp", gewaehlteGruppe),
+                    new DbParam("@kid", GetKomponentenID(komponenete)),
+                    new DbParam("@kat", kat.Value)
                 );
 
                 // 5. UI aktualisieren
@@ -1571,7 +1570,7 @@ namespace WindowsFormsApplication1
                     "FROM Tab_KostenKomponente AS k " +
                     "     INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID " +
                     "WHERE w.ProjektID = ?",
-                    new OleDbParameter("@pid", projektID));
+                    new DbParam("@pid", projektID));
                 if (p != null)
                     foreach (DataRow r in p.Rows)
                         if (r["Komponente"] != DBNull.Value)
@@ -1662,7 +1661,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente));
+                    new DbParam("@k", komponente));
                 if (o != null && o != DBNull.Value) id = Convert.ToInt32(o);
             }
             catch { }
@@ -1687,14 +1686,14 @@ namespace WindowsFormsApplication1
 
             // Aufruf der neuen zentralen Methode
             DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@val", (double)pos.Betrag),
-                new OleDbParameter("@best", (double)pos.BestCase),
-                new OleDbParameter("@worst", (double)pos.WorstCase),
-                new OleDbParameter("@nd", (double)pos.Nutzungsdauer),
-                new OleDbParameter("@bestNd", (double)pos.BestCase_Nutzungsdauer),
-                new OleDbParameter("@worstNd", (double)pos.WorstCase_Nutzungsdauer),
-                new OleDbParameter("gn", (string)pos.Gruppenname),
-                new OleDbParameter("@id", pos.ID)
+                new DbParam("@val", (double)pos.Betrag),
+                new DbParam("@best", (double)pos.BestCase),
+                new DbParam("@worst", (double)pos.WorstCase),
+                new DbParam("@nd", (double)pos.Nutzungsdauer),
+                new DbParam("@bestNd", (double)pos.BestCase_Nutzungsdauer),
+                new DbParam("@worstNd", (double)pos.WorstCase_Nutzungsdauer),
+                new DbParam("gn", (string)pos.Gruppenname),
+                new DbParam("@id", pos.ID)
             );
 
             KostenartSichern(pos);
@@ -1717,9 +1716,9 @@ namespace WindowsFormsApplication1
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_STARTJAHR +
                     "] = ? WHERE ID = ?",
-                    new OleDbParameter("@sj", OleDbType.Integer)
-                    { Value = pos.StartJahr > 1 ? (object)pos.StartJahr : DBNull.Value },
-                    new OleDbParameter("@id", pos.ID));
+                    new DbParam("@sj", DbParamTyp.Integer)
+                    { Wert = pos.StartJahr > 1 ? (object)pos.StartJahr : DBNull.Value },
+                    new DbParam("@id", pos.ID));
             }
             catch { /* Vorsorgeweg — der Betragsspeicherweg bleibt unberührt */ }
         }
@@ -1749,8 +1748,8 @@ namespace WindowsFormsApplication1
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_KOSTENART +
                     "] = ? WHERE ID = ?",
-                    new OleDbParameter("@art", pos.Kostenart),
-                    new OleDbParameter("@id", pos.ID));
+                    new DbParam("@art", pos.Kostenart),
+                    new DbParam("@id", pos.ID));
             }
             catch { }
         }
@@ -1988,8 +1987,8 @@ namespace WindowsFormsApplication1
                             ) ON energy_project_settings.ID_Energieträger = ec.id
                         WHERE energy_project_settings.ID_Projekt=?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@p", ID_Projekt),
+            DbParam[] ps = {
+                new DbParam("@p", ID_Projekt),
             };
 
             // KD6a-Nachtrag (Befund 26.08.2026): Im KATALOGkontext (Projekt 0)
@@ -2004,7 +2003,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = ID_Projekt <= 0
                 ? DataRepository.GetDataTable(sql)
-                : DataRepository.GetDataTable(sql, DbParam.Von(ps));
+                : DataRepository.GetDataTable(sql, ps);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -2107,7 +2106,7 @@ namespace WindowsFormsApplication1
                     int carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
-                        DbParam.Von(new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) }));
+                        new DbParam[] { new DbParam("@name", dlg.SelectedName) });
                     if (existing != null && existing != DBNull.Value)
                         carrierId = Convert.ToInt32(existing);
 
@@ -2118,32 +2117,32 @@ namespace WindowsFormsApplication1
                              (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
                               hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        OleDbParameter[] ps = {
-                            new OleDbParameter("@idB",   dlg.SelectedBrennstoffID),
-                            new OleDbParameter("@code",  dlg.SelectedCode),
-                            new OleDbParameter("@name",  dlg.SelectedName),
-                            new OleDbParameter("@gc",    dlg.SelectedGroupCode),
-                            new OleDbParameter("@pm",    dlg.SelectedBrennstoffCode),
-                            new OleDbParameter("@unit",  dlg.SelectedBillingUnit),
-                            new OleDbParameter("@shi",   dlg.SelectedHi),
-                            new OleDbParameter("@shs",   dlg.SelectedHs),
-                            new OleDbParameter("@defap", default_arbeitspreis),
-                            new OleDbParameter("@defgp", default_grundpreis),
-                            new OleDbParameter("@co2",   default_co2),
-                            new OleDbParameter("@so2",   default_so2),
-                            new OleDbParameter("@nox",   default_nox),
-                            new OleDbParameter("@active", OleDbType.Boolean) { Value = true }
+                        DbParam[] ps = {
+                            new DbParam("@idB",   dlg.SelectedBrennstoffID),
+                            new DbParam("@code",  dlg.SelectedCode),
+                            new DbParam("@name",  dlg.SelectedName),
+                            new DbParam("@gc",    dlg.SelectedGroupCode),
+                            new DbParam("@pm",    dlg.SelectedBrennstoffCode),
+                            new DbParam("@unit",  dlg.SelectedBillingUnit),
+                            new DbParam("@shi",   dlg.SelectedHi),
+                            new DbParam("@shs",   dlg.SelectedHs),
+                            new DbParam("@defap", default_arbeitspreis),
+                            new DbParam("@defgp", default_grundpreis),
+                            new DbParam("@co2",   default_co2),
+                            new DbParam("@so2",   default_so2),
+                            new DbParam("@nox",   default_nox),
+                            new DbParam("@active", DbParamTyp.Boolean) { Wert = true }
                         };
-                        carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, DbParam.Von(ps));
+                        carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
                     }
 
                     // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
                     int vorhanden = Convert.ToInt32(DataRepository.ExecuteScalar(
                         "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
-                        DbParam.Von(new OleDbParameter[] {
-                    new OleDbParameter("@pid", m_ID_Projekt),
-                    new OleDbParameter("@eid", carrierId)
-                        })));
+                        new DbParam[] {
+                    new DbParam("@pid", m_ID_Projekt),
+                    new DbParam("@eid", carrierId)
+                        }));
                     if (vorhanden > 0)
                     {
                         MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
@@ -2156,34 +2155,34 @@ namespace WindowsFormsApplication1
                     string sqlHistory = @"INSERT INTO energy_price
                          (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                    DataRepository.ExecuteSQL(sqlHistory, DbParam.Von(new OleDbParameter[] {
-                        new OleDbParameter("@cid",  carrierId),
-                        new OleDbParameter("@prid", m_ID_Projekt),
-                        new OleDbParameter("@ap",   Math.Round(default_arbeitspreis, 4)),
-                        new OleDbParameter("@hi",   Math.Round(dlg.SelectedHi, 4)),
-                        new OleDbParameter("@gp",   Math.Round(default_grundpreis, 4)),
-                        new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
-                        new OleDbParameter("@au",   dlg.SelectedBillingUnit),
-                        new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
-                    }));
+                    DataRepository.ExecuteSQL(sqlHistory, new DbParam[] {
+                        new DbParam("@cid",  carrierId),
+                        new DbParam("@prid", m_ID_Projekt),
+                        new DbParam("@ap",   Math.Round(default_arbeitspreis, 4)),
+                        new DbParam("@hi",   Math.Round(dlg.SelectedHi, 4)),
+                        new DbParam("@gp",   Math.Round(default_grundpreis, 4)),
+                        new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now },
+                        new DbParam("@au",   dlg.SelectedBillingUnit),
+                        new DbParam("@lp",   Math.Round(default_leistungspreis, 4))
+                    });
 
                     string sqlInsert = @"INSERT INTO energy_Project_settings
                          (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                           custom_price_base, ID_Umrechnung, co2, so2, nox)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    DataRepository.ExecuteSQL(sqlInsert, DbParam.Von(new OleDbParameter[] {
-                        new OleDbParameter("@pid",    m_ID_Projekt),
-                        new OleDbParameter("@eid",    carrierId),
-                        new OleDbParameter("@p",      Math.Round(default_arbeitspreis, 4)),
-                        new OleDbParameter("@pl",     Math.Round(default_leistungspreis, 4)),
-                        new OleDbParameter("@h",      Math.Round(dlg.SelectedHi, 4)),
-                        new OleDbParameter("@hs",     Math.Round(dlg.SelectedHs, 4)),
-                        new OleDbParameter("@b",      Math.Round(default_grundpreis, 4)),
-                        new OleDbParameter("@convid", dlg.SelectedConvID),
-                        new OleDbParameter("@co2",    default_co2),
-                        new OleDbParameter("@so2",    default_so2),
-                        new OleDbParameter("@nox",    default_nox)
-                    }));
+                    DataRepository.ExecuteSQL(sqlInsert, new DbParam[] {
+                        new DbParam("@pid",    m_ID_Projekt),
+                        new DbParam("@eid",    carrierId),
+                        new DbParam("@p",      Math.Round(default_arbeitspreis, 4)),
+                        new DbParam("@pl",     Math.Round(default_leistungspreis, 4)),
+                        new DbParam("@h",      Math.Round(dlg.SelectedHi, 4)),
+                        new DbParam("@hs",     Math.Round(dlg.SelectedHs, 4)),
+                        new DbParam("@b",      Math.Round(default_grundpreis, 4)),
+                        new DbParam("@convid", dlg.SelectedConvID),
+                        new DbParam("@co2",    default_co2),
+                        new DbParam("@so2",    default_so2),
+                        new DbParam("@nox",    default_nox)
+                    });
 
                     MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
                     return dlg.SelectedName;
@@ -2234,13 +2233,13 @@ namespace WindowsFormsApplication1
                 {
                     string sqlDetail = $"DELETE FROM energy_project_settings WHERE ID_Energieträger=? AND ID_Projekt=?";
                     v.Ausfuehren(sqlDetail,
-                        new OleDbParameter("?", id),
-                        new OleDbParameter("?", ID_Projekt));
+                        new DbParam("?", id),
+                        new DbParam("?", ID_Projekt));
 
                     sqlDetail = $"DELETE FROM energy_price WHERE carrier_id=? AND ID_Projekt=?";
                     v.Ausfuehren(sqlDetail,
-                        new OleDbParameter("?", id),
-                        new OleDbParameter("?", ID_Projekt));
+                        new DbParam("?", id),
+                        new DbParam("?", ID_Projekt));
 
                     v.Commit();
 

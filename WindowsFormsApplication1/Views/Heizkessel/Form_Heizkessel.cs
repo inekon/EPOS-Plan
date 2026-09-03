@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -202,7 +201,7 @@ namespace WindowsFormsApplication1
             // Default in Tab_Energieanlagen (Vorlauf, Ruecklauf) beim Speichern.
             DataTable dtStamm = DataRepository.GetDataTable(
                 "SELECT * FROM " + HeizkesselStammCtrl.TABLE + " WHERE ID = ?",
-                new OleDbParameter("@id", stammId));
+                new DbParam("@id", stammId));
             if (dtStamm != null && dtStamm.Rows.Count > 0)
             {
                 DataRow sr = dtStamm.Rows[0];
@@ -261,19 +260,19 @@ namespace WindowsFormsApplication1
 
                 object br = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) }));
+                    new DbParam[] { new DbParam("@id", nBrennstoff) });
                 if (br != null && br != DBNull.Value)
                     szBrennstoff = br.ToString();
 
                 object brkatid = DataRepository.ExecuteScalar(
                     "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) }));
+                    new DbParam[] { new DbParam("@id", nBrennstoff) });
                 if (brkatid != null && brkatid != DBNull.Value)
                     nKategorie = Convert.ToInt32(brkatid);
 
                 object brkat = DataRepository.ExecuteScalar(
                     "SELECT Gruppe FROM Tab_BrennstoffKategorien WHERE ID = ?",
-                    DbParam.Von(new OleDbParameter[] { new OleDbParameter("@id", nKategorie) }));
+                    new DbParam[] { new DbParam("@id", nKategorie) });
                 if (brkat != null && brkat != DBNull.Value)
                     szKategorie = brkat.ToString();
 
@@ -302,9 +301,9 @@ namespace WindowsFormsApplication1
                         // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet.
                         carrierId = -1;
                         {
-                            List<OleDbParameter> ps = new List<OleDbParameter>();
-                            ps.Add(new OleDbParameter("@name", dlg.SelectedName));
-                            object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", DbParam.Von(ps.ToArray()));
+                            List<DbParam> ps = new List<DbParam>();
+                            ps.Add(new DbParam("@name", dlg.SelectedName));
+                            object existing = v.Skalar("SELECT id FROM energy_carrier WHERE name = ?", ps.ToArray());
                             if (existing != null && existing != DBNull.Value)
                                 carrierId = Convert.ToInt32(existing);
                         }
@@ -312,21 +311,21 @@ namespace WindowsFormsApplication1
                         // Katalog-Datensatz nur anlegen, wenn wirklich neu.
                         if (carrierId < 0)
                         {
-                            List<OleDbParameter> pTraeger = new List<OleDbParameter>();
-                            pTraeger.Add(new OleDbParameter("@idB", dlg.SelectedBrennstoffID));
-                            pTraeger.Add(new OleDbParameter("@code", dlg.SelectedCode));
-                            pTraeger.Add(new OleDbParameter("@name", dlg.SelectedName));
-                            pTraeger.Add(new OleDbParameter("@gc", dlg.SelectedGroupCode));
-                            pTraeger.Add(new OleDbParameter("@pm", dlg.SelectedBrennstoffCode));
-                            pTraeger.Add(new OleDbParameter("@unit", dlg.SelectedBillingUnit));
-                            pTraeger.Add(new OleDbParameter("@shi", dlg.SelectedHi));
-                            pTraeger.Add(new OleDbParameter("@shs", dlg.SelectedHs));
-                            pTraeger.Add(new OleDbParameter("@defap", default_arbeitspreis));
-                            pTraeger.Add(new OleDbParameter("@defgp", default_grundpreis));
-                            pTraeger.Add(new OleDbParameter("@co2", default_co2));
-                            pTraeger.Add(new OleDbParameter("@so2", default_so2));
-                            pTraeger.Add(new OleDbParameter("@nox", default_nox));
-                            pTraeger.Add(new OleDbParameter("@active", OleDbType.Boolean) { Value = true });
+                            List<DbParam> pTraeger = new List<DbParam>();
+                            pTraeger.Add(new DbParam("@idB", dlg.SelectedBrennstoffID));
+                            pTraeger.Add(new DbParam("@code", dlg.SelectedCode));
+                            pTraeger.Add(new DbParam("@name", dlg.SelectedName));
+                            pTraeger.Add(new DbParam("@gc", dlg.SelectedGroupCode));
+                            pTraeger.Add(new DbParam("@pm", dlg.SelectedBrennstoffCode));
+                            pTraeger.Add(new DbParam("@unit", dlg.SelectedBillingUnit));
+                            pTraeger.Add(new DbParam("@shi", dlg.SelectedHi));
+                            pTraeger.Add(new DbParam("@shs", dlg.SelectedHs));
+                            pTraeger.Add(new DbParam("@defap", default_arbeitspreis));
+                            pTraeger.Add(new DbParam("@defgp", default_grundpreis));
+                            pTraeger.Add(new DbParam("@co2", default_co2));
+                            pTraeger.Add(new DbParam("@so2", default_so2));
+                            pTraeger.Add(new DbParam("@nox", default_nox));
+                            pTraeger.Add(new DbParam("@active", DbParamTyp.Boolean) { Wert = true });
                             // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
                             // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf con/tx).
                             carrierId = v.EinfuegenUndId(
@@ -334,7 +333,7 @@ namespace WindowsFormsApplication1
                                          (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
                                           hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
                                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                DbParam.Von(pTraeger.ToArray()));
+                                pTraeger.ToArray());
                         }
 
                         if (carrierId <= 0)
@@ -359,10 +358,10 @@ namespace WindowsFormsApplication1
                         // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
                         int vorhanden;
                         {
-                            List<OleDbParameter> ps = new List<OleDbParameter>();
-                            ps.Add(new OleDbParameter("@pid", m_ID_Projekt));
-                            ps.Add(new OleDbParameter("@eid", carrierId));
-                            vorhanden = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", DbParam.Von(ps.ToArray())));
+                            List<DbParam> ps = new List<DbParam>();
+                            ps.Add(new DbParam("@pid", m_ID_Projekt));
+                            ps.Add(new DbParam("@eid", carrierId));
+                            vorhanden = Convert.ToInt32(v.Skalar("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?", ps.ToArray()));
                         }
                         if (vorhanden > 0)
                         {
@@ -375,37 +374,37 @@ namespace WindowsFormsApplication1
 
                         // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen).
                         {
-                            List<OleDbParameter> ps = new List<OleDbParameter>();
-                            ps.Add(new OleDbParameter("@cid", carrierId));
-                            ps.Add(new OleDbParameter("@prid", m_ID_Projekt));
-                            ps.Add(new OleDbParameter("@ap", Math.Round(default_arbeitspreis, 4)));
-                            ps.Add(new OleDbParameter("@hi", Math.Round(dlg.SelectedHi, 4)));
-                            ps.Add(new OleDbParameter("@gp", Math.Round(default_grundpreis, 4)));
-                            ps.Add(new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now });
-                            ps.Add(new OleDbParameter("@au", dlg.SelectedBillingUnit));
-                            ps.Add(new OleDbParameter("@lp", Math.Round(default_leistungspreis, 4)));
+                            List<DbParam> ps = new List<DbParam>();
+                            ps.Add(new DbParam("@cid", carrierId));
+                            ps.Add(new DbParam("@prid", m_ID_Projekt));
+                            ps.Add(new DbParam("@ap", Math.Round(default_arbeitspreis, 4)));
+                            ps.Add(new DbParam("@hi", Math.Round(dlg.SelectedHi, 4)));
+                            ps.Add(new DbParam("@gp", Math.Round(default_grundpreis, 4)));
+                            ps.Add(new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now });
+                            ps.Add(new DbParam("@au", dlg.SelectedBillingUnit));
+                            ps.Add(new DbParam("@lp", Math.Round(default_leistungspreis, 4)));
                             v.Ausfuehren(@"INSERT INTO energy_price
                                      (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", DbParam.Von(ps.ToArray()));
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
                         }
 
                         {
-                            List<OleDbParameter> ps = new List<OleDbParameter>();
-                            ps.Add(new OleDbParameter("@pid", m_ID_Projekt));
-                            ps.Add(new OleDbParameter("@eid", carrierId));
-                            ps.Add(new OleDbParameter("@p", Math.Round(default_arbeitspreis, 4)));
-                            ps.Add(new OleDbParameter("@pl", Math.Round(default_leistungspreis, 4)));
-                            ps.Add(new OleDbParameter("@h", Math.Round(dlg.SelectedHi, 4)));
-                            ps.Add(new OleDbParameter("@hs", Math.Round(dlg.SelectedHs, 4)));
-                            ps.Add(new OleDbParameter("@b", Math.Round(default_grundpreis, 4)));
-                            ps.Add(new OleDbParameter("@convid", dlg.SelectedConvID));
-                            ps.Add(new OleDbParameter("@co2", default_co2));
-                            ps.Add(new OleDbParameter("@so2", default_so2));
-                            ps.Add(new OleDbParameter("@nox", default_nox));
+                            List<DbParam> ps = new List<DbParam>();
+                            ps.Add(new DbParam("@pid", m_ID_Projekt));
+                            ps.Add(new DbParam("@eid", carrierId));
+                            ps.Add(new DbParam("@p", Math.Round(default_arbeitspreis, 4)));
+                            ps.Add(new DbParam("@pl", Math.Round(default_leistungspreis, 4)));
+                            ps.Add(new DbParam("@h", Math.Round(dlg.SelectedHi, 4)));
+                            ps.Add(new DbParam("@hs", Math.Round(dlg.SelectedHs, 4)));
+                            ps.Add(new DbParam("@b", Math.Round(default_grundpreis, 4)));
+                            ps.Add(new DbParam("@convid", dlg.SelectedConvID));
+                            ps.Add(new DbParam("@co2", default_co2));
+                            ps.Add(new DbParam("@so2", default_so2));
+                            ps.Add(new DbParam("@nox", default_nox));
                             v.Ausfuehren(@"INSERT INTO energy_Project_settings
                                      (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                                       custom_price_base, ID_Umrechnung, co2, so2, nox)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", DbParam.Von(ps.ToArray()));
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ps.ToArray());
                         }
 
                         v.Commit();
@@ -484,14 +483,14 @@ namespace WindowsFormsApplication1
             {
                 DataTable dtCar = DataRepository.GetDataTable(
                     "SELECT name, group_code FROM energy_carrier WHERE id = ?",
-                    new OleDbParameter("@id", m.ID_Carrier));
+                    new DbParam("@id", m.ID_Carrier));
                 if (dtCar != null && dtCar.Rows.Count > 0)
                 {
                     string code = dtCar.Rows[0]["group_code"].ToString();
 
                     cmbBrennstoffArt.DataSource = DataRepository.GetDataTable(
                         "SELECT id, name FROM energy_carrier WHERE group_code = ? ORDER BY name",
-                        new OleDbParameter("@gc", code));
+                        new DbParam("@gc", code));
                     cmbBrennstoffArt.DisplayMember = "name";
                     cmbBrennstoffArt.ValueMember = "id";
                     cmbBrennstoffArt.SelectedValue = m.ID_Carrier;
@@ -540,11 +539,11 @@ namespace WindowsFormsApplication1
                 "SET ID_Energieträger = ? " +
                 "WHERE ID_Projekt = ? AND ID_Energieträger = ?";
 
-            DataRepository.ExecuteSQL(sqlUpdate, DbParam.Von(new OleDbParameter[] {
-                new OleDbParameter("@neu", m.ID_Carrier),   // SET-Wert
-                new OleDbParameter("@pid", m_ID_Projekt),    // Filter Projekt
-                new OleDbParameter("@alt", idcarrier_alt)    // Filter bisheriger Träger
-            }));
+            DataRepository.ExecuteSQL(sqlUpdate, new DbParam[] {
+                new DbParam("@neu", m.ID_Carrier),   // SET-Wert
+                new DbParam("@pid", m_ID_Projekt),    // Filter Projekt
+                new DbParam("@alt", idcarrier_alt)    // Filter bisheriger Träger
+            });
         }
 
         private void listBox_Kessel_DB_SelectedIndexChanged(object sender, EventArgs e)

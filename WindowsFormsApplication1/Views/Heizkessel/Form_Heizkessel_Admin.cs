@@ -335,7 +335,7 @@ namespace WindowsFormsApplication1
             // statt unbemerkt zwei Katalogsaetze zu veraendern.
             object anz = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE Bezeichner = ?",
-                new System.Data.OleDb.OleDbParameter("@nam", m_szGeladen));
+                new DbParam("@nam", m_szGeladen));
             int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
             if (nAnzahl > 1)
             {

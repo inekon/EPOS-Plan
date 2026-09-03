@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -492,7 +491,7 @@ namespace WindowsFormsApplication1
             {
                 {
                     ds.Tables.Add(DataRepository.GetDataTable(sql,
-                        new OleDbParameter("?", OleDbType.Integer) { Value = item.ID }));
+                        new DbParam("?", DbParamTyp.Integer) { Wert = item.ID }));
 
                     // Das Formular aufrufen (es bekommt das DataSet per ref wie im Original)
                     Kenndaten frm = new Kenndaten(ref ds);
@@ -517,29 +516,29 @@ namespace WindowsFormsApplication1
                             if (rK.RowState == DataRowState.Deleted)
                             {
                                 DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten_STAMM WHERE ID = ?",
-                                    new OleDbParameter("@id", OleDbType.Integer) { Value = Convert.ToInt32(rK["ID", DataRowVersion.Original]) });
+                                    new DbParam("@id", DbParamTyp.Integer) { Wert = Convert.ToInt32(rK["ID", DataRowVersion.Original]) });
                             }
                             else if (rK.RowState == DataRowState.Added)
                             {
                                 DataRepository.ExecuteSQL(
                                     "INSERT INTO Tab_Kenndaten_STAMM (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)",
-                                    new OleDbParameter("@id",  OleDbType.Integer) { Value = nextId++ },
-                                    new OleDbParameter("@wp",  OleDbType.Integer) { Value = item.ID },
-                                    new OleDbParameter("@vl",  OleDbType.Integer) { Value = KInt(rK["Vorlauf"]) },
-                                    new OleDbParameter("@t",   OleDbType.Integer) { Value = KInt(rK["Temperatur"]) },
-                                    new OleDbParameter("@cop", OleDbType.Double)  { Value = KDbl(rK["COP"]) },
-                                    new OleDbParameter("@pt",  OleDbType.Double)  { Value = KDbl(rK["Ptherm"]) });
+                                    new DbParam("@id",  DbParamTyp.Integer) { Wert = nextId++ },
+                                    new DbParam("@wp",  DbParamTyp.Integer) { Wert = item.ID },
+                                    new DbParam("@vl",  DbParamTyp.Integer) { Wert = KInt(rK["Vorlauf"]) },
+                                    new DbParam("@t",   DbParamTyp.Integer) { Wert = KInt(rK["Temperatur"]) },
+                                    new DbParam("@cop", DbParamTyp.Double)  { Wert = KDbl(rK["COP"]) },
+                                    new DbParam("@pt",  DbParamTyp.Double)  { Wert = KDbl(rK["Ptherm"]) });
                             }
                             else if (rK.RowState == DataRowState.Modified)
                             {
                                 DataRepository.ExecuteSQL(
                                     "UPDATE Tab_Kenndaten_STAMM SET ID_WP = ?, Vorlauf = ?, Temperatur = ?, COP = ?, Ptherm = ? WHERE ID = ?",
-                                    new OleDbParameter("@wp",  OleDbType.Integer) { Value = item.ID },
-                                    new OleDbParameter("@vl",  OleDbType.Integer) { Value = KInt(rK["Vorlauf"]) },
-                                    new OleDbParameter("@t",   OleDbType.Integer) { Value = KInt(rK["Temperatur"]) },
-                                    new OleDbParameter("@cop", OleDbType.Double)  { Value = KDbl(rK["COP"]) },
-                                    new OleDbParameter("@pt",  OleDbType.Double)  { Value = KDbl(rK["Ptherm"]) },
-                                    new OleDbParameter("@id",  OleDbType.Integer) { Value = Convert.ToInt32(rK["ID"]) });
+                                    new DbParam("@wp",  DbParamTyp.Integer) { Wert = item.ID },
+                                    new DbParam("@vl",  DbParamTyp.Integer) { Wert = KInt(rK["Vorlauf"]) },
+                                    new DbParam("@t",   DbParamTyp.Integer) { Wert = KInt(rK["Temperatur"]) },
+                                    new DbParam("@cop", DbParamTyp.Double)  { Wert = KDbl(rK["COP"]) },
+                                    new DbParam("@pt",  DbParamTyp.Double)  { Wert = KDbl(rK["Ptherm"]) },
+                                    new DbParam("@id",  DbParamTyp.Integer) { Wert = Convert.ToInt32(rK["ID"]) });
                             }
                         }
 

@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
-                    new System.Data.OleDb.OleDbParameter("@p", projektId));
+                    new DbParam("@p", projektId));
                 return o == null || o == DBNull.Value ? "" : Convert.ToString(o);
             }
             catch { return ""; }
@@ -164,7 +164,7 @@ namespace WindowsFormsApplication1
                     "SELECT MAX(ID_Carrier) FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND [" + geraeteSpalte + "] IS NOT NULL " +
                     "AND ID_Carrier IS NOT NULL",
-                    new System.Data.OleDb.OleDbParameter("@p", projektId));
+                    new DbParam("@p", projektId));
                 if (o == null || o == DBNull.Value) return null;
                 int id = Convert.ToInt32(o);
                 return id > 0 ? (int?)id : null;

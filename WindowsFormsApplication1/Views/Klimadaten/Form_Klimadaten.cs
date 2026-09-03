@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -303,9 +302,9 @@ namespace WindowsFormsApplication1
                     int id = 0;
                     string sqlSelect = "SELECT ID_Klimaregion FROM Tab_Klimaregion_STAMM WHERE Name = ?";
                     {
-                        List<OleDbParameter> p = new List<OleDbParameter>();
-                        p.Add(new OleDbParameter("?", Listbezeichner));
-                        object result = v.Skalar(sqlSelect, DbParam.Von(p.ToArray()));
+                        List<DbParam> p = new List<DbParam>();
+                        p.Add(new DbParam("?", Listbezeichner));
+                        object result = v.Skalar(sqlSelect, p.ToArray());
                         if (result != null && result != DBNull.Value) id = Convert.ToInt32(result);
                     }
 

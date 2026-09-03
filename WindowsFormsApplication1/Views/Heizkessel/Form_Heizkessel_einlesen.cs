@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.IO;
 using System.Windows.Forms;
 
@@ -353,7 +352,7 @@ namespace WindowsFormsApplication1
                     //    nach der Vorpruefung des Konfliktdialogs die zweite
                     //    Verteidigungslinie, sie prueft auch den Umbenennen-Namen
                     string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel_STAMM] WHERE Bezeichner = ?";
-                    int count = Convert.ToInt32(v.Skalar(checkSql, new OleDbParameter("?", model.Name)));
+                    int count = Convert.ToInt32(v.Skalar(checkSql, new DbParam("?", model.Name)));
                     if (count > 0)
                     {
                         v.Rollback();
@@ -413,28 +412,28 @@ namespace WindowsFormsApplication1
                         Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, ReadOnly) 
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                List<OleDbParameter> ps = new List<OleDbParameter>();
-                ps.Add(new OleDbParameter("@id", newId));
-                ps.Add(new OleDbParameter("@nam", model.Name ?? (object)DBNull.Value));
-                ps.Add(new OleDbParameter("@bes", model.Beschreibung ?? (object)DBNull.Value));
-                ps.Add(new OleDbParameter("@fir", model.Firma ?? (object)DBNull.Value));
-                ps.Add(new OleDbParameter("@pth", model.Ptherm));
-                ps.Add(new OleDbParameter("@bre", model.Brennstoff));
-                ps.Add(new OleDbParameter("@wgg", model.Wirkungsgrad_Gas));
-                ps.Add(new OleDbParameter("@wgo", model.Wirkungsgrad_Oel));
-                ps.Add(new OleDbParameter("@inv", model.Investitionskosten));
-                ps.Add(new OleDbParameter("@rau", model.Raumbedarf));
-                ps.Add(new OleDbParameter("@war", model.Wartungskosten));
-                ps.Add(new OleDbParameter("@nut", model.Nutzungsdauer));
-                ps.Add(new OleDbParameter("@co2", model.CO2));
-                ps.Add(new OleDbParameter("@so2", model.SO2));
-                ps.Add(new OleDbParameter("@nox", model.NOx));
-                ps.Add(new OleDbParameter("@co", model.CO));
-                ps.Add(new OleDbParameter("@sta", model.Staub));
-                ps.Add(new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust));
-                ps.Add(new OleDbParameter("@ro", false));
+                List<DbParam> ps = new List<DbParam>();
+                ps.Add(new DbParam("@id", newId));
+                ps.Add(new DbParam("@nam", model.Name ?? (object)DBNull.Value));
+                ps.Add(new DbParam("@bes", model.Beschreibung ?? (object)DBNull.Value));
+                ps.Add(new DbParam("@fir", model.Firma ?? (object)DBNull.Value));
+                ps.Add(new DbParam("@pth", model.Ptherm));
+                ps.Add(new DbParam("@bre", model.Brennstoff));
+                ps.Add(new DbParam("@wgg", model.Wirkungsgrad_Gas));
+                ps.Add(new DbParam("@wgo", model.Wirkungsgrad_Oel));
+                ps.Add(new DbParam("@inv", model.Investitionskosten));
+                ps.Add(new DbParam("@rau", model.Raumbedarf));
+                ps.Add(new DbParam("@war", model.Wartungskosten));
+                ps.Add(new DbParam("@nut", model.Nutzungsdauer));
+                ps.Add(new DbParam("@co2", model.CO2));
+                ps.Add(new DbParam("@so2", model.SO2));
+                ps.Add(new DbParam("@nox", model.NOx));
+                ps.Add(new DbParam("@co", model.CO));
+                ps.Add(new DbParam("@sta", model.Staub));
+                ps.Add(new DbParam("@bbv", model.Betriebsbereitschaftverlust));
+                ps.Add(new DbParam("@ro", false));
 
-                v.Ausfuehren(sql, DbParam.Von(ps.ToArray()));
+                v.Ausfuehren(sql, ps.ToArray());
                 return true;
             }
             catch (Exception ex)
