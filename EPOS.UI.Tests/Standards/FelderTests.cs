@@ -108,4 +108,69 @@ public class FelderTests : BunitContext
         Assert.True(erhalten);
         Assert.Equal("checkbox", cut.Find("input").GetAttribute("type"));
     }
+
+    // =====================================================================
+    // Textfeld mehrzeilig und nur lesend (iU9-W3.0)
+    // =====================================================================
+
+    [Fact]
+    public void Textfeld_mehrzeilig_wird_zur_Textflaeche_mit_der_gewuenschten_Zeilenzahl()
+    {
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.Bezeichnung, "Validierungsprotokoll:")
+            .Add(x => x.Mehrzeilig, true)
+            .Add(x => x.Zeilen, 14)
+            .Add(x => x.Wert, "Zeile 1\nZeile 2"));
+
+        var flaeche = cut.Find("textarea");
+        Assert.Equal("14", flaeche.GetAttribute("rows"));
+        Assert.Contains("epos-eingabe--mehrzeilig", flaeche.ClassName);
+        Assert.Contains("Zeile 2", flaeche.TextContent);
+        Assert.Empty(cut.FindAll("input"));
+    }
+
+    [Fact]
+    public void Textfeld_mehrzeilig_meldet_die_Eingabe()
+    {
+        string? erhalten = null;
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.Mehrzeilig, true)
+            .Add(x => x.WertChanged, (string w) => erhalten = w));
+
+        cut.Find("textarea").Input("erste Zeile");
+
+        Assert.Equal("erste Zeile", erhalten);
+    }
+
+    /// <summary>
+    /// NurLesen laesst den Inhalt lesbar und markierbar (das braucht ein
+    /// Protokoll), nimmt aber keine Eingabe an.
+    /// </summary>
+    [Fact]
+    public void Ein_nur_lesbares_Textfeld_meldet_keine_Eingabe()
+    {
+        bool gemeldet = false;
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.Mehrzeilig, true)
+            .Add(x => x.NurLesen, true)
+            .Add(x => x.Wert, "Protokoll")
+            .Add(x => x.WertChanged, (string w) => gemeldet = true));
+
+        Assert.True(cut.Find("textarea").HasAttribute("readonly"));
+        cut.Find("textarea").Input("etwas anderes");
+        Assert.False(gemeldet);
+    }
+
+    [Fact]
+    public void Auch_einzeilig_gibt_es_NurLesen()
+    {
+        bool gemeldet = false;
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.NurLesen, true)
+            .Add(x => x.WertChanged, (string w) => gemeldet = true));
+
+        Assert.True(cut.Find("input").HasAttribute("readonly"));
+        cut.Find("input").Input("x");
+        Assert.False(gemeldet);
+    }
 }
