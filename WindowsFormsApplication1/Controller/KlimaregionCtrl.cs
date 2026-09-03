@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
     /// Die Leseseite (ReadAll/ReadSingle) war dagegen immer korrekt. Alle drei sind
     /// jetzt auf das reale Schema gezogen.
     /// </summary>
-    partial class KlimaregionCtrl : KlimaregionModel
+    class KlimaregionCtrl : KlimaregionModel
     {
         // --- Kompatibilitäts-Layer ---
         private List<KlimaregionModel> _internalList = new List<KlimaregionModel>();

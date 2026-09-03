@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Seiten des Assistenten (<see cref="IAssistentRahmen"/>).</summary>
-        public List<WizardItemClass> Seiten
+        public List<WizardSeite> Seiten
         {
             get { return listPages; }
         }
@@ -82,7 +82,7 @@ namespace WindowsFormsApplication1
             Abmelden();
         }
 
-        public List<WizardItemClass> listPages = new List<WizardItemClass>();
+        public List<WizardSeite> listPages = new List<WizardSeite>();
         public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
         public List<Z_ProjektProzesswaermeModel> list_prozmodel = new List<Z_ProjektProzesswaermeModel>();
         public List<Z_ProjektStromganglinieModel> list_stromlastmodel = new List<Z_ProjektStromganglinieModel>();
@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
             list_wbmodel.Clear();
         }
 
-        public WizardParent(List<WizardItemClass> WizardPages)
+        public WizardParent(List<WizardSeite> WizardPages)
         {
             InitializeComponent();
 

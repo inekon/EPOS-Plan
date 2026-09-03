@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     //   - liest/schreibt das Feld ReadOnly
     //   - Update() und Delete() verweigern die Aenderung schreibgeschuetzter Datensaetze
     // Alle DB-Zugriffe laufen ueber DataRepository.
-    public partial class BHKWStammCtrl : BHKWStammModel
+    public class BHKWStammCtrl : BHKWStammModel
     {
         public const string TABLE = "Tab_BHKW_STAMM";
 

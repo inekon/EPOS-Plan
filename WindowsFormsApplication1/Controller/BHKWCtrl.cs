@@ -4,7 +4,7 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    public partial class BHKWCtrl : BHKWModel
+    public class BHKWCtrl : BHKWModel
     {
         public BHKWModel model;
 

@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     // Neues Feld ReadOnly: schreibgeschuetzte Stammdatensaetze koennen nicht ueberschrieben/geloescht werden.
     // Wird von den Admin-/Katalog-Dialogen verwendet (Form_WP, Form_WP_einlesen, Wizard_WPItem,
     // Form_WPAuswahl, WPDataCtrl). Alle DB-Zugriffe laufen ueber DataRepository.
-    partial class WPStammCtrl : WPModel
+    class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
         public const string CURVE     = "Tab_Kenndaten_STAMM";

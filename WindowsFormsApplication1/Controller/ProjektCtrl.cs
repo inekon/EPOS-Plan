@@ -4,7 +4,7 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    partial class ProjektCtrl : ProjektModel
+    class ProjektCtrl : ProjektModel
     {
         // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
         private List<ProjektModel> _internalList = new List<ProjektModel>();
