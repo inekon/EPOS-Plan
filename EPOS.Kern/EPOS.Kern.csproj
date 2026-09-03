@@ -113,6 +113,24 @@
   </ItemGroup>
 
   <!-- ================================================================== -->
+  <!-- AUSGABE DES BERICHTS (Paket iU5-U3)                                 -->
+  <!--                                                                    -->
+  <!-- Word (DocumentFormat.OpenXml) und Excel (ClosedXML, oben) sind      -->
+  <!-- Dateiformate, keine Windows-APIs - die Ausgabe laeuft damit auch    -->
+  <!-- auf iOS. SixLabors.Fonts misst fuer ClosedXML die Spaltenbreiten;   -->
+  <!-- die Fassung ist auf 1.0.1 gepinnt (ab 2.x gilt die                  -->
+  <!-- Six-Labors-Split-Lizenz), deshalb steht das Paket ausdruecklich     -->
+  <!-- hier und nicht nur transitiv ueber ClosedXML.                       -->
+  <!--                                                                    -->
+  <!-- Der GDI+-Stand ChartRendererGdi bleibt in der Anwendung; er ist     -->
+  <!-- nur noch der Gegenpart des Windows-Bildvergleichs.                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="SixLabors.Fonts" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
   <!-- SEMANTIKSUCHE DES KI-ASSISTENTEN (Paket iU5-U2)                     -->
   <!--                                                                    -->
   <!-- Allgemein\KI\SemantikModell.cs bettet Textstellen mit einem lokalen  -->
