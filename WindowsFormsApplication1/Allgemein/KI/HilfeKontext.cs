@@ -105,7 +105,6 @@ namespace WindowsFormsApplication1
 
             { "Form_BHKWAdmin",              B_BHKW },
 
-            { "Form_Brauchwasser",           B_BRAUCHWASSER },
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
 
 
@@ -135,7 +134,6 @@ namespace WindowsFormsApplication1
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 
-            { "Form_Prozesswaerme",          B_PROZESSWAERME },
             { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
 
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
@@ -173,7 +171,6 @@ namespace WindowsFormsApplication1
             { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
             { "Form_Stromganglinie",         B_STROMVERBRAUCHER },
             { "Form_Stromganglinie_Admin",   B_STROMVERBRAUCHER },
-            { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen

@@ -89,42 +89,20 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
-
-            Form_Stromverbraucher frm = new Form_Stromverbraucher();
-            RecordSet rs = new RecordSet();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_sbmodel.Clear();
-            frm.SetControls(m_szProjektname);
+            // iU9-W9.0d: derselbe JOIN wie im Startbild - jetzt EINMAL im Kern.
+            List<Z_ProjektStromverbraucherModel> liste =
+                Z_ProjektStromverbraucherCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_Projekt_Stromverbraucher.ID, Z_Projekt_Stromverbraucher.ID_Projekt, " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Tab_Stromverbraucher.Bezeichner, Z_Projekt_Stromverbraucher.Summe " +
-                "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
-                " where Z_Projekt_Stromverbraucher.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
-                item.m_ID_Z = (int)rs.Read("ID");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Stromverbraucher = (int)rs.Read("ID_Stromverbraucher");
-                item.m_szVerbraucher = (string)rs.Read("Bezeichner");
-                item.m_Summe = (double)rs.Read("Summe");
-                frm.list_sbmodel.Add(item);
-            }
-                
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Stromverbraucher.
+            if (BedarfsProfileHuelle.Oeffnen(listView_Strombedarf, m_ID_Projekt,
+                                             m_szProjektname, liste))
             {
                 wizctrl.Del_Projekt_Stromverbraucher(m_ID_Projekt);
-                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, frm.list_sbmodel);
-                    
+                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, liste);
+
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
@@ -153,19 +131,17 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Stromverbraucher frm = new Form_Stromverbraucher();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            frm.list_sbmodel.Clear();
-            frm.SetControls(m_szProjektname);
-            frm.m_ID_Projekt = m_ID_Projekt;
-        
-            frm.ShowDialog();
+            // "Hinzufuegen" startet mit einer LEEREN Liste und legt nur an (kein Del_).
+            List<Z_ProjektStromverbraucherModel> liste = new List<Z_ProjektStromverbraucherModel>();
 
-            if (frm.DialogResult == DialogResult.OK)
+            // iU9-W9.5: Blazor-Huelle statt Form_Stromverbraucher.
+            if (BedarfsProfileHuelle.Oeffnen(listView_Strombedarf, m_ID_Projekt,
+                                             m_szProjektname, liste))
             {
-                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, frm.list_sbmodel);
+                wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
