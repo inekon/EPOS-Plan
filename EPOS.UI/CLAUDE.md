@@ -71,6 +71,13 @@ lässt den Inhalt markierbar, anders als ein gesperrtes Feld.
 (`Schalter`, `Zahlenfeld`); die Klasse nimmt der Zelle nur die senkrechte Polsterung, damit ein
 44‑px‑Feld die Zeile nicht auf 60 px treibt.
 
+`Zahlenfeld` und `Ganzzahlfeld` führen seit iU9‑W6.1 `Feldname` und `FehlerZustand`:
+Der WinForms-Bestand prüft beim Speicherknopf jedes Zahlenfeld einzeln
+(`Program.ZahlPruefen(feld, "Thermische Leistung", …)`) und nennt in der Meldung genau
+das Feld, an dem es hängt. Das Feld färbt weiterhin während der Eingabe und meldet
+zusätzlich SEINEN NAMEN an den Dialog — so bleibt die Regel, ohne dass ein Dialog
+fünfzehn `@ref` auf seine Felder halten muss.
+
 `Dateiwahl` (Pfadfeld + Knopf „Durchsuchen…") **öffnet nichts**: Der Wähler kommt als
 `Func<string, Task<string?>>` herein — unter Windows aus `Dienste.Datei.DateiOeffnen`, auf iOS
 aus der Dokumentenauswahl. Ohne Delegat bleibt der Knopf weg.
@@ -157,6 +164,25 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Kosten/EnergietraegerEinstellungen` | `ucFuelSettings` (iU9‑W4.4, 2 103 Z.) | `EnergietraegerHuelle` → **`EnergietraegerPreisCtrl`** (neun SQL-Anweisungen, neu im Kern) |
 | `Kosten/EnergietraegerDialog` | `Form_Energietraeger` (iU9‑W4.4) | dieselbe Hülle; **vier** Unterdialoge in Überlagerungen |
 | `Berichte/BkUebernahmeDialog` | `Form_BkUebernahme` (iU9‑W5.1) | `UebersichtSeiteGaben` — ein Dialog, zwei Füllungen (Wertgegenüberstellung oder Klartext) |
+| `Kosten/KostenKnoepfeLeiste` | `Views/Kosten/KostenKnoepfe.Leiste` (iU9‑W6.0f) | keine; zwei Delegaten, ohne sie kein Knopf |
+| `Erzeuger/HeizkesselKatalogDialog` | `Form_Heizkessel_Bearbeiten` (iU9‑W6.1) | `HeizkesselHuelle` → `HeizkesselStammCtrl.Ueberschreiben`/`Anlegen`, `EmissionsVorgaben` |
+| `Erzeuger/BhkwKatalogDialog` | `Form_DBBHKW` (iU9‑W6.2) | `BhkwHuelle` → `BHKWStammCtrl.Ueberschreiben`/`Anlegen`, `BHKWKosten` |
+| `Erzeuger/HeizkesselDialog` | `Form_Heizkessel` (iU9‑W6.3) | dieselbe Hülle; **zwei** Unterdialoge in Überlagerungen, Sprungbrücke zur Katalogverwaltung |
+| `Erzeuger/BhkwDialog` | `Form_BHKWEing` (iU9‑W6.4) | dieselbe Hülle; **drei** Unterdialoge in Überlagerungen |
+| `Erzeuger/PhotovoltaikDialog` | `Form_PV` (iU9‑W6.5) | `PhotovoltaikHuelle` → `PhotovoltaikStammCtrl` |
+| `Erzeuger/StromspeicherDialog` | `Form_Stromspeicher` (iU9‑W6.6) | `StromspeicherHuelle` → `StromspeicherStammCtrl` (keine neue SQL) |
+| `Erzeuger/PufferspeicherDialog` | `Form_PufferSp` (iU9‑W6.7) | `PufferspeicherHuelle` → `PufferSpStammCtrl`/`PufferSpCtrl`, `AnlagenEindeutigkeit` |
+
+**Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
+Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
+unten ein Detailblock — und damit **eine** Datenform,
+`Dialoge/Erzeuger/ErzeugerAuswahlDaten.cs`: `ErzeugerZeile`, `KatalogZeile`,
+`ErzeugerDetail`, `TraegerVorbereitung`, `AufnahmeErgebnis`. Die Zeile trägt
+`Schluessel` (die Zeile) und `GeraetId` (das Gerät) GETRENNT: Zwei gleiche Kessel im
+Projekt teilen sich eine Kopie in `Tab_Heizkessel`, und daran hängt die Regel, dass
+„▶" die Kopie nur entfernt, wenn keine zweite Zeile mehr darauf verweist. Die
+geteilte Liste gehört der Hülle und wird **an Ort und Stelle** bearbeitet; jede
+Änderung geht über einen Delegaten sofort ins Modell zurück.
 
 **Ein Dialog IN einem Dialog** (iU9‑W4.0): Seit es `Ueberlagerung` gibt, öffnet ein
 Blazor-Dialog seine Unterdialoge **im selben Fenster** statt in einer zweiten

@@ -61,9 +61,10 @@ Rückweg: Git-Tag `letzter-x86-stand`.
 
 **WFO1000 ist in .NET 10 standardmäßig ein *Fehler*** (WinForms-Designer-Serialisierung). Die
 `..\.editorconfig` stuft ihn auf `warning` herab, damit der Bestand baut, lässt ihn aber sichtbar:
-nach iU9-W5 noch **14 Fundstellen** (16 nach iU9-W4, 20 nach iU9-W3, 22 nach iU9-W2,
-24 nach iU9-W1, 30 davor; die Warnzahl der ganzen Mappe steht bei **20**: 14 WFO1000,
-2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255), Schwerpunkt
+nach iU9-W6 noch **14 Fundstellen** (dieselben wie nach iU9-W5; 16 nach iU9-W4, 20 nach
+iU9-W3, 22 nach iU9-W2, 24 nach iU9-W1, 30 davor — die sieben Masken der Welle 6 trugen
+keine. Die Warnzahl der ganzen Mappe steht bei **20**: 14 WFO1000, 2 CS0108, 2 CS0109,
+1 WFO0003, 1 CA2255), Schwerpunkt
 `Form_Gesetzesparameter` (5) und die Karten-Controls des Kosten- und
 Simulationsmoduls (`SpeicherKarte`, `ErzeugerKarte`; `EinstiegsKarte` ist mit iU9-W4
 gelöscht). Die
@@ -172,10 +173,26 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `BlazorSeite<BerichteKostenSeite>`**: eine WebView für alle vier Seiten (Risiko R5).
   Kein neuer Kern-Controller: Alle vier riefen schon vorher ausschließlich
   Kern-Controller (Hausmuster Ä9).
-  Der **Stapellauf der Formularkarte zählt seither 88 Masken** (91 nach iU9‑W4, 98 nach
-  iU9‑W3, 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1, 118 davor), und die
-  Erreichbarkeit steht auf **0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
-  Zahl.
+  **Mit iU9‑W6 sind sieben weitere Masken verschwunden** — die Erzeugereingaben der
+  Startkacheln, zusammen 4 202 Zeilen: die beiden Katalogeditoren
+  `Form_Heizkessel_Bearbeiten` (714 Z.) und `Form_DBBHKW` (712 Z.), die beiden Hosts
+  `Form_Heizkessel` (767 Z.) und `Form_BHKWEing` (940 Z.) sowie `Form_PV` (338 Z.),
+  `Form_Stromspeicher` (354 Z.) und `Form_PufferSp` (377 Z.). An ihrer Stelle stehen
+  **fünf Hüllen** — `Views/Heizkessel/HeizkesselHuelle.cs`, `Views/BHKW/BhkwHuelle.cs`,
+  `Views/Photovoltaik/PhotovoltaikHuelle.cs`,
+  `Views/Stromspeicher/StromspeicherHuelle.cs`,
+  `Views/Pufferspeicher/PufferspeicherHuelle.cs` —, dazu
+  `Allgemein/Blazor/BlazorAssistentSeite.cs` und
+  `Views/Wizard/IAssistentErzeugerSeite.cs`. **Vier der sieben sind zugleich
+  Assistentenseiten** (PV, Stromspeicher, Heizkessel, BHKW) und damit die ersten, die
+  als Razor-Komponente im Assistentenrahmen laufen; `WizardParent` hängt sie über EINE
+  Schnittstelle ein statt über je zwei Zeilen mit hartem Typumbruch, und
+  `WizardParent.Aktiver` entfällt für sie. Die Datenseite ist in acht Kern-Controller
+  gewandert (Portprotokoll § 2.2); neu im Kern ist `Allgemein/EmissionsVorgaben.cs`.
+  Der **Stapellauf der Formularkarte zählt seither 81 Masken** (88 nach iU9‑W5, 91 nach
+  iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1, 118 davor),
+  und die Erreichbarkeit steht auf **0 × „nein", 0 × „verwaist"**; jede weitere Welle
+  senkt die Zahl.
 - **`Allgemein/`** (**43** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
@@ -206,8 +223,8 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | ~~`Import/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Import/`**: `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `GanglinienDatei`, `AnsiEncoding`. Ebenso `Katalog/` und `Export/` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
-| `Blazor/` | **Die Hülle für Razor-Dialoge und -Seiten (iU8 / iU9-W5).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` für die fünf zeichengleichen Namensabfragen des Bestands (seit iU9-W2.1 alle fünf umgestellt: `Bezeichner`, `BezeichnerUndBeschreibung`, `FragenMitHinweis`); seit iU9-W2.2 `Sprungbruecke` — Schlüssel → `Form`, **modal aus dem Rückruf einer Razor-Komponente heraus** (nur WinForms-Ziele). Seit iU9-W4.0 gilt für Blazor-Ziele nicht mehr der nachgelagerte Sprung, sondern der Baustein `Ueberlagerung`: ein modaler Bereich IM selben Fenster, also ohne zweite WebView (Risiko R2). Die Hülle liefert dafür `Gaben()` statt `Oeffnen()`. **Seit iU9-W5.0 gibt es die zweite Hüllenform: `BlazorSeite<T> : UserControl`** — nicht-modal, für eine Seite, die in einer vorhandenen Maske sitzt und dort bleibt (`Form_Start.tabPage6`). Sie trägt dieselben `CreationProperties` wie die Dialoghülle, insbesondere denselben `UserDataFolder`: ein gemeinsamer Browserprozess für Dialoge und Seiten. **Eine WebView je Fenster** (Risiko R5) — umgeschaltet wird in der Komponente (Baustein `Reiter` bzw. die Navigation von `BerichteKostenSeite`), nicht durch eine zweite Hülle. Der Projektwechsel läuft über `EPOS.UI.Dienste.SeitenZustand`, ein Objekt mit Änderungsereignis, damit die WebView **nicht** neu gebaut wird. **DPI:** Die `DpiInsel` wirkt nur für den modalen Lauf; eine eingebettete Seite sitzt im Fenster der DpiUnaware-`Form_Start` und wird ab 125 % bitmapskaliert — `BlazorSeite` versucht es deshalb gar nicht erst und dokumentiert den Befund (offener Entscheid iF21). Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
-| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md` und `iU9_W5_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
+| `Blazor/` | **Die Hülle für Razor-Dialoge und -Seiten (iU8 / iU9-W5).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` für die fünf zeichengleichen Namensabfragen des Bestands (seit iU9-W2.1 alle fünf umgestellt: `Bezeichner`, `BezeichnerUndBeschreibung`, `FragenMitHinweis`); seit iU9-W2.2 `Sprungbruecke` — Schlüssel → `Form`, **modal aus dem Rückruf einer Razor-Komponente heraus** (nur WinForms-Ziele; seit iU9-W6.0d auch die vier Katalogverwaltungen der Erzeuger); seit iU9-W6.0e `BlazorAssistentSeite<T>` — dasselbe für eine ASSISTENTENSEITE: randlos, `TopLevel = false`-tauglich, die WebView verzögert in `Bestuecken` gebaut (Risiko R5), beim Wiederbesuch wird die Wurzelkomponente getauscht statt der WebView. Seit iU9-W4.0 gilt für Blazor-Ziele nicht mehr der nachgelagerte Sprung, sondern der Baustein `Ueberlagerung`: ein modaler Bereich IM selben Fenster, also ohne zweite WebView (Risiko R2). Die Hülle liefert dafür `Gaben()` statt `Oeffnen()`. **Seit iU9-W5.0 gibt es die zweite Hüllenform: `BlazorSeite<T> : UserControl`** — nicht-modal, für eine Seite, die in einer vorhandenen Maske sitzt und dort bleibt (`Form_Start.tabPage6`). Sie trägt dieselben `CreationProperties` wie die Dialoghülle, insbesondere denselben `UserDataFolder`: ein gemeinsamer Browserprozess für Dialoge und Seiten. **Eine WebView je Fenster** (Risiko R5) — umgeschaltet wird in der Komponente (Baustein `Reiter` bzw. die Navigation von `BerichteKostenSeite`), nicht durch eine zweite Hülle. Der Projektwechsel läuft über `EPOS.UI.Dienste.SeitenZustand`, ein Objekt mit Änderungsereignis, damit die WebView **nicht** neu gebaut wird. **DPI:** Die `DpiInsel` wirkt nur für den modalen Lauf; eine eingebettete Seite sitzt im Fenster der DpiUnaware-`Form_Start` und wird ab 125 % bitmapskaliert — `BlazorSeite` versucht es deshalb gar nicht erst und dokumentiert den Befund (offener Entscheid iF21). Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md` und `iU9_W6_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,

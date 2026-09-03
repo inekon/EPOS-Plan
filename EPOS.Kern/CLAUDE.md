@@ -16,7 +16,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 3 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 886 Tests
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 636 Tests (Stand iU9-W6)
 ```
 
 Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
@@ -28,7 +28,7 @@ mit seinen beiden WFO1000 löschte).
 
 | Ordner | Inhalt |
 |---|---|
-| `Allgemein/` (17) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test` |
+| `Allgemein/` (18) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test`, seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode) |
 | `Allgemein/Simulation/` (25) | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb` |
 | `Allgemein/Wirtschaftlichkeit/` (20) | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
 | `Allgemein/Bericht/` (13 + 4) | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`; seit iU7-5 der **Renderer** `ChartRenderer`; seit iU5-U3 die **AUSGABE** `WordBerichtGenerator`, `ExcelBerichtGenerator`, `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` und `Bausteine/` (4 Dateien) |
@@ -40,7 +40,7 @@ mit seinen beiden WFO1000 löschte).
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte) |
+| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor |
 | `Model/` (46) | alle 46 Modelle |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
@@ -276,6 +276,18 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
   vergleich artifacts/reflauf/ref artifacts/reflauf/neu     # GESAMT: PASS
 ```
+
+**Seit iU9-W6 prüft `EPOS.Kern.Tests` auch SCHREIBENDE Wege — mit Datenbank.** Bis dahin
+galt dort ausschließlich, was ohne Datenbank entscheidbar ist. Mit Welle 6 sind jedoch
+Schreibwege aus der Oberfläche hierher gewandert, deren Ausgang darüber entscheidet, ob
+ein Erzeuger aufgenommen wird (`EnergietraegerVarianteCtrl.Anlegen`, vier Ausgänge); der
+Referenzlauf sieht davon nichts, weil er einen BESTEHENDEN Projektstand nachrechnet.
+`EPOS.Kern.Tests/TestDatenbank.cs` legt je Testklasse eine Arbeitskopie von
+`Referenzlaeufe/Kenndaten_Test.sqlite` an und biegt `DataRepository.PfadUeberschreibung`
+darauf um — dasselbe Vorgehen wie `EPOS.Referenzlauf`, damit die Vergleichsbasis
+unberührt bleibt. Fehlt die Datei, schweigen die Fälle statt rot zu werden. Alle Klassen
+dieser Art tragen `[Collection("Testdatenbank")]`: `PfadUeberschreibung` ist statisch, und
+xunit fährt Testklassen sonst nebeneinander.
 
 **Der iU5-Wächter — muss leer bleiben:**
 
