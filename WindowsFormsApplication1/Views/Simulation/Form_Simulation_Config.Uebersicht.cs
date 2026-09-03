@@ -500,13 +500,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         private string WaermesenkeAnzeige(AnlagenInfo a)
         {
-            return Form_Waermesenke.SenkeAnzeige(a.SenkeAufRang(0));
+            return WaermesenkeClass.SenkeAnzeige(a.SenkeAufRang(0));
         }
 
         /// <summary>Kompakte Anzeige der Senke auf Rang 2; „–" ohne zweite Senke (Konzept 4.1).</summary>
         private string ZweitsenkeAnzeige(AnlagenInfo a)
         {
-            return Form_Waermesenke.SenkeAnzeige(a.SenkeAufRang(1));
+            return WaermesenkeClass.SenkeAnzeige(a.SenkeAufRang(1));
         }
 
         // --- Klimadaten für den Erdreichdialog ---------------------------------------
@@ -761,7 +761,7 @@ namespace WindowsFormsApplication1
                         frm.Senkenliste.Count > 0 ? frm.Senkenliste[0] : null;
 
                     ShowStatus(string.Format(MyResource.Resource.SIM_STATUS_SENKE_GESPEICHERT,
-                                             Form_Waermesenke.SenkeAnzeige(rang1)),
+                                             WaermesenkeClass.SenkeAnzeige(rang1)),
                                Color.ForestGreen);
                 }
             }

@@ -1731,7 +1731,7 @@ namespace WindowsFormsApplication1
                 Z_AnlageSenkeModel z = kette[i];
                 if (z == null) continue;
 
-                string weiter = Form_Waermesenke.SenkeAnzeige(z);
+                string weiter = WaermesenkeClass.SenkeAnzeige(z);
                 bool weiterPuffer = WaermesenkeClass.IstPufferZiel(z.Ziel) && z.ID_Puffer > 0;
 
                 if (weiterPuffer)
