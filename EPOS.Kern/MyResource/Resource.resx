@@ -10287,4 +10287,475 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Der ausgewählte Pufferspeicher wurde in den Stammdaten nicht gefunden.</value>
   </data>
+  <data name="WPK_TITEL" xml:space="preserve">
+    <value>Wärmepumpen-Katalog</value>
+  </data>
+  <data name="WPK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="WPK_LBL_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung</value>
+  </data>
+  <data name="WPK_LBL_PRINZIP" xml:space="preserve">
+    <value>Funktionsprinzip</value>
+  </data>
+  <data name="WPK_LBL_REGELUNG" xml:space="preserve">
+    <value>Regelung</value>
+  </data>
+  <data name="WPK_LBL_BAUART" xml:space="preserve">
+    <value>Bauart</value>
+  </data>
+  <data name="WPK_LBL_AUFSTELLUNG" xml:space="preserve">
+    <value>Aufstellung</value>
+  </data>
+  <data name="WPK_LBL_ZUHEIZUNG" xml:space="preserve">
+    <value>Zuheizung</value>
+  </data>
+  <data name="WPK_LBL_VLT_MIN" xml:space="preserve">
+    <value>VLT Min [°C]</value>
+  </data>
+  <data name="WPK_LBL_VLT_MAX" xml:space="preserve">
+    <value>VLT Max [°C]</value>
+  </data>
+  <data name="WPK_LBL_LEISTUNG_MIN" xml:space="preserve">
+    <value>Leist. Min [kW]</value>
+  </data>
+  <data name="WPK_LBL_LEISTUNG_MAX" xml:space="preserve">
+    <value>Leist. Max [kW]</value>
+  </data>
+  <data name="WPK_LBL_SUCHE" xml:space="preserve">
+    <value>Modell filtern (z.B. CS*7*)</value>
+  </data>
+  <data name="WPK_PLATZHALTER_SUCHE" xml:space="preserve">
+    <value>🔍  Suchen…</value>
+  </data>
+  <data name="WPK_TEXT_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="WPK_BTN_FILTERN" xml:space="preserve">
+    <value>Daten filtern</value>
+  </data>
+  <data name="WPK_BTN_RESET" xml:space="preserve">
+    <value>Filter Reset</value>
+  </data>
+  <data name="WPK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>✔ Auswahl übernehmen</value>
+  </data>
+  <data name="WPK_BTN_KATALOG" xml:space="preserve">
+    <value>📋  Modul-Katalog...</value>
+  </data>
+  <data name="WPK_SP_MODELL" xml:space="preserve">
+    <value>Modell</value>
+  </data>
+  <data name="WPK_SP_VLT_MAX" xml:space="preserve">
+    <value>VLT max [°C]</value>
+  </data>
+  <data name="WPK_SP_VLT_MIN" xml:space="preserve">
+    <value>VLT min [°C]</value>
+  </data>
+  <data name="WPK_SP_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="WPK_SP_ZUHEIZER" xml:space="preserve">
+    <value>Zuheizer [kW]</value>
+  </data>
+  <data name="WPK_SP_BAUART" xml:space="preserve">
+    <value>Bauart</value>
+  </data>
+  <data name="WPK_TREFFER" xml:space="preserve">
+    <value>{0} Wärmepumpen gefunden</value>
+  </data>
+  <data name="WPKL_TITEL" xml:space="preserve">
+    <value>Kenndaten</value>
+  </data>
+  <data name="WPKL_LBL_VORLAUFLISTE" xml:space="preserve">
+    <value>Vorlauftemperatur [°C]</value>
+  </data>
+  <data name="WPKL_LBL_STUETZSTELLEN" xml:space="preserve">
+    <value>Kennlinie dieser Vorlauftemperatur</value>
+  </data>
+  <data name="WPKL_GRP_NEU" xml:space="preserve">
+    <value>Neue Stützstelle</value>
+  </data>
+  <data name="WPKL_LBL_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="WPKL_LBL_COP" xml:space="preserve">
+    <value>COP</value>
+  </data>
+  <data name="WPKL_LBL_PTHERM" xml:space="preserve">
+    <value>Ptherm</value>
+  </data>
+  <data name="WPKL_LBL_NEUVORLAUF" xml:space="preserve">
+    <value>Neue Vorlauftemperatur</value>
+  </data>
+  <data name="WPKL_SP_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]</value>
+  </data>
+  <data name="WPKL_SP_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur [°C]</value>
+  </data>
+  <data name="WPKL_SP_PTHERM" xml:space="preserve">
+    <value>Ptherm [kW]</value>
+  </data>
+  <data name="WPKL_SP_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="WPKL_BTN_ITEMNEU" xml:space="preserve">
+    <value>Daten übernehmen</value>
+  </data>
+  <data name="WPKL_BTN_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Stützstelle löschen</value>
+  </data>
+  <data name="WPKL_BTN_ABBRUCH" xml:space="preserve">
+    <value>Abbruch</value>
+  </data>
+  <data name="WPKL_MSG_KEIN_VORLAUF" xml:space="preserve">
+    <value>Vorlauftemperatur selektieren!</value>
+  </data>
+  <data name="WPKL_MSG_FELD" xml:space="preserve">
+    <value>Bitte {0} eingeben.</value>
+  </data>
+  <data name="WPS_TITEL" xml:space="preserve">
+    <value>Datenbank Wärmepumpen</value>
+  </data>
+  <data name="WPS_KOPFBAND" xml:space="preserve">
+    <value>Verwaltung Daten zu Wärmepumpen und deren Kennlinien</value>
+  </data>
+  <data name="WPS_LBL_LISTE" xml:space="preserve">
+    <value>Wärmepumpen Auswahl:</value>
+  </data>
+  <data name="WPS_GRP_STAMM" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="WPS_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="WPS_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="WPS_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WPS_LBL_TYP" xml:space="preserve">
+    <value>Wärmepumpentyp</value>
+  </data>
+  <data name="WPS_LBL_REGELUNG" xml:space="preserve">
+    <value>Leistungsstufen</value>
+  </data>
+  <data name="WPS_LBL_AUFSTELLUNG" xml:space="preserve">
+    <value>Aufstellung</value>
+  </data>
+  <data name="WPS_LBL_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
+  <data name="WPS_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="WPS_LBL_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="WPS_LBL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="WPS_LBL_KENNLINIEN" xml:space="preserve">
+    <value>Kenndaten Kennlinien:</value>
+  </data>
+  <data name="WPS_OPT_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="WPS_OPT_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="WPS_REITER_COP" xml:space="preserve">
+    <value>COP</value>
+  </data>
+  <data name="WPS_REITER_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="WPS_ACHSE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="WPS_ACHSE_PKUEHL" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="WPS_PLATZHALTER_BILD" xml:space="preserve">
+    <value>Keine Kennlinien vorhanden</value>
+  </data>
+  <data name="WPS_BTN_KENNDATEN" xml:space="preserve">
+    <value>Kennliniendaten Ansicht/Bearbeiten...</value>
+  </data>
+  <data name="WPS_BTN_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="WPS_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="WPS_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Wollen Sie wirklich die Wärmepumpe löschen?</value>
+  </data>
+  <data name="WPS_MSG_READONLY_SPEICHERN" xml:space="preserve">
+    <value>Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.</value>
+  </data>
+  <data name="WPS_MSG_READONLY_LOESCHEN" xml:space="preserve">
+    <value>Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="WPS_MSG_READONLY_KENNDATEN" xml:space="preserve">
+    <value>Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden.</value>
+  </data>
+  <data name="WPS_MSG_PROJEKT" xml:space="preserve">
+    <value>Löschen nicht möglich! Diese Wärmepumpe ist dem Projekt {0} zugeordnet!</value>
+  </data>
+  <data name="WPS_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Gespeichert</value>
+  </data>
+  <data name="WPS_MSG_FEHLER" xml:space="preserve">
+    <value>Speicherung nicht möglich, Fehler aufgetreten!</value>
+  </data>
+  <data name="WPS_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen Namen für die Wärmepumpe eingeben!</value>
+  </data>
+  <data name="WPS_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name existiert bereits!</value>
+  </data>
+  <data name="WPA_TITEL" xml:space="preserve">
+    <value>Detailansicht</value>
+  </data>
+  <data name="WPA_LBL_WP" xml:space="preserve">
+    <value>Wärmepumpen Auswahl:</value>
+  </data>
+  <data name="WPA_GRP_KENNDATEN" xml:space="preserve">
+    <value>Wärmepumpen Kenndaten</value>
+  </data>
+  <data name="WPA_GRP_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung für Verteilung</value>
+  </data>
+  <data name="WPA_GRP_SPITZENLAST" xml:space="preserve">
+    <value>Spitzenlast und Betrieb</value>
+  </data>
+  <data name="WPA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="WPA_LBL_PHEIZSTAB" xml:space="preserve">
+    <value>Leistung Heizstab</value>
+  </data>
+  <data name="WPA_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="WPA_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="WPA_LBL_SPITZENLAST" xml:space="preserve">
+    <value>Wärmeerzeuger Spitzenlast:</value>
+  </data>
+  <data name="WPA_LBL_SPERRZEIT" xml:space="preserve">
+    <value>Wärmepumpenleistung / maximale Betriebszeit:</value>
+  </data>
+  <data name="WPA_LBL_VON" xml:space="preserve">
+    <value>Sperrzeit von</value>
+  </data>
+  <data name="WPA_LBL_BIS" xml:space="preserve">
+    <value>Sperrzeit bis</value>
+  </data>
+  <data name="WPA_LBL_NUTZUNGSZEIT" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="WPA_LBL_BIVALENT" xml:space="preserve">
+    <value>Bivalenter Betrieb</value>
+  </data>
+  <data name="WPA_LBL_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="WPA_LBL_ABSCHALTTEMP" xml:space="preserve">
+    <value>Bivalenztemperatur</value>
+  </data>
+  <data name="WPA_BTN_PARAMETER" xml:space="preserve">
+    <value>Parameter Bearbeiten...</value>
+  </data>
+  <data name="WPA_HINWEIS_SPITZENLAST" xml:space="preserve">
+    <value>Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:</value>
+  </data>
+  <data name="WPA_HINWEIS_BETRIEB" xml:space="preserve">
+    <value>Außentemperaturgesteuerter Betrieb:</value>
+  </data>
+  <data name="WPA_RUECKLAUF_VORSCHLAG" xml:space="preserve">
+    <value>Übliche Werte: {0} °C</value>
+  </data>
+  <data name="WPA_MSG_BETRIEBSART" xml:space="preserve">
+    <value>Bitte Betriebsart auswählen!</value>
+  </data>
+  <data name="WPA_MSG_WAERMEPUMPE" xml:space="preserve">
+    <value>Bitte Wärmepumpe auswählen!</value>
+  </data>
+  <data name="WPA_MSG_FELD" xml:space="preserve">
+    <value>Bitte {0} eingeben.</value>
+  </data>
+  <data name="WPA_ERL_ALTERNATIV" xml:space="preserve">
+    <value>Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei der Unterschreitung des Bivalenzpunktes ein und übernimmt den alleinigen Heizbetrieb.</value>
+  </data>
+  <data name="WPA_ERL_PARALLEL" xml:space="preserve">
+    <value>Bei der bivalent-parallelen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Bei der Unterschreitung des Bivalenzpunktes unterstützt der zweite Wärmeerzeuger den Heizbetrieb der Wärmepumpe.</value>
+  </data>
+  <data name="WPA_ERL_TEILPARALLEL" xml:space="preserve">
+    <value>Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler und bivalent-alternativer Betriebsweise. Die Wärmepumpe arbeitet bis zum Bivalenzpunkt allein und wird anschließend vom zweiten Wärmeerzeuger unterstützt. Bei Erreichen einer weiteren festgelegten Temperatur (z. B. -2 °C) schaltet sich die Wärmepumpe ab.</value>
+  </data>
+  <data name="WPV_TITEL" xml:space="preserve">
+    <value>Wärmepumpen Verwaltung</value>
+  </data>
+  <data name="WPV_KOPFBAND" xml:space="preserve">
+    <value>Geben Sie die Daten der Wärmepumpe ein</value>
+  </data>
+  <data name="WPV_SP_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="WPV_SP_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]</value>
+  </data>
+  <data name="WPV_SP_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf [°C]</value>
+  </data>
+  <data name="WPV_SP_AKTION" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="WPV_BTN_NEU" xml:space="preserve">
+    <value>➕ Neu..</value>
+  </data>
+  <data name="WPV_BTN_AENDERN" xml:space="preserve">
+    <value>✏️ Ändern..</value>
+  </data>
+  <data name="WPV_BTN_LOESCHEN" xml:space="preserve">
+    <value>🗑️ Löschen</value>
+  </data>
+  <data name="WPV_BTN_ANSICHT" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="WPV_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="SKK_TITEL" xml:space="preserve">
+    <value>Kollektor Bearbeiten</value>
+  </data>
+  <data name="SKK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="SKK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technische Daten</value>
+  </data>
+  <data name="SKK_LBL_NAME" xml:space="preserve">
+    <value>Kollektorname :</value>
+  </data>
+  <data name="SKK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller :</value>
+  </data>
+  <data name="SKK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung :</value>
+  </data>
+  <data name="SKK_LBL_TYP" xml:space="preserve">
+    <value>Kollektortype :</value>
+  </data>
+  <data name="SKK_LBL_MODULFLAECHE" xml:space="preserve">
+    <value>Modulfläche :</value>
+  </data>
+  <data name="SKK_LBL_APERTURFLAECHE" xml:space="preserve">
+    <value>Aperturfläche :</value>
+  </data>
+  <data name="SKK_LBL_KOSTEN" xml:space="preserve">
+    <value>Investitionskosten :</value>
+  </data>
+  <data name="SKK_LBL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf:</value>
+  </data>
+  <data name="SKK_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf:</value>
+  </data>
+  <data name="SKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
+  <data name="SKK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="SKK_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen Kollektorname eingeben!</value>
+  </data>
+  <data name="SKK_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Name existiert bereits!</value>
+  </data>
+  <data name="SKK_MSG_ZAHL_FEHLT" xml:space="preserve">
+    <value>Bitte {0} als Zahl eingeben.</value>
+  </data>
+  <data name="SKK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Datensatz gespeichert</value>
+  </data>
+  <data name="SKK_MSG_FEHLER" xml:space="preserve">
+    <value>Fehler beim Speichern des Datensatzes!</value>
+  </data>
+  <data name="SKV_TITEL" xml:space="preserve">
+    <value>Eingabe der Solarkollektoren</value>
+  </data>
+  <data name="SKV_KOPFBAND" xml:space="preserve">
+    <value>Eingabe der Solarkollektoren</value>
+  </data>
+  <data name="SKV_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Auswahl in Projekt:</value>
+  </data>
+  <data name="SKV_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Auswahl in DB:</value>
+  </data>
+  <data name="SKV_GRP_KOLLEKTOR" xml:space="preserve">
+    <value>Kollektor</value>
+  </data>
+  <data name="SKV_LBL_KOLLEKTOR" xml:space="preserve">
+    <value>Kollektor:</value>
+  </data>
+  <data name="SKV_LBL_MODULAPERTUR" xml:space="preserve">
+    <value>Aperturfläche:</value>
+  </data>
+  <data name="SKV_LBL_ANZAHL" xml:space="preserve">
+    <value>Modulanzahl:</value>
+  </data>
+  <data name="SKV_LBL_APERTURFLAECHE" xml:space="preserve">
+    <value>Aperturfläche [m²]:</value>
+  </data>
+  <data name="SKV_LBL_NEIGUNG" xml:space="preserve">
+    <value>Neigung [°]:</value>
+  </data>
+  <data name="SKV_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimut [°]:</value>
+  </data>
+  <data name="SKV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="SKV_BTN_DB_AENDERN" xml:space="preserve">
+    <value>Kollektor in DB ändern...</value>
+  </data>
+  <data name="SKV_BTN_DB_NEU" xml:space="preserve">
+    <value>Kollektor in DB neu...</value>
+  </data>
+  <data name="SKV_BTN_DB_LOESCHEN" xml:space="preserve">
+    <value>Kollektor in DB löschen</value>
+  </data>
+  <data name="SKV_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Wollen Sie wirklich den Solarkollektor löschen?</value>
+  </data>
+  <data name="SKV_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Die Angaben sind übernommen.</value>
+  </data>
+  <data name="SKV_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Der ausgewählte Solarkollektor wurde in den Stammdaten nicht gefunden.</value>
+  </data>
+  <data name="SKV_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
+  </data>
+  <data name="SGL_TITEL" xml:space="preserve">
+    <value>Solarthermieganglinien</value>
+  </data>
+  <data name="SGL_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Ausgewählt im Projekt</value>
+  </data>
+  <data name="SGL_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Solarthermieganglinie aus DB</value>
+  </data>
+  <data name="SGL_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
 </root>

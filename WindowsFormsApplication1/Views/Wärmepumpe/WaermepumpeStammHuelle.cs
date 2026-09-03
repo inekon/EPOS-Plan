@@ -109,6 +109,7 @@ namespace WindowsFormsApplication1
                 ["OptionKuehlung"] = Text_("WPS_OPT_KUEHLUNG", "Kühlung"),
                 ["ReiterCop"] = Text_("WPS_REITER_COP", "COP"),
                 ["ReiterLeistung"] = Text_("WPS_REITER_LEISTUNG", "Leistung"),
+                ["PlatzhalterBild"] = Text_("WPS_PLATZHALTER_BILD", "Keine Kennlinien vorhanden"),
                 ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["BtnNeuText"] = Text_("WPS_BTN_NEU", "Neu"),

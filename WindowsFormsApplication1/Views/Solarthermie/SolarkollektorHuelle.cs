@@ -112,6 +112,8 @@ namespace WindowsFormsApplication1
                 ["LabelModulflaeche"] = Text_("SKK_LBL_MODULFLAECHE", "Modulfläche :"),
                 ["LabelAperturflaeche"] = Text_("SKK_LBL_APERTURFLAECHE", "Aperturfläche :"),
                 ["LabelKosten"] = Text_("SKK_LBL_KOSTEN", "Investitionskosten :"),
+                ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
+                ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["BtnUeberschreibenText"] = Text_("SKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("SKK_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,

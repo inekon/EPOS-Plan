@@ -358,12 +358,11 @@
     [Parameter] public string WarnungFeldFormat { get; set; } = "Bitte {0} eingeben.";
 
     /// <summary>Erläuterung zur gewählten Betriebsart (die drei langen Labels der Karte).</summary>
-    [Parameter] public string ErlaeuterungAlternativ { get; set; } =
-        "Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei der Unterschreitung des Bivalenzpunktes ein und übernimmt den alleinigen Heizbetrieb.";
-    [Parameter] public string ErlaeuterungParallel { get; set; } =
-        "Bei der bivalent-parallelen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Bei der Unterschreitung des Bivalenzpunktes unterstützt der zweite Wärmeerzeuger den Heizbetrieb der Wärmepumpe.";
-    [Parameter] public string ErlaeuterungTeilparallel { get; set; } =
-        "Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler und bivalent-alternativer Betriebsweise. Die Wärmepumpe arbeitet bis zum Bivalenzpunkt allein und wird anschließend vom zweiten Wärmeerzeuger unterstützt. Bei Erreichen einer weiteren festgelegten Temperatur (z. B. -2 °C) schaltet sich die Wärmepumpe ab.";
+    [Parameter] public string ErlaeuterungAlternativ { get; set; } = Resource.WPA_ERL_ALTERNATIV;
+
+    [Parameter] public string ErlaeuterungParallel { get; set; } = Resource.WPA_ERL_PARALLEL;
+
+    [Parameter] public string ErlaeuterungTeilparallel { get; set; } = Resource.WPA_ERL_TEILPARALLEL;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Wizard_WPItem.btn_Help";
