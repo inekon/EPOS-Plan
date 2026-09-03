@@ -1399,6 +1399,22 @@ namespace WindowsFormsApplication1
             public List<KeyValuePair<double, int>> EndenergieAbJahr =
                 new List<KeyValuePair<double, int>>();
 
+            /// <summary>
+            /// PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1): der in
+            /// <see cref="Betrieb"/> ENTHALTENE investitionsgekoppelte Anteil [€/a] —
+            /// Positionen mit <c>PROZENT_INVESTITION</c>
+            /// (<see cref="BetriebsTopfe.InvestGekoppeltSofort"/>). Nur die Sensitivität
+            /// „Investition Variante ±10 %" liest ihn und skaliert ihn mit dem
+            /// Investitionsfaktor mit (<see cref="RechneBild"/>); jede andere Rechnung
+            /// sieht ihn nicht, weil er in <see cref="Betrieb"/> längst steckt.
+            /// </summary>
+            public double InvestGekoppelt;
+
+            /// <summary>PAKET FX5-a × KD6: derselbe Ausweis für Positionen mit
+            /// Startjahr ≥ 2 — Teilmenge von <see cref="BetriebAbJahr"/>.</summary>
+            public List<KeyValuePair<double, int>> InvestGekoppeltAbJahr =
+                new List<KeyValuePair<double, int>>();
+
             public double? Energie;         // €/a (null = nicht bestimmbar)
             public double Erloes;           // €/a Einspeisevergütung (konstant)
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
@@ -1496,6 +1512,11 @@ namespace WindowsFormsApplication1
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
             e.EndenergieAbJahr = topfe.EndenergieAbJahr;
+            // PAKET FX5-a: der investgekoppelte Ausweis wandert mit — er ändert an den
+            // Beträgen nichts (er ist Teilmenge von Betrieb/BetriebAbJahr) und wird nur
+            // in der Sensitivität gelesen.
+            e.InvestGekoppelt = topfe.InvestGekoppeltSofort;
+            e.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;
             List<KeyValuePair<double, int>> betriebAbJahr = topfe.BetriebAbJahr;
 
             // ETAPPE KD6 (§ 11, FK10): Sind Startjahre gesetzt, laufen Investition
@@ -4411,11 +4432,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Kapitalwertrechnung einer Eingabe, optional mit Sensitivitäts-Ausschlägen
-        /// (Invest-/Energiefaktor wirken auf DIESES Projekt; Zins/Preissteigerung global).</summary>
+        /// (Invest-/Energiefaktor wirken auf DIESES Projekt; Zins/Preissteigerung global).
+        /// <para><b>Beide Faktoren ziehen ihre abgeleiteten Betriebskosten mit:</b> der
+        /// Energiefaktor den p_E-Topf (FX4-c), der Investitionsfaktor den
+        /// investgekoppelten Anteil des p_B-Topfes (FX5-a). Bei Faktor 1,0 wird jeweils
+        /// gar nichts angefasst — der Regellauf ist bitgenau der von vorher.</para></summary>
         private static KapitalwertRechner.Zahlungsbild RechneBild(ProjektEingabe e, WirtschaftlichkeitParameter p,
             double zinsProzent, double preisstEnergie, double investFaktor, double energieFaktor)
         {
             List<KapitalwertRechner.InvestPosition> invest = e.Investitionen;
+            double betrieb = e.Betrieb;
+            IList<KeyValuePair<double, int>> betriebAbJahr = e.BetriebAbJahr;
             if (investFaktor != 1.0)
             {
                 invest = new List<KapitalwertRechner.InvestPosition>();
@@ -4423,6 +4450,49 @@ namespace WindowsFormsApplication1
                     invest.Add(new KapitalwertRechner.InvestPosition
                     { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer,
                       StartJahr = pos.StartJahr });   // KD6: Startjahr wandert mit (Sensitivität)
+
+                // PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1): Der
+                // Ausschlag zieht die INVESTITIONSGEKOPPELTEN BETRIEBSKOSTEN mit —
+                // spiegelbildlich zu FX4-c auf der Energieseite. Eine Position
+                // „x % der Investitionssumme" (Wartung, Versicherung, Verwaltung; im
+                // Bestand die häufigste Kategorie-2-Bemessung) IST ein Anteil der
+                // Investition; kostet die Anlage 10 % mehr, kostet ihre Wartung nach
+                // dieser Bemessung 10 % mehr. Bis FX4 skalierte der Faktor nur die
+                // Investitionspositionen selbst.
+                //
+                // MODELLANNAHME, ausdrücklich: Δ Position = (f − 1) × Jahr-1-Betrag,
+                // also LINEAR im Faktor. Der Betrag entsteht in BaueEingabe einmal aus
+                // Investitionssumme × Satz (H4a InvestSummeFuer, stufig
+                // Anlage→Komponente→Projekt); „die Investition steigt um 10 %" heißt in
+                // diesem Modell, dass diese Bemessungsbasis um 10 % steigt. Neu
+                // aufgelöst wird nichts — die Kostenwelt kennt den Ausschlag nicht.
+                //
+                // WIE skaliert wird: als ADDITIVE Korrektur auf den fertigen
+                // Betriebs-Topf, betrieb = e.Betrieb + (f − 1) × Anteil. Das ist
+                // rechnerisch (e.Betrieb − Anteil) + f × Anteil, ändert aber die
+                // Summationsreihenfolge des Regellaufs nicht (dort wird der Zweig gar
+                // nicht betreten). Der Topf bleibt im Übrigen ein p_B-Topf: (1+p_B)^(t−1)
+                // läuft im Rechenkern unverändert darüber.
+                //
+                // OHNE AUSSCHLAG UNVERÄNDERT: investFaktor ist im Normallauf exakt 1,0 —
+                // dieselbe IEEE-754-Begründung wie bei FX4-c.
+                double delta = investFaktor - 1.0;
+                if (e.InvestGekoppelt != 0.0)
+                    betrieb = e.Betrieb + delta * e.InvestGekoppelt;
+                if (e.InvestGekoppeltAbJahr != null && e.InvestGekoppeltAbJahr.Count > 0)
+                {
+                    // Die Startjahr-Anteile sind ebenfalls Jahr-1-Beträge, nur später
+                    // fällig. Angehängt wird je Position ein KORREKTURPAAR mit demselben
+                    // Startjahr — der Rechenkern summiert die Paare ohnehin nur auf
+                    // (t ≥ Startjahr), also ist das wertgleich zum Skalieren der Position
+                    // und kommt ohne Zuordnung Liste↔Liste aus.
+                    var mitKorrektur = new List<KeyValuePair<double, int>>(
+                        betriebAbJahr ?? (IList<KeyValuePair<double, int>>)
+                                         new List<KeyValuePair<double, int>>());
+                    foreach (KeyValuePair<double, int> vi in e.InvestGekoppeltAbJahr)
+                        mitKorrektur.Add(new KeyValuePair<double, int>(delta * vi.Key, vi.Value));
+                    betriebAbJahr = mitKorrektur;
+                }
             }
             // ETAPPE K5: Der Zuschuss wird vom Investitionsfaktor NICHT skaliert. Die
             // Sensitivität fragt „was, wenn die Anlage 10 % mehr kostet?" — eine
@@ -4473,12 +4543,12 @@ namespace WindowsFormsApplication1
                 endenergieAbJahr = skaliert;
             }
 
-            return KapitalwertRechner.Rechne(invest, e.Betrieb,
+            return KapitalwertRechner.Rechne(invest, betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
                 e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
-                e.BetriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr);
+                betriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>
@@ -4503,6 +4573,10 @@ namespace WindowsFormsApplication1
                     Parameter = "Energiepreissteigerung ±" + SENS_DELTA_PREIS.ToString("0.#") + " %-Pkt",
                     KwMinus = diff(z, pe - SENS_DELTA_PREIS, 1, 1), KwBasis = kwBasis,
                     KwPlus = diff(z, pe + SENS_DELTA_PREIS, 1, 1) },
+                // PAKET FX5-a: Der Investitions-Ausschlag skaliert seit dem 03.09.2026
+                // NICHT mehr nur die Investitionspositionen, sondern auch die davon
+                // abgeleiteten Betriebskosten („x % der Investitionssumme") — die
+                // Mitkopplung sitzt in RechneBild, die Zeile hier ist unverändert.
                 new SensitivitaetZeile { IdProjekt = idProjekt,
                     Parameter = "Investition Variante ±" + SENS_DELTA_INVEST.ToString("0.#") + " %",
                     KwMinus = diff(z, pe, 1.0 - SENS_DELTA_INVEST / 100.0, 1), KwBasis = kwBasis,
@@ -4576,6 +4650,13 @@ namespace WindowsFormsApplication1
                 // Betriebstöpfe samt Startjahr-Anteilen, Energie, Erlös, CO₂).
                 // Bestandswirkung null: 0 Zeilen mit StartJahr > 1 im gesamten Bestand.
                 BetriebAbJahr = e.BetriebAbJahr,
+                // PAKET FX5-a: der investgekoppelte AUSWEIS gehört zur vollständigen
+                // Kopie. Rechnerisch ist er hier folgenlos — der Ohne-KWKG-Vergleich
+                // läuft immer mit Investitionsfaktor 1,0 —, aber die Kopie muss jedes
+                // Feld führen, das RechneBild liest; sonst wäre die oben behauptete
+                // Vollständigkeit wieder eine Halbwahrheit.
+                InvestGekoppelt = e.InvestGekoppelt,
+                InvestGekoppeltAbJahr = e.InvestGekoppeltAbJahr,
                 // PAKET FX3 (R-2): Der Endenergie-Topf MUSS mitkopiert werden —
                 // dieselbe Begründung wie beim Zuschuss und bei der CO₂-Reihe: Sonst
                 // rechnete das Novellen-Szenario gegen andere Betriebskosten als die
@@ -5017,6 +5098,12 @@ namespace WindowsFormsApplication1
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, StringComparison.Ordinal);
         }
 
+        /// <summary>„x % der Investitionssumme" (H4b auf der Investseite, H4a auf der
+        /// Betriebsseite).
+        /// <para><b>PAKET FX5-a:</b> Dasselbe Prädikat entscheidet seit dem
+        /// 03.09.2026 auch, welche KATEGORIE-2-Zeile in den investgekoppelten Ausweis
+        /// von <see cref="LiesBetriebskostenTopfe"/> geht — die Zeile, die der
+        /// Sensitivitäts-Investitionsfaktor mitzieht.</para></summary>
         private static bool IstProzentInvest(string bem)
         {
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal);
@@ -5247,9 +5334,41 @@ namespace WindowsFormsApplication1
             public List<KeyValuePair<double, int>> EndenergieAbJahr =
                 new List<KeyValuePair<double, int>>();
 
+            /// <summary>
+            /// PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1) — der
+            /// <b>investitionsgekoppelte ANTEIL</b> des Betriebs-Topfes [€/a],
+            /// Sofort-Anteil: Positionen mit
+            /// <see cref="DbWerte.BEMESSUNG_PROZENT_INVESTITION"/> („x % der
+            /// Investitionssumme", H4a).
+            ///
+            /// <para><b>KEIN dritter Topf, sondern eine TEILMENGE.</b> Der Betrag steckt
+            /// unverändert in <see cref="BetriebSofort"/> und eskaliert weiterhin mit p_B
+            /// — er ist investitions-, nicht energiegebunden. Dieser Ausweis dient
+            /// AUSSCHLIESSLICH der Sensitivität „Investition Variante ±10 %“
+            /// (<see cref="RechneBild"/>); <see cref="Gesamt"/> zählt ihn deshalb NICHT
+            /// noch einmal.</para>
+            ///
+            /// <para><b>Warum Teilmenge und nicht Herauslösung.</b> Würde der Anteil aus
+            /// <see cref="BetriebSofort"/> herausgelöst und im Rechenweg wieder addiert,
+            /// änderte sich die REIHENFOLGE der Gleitkomma-Summation der Leseschleife —
+            /// der Regellauf (Faktor 1,0) wäre dann nicht mehr bitgenau der von vorher.
+            /// So bleibt die Summation Zeile für Zeile, wie sie war.</para>
+            /// </summary>
+            public double InvestGekoppeltSofort;
+
+            /// <summary>PAKET FX5-a × KD6: derselbe Ausweis für die investitions-
+            /// gekoppelten Positionen mit Startjahr ≥ 2 — Teilmenge von
+            /// <see cref="BetriebAbJahr"/>, dieselben (Betrag, Startjahr)-Paare.</summary>
+            public List<KeyValuePair<double, int>> InvestGekoppeltAbJahr =
+                new List<KeyValuePair<double, int>>();
+
             /// <summary>Betriebskosten p. a. GESAMT [€/a] — beide Töpfe, Sofort- und
             /// Startjahr-Anteil. Das ist die Zahl, die Anzeigen und Berichte als
-            /// „Betriebskosten p. a." ausweisen; sie ist von FX3 unberührt.</summary>
+            /// „Betriebskosten p. a." ausweisen; sie ist von FX3 unberührt.
+            /// <para><b>PAKET FX5-a:</b> <see cref="InvestGekoppeltSofort"/> und
+            /// <see cref="InvestGekoppeltAbJahr"/> gehen hier bewusst NICHT ein — sie
+            /// sind eine Teilmenge der beiden Betriebsfelder und wären sonst doppelt
+            /// gezählt.</para></summary>
             public double Gesamt
             {
                 get
@@ -5267,12 +5386,20 @@ namespace WindowsFormsApplication1
         /// die beiden Preissteigerungstöpfe (Begründung an <see cref="BetriebsTopfe"/>).
         /// Ohne Endenergie-Position im Projekt bleibt der zweite Topf leer, und jede
         /// Zahl ist bitgenau die von vor FX3.
+        /// <para><b>PAKET FX5-a</b> hängt einen dritten, rein beschreibenden Ausweis an:
+        /// den investgekoppelten ANTEIL des Betriebs-Topfes
+        /// (<see cref="BetriebsTopfe.InvestGekoppeltSofort"/>). Er ist kein Topf, ändert
+        /// keine Summe und wird nur von der Sensitivität gelesen.</para>
         /// </summary>
         internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario)
         {
             var topfe = new BetriebsTopfe();
             double summe = 0;
             double summeEnde = 0;
+            // PAKET FX5-a: eigener Akkumulator für den investgekoppelten AUSWEIS. Er
+            // läuft NEBEN summe her und fasst sie nicht an — deshalb bleibt die
+            // Summationsreihenfolge des Betriebs-Topfes bitgenau die von vorher.
+            double summeInvest = 0;
             List<KeyValuePair<double, int>> abJahr = topfe.BetriebAbJahr;
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
@@ -5318,6 +5445,11 @@ namespace WindowsFormsApplication1
                     // gepflegten Szenariowert stammt.
                     // PAKET FX4-b: dazu zählen jetzt auch die zwei Alt-Arten.
                     bool ausEnergiepreis = false;
+                    // PAKET FX5-a: „Diese Zeile ist an der Investitionssumme bemessen" —
+                    // eine ZWEITE, unabhängige Frage. Sie entscheidet NICHT über den
+                    // Preissteigerungstopf (die Zeile bleibt p_B), sondern allein über
+                    // den Ausweis für die Sensitivität „Investition Variante ±10 %".
+                    bool ausInvestition = false;
 
                     if (!mitBemessung) beitrag = wert;
                     else
@@ -5325,6 +5457,7 @@ namespace WindowsFormsApplication1
                         string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                         bool erloes = B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES);
                         ausEnergiepreis = IstEnergiepreisArt(bem);
+                        ausInvestition = IstProzentInvest(bem);
 
                         if (string.IsNullOrEmpty(bem) ||
                             string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
@@ -5377,11 +5510,29 @@ namespace WindowsFormsApplication1
                     }
                     else if (start > 1) abJahr.Add(new KeyValuePair<double, int>(beitrag, start));
                     else summe += beitrag;
+
+                    // PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1):
+                    // Der investgekoppelte Anteil wird ZUSÄTZLICH ausgewiesen — dieselbe
+                    // Zeile, derselbe Szenariowert, derselbe Startjahr-Schnitt. Sie
+                    // bleibt oben im Betriebs-Topf stehen (sie eskaliert mit p_B, nicht
+                    // mit p_E); dieser Ausweis ist eine TEILMENGE und existiert allein
+                    // für die Sensitivität (Begründung an BetriebsTopfe).
+                    // PROZENT_INVESTITION ist keine energiepreisgebundene Art — beide
+                    // Zweige schließen einander aus; der Ausweis steht trotzdem
+                    // absichtlich unabhängig daneben statt in einem der Zweige.
+                    if (ausInvestition)
+                    {
+                        if (start > 1)
+                            topfe.InvestGekoppeltAbJahr.Add(
+                                new KeyValuePair<double, int>(beitrag, start));
+                        else summeInvest += beitrag;
+                    }
                 }
             }
             catch { }
             topfe.BetriebSofort = summe;
             topfe.EndenergieSofort = summeEnde;
+            topfe.InvestGekoppeltSofort = summeInvest;
             return topfe;
         }
 
