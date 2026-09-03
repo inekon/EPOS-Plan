@@ -275,6 +275,10 @@ Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
 UcBericht.btn_Help = Bericht
 Form_Simulation_Detail.btn_Help = Simulationsergebnisse
 Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.1 (Befund W10-B2, Abweichung A-1): Der Betriebsmodus-Dialog hatte als
+# einziger der Simulationsdialoge keinen Hilfeeinstieg. Die Razor-Fassung traegt
+# einen; die Zeile hier ist sein Ziel.
+Form_Betriebsmodus.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Gesetzesparameter

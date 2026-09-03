@@ -614,15 +614,12 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Die Maske steht in Form_Betriebsmodus (Views\Simulation). Sie entstand
-            // hier früher als Wegwerf-Form im Methodenrumpf und wurde nie
-            // freigegeben - das using holt das nach.
-            string modus;
-            using (Form_Betriebsmodus dlg = new Form_Betriebsmodus(info.Bezeichner, info.BM_Typ))
-            {
-                if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                modus = dlg.GewaehlterModus;
-            }
+            // Die Maske ist seit iU9-W10a.1 eine Razor-Komponente
+            // (EPOS.UI/Dialoge/Simulation/BetriebsmodusDialog); die Huelle zeigt sie in
+            // einer BlazorWebView und liefert den gewaehlten BM_Typ zurueck.
+            // Abgebrochen heisst null - dann bleibt hier alles unberuehrt.
+            string modus = BetriebsmodusHuelle.Oeffnen(this, info.Bezeichner, info.BM_Typ);
+            if (modus == null) return;
 
             WaermequelleClass.WertSchreiben(info.ID, "BM_Typ", modus);
 
