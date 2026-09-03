@@ -62,8 +62,11 @@ namespace WindowsFormsApplication1
             switch (maske)
             {
                 // --- Stammdaten und Herstellerdaten: in sich geschlossene Masken ------
+                // iU9-W7.3: Die Waermepumpen-Datenbank ist die Razor-Komponente
+                // WaermepumpeStammDialog; Form_WP ist im selben Schritt GELOESCHT
+                // (Regel M1). Die Huelle liefert dasselbe true/false wie MitOk.
                 case Masken.WpAdministration:
-                    using (Form_WP frm = new Form_WP()) return MitOk(frm);
+                    return WaermepumpeStammHuelle.Oeffnen(null);
 
                 case Masken.StromspeicherAdmin:
                     using (Form_AdminStromspeicher frm = new Form_AdminStromspeicher()) return MitOk(frm);

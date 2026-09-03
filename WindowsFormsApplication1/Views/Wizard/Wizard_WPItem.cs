@@ -593,20 +593,22 @@ namespace WindowsFormsApplication1
 
         private void btn_WP_Click(object sender, EventArgs e)
         {
-            Form_WP frm = new Form_WP(listBox_WP.Text);
-            frm.ShowDialog();
+            // iU9-W7.3: Der Stammdialog ist die Razor-Komponente
+            // WaermepumpeStammDialog; Form_WP ist im selben Schritt GELOESCHT
+            // (Regel M1). Er zeigt die ganze Stammliste - die Vorwahl auf den
+            // gerade gewaehlten Namen, die der Konstruktor Form_WP(wpname) leistete,
+            // entfaellt (Abweichung A-17). Diese Maske folgt in W7.4; dann wird der
+            // Stammdialog eine Ueberlagerung IM Dialog statt eines zweiten Fensters.
+            WaermepumpeStammHuelle.Oeffnen(this);
 
             // WP spezifische Daten ggf. aktualisieren im Dialog
-            WPCtrl wpctrl = new WPCtrl();
-            wpctrl.ReadAll("ID=" + item.ID_WP);
-
             // Befund 26.08.2026: Wurde die Waermepumpe im Dialog geloescht oder
-            // ist ID_WP nicht (mehr) vergeben, kommt eine LEERE Liste zurueck -
-            // der ungepruefte items[0]-Zugriff warf eine
-            // ArgumentOutOfRangeException. Dann bleibt die Anzeige unveraendert.
-            if (wpctrl.items == null || wpctrl.items.Count == 0) return;
+            // ist ID_WP nicht (mehr) vergeben, kommt nichts zurueck - der
+            // ungepruefte items[0]-Zugriff warf eine ArgumentOutOfRangeException.
+            // Dann bleibt die Anzeige unveraendert.
+            WPModel wp = WaermepumpeGeraeteCtrl.Geraetedaten(item.ID_WP);
+            if (wp == null) return;
 
-            var wp = wpctrl.items[0];
             textBox_Beschreibung.Text = wp.Beschreibung;
             textBox_Baujahr.Text = wp.Baujahr.ToString();
             textBox_Leistungsstufen.Text = wp.Regelung;
