@@ -429,23 +429,16 @@ namespace WindowsFormsApplication1
 
         private void btn_Prozess_DBedit_Click(object sender, EventArgs e)
         {
-            Form_EingDBProzess frm = new Form_EingDBProzess();
-            frm.m_szProzessname = textBox_Prozess_Name.Text;
-            frm.m_szBeschreibung = textBox_Beschreibung.Text;
-            frm.m_szProzesstyp = textBox_Prozess_Type.Text;
-            frm.mode = "Bearbeiten";
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W8.1: Blazor-Huelle statt Form_EingDBProzess.
+            TypStammHuelle.Bearbeiten(this, BedarfsArt.Prozesswaerme,
+                                      textBox_Prozess_Name.Text, textBox_Beschreibung.Text,
+                                      textBox_Prozess_Type.Text);
             SetControls(m_szProjekt);
             SetDBList();
         }
 
         private void btn_Prozess_DBneu_Click(object sender, EventArgs e)
         {
-            Form_EingDBProzess frm = new Form_EingDBProzess();
-            Point p1 = btn_Prozess_DBneu.Location;
-            p1 = this.PointToScreen(p1);
-
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -453,11 +446,10 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_szProzessname = szName;
-                frm.mode = "Neu";
-                frm.SetControls();
-                frm.Location = p1;
-                frm.ShowDialog();
+                // iU9-W8.1: Blazor-Huelle statt Form_EingDBProzess; die Positionierung an
+                // der Knopfposition entfaellt, die Huelle erscheint mittig ueber dem
+                // Besitzer (dieselbe Umstellung wie iU9-W2.1).
+                TypStammHuelle.Neu(this, BedarfsArt.Prozesswaerme, szName);
                 SetControls(m_szProjekt);
                 SetDBList();
             }

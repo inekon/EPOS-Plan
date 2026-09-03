@@ -303,19 +303,15 @@ namespace WindowsFormsApplication1
 
         private void btn_Strom_DBedit_Click(object sender, EventArgs e)
         {
-            Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
-            frm.m_szStromname = textBox_Stromname.Text;
-            frm.m_szBeschreibung = textBox_Beschreibung.Text;
-            frm.m_szStromtyp = textBox_Stromtyp.Text;
-            frm.mode = "Bearbeiten";
-            frm.SetControls();
-            frm.ShowDialog();
+            // iU9-W8.1: Blazor-Huelle statt Form_EingDBStromverbraucher.
+            TypStammHuelle.Bearbeiten(this, BedarfsArt.Stromverbraucher,
+                                      textBox_Stromname.Text, textBox_Beschreibung.Text,
+                                      textBox_Stromtyp.Text);
             SetControls(m_szProjekt); 
         }
 
         private void btn_Strom_DBneu_Click(object sender, EventArgs e)
         {
-            Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
             // iU9-W2.1: Namensabfrage ueber NamensDialogHuelle statt
             // Form_Sp_ItemNeu (mittig statt an der Knopfposition - die
             // Blazor-Huelle kennt kein PointToScreen; Name kommt getrimmt).
@@ -323,10 +319,8 @@ namespace WindowsFormsApplication1
 
             if (szName != null)
             {
-                frm.m_szStromname = szName;
-                frm.mode = "Neu";
-                frm.SetControls();
-                frm.ShowDialog();
+                // iU9-W8.1: Blazor-Huelle statt Form_EingDBStromverbraucher.
+                TypStammHuelle.Neu(this, BedarfsArt.Stromverbraucher, szName);
                 SetControls(m_szProjekt);
             }
         }

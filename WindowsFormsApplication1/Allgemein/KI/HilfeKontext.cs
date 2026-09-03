@@ -108,7 +108,6 @@ namespace WindowsFormsApplication1
             { "Form_Brauchwasser",           B_BRAUCHWASSER },
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
             { "Form_EingBrauchwasserTyp",    B_BRAUCHWASSER },
-            { "Form_EingDBBrauchwasser",     B_BRAUCHWASSER },
 
             { "Form_EingGebTyp",             B_GEBAEUDE },
             { "Form_GebWohnflaeche",         B_GEBAEUDE },
@@ -142,7 +141,6 @@ namespace WindowsFormsApplication1
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 
-            { "Form_EingDBProzess",          B_PROZESSWAERME },
             { "Form_EingProzTyp",            B_PROZESSWAERME },
             { "Form_Prozesswaerme",          B_PROZESSWAERME },
             { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
@@ -178,7 +176,6 @@ namespace WindowsFormsApplication1
             // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
             { "Form_StromTest",              B_STROMSPEICHER },
 
-            { "Form_EingDBStromverbraucher", B_STROMVERBRAUCHER },
             { "Form_EingStromTyp",           B_STROMVERBRAUCHER },
             { "Form_GanglinieImportOptionen",B_STROMVERBRAUCHER },
             { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
