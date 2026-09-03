@@ -1,13 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
     class WizardCtrl
     {
+        /// <summary>
+        /// Der eine Assistenten-Controller des laufenden Programms.
+        ///
+        /// <para><b>Wozu.</b> Bis iU5 lag er als <c>Program.wizardctrl</c> im
+        /// WinForms-Einstiegspunkt; Kern-naher Programmtext, der den Rahmen des
+        /// Assistenten anmelden musste, kam nur über <c>Program</c> dorthin. Die
+        /// Anmeldung hier ist dasselbe Hausmuster wie <c>WizardParent.Aktiver</c>:
+        /// EIN statischer Halter, gesetzt von <c>Program.Main</c>,
+        /// <c>Program.wizardctrl</c> ist seither nur noch die Weiterleitung für die
+        /// Masken.</para>
+        /// </summary>
+        public static WizardCtrl Aktueller { get; set; }
+
         public WizardParent parentform;
         public bool speichern;
         public string Projektname;
@@ -63,7 +75,7 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type <> " +
                 WizardItemClass.PUFFER_TYP.ToString(CultureInfo.InvariantCulture),
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
         }
 
         public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
@@ -78,7 +90,7 @@ namespace WindowsFormsApplication1
             FachspaltenSichern(projektID, nType);
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@type", nType) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@type", nType) });
         }
 
         public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
@@ -93,13 +105,13 @@ namespace WindowsFormsApplication1
                 if (KostenPositionCtrl.StelleSpaltenSicher())
                     DataRepository.ExecuteSQL(
                         "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ?",
-                        new OleDbParameter("@p", projektID),
-                        new OleDbParameter("@a", ID_Waermeerzeuger));
+                        new DbParam("@p", projektID),
+                        new DbParam("@a", ID_Waermeerzeuger));
             }
             catch { }
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID_Waermeerzeuger) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@id", ID_Waermeerzeuger) });
         }
 
         public bool Del_Projekt_ZuordungGebäude(int projektID)
@@ -109,16 +121,16 @@ namespace WindowsFormsApplication1
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
                 "(SELECT ID FROM Tab_DBTagV WHERE ID_Gebaeude IN " +
                 "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ?))",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagV WHERE ID_Gebaeude IN " +
                 "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ?)",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
             // Erst die Projekt-Gebaeudekopien (Kind: FK ID_ProjektGebaeude -> Z_ProjektGebaeude.ID), dann die Zuordnung.
             DataRepository.ExecuteSQL("DELETE FROM Tab_Gebaeude WHERE ID_Projekt = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektGebaeude WHERE ID_Projekt = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
         }
 
         public bool Del_Projekt_ZuordungGebäude(int projektID, int ID)
@@ -128,21 +140,21 @@ namespace WindowsFormsApplication1
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
                 "(SELECT ID FROM Tab_DBTagV WHERE ID_Gebaeude IN " +
                 "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ? AND ID_ProjektGebaeude = ?))",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@idpg", ID) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@idpg", ID) });
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagV WHERE ID_Gebaeude IN " +
                 "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = ? AND ID_ProjektGebaeude = ?)",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@idpg", ID) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@idpg", ID) });
             DataRepository.ExecuteSQL("DELETE FROM Tab_Gebaeude WHERE ID_Projekt = ? AND ID_ProjektGebaeude = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@idpg", ID) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@idpg", ID) });
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektGebaeude WHERE ID_Projekt = ? AND ID = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID) });
+                new DbParam[] { new DbParam("@pID", projektID), new DbParam("@id", ID) });
         }
 
         public bool Del_WaermebedarfExtern(int projektID)
         {
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
         }
 
         public bool Del_Projekt_Prozess(int projektID, int ID = 0)
@@ -150,8 +162,8 @@ namespace WindowsFormsApplication1
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
 
-            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
-            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
+            List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+            if (ID > 0) ps.Add(new DbParam("@id", ID));
 
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
@@ -159,13 +171,13 @@ namespace WindowsFormsApplication1
         public bool Del_Stromganglinie(int projektID)
         {
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
         }
 
         public bool Del_Solarganglinie(int projektID)
         {
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektSolarganglinie WHERE ID_Projekt = ?",
-                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+                new DbParam[] { new DbParam("@pID", projektID) });
         }
 
         public bool Del_Projekt_Stromverbraucher(int projektID, int ID = 0)
@@ -173,8 +185,8 @@ namespace WindowsFormsApplication1
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ?";
 
-            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
-            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
+            List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+            if (ID > 0) ps.Add(new DbParam("@id", ID));
 
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
@@ -184,246 +196,53 @@ namespace WindowsFormsApplication1
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ?";
 
-            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
-            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
+            List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+            if (ID > 0) ps.Add(new DbParam("@id", ID));
 
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
+        // =================================================================================
+        //  iU3 Kante K6 - die Einfuegeanweisung liegt jetzt bei AnlagenSql
+        // =================================================================================
+        //
+        // Der Kommentar bei AnlagenSql.SQL_ANLAGE_INSERT verlangt "EINE WAHRHEIT" ueber den
+        // Spaltensatz. Diese Wahrheit stand bis iU3 hier - und zog damit ueber
+        // WErzeugerCtrl.Insert den gesamten Wizard samt Oberflaeche in den Rechenpfad.
+        // Sie steht jetzt in Controller/AnlagenSql.cs (kein Dialog, nur SQL und
+        // Parameter); hier bleiben die Weiterleitungen, damit alle Aufrufer gueltig
+        // bleiben.
+
         /// <summary>
-        /// Die EINE Einfuegeanweisung fuer <c>Tab_Energieanlagen</c> - 58 Spalten
+        /// Die EINE Einfuegeanweisung fuer <c>Tab_Energieanlagen</c> - 63 Spalten
         /// (<c>ID</c> ist AutoWert und wird nie gesetzt).
+        /// Weiterleitung auf <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/>.
         ///
-        /// <para>
-        /// PAKET A des PV-Ertragsmodells (Stufe E1.3) hat <c>PV_WrWirkungsgrad</c> und
-        /// <c>PV_Systemverluste</c> ergaenzt - Migrationsschritt 62. Sie stehen hier und
-        /// nicht in einem nachgelagerten UPDATE, weil genau das der Grund des Fehlers ist,
-        /// den der Absatz darunter beschreibt.
-        /// </para>
-        ///
-        /// <para>
-        /// PAKET B (Stufe E2, Migrationsschritt 63) hat <c>PV_Modell</c>,
-        /// <c>PV_WrNennleistungKw</c> und die drei Kennlinienpunkte
-        /// <c>PV_WrEta10/50/100</c> ergaenzt - aus demselben Grund an derselben Stelle.
-        /// Es sind MODELLspalten, keine Fachspalten: Der Rechenkern liest sie, die
-        /// PV-Anlagenmaske schreibt sie, und mit ihrer Aufnahme hier verlassen sie
-        /// automatisch die Rettungsmenge <see cref="Fachspalten"/> (die ist als
-        /// Komplement dieser Anweisung definiert - es gibt keine zweite Liste).
-        /// </para>
-        ///
-        /// <para>
-        /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
-        /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
-        /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
-        /// ihren Fachcontrollern, nicht dem Modell (SchemaKatalog: "der Grund ist der
-        /// LESER"). Damit sie beim Loeschen + Neuanlegen nicht still auf NULL fallen
-        /// (Befund 02.09.2026), rettet der Speicherweg sie als KOMPLEMENT dieser
-        /// Anweisung: <see cref="FachspaltenSichern"/> vor dem DELETE,
-        /// <see cref="FachspaltenWiederherstellen"/> nach dem Add (Block FS1).
-        /// </para>
-        ///
-        /// <para>
-        /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
-        /// (<see cref="Del_Projekt_Waermeerzeuger(int)"/> gefolgt von
-        /// <see cref="Add_WP_Waermeerzeuger"/>). Jede Spalte, die hier fehlt, ist damit
-        /// bei JEDEM Speichern verloren - nicht nur beim Bearbeiten im Wizard, sondern
-        /// auch ueber Karten und Kontextmenues. Bis Paket 1 fuehrte die Anweisung 29
-        /// Spalten; die 27 Spalten der Quellen-/Senken-Konfiguration
-        /// (<c>WS_*</c>, <c>WQ_*</c>, <c>Prioritaet</c>, <c>BM_Typ</c>) gingen still
-        /// verloren.
-        /// </para>
-        ///
-        /// <para>
-        /// EINE WAHRHEIT. <see cref="WErzeugerCtrl.Insert"/> benutzt dieselbe Anweisung
-        /// und dieselben Parameter - zwei Einfuegewege mit unterschiedlichem
-        /// Spaltensatz waeren genau die Halbwahrheit, die diesen Fehler erzeugt hat.
-        /// </para>
+        /// <para>PAKET A/B des PV-Ertragsmodells (Migrationsschritte 62/63) haben die
+        /// sieben PV-Modellspalten dort ergaenzt, nicht hier - seit iU3 ist AnlagenSql
+        /// die EINE Wahrheit. <see cref="Fachspalten"/> bleibt ihr Komplement und laesst
+        /// sie damit automatisch aus der Rettungsmenge.</para>
         /// </summary>
-        public const string SQL_ANLAGE_INSERT = @"INSERT INTO Tab_Energieanlagen
-                        (ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
-                         Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung,
-                         Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type,
-                         ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER,
-                         Heizstab, Volumen, rendeMix, Solaranteil, ID_Carrier,
-                         Prioritaet, BM_Typ,
-                         WQ_Typ, WQ_Temp, WQ_Monatswerte, WQ_Wochenwerte, WQ_CSV, WQ_Puffer, WQ_ID_Puffer,
-                         WQ_Spreizung, WQ_Regeneration, WQ_Unbegrenzt, WQ_Tiefe, WQ_Flaeche, WQ_Anzahl,
-                         WQ_Bodentyp, WQ_Quellsystem,
-                         WS_Typ, WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV,
-                         WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2,
-                         PV_WrWirkungsgrad, PV_Systemverluste,
-                         PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                                ?,?,
-                                ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                                ?,?,?,?,?,?,?,?,?,?,
-                                ?,?,
-                                ?,?,?,?,?)";
+        public const string SQL_ANLAGE_INSERT = AnlagenSql.SQL_ANLAGE_INSERT;
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
-        /// Anweisung.
-        ///
-        /// <para>
-        /// DIE NEUEN 27 SPALTEN GEHEN DURCHGEHEND UEBER <c>ProjektPuffer.Par</c> mit
-        /// AUSDRUECKLICHEM Spaltentyp. Der Grund ist derselbe wie bei
-        /// <c>WaermequelleClass.WertSchreiben</c>: Aus <see cref="DBNull"/> allein leitet
-        /// der Provider keinen Typ ab, und NULL ist bei diesen Spalten der Normalfall.
-        /// Die 29 Bestandsspalten bleiben bei der typableitenden Kurzform - sie fuehren
-        /// nie DBNull ausser bei den Komponenten-Fremdschluesseln, wo der Typ aus dem
-        /// Kontext bereits feststeht.
-        /// </para>
+        /// Anweisung. Weiterleitung auf <see cref="AnlagenSql.AnlagenParameter"/>.
         /// </summary>
-        /// <param name="pufferCache">
-        /// Optionaler Zwischenspeicher fuer die Existenzpruefung der Puffer-Fremd-
-        /// schluessel; siehe <see cref="PufferFkOderNull"/>. Innerhalb einer Schleife
-        /// weiterreichen, damit dieselbe ID nicht mehrfach nachgeschlagen wird.
-        /// </param>
-        public static OleDbParameter[] AnlagenParameter(int projektID, WErzeugerModel item,
+        public static DbParam[] AnlagenParameter(int projektID, WErzeugerModel item,
                                                         Dictionary<int, bool> pufferCache = null)
         {
-            return new[] {
-                        new OleDbParameter("@pID", projektID),
-                        new OleDbParameter("@bez", item.Bezeichner ?? (object)DBNull.Value),
-                        new OleDbParameter("@art", item.Betriebsart ?? (object)DBNull.Value),
-                        new OleDbParameter("@sperr", item.Sperrung),
-                        new OleDbParameter("@svon", item.Sperrzeit_von),
-                        new OleDbParameter("@sbis", item.Sperrzeit_bis),
-                        new OleDbParameter("@vor", item.Vorlauf),
-                        new OleDbParameter("@rueck", item.Ruecklauf),
-                        new OleDbParameter("@biv", item.Bivalenter_Betrieb),
-                        new OleDbParameter("@ab", item.Abschaltpunkt),
-                        new OleDbParameter("@nutz", item.Nutzungszeit),
-                        new OleDbParameter("@grenz", item.Grenzleistung),
-                        new OleDbParameter("@koll", item.Kollektormodulanzahl),
-                        new OleDbParameter("@pvleist", item.PV_Leistung),
-                        new OleDbParameter("@neig", item.m_Neigung),
-                        new OleDbParameter("@azim", item.m_Azimut),
-                        new OleDbParameter("@type", item.ID_Type),
-
-                        // Fremdschlüssel-Logik (IDs nur setzen, wenn der Typ passt)
-                        new OleDbParameter("@wp", CheckType(item, WizardItemClass.WP_TYP, WizardItemClass.REF_WP_TYP) ? item.ID_WP : (object)DBNull.Value),
-                        new OleDbParameter("@sol", CheckType(item, WizardItemClass.SOLAR_TYP, WizardItemClass.REF_SOLAR_TYP) ? item.ID_Solar : (object)DBNull.Value),
-                        new OleDbParameter("@pv", CheckType(item, WizardItemClass.PV_TYP, WizardItemClass.REF_PV_TYP) ? item.ID_PV : (object)DBNull.Value),
-                        new OleDbParameter("@sp", CheckType(item, WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP) ? item.ID_SP : (object)DBNull.Value),
-                        new OleDbParameter("@kes", CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP) ? item.ID_Kessel : (object)DBNull.Value),
-                        new OleDbParameter("@bhkw", (item.ID_Type == WizardItemClass.BHKW_TYP) ? item.ID_BHKW : (object)DBNull.Value),
-                        new OleDbParameter("@puf", (item.ID_Type == WizardItemClass.PUFFER_TYP && item.ID_PUFFER > 0) ? item.ID_PUFFER : (object)DBNull.Value),
-
-                        new OleDbParameter("@stab", item.Heizstab),
-                        new OleDbParameter("@vol", item.Volumen),
-                        new OleDbParameter("@mix", item.rendeMix),
-                        new OleDbParameter("@solan", item.Solaranteil),
-                        // Rohwert: NULL bleibt NULL. 0 und NULL heißen beide "kein
-                        // Energieträger" (SchemaKatalog, Schritt 8), der Bestand führt
-                        // aber beide Schreibweisen - und ein Speichern soll keine davon
-                        // in die andere umschreiben.
-                        ProjektPuffer.Par("@idcarrier", OleDbType.Integer, Wert(item.ID_CarrierRoh)),
-
-                        // --- Kaskade und Betriebsmodus ---------------------------------
-                        ProjektPuffer.Par("@prio",      OleDbType.Integer,   Wert(item.Prioritaet)),
-                        ProjektPuffer.Par("@bmtyp",     OleDbType.VarWChar,  item.BM_Typ),
-
-                        // --- Wärmequelle ----------------------------------------------
-                        ProjektPuffer.Par("@wqtyp",     OleDbType.VarWChar,  item.WQ_Typ),
-                        ProjektPuffer.Par("@wqtemp",    OleDbType.Double,    Wert(item.WQ_Temp)),
-                        ProjektPuffer.Par("@wqmon",     OleDbType.VarWChar,  item.WQ_Monatswerte),
-                        ProjektPuffer.Par("@wqwoch",    OleDbType.VarWChar,  item.WQ_Wochenwerte),
-                        ProjektPuffer.Par("@wqcsv",     OleDbType.VarWChar,  item.WQ_CSV),
-                        ProjektPuffer.Par("@wqpuf",     OleDbType.VarWChar,  item.WQ_Puffer),
-                        ProjektPuffer.Par("@wqidpuf",   OleDbType.Integer,
-                            PufferFkOderNull(item.WQ_ID_Puffer, "WQ_ID_Puffer", item.Bezeichner, pufferCache)),
-                        ProjektPuffer.Par("@wqspreiz",  OleDbType.Double,    Wert(item.WQ_Spreizung)),
-                        ProjektPuffer.Par("@wqregen",   OleDbType.Double,    Wert(item.WQ_Regeneration)),
-                        ProjektPuffer.Par("@wqunbeg",   OleDbType.Boolean,   item.WQ_Unbegrenzt),
-                        ProjektPuffer.Par("@wqtiefe",   OleDbType.Double,    Wert(item.WQ_Tiefe)),
-                        ProjektPuffer.Par("@wqflaeche", OleDbType.Double,    Wert(item.WQ_Flaeche)),
-                        ProjektPuffer.Par("@wqanzahl",  OleDbType.Integer,   Wert(item.WQ_Anzahl)),
-                        ProjektPuffer.Par("@wqboden",   OleDbType.VarWChar,  item.WQ_Bodentyp),
-                        ProjektPuffer.Par("@wqquell",   OleDbType.VarWChar,  item.WQ_Quellsystem),
-
-                        // --- Wärmesenke -----------------------------------------------
-                        ProjektPuffer.Par("@wstyp",     OleDbType.VarWChar,  item.WS_Typ),
-                        ProjektPuffer.Par("@wsziel",    OleDbType.VarWChar,  item.WS_Ziel),
-                        ProjektPuffer.Par("@wsidpuf",   OleDbType.Integer,
-                            PufferFkOderNull(item.WS_ID_Puffer, "WS_ID_Puffer", item.Bezeichner, pufferCache)),
-                        ProjektPuffer.Par("@wslprio",   OleDbType.Integer,   Wert(item.WS_Ladeprio)),
-                        ProjektPuffer.Par("@wslgrenz",  OleDbType.Double,    Wert(item.WS_Ladegrenze)),
-                        ProjektPuffer.Par("@wslprioPV", OleDbType.Integer,   Wert(item.WS_Ladeprio_PV)),
-                        ProjektPuffer.Par("@wsziel2",   OleDbType.VarWChar,  item.WS_Ziel2),
-                        ProjektPuffer.Par("@wsidpuf2",  OleDbType.Integer,
-                            PufferFkOderNull(item.WS_ID_Puffer2, "WS_ID_Puffer2", item.Bezeichner, pufferCache)),
-                        ProjektPuffer.Par("@wslprio2",  OleDbType.Integer,   Wert(item.WS_Ladeprio2)),
-                        ProjektPuffer.Par("@wslgrenz2", OleDbType.Double,    Wert(item.WS_Ladegrenze2)),
-
-                        // --- PV-Anlagenparameter (Paket A, Stufe E1.3) ----------------
-                        // Ausdruecklicher Typ wie bei den 27 Spalten darueber: NULL ist
-                        // hier der Normalfall ("es gilt der Vorgabewert"), und aus DBNull
-                        // allein leitet der Provider keinen Spaltentyp ab.
-                        ProjektPuffer.Par("@pvwreta",   OleDbType.Double,    Wert(item.PV_WrWirkungsgrad)),
-                        ProjektPuffer.Par("@pvsysverl", OleDbType.Double,    Wert(item.PV_Systemverluste)),
-
-                        // --- PV-Modellwahl und Wechselrichter (Paket B, Stufe E2) ----
-                        // Ausdruecklicher Typ aus demselben Grund. Bei PV_Modell ist
-                        // NULL sogar der Regelfall des Bestands ("vereinfachtes
-                        // Modell"), und ein Leerstring waere davon nicht zu
-                        // unterscheiden - ProjektPuffer.Par schreibt fuer null DBNull.
-                        ProjektPuffer.Par("@pvmodell",  OleDbType.VarWChar,  item.PV_Modell),
-                        ProjektPuffer.Par("@pvwrnenn",  OleDbType.Double,    Wert(item.PV_WrNennleistungKw)),
-                        ProjektPuffer.Par("@pvwreta10", OleDbType.Double,    Wert(item.PV_WrEta10)),
-                        ProjektPuffer.Par("@pvwreta50", OleDbType.Double,    Wert(item.PV_WrEta50)),
-                        ProjektPuffer.Par("@pvwreta100",OleDbType.Double,    Wert(item.PV_WrEta100))
-                    };
+            return AnlagenSql.AnlagenParameter(projektID, item, pufferCache);
         }
 
         /// <summary>
-        /// Nullable-Wert als Parameterwert: <c>null</c> bleibt <c>null</c> und wird von
-        /// <c>ProjektPuffer.Par</c> zu <see cref="DBNull"/>. Ohne diese Umschachtelung
-        /// wuerde ein <c>int?</c> beim Boxen zwar korrekt zu null - der ausdrueckliche
-        /// Weg macht aber sichtbar, dass hier NICHT auf 0 ausgewichen wird.
+        /// Gibt es die Speicherzeile? Weiterleitung auf
+        /// <see cref="AnlagenSql.PufferVorhanden"/> - dieselbe Pruefung, die auch die
+        /// Parameterfabrik benutzt.
         /// </summary>
-        private static object Wert(int? v)
+        private static bool PufferVorhanden(int id, Dictionary<int, bool> cache)
         {
-            return v.HasValue ? (object)v.Value : null;
-        }
-
-        private static object Wert(double? v)
-        {
-            return v.HasValue ? (object)v.Value : null;
-        }
-
-        /// <summary>
-        /// Puffer-Fremdschluessel fuer das INSERT.
-        ///
-        /// <para>
-        /// ZWEI REGELN. Erstens: NULL bleibt NULL, 0 wird NIE geschrieben -
-        /// <c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c> und <c>WQ_ID_Puffer</c> stehen unter
-        /// einer erzwungenen Beziehung auf <c>Tab_Pufferspeicher.ID</c> (SchemaMigration
-        /// Schritt 4), 0 ist dort keine gueltige ID und waere eine Phantom-Referenz.
-        /// </para>
-        ///
-        /// <para>
-        /// Zweitens: Eine ID, die auf KEINE Speicherzeile mehr zeigt, wird zu NULL
-        /// abgeraeumt statt geschrieben. Das ist kein Schoenheitsfehler, sondern der
-        /// Schutz des gesamten Speichervorgangs: <see cref="Add_WP_Waermeerzeuger"/>
-        /// laeuft IMMER nach einem DELETE. Wuerde das INSERT an der Beziehung scheitern,
-        /// waeren die Anlagen bereits geloescht und der Abbruch haette mehr zerstoert als
-        /// der Datenverlust, den diese Anweisung beheben soll. Eine verwaiste Referenz
-        /// wird deshalb protokolliert und faellt weg - genau die Normalisierung, die
-        /// <c>WaermesenkeClass.Normalisieren</c> beim Lesen ohnehin vornimmt.
-        /// </para>
-        /// </summary>
-        private static object PufferFkOderNull(int? id, string spalte, string bezeichner,
-                                               Dictionary<int, bool> cache)
-        {
-            if (!id.HasValue || id.Value <= 0) return null;   // -> DBNull, nie 0
-
-            if (PufferVorhanden(id.Value, cache)) return id.Value;
-
-            Console.WriteLine("Energieanlage \"" + (bezeichner ?? "") + "\": " + spalte + " = " +
-                              id.Value + " zeigt auf keinen Pufferspeicher mehr - " +
-                              "die Referenz wird als leer gespeichert.");
-            return null;
+            return AnlagenSql.PufferVorhanden(id, cache);
         }
 
         /// <summary>
@@ -434,30 +253,12 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID = ? AND ID_Projekt = ?",
-                new OleDbParameter[] {
-                    new OleDbParameter("@id", idPuffer),
-                    new OleDbParameter("@proj", projektID)
+                new DbParam[] {
+                    new DbParam("@id", idPuffer),
+                    new DbParam("@proj", projektID)
                 });
 
             return (v != null && v != DBNull.Value && Convert.ToInt32(v) > 0);
-        }
-
-        /// <summary>
-        /// Gibt es die Speicherzeile? Nur TREFFER werden gemerkt: Ein Puffer kann
-        /// waehrend derselben Schleife noch entstehen (<c>PufferSpCtrl.CopyFromStamm</c>),
-        /// ein negatives Ergebnis darf deshalb nicht zwischengespeichert werden.
-        /// </summary>
-        private static bool PufferVorhanden(int id, Dictionary<int, bool> cache)
-        {
-            if (cache != null && cache.ContainsKey(id)) return true;
-
-            object v = DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID = ?",
-                new OleDbParameter[] { new OleDbParameter("@id", id) });
-
-            bool vorhanden = (v != null && v != DBNull.Value && Convert.ToInt32(v) > 0);
-            if (vorhanden && cache != null) cache[id] = true;
-            return vorhanden;
         }
 
         // =================================================================================
@@ -562,13 +363,13 @@ namespace WindowsFormsApplication1
                 string sql = "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen " +
                              "WHERE ID_Projekt = ? AND ID_Type IN (" + SP_TYPEN + ")";
 
-                List<OleDbParameter> ps = new List<OleDbParameter>
-                    { new OleDbParameter("@pID", projektID) };
+                List<DbParam> ps = new List<DbParam>
+                    { new DbParam("@pID", projektID) };
 
                 if (nType != TYP_ALLE)
                 {
                     sql += " AND ID_Type = ?";
-                    ps.Add(new OleDbParameter("@type", nType));
+                    ps.Add(new DbParam("@type", nType));
                 }
 
                 sql += " ORDER BY ID";
@@ -680,7 +481,7 @@ namespace WindowsFormsApplication1
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND ID_Type IN (" + SP_TYPEN + ") ORDER BY ID",
-                    new OleDbParameter("@pID", projektID));
+                    new DbParam("@pID", projektID));
 
                 if (dt == null || dt.Rows.Count == 0) return;
 
@@ -923,7 +724,7 @@ namespace WindowsFormsApplication1
                 Dictionary<int, SenkenSicherung> jeAnlage = new Dictionary<int, SenkenSicherung>();
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
-                    new OleDbParameter("@pID", projektID));
+                    new DbParam("@pID", projektID));
 
                 if (dt == null || dt.Rows.Count == 0) return;
 
@@ -1027,7 +828,7 @@ namespace WindowsFormsApplication1
 
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
-                    new OleDbParameter("@pID", projektID));
+                    new DbParam("@pID", projektID));
 
                 if (dt == null || dt.Rows.Count == 0) return;
 
@@ -1239,8 +1040,8 @@ namespace WindowsFormsApplication1
                     ? " AND ID_Type <> " + WizardItemClass.PUFFER_TYP.ToString(CultureInfo.InvariantCulture)
                     : " AND ID_Type = ?") + " ORDER BY ID";
 
-                List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
-                if (nType != TYP_ALLE) ps.Add(new OleDbParameter("@type", nType));
+                List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+                if (nType != TYP_ALLE) ps.Add(new DbParam("@type", nType));
 
                 DataTable dt = DataRepository.GetDataTable(sql, ps.ToArray());
                 if (dt == null || dt.Rows.Count == 0) return;
@@ -1308,7 +1109,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(FachspaltenSelect(fach) + " ORDER BY ID",
-                                                           new OleDbParameter("@pID", projektID));
+                                                           new DbParam("@pID", projektID));
                 if (dt == null || dt.Rows.Count == 0) return;
 
                 int zeilen = 0, werte = 0;
@@ -1331,13 +1132,13 @@ namespace WindowsFormsApplication1
                     treffer.Verbraucht = true;
 
                     string set = "";
-                    List<OleDbParameter> ps = new List<OleDbParameter>();
+                    List<DbParam> ps = new List<DbParam>();
                     foreach (KeyValuePair<string, object> w in treffer.Werte)
                     {
                         set += (set.Length > 0 ? ", " : "") + "[" + w.Key + "] = ?";
-                        ps.Add(new OleDbParameter("@w", w.Value));
+                        ps.Add(new DbParam("@w", w.Value));
                     }
-                    ps.Add(new OleDbParameter("@id", idAnlage));
+                    ps.Add(new DbParam("@id", idAnlage));
 
                     if (DataRepository.ExecuteSQL("UPDATE Tab_Energieanlagen SET " + set + " WHERE ID = ?",
                                                   ps.ToArray()))
@@ -1706,18 +1507,19 @@ namespace WindowsFormsApplication1
                 DataRepository.ExecuteSQL(
                     "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = ? " +
                     "WHERE ProjektID = ? AND ID_Anlage = ? AND ID_AnlageGeraet = ?",
-                    new OleDbParameter("@neu", geraetNeu),
-                    new OleDbParameter("@p", projektID),
-                    new OleDbParameter("@a", anlageAlt),
-                    new OleDbParameter("@g", geraetAlt));
+                    new DbParam("@neu", geraetNeu),
+                    new DbParam("@p", projektID),
+                    new DbParam("@a", anlageAlt),
+                    new DbParam("@g", geraetAlt));
             }
             catch { }
         }
 
-        // Kleine Hilfsfunktion für die Typprüfung (kommt mit in die Ctrl)
+        // Kleine Hilfsfunktion für die Typprüfung - Weiterleitung auf AnlagenSql (K6),
+        // damit Parameterfabrik und Wizard-Zweige dieselbe Regel benutzen.
         private static bool CheckType(WErzeugerModel item, int typ, int refTyp)
         {
-            return item.ID_Type == typ || item.ID_Type == refTyp;
+            return AnlagenSql.CheckType(item, typ, refTyp);
         }
 
         /// <summary>
@@ -1864,7 +1666,7 @@ namespace WindowsFormsApplication1
         {
             object oBrennstoff = DataRepository.ExecuteScalar(
                 "SELECT ID_Brennstoff FROM energy_carrier WHERE id = ?",
-                new OleDbParameter[] { new OleDbParameter("@cid", carrierId) });
+                new DbParam[] { new DbParam("@cid", carrierId) });
             if (oBrennstoff == null) return true;   // Katalogzeile fehlt -> nichts anzulegen
             int idBrennstoff = Convert.ToInt32(oBrennstoff);
 
@@ -1886,9 +1688,9 @@ namespace WindowsFormsApplication1
             // Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
             object oVorhanden = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
-                new OleDbParameter[] {
-                    new OleDbParameter("@pid", projektID),
-                    new OleDbParameter("@eid", carrierId)
+                new DbParam[] {
+                    new DbParam("@pid", projektID),
+                    new DbParam("@eid", carrierId)
                 });
             if (oVorhanden != null && Convert.ToInt32(oVorhanden) > 0) return true;
 
@@ -1896,15 +1698,15 @@ namespace WindowsFormsApplication1
             string sqlHistory = @"INSERT INTO energy_price
                  (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            if (!DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
-                new OleDbParameter("@cid",  carrierId),
-                new OleDbParameter("@prid", projektID),
-                new OleDbParameter("@ap",   Math.Round(default_arbeitspreis, 4)),
-                new OleDbParameter("@hi",   Math.Round(hi, 4)),
-                new OleDbParameter("@gp",   Math.Round(default_grundpreis, 4)),
-                new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
-                new OleDbParameter("@au",   einheit),
-                new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
+            if (!DataRepository.ExecuteSQL(sqlHistory, new DbParam[] {
+                new DbParam("@cid",  carrierId),
+                new DbParam("@prid", projektID),
+                new DbParam("@ap",   Math.Round(default_arbeitspreis, 4)),
+                new DbParam("@hi",   Math.Round(hi, 4)),
+                new DbParam("@gp",   Math.Round(default_grundpreis, 4)),
+                new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now },
+                new DbParam("@au",   einheit),
+                new DbParam("@lp",   Math.Round(default_leistungspreis, 4))
             })) return false;
 
             // ---------------------------------------------------------------------
@@ -1949,18 +1751,18 @@ namespace WindowsFormsApplication1
                  (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                   custom_price_base, ID_Umrechnung, co2, so2, nox)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            if (!DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
-                new OleDbParameter("@pid",    projektID),
-                new OleDbParameter("@eid",    carrierId),
-                new OleDbParameter("@p",      Math.Round(default_arbeitspreis, 4)),
-                new OleDbParameter("@pl",     Math.Round(default_leistungspreis, 4)),
-                new OleDbParameter("@h",      Math.Round(hi, 4)),
-                new OleDbParameter("@hs",     Math.Round(hs, 4)),
-                new OleDbParameter("@b",      Math.Round(default_grundpreis, 4)),
-                new OleDbParameter("@convid", convId),
-                new OleDbParameter("@co2",    OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@so2",    OleDbType.Double) { Value = DBNull.Value },
-                new OleDbParameter("@nox",    OleDbType.Double) { Value = DBNull.Value }
+            if (!DataRepository.ExecuteSQL(sqlInsert, new DbParam[] {
+                new DbParam("@pid",    projektID),
+                new DbParam("@eid",    carrierId),
+                new DbParam("@p",      Math.Round(default_arbeitspreis, 4)),
+                new DbParam("@pl",     Math.Round(default_leistungspreis, 4)),
+                new DbParam("@h",      Math.Round(hi, 4)),
+                new DbParam("@hs",     Math.Round(hs, 4)),
+                new DbParam("@b",      Math.Round(default_grundpreis, 4)),
+                new DbParam("@convid", convId),
+                new DbParam("@co2",    DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@so2",    DbParamTyp.Double) { Wert = DBNull.Value },
+                new DbParam("@nox",    DbParamTyp.Double) { Wert = DBNull.Value }
             })) return false;
 
             return true;
@@ -1980,10 +1782,10 @@ namespace WindowsFormsApplication1
         {
             object o = DataRepository.ExecuteScalar(
                 "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?",
-                new OleDbParameter[] {
-                    new OleDbParameter("@cid", idBrennstoff),
-                    new OleDbParameter("@fu", einheit),
-                    new OleDbParameter("@tu", einheit)
+                new DbParam[] {
+                    new DbParam("@cid", idBrennstoff),
+                    new DbParam("@fu", einheit),
+                    new DbParam("@tu", einheit)
                 });
             return (o != null) ? Convert.ToInt32(o) : -1;
         }
@@ -2003,13 +1805,13 @@ namespace WindowsFormsApplication1
                 int zID = DataRepository.GetMaxID("Z_ProjektGebaeude") + 1;
                 string sqlZ = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, Wohnflaeche_Waermebedarf, " +
                     "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, dezWarmwasserbereitung) VALUES (?,?,?,?,?,?)";
-                OleDbParameter[] psZ = {
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = zID },
-                    new OleDbParameter("@pid", OleDbType.Integer) { Value = projektID },
-                    new OleDbParameter("@fl", OleDbType.Double) { Value = item.Wohnflaeche },
-                    new OleDbParameter("@Einheit", OleDbType.VarWChar) { Value = (object)(item.Einheit ?? "") },
-                    new OleDbParameter("@jng", OleDbType.Double) { Value = item.Jahresnutzungsgrad },
-                    new OleDbParameter("@dez", OleDbType.Boolean) { Value = item.DezentralWarmwasser }
+                DbParam[] psZ = {
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = zID },
+                    new DbParam("@pid", DbParamTyp.Integer) { Wert = projektID },
+                    new DbParam("@fl", DbParamTyp.Double) { Wert = item.Wohnflaeche },
+                    new DbParam("@Einheit", DbParamTyp.VarWChar) { Wert = (object)(item.Einheit ?? "") },
+                    new DbParam("@jng", DbParamTyp.Double) { Wert = item.Jahresnutzungsgrad },
+                    new DbParam("@dez", DbParamTyp.Boolean) { Wert = item.DezentralWarmwasser }
                 };
                 if (!DataRepository.ExecuteSQL(sqlZ, psZ)) return false;
 
@@ -2024,14 +1826,14 @@ namespace WindowsFormsApplication1
         {
             string sql = "INSERT INTO Tab_Projekt (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?)";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@name", model.m_szProjektname),
-                new OleDbParameter("@bearb", model.m_szBearbeiter),
-                new OleDbParameter("@besch", model.m_szBeschreibung),
-                new OleDbParameter("@kunde", model.m_szKunde),
-                new OleDbParameter("@date", OleDbType.Date) { Value = model.m_Aenderungsdatum },
-                new OleDbParameter("@klima", model.m_ID_Klimaregion),
-                new OleDbParameter("@edate", OleDbType.Date) { Value = model.m_Erstelldatum }
+            DbParam[] ps = {
+                new DbParam("@name", model.m_szProjektname),
+                new DbParam("@bearb", model.m_szBearbeiter),
+                new DbParam("@besch", model.m_szBeschreibung),
+                new DbParam("@kunde", model.m_szKunde),
+                new DbParam("@date", DbParamTyp.Date) { Wert = model.m_Aenderungsdatum },
+                new DbParam("@klima", model.m_ID_Klimaregion),
+                new DbParam("@edate", DbParamTyp.Date) { Wert = model.m_Erstelldatum }
             };
 
             // Aufruf deiner neuen, zentralen Methode
@@ -2061,14 +1863,14 @@ namespace WindowsFormsApplication1
             if (projRegId > 0) model.m_ID_Klimaregion = projRegId;
 
             string sql = "UPDATE Tab_Projekt SET Projektname=?, Bearbeiter=?, ID_Klimaregion=?, Aenderungsdatum=?, Kunde=?, Beschreibung=? WHERE ID=?";
-            OleDbParameter[] ps = {
-                new OleDbParameter("@name", model.m_szProjektname),
-                new OleDbParameter("@bearb", model.m_szBearbeiter),
-                new OleDbParameter("@klima", model.m_ID_Klimaregion),
-                new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
-                new OleDbParameter("@kunde", model.m_szKunde),
-                new OleDbParameter("@besch", model.m_szBeschreibung),
-                new OleDbParameter("@id", projektID)
+            DbParam[] ps = {
+                new DbParam("@name", model.m_szProjektname),
+                new DbParam("@bearb", model.m_szBearbeiter),
+                new DbParam("@klima", model.m_ID_Klimaregion),
+                new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now },
+                new DbParam("@kunde", model.m_szKunde),
+                new DbParam("@besch", model.m_szBeschreibung),
+                new DbParam("@id", projektID)
             };
             return DataRepository.ExecuteSQL(sql, ps);
         }
@@ -2081,11 +1883,11 @@ namespace WindowsFormsApplication1
                                (ID_Projekt, Bezeichner, ID_Type, ID_SP) 
                                VALUES (?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@bez", item.m_szBezeichner ?? ""),
-                    new OleDbParameter("@type", 4), // Typ 4 Stromspeicher
-                    new OleDbParameter("@spID", item.m_ID)
+                DbParam[] ps = {
+                    new DbParam("@pID", projektID),
+                    new DbParam("@bez", item.m_szBezeichner ?? ""),
+                    new DbParam("@type", 4), // Typ 4 Stromspeicher
+                    new DbParam("@spID", item.m_ID)
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -2113,15 +1915,15 @@ namespace WindowsFormsApplication1
                     ? "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal) VALUES (?, ?, ?, ?, ?)"
                     : "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
 
-                var ps = new List<OleDbParameter>
+                var ps = new List<DbParam>
                 {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@gID", projGanglinieId),
-                    new OleDbParameter("@bez", item.m_szBezeichner ?? "")
+                    new DbParam("@id", nextID++),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@gID", projGanglinieId),
+                    new DbParam("@bez", item.m_szBezeichner ?? "")
                 };
                 if (kanalSpalte)
-                    ps.Add(new OleDbParameter("@kanal",
+                    ps.Add(new DbParam("@kanal",
                         Z_ProjektGebGanglinieCtrl.KanalOderHeizung(item.Kanal)));
 
                 if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;
@@ -2141,12 +1943,12 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@pwID", item.ID_Prozesswaerme),
-                    new OleDbParameter("@bez", item.szProzessname ?? ""),
-                    new OleDbParameter("@sum", item.Summe)
+                DbParam[] ps = {
+                    new DbParam("@id", nextID++),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@pwID", item.ID_Prozesswaerme),
+                    new DbParam("@bez", item.szProzessname ?? ""),
+                    new DbParam("@sum", item.Summe)
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -2166,12 +1968,12 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@svID", item.m_ID_Stromverbraucher),
-                    new OleDbParameter("@bez", item.m_szVerbraucher ?? ""),
-                    new OleDbParameter("@sum", item.m_Summe)
+                DbParam[] ps = {
+                    new DbParam("@id", nextID++),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@svID", item.m_ID_Stromverbraucher),
+                    new DbParam("@bez", item.m_szVerbraucher ?? ""),
+                    new DbParam("@sum", item.m_Summe)
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -2189,10 +1991,10 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_ProjektStromganglinie (ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@gID", projGanglinieId),
-                    new OleDbParameter("@bez", item.m_szStromganglinie ?? "")
+                DbParam[] ps = {
+                    new DbParam("@pID", projektID),
+                    new DbParam("@gID", projGanglinieId),
+                    new DbParam("@bez", item.m_szStromganglinie ?? "")
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -2212,11 +2014,11 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_ProjektSolarganglinie (ID, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@gID", projGanglinieId),
-                    new OleDbParameter("@bez", item.m_szSolarganglinie ?? "")
+                DbParam[] ps = {
+                    new DbParam("@id", nextID++),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@gID", projGanglinieId),
+                    new DbParam("@bez", item.m_szSolarganglinie ?? "")
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -2236,12 +2038,12 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@bwID", item.ID_Brauchwasser),
-                    new OleDbParameter("@bez", item.szBezeichner ?? ""),
-                    new OleDbParameter("@sum", item.Summe)
+                DbParam[] ps = {
+                    new DbParam("@id", nextID++),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@bwID", item.ID_Brauchwasser),
+                    new DbParam("@bez", item.szBezeichner ?? ""),
+                    new DbParam("@sum", item.Summe)
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;

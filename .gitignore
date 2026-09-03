@@ -385,6 +385,8 @@ Setup/Vorlage/*.accdb
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe
+# WebView2-Bootstrapper fuer das Setup (iU8-10): liegt in der Repowurzel, wird nie eingecheckt
+/MicrosoftEdgeWebview2Setup.exe
 
 # Editor-Sicherungskopien
 *.bak
@@ -392,3 +394,8 @@ Setup/Voraussetzungen/*.exe
 # Zugangsdaten - niemals versionieren (Schluessel gehoert per DPAPI in %AppData%\wp-plan)
 api_gemini.txt
 *.apikey
+
+# SQLite-Beidateien (entstehen beim Oeffnen einer Datenbank im WAL-Modus, nie einchecken)
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal

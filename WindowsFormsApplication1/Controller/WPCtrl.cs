@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class WPCtrl : WPModel
+    partial class WPCtrl : WPModel
     {
         private List<WPModel> _internalList = new List<WPModel>();
         public int rows => _internalList.Count;
@@ -33,18 +31,18 @@ namespace WindowsFormsApplication1
                                    Modulkosten = ? 
                                WHERE Bezeichner = ?";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
-                    new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
-                    new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
-                    new OleDbParameter("@bau", Baujahr),
-                    new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
-                    new OleDbParameter("@nen", Nennleistung),
-                    new OleDbParameter("@max", maxPTherm),
-                    new OleDbParameter("@hei", Heizung),
-                    new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
-                    new OleDbParameter("@mod", Modulkosten),
-                    new OleDbParameter("@nam", WPName ?? (object)DBNull.Value)
+                DbParam[] ps = {
+                    new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                    new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
+                    new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                    new DbParam("@bau", Baujahr),
+                    new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                    new DbParam("@nen", Nennleistung),
+                    new DbParam("@max", maxPTherm),
+                    new DbParam("@hei", Heizung),
+                    new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                    new DbParam("@mod", Modulkosten),
+                    new DbParam("@nam", WPName ?? (object)DBNull.Value)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -61,7 +59,7 @@ namespace WindowsFormsApplication1
             try
             {
                 string sql = "DELETE FROM Tab_WP WHERE Bezeichner = ?";
-                OleDbParameter[] ps = { new OleDbParameter("@nam", WPName ?? (object)DBNull.Value) };
+                DbParam[] ps = { new DbParam("@nam", WPName ?? (object)DBNull.Value) };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
@@ -91,21 +89,21 @@ namespace WindowsFormsApplication1
                                             ) 
                                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        OleDbParameter[] ps = {
-                            new OleDbParameter("@nam", WPName ?? (object)DBNull.Value),
-                            new OleDbParameter("@proj", ID_Projekt),
-                            new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
-                            new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
-                            new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
-                            new OleDbParameter("@bau", Baujahr),
-                            new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
-                            new OleDbParameter("@nen", Nennleistung),
-                            new OleDbParameter("@max", maxPTherm),
-                            new OleDbParameter("@hei", Heizung),
-                            new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
-                            new OleDbParameter("@mod", Modulkosten),
-                            new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value),
-                            new OleDbParameter("@kuehl", Kuehlleistung)
+                        DbParam[] ps = {
+                            new DbParam("@nam", WPName ?? (object)DBNull.Value),
+                            new DbParam("@proj", ID_Projekt),
+                            new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                            new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
+                            new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                            new DbParam("@bau", Baujahr),
+                            new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                            new DbParam("@nen", Nennleistung),
+                            new DbParam("@max", maxPTherm),
+                            new DbParam("@hei", Heizung),
+                            new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                            new DbParam("@mod", Modulkosten),
+                            new DbParam("@bart", Bauart ?? (object)DBNull.Value),
+                            new DbParam("@kuehl", Kuehlleistung)
                         };
 
                         // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
@@ -179,18 +177,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            foreach (var item in _internalList)
-            {
-                if (item != null)
-                {
-                    ctrl.Items.Add(item.WPName);
-                }
-            }
-        }
-
         #region --- STAMM -> PROJEKT KOPIE ---
 
         // Projekt-WP-ID (Tab_WP.ID) zu einem Bezeichner im Projekt, oder 0.
@@ -198,8 +184,8 @@ namespace WindowsFormsApplication1
         {
             object v = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_WP WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""),
+                new DbParam("@proj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
@@ -209,11 +195,11 @@ namespace WindowsFormsApplication1
             int id = GetProjektId(szBezeichner, idProjekt);
             if (id > 0)
             {
-                DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten WHERE ID_WP = ?", new OleDbParameter("@id", id));
-                DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", new OleDbParameter("@id", id));
+                DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten WHERE ID_WP = ?", new DbParam("@id", id));
+                DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", new DbParam("@id", id));
             }
             return DataRepository.ExecuteSQL("DELETE FROM Tab_WP WHERE Bezeichner = ? AND ID_Projekt = ?",
-                new OleDbParameter("@bez", szBezeichner ?? ""), new OleDbParameter("@proj", idProjekt));
+                new DbParam("@bez", szBezeichner ?? ""), new DbParam("@proj", idProjekt));
         }
 
         // Komfort-Ueberladung: kopiert per Bezeichner aus den Stammdaten ins Projekt.
@@ -233,7 +219,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable head = DataRepository.GetDataTable(
-                    "SELECT * FROM " + WPStammCtrl.TABLE + " WHERE ID = ?", new OleDbParameter("@id", stammId));
+                    "SELECT * FROM " + WPStammCtrl.TABLE + " WHERE ID = ?", new DbParam("@id", stammId));
                 if (head == null || head.Rows.Count == 0) return -1;
                 DataRow sHead = head.Rows[0];
                 string bez = sHead["Bezeichner"].ToString();
@@ -242,9 +228,9 @@ namespace WindowsFormsApplication1
                 if (vorhanden > 0) return vorhanden;
 
                 DataTable cw = DataRepository.GetDataTable(
-                    "SELECT * FROM " + WPStammCtrl.CURVE   + " WHERE ID_WP = ? ORDER BY ID", new OleDbParameter("@id", stammId));
+                    "SELECT * FROM " + WPStammCtrl.CURVE   + " WHERE ID_WP = ? ORDER BY ID", new DbParam("@id", stammId));
                 DataTable ck = DataRepository.GetDataTable(
-                    "SELECT * FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ? ORDER BY ID", new OleDbParameter("@id", stammId));
+                    "SELECT * FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ? ORDER BY ID", new DbParam("@id", stammId));
 
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
@@ -262,9 +248,9 @@ namespace WindowsFormsApplication1
                          Gewicht, Raum, Kuehlleistung, Bauart)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         {
-                            List<OleDbParameter> p = new List<OleDbParameter>();
-                            p.Add(new OleDbParameter("@id", neueId));
-                            p.Add(new OleDbParameter("@proj", idProjekt));
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", neueId));
+                            p.Add(new DbParam("@proj", idProjekt));
                             p.Add(P(sHead, "Bezeichner"));
                             p.Add(P(sHead, "Firma"));
                             p.Add(P(sHead, "Beschreibung"));
@@ -294,9 +280,9 @@ namespace WindowsFormsApplication1
                             foreach (DataRow r in cw.Rows)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", cid++));
-                                    p.Add(new OleDbParameter("@wp", neueId));
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", cid++));
+                                    p.Add(new DbParam("@wp", neueId));
                                     p.Add(P(r, "Vorlauf"));
                                     p.Add(P(r, "Temperatur"));
                                     p.Add(P(r, "COP"));
@@ -314,9 +300,9 @@ namespace WindowsFormsApplication1
                             foreach (DataRow r in ck.Rows)
                             {
                                 {
-                                    List<OleDbParameter> p = new List<OleDbParameter>();
-                                    p.Add(new OleDbParameter("@id", ckid++));
-                                    p.Add(new OleDbParameter("@wp", neueId));
+                                    List<DbParam> p = new List<DbParam>();
+                                    p.Add(new DbParam("@id", ckid++));
+                                    p.Add(new DbParam("@wp", neueId));
                                     p.Add(P(r, "Vorlauf"));
                                     p.Add(P(r, "Temperatur"));
                                     p.Add(P(r, "COP"));
@@ -346,10 +332,10 @@ namespace WindowsFormsApplication1
         }
 
         // Parameter aus Spaltenwert (DBNull, falls Spalte fehlt).
-        private static OleDbParameter P(DataRow row, string col)
+        private static DbParam P(DataRow row, string col)
         {
             object v = row.Table.Columns.Contains(col) ? row[col] : DBNull.Value;
-            return new OleDbParameter("@" + col, v ?? DBNull.Value);
+            return new DbParam("@" + col, v ?? DBNull.Value);
         }
 
         #endregion

@@ -73,6 +73,8 @@ $AusgabeDir = Join-Path $SetupDir 'Ausgabe'
 $VorlageDb  = Join-Path $SetupDir 'Vorlage\Kenndaten.accdb'
 $AceZiel    = Join-Path $SetupDir 'Voraussetzungen\AccessDatabaseEngine_X64.exe'
 $AceQuelle  = Join-Path $RepoDir  'AccessDatabaseEngine_X64.exe'
+$WvZiel     = Join-Path $SetupDir 'Voraussetzungen\MicrosoftEdgeWebview2Setup.exe'
+$WvQuelle   = Join-Path $RepoDir  'MicrosoftEdgeWebview2Setup.exe'
 
 # MSBuild erwartet in PublishDir einen Ordner MIT abschliessendem Backslash,
 # sonst landet die Ausgabe eine Ebene hoeher.
@@ -126,6 +128,32 @@ Access Database Engine (64 Bit) nicht gefunden - weder $AceZiel noch $AceQuelle
 Bezugsquelle: Microsoft-Download "Access Database Engine 2016 Redistributable,
 64 Bit" (AccessDatabaseEngine_X64.exe). Die Datei gehoert unveraendert in die
 Repowurzel; von dort uebernimmt dieses Skript sie nach Setup\Voraussetzungen.
+"@
+    }
+}
+
+# WebView2-Bootstrapper - dieselbe Mechanik wie bei der Access-Engine.
+# Gebraucht seit Paket iU8: Die neuen Dialoge sind Blazor-Komponenten und
+# laufen in einer WebView2.
+if (-not (Test-Path $WvZiel)) {
+    if (Test-Path $WvQuelle) {
+        Hinweis 'MicrosoftEdgeWebview2Setup.exe wird nach Setup\Voraussetzungen kopiert'
+        New-Item -ItemType Directory -Force -Path (Split-Path $WvZiel) | Out-Null
+        Copy-Item $WvQuelle $WvZiel
+    }
+    else {
+        throw @"
+WebView2-Bootstrapper nicht gefunden - weder $WvZiel noch $WvQuelle
+
+Bezugsquelle: https://go.microsoft.com/fwlink/p/?LinkId=2124703
+(Microsoft Edge WebView2 Runtime, "Evergreen Bootstrapper", rund 2 MB). Die
+Datei gehoert unveraendert in die Repowurzel; von dort uebernimmt dieses Skript
+sie nach Setup\Voraussetzungen.
+
+Der Bootstrapper laedt die Laufzeit beim Anwender online nach. Wer offline
+ausliefern muss, nimmt stattdessen den Standalone-Installer (rund 150 MB) oder
+bindet eine Fixed-Version-Verteilung ein - das ist eine Anwenderentscheidung
+und im Konzept unter 5.5 offen vermerkt.
 "@
     }
 }

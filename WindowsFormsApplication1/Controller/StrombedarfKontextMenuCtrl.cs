@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetStrombedarfControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Strombedarf, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetStrombedarfControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Strombedarf, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -170,7 +170,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetStrombedarfControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Strombedarf, m_ID_Projekt, m_szProjektname);
             }
         }
 

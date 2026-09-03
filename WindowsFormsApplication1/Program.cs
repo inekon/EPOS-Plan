@@ -17,19 +17,53 @@ namespace WindowsFormsApplication1
         public static Form_Start startfrm = null;
         public static MenueCtrl menuectrl = null;
         public static WizardCtrl wizardctrl = null;
-        public static string ApplicationPath_Common = "";
-        public static string ApplicationPath_User = "";
-        public static int nLanguage = 0; // 0=de, 1=en  
+        /// <summary>
+        /// <c>C:\ProgramData\WP-Plan</c> — seit iU5 nur noch eine Weiterleitung auf
+        /// <c>Dienste.Pfade.Gemeinsam</c>. Die Masken lesen unveraendert weiter; wer neu
+        /// schreibt, nimmt den Dienst.
+        /// </summary>
+        public static string ApplicationPath_Common
+        {
+            get { return Dienste.Pfade.Gemeinsam; }
+        }
+
+        /// <summary>
+        /// <c>LocalApplicationData\WP-Plan</c> — Weiterleitung auf
+        /// <c>Dienste.Pfade.BenutzerLokal</c>, siehe <see cref="ApplicationPath_Common"/>.
+        /// </summary>
+        public static string ApplicationPath_User
+        {
+            get { return Dienste.Pfade.BenutzerLokal; }
+        }
+        /// <summary>
+        /// 0=de, 1=en — der Wert liegt seit iU4-1 in <see cref="Sprache.Nummer"/>,
+        /// damit Kern-Code (Berichtstexte) ihn ohne <c>Program</c> lesen kann. Diese
+        /// Weiterleitung bleibt, damit die vorhandenen Leser und die eine Setzstelle
+        /// aus der Registry unverändert weiterlaufen.
+        /// </summary>
+        public static int nLanguage
+        {
+            get { return Sprache.Nummer; }
+            set { Sprache.Nummer = value; }
+        }
 
         /// <summary>
         /// Not-Rückfall für die Basis-URL der Wiki-Dokumentation, falls der
-        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Derselbe Wert steht
-        /// als Werksvorgabe in der <c>app.config</c>.
+        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Seit iU5 nur noch eine
+        /// Weiterleitung auf <see cref="WikiWissen.WIKI_STANDARD"/>, damit Kern-Code
+        /// den Rückfall ohne <c>Program</c> erreicht.
         /// </summary>
-        public const string WIKI_STANDARD = "https://wiki.epos-plan.de";
+        public const string WIKI_STANDARD = WikiWissen.WIKI_STANDARD;
 
-        // Der globale Katalog, auf den alle Formulare zugreifen können
-        public static WikiHelpCatalog HelpCatalog { get; private set; }
+        /// <summary>
+        /// Der globale Hilfekatalog, auf den alle Formulare zugreifen — seit iU5 nur
+        /// noch eine Weiterleitung auf <see cref="WikiHelpCatalog.Aktueller"/>, damit
+        /// Kern-naher Programmtext ihn ohne <c>Program</c> erreicht.
+        /// </summary>
+        public static WikiHelpCatalog HelpCatalog
+        {
+            get { return WikiHelpCatalog.Aktueller; }
+        }
 
         /// <summary>
         /// Der anwendungsweite Infobutton-Extender (Konzept Hilfesystem, F5).
@@ -39,8 +73,6 @@ namespace WindowsFormsApplication1
         /// braucht dafür noch eigenen Programmtext.
         /// </summary>
         public static HelpExtender HelpExtender { get; private set; }
-
-        private static Process _webServerProcess;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -59,6 +91,45 @@ namespace WindowsFormsApplication1
             // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.
             FeldsicherungSchalterAuswerten();
 
+            // DIE DIENSTE VOR ALLEM ANDEREN (Umsetzungskonzept iU5).
+            //
+            // Kern-Code - Zugriffsschicht, Controller, Modelle - spricht die Umgebung
+            // ueber neun kleine Schnittstellen an (Dienste.Dialog, .Datei, .Pfade,
+            // .Einstellungen, .Lizenzablage, .GeraeteId, .Sprache, .Navigation,
+            // .Projekt). Ohne Oberflaeche gilt die Vorbelegung des Kerns; hier werden
+            // die Windows-Fassungen eingelegt.
+            //
+            // WARUM AN DIESER STELLE. Vor jedem Programmtext, der eine Meldung absetzen
+            // koennte - insbesondere vor DataRepository.DatenbankVorhanden() weiter
+            // unten. Stuende die Belegung darunter, ginge genau die erste Meldung eines
+            // Startfehlers auf die Konsole statt in einen Dialog.
+            //
+            // MELDUNG.* WIRD NICHT MEHR BELEGT. Die vier Melde-Haken zeigen seit iU5
+            // selbst auf Dienste.Dialog (siehe Meldung.cs); eine Belegung hier waere
+            // eine zweite Wahrheit. Ein Nebeneffekt ist beabsichtigt: Meldung.Hinweis
+            // traegt damit wieder das Informationssymbol, das die Hinweisdialoge des
+            // Kerns bis iU3-2 hatten.
+            WindowsSprache sprache = new WindowsSprache();
+
+            Dienste.Dialog = new WindowsDialogDienst();
+            Dienste.Datei = new WindowsDateiDienst();
+            Dienste.Pfade = new WindowsPfade();
+            Dienste.Einstellungen = new SettingsEinstellungen();
+            Dienste.Lizenzablage = new DpapiLizenzAblage();
+            Dienste.GeraeteId = new WindowsGeraeteId();
+            Dienste.Sprache = sprache;
+            Dienste.Navigation = new WinFormsNavigation();
+            Dienste.Projekt = new FormStartProjektKontext();
+
+            // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
+            // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
+            // GeraeteWaisen zieht dafuer aber die Oberflaeche mit. Unter Windows soll sich
+            // nichts aendern - deshalb hier, vor dem ersten moeglichen Loeschvorgang.
+            // Lambda, nicht Methodengruppe: Aufraeumen hat einen Vorgabeparameter
+            // (OleDbConnection) und liefert einen Bericht zurueck, den der Loeschweg
+            // wie bisher verwirft.
+            WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
+
             // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
             if (Environment.OSVersion.Version.Major >= 10)
             {
@@ -70,23 +141,11 @@ namespace WindowsFormsApplication1
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
-            if (key == null)
-            {
-                key = Registry.CurrentUser.CreateSubKey(@"Software\\wp-plan");
-            }
-
-            nLanguage = (int)key.GetValue("Language", 0);
-            if (nLanguage == 0)
-            {
-                var culture_de = new CultureInfo("de-DE");
-                Thread.CurrentThread.CurrentUICulture = culture_de;
-            }
-            else
-            {
-                var culture_en = new CultureInfo("en-US");
-                Thread.CurrentThread.CurrentUICulture = culture_en;
-            }
+            // Die zuletzt eingestellte Oberflaechensprache uebernehmen: Registry-Wert
+            // Language lesen, Sprache.Nummer setzen, Anzeigekultur setzen. Der Weg
+            // dorthin liegt seit iU5 in WindowsSprache; nLanguage bleibt die
+            // Weiterleitung auf Sprache.Nummer, damit die Masken unveraendert lesen.
+            sprache.AusRegistryUebernehmen();
 
             // Startprüfung (vormals x64-Umstellung P1.3, jetzt DB-Migration SQLite 2.8):
             // Ohne lesbare Datenbankdatei ist jede DB-Operation unmöglich — sprechende
@@ -158,10 +217,10 @@ namespace WindowsFormsApplication1
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
 
-            ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
-            ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
-            ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
+            // Anmeldung beim eigenen Halter (iU5): Programmtext ausserhalb der Masken
+            // erreicht den Assistenten-Controller ueber WizardCtrl.Aktueller und nicht
+            // mehr ueber Program.wizardctrl.
+            WizardCtrl.Aktueller = wizardctrl;
 
             // Katalog-Objekt einmalig erstellen
             //
@@ -172,10 +231,10 @@ namespace WindowsFormsApplication1
             // "WordPressUrl" — eine Umbenennung würde gespeicherte Anwenderwerte
             // in der user.config verwerfen (Entscheid 7.3 des Konzepts).
             // WIKI_STANDARD greift nur, wenn der Einstellwert leer ist.
-            string dokuBasis = Properties.Settings.Default.WordPressUrl;
+            string dokuBasis = Dienste.Einstellungen.Lies(WikiWissen.EINSTELLUNG_BASIS);
             if (string.IsNullOrWhiteSpace(dokuBasis)) dokuBasis = WIKI_STANDARD;
 
-            HelpCatalog = new WikiHelpCatalog(dokuBasis);
+            WikiHelpCatalog.Aktueller = new WikiHelpCatalog(dokuBasis);
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
             // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load
@@ -189,10 +248,6 @@ namespace WindowsFormsApplication1
             // Ab hier ist help_mapping.txt die einzige Stelle, an der Hilfe
             // gepflegt wird.
             HelpExtender = HilfeAutomatik.Starten(HelpCatalog);
-
-            // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
-            // kein separates CMD Fensetr mit Aufruf nötig
-            //StartLocalWebServer();
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
@@ -424,30 +479,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Parst eine Zahl mit Dezimal-Komma ODER -Punkt. Gleiche Regel wie
-        /// WaermequelleClass.ZahlParsen, nur in double-Genauigkeit - gedacht für
-        /// Eingabefelder, deren Wert als double weiterverarbeitet wird.
-        /// Kein Tausendertrennzeichen: "1.234,5" wird bewusst abgelehnt, statt
-        /// wie double.Parse(CurrentCulture) still zu 12345 zu werden.
+        /// Weiterleitung auf <see cref="ZahlText.Parsen"/> (dort steht der Rumpf seit
+        /// iU4-1) — parst eine Zahl mit Dezimal-Komma ODER -Punkt, ohne
+        /// Tausendertrennzeichen. Bleibt stehen, damit die Masken ihren gewohnten
+        /// Aufruf behalten.
         /// </summary>
         public static bool ZahlParsen(string text, out double wert)
         {
-            wert = 0.0;
-            if (string.IsNullOrEmpty(text)) return false;
-            text = text.Trim().Replace(',', '.');
-            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.Parsen(text, out wert);
         }
 
         /// <summary>
-        /// Ganzzahl-Gegenstück zu <see cref="ZahlParsen"/>: invariant geparst.
-        /// Komma und Punkt sind hier bewusst KEINE gültigen Zeichen - es geht um
-        /// Stückzahlen, Tage, Nutzungsdauern und ganze Grad.
+        /// Weiterleitung auf <see cref="ZahlText.GanzzahlParsen"/> — Ganzzahl-
+        /// Gegenstück zu <see cref="ZahlParsen"/>, invariant geparst.
         /// </summary>
         public static bool GanzzahlParsen(string text, out int wert)
         {
-            wert = 0;
-            if (string.IsNullOrEmpty(text)) return false;
-            return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.GanzzahlParsen(text, out wert);
         }
 
         // ------------------------------------------------------------------
@@ -650,42 +698,6 @@ namespace WindowsFormsApplication1
             public const string MoveDown = "⬇";   // \u2B07
             public const string Add = "➕";   // \u2795
             public const string Remove = "➖";   // \u2796
-        }
-
-        private static void StartLocalWebServer()
-        {
-            try
-            {
-                _webServerProcess = new Process();
-
-                // Da 'dotnet' ein globaler Systembefehl ist, können wir ihn direkt beim Namen nennen
-                _webServerProcess.StartInfo.FileName = "dotnet";
-
-                // Hier sagen wir dotnet-serve, welchen Ordner es auf welchem Port öffnen soll:
-                // "serve" = Tool aufrufen
-                // "-d C:\WPFake" = Dieses Verzeichnis ausliefern
-                // "-p 8080" = Port 8080 nutzen
-                _webServerProcess.StartInfo.Arguments = @"serve -d C:\WPFake -p 8080";
-
-                // WICHTIG: Macht das CMD-Fenster für den Benutzer unsichtbar
-                _webServerProcess.StartInfo.CreateNoWindow = true;
-                _webServerProcess.StartInfo.UseShellExecute = false;
-
-                _webServerProcess.Start();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Fehler beim Starten von dotnet-serve: " + ex.Message);
-            }
-        }
-
-        private static void StopLocalWebServer()
-        {
-            if (_webServerProcess != null && !_webServerProcess.HasExited)
-            {
-                _webServerProcess.Kill(); // Schließt dotnet-serve im Hintergrund wieder
-                _webServerProcess.Dispose();
-            }
         }
 
      }

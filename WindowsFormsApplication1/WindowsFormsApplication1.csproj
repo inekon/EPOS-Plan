@@ -1,4 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    RAZOR-SDK statt Microsoft.NET.Sdk (Umsetzungskonzept iOS, Paket iU8,
+    Strang B). Das ist KEINE Web-Anwendung: Die Anwendung bleibt WinExe und
+    WinForms. Der Razor-SDK wird gebraucht, damit die statischen Web-Anteile
+    der Bibliothek EPOS.UI ueberhaupt hier ankommen - Komponenten-CSS,
+    help_icon.png, epos-ui.css und blazor.webview.js.
+
+    Belegt in der Vermessung zu iU8 (Gegenprobe b2): Mit dem einfachen
+    Microsoft.NET.Sdk uebersetzt alles fehlerfrei, aber der Veroeffentlichungs-
+    ordner enthaelt KEIN wwwroot - weder index.html noch _content noch
+    _framework/blazor.webview.js. Der erste Blazor-Dialog bliebe damit auf dem
+    Anwenderrechner leer. Der Razor-SDK bringt das StaticWebAssets-Ziel mit,
+    das die Anteile einsammelt.
+
+    Die Umstellung kostet keine Warnung: Der Bauvergleich vor/nach zeigt
+    dieselben Warnungscodes (WFO1000, CS0108, CS0109, WFO0003, CA2255).
+  -->
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -65,20 +83,20 @@
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
   </ItemGroup>
 
-  <!-- Generierter Typkatalog aus sql\schema (Arbeitspaket S2, Konzept 2.4).
-       EINGEBUNDEN PER LINK, nicht kopiert: Es gibt genau EINE Quelle, eine
-       Neuerzeugung durch sql\tools\Erzeuge-Schema.ps1 wirkt damit unmittelbar
-       im naechsten Build. Der namespace der erzeugten Datei ist
-       WindowsFormsApplication1.Allgemein - der Link legt sie folgerichtig
-       neben die uebrigen Dateien in Allgemein\. -->
-  <ItemGroup>
-    <Compile Include="..\sql\schema\SchemaTypKatalog.g.cs" Link="Allgemein\SchemaTypKatalog.g.cs" />
-  </ItemGroup>
-
   <!-- Projektreferenzen -->
   <ItemGroup>
+    <!-- DER RECHENKERN (Umsetzungskonzept iOS, iU4-5). Die 168 Kerndateien
+         liegen seit iU4-5 unter ..\EPOS.Kern\ und werden von diesem Projekt
+         NICHT mehr uebersetzt - eine Fachaenderung am Rechenkern wird an genau
+         einer Stelle gemacht. Der Kern bringt den generierten Typkatalog aus
+         sql\schema und den Anzeigetext-Katalog MyResource\Resource.resx samt
+         Satellit mit; beide waren bis iU4-4 hier eingebunden. -->
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+
     <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net10.0, AnyCPU).
-         Die Engine hat selbst keine Referenzen und bindet nichts nach. -->
+         Die Engine hat selbst keine Referenzen und bindet nichts nach.
+         Bleibt hier eingetragen, obwohl EPOS.Kern sie ebenfalls referenziert -
+         Views\ spricht sie direkt an. -->
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
 
     <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
@@ -93,6 +111,13 @@
          seit S8 zusaetzlich in WP-Plan.sln eingetragen, damit Visual Studio die
          Referenz aufloest (MSBuild baut sie ueber diese ProjectReference ohnehin). -->
     <ProjectReference Include="..\EposSqliteMigrator\Kern\EposSqliteMigrator.Kern.csproj" />
+
+    <!-- DIE OBERFLAECHENBIBLIOTHEK (iU8). Razor-Komponenten ohne WinForms,
+         ohne System.Drawing und ohne Datenbank; sie laufen hier in einer
+         BlazorWebView und auf iOS unveraendert in einer WKWebView. Jeder NEUE
+         Dialog entsteht dort, diese Anwendung liefert nur noch die Huelle
+         (Allgemein\Blazor\BlazorDialogForm.cs). -->
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->
@@ -117,7 +142,6 @@
 
     <!-- Konfiguration / Settings -->
     <PackageReference Include="System.Configuration.ConfigurationManager" />
-    <PackageReference Include="System.Management" />
 
     <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
     <PackageReference Include="BouncyCastle.Cryptography" />
@@ -145,28 +169,22 @@
          einmalig nach %APPDATA%\wp-plan\semantik\ geholt (SemantikModell). -->
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
+
+    <!-- Blazor-Huelle (iU8): BlazorWebView fuer WinForms. Zieht
+         Microsoft.Web.WebView2 mit (SDK und WebView2Loader.dll) - NICHT die
+         Laufzeit selbst. Die Evergreen-Runtime bringt das Setup mit
+         (Setup\EPOS-Plan.iss, WebView2Vorhanden). -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
   </ItemGroup>
 
-  <!-- Settings (klassisches Properties\Settings.settings) -->
+  <!-- Entwurfszeit-Verknuepfung. Properties\Settings.* und
+       MyResource\Resource.* sind mit iU4-5 nach EPOS.Kern gezogen; ihre
+       Verknuepfungen stehen jetzt dort. -->
   <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Update="MyResource\Resource.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resource.resx</DependentUpon>
-    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
 
@@ -227,17 +245,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <!-- Nur die NEUTRALE Datei trägt den Code-Generator. Er läuft ausschließlich zur
-         Entwurfszeit in Visual Studio, nicht im Build; MyResource\Resource.Designer.cs ist
-         daher eingecheckter Quelltext und muss beim Ergänzen von Schlüsseln mitgepflegt werden
-         (Paket 9 / L2). Satellitendateien dürfen KEINEN Generator haben — die frühere
-         Verknüpfung auf die 0-Byte-Datei Resource.en-US.Designer.cs war ein Altbestand und
-         wurde mit Paket 9 / L1 entfernt. -->
-    <EmbeddedResource Update="MyResource\Resource.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
 
   <!-- ClickOnce-Signaturdatei nicht kompilieren -->
@@ -253,6 +260,16 @@
       <Link>Vorlagen\Berichtsvorlage.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage.docx</TargetPath>
     </None>
+  </ItemGroup>
+
+  <!-- Die Startseite der Huelle. HostPage="wwwroot\index.html" sucht sie neben
+       der EXE; ohne diese Zeile stuende sie nur im Quellbaum. Die Anteile aus
+       EPOS.UI (_content\EPOS.UI\*) und das Blazor-Skript (_framework\*) legt
+       der Razor-SDK selbst daneben. -->
+  <ItemGroup>
+    <Content Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

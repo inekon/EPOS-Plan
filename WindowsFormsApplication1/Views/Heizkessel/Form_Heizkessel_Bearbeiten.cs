@@ -414,7 +414,7 @@ namespace WindowsFormsApplication1
                 // Form_Heizkessel_Admin).
                 object anz = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE Bezeichner = ?",
-                    new System.Data.OleDb.OleDbParameter("@nam", m_szKessel));
+                    new DbParam("@nam", m_szKessel));
                 int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
                 if (nAnzahl > 1)
                 {

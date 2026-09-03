@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -163,7 +162,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT DISTINCT ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             if (dt == null) return;   // stiller Fehler - Regel greift ohne Punkt 4
 

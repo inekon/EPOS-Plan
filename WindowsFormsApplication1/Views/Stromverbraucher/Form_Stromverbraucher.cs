@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -258,7 +257,7 @@ namespace WindowsFormsApplication1
 
             object anzahl = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?",
-                new OleDbParameter("@id", m_ID_Projekt));
+                new DbParam("@id", m_ID_Projekt));
 
             return anzahl != null && Convert.ToInt32(anzahl) > 0;
         }

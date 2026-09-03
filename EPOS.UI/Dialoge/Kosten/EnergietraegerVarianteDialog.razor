@@ -1,0 +1,180 @@
+﻿@* Energietraeger-Variante anlegen - der erste als Razor-Komponente
+   geschriebene Dialog von EPOS-Plan (iZ5).
+
+   Vorbild: Views/Kosten/Form_Kosten_Auswahl.cs und .Designer.cs. Uebernommen
+   sind Aufbau (Auswahlliste, Textfeld, OK/Abbrechen), das Vorbelegen des
+   Variantennamens bei einer Auswahl (cmbBrennstoffArt_SelectedIndexChanged)
+   und die Pruefung beim OK-Knopf. Nicht uebernommen ist das Laden der Daten:
+   Der Dialog bekommt die Energietraeger fertig herein und bleibt damit
+   datenbankfrei.
+
+   TEXTE. Der Vorlaeufer traegt unlokalisierte deutsche Literale (seine .resx
+   enthaelt nur Vorlagenreste). Sie stehen hier woertlich als Standardwerte von
+   [Parameter] string. Sobald die Schluessel KAUSW_* und ALLG_BTN_OK/ABBRECHEN
+   in Resource.resx liegen, setzt die Huelle sie beim Erzeugen der Komponente -
+   die Komponente selbst muss dafuer nicht angefasst werden.
+
+   TASTATUR. Eine BlazorWebView sieht AcceptButton, CancelButton und
+   KeyPreview des Formulars nicht; Enter und Esc muessen deshalb hier
+   beantwortet werden. Das Wurzel-div traegt dafuer tabindex="-1" und bekommt
+   in OnAfterRenderAsync den Erstfokus - anders als in WinForms liegt der
+   Fokus also zuerst auf dem Dialog, nicht im ersten Feld. Von dort fuehrt der
+   erste Tabulatorschritt in die Auswahlliste. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Auswahlfeld Bezeichnung="@LabelEnergietraeger"
+                 Eintraege="@Energietraeger"
+                 Auswahl="@_auswahl"
+                 AuswahlChanged="BeiAuswahl" />
+
+    <Textfeld Bezeichnung="@LabelVariante"
+              Wert="@_variantenName"
+              WertChanged="BeiName" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Die waehlbaren Energietraeger - fertig geladen, in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Name)> Energietraeger { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Id des anfangs gewaehlten Energietraegers. <c>null</c> waehlt den ersten
+    /// Eintrag - die datengebundene ComboBox des Vorlaeufers hatte immer eine
+    /// Auswahl.
+    /// </summary>
+    [Parameter] public int? VorwahlId { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende: das Ergebnis bei OK, <c>null</c> bei Abbrechen.
+    /// Geschlossen wird das Fenster von der Huelle, nicht von der Komponente.
+    /// </summary>
+    [Parameter] public EventCallback<EnergietraegerVarianteErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Fenstertitel (Form_Kosten_Auswahl.Designer.cs: Text).</summary>
+    [Parameter] public string TitelText { get; set; } = "Energieträger Variante";
+
+    /// <summary>Beschriftung der Auswahlliste (Designer: label1).</summary>
+    [Parameter] public string LabelEnergietraeger { get; set; } = "Energieträger:";
+
+    /// <summary>Beschriftung des Textfeldes (Designer: label_Variante).</summary>
+    [Parameter] public string LabelVariante { get; set; } = "Energieträger Varianten Bezeichnung:";
+
+    /// <summary>Meldung bei leerem Variantennamen (bisher eine MessageBox in btnOk_Click).</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Variantennamen (Code) eingeben.";
+
+    /// <summary>
+    /// Meldung, wenn kein Energietraeger gewaehlt ist. Diesen Zustand konnte
+    /// der Vorlaeufer nicht erreichen (die ComboBox war immer gefuellt); der
+    /// Text ist deshalb neu.
+    /// </summary>
+    [Parameter] public string MeldungTraegerFehlt { get; set; } = "Bitte einen Energieträger auswählen.";
+
+    /// <summary>Beschriftung des OK-Knopfes (Designer: btn_OK).</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes (Designer: btn_Abbrechen).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Kosten_Auswahl.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _auswahl;
+    private string _variantenName = "";
+    private string _meldung = "";
+
+    /// <summary>Der aktuell gewaehlte Energietraeger (Pruefhilfe fuer Tests).</summary>
+    public int? Auswahl => _auswahl;
+
+    protected override void OnInitialized()
+    {
+        // Die datengebundene ComboBox des Vorlaeufers hatte immer eine Auswahl;
+        // das Textfeld war nach LoadBrennstoffArten dagegen leer.
+        _auswahl = VorwahlId ?? (Energietraeger.Count > 0 ? Energietraeger[0].Id : (int?)null);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Eine Auswahl belegt den Variantennamen vor - wortgleich zu
+    /// cmbBrennstoffArt_SelectedIndexChanged: TextBox_Variante.Text =
+    /// cmbBrennstoffArt.Text.
+    /// </summary>
+    private void BeiAuswahl(int? id)
+    {
+        _auswahl = id;
+        _variantenName = NameZu(id);
+        _meldung = "";
+    }
+
+    private void BeiName(string wert)
+    {
+        _variantenName = wert;
+        if (!string.IsNullOrWhiteSpace(wert)) _meldung = "";
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        if (!_auswahl.HasValue)
+        {
+            _meldung = MeldungTraegerFehlt;
+            return;
+        }
+
+        // Wie btnOk_Click: ein leerer Name laesst den Dialog offen. Gemeldet
+        // wird jetzt im Dialog statt in einer MessageBox.
+        if (string.IsNullOrWhiteSpace(_variantenName))
+        {
+            _meldung = MeldungNameFehlt;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(
+            new EnergietraegerVarianteErgebnis(_auswahl.Value, NameZu(_auswahl), _variantenName));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => BeiErgebnis(true),
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+
+    private string NameZu(int? id)
+    {
+        if (!id.HasValue) return "";
+        foreach (var eintrag in Energietraeger)
+        {
+            if (eintrag.Id == id.Value) return eintrag.Name;
+        }
+        return "";
+    }
+}

@@ -1,0 +1,49 @@
+﻿@* Datumsfeld.
+
+   <input type="date"> bringt den Kalender des Systems mit und zeigt das Datum
+   in der Landesschreibweise, waehrend Wert und Rueckgabe immer im ISO-Format
+   stehen - dieselbe Trennung wie beim Zahlenfeld: Anzeige landesueblich,
+   Uebergabe eindeutig.
+
+   DateOnly statt DateTime: Es geht um Kalendertage (Inbetriebnahme,
+   Preisstand, Bewilligungszeitraum), nicht um Zeitpunkte. *@
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe" type="date" value="@Isotext(Wert)"
+               min="@Isotext(Min)" max="@Isotext(Max)" @onchange="BeiEingabe" />
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Das Datum; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public DateOnly? Wert { get; set; }
+
+    /// <summary>Meldet jedes neue Datum - auch <c>null</c> beim Leeren.</summary>
+    [Parameter] public EventCallback<DateOnly?> WertChanged { get; set; }
+
+    /// <summary>Fruehestes waehlbares Datum; <c>null</c> = keine Grenze.</summary>
+    [Parameter] public DateOnly? Min { get; set; }
+
+    /// <summary>Spaetestes waehlbares Datum; <c>null</c> = keine Grenze.</summary>
+    [Parameter] public DateOnly? Max { get; set; }
+
+    private static string? Isotext(DateOnly? datum) =>
+        datum?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    private Task BeiEingabe(ChangeEventArgs e)
+    {
+        string szRoh = e.Value?.ToString() ?? "";
+        Wert = DateOnly.TryParse(szRoh, System.Globalization.CultureInfo.InvariantCulture,
+                                 System.Globalization.DateTimeStyles.None, out DateOnly datum)
+               ? datum : null;
+        return WertChanged.InvokeAsync(Wert);
+    }
+}

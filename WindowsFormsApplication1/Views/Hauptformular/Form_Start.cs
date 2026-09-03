@@ -387,6 +387,20 @@ namespace WindowsFormsApplication1
             comboBox_Klima.Text = szKlima;
         }
 
+        /// <summary>
+        /// Die angezeigte Klimaregion des offenen Projekts — das Lesegegenstueck zu
+        /// <see cref="SetKlima"/>.
+        ///
+        /// <para>Angelegt mit iU5 fuer <c>IProjektKontext.Klimazone</c>: Der
+        /// Projektkontext gibt Nummer, Name UND Klimaregion heraus, gefuehrt hat die
+        /// Startmaske bisher aber nur die beiden ersten als Feld. Reiner Lesezugriff,
+        /// keine Wirkung.</para>
+        /// </summary>
+        public string Klimaregion
+        {
+            get { return comboBox_Klima.Text; }
+        }
+
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -502,7 +501,7 @@ namespace WindowsFormsApplication1
                     // 1. Existenzprüfung via COUNT in der STAMM-Tabelle
                     string checkSql = "SELECT COUNT(*) FROM Tab_BHKW_STAMM WHERE Bezeichner = ?";
                     int count = Convert.ToInt32(v.Skalar(checkSql,
-                        new OleDbParameter("?", comboBox_Name.Text)));
+                        new DbParam("?", comboBox_Name.Text)));
                     if (count > 0)
                     {
                         MessageBox.Show("Name existiert bereits!");
@@ -513,8 +512,8 @@ namespace WindowsFormsApplication1
                     // 2. Parametrisierter INSERT in die STAMM-Tabelle inkl. ReadOnly=false (NOT NULL)
                     string insertSql = "INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly) VALUES (?, ?)";
                     v.Ausfuehren(insertSql,
-                        new OleDbParameter("?", comboBox_Name.Text),
-                        new OleDbParameter("?", false));
+                        new DbParam("?", comboBox_Name.Text),
+                        new DbParam("?", false));
 
                     // 3. Controller verarbeiten (Stammdaten)
                     BHKWStammCtrl ctrl = new BHKWStammCtrl();

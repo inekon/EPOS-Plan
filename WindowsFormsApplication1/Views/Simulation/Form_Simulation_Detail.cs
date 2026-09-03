@@ -1200,9 +1200,9 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
                 "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
                 "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
-                StilleDb.Par("@proj1", System.Data.OleDb.OleDbType.Integer, idProjekt),
-                StilleDb.Par("@proj2", System.Data.OleDb.OleDbType.Integer, idProjekt),
-                StilleDb.Par("@typ", System.Data.OleDb.OleDbType.Integer, WizardItemClass.KESSEL_TYP));
+                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
 
             if (dt == null) return arten;
 
@@ -6420,7 +6420,7 @@ namespace WindowsFormsApplication1
             {
                 object wert = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
-                    new System.Data.OleDb.OleDbParameter("@id", v.ID_Energieanlage));
+                    new DbParam("@id", v.ID_Energieanlage));
                 if (wert != null && wert != DBNull.Value && wert.ToString().Length > 0)
                     return wert.ToString();
             }
@@ -6463,10 +6463,10 @@ namespace WindowsFormsApplication1
                     "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
 
-                var parameter = new System.Collections.Generic.List<System.Data.OleDb.OleDbParameter>
+                var parameter = new System.Collections.Generic.List<DbParam>
                 {
-                    new System.Data.OleDb.OleDbParameter("@proj", m_ID_Projekt),
-                    new System.Data.OleDb.OleDbParameter("@typ", WizardItemClass.SP_TYP)
+                    new DbParam("@proj", m_ID_Projekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP)
                 };
 
                 // Die Anlage der aktiven Variante, sofern sie eine Speicheranlage dieses
@@ -6474,7 +6474,7 @@ namespace WindowsFormsApplication1
                 if (_speicherVariante != null && _speicherVariante.ID_Energieanlage > 0)
                 {
                     sql += " AND a.ID = ?";
-                    parameter.Add(new System.Data.OleDb.OleDbParameter(
+                    parameter.Add(new DbParam(
                                       "@anlage", _speicherVariante.ID_Energieanlage));
                 }
 
@@ -7229,8 +7229,8 @@ namespace WindowsFormsApplication1
             {
                 object wert = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                    new System.Data.OleDb.OleDbParameter("@proj", m_ID_Projekt),
-                    new System.Data.OleDb.OleDbParameter("@typ", WizardItemClass.SP_TYP));
+                    new DbParam("@proj", m_ID_Projekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP));
 
                 if (wert != null && wert != DBNull.Value) return Convert.ToInt32(wert);
             }

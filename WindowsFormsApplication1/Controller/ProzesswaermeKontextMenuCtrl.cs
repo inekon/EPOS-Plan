@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Prozesswaerme, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Prozesswaerme, m_ID_Projekt, m_szProjektname);
             }
         }
 
@@ -176,7 +176,7 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
-                Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
+                Dienste.Navigation.OeffneGewerk(Gewerke.Prozesswaerme, m_ID_Projekt, m_szProjektname);
             }
         }
 

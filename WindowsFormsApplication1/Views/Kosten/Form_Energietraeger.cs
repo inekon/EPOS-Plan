@@ -169,8 +169,8 @@ namespace WindowsFormsApplication1
                         int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
                             "SELECT COUNT(*) FROM energy_project_settings " +
                             "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                            new System.Data.OleDb.OleDbParameter("@p", _projektId),
-                            new System.Data.OleDb.OleDbParameter("@c", uc.CarrierId)));
+                            new DbParam("@p", _projektId),
+                            new DbParam("@c", uc.CarrierId)));
                         if (zugeordnet == 0) continue;
                     }
                     uc.SaveProjectAndHistory();

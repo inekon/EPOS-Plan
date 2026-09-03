@@ -1,0 +1,55 @@
+﻿@* Auswahlliste ueber Id und Text.
+
+   Ersetzt die datengebundene ComboBox des Bestands (DataSource = DataTable,
+   DisplayMember/ValueMember). Die Komponente bleibt datenbankfrei: Sie bekommt
+   fertige (Id, Text)-Paare und meldet die gewaehlte Id zurueck - genau das,
+   was der Bestand als SelectedValue las.
+
+   <select> ist auf Touchgeraeten ein Gewinn: Edge oeffnet dafuer eine
+   fingerfreundliche Liste, ohne dass die Komponente etwas dafuer tun muss. *@
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")" @onchange="BeiAuswahl">
+            @if (Platzhalter is not null)
+            {
+                <option value="">@Platzhalter</option>
+            }
+            @foreach (var eintrag in Eintraege)
+            {
+                <option value="@eintrag.Id">@eintrag.Text</option>
+            }
+        </select>
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Auswahlmoeglichkeiten in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Id des gewaehlten Eintrags; <c>null</c> = nichts gewaehlt. Bindbar.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neu gewaehlte Id - <c>null</c>, wenn der Platzhalter gewaehlt wurde.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>
+    /// Text der leeren Zeile ganz oben, z. B. "(bitte waehlen)".
+    /// <c>null</c> = keine leere Zeile.
+    /// </summary>
+    [Parameter] public string? Platzhalter { get; set; }
+
+    private Task BeiAuswahl(ChangeEventArgs e)
+    {
+        string szRoh = e.Value?.ToString() ?? "";
+        Auswahl = Zahlen.GanzzahlParsen(szRoh, out int nId) ? nId : null;
+        return AuswahlChanged.InvokeAsync(Auswahl);
+    }
+}

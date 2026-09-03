@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Globalization;
 using KiKern;
 
@@ -183,7 +182,7 @@ namespace WindowsFormsApplication1
                                                                   komponente));
 
                     KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
-                        id, komponente, Form_Kosten.KATEGORIE_INVESTITION, komponentenId);
+                        id, komponente, DbWerte.KOSTEN_KATEGORIE_INVESTITION, komponentenId);
 
                     List<TechnikPlanwertCtrl.Anlage> anlagen = TechnikPlanwertCtrl.LiesAnlagen(id, komponente);
 
@@ -191,7 +190,7 @@ namespace WindowsFormsApplication1
                     // Ohne sie koennte kostenposition_setzen nicht angesteuert werden,
                     // ohne dass das Modell eine ID erfindet.
                     int idPosition = KostenPositionCtrl.FindeHauptposition(
-                        id, Form_Kosten.KATEGORIE_INVESTITION, komponentenId, komponente);
+                        id, DbWerte.KOSTEN_KATEGORIE_INVESTITION, komponentenId, komponente);
 
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
@@ -240,7 +239,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente ?? ""));
+                    new DbParam("@k", komponente ?? ""));
                 return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }

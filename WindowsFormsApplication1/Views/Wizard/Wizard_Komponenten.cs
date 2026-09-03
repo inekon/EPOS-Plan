@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
             if (seitenIndex == KomponentenBestand.OHNE_SEITE) return;
             if (rahmen.Seiten == null || seitenIndex >= rahmen.Seiten.Count) return;
 
-            WizardItemClass seite = rahmen.Seiten[seitenIndex];
+            WizardSeite seite = rahmen.Seiten[seitenIndex];
             seite.aktiv = aktiv;
             rahmen.Seiten[seitenIndex] = seite;
         }

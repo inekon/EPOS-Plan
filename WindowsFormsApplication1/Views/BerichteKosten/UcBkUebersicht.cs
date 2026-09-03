@@ -44,7 +44,12 @@ namespace WindowsFormsApplication1
     {
         // Registry-Ablage der zuletzt gewählten Stamm-Auswahl (Pfad wie im Altdialog,
         // damit die zuletzt bearbeitete Gruppe erhalten bleibt).
-        private const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
+        /// <summary>
+        /// Registry-Zweig der Variantenprobe — dieselbe Konstante wie in
+        /// <see cref="Form_Variantentest.RegPfad"/> und seit iU5 auch derselbe Wert:
+        /// Die Dublette ist aufgeloest.
+        /// </summary>
+        private const string RegPfad = Form_Variantentest.RegPfad;
         private const string RegWertStamm = "LetzterStammID";
 
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();

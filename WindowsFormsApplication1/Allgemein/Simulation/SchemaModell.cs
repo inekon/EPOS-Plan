@@ -356,7 +356,7 @@ namespace WindowsFormsApplication1
         {
             object v = StilleDb.Scalar(
                 "SELECT COUNT(*) FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", System.Data.OleDb.OleDbType.Integer, idProjekt));
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             if (v == null) return true;
             return StilleDb.Zahl(v) > 0;

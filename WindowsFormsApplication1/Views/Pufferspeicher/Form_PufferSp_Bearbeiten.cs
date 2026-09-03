@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -91,7 +90,7 @@ namespace WindowsFormsApplication1
 
             // 1. Daten über das DataRepository mittels DataTable abfragen (Ersetzt RecordSet)
             string sql = "SELECT * FROM Tab_Pufferspeicher_STAMM WHERE Bezeichner = ?";
-            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", szName ?? (object)DBNull.Value));
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("?", szName ?? (object)DBNull.Value));
 
             if (dt == null || dt.Rows.Count == 0) return;
 

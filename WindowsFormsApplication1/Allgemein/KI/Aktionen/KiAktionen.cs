@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using KiKern;
 
@@ -404,7 +403,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("@id", (Int32)idProjekt));
+                    new DbParam("@id", (Int32)idProjekt));
                 return o == null || o == DBNull.Value ? "" : o.ToString();
             }
             catch { return ""; }

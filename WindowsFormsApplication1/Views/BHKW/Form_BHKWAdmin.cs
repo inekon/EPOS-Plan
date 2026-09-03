@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -113,7 +112,7 @@ namespace WindowsFormsApplication1
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT * FROM " + BHKWStammCtrl.TABLE + " WHERE Bezeichner = ?",
-                new OleDbParameter("@name", szName));
+                new DbParam("@name", szName));
 
             if (dt == null || dt.Rows.Count == 0) { SetzeGeladenenSatz(""); return; }
             DataRow r = dt.Rows[0];

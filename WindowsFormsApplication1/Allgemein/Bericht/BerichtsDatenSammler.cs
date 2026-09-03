@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -88,7 +87,7 @@ namespace WindowsFormsApplication1
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
                     " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }
@@ -101,7 +100,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Aenderungsdatum FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }
@@ -436,12 +435,32 @@ namespace WindowsFormsApplication1
                                "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
                                "insoweit nicht aus den Projektdaten.");
 
+            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Dasselbe Muster für die
+            // zweite stille Lücke der Kostenkette — ein Heizkessel hat Wärme erzeugt,
+            // aber sein Brennstoffverbrauch steht nicht im Ergebnis. Die Kennzahlen
+            // bleiben unverändert (nichts wird abgeleitet), der Fehlbetrag wird nur
+            // benannt. Wortlaut wie die Hinweiszeile der Wirtschaftlichkeit
+            // (WIRT_KESSELBRENNSTOFF_FEHLT), damit beide Kanäle dasselbe sagen.
+            if (v.KesselVerbrauchFehlt && _warnungen != null)
+                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
+                               "': Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch " +
+                               "des Heizkessels " + Kesselnamen(v) + " liegt im Simulationsergebnis " +
+                               "nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz " +
+                               "und BEHG-Abgabe.");
+
             // 6. Detail-Daten (Gebäude, Anlage, Komponenten, Klimaregion) für
             //    Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung.
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
             catch { v.Details = null; }
 
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
+        }
+
+        /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>
+        private static string Kesselnamen(VariantenDaten v)
+        {
+            return (v.KesselOhneVerbrauch == null || v.KesselOhneVerbrauch.Count == 0)
+                ? "?" : string.Join(", ", v.KesselOhneVerbrauch);
         }
 
         /// <summary>

@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Testprojekt des Rechenkerns (Umsetzungskonzept iOS, iU4-6).
+
+    net10.0 wie EPOS.Kern selbst - KEIN net*-windows. Damit laufen diese Tests
+    ueberall, wo auch der Kern laeuft, und sind Teil von WP-Plan.Kern.slnf, das
+    die CI ohne Windows abarbeitet.
+
+    Geprueft wird ausschliesslich, was OHNE Datenbank und ohne Oberflaeche
+    entscheidbar ist. Nichts hier ruft DbParam.NachOleDb oder oeffnet eine
+    Verbindung; das bleibt den Referenzlaeufen vorbehalten.
+
+    Etliche Kerntypen sind internal (z. B. Init); EPOS.Kern gibt sie ueber
+    InternalsVisibleTo fuer dieses Projekt frei.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>EPOS.Kern.Tests</RootNamespace>
+    <AssemblyName>EPOS.Kern.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- DIAGRAMME (iU7-8)                                                   -->
+  <!--                                                                    -->
+  <!-- ChartRendererTests zeichnet wirklich - und dafuer reicht das        -->
+  <!-- verwaltete SkiaSharp nicht, es braucht die NATIVE Bibliothek der    -->
+  <!-- Bauumgebung. Sie kaeme ueber EPOS.Kern transitiv mit; hier steht    -->
+  <!-- sie noch einmal, weil DIESES Projekt das ausfuehrende ist: Wer      -->
+  <!-- laufen laesst, benennt seine Laufzeit selbst. Bedingt ueber         -->
+  <!-- IsOSPlatform, damit jede Umgebung genau ihre eigene zieht -         -->
+  <!-- Linux und macOS in kern.yml, Windows in windows.yml (dort laeuft    -->
+  <!-- "dotnet test WP-Plan.Kern.slnf" mit).                               -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+</Project>

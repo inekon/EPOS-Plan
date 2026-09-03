@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -62,9 +61,9 @@ namespace WindowsFormsApplication1
                 int stammId = DataRepository.GetMaxID("Tab_Kostenfaktor", "StammID") + 1;
                 bool ok = DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_Kostenfaktor (StammID, Bezeichnung, IsMainComponent) VALUES (?, ?, ?)",
-                    new OleDbParameter("@sid", stammId),
-                    new OleDbParameter("@bez", neueBezeichnung),
-                    new OleDbParameter("@main", OleDbType.Boolean) { Value = false });
+                    new DbParam("@sid", stammId),
+                    new DbParam("@bez", neueBezeichnung),
+                    new DbParam("@main", DbParamTyp.Boolean) { Wert = false });
                 if (!ok)
                     MessageBox.Show("Der Kostenfaktor konnte nicht angelegt werden.", "Fehler",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -117,7 +116,7 @@ namespace WindowsFormsApplication1
             // Hauptkomponenten sind über IsMainComponent geschützt.
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_Kostenfaktor WHERE Bezeichnung = ? AND IsMainComponent = False",
-                new OleDbParameter("@bez", bezeichnung));
+                new DbParam("@bez", bezeichnung));
 
             LoadKostenfaktoren();
         }
