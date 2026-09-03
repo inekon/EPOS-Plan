@@ -333,6 +333,30 @@ namespace WindowsFormsApplication1
                 erzeugerSeite.Modelle = list_werzmodel;
                 erzeugerSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
             }
+            // iU9-W9.0a: dieselbe Schnittstelle mit VIER anderen Listentypen - die
+            // Bedarfsseiten (Gebaeude, Waermebedarf extern, Prozesswaerme,
+            // Stromverbraucher). Die vier Zweige stehen einzeln da, weil jeder eine
+            // andere Liste meint; der harte Typumbruch auf die Form ist weg.
+            else if (page is IAssistentListenSeite<Z_ProjGebModel> gebaeudeSeite)
+            {
+                gebaeudeSeite.Modelle = list_gebmodel;
+                gebaeudeSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
+            }
+            else if (page is IAssistentListenSeite<Z_ProjWaermebedarfModel> waermebedarfSeite)
+            {
+                waermebedarfSeite.Modelle = list_wbmodel;
+                waermebedarfSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
+            }
+            else if (page is IAssistentListenSeite<Z_ProjektProzesswaermeModel> prozessSeite)
+            {
+                prozessSeite.Modelle = list_prozmodel;
+                prozessSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
+            }
+            else if (page is IAssistentListenSeite<Z_ProjektStromverbraucherModel> stromSeite)
+            {
+                stromSeite.Modelle = list_stromverbrauchermodel;
+                stromSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
+            }
             else if (top == WizardItemClass.GEBAEUDE_ITEM)
             {
                 ((Form_Gebaeude)page).list_gebmodel = list_gebmodel;
@@ -554,9 +578,11 @@ namespace WindowsFormsApplication1
             Program.wizardctrl.Projektname = ((Wizard_Projekt)pageproj).GetProjektName();
             Program.wizardctrl.speichern = false;
 
-            list_gebmodel = ((Form_Gebaeude)listPages[WizardItemClass.GEBAEUDE_ITEM].wizardform).list_gebmodel;
-            list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_pwmodel;
-            list_wbmodel = ((Form_Waermebedarf)listPages[WizardItemClass.WAERMEBEDARF_ITEM].wizardform).list_wbmodel;
+            // iU9-W9.0a: Das Ruecklesen der drei Listen aus ihren Seiten ist entfallen.
+            // Die Seite bekommt in LoadNewForm die Liste des Assistenten HEREIN und
+            // bearbeitet sie an Ort und Stelle (Add/RemoveAt) - die Zuweisung traf also
+            // schon vorher dasselbe Objekt. Mit den Blazor-Seiten gaebe es die Form
+            // nicht mehr, auf die hier umgebrochen wurde.
 
             // (Der frühere auskommentierte Block prüfte die Klimazone nur bei bestimmten
             //  Häkchen. Er rief die zehn Get*CheckBox-Methoden von Wizard_Komponenten,
