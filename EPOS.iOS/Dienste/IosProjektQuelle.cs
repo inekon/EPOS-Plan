@@ -13,7 +13,7 @@ namespace EPOS.iOS;
 /// <para><b>Warum sie in der HUELLE liegt und nicht in EPOS.UI.</b> Hausregel:
 /// „Keine Datenbank in EPOS.UI." Eine Komponente bekommt ihre Daten fertig
 /// herein; wer sie holt, ist die Huelle. Unter Windows tun das die Aufrufer
-/// <c>Views/Kosten/Form_Kosten</c> und
+/// <c>Views/Heizkessel/Form_Heizkessel</c> (fruehere Fassung in <c>Form_Kosten</c>, seit W0 geloescht) und
 /// <c>Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle</c> - hier steht
 /// dasselbe, nur ohne Fenster.</para>
 ///
@@ -146,7 +146,7 @@ public sealed class IosProjektQuelle : IProjektQuelle
     /// <para><b>iU10 legt noch nichts an - und das ist Absicht.</b> Der
     /// Schreibweg des Dialogs (Katalogsuche, INSERT in <c>energy_carrier</c>,
     /// Preishistorie, Projektzuordnung) steht bis heute in der WinForms-Maske
-    /// <c>Views/Kosten/Form_Kosten.CreateNewEnergyCarrier</c> und haengt dort
+    /// <c>Views/Heizkessel/Form_Heizkessel.CreateNewEnergyCarrier (Form_Kosten ist seit W0 geloescht)</c> und haengt dort
     /// am Typ <c>EnergyCarrier</c> und an <c>EnergietraegerKatalogCtrl</c> -
     /// beides ist mit Absicht in der Anwendung geblieben (siehe
     /// <c>EPOS.Kern/CLAUDE.md</c>, „Was mit Absicht NICHT hier liegt").</para>
@@ -172,7 +172,7 @@ public sealed class IosProjektQuelle : IProjektQuelle
             Console.WriteLine("Energietraeger-Variante \"" + ergebnis.VariantenName +
                               "\" zu Brennstoff " + ergebnis.BrennstoffId.ToString(CultureInfo.InvariantCulture) +
                               " (" + daten.Code + ", " + daten.BillingUnit + "): Der Schreibweg liegt noch in " +
-                              "Views/Kosten/Form_Kosten.CreateNewEnergyCarrier und wandert mit dem " +
+                              "Views/Heizkessel/Form_Heizkessel.CreateNewEnergyCarrier (Form_Kosten ist seit W0 geloescht) und wandert mit dem " +
                               "Umzug der Kostenmasken in den Kern.");
         }
         catch (Exception ex)

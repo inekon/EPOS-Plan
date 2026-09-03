@@ -79,6 +79,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Seit .NET 8 fuegt das MAUI-Workload Microsoft.Maui.Controls NICHT mehr implizit
+         hinzu; die Vorlage referenziert es ausdruecklich (Befund zweiter CI-Lauf 03.09.2026:
+         CS0234 "Microsoft.Maui" fehlt trotz UseMaui). Fassung aus Directory.Packages.props. -->
+    <PackageReference Include="Microsoft.Maui.Controls" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
 
     <!-- iOS-Native des Kern-Renderers - Gegenstueck zu den drei bedingten

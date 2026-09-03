@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Energieträgerverwaltung (Etappe KD4, Konzept Kostendialoge § 7, Folien 25/26) —
-    /// der Nachfolger des Energie-Reiters von <c>Form_Kosten</c> (Ä1): links die
+    /// der Nachfolger des Energie-Reiters der Altmaske „Kostenverwaltung" (Ä1): links die
     /// Trägerliste, rechts der Trägerbereich (<see cref="ucFuelSettings"/> bleibt Kern);
     /// beim Träger „Elektrische Energie" zusätzlich die beiden K4-Einstiegskarten
     /// „Kostenprofil" und „Spotmarktpreise" — „Kostenprofil kein separater Tab, nur
@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             {
                 // Ä13 (Nutzerauftrag 26.08.2026): Die Liste zeigt die Träger unter
                 // ihren GRUPPEN (group_code) — Köpfe sind nicht wählbar.
-                List<EnergyCarrier> traeger = Form_Kosten.GetAllCarriers(_projektId);
+                List<EnergyCarrier> traeger = KostenSummenCtrl.GetAllCarriers(_projektId);
                 traeger.Sort((a, b) =>
                 {
                     int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
@@ -477,7 +477,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Statuszeilen der Karten (kompakte Fassung der Form_Kosten-Logik).</summary>
+        /// <summary>Statuszeilen der Karten (kompakte Fassung der Altlogik).</summary>
         private void AktualisiereKarten()
         {
             if (_karteKostenprofil != null)

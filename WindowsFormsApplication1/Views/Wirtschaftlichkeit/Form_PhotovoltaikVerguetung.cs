@@ -157,8 +157,8 @@ namespace WindowsFormsApplication1
                 _investPv = null; _betriebPv = null;
                 try
                 {
-                    _investPv = KomponentenSumme(idStamm, Form_Kosten.KATEGORIE_INVESTITION);
-                    _betriebPv = KomponentenSumme(idStamm, Form_Kosten.KATEGORIE_BETRIEB);
+                    _investPv = KomponentenSumme(idStamm, KostenSummenCtrl.KATEGORIE_INVESTITION);
+                    _betriebPv = KomponentenSumme(idStamm, KostenSummenCtrl.KATEGORIE_BETRIEB);
                 }
                 catch { }
                 try { _strompreisEurKwh = WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh(idStamm); }
@@ -378,7 +378,7 @@ namespace WindowsFormsApplication1
         /// <summary>Summe der PV-Komponente einer Kostenkategorie; null = keine Zeile.</summary>
         private static double? KomponentenSumme(int idProjekt, int kategorie)
         {
-            System.Data.DataTable dt = Form_Kosten.LiesKomponentenSummen(idProjekt, kategorie);
+            System.Data.DataTable dt = KostenSummenCtrl.LiesKomponentenSummen(idProjekt, kategorie);
             if (dt == null) return null;
             foreach (System.Data.DataRow r in dt.Rows)
             {

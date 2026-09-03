@@ -10,10 +10,10 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **268 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **271 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
-Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 80 Controller. Die
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 82 Controller. Die
 Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
 Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
 
@@ -49,8 +49,9 @@ steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
 nachfragen, um das Actions-Kontingent nicht unnötig zu erhöhen.** Der macOS-Läufer zählt
 zehnfach. Deshalb laufen `kern.yml` bei Push nur auf ubuntu und `ios.yml` gar nicht von
 selbst; beide bauen auf macOS nur über *Actions → Run workflow* (bei `kern.yml` mit dem
-Häkchen „macos"), und dieser Aufruf wird vorher mit dem Anwender abgestimmt — auch nach
-Abschluss der Migration.
+Häkchen „macos"). **Bis zum Abschluss aller Migrationsschritte ist der Aufruf des iOS-Jobs
+pauschal freigegeben** (Anwender, 03.09.2026: „immer ja bis Abschluss aller
+Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimmt.
 
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
 

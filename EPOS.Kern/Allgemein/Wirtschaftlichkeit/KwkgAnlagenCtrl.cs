@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -108,7 +108,7 @@ namespace WindowsFormsApplication1
     /// keinen Schreibweg. <see cref="Speichere(KwkgAnlagenAngabe, bool)"/> nimmt sie mit;
     /// die parameterlose Überladung <see cref="Speichere(KwkgAnlagenAngabe)"/> schreibt
     /// unverändert die acht E6-Spalten und lässt die drei neuen ANGETASTET stehen. Das
-    /// ist kein Schönheitswert: <c>Form_KwkgModule</c> (E6) kennt die drei Felder nicht
+    /// ist kein Schönheitswert: die Modulmaske aus E6 kannte die drei Felder nicht
     /// und würde sie sonst bei jedem Speichern auf null zurücksetzen.</para>
     /// </summary>
     public class KwkgAnlagenCtrl
@@ -235,7 +235,7 @@ namespace WindowsFormsApplication1
         /// <para><b>Warum ein Schalter und kein zweiter Aufruf.</b> Die drei Spalten
         /// tragen dieselbe Nullsemantik wie die acht E6-Spalten: leer heißt
         /// „Projektwert". Ein Aufrufer, der sie nicht kennt (E6-Dialog
-        /// <c>Form_KwkgModule</c>), hat sie auch nicht im Bildschirmzustand — er würde
+        /// der Modulmaske aus E6), hat sie auch nicht im Bildschirmzustand — er würde
         /// beim Speichern gepflegte Werte still auf NULL zurücksetzen. Der Schalter
         /// hält die beiden Fälle auseinander, ohne die Spaltennamen zu doppeln.</para>
         /// </summary>

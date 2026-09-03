@@ -3242,66 +3242,6 @@
   <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="btn_Varianten.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_Varianten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>235, 22</value>
-  </data>
-  <data name="btn_Varianten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="btn_Varianten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>155, 37</value>
-  </data>
-  <data name="btn_Varianten.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="btn_Varianten.Text" xml:space="preserve">
-    <value>Varianten</value>
-  </data>
-  <data name="&gt;&gt;btn_Varianten.Name" xml:space="preserve">
-    <value>btn_Varianten</value>
-  </data>
-  <data name="&gt;&gt;btn_Varianten.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_Varianten.Parent" xml:space="preserve">
-    <value>tabPage6</value>
-  </data>
-  <data name="&gt;&gt;btn_Varianten.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="btn_Kosten.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_Kosten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 22</value>
-  </data>
-  <data name="btn_Kosten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="btn_Kosten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>155, 37</value>
-  </data>
-  <data name="btn_Kosten.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="btn_Kosten.Text" xml:space="preserve">
-    <value>Kosten</value>
-  </data>
-  <data name="&gt;&gt;btn_Kosten.Name" xml:space="preserve">
-    <value>btn_Kosten</value>
-  </data>
-  <data name="&gt;&gt;btn_Kosten.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_Kosten.Parent" xml:space="preserve">
-    <value>tabPage6</value>
-  </data>
-  <data name="&gt;&gt;btn_Kosten.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
   <data name="tabPage6.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold</value>
   </data>

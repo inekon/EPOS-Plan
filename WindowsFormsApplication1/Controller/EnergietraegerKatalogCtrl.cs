@@ -188,7 +188,7 @@ namespace WindowsFormsApplication1
             catch { }
 
             var frei = new List<EnergyCarrier>();
-            foreach (EnergyCarrier c in Form_Kosten.GetAllCarriers(0))
+            foreach (EnergyCarrier c in KostenSummenCtrl.GetAllCarriers(0))
                 if (!zugeordnet.Contains(c.ID)) frei.Add(c);
             return frei;
         }

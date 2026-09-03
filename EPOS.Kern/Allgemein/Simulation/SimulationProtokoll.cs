@@ -39,13 +39,13 @@ namespace WindowsFormsApplication1
     /// EIN Simulationslauf im Prozess läuft. Das ist heute so, aber NICHT, weil die
     /// Anwendung einläufig wäre — der Berichtspfad rechnet sehr wohl auf einem
     /// ThreadPool-Thread (<c>BerichtsDatenSammler.Sammle</c> in <c>Task.Run</c>, gerufen
-    /// aus <c>Form_Bericht</c>, <c>Form_Wirtschaftlichkeit</c> und
+    /// aus <c>UcBericht</c>, <c>UcWirtschaftlichkeit</c> und
     /// <c>Form_WirtschaftlichkeitVerlauf</c>). Getragen wird die Invariante von zwei
     /// Dingen:
     ///
     ///   1. <b>Modalität.</b> Alle drei Formulare werden ausschließlich über
-    ///      <c>ShowDialog()</c> geöffnet (aus <c>Form_Variantentest</c> bzw. aus
-    ///      <c>Form_Wirtschaftlichkeit</c> heraus). Solange einer dieser Dialoge offen
+    ///      <c>ShowDialog()</c> geöffnet (aus der Variantenseite bzw. aus der
+    ///      Wirtschaftlichkeitsseite heraus). Solange einer dieser Dialoge offen
     ///      ist, kann der MDI-Thread keinen zweiten Lauf starten — der Simulationsknopf
     ///      der Detailansicht ist nicht erreichbar. <b>Wer eines dieser Formulare je
     ///      nicht-modal öffnet, bricht diese Invariante</b>, und zwar für den Kanal hier

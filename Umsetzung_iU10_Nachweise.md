@@ -169,6 +169,7 @@ BhkwDaten(0)=null
 
 Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
+- [x] **Die Workload installiert sich** — bestätigt im zweiten Lauf (33734332715, 03.09.2026, 20 s): Set `10.0.400.1`, Manifest iOS 26.5.10315, MAUI 10.0.20; Restore, Kern und `EPOS.UI` bauen für `net10.0-ios`. Der Lauf brach danach in der Hülle ab (CS0234 `Microsoft.Maui`): `Microsoft.Maui.Controls` muss seit .NET 8 ausdrücklich referenziert werden — behoben, dritter Lauf nach Freigabe des Anwenders.
 - [ ] **Die Workload installiert sich.** `dotnet workload install maui-ios --version 10.0.400.1`
       läuft durch, `dotnet workload list` zeigt `maui-ios`.
 - [ ] **Xcode passt zur Workload.** Kein Fehler „requires Xcode …"; `xcodebuild -version` meldet

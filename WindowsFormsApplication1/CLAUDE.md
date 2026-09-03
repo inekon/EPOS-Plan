@@ -104,19 +104,30 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 - **`Controller/`** (**20** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
   `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `KlimaregionStammCtrl`,
   `EnergietraegerKatalogCtrl`, `PeakShavingCtrl`, `ProjektExportImportCtrl` und `WPCtrl`
-  (+ `.WinForms.cs`). Die übrigen **81** liegen in `../EPOS.Kern/Controller/` — 50 seit iU4,
-  29 seit iU5-U4, einer seit iU8-8b, einer seit iU9-W1.5 (`KostenfaktorCtrl`).
-- **`Model/`** — **keine `.cs` mehr**; alle 46 Modelle liegen in `../EPOS.Kern/Model/`.
-- **`Views/`** (**267 `.cs`**, davon 158 ohne Designer-Datei; **475 Dateien** mit `.resx`) —
+  (+ `.WinForms.cs`). Die übrigen **82** liegen in `../EPOS.Kern/Controller/` — 50 seit iU4,
+  29 seit iU5-U4, einer seit iU8-8b, einer seit iU9-W1.5 (`KostenfaktorCtrl`), einer seit
+  iU9-W0.1 (`KostenSummenCtrl`).
+- **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
+  (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
+- **`Views/`** (**251 `.cs`**, davon 148 ohne Designer-Datei; **451 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
-  Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). Vom Build ausgenommen sind die
-  „- Kopie"-Dateien und `Form_Simulation_Kurz.*`. **Mit iU9-W1 sind sieben Masken
+  Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
   stehen drei Hüllen — `Views/Kosten/VorlagenUebernahmeHuelle.cs`,
   `Views/Kosten/KostenfaktorKatalogHuelle.cs`,
-  `Views/Wirtschaftlichkeit/KapitalwertVerlaufHuelle.cs`. Der **Stapellauf der Formularkarte
-  zählt seither 111 Masken** (vorher 118); jede weitere Welle senkt die Zahl.
-- **`Allgemein/`** (**43** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+  `Views/Wirtschaftlichkeit/KapitalwertVerlaufHuelle.cs`.
+  **Mit iU9-W0 sind neun weitere stillgelegt** (Anwenderentscheid iF29, 25 Dateien):
+  `Form_Kosten` samt `Form_KostenfaktorItem`, `ucKostenItem` und `Form_Betriebskosten` —
+  **Nachfolger sind `Views/BerichteKosten/UcBkKosten.cs` und
+  `Views/Kosten/Form_KostenKomponente.cs`**, die von außen genutzte Leselogik steht als
+  `EPOS.Kern/Controller/KostenSummenCtrl.cs` im Kern —, dazu `Form_Variantentest` mit den zwei
+  K4-Hüllen `Form_Wirtschaftlichkeit`/`Form_Bericht`, `Form_Simulation_Kurz` (mit
+  `Form_Simulation_Detail - Kopie.cs` und `Allgemein/GrafikTools/ChartManagerNeu.cs`) und
+  `Form_KwkgModule`. Damit ist auch die `Compile Remove`-Liste der `.csproj` entfallen: Was
+  nicht übersetzt werden soll, liegt nicht mehr im Baum. Der **Stapellauf der Formularkarte
+  zählt seither 105 Masken** (111 nach iU9-W1, 118 davor), und die Erreichbarkeit steht auf
+  **0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die Zahl.
+- **`Allgemein/`** (**42** Dateien) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts
@@ -191,7 +202,7 @@ Diese Konventionen beim Erweitern beibehalten.
   iU8/iZ5, nicht eine Empfehlung: Ein zweites Mal dieselbe Maske zu bauen, heißt sie zweimal zu
   pflegen — und beim ersten Fachwechsel laufen die beiden Fassungen auseinander. Ein
   umgestellter Dialog wird im **selben Schritt** gelöscht (Regel M1), es gibt keinen Schalter
-  und kein „bis auf Weiteres". Vorbild ist `Views/Kosten/Form_Kosten.cs`
+  und kein „bis auf Weiteres". Vorbild ist `Views/Heizkessel/Form_Heizkessel.cs`
   (`CreateNewEnergyCarrier`): Parameterwörterbuch bauen, `Geschlossen`-Rückruf auf
   `BlazorDialogForm.Schliessen` legen, `ShowDialog()` wie bisher auswerten. Die Datenbankseite
   gehört dabei in einen Controller im Kern, nicht in die Komponente

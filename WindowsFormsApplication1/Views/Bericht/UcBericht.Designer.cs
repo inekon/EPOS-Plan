@@ -62,7 +62,7 @@
         //
         // Nicht geändert: MinimumSize 600 × 360. Sie ist für diesen Inhalt zu
         // klein — die unten verankerte Zielordner-/Fußzeile schiebt sich dann
-        // in die rechte Spalte. Eine Korrektur müsste Form_Bericht
+        // in die rechte Spalte. Eine Korrektur müsste die frühere Dialoghülle
         // (MinimumSize 700 × 420) mitziehen und ist deshalb hier offen.
         // ÜBERHOLT durch die Nacharbeit vom 21.08.2026, siehe unten.
         //

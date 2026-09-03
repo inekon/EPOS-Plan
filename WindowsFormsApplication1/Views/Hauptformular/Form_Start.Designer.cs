@@ -129,8 +129,6 @@
             pBox_DetailSim = new System.Windows.Forms.PictureBox();
             pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             tabPage6 = new System.Windows.Forms.TabPage();
-            btn_Varianten = new System.Windows.Forms.Button();
-            btn_Kosten = new System.Windows.Forms.Button();
             label21 = new System.Windows.Forms.Label();
             label22 = new System.Windows.Forms.Label();
             textBox_ProjektOpen = new System.Windows.Forms.TextBox();
@@ -1051,24 +1049,9 @@
             // 
             // tabPage6
             // 
-            tabPage6.Controls.Add(btn_Varianten);
-            tabPage6.Controls.Add(btn_Kosten);
             resources.ApplyResources(tabPage6, "tabPage6");
             tabPage6.Name = "tabPage6";
             tabPage6.UseVisualStyleBackColor = true;
-            // 
-            // btn_Varianten
-            // 
-            resources.ApplyResources(btn_Varianten, "btn_Varianten");
-            btn_Varianten.Name = "btn_Varianten";
-            btn_Varianten.UseVisualStyleBackColor = true;
-            btn_Varianten.Click += btn_Varianten_Click;
-            // 
-            // btn_Kosten
-            // 
-            resources.ApplyResources(btn_Kosten, "btn_Kosten");
-            btn_Kosten.Name = "btn_Kosten";
-            btn_Kosten.UseVisualStyleBackColor = true;
             // 
             // label21
             // 
@@ -1381,7 +1364,6 @@
         private System.Windows.Forms.Label label_Haus;
         private System.Windows.Forms.Label label_ProjektStatus;
         private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.Button btn_Kosten;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Button btn_Help;
@@ -1393,7 +1375,6 @@
         private System.Windows.Forms.Button btn_Help_Waermebedarf;
         private System.Windows.Forms.Button btn_Help_Kurzanleitung;
         private System.Windows.Forms.Button btn_Help_Strombedarf;
-        private System.Windows.Forms.Button btn_Varianten;
         private System.Windows.Forms.ComboBox comboBox_Varianten;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel panelVariante;

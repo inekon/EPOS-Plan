@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -252,7 +252,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <c>Tab_Energieanlagen.ID_Type</c> (<see cref="WizardItemClass"/>) →
         /// <c>Tab_KostenKomponente.ID</c> — die festen Nummern 1…7, Begründung bei
-        /// <c>Form_Kosten.GetKomponentenID</c>. 0 = keine Kostenkomponente
+        /// <c>Tab_KostenKomponente</c>. 0 = keine Kostenkomponente
         /// (Referenztypen 5–9, unbekannte Typen).
         /// </summary>
         private static int KomponenteZuTyp(int idType)

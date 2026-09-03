@@ -36,6 +36,18 @@ public sealed class PruefmusterTests
           "EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor" },
     };
 
+    /// <summary>
+    /// Muster STILLGELEGTER Masken (Anwenderentscheid iF29): Sie sind geloescht,
+    /// nicht umgestellt - eine Nachfolge gibt es also nicht. Das Muster bleibt,
+    /// weil an ihm Werkzeugmechanik haengt.
+    /// </summary>
+    public static TheoryData<string, string> StillgelegteMuster => new()
+    {
+        // iU9-W0: Form_KostenfaktorItem ist der einzige Beleg fuer die alte
+        // Designer-Schreibweise mit "this." und fuer die Kette "Oeffner ohne Wurzel".
+        { "Kosten", "Form_KostenfaktorItem" },
+    };
+
     [Theory]
     [MemberData(nameof(Muster))]
     public void DieBlazorNachfolgeStehtImRepoUndDieWinFormsMaskeNichtMehr(
@@ -44,6 +56,20 @@ public sealed class PruefmusterTests
         Assert.True(File.Exists(Repowurzel.Datei(nachfolge)),
                     "Die Nachfolge " + nachfolge + " fehlt.");
 
+        foreach (var endung in new[] { ".Designer.cs", ".cs", ".resx" })
+        {
+            var alt = Repowurzel.Designer(fach + "/" + maske + endung);
+            Assert.False(File.Exists(alt), "Die WinForms-Fassung lebt wieder: " + alt);
+
+            var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
+            Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(StillgelegteMuster))]
+    public void DieStillgelegteWinFormsMaskeIstWegUndDasMusterVollstaendig(string fach, string maske)
+    {
         foreach (var endung in new[] { ".Designer.cs", ".cs", ".resx" })
         {
             var alt = Repowurzel.Designer(fach + "/" + maske + endung);

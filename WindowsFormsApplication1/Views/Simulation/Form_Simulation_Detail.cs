@@ -280,7 +280,7 @@ namespace WindowsFormsApplication1
             init_Chart(chart1);
             init_Chart(chart2);
 
-            // Übersicht-Diagramm (Kreis) initialisieren – entspricht chart5 aus Form_Simulation_Kurz
+            // Übersicht-Diagramm (Kreis) initialisieren – entspricht chart5 der Kurzansicht
             ueb_chart.Legends[0].LegendStyle = LegendStyle.Table;
             ueb_chart.Legends[0].Docking = Docking.Right;
             ueb_chart.Legends[0].Alignment = StringAlignment.Center;
@@ -3326,7 +3326,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Beim Öffnen automatisch simulieren (wie btn_Simulation in Form_Simulation_Kurz)
+            // Beim Öffnen automatisch simulieren (wie btn_Simulation der Kurzansicht)
             // und anschließend den Übersicht-Tab in den Vordergrund holen.
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
             if (ctrl.rows > 0)
@@ -3508,7 +3508,7 @@ namespace WindowsFormsApplication1
 
             Endergebniss_Simulation();
 
-            // Inhalt des Übersicht-Tabs aktualisieren (wie zuvor in Form_Simulation_Kurz.btn_Simulation_Click)
+            // Inhalt des Übersicht-Tabs aktualisieren (wie zuvor in der Kurzansicht)
             FuelleUebersicht();
 
             // NACHARBEIT PAKET 8, BEFUND N1: Erst JETZT ist ein Ergebnis da, das
@@ -3761,7 +3761,7 @@ namespace WindowsFormsApplication1
         }
 
         // Befüllt den Übersicht-Tab mit den Simulationsergebnissen
-        // (entspricht der Ergebnisdarstellung aus Form_Simulation_Kurz.btn_Simulation_Click).
+        // (entspricht der Ergebnisdarstellung der Kurzansicht).
         private void FuelleUebersicht()
         {
             ueb_textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
