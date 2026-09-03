@@ -279,12 +279,25 @@ namespace WindowsFormsApplication1
                     if (!namen.TryGetValue(Convert.ToString(r["Komponente"]), out sp)) continue;
                     // Ids als LITERALE (ACE-Bindungsfalle, Ä21-Befund); der
                     // ID_Projekt-Vergleich schützt vor Fremdzuordnungen.
+                    // SQLite (Cutover 02.09.2026, Befund FS1 N-1): den Access-Verbund
+                    // "UPDATE ... INNER JOIN ... SET" kennt SQLite nicht (near "INNER":
+                    // syntax error - je Komponente ein Fehlerdialog bei jedem Speichern
+                    // der Erzeugerliste). Ersatz mit demselben Ergebnis: korreliertes
+                    // UPDATE - der Wert kommt per Unterabfrage aus der Anlagenzeile
+                    // (a.ID ist Schluessel, hoechstens eine Zeile), die Treffermenge
+                    // schraenkt EXISTS auf dieselbe Verbundbedingung ein. Positionen
+                    // ohne (gueltige) Anlage dieses Projekts bleiben unberuehrt.
+                    // Schritt 47 im eingefrorenen Access-Zweig behaelt seine JOIN-Form.
+                    int komponentenId = Convert.ToInt32(r["ID"]);
+                    string anlageDesProjekts =
+                        "FROM Tab_Energieanlagen AS a " +
+                        "WHERE a.ID = Tab_ProjektWerte.ID_Anlage AND a.ID_Projekt = " + projektId;
                     DataRepository.ExecuteSQL(
-                        "UPDATE Tab_ProjektWerte AS w INNER JOIN Tab_Energieanlagen AS a " +
-                        "ON w.ID_Anlage = a.ID SET w.ID_AnlageGeraet = a.[" + sp + "] " +
-                        "WHERE w.ProjektID = " + projektId +
-                        " AND a.ID_Projekt = " + projektId +
-                        " AND w.KomponentenID = " + Convert.ToInt32(r["ID"]));
+                        "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = " +
+                        "(SELECT a.[" + sp + "] " + anlageDesProjekts + ") " +
+                        "WHERE ProjektID = " + projektId +
+                        " AND KomponentenID = " + komponentenId +
+                        " AND EXISTS (SELECT 1 " + anlageDesProjekts + ")");
                 }
             }
             catch { }
