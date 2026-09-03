@@ -5,7 +5,7 @@ using WindowsFormsApplication1;
 namespace EPOS.iOS;
 
 /// <summary>
-/// Die iOS-Fassung von <see cref="INavigation"/>: Sie reicht die
+/// Die iOS-Fassung von <see cref="WindowsFormsApplication1.INavigation"/>: Sie reicht die
 /// Maskenschluessel des Kerns an die gerade gezeichnete Blazor-Wurzel weiter.
 ///
 /// <para><b>Die Aufrufrichtung.</b> Der Kern kennt nur einen SCHLUESSEL
@@ -27,7 +27,7 @@ namespace EPOS.iOS;
 /// „Abbrechen". Mit dem Assistenten (iU10-9, iL5) kommen die uebrigen
 /// Schluessel dazu.</para>
 /// </summary>
-public sealed class IosNavigation : INavigation
+public sealed class IosNavigation : WindowsFormsApplication1.INavigation   // voll qualifiziert: MAUI fuehrt Microsoft.Maui.Controls.INavigation als globales using (CS0104, dritter CI-Lauf 03.09.2026)
 {
     /// <inheritdoc/>
     public void OeffneGewerk(string gewerk, int idProjekt, string projektname)
