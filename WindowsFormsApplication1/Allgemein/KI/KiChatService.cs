@@ -641,7 +641,7 @@ namespace WindowsFormsApplication1
             // bewusst nicht gepflegt (Entscheid 7.1a). Übersetzt wird deshalb beim
             // ANTWORTEN. Der deutsche Zweig ist unverändert; im englischen entfällt
             // das "auf Deutsch", sonst stünden zwei sich widersprechende Regeln da.
-            if (Program.nLanguage != 0)
+            if (Dienste.Sprache.IstEnglisch)
             {
                 sb.AppendLine("Beantworte die Frage kurz und sachlich - höchstens 6 Sätze.");
                 sb.AppendLine("Answer in English.");

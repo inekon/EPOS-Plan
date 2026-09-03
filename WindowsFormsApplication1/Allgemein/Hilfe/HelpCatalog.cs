@@ -1548,7 +1548,7 @@ namespace WindowsFormsApplication1
             string ankerEn = "";
             if (teile.Length > 1) zielEn = AnkerAbtrennen(teile[1], out ankerEn);
 
-            bool englisch = Program.nLanguage != 0;
+            bool englisch = Dienste.Sprache.IstEnglisch;
             string bevorzugt = englisch ? zielEn : zielDe;
             string bevorzugtAnker = englisch ? ankerEn : ankerDe;
             string ersatz = englisch ? zielDe : zielEn;
