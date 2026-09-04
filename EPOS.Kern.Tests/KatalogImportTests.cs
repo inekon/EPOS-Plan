@@ -425,18 +425,39 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Sonderfall 4b — der <c>_Aufstellung</c>-Index.</b> Ein Index ausserhalb
-        /// 1…4 laesst <c>_Aufstellung[Int32.Parse(...) - 1]</c> werfen und reisst den
-        /// ganzen Dateiimport mit (Befund W13-B35). Die Gegenprobe traegt
-        /// <c>450;7</c>. Erwartung = heutiges Verhalten; W13.0d macht daraus eine
-        /// Protokollmeldung.
+        /// <b>Sonderfall 4b — der <c>_Aufstellung</c>-Index</b> (Befund W13-B35,
+        /// Abweichung A-2).
+        ///
+        /// <para><b>Was der Bestand tat.</b> <c>_Aufstellung[Int32.Parse(...) - 1]</c>
+        /// warf bei einem Index ausserhalb 1…4 eine
+        /// <see cref="IndexOutOfRangeException"/> und riss den GANZEN Dateiimport mit:
+        /// Aus einem Herstellerkatalog mit 129 Waermepumpen wurde wegen EINES Satzes
+        /// nichts, ohne dass der Anwender erfuhr, welcher. Beim Einfrieren am
+        /// 04.09.2026 stand hier deshalb <c>Assert.Throws</c>.</para>
+        ///
+        /// <para><b>Was W13.0d daraus macht.</b> Der Index wird geprueft, die Datei
+        /// laeuft durch, und die Warnung steht in <see cref="WaermepumpenImport.Meldungen"/>.
+        /// Der betroffene Satz behaelt die zuletzt gelesene Aufstellung — beim ersten
+        /// <c>450</c>-Satz der Datei also die leere.</para>
         /// </summary>
         [Fact]
-        public void WaermepumpenBrechenBeiEinemUnbekanntenAufstellungsindexAb()
+        public void WaermepumpenProtokollierenEinenUnbekanntenAufstellungsindex()
         {
             var c = new WaermepumpenImport();
-            Assert.Throws<IndexOutOfRangeException>(
-                () => c.Import(Probe("waermepumpen_gegenprobe_aufstellung.vdi")));
+            c.Import(Probe("waermepumpen_gegenprobe_aufstellung.vdi"));
+
+            Assert.Equal(3, c._list.Count);
+            Assert.All(c._list, a => Assert.Equal("", a.szAufstellung));
+
+            Assert.Single(c.Meldungen);
+            Assert.Equal("IMP_KAT_PROT_AUFSTELLUNG", c.Meldungen[0].Schluessel);
+            Assert.Equal("7", c.Meldungen[0].Werte[0]);
+
+            // Gegenprobe: mit gueltigem Index bleibt die Meldungsliste leer.
+            var gut = new WaermepumpenImport();
+            gut.Import(Probe("waermepumpen_hoval.vdi"));
+            Assert.Empty(gut.Meldungen);
+            Assert.All(gut._list, a => Assert.Equal("innen", a.szAufstellung));
         }
 
         // ==================================================================

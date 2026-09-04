@@ -105,6 +105,74 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
+        /// <summary>
+        /// <b>Der Schreibweg des Katalogimports</b> (iU9-W13.0e): Duplikatpruefung und
+        /// Einfuegen in EINER Transaktion.
+        ///
+        /// <para><b>Was sich gegenueber dem Bestand aendert.</b> Die Klammer — und
+        /// dass die Pruefung hier steht statt als konkateniertes inline-SQL in
+        /// <c>Form_SolarKollektoren_einlesen:225</c>. <see cref="Exists"/> gab es
+        /// bereits, die Maske rief es nur nicht.</para>
+        /// </summary>
+        public VdiUebernahmeErgebnis ImportUebernehmen(SolarkollektorenModel model, string nameOverride = null)
+        {
+            if (model == null) return VdiUebernahmeErgebnis.Fehler;
+
+            try
+            {
+                string bezeichner = nameOverride ?? model.m_szKollektorname;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
+                    int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
+
+                    string sql = @"INSERT INTO [" + TABLE + @"]
+                            (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
+                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DbParam[] ps = {
+                        new DbParam("@id", neueId),
+                        new DbParam("@bez", bezeichner ?? ""),
+                        new DbParam("@fir", (object)(model.m_szFirma ?? "")),
+                        new DbParam("@bes", (object)(model.m_szBeschreibung ?? "")),
+                        new DbParam("@typ", (object)(model.m_szKollektortyp ?? "")),
+                        new DbParam("@mfl", model.m_Modulfläche),
+                        new DbParam("@afl", model.m_Aperturfläche),
+                        new DbParam("@h0", model.m_h0),
+                        new DbParam("@k1", model.m_k1),
+                        new DbParam("@k2", model.m_k2),
+                        new DbParam("@kdir", model.m_Kdir),
+                        new DbParam("@kdfu", model.m_Kdfu),
+                        new DbParam("@inv", model.m_Kosten),
+                        new DbParam("@vor", (int)model.m_Vorlauf),
+                        new DbParam("@rue", (int)model.m_Ruecklauf),
+                        new DbParam("@ro", false)
+                    };
+
+                    v.Ausfuehren(sql, ps);
+                    v.Commit();
+                    this.m_ID = neueId;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Übernahme des Solarkollektors: " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
+        }
+
         public bool InsertFrom(SolarkollektorenModel m)
         {
             if (m != null) CopyFrom(m);

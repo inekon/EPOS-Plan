@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
@@ -302,6 +302,15 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WAERMEBEDARF",
                 Tabelle = "Tab_Waermebedarf_STAMM",
+                // LEERES Array und nicht null (iU9-W13.0g): null heisst "dieser
+                // Katalog hat keinen Dateiimport" (:66-70) - und genau daran lag es,
+                // dass die Waermebedarfsverwaltung als einzige Importmaske des
+                // Bestands ohne Dublettenpruefung auskam (Befund W13-B2). Der
+                // Kopfsatz traegt ausser dem Bezeichner nichts, was sich
+                // vergleichen liesse; die 8 760 Werte stehen im Datenblock. Ein
+                // leeres Array sagt deshalb genau das Richtige: pruefe den NAMEN,
+                // vergleiche keinen Inhalt (Dublettenkonzept 4.4).
+                ImportSpalten = new string[0],
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock
