@@ -573,9 +573,11 @@ namespace WindowsFormsApplication1
         {
             // iU9-W14c.7: Mit Besitzer - der Vorlaeufer rief ShowDialog() ohne "this"
             // und ohne using; das Fenster erschien nicht ueber dem Hauptfenster und
-            // wurde nie entsorgt (Befund W14c-B34). Der MENUETEXT bleibt "Klimadaten"
-            // (Entscheid E-3), die Komponente heisst KlimaregionDialog.
-            KlimaregionHuelle.Oeffnen(this);
+            // wurde nie entsorgt (Befund W14c-B34). Der MENUETEXT bleibt "Klimadaten",
+            // und die Komponente heisst seit dem Entscheid E-3 (04.09.2026) wieder
+            // genauso: KLIMAREGION sind die deutschen Regionen der Klimazonenkarte,
+            // KLIMADATEN der weltweite TMY-Download aus PVGIS.
+            KlimadatenHuelle.Oeffnen(this);
         }
 
         private void MenuItem_ProjektBearbeiten_Click(object sender, EventArgs e)

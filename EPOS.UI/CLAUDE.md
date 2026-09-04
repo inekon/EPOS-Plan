@@ -238,7 +238,7 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Projekt/ProjektWahlDialog` | **zwei** Masken: `Form_ProjektAuswahl` und `Form_ProjektDelete` (iU9‑W15a.2) | `Views/Projekt/ProjektWahlHuelle.cs` → `ProjektCtrl.NamenListe`; der Zweck (Öffnen/Löschen) entscheidet über Titel, Knopftext und die Sicherheitsabfrage |
 | `Projekt/ProjektKopieDialog` | `Form_ProjektSpeichernUnter` (iU9‑W15a.4) | `Views/Projekt/ProjektKopieHuelle.cs` → `ProjektDuplizierenCtrl.PruefeNamen`/`Duplizieren`/`VerwaltungsfelderSetzen`; der Kopierlauf läuft in `Task.Run` mit `Fortschritt` und Abbrechen |
 | `Projekt/ProjektTransferDialog` | `Form_ProjektExportImport` (iU9‑W15a.5, ohne Designer) | `Views/Projekt/ProjektTransferHuelle.cs` → `ProjektExportImportCtrl` (seit W15a.0e im Kern); vier Pfaddelegaten — Dateiwahl lesend und schreibend, Sicherungskopie, Importbericht |
-| `Klimadaten/KlimaregionDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimaregionHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
+| `Klimadaten/KlimadatenDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimadatenHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,

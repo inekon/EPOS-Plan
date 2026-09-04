@@ -605,6 +605,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordner sind auf dieser Plattform fest vorgegeben. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_PFADE_FEST {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_PFADE_FEST", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Allgemeiner Anwendungsordner: ähnelt.
         /// </summary>
         public static string ADM_SET_LBL_ALLGEMEIN {

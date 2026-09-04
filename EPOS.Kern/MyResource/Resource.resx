@@ -13237,6 +13237,9 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
   <data name="ADM_SET_MSG_KI_FEHLER" xml:space="preserve">
     <value>Der KI-Schalter konnte nicht gelesen werden.</value>
   </data>
+  <data name="ADM_SET_HINT_PFADE_FEST" xml:space="preserve">
+    <value>Die Ordner sind auf dieser Plattform fest vorgegeben.</value>
+  </data>
   <data name="ADM_DUBLETTEN_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
   </data>
