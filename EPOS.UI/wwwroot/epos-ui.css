@@ -3027,3 +3027,71 @@ body {
     display: flex;
     gap: 8px;
 }
+
+/* --------------------------------------------------------------------------
+   Einstellungen des KI-Assistenten (iU9-W15b.4).
+
+   Der Vorlaeufer war ein FixedDialog mit fest gerechneten Pixelpositionen
+   (500 x 358, AutoScaleMode.None, weil die Anwendung DpiUnaware laeuft). Hier
+   fliesst das Ganze; das Schluesselfeld nimmt die Breite, der Knopf "Modell neu
+   erkennen" steht daneben und rutscht auf schmalen Flaechen darunter.
+   -------------------------------------------------------------------------- */
+.epos-kieinst {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.epos-kieinst-schluesselzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieinst-schluessel {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieinst-modellneu {
+    flex: 0 0 auto;
+}
+
+.epos-kieinst-limit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Der Limitwert ist ANZEIGE, kein Feld - er steht bewusst im Code und ist auf
+   keinem Weg zu aendern (Befund W15b-B26). Grau wie im Vorlaeufer (DimGray). */
+.epos-kieinst-limitwert {
+    color: var(--epos-text-leise);
+}
+
+/* Der dreiteilige Hinweis: Modellzeile, Datenschutz, Kontingent - drei
+   Absaetze, wie im Katalog. Im Vorlaeufer ein einziges Label 470 x 154. */
+.epos-kieinst-hinweis {
+    color: var(--epos-text-leise);
+}
+
+.epos-kieinst-hinweis p {
+    margin: 0 0 8px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kieinst-hinweis p:last-child {
+    margin-bottom: 0;
+}
+
+.epos-kieinst-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
