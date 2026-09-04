@@ -2237,3 +2237,138 @@ body {
 }
 
 .epos-simkonfig-quellenwahl .epos-knopf { text-align: left; }
+
+/* ===================================================================
+   Die ERGEBNISSEITE der Simulation (iU9-W11b.1) - der Ersatz fuer
+   Form_Simulation_Detail (7 629 Z.) und ihre fuenf Nebenmasken.
+
+   Was hier NICHT steht, ist der Grossteil des Vorlaeufers: 99 Zeilen
+   Geometrie der Kesselseite, 75 der Autarkiekachel, die Ankerarithmetik
+   der Uebersichtszeilen und die Steuerelement-Ausleihe. Ein CSS-Raster
+   ordnet, was dort gerechnet wurde.
+   ========================================================================== */
+
+.epos-simerg {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-karte-rand);
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+}
+
+.epos-simerg-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.epos-simerg-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-simerg-fuss {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+/* Ein Feldblock: Beschriftung links, Wert rechts - der Ersatz fuer die
+   Label/TextBox/Einheit-Zeilen des Entwurfs. */
+.epos-simerg-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 640px;
+}
+
+.epos-simerg-werte {
+    display: grid;
+    grid-template-columns: minmax(180px, max-content) max-content max-content;
+    gap: 2px 10px;
+    align-items: baseline;
+}
+
+.epos-simerg-werte dt { color: var(--epos-text-leise); }
+.epos-simerg-werte dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.epos-simerg-werte .epos-simerg-einheit { color: var(--epos-text-sehr-leise); }
+
+.epos-simerg-block { display: flex; flex-direction: column; gap: 6px; }
+
+.epos-simerg-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+.epos-simerg-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.epos-simerg-hinweis {
+    margin: 2px 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-simerg-info {
+    margin: 6px 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+    max-width: 640px;
+}
+
+.epos-simerg-status { margin: 4px 0; font-weight: 600; }
+.epos-simerg-warn { color: var(--epos-warn-text); }
+.epos-simerg-aequivalent { color: var(--epos-text-sehr-leise); }
+
+.epos-simerg-knopf { /* nimmt die Hausform des Knopfes auf */ }
+.epos-simerg-knopf,
+.epos-simerg-fuss button {
+    min-height: var(--epos-touchziel);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--epos-text);
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.epos-simerg-knopf:disabled,
+.epos-simerg-fuss button:disabled { opacity: .55; cursor: default; }
+
+.epos-simerg-speicherparameter { display: flex; flex-direction: column; gap: 8px; }
+
+/* Die Kennzahlenliste des Stromspeichers: drei Gruppen, vier Spalten, die
+   Vergleichsspalte nur mit Vergleichslauf. Die Warnstufe faerbt die Zeile -
+   dieselben vier Werte wie SpWarnfarbe im Vorlaeufer. */
+.epos-simerg-kennzahlen { width: 100%; border-collapse: collapse; }
+.epos-simerg-kennzahlen th,
+.epos-simerg-kennzahlen td { padding: 3px 8px; text-align: left; }
+.epos-simerg-kennzahlen td.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
+.epos-simerg-kennzahlen tr.epos-stufe-knapp { background: rgb(255, 240, 190); }
+.epos-simerg-kennzahlen tr.epos-stufe-ueberschritten { background: rgb(255, 205, 205); }
+.epos-simerg-kennzahlen tr.epos-stufe-unbestimmt { background: rgb(240, 240, 240); }
+.epos-simerg-kennzahlen tbody th { font-weight: 600; padding-top: 10px; }
+
+/* Der Variantenvergleich: beste Zeile gruen hinterlegt (FARBE_BESTE
+   ARGB(222,241,222)), aktive fett, Fehlerzeile in Firebrick. */
+.epos-simerg-vergleich { width: 100%; border-collapse: collapse; }
+.epos-simerg-vergleich th,
+.epos-simerg-vergleich td { padding: 3px 8px; text-align: left; white-space: nowrap; }
+.epos-simerg-vergleich td.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.epos-simerg-vergleich tr.epos-simerg-beste { background: rgb(222, 241, 222); }
+.epos-simerg-vergleich tr.epos-simerg-aktiv { font-weight: 700; }
+.epos-simerg-vergleich tr.epos-simerg-fehler { color: firebrick; }
