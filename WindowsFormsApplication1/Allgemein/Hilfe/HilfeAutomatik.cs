@@ -21,7 +21,7 @@ namespace WindowsFormsApplication1
     /// <see cref="Application.OpenForms"/>.</b> Eine gemeinsame Basisklasse schied
     /// aus - sie haette 151 Formulare angefasst und waere an den eingebetteten
     /// Formularen (<c>Form_Start</c> laeuft mit <c>TopLevel=false</c> als Kind von
-    /// <c>MDIMainForm</c>) ohnehin vorbeigegangen. Ein <c>Form.Shown</c>-Haken gibt
+    /// <c>Hauptfensterrahmen</c>) ohnehin vorbeigegangen. Ein <c>Form.Shown</c>-Haken gibt
     /// es anwendungsweit nicht; man muesste ihn je Formular anbringen, also wieder
     /// 151-mal. <see cref="Application.Idle"/> dagegen laeuft auch in modalen
     /// Schleifen, kommt ohne jede Aenderung an den Formularen aus und kostet je

@@ -12,7 +12,17 @@ namespace WindowsFormsApplication1
 {
     static class Program
     {
-        public static MDIMainForm mdifrm = null;
+        /// <summary>
+        /// Das Anwendungsfenster, das <c>Application.Run</c> traegt.
+        /// </summary>
+        /// <remarks>
+        /// Anwenderentscheid E-10 (04.09.2026): Klasse und Feld heissen seither
+        /// <c>Hauptfensterrahmen</c> bzw. <c>rahmen</c> - vorher
+        /// <c>MDIMainForm</c> bzw. <c>mdifrm</c>, obwohl es seit jeher kein MDI
+        /// gibt (Befund W16-B10). Ausserhalb dieser Klasse liest das Feld
+        /// niemand; die Umbenennung hat deshalb keinen zweiten Aufrufer.
+        /// </remarks>
+        public static Hauptfensterrahmen rahmen = null;
 
         // iU9-W16b.1 (Anwenderentscheid E-7, K6-a): Das Feld "mainfrm" ist ersatzlos
         // entfallen - das Detailformular FormMain ("Konfiguration Projekt") mit seinen
@@ -305,7 +315,8 @@ namespace WindowsFormsApplication1
             WikiHelpCatalog.Aktueller = new WikiHelpCatalog(dokuBasis);
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
-            // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load
+            // Sicherung, sonst aus dem mitgelieferten Startbestand.
+            // Hauptfensterrahmen.BeimLaden
             // stößt den Onlineabruf danach bewusst ohne await an; ohne diese
             // Vorbelegung sähe jedes Formular, das früher öffnet, einen leeren
             // Katalog. Rangfolge insgesamt: Online > AppData-Sicherung > Beilage.
@@ -317,8 +328,8 @@ namespace WindowsFormsApplication1
             // gepflegt wird.
             HelpExtender = HilfeAutomatik.Starten(HelpCatalog);
 
-            mdifrm = new MDIMainForm();
-            Application.Run(mdifrm);
+            rahmen = new Hauptfensterrahmen();
+            Application.Run(rahmen);
 
             Application.Exit();
         }

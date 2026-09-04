@@ -242,7 +242,7 @@ namespace WindowsFormsApplication1
         //  SolarThermieImport.
         //
         //  IHR EINZIGER AUFRUFER WAR DAS MENUE DES HAUPTFENSTERS - je einer der
-        //  34 Ereignishandler von MDIMainForm. Seit W16c.1 steht der
+        //  34 Ereignishandler von Hauptfensterrahmen. Seit W16c.1 steht der
         //  Maskenschluessel in der Menuetabelle selbst, und
         //  HauptfensterHuelle.Weg reicht ihn unmittelbar an
         //  Dienste.Navigation.OeffneMaske weiter. Eine Methode, die nichts tut,

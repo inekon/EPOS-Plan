@@ -19,7 +19,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Modal, weil beide Aufrufer die Rückkehr brauchen.</b>
     /// <c>MenueCtrl.ProjektNeu</c> und <c>…ProjektBearbeiten</c> werten
-    /// <c>gespeichert</c> aus; <c>Form_Start</c> und <c>MDIMainForm</c> ziehen danach
+    /// <c>gespeichert</c> aus; <c>Form_Start</c> und <c>Hauptfensterrahmen</c> ziehen danach
     /// den Projektkontext aus <c>WizardCtrl.Aktueller.Projektname</c> nach. Dieselbe
     /// Begründung wie bei den beiden Simulationsseiten (R‑W10b‑1 / R‑W11‑1).</para>
     ///

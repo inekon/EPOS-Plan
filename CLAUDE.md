@@ -29,7 +29,7 @@ Razor-Klassenbibliothek ohne Windows-Bindung; die WinForms-Anwendung stellt nur 
 Seit dem 04.09.2026 (Welle iU9‑W10b) ist die **Simulationskonfiguration** eine Razor-SEITE —
 die erste Fachseite, die auch die iOS-Wurzel `AppWurzel` erreicht. **Seit iU9‑W16b ist auch die
 STARTSEITE eine Razor-Seite** (`EPOS.UI/Seiten/Start/Startseite.razor`): Kopfband, sechs Reiter
-mit 21 Kacheln, Fußleiste; `MDIMainForm` hängt sie als `BlazorSeite<Startseite>` ein, das offene
+mit 21 Kacheln, Fußleiste; der `Hauptfensterrahmen` hängt sie als `BlazorSeite<Startseite>` ein, das offene
 Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zwei
 Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
 Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
@@ -41,7 +41,12 @@ zwei Schalen). Zwei Anwenderentscheide vom 04.09.2026 stecken darin: die zwei Sp
 hängen unter einem Kopf **„Sprache"** (W16c‑E‑2), und **„Varianten und Bericht…" wechselt
 die Ansicht** auf `BERICHTE_KOSTEN`, statt den sechsten Reiter der Startseite nach vorn zu
 holen (W16c‑E‑3) — das Reiterblatt bleibt, nur der Menüweg führt in die Ansicht.
-`MDIMainForm` ist seither die **Hülle ohne Designer** (129 Zeilen); die Anwendung läuft
+Die WinForms-Seite ist seither die **Hülle ohne Designer** (129 Zeilen) und heißt seit dem
+Anwenderentscheid **E‑10** vom 04.09.2026 `Hauptfensterrahmen`
+(`WindowsFormsApplication1/Views/Hauptformular/Hauptfensterrahmen.cs`, vorher `MDIMainForm` —
+`IsMdiContainer` stand seit jeher auf `false`): **drei Namen, drei Dinge** — der RAHMEN ist das
+Fenster mit `Application.Run`, dem `BlazorWebView`, F1 und dem Sprachwechsel, `Hauptfenster` die
+Razor-SEITE darin, `HauptfensterHuelle` deren Blazor-Hülle. Die Anwendung läuft
 „Per Monitor V2" (E‑6 / iF21), die `DpiInsel` ist gefallen. `WindowsFormsApplication1` führt
 damit **eine** Maske (`Form_HelpPopup`, bleibt bis iU11), **keine Fachmaske** und **null**
 Inline-SQL — die Mischphase ist zu Ende (M9).
