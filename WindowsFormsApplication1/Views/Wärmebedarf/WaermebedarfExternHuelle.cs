@@ -60,13 +60,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die WÄRMEBEDARFSSEITE des Assistenten — dieselbe Komponente, randlos.</summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<WaermebedarfExternDialog, Z_ProjWaermebedarfModel>(
-                (projektId, projektName, modelle) => new Dictionary<string, object>(
-                    Gaben(null, projektId, projektName, modelle, wizard: true)),
-                MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         // =================================================================================
         // Der Parametersatz

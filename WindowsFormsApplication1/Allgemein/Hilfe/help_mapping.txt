@@ -176,7 +176,7 @@ Form_ImportKonflikte.btn_Help       = Projektverwaltung#konfliktliste
 #
 # Der Assistent fuehrt Schritt fuer Schritt durch ein neues Projekt - das ist
 # genau der Stoff der Kurzanleitung.
-WizardParent.btn_Help               = Kurzanleitung
+AssistentSeite.btn_Help             = Kurzanleitung
 
 # --- Admin ----------------------------------------------------------------
 Form_AdminSettings.btn_Help         = Einstellungen

@@ -120,70 +120,66 @@ namespace WindowsFormsApplication1
                           wizard: false);
         }
 
-        /// <summary>Die PROZESSWÄRME-Seite des Assistenten (Seite 4).</summary>
-        internal static Form AssistentSeiteProzess()
+        /// <summary>
+        /// Der PARAMETERSATZ der PROZESSWÄRME-Seite des Assistenten (Seite 4).
+        ///
+        /// <para>iU9-W16a.5: Die Fabrikmethode <c>AssistentSeiteProzess()</c> ist
+        /// entfallen — der Assistent ist selbst eine Razor-Seite und braucht kein
+        /// randloses WinForms-Formular mehr.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> AssistentGabenProzess(
+            int projektId, List<Z_ProjektProzesswaermeModel> modelle)
         {
-            return new BlazorAssistentSeite<BedarfsProfileDialog, Z_ProjektProzesswaermeModel>(
-                (projektId, projektName, modelle) =>
+            var zeilen = new List<BedarfsProfilZeile>();
+            foreach (Z_ProjektProzesswaermeModel m in modelle)
+                zeilen.Add(new BedarfsProfilZeile
                 {
-                    var zeilen = new List<BedarfsProfilZeile>();
-                    foreach (Z_ProjektProzesswaermeModel m in modelle)
-                        zeilen.Add(new BedarfsProfilZeile
-                        {
-                            IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
-                            Name = m.szProzessname ?? "", Summe = m.Summe
-                        });
+                    IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
+                    Name = m.szProzessname ?? "", Summe = m.Summe
+                });
 
-                    Action geaendert = () =>
+            Action geaendert = () =>
+            {
+                modelle.Clear();
+                foreach (BedarfsProfilZeile z in zeilen)
+                    modelle.Add(new Z_ProjektProzesswaermeModel
                     {
-                        modelle.Clear();
-                        foreach (BedarfsProfilZeile z in zeilen)
-                            modelle.Add(new Z_ProjektProzesswaermeModel
-                            {
-                                ID_Z = z.IdZ, ID_Projekt = projektId,
-                                ID_Prozesswaerme = z.IdStamm,
-                                szProzessname = z.Name, Summe = z.Summe
-                            });
-                    };
+                        ID_Z = z.IdZ, ID_Projekt = projektId,
+                        ID_Prozesswaerme = z.IdStamm,
+                        szProzessname = z.Name, Summe = z.Summe
+                    });
+            };
 
-                    return new Dictionary<string, object>(
-                        Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
-                              wizard: true));
-                },
-                MASS);
+            return Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
+                         wizard: true);
         }
 
-        /// <summary>Die STROMVERBRAUCHER-Seite des Assistenten (Seite 5).</summary>
-        internal static Form AssistentSeiteStrom()
+        /// <summary>Der PARAMETERSATZ der STROMVERBRAUCHER-Seite des Assistenten (Seite 5).</summary>
+        internal static IReadOnlyDictionary<string, object> AssistentGabenStrom(
+            int projektId, List<Z_ProjektStromverbraucherModel> modelle)
         {
-            return new BlazorAssistentSeite<BedarfsProfileDialog, Z_ProjektStromverbraucherModel>(
-                (projektId, projektName, modelle) =>
+            var zeilen = new List<BedarfsProfilZeile>();
+            foreach (Z_ProjektStromverbraucherModel m in modelle)
+                zeilen.Add(new BedarfsProfilZeile
                 {
-                    var zeilen = new List<BedarfsProfilZeile>();
-                    foreach (Z_ProjektStromverbraucherModel m in modelle)
-                        zeilen.Add(new BedarfsProfilZeile
-                        {
-                            IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
-                            Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
-                        });
+                    IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
+                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
+                });
 
-                    Action geaendert = () =>
+            Action geaendert = () =>
+            {
+                modelle.Clear();
+                foreach (BedarfsProfilZeile z in zeilen)
+                    modelle.Add(new Z_ProjektStromverbraucherModel
                     {
-                        modelle.Clear();
-                        foreach (BedarfsProfilZeile z in zeilen)
-                            modelle.Add(new Z_ProjektStromverbraucherModel
-                            {
-                                m_ID_Z = z.IdZ, m_ID_Projekt = projektId,
-                                m_ID_Stromverbraucher = z.IdStamm,
-                                m_szVerbraucher = z.Name, m_Summe = z.Summe
-                            });
-                    };
+                        m_ID_Z = z.IdZ, m_ID_Projekt = projektId,
+                        m_ID_Stromverbraucher = z.IdStamm,
+                        m_szVerbraucher = z.Name, m_Summe = z.Summe
+                    });
+            };
 
-                    return new Dictionary<string, object>(
-                        Gaben(null, BedarfsArt.Stromverbraucher, projektId, zeilen, geaendert,
-                              wizard: true));
-                },
-                MASS);
+            return Gaben(null, BedarfsArt.Stromverbraucher, projektId, zeilen, geaendert,
+                         wizard: true);
         }
 
         // =================================================================================

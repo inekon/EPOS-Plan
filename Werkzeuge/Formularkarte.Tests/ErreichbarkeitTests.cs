@@ -173,26 +173,23 @@ public sealed class ErreichbarkeitTests
         Assert.Equal("MDIMainForm", knoten.Pfad);
     }
 
-    [Fact]
-    public void DerAssistentZiehtSeineDreizehnSeitenMit()
-    {
-        // Die Seiten stehen als Erzeugerliste in einem statischen Feld von
-        // AssistentSeiten; wer nur Methodenrumpfe liest, findet sie nicht.
-        //
-        // iU9-W15a.9: Wizard_Projekt ist der dritte Zeuge gewesen und mit W15a.6
-        // gefallen (die Seite ist die Razor-Komponente ProjektKopfSeite). ZWEI
-        // Zeugen genuegen - der Test prueft die MECHANIK des Lesers, nicht die
-        // Vollzaehligkeit der Seiten. Eine der elf portierten Seiten koennte hier
-        // nicht einspringen: Ihr Knoten heisst BlazorAssistentSeite<...>, nicht
-        // Wizard_Gebaeude.
-        //
-        // WELLE 16 MUSS IHN GANZ STREICHEN: Wizard_Komponenten und
-        // Wizard_Stromlastgang sind die letzten zwei WinForms-Assistentenseiten.
-        foreach (var klasse in new[] { "Wizard_Komponenten", "Wizard_Stromlastgang" })
-        {
-            Assert.Equal(Erreichbar.Ja, Knoten(klasse).Status);
-        }
-    }
+    /// <summary>
+    /// iU9-W16a.3 — der AUFTRAG T2 aus dem Protokoll der Welle 15a (§ 8) ist
+    /// erledigt: <c>DerAssistentZiehtSeineDreizehnSeitenMit</c> ist gestrichen.
+    ///
+    /// <para>Er pruefte, dass der Leser Klassennamen auch in der Erzeugerliste eines
+    /// STATISCHEN FELDES findet (<c>AssistentSeiten.ERZEUGER</c>) und nicht nur in
+    /// Methodenruempfen. Seine drei Zeugen sind der Reihe nach gefallen:
+    /// <c>Wizard_Projekt</c> mit W15a.6, <c>Wizard_Stromlastgang</c> mit W16a.1,
+    /// <c>Wizard_Komponenten</c> mit W16a.3. Ein Ersatz ist im Bestand nicht
+    /// moeglich: In der Liste stehen seither ausschliesslich Huellenaufrufe, und
+    /// eine Huelle ist keine Maske - ihr Knoten hiesse
+    /// <c>BlazorAssistentSeite&lt;...&gt;</c>.</para>
+    ///
+    /// <para>Die MECHANIK selbst bleibt geprueft: <c>DasPruefmusterIstUnerreichbarUndSagtWarum</c>
+    /// und <c>WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar</c> lesen
+    /// denselben Graphen am eingefrorenen Pruefmuster.</para>
+    /// </summary>
 
     [Fact]
     public void DieSprungtabelleLoestDieMaskenschluesselAuf()
@@ -334,7 +331,11 @@ public sealed class ErreichbarkeitTests
         // zwei Gliedern); ihre zwei Geschwister Form_Lizenz und Form_Erststart
         // haben keinen Designer und tauchten in dieser Zaehlung nie auf. Die Zahl
         // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 11,
+        // Nach Welle 16a.1: 10 von 10 - sie nimmt GENAU EINE Designer-Maske mit
+        // (Wizard_Stromlastgang, die Assistentenseite 6). Nach Welle 16a.3: 9 von 9
+        // (Wizard_Komponenten, die Assistentenseite 0). Nach Welle 16a.5: 7 von 7
+        // (WizardParent und das UserControl ProjektAuswahl).
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 7,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

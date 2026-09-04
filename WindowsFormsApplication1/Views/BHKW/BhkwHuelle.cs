@@ -342,14 +342,9 @@ namespace WindowsFormsApplication1
         /// Die BHKW-Seite des ASSISTENTEN — dieselbe Komponente, randlose Hülle,
         /// <c>Wizard = true</c>.
         /// </summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<BhkwDialog>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(
-                        Gaben(null, projektId, WizardItemClass.BHKW_TYP, modelle, wizard: true)),
-                PROJEKT_MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>
         /// Der PARAMETERSATZ des Projektdialogs. Aufbau und Begründung wie in

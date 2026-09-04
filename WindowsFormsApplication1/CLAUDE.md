@@ -107,7 +107,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
 - **`Controller/`** (**15** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
-  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl` und `EnergietraegerKatalogCtrl`.
+  `*KontextMenuCtrl`, `MenueCtrl`, `EnergietraegerKatalogCtrl` und `ErststartCtrl`.
+  **`WizardCtrl` ist mit iU9‑W16a.4 in den Kern gezogen** — seine einzige WinForms-Kante
+  war das Feld `public WizardParent parentform` mit genau EINEM Schreiber und KEINEM
+  Leser im ganzen Bestand (Befund W16a‑B2); erst danach konnte `AssistentCtrl` (K3)
+  entstehen, denn der Assistent RUFT diesen Schreibweg.
   **`ProjektExportImportCtrl` ist mit iU9‑W15a.0e in den Kern gezogen** — seine einzige
   Kante war die ZAHL `SchemaMigration.ZIEL_VERSION`; sie steht seither als
   `SchemaStand.Zielversion` im Kern, und der `using System.Windows.Forms` der Datei war
@@ -127,7 +131,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**116 `.cs`**; **157 Dateien** mit `.resx`) —
+- **`Views/`** (**98 `.cs`**; **112 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -309,26 +313,33 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 11 Masken** (12 nach iU9‑W15b, 13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 7 Masken** (11 nach iU9‑W15c, 12 nach iU9‑W15b, 13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **7** (11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **3** (7 nach W15c, 11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15c **11 von 11 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W16a **7 von 7 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
   jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
   Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
   `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
   Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16;
   **der Test ist dort zu streichen oder auf ein Prüfmuster umzuziehen** (Risiko
-  R‑W15a‑10). Der **Assistenten-Zeuge** führt seit W15a.9 nur noch zwei Klassen
-  (`Wizard_Komponenten`, `Wizard_Stromlastgang`) — auch er fällt mit Welle 16.
+  R‑W15a‑10). Der **Assistenten-Zeuge** (`DerAssistentZiehtSeineDreizehnSeitenMit`)
+  ist mit **iU9‑W16a.3 GESTRICHEN** — seine drei Zeugen sind der Reihe nach gefallen
+  (`Wizard_Projekt` W15a.6, `Wizard_Stromlastgang` W16a.1, `Wizard_Komponenten`
+  W16a.3), und in `AssistentSeiten.ERZEUGER` standen zuletzt nur noch Hüllenaufrufe;
+  ein Ersatz ist im Bestand nicht möglich. Damit ist der W16-Auftrag **T2** aus dem
+  W15a-Protokoll erledigt (T1, der Maskenschlüssel-Zeuge an `FormMain`, folgt mit
+  W16b/W16c).
   Der historische Stand: bis iU9‑W12 hing der Erreichbarkeitsanker an
   `Form_AdminSettings` (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
   (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
-  behalten. **Der Kleinschreibungs-Zeuge des Stapellauf-Tests hängt seit iU9‑W14b
-  an `WizardParent.designer.cs`** (vorher `Form_Brauchwasser_Admin`): Nach W14a und
-  W14b bleiben genau zwei kleingeschriebene Designer, `WizardParent` und
-  `Wizard_Komponenten`, und beide kommen erst mit Welle 16 an die Reihe.
+  behalten. **Der Kleinschreibungs-Zeuge des Stapellauf-Tests steht seit iU9‑W16a.5 im
+  PRÜFMUSTER** (Entscheid E‑9): Nach dieser Teilwelle führt `WindowsFormsApplication1`
+  KEINE kleingeschriebene Designer-Datei mehr — die letzten beiden waren `WizardParent`
+  und `Wizard_Komponenten`. Letztere ist eingefroren nach
+  `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wizard/` gewandert und trägt den Zeugen
+  weiter; der Großschreibungs-Zeuge bleibt bis W16c an `MDIMainForm.Designer.cs`.
   **Mit iU9‑W11b sind sechs weitere Masken verschwunden — die letzten des
   Simulationsbereichs**, zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer,
   21 MessageBox und 17 Zeichenflächen: `Form_Simulation_Detail` (7 629 Z. +
@@ -575,6 +586,42 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Werkzeugliste), `KiChatKontext` (Positivliste und Bereichszuordnung, E‑9) und
   `Allgemein/Hilfe/Kurzbeschreibung` (Auflage H‑1). Protokoll:
   [`Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W16a sind vier weitere Masken verschwunden — der PROJEKTASSISTENT**,
+  zusammen 1 286 Zeilen `.cs`, 988 Zeilen Designer und 2 `MessageBox`:
+  `Wizard_Stromlastgang` (108 Z.), `Wizard_Komponenten` (216 Z.), der Rahmen
+  `WizardParent` (962 Z.) und das UserControl `ProjektAuswahl` (408 Z., die
+  iZ5-Ausnahme aus W15a — es lebte in zwei Wirten, und der zweite war der Rahmen).
+  **Vier Masken werden ZWEI Komponenten und ein Baustein**: `Wizard_Stromlastgang`
+  ist DIESELBE `StromganglinieDialog` wie der Dialog der Startkachel (Befund
+  W12‑O‑3, kein zweiter Bau); `Wizard_Komponenten` wird
+  `Dialoge/Bedarf/KomponentenauswahlDialog`; der Rahmen wird der Baustein
+  `Bausteine/Assistent` plus die Seite `Seiten/Assistent/AssistentSeite`. An ihrer
+  Stelle stehen **zwei Hüllen** — `Views/Wizard/KomponentenauswahlHuelle.cs` und
+  `Views/Wizard/AssistentHuelle.cs`.
+  **Der Befund der Welle ist der Rechenweg, der gar nicht in den Kern konnte:**
+  `WizardCtrl` (1 737 Z., die 23 Schreibmethoden des Assistenten) lag im
+  Anwendungsprojekt, obwohl es keine Zeile Oberfläche enthielt — seine einzige
+  WinForms-Kante war das Feld `public WizardParent parentform` mit genau EINEM
+  Schreiber und KEINEM Leser (Befund W16a‑B2). Ohne diese Streichung hätte
+  `AssistentCtrl` (K3) nicht entstehen können.
+  Neu im Kern sind `Controller/KomponentenBestandCtrl.cs` (K1, **unverändert
+  verschoben** — der Bitgleichheitsnachweis N6 gegen den eingefrorenen
+  `Form_Start.status`-Wert läuft für **alle dreizehn** Referenzprojekte und belegt
+  damit Entscheid E‑3), `Controller/AssistentCtrl.cs` (K3 — die sieben
+  Zustandslisten, die sechs Ladewege, die Seitenschaltung und der Speicherlauf mit
+  **bitgleicher** Schrittreihenfolge) und der umgezogene `Controller/WizardCtrl.cs`.
+  **`Form_Start.UpdateWizardSymbole` bleibt vorerst stehen** — es fällt mit W16b.
+  **Entscheid E‑4, erste Hälfte:** Statt siebzehn stiller `return` meldet der
+  Speicherweg EINEN Fehler und nennt den Schritt; der Assistent bleibt stehen, die
+  Eingaben gehen nicht verloren. Die **Transaktion** ist NICHT umgesetzt und bleibt
+  Anwenderfrage: Sie setzte voraus, dass alle 23 Schreibmethoden von `WizardCtrl`
+  einen `DbVorgang` hereingereicht bekommen — ein Umbau des Schreibwegs, den Risiko
+  R‑W16‑6 ohne Windows-Feldvergleich untersagt.
+  **`AktionsKarte` bleibt bis W16b**: Sechs ihrer neunzehn Instanzen stehen auf
+  `Form_Start.tabPage1`; die dreizehn des Komponentenschritts sind gefallen.
+  `Views/Wizard` führt seither KEINE Designer-Maske mehr, `Views/Projekt` ebenfalls
+  nicht. Protokoll:
+  [`Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
   Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
   Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über

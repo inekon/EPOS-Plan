@@ -8,9 +8,17 @@
 
    Als <button>, nicht als <div>: So ist die Kachel mit der Tastatur
    erreichbar, meldet sich einer Sprachausgabe als Schaltflaeche und
-   beantwortet Enter und Leertaste ohne eigenes Zutun. *@
+   beantwortet Enter und Leertaste ohne eigenes Zutun.
 
-<button type="button" class="epos-kachel" @onclick="Geklickt">
+   iU9-W16a.2 (Befund W16-B7): ZWEI neue Gaben fuer den Komponentenschritt des
+   Assistenten. Zustand faerbt den Statuspunkt gruen oder grau statt ihn nur
+   ein- und auszublenden; Aktiv nimmt die Kachel aus der Bedienung, ohne sie zu
+   verstecken - der Ersatz fuer die vierzehn Zeilen Cursors.Default, mit denen
+   AktionsKarte ihre Anzeigekacheln entschaerfte (Wizard_Komponenten :166-171).
+   Ein <button disabled> ist dabei mehr als eine Optik: Er nimmt die Kachel auch
+   aus der Tabreihenfolge und meldet sich einer Sprachausgabe als gesperrt. *@
+
+<button type="button" class="epos-kachel" disabled="@(!Aktiv)" @onclick="Geklickt">
     @if (!string.IsNullOrEmpty(Bild))
     {
         <img class="epos-kachel-bild" src="@Bild" alt="" />
@@ -20,10 +28,10 @@
     {
         <span class="epos-kachel-beschreibung">@Beschreibung</span>
     }
-    @if (!string.IsNullOrEmpty(Status))
+    @if (PunktSichtbar)
     {
         <span class="epos-kachel-status">
-            <span class="epos-kachel-statuspunkt" aria-hidden="true"></span>@Status
+            <span class="epos-kachel-statuspunkt @Punktklasse" aria-hidden="true"></span>@Status
         </span>
     }
 </button>
@@ -37,9 +45,28 @@
 
     /// <summary>
     /// Der gepflegte Bestand in einem Satz - leer, solange es nichts zu melden
-    /// gibt. Nur mit Text erscheint auch der gruene Statuspunkt.
+    /// gibt. Ohne <see cref="Zustand"/> erscheint der gruene Statuspunkt nur mit
+    /// Text; mit <see cref="Zustand"/> steht der Punkt immer.
     /// </summary>
     [Parameter] public string Status { get; set; } = "";
+
+    /// <summary>
+    /// Der Statuspunkt als ZUSTAND statt als Vorhandensein eines Textes
+    /// (iU9-W16a.2, Befund W16-B7): gruen „im Projekt", grau „nicht im Projekt",
+    /// der Punkt in beiden Faellen sichtbar. Nicht gesetzt = das alte Verhalten
+    /// (Punkt nur mit Text, immer gruen) - so bleiben die Kacheln der Kostenseite
+    /// und der Projektliste unveraendert.
+    /// </summary>
+    [Parameter] public Kachelstand? Zustand { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> zeigt die Kachel wie bisher, nimmt sie aber aus der
+    /// Bedienung — der Ersatz fuer <c>Cursors.Default</c> auf der Karte UND jedem
+    /// Kind (<c>Wizard_Komponenten.KachelZeichnen</c> :166-171). Gedacht fuer
+    /// Kacheln, die einen Bestand ehrlich anzeigen, ihn aber nicht verwalten
+    /// (Brauchwasser und Pufferspeicher im Komponentenschritt).
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
 
     /// <summary>
     /// Adresse des Sinnbilds - eine Datei unter "_content/EPOS.UI/..." oder eine
@@ -49,4 +76,9 @@
 
     /// <summary>Die Kachel wurde angeklickt.</summary>
     [Parameter] public EventCallback Geklickt { get; set; }
+
+    private bool PunktSichtbar => Zustand is not null || !string.IsNullOrEmpty(Status);
+
+    private string? Punktklasse
+        => Zustand == Kachelstand.Aus ? "epos-kachel-statuspunkt--aus" : null;
 }
