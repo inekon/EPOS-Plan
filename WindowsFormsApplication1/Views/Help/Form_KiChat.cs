@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using KiKern;
 
@@ -115,10 +116,11 @@ namespace WindowsFormsApplication1
         {
             BaueOberflaeche();
 
-            // Der Ausfuehrer marshallt jeden Datenbankzugriff ueber dieses Steuerelement
-            // auf den UI-Thread (Fachkonzept 3.4). Ohne Anker suchte er sich das erste
-            // offene Formular - das kann waehrend eines Wizards ein anderes sein.
-            KiAusfuehrer.Anker = this;
+            // Der Ausfuehrer marshallt jeden Datenbankzugriff ueber dieses Fenster auf
+            // den UI-Thread (Fachkonzept 3.4). Ohne eingelegten Weg suchte er sich das
+            // erste offene Formular - das kann waehrend eines Wizards ein anderes sein.
+            // Seit iU9-W15b.0c ist der Weg ein Delegat statt eines Control (E-8).
+            KiAusfuehrer.AufOberflaeche = ArbeitAufDemFenster;
 
             // Der Weg zur Bestätigung (Fachkonzept 3.5, Punkt 3). Solange dieses Fenster
             // offen ist, kann der Assistent fragen; ist es zu, läuft keine Schreibaktion,
@@ -130,7 +132,8 @@ namespace WindowsFormsApplication1
         /// <inheritdoc/>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            if (ReferenceEquals(KiAusfuehrer.Anker, this)) KiAusfuehrer.Anker = null;
+            if (ReferenceEquals(KiAusfuehrer.AufOberflaeche?.Target, this))
+                KiAusfuehrer.AufOberflaeche = null;
             if (_sperrUhr != null) _sperrUhr.Stop();
 
             // Eine offene Vorschau darf das Fenster nicht überleben: Wer das Fenster
@@ -140,6 +143,30 @@ namespace WindowsFormsApplication1
             if (ReferenceEquals(KiChatService.Bestaetigungsweg, _bestaetigungsweg))
                 KiChatService.Bestaetigungsweg = null;
             base.OnFormClosed(e);
+        }
+
+        /// <summary>
+        /// Der Weg auf den Oberflaechenfaden fuer <see cref="KiAusfuehrer.AufOberflaeche"/>
+        /// (iU9-W15b.0c). Er tut woertlich das, was der Ausfuehrer bis dahin selbst mit
+        /// dem <c>Anker</c> tat: <c>InvokeRequired</c> fragen und notfalls
+        /// <c>BeginInvoke</c>.
+        /// </summary>
+        private Task ArbeitAufDemFenster(Func<Task> arbeit)
+        {
+            if (arbeit == null) return Task.CompletedTask;
+            if (IsDisposed || !IsHandleCreated || !InvokeRequired) return arbeit();
+
+            var quelle = new TaskCompletionSource<bool>();
+            BeginInvoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    arbeit();
+                    quelle.SetResult(true);
+                }
+                catch (Exception ex) { quelle.SetException(ex); }
+            });
+            return quelle.Task;
         }
 
         /// <summary>
