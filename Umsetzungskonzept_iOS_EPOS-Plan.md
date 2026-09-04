@@ -1633,8 +1633,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > E‑2 (Druckknopf bleibt), E‑4 (kein iOS-Einstieg in die Lizenzverwaltung, iU11), E‑12 (Suchleiste entfallen), E‑17
 > (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Entschieden am 04.09.2026 (Empfehlungen angenommen):**
 > W15c‑O‑1 — der Vertragsendpunkt löst die AGB-Seite ab, sobald der Lizenzserver 1.4.0 im Betrieb ist (eine Zeile und ihr
-> Zeuge); W15c‑O‑2 — das `LizenzTexte`-Bündel für die zwei großen Komponenten (450/452 Zeilen, 25 bzw. 20 Einzelparameter)
-> kommt **nach W16** als eigener Commit. **Offen:** W15c‑O‑3
+> Zeuge); W15c‑O‑2 — das `LizenzTexte`-Bündel für die zwei großen Komponenten **ist umgesetzt** (04.09.2026, `2281ece`:
+> gemessen 18 bzw. 29 Einzelparameter, nicht 25/20, werden **einer**; `LizenzDialog` 449 → 349 und `LizenzVerwaltungDialog`
+> 451 → 347 Zeilen; `LizenzTexte` füllt sich selbst aus `MyResource` in de und en, ein leerer Katalogeintrag bleibt leer (E‑7);
+> die 54 Dialogfälle bleiben, ein neuer Fall prüft die Selbstfüllung aller Texte; Regel in `EPOS.UI/CLAUDE.md`: ab etwa
+> zehn Anzeigetexten ein Bündel, `*Texte` = Beschriftungen, `*Gaben` = Zustand). **Offen:** W15c‑O‑3
 > (Textsuche im Vertragstext), W15c‑O‑4 (Lizenzeinstieg auf iOS, iU11), W15c‑O‑5 (`Form_HelpPopup` fällt weder mit W15c
 > noch mit W16).
 >
