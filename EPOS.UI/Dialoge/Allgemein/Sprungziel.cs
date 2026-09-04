@@ -37,18 +37,16 @@
 /// </summary>
 public static class Sprungziel
 {
-    /// <summary>
-    /// Katalog „Gesetzliche Parameter", vorgewählt auf die Klasse CO₂-Preis —
-    /// der Knopf der Emissionsgruppe im Wirtschaftlichkeits-Parameterdialog
-    /// (Vorläufer: <c>Form_WirtschaftlichkeitParameter.btnGesetzeskatalog_Click</c>).
-    /// </summary>
-    public const string GesetzesparameterCo2 = "GESETZESPARAMETER_CO2";
-
-    /// <summary>
-    /// Katalog „Gesetzliche Parameter" ohne Vorwahl — dieselbe Maske, aber
-    /// von einem Einstieg aus, der keine Klasse meint.
-    /// </summary>
-    public const string Gesetzesparameter = "GESETZESPARAMETER";
+    // iU9-W14c.3: Die ZWEI Gesetzeszweige sind hier weg - Gesetzesparameter und
+    // GesetzesparameterCo2. Sie waren die letzten zwei abloesbaren Schluessel
+    // ueberhaupt: Beide Sprungquellen waren schon vorher Razor (Befund W14c-B13),
+    // aus jedem Sprung ist eine UEBERLAGERUNG im selben Fenster geworden, und die
+    // Vorwahl der Klasse CO2_PREIS reicht der Wirt als Parameter hinein.
+    //
+    // WAS BLEIBT, IST EIN ENTSCHEID, KEIN REST (R-W14c-11): SpeicherOptimierung
+    // steht bis Welle 16. Form_SpeicherOptimierung bleibt WinForms (iF22) - sie ist
+    // der einzige Ort des Programms, an dem ScottPlot laeuft. Wer Sprungziel und
+    // Sprungbruecke jetzt "aufraeumt", bricht sie.
 
     // iU9-W14a.4: Die FUENF Katalogverwaltungen der Erzeuger sind hier weg -
     // HeizkesselAdmin, StromspeicherAdmin, PvAdmin, PufferSpAdmin und

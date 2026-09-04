@@ -222,6 +222,45 @@ namespace ChartProben
                             },
                             "Monat", "Temperatur [°C]"));
 
+            // =========================================================================
+            // 16b/16c - die ZWEI KLIMABILDER der Welle 14c (iU9-W14c.7)
+            // =========================================================================
+            //
+            // Sie halten die beiden Faelle GETRENNT fest, die der Erdreich-Jahresgang
+            // nicht abdeckt:
+            //
+            //  * EINE Reihe mit VORZEICHEN (Jahrestemperatur): Die Achse muss ins
+            //    Negative reichen und die gestrichelte Nulllinie zeichnen. Der
+            //    Vorlaeufer nahm hier yAxis.Min() - denselben Wert liefert Jahresgang
+            //    ohne minimumNull.
+            //  * EINE Reihe mit NULLPUNKTBINDUNG (Sonnenwinkel): Der Vorlaeufer setzte
+            //    YMinValue = 0 fest (Form_Klimadaten:119). Ohne den Schalter aus
+            //    W14c.0j begaenne die Achse am kleinsten Wert - das Bild saehe sichtbar
+            //    anders aus. Genau das prueft die zweite Probe: minimumNull = true.
+            //
+            // Der Sonnenwinkel laeuft im Jahresgang zwischen rund 15 und 62 Grad
+            // (Stuttgart); die Reihe bildet das nach, ohne je unter null zu gehen.
+            double[] klimaTemperatur = Temperaturreihe(9.5, 11, 4, -Math.PI / 2);
+            Pruefe(ziel, "klimadaten_temperatur", 1304, 440,
+                   new SKColor[0],
+                   () => ChartRenderer.Jahresgang("Jahrestemperatur Verlauf",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Temperatur", klimaTemperatur,
+                                                        ChartRenderer.C_AUSSENTEMPERATUR)
+                            },
+                            "Monat", "Temperatur [°C]"));
+
+            double[] sonnenwinkel = Sonnenwinkelreihe();
+            Pruefe(ziel, "klimadaten_sonnenwinkel", 1304, 440,
+                   new[] { SKColors.Orange },
+                   () => ChartRenderer.Jahresgang("Sonnenwinkel Verlauf",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Sonnenwinkel", sonnenwinkel,
+                                                        SKColors.Orange)
+                            },
+                            "Monat", "Sonnenwinkel [°]", minimumNull: true));
 
             // =========================================================================
             // 17-30 - die sieben ERGEBNISBILDER der Welle 11 (iU9-W11a.6), je zwei Proben
@@ -647,6 +686,23 @@ namespace ChartProben
                 double jahr = 2.0 * Math.PI * i / STUNDEN;
                 double tag = 2.0 * Math.PI * (i % 24) / 24.0;
                 w[i] = mitte + jahresHub * Math.Sin(jahr + phase) + tagesHub * Math.Sin(tag);
+            }
+            return w;
+        }
+
+        /// <summary>
+        /// Der TAGESHOECHSTSTAND der Sonne ueber das Jahr (iU9-W14c.7) - dieselbe Form,
+        /// die <c>SolarCalculator.GetDailyAverages</c> als Maximum je Tag liefert:
+        /// Sinusbogen zwischen rund 15 Grad im Winter und 62 Grad im Sommer, NIE
+        /// negativ. Genau daran haengt die Nullpunktbindung der zweiten Probe.
+        /// </summary>
+        private static double[] Sonnenwinkelreihe()
+        {
+            var w = new double[STUNDEN];
+            for (int i = 0; i < STUNDEN; i++)
+            {
+                double jahr = 2.0 * Math.PI * i / STUNDEN;
+                w[i] = 38.5 + 23.5 * Math.Sin(jahr - Math.PI / 2);
             }
             return w;
         }

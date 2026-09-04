@@ -57,6 +57,7 @@ entgegen — sie ist damit austauschbar.
 | `Schema` | Das Hydraulikschema als **SVG**: vier Spalten, Knoten als Rundeck, Kanten als Bézier mit Pfeilspitze und Prioritätskreis, Kaskadenband und Legende. Die Anordnung kommt fertig aus dem Kern (`SchemaLayout`), die Farben aus `epos-ui.css`; jeder Kasten und jedes Bandglied ist ein Fokusziel | `Views/Simulation/SchemaAnsicht.cs` (789 Z. GDI+, iU9‑W10b.0c) |
 | `ErzeugerKachel` | Eine Anlage der Simulationskonfiguration: Rang, Titel, Chips in sechs Stilen mit sechs Editorzielen, ▲▼✎+× und ein Aufklappbereich — **acht Ereignisse** | `Views/Simulation/ErzeugerKarte.cs` (781 Z., iU9‑W10b.0d) |
 | `SpeicherKachel` | Ein Projekt-Pufferspeicher, zugeklappt eine Zeile: Badges, Flächenchips, Kurzbilanz; aufgeklappt die Detailzeilen und das Schwellenband (Inline-SVG) | `Views/Simulation/SpeicherKarte.cs` (551 Z. samt `SchwellenBand`, iU9‑W10b.0d) |
+| `Baumansicht` + `Baumknoten` | Ein vierstufiger Baum: `role="tree"/"treeitem"/"group"`, `aria-level`/`setsize`/`posinset`, `aria-expanded` NUR an Knoten mit Kindern, roving `tabindex` über die **abgeflachte Sichtliste** (↓↑ → ← Pos1 Ende Enter/Leertaste, kein Typeahead), Einrückung per CSS, `forced-colors`. Das Dreieck ist ein eigenes 44‑px‑Klickziel und **wählt nicht**; das Kennzeichen (»[Auslieferung]«) steht als eigenes `<span>` neben dem Text, nicht darin. Der Aufklappzustand kommt aus den DATEN (`VonVornOffen`) und überlebt einen Neuaufbau, solange die Schlüssel gleich bleiben. **Kein Kontextmenü, keine Mehrfachauswahl** — die kleinste tragfähige Fassung für den einen Nutzer (R‑W14c‑8) | `Views/Admin/Form_KatalogDubletten._tree` — der **einzige** `TreeView` des Bestands (iU9‑W14c.4); die Daten kommen als `DublettenBaum` aus dem Kern |
 
 ## Standards (`Standards/`)
 
@@ -226,6 +227,11 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Erzeuger/KatalogBrowserDialog` | **vier** Masken: `Form_Heizkessel_Admin`, `Form_BHKWAdmin`, `Form_SolarKollektorenAdmin`, `Form_PufferSp_Admin` (iU9‑W14a.1) | vier Hüllen mit gemeinsamem Kern (`Views/Erzeuger/KatalogBrowserHuelle.cs`) → `KatalogBrowserProfil`; der Katalogeditor und die Namensabfrage sind Überlagerungen, `NurLesen` ist der Lesemodus des Pufferspeichers |
 | `Erzeuger/PufferSpKatalogDialog` | `Form_PufferSp_Bearbeiten` (iU9‑W14a.2) | `Views/Pufferspeicher/PufferSpAdminHuelle.cs` → `PufferSpStammCtrl.Anlegen`/`Ueberschreiben`, `SpeichertypAbbildung`; erscheint als Überlagerung im Browser |
 | `Erzeuger/ModulKatalogDialog` | **zwei** Masken: `Form_AdminStromspeicher`, `Form_AdminPV` (iU9‑W14a.3) | `Views/Stromspeicher/StromspeicherAdminHuelle.cs`, `Views/Photovoltaik/PvAdminHuelle.cs` → `ModulKatalogProfil`; Browser und Editor in EINER Komponente |
+| `Wirtschaftlichkeit/GesetzeskatalogDialog` | `Form_Gesetzesparameter` (iU9‑W14c.2) | `Views/Admin/GesetzeskatalogHuelle.cs` → `GesetzKatalog`; er erscheint als eigenes Fenster (Menü) UND als Überlagerung in `KostenKomponenteDialog` und `WirtschaftlichkeitParameterDialog` — die letzten zwei `Sprungziel`e fallen damit |
+| `Wirtschaftlichkeit/GesetzeskatalogZeileDialog` | `Form_GesetzparameterZeile` (iU9‑W14c.1) | keine Hülle — eine Überlagerung im Katalog; Schlüssel und Klasse sind beim Ändern gesperrt, ein leeres Wertfeld ist NULL und nicht 0 |
+| `Admin/KatalogDublettenDialog` | `Form_KatalogDubletten` (iU9‑W14c.5, ohne Designer) | `Views/Admin/KatalogDublettenHuelle.cs` → `DublettenPruefung`, `DublettenBaum`, `DublettenBefundText`, `KatalogBereinigung`; der Scan läuft in `Task.Run` mit `Fortschritt`, das Umbenennen ist der `NamensDialog` **mit Prüfung** |
+| `Admin/EinstellungenDialog` | `Form_AdminSettings` (iU9‑W14c.6) | `Views/Admin/EinstellungenHuelle.cs` → `EinstellungenCtrl`; die Rubrikenliste ist ein SENKRECHTER `Reiter` mit vier Blättern, der KI-Abschalter läuft über `KiEinwilligung` |
+| `Klimadaten/KlimaregionDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimaregionHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -387,6 +393,21 @@ hinter zwei dauerhaft gesperrten Knöpfen): Der Erreichbarkeitsbefund zählt
 seither 0 nein / 0 verwaist / 0 unklar. Die fünf verbliebenen
 Erzeuger-`Sprungziel`e fallen mit ihr — ihre Ziele sind selbst Blazor, und aus
 jedem Sprung wird eine Überlagerung (Risiko R2).
+
+**Fünf Masken, fünf Komponenten, vier Fenster** (iU9‑W14c): Gesetzeskatalog,
+Klimaregionen, Einstellungen und Dublettensuche. Hier wiederholt sich **kein
+Muster** — jede Maske ist ein eigener Gegenstand; was zweimal vorkam, war der
+Anzeigeträger `KlasseItem`/`KatalogItem`, und der ist in beiden Fällen eine
+schlichte `(Wert, Anzeige)`-Liste am `Auswahlfeld`. Der Befund der Welle:
+**vier der fünf Fachteile lagen schon im Kern**, die Vorarbeit war Zuschnitt und
+kein neuer Rechenweg. Drei Dinge nimmt die Welle trotzdem mit: die **letzten zwei
+ablösbaren `Sprungziel`e** (beide Aufrufer waren schon Razor — aus jedem Sprung
+wird eine Überlagerung, im Kostendialog die SECHSTE), **alle sechs WFO1000** der
+Mappe und den **letzten MS-Chart-Nutzer** (`ChartManager`, 560 Z.). Neu ist der
+Baustein `Baumansicht` für den einzigen `TreeView` des Bestands. Was bleibt, ist
+ein Entscheid: `Sprungziel` führt danach EINE Konstante
+(`SpeicherOptimierung`) — sie steht bis Welle 16, und wer sie aufräumt, bricht
+`Form_SpeicherOptimierung` (iF22).
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen

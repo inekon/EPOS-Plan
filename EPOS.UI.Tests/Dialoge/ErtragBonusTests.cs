@@ -138,31 +138,36 @@ public class ErtragBonusTests : BunitContext
     }
 
     // =====================================================================
-    // Sprung in den Gesetzeskatalog
+    // Der Gesetzeskatalog - seit iU9-W14c.3 eine Ueberlagerung des WIRTS
     // =====================================================================
 
     [Fact]
-    public void Ohne_Sprungbruecke_fehlt_der_Katalogknopf()
+    public void Ohne_Rueckruf_fehlt_der_Katalogknopf()
     {
         var cut = Render<ErtragBonus>(p => p.Add(x => x.IstBhkw, true));
 
         Assert.Empty(cut.FindAll("button"));
     }
 
+    /// <summary>
+    /// Bis W14c sprang der Knopf ueber die Sprungbruecke in ein WinForms-Fenster
+    /// (<c>Sprungziel.Gesetzesparameter</c>) und las danach selbst neu. Der Katalog
+    /// ist jetzt selbst Razor; diese Komponente ist ein REITERBLATT und kann keine
+    /// Ueberlagerung oeffnen - sie meldet den Wunsch nach oben, und
+    /// <c>KostenKomponenteDialog</c> zeigt den Katalog und laedt danach die Gaben
+    /// dieses Blattes neu.
+    /// </summary>
     [Fact]
-    public void Der_Katalogknopf_springt_und_laesst_danach_neu_lesen()
+    public void Der_Katalogknopf_meldet_den_Wunsch_nach_oben()
     {
-        string? ziel = null;
-        int neuGelesen = 0;
+        int gerufen = 0;
         var cut = Render<ErtragBonus>(p => p
             .Add(x => x.IstBhkw, true)
-            .Add(x => x.Sprung, (Func<string, Task<bool>>)(z => { ziel = z; return Task.FromResult(true); }))
-            .Add(x => x.KatalogGeaendert, () => neuGelesen++));
+            .Add(x => x.GesetzeGewuenscht, () => gerufen++));
 
         cut.Find("button").Click();
 
-        Assert.Equal(Sprungziel.Gesetzesparameter, ziel);
-        Assert.Equal(1, neuGelesen);
+        Assert.Equal(1, gerufen);
     }
 
     [Fact]

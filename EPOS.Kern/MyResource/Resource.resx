@@ -5894,9 +5894,6 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
   </data>
-  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Übernehmen</value>
-  </data>
   <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
@@ -13030,5 +13027,247 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="ALLG_LBL_EINHEIT" xml:space="preserve">
     <value>Einheit:</value>
+  </data>
+  <data name="KLIMA_TITEL" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="KLIMA_LBL_IMPORT_KOPF" xml:space="preserve">
+    <value>Importieren Sie hier die meteorologischen Datensätze (TMY) für die Klimaregion.</value>
+  </data>
+  <data name="KLIMA_GRP_STANDORT" xml:space="preserve">
+    <value>Ort auswählen oder Longitude und Latitude eingeben</value>
+  </data>
+  <data name="KLIMA_GRP_LISTE" xml:space="preserve">
+    <value>Liste der importierten Regionen</value>
+  </data>
+  <data name="KLIMA_LBL_ORT" xml:space="preserve">
+    <value>Region auswählen oder eingeben (z. B. Berlin):</value>
+  </data>
+  <data name="KLIMA_LBL_ODER" xml:space="preserve">
+    <value>oder</value>
+  </data>
+  <data name="KLIMA_LBL_LONGITUDE" xml:space="preserve">
+    <value>Longitude:</value>
+  </data>
+  <data name="KLIMA_LBL_LATITUDE" xml:space="preserve">
+    <value>Latitude:</value>
+  </data>
+  <data name="KLIMA_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="KLIMA_LBL_DETAILS" xml:space="preserve">
+    <value>Details zur Region:</value>
+  </data>
+  <data name="KLIMA_FELD_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_FELD_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_REGION" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
+    <value>Daten einlesen</value>
+  </data>
+  <data name="KLIMA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KLIMA_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="KLIMA_REITER_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="KLIMA_REITER_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel</value>
+  </data>
+  <data name="KLIMA_DIA_TEMPERATUR" xml:space="preserve">
+    <value>Jahrestemperatur Verlauf</value>
+  </data>
+  <data name="KLIMA_DIA_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel Verlauf</value>
+  </data>
+  <data name="KLIMA_ACHSE_X" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="KLIMA_ACHSE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur [°C]</value>
+  </data>
+  <data name="KLIMA_ACHSE_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel [°]</value>
+  </data>
+  <data name="KLIMA_REIHE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="KLIMA_REIHE_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel</value>
+  </data>
+  <data name="KLIMA_MSG_READONLY" xml:space="preserve">
+    <value>Diese Klimaregion ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="KLIMA_MSG_AUSWAEHLEN" xml:space="preserve">
+    <value>Bitte eine Klimaregion auswählen.</value>
+  </data>
+  <data name="KLIMA_MSG_ORT_UNBEKANNT" xml:space="preserve">
+    <value>Der Ort „{0}" konnte nicht ermittelt werden. {1}</value>
+  </data>
+  <data name="KLIMA_MSG_EINGABEN_PRUEFEN" xml:space="preserve">
+    <value>Eingaben überprüfen: Longitude, Latitude und Bezeichnung sind Pflichtangaben.</value>
+  </data>
+  <data name="KLIMA_MSG_PVGIS_EINGABE" xml:space="preserve">
+    <value>Eingabefehler (PVGIS): {0}</value>
+  </data>
+  <data name="KLIMA_MSG_DOWNLOAD_FEHLER" xml:space="preserve">
+    <value>Fehler beim Klimadaten-Download: {0}</value>
+  </data>
+  <data name="KLIMA_MSG_IMPORT_FEHLER" xml:space="preserve">
+    <value>Der Import wurde abgebrochen. Alle Änderungen wurden rückgängig gemacht. Fehler: {0}</value>
+  </data>
+  <data name="KLIMA_MSG_ID_FEHLT" xml:space="preserve">
+    <value>Die ID der neu angelegten Klimaregion konnte nicht ermittelt werden.</value>
+  </data>
+  <data name="KLIMA_MSG_SCHON_VORHANDEN" xml:space="preserve">
+    <value>Die Klimaregion „{0}" gibt es bereits.</value>
+  </data>
+  <data name="KLIMA_MSG_KEINE_DATEN" xml:space="preserve">
+    <value>Für diese Region liegen keine Stundenwerte vor.</value>
+  </data>
+  <data name="KLIMA_MSG_IMPORT_FERTIG" xml:space="preserve">
+    <value>Die Klimaregion „{0}" ist angelegt: {1} Stundenwerte und {2} Tageswerte.</value>
+  </data>
+  <data name="KLIMA_MSG_ABGEBROCHEN" xml:space="preserve">
+    <value>Der Import wurde abgebrochen.</value>
+  </data>
+  <data name="KLIMA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Klimaregion „{0}" wirklich löschen?
+
+Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
+  </data>
+  <data name="KLIMA_FRAGE_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Klimaregion löschen</value>
+  </data>
+  <data name="KLIMA_SCHRITT_KOORDINATEN" xml:space="preserve">
+    <value>Koordinaten ermitteln…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_ABRUF" xml:space="preserve">
+    <value>Klimadaten abrufen…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_RECHNEN" xml:space="preserve">
+    <value>Sonnenstände rechnen…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_REGION" xml:space="preserve">
+    <value>Klimaregion anlegen…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_STUNDEN" xml:space="preserve">
+    <value>Stundenwerte schreiben…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_TAGE" xml:space="preserve">
+    <value>Tageswerte schreiben…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_FERTIG" xml:space="preserve">
+    <value>Fertig.</value>
+  </data>
+  <data name="ADM_SET_TITEL" xml:space="preserve">
+    <value>Administration – Globale Anwendungseinstellungen</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_VDI" xml:space="preserve">
+    <value>VDI Datensätze</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_DATENBANK" xml:space="preserve">
+    <value>Datenbank</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_WEB" xml:space="preserve">
+    <value>Web-Schnittstellen (API)</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ANWENDUNG" xml:space="preserve">
+    <value>Anwendung</value>
+  </data>
+  <data name="ADM_SET_LBL_VDI_PFAD" xml:space="preserve">
+    <value>Ordner der VDI-3805-Datensätze:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_EXPORT" xml:space="preserve">
+    <value>Ordner für Datenbank-Sicherungen:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_IMPORT" xml:space="preserve">
+    <value>Ordner für Datenbank-Importe:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_PFAD" xml:space="preserve">
+    <value>Ordner der Datenbank:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_NAME" xml:space="preserve">
+    <value>Name der Datenbankdatei:</value>
+  </data>
+  <data name="ADM_SET_LBL_WORDPRESS" xml:space="preserve">
+    <value>Adresse des Wiki (WordPress):</value>
+  </data>
+  <data name="ADM_SET_LBL_PVGIS" xml:space="preserve">
+    <value>Adresse der PVGIS-Schnittstelle:</value>
+  </data>
+  <data name="ADM_SET_LBL_GEOKODIERUNG" xml:space="preserve">
+    <value>Adresse der Geokodierung (Nominatim):</value>
+  </data>
+  <data name="ADM_SET_LBL_ALLGEMEIN" xml:space="preserve">
+    <value>Allgemeiner Anwendungsordner:</value>
+  </data>
+  <data name="ADM_SET_BTN_DURCHSUCHEN" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="ADM_SET_BTN_STANDARDWERTE" xml:space="preserve">
+    <value>Standardwerte</value>
+  </data>
+  <data name="ADM_SET_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die Einstellungen wurden gespeichert.</value>
+  </data>
+  <data name="ADM_SET_MSG_NEUSTART" xml:space="preserve">
+    <value>Ordner und Name der Datenbank wirken erst beim nächsten Programmstart.</value>
+  </data>
+  <data name="ADM_SET_MSG_ORDNER_FEHLER" xml:space="preserve">
+    <value>Die Ordner konnten nicht erstellt werden. Bitte die Pfadangaben überprüfen. Fehler: {0}</value>
+  </data>
+  <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
+    <value>Die Standardwerte wurden geladen. Mit „Speichern" werden sie übernommen.</value>
+  </data>
+  <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
+    <value>Wirklich alle Einstellungen auf die Werksstandards zurücksetzen?</value>
+  </data>
+  <data name="ADM_SET_FRAGE_STANDARDWERTE_TITEL" xml:space="preserve">
+    <value>Standardwerte wiederherstellen</value>
+  </data>
+  <data name="ADM_SET_MSG_KI_FEHLER" xml:space="preserve">
+    <value>Der KI-Schalter konnte nicht gelesen werden.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
+    <value>Dublettenbefund</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
+    <value>Dublettensuche läuft…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_GELOESCHT" xml:space="preserve">
+    <value>gelöscht.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Löschen fehlgeschlagen – die Zeile bleibt stehen.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_UMBENENNEN_FEHLER" xml:space="preserve">
+    <value>(Umbenennen fehlgeschlagen)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_PROTOKOLL_LEER" xml:space="preserve">
+    <value>Es gibt noch nichts zu speichern – das Protokoll ist leer.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT" xml:space="preserve">
+    <value>Das Protokoll wurde gespeichert.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_VERWENDUNG_FEHLER" xml:space="preserve">
+    <value>Die Verwendungsprüfung ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SP_SPALTE" xml:space="preserve">
+    <value>Spalte</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
   </data>
 </root>

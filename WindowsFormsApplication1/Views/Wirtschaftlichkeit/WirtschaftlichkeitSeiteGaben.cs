@@ -464,8 +464,7 @@ namespace WindowsFormsApplication1
                         return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
-                        return WirtschaftlichkeitParameterHuelle.Gaben(
-                            _idStamm, Sprungbruecke.Fuer(_besitzer != null ? _besitzer() : null));
+                        return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Verlauf:
                         var varianten = new List<int>();

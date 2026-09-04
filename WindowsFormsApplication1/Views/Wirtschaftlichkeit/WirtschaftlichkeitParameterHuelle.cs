@@ -25,9 +25,10 @@ namespace WindowsFormsApplication1
     /// (<c>GesetzKatalog.AlleDerKlasse</c>). Geschrieben wird über
     /// <c>SpeichereParameter</c>.</para>
     ///
-    /// <para><b>Zwei Sprünge, zwei Wege.</b> Der Gesetzeskatalog ist eine
-    /// WinForms-Maske und läuft über die <see cref="Sprungbruecke"/>
-    /// (iU9-W2.2) — modal ÜBER dem Dialog, der Dialog bleibt stehen. Der
+    /// <para><b>Zwei Wege, keiner mehr über die Brücke.</b> Der Gesetzeskatalog ist
+    /// seit iU9-W14c.2 selbst eine Razor-Komponente und erscheint als
+    /// <c>Ueberlagerung</c> IM Dialog — mit der Vorwahl CO₂-Preis, die bis dahin
+    /// <c>Sprungziel.GesetzesparameterCo2</c> setzte. Der
     /// Sammeldialog „BHKW-Wirtschaftlichkeit" ist selbst eine Blazor-Hülle und
     /// bleibt nachgelagert (Risiko R2): Die Komponente meldet den Wunsch im
     /// Ergebnis, diese Hülle schließt den Dialog, zeigt das Ziel und lädt danach
@@ -72,7 +73,7 @@ namespace WindowsFormsApplication1
             WirtParameterErgebnis ergebnis = null;
             BlazorDialogForm<WirtschaftlichkeitParameterDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>(Gaben(idStamm, Sprungbruecke.Fuer(besitzer)))
+            var werte = new Dictionary<string, object>(Gaben(idStamm))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<WirtParameterErgebnis>(
                     new object(), e =>
@@ -101,12 +102,7 @@ namespace WindowsFormsApplication1
         /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung
         /// in die BHKW-Sicht wertet er selbst aus (<c>WirtParameterSprung</c>).
         /// </summary>
-        /// <param name="sprung">
-        /// Die Sprungbrücke für den Gesetzeskatalog — ein WinForms-Ziel, das
-        /// weiter modal über allem erscheint. <c>null</c> = kein Knopf.
-        /// </param>
-        internal static IReadOnlyDictionary<string, object> Gaben(
-            int idStamm, Func<string, System.Threading.Tasks.Task<bool>> sprung)
+        internal static IReadOnlyDictionary<string, object> Gaben(int idStamm)
         {
             var ctrl = new WirtschaftlichkeitCtrl();
             WirtschaftlichkeitParameter parameter = ctrl.LadeParameter(idStamm);
@@ -138,8 +134,13 @@ namespace WindowsFormsApplication1
                 ["ReferenzkesselZeile"] = refKessel,
                 ["Co2PrognoseAb"] = Co2PrognoseAb(),
 
-                // Die Sprungbruecke (iU9-W2.2) - Ersteinsatz.
-                ["Sprung"] = sprung,
+                // iU9-W14c.3: Der Gesetzeskatalog laeuft nicht mehr ueber die
+                // Sprungbruecke, sondern als Ueberlagerung IM Dialog - mit der
+                // Vorwahl der Klasse CO2_PREIS, die Sprungbruecke.cs:100 setzte.
+                // Damit ist dies der ERSTE Dialog des Bestands, der ohne Sprungziel
+                // auskommt, seit er eines hatte (Ersteinsatz war iU9-W2.2).
+                ["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS)),
 
                 ["Speichern"] = new Func<bool>(() =>
                 {

@@ -103,11 +103,7 @@ namespace WindowsFormsApplication1
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     MyResource.Resource.GESETZ_MENUE);
                 eintrag.Name = "MenuItem_Gesetzesparameter";
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_Gesetzesparameter frm = new Form_Gesetzesparameter())
-                        frm.ShowDialog(this);
-                };
+                eintrag.Click += (s, e) => GesetzeskatalogHuelle.Oeffnen(this);
                 eintrag.Image = Properties.Resources.gesetzliche_parameter_32;
                 eintrag.ImageScaling = ToolStripItemImageScaling.None;
 
@@ -140,11 +136,7 @@ namespace WindowsFormsApplication1
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     MyResource.Resource.ADM_DUBLETTEN_MENUE);
                 eintrag.Name = "MenuItem_KatalogDubletten";
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_KatalogDubletten frm = new Form_KatalogDubletten())
-                        frm.ShowDialog(this);
-                };
+                eintrag.Click += (s, e) => KatalogDublettenHuelle.Oeffnen(this);
 
                 // Unterhalb von "Einstellungen" einordnen; hängt dort bereits der
                 // Gesetze-Eintrag (InitGesetzeMenue läuft davor), rückt dieser Eintrag
@@ -579,8 +571,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Klimadaten_Click(object sender, EventArgs e)
         {
-            Form_Klimadaten frm = new Form_Klimadaten();
-            frm.ShowDialog();
+            // iU9-W14c.7: Mit Besitzer - der Vorlaeufer rief ShowDialog() ohne "this"
+            // und ohne using; das Fenster erschien nicht ueber dem Hauptfenster und
+            // wurde nie entsorgt (Befund W14c-B34). Der MENUETEXT bleibt "Klimadaten"
+            // (Entscheid E-3), die Komponente heisst KlimaregionDialog.
+            KlimaregionHuelle.Oeffnen(this);
         }
 
         private void MenuItem_ProjektBearbeiten_Click(object sender, EventArgs e)
@@ -809,8 +804,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Einstellungen_Click(object sender, EventArgs e)
         {
-            Form_AdminSettings frm = new Form_AdminSettings();
-            frm.ShowDialog();
+            // iU9-W14c.6: Mit Besitzer - der Vorlaeufer rief ShowDialog() ohne "this"
+            // und ohne using (Befund W14c-B34). Der Menuepunkt selbst bleibt: Er ist
+            // der Anker, an dem InitGesetzeMenue, InitDublettenMenue und
+            // InitLizenzMenue ihre Eintraege einhaengen (Befund W14c-B63).
+            EinstellungenHuelle.Oeffnen(this);
         }
 
         /// <summary>

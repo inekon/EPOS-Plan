@@ -33,6 +33,7 @@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Wirtschaftlichkeit
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -156,7 +157,10 @@
     {
         <Reiterblatt Schluessel="ERTRAG" Titel="@TitelReiterErtrag">
             <KindInhalt>
-                <ErtragBonus @attributes="_stand.ErtragGaben" />
+                @* Kein Delegat, kein Knopf: Ohne GesetzeGaben bekommt das
+                   Reiterblatt auch keinen Rueckruf. *@
+                <ErtragBonus @attributes="_stand.ErtragGaben"
+                             GesetzeGewuenscht="@GesetzeRueckruf" />
             </KindInhalt>
         </Reiterblatt>
     }
@@ -219,6 +223,20 @@
             @if (_katalogGaben is not null)
             {
                 <KostenfaktorKatalogDialog @attributes="_katalogGaben" Geschlossen="KatalogFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* Die SECHSTE Ueberlagerung (iU9-W14c.3): der Gesetzeskatalog. Bis W14c
+       sprang ErtragBonus dorthin ueber die Sprungbruecke; das Ziel ist jetzt
+       selbst Razor, und zwei WebViews uebereinander sind Risiko R2. *@
+    <Ueberlagerung Offen="@(_gesetzeGaben is not null)" Schliessbar="false"
+                   Titel="@GesetzeTitel" Geschlossen="() => GesetzeFertigMachen(false)">
+        <KindInhalt>
+            @if (_gesetzeGaben is not null)
+            {
+                <GesetzeskatalogDialog @attributes="_gesetzeGaben"
+                                       Geschlossen="GesetzeFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -370,6 +388,16 @@
     [Parameter] public string UebernahmeTitel { get; set; } = "Übernahme ins Projekt";
     [Parameter] public string KatalogTitel { get; set; } = "Administration Kostenfaktoren";
 
+    /// <summary>Überschrift der Gesetzeskatalog-Überlagerung (iU9-W14c.3).</summary>
+    [Parameter] public string GesetzeTitel { get; set; } = Resource.GESETZ_TITEL;
+
+    /// <summary>
+    /// Der Parametersatz des Gesetzeskatalogs
+    /// (<c>GesetzeskatalogHuelle.Gaben</c>) — ohne ihn bleibt der Knopf im
+    /// Reiterblatt „Ertrag/Bonus" weg.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? GesetzeGaben { get; set; }
+
     /// <summary>Vorlage der Löschrückfrage einer Position.</summary>
     [Parameter] public string VorlagePositionLoeschen { get; set; } = "Position „{0}\" löschen?";
 
@@ -422,6 +450,7 @@
     private IReadOnlyDictionary<string, object>? _variantenGaben;
     private IReadOnlyDictionary<string, object>? _uebernahmeGaben;
     private IReadOnlyDictionary<string, object>? _katalogGaben;
+    private IReadOnlyDictionary<string, object>? _gesetzeGaben;
 
     private string _frage = "";
     private Func<Task>? _frageJa;
@@ -438,7 +467,7 @@
     /// <summary>Steht eine Überlagerung? (Prüfhilfe für Tests)</summary>
     public bool UeberlagerungOffen => _caseZeile is not null || _editorZeile is not null
         || _variantenGaben is not null || _uebernahmeGaben is not null
-        || _katalogGaben is not null || _frage.Length > 0;
+        || _katalogGaben is not null || _gesetzeGaben is not null || _frage.Length > 0;
 
     protected override void OnInitialized()
     {
@@ -676,6 +705,33 @@
     }
 
     private void KatalogFertigMachen() => _katalogGaben = null;
+
+    /// <summary>
+    /// Der Rückruf für das Reiterblatt — <c>default</c>, solange die Hülle keine
+    /// Gaben liefert. Der Knopf im Blatt hängt an <c>HasDelegate</c>.
+    /// </summary>
+    private EventCallback GesetzeRueckruf => GesetzeGaben is null
+        ? default
+        : EventCallback.Factory.Create(this, GesetzeOeffnen);
+
+    /// <summary>
+    /// Der Gesetzeskatalog, gerufen aus dem Reiterblatt „Ertrag/Bonus" (iU9-W14c.3).
+    /// </summary>
+    private void GesetzeOeffnen()
+    {
+        if (GesetzeGaben is null) return;
+        _gesetzeGaben = GesetzeGaben();
+    }
+
+    /// <summary>
+    /// Nach dem Katalog werden die Gaben des Reiterblatts neu gebaut — der
+    /// Vorläufer rief dafür <c>ErtragBonusGaben.Bauen(name)</c> erneut.
+    /// </summary>
+    private void GesetzeFertigMachen(bool ok)
+    {
+        _gesetzeGaben = null;
+        KontextLaden(_stand.VarianteId);
+    }
 
     // =====================================================================
     // Schlussleiste

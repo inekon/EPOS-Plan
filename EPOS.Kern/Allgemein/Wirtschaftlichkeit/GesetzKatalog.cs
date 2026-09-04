@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -127,9 +128,86 @@ namespace WindowsFormsApplication1
     /// einsät. Muster: <c>WirtschaftlichkeitCtrl.LadeKwkgStaffel</c>.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// Eine Zeile des Katalogs, FERTIG FORMATIERT für eine Anzeige (iU9-W14c.0c).
+    ///
+    /// <para><b>Warum es diesen Träger gibt.</b> Die Pflegemaske hat den Wert bisher
+    /// selbst formatiert (<c>"0.####"</c>) und das Jahr selbst in Text gewandelt. Eine
+    /// Razor-Komponente darf das nicht: Sie kennt die Fachklassen des Kerns nicht und
+    /// soll nichts rechnen. Der Katalog liefert deshalb die sechs Spalten der Liste als
+    /// Text — und die <see cref="Id"/> dazu, damit der Wirt die Zeile wiederfindet.</para>
+    /// </summary>
+    public sealed class GesetzZeile
+    {
+        public GesetzZeile(int id, string schluessel, string klasse, int jahrVon,
+                           string wertText, string einheit, string status, string quelle)
+        {
+            Id = id;
+            Schluessel = schluessel ?? "";
+            Klasse = klasse ?? "";
+            JahrVon = jahrVon;
+            WertText = wertText ?? "";
+            Einheit = einheit ?? "";
+            Status = status ?? "";
+            Quelle = quelle ?? "";
+        }
+
+        public int Id { get; }
+        public string Schluessel { get; }
+        public string Klasse { get; }
+        public int JahrVon { get; }
+
+        /// <summary>Der Wert im Format <c>"0.####"</c>; <b>leer = der Satz ist entfallen</b>.</summary>
+        public string WertText { get; }
+
+        public string Einheit { get; }
+        public string Status { get; }
+        public string Quelle { get; }
+    }
+
+    /// <summary>Der Ausgang einer Zeilenprüfung (iU9-W14c.0b).</summary>
+    public enum GesetzPruefung
+    {
+        /// <summary>Die Zeile darf gespeichert werden.</summary>
+        Ok,
+        /// <summary>Der Schlüssel ist leer.</summary>
+        SchluesselFehlt,
+        /// <summary>Das Jahr liegt außerhalb 1990…2100.</summary>
+        JahrUngueltig,
+        /// <summary>Schlüssel und Jahr gibt es in dieser Klasse schon.</summary>
+        Doppelt
+    }
+
+    /// <summary>
+    /// Befund einer Zeilenprüfung: der Ausgang und der fertige Meldungstext
+    /// (iU9-W14c.0b). Die Prüfregeln standen bisher ZWEIMAL — im Zeilendialog und in
+    /// der Wirtsmaske (Befund W14c-B7); hier stehen sie einmal.
+    /// </summary>
+    public sealed class GesetzPruefBefund
+    {
+        public GesetzPruefBefund(GesetzPruefung ausgang, string meldung)
+        {
+            Ausgang = ausgang;
+            Meldung = meldung ?? "";
+        }
+
+        public GesetzPruefung Ausgang { get; }
+
+        /// <summary>Der lokalisierte Meldungstext; leer, wenn die Zeile in Ordnung ist.</summary>
+        public string Meldung { get; }
+
+        public bool Ok => Ausgang == GesetzPruefung.Ok;
+    }
+
     public class GesetzKatalog
     {
         public const string TAB_GESETZESPARAMETER = "Tab_Gesetzesparameter";
+
+        /// <summary>Frühestes zulässiges Gültig-ab-Jahr (eingefroren).</summary>
+        public const int JAHR_MIN = 1990;
+
+        /// <summary>Spätestes zulässiges Gültig-ab-Jahr (eingefroren).</summary>
+        public const int JAHR_MAX = 2100;
 
         /// <summary>Reihen je Schlüssel, aufsteigend nach <c>JahrVon</c>. null = noch nicht geladen.</summary>
         private Dictionary<string, List<GesetzParameter>> _reihen;
@@ -219,6 +297,180 @@ namespace WindowsFormsApplication1
                         gesehen.Add(p.Klasse);
             gesehen.Sort(StringComparer.Ordinal);
             return gesehen;
+        }
+
+        // =====================================================================
+        // Steuerwertlisten und Anzeige (iU9-W14c.0a)
+        //
+        // Sie standen bisher im ZEILENDIALOG der Pflegemaske - acht Klassen, fuenfzehn
+        // Einheiten und drei Statuswerte als Quelltextlisten (Form_GesetzparameterZeile).
+        // Damit gab es zwei Quellen fuer dieselbe Klassenliste (Befund W14c-B5): die
+        // Wirtsmaske las sie aus der DATENBANK, der Zeilendialog aus dem Quelltext - eine
+        // neunte Klasse (EEG) erschien in der einen Liste und fehlte in der anderen.
+        // Eine Steuerwertliste gehoert zum Katalog, nicht zur Maske (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>
+        /// Die acht Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
+        /// Reihenfolge</b> und mit ihren eingefrorenen DB-Schreibweisen.
+        ///
+        /// <para><b>Nicht zu verwechseln mit <see cref="Klassen"/>:</b> Das ist, was in
+        /// der Datenbank VORKOMMT (heute neun, mit <c>EEG</c>); dies hier ist, was der
+        /// Anwender beim Anlegen WAEHLEN kann. Beide Listen sind gewollt verschieden —
+        /// <c>EEG</c>-Zeilen pflegt der Vergütungsdialog, nicht die Hand.</para>
+        /// </summary>
+        public static IReadOnlyList<string> KlassenVorrat()
+        {
+            return new[]
+            {
+                DbWerte.GESETZ_KLASSE_KWKG,
+                DbWerte.GESETZ_KLASSE_STROMSTEUER,
+                DbWerte.GESETZ_KLASSE_ENERGIESTEUER,
+                DbWerte.GESETZ_KLASSE_CO2_PREIS,
+                DbWerte.GESETZ_KLASSE_EF_NACHWEIS,
+                DbWerte.GESETZ_KLASSE_EF_BILANZ,
+                DbWerte.GESETZ_KLASSE_PEF_NACHWEIS,
+                DbWerte.GESETZ_KLASSE_UMSATZSTEUER
+            };
+        }
+
+        /// <summary>
+        /// Die fünfzehn zulässigen Einheiten — feste Liste, damit niemand „EUR/MWh"
+        /// einmal so und einmal anders schreibt (Leitentscheidung L3).
+        /// </summary>
+        public static IReadOnlyList<string> Einheiten()
+        {
+            return new[]
+            {
+                DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                DbWerte.GESETZ_EINHEIT_EUR_1000L,
+                DbWerte.GESETZ_EINHEIT_EUR_1000KG,
+                DbWerte.GESETZ_EINHEIT_EUR_GJ,
+                DbWerte.GESETZ_EINHEIT_EUR_T,
+                DbWerte.GESETZ_EINHEIT_EUR_A,
+                DbWerte.GESETZ_EINHEIT_CT_KWH,
+                DbWerte.GESETZ_EINHEIT_G_KWH,
+                DbWerte.GESETZ_EINHEIT_GJ_MWH,
+                DbWerte.GESETZ_EINHEIT_H,
+                DbWerte.GESETZ_EINHEIT_KW,
+                DbWerte.GESETZ_EINHEIT_KM,
+                DbWerte.GESETZ_EINHEIT_PROZENT,
+                DbWerte.GESETZ_EINHEIT_JAHR,
+                DbWerte.GESETZ_EINHEIT_OHNE
+            };
+        }
+
+        /// <summary>Die drei Statuswerte einer Zeile (gesichert / vorläufig / Prognose).</summary>
+        public static IReadOnlyList<string> Statuswerte()
+        {
+            return new[]
+            {
+                DbWerte.GESETZ_STATUS_GESICHERT,
+                DbWerte.GESETZ_STATUS_VORLAEUFIG,
+                DbWerte.GESETZ_STATUS_PROGNOSE
+            };
+        }
+
+        /// <summary>
+        /// Der lokalisierte Anzeigename einer Klasse; eine unbekannte Klasse zeigt ihren
+        /// Rohwert. <b>Kein Anzeigetext ist je Steuerwert</b> — der DB-Wert bleibt der
+        /// deutsche ASCII-Schlüssel aus <c>DbWerte</c>.
+        /// </summary>
+        public static string KlasseAnzeige(string klasse)
+        {
+            switch (klasse)
+            {
+                case DbWerte.GESETZ_KLASSE_KWKG: return MyResource.Resource.GESETZ_KLASSE_ANZ_KWKG;
+                case DbWerte.GESETZ_KLASSE_STROMSTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_STROMSTEUER;
+                case DbWerte.GESETZ_KLASSE_ENERGIESTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_ENERGIESTEUER;
+                case DbWerte.GESETZ_KLASSE_CO2_PREIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_CO2_PREIS;
+                case DbWerte.GESETZ_KLASSE_EF_NACHWEIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_EF_NACHWEIS;
+                case DbWerte.GESETZ_KLASSE_EF_BILANZ: return MyResource.Resource.GESETZ_KLASSE_ANZ_EF_BILANZ;
+                case DbWerte.GESETZ_KLASSE_PEF_NACHWEIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_PEF_NACHWEIS;
+                case DbWerte.GESETZ_KLASSE_UMSATZSTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMSATZSTEUER;
+                default: return klasse ?? "";
+            }
+        }
+
+        /// <summary>
+        /// Der Wert als Anzeigetext im Format <c>"0.####"</c>. <b>Ein leerer Text steht
+        /// für „Satz entfallen"</b> — und das ist etwas anderes als 0.
+        /// </summary>
+        public static string WertText(double? wert)
+        {
+            return wert.HasValue ? wert.Value.ToString("0.####", CultureInfo.CurrentCulture) : "";
+        }
+
+        /// <summary>
+        /// Die Zeilen einer Klasse als fertige Anzeigezeilen (iU9-W14c.0c) — sortiert wie
+        /// <see cref="AlleDerKlasse"/>, also nach Schlüssel und Jahr.
+        /// </summary>
+        public IReadOnlyList<GesetzZeile> Zeilen(string klasse)
+        {
+            var liste = new List<GesetzZeile>();
+            foreach (GesetzParameter p in AlleDerKlasse(klasse))
+                liste.Add(new GesetzZeile(p.Id, p.Schluessel, p.Klasse, p.JahrVon,
+                                          WertText(p.Wert), p.Einheit, p.Status, p.Quelle));
+            return liste;
+        }
+
+        // =====================================================================
+        // Pruefung (iU9-W14c.0b)
+        // =====================================================================
+
+        /// <summary>
+        /// Prüft eine Zeile vor dem Speichern: Schlüssel vorhanden, Jahr zwischen
+        /// <see cref="JAHR_MIN"/> und <see cref="JAHR_MAX"/>, Schlüssel plus Jahr in
+        /// dieser Klasse noch nicht vergeben.
+        ///
+        /// <para><b>Warum das hier steht.</b> Dieselben drei Regeln standen bisher
+        /// zweimal — im Zeilendialog und in der Wirtsmaske (Befund W14c-B7). Eine
+        /// Prüfregel, zwei Orte: Beim ersten Nachziehen laufen sie auseinander.</para>
+        /// </summary>
+        /// <param name="p">Die zu prüfende Zeile.</param>
+        /// <param name="eigeneId">Die ID der gerade bearbeiteten Zeile; sie zählt bei der
+        /// Dublettenprüfung nicht mit. 0 beim Anlegen.</param>
+        public static GesetzPruefBefund Pruefe(GesetzParameter p, int eigeneId)
+        {
+            if (p == null || p.Schluessel.Trim().Length == 0)
+                return new GesetzPruefBefund(GesetzPruefung.SchluesselFehlt,
+                                             MyResource.Resource.GESETZ_MSG_SCHLUESSEL_FEHLT);
+
+            if (p.JahrVon < JAHR_MIN || p.JahrVon > JAHR_MAX)
+                return new GesetzPruefBefund(GesetzPruefung.JahrUngueltig,
+                                             MyResource.Resource.GESETZ_MSG_JAHR_UNGUELTIG);
+
+            if (Existiert(p.Klasse, p.Schluessel, p.JahrVon, eigeneId))
+                return new GesetzPruefBefund(GesetzPruefung.Doppelt,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GESETZ_MSG_DOPPELT,
+                                  p.Schluessel, p.JahrVon));
+
+            return new GesetzPruefBefund(GesetzPruefung.Ok, "");
+        }
+
+        /// <summary>
+        /// Gibt es in dieser Klasse schon eine Zeile mit diesem Schlüssel und diesem
+        /// Jahr — abgesehen von <paramref name="ausserId"/>?
+        ///
+        /// <para><b>Eine Zählung, kein Katalognachladen</b> (Befund W14c-B12): Die
+        /// Pflegemaske hat dafür bisher den ganzen Katalog neu geladen und seine 222
+        /// Zeilen linear durchsucht — bei jedem Anlegen und jedem Ändern.</para>
+        /// </summary>
+        public static bool Existiert(string klasse, string schluessel, int jahr, int ausserId)
+        {
+            try
+            {
+                object v = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER +
+                    " WHERE Klasse = ? AND Schluessel = ? AND JahrVon = ? AND ID <> ?",
+                    new DbParam("@kla", DbParamTyp.VarWChar, 40) { Wert = klasse ?? "" },
+                    new DbParam("@sch", DbParamTyp.VarWChar, 60) { Wert = schluessel ?? "" },
+                    new DbParam("@jv", DbParamTyp.Integer) { Wert = jahr },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = ausserId });
+                return v != null && v != DBNull.Value &&
+                       Convert.ToInt32(v, CultureInfo.InvariantCulture) > 0;
+            }
+            catch { return false; }
         }
 
         /// <summary>Verwirft den Cache; der nächste Zugriff liest die Datenbank neu.</summary>

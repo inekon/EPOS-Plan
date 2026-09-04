@@ -28,9 +28,9 @@
         <div class="epos-rueckfrage">
             <p class="epos-rueckfrage-text" role="alert">@Frage</p>
             <div class="epos-leiste">
-                <button type="button" class="epos-knopf epos-knopf--primaer"
+                <button type="button" class="epos-knopf@(VorgabeNein ? "" : " epos-knopf--primaer")"
                         @onclick="() => Antworten(true)">@JaText</button>
-                <button type="button" class="epos-knopf"
+                <button type="button" class="epos-knopf@(VorgabeNein ? " epos-knopf--primaer" : "")"
                         @onclick="() => Antworten(false)">@NeinText</button>
                 @if (MitAbbrechen)
                 {
@@ -54,6 +54,20 @@
 
     /// <summary>Bietet zusaetzlich „Abbrechen" an (YesNoCancel statt YesNo).</summary>
     [Parameter] public bool MitAbbrechen { get; set; }
+
+    /// <summary>
+    /// Betont „Nein" statt „Ja" (iU9-W14c, A-1).
+    ///
+    /// <para><b>Warum es das braucht.</b> Der Baustein trug die Hervorhebung bis
+    /// hierher IMMER auf „Ja". Der Bestand kennt aber Fragen, deren Vorgabeknopf
+    /// bewusst „Nein" ist (<c>MessageBoxDefaultButton.Button2</c>): das Loeschen einer
+    /// Gesetzeszeile, die drei Loesch- und Bereinigungsfragen der Dublettensuche. Bei
+    /// „Satz endgueltig loeschen?" ist ein hervorgehobenes „Ja" ein Rueckschritt.</para>
+    ///
+    /// <para>Der Fokus bleibt davon unberuehrt - er liegt weiterhin auf dem Bereich,
+    /// nicht auf einem Knopf, und Enter ist nach wie vor nicht belegt.</para>
+    /// </summary>
+    [Parameter] public bool VorgabeNein { get; set; }
 
     /// <summary>Die Antwort: <c>true</c> = Ja, <c>false</c> = Nein, <c>null</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool?> Beantwortet { get; set; }

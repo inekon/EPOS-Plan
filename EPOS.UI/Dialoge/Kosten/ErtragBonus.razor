@@ -50,7 +50,7 @@
 
         <Gruppenkopf Titel="@TitelVerweise">
             <KindInhalt>
-                @if (Sprung is not null)
+                @if (GesetzeGewuenscht.HasDelegate)
                 {
                     <button type="button" class="epos-knopf" @onclick="BeiGesetze">@GesetzeText</button>
                 }
@@ -123,15 +123,18 @@
     // ---- Weiterfuehren ---------------------------------------------------
 
     /// <summary>
-    /// Sprung in eine andere Maske (iU9-W2.2). Gerufen wird er mit
-    /// <c>Sprungziel.Gesetzesparameter</c>; ohne Delegat bleibt der Knopf weg
-    /// (A-18 aus Welle 2 — ein Knopf, der nichts tut, ist eine Behauptung, die
-    /// nicht stimmt).
+    /// Der Wunsch nach dem Gesetzeskatalog (iU9-W14c.3). <b>Bis W14c war das ein
+    /// Sprung</b> (<c>Sprungziel.Gesetzesparameter</c> über die
+    /// <c>Sprungbruecke</c>) — seit der Katalog selbst eine Razor-Komponente ist,
+    /// wäre daraus ein zweiter WebView über dem ersten geworden (Risiko R2).
+    ///
+    /// <para>Diese Komponente ist KEIN Fenster, sondern ein Reiterblatt in
+    /// <c>KostenKomponenteDialog</c>. Sie kann eine Überlagerung deshalb nicht selbst
+    /// öffnen; sie meldet den Wunsch nach oben, und der Wirt zeigt den Katalog. Ohne
+    /// Rückruf bleibt der Knopf weg (A-18 aus Welle 2 — ein Knopf, der nichts tut, ist
+    /// eine Behauptung, die nicht stimmt).</para>
     /// </summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
-
-    /// <summary>Der Gesetzeskatalog kann sich geaendert haben — der Wirt laedt neu.</summary>
-    [Parameter] public EventCallback KatalogGeaendert { get; set; }
+    [Parameter] public EventCallback GesetzeGewuenscht { get; set; }
 
     // ---- Texte -----------------------------------------------------------
 
@@ -167,11 +170,10 @@
     private Task BeiPvOeffnen()
         => _projektId.HasValue ? PvOeffnen.InvokeAsync(_projektId.Value) : Task.CompletedTask;
 
-    /// <summary>Wie <c>btnGesetze_Click</c>: nach dem Katalog wird neu gelesen.</summary>
-    private async Task BeiGesetze()
-    {
-        if (Sprung is null) return;
-        await Sprung(Sprungziel.Gesetzesparameter);
-        await KatalogGeaendert.InvokeAsync();
-    }
+    /// <summary>
+    /// Wie <c>btnGesetze_Click</c>: Der Wirt öffnet den Katalog und lädt danach die
+    /// Gaben dieses Reiterblatts neu — der Vorläufer rief nach dem Sprung selbst
+    /// <c>BhkwFuellen</c> erneut.
+    /// </summary>
+    private Task BeiGesetze() => GesetzeGewuenscht.InvokeAsync();
 }

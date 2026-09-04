@@ -849,8 +849,21 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="xTitel">Beschriftung der x-Achse (Resource CHART_ACHSE_MONAT).</param>
         /// <param name="yTitel">Beschriftung der y-Achse (Resource CHART_ACHSE_QUELLTEMPERATUR).</param>
+        /// <param name="minimumNull">
+        /// <c>true</c>: Die y-Achse beginnt bei 0, auch wenn alle Werte darüber liegen
+        /// (iU9-W14c.0j, Entscheid E-4).
+        ///
+        /// <para><b>Warum es den Schalter braucht.</b> Der Sonnenwinkel-Verlauf der
+        /// Klimadaten stand im Vorläufer fest auf <c>YMinValue = 0</c>
+        /// (<c>Form_Klimadaten.CreateChart:119</c>), während die Temperaturkurve daneben
+        /// ihr Minimum aus den Werten nahm. Ohne den Schalter begänne die
+        /// Sonnenwinkel-Achse am kleinsten Wert — das Bild sähe sichtbar anders aus als
+        /// der Bestand. Die Vorgabe <c>false</c> lässt jeden bisherigen Aufruf
+        /// unverändert.</para>
+        /// </param>
         public static byte[] Jahresgang(string titel, IReadOnlyList<Reihe> reihen,
-                                        string xTitel, string yTitel)
+                                        string xTitel, string yTitel,
+                                        bool minimumNull = false)
         {
             int W = 1304, H = 440;
             using (var flaeche = Start(W, H))
@@ -880,7 +893,7 @@ namespace WindowsFormsApplication1
 
                 // Vorzeichenfaehige Skala mit "schoenen" Stufen (5 Rasterlinien) -
                 // dieselbe Rechnung wie in KapitalwertVerlauf und Kostenprofil.
-                double min = gueltig.Min(r => r.Werte.Min());
+                double min = minimumNull ? 0.0 : gueltig.Min(r => r.Werte.Min());
                 double max = gueltig.Max(r => r.Werte.Max());
                 if (min > 0) min = 0;              // die Null gehoert ins Bild
                 if (max < 0) max = 0;

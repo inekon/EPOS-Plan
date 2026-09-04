@@ -30,11 +30,17 @@ public sealed class StapelTests
         // mit dieser Welle gefallen. Nach W14a und W14b bleiben genau ZWEI
         // kleingeschriebene Designer im Bestand, WizardParent und
         // Wizard_Komponenten, und beide kommen erst mit Welle 16 an die Reihe;
-        // der Zeuge haelt damit so lange wie moeglich. Der GROSSschreibungs-Zeuge
-        // Form_Klimadaten bleibt (Welle 14c).
+        // der Zeuge haelt damit so lange wie moeglich.
+        //
+        // iU9-W14c (04.09.2026): Der GROSSschreibungs-Zeuge wandert von
+        // Form_Klimadaten auf MDIMainForm. Form_Klimadaten ist mit dieser Welle
+        // gefallen und liegt seither im PRUEFMUSTER - der Stapellauf uebergeht
+        // den Ordner, der Zeuge muesste also ohnehin umziehen. MDIMainForm faellt
+        // als ALLERLETZTE Maske ueberhaupt (Welle 16) und ist die Wurzel des
+        // Erreichbarkeitsgraphen: Ein Lauf, der sie nicht findet, ist kaputt.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
-        Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("WizardParent.designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
         // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
@@ -60,7 +66,14 @@ public sealed class StapelTests
         // ausserhalb dieses Stapellaufs. Welle 14b nimmt VIER mit (29): die drei
         // Bedarfs-Katalogverwaltungen (EINE Komponente mit drei Auspraegungen)
         // und die Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 24.
-        Assert.True(dateien.Count >= 24, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Welle 14c nimmt VIER mit (20): Form_GesetzparameterZeile,
+        // Form_Gesetzesparameter, Form_AdminSettings und Form_Klimadaten. Der
+        // Designer der Klimadaten ist dabei nicht geloescht, sondern nach
+        // Pruefmuster/Klimadaten/ VERSCHOBEN - er traegt fuenf Testanker und liegt
+        // damit ausserhalb dieser Zaehlung (der Stapellauf uebergeht den Ordner).
+        // Gezaehlt wird ueber die REPOWURZEL: 18 unter WindowsFormsApplication1
+        // plus die zwei generierten des Kerns (Resource, Settings).
+        Assert.True(dateien.Count >= 20, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -102,7 +115,11 @@ public sealed class StapelTests
         // Welle 14b nimmt VIER mit: die drei Bedarfs-Katalogverwaltungen werden
         // EINE Komponente mit drei Auspraegungen, dazu die
         // Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 21.
-        Assert.True(Lauf.Value.Masken >= 21, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Welle 14c nimmt VIER mit (17): die zwei Gesetzesmasken, die
+        // Einstellungen und die Klimadaten. Form_KatalogDubletten faellt in
+        // derselben Welle, zaehlte hier aber nie mit - sie hatte keinen Designer
+        // (Befund W14c-B61).
+        Assert.True(Lauf.Value.Masken >= 17, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -138,7 +155,11 @@ public sealed class StapelTests
         // einem aelteren Stand mitgezaehlt. Welle 14b nimmt DREI lokalisierte mit
         // (17) - Form_Prozesswaerme_Admin, Form_Stromverbraucher_Admin und
         // Form_Solarganglinie_Admin; Form_Brauchwasser_Admin war als einzige der
-        // vier gar nicht lokalisiert (Befund W14-B54).
+        // vier gar nicht lokalisiert (Befund W14-B54). Welle 14c nimmt KEINE
+        // lokalisierte mit: Von ihren fuenf Masken traegt keine ein
+        // ApplyResources - die vier .resx des Wellenumfangs sind leere
+        // 119-Zeilen-Ruempfe (Befunde W14c-B2/B36/B58). Die Zahl bleibt damit
+        // bei 11.
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 11,
@@ -203,7 +224,11 @@ public sealed class StapelTests
         Assert.Contains("# Stapellauf Formularkarte", uebersicht, StringComparison.Ordinal);
         Assert.Contains("| davon Masken (mit InitializeComponent) | " + Lauf.Value.Masken + " |",
                         uebersicht, StringComparison.Ordinal);
-        Assert.Contains("Form_Klimadaten", uebersicht, StringComparison.Ordinal);
+
+        // iU9-W14c.9: Bis dahin stand hier Form_Klimadaten; sie ist mit dieser
+        // Welle gefallen. Der Zeuge braucht nur IRGENDEINEN Maskennamen aus der
+        // Uebersicht - MDIMainForm faellt als allerletzte (Welle 16).
+        Assert.Contains("MDIMainForm", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -214,9 +239,14 @@ public sealed class StapelTests
         {
             // iU9-W6: Views/Heizkessel fuehrt seit Welle 6 nur noch zwei
             // Designer-Masken (Form_Heizkessel und der Katalogeditor sind
-            // umgestellt). Der Stapellauf laeuft jetzt ueber Views/Klimadaten -
-            // eine Maske, die bis Welle 14c bleibt.
-            var ergebnis = Stapel.Laufen(Repowurzel.Designer("Klimadaten"), ziel);
+            // umgestellt). Der Stapellauf lief danach ueber Views/Klimadaten.
+            //
+            // iU9-W14c.9: Der ORDNER Views/Klimadaten ist mit dieser Welle leer
+            // und geloescht; die Maske liegt als PRUEFMUSTER. Der Fall braucht
+            // einen Ordner mit GENAU EINER Designer-Maske - und im Pruefmuster
+            // steht sie unveraendert, samt ihrem btn_Help im Designer.
+            var ergebnis = Stapel.Laufen(Repowurzel.Pruefmuster("Klimadaten"), ziel,
+                                         suchwurzel: Repowurzel.PruefmusterWurzel);
 
             Assert.Empty(ergebnis.Fehler);
             Assert.True(File.Exists(Path.Combine(ziel, "Form_Klimadaten.karte.md")));
