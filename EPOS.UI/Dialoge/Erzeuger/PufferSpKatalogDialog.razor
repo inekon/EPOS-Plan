@@ -1,0 +1,301 @@
+﻿@* Katalogeditor Pufferspeicher (iU9-W14a.2).
+
+   VORBILD. Views/Pufferspeicher/Form_PufferSp_Bearbeiten (354 Z., lokalisiert
+   de/en, 13 Kartenzeilen in drei Gruppen, 11 MessageBox + 1 indirekte). Er ist
+   DER FEHLENDE VIERTE der Editorfamilie aus W6/W7: gleicher Aufbau wie
+   HeizkesselKatalogDialog, BhkwKatalogDialog und SolarkollektorKatalogDialog,
+   dieselben zwei Zustaende, dieselben drei Speicherwege.
+
+   DREI SPEICHERWEGE, wie im Vorlaeufer.
+   * "Ueberschreiben" schreibt in den geladenen Satz zurueck (Schluessel ist der
+     Bezeichner - Tab_Pufferspeicher_STAMM fuehrt ihn eindeutig).
+   * "Speichern unter" fragt einen Namen ab und legt einen neuen Satz an.
+   * "Speichern" (nur im Modus Neu) legt unter dem vorhandenen Namen an.
+   Welche Knoepfe aktiv sind, entscheidet der Modus - genau die
+   Enabled-Zuweisungen des Konstruktors (Z. 66-83).
+
+   DER SPEICHERTYP GEHT UEBER DEN INDEX, nicht ueber den Text (Befund L0-1): Bis
+   Paket 9 landete der LOKALISIERTE Auswahltext in der Datenbank. Die Abbildung
+   Index -> Persistenzwert liegt seit W14a.0d im Kern
+   (PufferSpStammCtrl.SpeichertypDbWert); die Huelle reicht die Anzeigetexte
+   herein und nimmt den Index entgegen.
+
+   DIE NAMENSABFRAGE steht in einer Ueberlagerung statt in einem zweiten
+   Fenster (iU9-W4.0, Risiko R2) - dieselbe NamensDialog-Komponente, die der
+   Vorlaeufer ueber NamensDialogHuelle als eigenes Fenster zeigte.
+
+   ELF MessageBox WERDEN BANNER. Der Dialog bleibt bei einem Fehlschlag offen
+   und zeigt den Grund; bis hierher schloss "Ueberschreiben" bei einem
+   Fehlschlag kommentarlos (Befund W14-B22).
+
+   WAS ES HIER NICHT GIBT (bewusst, wortgleich zu A-2 aus W6): der
+   KI-Aufrufknopf (KiAufrufKnopf.Anbringen, Z. 63) - der KI-Einstieg hat in
+   EPOS.UI noch keinen Baustein (Gespraechsverlauf kommt in W15b). Diese Maske
+   war sein LETZTER Nutzer im ganzen Bestand (Befund W14-B19).
+
+   TASTATUR. Wurzel-div mit tabindex="-1", Erstfokus dort, Esc = Abbrechen.
+   ENTER IST NICHT BELEGT: Drei Knoepfe schreiben sofort in den Katalog. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Gruppenkopf Titel="@GruppeBezeichnung">
+        <KindInhalt>
+            @* Der Name ist im Modus Bearbeiten NUR LESBAR - der Vorlaeufer hatte
+               textBox_Name gesperrt (Designer). Umbenannt wird ueber
+               "Speichern unter". *@
+            <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name" WertChanged="BeiName"
+                      NurLesen="@(Modus == KatalogModus.Bearbeiten)" />
+            <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
+                      WertChanged="w => Daten.Firma = w" />
+            <Auswahlfeld Bezeichnung="@LabelSpeichertyp" Eintraege="@Speichertypen"
+                         Auswahl="@Daten.SpeichertypIndex"
+                         AuswahlChanged="w => Daten.SpeichertypIndex = w" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeTechnik">
+        <KindInhalt>
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelVerluste" Einheit="kWh/d" Feldname="@FeldVerluste"
+                            Wert="@Daten.Bereitschaftsverluste"
+                            WertChanged="w => Daten.Bereitschaftsverluste = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Ganzzahlfeld Bezeichnung="@LabelVolumen" Einheit="l" Feldname="@FeldVolumen"
+                              Wert="@Daten.Gesamtvolumen"
+                              WertChanged="w => Daten.Gesamtvolumen = w"
+                              FehlerZustand="BeiFehlerZustand" />
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeKosten">
+        <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelInvest" Einheit="€" Feldname="@FeldInvest"
+                        Wert="@Daten.Investitionskosten"
+                        WertChanged="w => Daten.Investitionskosten = w"
+                        FehlerZustand="BeiFehlerZustand" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="() => _namensfrage = true">@BtnSpeichernUnterText</button>
+        <button type="button" class="epos-knopf" @onclick="() => Geschlossen.InvokeAsync(null)">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(Modus != KatalogModus.Neu)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+    </div>
+
+    @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnSpeichernUnterText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnSpeichernUnterText" FrageText="@LabelName"
+                          Vorbelegung="@Daten.Name" MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiSpeichernUnter" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Der Feldsatz. Die Huelle laedt ihn und nimmt ihn beim Speichern entgegen.</summary>
+    [Parameter] public PufferSpKatalogDaten Daten { get; set; } = new();
+
+    /// <summary>Welche der drei Speicherwege angeboten werden.</summary>
+    [Parameter] public KatalogModus Modus { get; set; } = KatalogModus.Bearbeiten;
+
+    /// <summary>
+    /// Die Speichertypen in Anzeigereihenfolge; die Id ist der Listenindex und damit der
+    /// Steuerwert (Befund L0-1). Die Huelle haengt einen VIERTEN Eintrag an, wenn der
+    /// geladene Satz einen Wert traegt, den keiner der drei trifft — so verschwindet eine
+    /// bewusste Freitexteingabe des Vorlaeufers nicht stillschweigend.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Speichertypen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Schreibt den geladenen Satz zurueck („Überschreiben").</summary>
+    [Parameter] public Func<PufferSpKatalogDaten, KatalogSpeicherErgebnis>? Ueberschreiben { get; set; }
+
+    /// <summary>Legt einen neuen Satz an - zweiter Parameter ist der gewuenschte Name.</summary>
+    [Parameter] public Func<PufferSpKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
+
+    /// <summary>
+    /// Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch. Der Aufrufer
+    /// waehlt damit die Zeile in seiner Liste wieder aus (Bestand: <c>m_szPufferSp</c>).
+    /// </summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    // --- Texte (Vorgabe = der deutsche Literaltext der Maske) -------------------
+
+    [Parameter] public string TitelText { get; set; } = "Pufferspeicher bearbeiten";
+    [Parameter] public string GruppeBezeichnung { get; set; } = "Bezeichnung";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller:";
+    [Parameter] public string LabelSpeichertyp { get; set; } = "Speichertyp:";
+
+    [Parameter] public string GruppeTechnik { get; set; } = "Technische Daten";
+    [Parameter] public string LabelVerluste { get; set; } = "Betriebsbereitschaftsverluste:";
+    [Parameter] public string FeldVerluste { get; set; } = "Betriebsbereitschaftsverluste";
+    [Parameter] public string LabelVolumen { get; set; } = "Gesamtvolumen:";
+    [Parameter] public string FeldVolumen { get; set; } = "Gesamtvolumen";
+
+    [Parameter] public string GruppeKosten { get; set; } = "Eingabedaten zur Berechnung der Kosten";
+    [Parameter] public string LabelInvest { get; set; } = "Investitionskosten:";
+    [Parameter] public string FeldInvest { get; set; } = "Investitionskosten";
+
+    [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>
+    /// Meldung bei ungueltiger Zahl. <c>{0}</c> nimmt den Feldnamen auf - wortgleich die
+    /// Meldung von <c>Program.GanzzahlPruefen</c>, die der Vorlaeufer beim Volumen zeigte.
+    /// </summary>
+    [Parameter] public string MeldungZahlUngueltig { get; set; } =
+        "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
+
+    /// <summary>Meldung, wenn „Speichern unter" ohne Namen bestaetigt wird.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Bezeichner eingeben!";
+
+    /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferSp_Bearbeiten.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _namensfrage;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die Felder, deren Text gerade keine Zahl ist (Pruefhilfe fuer Tests).</summary>
+    private readonly List<string> _fehlerhaft = new();
+
+    /// <summary>Steht die Namensabfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void BeiName(string wert)
+    {
+        // Im Modus Bearbeiten ist das Feld nur lesbar; die Zuweisung kaeme nie an.
+        if (Modus == KatalogModus.Bearbeiten) return;
+        Daten.Name = wert;
+    }
+
+    /// <summary>Sammelt, welche Zahlenfelder gerade keinen gueltigen Text tragen.</summary>
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft)
+        {
+            if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+        }
+        else
+        {
+            _fehlerhaft.Remove(meldung.Feld);
+        }
+    }
+
+    /// <summary>
+    /// Die Zahlenpruefung der Speicherknoepfe. Der Vorlaeufer prueft nur das VOLUMEN
+    /// (<c>VolumenPruefen</c>, Z. 259-262) und liest Verluste und Kosten mit einem
+    /// stillen <c>double.TryParse</c> OHNE Kultur (Befund W14-B21). Hier gilt fuer alle
+    /// drei dieselbe Zahlregel; ein leeres Feld bleibt gueltig und zaehlt als 0.
+    /// </summary>
+    private bool EingabenPruefen()
+    {
+        if (_fehlerhaft.Count == 0) return true;
+
+        _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
+    }
+
+    private async Task BeiUeberschreiben()
+    {
+        if (Ueberschreiben is null) return;
+        if (!EingabenPruefen()) return;
+
+        KatalogSpeicherErgebnis ergebnis = Ueberschreiben(Daten);
+        await NachDemSchreiben(ergebnis);
+    }
+
+    private async Task BeiSpeichern()
+    {
+        if (Anlegen is null) return;
+        if (!EingabenPruefen()) return;
+
+        KatalogSpeicherErgebnis ergebnis = Anlegen(Daten, Daten.Name);
+        await NachDemSchreiben(ergebnis);
+    }
+
+    private async Task BeiSpeichernUnter(string? name)
+    {
+        _namensfrage = false;
+        if (name is null || Anlegen is null) return;
+
+        // Der Vorlaeufer prueft das Volumen VOR der Namensabfrage (Z. 205-208), damit
+        // der Anwender nicht erst einen Namen vergibt und danach die Meldung bekommt.
+        // Hier steht die Pruefung an beiden Stellen; vor dem Oeffnen faellt sie nicht
+        // auf, weil der Knopf die Ueberlagerung sofort zeigt.
+        if (!EingabenPruefen()) return;
+
+        KatalogSpeicherErgebnis ergebnis = Anlegen(Daten, name);
+        await NachDemSchreiben(ergebnis);
+    }
+
+    /// <summary>
+    /// Erfolg schliesst den Dialog und meldet den (ggf. neuen) Namen; ein Fehlschlag
+    /// laesst ihn offen und zeigt den Grund. Der Vorlaeufer schloss auch beim Fehlschlag
+    /// (Befund W14-B22) und bei „Ueberschreiben" sogar OHNE Meldung.
+    /// </summary>
+    private async Task NachDemSchreiben(KatalogSpeicherErgebnis ergebnis)
+    {
+        if (ergebnis is null) return;
+
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        Daten.Name = ergebnis.Name;
+        await Geschlossen.InvokeAsync(ergebnis.Name);
+    }
+
+    /// <summary>
+    /// Esc schliesst. Enter bleibt unbelegt: Drei Knoepfe schreiben sofort in den
+    /// Katalog. Die Ueberlagerung wertet Esc zuerst fuer sich aus.
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(null);
+    }
+}

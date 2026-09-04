@@ -343,5 +343,222 @@ namespace WindowsFormsApplication1
 
             return summe == 0.0 ? KAPAZITAET_RUECKFALL_KWH : summe;
         }
+
+        // =================================================================================
+        // W14a.0c - Katalogliste und Detailblock des Modulkatalogs
+        // =================================================================================
+
+        /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Die Bezeichner des Speicherkatalogs, nach Namen sortiert — die Liste des
+        /// Modulkatalogs (<c>Form_AdminStromspeicher.Form_Stromspeicher_Load</c> Z. 71).
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer las <c>SELECT Bezeichner FROM Tab_Stromspeicher_STAMM</c> OHNE
+        /// Sortierung; die Liste kam damit in Einfuegereihenfolge. <c>ORDER BY</c> steht
+        /// jetzt da — dieselbe Angleichung wie in <c>PhotovoltaikStammCtrl.Filtern</c>
+        /// (W6.0c).
+        /// </remarks>
+        public static IReadOnlyList<KatalogZeile> KatalogZeilen()
+        {
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        // =================================================================================
+        // W14a.0e - der EINE Schreibeinstieg des Modulkatalogs
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Modulkatalogs ergeben hat — dieselbe Form wie
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c> (W6.0).
+        /// </summary>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den Speichersatz — der Weg des Knopfes „Speichern"
+        /// (<c>Form_AdminStromspeicher.btn_Speichern_Click</c> Z. 97-194).
+        /// </summary>
+        /// <param name="daten">Die dreizehn Felder der Maske, Bestand und AP3.</param>
+        /// <param name="neu"><c>true</c> nach „Neu…" (Bestandsfeld <c>m_Neu</c>).</param>
+        /// <param name="schluessel">Der urspruengliche Bezeichner — WHERE-Schluessel des UPDATE.</param>
+        /// <remarks>
+        /// <para><b>Befund W14-B47 behoben.</b> Der Vorlaeufer kehrte bei einem
+        /// fehlgeschlagenen <see cref="Update(string)"/> STILL zurueck (Z. 175) — kein
+        /// Wort, kein Hinweis. Jetzt kommt der Grund zurueck.</para>
+        /// <para><b>Der <c>Exists</c>-Vorabtest ist NEU</b> (Angleichung an Heizkessel,
+        /// Pufferspeicher und Photovoltaik): Der Vorlaeufer legte ohne Vorabtest an und
+        /// bekam erst von der Datenbank eine Absage — oder, schlimmer, eine zweite Zeile
+        /// mit demselben Bezeichner.</para>
+        /// </remarks>
+        public static SpeicherErgebnis SpeichernAus(StromspeicherModel daten, bool neu, string schluessel)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.m_szBezeichner))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new StromspeicherStammCtrl();
+                Uebernehmen(ctrl, daten);
+
+                if (neu)
+                {
+                    if (ctrl.Exists(daten.m_szBezeichner))
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, "");
+
+                    if (!ctrl.Insert())
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                    return new SpeicherErgebnis(true,
+                        MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szBezeichner);
+                }
+
+                string key = schluessel ?? daten.m_szBezeichner;
+
+                // Der Schutz wird VOR dem Schreiben gefragt, damit der Grund als Text
+                // zurueckkommt; Update() zeigt ihn sonst selbst ueber Meldung.Hinweis.
+                if (IsReadOnlyStatic(key))
+                    return new SpeicherErgebnis(false, Text("MODK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+                if (!ctrl.Update(key))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szBezeichner);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Loescht einen Speichersatz und sagt, WARUM es nicht ging.
+        /// </summary>
+        /// <remarks>
+        /// <b>Befund W14-B42 behoben.</b> Der Vorlaeufer
+        /// (<c>Form_AdminStromspeicher.btn_Loeschen_Click</c> Z. 330-335) deutete JEDE
+        /// Ausnahme als „Es besteht eine Projektzuordnung!" — auch eine gesperrte Datei,
+        /// einen Tippfehler im SQL oder einen fehlenden Schreibzugriff. Jetzt kommt der
+        /// wirkliche Grund zurueck; die Projektzuordnung ist einer davon und wird als
+        /// solche benannt.
+        /// </remarks>
+        public static SpeicherErgebnis Loeschen(string szBezeichner)
+        {
+            if (string.IsNullOrWhiteSpace(szBezeichner))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                if (IsReadOnlyStatic(szBezeichner))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_SCHUTZ_LOESCHEN",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden."), "");
+
+                var ctrl = new StromspeicherStammCtrl();
+                if (!ctrl.Delete(szBezeichner))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_LOESCHEN_FEHLER",
+                        "Der Datensatz konnte nicht gelöscht werden."), "");
+
+                return new SpeicherErgebnis(true, "", szBezeichner);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>Uebernimmt die dreizehn Felder eines Modells in diesen Controller.</summary>
+        private static void Uebernehmen(StromspeicherStammCtrl ziel, StromspeicherModel m)
+        {
+            ziel.m_szBezeichner = m.m_szBezeichner ?? "";
+            ziel.m_szTyp = m.m_szTyp ?? "";
+            ziel.m_Leistung = m.m_Leistung;
+            ziel.m_Energie = m.m_Energie;
+            ziel.m_Degradation = m.m_Degradation;
+            ziel.m_Ladezustand = m.m_Ladezustand;
+            ziel.m_Modulkosten = m.m_Modulkosten;
+            ziel.m_WirkungsgradRT = m.m_WirkungsgradRT;
+            ziel.m_ZyklenZugesichert = m.m_ZyklenZugesichert;
+            ziel.m_Verschleisskosten = m.m_Verschleisskosten;
+            ziel.m_Leistungskosten = m.m_Leistungskosten;
+            ziel.m_InvestitionFix = m.m_InvestitionFix;
+            ziel.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+        }
+
+        /// <summary>
+        /// Die dreizehn Anzeigefelder eines Katalogsatzes, bereits als Text — der
+        /// Detailblock von <c>Form_AdminStromspeicher
+        /// .listBox_Stromspeicher_SelectedIndexChanged</c> (Z. 196-239) samt der sechs
+        /// AP3-Gerätefelder (<c>GeraetefelderAnzeigen</c> Z. 469-477).
+        /// </summary>
+        /// <remarks>
+        /// Die Werte kommen ROH wie im Bestand. Fehlende Spalten und <c>NULL</c> ergeben
+        /// einen leeren Text: Auf einer Datenbank vor Migrationsschritt 11 gibt es die
+        /// sechs AP3-Spalten nicht, und das Durchklicken des Katalogs darf daran nicht
+        /// scheitern (Kommentar Z. 463-468).
+        /// </remarks>
+        public static IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string szBezeichner)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[ModulKatalogProfil.FeldBezeichner] = Spaltentext(r, "Bezeichner");
+            werte[ModulKatalogProfil.FeldTyp] = Spaltentext(r, "Typ");
+            werte[ModulKatalogProfil.FeldEnergie] = Spaltentext(r, "Energie");
+            werte[ModulKatalogProfil.FeldLeistung] = Spaltentext(r, "Leistung");
+            werte[ModulKatalogProfil.FeldDegradation] = Spaltentext(r, "Degradation");
+            werte[ModulKatalogProfil.FeldLadezustand] = Spaltentext(r, "Ladezustand");
+            werte[ModulKatalogProfil.FeldModulkosten] = Spaltentext(r, "Modulkosten");
+
+            werte[ModulKatalogProfil.FeldWirkungsgradRt] = Spaltentext(r, "Wirkungsgrad_RT");
+            werte[ModulKatalogProfil.FeldZyklen] = Spaltentext(r, "Zyklen_Zugesichert");
+            werte[ModulKatalogProfil.FeldVerschleisskosten] = Spaltentext(r, "Verschleisskosten");
+            werte[ModulKatalogProfil.FeldLeistungskosten] = Spaltentext(r, "Leistungskosten");
+            werte[ModulKatalogProfil.FeldInvestitionFix] = Spaltentext(r, "Investition_Fix");
+            werte[ModulKatalogProfil.FeldStandby] = Spaltentext(r, "Standby_Verbrauch");
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Spaltentext(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }

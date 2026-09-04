@@ -516,5 +516,110 @@ namespace WindowsFormsApplication1
                 "SELECT Bezeichner FROM " + TABLE + " WHERE ID = ?", new DbParam("@id", id));
             return (v == null || v == DBNull.Value) ? "" : v.ToString();
         }
+
+        // =================================================================================
+        // W14a.0e - der EINE Schreibeinstieg des Modulkatalogs
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Modulkatalogs ergeben hat — dieselbe Form wie
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c> (W6.0).
+        /// </summary>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den Modulsatz — der Weg des Knopfes „Speichern"
+        /// (<c>Form_AdminPV.btn_Speichern_Click</c> Z. 58-134).
+        /// </summary>
+        /// <param name="daten">Die dreizehn Felder der Maske.</param>
+        /// <param name="neu">
+        /// <c>true</c> nach „Neu…": anlegen statt aendern (Bestandsfeld <c>m_Neu</c>).
+        /// </param>
+        /// <param name="schluessel">
+        /// Der urspruengliche Bezeichner — der WHERE-Schluessel des UPDATE. Der Bestand
+        /// nahm dafuer <c>listBox_PV.Text</c> (Z. 118).
+        /// </param>
+        /// <remarks>
+        /// <para><b>Befund W14-B33 behoben.</b> Der Vorlaeufer meldete den Erfolg des
+        /// UPDATE, hatte aber KEINEN <c>else</c>-Zweig: Ein fehlgeschlagenes Update
+        /// schwieg. Jetzt kommt in beiden Faellen ein Ergebnis mit Text zurueck.</para>
+        /// <para>Der <c>Exists</c>-Vorabtest beim Anlegen ist woertlich uebernommen
+        /// (Z. 104), einschliesslich seiner Meldung.</para>
+        /// </remarks>
+        public static SpeicherErgebnis SpeichernAus(PhotovoltaikModel daten, bool neu, string schluessel)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.m_szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PhotovoltaikStammCtrl();
+
+                if (neu)
+                {
+                    if (ctrl.Exists(daten.m_szName))
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, "");
+
+                    if (!ctrl.InsertFrom(daten))
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                    return new SpeicherErgebnis(true,
+                        MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szName);
+                }
+
+                if (!ctrl.UpdateFrom(daten, schluessel ?? daten.m_szName))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Loescht ein Katalogmodul und sagt, warum es nicht ging.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer (<c>Form_AdminPV.btn_Loeschen_Click</c> Z. 221-242) loeschte
+        /// OHNE Rueckfrage (Befund W14-B35) und schluckte jede Ausnahme still (Z. 239).
+        /// Die Rueckfrage stellt jetzt die Oberflaeche, der Grund kommt von hier.
+        /// </remarks>
+        public static SpeicherErgebnis Loeschen(string szName)
+        {
+            if (string.IsNullOrWhiteSpace(szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PhotovoltaikStammCtrl();
+                if (!ctrl.Delete(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_LOESCHEN_FEHLER",
+                        "Der Datensatz konnte nicht gelöscht werden."), "");
+
+                return new SpeicherErgebnis(true, "", szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }

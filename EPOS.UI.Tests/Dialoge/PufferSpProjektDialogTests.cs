@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
@@ -74,7 +74,8 @@ public class PufferSpProjektDialogTests : BunitContext
 
     private IRenderedComponent<PufferSpProjektDialog> Zeige(
         Pruefstand stand, string? verwendung = null, int idPuffer = 0,
-        Action<int>? geschlossen = null, Func<string, Task<bool>>? sprung = null,
+        Action<int>? geschlossen = null,
+        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         IReadOnlyList<int>? passt = null)
     {
         return Render<PufferSpProjektDialog>(p =>
@@ -85,7 +86,7 @@ public class PufferSpProjektDialogTests : BunitContext
             p.Add(x => x.Dienste, stand.Dienste());
             if (passt is not null) p.Add(x => x.PasstZurVerwendung, passt);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
-            if (sprung is not null) p.Add(x => x.Sprung, sprung);
+            if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
         });
     }
 
@@ -515,16 +516,30 @@ public class PufferSpProjektDialogTests : BunitContext
 
     // ============================================================ Sprung / Schluss
 
-    /// <summary>Ohne Sprungdelegat fehlt der Katalogknopf — Hausregel.</summary>
+    /// <summary>
+    /// Ohne Parametersatz der Verwaltung fehlt der Katalogknopf — Hausregel. Seit
+    /// iU9-W14a.4 ist der Auslieferungskatalog eine ÜBERLAGERUNG im selben Fenster
+    /// (mit <c>NurLesen</c>), nicht mehr ein Sprung über
+    /// <c>Sprungziel.PufferSpAdminNurLesen</c>.
+    /// </summary>
     [Fact]
-    public void Ohne_Sprung_gibt_es_keinen_Katalogknopf()
+    public void Ohne_Verwaltungsgaben_gibt_es_keinen_Katalogknopf()
     {
         var ohne = Zeige(MitZwei());
         Assert.DoesNotContain(ohne.FindAll("button"), b => b.TextContent.Contains("Katalog"));
 
-        var mit = Zeige(MitZwei(), sprung: _ => Task.FromResult(true));
+        var mit = Zeige(MitZwei(), verwaltung: () => Verwaltungsgaben());
         Assert.Contains(mit.FindAll("button"), b => b.TextContent.Contains("Katalog"));
     }
+
+    /// <summary>Ein Mindestsatz für die Überlagerung — NUR ZUM ANSEHEN.</summary>
+    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Art"] = WindowsFormsApplication1.KatalogBrowserArt.Pufferspeicher,
+            ["NurLesen"] = true,
+            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.KatalogBrowserWege()
+        };
 
     /// <summary>
     /// Der Dialog hat KEIN Abbrechen (Befund W10-B29) - nur "Schliessen", und das

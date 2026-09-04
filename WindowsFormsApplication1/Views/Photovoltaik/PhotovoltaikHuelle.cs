@@ -122,7 +122,11 @@ namespace WindowsFormsApplication1
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
 
                 // Die Modulverwaltung ist bis Welle 14 eine WinForms-Maske.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
+                // ModulKatalogDialog und erscheint als UEBERLAGERUNG im selben
+                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
+                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    PvAdminHuelle.Gaben),
 
                 ["TitelText"] = Text_("PVD_TITEL", "Verwaltung Photovoltaik Module"),
                 ["KopfbandText"] = Text_("PVD_KOPFBAND", "Eingabe der Photovoltaik Anlagendaten"),

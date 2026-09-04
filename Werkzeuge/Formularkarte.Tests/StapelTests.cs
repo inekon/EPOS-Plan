@@ -59,8 +59,8 @@ public sealed class StapelTests
         // der Zeuge des Umlaut-Tests (RazorSchreiberTests) und liegt damit
         // ausserhalb dieses Stapellaufs. Welle 14b nimmt VIER mit (29): die drei
         // Bedarfs-Katalogverwaltungen (EINE Komponente mit drei Auspraegungen)
-        // und die Solarganglinien-Verwaltung.
-        Assert.True(dateien.Count >= 29, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // und die Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 24.
+        Assert.True(dateien.Count >= 24, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -96,10 +96,13 @@ public sealed class StapelTests
         // FUENF mit (38): die vier Glieder der AP5-Importkette und die
         // Lastspitzenkappung. Welle 13 nimmt SECHS mit (32): die vier
         // VDI-3805-Einlesemasken werden EINE Komponente mit vier Auspraegungen,
-        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport. Welle 14b
-        // nimmt VIER mit (28): die drei Bedarfs-Katalogverwaltungen werden EINE
-        // Komponente mit drei Auspraegungen, dazu die Solarganglinien-Verwaltung.
-        Assert.True(Lauf.Value.Masken >= 28, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport. Welle 14a nimmt
+        // SIEBEN mit (25): vier Katalogbrowser werden EINE Komponente, zwei
+        // Modulkataloge eine zweite, dazu der fehlende vierte Katalogeditor.
+        // Welle 14b nimmt VIER mit: die drei Bedarfs-Katalogverwaltungen werden
+        // EINE Komponente mit drei Auspraegungen, dazu die
+        // Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 21.
+        Assert.True(Lauf.Value.Masken >= 21, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -125,7 +128,11 @@ public sealed class StapelTests
         // lokalisierte mit (21) - Form_Heizkessel_einlesen, Form_PufferSp_einlesen,
         // Form_WP_einlesen und Form_AdminWaermeeinlesen; Form_SolarKollektoren_
         // einlesen hatte weder de-DE noch en-US (Befund W13-B27) und
-        // Form_CECImport eine LEERE .resx (B54). Gemessen OHNE die Git-Nebenbaeume
+        // Form_CECImport eine LEERE .resx (B54). Welle 14a nimmt SECHS lokalisierte
+        // mit (14) - Form_Heizkessel_Admin, Form_SolarKollektorenAdmin,
+        // Form_PufferSp_Admin, Form_PufferSp_Bearbeiten, Form_AdminPV und
+        // Form_AdminStromspeicher; Form_BHKWAdmin war als einzige der sieben gar nicht
+        // lokalisiert (Befund W14-B11). Gemessen OHNE die Git-Nebenbaeume
         // unter .claude/worktrees (die der Stapellauf seit dem 04.09.2026 uebergeht)
         // sind es 20: Der Lauf im W13-Worktree hatte eine Kopie des Bestands auf
         // einem aelteren Stand mitgezaehlt. Welle 14b nimmt DREI lokalisierte mit
@@ -134,7 +141,7 @@ public sealed class StapelTests
         // vier gar nicht lokalisiert (Befund W14-B54).
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 17,
+        Assert.True(Lauf.Value.Lokalisierte >= 11,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

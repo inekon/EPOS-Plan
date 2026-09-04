@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
 
                 // Die Pufferverwaltung als UEBERLAGERUNG (W10a.4). Keine
                 // Verwendungsvorgabe: die Quellseite legt den Kanal nicht fest.
-                ["VerwaltungGaben"] = PufferSpProjektHuelle.Gaben(idProjekt, null, 0, null),
+                ["VerwaltungGaben"] = PufferSpProjektHuelle.Gaben(idProjekt, null, 0),
 
                 ["SteuerwertBerechnet"] = DbWerte.WQ_TEMPMODUS_BERECHNET,
                 ["SteuerwertFest"] = DbWerte.WQ_TEMPMODUS_FEST,

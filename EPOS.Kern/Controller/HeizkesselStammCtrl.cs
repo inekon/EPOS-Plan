@@ -697,21 +697,32 @@ namespace WindowsFormsApplication1
         /// ausserhalb gilt als 0 („Alle").</param>
         /// <remarks>
         /// <para>
-        /// Die Gruppenkette ist WORTGLEICH aus <c>Form_Heizkessel.SetFilter</c> (Z. 665-676)
-        /// uebernommen, samt ihrer beiden Ungenauigkeiten (Regel F3 - eine stille Reparatur
-        /// waere eine Fachaenderung; Befund W6-O-1 des Protokolls):
+        /// <b>Berichtigt mit iU9-W14a.0b (Befund W14-B2, Abweichung A-1).</b> Bis dahin
+        /// stammte die Kette wortgleich aus dem mit W6.3 geloeschten
+        /// <c>Form_Heizkessel.SetFilter</c> und trug dessen zwei Ungenauigkeiten: Sie kannte
+        /// „Sonstige" (<c>Brennstoff=23</c>), waehrend <c>Tab_BrennstoffKategorien</c>
+        /// „Sonstige Energieträger" fuehrt - der Eintrag traf nie -, und die drei
+        /// wirklich vorhandenen Gruppen „Fernwärme", „Sonstige Energieträger" und
+        /// „Wasserstoff" standen gar nicht in der Kette und hoben die Einengung auf: Wer
+        /// sie waehlte, sah den GANZEN Katalog.
         /// </para>
-        /// <list type="bullet">
-        /// <item>Die Kette kennt „Sonstige", <c>Tab_BrennstoffKategorien</c> fuehrt aber
-        /// „Sonstige Energieträger" - der Eintrag trifft nie, und die Liste zeigt dann
-        /// alle Brennstoffe der gewaehlten Leistungsstufe.</item>
-        /// <item>„Sonstige" ist auf <c>Brennstoff=23</c> abgebildet; 23 ist im Katalog
-        /// aber Fernwaerme. <c>Form_BHKWEing.BuildFilter</c> bildet dieselben drei Gruppen
-        /// auf 23/24/25 ab und liegt damit richtig.</item>
-        /// </list>
         /// <para>
-        /// Ebenfalls Bestand: Die Gruppen „Fernwärme" und „Wasserstoff" stehen in der
-        /// Kette gar nicht und heben die Einengung deshalb auf.
+        /// Die richtige Kette stand in <c>Form_Heizkessel_Admin.SetFilter</c> (Z. 118-120) und
+        /// steht so auch in <see cref="BHKWStammCtrl.Filtern"/>: <c>Fernwärme=23</c>,
+        /// <c>Sonstige Energieträger=24</c>, <c>Wasserstoff=25</c>. Sie ist jetzt die
+        /// einzige; der Kern-Kommentar „W6-O-1" ist damit geschlossen.
+        /// </para>
+        /// <para>
+        /// <b>Das aendert die angezeigte Liste</b> - in der KATALOGVERWALTUNG (W14a.1,
+        /// Auspraegung Heizkessel) und ebenso im schon portierten Projektdialog
+        /// <c>HeizkesselDialog</c> (W6.3), der dieselbe Methode benutzt. Auf
+        /// <c>Kenndaten_Test.sqlite</c> gemessen: die drei Gruppen liefern statt je 62
+        /// Saetzen (dem ganzen Katalog) je 0; alle uebrigen zehn Gruppen sind unveraendert.
+        /// Die Zahlen stehen in <c>KatalogVerwaltungTests</c>.
+        /// </para>
+        /// <para>
+        /// Die doppelte Zeile fuer „Tierische Fette" des Vorlaeufers (die zweite war schon
+        /// dort unerreichbar) ist beim Umzug in den Kern entfallen und bleibt entfallen.
         /// </para>
         /// </remarks>
         public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
@@ -730,7 +741,9 @@ namespace WindowsFormsApplication1
             else if (g == "Strom") szFilter = "Brennstoff=13";
             else if (g == "Pellets") szFilter = "Brennstoff=15";
             else if (g == "Rapsöl") szFilter = "Brennstoff=16";
-            else if (g == "Sonstige") szFilter = "Brennstoff=23";
+            else if (g == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (g == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (g == "Wasserstoff") szFilter = "Brennstoff=25";
             else if (g == "Alle") szFilter = "Brennstoff Like '%'";
 
             string sql = szFilter == ""
@@ -985,6 +998,147 @@ namespace WindowsFormsApplication1
                 if (a >= 0) arten.Add(a);
             }
             return arten;
+        }
+
+        // =================================================================================
+        // W14a.0c - der Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_Heizkessel_Admin.listBox_Kessel_DB_SelectedIndexChanged</c>
+        /// (Z. 49-77). <c>null</c>, wenn es den Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum hier.</b> Der Vorlaeufer baute sein SQL per Textverkettung
+        /// (<c>… WHERE Bezeichner='" + listBox.Text + "'</c>, Befund W14-B12). Hier steht
+        /// derselbe Zugriff mit <see cref="DbParam"/>; ein Bezeichner mit Apostroph
+        /// zerreisst das Praedikat nicht mehr.</para>
+        /// <para><b>Die Formatierung ist woertlich uebernommen</b>: Leistung und
+        /// Investitionskosten mit <c>F2</c> (Z. 61-62), Vorlauf und Ruecklauf als leerer
+        /// Text bei <c>NULL</c> (Z. 64-65), der Brennstoff als NACHSCHLAG in
+        /// <see cref="Brennstoffart"/> ueber die 1-basierte Nummer (Z. 59). Der Schalter
+        /// „Brennwertkessel" kommt sprachneutral als <c>"1"</c> oder <c>"0"</c> — die
+        /// Oberflaeche macht daraus ihren Schalter.</para>
+        /// <para>Die Schluessel sind die Feldschluessel aus
+        /// <see cref="KatalogBrowserProfil"/>; damit passen Profil, Anzeige und
+        /// Speicherweg ohne zweite Liste zusammen.</para>
+        /// </remarks>
+        public IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string name)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", name ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
+
+            // Nachschlage-Anzeige: die Spalte fuehrt eine 1-basierte Nummer, gezeigt wird
+            // der Name. Liegt die Nummer ausserhalb der Liste, bleibt das Feld leer -
+            // Bestandsverhalten (der Vorlaeufer waere dort abgestuerzt).
+            int brenn = r["Brennstoff"] == DBNull.Value ? 0 : Convert.ToInt32(r["Brennstoff"]);
+            werte[KatalogBrowserProfil.FeldBrennstoff] =
+                (brenn >= 1 && brenn <= Brennstoffart.Count) ? Brennstoffart[brenn - 1] : "";
+
+            werte[KatalogBrowserProfil.FeldPtherm] =
+                r["Ptherm"] == DBNull.Value ? "" : Convert.ToDouble(r["Ptherm"]).ToString("F2");
+            werte[KatalogBrowserProfil.FeldInvestitionskosten] =
+                r["Investitionskosten"] == DBNull.Value ? "" : Convert.ToDouble(r["Investitionskosten"]).ToString("F2");
+            werte[KatalogBrowserProfil.FeldBrennwert] =
+                (r["Brennwert"] != DBNull.Value && Convert.ToBoolean(r["Brennwert"])) ? "1" : "0";
+            werte[KatalogBrowserProfil.FeldVorlauf] =
+                r["Vorlauf"] == DBNull.Value ? "" : Convert.ToInt32(r["Vorlauf"]).ToString();
+            werte[KatalogBrowserProfil.FeldRuecklauf] =
+                r["Ruecklauf"] == DBNull.Value ? "" : Convert.ToInt32(r["Ruecklauf"]).ToString();
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        // =================================================================================
+        // W14a.0c - der Speicherweg des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt (Speicherpaket vom
+        /// 18.08.2026, <c>Form_Heizkessel_Admin.Speicherfelder</c> Z. 277-284 plus der
+        /// Schalter „Brennwertkessel").
+        /// </summary>
+        public sealed record AnzeigefelderHeizkessel(string Beschreibung, double Ptherm,
+                                                     double Investitionskosten, bool Brennwert,
+                                                     int Vorlauf, int Ruecklauf);
+
+        /// <summary>
+        /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
+        /// Knopfes „Speichern" im Browser.
+        /// </summary>
+        /// <remarks>
+        /// <para>Zusammengefasst aus <c>Form_Heizkessel_Admin.SpeichereStammsatz</c>
+        /// (Z. 310-361), woertlich und in derselben Reihenfolge:</para>
+        /// <list type="number">
+        /// <item><b>Dublettenklammer</b> (Z. 325-337): <c>Tab_Heizkessel_STAMM</c> fuehrt
+        /// auf <c>Bezeichner</c> keinen eindeutigen Schluessel, und <see cref="Update"/>
+        /// filtert genau darauf. Bei einer Dublette wuerden beide Saetze zugleich
+        /// ueberschrieben — deshalb hier abbrechen.</item>
+        /// <item><b>Satz VOLLSTAENDIG lesen</b> (Z. 342-351) und nur die angezeigten
+        /// Felder aendern: <see cref="Update"/> schreibt alle Spalten, ein halb gefuelltes
+        /// Modell wuerde Wirkungsgrade, Emissionen und Wartungskosten nullen.</item>
+        /// <item><b>Schreiben</b> (Z. 355). Der Grund einer Ablehnung kommt als Text
+        /// zurueck statt als <c>MessageBox</c> — eine Razor-Komponente hat keine.</item>
+        /// </list>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderHeizkessel felder)
+        {
+            if (string.IsNullOrEmpty(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@nam", bezeichner));
+                int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (nAnzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, bezeichner, nAnzahl), "");
+
+                var schreiber = new HeizkesselStammCtrl();
+                schreiber.ReadSingle(bezeichner);
+                if (schreiber.rows == 0)
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                schreiber.Beschreibung = felder.Beschreibung ?? "";
+                schreiber.Ptherm = felder.Ptherm;
+                schreiber.Investitionskosten = felder.Investitionskosten;
+                schreiber.Brennwert = felder.Brennwert;
+                schreiber.Vorlauf = felder.Vorlauf;
+                schreiber.Ruecklauf = felder.Ruecklauf;
+
+                (bool ok, string grund) = schreiber.UpdateMitGrund();
+                if (!ok) return new SpeicherErgebnis(false, grund, "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_GESPEICHERT", "Datensatz gespeichert"), schreiber.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
         }
     }
 }

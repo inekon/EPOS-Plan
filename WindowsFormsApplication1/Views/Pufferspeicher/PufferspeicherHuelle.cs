@@ -121,8 +121,11 @@ namespace WindowsFormsApplication1
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
 
-                // Die Speicherverwaltung ist bis Welle 14 eine WinForms-Maske.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W14a.1: Die Speicherverwaltung ist die Razor-Komponente
+                // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
+                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
+                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => PufferSpAdminHuelle.Gaben(false)),
 
                 ["TitelText"] = Text_("PSPD_TITEL", "Verwaltung Pufferspeicher"),
                 ["KopfbandText"] = Text_("PSPD_KOPFBAND", "Geben Sie die Daten der Pufferspeicher ein"),

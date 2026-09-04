@@ -48,7 +48,7 @@ public class PufferspeicherDialogTests : BunitContext
         Action<ErzeugerZeile>? entfernen = null,
         Func<int, ErzeugerDetail?>? projektDetail = null,
         Func<int, bool>? katalogLoeschen = null,
-        Func<string, Task<bool>>? sprung = null,
+        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         Action<bool>? geschlossen = null)
     {
         return Render<PufferspeicherDialog>(p => p
@@ -63,7 +63,7 @@ public class PufferspeicherDialogTests : BunitContext
                  ((id, _) => new AufnahmeErgebnis(Zeile(9, "Speicher 800 Ltr", id))))
             .Add(x => x.Entfernen, entfernen)
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
@@ -99,15 +99,27 @@ public class PufferspeicherDialogTests : BunitContext
         Assert.Equal(Volumen, eintraege);
     }
 
+    /// <summary>
+    /// Ohne Parametersatz der Speicherverwaltung kein Knopf — Hausregel. Seit
+    /// iU9-W14a.4 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster.
+    /// </summary>
     [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Sprung()
+    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltungsgaben()
     {
         var ohne = Aufbauen();
         Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent), t => t == "Bearbeiten...");
 
-        var mit = Aufbauen(sprung: _ => Task.FromResult(true));
+        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
         Assert.Contains(mit.FindAll("button").Select(b => b.TextContent), t => t == "Bearbeiten...");
     }
+
+    /// <summary>Ein Mindestsatz für die Überlagerung — der Browser braucht sein Profil.</summary>
+    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Art"] = WindowsFormsApplication1.KatalogBrowserArt.Pufferspeicher,
+            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.KatalogBrowserWege()
+        };
 
     // =================================================================================
     // Detailquellen
@@ -243,15 +255,21 @@ public class PufferspeicherDialogTests : BunitContext
         Assert.Equal(new[] { 52 }, geloescht);
     }
 
+    /// <summary>
+    /// „Bearbeiten…" öffnet die Speicherverwaltung als ÜBERLAGERUNG im selben
+    /// Fenster — bis iU9-W14a war es ein Sprung in ein zweites Fenster
+    /// (<c>Sprungziel.PufferSpAdmin</c>).
+    /// </summary>
     [Fact]
-    public void Bearbeiten_springt_in_die_Speicherverwaltung()
+    public void Bearbeiten_oeffnet_die_Speicherverwaltung_als_Ueberlagerung()
     {
-        string? ziel = null;
-        var cut = Aufbauen(sprung: s => { ziel = s; return Task.FromResult(true); });
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
+        Assert.False(cut.Instance.VerwaltungOffen);
         cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
-        Assert.Equal(Sprungziel.PufferSpAdmin, ziel);
+        Assert.True(cut.Instance.VerwaltungOffen);
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
     }
 
     [Fact]

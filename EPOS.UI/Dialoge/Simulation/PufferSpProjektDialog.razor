@@ -85,7 +85,7 @@
                 <button type="button" class="epos-knopf" @onclick="NeuVorbereiten">@BtnNeu</button>
                 <button type="button" class="epos-knopf" disabled="@(_bearbeiteteId <= 0)"
                         @onclick="EntfernenStarten">@BtnEntfernen</button>
-                @if (Sprung is not null)
+                @if (VerwaltungGaben is not null)
                 {
                     <button type="button" class="epos-knopf" @onclick="KatalogAnsehen">@BtnKatalog</button>
                 }
@@ -208,6 +208,18 @@
     <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
                 TitelText="@_fragetitel" Beantwortet="Beantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
+    @* --- Ueberlagerung: der Auslieferungskatalog, nur zum Ansehen (W14a.4) --- *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <EPOS.UI.Dialoge.Erzeuger.KatalogBrowserDialog @attributes="_verwaltungGaben"
+                                                               Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
 </div>
 
 @code {
@@ -244,13 +256,13 @@
     [Parameter] public PufferSpProjektDienste? Dienste { get; set; }
 
     /// <summary>
-    /// Sprung in den Auslieferungskatalog (nur zum Ansehen). Ohne Delegat fehlt der
-    /// Knopf — Hausregel.
+    /// Der Parametersatz des Auslieferungskatalogs — NUR ZUM ANSEHEN. Er erscheint seit
+    /// iU9-W14a als <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster
+    /// über die Sprungbrücke (Risiko R2); die Hülle setzt dort <c>NurLesen</c>, das
+    /// die drei Bearbeitungsknöpfe sperrt (bis dahin <c>Sprungziel.PufferSpAdminNurLesen</c>
+    /// und <c>Form_PufferSp_Admin.m_bReadOnly</c>). Ohne Delegat fehlt der Knopf.
     /// </summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
-
-    /// <summary>Der Schlüssel für <see cref="Sprung"/>.</summary>
-    [Parameter] public string SprungzielKatalog { get; set; } = "PUFFERSP_ADMIN_NUR_LESEN";
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
     /// <summary>
     /// Der Dialog ist zu Ende. Geliefert wird der ZULETZT angelegte oder gewählte
@@ -929,13 +941,26 @@
 
     // --- Katalog ----------------------------------------------------------------
 
-    private async Task KatalogAnsehen()
-    {
-        if (Sprung is null) return;
-        await Sprung(SprungzielKatalog);
+    /// <summary>Der Parametersatz des offenen Katalogs; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
 
-        // Nach der Rueckkehr den Katalog neu lesen - der Anwender kann dort etwas
-        // geaendert haben (btnKatalog_Click:1593-1603).
+    /// <summary>Steht der Auslieferungskatalog? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    private Task KatalogAnsehen()
+    {
+        if (VerwaltungGaben is null) return Task.CompletedTask;
+        _verwaltungGaben = VerwaltungGaben();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Nach der Rueckkehr den Katalog neu lesen - der Anwender kann dort etwas
+    /// geaendert haben (btnKatalog_Click:1593-1603).
+    /// </summary>
+    private void VerwaltungFertig(EPOS.UI.Dialoge.Erzeuger.BrowserErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
         if (Dienste is not null) _katalog = Dienste.Katalogzeilen();
     }
 
