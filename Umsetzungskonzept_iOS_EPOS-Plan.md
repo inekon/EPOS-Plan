@@ -1446,8 +1446,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bitgleich, mit Zeugen). **Anwenderfragen:** E‑8 Weg 2 (oben), E‑7 (oben — eine andere Entscheidung kostet 27 Werte im
 > englischen Zweig), **E‑9 → iF30** (Register: Lesemodus-Durchsetzung nach W16 — `DarfSchreiben()` hat genau einen Leser),
 > E‑2 (Druckknopf bleibt), E‑4 (kein iOS-Einstieg in die Lizenzverwaltung, iU11), E‑12 (Suchleiste entfallen), E‑17
-> (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Offen:** W15c‑O‑1 (Vertragsendpunkt), W15c‑O‑2 (ein
-> `LizenzTexte`-Bündel — die zwei großen Komponenten stehen bei 450/452 Zeilen mit 25 bzw. 20 Einzelparametern), W15c‑O‑3
+> (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Entschieden am 04.09.2026 (Empfehlungen angenommen):**
+> W15c‑O‑1 — der Vertragsendpunkt löst die AGB-Seite ab, sobald der Lizenzserver 1.4.0 im Betrieb ist (eine Zeile und ihr
+> Zeuge); W15c‑O‑2 — das `LizenzTexte`-Bündel für die zwei großen Komponenten (450/452 Zeilen, 25 bzw. 20 Einzelparameter)
+> kommt **nach W16** als eigener Commit. **Offen:** W15c‑O‑3
 > (Textsuche im Vertragstext), W15c‑O‑4 (Lizenzeinstieg auf iOS, iU11), W15c‑O‑5 (`Form_HelpPopup` fällt weder mit W15c
 > noch mit W16).
 >
