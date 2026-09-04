@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W13 umgesetzt, W14a/W14b in Arbeit | `01c9933` | **32** Designer-Masken offen (38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen |
+| **iU9** Masken in Wellen | 🔄 W0 bis W13 und W14b umgesetzt, W14a in Arbeit | `c9855b1` | **28** Designer-Masken offen (32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3) |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,44 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
+>
+> **Vier Masken — 670 Zeilen `.cs`, 937 Designer, 11 `MessageBox` — sind zwei Razor-Komponenten:** `BedarfAdminDialog`
+> (`EPOS.UI/Dialoge/Bedarf/`) mit **drei Ausprägungen** über `BedarfsArt` (Brauchwasser, Prozesswärme, Stromverbraucher —
+> die drei Drillinge waren bis auf die Bezeichner zeichengleich; fünf ihrer sieben Knöpfe riefen schon die Razor-Dialoge
+> aus W8) und `SolarganglinieAdminDialog` (`EPOS.UI/Dialoge/Solarthermie/`, Zwilling der Ganglinien-Verwaltungen aus W12
+> und W13, Einlesen über `GanglinienTextDatei.Lies(pfad, mitKopfzeile: true)` mit `Fortschritt`). Im Kern:
+> `BedarfStammCtrl.Bezeichner`/`Kopf`/`Loeschen`, **`BedarfsVorschauCtrl`** (die drei Vorrechnungen als ein Weg),
+> `SolarganglinieStammCtrl.Exists`/`HatProjektzuordnung` (die Präfixsuche `FindString` war die einzige Dublettenprüfung,
+> B70). Mit der Welle fallen `EPOS.Kern/Allgemein/ToolsClass.cs` (letzter Nutzer), das Sprungziel `SolarganglinieAdmin`
+> (`SolarganglinieDialog` zeigt die Verwaltung als Überlagerung) und der Kleinschreibungs-Zeuge der Formularkarte wandert
+> auf `WizardParent.designer.cs`. **Elf Sachcommits und zwei Merges** (`2a53d36` … `8b855ce`), auf `ios_migration`
+> als `c9855b1`. Der Nachweis (27 Kern-Fälle + Probe `solarganglinie_8760.txt`) entstand vor der ersten Maske.
+>
+> **Sieben Abweichungen** (A‑1…A‑7): Leerprüfung vor dem Löschen auch beim Brauchwasser, ein Löschsatz mit Platzhalter
+> statt dreier Schreibweisen, Fehlschlag und ReadOnly-Sperre als Warnbanner, Rückfrage vor dem Löschen der Solarganglinie,
+> der Ganglinienordner sichtbar (stand auf `Visible = False`, B79), „OK" liefert OK. **Zwei neue Befunde:** B78 — der
+> Knopf „Ergebnisse" stand in allen drei Drillingen im Code, aber in keinem Designer: er war seit jeher tot, die
+> Anwenderfragen E‑7/E‑8 der Vermessung sind damit gegenstandslos; B79 (s. o.). **E‑6 (B49, Brauchwasser ohne Teiler)
+> ist durch den Anwenderentscheid W8‑O‑5/W9‑O‑3 erledigt** — `Energieeinheit`/`BedarfEinheitWahl` im Kern, MWh als
+> Vorgabe, kWh wählbar, konsistent in allen Bedarfsansichten; die Prozesswärme im W9-Weg rechnet ebenfalls über die
+> Einheitenklasse (`SimulationWaermebedarf.ProzesssummeUebernehmen`, W9‑O‑3b). Offen: **W14b‑O‑1** (Jahressumme in
+> drei Formaten — Anwenderfrage, Empfehlung `F2`), W14b‑O‑2 (`Rechenstand` des W9-Wegs und `BedarfsVorschauCtrl`
+> zusammenführen), W14b‑O‑3 (gleichnamige Datei im Ablageordner wird weiterverwendet), **W8‑O‑5b** (Simulation →
+> „Wärmebedarf-Details" teilt ein bereits in MWh stehendes Brauchwasser ein zweites Mal — Anwenderentscheid).
+>
+> **Nachweise** (auf dem gemergten Stand `c9855b1`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 087** grün (3 012 vor dem Merge), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **123** grün · Stapellauf **28** Masken (32 − 4), 27 erreichbar, 0 × „nein", 1 „unklar" (fällt mit
+> W14a) · SQL-Prüfer 1 240 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> **PASS, byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, sieben Abweichungen, den Befunden B48…B79 und 25 Abnahmepunkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`. **Windows-Abnahme steht aus**:
+> die sieben Knöpfe je Ausprägung, die drei Jahressummen-Formate, Löschen leer/mit Rückfrage/schreibgeschützt, „Grafik"
+> als Überlagerung mit Einheitenwahl, Solarganglinie (Ordner, Kopie, Einlesen mit Kopfzeile, Projektzuordnungssperre,
+> Überlagerung aus dem Projektdialog), de/en, 125 %. Der fünfzehnte iOS-Lauf folgt nach dem Merge von W14a.
 
 > **Statusblock iU9 — Welle 13 umgesetzt (04.09.2026, Basis `08c489a` nach W12, zusammengeführt mit `4101740`)**
 >

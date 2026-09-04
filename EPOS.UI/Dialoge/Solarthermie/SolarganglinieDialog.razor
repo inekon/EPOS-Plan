@@ -11,12 +11,14 @@
    Maske: Dieselbe Ganglinie darf mehrfach zugeordnet sein, und "▶" muss dann
    die ZEILE treffen, nicht den ersten Namensvetter.
 
-   DIE VERWALTUNG BLEIBT WINFORMS. "Bearbeiten..." fuehrt in
-   Form_Solarganglinie_Admin (bis Welle 14b) und laeuft deshalb ueber die
-   Sprungbruecke - Sprungziel.SolarganglinieAdmin (W7.0f). Ohne Delegat kein
-   Knopf.
+   DIE VERWALTUNG IST SEIT WELLE 14b EINE UEBERLAGERUNG. "Bearbeiten..." zeigte
+   bis dahin Form_Solarganglinie_Admin ueber die Sprungbruecke
+   (Sprungziel.SolarganglinieAdmin, W7.0f); seit W14b.2 ist das Ziel selbst
+   Blazor, und damit wird der Sprung eine Ueberlagerung im selben Fenster - kein
+   zweiter WebView (Risiko R2). Ohne Parametersatz kein Knopf.
 
-   TASTATUR: Esc schliesst. Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst, aber erst, wenn die Verwaltung zu ist. Enter ist
+   nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
@@ -91,7 +93,7 @@
                 </table>
             </div>
 
-            @if (Sprung is not null)
+            @if (VerwaltungGaben is not null)
             {
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
@@ -105,6 +107,23 @@
               Mehrzeilig="true" Zeilen="3" />
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Die Ganglinienverwaltung als UEBERLAGERUNG (iU9-W14b.2) -----------
+       Bis Welle 14b war das ein SPRUNG ueber die Sprungbruecke in ein
+       WinForms-Fenster (Sprungziel.SolarganglinieAdmin). Ist das Ziel selbst
+       Blazor, wird daraus eine Ueberlagerung im selben Fenster - kein zweiter
+       WebView (Risiko R2), dasselbe Muster wie WaermebedarfExternDialog aus
+       W13. Nebenbei behoben ist damit Befund W14-B73: Der Sprung rief
+       SetControls() NICHT, wer aus diesem Dialog sprang, sah eine LEERE Liste. *@
+    <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_verwaltungOffen)
+            {
+                <SolarganglinieAdminDialog @attributes="@VerwaltungGaben"
+                                           Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -128,8 +147,13 @@
     /// <summary>Entfernt die Zeile aus der geteilten Liste („▶").</summary>
     [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
 
-    /// <summary>Weiterführung in die Ganglinienverwaltung; ohne Delegat kein Knopf.</summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+    /// <summary>
+    /// Der PARAMETERSATZ der Ganglinienverwaltung
+    /// (<c>SolarganglinieAdminHuelle.Gaben</c>, iU9-W14b.2). Sie erscheint als
+    /// Überlagerung im selben Fenster; bis Welle 14b war es ein Sprung in ein
+    /// WinForms-Fenster. Ohne den Satz bleibt der Knopf „Bearbeiten…" weg.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -160,6 +184,12 @@
     private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
     private string _name = "";
     private string _beschreibung = "";
+
+    /// <summary>Steht die Ganglinienverwaltung als Ueberlagerung offen? (iU9-W14b.2)</summary>
+    private bool _verwaltungOffen;
+
+    /// <summary>Steht die Verwaltung offen? — Prüfhilfe für die Tests.</summary>
+    public bool VerwaltungOffen => _verwaltungOffen;
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
@@ -240,21 +270,33 @@
     }
 
     /// <summary>
-    /// „Bearbeiten…": Sprung in die Ganglinienverwaltung. Danach wird der Katalog
-    /// IMMER neu gezogen — der Vorläufer tat dasselbe (<c>btn_Bearbeiten_Click</c>:117).
+    /// „Bearbeiten…": die Ganglinienverwaltung als Überlagerung (iU9-W14b.2). Bis
+    /// dahin war es ein Sprung in ein WinForms-Fenster.
     /// </summary>
-    private async Task BeiBearbeiten()
+    private void BeiBearbeiten()
     {
-        if (Sprung is null) return;
+        if (VerwaltungGaben is null) return;
 
         _projektZeile = null;
         _katalogZeile = null;
-        await Sprung(Sprungziel.SolarganglinieAdmin);
+        _verwaltungOffen = true;
+    }
+
+    /// <summary>
+    /// Die Verwaltung ist zu. Der Katalog wird IMMER neu gezogen — der Vorläufer tat
+    /// dasselbe (<c>btn_Bearbeiten_Click</c>:117).
+    /// </summary>
+    private void VerwaltungFertig(bool _)
+    {
+        _verwaltungOffen = false;
         KatalogNeuLaden();
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" ? Geschlossen.InvokeAsync(false) : Task.CompletedTask;
+    {
+        if (e.Key != "Escape" || _verwaltungOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
 }

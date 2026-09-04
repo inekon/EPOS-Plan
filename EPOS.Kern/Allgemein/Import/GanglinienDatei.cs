@@ -150,8 +150,10 @@ namespace WindowsFormsApplication1
     /// <para>
     /// <b>Altweg.</b> Eine <c>.txt</c>-Datei mit einem Wert je Zeile ist der
     /// Sonderfall "kein Trennzeichen, eine Spalte, keine Kopfzeile" und laeuft
-    /// durch dieselbe Kette. <c>ToolsClass.OpenText</c> bleibt fuer die anderen
-    /// Ganglinienimporte (Solar, Waermebedarf) unveraendert bestehen.
+    /// durch dieselbe Kette. Die beiden anderen Ganglinienimporte (Waermebedarf
+    /// seit W13.2, Solarthermie seit W14b.2) lesen ueber
+    /// <see cref="GanglinienTextDatei"/>; die frueher dafuer zustaendige
+    /// <c>ToolsClass.OpenText</c> ist mit Welle 14b geloescht.
     /// </para>
     /// </remarks>
     public static class GanglinienDatei

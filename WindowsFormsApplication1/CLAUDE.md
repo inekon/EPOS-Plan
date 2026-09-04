@@ -120,7 +120,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**127 `.cs`**; **182 Dateien** mit `.resx`) —
+- **`Views/`** (**121 `.cs`**; **166 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -302,16 +302,19 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 25 Masken** (32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 21 Masken** (25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **14** (21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **11** (14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf **25 von 25 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  Erreichbarkeit steht seit iU9‑W14a auf **21 von 21 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
   jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
   `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
   (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
-  behalten.
+  behalten. **Der Kleinschreibungs-Zeuge des Stapellauf-Tests hängt seit iU9‑W14b
+  an `WizardParent.designer.cs`** (vorher `Form_Brauchwasser_Admin`): Nach W14a und
+  W14b bleiben genau zwei kleingeschriebene Designer, `WizardParent` und
+  `Wizard_Komponenten`, und beide kommen erst mit Welle 16 an die Reihe.
   **Mit iU9‑W11b sind sechs weitere Masken verschwunden — die letzten des
   Simulationsbereichs**, zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer,
   21 MessageBox und 17 Zeichenflächen: `Form_Simulation_Detail` (7 629 Z. +
@@ -433,6 +436,30 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` verschoben — er ist der
   Zeuge des Umlaut-Tests. Protokoll:
   [`Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W14b sind vier weitere Masken verschwunden — die ruhenden
+  Verwaltungen des Bedarfs**, zusammen 670 Zeilen `.cs`, 937 Zeilen Designer und
+  11 `MessageBox`: `Form_Stromverbraucher_Admin` (177 Z.),
+  `Form_Prozesswaerme_Admin` (177 Z.), `Form_Brauchwasser_Admin` (163 Z.) und
+  `Form_Solarganglinie_Admin` (153 Z.). **Vier Masken werden ZWEI Komponenten**:
+  Die drei Bedarfskataloge sind DRILLINGE wie ihre Projektblätter aus W8 und W9 —
+  ihre Ausprägung ist derselbe Aufzählungstyp `BedarfsArt`, und der
+  Feldkartenabgleich läuft je AUSPRÄGUNG. An ihrer Stelle stehen **zwei Hüllen** —
+  `Views/Bedarf/BedarfAdminHuelle.cs` (EINE für drei Maskenschlüssel) und
+  `Views/Solarthermie/SolarganglinieAdminHuelle.cs`.
+  Neu im Kern ist `Controller/BedarfsVorschauCtrl.cs` (die Rechnung hinter
+  „Grafik", die dreimal im Formularcode stand); erweitert sind `BedarfStammCtrl`
+  (`Bezeichner`, `Kopf`, `Loeschen`) und `SolarganglinieStammCtrl` (`Exists`,
+  `HatProjektzuordnung`). **`EPOS.Kern/Allgemein/ToolsClass.cs` fällt** — sie
+  hatte genau zwei Nutzer, und beide sind mit W13.2 bzw. W14b.2 gefallen.
+  **Die Sprungbrücke verliert ein weiteres Ziel**: `SolarganglinieDialog` zeigt
+  die Verwaltung als Überlagerung; `Sprungziel` führt danach acht Konstanten.
+  Der Nachweis der Welle sind **37 eingefrorene Fälle**
+  (`EPOS.Kern.Tests/BedarfVerwaltungTests.cs`), angelegt VOR der ersten
+  portierten Zeile: Für diese vier Masken gab es weder Referenzlauf noch
+  ChartProbe noch Kern-Test (Befund W14‑B77).
+  **`Views/Brauchwasser`, `Views/Prozesswärme` und `Views/Stromverbraucher`
+  führen seither keine Designer-Maske mehr.** Protokoll:
+  [`Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W14a sind sieben weitere Masken verschwunden — die Erzeuger-Katalogverwaltung**,
   zusammen 2 387 Zeilen `.cs`, 2 369 Zeilen Designer, 39 `MessageBox` und 32 indirekte:
   `Form_Heizkessel_Admin` (365 Z.), `Form_BHKWAdmin` (465 Z.),
