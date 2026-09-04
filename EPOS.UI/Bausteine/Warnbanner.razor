@@ -22,12 +22,19 @@
    nicht - es gehoert der Seite und geht mit ihr; die Abbruchmarke haengt an
    IDisposable.
 
-   Form_Hinweis selbst BLEIBT bis Welle 16 (Entscheid E-1b, bewusste Ausnahme von
-   der Arbeitsregel iZ5): Seine drei Aufrufer liegen saemtlich in Form_Start, und
-   die ist bis W16 WinForms. Ein modaler OK-Dialog statt eines 3-s-Hinweises
-   waere dort ein Rueckschritt - der Anwender muesste ihn wegklicken. Gebaut und
-   geprueft wird der Nachfolger trotzdem jetzt (T-6), damit W16 nur noch
-   umhaengt. *@
+   Form_Hinweis selbst blieb bis Welle 16 (Entscheid E-1b, bewusste Ausnahme von
+   der Arbeitsregel iZ5): Seine drei Aufrufer lagen saemtlich in Form_Start, und
+   die war bis dahin WinForms. Ein modaler OK-Dialog statt eines 3-s-Hinweises
+   waere dort ein Rueckschritt gewesen - der Anwender haette ihn wegklicken
+   muessen. Gebaut und geprueft wurde der Nachfolger trotzdem schon damals (T-6),
+   damit W16 nur noch umhaengen musste.
+
+   MIT iU9-W16b.3 IST ES SOWEIT: Form_Start ist die Razor-Startseite, und
+   Form_Hinweis ist geloescht. Von seinen drei Aufrufern wurden zwei ein
+   Warnbanner - der Kurzhinweis "Projekt ... geoeffnet!" mit Verfaellt = 3 s und
+   der dauerhafte Hinweis der Reitersperre -, der dritte fiel mit der Kachel
+   "Projekt Details" (Anwenderentscheid E-7). Die drei PointToScreen-Rechnungen
+   sind ersatzlos entfallen. *@
 
 @implements IDisposable
 

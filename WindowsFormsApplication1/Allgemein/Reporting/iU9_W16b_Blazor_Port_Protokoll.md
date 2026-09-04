@@ -1,4 +1,4 @@
-# iU9 Welle 16b — Die Startseite: Form_Start, FormMain, AktionsKarte, Form_Hinweis — Portprotokoll
+﻿# iU9 Welle 16b — Die Startseite: Form_Start, FormMain, AktionsKarte, Form_Hinweis — Portprotokoll
 
 > Teilwelle **W16b** des Pakets iU9 (Welle 16 = der Rahmen K5 in drei Teilwellen).
 > Grundlage: `iU9_W16_Vermessung.md` (1 907 Zeilen, Stand `4101740`) und die
@@ -256,6 +256,15 @@ sieben `Text_Form_Start_*` und die fünf `SIM_*`.
 | Wächter `Program.*` im Kern und in den Kernkandidaten | leer | **leer** |
 | Wächter `System.Windows.Forms`/`System.Drawing`/`MessageBox.`/`Registry.`/`ProtectedData`/`OleDb` im Kern | leer | **leer** |
 | `git grep` auf die gefallenen Klassen | nur Kommentare, Protokolle und das eingefrorene Prüfmuster | erfüllt |
+
+**Nach dem Merge von `origin/ios_migration`** (`d4a7632` — der einundzwanzigste
+iOS-Lauf auf dem Stand nach W16a, die Nachweisliste und ein neuer Abschnitt
+„Compact instructions" in der Wurzel-`CLAUDE.md`) ist das ganze Gate ein zweites Mal
+gelaufen: Build **0 / 6** (Vollneubau), **3 968** grün und ebenso unter `en_US`,
+Formularkarte **121**, Stapellauf **2 / 3** mit 2 / 0 / 0 / 0, SQL **0 von 1 200**,
+ChartProben **32**, Referenzlauf **byte-gleich in allen drei Projekten** (815 043
+Werte), beide Wächter leer. **Der Merge lief ohne Konflikt** — die andere Seite hat
+nur Konzept- und Nachweisdateien angefasst, keine Quelldatei.
 
 ### R‑W16‑4 — der Projektwechsel
 
