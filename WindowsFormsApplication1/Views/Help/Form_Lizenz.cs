@@ -685,8 +685,11 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
-                    frm.ShowDialog(this);
+                // iU9-W15c.5: Die Lizenzverwaltung ist eine Razor-Komponente. Bis
+                // diese Maske selbst faellt (W15c.11) bleibt es ein zweites Fenster;
+                // danach erscheint dieselbe Komponente als Ueberlagerung im
+                // Lizenzdialog (Entscheid E-11, Risiko R2).
+                LizenzVerwaltungHuelle.Oeffnen(this);
             }
             catch (Exception ex)
             {

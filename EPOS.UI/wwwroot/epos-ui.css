@@ -3366,3 +3366,100 @@ body {
 @media (forced-colors: active) {
     .epos-kiknopf { border: 1px solid CanvasText; }
 }
+
+/* --------------------------------------------------------------------------
+   Lizenzverwaltung (iU9-W15c.5).
+
+   Der Vorlaeufer war ein FixedDialog mit drei GroupBox und fest gerechneten
+   Pixelpositionen (560 x 486, AutoScaleMode.None). Hier fliesst das Ganze; die
+   drei Gruppen sind <section> mit Ueberschrift, die Eingabefelder nehmen die
+   Breite, und der Knopf "Lizenzdatei (.lic)..." rutscht auf schmalen Flaechen
+   unter das Schluesselfeld.
+   -------------------------------------------------------------------------- */
+.epos-lizverw {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.epos-lizverw-gruppe {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    padding: 10px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-kopf {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+/* Die drei Statusfarben sind BITGLEICH aus Form_LizenzVerwaltung.cs:134-137
+   uebernommen: gruen 0/128/60 (Gueltig), orange 190/120/0 (Kulanz und
+   Nachpruefung), rot 190/40/40 (nicht aktiviert, Lesemodus, Uhr). Sie sind die
+   einzige Stelle des Bestands, die Lizenzzustaende sichtbar unterscheidet. */
+.epos-lizverw-status {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-lizverw-status--gut       { color: rgb(0, 128, 60); }
+.epos-lizverw-status--warn      { color: rgb(190, 120, 0); }
+.epos-lizverw-status--schlecht  { color: rgb(190, 40, 40); }
+
+.epos-lizverw-detail {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-portal {
+    margin: 0;
+}
+
+.epos-lizverw-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-schluessel { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-email      { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-lic        { flex: 0 0 auto; }
+
+/* CharacterCasing = Upper des Vorlaeufers (Designer:112). Die Anzeige macht
+   text-transform, den WERT macht ToUpperInvariant() beim Uebergeben - CSS
+   allein aendert ihn nicht. */
+.epos-lizverw-grossschrift {
+    text-transform: uppercase;
+}
+
+.epos-lizverw-hinweis {
+    margin: 0;
+    color: var(--epos-text-sehr-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-fuss {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-lizverw-status--gut,
+    .epos-lizverw-status--warn,
+    .epos-lizverw-status--schlecht { color: CanvasText; }
+    .epos-lizverw-gruppe { border: 1px solid CanvasText; }
+}

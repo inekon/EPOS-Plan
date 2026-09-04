@@ -1,0 +1,451 @@
+﻿@* Lizenzverwaltung (Administration -> Lizenz): Status, Aktivierung per
+   Schluessel oder .lic-Datei, Testversion und Geraetefreigabe.
+   iU9-W15c.5, Ersatz fuer Views/Admin/Form_LizenzVerwaltung.{cs,Designer.cs,resx}
+   (302 + 246 + 119 Z.).
+
+   DREI GRUPPEN WIE IM VORLAEUFER: Status | Aktivieren | Weitere Aktionen, dazu
+   eine Fusszeile mit Hinweisplatz und "Schliessen".
+
+   KEIN OK/ABBRECHEN-PAAR (Entscheid E-3, bitgleich). Die Begruendung des
+   Bestands (Form_LizenzVerwaltung.cs:82-86) gilt unveraendert: "die Aktivierung
+   laeuft in Aktivieren_Click sofort gegen den Lizenzserver und ist beim
+   Schliessen laengst geschehen; ein 'Abbrechen' wuerde eine Ruecknahme zusagen,
+   die der Dialog nicht leisten kann."
+
+   DIE KOMPONENTE KENNT DEN LIZENZKERN NICHT (Regel S-2, Befund W15c-B13). Kein
+   LizenzManager, kein LizenzServerClient, kein GeraeteId, keine
+   Signaturpruefung. Die vier Wege nach draussen sind DELEGATEN, die die Huelle
+   legt; auf iOS liest Pruefe() den Schluesselbund synchron, und eine Komponente
+   ruft immer vom Zeichenfaden.
+
+   DER SCHLUESSEL VERLAESST DIE KOMPONENTE NUR RICHTUNG "Aktivieren" (Regel S-4).
+   Nach einem Erfolg wird das Feld GELEERT - der Vorlaeufer tut dasselbe
+   (_schluessel.Clear(), :184). Keine Meldung wiederholt ihn, nichts wird
+   abgelegt: kein localStorage, kein Zustand ueber den Dialog hinaus.
+
+   GROSSSCHREIBUNG DES SCHLUESSELFELDES: Der Designer setzt
+   CharacterCasing = Upper (:112). CSS allein (text-transform) aendert den WERT
+   nicht - deshalb steht zusaetzlich ToUpperInvariant() auf dem Weg nach
+   draussen.
+
+   NEUN MESSAGEBOX WERDEN EIN WARNBANNER UND EINE RUECKFRAGE. Acht der neun
+   Meldungen unterbrachen nur; sie stehen jetzt an Ort und Stelle. Die neunte
+   ("Geraet von der Lizenz loesen?") ist eine echte Entscheidung und bleibt eine
+   Rueckfrage - mit VorgabeNein, weil der Vorlaeufer YesNo mit dem Fokus auf
+   "Ja" zeigte, die Folge aber eine Neuaktivierung ist. *@
+
+@namespace EPOS.UI.Dialoge.Lizenz
+
+<div class="epos-lizverw">
+
+    @* ---- Gruppe 1: Lizenzstatus auf diesem Arbeitsplatz ---------------- *@
+    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-status-kopf">
+        <h2 class="epos-lizverw-kopf" id="lizverw-status-kopf">@GruppeStatus</h2>
+
+        <p class="epos-lizverw-status epos-lizverw-status--@Stufe" role="status">@Lage.Statustext</p>
+        <p class="epos-lizverw-detail">@Lage.Detailtext</p>
+
+        @if (!string.IsNullOrEmpty(Lage.PortalUrl))
+        {
+            @* Ein Verweis, kein Process.Start: Die WebView oeffnet ihn im
+               Systembrowser, auf iOS das Teilen-Blatt der Plattform. *@
+            <p class="epos-lizverw-portal">
+                <a href="@Lage.PortalUrl" target="_blank" rel="noopener noreferrer">@LinkPortal</a>
+            </p>
+        }
+    </section>
+
+    @* ---- Gruppe 2: Aktivieren ----------------------------------------- *@
+    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-aktiv-kopf">
+        <h2 class="epos-lizverw-kopf" id="lizverw-aktiv-kopf">@GruppeAktivieren</h2>
+
+        <div class="epos-lizverw-zeile">
+            <label class="epos-feld epos-lizverw-schluessel">
+                <span class="epos-feld-text">@LabelSchluessel</span>
+                <span class="epos-feld-zeile">
+                    @* text-transform macht die Anzeige gross, ToUpperInvariant den
+                       WERT - beides zusammen ist CharacterCasing = Upper. *@
+                    <input class="epos-eingabe epos-lizverw-grossschrift" type="text"
+                           value="@_schluessel" disabled="@_laeuft"
+                           autocomplete="off" spellcheck="false"
+                           @oninput="SchluesselGeaendert" />
+                </span>
+            </label>
+
+            <button type="button" class="epos-knopf epos-lizverw-lic"
+                    disabled="@_laeuft" @onclick="LicLaden">@KnopfLic</button>
+        </div>
+
+        <div class="epos-lizverw-zeile">
+            <label class="epos-feld epos-lizverw-email">
+                <span class="epos-feld-text">@LabelEmail</span>
+                <span class="epos-feld-zeile">
+                    <input class="epos-eingabe" type="email" value="@_email"
+                           disabled="@_laeuft" autocomplete="off" spellcheck="false"
+                           @oninput="EmailGeaendert" />
+                </span>
+            </label>
+        </div>
+
+        <div class="epos-lizverw-zeile">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@_laeuft" @onclick="Aktivieren">@KnopfAktivieren</button>
+        </div>
+
+        <p class="epos-lizverw-hinweis">@HinweisAktivierung</p>
+    </section>
+
+    @* ---- Gruppe 3: Weitere Aktionen ------------------------------------ *@
+    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-aktionen-kopf">
+        <h2 class="epos-lizverw-kopf" id="lizverw-aktionen-kopf">@GruppeAktionen</h2>
+
+        <div class="epos-lizverw-zeile">
+            @* Bitgleich zu StatusAnzeigen(): "Testversion" nur OHNE Token,
+               "Geraet loesen" nur MIT. Waehrend einer Aktion beide gesperrt. *@
+            <button type="button" class="epos-knopf"
+                    disabled="@(_laeuft || Lage.HatToken)" @onclick="Trial">@KnopfTrial</button>
+
+            <button type="button" class="epos-knopf"
+                    disabled="@(_laeuft || !Lage.HatToken)" @onclick="FreigebenFragen">@KnopfFreigeben</button>
+        </div>
+    </section>
+
+    @* ---- Fusszeile ------------------------------------------------------ *@
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungsstufe" Text="@_meldung" />
+    }
+
+    <div class="epos-lizverw-fuss">
+        <InfoKnopf Schluessel="Form_LizenzVerwaltung.btn_Help" />
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="Schliessen">@KnopfSchliessen</button>
+    </div>
+</div>
+
+<Rueckfrage Offen="@_freigabeFrage"
+            Frage="@MsgFreigebenFrage"
+            TitelText="@TitelText"
+            VorgabeNein="true"
+            JaText="@JaText"
+            NeinText="@NeinText"
+            Beantwortet="FreigebenBeantwortet" />
+
+@code {
+    // ==================================================================
+    //  Anzeige
+    // ==================================================================
+
+    /// <summary>Das Lagebild der Lizenz — von der Huelle gebaut (siehe <see cref="LizenzGaben"/>).</summary>
+    [Parameter] public LizenzGaben Lage { get; set; } = LizenzGaben.Leer;
+
+    /// <summary>
+    /// Vorbelegung des E-Mail-Feldes — aus dem Token, wenn eines vorliegt. Der
+    /// LIZENZSCHLUESSEL wird NIE vorbelegt (Regel S-4).
+    /// </summary>
+    [Parameter] public string EmailVorgabe { get; set; } = "";
+
+    // ==================================================================
+    //  Wege nach draussen
+    // ==================================================================
+
+    /// <summary>Aktivierung: Schluessel und E-Mail hinein, Erfolg und Meldung heraus.</summary>
+    [Parameter] public Func<string, string, Task<(bool Ok, string Meldung)>>? Aktivierenweg { get; set; }
+
+    /// <summary>Eine <c>.lic</c>-Datei waehlen und lesen; leerer Schluessel = nichts gefunden.</summary>
+    [Parameter] public Func<Task<(string Schluessel, string Email, string Meldung)>>? LicLesen { get; set; }
+
+    /// <summary>Testversion anfordern; der Schluessel kommt per E-Mail.</summary>
+    [Parameter] public Func<string, Task<(bool Ok, string Meldung)>>? Trialweg { get; set; }
+
+    /// <summary>Geraet von der Lizenz loesen. Ein Netzfehler ist KEIN Ablehnungsgrund.</summary>
+    [Parameter] public Func<Task<(bool Ok, bool Netzfehler, string Meldung)>>? Freigebenweg { get; set; }
+
+    /// <summary>Das Lagebild neu holen — nach JEDER Aktion, wie <c>StatusAnzeigen()</c>.</summary>
+    [Parameter] public Func<Task<LizenzGaben>>? Auffrischen { get; set; }
+
+    /// <summary>
+    /// Die E-Mail-Regel — sie steht im KERN (<c>LizenzCtrl.EmailGueltig</c>,
+    /// „gleiche Maßstäbe wie WordPress' <c>is_email()</c>") und kommt als Delegat
+    /// herein. Eine zweite Fassung in der Komponente wäre eine zweite Wahrheit:
+    /// Der Lizenzserver entscheidet, welche Adresse er annimmt. Ohne Delegat gilt
+    /// jede nichtleere Eingabe als möglich — dann entscheidet der Server allein.
+    /// </summary>
+    [Parameter] public Func<string, bool>? EmailPruefen { get; set; }
+
+    /// <summary>Der Dialog ist zu.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    // ==================================================================
+    //  Texte (die Huelle setzt sie aus MyResource.LIZ_*)
+    // ==================================================================
+
+    /// <summary>Fenstertitel, auch Titel der Rueckfrage (<c>LIZ_TITEL</c>).</summary>
+    [Parameter] public string TitelText { get; set; } = "Lizenz";
+
+    /// <summary>Gruppentitel „Lizenzstatus auf diesem Arbeitsplatz" (<c>LIZ_GRP_STATUS</c>).</summary>
+    [Parameter] public string GruppeStatus { get; set; } = "Lizenzstatus auf diesem Arbeitsplatz";
+
+    /// <summary>Gruppentitel „Aktivieren" (<c>LIZ_GRP_AKTIVIEREN</c>).</summary>
+    [Parameter] public string GruppeAktivieren { get; set; } = "Aktivieren";
+
+    /// <summary>Gruppentitel „Weitere Aktionen" (<c>LIZ_GRP_AKTIONEN</c>).</summary>
+    [Parameter] public string GruppeAktionen { get; set; } = "Weitere Aktionen";
+
+    /// <summary>Beschriftung „Lizenzschlüssel:" (<c>LIZ_LBL_SCHLUESSEL</c>).</summary>
+    [Parameter] public string LabelSchluessel { get; set; } = "Lizenzschlüssel:";
+
+    /// <summary>Beschriftung „E-Mail (Benutzer):" (<c>LIZ_LBL_EMAIL</c>).</summary>
+    [Parameter] public string LabelEmail { get; set; } = "E-Mail (Benutzer):";
+
+    /// <summary>Knopf „Lizenzdatei (.lic)…" (<c>LIZ_BTN_LIC</c>).</summary>
+    [Parameter] public string KnopfLic { get; set; } = "Lizenzdatei (.lic)…";
+
+    /// <summary>Knopf „Jetzt aktivieren" (<c>LIZ_BTN_AKTIVIEREN</c>).</summary>
+    [Parameter] public string KnopfAktivieren { get; set; } = "Jetzt aktivieren";
+
+    /// <summary>Knopf „Testversion anfordern…" (<c>LIZ_BTN_TRIAL</c>).</summary>
+    [Parameter] public string KnopfTrial { get; set; } = "Testversion anfordern…";
+
+    /// <summary>Knopf „Gerät von der Lizenz lösen" (<c>LIZ_BTN_FREIGEBEN</c>).</summary>
+    [Parameter] public string KnopfFreigeben { get; set; } = "Gerät von der Lizenz lösen";
+
+    /// <summary>Knopf „Schließen" (<c>LIZ_BTN_SCHLIESSEN</c>).</summary>
+    [Parameter] public string KnopfSchliessen { get; set; } = "Schließen";
+
+    /// <summary>Der zweizeilige Datenschutzhinweis (<c>LIZ_HINWEIS_AKTIVIERUNG</c>).</summary>
+    [Parameter] public string HinweisAktivierung { get; set; } = "";
+
+    /// <summary>Beschriftung des Portalverweises (<c>LIZ_LINK_PORTAL</c>).</summary>
+    [Parameter] public string LinkPortal { get; set; } = "Lizenzportal öffnen";
+
+    /// <summary>„Bitte Lizenzschlüssel und E-Mail-Adresse angeben." (<c>LIZ_MSG_EINGABE_FEHLT</c>).</summary>
+    [Parameter] public string MsgEingabeFehlt { get; set; } = "";
+
+    /// <summary>Formatvorlage mit der Adresse (<c>LIZ_MSG_EMAIL_UNGUELTIG</c>).</summary>
+    [Parameter] public string MsgEmailUngueltig { get; set; } = "{0}";
+
+    /// <summary>„Die Lizenz wurde erfolgreich aktiviert." (<c>LIZ_MSG_AKTIVIERT</c>).</summary>
+    [Parameter] public string MsgAktiviert { get; set; } = "";
+
+    /// <summary>„Die Aktivierung ist fehlgeschlagen." (<c>LIZ_MSG_AKTIVIERUNG_FEHLER</c>).</summary>
+    [Parameter] public string MsgAktivierungFehler { get; set; } = "";
+
+    /// <summary>„… kein gültiger Lizenzschlüssel gefunden." (<c>LIZ_MSG_LIC_OHNE_SCHLUESSEL</c>).</summary>
+    [Parameter] public string MsgLicOhneSchluessel { get; set; } = "";
+
+    /// <summary>„Bitte oben eine gültige E-Mail-Adresse eintragen …" (<c>LIZ_MSG_TRIAL_EMAIL</c>).</summary>
+    [Parameter] public string MsgTrialEmail { get; set; } = "";
+
+    /// <summary>„Der Test-Lizenzschlüssel wurde per E-Mail versandt." (<c>LIZ_MSG_TRIAL_OK</c>).</summary>
+    [Parameter] public string MsgTrialOk { get; set; } = "";
+
+    /// <summary>„Die Anforderung ist fehlgeschlagen." (<c>LIZ_MSG_TRIAL_FEHLER</c>).</summary>
+    [Parameter] public string MsgTrialFehler { get; set; } = "";
+
+    /// <summary>Die Rückfrage vor dem Lösen (<c>LIZ_MSG_FREIGEBEN_FRAGE</c>).</summary>
+    [Parameter] public string MsgFreigebenFrage { get; set; } = "";
+
+    /// <summary>„Der Lizenzserver ist zurzeit nicht erreichbar …" (<c>LIZ_MSG_SERVER_NICHT_ERREICHBAR</c>).</summary>
+    [Parameter] public string MsgServerNichtErreichbar { get; set; } = "";
+
+    /// <summary>Statuszeile „Aktivierung läuft…" (<c>LIZ_STATUS_AKTIVIERUNG</c>).</summary>
+    [Parameter] public string StatusAktivierung { get; set; } = "";
+
+    /// <summary>Statuszeile „Testversion wird angefordert…" (<c>LIZ_STATUS_TRIAL</c>).</summary>
+    [Parameter] public string StatusTrial { get; set; } = "";
+
+    /// <summary>Statuszeile „Gerät wird freigegeben…" (<c>LIZ_STATUS_FREIGABE</c>).</summary>
+    [Parameter] public string StatusFreigabe { get; set; } = "";
+
+    /// <summary>„Lizenzdatei geladen — bitte mit ‚Jetzt aktivieren' abschließen." (<c>LIZ_HINWEIS_LIC_GELADEN</c>).</summary>
+    [Parameter] public string HinweisLicGeladen { get; set; } = "";
+
+    /// <summary>Beschriftung „Ja" der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>Beschriftung „Nein" der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    // ==================================================================
+    //  Zustand — zwei Zeichenketten und die Sperre, mehr nicht
+    // ==================================================================
+
+    private string _schluessel = "";
+    private string _email = "";
+    private bool _laeuft;
+    private bool _freigabeFrage;
+    private string _meldung = "";
+    private WarnStufe _meldungsstufe = WarnStufe.Hinweis;
+
+    /// <summary>
+    /// Die drei Stufen der Statusanzeige — bitgleich zu den drei Farben des
+    /// Vorlaeufers (<c>Form_LizenzVerwaltung.cs:134-137</c>): gruen fuer
+    /// <c>Gueltig</c>, orange fuer die zwei Fristzustaende, rot fuer den Rest.
+    /// </summary>
+    private string Stufe => Lage.Zustand switch
+    {
+        "GUELTIG" => "gut",
+        "KULANZ" or "NACHPRUEFUNG" => "warn",
+        _ => "schlecht"
+    };
+
+    protected override void OnParametersSet()
+    {
+        // Die E-Mail wird vorbelegt, solange der Anwender nichts eingetippt hat.
+        if (_email.Length == 0 && !string.IsNullOrEmpty(EmailVorgabe)) _email = EmailVorgabe;
+    }
+
+    private void SchluesselGeaendert(ChangeEventArgs e) => _schluessel = e.Value?.ToString() ?? "";
+
+    private void EmailGeaendert(ChangeEventArgs e) => _email = e.Value?.ToString() ?? "";
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungsstufe = stufe;
+    }
+
+    // ==================================================================
+    //  Die vier Aktionen
+    // ==================================================================
+
+    /// <summary>
+    /// „Jetzt aktivieren": leere Eingabe und ungueltige Adresse melden sofort,
+    /// sonst laeuft der Delegat. Bei Erfolg wird das Schluesselfeld GELEERT
+    /// (Regel S-4); danach wird IMMER aufgefrischt.
+    /// </summary>
+    private async Task Aktivieren()
+    {
+        string schluessel = (_schluessel ?? "").Trim().ToUpperInvariant();
+        string email = (_email ?? "").Trim();
+
+        if (schluessel.Length == 0 || email.Length == 0)
+        {
+            Melden(MsgEingabeFehlt, WarnStufe.Hinweis);
+            return;
+        }
+        if (!EmailTaugt(email))
+        {
+            Melden(string.Format(MsgEmailUngueltig, email), WarnStufe.Hinweis);
+            return;
+        }
+        if (Aktivierenweg is null) return;
+
+        _laeuft = true;
+        Melden(StatusAktivierung, WarnStufe.Hinweis);
+        StateHasChanged();
+
+        (bool ok, string meldung) = await Aktivierenweg(schluessel, email);
+
+        _laeuft = false;
+        if (ok)
+        {
+            _schluessel = "";                       // Regel S-4
+            Melden(MsgAktiviert, WarnStufe.Hinweis);
+        }
+        else
+        {
+            Melden(string.IsNullOrEmpty(meldung) ? MsgAktivierungFehler : meldung, WarnStufe.Fehler);
+        }
+
+        await LageHolen();
+    }
+
+    /// <summary>
+    /// „Lizenzdatei (.lic)…": Die Huelle waehlt und liest, hier landen nur die
+    /// beiden Eingabewerte. Ein leerer Schluessel meldet
+    /// <c>LIZ_MSG_LIC_OHNE_SCHLUESSEL</c>.
+    /// </summary>
+    private async Task LicLaden()
+    {
+        if (LicLesen is null) return;
+
+        (string schluessel, string email, string meldung) = await LicLesen();
+
+        // Abgebrochener Waehler: kein Schluessel UND keine Meldung - dann bleibt alles.
+        if (string.IsNullOrWhiteSpace(schluessel) && string.IsNullOrEmpty(meldung))
+            return;
+
+        if (string.IsNullOrWhiteSpace(schluessel))
+        {
+            Melden(MsgLicOhneSchluessel, WarnStufe.Fehler);
+            return;
+        }
+
+        _schluessel = schluessel;
+        if (!string.IsNullOrWhiteSpace(email)) _email = email;
+        Melden(HinweisLicGeladen, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Testversion anfordern…": Die Adresse wird VORHER geprueft — der Schluessel
+    /// wird an sie geschickt, eine falsche Adresse liefe ins Leere.
+    /// </summary>
+    private async Task Trial()
+    {
+        string email = (_email ?? "").Trim();
+        if (email.Length == 0 || !EmailTaugt(email))
+        {
+            Melden(MsgTrialEmail, WarnStufe.Hinweis);
+            return;
+        }
+        if (Trialweg is null) return;
+
+        _laeuft = true;
+        Melden(StatusTrial, WarnStufe.Hinweis);
+        StateHasChanged();
+
+        (bool ok, string meldung) = await Trialweg(email);
+
+        _laeuft = false;
+        Melden(string.IsNullOrEmpty(meldung) ? (ok ? MsgTrialOk : MsgTrialFehler) : meldung,
+               ok ? WarnStufe.Hinweis : WarnStufe.Fehler);
+    }
+
+    /// <summary>„Gerät von der Lizenz lösen" — erst die Rückfrage.</summary>
+    private void FreigebenFragen() => _freigabeFrage = true;
+
+    /// <summary>
+    /// Die Antwort auf die Rueckfrage. „Nein" tut nichts — genau wie
+    /// <c>if (wahl != DialogResult.Yes) return;</c> im Vorlaeufer.
+    /// </summary>
+    private async Task FreigebenBeantwortet(bool? antwort)
+    {
+        _freigabeFrage = false;
+        if (antwort != true) return;
+        if (Freigebenweg is null) return;
+
+        _laeuft = true;
+        Melden(StatusFreigabe, WarnStufe.Hinweis);
+        StateHasChanged();
+
+        (bool ok, bool netzfehler, string meldung) = await Freigebenweg();
+
+        _laeuft = false;
+
+        // Bitgleich: gemeldet wird NUR der Netzfehler; eine fachliche Ablehnung
+        // loescht das Token und zeigt sich im neuen Lagebild.
+        if (!ok && netzfehler) Melden(MsgServerNichtErreichbar, WarnStufe.Fehler);
+        else Melden(string.IsNullOrEmpty(meldung) ? "" : meldung, WarnStufe.Hinweis);
+
+        await LageHolen();
+    }
+
+    private async Task LageHolen()
+    {
+        if (Auffrischen is null) return;
+        Lage = await Auffrischen() ?? LizenzGaben.Leer;
+        StateHasChanged();
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+
+    /// <summary>
+    /// Die E-Mail-Regel des KERNS, durch den Delegaten (Regel 6 der Zerlegung):
+    /// „Gleiche Maßstäbe wie WordPress' <c>is_email()</c>" ist eine Serverregel und
+    /// keine Anzeigefrage; eine zweite Fassung hier wäre eine zweite Wahrheit.
+    /// Ohne Delegat entscheidet der Server allein.
+    /// </summary>
+    private bool EmailTaugt(string email) => EmailPruefen is null || EmailPruefen(email);
+}

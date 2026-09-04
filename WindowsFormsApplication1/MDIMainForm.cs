@@ -413,11 +413,10 @@ namespace WindowsFormsApplication1
             {
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     Dienste.Sprache.IstEnglisch ? "License…" : "Lizenz…");
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
-                        frm.ShowDialog(this);
-                };
+                // iU9-W15c.5: Die Lizenzverwaltung ist eine Razor-Komponente
+                // (EPOS.UI/Dialoge/Lizenz/LizenzVerwaltungDialog.razor); hier steht
+                // nur noch der Aufruf ihrer Windows-Huelle.
+                eintrag.Click += (s, e) => LizenzVerwaltungHuelle.Oeffnen(this);
                 eintrag.Image = Properties.Resources.lizenzen_32;
                 eintrag.ImageScaling = ToolStripItemImageScaling.None;
                 // Direkt unterhalb von "Einstellungen" einordnen
