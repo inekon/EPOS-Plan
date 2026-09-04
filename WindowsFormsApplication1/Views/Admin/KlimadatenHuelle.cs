@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt die Klimadaten als eigenes Fenster — der Weg von
-        /// <c>MDIMainForm.MenuItem_Klimadaten_Click</c>.
+        /// <c>Hauptfensterrahmen.MenuItem_Klimadaten_Click</c>.
         ///
         /// <para><b>Mit Besitzer und in einem <c>using</c></b> (Befund W14c-B34).</para>
         /// </summary>

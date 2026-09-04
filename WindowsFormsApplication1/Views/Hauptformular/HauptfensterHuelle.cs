@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     /// <c>EPOS.UI/Seiten/Hauptfenster.razor</c>.
     ///
     /// <para><b>Sie ist die Nachfolge der 34 Ereignishandler und der acht
-    /// <c>Init*</c>-Methoden</b> von <c>MDIMainForm</c>. Was dort in 43
+    /// <c>Init*</c>-Methoden</b> von <c>Hauptfensterrahmen</c>. Was dort in 43
     /// Einzelstellen stand, ist hier EIN <see cref="Weg"/>: Er bekommt den
     /// Seitenschlüssel des angeklickten Menüpunkts und geht ihn — entweder als
     /// zusammengesetzten Ablauf (die neunzehn Wege des Fensters) oder über
@@ -82,7 +82,7 @@ namespace WindowsFormsApplication1
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
                 // wird nicht übersetzt.
-                ["Produktname"] = MDIMainForm.PRODUKTNAME,
+                ["Produktname"] = Hauptfensterrahmen.PRODUKTNAME,
                 ["Gattung"] = MyResource.Resource.START_GATTUNG,
                 ["Claim"] = MyResource.Resource.HAUPT_CLAIM,
                 ["VersionText"] = Versionszeile()
@@ -281,14 +281,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Versionsmeldung()
         {
-            string text = MDIMainForm.PRODUKTNAME + Environment.NewLine +
+            string text = Hauptfensterrahmen.PRODUKTNAME + Environment.NewLine +
                           MyResource.Resource.HAUPT_CLAIM + Environment.NewLine + Environment.NewLine +
                           Versionszeile() + Environment.NewLine +
                           MyResource.Resource.HAUPT_UEBER_HAUS;
 
             Dienste.Dialog.Meldung(
                 text,
-                string.Format(MyResource.Resource.HAUPT_UEBER_TITEL, MDIMainForm.PRODUKTNAME));
+                string.Format(MyResource.Resource.HAUPT_UEBER_TITEL, Hauptfensterrahmen.PRODUKTNAME));
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace WindowsFormsApplication1
         {
             string adresse = Properties.Settings.Default.WordPressUrl;
             if (string.IsNullOrWhiteSpace(adresse) || adresse.Contains("localhost"))
-                adresse = MDIMainForm.DOKU_URL;
+                adresse = Hauptfensterrahmen.DOKU_URL;
 
             Dienste.Datei.AdresseOeffnen(DokuUebersetzung.FuerAnzeige(adresse));
         }

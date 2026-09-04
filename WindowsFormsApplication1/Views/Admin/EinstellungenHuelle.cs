@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt die Einstellungen als eigenes Fenster — der Weg von
-        /// <c>MDIMainForm.MenuItem_Einstellungen_Click</c>.
+        /// <c>Hauptfensterrahmen.MenuItem_Einstellungen_Click</c>.
         ///
         /// <para><b>Mit Besitzer und in einem <c>using</c></b> (Befund W14c-B34): Der
         /// Vorläufer wurde mit <c>ShowDialog()</c> ohne <c>this</c> und ohne

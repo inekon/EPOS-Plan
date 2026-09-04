@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
     /// <c>Views/Hauptformular/Form_Start</c> ab (2 300 Z. + 1 381 Designer).
     ///
     /// <para><b>Sie ist die NICHT-MODALE Hülle</b> (<see cref="BlazorSeite{T}"/>)
-    /// und sitzt unmittelbar in <c>MDIMainForm</c> — dort, wo bis hierher die
+    /// und sitzt unmittelbar in <c>Hauptfensterrahmen</c> — dort, wo bis hierher die
     /// eingebettete <c>Form_Start</c> hing (<c>TopLevel = false</c>,
     /// <c>Dock = Fill</c>). Muster: <c>BerichteKostenHuelle</c> aus W5.6; wie dort
     /// gibt es KEIN <c>Oeffnen</c> — eine Seite wird nicht gezeigt, sie steht.</para>

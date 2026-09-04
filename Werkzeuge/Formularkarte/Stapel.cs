@@ -304,7 +304,7 @@ public static class Stapel
 
         werkzeug.Append("| Zustand | Masken | Bedeutung |\n|---|---|---|\n");
         werkzeug.Append("| ja | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Ja))
-                .Append(" | Weg von MDIMainForm bzw. Form_Start vorhanden |\n");
+                .Append(" | Weg von Hauptfensterrahmen bzw. Form_Start vorhanden |\n");
         werkzeug.Append("| nein | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Nein))
                 .Append(" | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |\n");
         werkzeug.Append("| verwaist | ").Append(ergebnis.Erreichbar(Formularkarte.Erreichbar.Verwaist))

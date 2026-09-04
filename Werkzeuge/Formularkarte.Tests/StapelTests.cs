@@ -33,9 +33,9 @@ public sealed class StapelTests
         // der Zeuge haelt damit so lange wie moeglich.
         //
         // iU9-W14c (04.09.2026): Der GROSSschreibungs-Zeuge wandert von
-        // Form_Klimadaten auf MDIMainForm. Form_Klimadaten ist mit dieser Welle
+        // Form_Klimadaten auf Hauptfensterrahmen. Form_Klimadaten ist mit dieser Welle
         // gefallen und liegt seither im PRUEFMUSTER - der Stapellauf uebergeht
-        // den Ordner, der Zeuge muesste also ohnehin umziehen. MDIMainForm faellt
+        // den Ordner, der Zeuge muesste also ohnehin umziehen. Hauptfensterrahmen faellt
         // als ALLERLETZTE Maske ueberhaupt (Welle 16) und ist die Wurzel des
         // Erreichbarkeitsgraphen: Ein Lauf, der sie nicht findet, ist kaputt.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
@@ -51,7 +51,7 @@ public sealed class StapelTests
         // Aufrufer liegen saemtlich in Form_Start, und die ist bis dahin WinForms.
         //
         // iU9-W16c.3 (Entscheid E-9): Der GROSSSCHREIBUNGS-Zeuge steht seither
-        // ebenfalls im PRUEFMUSTER. Mit dem Rueckbau von MDIMainForm auf die
+        // ebenfalls im PRUEFMUSTER. Mit dem Rueckbau von Hauptfensterrahmen auf die
         // Huelle faellt ihr Designer; im Bestand bleibt als einzige
         // grossgeschriebene Designer-Datei einer MASKE noch Form_HelpPopup
         // (bis iU11, Entscheid W15b-E-2), dazu die drei erzeugten Ressourcen-
@@ -121,11 +121,11 @@ public sealed class StapelTests
         // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
         // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
         // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
-        // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // ZWEI Masken: Hauptfensterrahmen (die Huelle, faellt in W16c auf 120-160 Zeilen
         // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
         //
         // iU9-W16c.3: Die Teilwelle nimmt den LETZTEN Designer einer Fachmaske mit
-        // (MDIMainForm). Ueber die Repowurzel gezaehlt bleiben VIER Dateien: zwei
+        // (Hauptfensterrahmen). Ueber die Repowurzel gezaehlt bleiben VIER Dateien: zwei
         // unter WindowsFormsApplication1 (Form_HelpPopup.Designer.cs und das
         // erzeugte Properties/Resources.Designer.cs) und zwei erzeugte des Kerns
         // (Resource, Settings). NACHWEIS N1 (Vermessung § 11.8) - siehe
@@ -194,11 +194,11 @@ public sealed class StapelTests
         // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
         // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
         // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
-        // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // ZWEI Masken: Hauptfensterrahmen (die Huelle, faellt in W16c auf 120-160 Zeilen
         // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
         //
         // iU9-W16c.3 - NACHWEIS N1 (Vermessung § 11.8, "Der Bestand ist leer"):
-        // Mit dem Rueckbau von MDIMainForm auf die Huelle faellt der letzte
+        // Mit dem Rueckbau von Hauptfensterrahmen auf die Huelle faellt der letzte
         // Designer einer FACHMASKE. Es bleibt GENAU EINE Maske, und sie ist keine
         // Fachmaske: Form_HelpPopup, das Hilfe-Sprechblasenfenster, das mit
         // HelpCatalog/HelpExtender in iU11 faellt (Entscheid W15b-E-2).
@@ -268,7 +268,7 @@ public sealed class StapelTests
         // (FormMain und Form_Start); Form_StromTest, Form_Hinweis und AktionsKarte
         // haben keine Satelliten. Es bleibt EINE von ZWEI - der Anteil steht damit
         // weiterhin bei der Haelfte.
-        // iU9-W16c.3: MDIMainForm war die LETZTE lokalisierte Maske des Bestands
+        // iU9-W16c.3: Hauptfensterrahmen war die LETZTE lokalisierte Maske des Bestands
         // (44 de-DE- und 40 en-US-Eintraege); mit ihrem Designer ist der Zaehler
         // auf NULL - Form_HelpPopup traegt kein ApplyResources. Damit ist auch
         // dieser Zeuge im PRUEFMUSTER: Pruefmuster/Hauptformular/ und
@@ -287,7 +287,7 @@ public sealed class StapelTests
     public void DieHaeufigstenTypenSindAbgedeckt()
     {
         // Der Bestand schrumpft mit jeder Welle von iU9, und mit Welle 16b ist er
-        // leer: Was noch steht, sind MDIMainForm (die Huelle, ein Kartenzeile) und
+        // leer: Was noch steht, sind Hauptfensterrahmen (die Huelle, ein Kartenzeile) und
         // Form_HelpPopup. ALLE elf Typzeugen haengen deshalb seither am eingefrorenen
         // PRUEFMUSTER (Entscheid E-9) - es ist die einzige Stelle, an der der Leser
         // einen Typ nach dem Rueckbau noch vorfindet.
@@ -358,7 +358,7 @@ public sealed class StapelTests
         // Welle gefallen. Der Zeuge braucht nur IRGENDEINEN Maskennamen aus der
         // Uebersicht.
         //
-        // iU9-W16c.3: MDIMainForm ist die Huelle und hat keinen Designer mehr;
+        // iU9-W16c.3: Hauptfensterrahmen ist die Huelle und hat keinen Designer mehr;
         // die einzige Maske des Bestands ist Form_HelpPopup (bis iU11).
         Assert.Contains("Form_HelpPopup", uebersicht, StringComparison.Ordinal);
     }

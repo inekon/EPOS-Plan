@@ -1,6 +1,6 @@
 ﻿// Prüfmuster für Formularkarte — die WURZEL des eingefrorenen „unklar"-Musters.
 //
-// Der Erreichbarkeitsgraph kennt genau zwei Wurzeln, MDIMainForm und Form_Start
+// Der Erreichbarkeitsgraph kennt genau zwei Wurzeln, Hauptfensterrahmen und Form_Start
 // (Erreichbarkeit.Wurzelmasken). Ohne eine davon hätte jede Maske im Prüfmusterbaum den
 // Zustand „nein" — und der Unterschied zwischen „nein" (kein Weg) und „unklar" (nur ein
 // zweifelhafter Weg) wäre nicht mehr prüfbar.
@@ -21,7 +21,7 @@
 
 namespace WindowsFormsApplication1
 {
-    public partial class MDIMainForm : Form
+    public partial class Hauptfensterrahmen : Form
     {
         public void PufferspeicherVerwaltungOeffnen()
         {
