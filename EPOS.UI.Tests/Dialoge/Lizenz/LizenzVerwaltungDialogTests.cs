@@ -264,9 +264,9 @@ public class LizenzVerwaltungDialogTests : BunitContext
     [Fact]
     public void Nach_dem_Erfolg_ist_das_Schluesselfeld_leer()
     {
-        string gesehen = null;
+        string? gesehen = null;
         var cut = Zeigen(
-            aktivieren: (s, m) => { gesehen = s; return Task.FromResult((true, (string)null)); },
+            aktivieren: (s, m) => { gesehen = s; return Task.FromResult((true, "")); },
             auffrischen: () => Task.FromResult(Lage("GUELTIG", hatToken: true, statustext: "Firmenlizenz · gültig bis 31.12.2026")));
 
         Schluesselfeld(cut).Input("epos-f-04795-lfkp-xyyu-ml");
@@ -293,7 +293,7 @@ public class LizenzVerwaltungDialogTests : BunitContext
         Knopf(mitMeldung, "Jetzt aktivieren").Click();
         mitMeldung.WaitForAssertion(() => Assert.Contains("Lizenzschlüssel unbekannt.", mitMeldung.Markup, StringComparison.Ordinal));
 
-        var ohne = Zeigen(aktivieren: (s, m) => Task.FromResult((false, (string)null)));
+        var ohne = Zeigen(aktivieren: (s, m) => Task.FromResult((false, "")));
         Schluesselfeld(ohne).Input("ABC");
         Emailfeld(ohne).Input("kunde@firma.de");
         Knopf(ohne, "Jetzt aktivieren").Click();
@@ -367,8 +367,8 @@ public class LizenzVerwaltungDialogTests : BunitContext
     [Fact]
     public void Die_Testversion_meldet_den_Versand()
     {
-        string gesehen = null;
-        var cut = Zeigen(trial: m => { gesehen = m; return Task.FromResult((true, (string)null)); });
+        string? gesehen = null;
+        var cut = Zeigen(trial: m => { gesehen = m; return Task.FromResult((true, "")); });
 
         Emailfeld(cut).Input("kunde@firma.de");
         Knopf(cut, "Testversion anfordern…").Click();
@@ -416,7 +416,7 @@ public class LizenzVerwaltungDialogTests : BunitContext
     {
         int rufe = 0;
         var cut = Zeigen(Lage("GUELTIG", hatToken: true),
-                         freigeben: () => { rufe++; return Task.FromResult((true, false, (string)null)); },
+                         freigeben: () => { rufe++; return Task.FromResult((true, false, "")); },
                          auffrischen: () => Task.FromResult(Lage()));
 
         Knopf(cut, "Gerät von der Lizenz lösen").Click();
@@ -434,7 +434,7 @@ public class LizenzVerwaltungDialogTests : BunitContext
     public void Ein_Netzfehler_beim_Loesen_wird_gemeldet()
     {
         var cut = Zeigen(Lage("GUELTIG", hatToken: true),
-                         freigeben: () => Task.FromResult((false, true, (string)null)),
+                         freigeben: () => Task.FromResult((false, true, "")),
                          auffrischen: () => Task.FromResult(Lage("GUELTIG", hatToken: true)));
 
         Knopf(cut, "Gerät von der Lizenz lösen").Click();
