@@ -1453,8 +1453,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > byte-gleich). **E‑10 (`MDIMainForm` → `Hauptfenster`) bewusst nicht getan** (W16c‑O‑1; `Hauptfenster` ist bereits der
 > Name der Razor-Seite in `EPOS.UI.Seiten` — Empfehlung: `Hauptfensterrahmen` oder bis iU11 beim alten Namen bleiben,
 > Entscheid offen); **W16a‑E‑1/W16b‑O‑5** (Assistent modal) und **W16b‑E‑1/E‑2** offen. **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
-> `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3
-> (iOS-Klimazone auf `ProjektKontextCtrl`), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
+> `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3 erledigt
+> (`bd0592a`, eine Wahrheit im Kern), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
 > `Seitenschluessel` mit 34 Werten in einer Klasse (W16c‑O‑4, Teilung entlang Ansicht/Maske/Weg), keine Menüfreischaltung
 > nach Projektzustand wie im Bestand (W16c‑O‑5); die `WFO1000`-Herabstufung kann mit `Form_HelpPopup` entfallen.
 >
@@ -1507,7 +1507,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > entfällt, `IProjektKontext.Vorhanden = true` wie auf iOS, „Öffnen…"/„zuletzt geöffnet" setzen das Projekt aktiv statt
 > ein Detailformular zu zeigen, gerechnete Rechtsbündigkeit → CSS) und die Befunde W16b‑B1…B8, darunter:
 > **`IosProjektKontext` liest die Klimazone anders** (Stammname statt Projektkopie) — der Kern übernimmt den Windows-Weg,
-> die iOS-Angleichung ist W16b‑O‑3 (B2); `ProjektTransferDialogTests` flatterhaft, nicht von dieser Welle (B7,
+> **W16b‑O‑3 entschieden 04.09.2026 („iOS-Lösung"): die Messung zeigte, dass die iOS-Abfrage den falschen
+> Schlüsselraum las — `ID_Klimaregion` ist die Id der Projektkopie, der Stammname war auf iOS immer leer; umgesetzt als
+> EINE Wahrheit im Kern (`StartseiteCtrl.ProjektKlimazone` liest die Projektkopie, die Stammabfrage fällt),
+> `IosProjektKontext` läuft über `ProjektKontextCtrl`, N7 15 Fälle, `bd0592a`** (B2); `ProjektTransferDialogTests` flatterhaft, nicht von dieser Welle (B7,
 > W16b‑O‑2); die Stapellauf-Sollzahl „1/2" der Anweisung ist die von nach W16c, gemessen 2 Masken / 3 Designer (B8).
 > **Anwenderfragen:** **E‑7 umgesetzt** — verloren gehen die Gewerksübersicht in Listenform und das Drag & Drop
 > zwischen den zwölf Listen; an ihrer Stelle dieselben zwölf Gewerke als Kacheln mit Statuspunkt, jede führt in
