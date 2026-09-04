@@ -1,0 +1,209 @@
+﻿@* Die Werkzeugliste zur Auswahl VON HAND (iU9-W15b.7, Fachkonzept 8, Etappe 1):
+   Aktion waehlen, Angaben eintragen, ausfuehren. Ohne Modell und ohne Kosten.
+
+   SIE WAR EIN WEGWERF-DIALOG. Der Vorlaeufer baute sie in WerkzeugeOeffnen
+   (Form_KiChat.cs:1198-1298) als new Form() mit ListBox, Beschreibungsfeld,
+   Parameterpanel und zwei Knoepfen - 101 Zeilen Fensterbau im Formular, dazu 59
+   fuer die Felder (FelderBauen :1301-1359). Hier ist sie eine Ueberlagerung im
+   selben Fenster (Risiko R2).
+
+   DIE EINZIGE MessageBox DER GANZEN WELLE stand hier (:1263): "Bitte zuerst eine
+   Aktion waehlen", danach DialogResult.None - der Dialog blieb offen. Daraus
+   wird ein Warnbanner im Bereich; der Bereich bleibt ebenso offen.
+
+   DIE KULTURREGEL liegt im Kern (KiWerkzeugWerte.Sammeln): Komma wird zu Punkt,
+   ein leeres Feld heisst "nicht angegeben", eine Ganzzahlliste wird an Komma,
+   Strichpunkt, Leerzeichen und Tabulator zerlegt. Diese Komponente sammelt nur
+   die Rohtexte ein.
+
+   DIE REGEL, DIE SIE ERBT (:1295-1296): "Erst NACH dem Schliessen des Dialogs
+   ausfuehren: der Ausfuehrer weist Aktionen ab, solange ein modales Fenster
+   offen ist (Fachkonzept 3.4)." In Blazor gibt es keine WinForms-Modalitaet -
+   der Wirt meldet seinen Ueberlagerungszustand deshalb an
+   KiAusfuehrer.Ueberlagerung (W15b.0d, Entscheid E-8), und die Reihenfolge
+   bleibt: Diese Komponente meldet die Wahl, der Wirt schliesst und fuehrt dann
+   aus. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+@using KiKern
+@using WindowsFormsApplication1
+
+<div class="epos-kiwerkzeuge">
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    <div class="epos-kiwerkzeuge-raster">
+
+        @* Die Aktionsliste - im Vorlaeufer eine ListBox von 240 px Breite. Kein
+           Baustein: Zeilenwahl ist der Wahlknopf EINER RASTERZEILE und traegt
+           keinen Text, und ein Raster mit einer Spalte waere mehr Geruest als
+           Liste. Eine Liste mit role="listbox" ist die ehrliche Entsprechung. *@
+        <ul class="epos-kiwerkzeuge-liste" role="listbox" aria-label="@ListeText">
+            @foreach (KiAktion a in Aktionen)
+            {
+                <li role="option" aria-selected="@(a.Name == _gewaehlt?.Name)">
+                    <button type="button"
+                            class="epos-kiwerkzeuge-eintrag @(a.Name == _gewaehlt?.Name ? "epos-kiwerkzeuge-eintrag--gewaehlt" : "")"
+                            @onclick="() => Waehlen(a)">@a.Name</button>
+                </li>
+            }
+        </ul>
+
+        <div class="epos-kiwerkzeuge-detail">
+            <Textfeld Mehrzeilig="true" NurLesen="true" Zeilen="6"
+                      Wert="@Beschreibung" Bezeichnung="@BeschreibungText" />
+
+            @if (_gewaehlt is not null)
+            {
+                <div class="epos-kiwerkzeuge-felder">
+                    @foreach (KiParameter p in _gewaehlt.Parameter)
+                    {
+                        string bezeichnung = p.Anzeigename + (p.Pflicht ? " *" : "");
+
+                        @* Aufzaehlung und Wahrheitswert waren im Vorlaeufer eine
+                           ComboBox(DropDownList), alles uebrige eine TextBox
+                           (:1326-1347). Auswahlfeld passt hier NICHT: Es waehlt
+                           ueber eine Id, hier steht der WERT selbst zur Wahl. *@
+                        @if (Werteliste(p) is { Count: > 0 } liste)
+                        {
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">@bezeichnung</span>
+                                <span class="epos-feld-zeile">
+                                    <select class="epos-eingabe" value="@Wert(p.Name)"
+                                            @onchange="e => Gewaehlt(p.Name, e)">
+                                        @foreach (string w in liste)
+                                        {
+                                            <option value="@w" selected="@(w == Wert(p.Name))">@w</option>
+                                        }
+                                    </select>
+                                </span>
+                            </label>
+                        }
+                        else
+                        {
+                            <Textfeld Bezeichnung="@bezeichnung"
+                                      Wert="@Wert(p.Name)"
+                                      WertChanged="@(w => Setzen(p.Name, w))" />
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="epos-kiwerkzeuge-fuss">
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Ausfuehren">
+            @AusfuehrenText
+        </button>
+        <button type="button" class="epos-knopf" @onclick="Schliessen">
+            @SchliessenText
+        </button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Die Aktionen des Registers, in Registrierungsreihenfolge.</summary>
+    [Parameter] public IReadOnlyList<KiAktion> Aktionen { get; set; } = [];
+
+    /// <summary>
+    /// Die Beschreibung der gewaehlten Aktion. Sie kommt aus
+    /// <c>KiBestaetigung.Beschreibe</c> und damit als Delegat herein — die
+    /// Komponente kennt KiKern-DATEN, aber keine Kern-Aufrufe.
+    /// </summary>
+    [Parameter] public Func<KiAktion, string>? Beschreiben { get; set; }
+
+    /// <summary>Beschriftung der Aktionsliste.</summary>
+    [Parameter] public string ListeText { get; set; } = "";
+
+    /// <summary>Beschriftung des Beschreibungsfeldes.</summary>
+    [Parameter] public string BeschreibungText { get; set; } = "";
+
+    /// <summary>Beschriftung „Ausführen".</summary>
+    [Parameter] public string AusfuehrenText { get; set; } = "";
+
+    /// <summary>Beschriftung „Schließen".</summary>
+    [Parameter] public string SchliessenText { get; set; } = "";
+
+    /// <summary>
+    /// „Bitte zuerst eine Aktion wählen." (<c>KI_AKT_AKTION_WAEHLEN</c>) — die
+    /// einzige MessageBox der Welle, jetzt ein Warnbanner.
+    /// </summary>
+    [Parameter] public string AktionWaehlenText { get; set; } = "";
+
+    /// <summary>
+    /// Der Anwender will ausführen: Aktion und die gesammelten Werte (Kulturregel
+    /// bereits angewandt). Der WIRT schließt danach und führt dann aus — der
+    /// Ausführer weist Aktionen ab, solange eine Überlagerung offen ist.
+    /// </summary>
+    [Parameter] public EventCallback<(KiAktion Aktion, IReadOnlyDictionary<string, object> Werte)> Ausgefuehrt { get; set; }
+
+    /// <summary>Der Anwender hat geschlossen.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Die drei Einträge eines Wahrheitswertfeldes (Bestand <c>:1340-1342</c>).</summary>
+    private static readonly IReadOnlyList<string> WAHRHEITSWERTE = new[] { "", "true", "false" };
+
+    private KiAktion? _gewaehlt;
+    private string _meldung = "";
+    private readonly Dictionary<string, string> _werte = new(StringComparer.Ordinal);
+
+    private string Beschreibung
+        => _gewaehlt is null || Beschreiben is null ? "" : Beschreiben(_gewaehlt);
+
+    /// <summary>
+    /// Die Werteliste eines Parameters, oder <c>null</c> fuer ein Textfeld.
+    /// </summary>
+    /// <remarks>
+    /// Bei einem WAHLparameter steht eine Leerzeile voran (Bestand <c>:1332</c>) —
+    /// sonst gäbe es keinen Weg, ihn NICHT anzugeben. Ein Wahrheitswert bekommt
+    /// die drei festen Einträge „", „true", „false" (<c>:1340-1342</c>).
+    /// </remarks>
+    private static IReadOnlyList<string>? Werteliste(KiParameter p)
+    {
+        if (p.Typ == KiParameterTyp.Wahrheitswert) return WAHRHEITSWERTE;
+        if (p.Typ != KiParameterTyp.Aufzaehlung || p.Werte is null || p.Werte.Count == 0)
+            return null;
+
+        if (p.Pflicht) return p.Werte;
+
+        var liste = new List<string> { "" };
+        liste.AddRange(p.Werte);
+        return liste;
+    }
+
+    private string Wert(string name) => _werte.TryGetValue(name, out string? w) ? w : "";
+
+    private void Gewaehlt(string name, ChangeEventArgs e)
+        => Setzen(name, e.Value?.ToString() ?? "");
+
+    private void Setzen(string name, string wert)
+    {
+        _werte[name] = wert ?? "";
+        _meldung = "";
+    }
+
+    private void Waehlen(KiAktion aktion)
+    {
+        _gewaehlt = aktion;
+        _werte.Clear();
+        _meldung = "";
+    }
+
+    private async Task Ausfuehren()
+    {
+        if (_gewaehlt is null)
+        {
+            // Der Bereich bleibt offen - genau wie der Wegwerf-Dialog, der nach der
+            // MessageBox sein DialogResult auf None zuruecksetzte (:1265).
+            _meldung = AktionWaehlenText;
+            return;
+        }
+
+        await Ausgefuehrt.InvokeAsync((_gewaehlt, KiWerkzeugWerte.Sammeln(_gewaehlt, _werte)));
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+}

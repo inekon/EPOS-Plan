@@ -1,0 +1,194 @@
+﻿@* Die geordnete, rollenbehaftete Nachrichtenliste des KI-Assistenten
+   (iU9-W15b.6, Bausteinluecke 17 des Wellenplans).
+
+   WAS ER IST. Eine Liste von Zeilen mit Rolle, in Reihenfolge, mit Nachfuehrung
+   ans Ende. Vorbild ist Form_KiChat._verlaufAnzeige - eine RichTextBox mit
+   ReadOnly, weissem Grund und GENAU EINER Ausgabemethode
+   SchreibeZeile(text, farbe, fett). Deren acht Farben und zwei Schriftschnitte
+   sind hier zehn Rollen geworden (Gespraechsrolle).
+
+   WAS ER NICHT IST. Kein Chatfenster: keine Eingabezeile, keine Knoepfe ausser
+   dem Kopierknopf, kein Dienst, kein Netz. Eingabe, Sperre, Bestaetigungsschicht
+   und Dienstaufruf liegen in KiChatDialog. Der Baustein kennt nur eine Liste -
+   und ist damit auch fuer ein Pruefprotokoll brauchbar.
+
+   FUENF ENTSCHEIDE STECKEN IM MARKUP:
+
+   E-4/G-4  FREMDTEXT WIRD NIE ALS MARKUP AUSGEGEBEN. Kein MarkupString, nie.
+            Der Antworttext kommt vom Modell; er wird als Text gesetzt, und
+            <b>x</b> erscheint woertlich. white-space: pre-line erhaelt die
+            Umbrueche INNERHALB einer Zeile, ohne dass HTML entsteht.
+
+   G-5      NUR EINE ZEILE MIT ADRESSE IST EIN VERWEIS. Die Komponente raet
+            nicht, was ein Link ist (siehe Gespraechszeile.Adresse). Ein Text,
+            der wie eine URL aussieht, bleibt Text.
+
+   G-6      SIE OEFFNET NICHTS. Ein Klick meldet die Adresse an den Wirt; das
+            Oeffnen ist Sache der Plattform (Windows: Dienste.Datei, iOS:
+            Launcher.OpenAsync).
+
+   E-3      DER FUSSBEREICH LIEGT IM BILDLAUF. Der Bestaetigungsblock stand in
+            Form_KiChat OBEN am Fenster (:417); der Kommentar :609-613 sagt aber,
+            worauf es ankommt: "der Anwender soll die Vorschau neben dem lesen
+            koennen, was zu ihr gefuehrt hat". In einer scrollenden Liste ist
+            "neben" = unten, direkt nach der letzten Zeile. Der Block wandert
+            damit mit, statt oben zu kleben.
+
+   E-12     NACHGEFUEHRT WIRD NUR, WENN DER ANWENDER UNTEN STEHT. ScrollToCaret
+            (:1606) sprang immer und riss beim Nachlesen den Verlauf weg.
+
+   NICHTS IN localStorage (Regel S-3). Der Verlauf enthaelt Fragen und Antworten
+   und ist personenbezogen - er wird nirgends abgelegt. *@
+
+@namespace EPOS.UI.Bausteine
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+<div class="epos-verlauf" role="log" aria-live="polite" aria-relevant="additions"
+     aria-label="@Bezeichnung" tabindex="0" @ref="_liste">
+
+    @foreach (Gespraechszeile z in Zeilen)
+    {
+        <p @key="z.Kennung" class="epos-verlauf-zeile epos-verlauf-zeile--@Klasse(z.Rolle)">
+            @if (!string.IsNullOrEmpty(z.Adresse))
+            {
+                <button type="button" class="epos-verlauf-verweis"
+                        @onclick="() => AdresseGewaehlt.InvokeAsync(z.Adresse)">@z.Text</button>
+            }
+            else
+            {
+                @z.Text
+            }
+        </p>
+    }
+
+    @if (Beschaeftigt)
+    {
+        <p class="epos-verlauf-zeile epos-verlauf-zeile--leise epos-verlauf-laeuft" role="status">
+            <span class="epos-verlauf-punkte" aria-hidden="true"></span>@BeschaeftigtText
+        </p>
+    }
+
+    @if (Fussbereich is not null)
+    {
+        <div class="epos-verlauf-fuss">@Fussbereich</div>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(KopierenText))
+{
+    <button type="button" class="epos-knopf epos-verlauf-kopieren" @onclick="AllesKopieren">
+        @KopierenText
+    </button>
+}
+
+@code {
+    /// <summary>Die Zeilen, in Reihenfolge. Aeltester Eintrag zuerst.</summary>
+    [Parameter] public IReadOnlyList<Gespraechszeile> Zeilen { get; set; } = [];
+
+    /// <summary>Beschriftung der Liste fuer Sprachausgaben (<c>aria-label</c>).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Es laeuft eine Anfrage - zeigt die drei wandernden Punkte.</summary>
+    [Parameter] public bool Beschaeftigt { get; set; }
+
+    /// <summary>Text neben den Punkten, z. B. „Der Assistent denkt nach…".</summary>
+    [Parameter] public string BeschaeftigtText { get; set; } = "";
+
+    /// <summary>
+    /// Klick auf eine Adresse. Die Komponente oeffnet NICHTS selbst - unter Windows
+    /// geht das ueber <c>Dienste.Datei.MitSystemOeffnen</c>, auf iOS ueber
+    /// <c>Launcher.OpenAsync</c>.
+    /// </summary>
+    [Parameter] public EventCallback<string> AdresseGewaehlt { get; set; }
+
+    /// <summary>Beschriftung des Kopierknopfs; leer = kein Knopf.</summary>
+    [Parameter] public string KopierenText { get; set; } = "";
+
+    /// <summary>
+    /// Der Anwender hat „Verlauf kopieren" gewaehlt. Die Komponente liefert den
+    /// fertigen Text; das Schreiben in die Zwischenablage macht die Huelle
+    /// (WinForms <c>Clipboard.SetText</c>, iOS <c>Clipboard.Default.SetTextAsync</c>)
+    /// — <c>EPOS.UI</c> kennt keine Plattform.
+    /// </summary>
+    [Parameter] public EventCallback<string> Kopieren { get; set; }
+
+    /// <summary>Ans Ende springen, sobald Zeilen dazukommen.</summary>
+    [Parameter] public bool Nachfuehren { get; set; } = true;
+
+    /// <summary>
+    /// Bereich unter der letzten Zeile - dort steht der Bestaetigungsblock, wenn eine
+    /// Freigabe offen ist (Entscheid E-3).
+    /// </summary>
+    [Parameter] public RenderFragment? Fussbereich { get; set; }
+
+    private ElementReference _liste;
+    private IJSObjectReference? _modul;
+    private int _gezeichnet = -1;
+
+    /// <summary>Die CSS-Endung je Rolle - zehn Rollen, zehn Klassen (G-1).</summary>
+    private static string Klasse(Gespraechsrolle rolle) => rolle switch
+    {
+        Gespraechsrolle.Anwender => "anwender",
+        Gespraechsrolle.Assistent => "assistent",
+        Gespraechsrolle.AssistentKopf => "assistentkopf",
+        Gespraechsrolle.Ueberschrift => "ueberschrift",
+        Gespraechsrolle.Leise => "leise",
+        Gespraechsrolle.Erfolg => "erfolg",
+        Gespraechsrolle.Warnung => "warnung",
+        Gespraechsrolle.Fehler => "fehler",
+        Gespraechsrolle.Bestaetigung => "bestaetigung",
+        _ => "leerzeile"
+    };
+
+    /// <summary>
+    /// Nach jedem Zeichnen ans Ende springen - aber nur, wenn Zeilen DAZUGEKOMMEN
+    /// sind und der Anwender ohnehin unten steht (E-12).
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        int jetzt = Zeilen.Count;
+        bool gewachsen = jetzt > _gezeichnet;
+        _gezeichnet = jetzt;
+
+        if (!Nachfuehren || (!gewachsen && !firstRender)) return;
+
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/EPOS.UI/epos-verlauf.js");
+
+            // Gemessen wird VOR dem Springen: Wer weiter oben liest, bleibt dort.
+            // Beim ersten Zeichnen ist die Liste kuerzer als ihr Rahmen und gilt
+            // damit als "unten" - dann wird gesprungen, und das ist richtig.
+            bool unten = await _modul.InvokeAsync<bool>("istUnten", _liste);
+            if (unten) await _modul.InvokeVoidAsync("ansEnde", _liste);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul gibt es keine Nachfuehrung - ein Schoenheitsfehler,
+            // kein Fehlschlag. Der Verlauf steht trotzdem vollstaendig da, und
+            // der Anwender rollt selbst.
+        }
+    }
+
+    /// <summary>
+    /// Baut den Verlauf als Klartext: je Zeile eine Zeile, ohne Farben und ohne
+    /// zusaetzliche Rollenpraefixe — „Sie: " und „Assistent:" stehen bereits im Text.
+    /// </summary>
+    private Task AllesKopieren()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (Gespraechszeile z in Zeilen) sb.AppendLine(z.Text);
+        return Kopieren.InvokeAsync(sb.ToString());
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try { await _modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg - dann gibt es nichts zu loesen. */ }
+    }
+}
