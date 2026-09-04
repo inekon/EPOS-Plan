@@ -2748,3 +2748,33 @@ body {
         color: LinkText;
     }
 }
+
+/* --------------------------------------------------------------------------
+   „Projekt Speichern unter" (iU9-W15a.4).
+
+   Zwei Spalten: links die Quellliste, rechts die vier Eingabefelder. Der
+   Vorlaeufer stellte sie nebeneinander in ein 544 x 622 grosses Fenster, das
+   WAEHREND des Kopierens wuchs (Befund W15a-B12); hier bleibt das Fenster, und
+   der Fortschrittsbereich blendet sich unter dem Raster ein (A-3).
+   -------------------------------------------------------------------------- */
+.epos-projektkopie-raster {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 16px;
+    align-items: start;
+    min-height: 0;
+}
+
+.epos-projektkopie-quelle,
+.epos-projektkopie-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+@media (max-width: 780px) {
+    .epos-projektkopie-raster {
+        grid-template-columns: 1fr;
+    }
+}

@@ -178,9 +178,10 @@ namespace WindowsFormsApplication1
                 case Masken.PeakShaving:
                     return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
 
+                // iU9-W15a.4: „Speichern unter" ist die Razor-Komponente ProjektKopieDialog;
+                // ausgewertet wird wie beim Vorlaeufer nur das DialogResult.
                 case Masken.ProjektSpeichernUnter:
-                    using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
-                        return MitOk(frm);
+                    return ProjektKopieHuelle.Oeffnen(null);
 
                 // --- Masken, die eine Projektwahl herausgeben -------------------------
                 // iU9-W15a.3: Beide Schluessel zeigen auf DIESELBE Razor-Komponente
