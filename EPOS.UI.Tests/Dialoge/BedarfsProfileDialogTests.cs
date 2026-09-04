@@ -32,9 +32,25 @@ public class BedarfsProfileDialogTests : BunitContext
     public BedarfsProfileDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
+        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit iU9‑W8, Muster
+    /// <c>DeutscheOberflaeche</c> aus <c>GebaeudeKatalogDialogTests</c>) — Kultur UND
+    /// Thread-Kultur, damit ein Lauf unter <c>LANG=en_US.UTF-8</c> dieselben deutschen
+    /// Texte und dieselbe Zahlenschreibweise sieht.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     private static BedarfsProfilZeile Zeile(int idZ, string name = "Profil A", double summe = 12.5)
@@ -53,7 +69,10 @@ public class BedarfsProfileDialogTests : BunitContext
         Func<string, bool>? katalogLoeschen = null,
         Action? geaendert = null,
         Action<bool>? geschlossen = null,
-        string meldungWert = "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
+        Energieeinheit? einheit = null,
+        Action<Energieeinheit>? einheitGewaehlt = null,
+        double jahressumme = 42.0,
+        string meldungWert = "Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.",
         string labelJahresverbrauch = "jährlicher Prozesswärmebedarf:",
         string labelSumme = "Summe aller ausgew. Prozesse:",
         string btnDbAendern = "Prozess in DB ändern",
@@ -64,10 +83,10 @@ public class BedarfsProfileDialogTests : BunitContext
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Katalog, () => KATALOG)
             .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1"))
-            .Add(x => x.Jahressumme, _ => 42.0)
+            .Add(x => x.Jahressumme, _ => jahressumme)
             .Add(x => x.Aufnehmen, n => new BedarfsProfilZeile
             {
-                IdZ = 100000, IdStamm = 9, Name = n, Summe = 42.0
+                IdZ = 100000, IdStamm = 9, Name = n, Summe = jahressumme
             })
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
             .Add(x => x.ProjektGespeichert, projektGespeichert ?? (() => true))
@@ -77,6 +96,8 @@ public class BedarfsProfileDialogTests : BunitContext
             .Add(x => x.TypStammGaben, typStammGaben)
             .Add(x => x.TypProfilGaben, typProfilGaben)
             .Add(x => x.Geaendert, geaendert)
+            .Add(x => x.Einheit, einheit ?? Energieeinheit.MWh)
+            .Add(x => x.EinheitGewaehlt, einheitGewaehlt)
             .Add(x => x.MeldungWertUngueltig, meldungWert)
             .Add(x => x.LabelJahresverbrauch, labelJahresverbrauch)
             .Add(x => x.LabelSumme, labelSumme)
@@ -242,22 +263,151 @@ public class BedarfsProfileDialogTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Befund W9‑B7:</b> derselbe Wert, zwei Einheiten in der Meldung — MWh bei Prozess
-    /// und Brauchwasser, kWh beim Stromverbraucher. Wörtlich übernommen.
+    /// <b>Befund W9‑B7, erledigt:</b> Der Bestand nannte beim Stromverbraucher kWh, bei
+    /// Prozess und Brauchwasser MWh — für dieselbe Größe. Seit dem Entscheid des
+    /// Anwenders vom 04.09.2026 steht in allen drei Ausprägungen derselbe Text, und die
+    /// Einheit ist der Platzhalter <c>{0}</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(BedarfsArt.Prozesswaerme)]
+    [InlineData(BedarfsArt.Stromverbraucher)]
+    [InlineData(BedarfsArt.Brauchwasser)]
+    public void Ein_negativer_Wert_meldet_die_gewaehlte_Einheit(BedarfsArt art)
+    {
+        var cut = Aufbauen(art);
+        cut.Find("input[inputmode=decimal]").Input("-1");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.Equal("Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
+                     cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // Die Einheitenwahl (Anwenderentscheid W9-O-3 vom 04.09.2026)
+    // =================================================================================
+
+    private static IElement Einheitenfeld(IRenderedComponent<BedarfsProfileDialog> cut)
+        => cut.FindAll("select").Last();
+
+    [Fact]
+    public void Die_Vorgabe_ist_MWh()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) });
+
+        Assert.Same(Energieeinheit.MWh, cut.Instance.Anzeigeeinheit);
+        Assert.Equal("12,50", cut.Instance.Jahresverbrauch);
+        Assert.Contains("Einheit:", cut.Markup);
+
+        // Die Einheit hinter dem Eingabefeld und die beiden Wahlmoeglichkeiten.
+        var wahl = Einheitenfeld(cut);
+        Assert.Equal(new[] { "MWh", "kWh" },
+                     wahl.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.Contains("MWh", cut.Find(".epos-einheit").TextContent);
+    }
+
+    /// <summary>
+    /// Umschalten auf kWh nimmt Zahl UND Einheitentext mit — die Summe der Projektzeile
+    /// liegt in MWh, angezeigt wird sie mal 1 000.
     /// </summary>
     [Fact]
-    public void Ein_negativer_Wert_meldet_die_Einheit_der_Auspraegung()
+    public void Umschalten_auf_kWh_aendert_Zahl_und_Einheitentext()
     {
-        var cutProzess = Aufbauen(BedarfsArt.Prozesswaerme);
-        cutProzess.Find("input[inputmode=decimal]").Input("-1");
-        Knopf(cutProzess, "Übernehmen").Click();
-        Assert.Contains("MWh", cutProzess.Instance.Meldung);
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) });
 
-        var cutStrom = Aufbauen(BedarfsArt.Stromverbraucher,
-                                meldungWert: "Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.");
-        cutStrom.Find("input[inputmode=decimal]").Input("-1");
-        Knopf(cutStrom, "Übernehmen").Click();
-        Assert.Contains("kWh", cutStrom.Instance.Meldung);
+        Einheitenfeld(cut).Change("1");
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+        Assert.Equal("12500", cut.Instance.Jahresverbrauch);
+        Assert.Contains("kWh", cut.Find(".epos-einheit").TextContent);
+
+        Einheitenfeld(cut).Change("0");
+        Assert.Same(Energieeinheit.MWh, cut.Instance.Anzeigeeinheit);
+        Assert.Equal("12,50", cut.Instance.Jahresverbrauch);
+    }
+
+    [Fact]
+    public void Die_Wahl_wird_beim_Aendern_gemeldet()
+    {
+        Energieeinheit? gemerkt = null;
+        var cut = Aufbauen(einheitGewaehlt: e => gemerkt = e);
+
+        Einheitenfeld(cut).Change("1");
+        Assert.Same(Energieeinheit.KWh, gemerkt);
+
+        Einheitenfeld(cut).Change("0");
+        Assert.Same(Energieeinheit.MWh, gemerkt);
+    }
+
+    [Fact]
+    public void Der_Dialog_oeffnet_mit_der_gemerkten_Einheit()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) },
+                           einheit: Energieeinheit.KWh);
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+        Assert.Equal("12500", cut.Instance.Jahresverbrauch);
+    }
+
+    /// <summary>
+    /// Der SPEICHERWEG bleibt MWh. Bei der Vorgabe MWh geht der eingegebene Wert
+    /// bitgleich in die Zeile (Fall <c>Uebernehmen_schreibt_den_Wert_in_die_Zeile</c>);
+    /// in kWh wird er vor dem Schreiben durch 1 000 geteilt.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_in_kWh_schreibt_MWh_in_die_Zeile()
+    {
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 1) };
+        var cut = Aufbauen(zeilen: zeilen, einheit: Energieeinheit.KWh);
+
+        cut.Find("input[inputmode=decimal]").Input("33500");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.Equal(33.5, zeilen[0].Summe, 10);
+        Assert.Equal("33500", cut.Instance.Jahresverbrauch);
+    }
+
+    /// <summary>
+    /// Ein eingetippter Wert steht in der ALTEN Einheit — beim Umschalten wandert er
+    /// mit, statt still um den Faktor 1 000 umgedeutet zu werden.
+    /// </summary>
+    [Fact]
+    public void Der_eingegebene_Wert_wandert_beim_Umschalten_mit()
+    {
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 1) };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        cut.Find("input[inputmode=decimal]").Input("12,5");
+        Einheitenfeld(cut).Change("1");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.Equal(12.5, zeilen[0].Summe, 10);
+    }
+
+    [Fact]
+    public void Ein_negativer_Wert_meldet_in_kWh_die_kWh()
+    {
+        var cut = Aufbauen(einheit: Energieeinheit.KWh);
+
+        cut.Find("input[inputmode=decimal]").Input("-1");
+        Knopf(cut, "Übernehmen").Click();
+
+        Assert.Equal("Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.",
+                     cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Die_Gesamtsumme_folgt_der_Wahl()
+    {
+        var zeilen = new List<BedarfsProfilZeile>
+        {
+            Zeile(1, "Profil A", 12.5), Zeile(2, "Profil B", 7.5)
+        };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        Assert.Contains("20,00", cut.Markup);
+
+        Einheitenfeld(cut).Change("1");
+        Assert.Contains("20000", cut.Markup);
     }
 
     // =================================================================================

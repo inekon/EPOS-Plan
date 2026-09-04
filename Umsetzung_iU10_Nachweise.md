@@ -266,6 +266,14 @@ Importprotokoll, Importoptionen, Konfliktdialog, Lastspitzenkappung) und ohne `F
 Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per
 `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Vierzehnter Lauf 33844935661 (`ios.yml`, `macos-26`, 04.09.2026, 06:34–06:44 UTC, 10 min 04 s)** auf
+`29aecbc` — der Stand **nach der Welle 13**: grün. Erstmals mit `KatalogImportAblauf`/`KatalogImportProfil`
+und den zwanzig Importproben im Kern, den drei Import-Komponenten (`KatalogImportDialog` mit vier Ausprägungen,
+`WaermebedarfAdminDialog`, `PvModulImportDialog`), der Mehrfachmarkierung im `Raster` und ohne die sechs
+Importmasken; die Sprungbrücke `WaermebedarfExternAdmin` ist gefallen. Bau, Simulatorstart, Erststart mit
+Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.

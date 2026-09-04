@@ -33484,29 +33484,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
-        public static string BPF_MSG_WERT_BW {
+        public static string BPF_MSG_WERT {
             get {
-                return ResourceManager.GetString("BPF_MSG_WERT_BW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
-        /// </summary>
-        public static string BPF_MSG_WERT_PROZ {
-            get {
-                return ResourceManager.GetString("BPF_MSG_WERT_PROZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
-        /// </summary>
-        public static string BPF_MSG_WERT_STROM {
-            get {
-                return ResourceManager.GetString("BPF_MSG_WERT_STROM", resourceCulture);
+                return ResourceManager.GetString("BPF_MSG_WERT", resourceCulture);
             }
         }
         
@@ -35748,6 +35730,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_STROMVERBRAUCH {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit: ähnelt.
+        /// </summary>
+        public static string ALLG_LBL_EINHEIT {
+            get {
+                return ResourceManager.GetString("ALLG_LBL_EINHEIT", resourceCulture);
             }
         }
         

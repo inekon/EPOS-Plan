@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Bedarf;
+﻿using WindowsFormsApplication1;
+
+namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// Welche der beiden Ergebnisansichten gezeigt wird (iU9-W8.0e).
@@ -79,11 +81,32 @@ public sealed class BedarfErgebnisDaten
     public byte[]? JahresverlaufBild { get; set; }
 }
 
-/// <summary>Eine Kennzahl des ersten Reiters — Beschriftung, Wert, Einheit.</summary>
+/// <summary>
+/// Eine Kennzahl des ersten Reiters — Beschriftung, Wert, Einheit.
+///
+/// <para><b>Zwei Sorten Kennzahl.</b> Eine LEISTUNG („max. Wärmelast", kW) ist ein
+/// fertiger Text mit fester Einheit — daran gibt es nichts umzurechnen. Eine
+/// ENERGIEMENGE trägt zusätzlich <see cref="Energie"/> und
+/// <see cref="QuelleEinheit"/>: die Zahl und die Einheit, IN DER SIE VORLIEGT. Erst
+/// damit kann die Anzeige der Einheitenwahl folgen (Anwenderentscheid W8‑O‑5 vom
+/// 04.09.2026). <see cref="Wert"/> und <see cref="Einheit"/> bleiben dann die
+/// MWh-Fassung und dienen als Rückfall.</para>
+/// </summary>
 /// <param name="Bezeichnung">Die Beschriftung, z. B. „Gesamter Wärmebedarf:".</param>
 /// <param name="Wert">Der bereits formatierte Wert; leer zeigt „—".</param>
 /// <param name="Einheit">Die Einheit rechts, z. B. „MWh".</param>
-public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Einheit);
+public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Einheit)
+{
+    /// <summary>
+    /// Der Zahlenwert dieser Energiemenge in <see cref="QuelleEinheit"/>;
+    /// <c>null</c> = keine Energiemenge (Leistung, Text), die Anzeige nimmt
+    /// <see cref="Wert"/> und <see cref="Einheit"/> unverändert.
+    /// </summary>
+    public double? Energie { get; init; }
+
+    /// <summary>Die Einheit, in der <see cref="Energie"/> vorliegt.</summary>
+    public Energieeinheit? QuelleEinheit { get; init; }
+}
 
 /// <summary>
 /// Eine wählbare Monatssicht — der Optionsknopf des Vorläufers samt seiner Tabelle und
@@ -99,4 +122,22 @@ public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Ei
 /// von <c>Form_ErgBrauchwasserwaerme</c> hatte ihn.
 /// </param>
 public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Werte,
-                                 byte[]? Bild, bool IstBrauchwasser = false);
+                                 byte[]? Bild, bool IstBrauchwasser = false)
+{
+    /// <summary>
+    /// Die zwölf Monatswerte als ZAHL in <see cref="QuelleEinheit"/>; <c>null</c> =
+    /// die Tabelle nimmt die fertigen <see cref="Werte"/> und folgt der
+    /// Einheitenwahl nicht.
+    /// </summary>
+    public IReadOnlyList<double>? Zahlen { get; init; }
+
+    /// <summary>Die Einheit, in der <see cref="Zahlen"/> vorliegen.</summary>
+    public Energieeinheit? QuelleEinheit { get; init; }
+
+    /// <summary>
+    /// Dasselbe Säulenbild mit kWh-Beschriftung; <c>null</c> = es gibt nur
+    /// <see cref="Bild"/>. Ein PNG lässt sich nicht umrechnen — die Hülle zeichnet
+    /// beide Fassungen vorab, weil die Komponente keinen Renderer aufruft.
+    /// </summary>
+    public byte[]? BildKWh { get; init; }
+}

@@ -21,10 +21,19 @@ namespace WindowsFormsApplication1
     /// die Bilder vorab und reicht beides hinein — die Komponente kennt die
     /// Simulationsklassen nicht (Risiko R-W8-2).</para>
     ///
-    /// <para><b>Die Zahlen entstehen HIER, nicht in der Komponente</b>, und zwar wörtlich
-    /// je Ausprägung: <c>ToString("F2")</c> wie in den <c>Init</c>-Methoden, samt dem
-    /// Teiler 1000 beim Brauchwasser, den NUR die Brauchwassermaske hat (Befund W8-B4,
-    /// siehe unten).</para>
+    /// <para><b>Die Zahlen entstehen HIER, nicht in der Komponente</b> — die Hülle nennt
+    /// je Kennzahl die EINHEIT, IN DER IHR WERT VORLIEGT, und die Komponente rechnet auf
+    /// die gewählte Anzeigeeinheit um (<see cref="Energieeinheit"/>). Der nackte Teiler
+    /// 1000, den nur die Brauchwasserfassung hatte (Befund W8‑B4), ist damit
+    /// verschwunden: <c>Waermebedarf_Brauchwasser</c> kommt aus
+    /// <c>brauchwasserwerte.Sum()</c> und liegt in kWh, alle übrigen Energiekennzahlen
+    /// liegen in MWh. Bei der Vorgabe MWh sind die angezeigten Zahlen zeichengleich zum
+    /// Bestand.</para>
+    ///
+    /// <para><b>W8‑O‑5, Entscheid des Anwenders vom 04.09.2026:</b> MWh als Vorgabe, kWh
+    /// wählbar, konsistent in den Ansichten. Die Wahl liegt in
+    /// <c>BedarfEinheitWahl</c> — derselbe Schlüssel, den der Bedarfsprofildialog
+    /// liest.</para>
     /// </summary>
     internal static class BedarfErgebnisHuelle
     {
@@ -70,14 +79,16 @@ namespace WindowsFormsApplication1
                 Kennzahlen = new[]
                 {
                     // Reihenfolge und Beschriftungen aus dem Designer (Karte, tabPage1).
+                    // Die drei Energiemengen liegen in MWh (SimulationStrombedarf teilt
+                    // selbst durch 4000); der Spitzenwert ist eine LEISTUNG in kW.
                     new ErgebnisKennzahl(Text_("BERG_LBL_MAX_STROM", "max. Strombedarf:"),
                                  F2(simulation.Strombedarf_Max), EINHEIT_KW),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_STROM_GESAMT", "Gesamter Strombedarf:"),
-                                 F2(simulation.Strombedarf_gesamt), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_STROMGANGLINIE", "Stromganglinie:"),
-                                 F2(simulation.Stromganglinie_gesamt), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_STROM_GEBAEUDE", "Strombedarf Gebäude:"),
-                                 F2(simulation.Strombedarf_Gebaeude_gesamt), EINHEIT_MWH)
+                    Energie(Text_("BERG_LBL_STROM_GESAMT", "Gesamter Strombedarf:"),
+                            simulation.Strombedarf_gesamt, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_STROMGANGLINIE", "Stromganglinie:"),
+                            simulation.Stromganglinie_gesamt, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_STROM_GEBAEUDE", "Strombedarf Gebäude:"),
+                            simulation.Strombedarf_Gebaeude_gesamt, Energieeinheit.MWh)
                 },
                 Sichten = new[]
                 {
@@ -115,14 +126,6 @@ namespace WindowsFormsApplication1
                                                        bool mitBrauchwasser, int startReiter,
                                                        string titelZusatz)
         {
-            // BEFUND W8-B4: Der Brauchwasserwert wird NUR in der Brauchwassermaske durch
-            // 1000 geteilt (Form_ErgBrauchwasserwaerme.Init:36 gegen
-            // Form_ErgProzesswaerme.Init:32 ohne Teiler). Woertlich uebernommen; die Frage
-            // an den Anwender steht im Protokoll.
-            double brauchwasser = mitBrauchwasser
-                ? simulation.Waermebedarf_Brauchwasser / 1000
-                : simulation.Waermebedarf_Brauchwasser;
-
             var sichten = new List<Monatssicht>
             {
                 Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
@@ -156,22 +159,27 @@ namespace WindowsFormsApplication1
                 Kennzahlen = new[]
                 {
                     // Reihenfolge und Beschriftungen aus dem Designer (Karte, tabPage1).
-                    new ErgebnisKennzahl(Text_("BERG_LBL_NETZVERLUSTE", "Netzverluste:"),
-                                 F2(simulation.Waermebedarf_Netzverluste), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_WAERME_GESAMT", "Gesamter Wärmebedarf:"),
-                                 F2(simulation.Waermebedarf_Gesamt), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_WAERME_EXTERN", "Externer Wärmebedarf:"),
-                                 F2(simulation.Waermebedarf_Extern_Gesamt), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_WAERME_PROZESS", "Wärmebedarf Prozess:"),
-                                 F2(simulation.Waermebedarf_Prozess), EINHEIT_MWH),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_WAERME_GEBAEUDE", "Wärmebedarf Gebäude:"),
-                                 F2(simulation.Waermebedarf_Gebaeude_Gesamt), EINHEIT_MWH),
+                    // Fuenf Energiemengen in MWh, eine LEISTUNG in kW - und das
+                    // Brauchwasser in kWh: Es kommt aus brauchwasserwerte.Sum(), waehrend
+                    // SimulationWaermebedarf jede andere Groesse selbst durch 1000 teilt
+                    // (Befund W8-B4). Genau das war der Sonderteiler, den nur die
+                    // Brauchwasserfassung hatte; jetzt steht die Einheit am Wert.
+                    Energie(Text_("BERG_LBL_NETZVERLUSTE", "Netzverluste:"),
+                            simulation.Waermebedarf_Netzverluste, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_WAERME_GESAMT", "Gesamter Wärmebedarf:"),
+                            simulation.Waermebedarf_Gesamt, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_WAERME_EXTERN", "Externer Wärmebedarf:"),
+                            simulation.Waermebedarf_Extern_Gesamt, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_WAERME_PROZESS", "Wärmebedarf Prozess:"),
+                            simulation.Waermebedarf_Prozess, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_WAERME_GEBAEUDE", "Wärmebedarf Gebäude:"),
+                            simulation.Waermebedarf_Gebaeude_Gesamt, Energieeinheit.MWh),
                     new ErgebnisKennzahl(Text_("BERG_LBL_MAX_WAERMELAST", "max. Wärmelast:"),
                                  F2(simulation.Waermebedarf_Max), EINHEIT_KW),
-                    new ErgebnisKennzahl(mitBrauchwasser
-                                     ? Text_("BERG_LBL_WAERME_BRAUCHWASSER", "Wärmebedarf Brauchwasser:")
-                                     : Text_("BERG_LBL_DAVON_BRAUCHWASSER", "davon Brauchwasser:"),
-                                 F2(brauchwasser), EINHEIT_MWH)
+                    Energie(mitBrauchwasser
+                                ? Text_("BERG_LBL_WAERME_BRAUCHWASSER", "Wärmebedarf Brauchwasser:")
+                                : Text_("BERG_LBL_DAVON_BRAUCHWASSER", "davon Brauchwasser:"),
+                            simulation.Waermebedarf_Brauchwasser, Energieeinheit.KWh)
                 },
                 Sichten = sichten
             };
@@ -179,8 +187,24 @@ namespace WindowsFormsApplication1
 
         // =================================================================================
 
-        private const string EINHEIT_MWH = "MWh";
         private const string EINHEIT_KW = "kW";
+
+        /// <summary>
+        /// Eine ENERGIEKENNZAHL: die Zahl samt der Einheit, IN DER SIE VORLIEGT. Der
+        /// mitgegebene Text ist ihre MWh-Fassung — genau das, was der Bestand anzeigte
+        /// — und dient der Komponente als Rückfall.
+        /// </summary>
+        private static ErgebnisKennzahl Energie(string bezeichnung, double wert,
+                                                Energieeinheit quelle)
+        {
+            return new ErgebnisKennzahl(bezeichnung,
+                                        F2(Energieeinheit.MWh.Aus(quelle, wert)),
+                                        Energieeinheit.MWh.Text)
+            {
+                Energie = wert,
+                QuelleEinheit = quelle
+            };
+        }
 
         private static void Oeffnen(IWin32Window besitzer, BedarfErgebnisDaten daten,
                                     string reiterKennzahlen, string reiterMonate, string reiterGrafik,
@@ -222,7 +246,13 @@ namespace WindowsFormsApplication1
                 ["ReiterMonate"] = reiterMonate,
                 ["ReiterGrafik"] = reiterGrafik,
                 ["GruppeMonate"] = gruppeMonate,
-                ["EinheitMonat"] = EINHEIT_MWH,
+                ["EinheitMonat"] = Energieeinheit.MWh.Text,
+                // Die Anzeigeeinheit (Entscheid W8-O-5 vom 04.09.2026): MWh als Vorgabe,
+                // kWh waehlbar - dieselbe gemerkte Wahl wie im Bedarfsprofildialog, aus
+                // dem dieser Dialog als Ueberlagerung kommt.
+                ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
+                ["Einheit"] = BedarfEinheitWahl.Lies(),
+                ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
                 ["LabelJahresverlauf"] = Text_("BERG_SCH_JAHRESVERLAUF", "Jahresverlauf"),
                 ["Monatsnamen"] = Monatsnamen(),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
@@ -260,8 +290,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Eine Monatssicht: die zwölf Werte als <c>F2</c>-Texte und das fertige Säulenbild.
-        /// Eine fehlende Reihe bleibt <c>null</c> und zeigt „—" statt zwölf Nullen.
+        /// Eine Monatssicht: die zwölf Werte und das fertige Säulenbild. Eine fehlende
+        /// Reihe bleibt <c>null</c> und zeigt „—" statt zwölf Nullen.
+        ///
+        /// <para><b>Die Monatswerte liegen in MWh</b> — <c>BhkwPlan.MonatsSumme</c>
+        /// nimmt die Stundenwerte mal 0,001, <c>MonatsSumme_MW</c> beim Strom ebenso.
+        /// Die Zahlen gehen deshalb samt <see cref="Energieeinheit.MWh"/> in die
+        /// Komponente; die <c>F2</c>-Texte bleiben als Rückfall stehen.</para>
+        ///
+        /// <para><b>Das Bild entsteht ZWEIMAL</b>, einmal je Einheit. Ein PNG lässt sich
+        /// nicht umrechnen, und die Komponente ruft keinen Renderer (Risiko
+        /// R‑W8‑2).</para>
         /// </summary>
         private static Monatssicht Sicht(string bezeichnung, float[] monat, string bildtitel,
                                          SKColor farbe, bool istBrauchwasser = false)
@@ -270,15 +309,27 @@ namespace WindowsFormsApplication1
                 return new Monatssicht(bezeichnung, null, null, istBrauchwasser);
 
             var texte = new string[12];
-            var zahlen = new double[12];
+            var mwh = new double[12];
+            var kwh = new double[12];
             for (int m = 0; m < 12; m++)
             {
                 texte[m] = F2(monat[m]);
-                zahlen[m] = monat[m];
+                mwh[m] = monat[m];
+                kwh[m] = Energieeinheit.KWh.AusMWh(monat[m]);
             }
 
-            byte[] bild = ChartRenderer.MonatsSaeulen(bildtitel, zahlen, farbe, EINHEIT_MWH, MonateKurz());
-            return new Monatssicht(bezeichnung, texte, bild, istBrauchwasser);
+            string[] monate = MonateKurz();
+            byte[] bild = ChartRenderer.MonatsSaeulen(bildtitel, mwh, farbe,
+                                                      Energieeinheit.MWh.Text, monate);
+            byte[] bildKWh = ChartRenderer.MonatsSaeulen(bildtitel, kwh, farbe,
+                                                         Energieeinheit.KWh.Text, monate);
+
+            return new Monatssicht(bezeichnung, texte, bild, istBrauchwasser)
+            {
+                Zahlen = mwh,
+                QuelleEinheit = Energieeinheit.MWh,
+                BildKWh = bildKWh
+            };
         }
 
         /// <summary>Die Formatierung der Vorläufer: <c>ToString("F2")</c> in der Anzeigekultur.</summary>

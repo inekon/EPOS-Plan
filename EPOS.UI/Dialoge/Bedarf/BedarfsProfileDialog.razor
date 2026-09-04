@@ -21,10 +21,10 @@
    einer WebView waere das ein eingefrorener Dialog. An seiner Stelle steht
    eine Meldung (A-10, wie W8 A-5).
 
-   BEFUND W9-B7. Die Meldung bei ungueltigem Jahresverbrauch nennt beim
-   Stromverbraucher kWh, bei Prozess und Brauchwasser MWh - fuer DIESELBE
-   Groesse, die ueberall in MWh angezeigt wird. Woertlich uebernommen, Frage
-   an den Anwender.
+   BEFUND W9-B7, ERLEDIGT. Die Meldung bei ungueltigem Jahresverbrauch nannte
+   beim Stromverbraucher kWh, bei Prozess und Brauchwasser MWh - fuer DIESELBE
+   Groesse. Seit dem Entscheid des Anwenders vom 04.09.2026 gibt es EINEN Text
+   mit einem Platzhalter fuer die Einheit (BPF_MSG_WERT).
 
    "MONATLICHER VERLAUF" IST BIS ZUR ERSTEN SIMULATION GESPERRT - Bestand
    (SetControls setzt Enabled = false, btn_Simulation gibt frei).
@@ -145,7 +145,7 @@
             <Textfeld Bezeichnung="@LabelTyp" Wert="@_infoTyp" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_infoBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
-            <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@_jahresverbrauch" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@Jahresverbrauch" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelSumme" Wert="@Gesamtsumme" NurLesen="true" />
         </KindInhalt>
     </Gruppenkopf>
@@ -153,7 +153,9 @@
     @* --------------------------------------------- Jahresverbrauch -------- *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelNeuerWert" Einheit="@EinheitVerbrauch"
+            <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
+                         Auswahl="@EinheitIndex" AuswahlChanged="EinheitWaehlen" />
+            <Zahlenfeld Bezeichnung="@LabelNeuerWert" Einheit="@_einheit.Text"
                         Feldname="@LabelNeuerWert" Wert="@_neuerWert"
                         WertChanged="w => _neuerWert = w" />
             <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -281,6 +283,28 @@
     /// <summary>Meldet der Hülle, dass sich die Zuordnungsliste geändert hat.</summary>
     [Parameter] public Action? Geaendert { get; set; }
 
+    /// <summary>
+    /// Die ANZEIGEEINHEIT beim Öffnen — MWh (Vorgabe) oder kWh (Anwenderentscheid
+    /// W9‑O‑3 vom 04.09.2026). Die Hülle holt sie aus <c>BedarfEinheitWahl</c>, damit
+    /// dieser Dialog und der daraus geöffnete Ergebnisdialog dieselbe zeigen.
+    ///
+    /// <para><b>Alle Zahlen dieser Komponente liegen in MWh</b> — die Summen der
+    /// Projektzeilen (<c>BedarfsProfilZeile.Summe</c>) ebenso wie die
+    /// <see cref="Jahressumme"/> des Katalogs; so stehen sie in
+    /// <c>Z_Projekt_*.Summe</c> und in den zwölf Monatsfeldern der Katalogtabellen
+    /// (<c>BhkwPlan.StromWocheToJahr</c> nimmt sie mal 1000 und rechnet damit in
+    /// kWh weiter). Umgerechnet wird deshalb NUR für die Anzeige und die
+    /// Eingabe.</para>
+    /// </summary>
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+
+    /// <summary>
+    /// Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird
+    /// (<c>BedarfEinheitWahl.Schreib</c>). Ohne Rückruf wirkt die Wahl nur in diesem
+    /// Fenster.
+    /// </summary>
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste, dafür der Vorschauhinweis.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -302,7 +326,7 @@
         = "jährlicher Prozesswärmebedarf:";
     [Parameter] public string LabelSumme { get; set; } = "Summe aller ausgew. Prozesse:";
     [Parameter] public string LabelNeuerWert { get; set; } = "neuer Wert";
-    [Parameter] public string EinheitVerbrauch { get; set; } = "MWh";
+    [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
     [Parameter] public string SpalteName { get; set; } = "Name";
     [Parameter] public string SpalteTyp { get; set; } = "Typ";
@@ -330,11 +354,14 @@
         = "Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!";
 
     /// <summary>
-    /// Der Text bei ungültigem Jahresverbrauch. Er nennt beim Stromverbraucher kWh, bei
-    /// Prozess und Brauchwasser MWh — <b>Befund W9‑B7</b>, wörtlich übernommen.
+    /// Der Text bei ungültigem Jahresverbrauch. <c>{0}</c> ist die Einheit — der
+    /// Bestand hatte hier DREI Texte und nannte beim Stromverbraucher kWh, bei Prozess
+    /// und Brauchwasser MWh, für dieselbe Größe (<b>Befund W9‑B7</b>). Seit dem
+    /// Entscheid des Anwenders vom 04.09.2026 ist es ein Text, und die Einheit kommt
+    /// aus der Wahl im Dialog.
     /// </summary>
     [Parameter] public string MeldungWertUngueltig { get; set; }
-        = "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.";
+        = "Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.";
 
     /// <summary>Die Bestätigung nach „Übernehmen" — der Ersatz für den 500‑ms-Bildblitz.</summary>
     [Parameter] public string MeldungUebernommen { get; set; } = "Jahresverbrauch übernommen.";
@@ -370,8 +397,15 @@
     private string _infoName = "";
     private string _infoBeschreibung = "";
     private string _infoTyp = "";
-    private string _jahresverbrauch = "";
+
+    /// <summary>Der angezeigte Jahresverbrauch IN MWH; <c>null</c> = noch keiner.</summary>
+    private double? _jahresverbrauchMWh;
+
+    /// <summary>Der Wert im Eingabefeld — in der GEWÄHLTEN Einheit.</summary>
     private double? _neuerWert;
+
+    /// <summary>Die gewählte Anzeigeeinheit; beim Aufbau <see cref="Einheit"/>.</summary>
+    private Energieeinheit _einheit = Energieeinheit.MWh;
 
     private bool _gerechnet;
     private bool _hinweisGezeigt;
@@ -395,8 +429,12 @@
     /// <summary>Der Name im Infoblock — Prüfhilfe für die Tests.</summary>
     public string InfoName => _infoName;
 
-    /// <summary>Der angezeigte Jahresverbrauch — Prüfhilfe für die Tests.</summary>
-    public string Jahresverbrauch => _jahresverbrauch;
+    /// <summary>Der angezeigte Jahresverbrauch in der gewählten Einheit.</summary>
+    public string Jahresverbrauch => _jahresverbrauchMWh is null
+        ? "" : _einheit.Formatiere(_einheit.AusMWh(_jahresverbrauchMWh.Value));
+
+    /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
+    public Energieeinheit Anzeigeeinheit => _einheit;
 
     /// <summary>Steht der Ergebnisdialog? Prüfhilfe für die Tests.</summary>
     public bool ErgebnisOffen => _ergebnisGaben is not null;
@@ -410,14 +448,56 @@
     /// <summary>Der Stromverbraucherkatalog ist eine LISTE ohne Typspalte (Bestand).</summary>
     private bool MitTypspalte => Art != BedarfsArt.Stromverbraucher;
 
-    private string Gesamtsumme => Summe().ToString("F2");
+    private string Gesamtsumme => _einheit.Formatiere(_einheit.AusMWh(Summe()));
 
     private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
 
+    /// <summary>Die beiden Einheiten als Auswahlliste — MWh zuerst.</summary>
+    private IReadOnlyList<(int Id, string Text)> Einheitenwahl
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                liste.Add((i, Energieeinheit.Alle[i].Text));
+            return liste;
+        }
+    }
+
+    private int EinheitIndex
+    {
+        get
+        {
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                if (ReferenceEquals(Energieeinheit.Alle[i], _einheit)) return i;
+            return 0;
+        }
+    }
+
     protected override void OnInitialized()
     {
+        _einheit = Einheit ?? Energieeinheit.Vorgabe;
         KatalogLaden();
         if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+    }
+
+    /// <summary>
+    /// Die Einheit umschalten. Der eingegebene Wert WANDERT MIT — er stand in der
+    /// alten Einheit, und eine stille Umdeutung um den Faktor 1000 wäre die
+    /// gefährlichste Antwort. Die Wahl geht an die Hülle, damit sie gemerkt wird.
+    /// </summary>
+    private void EinheitWaehlen(int? id)
+    {
+        int n = id ?? 0;
+        if (n < 0 || n >= Energieeinheit.Alle.Count) return;
+
+        Energieeinheit neu = Energieeinheit.Alle[n];
+        if (ReferenceEquals(neu, _einheit)) return;
+
+        if (_neuerWert.HasValue) _neuerWert = neu.AusMWh(_einheit.NachMWh(_neuerWert.Value));
+
+        _einheit = neu;
+        EinheitGewaehlt?.Invoke(neu);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -452,7 +532,7 @@
     {
         _gewaehlt = z;
         _katalogzeile = null;
-        _jahresverbrauch = z.Summe.ToString("F2");
+        _jahresverbrauchMWh = z.Summe;
         InfoSetzen(z.Name);
     }
 
@@ -464,7 +544,7 @@
     {
         _katalogzeile = k;
         _gewaehlt = null;
-        _jahresverbrauch = (Jahressumme?.Invoke(k.Name) ?? 0).ToString("F2");
+        _jahresverbrauchMWh = Jahressumme?.Invoke(k.Name) ?? 0;
         InfoSetzen(k.Name);
     }
 
@@ -523,12 +603,14 @@
         }
         if (_neuerWert.Value < 0)
         {
-            Melden(MeldungWertUngueltig, WarnStufe.Warnung);
+            Melden(string.Format(MeldungWertUngueltig, _einheit.Text), WarnStufe.Warnung);
             return;
         }
 
-        _gewaehlt.Summe = _neuerWert.Value;
-        _jahresverbrauch = _neuerWert.Value.ToString("F2");
+        // Der SPEICHERWEG liegt in MWh - bei der Vorgabe MWh ist NachMWh die Identitaet
+        // und der Wert wandert bitgleich in die Projektzeile wie im Bestand.
+        _gewaehlt.Summe = _einheit.NachMWh(_neuerWert.Value);
+        _jahresverbrauchMWh = _gewaehlt.Summe;
         Geaendert?.Invoke();
         Melden(MeldungUebernommen, WarnStufe.Hinweis);
     }

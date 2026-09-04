@@ -16,7 +16,12 @@ namespace EPOS.Kern.Tests
     /// <para>Jeder Test, der einen Dienst tauscht, setzt ihn im <c>finally</c> zurück:
     /// <see cref="Dienste"/> ist prozessweiter Zustand, und xunit gibt keine Reihenfolge
     /// vor.</para>
+    ///
+    /// <para>Die Sammlung „Dienste" hält diese Klasse und <c>EnergieeinheitTests</c>
+    /// auseinander: Beide tauschen <see cref="Dienste.Einstellungen"/>, und xunit
+    /// fährt Testklassen sonst nebeneinander.</para>
     /// </summary>
+    [Collection("Dienste")]
     public class DiensteTests
     {
         // ==================================================================
