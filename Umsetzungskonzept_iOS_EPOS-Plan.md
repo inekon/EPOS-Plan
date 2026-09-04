@@ -1406,6 +1406,58 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
 
+> **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
+>
+> **Sechs Masken — 2 134 Zeilen `.cs`, 1 409 Designer, 10 `MessageBox` + 13 indirekte — sind sechs
+> Razor-Komponenten:** `GanglinieProtokollDialog`, `GanglinieImportOptionenDialog`,
+> `ImportKonflikteDialog`, `StromganglinieAdminDialog`, `StromganglinieDialog` und
+> `PeakShavingDialog`. **Der rote Faden ist die AP5-Importkette**, die zweimal wörtlich im Bestand
+> stand (mit Ablage in der Stammdatenverwaltung, ohne in der Lastspitzenkappung) und jetzt EIN
+> Kern-Ablauf `GanglinienImportAblauf` mit drei Rückrufen ist; die drei Zwischenmasken erscheinen
+> als `Ueberlagerung` desselben Fensters, jeder Rückruf wartet auf eine `TaskCompletionSource`.
+> **`ImportKonflikteDialog` ist Blatt vor Host MIT Hülle** (Entscheid § 8.3 der Vermessung): Vier
+> seiner fünf Aufrufer bleiben bis W13 WinForms, und die `Sprungbruecke` kann keine Nutzlast
+> zurückgeben — die Hülle kostet 80 Zeilen und lebt eine Welle. **Acht Dateien in den Kern:**
+> `GanglinienImportAblauf`, `GanglinienOptionenModell`, `GanglinienProtokollText`,
+> `ImportKonfliktModell`, `PeakShavingCtrl` (Umzug), `PeakShavingKennzahlenBlock`,
+> `PeakShavingEingaben`, `PeakShavingBild`. **Bilanz 80 Dateien, +9 742 / −5 422 Zeilen** (ohne die
+> 3,4 MB Probendateien). Sechzehn Sachcommits und ein Merge (`72dd8ba` … `34e2095`).
+>
+> **Der Nachweis der Welle ist der bitgleiche Ganglinien-Import.** Dafür gab es KEINEN Test
+> (Befund W12‑B14); die zwölf Proben — Trennzeichen `;`/`,`/Tab/einspaltig × Dezimaltrenner ×
+> Kopfzeile × 8 760/35 040/525 600 × Schaltjahr × beide Sommerzeitfälle × `.xlsx` — entstehen
+> deshalb ZUERST, mit aus dem Bestand eingefrorenen Erwartungswerten. Sie laufen danach durch den
+> neuen Kern-Ablauf und liefern dieselben Zahlen. **Befund W12‑B27 dabei gefunden und behoben:**
+> Der Excel-Zweig war überhaupt nicht benutzbar (drei Leseschleifen liefen um eine Zeile über das
+> Feld hinaus, jeder `.xlsx`-Import endete in `IMPORT_PROT_LESEFEHLER`) — damit ist der offene
+> Nachweispunkt `Umsetzung_iU0_iU1_Nachweise.md:136` erklärt und abgehakt.
+>
+> **Zwei Entscheidungen:** (1) **Kein neuer Renderer** für das Vorher/Nachher-Bild —
+> `ChartRenderer.ErzeugerStapel` trägt seit W11a eine Sekundärachse und rechnet die
+> Jahresstundenmarken über die Reihenlänge um; die ChartProben bleiben bei 30. (2) **Der Anker des
+> Erreichbarkeitstests hängt jetzt an `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`):
+> Von den zwölf Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13/W14 (Befund W12‑B26),
+> der Test kann seine Form „über die Startseite" nicht behalten. **Der Rechenlauf der
+> Lastspitzenkappung läuft nebenher** (`Task.Run` + `Fortschritt`, Befund W12‑B22) — die dritte
+> nebenläufige Rechnung der Anwendung.
+>
+> **Nachweise** (auf dem gemergten Stand, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 807** grün (2 614 nach W11b), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf **38** Masken (43 − 5),
+> 37 erreichbar, 0 × „nein" · SQL-Prüfer 1 231 Texte, 0 Fundstellen · ChartProben 30 Bilder,
+> 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) ·
+> **Import-Proben byte-gleich**.
+>
+> **Protokoll** mit Feldkartenabgleich, 19 Abweichungen (A‑1…A‑19), den wörtlich übernommenen
+> Befunden und fünf offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md`.
+> **Anwenderfrage W12‑O‑1:** Befund B5 — derselbe Katalogeintrag lässt sich einem Projekt beliebig
+> oft zuordnen (heute wie früher). Soll das so bleiben? **Windows-Abnahme steht aus**: Verwaltung
+> mit Einlesen (CSV `;`/`,`, `.xlsx`) samt Optionen/Protokoll/Konflikt, Startbild → Strom-Messdaten
+> mit ◀/▶ und „Bearbeiten…", Lastspitzenkappung mit Balken, minimaler Schwelle, drei Reitern und
+> CSV — auch ohne geöffnetes Projekt —, die vier W13-Importmasken über die Konflikthülle, de/en,
+> 125 %, Esc je Ebene.
+
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
 > Der zweite Lauf der Welle 11: **`Form_Simulation_Detail` (7 766 Zeilen + 3 082 Designer), `DashboardForm`,
