@@ -1,0 +1,168 @@
+@* Der STROMSPEICHER-Reiter der Ergebnisseite (R10, iU9-W11b.9).
+
+   VORBILD. tabPage_Stromspeicher hatte NULL Designer-Kinder - die ganze Seite
+   entstand programmatisch (InitStromspeicherSeite :6687-7009, ein
+   TableLayoutPanel aus Kopfzeile, Kernblock, Diagramm und Kennzahlenliste,
+   dazu SpSeiteEinpassen/SpTextzeilenEinpassen/SpZeilenhoeheNachziehen/
+   SpKernblockEinpassen - rund 120 Zeilen Einpassung, weil die Seite zur
+   Laufzeit in ein schmaleres Panel ausgeliehen wurde).
+
+   DIE ZWOELF KACHELN sind ein Kachelraster mit Kennzahlkacheln, die 39
+   Kennzahlzeilen kommen fertig aus dem Kern (SpeicherKennzahlenBlock.Zeilen,
+   iU9-W11a.3) - samt Reihenfolge, Formatangaben, Einheiten und der WarnSTUFE,
+   die die vier Color.FromArgb-Werte abgeloest hat. Die Farbe dazu steht in
+   epos-ui.css und traegt dieselben vier Werte.
+
+   DIE VERGLEICHSSPALTE gibt es nur mit Vergleichslauf. Eine ListView kann
+   Spalten nicht ausblenden - der Vorlaeufer setzte deshalb Breite 0
+   (SpVergleichsspalteSetzen :7287-7306); eine Tabelle laesst die Spalte
+   einfach weg.
+
+   DER OPTIMIERUNGSKNOPF steht - woertlich wie im Vorlaeufer - auf der
+   PARAMETERSEITE (P3) und nicht hier. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <p class="@(Daten.LaufVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">
+        @Daten.Kopf
+    </p>
+
+    @if (Daten.LaufVorhanden)
+    {
+        <Kachelraster>
+            <KindInhalt>
+                @foreach ((string Titel, string Wert) k in Daten.Kacheln)
+                {
+                    <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" />
+                }
+            </KindInhalt>
+        </Kachelraster>
+
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <ChartBild Png="@BildSoc" Alt="@Resource.SP_CHART_TITEL_SOC" />
+
+                <div class="epos-simerg-schalter">
+                    @if (Csv.HasDelegate)
+                    {
+                        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
+                                title="@Resource.SP_TOOLTIP_CSV">@Resource.SIM_BTN_CSV_EXPORT</button>
+                    }
+                    @* Vergleichen laesst sich erst ab zwei Varianten (Fachkonzept 7.3):
+                       Bei einer einzigen zeigte die Maske dieselben Zahlen, die eine
+                       Handbreit weiter links bereits stehen. *@
+                    @if (Daten.MehrereVarianten && Vergleich.HasDelegate)
+                    {
+                        <button type="button" class="epos-simerg-knopf" @onclick="Vergleich"
+                                title="@Resource.VAR_VGL_TOOLTIP_OEFFNEN">@Resource.VAR_VGL_BTN_OEFFNEN</button>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Daten.Erzeugungshinweis))
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Daten.Erzeugungshinweis" />
+                }
+            </section>
+
+            <section class="epos-simerg-block">
+                <table class="epos-simerg-kennzahlen">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Resource.SP_ERG_SPALTE_KENNZAHL</th>
+                            <th scope="col">@Resource.SP_ERG_SPALTE_WERT</th>
+                            @if (Daten.MitVergleich)
+                            {
+                                <th scope="col" title="@Resource.NACHT_ERG_VERGLEICH_HINWEIS">
+                                    @Resource.NACHT_ERG_SPALTE_VERGLEICH
+                                </th>
+                            }
+                            <th scope="col">@Resource.SP_ERG_SPALTE_EINHEIT</th>
+                        </tr>
+                    </thead>
+                    @foreach (string gruppe in GRUPPEN)
+                    {
+                        string g = gruppe;
+                        <tbody>
+                            <tr><th colspan="@Spalten" scope="colgroup">@Gruppentitel(g)</th></tr>
+                            @foreach (var z in Zeilen(g))
+                            {
+                                <tr class="@Stufenklasse(z.Stufe)">
+                                    <td>@z.Bezeichnung</td>
+                                    <td class="epos-simerg-zahl">@z.Wert</td>
+                                    @if (Daten.MitVergleich)
+                                    {
+                                        <td class="epos-simerg-zahl">@z.Vergleich</td>
+                                    }
+                                    <td>@z.Einheit</td>
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                </table>
+
+                @if (!string.IsNullOrEmpty(Daten.Ampel))
+                {
+                    <p class="@(Daten.AmpelWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">
+                        @Daten.Ampel
+                    </p>
+                }
+            </section>
+
+        </div>
+    }
+
+</div>
+
+@code {
+    private static readonly string[] GRUPPEN =
+    {
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_ENERGIE,
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_SPEICHER,
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT
+    };
+
+    /// <summary>Kopf, Kacheln, Kennzahlen, Ampel und Warnzeile.</summary>
+    [Parameter] public SpeicherErgebnisDaten Daten { get; set; } = new SpeicherErgebnisDaten();
+
+    /// <summary>Liefert das SoC-Bild.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Vergleich { get; set; }
+
+    private int Spalten => Daten.MitVergleich ? 4 : 3;
+
+    private byte[]? BildSoc => Bild?.Invoke(new Bildauftrag(Bilder.SpeicherSoc));
+
+    private IEnumerable<WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile> Zeilen(string gruppe)
+    {
+        foreach (var z in Daten.Kennzahlen)
+            if (string.Equals(z.Gruppe, gruppe, StringComparison.Ordinal)) yield return z;
+    }
+
+    private static string Gruppentitel(string gruppe) => gruppe switch
+    {
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_ENERGIE => Resource.SP_ERG_GRUPPE_ENERGIE,
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_SPEICHER => Resource.SP_ERG_GRUPPE_SPEICHER,
+        WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT => Resource.SP_ERG_GRUPPE_WIRTSCHAFT,
+        _ => gruppe
+    };
+
+    /// <summary>
+    /// Die Warnstufe einer Zeile als Klasse — dieselben vier Werte, die
+    /// <c>SpWarnfarbe</c> als <c>Color.FromArgb</c> setzte.
+    /// </summary>
+    private static string Stufenklasse(WindowsFormsApplication1.KennzahlStufe stufe) => stufe switch
+    {
+        WindowsFormsApplication1.KennzahlStufe.Ueberschritten => "epos-stufe-ueberschritten",
+        WindowsFormsApplication1.KennzahlStufe.Knapp => "epos-stufe-knapp",
+        WindowsFormsApplication1.KennzahlStufe.Ok => "epos-stufe-ok",
+        _ => "epos-stufe-unbestimmt"
+    };
+}
