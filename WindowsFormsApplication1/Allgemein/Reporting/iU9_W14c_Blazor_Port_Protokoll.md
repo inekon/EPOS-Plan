@@ -421,6 +421,7 @@ Am Windows-Gerät zu prüfen — was kein automatisches Netz sieht.
 | 11 | **Beide Sprachen**: Oberfläche auf Englisch umstellen, alle vier Fenster öffnen — keine deutschen Reste. Besonders bei Klimadaten und Einstellungen: Sie waren VOR dieser Welle vollständig deutsch, samt Fenstertitel. |
 | 12 | **125 % Skalierung**: Alle vier Fenster öffnen; die Felder sind vollständig sichtbar, der Baum rollt, kein Text abgeschnitten. |
 | 13 | **Die Ortsliste**: Ohne `<BenutzerLokal>\Ortsliste\Ortsnamen.txt` öffnet der Dialog und das Ortsfeld ist leer, aber beschreibbar (E‑7) — der Vorläufer öffnete GAR NICHT. Mit Datei stehen die Vorschläge. |
+| 14 | **Schemaschritt 62 auf dem Windows-Gerät** (E‑6, nachgereicht): Der erste Start nach dem Update hebt den Stand von 61 auf 62 und schreibt in `migration_protokoll.txt` je Tabelle „Waisen vorher n, nachher 0"; ein zweiter Start meldet „bereits erledigt". `Proben/ZugriffsschichtProben` (Fälle 13 und 14) laufen dort — sie brauchen die WindowsDesktop-Laufzeit und sind auf Linux nur baubar, nicht lauffähig. Danach: **ein Projektpaket mit Schemastand 61 wird abgewiesen** (Regel B2) — das ist so gewollt und im Nachtrag zu E‑6 benannt. |
 
 ---
 
@@ -433,7 +434,7 @@ Am Windows-Gerät zu prüfen — was kein automatisches Netz sieht.
 | **E‑3** | Die Komponente heißt **`KlimaregionDialog`**, nicht `KlimadatenDialog`. Betrifft auch den Menüpunkt: „Klimadaten" oder „Klimaregionen"? | **entschieden** (Anwender, 04.09.2026): „Klimaregion ist eigentlich für Deutschland gedacht, Klimadaten für den Download weltweit mit TMY-Daten." Der **Menütext bleibt „Klimadaten"**, die Komponente heißt **wieder `KlimadatenDialog`** — siehe den Nachtrag unten |
 | **E‑4** | **Die y-Achse des Sonnenwinkels** — am kleinsten Wert oder bei 0? | **bei 0**, über `MinimumNull` (W14c.0j); das Bild bleibt wie im Bestand |
 | **E‑5** | **Auf iOS gibt es die fünf „Durchsuchen…"-Knöpfe der Einstellungen nicht** (`OrdnerWaehlen` liefert dort immer `""`). Reicht das — oder braucht iOS gar keine Pfadeinstellungen? | **entschieden** (Anwender, 04.09.2026: „Empfehlung"): **Ohne `OrdnerWaehler` sind die fünf Pfade fest** — nur lesende Felder mit dem Wert aus `EinstellungenCtrl` (auf iOS die Sandbox-Pfade), kein Knopf, darüber der Hinweis `ADM_SET_HINT_PFADE_FEST` („Die Ordner sind auf dieser Plattform fest vorgegeben." / „Folders are fixed on this platform."); „Speichern" schreibt die übrigen Werte unverändert und gibt die fünf Pfade so zurück, wie der Kern sie vorgegeben hat — auch nach „Standardwerte". Mit Wähler (Windows) bleibt alles wie bisher. Fünf neue bunit-Fälle |
-| **E‑6** | **Löschen einer Klimaregion räumt künftig die 8 760 + 365 Datenzeilen ab.** Sollen vorhandene Altwaisen mit einer einmaligen Bereinigung mitgehen? | **Die Zählung ist gelaufen** (siehe unten) — auf `Kenndaten_Test.sqlite` gibt es KEINE Waisen; eine Altbereinigung ist dort gegenstandslos. Für die Anwenderdatenbank offen |
+| **E‑6** | **Löschen einer Klimaregion räumt künftig die 8 760 + 365 Datenzeilen ab.** Sollen vorhandene Altwaisen mit einer einmaligen Bereinigung mitgehen? | **entschieden** (Anwender, 04.09.2026): „Altbereinigung ausführen." Umgesetzt als **Schemaschritt 62** (`SCHRITT_62_KLIMAWAISEN`, der ERSTE Eintrag in `SCHRITTE_SQLITE`) — zwei `DELETE` aus `KlimaWaisenBereinigung` im Kern; auf `Kenndaten_Test.sqlite` ein **No-op** (0 Waisen). Siehe den Nachtrag unten |
 | **E‑7** | **`Ortsnamen.txt` fehlt in Auslieferung und Repo.** Was soll die Ortsauswahl anbieten? | **(c) umgesetzt**: vorhanden → Vorschlagsliste, fehlt → leere Liste, nie ein Absturz; das Feld erlaubt immer freie Eingabe. Ob die Datei künftig ausgeliefert oder aus `Tab_Klimaregion_STAMM` gefüllt wird — offen |
 | **E‑8** | **WebView2-Bezug**: Mit dieser Welle sind die letzten vier Admin-Masken Blazor. Ohne die WebView2-Laufzeit bleiben Gesetzeskatalog, Dublettensuche, Einstellungen und Klimadaten LEER — die Anwendung startet, aber die Verwaltung ist unbedienbar. Das Setup installiert die Laufzeit nach (`Setup/EPOS-Plan.iss`, `WebView2Vorhanden`); auf einem Rechner ohne Internet muss sie vorher da sein | Hinweis, keine Änderung |
 
@@ -473,6 +474,57 @@ Auf `Referenzlaeufe/Kenndaten_Test.sqlite`: **32 Regionen, 280 320 Stundenwerte
 der Auslieferungsstand trägt keinen Datenblock ohne Kopfsatz. Der Fall steht als
 `DerBestandFuehrtKeineVerwaistenKlimadaten` in `KatalogpflegeTests` und würde rot, sobald sich
 das ändert.
+
+### Nachtrag zu E‑6: die Altbereinigung als Schemaschritt 62 (04.09.2026)
+
+Der Anwender hat sie angeordnet („Altbereinigung ausführen"), obwohl die Zählung oben auf dem
+Auslieferungsstand null ergibt — die Anwenderdatenbanken sind der Grund.
+
+| Stelle | Was dort steht |
+|---|---|
+| `EPOS.Kern/Allgemein/Katalog/KlimaWaisenBereinigung.cs` | **die zwei Anweisungen**, `ZaehlungZu`/`LoeschungZu` je Datenblocktabelle — die EINE Wahrheit für Schritt und Nachweis |
+| `SchemaMigration.SCHRITT_62_KLIMAWAISEN` + `Schritt_62_KlimaWaisen` | der Schritt; **erster Eintrag in `SCHRITTE_SQLITE`** — angelegt in der Reihenfolge des E6‑Vorfalls: erst Konstante, Methode und Eintrag, DANN das Ziel |
+| `SchemaMigration.ZIEL_VERSION` | **61 → 62** |
+| `SchemaMigration.FREEZE_VERSION` | **neu, 61** — siehe unten |
+| `SqliteDml` / `SqliteZahl` | zwei Helfer neben `SqliteDdl`, gleiche Bauart, über `DataRepository` statt über `Lauf.Conn`; `SqliteDdl` meldet „angelegt", ein `DELETE` meldet „ausgefuehrt" |
+
+**`FREEZE_VERSION` musste dazukommen, und das ist der eigentliche Eingriff.** Bis hierher waren
+Freeze-Stand und Zielstand DIESELBE Zahl, und beide Zweige lasen `ZIEL_VERSION`:
+`SchritteAbarbeitenSqlite` wies alles unterhalb davon als „nicht auf Freeze-Stand" ab, und der
+Access-Zweig prüfte am Ende `StandNachher >= ZIEL_VERSION`. Ein blosses Hochsetzen auf 62 hätte
+deshalb **jede frisch migrierte Datei (Stand 61) abgewiesen, statt Schritt 62 auf ihr zu fahren**,
+und `HebeAltbestand` hätte einen Fehlschlag gemeldet, obwohl der eingefrorene Zweig alles getan
+hat, was er kann. Seither: `FREEZE_VERSION` = 61 (was der `EposSqliteMigrator` liefert, wird nie
+wieder angehoben), `ZIEL_VERSION` = 62 (was das Programm erwartet).
+
+**Befund am Rande, benannt:** Beide Datenblocktabellen tragen seit der SQLite-Umstellung einen
+Fremdschlüssel auf `Tab_Klimaregion_STAMM` mit `ON DELETE CASCADE`, und `DataRepository` setzt je
+Verbindung `PRAGMA foreign_keys = ON`. **Über die Zugriffsschicht kann seither gar keine Waise
+mehr entstehen** — die Kaskade räumt beim Löschen des Kopfsatzes selbst ab. Der Schritt ist damit
+für Bestände da, die ihre Waisen aus der Access-Zeit mitbringen oder deren Datei einmal ohne
+Fremdschlüssel geschrieben wurde; er ist ein Netz, kein Alltagsweg. Der Kern-Test legt seine
+Waisen deshalb an der Zugriffsschicht vorbei an (`Foreign Keys=False` auf einer eigenen
+Verbindung).
+
+**Nachweis** (`EPOS.Kern.Tests/KatalogpflegeTests.cs`, 104 → 106 Fälle, eigene Arbeitskopie):
+
+| Fall | Was er festhält |
+|---|---|
+| `DieAltbereinigungRaeumtWaisenAbUndLaesstDenBestandStehen` | je Tabelle eine künstliche Waise (`ID_Klimaregion = 999999`) → nach den zwei Anweisungen 0 Waisen, Bestand unverändert 32 / 280 320 / 11 680; **zweiter Lauf ändert nichts** |
+| `DieAltbereinigungIstAufDemAuslieferungsstandEinNoOp` | die zwei Anweisungen auf dem unberührten Stand — jede Zahl steht danach wie vorher |
+
+**`Proben/ZugriffsschichtProben` ist nachgezogen, aber hier nicht lauffähig:** Das Projekt ist
+`net10.0-windows` und braucht die WindowsDesktop-Laufzeit; es **baut** auf Linux, es **läuft**
+dort nicht. Fall 13 erwartet jetzt Schritt 62, die Waisenzeilen „vorher 0, nachher 0" und
+Schemastand 62 (statt „Stand bleibt 61"), dazu einen zweiten Lauf mit „bereits erledigt"; der
+Wegwerf-Schritt des Test-Seams in Fall 14 ist von 62 auf **63** gerückt, weil 62 jetzt wirklich
+existiert. **Beides ist Windows-Abnahmepunkt 14** (siehe § 9).
+
+**Paketfolge, ausdrücklich benannt:** Wie bei jedem Schemaschritt hebt sich der Stand, und
+`ProjektExportImportCtrl` (Regel B2, `:329`) weist ein Projektpaket ab, dessen `schemaVersion`
+nicht dem eigenen Zielstand entspricht. **Pakete mit Schemastand 61 werden nach dem Update also
+abgewiesen** — beide Rechner sind auf denselben Programmstand zu bringen und das Projekt neu zu
+exportieren. Das ist die stehende Regel jedes Schemaschritts, keine Besonderheit dieses einen.
 
 ---
 
