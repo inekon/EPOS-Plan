@@ -332,6 +332,16 @@ ist auf iOS angekündigt, aber nicht bedienbar, W16a‑O‑4), mit `KomponentenB
 ohne `BlazorAssistentSeite`, `WizardParent` und `ProjektAuswahl`. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Zweiundzwanzigster Lauf 33898599945 (`ios.yml`, `macos-26`, 04.09.2026, 17:04–17:12 UTC, 7 min 56 s)** auf
+`c8fbd77` — der Stand **nach der Teilwelle 16b**: grün. Erstmals mit der Razor-Startseite und
+`IProjektQuelle.Startkacheln` im gemeinsamen `EPOS.UI` (N9 — `IosProjektQuelle` setzt die Startkacheln noch nicht um, der
+Zweig in der `AppWurzel` kommt mit K7 in W16c), mit `ProjektKontextCtrl`, `StartseiteCtrl` und `BedarfsZustand` im Kern
+und ohne `Form_Start`, `FormMain` und die zwölf `*KontextMenuCtrl`. Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende. Der Lauf Nr. 23 (33898901613) auf demselben Stand war eine versehentliche Dublette (der erste Aufruf
+ging vor einem Neustart des Sitzungsprozesses durch, seine Bestätigung ging verloren) und wurde nach 100 Sekunden
+abgebrochen; der nächste echte Lauf trägt die Nummer 24.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
