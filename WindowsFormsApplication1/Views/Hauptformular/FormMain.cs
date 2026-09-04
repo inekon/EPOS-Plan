@@ -627,9 +627,12 @@ namespace WindowsFormsApplication1
         public void FillKlimaList()
         {
             // Katalog (Tab_Klimaregion_STAMM) anzeigen, nicht die Projekt-Kopien aller Projekte.
+            // iU9-W14c.0d: Der Controller liegt im Kern und fuellt keine Steuerelemente
+            // mehr - er liefert die Namen, die Maske schreibt sie hin.
             KlimaregionStammCtrl ctrl = new KlimaregionStammCtrl();
             ctrl.ReadAll();
-            ctrl.FillComboBox(comboBox_Klima);
+            comboBox_Klima.Items.Clear();
+            foreach (string name in ctrl.Bezeichner()) comboBox_Klima.Items.Add(name);
         }
 
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)

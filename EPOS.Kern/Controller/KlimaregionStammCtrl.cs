@@ -1,13 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    // Controller fuer die Klimaregion-STAMMDATEN (Tab_Klimaregion_STAMM).
-    // Behaelt die alte Spaltenstruktur (ID_Klimaregion, Name) und kennt das neue Feld ReadOnly.
-    // Enthaelt ausserdem die zentrale Kopierlogik STAMM -> Projekt fuer Klimaregion + Klimadaten + Solar.
+    /// <summary>
+    /// Controller fuer die Klimaregion-STAMMDATEN (<c>Tab_Klimaregion_STAMM</c>).
+    /// Behaelt die alte Spaltenstruktur (ID_Klimaregion, Name) und kennt das Feld
+    /// ReadOnly. Enthaelt ausserdem die zentrale Kopierlogik STAMM -> Projekt fuer
+    /// Klimaregion + Klimadaten + Solar.
+    ///
+    /// <para><b>Seit iU9-W14c.0d liegt er im KERN</b> (Befund W14c-B33). Bis dahin stand
+    /// er in <c>WindowsFormsApplication1/Controller/</c> und zog
+    /// <c>System.Windows.Forms</c> herein - er fuehrte
+    /// <c>FillComboBox(ComboBox)</c> und <c>FillListBox(ListBox)</c>. An ihre Stelle
+    /// tritt <see cref="Bezeichner"/>: eine Liste von Namen, die jeder Aufrufer selbst
+    /// in sein Steuerelement schreibt (dasselbe Vorgehen wie bei <c>WPCtrl</c> in
+    /// W7.0a).</para>
+    ///
+    /// <para><b><see cref="Delete"/> loescht seit W14c.0d MIT KASKADE</b> (Befund
+    /// W14c-B23, A-8): Er lief bis dahin ueber ein blosses
+    /// <c>DELETE ... WHERE Name = ?</c> und liess die 8 760 Stunden- und 365 Tageswerte
+    /// als Waisen stehen. <c>KatalogBereinigung.SatzLoeschen</c> raeumt beide
+    /// Datenbloecke ab, weil die <c>KatalogRegistry</c> sie fuehrt.</para>
+    /// </summary>
     class KlimaregionStammCtrl : KlimaregionStammModel
     {
         public const string TAB_REGION_STAMM   = "Tab_Klimaregion_STAMM";
@@ -38,11 +54,21 @@ namespace WindowsFormsApplication1
             ExecuteRead("SELECT * FROM " + TAB_REGION_STAMM + " ORDER BY Name");
         }
 
-        public void ReadSingle(string sql)
+        /// <summary>
+        /// Liest EINE Region ueber ihren Namen.
+        ///
+        /// <para><b>Parametriert</b> (Befund W14c-B18): Die Maske baute dafuer
+        /// <c>"... WHERE Name = '" + name + "'"</c> zusammen - ein Apostroph im
+        /// Regionsnamen brach die Abfrage.</para>
+        /// </summary>
+        public void ReadByName(string szName)
         {
-            DataTable dt = DataRepository.GetDataTable(sql);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TAB_REGION_STAMM + " WHERE Name = ?",
+                new DbParam("@name", szName ?? ""));
+
             _internalList.Clear();
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 MapRowToThis(dt.Rows[0]);
                 _internalList.Add(this);
@@ -136,33 +162,48 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        // Loescht eine Klimaregion aus der STAMM-Tabelle, sofern nicht schreibgeschuetzt.
+        /// <summary>
+        /// Loescht eine Klimaregion samt IHREN DATENBLOECKEN, sofern sie nicht
+        /// schreibgeschuetzt ist (Befund W14c-B23, A-8).
+        ///
+        /// <para><b>Bis iU9-W14c.0d loeschte diese Methode nur den KOPFSATZ</b> und
+        /// liess 8 760 Zeilen in <c>Tab_Solar_STAMM</c> und 365 in
+        /// <c>Tab_Klimadaten_STAMM</c> als Waisen stehen. Es gab damit ZWEI Loeschwege
+        /// fuer denselben Katalog, und der hier benutzte war der unvollstaendige.
+        /// Jetzt geht er ueber <see cref="KatalogBereinigung.SatzLoeschen"/> - denselben
+        /// Weg, den die Dublettensuche nimmt.</para>
+        ///
+        /// <para><b>Die Meldung entfaellt</b> (Befund W14c-B21): Sie war unerreichbar,
+        /// weil jeder Aufrufer <see cref="IsReadOnly"/> vorher selbst prueft und seinen
+        /// eigenen Text zeigte. Der Rueckgabewert sagt, was geschehen ist.</para>
+        /// </summary>
         public bool Delete(string szName)
         {
-            if (IsReadOnly(szName))
-            {
-                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt");
-                return false;
-            }
-            string sql = "DELETE FROM " + TAB_REGION_STAMM + " WHERE Name = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@name", szName ?? ""));
+            if (IsReadOnly(szName)) return false;
+
+            int id = GetStammId(szName);
+            if (id <= 0) return false;
+
+            return KatalogBereinigung.SatzLoeschen(KatalogRegistry.Finde("KLIMAREGION"), id);
         }
 
         #endregion
 
-        #region --- UI FILL ---
+        #region --- ANZEIGELISTE ---
 
-        public void FillComboBox(ComboBox ctrl)
+        /// <summary>
+        /// Die Namen der gelesenen Regionen, in Lesereihenfolge (iU9-W14c.0d).
+        ///
+        /// <para><b>Der Ersatz fuer <c>FillComboBox</c> und <c>FillListBox</c>:</b> Sie
+        /// nahmen ein <c>ComboBox</c> bzw. <c>ListBox</c> entgegen und zogen damit
+        /// <c>System.Windows.Forms</c> in den Controller. Wer eine Liste fuellen will,
+        /// bekommt hier die Namen und schreibt sie selbst hin.</para>
+        /// </summary>
+        public IReadOnlyList<string> Bezeichner()
         {
-            ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++) ctrl.Items.Add(items[i].m_szName);
-        }
-
-        public void FillListBox(ListBox ctrl)
-        {
-            ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++) ctrl.Items.Add(items[i].m_szName);
+            var namen = new List<string>(rows);
+            for (int i = 0; i < rows; i++) namen.Add(items[i].m_szName);
+            return namen;
         }
 
         #endregion

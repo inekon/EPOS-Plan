@@ -2535,3 +2535,153 @@ body {
     font-size: 12px;
     align-self: center;
 }
+
+/* ====================================================================
+   Baumansicht (iU9-W14c.4) - der Ersatz fuer den einzigen TreeView des
+   Bestands. Die Einrueckung laeuft ueber padding-inline-start, NICHT ueber
+   &nbsp;-Ketten: Eine Sprachausgabe laese die Leerzeichen sonst mit.
+   ==================================================================== */
+
+.epos-baum {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 380px;
+    overflow: auto;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: 6px;
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-baum ul[role="group"] {
+    list-style: none;
+    margin: 0;
+    padding-inline-start: 20px;
+}
+
+.epos-baum-knoten {
+    outline-offset: -2px;
+}
+
+.epos-baum-zeile {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--epos-touchziel);
+}
+
+/* Das Dreieck ist ein EIGENES Klickziel und waehlt nicht. Der Platzhalter am
+   Blatt ist gleich breit, damit die Texte einer Ebene buendig stehen. */
+.epos-baum-schalter {
+    flex: none;
+    width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    border: none;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.epos-baum-schalter--leer {
+    display: inline-block;
+    cursor: default;
+}
+
+.epos-baum-text {
+    flex: 1 1 auto;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.epos-baum-knoten--gewaehlt > .epos-baum-zeile > .epos-baum-text {
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-quelle-text);
+    font-weight: 600;
+}
+
+.epos-baum-kennzeichen {
+    margin-inline-start: 8px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-text-leise);
+    font-size: 12px;
+}
+
+.epos-baum-leer {
+    margin: 8px 0;
+    color: var(--epos-text-leise);
+}
+
+@media (forced-colors: active) {
+    /* Die Auswahl ueber einen Rahmen statt ueber die Flaeche, das Kennzeichen
+       ebenso - Hintergrundfarben werden im Hochkontrastbetrieb ersetzt. */
+    .epos-baum-knoten--gewaehlt > .epos-baum-zeile > .epos-baum-text {
+        outline: 2px solid Highlight;
+        background: Canvas;
+    }
+
+    .epos-baum-kennzeichen {
+        border: 1px solid CanvasText;
+        background: Canvas;
+    }
+}
+
+/* Die Mitte der Dublettensuche: links der Baum (450 px im Vorlaeufer), rechts
+   die Gegenueberstellung (518 px). Unter 900 px stehen sie untereinander. */
+.epos-dubletten-mitte {
+    display: grid;
+    grid-template-columns: minmax(320px, 45fr) minmax(320px, 55fr);
+    gap: 12px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .epos-dubletten-mitte {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Die Rubrikenliste der Einstellungen IST eine Reiterleiste, nur SENKRECHT
+   (iU9-W14c.6, A-16): links die vier Rubriken, rechts das Blatt. Der Vorlaeufer
+   loeste das mit einem SplitContainer und vier gestapelten Dock.Fill-Panels. */
+.epos-reiter--senkrecht > .epos-reiter {
+    display: grid;
+    grid-template-columns: minmax(160px, 200px) 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.epos-reiter--senkrecht .epos-reiter-leiste {
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: none;
+    border-inline-end: 1px solid var(--epos-karte-rahmen);
+}
+
+.epos-reiter--senkrecht .epos-reiter-knopf {
+    text-align: start;
+    border-bottom: 1px solid transparent;
+    border-inline-end: 3px solid transparent;
+}
+
+.epos-reiter--senkrecht .epos-reiter-knopf--aktiv {
+    border-bottom-color: transparent;
+    border-inline-end-color: var(--epos-quelle-rahmen);
+}
+
+@media (max-width: 700px) {
+    .epos-reiter--senkrecht > .epos-reiter {
+        grid-template-columns: 1fr;
+    }
+
+    .epos-reiter--senkrecht .epos-reiter-leiste {
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-inline-end: none;
+        border-bottom: 1px solid var(--epos-karte-rahmen);
+    }
+}

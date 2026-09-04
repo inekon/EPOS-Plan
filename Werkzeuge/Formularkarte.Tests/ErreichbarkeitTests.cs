@@ -150,24 +150,22 @@ public sealed class ErreichbarkeitTests
     }
 
     [Fact]
-    public void FormAdminSettingsIstUeberDasHauptfensterZuErreichen()
+    public void DasHauptfensterIstDieWurzelUndDamitErreichbar()
     {
-        // iU9-W12: Bis dahin stand hier Form_Stromganglinie (davor Form_Gebaeude,
-        // davor Form_Heizkessel); alle drei sind mit ihrer Welle geloescht
-        // (Regel M1). Der Anker kann seine Form ("ueber die STARTSEITE") nicht
-        // behalten: Von den zwoelf Masken, deren Pfad mit Form_Start beginnt,
-        // faellt keine erst in W13 oder W14 - alle W13/W14-Masken haengen am Menue
-        // des MDIMainForm (Befund W12-B26).
+        // Die Zeugenkette: Form_Heizkessel -> Form_Gebaeude ->
+        // Form_Stromganglinie (bis W12) -> Form_AdminSettings (bis W14c) ->
+        // MDIMainForm. Jeder Vorgaenger ist mit seiner Welle geloescht (Regel M1).
         //
-        // Nachfolger ist Form_AdminSettings ueber MDIMainForm ->
-        // MenuItem_Einstellungen: der kuerzeste und stabilste Weg im Bestand, und
-        // W14c ist die LETZTE der W13/W14-Wellen - der Anker haelt damit am
-        // laengsten.
-        var knoten = Knoten("Form_AdminSettings");
+        // iU9-W14c.9: MDIMainForm ist die WURZEL des Erreichbarkeitsgraphen -
+        // Pfadlaenge 1, und sie faellt als ALLERLETZTE Maske ueberhaupt (Welle 16).
+        // Der Anker kann damit nicht mehr unerreichbar werden und muss nicht noch
+        // einmal umziehen. Form_ProjektSpeichernUnter waere der zweitbeste
+        // gewesen - sie faellt schon mit W15a und traegt seit W14a den
+        // Maskenschluessel-Zeugen; zwei Anker auf einer Maske sind unnoetig.
+        var knoten = Knoten("MDIMainForm");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.StartsWith("MDIMainForm", knoten.Pfad, StringComparison.Ordinal);
-        Assert.EndsWith("Form_AdminSettings", knoten.Pfad, StringComparison.Ordinal);
+        Assert.Equal("MDIMainForm", knoten.Pfad);
     }
 
     [Fact]
@@ -304,9 +302,9 @@ public sealed class ErreichbarkeitTests
         // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43, nach
         // Welle 12: 37 von 38, nach Welle 13: 31 von 32, nach Welle 14b: 27 von
         // 28. Mit Welle 14a faellt die letzte "unklar"-Maske: nach BEIDEN Wellen
-        // sind es 21 von 21 - ALLE erreichbar. Die Zahl sinkt mit jeder Welle,
-        // der Anteil steht jetzt auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 21,
+        // sind es 21 von 21 - ALLE erreichbar. Nach Welle 14c: 17 von 17. Die Zahl
+        // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 17,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -324,15 +322,22 @@ public sealed class ErreichbarkeitTests
         // W14a.1. Seither steht KEINE Maske mehr auf "unklar"; die Regel selbst prueft
         // EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa am Pruefmuster.
         Assert.Contains("| unklar | 0 |", befund, StringComparison.Ordinal);
-        Assert.Contains("| Form_AdminSettings | ja |", befund, StringComparison.Ordinal);
+
+        // iU9-W14c.9: Bis dahin stand hier Form_AdminSettings (davor
+        // Form_Stromganglinie); beide sind mit ihrer Welle gefallen. MDIMainForm
+        // ist die Wurzel und faellt als allerletzte.
+        Assert.Contains("| MDIMainForm | ja |", befund, StringComparison.Ordinal);
         Assert.Contains("| gesamt | " + ergebnis.Masken + " | |", befund, StringComparison.Ordinal);
     }
 
     [Fact]
     public void OhneSchalterWirdDieErreichbarkeitNichtGerechnet()
     {
-        var ergebnis = Stapel.Laufen(Repowurzel.Designer("Klimadaten"), ziel: null, suchwurzel: Projekt,
-                                     erreichbarkeit: false);
+        // iU9-W14c.9: Der ORDNER Views/Klimadaten ist mit dieser Welle leer und
+        // geloescht; die Maske liegt als Pruefmuster. Der Fall braucht nur einen
+        // Ordner mit wenigen Masken - was er prueft, ist der SCHALTER.
+        var ergebnis = Stapel.Laufen(Repowurzel.Pruefmuster("Klimadaten"), ziel: null,
+                                     suchwurzel: Projekt, erreichbarkeit: false);
 
         Assert.False(ergebnis.MitErreichbarkeit);
         Assert.All(ergebnis.Zeilen, z => Assert.Null(z.Erreichbarkeit));

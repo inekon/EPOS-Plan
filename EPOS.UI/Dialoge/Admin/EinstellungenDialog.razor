@@ -1,0 +1,328 @@
+﻿@* Globale Anwendungseinstellungen (iU9-W14c.6).
+
+   VORBILD: Views/Admin/Form_AdminSettings.cs (320 Z.) und .Designer.cs
+   (491 Z.) - 35 Steuerelemente plus ZWEI, die zur Laufzeit entstehen.
+
+   WOZU. Neun Properties.Settings-Werte und EIN Registry-Schalter (der
+   KI-Abschalter), sortiert in vier Rubriken.
+
+   DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Vier gestapelte
+   Dock.Fill-Panels, von denen genau eines sichtbar ist, plus eine Auswahlliste
+   links - das ist woertlich der Baustein Reiter/Reiterblatt, nur senkrecht. Die
+   Ausrichtung ist eine CSS-Frage (epos-reiter--senkrecht), keine zweite
+   Komponente.
+
+   BEFUND W14c-B50/B51, BEHOBEN: Die vier Rubriktexte waren deutsche
+   Designer-Literale, und die Umschaltung lief ueber den INDEX - Rubrik 0 "VDI
+   Datensaetze" zeigte panel_Import, Rubrik 1 "Datenbank" zeigte panel_Export
+   (mit vier Feldern). Hier fuehrt jedes Blatt einen sprachneutralen SCHLUESSEL
+   und einen Ressourcentext.
+
+   BEFUND W14c-B52, ANGEGLICHEN: "Speichern" schrieb Ordner und Name der
+   Datenbank im laufenden Betrieb, ohne zu sagen, dass die geoeffnete Datenbank
+   eine andere ist. Der Hinweis steht jetzt da.
+
+   BEFUND W14c-B53, BEHOBEN (A-12): "Standardwerte" setzte den DB-NAMEN in das
+   PFADfeld ("txt_DBPath.Text = ...DBName") und liess das Namensfeld unberuehrt.
+
+   BEFUND W14c-B55, BEHOBEN: Die vier Vorgabepfade griffen unmittelbar auf
+   Environment.GetFolderPath(SpecialFolder...) zu - im Kern verboten. Sie stehen
+   seit W14c.0i in EinstellungenCtrl ueber Dienste.Pfade.
+
+   BEFUND W14c-B49, ANGEGLICHEN: Scheiterte der Aufbau des KI-Schalters, fiel er
+   kommentarlos weg (catch { chk_KiAus = null; }). Jetzt sagt ein Banner, dass
+   er nicht gelesen werden konnte.
+
+   ENTSCHEID E-5 (iOS): Ohne OrdnerWaehler bleiben die fuenf
+   "Durchsuchen..."-Knoepfe weg (IosDateiDienst.OrdnerWaehlen liefert immer "");
+   die Pfadfelder bleiben von Hand beschreibbar.
+
+   TASTATUR: Esc schliesst - erst die Rueckfrage, dann den Dialog. Enter ist
+   nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Admin
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-einstellungen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-reiter--senkrecht">
+        <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
+            <KindInhalt>
+
+                <Reiterblatt Schluessel="VDI" Titel="@RubrikVdiText">
+                    <KindInhalt>
+                        <Dateiwahl Bezeichnung="@LabelVdiPfad" Pfad="@_satz.VdiPfad"
+                                   PfadChanged="@(p => _satz.VdiPfad = p)"
+                                   Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
+                                   NurLesen="false" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="DATENBANK" Titel="@RubrikDatenbankText">
+                    <KindInhalt>
+                        <Dateiwahl Bezeichnung="@LabelDbExport" Pfad="@_satz.DbExportPfad"
+                                   PfadChanged="@(p => _satz.DbExportPfad = p)"
+                                   Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
+                                   NurLesen="false" />
+                        <Dateiwahl Bezeichnung="@LabelDbImport" Pfad="@_satz.DbImportPfad"
+                                   PfadChanged="@(p => _satz.DbImportPfad = p)"
+                                   Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
+                                   NurLesen="false" />
+                        <Dateiwahl Bezeichnung="@LabelDbPfad" Pfad="@_satz.DbPfad"
+                                   PfadChanged="@(p => _satz.DbPfad = p)"
+                                   Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
+                                   NurLesen="false" />
+                        <Textfeld Bezeichnung="@LabelDbName" Wert="@_satz.DbName"
+                                  WertChanged="@(t => _satz.DbName = t)" />
+                        <Herleitungszeile Text="@NeustartText" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="WEB" Titel="@RubrikWebText">
+                    <KindInhalt>
+                        <Textfeld Bezeichnung="@LabelPvgis" Wert="@_satz.PvgisUrl"
+                                  WertChanged="@(t => _satz.PvgisUrl = t)" />
+                        <Textfeld Bezeichnung="@LabelWiki" Wert="@_satz.WikiUrl"
+                                  WertChanged="@(t => _satz.WikiUrl = t)" />
+                        <Textfeld Bezeichnung="@LabelGeokodierung" Wert="@_satz.GeokodierungUrl"
+                                  WertChanged="@(t => _satz.GeokodierungUrl = t)" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="ANWENDUNG" Titel="@RubrikAnwendungText">
+                    <KindInhalt>
+                        <Dateiwahl Bezeichnung="@LabelAllgemein" Pfad="@_satz.AllgemeinPfad"
+                                   PfadChanged="@(p => _satz.AllgemeinPfad = p)"
+                                   Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
+                                   NurLesen="false" />
+
+                        @* Die KI-Gruppe entstand im Vorlaeufer ZUR LAUFZEIT
+                           (chk_KiAus, lbl_KiAus) - die Feldkarte sah sie nicht
+                           (R-W14c-6). Hier steht sie im Markup. *@
+                        <Gruppenkopf Titel="@KiTitelText" />
+
+                        @if (MaschinenRiegel)
+                        {
+                            <Warnbanner Stufe="WarnStufe.Warnung" Text="@KiMaschineText" />
+                        }
+
+                        <Schalter Bezeichnung="@KiSchalterText" Wert="@_kiAus"
+                                  WertChanged="@(w => _kiAus = w)" Aktiv="@(!MaschinenRiegel)" />
+                        <Herleitungszeile Text="@KiHinweisText" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+            </KindInhalt>
+        </Reiter>
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiStandardwerte">@StandardwerteText</button>
+        <span class="epos-leiste-fueller"></span>
+    </div>
+
+    <SpeichernLeiste OkText="@SpeichernText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiLeiste" />
+
+    <Rueckfrage Offen="@_frageOffen" Frage="@FrageStandardwerteText"
+                TitelText="@TitelStandardwerteText" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="StandardwerteBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten und Werte — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Der gespeicherte Stand samt Vorgaben (<c>EinstellungenCtrl.Lesen</c>).</summary>
+    [Parameter] public Einstellungensatz Satz { get; set; } = new Einstellungensatz();
+
+    /// <summary>Ist der KI-Assistent abgeschaltet? (<c>KiEinwilligung.Abgeschaltet</c>)</summary>
+    [Parameter] public bool KiAbgeschaltet { get; set; }
+
+    /// <summary>
+    /// Ein maschinenweiter Riegel (HKLM) — dann bleibt der Schalter gesperrt: Er ist
+    /// die Sperre der Verwaltung und darf sich hier nicht lösen lassen.
+    /// </summary>
+    [Parameter] public bool MaschinenRiegel { get; set; }
+
+    /// <summary>
+    /// Konnte der KI-Schalter überhaupt gelesen werden? <c>false</c> meldet sich
+    /// (Befund W14c-B49) statt kommentarlos zu verschwinden.
+    /// </summary>
+    [Parameter] public bool KiLesbar { get; set; } = true;
+
+    /// <summary>
+    /// Der Ordnerwähler der Plattform (<c>Dienste.Datei.OrdnerWaehlen</c>). <b>Ohne
+    /// ihn bleiben die fünf „Durchsuchen…"-Knöpfe weg</b> — auf iOS liefert er immer
+    /// <c>""</c> (Entscheid E-5).
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? OrdnerWaehler { get; set; }
+
+    /// <summary>Schreibt die neun Werte und legt die fünf Ordner an.</summary>
+    [Parameter] public Func<Einstellungensatz, bool, Task<SpeicherBefund>>? Speichern { get; set; }
+
+    /// <summary>Die Werksstandards (<c>EinstellungenCtrl.Zuruecksetzen</c>).</summary>
+    [Parameter] public Func<Task<Einstellungensatz>>? Zuruecksetzen { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = gespeichert.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.ADM_SET_TITEL;
+    [Parameter] public string RubrikVdiText { get; set; } = Resource.ADM_SET_RUBRIK_VDI;
+    [Parameter] public string RubrikDatenbankText { get; set; } = Resource.ADM_SET_RUBRIK_DATENBANK;
+    [Parameter] public string RubrikWebText { get; set; } = Resource.ADM_SET_RUBRIK_WEB;
+    [Parameter] public string RubrikAnwendungText { get; set; } = Resource.ADM_SET_RUBRIK_ANWENDUNG;
+    [Parameter] public string LabelVdiPfad { get; set; } = Resource.ADM_SET_LBL_VDI_PFAD;
+    [Parameter] public string LabelDbExport { get; set; } = Resource.ADM_SET_LBL_DB_EXPORT;
+    [Parameter] public string LabelDbImport { get; set; } = Resource.ADM_SET_LBL_DB_IMPORT;
+    [Parameter] public string LabelDbPfad { get; set; } = Resource.ADM_SET_LBL_DB_PFAD;
+    [Parameter] public string LabelDbName { get; set; } = Resource.ADM_SET_LBL_DB_NAME;
+    [Parameter] public string LabelWiki { get; set; } = Resource.ADM_SET_LBL_WORDPRESS;
+    [Parameter] public string LabelPvgis { get; set; } = Resource.ADM_SET_LBL_PVGIS;
+    [Parameter] public string LabelGeokodierung { get; set; } = Resource.ADM_SET_LBL_GEOKODIERUNG;
+    [Parameter] public string LabelAllgemein { get; set; } = Resource.ADM_SET_LBL_ALLGEMEIN;
+    [Parameter] public string DurchsuchenText { get; set; } = Resource.ADM_SET_BTN_DURCHSUCHEN;
+    [Parameter] public string SpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string StandardwerteText { get; set; } = Resource.ADM_SET_BTN_STANDARDWERTE;
+    [Parameter] public string GespeichertText { get; set; } = Resource.ADM_SET_MSG_GESPEICHERT;
+    [Parameter] public string NeustartText { get; set; } = Resource.ADM_SET_MSG_NEUSTART;
+    [Parameter] public string StandardwerteGeladenText { get; set; } = Resource.ADM_SET_MSG_STANDARDWERTE;
+    [Parameter] public string FrageStandardwerteText { get; set; } = Resource.ADM_SET_FRAGE_STANDARDWERTE;
+    [Parameter] public string TitelStandardwerteText { get; set; }
+        = Resource.ADM_SET_FRAGE_STANDARDWERTE_TITEL;
+    [Parameter] public string KiTitelText { get; set; } = Resource.KI_ABSCHALTER_ADMIN;
+    [Parameter] public string KiSchalterText { get; set; } = Resource.KI_ABSCHALTER_ADMIN;
+    [Parameter] public string KiHinweisText { get; set; } = Resource.KI_ABSCHALTER_ADMIN_HINWEIS;
+    [Parameter] public string KiMaschineText { get; set; } = Resource.KI_ABSCHALTER_MASCHINE;
+    [Parameter] public string KiFehlerText { get; set; } = Resource.ADM_SET_MSG_KI_FEHLER;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_AdminSettings.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private Einstellungensatz _satz = new Einstellungensatz();
+    private bool _kiAus;
+    private string _reiter = "VDI";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _frageOffen;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der bearbeitete Wertesatz (Prüfhilfe für Tests).</summary>
+    public Einstellungensatz Werte => _satz;
+
+    /// <summary>Der Stand des KI-Schalters (Prüfhilfe für Tests).</summary>
+    public bool KiAus => _kiAus;
+
+    protected override void OnParametersSet()
+    {
+        if (!_ersterAufbau) return;
+        Uebernehmen(Satz);
+        _kiAus = KiAbgeschaltet;
+        if (!KiLesbar) Melden(KiFehlerText, WarnStufe.Warnung);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Übernimmt einen Wertesatz in die Felder. <b>Der DB-Name landet im Namensfeld</b>
+    /// (Befund W14c-B53, A-12).
+    /// </summary>
+    private void Uebernehmen(Einstellungensatz s)
+    {
+        _satz = new Einstellungensatz
+        {
+            VdiPfad = s?.VdiPfad ?? "",
+            DbExportPfad = s?.DbExportPfad ?? "",
+            DbImportPfad = s?.DbImportPfad ?? "",
+            DbPfad = s?.DbPfad ?? "",
+            DbName = s?.DbName ?? "",
+            WikiUrl = s?.WikiUrl ?? "",
+            PvgisUrl = s?.PvgisUrl ?? "",
+            GeokodierungUrl = s?.GeokodierungUrl ?? "",
+            AllgemeinPfad = s?.AllgemeinPfad ?? ""
+        };
+    }
+
+    // =====================================================================
+    // Standardwerte (btn_Standardwerte_Click)
+    // =====================================================================
+
+    private void BeiStandardwerte()
+    {
+        _meldung = "";
+        _frageOffen = true;
+    }
+
+    private async Task StandardwerteBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        if (antwort != true || Zuruecksetzen is null) return;
+
+        Uebernehmen(await Zuruecksetzen());
+
+        // Zuruecksetzen SPEICHERT NICHT - woertlich wie der Vorlaeufer.
+        Melden(StandardwerteGeladenText, WarnStufe.Hinweis);
+    }
+
+    // =====================================================================
+    // Speichern (Btn_Speichern_Click)
+    // =====================================================================
+
+    private async Task BeiLeiste(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(false); return; }
+        if (Speichern is null) { await Geschlossen.InvokeAsync(false); return; }
+
+        // Der KI-Abschalter liegt in der Registry, nicht in den Settings - er geht
+        // deshalb gesondert mit; bei maschinenweiter Sperre passiert nichts.
+        SpeicherBefund befund = await Speichern(_satz, MaschinenRiegel ? KiAbgeschaltet : _kiAus);
+
+        if (!befund.Ok) { Melden(befund.Meldung, WarnStufe.Fehler); return; }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _frageOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

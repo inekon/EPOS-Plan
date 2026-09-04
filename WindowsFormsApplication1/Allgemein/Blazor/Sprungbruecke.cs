@@ -94,16 +94,21 @@ namespace WindowsFormsApplication1
             {
                 switch (schluessel)
                 {
-                    case Sprungziel.GesetzesparameterCo2:
-                        using (Form_Gesetzesparameter f = new Form_Gesetzesparameter())
-                        {
-                            f.GewaehlteKlasse = DbWerte.GESETZ_KLASSE_CO2_PREIS;
-                            return MitOk(f, besitzer);
-                        }
-
-                    case Sprungziel.Gesetzesparameter:
-                        using (Form_Gesetzesparameter f = new Form_Gesetzesparameter())
-                            return MitOk(f, besitzer);
+                    // --- iU9-W14c.3: die ZWEI Gesetzeszweige sind WEG -----------------
+                    // Bis W14c standen hier Gesetzesparameter und
+                    // GesetzesparameterCo2 (letzterer mit der Vorwahl
+                    // DbWerte.GESETZ_KLASSE_CO2_PREIS). BEIDE Sprungquellen waren
+                    // schon vorher Razor (Befund W14c-B13): ErtragBonus als
+                    // Reiterblatt in KostenKomponenteDialog und
+                    // WirtschaftlichkeitParameterDialog. Der Sprung waere damit ein
+                    // Blazor-nach-Blazor-Weg gewesen, also zwei WebViews
+                    // uebereinander (Risiko R2) - stattdessen zeigt jeder Wirt den
+                    // Katalog als UEBERLAGERUNG und holt sich den Parametersatz ueber
+                    // GesetzeskatalogHuelle.Gaben(vorwahlKlasse).
+                    //
+                    // Nebenbei faellt damit auch der Befund W14c-B11 weg: MitOk lieferte
+                    // fuer beide Zweige IMMER false, weil btnSchliessen_Click kein
+                    // DialogResult setzte.
 
                     // --- iU9-W14a: die FUENF Katalogverwaltungen sind WEG --------------
                     // Bis W14a standen hier fuenf Zweige: HeizkesselAdmin,

@@ -1,0 +1,305 @@
+﻿@* Zeilendialog des Gesetzeskatalogs (iU9-W14c.1).
+
+   VORBILD: Views/Admin/Form_GesetzparameterZeile.cs (258 Z.) und
+   .Designer.cs (224 Z.) - 17 Steuerelemente, keine eigene .resx (Befund
+   W14c-B2), kein Hilfeknopf (Befund W14c-B3, woertlich uebernommen).
+
+   WOZU. Sieben Felder einer Zeile aus Tab_Gesetzesparameter: Schluessel,
+   Bereich (Klasse), Gueltig ab, Wert, Einheit, Status, Quelle.
+
+   ZWEI BETRIEBSARTEN. Neu und Aendern. BEIM AENDERN SIND SCHLUESSEL UND
+   KLASSE GESPERRT: Sie sind die Identitaet der Reihe und in der Datenbank
+   eingefroren - wer sie aendern will, legt eine neue Zeile an und loescht die
+   alte.
+
+   EIN LEERES WERTFELD IST KEIN NULLWERT. Es bedeutet "der Satz ist entfallen"
+   (Verdraengungsstrommix ab 2027, Leitentscheidung L12) und wird als NULL
+   gespeichert. Die graue Zeile unter dem Feld sagt das ausdruecklich - sie ist
+   die einzige ihrer Art im ganzen Bestand.
+
+   ER IST EINE UEBERLAGERUNG, KEIN FENSTER. Sein einziger Aufrufer ist der
+   Gesetzeskatalog, und der ist seit W14c.2 selbst Blazor: zwei WebViews
+   uebereinander sind Risiko R2 des Wellenplans.
+
+   DIE DREI MESSAGEBOX WERDEN EIN WARNBANNER. Der Vorlaeufer prueft am
+   OK-Knopf drei Dinge (Jahr, Wert, Schluessel) und meldet je mit einer
+   modalen MessageBox. Hier steht die Meldung im Banner, und der Dialog bleibt
+   offen - man sieht, was zu berichtigen ist, waehrend man es berichtigt.
+
+   BEFUND W14c-B5, BEHOBEN: Die acht Klassen standen als Quelltextliste in
+   dieser Maske - eine ZWEITE Quelle neben GesetzKatalog.Klassen() aus der
+   Datenbank. Seit W14c.0a fuehrt der Katalog beide Listen: KlassenVorrat()
+   (was man WAEHLEN kann) und Klassen() (was VORKOMMT).
+
+   BEFUND W14c-B7, BEHOBEN: Schluessel-leer und Jahr 1990...2100 wurden hier
+   UND in der Wirtsmaske geprueft. Geprueft wird jetzt EINMAL, ueber
+   GesetzKatalog.Pruefe - der Dialog reicht die Frage als Delegat hinaus.
+
+   BEFUND W14c-B8, WOERTLICH: Die Id wird nur durchgereicht; beim Anlegen ist
+   sie 0, und Anlegen ignoriert sie ohnehin.
+
+   TASTATUR: Esc bricht ab. Enter ist nicht belegt - der Dialog schreibt zwar
+   nicht selbst, aber sein OK loest im Wirt sofort einen Schreibvorgang aus. *@
+
+@namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-gesetz-zeile" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    @* Schluessel und Klasse: beim Aendern gesperrt, beim Anlegen frei. *@
+    <Textfeld Bezeichnung="@LabelSchluessel" Wert="@_schluessel" WertChanged="BeiSchluessel"
+              Hoechstlaenge="60" NurLesen="@(!IstNeu)" />
+
+    <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
+                 Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" Aktiv="@IstNeu" />
+
+    <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@_jahr" WertChanged="BeiJahr"
+                  Min="@GesetzKatalog.JAHR_MIN" Max="@GesetzKatalog.JAHR_MAX"
+                  Feldname="@LabelJahr" FehlerZustand="BeiFehler" />
+
+    <Zahlenfeld Bezeichnung="@LabelWert" Wert="@_wert" WertChanged="BeiWert"
+                Feldname="@LabelWert" FehlerZustand="BeiFehler" />
+
+    <Herleitungszeile Text="@HinweisWertLeer" />
+
+    <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@EinheitEintraege"
+                 Auswahl="@_einheitIndex" AuswahlChanged="BeiEinheit" />
+
+    <Auswahlfeld Bezeichnung="@LabelStatus" Eintraege="@StatusEintraege"
+                 Auswahl="@_statusIndex" AuswahlChanged="BeiStatus" />
+
+    <Textfeld Bezeichnung="@LabelQuelle" Wert="@_quelle" WertChanged="@(t => _quelle = t)"
+              Hoechstlaenge="120" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@(!_fehlerhaft)" Ergebnis="BeiLeiste" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die sieben Werte einer Zeile, wie der Dialog sie liefert.
+    ///
+    /// <para><b>Warum ein eigener Traeger und nicht <c>GesetzParameter</c>:</b> Eine
+    /// Komponente kennt die Fachklassen des Kerns nicht (EPOS.UI/CLAUDE.md). Der Wirt
+    /// bildet die sieben Werte auf <c>GesetzKatalog.Anlegen</c> bzw. <c>.Aendern</c>
+    /// ab — das ist seine Aufgabe, nicht die des Dialogs.</para>
+    /// </summary>
+    public sealed record Zeilenwerte(int Id, string Schluessel, string Klasse, int JahrVon,
+                                     double? Wert, string Einheit, string Status, string Quelle);
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    /// <summary>Betriebsart: <c>true</c> = Neu (Schlüssel und Klasse frei), sonst Ändern.</summary>
+    [Parameter] public bool IstNeu { get; set; }
+
+    /// <summary>Die Id der bearbeiteten Zeile; 0 beim Anlegen (Befund W14c-B8).</summary>
+    [Parameter] public int Id { get; set; }
+
+    /// <summary>Vorbelegung: der Schlüssel.</summary>
+    [Parameter] public string Schluessel { get; set; } = "";
+
+    /// <summary>Vorbelegung: die Klasse als DB-Wert.</summary>
+    [Parameter] public string Klasse { get; set; } = "";
+
+    /// <summary>Vorbelegung: das Gültig-ab-Jahr.</summary>
+    [Parameter] public int JahrVon { get; set; }
+
+    /// <summary>Vorbelegung: der Wert; <c>null</c> = der Satz ist entfallen.</summary>
+    [Parameter] public double? Wert { get; set; }
+
+    /// <summary>Vorbelegung: die Einheit als DB-Wert.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Vorbelegung: der Status als DB-Wert.</summary>
+    [Parameter] public string Status { get; set; } = "";
+
+    /// <summary>Vorbelegung: die Quelle.</summary>
+    [Parameter] public string Quelle { get; set; } = "";
+
+    /// <summary>
+    /// Die wählbaren Klassen als (DB-Wert, Anzeigename) — aus
+    /// <c>GesetzKatalog.KlassenVorrat()</c> und <c>KlasseAnzeige()</c>. <b>Kein
+    /// Anzeigetext ist je Steuerwert.</b>
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Wert, string Anzeige)> Klassen { get; set; }
+        = Array.Empty<(string, string)>();
+
+    /// <summary>Die fünfzehn Einheiten (DB-Werte, sie sind zugleich der Anzeigetext).</summary>
+    [Parameter] public IReadOnlyList<string> Einheiten { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die drei Statuswerte.</summary>
+    [Parameter] public IReadOnlyList<string> Statuswerte { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Die Prüfung vor dem Schließen (<c>GesetzKatalog.Pruefe</c>): leerer Text = in
+    /// Ordnung, sonst der Meldungstext. <b>Sie läuft genau einmal</b> — die Wirtsmaske
+    /// prüft nicht noch einmal (Befund W14c-B7).
+    /// </summary>
+    [Parameter] public Func<Zeilenwerte, Task<string>>? Pruefen { get; set; }
+
+    /// <summary>Das Ergebnis; <c>null</c> = abgebrochen.</summary>
+    [Parameter] public EventCallback<Zeilenwerte?> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelNeu { get; set; } = Resource.GESETZ_DLG_TITEL_NEU;
+    [Parameter] public string TitelAendern { get; set; } = Resource.GESETZ_DLG_TITEL_AENDERN;
+    [Parameter] public string LabelSchluessel { get; set; } = Resource.GESETZ_SP_SCHLUESSEL;
+    [Parameter] public string LabelKlasse { get; set; } = Resource.GESETZ_LBL_KLASSE;
+    [Parameter] public string LabelJahr { get; set; } = Resource.GESETZ_SP_JAHRVON;
+    [Parameter] public string LabelWert { get; set; } = Resource.GESETZ_SP_WERT;
+    [Parameter] public string HinweisWertLeer { get; set; } = Resource.GESETZ_LBL_WERT_LEER;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.GESETZ_SP_EINHEIT;
+    [Parameter] public string LabelStatus { get; set; } = Resource.GESETZ_SP_STATUS;
+    [Parameter] public string LabelQuelle { get; set; } = Resource.GESETZ_SP_QUELLE;
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.GESETZ_BTN_ABBRECHEN;
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private string _schluessel = "";
+    private string _quelle = "";
+    private int? _jahr;
+    private double? _wert;
+    private int? _klasseIndex;
+    private int? _einheitIndex;
+    private int? _statusIndex;
+
+    private string _meldung = "";
+    private readonly HashSet<string> _fehlerFelder = new();
+    private bool _fehlerhaft => _fehlerFelder.Count > 0;
+
+    /// <summary>Der Fenstertitel je Betriebsart.</summary>
+    private string Titel => IstNeu ? TitelNeu : TitelAendern;
+
+    /// <summary>Der Meldungstext des Banners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    private IReadOnlyList<(int Id, string Text)> KlassenEintraege =>
+        Klassen.Select((k, i) => (i, k.Anzeige)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> EinheitEintraege =>
+        Einheiten.Select((e, i) => (i, e)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> StatusEintraege =>
+        Statuswerte.Select((s, i) => (i, s)).ToList();
+
+    protected override void OnParametersSet()
+    {
+        if (!_ersterAufbau) return;
+
+        _schluessel = Schluessel ?? "";
+        _quelle = Quelle ?? "";
+        _jahr = JahrVon;
+        _wert = Wert;
+        _klasseIndex = Suchen(Klassen.Select(k => k.Wert).ToList(), Klasse);
+        _einheitIndex = Suchen(Einheiten, Einheit);
+        _statusIndex = Suchen(Statuswerte, Status);
+    }
+
+    /// <summary>
+    /// Der Index eines DB-Werts in seiner Liste; ohne Treffer der erste Eintrag —
+    /// dieselbe Rückfallregel wie <c>WaehleText</c> des Vorläufers.
+    /// </summary>
+    private static int? Suchen(IReadOnlyList<string> liste, string wert)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i], wert, StringComparison.Ordinal)) return i;
+        return liste.Count > 0 ? 0 : (int?)null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    private void BeiSchluessel(string text) { _schluessel = text ?? ""; _meldung = ""; }
+    private void BeiKlasse(int? index) { _klasseIndex = index; _meldung = ""; }
+    private void BeiJahr(int? jahr) { _jahr = jahr; _meldung = ""; }
+    private void BeiWert(double? wert) { _wert = wert; _meldung = ""; }
+    private void BeiEinheit(int? index) { _einheitIndex = index; }
+    private void BeiStatus(int? index) { _statusIndex = index; }
+
+    /// <summary>
+    /// Ein Zahlenfeld meldet seinen Fehlerzustand mit NAMEN (seit W6.1) — solange
+    /// eines fehlerhaft ist, bleibt „OK" gesperrt.
+    /// </summary>
+    private void BeiFehler((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlerFelder.Add(f.Feld); else _fehlerFelder.Remove(f.Feld);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private async Task BeiLeiste(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(null); return; }
+
+        Zeilenwerte werte = Sammeln();
+
+        if (Pruefen is not null)
+        {
+            string fehler = await Pruefen(werte);
+            if (!string.IsNullOrEmpty(fehler)) { _meldung = fehler; return; }
+        }
+
+        await Geschlossen.InvokeAsync(werte);
+    }
+
+    /// <summary>
+    /// Die sieben Werte samt der drei Rückfälle des Vorläufers: ohne Klassenwahl
+    /// <c>KWKG</c>, ohne Einheit <c>-</c>, ohne Status <c>GESICHERT</c>.
+    /// </summary>
+    private Zeilenwerte Sammeln()
+    {
+        string klasse = _klasseIndex is int ki && ki >= 0 && ki < Klassen.Count
+            ? Klassen[ki].Wert : DbWerte.GESETZ_KLASSE_KWKG;
+        string einheit = _einheitIndex is int ei && ei >= 0 && ei < Einheiten.Count
+            ? Einheiten[ei] : DbWerte.GESETZ_EINHEIT_OHNE;
+        string status = _statusIndex is int si && si >= 0 && si < Statuswerte.Count
+            ? Statuswerte[si] : DbWerte.GESETZ_STATUS_GESICHERT;
+
+        // Beim Aendern bleiben Schluessel und Klasse, was sie waren - die Felder sind
+        // gesperrt, aber der Traeger soll trotzdem den richtigen Wert fuehren.
+        return new Zeilenwerte(
+            Id,
+            IstNeu ? (_schluessel ?? "").Trim() : (Schluessel ?? "").Trim(),
+            IstNeu ? klasse : (Klasse ?? ""),
+            _jahr ?? 0,
+            _wert,
+            einheit,
+            status,
+            (_quelle ?? "").Trim());
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        return e.Key == "Escape" ? Geschlossen.InvokeAsync(null) : Task.CompletedTask;
+    }
+}

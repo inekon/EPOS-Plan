@@ -120,6 +120,21 @@
     /// </summary>
     [Parameter] public bool OkNurMitText { get; set; }
 
+    /// <summary>
+    /// Zusaetzliche Namenspruefung (iU9-W14c.5, Befund W14c-B46): Sie bekommt den
+    /// getrimmten Namen und liefert einen Fehlertext — oder <c>null</c>/leer, wenn der
+    /// Name in Ordnung ist. Bei einem Fehlertext bleibt der Dialog OFFEN und meldet
+    /// ihn ueber dem Feld.
+    ///
+    /// <para><b>Warum das hier steht.</b> Die Dublettenmaske hat diesen Dialog von
+    /// Hand nachgebaut — 71 Zeilen <c>new Form()</c> im Methodenrumpf —, weil sie eine
+    /// Pruefung brauchte, die der Baustein nicht kannte: „normalisiert schon vergeben,
+    /// ausser es ist der eigene Name". Die Alternative waere, die Pruefung beim Wirt zu
+    /// lassen und den Dialog nur melden zu lassen; das ist die schlechtere Fassung,
+    /// weil der Dialog dann offen bleiben muesste, ohne zu wissen warum.</para>
+    /// </summary>
+    [Parameter] public Func<string, string?>? Pruefung { get; set; }
+
     /// <summary>Der getrimmte Name bei OK, <c>null</c> bei Abbrechen.</summary>
     [Parameter] public EventCallback<string?> Geschlossen { get; set; }
 
@@ -189,6 +204,14 @@
         {
             _meldung = MeldungLeer;
             return;
+        }
+
+        // Die zusaetzliche Pruefung des Wirts (iU9-W14c.5) - sie haelt den Dialog
+        // offen und sagt, warum.
+        if (Pruefung is not null)
+        {
+            string? fehler = Pruefung(_name.Trim());
+            if (!string.IsNullOrEmpty(fehler)) { _meldung = fehler!; return; }
         }
 
         // Erst das zweite Feld melden, dann schliessen: Geschlossen nimmt der

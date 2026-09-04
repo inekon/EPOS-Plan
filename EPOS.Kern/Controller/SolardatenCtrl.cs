@@ -95,8 +95,10 @@ namespace WindowsFormsApplication1
         // und fuellt die Hilfslisten – fuer die Admin-Anzeige (Form_Klimadaten).
         public void ReadAllStamm(int stammRegionId)
         {
-            string sql = "SELECT * FROM Tab_Solar_STAMM WHERE ID_Klimaregion = " + stammRegionId + " ORDER BY ID";
-            DataTable dt = DataRepository.GetDataTable(sql, null);
+            // iU9-W14c.0d (Befund W14c-B18b): parametriert statt verkettet.
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM Tab_Solar_STAMM WHERE ID_Klimaregion = ? ORDER BY ID",
+                new DbParam("@id", stammRegionId));
 
             _internalList.Clear();
             list_Temperatur.Clear();

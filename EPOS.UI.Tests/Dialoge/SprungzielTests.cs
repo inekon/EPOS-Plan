@@ -58,8 +58,11 @@ public sealed class SprungzielTests
     {
         // Sie stehen als Zeichenkette auch in der Windows-Bruecke; wer hier
         // umbenennt, muss dort nachziehen. Der Test macht das Paar sichtbar.
-        Assert.Equal("GESETZESPARAMETER", Sprungziel.Gesetzesparameter);
-        Assert.Equal("GESETZESPARAMETER_CO2", Sprungziel.GesetzesparameterCo2);
+        //
+        // iU9-W14c.3: Die ZWEI Gesetzesziele sind weg - GESETZESPARAMETER und
+        // GESETZESPARAMETER_CO2, die letzten zwei abloesbaren ueberhaupt. Beide
+        // Sprungquellen waren schon vorher Razor (Befund W14c-B13); aus jedem
+        // Sprung ist eine Ueberlagerung im selben Fenster geworden.
 
         // iU9-W6.0d fuehrte die vier Katalogverwaltungen der Erzeugerdialoge ein,
         // iU9-W7.0f SOLARGANGLINIE_ADMIN. Mit iU9-W14a und W14b sind alle fuenf
@@ -74,7 +77,7 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_drei_Ziele_sind_da()
+    public void Das_letzte_Ziel_ist_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
@@ -90,9 +93,13 @@ public sealed class SprungzielTests
         // und PufferSpAdminNurLesen ebenso - die vier Katalogbrowser sind EINE
         // Razor-Komponente, die beiden Modulkataloge eine zweite.
         //
-        // Nach BEIDEN Wellen bleiben DREI: die zwei Gesetzesparameter-Ziele und
-        // die Auslegungsoptimierung des Stromspeichers, die einzige Maske, die
-        // nach iF22 bewusst WinForms bleibt.
-        Assert.Equal(3, Schluessel().Length);
+        // iU9-W14c.3: die zwei Gesetzesziele ebenso.
+        //
+        // Es bleibt EINES: die Auslegungsoptimierung des Stromspeichers - die
+        // einzige Maske, die nach iF22 bewusst WinForms bleibt (der einzige Ort
+        // des Programms, an dem ScottPlot laeuft). DAS IST EIN ENTSCHEID, KEIN
+        // REST (R-W14c-11): Sprungziel und Sprungbruecke bleiben bis Welle 16
+        // stehen; wer sie jetzt "aufraeumt", bricht Form_SpeicherOptimierung.
+        Assert.Single(Schluessel());
     }
 }

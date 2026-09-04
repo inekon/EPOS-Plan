@@ -122,11 +122,20 @@ public sealed class AbschnittTests
     }
 
     // ---- Form_Klimadaten: Panel ueber TabControl ueber TabPage ------------
+    //
+    // iU9-W14c.9: Die Maske ist mit Welle 14c gefallen; ihre drei Dateien liegen
+    // seither als PRUEFMUSTER unter Pruefmuster/Klimadaten/ (Muster W2/W4/W7/W13).
+    // Sie ist die EINZIGE Maske des Bestands gewesen, deren btn_Help im DESIGNER
+    // stand statt ueber InfoKnopf.Anbringen - und genau das pruefen die zwei Faelle
+    // hier und der Skelettfall in RazorSchreiberTests. Ein Umhaengen auf eine andere
+    // Maske haette den Fall inhaltlich veraendert.
 
     [Fact]
     public void Klimadaten_GehtDreiStufenTief()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Klimadaten/Form_Klimadaten.Designer.cs"));
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Klimadaten/Form_Klimadaten.Designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
         var abschnitte = Kartenbau.Abschnitte(maske);
 
         // Panel -> TabControl -> TabPage: die Kette steht in Elter, die Tiefe
@@ -141,7 +150,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Klimadaten_HilfeknopfWirdInfoKnopf()
     {
-        var zeile = Abschnitte("Klimadaten/Form_Klimadaten.Designer.cs")
+        var zeile = Musterabschnitte("Klimadaten/Form_Klimadaten.Designer.cs")
             .SelectMany(a => a.Zeilen)
             .Single(z => z.Element.Name == "btn_Help");
 

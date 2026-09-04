@@ -21,10 +21,12 @@
    und der geladene Satz traegt die Werte unveraendert weiter. Uebrig bleibt der
    Verweis mit dem Sprungknopf.
 
-   ZWEI SPRUENGE, ZWEI WEGE. Der Gesetzeskatalog ist eine WinForms-Maske und
-   erscheint ueber die Sprungbruecke (iU9-W2.2) MODAL ueber diesem Dialog. Der
-   Dialog "BHKW-Wirtschaftlichkeit" ist selbst eine Blazor-Huelle; er bleibt
-   NACHGELAGERT (Risiko R2) - die Komponente meldet den Wunsch im Ergebnis.
+   ZWEI WEGE, KEINER MEHR UEBER DIE BRUECKE (iU9-W14c.3). Der Gesetzeskatalog
+   ist seit W14c.2 selbst eine Razor-Komponente und erscheint als UEBERLAGERUNG
+   in diesem Dialog - mit der Vorwahl der Klasse CO2_PREIS, die bis dahin
+   Sprungziel.GesetzesparameterCo2 setzte. Der Dialog "BHKW-Wirtschaftlichkeit"
+   ist ebenfalls eine Blazor-Huelle; er bleibt NACHGELAGERT (Risiko R2) - die
+   Komponente meldet den Wunsch im Ergebnis.
 
    ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Parametersatz, Erzeugerflags,
    Kraftwerksparkliste, die Referenzkesselzeile und das Prognosejahr des
@@ -108,7 +110,7 @@
                             Min="0" Max="500" Nachkommastellen="0" Einheit="€/t" />
                 <Herleitungszeile Text="@Co2Zeile" />
 
-                @if (Sprung is not null)
+                @if (GesetzeGaben is not null)
                 {
                     <button type="button" class="epos-knopf epos-sprung"
                             @onclick="KatalogKlick">@_t.Co2Katalog</button>
@@ -149,6 +151,21 @@
 
     <SpeichernLeiste OkText="@_t.BtnSpeichern" AbbrechenText="@_t.BtnAbbrechen"
                      Ergebnis="BeiErgebnis" />
+
+    @* Der Gesetzeskatalog als UEBERLAGERUNG (iU9-W14c.3). Bis W14c fuehrte hier
+       Sprungziel.GesetzesparameterCo2 ueber die Sprungbruecke zu einem
+       WinForms-Fenster; das Ziel ist jetzt selbst Razor. Die Vorwahl der Klasse
+       CO2_PREIS steckt im Parametersatz der Huelle. *@
+    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
+                   Titel="@_t.Co2Katalog" Geschlossen="() => KatalogFertigMachen(false)">
+        <KindInhalt>
+            @if (_katalogGaben is not null)
+            {
+                <GesetzeskatalogDialog @attributes="_katalogGaben"
+                                       Geschlossen="KatalogFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -187,12 +204,11 @@
     [Parameter] public int Co2PrognoseAb { get; set; } = 2028;
 
     /// <summary>
-    /// Die Sprungbrücke (iU9-W2.2): Schlüssel → Fenster, Antwort = mit OK
-    /// geschlossen. <c>null</c> = diese Umgebung kennt das Ziel nicht; dann
-    /// fehlt der Katalogknopf. Ein Knopf, der nichts tut, wäre eine Behauptung,
-    /// die nicht stimmt.
+    /// Der Parametersatz des Gesetzeskatalogs (<c>GesetzeskatalogHuelle.Gaben</c>,
+    /// mit der Vorwahl CO₂-Preis). Ohne ihn bleibt der Knopf weg — bis W14c stand
+    /// hier <c>Sprung(Sprungziel.GesetzesparameterCo2)</c>.
     /// </summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? GesetzeGaben { get; set; }
 
     /// <summary>Schreibt den Parametersatz fort. <c>true</c> = gespeichert.</summary>
     [Parameter] public Func<bool>? Speichern { get; set; }
@@ -216,6 +232,13 @@
     private IReadOnlyList<Steuerwahl> _biomasse = Array.Empty<Steuerwahl>();
 
     private string _fehler = "";
+
+    /// <summary>Steht der Gesetzeskatalog als Überlagerung? (Prüfhilfe für Tests)</summary>
+    private bool _katalogOffen;
+    private IReadOnlyDictionary<string, object>? _katalogGaben;
+
+    /// <summary>Steht die Katalog-Überlagerung? (Prüfhilfe für Tests)</summary>
+    public bool KatalogOffen => _katalogOffen;
     private bool _gespeichert;
 
     protected override void OnInitialized()
@@ -263,15 +286,22 @@
     // =====================================================================
 
     /// <summary>
-    /// Der Gesetzeskatalog — MODAL über diesem Dialog, über die Sprungbrücke.
+    /// Der Gesetzeskatalog — eine ÜBERLAGERUNG in diesem Dialog (iU9-W14c.3).
     /// Die Werte dieses Dialogs bleiben unberührt: Der Katalog ist eine eigene
     /// Tabelle ohne Projektbezug.
     /// </summary>
-    private async Task KatalogKlick()
+    private void KatalogKlick()
     {
-        if (Sprung is null) return;
+        if (GesetzeGaben is null) return;
         _fehler = "";
-        await Sprung(Sprungziel.GesetzesparameterCo2);
+        _katalogGaben = GesetzeGaben();
+        _katalogOffen = true;
+    }
+
+    private void KatalogFertigMachen(bool ok)
+    {
+        _katalogOffen = false;
+        _katalogGaben = null;
         StateHasChanged();
     }
 
@@ -300,6 +330,10 @@
     private Task Schliessen(WirtParameterSprung sprung) =>
         Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert, sprung));
 
-    private Task BeiTaste(KeyboardEventArgs e) =>
-        e.Key == "Escape" ? Schliessen(WirtParameterSprung.Keiner) : Task.CompletedTask;
+    /// <summary>Esc schließt die OBERSTE Ebene — erst den Katalog, dann den Dialog.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _katalogOffen) return Task.CompletedTask;
+        return Schliessen(WirtParameterSprung.Keiner);
+    }
 }
