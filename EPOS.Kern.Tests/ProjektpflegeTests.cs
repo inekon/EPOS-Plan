@@ -183,6 +183,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(MIT_ANHANG, befund.Projektname);
             Assert.Equal("", befund.Fehlertext);
 
+            // Entscheid O-3: Der Name ist eindeutig - eine Zeile, keine Rueckfrage.
+            Assert.Equal(1, befund.Anzahl);
+
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + id));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Berichtskonfiguration WHERE ProjektID = " + id));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + id +
@@ -207,6 +210,125 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(LoeschStand.NameLeer, befund.Stand);
             Assert.Equal(vorher, Zahl("SELECT COUNT(*) FROM Tab_Projekt"));
+        }
+
+        // =============================================================================
+        //  P9c/P9d — ein Name, der MEHRERE Projekte trifft (Entscheid W15a-O-3)
+        // =============================================================================
+
+        /// <summary>
+        /// Der Loeschweg laeuft ueber den NAMEN. Regulaer trifft der genau ein Projekt:
+        /// <c>Tab_Projekt</c> traegt den eindeutigen Index <c>Projektname</c>. Ein
+        /// ALTBESTAND ohne diesen Index kann zwei gleichnamige Projekte fuehren — dann
+        /// darf der Weg nicht still beide mitnehmen (Anwenderentscheid vom 04.09.2026:
+        /// „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem
+        /// Fall.").
+        ///
+        /// <para>Die Probe stellt genau diesen Altbestand auf der ARBEITSKOPIE her: Index
+        /// weg, eine zweite Zeile desselben Namens dazu.</para>
+        /// </summary>
+        [Fact]
+        public void P9c_Ein_mehrdeutiger_Name_meldet_die_Anzahl_und_loescht_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int id = ProjektCtrl.IdVonName(MIT_ANHANG);
+            Assert.True(id > 0);
+
+            int zwilling = ZwillingAnlegen(id);
+            Assert.True(zwilling > 0);
+            Assert.Equal(2, ProjektCtrl.AnzahlGleicherNamen(MIT_ANHANG));
+
+            // Vorbedingung: die Vorarbeiten haetten etwas zu tun.
+            int berichte = Zahl("SELECT COUNT(*) FROM Berichtskonfiguration WHERE ProjektID = " + id);
+            int varianten = Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + id +
+                                 " OR ID_ProjektRef = " + id);
+            Assert.True(berichte > 0);
+            Assert.True(varianten > 0);
+
+            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(id, MIT_ANHANG);
+
+            Assert.Equal(LoeschStand.Mehrdeutig, befund.Stand);
+            Assert.Equal(MIT_ANHANG, befund.Projektname);
+            Assert.Equal(2, befund.Anzahl);
+
+            // NICHTS ist angefasst - beide Zeilen stehen, die Vorarbeiten sind nicht gelaufen.
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + id));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(berichte, Zahl("SELECT COUNT(*) FROM Berichtskonfiguration WHERE ProjektID = " + id));
+            Assert.Equal(varianten, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + id +
+                                         " OR ID_ProjektRef = " + id));
+        }
+
+        /// <summary>
+        /// Mit der ausdruecklichen Freigabe laeuft derselbe Weg wie eh und je — ueber den
+        /// NAMEN, also fuer ALLE Projekte dieses Namens, mit allen Vorarbeiten.
+        /// </summary>
+        [Fact]
+        public void P9d_Mit_ausdruecklicher_Freigabe_fallen_alle_Projekte_des_Namens()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int id = ProjektCtrl.IdVonName(MIT_ANHANG);
+            Assert.True(id > 0);
+
+            int zwilling = ZwillingAnlegen(id);
+            Assert.True(zwilling > 0);
+
+            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(
+                id, MIT_ANHANG, mehrdeutigZugelassen: true);
+
+            Assert.Equal(LoeschStand.Geloescht, befund.Stand);
+            Assert.Equal(2, befund.Anzahl);
+
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(MIT_ANHANG));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + id));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+
+            // Die drei Vorarbeiten sind gelaufen.
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Berichtskonfiguration WHERE ProjektID = " + id));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + id +
+                                 " OR ID_ProjektRef = " + id));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + id));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = " + id));
+        }
+
+        [Fact]
+        public void AnzahlGleicherNamen_zaehlt_und_bleibt_bei_Unfug_still()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.Equal(1, ProjektCtrl.AnzahlGleicherNamen(PROJEKT));
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen("So heisst keines"));
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(""));
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(null));
+
+            // Wie IdVonName: der Name ist ein PARAMETER, kein verketteter Text.
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen("O'Brien GmbH"));
+        }
+
+        /// <summary>
+        /// Legt auf der ARBEITSKOPIE ein zweites Projekt mit dem Namen von
+        /// <paramref name="quelle"/> an — den Altbestand ohne den eindeutigen Index.
+        /// Gibt dessen Id zurueck.
+        /// </summary>
+        private static int ZwillingAnlegen(int quelle)
+        {
+            // Der eindeutige Index stammt aus der SQLite-Migration; ohne ihn waere die
+            // zweite Zeile gar nicht anzulegen.
+            DataRepository.ExecuteNonQuery("DROP INDEX IF EXISTS Projektname");
+
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_Projekt (Projektname, Bearbeiter, Beschreibung, Kunde, " +
+                "Aenderungsdatum, ID_Klimaregion, Erstelldatum) " +
+                "SELECT Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, " +
+                "ID_Klimaregion, Erstelldatum FROM Tab_Projekt WHERE ID = ?",
+                new DbParam("@id", quelle));
+
+            return Zahl("SELECT MAX(ID) FROM Tab_Projekt");
         }
 
         // =============================================================================

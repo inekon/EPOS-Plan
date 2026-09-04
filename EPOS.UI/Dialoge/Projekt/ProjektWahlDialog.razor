@@ -63,6 +63,12 @@
     <Rueckfrage Offen="@_frageOffen" TitelText="@FrageTitel" Frage="@Frage"
                 VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
                 Beantwortet="BeiFrage" />
+
+    @* Entscheid O-3: erst NACH der Sicherheitsabfrage und nur, wenn der Name
+       mehrere Projekte trifft. Ebenfalls Vorgabe "Nein". *@
+    <Rueckfrage Offen="@_mehrdeutigOffen" TitelText="@MehrdeutigTitel" Frage="@MehrdeutigFrage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiMehrdeutig" />
 </div>
 
 @code {
@@ -119,6 +125,35 @@
     /// </summary>
     [Parameter] public string FrageFormat { get; set; } = "";
 
+    /// <summary>
+    /// Wie viele Projekte tragen diesen Namen? Der Löschweg fragt damit nach, bevor er
+    /// einen mehrdeutigen Namen löscht (iU9-W15a, Entscheid O-3 vom 04.09.2026).
+    ///
+    /// <para><b>Warum ein Rückruf und keine Abfrage.</b> EPOS.UI rührt keine Datenbank an
+    /// (Hausregel). Die Hülle reicht <c>ProjektCtrl.AnzahlGleicherNamen</c> herein —
+    /// DIESELBE Zählung, mit der <c>ProjektCtrl.LoeschenMitVorarbeiten</c> im Kern
+    /// abbricht. So können die beiden nicht auseinanderlaufen. <c>null</c> = nicht
+    /// gesetzt, dann wird nicht gefragt (der Kern hält die Sperre trotzdem).</para>
+    /// </summary>
+    [Parameter] public Func<string, int>? NamensAnzahl { get; set; }
+
+    /// <summary>Der Titel der Mehrdeutigkeits-Rückfrage.</summary>
+    [Parameter] public string MehrdeutigTitel { get; set; } = "";
+
+    /// <summary>
+    /// Die Mehrdeutigkeits-Rückfrage; <c>{0}</c> = Projektname, <c>{1}</c> = Anzahl.
+    /// Leer = die Rückfrage unterbleibt.
+    /// </summary>
+    [Parameter] public string MehrdeutigFormat { get; set; } = "";
+
+    /// <summary>
+    /// Meldet dem Aufrufer, dass der Anwender dem Löschen ALLER Projekte dieses Namens
+    /// ausdrücklich zugestimmt hat — er reicht das als <c>mehrdeutigZugelassen</c> an
+    /// den Kern weiter. Wird nur bei „Ja" gerufen, unmittelbar vor
+    /// <see cref="Geschlossen"/>.
+    /// </summary>
+    [Parameter] public EventCallback<bool> MehrdeutigZugelassen { get; set; }
+
     /// <summary>Meldung, wenn OK ohne Auswahl gedrückt wird (Schlüssel <c>Text_Select</c>).</summary>
     [Parameter] public string MeldungKeineWahl { get; set; } = "Bitte auswählen!";
 
@@ -138,6 +173,8 @@
     private ProjektKopfZeile? _gewaehlt;
     private string _meldung = "";
     private bool _frageOffen;
+    private bool _mehrdeutigOffen;
+    private int _anzahlGleicher;
 
     /// <summary>Die gerade markierte Zeile (Prüfhilfe für Tests).</summary>
     public ProjektKopfZeile? Markiert => _gewaehlt;
@@ -145,7 +182,13 @@
     /// <summary>Steht die Sicherheitsabfrage? (Prüfhilfe für Tests.)</summary>
     public bool FrageOffen => _frageOffen;
 
+    /// <summary>Steht die Mehrdeutigkeits-Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool MehrdeutigOffen => _mehrdeutigOffen;
+
     private string Frage => string.Format(FrageFormat ?? "", _gewaehlt?.Name ?? "");
+
+    private string MehrdeutigFrage
+        => string.Format(MehrdeutigFormat ?? "", _gewaehlt?.Name ?? "", _anzahlGleicher);
 
     protected override void OnParametersSet()
     {
@@ -199,19 +242,54 @@
             return;
         }
 
-        await Geschlossen.InvokeAsync(_gewaehlt);
+        await Uebernehmen();
     }
 
     private async Task BeiFrage(bool? antwort)
     {
         _frageOffen = false;
         if (antwort != true) return;          // "Nein" laesst den Dialog stehen
+        await Uebernehmen();
+    }
+
+    /// <summary>
+    /// Der letzte Schritt vor dem Schliessen — und die Stelle, an der der Loeschweg
+    /// nach einem MEHRDEUTIGEN Namen fragt (Entscheid O-3 vom 04.09.2026).
+    ///
+    /// <para>Regulaer trifft ein Name genau ein Projekt: <c>Tab_Projekt</c> traegt den
+    /// eindeutigen Index <c>Projektname</c>. Ein Altbestand ohne ihn kann den Fall
+    /// fuehren, und weil der Loeschweg ueber den NAMEN laeuft, traefe er dann beide
+    /// Projekte. Deshalb: nachfragen. „Nein" laesst den Dialog stehen, wie bei der
+    /// Sicherheitsabfrage.</para>
+    /// </summary>
+    private async Task Uebernehmen()
+    {
+        if (Zweck == ProjektZweck.Loeschen && NamensAnzahl is not null
+            && !string.IsNullOrEmpty(MehrdeutigFormat))
+        {
+            _anzahlGleicher = NamensAnzahl(_gewaehlt?.Name ?? "");
+            if (_anzahlGleicher > 1)
+            {
+                _mehrdeutigOffen = true;
+                return;
+            }
+        }
+
+        await Geschlossen.InvokeAsync(_gewaehlt);
+    }
+
+    private async Task BeiMehrdeutig(bool? antwort)
+    {
+        _mehrdeutigOffen = false;
+        if (antwort != true) return;          // "Nein" laesst den Dialog stehen
+        await MehrdeutigZugelassen.InvokeAsync(true);
         await Geschlossen.InvokeAsync(_gewaehlt);
     }
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (_frageOffen) return Task.CompletedTask;   // die Rueckfrage beantwortet Esc selbst
+        // Steht eine Rueckfrage, beantwortet sie Esc selbst.
+        if (_frageOffen || _mehrdeutigOffen) return Task.CompletedTask;
         return e.Key switch
         {
             "Enter" => BeiErgebnis(true),

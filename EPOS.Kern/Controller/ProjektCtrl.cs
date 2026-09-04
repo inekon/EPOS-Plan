@@ -67,6 +67,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Wie viele Projekte tragen diesen Namen? (iU9-W15a, Entscheid O-3 vom
+        /// 04.09.2026.)
+        ///
+        /// <para><b>Wozu.</b> Der ganze Loeschweg laeuft ueber den NAMEN — <see cref="Delete"/>
+        /// und seine drei Vorarbeiten setzen alle bei <c>WHERE Projektname=?</c> an
+        /// (Befund W15a-B49). Das ist richtig, solange der Name eindeutig ist, und das
+        /// ist er: <c>Tab_Projekt</c> traegt seit der SQLite-Migration den eindeutigen
+        /// Index <c>Projektname</c>, und „Speichern unter" prueft zusaetzlich ueber
+        /// <c>ProjektDuplizierenCtrl.PruefeNamen</c>. Ein ALTBESTAND ohne diesen Index
+        /// kann den Fall trotzdem fuehren — dann wird gefragt, statt still beide zu
+        /// loeschen.</para>
+        /// </summary>
+        /// <returns>Die Zahl der Projekte dieses Namens; 0 bei leerem Namen.</returns>
+        public static int AnzahlGleicherNamen(string projektname)
+        {
+            if (string.IsNullOrEmpty(projektname)) return 0;
+
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ?",
+                new DbParam("@pname", projektname));
+
+            return anzahl != null && anzahl != DBNull.Value ? Convert.ToInt32(anzahl) : 0;
+        }
+
+        /// <summary>
         /// Alle Projekte als Anzeigezeilen, nach Namen sortiert (iU9-W15a.0a).
         ///
         /// <para><b>Die EINE Projektliste.</b> Bis iU9-W15a las jede der vier Masken
@@ -229,13 +254,35 @@ namespace WindowsFormsApplication1
         /// vorher <c>SELECT *</c> fuer eine einzige Spalte (Befund W15a-B48). Hier steht
         /// die eine Spalte im SELECT; die Zuweisung <c>ID_Projekt = 0</c> ist wie zuvor
         /// eine Konstante.</para>
+        ///
+        /// <para><b>Ein Name, der MEHRERE Projekte trifft, wird nicht still mitgeloescht</b>
+        /// (Befund W15a-B49, Entscheid O-3 vom 04.09.2026 — woertlich: „Projektname darf
+        /// nicht gleich sein, daher löschen. Rückfragen in diesem Fall."). Alle sechs
+        /// Schritte laufen ueber den NAMEN; das bleibt bitgleich, denn der Name IST
+        /// eindeutig (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c> seit der
+        /// SQLite-Migration, dazu <c>PruefeNamen</c> in „Speichern unter"). Fuehrt ein
+        /// Altbestand OHNE diesen Index den Fall dennoch, meldet der Weg
+        /// <see cref="LoeschStand.Mehrdeutig"/> mit der Anzahl und fasst NICHTS an. Erst
+        /// wenn der Aufrufer nachgefragt hat und mit <paramref name="mehrdeutigZugelassen"/>
+        /// ausdruecklich „alle loeschen" verlangt, laeuft er wie zuvor.</para>
         /// </summary>
         /// <param name="idProjekt">Id des zu loeschenden Projekts (fuer den Vergleich mit <c>Tab_Applikation</c>).</param>
         /// <param name="projektname">Name des zu loeschenden Projekts — der fuehrende Schluessel.</param>
-        public static LoeschBefund LoeschenMitVorarbeiten(int idProjekt, string projektname)
+        /// <param name="mehrdeutigZugelassen">
+        /// <c>true</c> = der Anwender hat der Loeschung ALLER Projekte dieses Namens
+        /// ausdruecklich zugestimmt. Vorgabe <c>false</c>: mehrdeutig heisst abbrechen.
+        /// </param>
+        public static LoeschBefund LoeschenMitVorarbeiten(int idProjekt, string projektname,
+                                                          bool mehrdeutigZugelassen = false)
         {
             if (string.IsNullOrEmpty(projektname))
-                return new LoeschBefund(LoeschStand.NameLeer, "");
+                return new LoeschBefund(LoeschStand.NameLeer, "", "", 0);
+
+            // Entscheid O-3: VOR dem ersten Schritt zaehlen. Nichts ist bis hierher
+            // angefasst - der Abbruch laesst die Datenbank unberuehrt.
+            int gleichnamige = AnzahlGleicherNamen(projektname);
+            if (gleichnamige > 1 && !mehrdeutigZugelassen)
+                return new LoeschBefund(LoeschStand.Mehrdeutig, projektname, "", gleichnamige);
 
             try
             {
@@ -253,7 +300,8 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
-                return new LoeschBefund(LoeschStand.ApplikationsdatenFehler, projektname, ex.Message);
+                return new LoeschBefund(LoeschStand.ApplikationsdatenFehler, projektname,
+                                        ex.Message, gleichnamige);
             }
 
             var anlagen = new WErzeugerCtrl { ID_Projekt = idProjekt };
@@ -262,7 +310,7 @@ namespace WindowsFormsApplication1
             var projekt = new ProjektCtrl { m_szProjektname = projektname };
             projekt.Delete(projektname);
 
-            return new LoeschBefund(LoeschStand.Geloescht, projektname);
+            return new LoeschBefund(LoeschStand.Geloescht, projektname, "", gleichnamige);
         }
 
         /// <summary>
