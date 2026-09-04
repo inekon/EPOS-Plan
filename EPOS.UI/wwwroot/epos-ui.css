@@ -1859,3 +1859,195 @@ body {
 
     .epos-schema-halo { stroke: Highlight; }
 }
+
+/* =====================================================================
+   Die beiden Kacheln der Simulationskonfiguration (iU9-W10b.0d)
+
+   Herkunft: Views/Simulation/ErzeugerKarte.cs und SpeicherKarte.cs. Die
+   gesamte Pixelarithmetik der Vorlaeufer (Neuordnen, Innenbreite,
+   HoeheNachfuehren) ersetzt hier Flexbox mit Umbruch.
+   ===================================================================== */
+
+/* ---- Chips (KartenChip:25-72) --------------------------------------- */
+
+.epos-chip {
+    display: inline-block;
+    padding: 3px 8px;
+    margin: 0 6px 4px 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: transparent;
+    color: var(--epos-text);
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1.3;
+}
+
+.epos-chip--quelle { border-color: var(--epos-quelle-rahmen); color: var(--epos-quelle-text); }
+.epos-chip--gestrichelt { border-style: dashed; }
+.epos-chip--senke { border-color: var(--epos-senke-rahmen); color: var(--epos-senke-text); }
+
+/* „Flaeche": nur Fuellung, kein Rahmen (Temperaturpaar, Modulausweis). */
+.epos-chip--flaeche { border-color: transparent; background: var(--epos-flaeche); }
+
+.epos-chip--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+/* Das Badge der Speicherkachel - Fuellung ohne Rahmen, eigene Textfarbe. */
+.epos-chip--badge {
+    border-color: transparent;
+    background: var(--epos-badge-flaeche);
+    color: var(--epos-badge-text);
+}
+
+/* Ein Chip MIT Editorziel ist ein Knopf: Handzeiger, Tastatur, Sprachausgabe. */
+.epos-chip--ziel { cursor: pointer; }
+.epos-chip--ziel:focus-visible { outline: 2px solid var(--epos-quelle-rahmen); outline-offset: 1px; }
+
+/* ---- Erzeugerkachel -------------------------------------------------- */
+
+.epos-erzeugerkachel {
+    padding: var(--epos-rand);
+    margin-bottom: 8px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #ffffff;
+    cursor: default;
+}
+
+/* Nicht aufgenommene Komponenten stehen gestrichelt und in der Flaechenfarbe
+   da - dieselbe Sprache wie beim Kaskaden-Quellchip. */
+.epos-erzeugerkachel--verfuegbar {
+    border-style: dashed;
+    border-color: var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+}
+
+.epos-erzeugerkachel--verfuegbar .epos-erzeugerkachel-titel { color: var(--epos-text-leise); }
+
+/* Hervorhebung = das im Schema markierte Element (Auswahl-Synchronisation). */
+.epos-erzeugerkachel--hervor { border-color: var(--epos-quelle-rahmen); border-width: 2px; padding: 9px; }
+
+.epos-erzeugerkachel-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-erzeugerkachel-rang { font-weight: 600; color: var(--epos-text-leise); }
+
+.epos-erzeugerkachel-titel {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--epos-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epos-erzeugerkachel-schalter { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+
+.epos-erzeugerkachel-glyphe,
+.epos-erzeugerkachel-pfeil,
+.epos-speicherkachel-glyphe,
+.epos-speicherkachel-pfeil {
+    border: 0;
+    background: transparent;
+    color: var(--epos-text-sehr-leise);
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1;
+    padding: 4px 6px;
+    min-width: 24px;
+}
+
+.epos-erzeugerkachel-glyphe:hover,
+.epos-erzeugerkachel-pfeil:hover,
+.epos-speicherkachel-glyphe:hover,
+.epos-speicherkachel-pfeil:hover { color: var(--epos-quelle-text); }
+
+/* ▲▼ bleiben SICHTBAR, wenn sie nicht moeglich sind - nur ausgegraut. Sonst
+   rutschte die Kopfzeile bei jedem Verschieben um eine Schalterbreite. */
+.epos-erzeugerkachel-glyphe:disabled { color: var(--epos-rahmen-leise); cursor: default; }
+
+.epos-erzeugerkachel-aufnehmen {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+    padding: 4px 6px;
+}
+
+.epos-erzeugerkachel-chips,
+.epos-erzeugerkachel-detail {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+/* ---- Speicherkachel -------------------------------------------------- */
+
+.epos-speicherkachel {
+    padding: 8px var(--epos-rand);
+    margin-bottom: 6px;
+    border: 1px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.epos-speicherkachel--hervor { border-color: var(--epos-quelle-rahmen); border-width: 2px; padding: 7px 9px; }
+
+.epos-speicherkachel-kopf {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.epos-speicherkachel-name { font-weight: 600; color: var(--epos-text); }
+
+.epos-speicherkachel-bilanz {
+    margin-left: auto;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+.epos-speicherkachel-detail { margin-top: 6px; }
+
+.epos-speicherkachel-zeile {
+    margin: 0 0 3px 0;
+    color: var(--epos-text-leise);
+}
+
+/* Das Schwellenband: eine Bahn 0…100 % mit drei Marken. */
+.epos-speicherkachel-band {
+    display: block;
+    width: 100%;
+    height: 12px;
+    margin: 4px 0;
+}
+
+.epos-speicherkachel-bahn { fill: var(--epos-flaeche); }
+.epos-speicherkachel-reserve { fill: var(--epos-badge-flaeche); }
+.epos-speicherkachel-bahnrand { fill: none; stroke: var(--epos-rahmen-leise); stroke-width: 1; }
+
+.epos-speicherkachel-marke { stroke-width: 2; }
+.epos-speicherkachel-marke--ein { stroke: var(--epos-quelle-rahmen); }
+.epos-speicherkachel-marke--nachrang { stroke: var(--epos-text-sehr-leise); }
+.epos-speicherkachel-marke--aus { stroke: var(--epos-senke-rahmen); }
+
+@media (forced-colors: active) {
+    .epos-chip--warnung,
+    .epos-chip--badge,
+    .epos-chip--flaeche { border: 1px solid CanvasText; }
+
+    .epos-erzeugerkachel--hervor,
+    .epos-speicherkachel--hervor { border-color: Highlight; }
+
+    .epos-speicherkachel-marke { stroke: CanvasText; }
+}
