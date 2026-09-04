@@ -66,6 +66,8 @@ stünden zwei WebViews in einem Fenster, Risiko R5).
 | `d28592c` | **iU9-W11b.9: die Ergebnisseite — sechs Masken in EINEM Schritt gelöscht** |
 | `326c529` | iU9-W11b.10: Formularkarte auf den Stand nach W11b |
 | `874d826` | **iU9-W11b.11: Anwenderentscheid zu W11a‑O‑1 — EINE Restwärmezahl, aus der Deckung gerechnet** |
+| `9d9d2f6` | iU9-W11b.12: Protokoll und die drei CLAUDE.md |
+| `7553216` | Merge `origin/ios_migration` (`da420f3`, Anwenderentscheide) |
 
 **Eine Abweichung von der Schrittfolge der Arbeitsanweisung, begründet.** Die
 Anweisung nennt dreizehn Reitercommits; gebaut sind acht. Zusammengelegt sind die
@@ -481,7 +483,30 @@ diff -rq je Projekt
 Sie fasst den Rechenweg nicht an: Was gerechnet wird, stand nach W11a schon im
 Kern.
 
-### 8.7 Keine Typverwendung ist übrig
+### 8.7 Alles noch einmal auf dem zusammengeführten Stand
+
+`origin/ios_migration` ist seit der Basis `81a04ec` um **einen** Commit gewachsen
+(`da420f3` — die Anwenderentscheide zu W10b‑O‑3, W11a‑O‑1 und W11a‑O‑2 in den
+Protokollen). **Ein Konflikt**, in `iU9_W11a_Kern_Protokoll.md` unter W11a‑O‑1:
+Beide Seiten haben denselben Entscheid vermerkt — `origin` als Kurztext im
+Wortlaut des Anwenders, W11b als ausführlichen Block mit den gemessenen Zahlen
+der Umsetzung. **Beide bleiben**, in dieser Reihenfolge: erst der Entscheid, dann
+seine Umsetzung.
+
+| Tor | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 12 Warnungen |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | 2 614 grün, 0 rot |
+| dasselbe mit `LANG=en_US.UTF-8` | 2 614 grün, 0 rot |
+| `dotnet test Werkzeuge/Formularkarte.Tests` | 123 grün |
+| Stapellauf Formularkarte | 44 Designer, 43 Masken, 27 lokalisiert, 42 erreichbar, 0 unerreichbar, 0 verwaist, 1 unklar |
+| SQL-Dialektprüfer | 1 233 Texte, 0 Fundstellen |
+| ChartProben | 30 Bilder, 0 Verstöße |
+| Referenzlauf 1030/1007/1017 | PASS, 815 043 Werte, **alle drei byte-gleich** |
+| iU5-Wächter (`Program.*`) | leer |
+| Plattform-Wächter (WinForms/Drawing/OleDb im Kern) | leer |
+
+### 8.8 Keine Typverwendung ist übrig
 
 ```
 grep -rnE "(new|typeof|:)\s*(Form_Simulation_Detail|DashboardForm|NavigatorUebersicht|
