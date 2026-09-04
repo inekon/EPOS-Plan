@@ -132,10 +132,13 @@ geladenen Daten zurück** (Schleife in `Oeffnen`). Eine leise Zeile unter den Kn
 
 > „Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern."
 
-**Offene Designfrage an den Anwender (B5b-O1):** Soll das Haus ein Muster für den nachgelagerten
-Sprung bekommen — etwa einen `IFensterDienst` neben `IHilfeDienst`, über den eine Komponente ein
-Plattformfenster *ohne* Schließen des eigenen Dialogs anfordert? Das wäre ein neues Brückenmuster
-und gehört als Entscheidung vor die nächste Maske mit Sprungziel, nicht in diesen Port.
+**Designfrage B5b-O1 — ENTSCHIEDEN (Anwender, 03.09.2026): Variante a.** Der nachgelagerte
+Sprung (Dialog schließt, Zielfenster öffnet, Dialog kehrt mit frischen Daten zurück, Hinweiszeile
+kündigt es an) ist die beschlossene Bauform — **kein** `IFensterDienst`. Begründung: funktional
+sauber, kein neues Brückenmuster auf der frischen Blazor-Schiene; ein Fensterdienst lohnt erst,
+wenn mehrere portierte Masken ihn brauchen. Wiedervorlage ausdrücklich bei der **nächsten
+iU9-Maske mit Sprungziel** (Kandidat laut B5b-O7: `Form_KwkgModule`-Nachfolger) — dann mit der
+Erfahrung aus dem Praxisbetrieb dieser Lösung.
 
 ---
 
@@ -442,7 +445,7 @@ Zum Abhaken am laufenden Programm — Wirtschaftlichkeit → **„BHKW-Wirtschaf
 
 | # | Punkt |
 |---|---|
-| **B5b-O1** | **Designfrage Sprungbrücke:** nachgelagerter Sprung (heute) oder ein neuer Dienst `IFensterDienst` neben `IHilfeDienst`, mit dem eine Komponente ein Plattformfenster öffnet, ohne sich selbst zu schließen? Entscheidung vor der nächsten Maske mit Sprungziel |
+| **B5b-O1** | ~~Designfrage Sprungbrücke~~ **ENTSCHIEDEN 03.09.2026: Variante a** — der nachgelagerte Sprung bleibt (§ 2); kein `IFensterDienst`. Wiedervorlage bei der nächsten iU9-Maske mit Sprungziel |
 | **B5b-O2** | `help_mapping.txt` hat keine Zeile `Form_BhkwWirtschaftlichkeit.btn_Help` — der Infoknopf bleibt folgenlos (Bestand aus B5). Ein Wort des Anwenders, welche Wikiseite er zeigen soll, genügt |
 | **B5b-O3** | Die drei neuen Schlüssel `BHW_SP_WAHL`, `BHW_A_OHNE_WAHL`, `BHW_S_SPRUNG_HINWEIS` in den nächsten resx-Sammelnachtrag (de + en); `BHW_MSG_FEHLER_TITEL` kann dabei entfallen |
 | **B5b-O4** | Sobald Visual Studio `Resource.Designer.cs` neu erzeugt: Textzugriff von `ResourceManager.GetString` auf `@Resource.BHW_*` umstellen (§ 5) |
