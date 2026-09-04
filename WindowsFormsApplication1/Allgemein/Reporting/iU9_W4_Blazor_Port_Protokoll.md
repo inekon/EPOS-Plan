@@ -560,6 +560,7 @@ Energieträgerverwaltung** (Katalogkontext) · **Berichte & Kosten → Kosten �
 | **W4‑16** | W4.4 Projektkontext: „Aus Katalog übernehmen…" zeigt die freien Träger mit Haken samt „Alle"/„Keine"; nach „Übernehmen" steht der letzte gewählte Träger in der Liste. Sind alle zugeordnet, meldet der Dialog statt zu öffnen |
 | **W4‑17** | W4.4: „Entfernen" bzw. „Löschen" fragt nach; ein benutzter Träger bleibt erhalten und nennt den Grund |
 | **W4‑18** | W4.4: Ein Träger ohne Heizwert (Fernwärme) zeigt weder Heizwertfeld noch Formelgruppe; einer ohne Leistungspreis keine Saisonzeile |
+| **W4‑19** | W4.4 (**W4‑E‑1, neu 04.09.2026**): Über der Trägerliste steht „Filter:" wie in den Importdialogen. Eintippen filtert nach **Bezeichnung und Gruppe**, Groß-/Kleinschreibung ist egal, eine Gruppe ohne Treffer verschwindet samt Kopf, „kein Treffer" sagt es statt leer zu bleiben. Der **gewählte Träger bleibt gewählt**, auch wenn der Filter ihn ausblendet — beim Leeren steht er wieder markiert da. ↑ ↓ Pos1 Ende wandern über die Treffer und überspringen die Gruppenköpfe |
 
 ---
 
@@ -641,3 +642,35 @@ GELÖSCHT
   17 Dateien der sieben WinForms-Masken und der zwei nutzerlosen Karten-Controls
   (Regel M1) — Liste in § 6
 ```
+
+---
+
+## 12 — Anwenderfragen
+
+> **Nachtrag 04.09.2026 (Windows-Abnahme).** Der Anwender hat die
+> Energieträgerverwaltung durchgesehen und **einen** Wunsch geäußert; er ist
+> entschieden und umgesetzt.
+
+| # | Frage | Stand |
+|---|---|---|
+| **W4‑E‑1** | Suche und Filter in der Trägerauswahl wie in den Importdialogen | **Anwenderwunsch 04.09.2026 (Windows-Abnahme), umgesetzt** (Commit `41544a5`). Wortlaut: „Die Auswahl ist nicht mit Filter wie in den anderen Dialogen. Erweitere mit Suche und Auswahl analog Dialoge unter Administration → Daten & Import → Import." Über der Trägerliste steht seither ein Filterfeld mit **derselben Beschriftung** wie dort (`IMP_KAT_FILTER_SUCHE`, „Filter:" / „Filter:") und **demselben Kernbaustein** dahinter — `VdiAuswahlFilter.Passt`: Teilzeichenkette, Groß-/Kleinschreibung egal, mehrere Begriffe UND-verknüpft. Geprüft werden **Bezeichnung und Gruppe**, wie im Vorbild Bezeichner und Firma; ein Gruppenkopf bleibt nur über seinen Treffern (Ä13 bleibt sichtbar), eine leere Suche zeigt wieder alles, und nimmt der Filter alles weg, sagt die Liste das (`ETV_SUCHE_LEER`). **Der gewählte Träger bleibt gewählt**, auch wenn der Filter ihn ausblendet — die Karte rechts gehört weiter ihm. ↑ ↓ Pos1 Ende wandern über die **Treffer** und wählen dabei, wie die `ListBox` des Vorläufers, die die Gruppenköpfe schon dort übersprang. **Einzelwahl bleibt Einzelwahl:** „Löschen", „Variante" und „Entfernen" wirken auf den **einen** gewählten Träger, eine Mehrfachaktion kennt der Bestand hier nicht |
+
+**Warum kein `Raster` und keine `Baumansicht` (Begründung zu W4‑E‑1).** Die
+Trägerliste war weder das eine noch das andere, sondern ein handgeschriebener
+Knopfblock mit eingestreuten Gruppenköpfen. Ein `Raster` (QuickGrid) zeichnet
+eine **flache** Tabelle — es kann die Gruppenköpfe nicht zwischen die Zeilen
+setzen, und genau die soll der Filter stehen lassen; ein `Raster` je Gruppe in
+einer 260 px breiten Spalte wäre schwerer als das Problem. Die `Baumansicht`
+**wählt beim zweiten Klick ab** (`Waehlen` gibt `null` zurück) — das darf hier
+nicht passieren, und ein zweistufiger Baum setzte vor jede Auswahl einen
+Aufklappklick. Stattdessen trägt die **Zeile die Wahl selbst**: Der Baustein
+`Zeilenwahl` hat dafür zwei additive Parameter bekommen (`Beschriftung`,
+`Zusatzklasse`, siehe `EPOS.UI/CLAUDE.md`). Ohne `Beschriftung` bleibt sein
+Markup Zeichen für Zeichen das alte — die 19 bestehenden Aufrufe ändern sich
+nicht —, und die Trägerzeile ist **ein** Klickziel und **ein** Tabulatorhalt
+statt zweier, bei unveränderter Höhe ≥ `--epos-touchziel`.
+
+**Nachweis.** Build 0 Fehler / 6 Warnungen; `EPOS.UI.Tests` **2 214** (2 205 +
+9 neue: Filter, leere Suche, Gruppentreffer, Groß-/Kleinschreibung, Auswahl
+über den Filterwechsel, kein Treffer, Tastatur mit und ohne Filter), grün unter
+`de-DE` **und** `en_US`; `EPOS.Kern.Tests` 1 024.

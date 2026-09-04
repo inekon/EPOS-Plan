@@ -318,6 +318,9 @@
   <data name="ETV_SP_LEISTUNGSPREIS" xml:space="preserve">
     <value>Demand charge</value>
   </data>
+  <data name="ETV_SUCHE_LEER" xml:space="preserve">
+    <value>No match.</value>
+  </data>
   <data name="ETV_TITEL_HISTORIE" xml:space="preserve">
     <value>Price history</value>
   </data>

@@ -15,6 +15,19 @@
    Speichern). Abbrechen und ein Traegerwechsel uebernehmen nichts — dieselbe
    Semantik wie in der Kostenverwaltung (Ae12).
 
+   SUCHE UND FILTER IN DER TRAEGERAUSWAHL (Anwenderwunsch 04.09.2026, Windows-
+   Abnahme): Ueber der Liste steht ein Filterfeld wie in den Importdialogen
+   unter Administration -> Daten & Import (KatalogImportDialog, W13). Es filtert
+   ueber BEZEICHNUNG UND GRUPPE mit demselben Kernbaustein wie dort
+   (VdiAuswahlFilter.Passt: Teilzeichenkette, Gross-/Kleinschreibung egal,
+   mehrere Begriffe UND-verknuepft); ein Gruppenkopf bleibt nur ueber seinen
+   Treffern. Der gewaehlte Traeger BLEIBT GEWAEHLT, auch wenn der Filter ihn
+   ausblendet - die Karte rechts gehoert weiter ihm, und beim Leeren der Suche
+   steht er wieder markiert in der Liste. Die Zeilen sind seither Zeilenwahl
+   (Einzelwahl - Loeschen, Variante und Entfernen wirken auf den EINEN
+   gewaehlten Traeger), und Pfeil hoch/runter, Pos1 und Ende wandern ueber die
+   Treffer.
+
    ALLE UNTERDIALOGE STEHEN IM SELBEN FENSTER (W4.0): die Namensabfrage, die
    Mehrfachauswahl der Kataloguebernahme, die Rueckfragen vor dem Loeschen und
    Entfernen, dazu Kostenprofil, Spotpreis-Import, saisonale Saetze und der
@@ -23,6 +36,7 @@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -44,22 +58,34 @@
         <div class="epos-traeger-liste">
             <p class="epos-untergruppe">@ListenTitel</p>
 
-            @foreach (EnergietraegerListe eintrag in Liste)
-            {
-                if (eintrag.Traeger is null)
+            <Textfeld Bezeichnung="@SucheText" Wert="@_suche" WertChanged="SucheSetzen" />
+
+            @* Der Tastendruck wird HIER abgefangen, nicht am Suchfeld: Pfeiltasten
+               gehoeren im Eingabefeld dem Textcursor. *@
+            <div class="epos-traeger-eintraege" role="group" aria-label="@ListenTitel"
+                 @onkeydown="BeiListenTaste">
+                @{ IReadOnlyList<EnergietraegerListe> sicht = GefilterteListe; }
+
+                @if (sicht.Count == 0)
                 {
-                    <p class="epos-traeger-gruppenkopf">▪ @eintrag.Text</p>
+                    <p class="epos-traeger-leer">@SucheLeerText</p>
                 }
-                else
+
+                @foreach (EnergietraegerListe eintrag in sicht)
                 {
-                    int id = eintrag.Traeger.Value;
-                    <button type="button"
-                            class="@(_traegerId == id ? "epos-knopf epos-traeger-eintrag epos-knopf--primaer"
-                                                      : "epos-knopf epos-traeger-eintrag")"
-                            aria-pressed="@(_traegerId == id ? "true" : "false")"
-                            @onclick="() => BeiTraeger(id)">@eintrag.Text</button>
+                    if (eintrag.Traeger is null)
+                    {
+                        <p class="epos-traeger-gruppenkopf">▪ @eintrag.Text</p>
+                    }
+                    else
+                    {
+                        int id = eintrag.Traeger.Value;
+                        <Zeilenwahl Gewaehlt="@(_traegerId == id)" Beschriftung="@eintrag.Text"
+                                    Kurztext="@eintrag.Text" Zusatzklasse="epos-traeger-eintrag"
+                                    Gewaehltwerden="() => BeiTraeger(id)" />
+                    }
                 }
-            }
+            </div>
 
             <div class="epos-leiste">
                 @if (Katalogkontext)
@@ -332,6 +358,12 @@
     [Parameter] public string TitelText { get; set; } = "Energieträgerverwaltung";
     [Parameter] public string KontextText { get; set; } = "";
     [Parameter] public string ListenTitel { get; set; } = "Energieträger";
+
+    /// <summary>Beschriftung des Filterfeldes (<c>IMP_KAT_FILTER_SUCHE</c>).</summary>
+    [Parameter] public string SucheText { get; set; } = "Filter:";
+
+    /// <summary>Was steht, wenn der Filter alles wegnimmt (<c>ETV_SUCHE_LEER</c>).</summary>
+    [Parameter] public string SucheLeerText { get; set; } = "Kein Treffer.";
     [Parameter] public string LeerText { get; set; } = "Bitte einen Energieträger wählen.";
     [Parameter] public string NeuText { get; set; } = "Neu…";
     [Parameter] public string VarianteText { get; set; } = "Variante";
@@ -380,6 +412,7 @@
 
     private EnergietraegerAnsicht _ansicht = new();
     private int? _traegerId;
+    private string _suche = "";
     private string _stammName = "";
     private int? _stammGruppe;
     private string _status = "";
@@ -399,6 +432,9 @@
 
     /// <summary>Der gewählte Träger (Prüfhilfe für Tests).</summary>
     public int? Traeger => _traegerId;
+
+    /// <summary>Der Text im Filterfeld (Prüfhilfe für Tests).</summary>
+    public string Suchtext => _suche;
 
     /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
@@ -435,6 +471,77 @@
             if (e.Traeger.HasValue) return e.Traeger.Value;
         }
         return null;
+    }
+
+    // =====================================================================
+    // Suche und Filter (Anwenderwunsch 04.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Filter wirkt NUR auf die Anzeige: <c>_traegerId</c> bleibt stehen,
+    /// damit die Karte rechts weiter ihrem Träger gehört und er beim Leeren der
+    /// Suche wieder markiert in der Liste steht.
+    /// </summary>
+    private void SucheSetzen(string wert) => _suche = wert ?? "";
+
+    /// <summary>
+    /// Die Liste, wie sie unter dem Filter aussieht — Bezeichnung UND Gruppe
+    /// werden geprüft (wie im Importdialog Bezeichner und Firma), und ein
+    /// Gruppenkopf bleibt nur über seinen Treffern.
+    /// </summary>
+    private IReadOnlyList<EnergietraegerListe> GefilterteListe
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_suche)) return Liste;
+
+            var treffer = new List<EnergietraegerListe>();
+            EnergietraegerListe? kopf = null;
+            string gruppe = "";
+            foreach (EnergietraegerListe e in Liste)
+            {
+                if (e.Traeger is null) { kopf = e; gruppe = e.Text; continue; }
+                if (!VdiAuswahlFilter.Passt(_suche, e.Text, gruppe)) continue;
+                if (kopf is not null) { treffer.Add(kopf); kopf = null; }
+                treffer.Add(e);
+            }
+            return treffer;
+        }
+    }
+
+    /// <summary>Die Träger der gefilterten Liste in Anzeigereihenfolge.</summary>
+    private List<int> Treffer()
+    {
+        var ids = new List<int>();
+        foreach (EnergietraegerListe e in GefilterteListe)
+        {
+            if (e.Traeger.HasValue) ids.Add(e.Traeger.Value);
+        }
+        return ids;
+    }
+
+    /// <summary>
+    /// ↑ ↓ Pos1 Ende wandern über die TREFFER und wählen dabei — die
+    /// <c>ListBox</c> des Vorläufers tat dasselbe, und Gruppenköpfe übersprang
+    /// sie schon dort.
+    /// </summary>
+    private void BeiListenTaste(KeyboardEventArgs e)
+    {
+        List<int> ids = Treffer();
+        if (ids.Count == 0) return;
+
+        int i = _traegerId.HasValue ? ids.IndexOf(_traegerId.Value) : -1;
+        int ziel;
+        switch (e.Key)
+        {
+            case "ArrowDown": ziel = i < 0 ? 0 : Math.Min(i + 1, ids.Count - 1); break;
+            case "ArrowUp":   ziel = i < 0 ? 0 : Math.Max(i - 1, 0);             break;
+            case "Home":      ziel = 0;                                          break;
+            case "End":       ziel = ids.Count - 1;                              break;
+            default: return;
+        }
+
+        if (ids[ziel] != _traegerId) BeiTraeger(ids[ziel]);
     }
 
     /// <summary>

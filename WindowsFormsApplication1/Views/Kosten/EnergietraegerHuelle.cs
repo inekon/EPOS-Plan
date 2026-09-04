@@ -183,6 +183,11 @@ namespace WindowsFormsApplication1
                     : string.Format(CultureInfo.CurrentCulture,
                         T("KDLG_ET_KONTEXT_PROJEKT", "Kontext: Projekt {0}"), _projektId),
                 ["ListenTitel"] = T("KDLG_ET_LISTE", "Energieträger"),
+                // Suche und Filter der Traegerliste (Anwenderwunsch 04.09.2026):
+                // WORTGLEICH mit den Importdialogen - dieselbe Beschriftung,
+                // damit die Auswahl dort und hier gleich heisst.
+                ["SucheText"] = T("IMP_KAT_FILTER_SUCHE", "Filter:"),
+                ["SucheLeerText"] = T("ETV_SUCHE_LEER", "Kein Treffer."),
                 ["LeerText"] = T("ETV_LEER", "Bitte einen Energieträger wählen."),
                 ["NeuText"] = T("KDLG_ET_BTN_NEU", "Neu…"),
                 ["VarianteText"] = T("KDLG_ET_BTN_VARIANTE", "Variante"),
