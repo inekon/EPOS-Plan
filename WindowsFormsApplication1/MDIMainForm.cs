@@ -732,10 +732,22 @@ namespace WindowsFormsApplication1
             ctrl.Brauchwasser();
         }
 
+        /// <summary>
+        /// Der Modulkatalog der Photovoltaik.
+        /// </summary>
+        /// <remarks>
+        /// iU9-W14a.0h (Befund W14-B36): Bis hierher stand hier
+        /// <c>new Form_AdminPV(); frm.ShowDialog();</c> - der EINZIGE der elf
+        /// Katalogmenuepunkte, der die Maske selbst anlegte statt ueber
+        /// <see cref="MenueCtrl"/> zu gehen. Damit war <c>MenueCtrl.PV()</c> ohne
+        /// Aufrufer, und mit ihm die ganze Kette <c>Masken.PvAdmin</c> ->
+        /// <c>WinFormsNavigation</c> unerreichbar: drei tote Stellen. Der Weg ist
+        /// jetzt derselbe wie bei den zehn anderen.
+        /// </remarks>
         private void MenuItem_PV_Bearbeiten_Click(object sender, EventArgs e)
         {
-            Form_AdminPV frm = new Form_AdminPV();
-            frm.ShowDialog();
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.PV();
         }
 
         private void MenuItem_PV_Import_Click(object sender, EventArgs e)
