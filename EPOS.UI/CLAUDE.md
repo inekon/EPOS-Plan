@@ -39,6 +39,15 @@ entgegen — sie ist damit austauschbar.
   **färbt** das Feld (`epos-fehleingabe`), sie meldet nicht.
 - **Beruhrungsziele mindestens 44 px** (`--epos-touchziel`), Warnfarben mit
   `@media (forced-colors: active)` absichern.
+- **Aktionsknöpfe in einer Tabellenzeile sind IMMER sichtbar**, nie erst bei `:hover` —
+  Berührung kennt kein Hover (iL4). Und: **kein `display: flex` auf einem `<td>` oder `<th>`.**
+  Das nimmt der Zelle ihre Rolle als Tabellenzelle (CSS 2.1, 17.2.1) — der Browser schiebt eine
+  anonyme `table-cell` darunter, die Spaltenbreite hängt nicht mehr an der Zelle, und jede
+  Zellenregel (Polsterung, Trennlinie, Zeilenfarbe) trifft einen Kasten, der die Zelle nicht
+  mehr ist. Der Flexkasten gehört **in** die Zelle (`.epos-zellenaktionen-inhalt`), und die
+  Aktionsspalte bekommt einen **beschrifteten** Kopf, sonst hat sie nichts, woraus sie ihre
+  Breite nehmen kann. Beides ist Befund **W5‑B‑1** der Windows-Abnahme vom 04.09.2026 —
+  die Spalte war schlicht nicht zu sehen. Wache: `KostenSeiteTests`.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
