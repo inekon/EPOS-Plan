@@ -1,0 +1,579 @@
+﻿@* Katalog-Dublettensuche (iU9-W14c.5).
+
+   VORBILD: Views/Admin/Form_KatalogDubletten.cs (800 Z.) - eine REINE
+   CODE-FORM ohne Designer und ohne .resx (Konzept_Dublettenpruefung_Import,
+   Abschnitt 5, Paket D3). Die Feldkarte ist deshalb von Hand aus
+   BaueOberflaeche:70-185 geschrieben (R-W14c-10): Katalogwahl, Pruefknopf,
+   Statuszeile, TreeView, Detailfeld, vier Aktionsknoepfe, Protokollfeld.
+
+   WOZU. Dublettensuche ueber die 19 Kataloge der Registry: Katalog waehlen,
+   pruefen, den Befundbaum lesen (Katalog / Ast / Gruppe / Satz), die
+   Gegenueberstellung im Detailfeld sehen und vier Aktionen ausloesen -
+   Leerkopien bereinigen, Satz loeschen, Satz umbenennen, Protokoll speichern.
+
+   AUSLIEFERUNGSSAETZE WERDEN HIER WEDER GELOESCHT NOCH UMBENANNT. Die
+   Migration faende den Satz sonst nicht wieder (KONTEXT_Stammdaten_
+   Aenderbarkeit.md 4.3).
+
+   BEFUND W14c-B38, ANGEGLICHEN (A-14): Die Maske hatte KEINEN Schliessen-Knopf,
+   keinen AcceptButton und keinen CancelButton - geschlossen wurde ueber das
+   Fensterkreuz. Jede andere Maske hat einen.
+
+   BEFUND W14c-B41, ANGEGLICHEN (A-15): Der Scan lief im Bedienfaden. Bei
+   "(alle Kataloge)" sind das 19 Volltabellen-Lesungen samt Hashbildung; die
+   Maske half sich mit _lblStatus.Refresh(). Er laeuft jetzt in Task.Run der
+   Huelle und meldet an den Baustein Fortschritt.
+
+   BEFUND W14c-B42, BEHOBEN: DetailText und Zelle arbeiteten auf DataRow und
+   DataTable. Der Textbau steht seit W14c.0f als DublettenBefundText im Kern -
+   ohne diesen Schritt zoege EPOS.UI System.Data herein.
+
+   BEFUND W14c-B43, BEHOBEN: Die drei Protokolltexte waren hartkodiert deutsch
+   (und ohne Umlaute) - in einer Maske mit 42 Ressourcenschluesseln.
+
+   BEFUND W14c-B44, BEHOBEN: VerwendungZaehlen fing JEDE Ausnahme und lieferte
+   0 - eine fehlende Tabelle sah aus wie "nicht verwendet", und die Loeschsperre
+   griff nicht. Der Fehler kommt jetzt als Meldung.
+
+   BEFUND W14c-B46, BEHOBEN: Der Umbenennen-Dialog war der NamensDialog aus
+   W2.1, von Hand nachgebaut (71 Zeilen new Form() im Methodenrumpf). Er ist
+   jetzt der Baustein - mit der Pruefung, die ihm bis W14c fehlte.
+
+   BEFUND W14c-B47, BEHOBEN: "Protokoll speichern" kehrte bei leerem Protokoll
+   STILL zurueck; der Knopf war immer aktiv. Jetzt sagt ein Banner, warum
+   nichts passiert.
+
+   TASTATUR: Esc schliesst die oberste Ebene - erst die Rueckfragen und die
+   Namensabfrage, dann den Dialog. Enter ist nicht belegt: Bereinigen, Loeschen
+   und Umbenennen schreiben SOFORT. *@
+
+@namespace EPOS.UI.Dialoge.Admin
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalogdubletten" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-kontextleiste">
+        <Auswahlfeld Bezeichnung="@LabelKatalog" Eintraege="@KatalogEintraege"
+                     Auswahl="@_katalogIndex" AuswahlChanged="BeiKatalog" Aktiv="@(!_laeuft)" />
+        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                @onclick="BeiPruefen">@PruefenText</button>
+        <span class="epos-status">@_status</span>
+    </div>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+    <div class="epos-dubletten-mitte">
+        <Baumansicht Wurzeln="@_baumAnsicht" Gewaehlt="@_gewaehlt" GewaehltChanged="BeiAuswahl"
+                     Bezeichnung="@BaumBezeichnung" LeerText="@LeerText" />
+
+        <Textfeld Bezeichnung="@LabelDetails" Wert="@_details"
+                  Mehrzeilig="true" Zeilen="16" NurLesen="true" Festbreite="true" />
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!BereinigenErlaubt)"
+                @onclick="BeiBereinigen">@BereinigenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!SatzErlaubt)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!SatzErlaubt)"
+                @onclick="BeiUmbenennen">@UmbenennenText</button>
+        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                @onclick="BeiProtokollSpeichern">@ProtokollText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    <Textfeld Bezeichnung="@LabelProtokoll" Wert="@ProtokollText_Inhalt"
+              Mehrzeilig="true" Zeilen="8" NurLesen="true" Festbreite="true" />
+
+    @* --- Die drei Rueckfragen, alle mit Vorgabe "Nein" (A-1) --------------- *@
+    <Rueckfrage Offen="@_bereinigenFrageOffen" Frage="@_bereinigenFrage"
+                TitelText="@TitelText" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BereinigenBeantwortet" />
+
+    <Rueckfrage Offen="@_verwendungFrageOffen" Frage="@_verwendungFrage"
+                TitelText="@TitelText" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="VerwendungBeantwortet" />
+
+    <Rueckfrage Offen="@_loeschFrageOffen" Frage="@_loeschFrage"
+                TitelText="@TitelText" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschenBeantwortet" />
+
+    @* --- Umbenennen als NamensDialog-Ueberlagerung MIT Pruefung (B46) ------ *@
+    <Ueberlagerung Offen="@_umbenennenOffen" Titel="@UmbenennenText" Schliessbar="false">
+        <KindInhalt>
+            <NamensDialog TitelText="@UmbenennenText" FrageText="@LabelNameNeu"
+                          Vorbelegung="@_alterName" MeldungLeer="@MeldungNameLeer"
+                          Pruefung="@NamePruefenIntern" OkText="@OkText"
+                          AbbrechenText="@AbbrechenText"
+                          Geschlossen="UmbenennenGeschlossen" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Die 19 Kataloge als (Registry-Schlüssel, Anzeigename).</summary>
+    [Parameter] public IReadOnlyList<(string Schluessel, string Anzeige)> Kataloge { get; set; }
+        = Array.Empty<(string, string)>();
+
+    /// <summary>
+    /// Der Scan eines Katalogs (leer = alle) — <b>im Hintergrund</b>, mit
+    /// Fortschrittsmeldungen (A-15).
+    /// </summary>
+    [Parameter] public Func<string, IProgress<Scanmeldung>, Task<Scanergebnis>>? Scannen { get; set; }
+
+    /// <summary>Der Detailtext zu einem Knotenschlüssel (<c>DublettenBefundText</c>).</summary>
+    [Parameter] public Func<string, Task<string>>? Detailtext { get; set; }
+
+    /// <summary>
+    /// Die Zahl der Gruppen, die „Bereinigen" für diesen Knoten anfassen würde — die
+    /// Zahl in der Rückfrage. 0 = nichts zu tun.
+    /// </summary>
+    [Parameter] public Func<string, Task<int>>? Bereinigungsumfang { get; set; }
+
+    /// <summary>Wendet die Leerkopien-Regel an (<c>KatalogBereinigung</c>).</summary>
+    [Parameter] public Func<string, Task<Aktionsergebnis>>? Bereinigen { get; set; }
+
+    /// <summary>Die drei Schranken vor dem Löschen.</summary>
+    [Parameter] public Func<string, Task<Loeschpruefung>>? LoeschPruefen { get; set; }
+
+    /// <summary>Löscht den Satz samt Datenblöcken (<c>KatalogBereinigung.SatzLoeschen</c>).</summary>
+    [Parameter] public Func<string, Task<Aktionsergebnis>>? Loeschen { get; set; }
+
+    /// <summary>Der Vorlauf zum Umbenennen (Schreibschutz, heutiger Name).</summary>
+    [Parameter] public Func<string, Task<Umbenennung>>? UmbenennenVorbereiten { get; set; }
+
+    /// <summary>
+    /// Die Namensprüfung: leer/<c>null</c> = in Ordnung, sonst der Fehlertext
+    /// („normalisiert schon vergeben, außer es ist der eigene Name").
+    /// </summary>
+    [Parameter] public Func<string, string, string?>? NamePruefen { get; set; }
+
+    /// <summary>Benennt den Satz um (<c>KatalogBereinigung.SatzUmbenennen</c>).</summary>
+    [Parameter] public Func<string, string, Task<Aktionsergebnis>>? Umbenennen { get; set; }
+
+    /// <summary>
+    /// Speichert das Sitzungsprotokoll (<c>Dienste.Datei.DateiSpeichern</c>, UTF-8).
+    /// Rückgabe: die Meldung; leer = der Anwender hat abgebrochen.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>, Task<string>>? ProtokollSpeichern { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.ADM_DUBLETTEN_TITEL;
+    [Parameter] public string LabelKatalog { get; set; } = Resource.ADM_KATALOG_WP;
+    [Parameter] public string AlleText { get; set; } = Resource.ADM_DUBLETTEN_ALLE;
+    [Parameter] public string PruefenText { get; set; } = Resource.ADM_DUBLETTEN_PRUEFEN;
+    [Parameter] public string BereinigenText { get; set; } = Resource.ADM_DUBLETTEN_BTN_BEREINIGEN;
+    [Parameter] public string LoeschenText { get; set; } = Resource.ADM_DUBLETTEN_BTN_LOESCHEN;
+    [Parameter] public string UmbenennenText { get; set; } = Resource.ADM_DUBLETTEN_BTN_UMBENENNEN;
+    [Parameter] public string ProtokollText { get; set; } = Resource.ADM_DUBLETTEN_BTN_PROTOKOLL;
+    [Parameter] public string SchliessenText { get; set; } = Resource.ADM_DUBLETTEN_BTN_SCHLIESSEN;
+    [Parameter] public string BaumBezeichnung { get; set; } = Resource.ADM_DUBLETTEN_BAUM;
+    [Parameter] public string LeerText { get; set; } = Resource.ADM_DUBLETTEN_KEINE;
+    [Parameter] public string LabelDetails { get; set; } = Resource.ADM_DUBLETTEN_BAUM;
+    [Parameter] public string LabelProtokoll { get; set; } = Resource.ADM_DUBLETTEN_BTN_PROTOKOLL;
+    [Parameter] public string LabelNameNeu { get; set; } = Resource.ADM_DUBLETTEN_NAME_NEU;
+    [Parameter] public string MeldungNameLeer { get; set; } = Resource.IMP_KONFLIKT_NAME_UNGUELTIG;
+    [Parameter] public string KeineText { get; set; } = Resource.ADM_DUBLETTEN_KEINE;
+    [Parameter] public string ScanText { get; set; } = Resource.ADM_DUBLETTEN_SCAN_LAEUFT;
+    [Parameter] public string ProtokollLeerText { get; set; } = Resource.ADM_DUBLETTEN_MSG_PROTOKOLL_LEER;
+    [Parameter] public string ReadOnlyGesperrtText { get; set; } = Resource.ADM_DUBLETTEN_READONLY_GESPERRT;
+    [Parameter] public string KeineVerwendungspruefungText { get; set; }
+        = Resource.ADM_DUBLETTEN_KEINE_VERWENDUNGSPRUEFUNG;
+    [Parameter] public string VorlageVerwendet { get; set; } = Resource.ADM_DUBLETTEN_VERWENDET;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.ADM_DUBLETTEN_FRAGE_LOESCHEN;
+    [Parameter] public string VorlageBereinigenfrage { get; set; } = Resource.ADM_DUBLETTEN_FRAGE_BEREINIGEN;
+    [Parameter] public string VorlageVerwendungFehler { get; set; }
+        = Resource.ADM_DUBLETTEN_MSG_VERWENDUNG_FEHLER;
+    [Parameter] public string OkText { get; set; } = Resource.IMP_KONFLIKT_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMP_KONFLIKT_ABBRECHEN;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_KatalogDubletten.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _katalogIndex = 0;
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private string _status = "";
+
+    private IReadOnlyList<DublettenKnoten> _baum = Array.Empty<DublettenKnoten>();
+    private string? _gewaehlt;
+    private string _details = "";
+
+    private readonly List<string> _protokoll = new();
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _bereinigenFrageOffen;
+    private string _bereinigenFrage = "";
+    private bool _verwendungFrageOffen;
+    private string _verwendungFrage = "";
+    private bool _loeschFrageOffen;
+    private string _loeschFrage = "";
+
+    private bool _umbenennenOffen;
+    private string _alterName = "";
+
+    /// <summary>Der Befundbaum in der Anzeigeform des Bausteins.</summary>
+    private IReadOnlyList<Baumknoten> _baumAnsicht = Array.Empty<Baumknoten>();
+
+    // ---- Pruefhilfen fuer Tests ------------------------------------------
+
+    /// <summary>Der gewählte Knotenschlüssel (Prüfhilfe für Tests).</summary>
+    public string? Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Statuszeile (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Das Sitzungsprotokoll (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Protokollzeilen => _protokoll;
+
+    /// <summary>Der Detailtext (Prüfhilfe für Tests).</summary>
+    public string Detailinhalt => _details;
+
+    // ---- Abgeleitetes -----------------------------------------------------
+
+    private IReadOnlyList<(int Id, string Text)> KatalogEintraege
+    {
+        get
+        {
+            var liste = new List<(int, string)> { (0, AlleText) };
+            for (int i = 0; i < Kataloge.Count; i++) liste.Add((i + 1, Kataloge[i].Anzeige));
+            return liste;
+        }
+    }
+
+    /// <summary>Der gewählte Registry-Schlüssel; leer = alle Kataloge.</summary>
+    public string GewaehlterSchluessel =>
+        _katalogIndex is int i && i > 0 && i <= Kataloge.Count ? Kataloge[i - 1].Schluessel : "";
+
+    private string ProtokollText_Inhalt => string.Join("\n", _protokoll);
+
+    private DublettenKnoten? Auswahlknoten => Finden(_baum, _gewaehlt);
+
+    /// <summary>
+    /// „Bereinigen" hängt an IRGENDEINEM gewählten Knoten — oder, ohne Auswahl, am
+    /// einzigen gescannten Katalog (der stille Sonderweg <c>AktuelleAuswahl</c> des
+    /// Vorläufers, wörtlich übernommen).
+    /// </summary>
+    private bool BereinigenErlaubt => !_laeuft && Bereinigen is not null &&
+                                      (Auswahlknoten is not null || _baum.Count == 1);
+
+    /// <summary>„Löschen" und „Umbenennen" gehen nur an einem SATZ.</summary>
+    private bool SatzErlaubt => !_laeuft && Auswahlknoten is { Art: DublettenKnotenArt.Blatt };
+
+    private static DublettenKnoten? Finden(IReadOnlyList<DublettenKnoten> knoten, string? schluessel)
+    {
+        if (schluessel is null) return null;
+        foreach (DublettenKnoten k in knoten)
+        {
+            if (string.Equals(k.Schluessel, schluessel, StringComparison.Ordinal)) return k;
+            DublettenKnoten? treffer = Finden(k.Kinder, schluessel);
+            if (treffer is not null) return treffer;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Der Knotenschlüssel, auf den eine Aktion wirkt: die Auswahl — oder, ohne
+    /// Auswahl, die Wurzel des einzigen gescannten Katalogs.
+    /// </summary>
+    private string? Wirkungsziel =>
+        _gewaehlt ?? (_baum.Count == 1 ? _baum[0].Schluessel : null);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void BeiKatalog(int? index)
+    {
+        _katalogIndex = index;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Bildet den Kern-Baum auf die Anzeigeform des Bausteins ab. Der Baustein kennt
+    /// weder Katalog noch Gruppe noch Satz — nur Schlüssel, Text und Kennzeichen.
+    /// </summary>
+    private static IReadOnlyList<Baumknoten> Abbilden(IReadOnlyList<DublettenKnoten> knoten)
+    {
+        var liste = new List<Baumknoten>(knoten.Count);
+        foreach (DublettenKnoten k in knoten)
+            liste.Add(new Baumknoten(k.Schluessel, k.Text, Abbilden(k.Kinder),
+                                     k.Kennzeichen, k.VonVornOffen));
+        return liste;
+    }
+
+    // =====================================================================
+    // Pruefen (btnPruefen_Click) - A-15: im Hintergrund mit Fortschritt
+    // =====================================================================
+
+    private async Task BeiPruefen()
+    {
+        if (Scannen is null || _laeuft) return;
+        await Scan(GewaehlterSchluessel);
+    }
+
+    private async Task Scan(string schluessel)
+    {
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = ScanText;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<Scanmeldung>(m =>
+            {
+                _anteil = m.Anteil;
+                _fortschrittText = m.Text;
+                InvokeAsync(StateHasChanged);
+            });
+
+            Scanergebnis erg = await Scannen!(schluessel, melder);
+
+            _baum = erg.Baum ?? Array.Empty<DublettenKnoten>();
+            _baumAnsicht = Abbilden(_baum);
+            _status = erg.Status ?? "";
+            foreach (string zeile in erg.Protokoll ?? Array.Empty<string>()) _protokoll.Add(zeile);
+
+            // Nach einem Neuscan ist die alte Auswahl weg - der Vorlaeufer rief dafuer
+            // tree_AfterSelect von Hand auf, damit die Knoepfe nachziehen.
+            if (Finden(_baum, _gewaehlt) is null) { _gewaehlt = null; _details = ""; }
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+        }
+    }
+
+    private async Task BeiAuswahl(string? schluessel)
+    {
+        _gewaehlt = schluessel;
+        _meldung = "";
+        _details = schluessel is not null && Detailtext is not null
+            ? await Detailtext(schluessel) ?? ""
+            : "";
+    }
+
+    // =====================================================================
+    // Bereinigen (btnBereinigen_Click)
+    // =====================================================================
+
+    private async Task BeiBereinigen()
+    {
+        if (!BereinigenErlaubt) return;
+        string? ziel = Wirkungsziel;
+        if (ziel is null) return;
+
+        int gruppen = Bereinigungsumfang is null ? 0 : await Bereinigungsumfang(ziel);
+        if (gruppen == 0)
+        {
+            // Der Vorlaeufer zeigte hier eine MessageBox mit Informationssymbol.
+            Melden(KeineText, WarnStufe.Hinweis);
+            return;
+        }
+
+        _bereinigenFrage = string.Format(VorlageBereinigenfrage, gruppen);
+        _bereinigenFrageOffen = true;
+    }
+
+    private async Task BereinigenBeantwortet(bool? antwort)
+    {
+        _bereinigenFrageOffen = false;
+        if (antwort != true || Bereinigen is null) return;
+
+        string? ziel = Wirkungsziel;
+        if (ziel is null) return;
+
+        Aktionsergebnis erg = await Bereinigen(ziel);
+        await Nachbereiten(erg);
+    }
+
+    // =====================================================================
+    // Loeschen (btnLoeschen_Click) - DREI Schranken hintereinander
+    // =====================================================================
+
+    private Loeschpruefung? _loeschbefund;
+
+    private async Task BeiLoeschen()
+    {
+        if (!SatzErlaubt || LoeschPruefen is null || _gewaehlt is null) return;
+
+        Loeschpruefung p = await LoeschPruefen(_gewaehlt);
+        _loeschbefund = p;
+
+        // Schranke 1: Auslieferungsbestand nie anfassen.
+        if (p.Gesperrt) { Melden(ReadOnlyGesperrtText, WarnStufe.Warnung); return; }
+
+        // Befund W14c-B44: Ein Fehlschlag der Verwendungspruefung ist NICHT
+        // "nicht verwendet" - er meldet sich und haelt an.
+        if (p.Fehler.Length > 0)
+        {
+            Melden(string.Format(VorlageVerwendungFehler, p.Fehler), WarnStufe.Fehler);
+            return;
+        }
+
+        // Schranke 2: Der Katalog fuehrt keine Verwendungspruefung - melden und
+        // WEITERLAUFEN, woertlich wie der Vorlaeufer.
+        if (p.KeineVerwendungspruefung) Melden(KeineVerwendungspruefungText, WarnStufe.Hinweis);
+
+        if (p.Verwendet.Length > 0)
+        {
+            _verwendungFrage = string.Format(VorlageVerwendet, p.Verwendet);
+            _verwendungFrageOffen = true;
+            return;
+        }
+
+        Endbestaetigung(p);
+    }
+
+    private void VerwendungBeantwortet(bool? antwort)
+    {
+        _verwendungFrageOffen = false;
+        if (antwort != true || _loeschbefund is null) return;
+        Endbestaetigung(_loeschbefund);
+    }
+
+    /// <summary>Schranke 3: die ausdrückliche Bestätigung mit Name und Id.</summary>
+    private void Endbestaetigung(Loeschpruefung p)
+    {
+        _loeschFrage = string.Format(VorlageLoeschfrage, p.Name, p.Id);
+        _loeschFrageOffen = true;
+    }
+
+    private async Task LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschFrageOffen = false;
+        if (antwort != true || Loeschen is null || _gewaehlt is null) return;
+
+        Aktionsergebnis erg = await Loeschen(_gewaehlt);
+        await Nachbereiten(erg);
+    }
+
+    // =====================================================================
+    // Umbenennen (btnUmbenennen_Click)
+    // =====================================================================
+
+    private async Task BeiUmbenennen()
+    {
+        if (!SatzErlaubt || UmbenennenVorbereiten is null || _gewaehlt is null) return;
+
+        Umbenennung u = await UmbenennenVorbereiten(_gewaehlt);
+        if (u.Gesperrt) { Melden(ReadOnlyGesperrtText, WarnStufe.Warnung); return; }
+
+        _alterName = u.Name;
+        _umbenennenOffen = true;
+    }
+
+    /// <summary>
+    /// Die Namensprüfung des Bausteins: „nicht leer" macht er selbst, „normalisiert
+    /// schon vergeben, außer es ist der eigene Name" kommt von der Hülle.
+    /// </summary>
+    private string? NamePruefenIntern(string name)
+        => NamePruefen is null || _gewaehlt is null ? null : NamePruefen(_gewaehlt, name);
+
+    private async Task UmbenennenGeschlossen(string? name)
+    {
+        _umbenennenOffen = false;
+        if (name is null || Umbenennen is null || _gewaehlt is null) return;
+
+        Aktionsergebnis erg = await Umbenennen(_gewaehlt, name);
+        await Nachbereiten(erg);
+    }
+
+    // =====================================================================
+    // Protokoll (btnProtokoll_Click)
+    // =====================================================================
+
+    private async Task BeiProtokollSpeichern()
+    {
+        if (_laeuft || ProtokollSpeichern is null) return;
+
+        // Befund W14c-B47: Der Vorlaeufer kehrte hier STILL zurueck.
+        if (_protokoll.Count == 0) { Melden(ProtokollLeerText, WarnStufe.Hinweis); return; }
+
+        string meldung = await ProtokollSpeichern(_protokoll);
+        if (!string.IsNullOrEmpty(meldung)) Melden(meldung, WarnStufe.Erfolg);
+    }
+
+    // =====================================================================
+    // Gemeinsames
+    // =====================================================================
+
+    /// <summary>
+    /// Nach jeder schreibenden Aktion: Protokollzeilen übernehmen, melden und den
+    /// betroffenen Katalog NEU SCANNEN (<c>NeuScannen</c> des Vorläufers).
+    /// </summary>
+    private async Task Nachbereiten(Aktionsergebnis erg)
+    {
+        foreach (string zeile in erg.Protokoll ?? Array.Empty<string>()) _protokoll.Add(zeile);
+        if (erg.Meldung.Length > 0)
+            Melden(erg.Meldung, erg.Erfolgreich ? WarnStufe.Erfolg : WarnStufe.Warnung);
+
+        string katalog = Auswahlknoten?.Katalog ??
+                         (_baum.Count == 1 ? _baum[0].Katalog : GewaehlterSchluessel);
+        await Scan(katalog);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    /// <summary>Esc schließt die OBERSTE Ebene.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_bereinigenFrageOffen || _verwendungFrageOffen || _loeschFrageOffen ||
+            _umbenennenOffen || _laeuft) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

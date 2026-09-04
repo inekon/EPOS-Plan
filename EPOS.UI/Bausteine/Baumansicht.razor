@@ -1,0 +1,350 @@
+﻿@* Baumansicht - der Ersatz fuer den EINZIGEN TreeView des Bestands
+   (iU9-W14c.4, Bausteinluecke "Baumansicht - TreeView (KatalogDubletten)").
+
+   WOZU. Der Dublettenbefund ist vierstufig: Katalog / Ast (Namens- oder
+   Inhaltsdubletten) / Gruppe / Satz. Das ist ein Baum, und ein Baum ist keine
+   eingerueckte Liste - eine Sprachausgabe muss Ebene, Geschwisterzahl und
+   Aufklappzustand melden koennen.
+
+   DIE DATEN KOMMEN AUS DEM KERN. Baumknoten ist ein reiner Anzeigetraeger; was
+   ein Katalog, eine Gruppe oder ein Satz ist, weiss dieser Baustein nicht
+   (DublettenBaum, W14c.0h).
+
+   DIE KLEINSTE TRAGFAEHIGE FASSUNG (R-W14c-8). KEIN Kontextmenue und KEINE
+   Mehrfachauswahl: Der Vorlaeufer hat beides nicht - seine vier Aktionen liegen
+   als Knoepfe UNTER dem Baum und wirken auf die Auswahl. Erweiterungen waeren
+   additiv; eine zu allgemeine Fassung waere zur Haelfte tot. (Ein Kontextmenue
+   ueber Rechtsklick waere auf iOS ohnehin keine Bedienform.)
+
+   AUF- UND ZUKLAPPEN.
+   - Die Vorgabe kommt aus den DATEN (VonVornOffen). Der Dublettenbaum setzt sie
+     auf Wurzel und Ast, auf die Gruppe nicht - damit ist das Bild nach dem Scan
+     bitgleich zum Vorlaeufer (BaumFuellen: wurzel.Expand + ast.Expand).
+   - Das Dreieck ist ein EIGENES Klickziel (44 px, --epos-touchziel) und waehlt
+     NICHT: Wer aufklappt, will sehen, nicht auswaehlen.
+   - Ein Blatt hat kein Dreieck, sondern einen gleich breiten Platzhalter, damit
+     die Texte einer Ebene buendig stehen.
+   - Der Zustand ueberlebt einen Neuaufbau der Wurzeln, solange die Schluessel
+     gleich bleiben - das ist der Grund fuer Schluessel statt Index.
+
+   AUSWAHL. Einwertig; der gewaehlte Knoten traegt aria-selected und bleibt
+   SICHTBAR markiert, auch wenn der Baum den Fokus verliert (das ist
+   HideSelection = false des Vorlaeufers). Gemeldet wird ueber
+   Gewaehlt/GewaehltChanged - auch das Abwaehlen (null).
+
+   TASTATUR (WAI-ARIA-Baummuster, wie Reiter es fuer Reiter tut):
+     Pfeil runter/hoch  zum naechsten/vorigen SICHTBAREN Knoten, ueber Ebenen hinweg
+     Pfeil rechts       zugeklappt: aufklappen; aufgeklappt: zum ersten Kind; Blatt: nichts
+     Pfeil links        aufgeklappt: zuklappen; sonst: zum Elternknoten
+     Pos1 / Ende        erster / letzter sichtbarer Knoten
+     Enter / Leertaste  waehlen - und NUR waehlen. Enter loest keine Aktion aus:
+                        Wo ein Knopf sofort schreibt, bleibt Enter unbelegt.
+     Buchstabe          NICHT belegt (Typeahead waere bei 19 Katalogen x n Gruppen
+                        mehr Verwirrung als Hilfe).
+
+   ROVING TABINDEX: Genau EIN Knoten traegt tabindex 0 (der gewaehlte, sonst der
+   erste) - der Baum ist damit EIN Tabulatorhalt, nicht n. *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (Wurzeln.Count == 0)
+{
+    <p class="epos-baum-leer">@LeerText</p>
+}
+else
+{
+    <ul class="epos-baum" role="tree" aria-label="@Bezeichnung" @onkeydown="BeiTaste">
+        @for (int i = 0; i < Wurzeln.Count; i++)
+        {
+            @Zeichnen(Wurzeln[i], 1, Wurzeln.Count, i + 1)
+        }
+    </ul>
+}
+
+@code {
+    /// <summary>Die obersten Knoten, in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<Baumknoten> Wurzeln { get; set; } = Array.Empty<Baumknoten>();
+
+    /// <summary>Schlüssel des gewählten Knotens; <c>null</c> = nichts gewählt.</summary>
+    [Parameter] public string? Gewaehlt { get; set; }
+
+    /// <summary>Meldet jede Auswahl — <b>auch das Abwählen</b>.</summary>
+    [Parameter] public EventCallback<string?> GewaehltChanged { get; set; }
+
+    /// <summary>
+    /// Von außen gesteuerter Aufklappzustand. Ohne ihn führt der Baustein ihn selbst
+    /// aus <see cref="Baumknoten.VonVornOffen"/>.
+    /// </summary>
+    [Parameter] public IReadOnlySet<string>? Offen { get; set; }
+
+    /// <summary>Meldet den geänderten Aufklappzustand (optional).</summary>
+    [Parameter] public EventCallback<IReadOnlySet<string>> OffenChanged { get; set; }
+
+    /// <summary>Die <c>aria-label</c>-Bezeichnung des Baums.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Was ohne Wurzeln steht.</summary>
+    [Parameter] public string LeerText { get; set; } = "";
+
+    /// <summary>Ersetzt die Standardzeile (für Abzeichen, Farben) — optional.</summary>
+    [Parameter] public RenderFragment<Baumknoten>? KnotenInhalt { get; set; }
+
+    /// <summary>Klappt ein Doppelklick auf den Text zusätzlich um? (Windows-Gewohnheit)</summary>
+    [Parameter] public bool AufKlappenBeiDoppelklick { get; set; } = true;
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    /// <summary>Der selbst geführte Aufklappzustand, wenn <see cref="Offen"/> fehlt.</summary>
+    private HashSet<string> _offen = new(StringComparer.Ordinal);
+
+    /// <summary>Die Wurzeln des letzten Aufbaus — daran hängt die Vorgabe aus den Daten.</summary>
+    private IReadOnlyList<Baumknoten>? _gesehen;
+
+    /// <summary>Der Knoten mit <c>tabindex="0"</c> (roving tabindex).</summary>
+    private string? _fokus;
+
+    private IReadOnlySet<string> OffeneMenge => Offen ?? _offen;
+
+    /// <summary>Der Aufklappzustand (Prüfhilfe für Tests).</summary>
+    public IReadOnlySet<string> Aufgeklappt => OffeneMenge;
+
+    protected override void OnParametersSet()
+    {
+        // Die Vorgabe aus den Daten wird EINMAL je Wurzelsatz uebernommen - ein
+        // Neuaufbau mit denselben Schluesseln laesst den Zustand stehen.
+        if (Offen is null && !ReferenceEquals(_gesehen, Wurzeln))
+        {
+            foreach (Baumknoten k in Flach(Wurzeln))
+                if (k.VonVornOffen && k.Kinder.Count > 0) _offen.Add(k.Schluessel);
+            _gesehen = Wurzeln;
+        }
+
+        if (_fokus is null || Finden(_fokus) is null)
+            _fokus = Gewaehlt ?? (Wurzeln.Count > 0 ? Wurzeln[0].Schluessel : null);
+    }
+
+    // =====================================================================
+    // Zeichnen
+    // =====================================================================
+
+    private RenderFragment Zeichnen(Baumknoten k, int ebene, int geschwister, int platz) => builder =>
+    {
+        bool hatKinder = k.Kinder.Count > 0;
+        bool offen = hatKinder && OffeneMenge.Contains(k.Schluessel);
+        bool gewaehlt = string.Equals(k.Schluessel, Gewaehlt, StringComparison.Ordinal);
+
+        builder.OpenElement(0, "li");
+        builder.AddAttribute(1, "role", "treeitem");
+        builder.AddAttribute(2, "class",
+            "epos-baum-knoten" + (gewaehlt ? " epos-baum-knoten--gewaehlt" : ""));
+        builder.AddAttribute(3, "aria-level", ebene);
+        builder.AddAttribute(4, "aria-setsize", geschwister);
+        builder.AddAttribute(5, "aria-posinset", platz);
+        builder.AddAttribute(6, "aria-selected", gewaehlt ? "true" : "false");
+        builder.AddAttribute(7, "tabindex",
+            string.Equals(k.Schluessel, _fokus, StringComparison.Ordinal) ? 0 : -1);
+        builder.AddAttribute(8, "data-schluessel", k.Schluessel);
+        // aria-expanded NUR an Knoten mit Kindern - ein Blatt darf es nicht tragen.
+        if (hatKinder) builder.AddAttribute(9, "aria-expanded", offen ? "true" : "false");
+
+        builder.OpenElement(10, "div");
+        builder.AddAttribute(11, "class", "epos-baum-zeile");
+
+        if (hatKinder)
+        {
+            builder.OpenElement(12, "button");
+            builder.AddAttribute(13, "type", "button");
+            builder.AddAttribute(14, "class", "epos-baum-schalter");
+            builder.AddAttribute(15, "aria-hidden", "true");
+            builder.AddAttribute(16, "tabindex", -1);
+            builder.AddAttribute(17, "onclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => Umschalten(k.Schluessel)));
+            builder.AddEventStopPropagationAttribute(18, "onclick", true);
+            builder.AddContent(19, offen ? "▾" : "▸");
+            builder.CloseElement();
+        }
+        else
+        {
+            builder.OpenElement(20, "span");
+            builder.AddAttribute(21, "class", "epos-baum-schalter epos-baum-schalter--leer");
+            builder.AddAttribute(22, "aria-hidden", "true");
+            builder.CloseElement();
+        }
+
+        builder.OpenElement(23, "span");
+        builder.AddAttribute(24, "class", "epos-baum-text");
+        builder.AddAttribute(25, "onclick",
+            EventCallback.Factory.Create<MouseEventArgs>(this, () => Waehlen(k.Schluessel)));
+        if (AufKlappenBeiDoppelklick && hatKinder)
+            builder.AddAttribute(26, "ondblclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => Umschalten(k.Schluessel)));
+
+        if (KnotenInhalt is not null)
+        {
+            builder.AddContent(27, KnotenInhalt(k));
+        }
+        else
+        {
+            builder.AddContent(28, k.Text);
+            if (k.Kennzeichen.Length > 0)
+            {
+                builder.OpenElement(29, "span");
+                builder.AddAttribute(30, "class", "epos-baum-kennzeichen");
+                builder.AddContent(31, k.Kennzeichen);
+                builder.CloseElement();
+            }
+        }
+        builder.CloseElement();       // span.epos-baum-text
+        builder.CloseElement();       // div.epos-baum-zeile
+
+        if (hatKinder && offen)
+        {
+            builder.OpenElement(32, "ul");
+            builder.AddAttribute(33, "role", "group");
+            for (int i = 0; i < k.Kinder.Count; i++)
+                builder.AddContent(34, Zeichnen(k.Kinder[i], ebene + 1, k.Kinder.Count, i + 1));
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();       // li
+    };
+
+    // =====================================================================
+    // Auswahl und Aufklappen
+    // =====================================================================
+
+    private async Task Waehlen(string schluessel)
+    {
+        _fokus = schluessel;
+        // Ein zweiter Klick auf denselben Knoten waehlt ab - der Wirt bekommt null
+        // und schaltet seine Knoepfe zurueck (der Vorlaeufer rief dafuer
+        // tree_AfterSelect mit null von Hand).
+        string? neu = string.Equals(schluessel, Gewaehlt, StringComparison.Ordinal) ? null : schluessel;
+        Gewaehlt = neu;
+        await GewaehltChanged.InvokeAsync(neu);
+    }
+
+    private async Task Umschalten(string schluessel)
+    {
+        var menge = new HashSet<string>(OffeneMenge, StringComparer.Ordinal);
+        if (!menge.Remove(schluessel)) menge.Add(schluessel);
+
+        if (Offen is null) _offen = menge; else await OffenChanged.InvokeAsync(menge);
+        _fokus = schluessel;
+        StateHasChanged();
+    }
+
+    private async Task Aufklappen(string schluessel, bool auf)
+    {
+        var menge = new HashSet<string>(OffeneMenge, StringComparer.Ordinal);
+        bool geaendert = auf ? menge.Add(schluessel) : menge.Remove(schluessel);
+        if (!geaendert) return;
+
+        if (Offen is null) _offen = menge; else await OffenChanged.InvokeAsync(menge);
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Tastatur - ueber die ABGEFLACHTE SICHTLISTE
+    // =====================================================================
+
+    /// <summary>
+    /// Die sichtbaren Knoten in Anzeigereihenfolge — zugeklappte Teilbäume bleiben
+    /// draußen. Auf ihr laufen ↓ ↑ Pos1 Ende.
+    /// </summary>
+    private List<Baumknoten> Sichtliste()
+    {
+        var liste = new List<Baumknoten>();
+        void Gehen(IReadOnlyList<Baumknoten> knoten)
+        {
+            foreach (Baumknoten k in knoten)
+            {
+                liste.Add(k);
+                if (k.Kinder.Count > 0 && OffeneMenge.Contains(k.Schluessel)) Gehen(k.Kinder);
+            }
+        }
+        Gehen(Wurzeln);
+        return liste;
+    }
+
+    /// <summary>Alle Knoten, unabhängig vom Aufklappzustand.</summary>
+    private static IEnumerable<Baumknoten> Flach(IReadOnlyList<Baumknoten> knoten)
+    {
+        foreach (Baumknoten k in knoten)
+        {
+            yield return k;
+            foreach (Baumknoten kind in Flach(k.Kinder)) yield return kind;
+        }
+    }
+
+    private Baumknoten? Finden(string? schluessel)
+    {
+        if (schluessel is null) return null;
+        foreach (Baumknoten k in Flach(Wurzeln))
+            if (string.Equals(k.Schluessel, schluessel, StringComparison.Ordinal)) return k;
+        return null;
+    }
+
+    private Baumknoten? Elter(string schluessel)
+    {
+        foreach (Baumknoten k in Flach(Wurzeln))
+            foreach (Baumknoten kind in k.Kinder)
+                if (string.Equals(kind.Schluessel, schluessel, StringComparison.Ordinal)) return k;
+        return null;
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        List<Baumknoten> sicht = Sichtliste();
+        if (sicht.Count == 0) return;
+
+        int i = _fokus is null ? -1
+              : sicht.FindIndex(k => string.Equals(k.Schluessel, _fokus, StringComparison.Ordinal));
+        if (i < 0) i = 0;
+        Baumknoten aktuell = sicht[i];
+        bool hatKinder = aktuell.Kinder.Count > 0;
+        bool offen = hatKinder && OffeneMenge.Contains(aktuell.Schluessel);
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (i + 1 < sicht.Count) { _fokus = sicht[i + 1].Schluessel; StateHasChanged(); }
+                break;
+
+            case "ArrowUp":
+                if (i > 0) { _fokus = sicht[i - 1].Schluessel; StateHasChanged(); }
+                break;
+
+            case "ArrowRight":
+                if (hatKinder && !offen) await Aufklappen(aktuell.Schluessel, true);
+                else if (hatKinder) { _fokus = aktuell.Kinder[0].Schluessel; StateHasChanged(); }
+                break;
+
+            case "ArrowLeft":
+                if (offen) await Aufklappen(aktuell.Schluessel, false);
+                else
+                {
+                    Baumknoten? elter = Elter(aktuell.Schluessel);
+                    if (elter is not null) { _fokus = elter.Schluessel; StateHasChanged(); }
+                }
+                break;
+
+            case "Home":
+                _fokus = sicht[0].Schluessel;
+                StateHasChanged();
+                break;
+
+            case "End":
+                _fokus = sicht[sicht.Count - 1].Schluessel;
+                StateHasChanged();
+                break;
+
+            case "Enter":
+            case " ":
+                await Waehlen(aktuell.Schluessel);
+                break;
+        }
+    }
+}
