@@ -53,6 +53,7 @@ die Hülle `MDIMainForm` **ohne Designer**. Der einzige bewusst gebliebene
 | W16c.7 | `03c5947` | **W16c‑E‑2**: Die zwei Sprachpunkte wandern in ein Untermenü „Sprache" |
 | W16c.8 | `74e0cc1` | **W16c‑E‑3**: „Varianten und Bericht…" wechselt die ANSICHT |
 | **E‑10** | `7ed320b` | **Nach dem Merge:** `MDIMainForm` → `Hauptfensterrahmen` (Klasse, Datei, `Program.rahmen`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext`, die zwei Prüfmuster-Auszüge, die Kommentare) |
+| **B‑12** | `73b6e58` | **Der Startabsturz:** `Hauptfenster` bekommt den `[Parameter] Zustand`, den `BlazorSeite<T>` jedem Parametersatz beilegt; dazu die Reflexionswache in `BlazorSeite` und fünf bunit-Fälle, die über den Weg der Hülle rendern |
 
 > **W16c.3 und W16c.5 sind EIN Commit** — dieselbe Begründung wie bei
 > W16b.3/.5 im Protokoll der Vorwelle: Der Rückbau löscht
@@ -207,6 +208,9 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 | **W16c‑B10** | **`AppWurzel.ZurueckZurListe` räumte `_simErgebnis` nicht ab** (die übrigen fünf Zwischenspeicher schon) | Beim Umbau erledigt. Wirkung im Bestand: keine — die Ansicht wird über `_ansicht` gewählt; der Satz blieb bloß am Leben |
 | **W16c‑B11** (04.09.2026, bei W16c‑E‑3 gefunden) | **`IProjektQuelle` stand im Windows-Dienstverzeichnis GAR NICHT** — `BlazorDienste.Erzeugen` trug allein `IHilfeDienst`. `AppWurzel` fordert die Quelle seit W16c.2 per `@inject` an und wird seither in **jedem** Windows-Start gezeichnet; ein fehlendes `@inject`-Ziel wirft beim Aufbau der Komponente | `BlazorDienste` trägt jetzt `KeineProjekte` ein. Unter Windows liefert die Quelle bewusst nichts — jede Ansicht bekommt ihren Parametersatz von der Hülle —, aber eingetragen muss sie sein. Auf Linux ist das nicht nachweisbar (die Windows-Abnahme steht als W16c‑O‑2 aus); der Befund kam beim Nachrechnen des Weges für W16c‑E‑3 heraus |
 
+| **W16c‑B12** (04.09.2026, beim ersten Start durch den Anwender) | **`Hauptfenster` fehlte der `[Parameter] Zustand` — die Anwendung startete nicht.** `BlazorSeite<T>` trägt den `SeitenZustand` **jedem** Parametersatz nach (`BlazorSeite.cs:93‑96`): Wer keinen mitgibt, bekommt einen frischen, und der Schlüssel `"Zustand"` steht danach in jedem Satz. Bis W16b war die Wurzel der Hülle `BlazorSeite<Startseite>`, und die Startseite **führt** den Parameter; seit W16c.2 ist es `BlazorSeite<Hauptfenster>` (`Hauptfensterrahmen.cs:122`) — und `Hauptfenster.razor` hatte ihn nicht. Blazor wirft dafür beim **ersten Zeichnen** `InvalidOperationException: Object of type 'EPOS.UI.Seiten.Hauptfenster' does not have a property matching the name 'Zustand'`; weil das im Verteiler geschieht, reicht die WinForms-Nachrichtenschleife es als **`TargetInvocationException` an `Program.Main:332`** (`Application.Run`) weiter — die Aufrufliste zeigt nur `[Externer Code]` | Behoben in `73b6e58`: `Hauptfenster` trägt den Parameter und reicht ihn an `AppWurzel`, die sich an `SeitenZustand.Geaendert` hängt und neu zeichnet (der Weg, den `BlazorSeite.ProjektSetzen` beschreibt). `AppWurzel.MitZustand()` legt ihn nur einem Parametersatz bei, der **keinen** führt: Unter Windows behalten `StartseiteHuelle` und `BerichteKostenHuelle` ihren eigenen — über ihn meldet `ProjektKontextCtrl.Gewechselt` den Projektwechsel (**Abnahmepunkt 9**), und zwei Zustände für dieselbe Ansicht wären zwei Wahrheiten |
+| **W16c‑B12a** — warum 4 031 grüne Tests ihn nicht sahen | **Die bunit-Fälle rendern ohne die Hülle.** `Render<Hauptfenster>(p => p.Add(x => x.Weg, …))` setzt **getippte** Parameter; ein Schlüssel ohne `[Parameter]` kann dabei gar nicht entstehen. Der Weg der Hülle ist ein **Wörterbuch** auf die Wurzelkomponente (`RootComponents.Add<T>("#app", parameter)`), und nur dort fällt ein unbekannter Schlüssel auf. Dieselbe Lücke hatte schon **W16c‑B11** (`IProjektQuelle` fehlte im Dienstverzeichnis) — beide Male war das Fehlende etwas, das **nur die Hülle** beisteuert | **Zwei Wachen.** (1) `BlazorSeite<T>` prüft im Konstruktor per Reflexion, ob `T` einen beschreibbaren `[Parameter]` `Zustand` führt, der einen `SeitenZustand` aufnimmt, und wirft sonst „BlazorSeite verlangt einen Parameter Zustand" **mit dem Typnamen** — lesbar statt verpackt. (2) `HauptfensterTests.AusHuelle()` rendert über `AddMultipleAttributes`, also genau wie die Hülle; fünf Fälle hängen daran, darunter die `Theory` `Jede_Seite_einer_Seitenhuelle_traegt_den_Parameter_Zustand` über `Hauptfenster`, `Startseite` und `BerichteKostenSeite` |
+
 ---
 
 ## 8 — Die Zeugen der Formularkarte (E‑8a / E‑9, Nachweise N1 und N2)
@@ -304,6 +308,17 @@ Pfeiltasten über **vier** Köpfe mit öffnendem „Sprache" und — für W16c�
 der Ansichtswechsel samt Rückweg an `Hauptfenster` und `AppWurzel` sowie der
 Rückwegknopf mit und ohne Rückruf an `BerichteKostenSeite`.
 
+**Gate der Behebung von W16c‑B12** (Commit `73b6e58`, Basis `01463d1`):
+
+| Prüfung | Sollwert | Ergebnis |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` | 0 Fehler, 6 Warnungen | **0 / 6** (Vollneubau) |
+| `dotnet test EPOS.UI.Tests -c Release` | Basis 2 222 + 5 neue | **2 227** (+5: vier Fälle über `AusHuelle` und eine `Theory` mit drei Zeilen) |
+| dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | **grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | unverändert | **1 024 grün** (der Kern ist nicht berührt) |
+| **Gegenprobe**: ein zusätzlicher unbekannter Schlüssel im Parametersatz | die vier `AusHuelle`-Fälle rot | **rot, mit genau dem gemeldeten Wortlaut** (`does not have a property matching the name …`) — der neue Weg prüft wirklich die Schlüssel |
+| `ChartProben`, `SqlDialektPruefer`, Referenzlauf | nicht berührt | **kein Rechenweg, kein SQL, kein Bild angefasst** |
+
 **Der Referenzlauf ist byte-gleich, und das war zu erwarten:** Der Rechenkern
 ist nicht angefasst. Der Berührungspunkt dieser Teilwelle ist der **Startweg** —
 Erststart, Lizenz, `LizenzManager.NachpruefungImHintergrund()` —, und der ist
@@ -317,6 +332,7 @@ Ende von `BeimLaden`).
 
 | # | Was | Erwartung |
 |---|---|---|
+| **0** | **START** — die Anwendung aus Visual Studio (Debug, x64) und als Installation starten | Das Hauptfenster steht: Menüband, Kopfband, Startseite. **Dieser Punkt bleibt offen, bis ihn ein Windows-Gerät zeigt** — er ist auf Linux grundsätzlich nicht nachweisbar (kein WebView2, keine WinForms-Nachrichtenschleife), und genau hier ist die Teilwelle am 04.09.2026 gescheitert (**Befund W16c‑B12**: `TargetInvocationException` an `Program.Main:332`). Die zwei Wachen dagegen — die Reflexionsprüfung in `BlazorSeite<T>` und die fünf bunit-Fälle über den Weg der Hülle — greifen ab jetzt, ersetzen den Punkt aber nicht |
 | 1 | **Erststart** auf einem Rechner ohne Datenbank | Unverändert: Erststartdialog, Lizenzvereinbarung, dann das Hauptfenster. Beide Dialoge laufen besitzerlos VOR dem Fenster (W15c) und sind vom Rückbau nicht berührt |
 | 2 | **Lizenz** — Zustände, Karenz, „Lizenz…" im Menü Administration | Unverändert; die stille Nachprüfung läuft beim Start weiter im Hintergrund |
 | 3 | **Alle 55 Menüpunkte durchklicken** | **VIER Köpfe** (W16c‑E‑2): Projekt 8 (+2 Trenner-Gruppen), Administration 11 mit sieben Untermenüs, Hilfe 4 und ganz rechts **„Sprache" mit genau zwei Einträgen** (Deutsch, Englisch — mit ihren Fahnen). Jeder Punkt führt in denselben Dialog wie vorher |
@@ -359,5 +375,6 @@ Ende von `BeimLaden`).
 | **W16c‑O‑2** | **Die DPI-Abnahme steht aus.** Auf Linux ist nur der Bau prüfbar; die 16 Punkte in § 10 (besonders 13–15) brauchen ein Windows-Gerät. `Form_HelpPopup` und `Form_SpeicherOptimierung` sind die zwei Kandidaten für eine echte Abweichung |
 | ~~**W16c‑O‑3**~~ | ~~Der Menüpunkt „Deutsch"/„Englisch" bleibt ein Kopf erster Ebene~~ — **erledigt** (04.09.2026, Commit `03c5947`): Der Anwender hat **W16c‑E‑2** zugunsten des Untermenüs entschieden. „Sprache" ist ein Kopf, die zwei Punkte hängen darunter; N4 führt seither 55 Punkte in vier Köpfen |
 | **W16c‑O‑6** (neu) | **Die Windows-Abnahme der zwei Entscheide steht aus.** Auf Linux ist beides nur als bunit-Fall geprüft: dass „Sprache" aufklappt und der Klick meldet (W16c‑E‑2), und dass „Varianten und Bericht…" die Ansicht wechselt und „◀ Zurück" zurückführt (W16c‑E‑3). Was ein Windows-Gerät zeigen muss, steht als Punkt 3, 5, 11 und 12 in § 10 — dazu **Befund W16c‑B11**: dass die Anwendung überhaupt startet, ist auf Linux nicht nachweisbar |
+| **W16c‑O‑7** (neu, 04.09.2026) | **Der Abnahmepunkt „Start" (§ 10, Punkt 0) bleibt offen.** `W16c‑B12` hat gezeigt, was W16c‑O‑6 nur vermutet hatte: Der Start ist der einzige Punkt, den **jeder** Fehler der Hülle trifft, und der einzige, den Linux gar nicht prüfen kann. Zweimal hintereinander fehlte etwas, das **nur die Hülle** beisteuert — das Dienstverzeichnis (`B11`) und der Parametersatz (`B12`). Die zwei Wachen aus `B12a` decken künftig die zweite Art ab; für die erste gibt es keine, weil `@inject` erst zur Laufzeit auflöst. **Erste Handlung nach jedem Rückbau an der Hülle: starten.** |
 | **W16c‑O‑4** | **`Seitenschluessel` führt 34 Werte in einer Klasse** — Ansichten, Masken und Wege nebeneinander. Das ist gewollt (das Menüband kennt genau eine Schlüsselart, N4 prüft an einem Ort), aber die Klasse ist mit 319 Zeilen die größte Konstantenklasse des Hauses. Wenn iU11 sie teilt, dann entlang „Ansicht / Maske / Weg" — und mit einem gemeinsamen `Alle` |
 | **W16c‑O‑5** | **Das Menüband hat keine Freischaltung nach Projektzustand.** Der Bestand hatte sie auch nicht (`WinFormsNavigation.MenueAktualisieren` ist seit iU5 leer, mit Begründung); die Reitersperre der Startseite trägt das. Wer sie je will, hat mit der Tabelle jetzt den Ort dafür |
