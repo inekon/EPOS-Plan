@@ -117,7 +117,19 @@ namespace WindowsFormsApplication1
                 ["ZeileMarkiert"] = new Action<int>(ZeileSetzen),
                 ["VarianteAnlegen"] = new Func<string, string>(VarianteAnlegen),
                 ["LoeschFrage"] = new Func<string>(LoeschFrage),
-                ["VarianteLoeschen"] = new Func<string>(VarianteLoeschen),
+                ["VarianteLoeschen"] = new Func<bool, string>(VarianteLoeschen),
+
+                // Entscheid O-4 vom 04.09.2026: Trifft der Projektname MEHRERE Projekte,
+                // wird gefragt, statt still beide zu loeschen. Die Zaehlung ist DIESELBE,
+                // mit der VariantenCtrl.LoescheVariante abbricht - die Seite ruehrt keine
+                // Datenbank an (Hausregel EPOS.UI). Die zwei Texte sind die des
+                // ProjektWahlDialogs (Entscheid O-3); es ist dieselbe Frage.
+                ["NamensAnzahl"] = new Func<string, int>(ProjektCtrl.AnzahlGleicherNamen),
+                ["MehrdeutigTitel"] = T("PROJ_MSG_NAME_MEHRDEUTIG_TITEL",
+                    "Projektname mehrfach vergeben"),
+                ["MehrdeutigFormat"] = T("PROJ_MSG_NAME_MEHRDEUTIG",
+                    "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                    + "gelöscht. Fortfahren?"),
                 ["Simulation"] = new Func<Action<Laufschritt>, Task<LaufErgebnis>>(Simulieren),
                 ["UebernahmeGaben"] = new Func<VergleichZeile,
                                                IReadOnlyDictionary<string, object>>(UebernahmeGaben),
@@ -637,16 +649,37 @@ namespace WindowsFormsApplication1
             return string.Format(MyResource.Resource.BK_MSG_LOESCHEN_FRAGE, z.Bezeichner);
         }
 
-        private string VarianteLoeschen()
+        /// <summary>
+        /// Löscht die markierte Variante (iU9-W15a, Entscheid O-4 vom 04.09.2026).
+        /// </summary>
+        /// <param name="alleGleichenNamens">
+        /// Die Antwort auf die Mehrdeutigkeits-Rückfrage der Seite: <c>true</c> = der
+        /// Anwender hat dem Löschen ALLER Projekte dieses Namens ausdrücklich zugestimmt.
+        /// </param>
+        private string VarianteLoeschen(bool alleGleichenNamens)
         {
             VarianteZeile z = MarkierteZeile();
             if (z == null || z.IstStamm) return MyResource.Resource.BK_MSG_NUR_VARIANTE;
 
             try
             {
-                string fehler;
-                if (!_ctrl.LoescheVariante(z.IdProjekt, z.Projektname, out fehler))
-                    return fehler ?? MyResource.Resource.BK_MSG_LOESCHEN_FEHLGESCHLAGEN;
+                LoeschBefund befund = _ctrl.LoescheVariante(z.IdProjekt, z.Projektname,
+                                                            alleGleichenNamens);
+
+                // Der Kern hat abgebrochen, ohne etwas anzufassen: Der Name trifft
+                // mehrere Projekte, und die Zustimmung fehlt. Hier ist das das
+                // SICHERUNGSNETZ - die Rueckfrage steht in der Seite; ein "Nein" kommt
+                // gar nicht bis hierher. Gemeldet wird derselbe Satz, damit der Anwender
+                // sieht, WARUM nichts geloescht wurde.
+                if (befund.Stand == LoeschStand.Mehrdeutig)
+                    return string.Format(T("PROJ_MSG_NAME_MEHRDEUTIG",
+                        "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                        + "gelöscht. Fortfahren?"), befund.Projektname, befund.Anzahl);
+
+                if (befund.Stand != LoeschStand.Geloescht)
+                    return string.IsNullOrEmpty(befund.Fehlertext)
+                        ? MyResource.Resource.BK_MSG_LOESCHEN_FEHLGESCHLAGEN
+                        : befund.Fehlertext;
 
                 VerwirfDetails();          // die Gruppe hat eine Spalte weniger
                 _markiert = -1;

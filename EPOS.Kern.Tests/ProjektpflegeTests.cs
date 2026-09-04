@@ -332,6 +332,121 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  P9e/P9f/P9g — die VARIANTENloeschung (Entscheid W15a-O-4)
+        // =============================================================================
+
+        /// <summary>
+        /// Der Anwenderentscheid O-4 vom 04.09.2026 (Empfehlung angenommen): Die
+        /// Variantenloeschung geht ueber DIESELBE Vorpruefung wie das Projektloeschen.
+        ///
+        /// <para><b>Warum sie eine braucht.</b> Der letzte der drei Schritte ist
+        /// <c>ProjektCtrl.Delete(projektname)</c> und laeuft damit ueber den NAMEN — die
+        /// beiden davor arbeiten ueber die Id. Traegt eine Datenbank zwei Projekte
+        /// desselben Namens, naehme dieser Schritt beide mit. Regulaer geht das nicht
+        /// (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c>); die Probe
+        /// stellt den ALTBESTAND ohne ihn auf der Arbeitskopie her.</para>
+        /// </summary>
+        [Fact]
+        public void P9e_Eine_Variante_mit_mehrdeutigem_Namen_meldet_die_Anzahl_und_loescht_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int variante = ErsteVarianteVon(MIT_ANHANG);
+            Assert.True(variante > 0);
+            string name = ProjektnameVon(variante);
+            Assert.False(string.IsNullOrEmpty(name));
+
+            int zwilling = ZwillingAnlegen(variante);
+            Assert.True(zwilling > 0);
+            Assert.Equal(2, ProjektCtrl.AnzahlGleicherNamen(name));
+
+            LoeschBefund befund = new VariantenCtrl().LoescheVariante(variante, name);
+
+            Assert.Equal(LoeschStand.Mehrdeutig, befund.Stand);
+            Assert.Equal(name, befund.Projektname);
+            Assert.Equal(2, befund.Anzahl);
+            Assert.Equal("", befund.Fehlertext);
+
+            // NICHTS ist angefasst - beide Projekte stehen, die Verknuepfung auch.
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + variante));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + variante));
+        }
+
+        /// <summary>
+        /// Mit der ausdruecklichen Freigabe laeuft derselbe Weg wie eh und je — die drei
+        /// Schritte in ihrer Reihenfolge, der letzte ueber den NAMEN, also fuer ALLE
+        /// Projekte dieses Namens.
+        /// </summary>
+        [Fact]
+        public void P9f_Mit_ausdruecklicher_Freigabe_faellt_die_Variante_samt_Gleichnamigen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int variante = ErsteVarianteVon(MIT_ANHANG);
+            Assert.True(variante > 0);
+            string name = ProjektnameVon(variante);
+
+            int zwilling = ZwillingAnlegen(variante);
+            Assert.True(zwilling > 0);
+
+            LoeschBefund befund = new VariantenCtrl().LoescheVariante(
+                variante, name, mehrdeutigZugelassen: true);
+
+            Assert.Equal(LoeschStand.Geloescht, befund.Stand);
+            Assert.Equal(2, befund.Anzahl);
+
+            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(name));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + variante));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+
+            // Die beiden Schritte ueber die Id sind ebenfalls gelaufen.
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + variante));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + variante));
+        }
+
+        /// <summary>
+        /// Ein Stammprojekt wird ueber diesen Weg nicht geloescht — der Befund traegt den
+        /// Grund im Klartext, und es wird nichts angefasst (unveraendert seit iU9-W5.5,
+        /// nur jetzt als <see cref="LoeschStand.KeineVariante"/> statt als
+        /// <c>false</c> + <c>out</c>).
+        /// </summary>
+        [Fact]
+        public void P9g_Ein_Stammprojekt_faellt_ueber_die_Variantenloeschung_nicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int stamm = ProjektCtrl.IdVonName(MIT_ANHANG);
+            Assert.True(stamm > 0);
+            int vorher = Zahl("SELECT COUNT(*) FROM Tab_Projekt");
+
+            LoeschBefund befund = new VariantenCtrl().LoescheVariante(stamm, MIT_ANHANG);
+
+            Assert.Equal(LoeschStand.KeineVariante, befund.Stand);
+            Assert.Contains("keine Variante", befund.Fehlertext);
+            Assert.Equal(vorher, Zahl("SELECT COUNT(*) FROM Tab_Projekt"));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + stamm));
+        }
+
+        /// <summary>Die erste Variante des Stammprojekts <paramref name="stammName"/>.</summary>
+        private static int ErsteVarianteVon(string stammName)
+        {
+            int stamm = ProjektCtrl.IdVonName(stammName);
+            return stamm <= 0 ? 0
+                 : Zahl("SELECT MIN(ID_Projekt) FROM Tab_Variante WHERE ID_ProjektRef = " + stamm);
+        }
+
+        private static string ProjektnameVon(int idProjekt)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT Projektname FROM Tab_Projekt WHERE ID = " + idProjekt);
+            return o == null || o == DBNull.Value ? "" : o.ToString();
+        }
+
+        // =============================================================================
         //  Die Projektliste (iU9-W15a.0a)
         // =============================================================================
         [Fact]
