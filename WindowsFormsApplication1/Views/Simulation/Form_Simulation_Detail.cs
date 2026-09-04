@@ -1193,25 +1193,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static System.Collections.Generic.HashSet<int> KesselBrennstoffartenLesen(int idProjekt)
         {
-            System.Collections.Generic.HashSet<int> arten = new System.Collections.Generic.HashSet<int>();
-            if (idProjekt <= 0) return arten;
-
-            System.Data.DataTable dt = StilleDb.Tabelle(
-                "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
-                "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
-                "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
-                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
-                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
-                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
-
-            if (dt == null) return arten;
-
-            foreach (System.Data.DataRow r in dt.Rows)
-            {
-                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
-                if (a >= 0) arten.Add(a);
-            }
-            return arten;
+            // iU9-W11a.2: Die Abfrage steht als
+            // HeizkesselStammCtrl.BrennstoffartenJeProjekt im Kern (SQL woertlich
+            // uebernommen). Hier bleibt nur der Aufruf.
+            return HeizkesselStammCtrl.BrennstoffartenJeProjekt(idProjekt);
         }
 
         /// <summary>
@@ -2789,7 +2774,7 @@ namespace WindowsFormsApplication1
         public void UpdateTabPages()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
 
             // Alle 6 Tools lückenlos von Index 0 bis 5 auslesen
             string[] tool = new string[6];
@@ -3328,7 +3313,7 @@ namespace WindowsFormsApplication1
 
             // Beim Öffnen automatisch simulieren (wie btn_Simulation der Kurzansicht)
             // und anschließend den Übersicht-Tab in den Vordergrund holen.
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows > 0)
             {
                 btn_Simulation_Click(this, EventArgs.Empty);
@@ -3450,7 +3435,7 @@ namespace WindowsFormsApplication1
             textBox_gesWaermebedarf.Text = m_Waermebedarf_Gesamt.ToString("F2");
 
             // Konfiguration auslesen
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows == 0)
             {
                 MessageBox.Show(MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT, MyResource.Resource.SIM_TITEL_FEHLER, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -4108,7 +4093,7 @@ namespace WindowsFormsApplication1
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
 
             mainTabPageIndex = tabControl_Simulation.SelectedIndex; // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem Konfigurationsfenster dorthin zurückspringen können
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             frm.Konfiguration = ctrl.model;
             frm.SetControls(m_ID_Projekt);
             System.Drawing.Point p1 = btn_Konfiguration.Location;
@@ -5046,15 +5031,12 @@ namespace WindowsFormsApplication1
                 // WaermepumpenDialog; Form_WPAuswahl ist im selben Schritt GELOESCHT
                 // (Regel M1). Diese Datei wird bis Welle 11 sonst nicht angefasst
                 // (Wachstumsstopp iR10) - geaendert ist genau dieser Aufruf.
-                WErzeugerCtrl werzctrl = new WErzeugerCtrl();
                 int id_type = WizardItemClass.WP_TYP;
 
-                List<WErzeugerModel> liste = new List<WErzeugerModel>();
-                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
-                for (int i = 0; i < werzctrl.rows; i++)
-                {
-                    liste.Add(werzctrl.items[i]);
-                }
+                // iU9-W11a.2: parametrisiert ueber den Kern statt
+                // ReadAllFilter("ID_Projekt=" + … + " and ID_Type=" + …).
+                List<WErzeugerModel> liste =
+                    WErzeugerCtrl.ModelleJeTyp(m_ID_Projekt, WizardItemClass.WP_TYP);
 
                 if (WaermepumpenHuelle.Oeffnen(this, m_ID_Projekt, liste))
                 {
@@ -5311,7 +5293,7 @@ namespace WindowsFormsApplication1
             {
                 // Controller instanziieren und aktuellen DB-Stand laden
                 KonfigurationCtrl ctrl = new KonfigurationCtrl();
-                ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+                ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
 
                 if (ctrl.rows > 0)
                 {
@@ -5355,7 +5337,7 @@ namespace WindowsFormsApplication1
         private void LeseKonfiguration()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows > 0)
             {
                 checkBox_Heizstab.Checked = ctrl.model.m_WP_Heizstab;
@@ -6409,15 +6391,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string SpVariantenname(StromspeicherVarianteModel v)
         {
-            try
-            {
-                object wert = DataRepository.ExecuteScalar(
-                    "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
-                    new DbParam("@id", v.ID_Energieanlage));
-                if (wert != null && wert != DBNull.Value && wert.ToString().Length > 0)
-                    return wert.ToString();
-            }
-            catch { /* Anzeigename ist Beiwerk - der Status erscheint auch ohne ihn */ }
+            // iU9-W11a.2: Die Abfrage steht als WErzeugerCtrl.Bezeichner im Kern.
+            string name = WErzeugerCtrl.AnlagenBezeichner(v.ID_Energieanlage);
+            if (!string.IsNullOrEmpty(name)) return name;
 
             return v.ID_Energieanlage.ToString(CultureInfo.CurrentCulture);
         }
@@ -6445,62 +6421,14 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private void SpGeraetedaten(out double kapazitaetKwh, out double leistungKw)
         {
-            kapazitaetKwh = 0.0;
-            leistungKw = 0.0;
-
-            try
-            {
-                string sql =
-                    "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
-                    "FROM Tab_Energieanlagen AS a " +
-                    "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
-                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
-
-                var parameter = new System.Collections.Generic.List<DbParam>
-                {
-                    new DbParam("@proj", m_ID_Projekt),
-                    new DbParam("@typ", WizardItemClass.SP_TYP)
-                };
-
-                // Die Anlage der aktiven Variante, sofern sie eine Speicheranlage dieses
-                // Projekts ist - die WHERE-Bedingung oben prüft das gleich mit.
-                if (_speicherVariante != null && _speicherVariante.ID_Energieanlage > 0)
-                {
-                    sql += " AND a.ID = ?";
-                    parameter.Add(new DbParam(
-                                      "@anlage", _speicherVariante.ID_Energieanlage));
-                }
-
-                System.Data.DataTable dt = DataRepository.GetDataTable(sql, parameter.ToArray());
-                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
-                {
-                    kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
-                    if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
-                    return;
-                }
-
-                // Rückfall: Die aktive Variante zeigt ins Leere - dann gilt wieder die
-                // Aggregation über alle Speicheranlagen (Verhalten bis AP9a).
-                if (parameter.Count > 2)
-                {
-                    dt = DataRepository.GetDataTable(
-                        "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
-                        "FROM Tab_Energieanlagen AS a " +
-                        "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
-                        "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
-                        parameter[0], parameter[1]);
-
-                    if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
-                    {
-                        kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
-                        if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Gerätedaten des Speichers konnten nicht gelesen werden: " + ex.Message);
-            }
+            // iU9-W11a.2: Abfrage UND Rueckfall stehen als
+            // StromspeicherStammCtrl.KapazitaetUndLeistung im Kern. Die beiden
+            // Fassungen der Vermessung sind nicht zwei Meinungen, sondern erste Wahl
+            // (aktive Variante) und Rueckfall (Aggregation) - beide bleiben.
+            int idAnlage = _speicherVariante != null ? _speicherVariante.ID_Energieanlage : 0;
+            var werte = StromspeicherStammCtrl.KapazitaetUndLeistung(m_ID_Projekt, idAnlage);
+            kapazitaetKwh = werte.Kwh;
+            leistungKw = werte.Kw;
         }
 
         // ====================================================================
@@ -7218,21 +7146,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private int SpVariantenzahl()
         {
-            try
-            {
-                object wert = DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                    new DbParam("@proj", m_ID_Projekt),
-                    new DbParam("@typ", WizardItemClass.SP_TYP));
-
-                if (wert != null && wert != DBNull.Value) return Convert.ToInt32(wert);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Zahl der Speichervarianten konnte nicht gelesen werden: " + ex.Message);
-            }
-
-            return 0;
+            // iU9-W11a.2: EINE Abfrage fuer Liste und Zaehlung
+            // (WErzeugerCtrl.AnlagenJeTyp); die Zahl ist ihr Count.
+            return WErzeugerCtrl.AnlagenJeTyp(m_ID_Projekt, WizardItemClass.SP_TYP).Count;
         }
 
         /// <summary>

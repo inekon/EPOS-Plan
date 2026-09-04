@@ -1230,7 +1230,7 @@ namespace WindowsFormsApplication1
             Form_Simulation_Config frm = new Form_Simulation_Config();
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
 
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             frm.Konfiguration = ctrl.model;
             frm.SetControls(m_ID_Projekt);
             System.Drawing.Point p1 = btn_SimKonfig.Location;

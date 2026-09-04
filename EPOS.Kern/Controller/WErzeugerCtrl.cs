@@ -348,5 +348,129 @@ namespace WindowsFormsApplication1
         {
             return Belegt(dt, row, spalte) && Convert.ToBoolean(row[spalte]);
         }
+
+        /// <summary>Eine Anlagenzeile, so weit eine Liste sie braucht: Id und Name.</summary>
+        public sealed record AnlagenZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Alle Anlagenzeilen EINES Projekts von EINEM Typ, in Anlagenreihenfolge
+        /// (iU9-W11a.2).
+        ///
+        /// <para><b>Drei Aufrufer, eine Abfrage.</b> Bis hierher stand sie zweimal im
+        /// Bestand: als <c>SELECT ID, Bezeichner … ORDER BY ID</c> im
+        /// Variantenvergleich (Z. 363-378) und als <c>SELECT COUNT(*)</c> in
+        /// <c>Form_Simulation_Detail.SpVariantenzahl</c> (Z. 7217-7236). Die Zaehlung ist
+        /// die <c>Count</c>-Eigenschaft dieser Liste — eine zweite Abfrage braucht es
+        /// dafuer nicht.</para>
+        ///
+        /// <para><c>ORDER BY ID</c> ist Fachkonzept 7.3: Dieselbe Reihenfolge fuehren die
+        /// Uebersicht des Hauptformulars und <c>ReadAllByProjekt</c>, damit eine Variante
+        /// in allen drei Ansichten an derselben Stelle steht.</para>
+        ///
+        /// <para>Wirft nicht — bei einem Fehler kommt eine leere Liste zurueck.</para>
+        /// </summary>
+        public static List<AnlagenZeile> AnlagenJeTyp(int idProjekt, int idType)
+        {
+            List<AnlagenZeile> zeilen = new List<AnlagenZeile>();
+            if (idProjekt <= 0) return zeilen;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND ID_Type = ? ORDER BY ID",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", idType));
+
+                if (dt == null) return zeilen;
+
+                foreach (DataRow r in dt.Rows)
+                    zeilen.Add(new AnlagenZeile(
+                        Convert.ToInt32(r["ID"]),
+                        r["Bezeichner"] != DBNull.Value ? r["Bezeichner"].ToString() : ""));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Anlagen des Projekts konnten nicht gelesen werden: " + ex.Message);
+            }
+
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Alle Anlagen EINES Projekts von EINEM Typ als VOLLE Modelle (iU9-W11a.2) —
+        /// der parametrisierte Ersatz fuer
+        /// <c>ReadAllFilter("ID_Projekt=" + p + " and ID_Type=" + t)</c>.
+        ///
+        /// <para>Zwei Aufrufer im Bestand: der Doppelklick auf die Modulliste der
+        /// Waermepumpenseite (<c>Form_Simulation_Detail</c> Z. 5053) und die
+        /// Speicherkapazitaet des Dashboards (<c>TabNavigationManager</c> Z. 142). Beide
+        /// bauten den WHERE-Zweig als Zeichenkette zusammen.</para>
+        ///
+        /// <para><b>Ohne <c>ORDER BY</c></b> — wie der Vorlaeufer: <c>ReadAllFilter</c>
+        /// sortiert nur den filterlosen Fall.</para>
+        /// </summary>
+        public static List<WErzeugerModel> ModelleJeTyp(int idProjekt, int idType)
+        {
+            WErzeugerCtrl ctrl = new WErzeugerCtrl();
+            ctrl.LesenJeTyp(idProjekt, idType);
+            return new List<WErzeugerModel>(ctrl.items);
+        }
+
+        /// <summary>
+        /// Fuellt DIESES Steuerobjekt mit den Anlagen eines Projekts und Typs —
+        /// parametrisiert. Siehe <see cref="ModelleJeTyp"/>.
+        /// </summary>
+        public void LesenJeTyp(int idProjekt, int idType)
+        {
+            _internalList.Clear();
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", idType));
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                WErzeugerModel item = new WErzeugerModel();
+                AusZeile(dt, row, item);
+                _internalList.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Der ANZEIGENAME einer Anlagenzeile (iU9-W11a.2; woertlich aus
+        /// <c>Form_Simulation_Detail.SpVariantenname</c>, Z. 6410-6423).
+        ///
+        /// <para>Die Variantentabelle selbst fuehrt keinen Namen — der Name gehoert zur
+        /// Anlage (Fachkonzept 7.3). Rueckgabe <c>null</c>, wenn die Zeile keinen
+        /// Bezeichner fuehrt oder nicht gelesen werden kann; der Aufrufer nimmt dann die
+        /// Id. Der Anzeigename ist Beiwerk — der Status erscheint auch ohne ihn.</para>
+        ///
+        /// <para><b>Warum nicht schlicht <c>Bezeichner</c>.</b> Die Arbeitsanweisung
+        /// nennt den Namen so; er ist hier aber vergeben: <c>WErzeugerCtrl</c> erbt von
+        /// <c>WErzeugerModel</c>, und dort ist <c>Bezeichner</c> ein FELD. Eine
+        /// gleichnamige statische Methode bricht den Bau (CS0019 an jeder Lesestelle des
+        /// Feldes).</para>
+        /// </summary>
+        public static string AnlagenBezeichner(int idAnlage)
+        {
+            if (idAnlage <= 0) return null;
+
+            try
+            {
+                object wert = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
+                    new DbParam("@id", idAnlage));
+
+                if (wert != null && wert != DBNull.Value && wert.ToString().Length > 0)
+                    return wert.ToString();
+            }
+            catch { /* Anzeigename ist Beiwerk */ }
+
+            return null;
+        }
     }
 }
