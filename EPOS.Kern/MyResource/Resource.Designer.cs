@@ -737,6 +737,303 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ändern... ähnelt.
+        /// </summary>
+        public static string BADM_BTN_AENDERN_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_BTN_AENDERN_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ändern ähnelt.
+        /// </summary>
+        public static string BADM_BTN_AENDERN_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_BTN_AENDERN_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB ändern ähnelt.
+        /// </summary>
+        public static string BADM_BTN_AENDERN_STROM {
+            get {
+                return ResourceManager.GetString("BADM_BTN_AENDERN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        /// </summary>
+        public static string BADM_BTN_GRAFIK {
+            get {
+                return ResourceManager.GetString("BADM_BTN_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil löschen ähnelt.
+        /// </summary>
+        public static string BADM_BTN_LOESCHEN_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_BTN_LOESCHEN_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess löschen ähnelt.
+        /// </summary>
+        public static string BADM_BTN_LOESCHEN_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_BTN_LOESCHEN_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB löschen ähnelt.
+        /// </summary>
+        public static string BADM_BTN_LOESCHEN_STROM {
+            get {
+                return ResourceManager.GetString("BADM_BTN_LOESCHEN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Profil... ähnelt.
+        /// </summary>
+        public static string BADM_BTN_NEU_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_BTN_NEU_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Prozess ähnelt.
+        /// </summary>
+        public static string BADM_BTN_NEU_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_BTN_NEU_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB neu ähnelt.
+        /// </summary>
+        public static string BADM_BTN_NEU_STROM {
+            get {
+                return ResourceManager.GetString("BADM_BTN_NEU_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profiltyp ändern... ähnelt.
+        /// </summary>
+        public static string BADM_BTN_TYP_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_BTN_TYP_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ändern ähnelt.
+        /// </summary>
+        public static string BADM_BTN_TYP_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_BTN_TYP_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern ähnelt.
+        /// </summary>
+        public static string BADM_BTN_TYP_STROM {
+            get {
+                return ResourceManager.GetString("BADM_BTN_TYP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MWh ähnelt.
+        /// </summary>
+        public static string BADM_EINHEIT_STROM {
+            get {
+                return ResourceManager.GetString("BADM_EINHEIT_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MWth ähnelt.
+        /// </summary>
+        public static string BADM_EINHEIT_WAERME {
+            get {
+                return ResourceManager.GetString("BADM_EINHEIT_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("BADM_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Wärmebedarf: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_JAHRESSUMME_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_LBL_JAHRESSUMME_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Prozesswärmebedarf: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_JAHRESSUMME_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_LBL_JAHRESSUMME_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährlicher Strombedarf: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_JAHRESSUMME_STROM {
+            get {
+                return ResourceManager.GetString("BADM_LBL_JAHRESSUMME_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Brauchwasserprofile ähnelt.
+        /// </summary>
+        public static string BADM_LBL_KATALOG_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_LBL_KATALOG_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Prozesswärme: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_KATALOG_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_LBL_KATALOG_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank Stromverbraucher ähnelt.
+        /// </summary>
+        public static string BADM_LBL_KATALOG_STROM {
+            get {
+                return ResourceManager.GetString("BADM_LBL_KATALOG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_NAME {
+            get {
+                return ResourceManager.GetString("BADM_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
+        /// </summary>
+        public static string BADM_LBL_TYP {
+            get {
+                return ResourceManager.GetString("BADM_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die "{0}" wurde gelöscht. ähnelt.
+        /// </summary>
+        public static string BADM_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BADM_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte wählen Sie zuerst ein Profil aus! ähnelt.
+        /// </summary>
+        public static string BADM_MSG_KEINE_WAHL_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_MSG_KEINE_WAHL_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte wählen Sie einen Prozess aus, den Sie löschen möchten. ähnelt.
+        /// </summary>
+        public static string BADM_MSG_KEINE_WAHL_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_MSG_KEINE_WAHL_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte wählen Sie zuerst einen Verbraucher aus! ähnelt.
+        /// </summary>
+        public static string BADM_MSG_KEINE_WAHL_STROM {
+            get {
+                return ResourceManager.GetString("BADM_MSG_KEINE_WAHL_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz konnte nicht aus der Datenbank gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BADM_MSG_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("BADM_MSG_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BADM_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BADM_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Brauchwasser ähnelt.
+        /// </summary>
+        public static string BADM_TITEL_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("BADM_TITEL_BRAUCHWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme Verwaltung ähnelt.
+        /// </summary>
+        public static string BADM_TITEL_PROZESS {
+            get {
+                return ResourceManager.GetString("BADM_TITEL_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher Verwaltung ähnelt.
+        /// </summary>
+        public static string BADM_TITEL_STROM {
+            get {
+                return ResourceManager.GetString("BADM_TITEL_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BEHG: {0} ähnelt.
         /// </summary>
         public static string BB_BTN_CO2 {
@@ -18396,6 +18693,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVW_WARN_STROMSTEUER {
             get {
                 return ResourceManager.GetString("PVW_WARN_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei bearbeiten... ähnelt.
+        /// </summary>
+        public static string SGAD_BTN_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("SGAD_BTN_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Auswählen... ähnelt.
+        /// </summary>
+        public static string SGAD_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("SGAD_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Einlesen... ähnelt.
+        /// </summary>
+        public static string SGAD_BTN_EINLESEN {
+            get {
+                return ResourceManager.GetString("SGAD_BTN_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie Löschen ähnelt.
+        /// </summary>
+        public static string SGAD_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("SGAD_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie aus Datei Einlesen ähnelt.
+        /// </summary>
+        public static string SGAD_GRP_EINLESEN {
+            get {
+                return ResourceManager.GetString("SGAD_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Datei: ähnelt.
+        /// </summary>
+        public static string SGAD_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("SGAD_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinien in DB ähnelt.
+        /// </summary>
+        public static string SGAD_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("SGAD_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Basis Ordner: ähnelt.
+        /// </summary>
+        public static string SGAD_LBL_ORDNER {
+            get {
+                return ResourceManager.GetString("SGAD_LBL_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte über 1 Jahr als Textdatei ähnelt.
+        /// </summary>
+        public static string SGAD_LBL_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("SGAD_LBL_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string SGAD_MSG_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("SGAD_MSG_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Solarganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string SGAD_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("SGAD_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinie ist bereits in Datenbank vorhanden! ähnelt.
+        /// </summary>
+        public static string SGAD_MSG_VORHANDEN {
+            get {
+                return ResourceManager.GetString("SGAD_MSG_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie Ganglinie ähnelt.
+        /// </summary>
+        public static string SGAD_TITEL {
+            get {
+                return ResourceManager.GetString("SGAD_TITEL", resourceCulture);
             }
         }
         

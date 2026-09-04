@@ -117,6 +117,105 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BADM_BTN_AENDERN_BRAUCHWASSER" xml:space="preserve">
+    <value>Change profile...</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
+    <value>Change process in DB</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
+    <value>Change consumer</value>
+  </data>
+  <data name="BADM_BTN_GRAFIK" xml:space="preserve">
+    <value>Graphic</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_PROZESS" xml:space="preserve">
+    <value>Delete process in DB</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_STROM" xml:space="preserve">
+    <value>Delete consumer</value>
+  </data>
+  <data name="BADM_BTN_NEU_BRAUCHWASSER" xml:space="preserve">
+    <value>New profile...</value>
+  </data>
+  <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
+    <value>New process in DB</value>
+  </data>
+  <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
+    <value>New consumer</value>
+  </data>
+  <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
+    <value>Change profile type...</value>
+  </data>
+  <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
+    <value>Change type in DB</value>
+  </data>
+  <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
+    <value>Change type</value>
+  </data>
+  <data name="BADM_EINHEIT_STROM" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="BADM_EINHEIT_WAERME" xml:space="preserve">
+    <value>MWth</value>
+  </data>
+  <data name="BADM_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_BRAUCHWASSER" xml:space="preserve">
+    <value>annual heat requirement:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_PROZESS" xml:space="preserve">
+    <value>Annual process heat requirement:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_STROM" xml:space="preserve">
+    <value>annual electricity requirement:</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water profile database</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_PROZESS" xml:space="preserve">
+    <value>Process heat database</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_STROM" xml:space="preserve">
+    <value>Electricity consumer database</value>
+  </data>
+  <data name="BADM_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="BADM_LBL_TYP" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="BADM_MSG_GELOESCHT" xml:space="preserve">
+    <value>"{0}" has been deleted.</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_BRAUCHWASSER" xml:space="preserve">
+    <value>Please select a profile first!</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_PROZESS" xml:space="preserve">
+    <value>Please select a process to delete.</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_STROM" xml:space="preserve">
+    <value>Please select a consumer first!</value>
+  </data>
+  <data name="BADM_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>The record could not be deleted from the database.</value>
+  </data>
+  <data name="BADM_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This master record is read-only and cannot be deleted.</value>
+  </data>
+  <data name="BADM_TITEL_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water management</value>
+  </data>
+  <data name="BADM_TITEL_PROZESS" xml:space="preserve">
+    <value>Process heat management</value>
+  </data>
+  <data name="BADM_TITEL_STROM" xml:space="preserve">
+    <value>Electricity consumer management</value>
+  </data>
   <data name="CEC_MSG_DATEI_FEHLT" xml:space="preserve">
     <value>File not found.</value>
   </data>
@@ -748,6 +847,45 @@ with a small tank the figure becomes large without any additional ageing.</value
   </data>
   <data name="PVIMP_TITEL" xml:space="preserve">
     <value>Photovoltaic module import</value>
+  </data>
+  <data name="SGAD_BTN_ANZEIGEN" xml:space="preserve">
+    <value>Edit file...</value>
+  </data>
+  <data name="SGAD_BTN_DATEI" xml:space="preserve">
+    <value>Select file...</value>
+  </data>
+  <data name="SGAD_BTN_EINLESEN" xml:space="preserve">
+    <value>Read file...</value>
+  </data>
+  <data name="SGAD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete curve</value>
+  </data>
+  <data name="SGAD_GRP_EINLESEN" xml:space="preserve">
+    <value>Import curves from file</value>
+  </data>
+  <data name="SGAD_LBL_DATEI" xml:space="preserve">
+    <value>Selected file:</value>
+  </data>
+  <data name="SGAD_LBL_KATALOG" xml:space="preserve">
+    <value>Curves in DB</value>
+  </data>
+  <data name="SGAD_LBL_ORDNER" xml:space="preserve">
+    <value>File base folder:</value>
+  </data>
+  <data name="SGAD_LBL_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values over 1 year as a text file</value>
+  </data>
+  <data name="SGAD_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Error saving the curve. The data was not saved.</value>
+  </data>
+  <data name="SGAD_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This solar curve is read-only and cannot be deleted.</value>
+  </data>
+  <data name="SGAD_MSG_VORHANDEN" xml:space="preserve">
+    <value>The solar curve already exists in the database!</value>
+  </data>
+  <data name="SGAD_TITEL" xml:space="preserve">
+    <value>Solar thermal energy curves</value>
   </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Source draw-off height (0…1):</value>

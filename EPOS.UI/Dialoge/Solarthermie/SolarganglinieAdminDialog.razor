@@ -1,0 +1,402 @@
+﻿@* Verwaltung der Solarthermie-Ganglinien (iU9-W14b.2).
+
+   VORBILD: Views/Solarthermie/Form_Solarganglinie_Admin.cs (153 Z.) und
+   .designer.cs (167 Z.).
+
+   WOZU. Die Liste aller Katalogeintraege in Tab_Solarganglinie_STAMM, das
+   Loeschen mit Projektzuordnungssperre, das Anzeigen des Dateiinhalts mit der
+   Systemanwendung und das EINLESEN einer Textdatei: ERSTE ZEILE = BESCHREIBUNG,
+   danach 8 760 Stundenwerte.
+
+   IHR ZWILLING IST NICHT EINE DER DREI BEDARFSMASKEN, sondern
+   Form_Stromganglinie_Admin (W12) und Form_AdminWaermeeinlesen (W13.2). Diese
+   Komponente folgt WaermebedarfAdminDialog Zug um Zug - nur liest hier
+   GanglinienTextDatei MIT Kopfzeile, und statt des Konfliktdialogs steht eine
+   einfache Namenspruefung: Der Solarganglinienkatalog kennt keinen
+   Ueberschreibweg.
+
+   BEFUND W14-B70, BEHOBEN: Die einzige Dublettenpruefung des Vorlaeufers war
+   listBox_Extern.FindString(...) - eine PRAEFIXSUCHE in der ANZEIGE. "Tsol"
+   traf damit auch "Tsol1" und lehnte den Import ab, obwohl der Name frei war.
+   Seit W14b.0d fragt SolarganglinieStammCtrl.Exists die Datenbank.
+
+   BEFUND W14-B12/B68, BEHOBEN: Die Projektzuordnungssperre lief als inline-SQL
+   mit Zeichenkettenverkettung ueber den Anwendertext; sie steht seit W14b.0d als
+   SolarganglinieStammCtrl.HatProjektzuordnung im Kern. Geloescht wurde OHNE
+   Rueckfrage und ohne den Rueckgabewert zu pruefen - beides ist jetzt da (A-5).
+
+   BEFUND W14-B69, BEHOBEN: Der Fehlschlag der verlustfreien Originalablage lief
+   in ein catch { }. Er kommt jetzt als Meldung zurueck.
+
+   BEFUND W14-B71, BEHOBEN: Cursors.WaitCursor ohne try/finally, und die ganze
+   Datei wurde im Bedienfaden gelesen. Das Lesen und Schreiben laeuft in
+   Task.Run der Huelle und meldet an den Baustein Fortschritt.
+
+   BEFUND W14-B74, BEHOBEN: btn_Hilfe (Text "Hilfe"/"Help") hatte KEINEN
+   Click-Handler. Die Hilfe kommt ueber InfoKnopf, wie ueberall seit H7.
+
+   VIER TOTE STELLEN FALLEN WEG: m_ID_Projekt, m_szProjekt, result (gesetzt, von
+   keinem Aufrufer gelesen - Befund W14-B4) und DateiListe (befuellt, nie
+   geleert, nie gelesen - Befund W14-B65), dazu btn_Abbrechen_Click ohne Knopf
+   und die tote Methode GetDateiInfo (Befund W14-B75).
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Bedarf
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-solarganglinie-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Gruppenkopf Titel="@LabelKatalog" />
+
+    <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
+            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                            Property="@(z => z.Beschreibung)" Title="@SpalteBeschreibungText" />
+        </KindInhalt>
+    </Raster>
+
+    <Gruppenkopf Titel="@GruppeEinlesenText" />
+
+    <Herleitungszeile Text="@HinweisStundenwerte" />
+
+    @* A-6: Der Ordner war im Bestand UNSICHTBAR (textBox_Ordner.Visible = False
+       in der .resx, Befund W14-B79) - man sah nicht, wohin kopiert wird. *@
+    <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
+
+    <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@DateiText" Filter="@Dateifilter"
+               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+               Aktiv="@(!_laeuft)" />
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"
+                @onclick="BeiAnzeigen">@AnzeigenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!EinlesenErlaubt)"
+                @onclick="BeiEinlesen">@EinlesenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@OkText</button>
+    </div>
+
+    @* --- Rueckfrage vor dem Loeschen (A-5) ------------------------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelLoeschen"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Ganglinienkatalogs.</summary>
+    public sealed record Katalogzeile(int Id, string Bezeichner, string Beschreibung, bool NurLesen);
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Der Katalog (<c>SolarganglinieStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<Task<List<Katalogzeile>>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Gibt es zu dieser Ganglinie eine Projektzuordnung?
+    /// (<c>SolarganglinieStammCtrl.HatProjektzuordnung</c>, seit W14b.0d im Kern.)
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? HatProjektzuordnung { get; set; }
+
+    /// <summary>Löscht einen Katalogeintrag; <c>false</c> = er blieb stehen.</summary>
+    [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>Der Dateiwähler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Legt die gewählte Datei verlustfrei im Ganglinienordner ab und liefert den
+    /// dortigen Pfad. Ein Fehlschlag kommt als Meldung zurück statt in ein
+    /// <c>catch { }</c> (Befund W14-B69).
+    /// </summary>
+    [Parameter] public Func<string, Task<AblageErgebnis>>? Ablegen { get; set; }
+
+    /// <summary>
+    /// Öffnet eine Datei mit der Systemanwendung
+    /// (<c>Dienste.Datei.MitSystemOeffnen</c>) — mit dem VOLLEN Pfad. Der Vorläufer
+    /// verkettete den Ordner mit <c>textBox_Name.Text</c>, das den vollen Pfad
+    /// bereits trug, und verdoppelte ihn damit (Befund W14-B67).
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? MitSystemOeffnen { get; set; }
+
+    /// <summary>
+    /// Liest, prüft den Namen und schreibt — die ganze Kette in der Hülle, weil sie
+    /// 8 760 Zeilen liest und in einer Transaktion schreibt.
+    /// </summary>
+    [Parameter]
+    public Func<string, IProgress<ImportFortschritt>, Task<SolarganglinieImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Der Ganglinienordner als Anzeigetext.</summary>
+    [Parameter] public string Ordner { get; set; } = "";
+
+    /// <summary>Der Dialog ist zu Ende.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Meldet dem Wirt, dass sich der Katalog geändert hat (Überlagerungsbetrieb).</summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.SGAD_TITEL;
+    [Parameter] public string LabelKatalog { get; set; } = Resource.SGAD_LBL_KATALOG;
+    [Parameter] public string SpalteBezeichnerText { get; set; } = Resource.WBAD_SPALTE_BEZEICHNER;
+    [Parameter] public string SpalteBeschreibungText { get; set; } = Resource.BADM_LBL_BESCHREIBUNG;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string GruppeEinlesenText { get; set; } = Resource.SGAD_GRP_EINLESEN;
+    [Parameter] public string HinweisStundenwerte { get; set; } = Resource.SGAD_LBL_STUNDENWERTE;
+    [Parameter] public string LabelOrdner { get; set; } = Resource.SGAD_LBL_ORDNER;
+    [Parameter] public string LabelDatei { get; set; } = Resource.SGAD_LBL_DATEI;
+    [Parameter] public string DateiText { get; set; } = Resource.SGAD_BTN_DATEI;
+    [Parameter] public string AnzeigenText { get; set; } = Resource.SGAD_BTN_ANZEIGEN;
+    [Parameter] public string EinlesenText { get; set; } = Resource.SGAD_BTN_EINLESEN;
+    [Parameter] public string LoeschenText { get; set; } = Resource.SGAD_BTN_LOESCHEN;
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string Dateifilter { get; set; } = Resource.WBAD_DATEIFILTER;
+    [Parameter] public string TitelLoeschen { get; set; } = Resource.PSP_TITEL_LOESCHEN;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.PSP_MELDUNG_WIRKLICH_LOESCHEN;
+    [Parameter] public string VorlageGeloescht { get; set; } = Resource.WBAD_MSG_GELOESCHT;
+    [Parameter] public string TextZuordnung { get; set; } = Resource.WBAD_MSG_PROJEKTZUORDNUNG;
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.SGAD_MSG_SCHREIBGESCHUETZT;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie_Admin.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+
+    private List<Katalogzeile> _katalog = new();
+    private string _gewaehlt = "";
+
+    /// <summary>
+    /// Der Pfad der abgelegten Datei — ein PARAMETER der Kette, kein Feld. Im
+    /// Vorläufer waren <c>filename</c> und <c>filebasename</c> FELDER: Brach der
+    /// Anwender die Dateiwahl ab, lief „Einlesen" mit der Datei des VORIGEN Laufs
+    /// weiter (derselbe Befund wie W13-B10).
+    /// </summary>
+    private string _pfad = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
+
+    /// <summary>Der gewählte Katalogeintrag (Prüfhilfe für Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Pfad der gewählten Datei (Prüfhilfe für Tests).</summary>
+    public string Pfad => _pfad;
+
+    private bool LoeschenErlaubt => _gewaehlt.Length > 0 && !_laeuft && Loeschen is not null;
+    private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && MitSystemOeffnen is not null;
+    private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Einlesen is not null;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await KatalogLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Lädt den Katalog neu (<c>SetControls</c> des Vorläufers) — ohne dessen
+    /// wachsende <c>DateiListe</c> (Befund W14-B65).
+    /// </summary>
+    public async Task KatalogLaden()
+    {
+        if (Katalog is null) return;
+        _katalog = await Katalog() ?? new List<Katalogzeile>();
+        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
+    }
+
+    private void Waehlen(Katalogzeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Loeschen (btn_Loeschen_Click)
+    // =====================================================================
+
+    private async Task BeiLoeschen()
+    {
+        if (!LoeschenErlaubt) return;
+
+        Katalogzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null) return;
+
+        // Pruefregel 1, woertlich: Eine zugeordnete Ganglinie bleibt stehen.
+        if (HatProjektzuordnung is not null && await HatProjektzuordnung(_gewaehlt))
+        {
+            Melden(TextZuordnung, WarnStufe.Warnung);
+            return;
+        }
+
+        // Pruefregel 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
+        // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
+        if (zeile.NurLesen)
+        {
+            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
+            return;
+        }
+
+        // A-5: Der Vorlaeufer loeschte OHNE Rueckfrage (Befund W14-B68).
+        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null) return;
+
+        string name = _gewaehlt;
+
+        // A-5: Der Rueckgabewert wurde im Vorlaeufer gar nicht geprueft.
+        bool weg = await Loeschen(name);
+        await KatalogLaden();
+        Geaendert?.Invoke();
+        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
+               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Datei waehlen und anzeigen (btn_Datei_Click / btn_Oeffnen_Click)
+    // =====================================================================
+
+    private async Task BeiDatei(string pfad)
+    {
+        _meldung = "";
+        if (string.IsNullOrEmpty(pfad)) { _pfad = ""; return; }
+
+        if (Ablegen is null) { _pfad = pfad; return; }
+
+        // Die verlustfreie Originalablage im Ganglinienordner. Ein Fehlschlag ist
+        // eine Warnung - der Import laeuft dann mit der Originaldatei weiter.
+        AblageErgebnis erg = await Ablegen(pfad);
+        _pfad = erg.Pfad.Length > 0 ? erg.Pfad : pfad;
+        if (erg.Meldung.Length > 0) Melden(erg.Meldung, WarnStufe.Warnung);
+    }
+
+    private async Task BeiAnzeigen()
+    {
+        if (!AnzeigenErlaubt) return;
+        await MitSystemOeffnen!(_pfad);
+    }
+
+    // =====================================================================
+    // Einlesen (btn_Einlesen_Click)
+    // =====================================================================
+
+    private async Task BeiEinlesen()
+    {
+        if (!EinlesenErlaubt) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = f.Schluessel;
+                InvokeAsync(StateHasChanged);
+            });
+
+            SolarganglinieImportErgebnis erg = await Einlesen!(_pfad, melder);
+
+            if (erg.Meldung.Length > 0)
+                Melden(erg.Meldung,
+                       erg.Erfolgreich ? WarnStufe.Erfolg
+                                       : erg.IstFehler ? WarnStufe.Fehler : WarnStufe.Warnung);
+
+            if (erg.Erfolgreich)
+            {
+                await KatalogLaden();
+                Geaendert?.Invoke();
+                _pfad = "";
+            }
+        }
+        finally
+        {
+            // Befund W14-B71: Der Vorlaeufer setzte Cursors.Default OHNE try/finally -
+            // eine Ausnahme dazwischen liess die Sanduhr stehen.
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+        }
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    /// <summary>
+    /// „OK" liefert OK. Der Vorläufer setzte ein eigenes Feld <c>result</c>, das
+    /// niemand las, und liess <c>this.DialogResult</c> auf <c>Cancel</c> stehen —
+    /// <c>MitOk</c> lieferte damit IMMER <c>false</c> (Befund W14-B4, A-7).
+    /// </summary>
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_loeschfrageOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}
