@@ -325,7 +325,14 @@
         _bericht.Clear();
         StateHasChanged();
 
-        var melder = new Progress<string>(t => { _status = t; StateHasChanged(); });
+        // Progress<T> stellt jede Meldung in den Synchronisationskontext EIN und
+        // liefert sie spaeter aus. Eine Meldung, die der Kern unmittelbar vor seinem
+        // Ende absetzt, kann deshalb NACH der Fortsetzung hinter dem await ankommen
+        // und die Abschlussmeldung ueberschreiben - dann stuende bis zum naechsten
+        // Zeichnen ein Fortschrittstext in der Statuszeile (Kern-Lauf 33883408900,
+        // ProjektTransferDialogTests: "... Tab_Projekt" statt "Export abgeschlossen.").
+        // Nach dem Lauf werden Fortschrittsmeldungen deshalb verworfen.
+        var melder = new Progress<string>(t => { if (!_laeuft) return; _status = t; StateHasChanged(); });
         bool ok = await Task.Run(() => Daten.Exportieren(_projekt, varianten, ziel!, melder));
 
         _laeuft = false;
@@ -395,7 +402,14 @@
         _bericht.Clear();
         StateHasChanged();
 
-        var melder = new Progress<string>(t => { _status = t; StateHasChanged(); });
+        // Progress<T> stellt jede Meldung in den Synchronisationskontext EIN und
+        // liefert sie spaeter aus. Eine Meldung, die der Kern unmittelbar vor seinem
+        // Ende absetzt, kann deshalb NACH der Fortsetzung hinter dem await ankommen
+        // und die Abschlussmeldung ueberschreiben - dann stuende bis zum naechsten
+        // Zeichnen ein Fortschrittstext in der Statuszeile (Kern-Lauf 33883408900,
+        // ProjektTransferDialogTests: "... Tab_Projekt" statt "Export abgeschlossen.").
+        // Nach dem Lauf werden Fortschrittsmeldungen deshalb verworfen.
+        var melder = new Progress<string>(t => { if (!_laeuft) return; _status = t; StateHasChanged(); });
         ImportErgebnis e = await Task.Run(() => Daten.Importieren(_paketpfad, name ?? "", _modus, melder));
 
         _laeuft = false;
