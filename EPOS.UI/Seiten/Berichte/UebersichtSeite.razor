@@ -172,6 +172,12 @@
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
                 TitelText="@LoeschenText" Beantwortet="LoeschenBeantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
+
+    @* Entscheid O-4: erst NACH der unveraenderten Loeschfrage und nur, wenn der
+       Projektname mehrere Projekte trifft. Ebenfalls Vorgabe "Nein". *@
+    <Rueckfrage Offen="@_mehrdeutigOffen" Frage="@MehrdeutigFrage"
+                TitelText="@MehrdeutigTitel" Beantwortet="MehrdeutigBeantwortet"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" />
 </div>
 
 @code {
@@ -197,8 +203,26 @@
     /// <summary>Die Frage vor dem Löschen; leer = nicht möglich.</summary>
     [Parameter] public Func<string>? LoeschFrage { get; set; }
 
-    /// <summary>Löscht die markierte Variante und liefert die Meldung.</summary>
-    [Parameter] public Func<string>? VarianteLoeschen { get; set; }
+    /// <summary>
+    /// Löscht die markierte Variante und liefert die Meldung. Der Parameter ist die
+    /// Antwort auf die Mehrdeutigkeits-Rückfrage (iU9-W15a, Entscheid O-4 vom
+    /// 04.09.2026): <c>true</c> = der Anwender hat dem Löschen ALLER Projekte dieses
+    /// Namens ausdrücklich zugestimmt. Regulär <c>false</c>.
+    /// </summary>
+    [Parameter] public Func<bool, string>? VarianteLoeschen { get; set; }
+
+    /// <summary>
+    /// Wie viele Projekte tragen diesen Projektnamen? Der Löschweg fragt damit nach,
+    /// bevor er einen mehrdeutigen Namen löscht (iU9-W15a, Entscheid O-4 vom
+    /// 04.09.2026 — dieselbe Vorprüfung wie beim Projektlöschen, O-3).
+    ///
+    /// <para><b>Warum ein Rückruf und keine Abfrage.</b> EPOS.UI rührt keine Datenbank an
+    /// (Hausregel). Die Hülle reicht <c>ProjektCtrl.AnzahlGleicherNamen</c> herein —
+    /// DIESELBE Zählung, mit der <c>VariantenCtrl.LoescheVariante</c> im Kern abbricht.
+    /// So können die beiden nicht auseinanderlaufen. <c>null</c> = nicht gesetzt, dann
+    /// wird nicht gefragt (der Kern hält die Sperre trotzdem).</para>
+    /// </summary>
+    [Parameter] public Func<string, int>? NamensAnzahl { get; set; }
 
     /// <summary>
     /// Simuliert Stamm und markierte Variante. Der Parameter ist der
@@ -235,6 +259,15 @@
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
 
+    /// <summary>Der Titel der Mehrdeutigkeits-Rückfrage (Schlüssel <c>PROJ_MSG_NAME_MEHRDEUTIG_TITEL</c>).</summary>
+    [Parameter] public string MehrdeutigTitel { get; set; } = "";
+
+    /// <summary>
+    /// Die Mehrdeutigkeits-Rückfrage (Schlüssel <c>PROJ_MSG_NAME_MEHRDEUTIG</c>);
+    /// <c>{0}</c> = Projektname, <c>{1}</c> = Anzahl. Leer = die Rückfrage unterbleibt.
+    /// </summary>
+    [Parameter] public string MehrdeutigFormat { get; set; } = "";
+
     /// <summary>Meldung „abgebrochen".</summary>
     [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
 
@@ -257,6 +290,9 @@
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
 
+    private bool _mehrdeutigOffen;
+    private int _anzahlGleicher;
+
     /// <summary>Statuszeile (Prüfhilfe).</summary>
     public string Status => _status;
 
@@ -265,6 +301,9 @@
 
     /// <summary>Steht der Übernahmedialog? (Prüfhilfe)</summary>
     public bool UebernahmeOffen => _gaben is not null;
+
+    /// <summary>Steht die Mehrdeutigkeits-Rückfrage? (Prüfhilfe)</summary>
+    public bool MehrdeutigOffen => _mehrdeutigOffen;
 
     /// <summary>Trägt der Komponentenbereich die Aktionsspalte? (Prüfhilfe)</summary>
     public bool MitAktionsspalte => _mitAktionsspalte;
@@ -344,15 +383,64 @@
         _loeschfrageOffen = true;
     }
 
+    /// <summary>
+    /// Die Antwort auf die unveränderte Löschfrage — und die Stelle, an der der
+    /// Löschweg nach einem MEHRDEUTIGEN Projektnamen fragt (Entscheid O-4 vom
+    /// 04.09.2026, dieselbe Rückfrage wie im <c>ProjektWahlDialog</c>).
+    ///
+    /// <para>Regulär trägt ein Name genau ein Projekt: <c>Tab_Projekt</c> hat den
+    /// eindeutigen Index <c>Projektname</c>. Ein Altbestand ohne ihn kann den Fall
+    /// führen, und weil der letzte Schritt der Variantenlöschung über den NAMEN läuft,
+    /// träfe er dann beide Projekte. Deshalb: nachfragen. „Nein" lässt die Seite
+    /// stehen, wie bei der Löschfrage selbst.</para>
+    /// </summary>
     private void LoeschenBeantwortet(bool? antwort)
     {
         _loeschfrageOffen = false;
         if (antwort != true || VarianteLoeschen is null) return;
 
-        string meldung = VarianteLoeschen();
+        if (NamensAnzahl is not null && !string.IsNullOrEmpty(MehrdeutigFormat))
+        {
+            _anzahlGleicher = NamensAnzahl(MarkierterProjektname);
+            if (_anzahlGleicher > 1)
+            {
+                _mehrdeutigOffen = true;
+                return;
+            }
+        }
+
+        Loeschen(false);
+    }
+
+    private void MehrdeutigBeantwortet(bool? antwort)
+    {
+        _mehrdeutigOffen = false;
+        if (antwort != true) return;          // "Nein" laesst die Seite stehen
+        Loeschen(true);
+    }
+
+    private void Loeschen(bool alleGleichenNamens)
+    {
+        if (VarianteLoeschen is null) return;
+
+        string meldung = VarianteLoeschen(alleGleichenNamens);
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }
+
+    /// <summary>Der Projektname der markierten Zeile (leer, wenn keine markiert ist).</summary>
+    private string MarkierterProjektname
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IdProjekt == _stand.MarkierteId) return z.Projektname ?? "";
+            return "";
+        }
+    }
+
+    private string MehrdeutigFrage
+        => string.Format(MehrdeutigFormat ?? "", MarkierterProjektname, _anzahlGleicher);
 
     // =====================================================================
     // Simulation

@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -22,6 +23,24 @@ public class UebersichtSeiteTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+        DeutscheOberflaeche();
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
+    /// <c>ProjektListeTests</c>) — Kultur UND Thread-Kultur, damit ein Lauf unter
+    /// <c>LANG=en_US.UTF-8</c> dieselben Beschriftungen und dieselbe Zahlschreibweise
+    /// sieht.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     // ---- Probendaten -----------------------------------------------------
@@ -277,9 +296,10 @@ public class UebersichtSeiteTests : BunitContext
     public void Loeschen_fragt_nach_und_loescht_erst_bei_Ja()
     {
         int geloescht = 0;
+        bool alle = true;
         var cut = Zeige(p => p
             .Add(x => x.LoeschFrage, () => "Variante „WP klein“ wirklich löschen?")
-            .Add(x => x.VarianteLoeschen, () => { geloescht++; return "gelöscht."; }),
+            .Add(x => x.VarianteLoeschen, (bool a) => { geloescht++; alle = a; return "gelöscht."; }),
             stand: Unterschiedsansicht());
 
         Pflegeknoepfe(cut)[1].Click();
@@ -293,6 +313,111 @@ public class UebersichtSeiteTests : BunitContext
 
         Assert.Equal(1, geloescht);
         Assert.Equal("gelöscht.", cut.Instance.Status);
+
+        // Ohne Mehrdeutigkeit wird das Loeschen ALLER Gleichnamigen NICHT freigegeben.
+        Assert.False(alle);
+        Assert.False(cut.Instance.MehrdeutigOffen);
+    }
+
+    // =====================================================================
+    //  Entscheid W15a-O-4 — der Projektname trifft mehrere Projekte
+    // =====================================================================
+
+    /// <summary>Der Parametersatz der zweiten Rückfrage (Texte wie im <c>ProjektWahlDialog</c>).</summary>
+    private static void MitMehrdeutigkeit(
+        Bunit.ComponentParameterCollectionBuilder<UebersichtSeite> p, int anzahl)
+    {
+        p.Add(x => x.NamensAnzahl, (string _) => anzahl);
+        p.Add(x => x.MehrdeutigTitel, "Projektname mehrfach vergeben");
+        p.Add(x => x.MehrdeutigFormat,
+              "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren?");
+    }
+
+    /// <summary>
+    /// Entscheid O-4 vom 04.09.2026: Trifft der Projektname MEHRERE Projekte, kommt nach
+    /// der unveränderten Löschfrage eine zweite Rückfrage — dieselbe wie beim
+    /// Projektlöschen (O-3). „Nein" lässt die Seite stehen, gelöscht wird nichts.
+    /// </summary>
+    [Fact]
+    public void Ein_mehrdeutiger_Projektname_fragt_ein_zweites_Mal_und_Nein_loescht_nichts()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p =>
+        {
+            p.Add(x => x.LoeschFrage, () => "Variante „WP klein“ wirklich löschen?");
+            p.Add(x => x.VarianteLoeschen, (bool _) => { geloescht++; return "gelöscht."; });
+            MitMehrdeutigkeit(p, 2);
+        }, stand: Unterschiedsansicht());
+
+        Pflegeknoepfe(cut)[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja auf die Loeschfrage
+
+        // Jetzt steht die ZWEITE Rueckfrage - und geloescht ist noch nichts.
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.MehrdeutigOffen),
+                          TimeSpan.FromSeconds(10));
+        Assert.Equal(0, geloescht);
+
+        string text = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("Musterhaus", text);       // {0} - der Projektname der markierten Zeile
+        Assert.Contains("2-mal", text);            // {1} - die Anzahl aus NamensAnzahl
+
+        // Vorgabe "Nein": der zweite Knopf traegt die Betonung, nicht der erste.
+        IReadOnlyList<IElement> knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassName ?? "");
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName ?? "");
+
+        knoepfe[1].Click();                        // Nein
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.MehrdeutigOffen),
+                          TimeSpan.FromSeconds(10));
+        Assert.Equal(0, geloescht);
+    }
+
+    /// <summary>„Ja" auf die zweite Rückfrage löscht wie bisher — alle Gleichnamigen.</summary>
+    [Fact]
+    public void Ein_Ja_auf_die_zweite_Rueckfrage_gibt_alle_Gleichnamigen_frei()
+    {
+        int geloescht = 0;
+        bool alle = false;
+        var cut = Zeige(p =>
+        {
+            p.Add(x => x.LoeschFrage, () => "Variante „WP klein“ wirklich löschen?");
+            p.Add(x => x.VarianteLoeschen, (bool a) => { geloescht++; alle = a; return "gelöscht."; });
+            MitMehrdeutigkeit(p, 2);
+        }, stand: Unterschiedsansicht());
+
+        Pflegeknoepfe(cut)[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja auf die Loeschfrage
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.MehrdeutigOffen),
+                          TimeSpan.FromSeconds(10));
+
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja auf die Mehrdeutigkeit
+
+        cut.WaitForAssertion(() => Assert.Equal(1, geloescht), TimeSpan.FromSeconds(10));
+        Assert.True(alle);
+        Assert.False(cut.Instance.MehrdeutigOffen);
+        Assert.Equal("gelöscht.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// Ein eindeutiger Name kommt ohne die zweite Rückfrage aus — der Regelfall, denn
+    /// <c>Tab_Projekt</c> trägt den eindeutigen Index <c>Projektname</c>.
+    /// </summary>
+    [Fact]
+    public void Ein_eindeutiger_Projektname_loescht_ohne_zweite_Rueckfrage()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p =>
+        {
+            p.Add(x => x.LoeschFrage, () => "Variante „WP klein“ wirklich löschen?");
+            p.Add(x => x.VarianteLoeschen, (bool _) => { geloescht++; return "gelöscht."; });
+            MitMehrdeutigkeit(p, 1);
+        }, stand: Unterschiedsansicht());
+
+        Pflegeknoepfe(cut)[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        cut.WaitForAssertion(() => Assert.Equal(1, geloescht), TimeSpan.FromSeconds(10));
+        Assert.False(cut.Instance.MehrdeutigOffen);
     }
 
     // =====================================================================
