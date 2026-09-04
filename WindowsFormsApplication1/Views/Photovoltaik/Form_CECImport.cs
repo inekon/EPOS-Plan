@@ -481,7 +481,7 @@ namespace WindowsFormsApplication1
             }
 
             // 3. Konfliktdialog (eine Zeile) und Aktions-Switch (Konzept 4.2/4.3).
-            List<KonfliktEntscheidung> entscheidungen = Form_ImportKonflikte.Zeigen(
+            List<KonfliktEntscheidung> entscheidungen = ImportKonflikteHuelle.Zeigen(
                 this, pruefungen, DublettenPruefung.VergebeneNamen(katalog));
             if (entscheidungen == null) return;   // Abbruch: nichts schreiben
 

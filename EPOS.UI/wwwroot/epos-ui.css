@@ -2416,3 +2416,16 @@ body {
 }
 
 .epos-vorschau-kopf { color: var(--epos-text-leise, GrayText); }
+
+/* ------------------------------------------------------------------ */
+/* Konfliktdialog des Imports (iU9-W12.3)                              */
+/*                                                                     */
+/* Die Befundspalte umbricht - sie kann bis zu drei Zusatzzeilen        */
+/* tragen (WrapMode der DataGridView-Spalte des Vorlaeufers). Die       */
+/* beanstandete Zeile wird hervorgehoben, statt wie frueher den Fokus   */
+/* in eine Zelle zu setzen.                                            */
+/* ------------------------------------------------------------------ */
+.epos-konflikt-kopf { margin: 0 0 8px; }
+.epos-konflikt-befund { white-space: normal; }
+.epos-konflikt-beanstandet { color: var(--epos-stufe-fehler); font-weight: 600; }
+.epos-leiste-fueller { flex: 1 1 auto; }

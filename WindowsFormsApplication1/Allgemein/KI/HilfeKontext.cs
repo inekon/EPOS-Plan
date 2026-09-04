@@ -173,6 +173,12 @@ namespace WindowsFormsApplication1
             // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
             { "Form_StromTest",              B_STROMSPEICHER },
 
+            // BEFUND W12-B20, nachgetragen (iU9-W12.3): Der Konfliktdialog hatte als
+            // einzige der sechs Masken der Welle 12 KEINEN Bereich, obwohl
+            // help_mapping.txt seit H1/H2 eine Zeile fuer ihn fuehrt. Er gehoert zum
+            // Uebernehmen fremder Projekte - dasselbe Ziel wie dort.
+            { "ImportKonflikteDialog",       B_PROJEKT },
+
             { "Form_GanglinieImportOptionen",B_STROMVERBRAUCHER },
             { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
             { "Form_Stromganglinie",         B_STROMVERBRAUCHER },
