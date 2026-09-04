@@ -195,6 +195,14 @@ die Seitenreihenfolge sind **wörtlich** übernommen.
 | Wächter `System.Windows.Forms`/`System.Drawing`/`MessageBox.`/`Registry.`/`ProtectedData`/`OleDb` im Kern | leer | **leer** |
 | `git grep` auf die gefallenen Klassen | nur Kommentare, Protokolle und das eingefrorene Prüfmuster | erfüllt |
 
+**Nach dem Merge von `origin/ios_migration`** (`3c7e0d6` — die W15c-Entscheide O‑1/O‑2,
+der Git-Tag `vor-W16` in der Konzeptnotiz und eine Korrektur am Transferdialog) ist das
+ganze Gate ein zweites Mal gelaufen: Build **0 / 6**, **3 923** grün und ebenso unter
+`en_US`, Formularkarte **123**, Stapellauf **7 / 8** mit 7 / 0 / 0 / 0, SQL **0 von
+1 234**, ChartProben **32**, Referenzlauf **byte-gleich in allen drei Projekten**
+(815 043 Werte), beide Wächter leer. **Der Merge lief ohne Konflikt** — die andere
+Seite hat weder `EPOS.UI/Seiten/` noch die beiden `Resource.resx` angefasst.
+
 ### R‑W16‑6 — der `projekt`-Vergleich
 
 Der Modus `EPOS.Referenzlauf projekt` rechnet, er **schreibt kein Projekt**; ein
