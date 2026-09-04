@@ -177,68 +177,58 @@ namespace WindowsFormsApplication1
             return Dienste.Navigation.OeffneMaske(Masken.ProjektSpeichernUnter);
         }
 
+        /// <summary>
+        /// Der LOESCHWEG eines Projekts — Auswahl, Sicherheitsabfrage, die drei
+        /// Loeschschritte, Erfolgsmeldung.
+        ///
+        /// <para><b>iU9-W15a.2:</b> Die Auswahl UND die Sicherheitsabfrage stehen jetzt in
+        /// derselben Razor-Komponente (<c>ProjektWahlDialog</c> mit
+        /// <c>ProjektZweck.Loeschen</c>) — der Anwender sieht die Frage dort, wo er
+        /// gerade ist. Die REIHENFOLGE der sechs Schritte ist unveraendert; die Schritte
+        /// 3 bis 5 (Tab_Applikation zuruecksetzen, Energieanlagen, Projekt) liegen seit
+        /// iU9-W15a.0d als <see cref="ProjektCtrl.LoeschenMitVorarbeiten"/> im Kern.</para>
+        ///
+        /// <para>Der Rueckgabewert bleibt der Projektname bei Erfolg und <c>""</c> sonst —
+        /// beide Aufrufer werten genau das aus.</para>
+        /// </summary>
         public string ProjektDelete(bool zuletzt = false)
         {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
             Projektwahl wahl = new Projektwahl();
-            string szProjekt = "";
 
-            if (Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl) && wahl.Name != "")
+            // Der Dialog liefert nur mit OK zurueck, und OK gibt es im Loeschmodus erst
+            // nach der Sicherheitsabfrage (warnend, Vorgabe "Nein" - damit die
+            // Eingabetaste kein Projekt loescht).
+            if (!Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl) || wahl.Name == "")
+                return "";
+
+            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(wahl.Id, wahl.Name);
+
+            if (befund.Stand == LoeschStand.ApplikationsdatenFehler)
             {
-                // --- Sicherheitsabfrage vor dem tatsächlichen Löschen ---
-                // warnend: das Warnsymbol ist hier eine Aussage.
-                // vorgabeNein: der Fokus liegt zur Sicherheit auf "Nein", damit die
-                // Eingabetaste kein Projekt löscht.
-                bool loeschen = Dienste.Dialog.Frage(
-                    $"Sind Sie sicher, dass Sie das Projekt '{wahl.Name}' und alle dazugehörigen Daten unwiderruflich löschen möchten?",
-                    "Projekt löschen bestätigen",
-                    warnend: true,
-                    vorgabeNein: true);
-
-                // Wenn der Nutzer nicht auf "Ja" klickt, wird der Löschvorgang abgebrochen
-                if (!loeschen)
-                {
-                    return "";
-                }
-
-                try
-                {
-                    // 1. Unhandlichen OdbcDataAdapter durch sauberes DataRepository.GetDataTable (OLEDB) ersetzt
-                    string selectSql = "SELECT * FROM Tab_Applikation";
-                    DataTable dt = DataRepository.GetDataTable(selectSql);
-
-                    if (dt != null && dt.Rows.Count > 0)
-                    {
-                        DataRow row = dt.Rows[0];
-                        if (row["ID_Projekt"] != DBNull.Value && Convert.ToInt32(row["ID_Projekt"]) == wahl.Id)
-                        {
-                            // 2. Statt speicherintensiven CommandBuilder upzudaten, führen wir ein gezieltes UPDATE per Repository aus
-                            string updateSql = "UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0";
-                            DbParam pName = new DbParam("?", "");
-
-                            DataRepository.ExecuteNonQuery(updateSql, pName);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
-                    Dienste.Dialog.Fehler($"Fehler beim Zurücksetzen der Applikationsdaten: {ex.Message}", "Fehler");
-                    return "";
-                }
-
-                ctrlwerz.ID_Projekt = wahl.Id;
-                ctrlwerz.Delete();
-
-                ctrlproj.m_szProjektname = wahl.Name;
-                ctrlproj.Delete(wahl.Name);
-                szProjekt = wahl.Name;
-
-                // --- NEU: Erfolgsmeldung nach erfolgreichem Löschen ---
-                Dienste.Dialog.Meldung($"Das Projekt '{szProjekt}' wurde erfolgreich gelöscht.", "Projekt gelöscht");
+                Dienste.Dialog.Fehler(
+                    string.Format(Text_("PRJ_DEL_MSG_APPFEHLER",
+                        "Fehler beim Zurücksetzen der Applikationsdaten: {0}"), befund.Fehlertext),
+                    Text_("SIM_TITEL_FEHLER", "Fehler"));
+                return "";
             }
-            return szProjekt;
+
+            if (befund.Stand != LoeschStand.Geloescht) return "";
+
+            Dienste.Dialog.Meldung(
+                string.Format(Text_("PRJ_DEL_MSG_ERFOLG",
+                    "Das Projekt '{0}' wurde erfolgreich gelöscht."), befund.Projektname),
+                Text_("PRJ_DEL_MSG_ERFOLG_TITEL", "Projekt gelöscht"));
+
+            return befund.Projektname;
+        }
+
+        /// <summary>Anzeigetext aus dem Ressourcenkatalog; Rueckfall = der deutsche Satz.</summary>
+        private static string Text_(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
         public void WP_Administration()
