@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -3320,6 +3322,17 @@ namespace WindowsFormsApplication1
             ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows > 0)
             {
+                // iU9-W11a.4: Der Aufruf bleibt WOERTLICH stehen - er ist jetzt nur
+                // asynchron: btn_Simulation_Click kehrt am ersten "await" zurueck, der
+                // Lauf laeuft im Hintergrund weiter, und diese Methode kommt sofort bis
+                // zur Zeile darunter. Genau das ist der Gewinn (Befund W11-B48).
+                //
+                // DER MERKER haelt die sichtbare Endlage: Bis hierher lief der Lauf
+                // SYNCHRON, setzte an seinem Ende den Reiter "Simulation" - und danach
+                // holte die Zeile darunter die "Uebersicht" in den Vordergrund. Ohne den
+                // Merker kaeme der Lauf jetzt NACH ihr an und der Anwender landete nach
+                // dem Oeffnen auf einem anderen Reiter als bisher.
+                _laufAusLoad = true;
                 btn_Simulation_Click(this, EventArgs.Empty);
             }
             tabControl_Simulation.SelectedTab = tabPage_Uebersicht;
@@ -3405,7 +3418,135 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private void btn_Simulation_Click(object sender, EventArgs e)
+        // ==================================================================
+        //  Der Lauf: nebenlaeufig seit iU9-W11a.4 (Befund W11-B48)
+        // ==================================================================
+        //
+        // AUSGANGSLAGE. Der Lauf stand SYNCHRON im Bedienfaden - kein Task, kein
+        // await, keine ProgressBar, kein WaitCursor, kein Abbruch (nachgezaehlt in der
+        // Vermessung: null Treffer). Bei einem grossen Projekt fror das Fenster fuer
+        // seine Dauer ein und die Titelzeile meldete "Keine Rueckmeldung" - und der
+        // Lauf startet beim OEFFNEN von selbst.
+        //
+        // AUFTEILUNG wie in Form_SpeicherOptimierung (Klassenkopf dort :29-46), der
+        // bisher einzigen nebenlaeufigen Rechnung des Programms:
+        //   UI-Faden:      Felder lesen, Vorpruefen, Bedarf, Bestuecken (Datenbank!),
+        //                  danach die Anzeige.
+        //   Hintergrund:   ausschliesslich SimulationLaufCtrl.Laufen.
+        //   Marshalling:   Progress<T>, auf dem UI-Faden erzeugt - es uebernimmt dessen
+        //                  SynchronizationContext und ruft den Fortschrittshandler von
+        //                  selbst wieder dort auf. Kein Invoke von Hand.
+        //
+        // DASS DER LAUF IM FREMDEN FADEN GEHT, ist gemessen (Probe R-W10a-2,
+        // EPOS.Kern.Tests/SimulationslaufAusFremdemFadenTests): SqliteDatenzugriff
+        // oeffnet je Aufruf eine eigene Verbindung und haelt nichts [ThreadStatic].
+        // Vorgezogen werden musste deshalb KEIN Lesevorgang.
+
+        /// <summary>Abbruchmarke des laufenden Simulationslaufs; <c>null</c> = kein Lauf.</summary>
+        private CancellationTokenSource m_LaufAbbruch;
+
+        /// <summary>Fortschrittsbalken und Abbrechen-Knopf der Fusszeile (programmatisch).</summary>
+        private ProgressBar bar_Lauf;
+        private Button btn_LaufAbbrechen;
+
+        /// <summary>
+        /// true, solange der Lauf aus <see cref="Form_Simulation_Detail_Load"/> stammt —
+        /// dann bleibt die Reiterwahl am Ende des Laufs aus (Begruendung dort).
+        /// </summary>
+        private bool _laufAusLoad;
+
+        /// <summary>Ob die Maske schon zu ist — dann darf kein Steuerelement mehr angefasst werden.</summary>
+        private bool Entsorgt()
+        {
+            return IsDisposed || Disposing;
+        }
+
+        /// <summary>
+        /// Legt Fortschrittsbalken und Abbrechen-Knopf an — an derselben gemessenen
+        /// Stelle der Fusszeile wie die Meldungszeile
+        /// (<see cref="LaufmeldungenLabelSicherstellen"/>). Beide koennen dort stehen,
+        /// weil sie sich zeitlich ausschliessen: waehrend des Laufs der Balken, danach
+        /// die Meldungen.
+        /// </summary>
+        private void LaufanzeigeSicherstellen()
+        {
+            if (bar_Lauf != null) return;
+
+            LaufmeldungenLabelSicherstellen();
+            int links = label_Laufmeldungen.Left;
+            int oben = label_Laufmeldungen.Top;
+
+            bar_Lauf = new ProgressBar();
+            bar_Lauf.Name = "bar_Lauf";
+            bar_Lauf.Location = new Point(links, oben);
+            bar_Lauf.Size = new Size(280, 20);
+            bar_Lauf.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            bar_Lauf.Minimum = 0;
+            bar_Lauf.Maximum = 100;
+            // Bis die erste Phase gemeldet ist, ist jede Prozentzahl erfunden - solange
+            // laeuft der Balken unbestimmt (Marquee).
+            bar_Lauf.Style = ProgressBarStyle.Marquee;
+            bar_Lauf.Visible = false;
+            this.Controls.Add(bar_Lauf);
+            bar_Lauf.BringToFront();
+
+            btn_LaufAbbrechen = new Button();
+            btn_LaufAbbrechen.Name = "btn_LaufAbbrechen";
+            btn_LaufAbbrechen.Text = MyResource.Resource.OPT_BTN_ABBRUCH;
+            btn_LaufAbbrechen.Location = new Point(links + 292, oben - 3);
+            btn_LaufAbbrechen.Size = new Size(120, 26);
+            btn_LaufAbbrechen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btn_LaufAbbrechen.Visible = false;
+            btn_LaufAbbrechen.Click += btn_LaufAbbrechen_Click;
+            this.Controls.Add(btn_LaufAbbrechen);
+            btn_LaufAbbrechen.BringToFront();
+        }
+
+        private void btn_LaufAbbrechen_Click(object sender, EventArgs e)
+        {
+            CancellationTokenSource quelle = m_LaufAbbruch;
+            if (quelle != null && !quelle.IsCancellationRequested) quelle.Cancel();
+            if (btn_LaufAbbrechen != null) btn_LaufAbbrechen.Enabled = false;
+        }
+
+        /// <summary>Sperrt bzw. entsperrt die Bedienung fuer die Dauer des Laufs.</summary>
+        private void LaufZustandSetzen(bool laeuft)
+        {
+            if (Entsorgt()) return;
+
+            btn_Simulation.Enabled = !laeuft;
+            btn_Konfiguration.Enabled = !laeuft;
+            btn_ErgebnisSpeichern.Enabled = !laeuft && _ergebnisGueltig;
+
+            if (bar_Lauf != null)
+            {
+                bar_Lauf.Visible = laeuft;
+                if (laeuft) bar_Lauf.Style = ProgressBarStyle.Marquee;
+            }
+            if (btn_LaufAbbrechen != null)
+            {
+                btn_LaufAbbrechen.Visible = laeuft;
+                btn_LaufAbbrechen.Enabled = laeuft;
+            }
+            if (label_Laufmeldungen != null && laeuft) label_Laufmeldungen.Visible = false;
+
+            Cursor = laeuft ? Cursors.WaitCursor : Cursors.Default;
+        }
+
+        /// <summary>
+        /// Zeigt eine Phasenmeldung des Kerns. Laeuft auf dem UI-Faden — <c>Progress&lt;T&gt;</c>
+        /// besorgt das Marshalling.
+        /// </summary>
+        private void LaufFortschrittAnzeigen(LaufFortschritt f)
+        {
+            if (Entsorgt() || bar_Lauf == null || f == null) return;
+
+            bar_Lauf.Style = ProgressBarStyle.Continuous;
+            int wert = (int)Math.Round(f.Anteil * 100.0);
+            bar_Lauf.Value = Math.Max(bar_Lauf.Minimum, Math.Min(bar_Lauf.Maximum, wert));
+        }
+
+        private async void btn_Simulation_Click(object sender, EventArgs e)
         {
             // NACHARBEIT PAKET 8, BEFUND N1 — Zustandsmaschine „Ergebnis speichern".
             //
@@ -3463,26 +3604,63 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Wärmebedarf und Strombedarf Simulation durchführen
-            sim.tool = tool;
-            sim.Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
-            sim.simulation_Waermebedarf = simulation_Waermebedarf;
-            sim.simulation_Strombedarf = simulation_Strombedarf;
-            sim.ctrl_konfig = ctrl;
-
             textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
             textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
-            sim.GrenzleistungBHKW = (int)numericUpDown_UnteresteLG.Value;
-            // Etappe 3: Das Pendelspeichervolumen kommt aus dem Projekt-Puffer
-            // "BHKW-Pendelspeicher" in LITERN - dieselbe Quelle wie im SimulationRunner.
-            // Das Eingabefeld schreibt beim Verlassen dorthin, gerechnet wird also mit
-            // dem gespeicherten Stand (Tab_Einstellungen.Pendelspeicher ist tot).
-            sim.VolumenPendelspeicherBHKW = PufferSpCtrl.PendelspeicherVolumenLiter(m_ID_Projekt);
-            sim.modeBHKW = bhkwSimulationsArt;
+            // Bestuecken (Schritt 8) - der LETZTE Datenbankzugriff vor dem Lauf, deshalb
+            // noch auf dem UI-Faden. Grenzleistung und Betriebsart kommen aus den
+            // Bedienelementen und nicht aus der gespeicherten Konfiguration: Der Anwender
+            // hat sie eben eingestellt (der headless SimulationRunner nimmt dort die
+            // gespeicherten Werte - das ist der einzige Unterschied der beiden Wege).
+            SimulationLaufCtrl.Bestuecken(sim, m_ID_Projekt, tool,
+                                          simulation_Waermebedarf, simulation_Strombedarf, ctrl,
+                                          (int)numericUpDown_UnteresteLG.Value, bhkwSimulationsArt);
 
-            // Tool Simulation WP, SPK usw. durchführen
-            sim.Do_Simulation(m_ID_Projekt);
+            // ---- Der Lauf: Hintergrund-Task (iU9-W11a.4) ----------------------
+            bool ausLoad = _laufAusLoad;
+            _laufAusLoad = false;
+
+            LaufanzeigeSicherstellen();
+            m_LaufAbbruch = new CancellationTokenSource();
+            CancellationToken marke = m_LaufAbbruch.Token;
+            IProgress<LaufFortschritt> melder = new Progress<LaufFortschritt>(LaufFortschrittAnzeigen);
+            LaufZustandSetzen(true);
+
+            try
+            {
+                await Task.Run(() => SimulationLaufCtrl.Laufen(sim, m_ID_Projekt, melder, marke), marke);
+            }
+            catch (OperationCanceledException)
+            {
+                // Der haeufigste Grund fuer einen Abbruch ist, dass der Anwender die
+                // Maske zumacht. Dann ist sie nach dem await bereits entsorgt, und jeder
+                // Zugriff auf ein Steuerelement landete als ObjectDisposedException in
+                // einer async-void-Fortsetzung - also unbehandelt. Deshalb steht die
+                // Pruefung in JEDEM Zweig.
+                if (Entsorgt()) return;
+
+                // Ein abgebrochener Lauf hat kein Ergebnis - der Knopf bleibt gesperrt
+                // (er ist es seit dem Kopf dieser Methode, Befund N1).
+                LaufmeldungenAnzeigen();
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (Entsorgt()) return;
+                MessageBox.Show(ex.Message, MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            finally
+            {
+                CancellationTokenSource quelle = m_LaufAbbruch;
+                m_LaufAbbruch = null;
+                if (quelle != null) quelle.Dispose();
+
+                if (!Entsorgt()) LaufZustandSetzen(false);
+            }
+
+            if (Entsorgt()) return;
 
             // PAKET 8 (Konzept 13.4) — Auswertung der beiden Kanäle NACH dem Lauf.
             //
@@ -3511,12 +3689,18 @@ namespace WindowsFormsApplication1
             // Konsole, die im Programm niemand sieht).
             LaufmeldungenAnzeigen();
 
-            tabControl_Simulation.SelectedTab = tabPage_Simulation;
-            if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+            // Beim AUTOMATIKSTART aus dem Laden bleibt die Reiterwahl aus: Dort holt der
+            // Aufrufer unmittelbar danach die "Uebersicht" nach vorn, und bis iU9-W11a.4
+            // lief dieser Block SYNCHRON davor. Ohne die Ausnahme laege die sichtbare
+            // Endlage jetzt auf einem anderen Reiter als bisher.
+            if (!ausLoad)
             {
-                listViewQuellen.SelectedIndices.Add(0);
+                tabControl_Simulation.SelectedTab = tabPage_Simulation;
+                if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+                {
+                    listViewQuellen.SelectedIndices.Add(0);
+                }
             }
-
         }
 
         /// <summary>
@@ -3539,26 +3723,18 @@ namespace WindowsFormsApplication1
         /// <returns>true, wenn der Lauf abgebrochen ist.</returns>
         private bool LaufAbgebrochen()
         {
-            string grund = !string.IsNullOrEmpty(sim.Sperrgrund) ? sim.Sperrgrund : sim.Fehlertext;
-            if (string.IsNullOrEmpty(grund)) return false;
+            // iU9-W11a.4: Beide Quellen und der Anhang aus dem Fehlerkanal stehen als
+            // SimulationLaufCtrl.Abbruchgrund im Kern.
+            //
+            // NACHARBEIT PAKET 8, BEFUNDE N6 und N12b — was im Dialog steht und was nicht.
+            // In den Dialog gehören der Abbruchgrund und die FEHLER des Kanals. Die
+            // WARNUNGEN gehören NICHT in denselben Dialog: Sie standen bis zur Nacharbeit
+            // doppelt da - einmal hier und einmal in der Fußzeile. Sie bleiben in der
+            // Fußzeile, wo sie den Anwender nicht aufhalten.
+            string text = SimulationLaufCtrl.Abbruchgrund(sim);
+            if (text == null) return false;
 
             ErgebnisUngueltig();
-
-            // NACHARBEIT PAKET 8, BEFUNDE N6 und N12b — was im Dialog steht und was nicht.
-            //
-            // In den Dialog gehören der Abbruchgrund und die FEHLER des Kanals. Die
-            // Module legen in ihren Fehlertext einen kurzen, allgemeinen Satz; die
-            // sprechende Diagnose (Ausnahmetext, betroffenes Stromprofil, betroffene
-            // Anlage) steht nur im Fehlerkanal und erreichte die Oberfläche bisher nie.
-            //
-            // Die WARNUNGEN gehören NICHT in denselben Dialog: Sie standen bis zur
-            // Nacharbeit doppelt da - einmal hier und einmal in der Fußzeile. Sie bleiben
-            // in der Fußzeile, wo sie den Anwender nicht aufhalten.
-            string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
-            string text = string.IsNullOrEmpty(fehlerZusatz)
-                ? grund
-                : grund + Environment.NewLine + Environment.NewLine + MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN +
-                  Environment.NewLine + fehlerZusatz;
 
             MessageBox.Show(text, MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -3722,12 +3898,12 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Ergebnismodell zentral über den SimulationRunner aufbauen (eine Quelle der Wahrheit).
-            ErgebnisModel m = SimulationRunner.BaueErgebnis(m_ID_Projekt,
-                simulation_Waermebedarf, simulation_Strombedarf, sim);
-
-            int id = new ErgebnisCtrl().Save(m);
-            if (id > 0)
+            // Ergebnismodell zentral über den SimulationRunner aufbauen (eine Quelle der
+            // Wahrheit) - seit iU9-W11a.4 über SimulationLaufCtrl.ErgebnisSpeichern.
+            // Das Auffrischen der Startmaske bleibt hier: Program.* ist im Kern verboten,
+            // und eine Oberflächenauffrischung ist auch keine Aufgabe des Speicherns.
+            if (SimulationLaufCtrl.ErgebnisSpeichern(m_ID_Projekt,
+                    simulation_Waermebedarf, simulation_Strombedarf, sim))
             {
                 // AP3b: Die Speicherübersicht in FormMain zeigt Ertrag und Amortisation
                 // der ZULETZT GESPEICHERTEN Rechnung - ohne diese Auffrischung stünden
@@ -3940,42 +4116,39 @@ namespace WindowsFormsApplication1
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
         {
-            int netzverluste = (int)ctrl.m_Netzverluste;
-            if (ctrl.m_szNetzverlusteEinheit == "%" && netzverluste > 100)
-            {
-                MessageBox.Show(MyResource.Resource.SIM_MSG_NETZVERLUSTE_ZU_GROSS);
-                return false;
-            }
-
             projektCtrl.ReadSingle(m_ID_Projekt);
             int nKlimaregion = projektCtrl.m_ID_Klimaregion;
-            if (nKlimaregion == 0)
+
+            // iU9-W11a.4: Die beiden Vorpruefungen stehen als
+            // SimulationLaufCtrl.Vorpruefen im Kern und liefern einen Text statt eines
+            // Dialogs. Der Dialog steht hier, wo er hingehoert.
+            //
+            // UEBERGEBEN WIRD "ctrl" SELBST, nicht "ctrl.model": KonfigurationCtrl ERBT
+            // von KonfigurationModel, und ReadSingle fuellt ausschliesslich das Feld
+            // "model" - die geerbten Felder bleiben auf ihrer Vorbelegung. Der Bestand
+            // liest hier (und im SimulationRunner) genau diese geerbten Felder; die
+            // Netzverluste sind damit faktisch immer 0. Das WOERTLICH zu uebernehmen ist
+            // Bedingung des Referenzlaufs - der Befund selbst ist im W11a-Protokoll als
+            // offener Punkt vermerkt.
+            string fehler = SimulationLaufCtrl.Vorpruefen(m_ID_Projekt, ctrl, nKlimaregion);
+            if (fehler != null)
             {
-                MessageBox.Show(MyResource.Resource.SIM_MSG_KLIMAREGION_WAEHLEN);
+                MessageBox.Show(fehler);
                 return false;
             }
 
-            // Parameter für die Wärmebedarf Simulation durchführen 
-            simulation_Waermebedarf.Netzverluste = netzverluste;
-            simulation_Waermebedarf.Netzverluste_Einheit = ctrl.m_szNetzverlusteEinheit;
-
-            // Wärmebedarf Simulation
-            simulation_Waermebedarf.Waermebedarf_berechnen(m_ID_Projekt, nKlimaregion);
-            simulation_Strombedarf.m_ID_Projekt = m_ID_Projekt;
-
-            // K1 (F3): denselben Klimadaten-Kalender wie die Wärmerechnung verwenden -
-            // erspart der Stromrechnung die eigene Klimadaten-Lesung und schließt aus,
-            // dass beide Bedarfsarten je einen anderen Wochentag ermitteln.
-            simulation_Strombedarf.WochentagJan1 = simulation_Waermebedarf.WochentagJan1;
-
-            // Strombedarf Simulation
-            simulation_Strombedarf.Berechnung(m_ID_Projekt);
+            // Bedarfsrechnung (Waerme, dann Strom mit demselben Wochentagskalender) -
+            // seit iU9-W11a.4 SimulationLaufCtrl.Bedarf.
+            string bedarfsfehler = SimulationLaufCtrl.Bedarf(
+                m_ID_Projekt, nKlimaregion,
+                ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
+                simulation_Waermebedarf, simulation_Strombedarf);
 
             // PAKET 8 (Konzept 13.4): Der Abbruch der Strombedarfsrechnung kam bisher als
             // MessageBox aus der Engine; das Formular rechnete danach mit einem leeren
             // Stromprofil weiter. Jetzt meldet die Engine über den Fehlerkanal, und der
             // Dialog steht hier - in der Oberfläche, wo er hingehört.
-            if (!string.IsNullOrEmpty(simulation_Strombedarf.Fehlertext))
+            if (bedarfsfehler != null)
             {
                 // NACHARBEIT PAKET 8, BEFUND N6: mit den FEHLERN des Kanals. Der
                 // Fehlertext des Moduls ist bewusst allgemein ("Die Stromprofile des
@@ -3983,12 +4156,11 @@ namespace WindowsFormsApplication1
                 // Ausnahmetext und betroffenes Stromprofil - steht im Fehlerkanal und
                 // erreichte die Oberfläche vorher nicht. Ohne sie hat der Anwender keinen
                 // Ansatzpunkt.
-                string grund = simulation_Strombedarf.Fehlertext;
-                string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
+                string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(bedarfsfehler);
                 MessageBox.Show(
                     string.IsNullOrEmpty(fehlerZusatz)
-                        ? grund
-                        : grund + Environment.NewLine + Environment.NewLine +
+                        ? bedarfsfehler
+                        : bedarfsfehler + Environment.NewLine + Environment.NewLine +
                           MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN + Environment.NewLine + fehlerZusatz,
                     MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
