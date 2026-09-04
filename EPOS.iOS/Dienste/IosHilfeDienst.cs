@@ -64,7 +64,7 @@ public sealed class IosHilfeDienst : IHilfeDienst
             // MyResource. Bis iU9-W15b.0g stand hier der deutsche Satz fest im
             // Quelltext - der einzige Verstoss der iOS-Huelle (Befund W15b-B20,
             // Auflage H-2).
-            MyResource.Resource.HILFE_IOS_BESCHREIBUNG,
+            WindowsFormsApplication1.MyResource.Resource.HILFE_IOS_BESCHREIBUNG,
             adresse);
     }
 

@@ -45,6 +45,21 @@ public class KiChatDialogTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
+    /// <summary>
+    /// Der Tooltip der Semantikzeile, so wie ihn die Hülle baut: der Text von
+    /// <c>KI_SEMANTIK_HERKUNFT</c> (wortgleich aus dem Vorläufer,
+    /// <c>Form_KiChat:936-938</c>) mit den drei Angaben aus
+    /// <c>SemantikModell</c>. Die drei Konstanten stehen im Kern und sind hier
+    /// mitgeprüft — steht dort ein anderes Modell, fällt dieser Zeuge auf.
+    /// </summary>
+    private const string HERKUNFT =
+        "Die semantische Suche arbeitet ausschließlich auf diesem Rechner. Modell: " +
+        MODELL + " (" + LIZENZ + "), einmalig bezogen von " + QUELLE + ".";
+
+    private const string MODELL = WindowsFormsApplication1.SemantikModell.NAME;
+    private const string LIZENZ = WindowsFormsApplication1.SemantikModell.LIZENZ;
+    private const string QUELLE = WindowsFormsApplication1.SemantikModell.QUELLE;
+
     private static KiChatTexte Texte() => new()
     {
         Verlauf = "Hilfe-Assistent",
@@ -52,6 +67,7 @@ public class KiChatDialogTests : BunitContext
         KontextLeer = "Kontext: (nicht erkannt)",
         Denkt = "Der Assistent denkt nach...",
         VerbrauchFormat = "Heute genutzt: {0} von {1}",
+        SemantikHerkunft = HERKUNFT,
         Eingabe = "Ihre Frage",
         Fragen = "Fragen",
         Suchen = "Nur suchen",
@@ -561,5 +577,46 @@ public class KiChatDialogTests : BunitContext
         cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Schließen").Click();
 
         Assert.Equal(1, gemeldet);
+    }
+
+    // ==================================================================
+    //  Die Semantikzeile und ihr Tooltip (Entscheid W15b-O-2, 04.09.2026)
+    // ==================================================================
+
+    /// <summary>
+    /// <b>Mit Semantikzustand:</b> Die Statuszeile trägt ein <c>title</c>-Merkmal
+    /// mit Modellname, Lizenz und Herkunft — der Tooltip, der im Bestand am
+    /// Statuslabel hing (<c>Form_KiChat:935-938</c>) und mit dem Label entfiel
+    /// (Anpassung A‑10).
+    /// </summary>
+    [Fact]
+    public void Die_Semantikzeile_traegt_Modell_Lizenz_und_Herkunft_als_Tooltip()
+    {
+        var cut = Zeigen(p => p.Add(x => x.SemantikZeile,
+            (Func<string>)(() => "Semantische Suche aktiv")));
+
+        var zeile = cut.Find("span.epos-kichat-status");
+        string tipp = zeile.GetAttribute("title") ?? "";
+
+        Assert.Contains("Semantische Suche aktiv", zeile.TextContent, StringComparison.Ordinal);
+        Assert.Contains(MODELL, tipp, StringComparison.Ordinal);
+        Assert.Contains(LIZENZ, tipp, StringComparison.Ordinal);
+        Assert.Contains(QUELLE, tipp, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ohne Semantikzustand:</b> gar kein <c>title</c>. Der Tagesverbrauch steht
+    /// zwar in derselben Zeile, aber über ihn sagt der Tooltip nichts — und ein
+    /// leerer Kasten unter dem Mauszeiger wäre schlimmer als keiner.
+    /// </summary>
+    [Fact]
+    public void Ohne_Semantikzustand_gibt_es_keinen_Tooltip()
+    {
+        var cut = Zeigen();
+
+        var zeile = cut.Find("span.epos-kichat-status");
+
+        Assert.Contains("Heute genutzt: 3 von 50", zeile.TextContent, StringComparison.Ordinal);
+        Assert.False(zeile.HasAttribute("title"));
     }
 }
