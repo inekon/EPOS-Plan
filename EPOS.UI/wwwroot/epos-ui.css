@@ -2813,3 +2813,113 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Gespraechsverlauf des KI-Assistenten (iU9-W15b.6, Bausteinluecke 17).
+
+   Vorbild ist Form_KiChat._verlaufAnzeige: eine RichTextBox, ReadOnly, weisser
+   Grund, beide Bildlaufleisten. Die acht Farben und zwei Schriftschnitte, die
+   SchreibeZeile je vergeben hat, stehen als Rollenklassen darunter.
+
+   pre-line statt pre: Die Umbrueche INNERHALB einer Zeile bleiben erhalten (der
+   Antworttext des Modells ist mehrzeilig), aber es entsteht kein Waagerecht-
+   Bildlauf - overflow-wrap: anywhere bricht auch ein ueberlanges Wort (G-10).
+   -------------------------------------------------------------------------- */
+.epos-verlauf {
+    flex: 1 1 auto;
+    min-height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen, #d1d5db);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px 16px 10px;
+}
+
+.epos-verlauf:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-verlauf-zeile {
+    margin: 0 0 2px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--epos-verlauf-assistent);
+}
+
+.epos-verlauf-zeile--anwender      { color: var(--epos-verlauf-anwender); font-weight: 600; }
+.epos-verlauf-zeile--assistent     { color: var(--epos-verlauf-assistent); }
+.epos-verlauf-zeile--assistentkopf { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--ueberschrift  { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--leise         { color: var(--epos-verlauf-leise); }
+.epos-verlauf-zeile--erfolg        { color: var(--epos-verlauf-erfolg); }
+.epos-verlauf-zeile--warnung       { color: var(--epos-verlauf-warnung); }
+.epos-verlauf-zeile--fehler        { color: var(--epos-verlauf-fehler); }
+.epos-verlauf-zeile--bestaetigung  { color: var(--epos-verlauf-bestaetigung); font-weight: 600; }
+
+/* Der Absatztrenner traegt keinen Text und braucht trotzdem Hoehe. */
+.epos-verlauf-zeile--leerzeile {
+    min-height: 0.6em;
+}
+
+/* Ein Verweis ist ein KNOPF, kein <a>: Die Komponente oeffnet nichts selbst,
+   sie meldet die Adresse (G-6). Damit gibt es auch kein href, das ein
+   Rechtsklick kopieren und ein Kontextmenue oeffnen koennte. 44 px
+   Beruehrungsziel (M2) ueber die Zeilenhoehe, nicht ueber Polsterung - sonst
+   risse jede Quellenzeile den Verlauf auseinander. */
+.epos-verlauf-verweis {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    text-align: left;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-verlauf-verweis:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* Die drei wandernden Punkte des Beschaeftigt-Zustands. Kein Bild, keine
+   Schriftart - drei Zeichen und eine Blende. */
+.epos-verlauf-punkte::after {
+    content: "\2022\2022\2022";
+    letter-spacing: 2px;
+    margin-right: 6px;
+    animation: epos-verlauf-blenden 1.2s ease-in-out infinite;
+}
+
+@keyframes epos-verlauf-blenden {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-verlauf-punkte::after { animation: none; opacity: 0.6; }
+}
+
+/* Der Fussbereich liegt IM Bildlauf, direkt nach der letzten Zeile (E-3). */
+.epos-verlauf-fuss {
+    margin-top: 8px;
+}
+
+.epos-verlauf-kopieren {
+    align-self: flex-start;
+    margin-top: 4px;
+    min-height: var(--epos-touchziel);
+}
+
+@media (forced-colors: active) {
+    /* Im Hochkontrastbetrieb traegt die FARBE keine Bedeutung mehr - das System
+       setzt sie. Was bleibt, ist der Schriftschnitt und der Rahmen. */
+    .epos-verlauf { border: 1px solid CanvasText; }
+    .epos-verlauf-verweis { color: LinkText; }
+}
