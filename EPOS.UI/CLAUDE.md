@@ -205,6 +205,12 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Simulation/QuellePufferspeicherDialog` | `Form_QuellePufferspeicher` (iU9‑W10a.5) | `Views/Simulation/QuellePufferspeicherHuelle.cs`; WP- und Kesselzweig in EINER Maske, Pufferverwaltung als Überlagerung |
 | `Simulation/QuellprofilDialog` | `Form_Quellprofil` (iU9‑W10a.6) | `Views/Simulation/QuellprofilHuelle.cs` → `QuellprofilCtrl`; **virtualisiertes** Raster mit 8 760 Zeilen |
 | `Simulation/WaermesenkeDialog` | `Form_Waermesenke` (iU9‑W10a.7) | `Views/Simulation/WaermesenkeHuelle.cs` → `Z_AnlageSenkeCtrl`, `AnlagePufferVerbundCtrl`, `Ladeordnung`, `Warnkriterien`; **11 Delegaten**, Pufferverwaltung als Überlagerung |
+| `Strom/GanglinieProtokollDialog` | `Form_GanglinieProtokoll` (iU9‑W12.1) | keine Hülle — `GanglinienProtokollText` im Kern; erscheint als Überlagerung in beiden Wirten der Importkette |
+| `Strom/GanglinieImportOptionenDialog` | `Form_GanglinieImportOptionen` (iU9‑W12.2) | keine Hülle — `GanglinienOptionenModell` im Kern; die Vorschau kommt über einen Delegaten aus `GanglinienDatei.Vorschau` |
+| `Import/ImportKonflikteDialog` | `Form_ImportKonflikte` (iU9‑W12.3) | `Views/Import/ImportKonflikteHuelle.cs` → `ImportKonfliktModell`; die Hülle bedient die **vier W13-Importmasken** und fällt mit Welle 13 |
+| `Strom/StromganglinieAdminDialog` | `Form_Stromganglinie_Admin` (iU9‑W12.4) | `Views/Stromverbraucher/StromganglinieAdminHuelle.cs` → `StromganglinieStammCtrl`, `GanglinienImportAblauf`; **drei** Überlagerungen der Importkette |
+| `Strom/StromganglinieDialog` | `Form_Stromganglinie` (iU9‑W12.5) | `Views/Stromverbraucher/StromganglinieHuelle.cs` → `Z_ProjektStromganglinieCtrl`, `StromganglinieStammCtrl`; Verwaltung als Überlagerung, Assistentenschnitt für W16 |
+| `Strom/PeakShavingDialog` | `Form_PeakShaving` (iU9‑W12.6) | `Views/Stromspeicher/PeakShavingHuelle.cs` → `PeakShavingCtrl`, `PeakShavingEingaben`, `PeakShavingKennzahlenBlock`, `PeakShavingBild`; **beide Rechenläufe** in `Task.Run` mit `Fortschritt` |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -279,6 +285,23 @@ läuft in `Task.Run` und meldet seine fünf Phasen an den Baustein `Fortschritt`
 er startet beim Öffnen von selbst, wie eh und je. **Eine Komponente in zwei
 Rollen:** `UebersichtReiter` ist der Hauptreiter „Übersicht" UND — mit
 `NurNavigator` — das erste Blatt des Ergebnisreiters.
+
+**Sechs Masken, eine Kette** (iU9‑W12): Die AP5-Importkette der
+Stromganglinien stand ZWEIMAL wörtlich im Bestand — einmal mit Ablage
+(`Form_Stromganglinie_Admin`), einmal ohne (`Form_PeakShaving`). Sie ist
+jetzt EIN Kern-Ablauf (`GanglinienImportAblauf`) mit zwei Ausprägungen und
+drei RÜCKRUFEN; die drei Zwischenmasken — Optionen, Protokoll, Konflikte —
+erscheinen als `Ueberlagerung` desselben Fensters, und jeder Rückruf wartet
+auf eine `TaskCompletionSource`, die der Unterdialog beim Schließen auflöst.
+`ImportKonflikteDialog` ist **Blatt vor Host mit Hülle**: Vier seiner fünf
+Aufrufer sind bis Welle 13 WinForms, und die `Sprungbruecke` kann keine
+Nutzlast zurückgeben (Schlüssel → `Form` → `bool`). Der Nachweis der Welle ist
+der **bitgleiche Import**: zwölf Proben mit eingefrorenen Erwartungswerten,
+vor jedem Umbau angelegt. `PeakShavingDialog` bringt die zweite nebenläufige
+Rechnung der Oberfläche mit (`Task.Run` + `Fortschritt`, wie W11a) und das
+erste Bild, das eine SEKUNDÄRACHSE braucht — dafür genügt der
+Bestandsrenderer `ChartRenderer.ErzeugerStapel`, ein neuer wäre eine zweite
+Wahrheit über dieselbe Zeichnung.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
