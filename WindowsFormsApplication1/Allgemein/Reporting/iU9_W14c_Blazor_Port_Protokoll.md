@@ -435,7 +435,7 @@ Am Windows-Gerät zu prüfen — was kein automatisches Netz sieht.
 | **E‑4** | **Die y-Achse des Sonnenwinkels** — am kleinsten Wert oder bei 0? | **bei 0**, über `MinimumNull` (W14c.0j); das Bild bleibt wie im Bestand |
 | **E‑5** | **Auf iOS gibt es die fünf „Durchsuchen…"-Knöpfe der Einstellungen nicht** (`OrdnerWaehlen` liefert dort immer `""`). Reicht das — oder braucht iOS gar keine Pfadeinstellungen? | **entschieden** (Anwender, 04.09.2026: „Empfehlung"): **Ohne `OrdnerWaehler` sind die fünf Pfade fest** — nur lesende Felder mit dem Wert aus `EinstellungenCtrl` (auf iOS die Sandbox-Pfade), kein Knopf, darüber der Hinweis `ADM_SET_HINT_PFADE_FEST` („Die Ordner sind auf dieser Plattform fest vorgegeben." / „Folders are fixed on this platform."); „Speichern" schreibt die übrigen Werte unverändert und gibt die fünf Pfade so zurück, wie der Kern sie vorgegeben hat — auch nach „Standardwerte". Mit Wähler (Windows) bleibt alles wie bisher. Fünf neue bunit-Fälle |
 | **E‑6** | **Löschen einer Klimaregion räumt künftig die 8 760 + 365 Datenzeilen ab.** Sollen vorhandene Altwaisen mit einer einmaligen Bereinigung mitgehen? | **entschieden** (Anwender, 04.09.2026): „Altbereinigung ausführen." Umgesetzt als **Schemaschritt 62** (`SCHRITT_62_KLIMAWAISEN`, der ERSTE Eintrag in `SCHRITTE_SQLITE`) — zwei `DELETE` aus `KlimaWaisenBereinigung` im Kern; auf `Kenndaten_Test.sqlite` ein **No-op** (0 Waisen). Siehe den Nachtrag unten |
-| **E‑7** | **`Ortsnamen.txt` fehlt in Auslieferung und Repo.** Was soll die Ortsauswahl anbieten? | **(c) umgesetzt**: vorhanden → Vorschlagsliste, fehlt → leere Liste, nie ein Absturz; das Feld erlaubt immer freie Eingabe. Ob die Datei künftig ausgeliefert oder aus `Tab_Klimaregion_STAMM` gefüllt wird — offen |
+| **E‑7** | **`Ortsnamen.txt` fehlt in Auslieferung und Repo.** Was soll die Ortsauswahl anbieten? | **entschieden** (Anwender, 04.09.2026: „Empfehlung"): Es bleibt bei **(c)** — vorhanden → Vorschlagsliste, fehlt → leere Liste, nie ein Absturz, freie Eingabe immer. **Keine Datei wird ausgeliefert** (`Setup/EPOS-Plan.iss` unberührt), und **Katalognamen scheiden als Vorschlag aus** — Begründung im Nachtrag unten |
 | **E‑8** | **WebView2-Bezug**: Mit dieser Welle sind die letzten vier Admin-Masken Blazor. Ohne die WebView2-Laufzeit bleiben Gesetzeskatalog, Dublettensuche, Einstellungen und Klimadaten LEER — die Anwendung startet, aber die Verwaltung ist unbedienbar. Das Setup installiert die Laufzeit nach (`Setup/EPOS-Plan.iss`, `WebView2Vorhanden`); auf einem Rechner ohne Internet muss sie vorher da sein | Hinweis, keine Änderung |
 
 ### Nachtrag zu E‑3: die zwei Begriffe (04.09.2026)
@@ -459,6 +459,23 @@ Stilblatt und dienen nur als Prüfanker).
 Die Abschnitte § 1, § 3.5 und § 12 dieses Protokolls nennen die Komponente weiter
 `KlimaregionDialog` — sie sind der **datierte Bericht des Portstands**, nicht der aktuelle
 Namensstand.
+
+### Nachtrag zu E‑7: warum Katalognamen als Vorschlag ausscheiden (04.09.2026)
+
+Die Empfehlung lautete zunächst, die Vorschläge aus den Namen des Stammkatalogs zu speisen.
+**Dabei ist ein Widerspruch aufgefallen, der die Umsetzung ändert:** Im Zweig `AusOrtsname` ist
+der Ortsname zugleich der NAME der neuen Region (`KlimaImportAblauf.cs:182`, `bezeichner = ort`),
+und unmittelbar danach weist die Dublettenprüfung **A‑9** jeden bereits vergebenen Namen ab
+(`KlimaregionStammCtrl.GetStammId(bezeichner) > 0` → `KlimaImportAusgang.Dublette`). Jeder
+Vorschlag aus dem Katalog wäre also per Definition ein Name, den es schon gibt — die Liste böte
+ausschließlich Eingaben an, die der Import eine Zeile später zurückweist.
+
+**Deshalb: keine Katalognamen in der Vorschlagsliste.** Es bleibt bei Variante (c), wie sie seit
+W14c.7 steht — `KlimadatenHuelle.Ortsvorschlaege()` liest
+`<BenutzerLokal>\Ortsliste\Ortsnamen.txt`, wenn es sie gibt, liefert sonst eine leere Liste und
+fängt jeden Fehler ab; das Feld ist ein `<input list>` und nimmt jede freie Eingabe. **Am Code war
+dafür nichts zu ändern** (geprüft), und **`Setup/EPOS-Plan.iss` bleibt unberührt** — es wird keine
+Ortsliste ausgeliefert.
 
 ### Die Zählung zu E‑6 (verlangt in § 11.6)
 
