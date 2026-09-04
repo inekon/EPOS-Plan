@@ -2413,6 +2413,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Windows-Abnahmeliste mit 25 Punkten und acht offenen Punkten:
 > `WindowsFormsApplication1/Allgemein/Reporting/iU9_W5_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+> **Windows-Abnahme 04.09.2026, erster Befund (Kosten-Seite):** die Aktionsspalte der Anlagentabelle war unsichtbar
+> (`display:flex` direkt am `<td>` nahm der Zelle ihre Tabellenrolle, der Spaltenkopf war leer — W5‑B‑1) und der
+> Doppelklick auf der losen Position fehlte. **W5‑O3 entschieden: der Doppelklick ist als zweiter Weg zurück, der
+> Knopf bleibt**; Aktionsspalte als gewöhnliche Zelle mit beschriftetem Kopf (`5f153f1`, sechs bunit-Fälle, darunter eine
+> Wache auf das Stilblatt; Regel in `EPOS.UI/CLAUDE.md`: kein `display:flex` auf `<td>`/`<th>`, Aktionsknöpfe ohne
+> Hover sichtbar). Die Sichtprüfung in der WebView2 bleibt beim Anwender.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
