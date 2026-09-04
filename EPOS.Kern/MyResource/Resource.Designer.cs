@@ -39459,5 +39459,455 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("START_STATUS_KEINS", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie · Planung · Optimierung · Simulation ähnelt.
+        /// </summary>
+        public static string HAUPT_CLAIM {
+            get {
+                return ResourceManager.GetString("HAUPT_CLAIM", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die INEKON - Intelligente Energiekonzepte ähnelt.
+        /// </summary>
+        public static string HAUPT_UEBER_HAUS {
+            get {
+                return ResourceManager.GetString("HAUPT_UEBER_HAUS", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Über {0} ähnelt.
+        /// </summary>
+        public static string HAUPT_UEBER_TITEL {
+            get {
+                return ResourceManager.GetString("HAUPT_UEBER_TITEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version {0} ähnelt.
+        /// </summary>
+        public static string HAUPT_VERSION {
+            get {
+                return ResourceManager.GetString("HAUPT_VERSION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration ähnelt.
+        /// </summary>
+        public static string MENU_ADMINISTRATION {
+            get {
+                return ResourceManager.GetString("MENU_ADMINISTRATION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string MENU_BHKW {
+            get {
+                return ResourceManager.GetString("MENU_BHKW", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser ähnelt.
+        /// </summary>
+        public static string MENU_BRAUCHWASSER {
+            get {
+                return ResourceManager.GetString("MENU_BRAUCHWASSER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten & Import ähnelt.
+        /// </summary>
+        public static string MENU_DAT_IMPORT {
+            get {
+                return ResourceManager.GetString("MENU_DAT_IMPORT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deutsch ähnelt.
+        /// </summary>
+        public static string MENU_DEUTSCH {
+            get {
+                return ResourceManager.GetString("MENU_DEUTSCH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dokumentation ähnelt.
+        /// </summary>
+        public static string MENU_DOKUMENTATION {
+            get {
+                return ResourceManager.GetString("MENU_DOKUMENTATION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen ähnelt.
+        /// </summary>
+        public static string MENU_EINSTELLUNGEN {
+            get {
+                return ResourceManager.GetString("MENU_EINSTELLUNGEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesysteme ähnelt.
+        /// </summary>
+        public static string MENU_ENERGIESYSTEME {
+            get {
+                return ResourceManager.GetString("MENU_ENERGIESYSTEME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Englisch ähnelt.
+        /// </summary>
+        public static string MENU_ENGLISCH {
+            get {
+                return ResourceManager.GetString("MENU_ENGLISCH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Export/Import ähnelt.
+        /// </summary>
+        public static string MENU_EXPORT_IMPORT {
+            get {
+                return ResourceManager.GetString("MENU_EXPORT_IMPORT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string MENU_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("MENU_GEBAEUDE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string MENU_GEB_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("MENU_GEB_BEARBEITEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen ähnelt.
+        /// </summary>
+        public static string MENU_GEB_TYPEN {
+            get {
+                return ResourceManager.GetString("MENU_GEB_TYPEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe ähnelt.
+        /// </summary>
+        public static string MENU_HELP {
+            get {
+                return ResourceManager.GetString("MENU_HELP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Heizkessel VDI 3805 ähnelt.
+        /// </summary>
+        public static string MENU_IMPORT_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("MENU_IMPORT_HEIZKESSEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string MENU_KESSEL {
+            get {
+                return ResourceManager.GetString("MENU_KESSEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten & Umgebung ähnelt.
+        /// </summary>
+        public static string MENU_KLIMA {
+            get {
+                return ResourceManager.GetString("MENU_KLIMA", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string MENU_KLIMADATEN {
+            get {
+                return ResourceManager.GetString("MENU_KLIMADATEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten ähnelt.
+        /// </summary>
+        public static string MENU_KOSTEN_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("MENU_KOSTEN_VERWALTUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz ähnelt.
+        /// </summary>
+        public static string MENU_LIZENZ {
+            get {
+                return ResourceManager.GetString("MENU_LIZENZ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz… ähnelt.
+        /// </summary>
+        public static string MENU_LIZENZ_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("MENU_LIZENZ_VERWALTUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string MENU_PC_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("MENU_PC_BEARBEITEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string MENU_PROJEKTE {
+            get {
+                return ResourceManager.GetString("MENU_PROJEKTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten... ähnelt.
+        /// </summary>
+        public static string MENU_PROJEKT_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("MENU_PROJEKT_BEARBEITEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen... ähnelt.
+        /// </summary>
+        public static string MENU_PROJEKT_LOESCHEN {
+            get {
+                return ResourceManager.GetString("MENU_PROJEKT_LOESCHEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu... ähnelt.
+        /// </summary>
+        public static string MENU_PROJEKT_NEU {
+            get {
+                return ResourceManager.GetString("MENU_PROJEKT_NEU", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnen... ähnelt.
+        /// </summary>
+        public static string MENU_PROJEKT_OEFFNEN {
+            get {
+                return ResourceManager.GetString("MENU_PROJEKT_OEFFNEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string MENU_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("MENU_PROZESSWAERME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string MENU_PUFFER_SP {
+            get {
+                return ResourceManager.GetString("MENU_PUFFER_SP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Pufferspeicher VDI 3805 ähnelt.
+        /// </summary>
+        public static string MENU_PUFFER_SP_VDI3805 {
+            get {
+                return ResourceManager.GetString("MENU_PUFFER_SP_VDI3805", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string MENU_PV {
+            get {
+                return ResourceManager.GetString("MENU_PV", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Photovoltaik CEC/Pan ähnelt.
+        /// </summary>
+        public static string MENU_PV_IMPORT_CEC {
+            get {
+                return ResourceManager.GetString("MENU_PV_IMPORT_CEC", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren ähnelt.
+        /// </summary>
+        public static string MENU_SOLARKOLLEKTOREN {
+            get {
+                return ResourceManager.GetString("MENU_SOLARKOLLEKTOREN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermieganglinie ähnelt.
+        /// </summary>
+        public static string MENU_SOL_THERM_GANGLINIE {
+            get {
+                return ResourceManager.GetString("MENU_SOL_THERM_GANGLINIE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinie ähnelt.
+        /// </summary>
+        public static string MENU_STROMGANGLINIE {
+            get {
+                return ResourceManager.GetString("MENU_STROMGANGLINIE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string MENU_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("MENU_STROMSPEICHER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher ähnelt.
+        /// </summary>
+        public static string MENU_STROMVERBRAUCHER {
+            get {
+                return ResourceManager.GetString("MENU_STROMVERBRAUCHER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf & Speicher ähnelt.
+        /// </summary>
+        public static string MENU_STROM_BEDARFUND_SP {
+            get {
+                return ResourceManager.GetString("MENU_STROM_BEDARFUND_SP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string MENU_ST_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("MENU_ST_BEARBEITEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Solarthermie VDI 3805 ähnelt.
+        /// </summary>
+        public static string MENU_ST_IMPORT {
+            get {
+                return ResourceManager.GetString("MENU_ST_IMPORT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Wärmepumpen VDI 3805 ähnelt.
+        /// </summary>
+        public static string MENU_VDI3805 {
+            get {
+                return ResourceManager.GetString("MENU_VDI3805", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version ähnelt.
+        /// </summary>
+        public static string MENU_VERSION {
+            get {
+                return ResourceManager.GetString("MENU_VERSION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Lastgang ähnelt.
+        /// </summary>
+        public static string MENU_WAERMEBEDARF_EXTERN {
+            get {
+                return ResourceManager.GetString("MENU_WAERMEBEDARF_EXTERN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf & Heizung ähnelt.
+        /// </summary>
+        public static string MENU_WBUND_HEIZUNG {
+            get {
+                return ResourceManager.GetString("MENU_WBUND_HEIZUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen ähnelt.
+        /// </summary>
+        public static string MENU_WP {
+            get {
+                return ResourceManager.GetString("MENU_WP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zuletzt geöffnet ähnelt.
+        /// </summary>
+        public static string MENU_ZULETZT_GEOEFFNET {
+            get {
+                return ResourceManager.GetString("MENU_ZULETZT_GEOEFFNET", resourceCulture);
+            }
+        }
 }
 }
