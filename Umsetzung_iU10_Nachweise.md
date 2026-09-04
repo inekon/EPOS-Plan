@@ -274,6 +274,15 @@ Importmasken; die Sprungbrücke `WaermebedarfExternAdmin` ist gefallen. Bau, Sim
 Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
 Freigabe bis Migrationsende.
 
+**Fünfzehnter Lauf 33852944072 (`ios.yml`, `macos-26`, 04.09.2026, 08:20–08:27 UTC, 7 min 24 s)** auf
+`ecd6cfe` — der Stand **nach den Wellen 14a und 14b**: grün. Erstmals mit den Katalogbrowsern
+(`KatalogBrowserDialog`, `PufferSpKatalogDialog`, `ModulKatalogDialog`), der Bedarfs-Admin (`BedarfAdminDialog`,
+`SolarganglinieAdminDialog`), der Energieeinheiten-Wahl MWh/kWh im Kern, der berichtigten Heizkessel-Brennstoffkette
+und ohne elf Admin-Masken, `ToolsClass`, `SpeichernLeiste`, `KiAufrufKnopf`; die Sprungbrücke trägt nur noch die
+Zweige `Gesetzesparameter`, `GesetzesparameterCo2` (W14c) und `SpeicherOptimierung` (iF22). Bau, Simulatorstart,
+Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der
+pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
