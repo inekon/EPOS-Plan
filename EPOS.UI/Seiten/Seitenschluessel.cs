@@ -106,7 +106,7 @@ public static class Seitenschluessel
     /// Reiter, 21 Kacheln, Kopfband mit Projektwahl und Klimaregion.
     /// </summary>
     /// <remarks>
-    /// Unter Windows steht sie seit W16b unmittelbar in <c>MDIMainForm</c>; mit
+    /// Unter Windows steht sie seit W16b unmittelbar in <c>Hauptfensterrahmen</c>; mit
     /// W16c ist sie die Vorgabeansicht von <see cref="AppWurzel"/> und damit auf
     /// beiden Plattformen dieselbe Seite (E-1). Auf iOS speist
     /// <c>IProjektQuelle.Startkacheln(id)</c> ihren Kachelbestand (K6).
@@ -234,7 +234,7 @@ public static class Seitenschluessel
     //  Neunzehn Menuepunkte fuehren nicht auf eine Maske aus "Masken", sondern
     //  auf einen zusammengesetzten Ablauf oder auf eine Windows-Eigenheit
     //  (Sprachwechsel, Browser, Versionsmeldung). Im Bestand war jeder von
-    //  ihnen ein eigener Ereignishandler in MDIMainForm; hier ist er ein
+    //  ihnen ein eigener Ereignishandler in Hauptfensterrahmen; hier ist er ein
     //  Schluessel wie jeder andere, und Hauptfenster.Springe verteilt ihn -
     //  entweder selbst oder ueber den Weg-Delegaten der Huelle.
     //

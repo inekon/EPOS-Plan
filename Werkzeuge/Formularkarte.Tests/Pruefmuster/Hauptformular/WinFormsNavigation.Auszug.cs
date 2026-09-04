@@ -15,7 +15,7 @@
 //
 // Genau das steht hier. Der Auszug führt EINEN Zweig — den zum eingefrorenen
 // `Form_PufferSp_Admin` unter Pruefmuster/Pufferspeicher/ —, und der Weg dorthin beginnt in
-// `MDIMainForm.Sprungtabelle.Auszug.cs`, der zweiten Wurzeldatei desselben Ordners.
+// `Hauptfensterrahmen.Sprungtabelle.Auszug.cs`, der zweiten Wurzeldatei desselben Ordners.
 //
 // Der Rumpf ist der Zweig aus WindowsFormsApplication1/Dienste/WinFormsNavigation.cs, Stand
 // vor iU9-W14a.1 — dort ging er noch auf die Maske, heute auf `PufferSpAdminHuelle`. Die

@@ -36,10 +36,10 @@ public sealed class ErreichbarkeitTests
 
     // iU9-W16b.3: Es ist nur noch EINE Wurzel. Form_Start ist eine Razor-Seite
     // (EPOS.UI/Seiten/Start/Startseite.razor) und damit keine Maske mehr; der
-    // Graph beginnt seither allein an MDIMainForm - und Form_HelpPopup, die
+    // Graph beginnt seither allein an Hauptfensterrahmen - und Form_HelpPopup, die
     // letzte Maske neben der Huelle, haengt weiter daran (Befund W16-B3).
     [Theory]
-    [InlineData("MDIMainForm")]
+    [InlineData("Hauptfensterrahmen")]
     public void DieBeidenEinstiegeSindWurzeln(string klasse)
     {
         var knoten = Knoten(klasse);
@@ -162,18 +162,18 @@ public sealed class ErreichbarkeitTests
     {
         // Die Zeugenkette: Form_Heizkessel -> Form_Gebaeude ->
         // Form_Stromganglinie (bis W12) -> Form_AdminSettings (bis W14c) ->
-        // MDIMainForm. Jeder Vorgaenger ist mit seiner Welle geloescht (Regel M1).
+        // Hauptfensterrahmen. Jeder Vorgaenger ist mit seiner Welle geloescht (Regel M1).
         //
-        // iU9-W14c.9: MDIMainForm ist die WURZEL des Erreichbarkeitsgraphen -
+        // iU9-W14c.9: Hauptfensterrahmen ist die WURZEL des Erreichbarkeitsgraphen -
         // Pfadlaenge 1, und sie faellt als ALLERLETZTE Maske ueberhaupt (Welle 16).
         // Der Anker kann damit nicht mehr unerreichbar werden und muss nicht noch
         // einmal umziehen. Form_ProjektSpeichernUnter waere der zweitbeste
         // gewesen - sie faellt schon mit W15a und traegt seit W14a den
         // Maskenschluessel-Zeugen; zwei Anker auf einer Maske sind unnoetig.
-        var knoten = Knoten("MDIMainForm");
+        var knoten = Knoten("Hauptfensterrahmen");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Equal("MDIMainForm", knoten.Pfad);
+        Assert.Equal("Hauptfensterrahmen", knoten.Pfad);
     }
 
     // iU9-W16a.3 - der AUFTRAG T2 aus dem Protokoll der Welle 15a (Paragraph 8) ist
@@ -211,7 +211,7 @@ public sealed class ErreichbarkeitTests
     // OFFENER PUNKT W16b-O-1 - MIT iU9-W16c.5 ERLEDIGT: Das Pruefmuster fuehrt
     // seither einen Auszug der Sprungtabelle
     // (Pruefmuster/Hauptformular/WinFormsNavigation.Auszug.cs samt der zweiten
-    // Wurzeldatei MDIMainForm.Sprungtabelle.Auszug.cs), und der Zeuge steht
+    // Wurzeldatei Hauptfensterrahmen.Sprungtabelle.Auszug.cs), und der Zeuge steht
     // unmittelbar darunter wieder - gegen das Muster statt gegen den Bestand.
 
     /// <summary>
@@ -245,7 +245,7 @@ public sealed class ErreichbarkeitTests
             Assert.Equal(Erreichbar.Ja, knoten!.Status);
 
             // Die Maske hat ZWEI Oeffner im Muster: den unmittelbaren Weg
-            // (Pruefmuster/Pufferspeicher/MDIMainForm.Auszug.cs, der Anker des
+            // (Pruefmuster/Pufferspeicher/Hauptfensterrahmen.Auszug.cs, der Anker des
             // "unklar"-Falls) und den Weg UEBER DEN SCHLUESSEL. Der Pfad nennt
             // den kuerzeren; geprueft wird deshalb die OEFFNERLISTE - dort steht
             // die aufgeloeste Kette, und genau sie ist der Zeuge.
@@ -256,7 +256,7 @@ public sealed class ErreichbarkeitTests
 
             // Und die Wurzel, von der aus der Schluessel genannt wird, steht
             // ebenfalls darin - ohne sie waere der Zweig unerreichbar.
-            Assert.Contains("MDIMainForm", oeffner, StringComparison.Ordinal);
+            Assert.Contains("Hauptfensterrahmen", oeffner, StringComparison.Ordinal);
         }
         finally
         {
@@ -280,7 +280,7 @@ public sealed class ErreichbarkeitTests
     /// der Erreichbarkeitsbefund zaehlt seither 0 nein / 0 verwaist / 0 unklar.</para>
     /// <para>Damit die REGEL prueffbar bleibt, liegen beide Masken eingefroren unter
     /// <c>Pruefmuster/Pufferspeicher/</c> — samt einer Wurzel
-    /// (<c>MDIMainForm.Auszug.cs</c>), ohne die jede Maske dort „nein" waere. Dasselbe
+    /// (<c>Hauptfensterrahmen.Auszug.cs</c>), ohne die jede Maske dort „nein" waere. Dasselbe
     /// Vorgehen wie bei den Ankern der Wellen 2, 4 und 7.</para>
     /// </remarks>
     [Fact]
@@ -386,8 +386,8 @@ public sealed class ErreichbarkeitTests
         // Nach Welle 16b: 2 von 2 - sie nimmt FUENF Designer-Masken mit (FormMain
         // und Form_StromTest mit E-7/K6-a, AktionsKarte und Form_Hinweis mit der
         // Razor-Startseite, Form_Start selbst). Es bleiben die beiden Wurzelmasken
-        // MDIMainForm und Form_HelpPopup.
-        // Nach Welle 16c: 1 von 1 - sie nimmt den Designer von MDIMainForm mit
+        // Hauptfensterrahmen und Form_HelpPopup.
+        // Nach Welle 16c: 1 von 1 - sie nimmt den Designer von Hauptfensterrahmen mit
         // (die Huelle bleibt als Klasse und bleibt die Wurzel des Graphen, sie ist
         // nur keine MASKE mehr). Es bleibt Form_HelpPopup, und sie meldet
         // unveraendert "ja" - Befund W16-B3 und Risiko R-W16-10 sind damit
@@ -417,7 +417,7 @@ public sealed class ErreichbarkeitTests
         // iU9-W14c.9: Bis dahin stand hier Form_AdminSettings (davor
         // Form_Stromganglinie); beide sind mit ihrer Welle gefallen.
         //
-        // iU9-W16c.3: MDIMainForm hat keinen Designer mehr und steht deshalb nicht
+        // iU9-W16c.3: Hauptfensterrahmen hat keinen Designer mehr und steht deshalb nicht
         // mehr in diesem BEFUND (der die Masken des Stapellaufs auflistet) - sie
         // ist weiter die Wurzel des Graphen, aber keine Maske. Die einzige Zeile
         // ist Form_HelpPopup, und sie sagt "ja".

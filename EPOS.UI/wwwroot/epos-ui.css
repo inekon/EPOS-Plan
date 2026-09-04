@@ -3884,7 +3884,7 @@ body {
 /* ==========================================================================
    MENUEBAND (iU9-W16c.1) - die Windows-Schale des Hauptfensters.
 
-   Vorbild: MDIMainForm.menuToolbar, ein MenuStrip in AliceBlue mit 54 Punkten
+   Vorbild: Hauptfensterrahmen.menuToolbar, ein MenuStrip in AliceBlue mit 54 Punkten
    in drei Ebenen. Hier steht dafuer Layout und Farbe aus dem Farbsatz; die
    acht Bildchen sind dieselben PNG (wwwroot/bilder/menue/), damit der
    Wiedererkennungswert bleibt.
