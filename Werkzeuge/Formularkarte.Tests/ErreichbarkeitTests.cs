@@ -208,10 +208,61 @@ public sealed class ErreichbarkeitTests
     // WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar lesen denselben
     // Graphen am eingefrorenen Pruefmuster).
     //
-    // OFFENER PUNKT W16b-O-1: W16c legt nach Entscheid E-9 das grosse Pruefmuster an
-    // (Form_Start.Designer.cs, MDIMainForm.Designer.cs). Wer dort einen Auszug der
-    // Sprungtabelle mit einfriert, bekommt diesen Zeugen zurueck - dann gegen das
-    // Pruefmuster statt gegen den Bestand.
+    // OFFENER PUNKT W16b-O-1 - MIT iU9-W16c.5 ERLEDIGT: Das Pruefmuster fuehrt
+    // seither einen Auszug der Sprungtabelle
+    // (Pruefmuster/Hauptformular/WinFormsNavigation.Auszug.cs samt der zweiten
+    // Wurzeldatei MDIMainForm.Sprungtabelle.Auszug.cs), und der Zeuge steht
+    // unmittelbar darunter wieder - gegen das Muster statt gegen den Bestand.
+
+    /// <summary>
+    /// DER MASKENSCHLUESSEL-ZEUGE (zurueckgeholt mit iU9-W16c.5, offener Punkt
+    /// W16b-O-1) — gegen das eingefrorene PRUEFMUSTER.
+    /// </summary>
+    /// <remarks>
+    /// <para>Der Graph loest einen Maskenschluessel nicht ueber einen Aufruf auf,
+    /// sondern ueber eine besondere Klasse: Er erkennt <c>WinFormsNavigation</c>
+    /// am Namen, liest den <c>switch</c> in <c>OeffneMaske</c> und ordnet jedem
+    /// <c>case Masken.X:</c> die Masken zu, die dieser Zweig anfasst. Wer
+    /// irgendwo <c>Masken.X</c> schreibt, bekommt eine Kante auf genau diesen
+    /// Zweig — und nur auf ihn: Ohne diese Sonderbehandlung oeffnete JEDER
+    /// Aufruf von <c>OeffneMaske</c> saemtliche Masken auf einmal.</para>
+    /// <para>Die Kette der Zeugen im Bestand lautete <c>Form_WP</c> (W7.3) →
+    /// <c>Form_AdminStromspeicher</c> (W14a.3) → <c>Form_ProjektSpeichernUnter</c>
+    /// (W15a.4) → <c>FormMain</c> (W16b.1); danach gab es keinen
+    /// <c>Masken.*</c>-Schluessel mehr mit einer WinForms-Maske dahinter — genau
+    /// das ist der Zweck der Welle. Im Muster steht die Kette weiter.</para>
+    /// </remarks>
+    [Fact]
+    public void DieSprungtabelleLoestDieMaskenschluesselAuf()
+    {
+        Erreichbarkeit.Vergessen();
+        try
+        {
+            var graph = Erreichbarkeit.Bauen(Repowurzel.PruefmusterWurzel);
+
+            var knoten = graph.Fuer("Form_PufferSp_Admin");
+            Assert.True(knoten is not null, "Das Pruefmuster kennt Form_PufferSp_Admin nicht.");
+            Assert.Equal(Erreichbar.Ja, knoten!.Status);
+
+            // Die Maske hat ZWEI Oeffner im Muster: den unmittelbaren Weg
+            // (Pruefmuster/Pufferspeicher/MDIMainForm.Auszug.cs, der Anker des
+            // "unklar"-Falls) und den Weg UEBER DEN SCHLUESSEL. Der Pfad nennt
+            // den kuerzeren; geprueft wird deshalb die OEFFNERLISTE - dort steht
+            // die aufgeloeste Kette, und genau sie ist der Zeuge.
+            string oeffner = string.Join(" | ", knoten.Oeffner);
+
+            Assert.Contains("WinFormsNavigation.OeffneMaske", oeffner, StringComparison.Ordinal);
+            Assert.Contains("Masken.PufferSpAdmin", oeffner, StringComparison.Ordinal);
+
+            // Und die Wurzel, von der aus der Schluessel genannt wird, steht
+            // ebenfalls darin - ohne sie waere der Zweig unerreichbar.
+            Assert.Contains("MDIMainForm", oeffner, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Erreichbarkeit.Vergessen();
+        }
+    }
 
     // ==================================================================
     //  Unklar
@@ -336,8 +387,16 @@ public sealed class ErreichbarkeitTests
         // und Form_StromTest mit E-7/K6-a, AktionsKarte und Form_Hinweis mit der
         // Razor-Startseite, Form_Start selbst). Es bleiben die beiden Wurzelmasken
         // MDIMainForm und Form_HelpPopup.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 2,
-                    "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
+        // Nach Welle 16c: 1 von 1 - sie nimmt den Designer von MDIMainForm mit
+        // (die Huelle bleibt als Klasse und bleibt die Wurzel des Graphen, sie ist
+        // nur keine MASKE mehr). Es bleibt Form_HelpPopup, und sie meldet
+        // unveraendert "ja" - Befund W16-B3 und Risiko R-W16-10 sind damit
+        // eingeloest, ohne dass Program.Main eine zweite Wurzel werden musste.
+        //
+        // NACHWEIS N1, zweite Haelfte (Vermessung § 11.8): Die Anweisung nennt
+        // "Erreichbar(Ja) == 0"; nachgerechnet vom heutigen Stand ist es 1, weil
+        // Form_HelpPopup mit Entscheid W15b-E-2 bis iU11 bleibt (Befund W16c-B7).
+        Assert.Equal(1, ergebnis.Erreichbar(Erreichbar.Ja));
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
         Assert.Contains("| Öffner erreichbar | ", uebersicht, StringComparison.Ordinal);
@@ -356,9 +415,13 @@ public sealed class ErreichbarkeitTests
         Assert.Contains("| unklar | 0 |", befund, StringComparison.Ordinal);
 
         // iU9-W14c.9: Bis dahin stand hier Form_AdminSettings (davor
-        // Form_Stromganglinie); beide sind mit ihrer Welle gefallen. MDIMainForm
-        // ist die Wurzel und faellt als allerletzte.
-        Assert.Contains("| MDIMainForm | ja |", befund, StringComparison.Ordinal);
+        // Form_Stromganglinie); beide sind mit ihrer Welle gefallen.
+        //
+        // iU9-W16c.3: MDIMainForm hat keinen Designer mehr und steht deshalb nicht
+        // mehr in diesem BEFUND (der die Masken des Stapellaufs auflistet) - sie
+        // ist weiter die Wurzel des Graphen, aber keine Maske. Die einzige Zeile
+        // ist Form_HelpPopup, und sie sagt "ja".
+        Assert.Contains("| Form_HelpPopup | ja |", befund, StringComparison.Ordinal);
         Assert.Contains("| gesamt | " + ergebnis.Masken + " | |", befund, StringComparison.Ordinal);
     }
 

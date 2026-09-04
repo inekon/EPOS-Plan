@@ -1,0 +1,150 @@
+﻿@* DAS HAUPTFENSTER (iU9-W16c.2, S2 der Vermessung) — die Windows-Schale.
+
+   Vorbild: WindowsFormsApplication1/MDIMainForm.cs (873 Z.) und
+   .Designer.cs (493 Z., 45 ToolStripMenuItem, 6 ToolStripSeparator, 1
+   Kartenzeile). Was davon hierher wandert, steht in § 6 i der Vermessung: die
+   34 Ereignishandler, die 45 Menuepunkte, das Kopfband aus InitMarke (78
+   Zeilen Zeichenarbeit), die Ladeanzeige, die Menue-Textsuche und die drei
+   Console.WriteLine-Ketten. Was in Windows bleiben MUSS, steht in § 12.4 und
+   ist die Huelle MDIMainForm (W16c.3).
+
+   AUFBAU (Vermessung § 12.6):
+     Menueband   54 Punkte in drei Ebenen, aus Menuetabelle (erzeugt)
+     Kopfband    PRODUKTNAME · GATTUNG · CLAIM · Version
+     Inhalt      AppWurzel - dieselbe Wurzel, die auf iOS laeuft (E-1)
+
+   EIN HANDLER STATT 43. Springe(punkt) ist der einzige Ereignishandler. Er
+   fragt zuerst den WEG der Huelle (unter Windows: die 25 Maskenschluessel ueber
+   Dienste.Navigation, die 19 zusammengesetzten Ablaeufe und die drei
+   Fenstereigenheiten Sprachwechsel, Browser, Versionsmeldung) und laesst erst
+   dann die Wurzel die Ansicht wechseln. Ohne Weg-Delegat - also auf iOS -
+   entscheidet allein die Wurzel. Das ist die Razor-Fassung von MenueCtrl.
+
+   DAS KOPFBAND IST MARKUP. InitMarke baute ein Panel von 52 px mit zwei
+   Labels, einem FlowLayoutPanel, einem Versionslabel, einem ToolTip und einem
+   eigenen Paint-Handler (Trennlinie und 4-px-Farbakzent). Hier sind es sieben
+   Zeilen HTML und eine CSS-Klasse; die drei Produkttexte waren deutsche
+   LITERALE im Code (Befund W16-B25) und kommen jetzt als Parameter herein.
+
+   KEINE DATENBANK, KEIN WINDOWS (Hausregel EPOS.UI). Version, Produktname und
+   der Weg kommen als Parameter aus der Huelle. *@
+
+@namespace EPOS.UI.Seiten
+
+<div class="epos-hauptfenster">
+
+    <AppWurzel @ref="_wurzel"
+               Startansicht="@Startansicht"
+               StartseiteGaben="@StartseiteGaben"
+               BerichteKostenGaben="@BerichteKostenGaben">
+        <Kopfleiste>
+            <Menueband @ref="_band"
+                       Eintraege="@Eintraege"
+                       Gewaehlt="Springe"
+                       Bezeichnung="@MenueBezeichnung" />
+
+            <header class="epos-hauptfenster-marke">
+                <div class="epos-hauptfenster-marke-links">
+                    <span class="epos-hauptfenster-name">@Produktname</span>
+                    <span class="epos-hauptfenster-untertitel">@Gattung&nbsp; · &nbsp;@Claim</span>
+                </div>
+                <div class="epos-hauptfenster-rechts">
+                    @* Die FENSTERHILFE (offener Punkt W16b-O-4). Im Bestand sass sie
+                       als Form_Start.btn_Help oberhalb des gesamten Reiterwerks und
+                       meinte den Ablauf des PROGRAMMS, nicht die Startseite (Befund
+                       W16b-B5); ihr Ziel in help_mapping.txt ist "Programmablauf".
+                       Hier steht sie im Kopfband des Fensters - an derselben Stelle
+                       im Aufbau, nur eine Ebene hoeher. *@
+                    <InfoKnopf Schluessel="@HilfeSchluessel" />
+                    <span class="epos-hauptfenster-version">@VersionText</span>
+                </div>
+            </header>
+        </Kopfleiste>
+    </AppWurzel>
+
+</div>
+
+@code {
+    private AppWurzel? _wurzel;
+    private Menueband? _band;
+
+    // =====================================================================
+    //  Das Menue
+    // =====================================================================
+
+    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (54 Punkte).</summary>
+    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Menuetabelle.Eintraege;
+
+    /// <summary>Beschriftung der Menueleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string MenueBezeichnung { get; set; } = "Hauptmenü";
+
+    /// <summary>
+    /// Der WEG der Plattform: Er bekommt den Seitenschluessel samt Argument und
+    /// meldet, ob er ihn behandelt hat. Unter Windows ist das
+    /// <c>HauptfensterHuelle.Weg</c>; ohne ihn entscheidet allein die Wurzel.
+    /// </summary>
+    [Parameter] public Func<string, string, Task<bool>>? Weg { get; set; }
+
+    // =====================================================================
+    //  Das Kopfband (InitMarke, MDIMainForm.cs:217-294)
+    // =====================================================================
+
+    /// <summary>Produktname — im Bestand die Konstante <c>PRODUKTNAME</c>.</summary>
+    [Parameter] public string Produktname { get; set; } = "EPOS-Plan";
+
+    /// <summary>Gattungsbezeichnung — <c>PRODUKT_GATTUNG</c>.</summary>
+    [Parameter] public string Gattung { get; set; } = "Energieplanungs-Software";
+
+    /// <summary>Auflösung des Namens EPOS — <c>PRODUKT_CLAIM</c>.</summary>
+    [Parameter] public string Claim { get; set; } = "Energie · Planung · Optimierung · Simulation";
+
+    /// <summary>Die fertige Versionszeile, z. B. „Version 1.0.0.0".</summary>
+    [Parameter] public string VersionText { get; set; } = "";
+
+    /// <summary>
+    /// Der Hilfeschluessel der FENSTERHILFE — im Bestand
+    /// <c>Form_Start.btn_Help</c>, Ziel „Programmablauf" (offener Punkt
+    /// W16b-O-4).
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Hauptfenster.btn_Help";
+
+    // =====================================================================
+    //  Die Wurzel
+    // =====================================================================
+
+    /// <summary>Die Ansicht, mit der das Fenster aufmacht.</summary>
+    [Parameter] public string Startansicht { get; set; } = Seitenschluessel.Startseite;
+
+    /// <summary>Der Parametersatz der Startseite (Windows: <c>StartseiteHuelle.Gaben()</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? StartseiteGaben { get; set; }
+
+    /// <summary>Der Parametersatz von „Berichte &amp; Kosten"; unter Windows leer.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
+
+    // =====================================================================
+    //  Der EINE Handler
+    // =====================================================================
+
+    /// <summary>
+    /// Der einzige Menuehandler. Erst der Weg der Huelle, dann die Wurzel —
+    /// die Reihenfolge ist die des Bestands: Ein Menuepunkt, den
+    /// <c>MenueCtrl</c> bediente, oeffnete ein Fenster; nur was dort nicht
+    /// stand, wechselte die Ansicht.
+    /// </summary>
+    public async Task Springe(Menuepunkt punkt)
+    {
+        if (punkt is null || string.IsNullOrEmpty(punkt.Ziel)) return;
+
+        _band?.Schliessen();
+
+        if (Weg is not null && await Weg(punkt.Ziel, punkt.Argument)) return;
+
+        _wurzel?.OeffneMaske(punkt.Ziel, punkt.Argument);
+    }
+
+    /// <summary>
+    /// Eine Ansicht von aussen setzen — der Weg, den die Huelle nach einem
+    /// Projektwechsel oder aus einem Dialog heraus geht.
+    /// </summary>
+    public bool Zeige(string schluessel) => _wurzel?.OeffneMaske(schluessel) ?? false;
+}

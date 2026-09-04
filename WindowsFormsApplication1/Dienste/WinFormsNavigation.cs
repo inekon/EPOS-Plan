@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
-
 using EPOS.UI.Dialoge.Projekt;
 
 namespace WindowsFormsApplication1
@@ -225,23 +223,12 @@ namespace WindowsFormsApplication1
         //  Kleinkram
         // ==================================================================
 
-        private static bool MitOk(Form frm)
-        {
-            return frm.ShowDialog() == DialogResult.OK;
-        }
-
-        private static bool WahlUebernehmen(object[] argumente, int id, string name)
-        {
-            Projektwahl fach = argumente != null && argumente.Length > 0
-                ? argumente[0] as Projektwahl
-                : null;
-
-            if (fach == null) return true;   // Aufrufer will das Ergebnis nicht
-
-            fach.Id = id;
-            fach.Name = name ?? "";
-            return true;
-        }
+        // iU9-W16c.3: MitOk(Form) und WahlUebernehmen sind WEG. Beide waren die
+        // letzten Reste der Zeit, als diese Tabelle Formulare BAUTE: MitOk zeigte
+        // eine Maske modal und las ihr DialogResult, WahlUebernehmen fuellte das
+        // Projektwahl-Fach. Seit W15a fuellen die Huellen es selbst, und seit
+        // W15c gibt es in diesem switch kein "new Form_X()" mehr - beide Methoden
+        // standen ohne Aufrufer da (nur noch in Kommentaren genannt).
 
         private static int Ganzzahl(object[] argumente, int stelle)
         {

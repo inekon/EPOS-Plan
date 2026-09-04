@@ -37,21 +37,16 @@ namespace WindowsFormsApplication1
     /// bzw. unmittelbar aus <see cref="ProjektSetzen"/>, solange die Startmaske noch
     /// WinForms ist.</para>
     ///
-    /// <para><b>DPI - der offene Punkt (Risiko R4).</b> Die Anwendung laeuft
-    /// DpiUnaware (<c>app.manifest</c>, <c>Program.SetHighDpiMode</c>). Die
-    /// Dialoghuelle umgeht das mit der <c>DpiInsel</c>: Sie stellt den Faden fuer
-    /// die Dauer des modalen Laufs auf „Per Monitor V2", und weil dabei sowohl das
-    /// Fenster als auch das Fenster der WebView2 entsteht, ist der Dialoginhalt
-    /// scharf. FUER EINE EINGEBETTETE SEITE GEHT DAS NICHT: Sie hat kein eigenes
-    /// Fenster, sie sitzt im Fenster der DpiUnaware-<c>Form_Start</c>, und Windows
-    /// skaliert dieses Fenster als Bitmap - bei 125-200 % also unscharf. Ein
-    /// Fenster kann seinen DPI-Kontext nachtraeglich nicht wechseln.
-    /// <b>Diese Huelle versucht es deshalb gar nicht erst.</b> Der Weg zur
-    /// scharfen Seite ist, die Anwendung insgesamt DPI-faehig zu machen (offener
-    /// Entscheid iF21) - ein eigenes Paket, das die fest gerechneten
-    /// Pixelkoordinaten der gewachsenen WinForms-Masken betrifft. Bis dahin ist die
-    /// Schaerfe der Seite ein <b>Abnahmepunkt</b> (Umsetzung_iU9_Nachweise.md,
-    /// 125 % und 150 %) und keine Zusage.</para>
+    /// <para><b>DPI - der Punkt ist mit iU9-W16c.4 geschlossen (E-6 / iF21).</b>
+    /// Bis dahin lief die Anwendung DpiUnaware, und diese Huelle konnte nichts
+    /// dagegen tun: Eine eingebettete Seite hat kein eigenes Fenster, sie sitzt im
+    /// Fenster des Wirts, und ein Fenster kann seinen DPI-Kontext nachtraeglich
+    /// nicht wechseln - die <c>DpiInsel</c> der Dialoghuelle half ihr also nicht.
+    /// Seit W16c.4 laeuft die GANZE Anwendung „Per Monitor V2" (<c>app.manifest</c>
+    /// und <c>Program.Main</c>), weil es die fest gerechneten Pixelkoordinaten der
+    /// gewachsenen WinForms-Masken nicht mehr gibt; die Insel ist im selben Schritt
+    /// gefallen. Die Schaerfe bei 125 % und 150 % bleibt ein <b>Abnahmepunkt</b>
+    /// am Geraet (Umsetzung_iU9_Nachweise.md).</para>
     ///
     /// <para><b>Kein weisses Aufblitzen.</b> Wie bei der Dialoghuelle steht die
     /// Themaflaeche, bevor die WebView2 da ist.</para>

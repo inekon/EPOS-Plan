@@ -227,122 +227,31 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
-        public void WP_Administration()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.WpAdministration);
-        }
-
-        public void StromspeicherBearbeiten()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.StromspeicherAdmin);
-        }
-
-        /// <summary>
-        /// Öffnet die Lastspitzenkappung (Peak-Shaving) – eigener Einstieg nach
-        /// Fachkonzept 6.4 (AP7). Ein geöffnetes Projekt ist ausdrücklich nicht
-        /// nötig: ohne Projekt stehen Stammganglinien und der Direktimport zur
-        /// Verfügung, deshalb hier auch keine Projektprüfung.
-        /// </summary>
-        public void PeakShavingBearbeiten()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.PeakShaving, Dienste.Projekt.Id);
-        }
-
-        public void GebaeudeBearbeiten()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.GebaeudeAdmin);
-        }
-
-        public void GebaeudetypenBearbeiten()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.GebaeudetypenAdmin);
-        }
-
-        public void WaermebedarfExtern()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.WaermebedarfExternAdmin);
-        }
-
-        public void Prozesswaerme()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.ProzesswaermeAdmin);
-        }
-
-        public void Stromverbraucher()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.StromverbraucherAdmin);
-        }
-
-        public void Stromganglinie()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.StromganglinieAdmin);
-        }
-
-        public void Solarganglinie()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.SolarganglinieAdmin);
-        }
-
-        public void WPImport()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.WpImport);
-        }
-
-        public void Kessel()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.HeizkesselAdmin);
-        }
-
-        public void BHKW()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.BhkwAdmin);
-        }
-        public void Solarkollektoren()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.SolarkollektorenAdmin);
-        }
-
-        public void PV()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.PvAdmin);
-        }
-
-        public void SPKImport()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.HeizkesselImport);
-        }
-
-        public void PufferSPImport()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.PufferSpImport);
-        }
-
-        public void PufferSp()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.PufferSpAdmin);
-        }
-
-        public void Brauchwasser()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.BrauchwasserAdmin);
-        }
-
-        /// <summary>
-        /// Herstellerdaten PV-Module einlesen — die CEC-Modulliste.
-        ///
-        /// <para><b>Sie war LEER</b> (Befund W13-B52): Der Menuepunkt
-        /// <c>MenuItem_PV_Import</c> rief sie, und es geschah nichts. Seit
-        /// iU9-W13.0k oeffnet sie die Maske ueber ihren Schluessel — wie jeder
-        /// andere Menueweg auch.</para>
-        /// </summary>
-        public void PVImport()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.PvImport, "CEC");
-        }
-
-        public void SolarThermieImport()
-        {
-            Dienste.Navigation.OeffneMaske(Masken.SolarkollektorenImport);
-        }
+        // ==================================================================
+        //  iU9-W16c.3: DIE EINUNDZWANZIG EINZEILER SIND WEG
+        //
+        //  Bis hierher standen hier 21 Methoden der Bauform
+        //      public void X() { Dienste.Navigation.OeffneMaske(Masken.X); }
+        //  - WP_Administration, StromspeicherBearbeiten, PeakShavingBearbeiten,
+        //  GebaeudeBearbeiten, GebaeudetypenBearbeiten, WaermebedarfExtern,
+        //  Prozesswaerme, Stromverbraucher, Stromganglinie, Solarganglinie,
+        //  WPImport, Kessel, BHKW, Solarkollektoren, PV, SPKImport,
+        //  PufferSPImport, PufferSp, Brauchwasser, PVImport,
+        //  SolarThermieImport.
+        //
+        //  IHR EINZIGER AUFRUFER WAR DAS MENUE DES HAUPTFENSTERS - je einer der
+        //  34 Ereignishandler von MDIMainForm. Seit W16c.1 steht der
+        //  Maskenschluessel in der Menuetabelle selbst, und
+        //  HauptfensterHuelle.Weg reicht ihn unmittelbar an
+        //  Dienste.Navigation.OeffneMaske weiter. Eine Methode, die nichts tut,
+        //  als einen Schluessel weiterzugeben, waere danach eine Zwischenstufe
+        //  ohne Aufgabe.
+        //
+        //  WAS BLEIBT, sind die ZUSAMMENGESETZTEN Ablaeufe: der Assistent mit
+        //  seinen zwei Betriebsarten, das Oeffnen samt Aktivsetzen, das
+        //  Duplizieren und der sechsschrittige Loeschweg. Sie haben Aufrufer in
+        //  der Startseiten- und der Assistentenhuelle - und sie tun mehr als
+        //  einen Schluessel zu nennen.
+        // ==================================================================
     }
 }

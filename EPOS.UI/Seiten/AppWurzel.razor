@@ -1,4 +1,20 @@
-﻿@* Die Wurzelkomponente der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
+﻿@* DIE GEMEINSAME WURZEL BEIDER PLATTFORMEN (iU9-W16c.2, Entscheid E-1).
+
+   Bis W16b war das die Wurzelkomponente der iOS-Huelle allein; Windows hatte
+   mit MDIMainForm einen eigenen Rahmen. Seit W16c ist es EINE Wurzel und ZWEI
+   SCHALEN (Vermessung § 9.3): Die Zustandsmaschine hier kennt die Ansichten,
+   und darueber steht je Plattform eine Schale - unter Windows das Menueband
+   (als Kopfleiste hereingereicht), auf dem iPad nichts weiter. iL5 sagt
+   ausdruecklich "kein MDI, keine modalen Ketten"; eine Menueleiste mit 54
+   Punkten waere auf Touch unbedienbar, ein zweiter Navigationsbaum aber
+   ebenso falsch. Deshalb ist die Schale ein RenderFragment und kein zweiter
+   Baum.
+
+   Mit W16c kommen die drei Ansichten des Rahmens dazu (K7): STARTSEITE,
+   ASSISTENT (steht seit W16a.5) und BERICHTE_KOSTEN - das fuenfte der fuenf
+   Stuecke, die § 9.2 der Vermessung an AppWurzel vermisst hat.
+
+   Die Wurzelkomponente der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
 
    SIE IST NOCH KEIN ROUTER. Was hier steht, ist eine Zustandsmaschine mit drei
    Zustaenden - Liste, Dialog A, Dialog B - und genau das, was iU10 braucht: Die
@@ -23,7 +39,23 @@
 
 @inject IProjektQuelle Quelle
 
-@if (_ansicht == Seitenschluessel.Energietraeger)
+@Kopfleiste
+
+@if (_ansicht == Seitenschluessel.Startseite && _startseite is not null)
+{
+    @* DIE STARTSEITE (iU9-W16b.2). Unter Windows reicht Hauptfenster den
+       Parametersatz von StartseiteHuelle herein; auf iOS kommt er aus
+       IProjektQuelle.StartseiteGaben. *@
+    <EPOS.UI.Seiten.Start.Startseite @attributes="_startseite" />
+}
+else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not null)
+{
+    @* Der Reiter „Berichte & Kosten" (W5) als eigene Ansicht - der iOS-Weg.
+       Unter Windows ist er das sechste Reiterblatt der Startseite, und der
+       Menuepunkt „Varianten und Bericht…" holt ihn dort nach vorn. *@
+    <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten" />
+}
+else if (_ansicht == Seitenschluessel.Energietraeger)
 {
     <EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteDialog
         Energietraeger="@_energietraeger"
@@ -85,7 +117,7 @@ else
     // Zustand - drei Ansichten, ein offenes Projekt
     // =====================================================================
 
-    private string _ansicht = Seitenschluessel.Projektliste;
+    private string _ansicht = "";
     private IReadOnlyList<ProjektZeile> _projekte = Array.Empty<ProjektZeile>();
     private IReadOnlyList<(int Id, string Name)> _energietraeger = Array.Empty<(int, string)>();
     private BhkwDialogDaten? _bhkw;
@@ -93,8 +125,43 @@ else
     private IReadOnlyDictionary<string, object>? _simErgebnis;
     private IReadOnlyDictionary<string, object>? _kiAssistent;
     private IReadOnlyDictionary<string, object>? _assistent;
+    private IReadOnlyDictionary<string, object>? _startseite;
+    private IReadOnlyDictionary<string, object>? _berichteKosten;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+
+    // =====================================================================
+    // Die zwei Gaben der Schale (iU9-W16c.2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Schale der Plattform — unter Windows das <c>Menueband</c> samt
+    /// Markenkopf, auf iOS nichts (Entscheid E-1: eine Wurzel, zwei Schalen).
+    /// Sie steht ueber JEDER Ansicht, weil das Menue unter Windows nie
+    /// verschwindet.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfleiste { get; set; }
+
+    /// <summary>
+    /// Die Ansicht, mit der die Wurzel aufmacht, und das Ziel des Rueckwegs.
+    /// Vorgabe ist die Projektliste (der iOS-Einstieg); Windows setzt
+    /// <c>STARTSEITE</c>.
+    /// </summary>
+    [Parameter] public string Startansicht { get; set; } = Seitenschluessel.Projektliste;
+
+    /// <summary>
+    /// Der Parametersatz der STARTSEITE, wenn ihn die Huelle stellt (Windows:
+    /// <c>StartseiteHuelle.Gaben()</c>). Ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.StartseiteGaben</c> — der iOS-Weg.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? StartseiteGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Reiters „Berichte &amp; Kosten", wenn ihn die
+    /// Huelle stellt. Ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BerichteKostenGaben</c>.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
 
     /// <summary>
     /// Die zuletzt gezeichnete Wurzel meldet sich als Navigationsziel an. Der
@@ -105,6 +172,9 @@ else
     protected override void OnInitialized()
     {
         Navigationsziel.Aktuell = this;
+        // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
+        // Wechsel - sonst gaebe es zwei Stellen, an denen eine Ansicht entsteht.
+        if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
     }
 
@@ -139,6 +209,33 @@ else
 
     private bool Zeige(string maske)
     {
+        if (maske == Seitenschluessel.Startseite)
+        {
+            // Der Parametersatz der Huelle hat Vorrang: Unter Windows haelt
+            // StartseiteHuelle den Projektkontext, die zwei Bedarfsobjekte und
+            // die 21 Kachelwege - eine Projektquelle koennte das nicht.
+            _startseite = StartseiteGaben ?? Quelle.StartseiteGaben(_projekt?.Id ?? 0);
+            if (_startseite is null)
+            {
+                _statuszeile = KeineStartseiteText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.BerichteKosten)
+        {
+            _berichteKosten = BerichteKostenGaben ?? Quelle.BerichteKostenGaben(_projekt?.Id ?? 0);
+            if (_berichteKosten is null)
+            {
+                _statuszeile = KeineBerichteText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Energietraeger)
         {
             _energietraeger = Quelle.Energietraeger();
@@ -230,13 +327,20 @@ else
         return false;
     }
 
+    /// <summary>
+    /// Der Rueckweg. Er fuehrt zur <see cref="Startansicht"/> - auf iOS die
+    /// Projektliste, unter Windows die Startseite. Laesst sie sich nicht
+    /// aufbauen, bleibt die Liste; sie steht auf beiden Plattformen.
+    /// </summary>
     private void ZurueckZurListe()
     {
-        _ansicht = Seitenschluessel.Projektliste;
         _bhkw = null;
         _simKonfig = null;
+        _simErgebnis = null;
         _kiAssistent = null;
         _assistent = null;
+
+        if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
     }
 
@@ -291,6 +395,8 @@ else
                     || maske == Seitenschluessel.SimulationErgebnis
                     || maske == Seitenschluessel.KiAssistent
                     || maske == Seitenschluessel.Assistent
+                    || maske == Seitenschluessel.Startseite
+                    || maske == Seitenschluessel.BerichteKosten
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
@@ -351,4 +457,17 @@ else
     /// </summary>
     [Parameter] public string KeinProjektassistentText { get; set; } =
         "Der Projektassistent steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn die Startseite nicht aufzubauen ist — der Zustand, solange
+    /// die iOS-Hülle sie nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeineStartseiteText { get; set; } =
+        "Die Startseite steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn „Berichte &amp; Kosten" nicht aufzubauen ist.
+    /// </summary>
+    [Parameter] public string KeineBerichteText { get; set; } =
+        "Berichte und Kosten stehen auf diesem Gerät noch nicht zur Verfügung.";
 }
