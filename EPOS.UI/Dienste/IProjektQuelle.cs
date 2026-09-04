@@ -224,9 +224,12 @@ public interface IProjektQuelle
     ///
     /// <para>Die Seite gibt es als Razor seit Welle 5; in <c>AppWurzel</c> war
     /// sie bis W16c bloss nicht verdrahtet (Vermessung § 9.2 — das fuenfte der
-    /// fuenf fehlenden Stuecke). Unter Windows steht sie als sechster REITER in
-    /// der Startseite; der Menuepunkt „Varianten und Bericht…" holt ihn nach
-    /// vorn, statt eine zweite Ansicht zu oeffnen.</para>
+    /// fuenf fehlenden Stuecke). Unter Windows steht sie ZUSAETZLICH als
+    /// sechster REITER in der Startseite; seit dem Anwenderentscheid W16c-E-3
+    /// (04.09.2026) fuehrt der Menuepunkt „Varianten und Bericht…" aber auch
+    /// dort in die ANSICHT, und die Windows-Huelle stellt den Parametersatz
+    /// unmittelbar (<c>HauptfensterHuelle.Gaben</c>) — dieser Weg hier bleibt
+    /// der iOS-Weg.</para>
     /// </summary>
     IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => null;
 }
