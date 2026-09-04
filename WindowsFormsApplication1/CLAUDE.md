@@ -309,11 +309,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 12 Masken** (13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 11 Masken** (12 nach iU9‑W15b, 13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
   iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **7** (11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15b **12 von 12 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15c **11 von 11 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
   jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
   Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
   `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
@@ -533,8 +533,8 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Der Nachweis der Welle entsteht ZUERST (`EPOS.Kern.Tests/KatalogpflegeTests.cs`, 104 Fälle):
   Für die acht berührten Kerntypen gab es bis dahin keinen einzigen Test (Befund W14c‑B62);
   die TMY-Antwort des einzigen Netzzugriffs kommt darin aus einer eingefrorenen Datei.
-  **`Views/Klimadaten` gibt es nicht mehr, `Views/Admin` führt nur noch
-  `Form_LizenzVerwaltung`** (Welle 15c); `Form_Klimadaten` ist nicht gelöscht, sondern nach
+  **`Views/Klimadaten` gibt es nicht mehr, `Views/Admin` führt seit Welle 15c
+  keine Maske mehr**; `Form_Klimadaten` ist nicht gelöscht, sondern nach
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/` VERSCHOBEN — sie war die einzige
   Maske, deren `btn_Help` im Designer stand, und trägt dort fünf Testanker. Protokoll:
   [`Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
