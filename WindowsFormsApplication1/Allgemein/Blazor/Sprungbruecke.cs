@@ -105,18 +105,9 @@ namespace WindowsFormsApplication1
                         using (Form_Gesetzesparameter f = new Form_Gesetzesparameter())
                             return MitOk(f, besitzer);
 
-                    // --- iU9-W6.0d: die vier Katalogverwaltungen der Erzeugerdialoge ----
-                    // Alle vier bleiben bis Welle 14 WinForms-Masken; nach der Rueckkehr
-                    // laedt die Huelle die Katalogliste neu. Sie sind DIESELBEN Masken,
-                    // die Dienste.Navigation fuer Masken.HeizkesselAdmin,
-                    // Masken.PvAdmin und Masken.PufferSpAdmin zeigt - die Vorlaeufer
-                    // riefen zwei davon ueber MenueCtrl.PV() bzw. MenueCtrl.PufferSp().
-                    // Der Stromspeicher hatte kein Maskenkuerzel und oeffnete
-                    // Form_AdminStromspeicher direkt.
-                    case Sprungziel.HeizkesselAdmin:
-                        using (Form_Heizkessel_Admin f = new Form_Heizkessel_Admin())
-                            return MitOk(f, besitzer);
-
+                    // --- iU9-W6.0d: die zwei verbliebenen Katalogverwaltungen ----------
+                    // Beide bleiben bis iU9-W14a.3 WinForms-Masken; nach der Rueckkehr
+                    // laedt die Huelle die Katalogliste neu.
                     case Sprungziel.StromspeicherAdmin:
                         using (Form_AdminStromspeicher f = new Form_AdminStromspeicher())
                             return MitOk(f, besitzer);
@@ -125,23 +116,13 @@ namespace WindowsFormsApplication1
                         using (Form_AdminPV f = new Form_AdminPV())
                             return MitOk(f, besitzer);
 
-                    case Sprungziel.PufferSpAdmin:
-                        using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
-                            return MitOk(f, besitzer);
-
-                    // --- iU9-W10a.0c: derselbe Katalog, aber NUR ZUM ANSEHEN -----------
-                    // Der Knopf "Katalog ansehen" der Pufferspeicher-Verwaltung auf
-                    // Projektebene (Form_PufferSp_Projekt.btnKatalog_Click:1596) setzte
-                    // m_bReadOnly = true, bevor er die Maske zeigte. Ohne dieses
-                    // Kennzeichen waere aus dem Nachschlagen das Bearbeiten des
-                    // Auslieferungskatalogs geworden (Befund W10-B28) - deshalb ein
-                    // eigener Zweig und nicht der Schluessel darueber.
-                    case Sprungziel.PufferSpAdminNurLesen:
-                        using (Form_PufferSp_Admin f = new Form_PufferSp_Admin())
-                        {
-                            f.m_bReadOnly = true;
-                            return MitOk(f, besitzer);
-                        }
+                    // --- iU9-W14a.1: die drei Katalogverwaltungen sind WEG -------------
+                    // Bis W14a standen hier auch HeizkesselAdmin, PufferSpAdmin und -
+                    // seit W10a.0c - PufferSpAdminNurLesen. Ihre Ziele sind jetzt
+                    // selbst Blazor: Aus jedem Sprung ist eine UEBERLAGERUNG im
+                    // selben Fenster geworden (Muster W4/W10a, Risiko R2), und die
+                    // Aufrufer bekommen den Parametersatz der Verwaltung als
+                    // VerwaltungGaben statt eines Sprungschluessels.
 
                     // --- iU9-W7.0f: die Stammdaten der Solarthermieganglinien ----------
                     // Dieselbe Maske, die Dienste.Navigation fuer Masken.SolarganglinieAdmin

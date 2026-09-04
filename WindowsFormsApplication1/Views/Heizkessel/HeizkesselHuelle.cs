@@ -470,9 +470,11 @@ namespace WindowsFormsApplication1
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
 
-                // Die Katalogverwaltung ist bis Welle 14 eine WinForms-Maske - sie geht
-                // deshalb über die Sprungbrücke, nicht über eine zweite WebView.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W14a.1: Die Katalogverwaltung ist die Razor-Komponente
+                // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
+                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
+                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    HeizkesselAdminHuelle.Gaben),
 
                 ["TitelText"] = Text_("HZK_TITEL", "Verwaltung Heizkessel"),
                 ["KopfbandText"] = Text_("HZK_KOPFBAND", "Geben Sie Daten des Spitzenlastkessels ein"),

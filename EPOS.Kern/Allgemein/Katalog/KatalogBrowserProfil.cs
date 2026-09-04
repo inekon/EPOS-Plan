@@ -169,7 +169,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool ZeigtSchreibschutz { get; private set; }
 
-        /// <summary>Der Bereichsschluessel des Infoknopfs (<c>help_mapping.txt</c>).</summary>
+        /// <summary>
+        /// Der Schluessel des Infoknopfs — die ZEILE LINKS in <c>help_mapping.txt</c>
+        /// (<c>Form_X.btn_Help</c>), nicht das Ziel rechts. Die Zuordnung bleibt damit
+        /// unveraendert, obwohl die Maske dahinter nicht mehr existiert; dasselbe
+        /// Vorgehen wie bei den vier Einlesemasken der Welle 13.
+        /// </summary>
         public string HilfeSchluessel { get; private set; }
 
         /// <summary>Fenstertitel, bereits uebersetzt.</summary>
@@ -262,7 +267,7 @@ namespace WindowsFormsApplication1
                         Filterart = KatalogFilterArt.BrennstoffUndLeistung,
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = false,
-                        HilfeSchluessel = "Heizkessel",
+                        HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
                         Titel = t("KBROW_TITEL_HEIZKESSEL"),
                         Listenbeschriftung = t("KBROW_LISTE_HEIZKESSEL"),
                         Detailueberschrift = t("KBROW_GRUPPE_HEIZKESSEL"),
@@ -300,7 +305,7 @@ namespace WindowsFormsApplication1
                         Filterart = KatalogFilterArt.BrennstoffUndLeistung,
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = true,
-                        HilfeSchluessel = "BHKW",
+                        HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
                         Titel = t("KBROW_TITEL_BHKW"),
                         Listenbeschriftung = t("KBROW_LISTE_BHKW"),
                         Detailueberschrift = t("KBROW_GRUPPE_BHKW"),
@@ -342,7 +347,7 @@ namespace WindowsFormsApplication1
                         Filterart = KatalogFilterArt.Keiner,
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
-                        HilfeSchluessel = "Solarthermie",
+                        HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
                         Titel = t("KBROW_TITEL_SOLAR"),
                         Listenbeschriftung = t("KBROW_LISTE_SOLAR"),
                         Detailueberschrift = t("KBROW_GRUPPE_SOLAR"),
@@ -383,7 +388,7 @@ namespace WindowsFormsApplication1
                         Filterart = KatalogFilterArt.HerstellerUndVolumen,
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
-                        HilfeSchluessel = "Pufferspeicher",
+                        HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
                         Titel = t("KBROW_TITEL_PUFFERSP"),
                         Listenbeschriftung = t("KBROW_LISTE_PUFFERSP"),
                         Detailueberschrift = t("KBROW_GRUPPE_PUFFERSP"),

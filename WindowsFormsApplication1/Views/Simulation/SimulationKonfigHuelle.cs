@@ -376,7 +376,7 @@ namespace WindowsFormsApplication1
                 WaermesenkeFertig = WaermesenkeFertig,
 
                 PufferVerwaltungGaben = idPuffer =>
-                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer, null)
+                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer)
             };
         }
 

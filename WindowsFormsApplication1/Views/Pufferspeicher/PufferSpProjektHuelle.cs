@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
         /// Überlagerungen der Wellen W10a.5 und W10a.7 nehmen können.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            int idProjekt, string verwendung, int idPuffer, Func<string, Task<bool>> sprung)
+            int idProjekt, string verwendung, int idPuffer)
         {
             return new Dictionary<string, object>
             {
@@ -48,8 +48,12 @@ namespace WindowsFormsApplication1
                 ["Verwendung"] = verwendung ?? "",
                 ["IdPuffer"] = idPuffer,
                 ["Dienste"] = Dienste(idProjekt),
-                ["Sprung"] = sprung,
-                ["SprungzielKatalog"] = Sprungziel.PufferSpAdminNurLesen,
+                // iU9-W14a.1: Der Auslieferungskatalog ist die Razor-Komponente
+                // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
+                // Fenster; NurLesen sperrt die drei Bearbeitungsknoepfe. Damit
+                // entfaellt das Sprungziel PufferSpAdminNurLesen (W10a.0c).
+                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => PufferSpAdminHuelle.Gaben(true)),
                 ["PasstZurVerwendung"] = PasstZurVerwendung(idProjekt, verwendung),
                 ["VorbelegteNutzung"] = VorbelegteNutzung(verwendung),
 

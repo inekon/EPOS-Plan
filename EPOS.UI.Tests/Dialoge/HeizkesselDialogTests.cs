@@ -52,7 +52,7 @@ public class HeizkesselDialogTests : BunitContext
         Action<ErzeugerZeile, int>? traegerWechseln = null,
         Action<ErzeugerZeile>? uebernehmen = null,
         Func<int, bool>? katalogLoeschen = null,
-        Func<string, Task<bool>>? sprung = null,
+        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
         bool wizard = false,
         Action<bool>? geschlossen = null)
@@ -73,7 +73,7 @@ public class HeizkesselDialogTests : BunitContext
             .Add(x => x.TraegerWechseln, traegerWechseln)
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.EditorGaben, editorGaben)
             .Add(x => x.TraegerGaben, _ => new Dictionary<string, object>
             {
@@ -123,15 +123,41 @@ public class HeizkesselDialogTests : BunitContext
         Assert.Single(gruppe.QuerySelectorAll("input[type=checkbox]"));
     }
 
+    /// <summary>
+    /// Ohne Parametersatz der Katalogverwaltung kein Knopf — Hausregel. Seit
+    /// iU9-W14a.4 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster statt eines
+    /// zweiten Fensters über die Sprungbrücke (Risiko R2).
+    /// </summary>
     [Fact]
-    public void Der_Admin_Knopf_erscheint_nur_mit_Sprung()
+    public void Der_Admin_Knopf_erscheint_nur_mit_Verwaltungsgaben()
     {
         var ohne = Aufbauen();
         Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent), t => t == "Administration...");
 
-        var mit = Aufbauen(sprung: _ => Task.FromResult(true));
+        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
         Assert.Contains(mit.FindAll("button").Select(b => b.TextContent), t => t == "Administration...");
     }
+
+    /// <summary>Der Knopf öffnet die Verwaltung als Überlagerung, nicht als Fenster.</summary>
+    [Fact]
+    public void Der_Admin_Knopf_oeffnet_die_Verwaltung_als_Ueberlagerung()
+    {
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
+
+        Assert.False(cut.Instance.VerwaltungOffen);
+        cut.FindAll("button").First(b => b.TextContent == "Administration...").Click();
+
+        Assert.True(cut.Instance.VerwaltungOffen);
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
+    /// <summary>Ein Mindestsatz für die Überlagerung — der Browser braucht sein Profil.</summary>
+    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Art"] = WindowsFormsApplication1.KatalogBrowserArt.Heizkessel,
+            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.KatalogBrowserWege()
+        };
 
     [Fact]
     public void Im_Assistenten_fehlen_OK_Abbrechen_und_die_Kostenleiste()

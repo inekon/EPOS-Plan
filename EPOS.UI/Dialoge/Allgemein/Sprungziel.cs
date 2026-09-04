@@ -51,17 +51,11 @@ public static class Sprungziel
     public const string Gesetzesparameter = "GESETZESPARAMETER";
 
     /// <summary>
-    /// Katalog „Administration Heizkessel" — der Knopf „Admin" des
-    /// Heizkessel-Projektdialogs (Vorläufer:
-    /// <c>Form_Heizkessel.btn_Admin_Click</c>, iU9-W6.3).
-    /// </summary>
-    public const string HeizkesselAdmin = "HEIZKESSEL_ADMIN";
-
-    /// <summary>
     /// Katalog „Administration Stromspeicher" — der Knopf „Bearbeiten" des
     /// Stromspeicher-Projektdialogs (Vorläufer:
     /// <c>Form_Stromspeicher.btn_Bearbeiten_Click</c>, iU9-W6.6).
     /// </summary>
+    /// <remarks>Fällt mit iU9-W14a.4, sobald der Modulkatalog Blazor ist.</remarks>
     public const string StromspeicherAdmin = "STROMSPEICHER_ADMIN";
 
     /// <summary>
@@ -69,29 +63,15 @@ public static class Sprungziel
     /// PV-Projektdialogs (Vorläufer: <c>Form_PV.btn_Bearbeiten_Click</c> über
     /// <c>MenueCtrl.PV()</c>, iU9-W6.5).
     /// </summary>
+    /// <remarks>Fällt mit iU9-W14a.4, sobald der Modulkatalog Blazor ist.</remarks>
     public const string PvAdmin = "PV_ADMIN";
 
-    /// <summary>
-    /// Katalog „Administration Pufferspeicher" — der Knopf „Bearbeiten" des
-    /// Pufferspeicher-Projektdialogs (Vorläufer:
-    /// <c>Form_PufferSp.btn_Bearbeiten_Click</c> über <c>MenueCtrl.PufferSp()</c>,
-    /// iU9-W6.7).
-    /// </summary>
-    public const string PufferSpAdmin = "PUFFERSP_ADMIN";
-
-    /// <summary>
-    /// Dieselbe Maske NUR ZUM ANSEHEN — der Knopf „Katalog ansehen" der
-    /// Pufferspeicher-Verwaltung auf Projektebene (Vorläufer:
-    /// <c>Form_PufferSp_Projekt.btnKatalog_Click</c>:1596, iU9‑W10a.0c).
-    ///
-    /// <para><b>Warum ein eigener Schlüssel (Befund W10‑B28).</b> Der Vorläufer
-    /// setzte <c>m_bReadOnly = true</c>, bevor er die Maske zeigte — sie ist an
-    /// dieser Stelle ein Katalog<i>browser</i>, kein Katalog<i>editor</i>.
-    /// <see cref="PufferSpAdmin"/> öffnet sie OHNE dieses Kennzeichen; würde der
-    /// Projektdialog denselben Schlüssel nehmen, wäre aus dem Nachschlagen
-    /// unversehens das Bearbeiten des Auslieferungskatalogs geworden.</para>
-    /// </summary>
-    public const string PufferSpAdminNurLesen = "PUFFERSP_ADMIN_NUR_LESEN";
+    // iU9-W14a.4: DREI Katalogverwaltungen der Erzeuger sind hier weg -
+    // HeizkesselAdmin, PufferSpAdmin und
+    // PufferSpAdminNurLesen. Ihre Ziele sind selbst Blazor geworden; aus jedem
+    // Sprung ist eine UEBERLAGERUNG im selben Fenster geworden (Muster W4/W10a,
+    // Risiko R2), und der Aufrufer bekommt den Parametersatz der Verwaltung
+    // statt eines Schluessels. Die Sprungbruecke bleibt fuer die WinForms-Ziele.
 
     /// <summary>
     /// Katalog „Stammdaten Solarthermieganglinien" — der Knopf „Bearbeiten…" des

@@ -126,7 +126,10 @@ namespace WindowsFormsApplication1
         /// <summary>Meldung, wenn ein Knopf ohne Auswahl gedrueckt wird.</summary>
         public string MeldungOhneAuswahl { get; private set; }
 
-        /// <summary>Der Bereichsschluessel des Infoknopfs (<c>help_mapping.txt</c>).</summary>
+        /// <summary>
+        /// Der Schluessel des Infoknopfs — die ZEILE LINKS in <c>help_mapping.txt</c>
+        /// (<c>Form_X.btn_Help</c>), nicht das Ziel rechts.
+        /// </summary>
         public string HilfeSchluessel { get; private set; }
 
         /// <summary>Fuehrt der Katalog einen Herstellerfilter? Nur die Photovoltaik.</summary>
@@ -188,7 +191,7 @@ namespace WindowsFormsApplication1
                         GruppeBestand = t("MODK_GRUPPE_SPEICHER"),
                         GruppeZwei = t("SP_GRUPPE_GERAETETECHNIK"),
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_SPEICHER"),
-                        HilfeSchluessel = "Stromspeicher",
+                        HilfeSchluessel = "Form_AdminStromspeicher.btn_Help",
                         HatHerstellerfilter = false,
                         FilterBezeichnung = "",
                         Felder = new[]
@@ -246,7 +249,7 @@ namespace WindowsFormsApplication1
                         GruppeBestand = t("MODK_GRUPPE_PV"),
                         GruppeZwei = "",
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_MODUL"),
-                        HilfeSchluessel = "Photovoltaik",
+                        HilfeSchluessel = "Form_AdminPV.btn_Help",
                         HatHerstellerfilter = false,
                         FilterBezeichnung = "",
                         Felder = new[]
