@@ -138,3 +138,32 @@ Bearbeiten der `.accdb` ohne Access und die offene Migrationsbaustelle — steht
 Nehme aktuelle .md Dateien jeweils zur bearbeteten Thematik. Teilweise gibt es ältere .MD Dateien, die nur teilweise noch Gültigkeit haben.
 Lizenzierungskonzept als
 `EPOS-Plan_Konzept_Lizenzierung.md` in der Wurzel.
+
+
+## Compact instructions
+
+Beim Verdichten des Gesprächs (`/compact` wie automatische Verdichtung) bleibt erhalten:
+
+- **Auftrag und Stand**: der Arbeitsauftrag im Wortlaut, der Zweig, der zuletzt zusammengeführte
+  und der zuletzt gepushte Commit (SHA), die laufende Welle bzw. der laufende Schritt und was
+  davon noch offen ist.
+- **Laufende Arbeiten**: Kennungen und Worktree-Pfade laufender Agenten samt Auftrag, armierte
+  Check-ins (Trigger-Kennung, Uhrzeit), laufende CI- und iOS-Läufe (Run-Kennung, Commit).
+- **Entscheide des Anwenders**: jeder in der Sitzung getroffene Entscheid mit Kennung
+  (z. B. W15a‑O‑3), Inhalt und Umsetzungsstand; jede noch offene Anwenderfrage mit Kennung.
+- **Arbeitsregeln der Sitzung**: Git-Regeln (Zweig, Attribution-Trailer, kein Pull Request, kein
+  Tag-Push), die Reihenfolge Merge → Gate → Statusblock → Push → iOS-Lauf → Nachweis, die Regeln an
+  Agenten (Modellwahl, Kultur pinnen, eigener Worktree, kein Push, kein CI-Aufruf, Aufräumen).
+- **Fehler und Behebung**: jede gefundene Fehlerursache und der Commit, der sie behebt.
+- **Dateien und Muster**: Pfade der Scratchpad-Skripte und Arbeitsanweisungen sowie die Muster,
+  nach denen Dokumente fortgeschrieben werden (Aufbau eines Statusblocks, Anker im
+  Nachweisdokument, Übersichtszeile im Konzept).
+
+Weglassen darf die Verdichtung: vollständige Dateiinhalte, Build- und Testausgaben, die bereits in
+ein grünes Gate oder einen Commit gemündet sind, und die Zwischenschritte erledigter Wellen jenseits
+von Commit und Ergebnis.
+
+Während der iOS-Migration (Zweig `ios_migration`) gilt zusätzlich: Der dauerhafte Stand steht in den
+Statusblöcken von [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) und in
+[`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md). Nach einer Verdichtung wird der
+Wellenstand von dort und aus `git log origin/ios_migration` nachgelesen, nicht aus dem Gedächtnis.
