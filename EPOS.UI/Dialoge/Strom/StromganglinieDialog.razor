@@ -1,0 +1,320 @@
+﻿@* Zuordnung von Stromganglinien zum Projekt (iU9-W12.5).
+
+   Vorbild: Views/Stromverbraucher/Form_Stromganglinie.cs (125 Z.) und
+   .designer.cs (128 Z., 7 Kartenzeilen, 0 MessageBox).
+
+   WOZU. Links die dem Projekt schon zugeordneten Ganglinien, rechts der
+   Katalog, dazwischen "◀" und "▶"; unter dem Katalog "Bearbeiten..." in die
+   Stammdatenverwaltung.
+
+   DER DIALOG SCHREIBT NICHTS - woertlich wie der Vorlaeufer. Er pflegt die
+   GETEILTE Liste; geschrieben wird beim Aufrufer (Form_Start bzw.
+   StromganglinieKontextMenuCtrl, je mit Del_Stromganglinie +
+   Add_Stromganglinie). Deshalb gibt die Huelle die Liste zurueck und legt sie
+   nicht selbst ab (Risiko R-W12-4).
+
+   DASSELBE MUSTER WIE DIE ERZEUGER UND DIE SOLARGANGLINIE (epos-auswahlpaar,
+   iU9-W6.3): zwei Listen, eine schmale Pfeilspalte dazwischen. Die Zeile traegt
+   Schluessel (die Zuordnung) und GanglinieId (den Katalogeintrag) GETRENNT -
+   dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein.
+
+   A-ZEILE: ENTFERNEN UEBER DIE ZEILE, NICHT UEBER DEN NAMEN. Der Vorlaeufer
+   suchte den zu entfernenden Satz ueber m_szStromganglinie == listBox.Text
+   (btn_Entfernen_Click :89) - zwei gleich benannte Zuordnungen trafen deshalb
+   immer die erste. Hier geht die GEWAEHLTE Zeile.
+
+   WOERTLICH TROTZ BEFUND: W12-B5, keine Dublettenpruefung beim Hinzufuegen.
+   Derselbe Katalogeintrag laesst sich beliebig oft zuordnen - das ist heute so,
+   und ob es so bleiben soll, ist eine Anwenderfrage.
+
+   ERSATZLOS WEG: SetControls(szProjekt) las die Datenbank, ohne das Ergebnis zu
+   verwenden, und benutzte seinen Parameter nicht (Befund W12-B2); je Zeile
+   diente ein Z_ProjWaermebedarfModel als Zwischenablage fuer eine Stromganglinie
+   (Befund W12-B3).
+
+   ASSISTENTENSCHNITT: Zeilen kommt als Parameter herein und wird an Ort und
+   Stelle bearbeitet, Wizard nimmt die Schlussleiste weg - damit W16 den
+   Zwilling Wizard_Stromlastgang ohne zweiten Bau uebernehmen kann
+   (Befund W12-B10, Risiko R-W12-8).
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GanglinienProjektZeile zeile in Zeilen)
+                        {
+                            GanglinienProjektZeile z = zeile;
+                            <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="epos-auswahlpfeile">
+            <button type="button" class="epos-knopf" title="@LabelHinzu"
+                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">@HinzufuegenText</button>
+            <button type="button" class="epos-knopf" title="@LabelEntfernen"
+                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">@EntfernenText</button>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GanglinienKatalogZeile zeile in _katalog)
+                        {
+                            GanglinienKatalogZeile k = zeile;
+                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Verwaltung is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BearbeitenText</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Die Stammdatenverwaltung als UEBERLAGERUNG (Risiko R2) --------- *@
+    <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_verwaltungOffen && Verwaltung is not null)
+            {
+                <StromganglinieAdminDialog @attributes="Verwaltung" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben und Delegaten
+    // =====================================================================
+
+    /// <summary>
+    /// Die GETEILTE Liste der Projektzuordnungen. Sie wird an Ort und Stelle
+    /// bearbeitet — der Aufrufer schreibt sie danach selbst
+    /// (<c>WizardCtrl.Del_Stromganglinie</c> + <c>Add_Stromganglinie</c>).
+    /// </summary>
+    [Parameter] public List<GanglinienProjektZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Der Katalog (<c>StromganglinieStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<Task<List<GanglinienKatalogZeile>>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Stammdatenverwaltung
+    /// (<c>StromganglinieAdminHuelle.Gaben</c>). Ohne ihn bleibt „Bearbeiten…" weg
+    /// — dieselbe Regel wie bei Dateiwahl und Sprung.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? Verwaltung { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.STROMGL_TITEL;
+    [Parameter] public string LabelProjektliste { get; set; } = Resource.STROMGL_LBL_AUSWAHL;
+    [Parameter] public string LabelKatalogliste { get; set; } = Resource.STROMGL_LBL_KATALOG;
+    [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteName { get; set; } = Resource.STROMGL_SPALTE_BEZEICHNER;
+    [Parameter] public string HinzufuegenText { get; set; } = Resource.STROMGL_BTN_HINZUFUEGEN;
+    [Parameter] public string EntfernenText { get; set; } = Resource.STROMGL_BTN_ENTFERNEN;
+    [Parameter] public string BearbeitenText { get; set; } = Resource.STROMGL_BTN_BEARBEITEN;
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+
+    /// <summary>Kurztext des ◀-Knopfes — er trägt sonst nur ein Zeichen.</summary>
+    [Parameter] public string LabelHinzu { get; set; } = Resource.HZK_TIP_HINZU;
+
+    /// <summary>Kurztext des ▶-Knopfes.</summary>
+    [Parameter] public string LabelEntfernen { get; set; } = Resource.HZK_TIP_ENTFERNEN;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in <c>help_mapping.txt</c>.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromganglinie.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zähler für noch nicht gespeicherte Zuordnungen — wörtlich der
+    /// <c>startindex = 100000</c> des Vorläufers samt dem Kommentar dort: „noch
+    /// nicht gespeichert, also noch unbekannt".
+    /// </summary>
+    public const int StartIndex = 100000;
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<GanglinienKatalogZeile> _katalog = new();
+    private GanglinienKatalogZeile? _katalogZeile;
+    private GanglinienProjektZeile? _projektZeile;
+    private int _naechsterSchluessel = StartIndex;
+    private bool _verwaltungOffen;
+
+    /// <summary>Die Katalogzeilen (Prüfhilfe für die Tests).</summary>
+    public IReadOnlyList<GanglinienKatalogZeile> Katalogliste => _katalog;
+
+    /// <summary>Die gewählte Projektzeile (Prüfhilfe für die Tests).</summary>
+    public GanglinienProjektZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewählte Katalogzeile (Prüfhilfe für die Tests).</summary>
+    public GanglinienKatalogZeile? Katalogzeile => _katalogZeile;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await KatalogLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Lädt den Katalog neu — beim Aufbau und nach „Bearbeiten…".</summary>
+    public async Task KatalogLaden()
+    {
+        if (Katalog is null) return;
+        _katalog = await Katalog() ?? new List<GanglinienKatalogZeile>();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void ProjektZeileWaehlen(GanglinienProjektZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+    }
+
+    private void KatalogZeileWaehlen(GanglinienKatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+    }
+
+    // =====================================================================
+    // Hinzufuegen und Entfernen
+    // =====================================================================
+
+    /// <summary>
+    /// „◀" — der gewählte Katalogeintrag wird dem Projekt zugeordnet.
+    ///
+    /// <para><b>Ohne Dublettenprüfung</b> (Befund W12-B5, wörtlich): Derselbe
+    /// Eintrag lässt sich beliebig oft zuordnen.</para>
+    ///
+    /// <para>Die Id des Katalogeintrags steht hier nicht; sie holt die Hülle beim
+    /// Zurückschreiben über den Bezeichner
+    /// (<c>StromganglinieStammCtrl.FindeStamm</c>, W12.0g). Der Vorläufer schlug
+    /// dieselbe Zeile schon beim Hinzufügen nach — mit einem konkatenierten
+    /// <c>SELECT</c> (Befund W12-B4).</para>
+    /// </summary>
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null) return;
+
+        GanglinienProjektZeile neu =
+            new GanglinienProjektZeile(_naechsterSchluessel++, 0, _katalogZeile.Bezeichner);
+
+        Zeilen.Add(neu);
+        ProjektZeileWaehlen(neu);
+    }
+
+    /// <summary>
+    /// „▶" — die GEWÄHLTE Zuordnung fällt weg. <b>A-Zeile:</b> über die Zeile, nicht
+    /// über den Namen; zwei gleich benannte Zuordnungen trafen im Vorläufer immer
+    /// die erste.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+        Zeilen.Remove(_projektZeile);
+        _projektZeile = null;
+    }
+
+    // =====================================================================
+    // Bearbeiten - die Verwaltung als Ueberlagerung
+    // =====================================================================
+
+    private void BeiBearbeiten()
+    {
+        _projektZeile = null;      // wie listBox_Auswahl.SelectedItems.Clear() (:112)
+        _verwaltungOffen = true;
+    }
+
+    /// <summary>
+    /// Nach der Verwaltung wird der Katalog IMMER neu gezogen. Der Vorläufer tat es
+    /// nur bei OK (:117) — die Verwaltung kann aber gelöscht oder eingelesen haben,
+    /// und ihr einziger Fußknopf trägt ohnehin OK.
+    /// </summary>
+    private async Task VerwaltungFertig(bool ok)
+    {
+        _verwaltungOffen = false;
+        await KatalogLaden();
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_verwaltungOffen) return Task.CompletedTask;   // erst die Überlagerung
+        return Wizard ? Task.CompletedTask : Geschlossen.InvokeAsync(false);
+    }
+}

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using SpeicherEngine;
 
@@ -296,13 +295,17 @@ namespace WindowsFormsApplication1
                     if (v.StartSoCProzent > v.SoCMaxProzent) v.StartSoCProzent = v.SoCMaxProzent;
                 }
             }
-            catch (OleDbException)
+            catch (Exception)
             {
                 // Tabellen einer noch nicht migrierten Datenbank - die Vorgaben
                 // stehen bereits im Objekt, die Maske bleibt bedienbar.
-            }
-            catch (InvalidOperationException)
-            {
+                //
+                // BIS iU9-W12.0a stand hier catch (OleDbException). Seit der
+                // SQLite-Umstellung (6486c36) wirft der Zugriff SqliteException, der
+                // Rueckfall griff also gar nicht mehr (Befund W12-B25) - und
+                // EPOS.Kern nennt System.Data.OleDb ueberhaupt nicht mehr. Gefangen
+                // wird deshalb der Oberbegriff: Was diese Methode kann, ist
+                // Vorbelegen; kein Fehler von hier darf die Maske verhindern.
             }
 
             return v;
