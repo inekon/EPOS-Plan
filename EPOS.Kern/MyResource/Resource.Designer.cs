@@ -14471,6 +14471,573 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablehnen ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_ABLEHNEN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_ABLEHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz aktivieren... ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_AKTIVIEREN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_AKTIVIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei wählen... ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drucken... ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_DRUCKEN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_DRUCKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter... ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustimmen ähnelt.
+        /// </summary>
+        public static string LIZR_BTN_ZUSTIMMEN {
+            get {
+                return ResourceManager.GetString("LIZR_BTN_ZUSTIMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan_Rechtliche_Hinweise ähnelt.
+        /// </summary>
+        public static string LIZR_DATEI_HINWEISE {
+            get {
+                return ResourceManager.GetString("LIZR_DATEI_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan_Komponenten ähnelt.
+        /// </summary>
+        public static string LIZR_DATEI_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("LIZR_DATEI_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan_Lizenz ähnelt.
+        /// </summary>
+        public static string LIZR_DATEI_VERTRAG {
+            get {
+                return ResourceManager.GetString("LIZR_DATEI_VERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Textdatei (*.txt)|*.txt|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_SPEICHERN_TEXT_FILTER {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_SPEICHERN_TEXT_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Text speichern ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_SPEICHERN_TEXT_TITEL {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_SPEICHERN_TEXT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_SPEICHERN_VERTRAG_FILTER {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_SPEICHERN_VERTRAG_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung speichern ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_SPEICHERN_VERTRAG_TITEL {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_SPEICHERN_VERTRAG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung (*.rtf;*.docx;*.pdf)|*.rtf;*.docx;*.pd [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_WAEHLEN_FILTER {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_WAEHLEN_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung auswählen ähnelt.
+        /// </summary>
+        public static string LIZR_DLG_WAEHLEN_TITEL {
+            get {
+                return ResourceManager.GetString("LIZR_DLG_WAEHLEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz: {0} ähnelt.
+        /// </summary>
+        public static string LIZR_FUSS_LIZENZ {
+            get {
+                return ResourceManager.GetString("LIZR_FUSS_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} ähnelt.
+        /// </summary>
+        public static string LIZR_FUSS_QUELLE {
+            get {
+                return ResourceManager.GetString("LIZR_FUSS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die    ·   Stand {0} ähnelt.
+        /// </summary>
+        public static string LIZR_FUSS_STAND {
+            get {
+                return ResourceManager.GetString("LIZR_FUSS_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        /// </summary>
+        public static string LIZR_HINWEIS_SPRACHE {
+            get {
+                return ResourceManager.GetString("LIZR_HINWEIS_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz und rechtliche Hinweise ähnelt.
+        /// </summary>
+        public static string LIZR_KOPF_TITEL {
+            get {
+                return ResourceManager.GetString("LIZR_KOPF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan - Energieplanungs-Software - INEKON, Intelligen [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KOPF_UNTERTITEL {
+            get {
+                return ResourceManager.GetString("LIZR_KOPF_UNTERTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan verwendet die nachfolgend genannten Komponenten [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A1 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsof [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A2 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS - Photovoltaic Geographical Information System der  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A3 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensätze zu Wärmepumpen, Heizkesseln, Pufferspeichern u [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A4 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfe-Assistent kann auf Wunsch einen externen Sprach [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A5 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ONNX Runtime (MIT-Lizenz, Microsoft Corporation) und Micr [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_KO_A6 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_A6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendete Komponenten und Datenquellen ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U1 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeit und Bibliotheken ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U2 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klima- und Geodaten ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U3 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Produkt- und Herstellerdaten ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U4 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optionaler Hilfe-Assistent ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U5 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semantische Suche in der Dokumentation ähnelt.
+        /// </summary>
+        public static string LIZR_KO_U6 {
+            get {
+                return ResourceManager.GetString("LIZR_KO_U6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert: ähnelt.
+        /// </summary>
+        public static string LIZR_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("LIZR_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenzvereinbarung wurde gespeichert: ähnelt.
+        /// </summary>
+        public static string LIZR_MSG_GESPEICHERT_VERTRAG {
+            get {
+                return ResourceManager.GetString("LIZR_MSG_GESPEICHERT_VERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht gespeichert werden: ähnelt.
+        /// </summary>
+        public static string LIZR_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("LIZR_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenzverwaltung konnte nicht geöffnet werden: ähnelt.
+        /// </summary>
+        public static string LIZR_MSG_VERWALTUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("LIZR_MSG_VERWALTUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechtliche Hinweise ähnelt.
+        /// </summary>
+        public static string LIZR_REITER_HINWEISE {
+            get {
+                return ResourceManager.GetString("LIZR_REITER_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten ähnelt.
+        /// </summary>
+        public static string LIZR_REITER_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("LIZR_REITER_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung ähnelt.
+        /// </summary>
+        public static string LIZR_REITER_VERTRAG {
+            get {
+                return ResourceManager.GetString("LIZR_REITER_VERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A1 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzung von EPOS-Plan gilt ausschließlich die Liz [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A2 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anwender erhält ein nicht ausschließliches Recht zur  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A3 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan ist ein Planungswerkzeug. Die Berechnungen beru [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A4 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gelten die Regelungen der Lizenzvereinbarung. Eine Haf [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A5 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt-, Kunden- und Simulationsdaten werden ausschließl [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A6 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan sowie Programmoberfläche, Dokumentation und Dat [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A7 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        /// </summary>
+        public static string LIZR_RH_A8 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_A8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anbieter ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U1 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbindliche Grundlage ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U2 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsrecht ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U3 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse und Verantwortung des Anwenders ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U4 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewährleistung und Haftung ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U5 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenverarbeitung ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U6 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Marken und Urheberrecht ähnelt.
+        /// </summary>
+        public static string LIZR_RH_U7 {
+            get {
+                return ResourceManager.GetString("LIZR_RH_U7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status nicht ermittelbar ähnelt.
+        /// </summary>
+        public static string LIZR_STATUS_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("LIZR_STATUS_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenzvereinbarung liegt als Datei vor: ähnelt.
+        /// </summary>
+        public static string LIZR_TEXT_DATEI {
+            get {
+                return ResourceManager.GetString("LIZR_TEXT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenzdatei konnte nicht gelesen werden: ähnelt.
+        /// </summary>
+        public static string LIZR_TEXT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("LIZR_TEXT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenzvereinbarung wird von epos-plan.de geladen... ähnelt.
+        /// </summary>
+        public static string LIZR_TEXT_ONLINE_LAEDT {
+            get {
+                return ResourceManager.GetString("LIZR_TEXT_ONLINE_LAEDT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan - Lizenz und rechtliche Hinweise ähnelt.
+        /// </summary>
+        public static string LIZR_TITEL {
+            get {
+                return ResourceManager.GetString("LIZR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan - Lizenzvereinbarung ähnelt.
+        /// </summary>
+        public static string LIZR_TITEL_ZUSTIMMUNG {
+            get {
+                return ResourceManager.GetString("LIZR_TITEL_ZUSTIMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte lesen Sie die Vereinbarung und bestätigen Sie sie,  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZR_ZUSTIMMUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("LIZR_ZUSTIMMUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt aktivieren ähnelt.
         /// </summary>
         public static string LIZ_BTN_AKTIVIEREN {

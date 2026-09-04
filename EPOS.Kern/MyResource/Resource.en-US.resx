@@ -13684,4 +13684,212 @@ Depending on the amount of data this takes a few minutes. On failure the new fil
   <data name="START_BERICHT" xml:space="preserve">
     <value>Report: {0}</value>
   </data>
+  <data name="LIZR_RH_U1" xml:space="preserve">
+    <value>Anbieter</value>
+  </data>
+  <data name="LIZR_RH_A1" xml:space="preserve">
+    <value>INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann, Breitwiesenstraße 13, 70565 Stuttgart. Kontakt und vollständige Anbieterkennzeichnung: https://epos-plan.de/impressum/</value>
+  </data>
+  <data name="LIZR_RH_U2" xml:space="preserve">
+    <value>Verbindliche Grundlage</value>
+  </data>
+  <data name="LIZR_RH_A2" xml:space="preserve">
+    <value>Für die Nutzung von EPOS-Plan gilt ausschließlich die Lizenzvereinbarung einschließlich der Allgemeinen Geschäftsbedingungen auf der ersten Registerkarte dieses Fensters. Die folgenden Abschnitte fassen wesentliche Punkte zusammen; im Zweifel gilt der Wortlaut der Vereinbarung.</value>
+  </data>
+  <data name="LIZR_RH_U3" xml:space="preserve">
+    <value>Nutzungsrecht</value>
+  </data>
+  <data name="LIZR_RH_A3" xml:space="preserve">
+    <value>Der Anwender erhält ein nicht ausschließliches Recht zur Nutzung der Software im Umfang des geschlossenen Lizenz- beziehungsweise Wartungsvertrags. Die Software ist urheberrechtlich geschützt. Weitergabe, Vermietung, Dekompilierung und Veränderung sind nur in den gesetzlich zwingend erlaubten Grenzen zulässig. Mitgelieferte Stammdaten, Kennfelder und Klimadatensätze dürfen ausschließlich innerhalb der Software genutzt werden.</value>
+  </data>
+  <data name="LIZR_RH_U4" xml:space="preserve">
+    <value>Ergebnisse und Verantwortung des Anwenders</value>
+  </data>
+  <data name="LIZR_RH_A4" xml:space="preserve">
+    <value>EPOS-Plan ist ein Planungswerkzeug. Die Berechnungen beruhen auf den eingegebenen Daten, auf Herstellerangaben und auf modellhaften Annahmen; sie bilden das reale Anlagenverhalten näherungsweise ab. Ergebnisse ersetzen weder die fachliche Prüfung durch eine qualifizierte Planerin oder einen qualifizierten Planer noch eine Ausführungsplanung, eine Heizlastberechnung nach den einschlägigen Normen oder behördlich geforderte Nachweise. Für die Plausibilität der Eingangsdaten und für die Verwendung der Ergebnisse ist der Anwender verantwortlich.</value>
+  </data>
+  <data name="LIZR_RH_U5" xml:space="preserve">
+    <value>Gewährleistung und Haftung</value>
+  </data>
+  <data name="LIZR_RH_A5" xml:space="preserve">
+    <value>Es gelten die Regelungen der Lizenzvereinbarung. Eine Haftung für Schäden, die auf fehlerhaften Eingabedaten, unsachgemäßer Anwendung oder auf der Verwendung der Ergebnisse ohne fachliche Prüfung beruhen, ist ausgeschlossen, soweit dies gesetzlich zulässig ist. Unberührt bleibt die Haftung bei Vorsatz und grober Fahrlässigkeit, bei der Verletzung von Leben, Körper und Gesundheit sowie nach dem Produkthaftungsgesetz.</value>
+  </data>
+  <data name="LIZR_RH_U6" xml:space="preserve">
+    <value>Datenverarbeitung</value>
+  </data>
+  <data name="LIZR_RH_A6" xml:space="preserve">
+    <value>Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/</value>
+  </data>
+  <data name="LIZR_RH_U7" xml:space="preserve">
+    <value>Marken und Urheberrecht</value>
+  </data>
+  <data name="LIZR_RH_A7" xml:space="preserve">
+    <value>EPOS-Plan sowie Programmoberfläche, Dokumentation und Datenbestände sind urheberrechtlich geschützt. Genannte Produkt- und Firmennamen Dritter sind Marken ihrer jeweiligen Inhaber und werden ausschließlich zur Bezeichnung der betreffenden Produkte verwendet.</value>
+  </data>
+  <data name="LIZR_RH_A8" xml:space="preserve">
+    <value>
+Stand: {0} - Programmversion {1}.</value>
+  </data>
+  <data name="LIZR_KO_U1" xml:space="preserve">
+    <value>Verwendete Komponenten und Datenquellen</value>
+  </data>
+  <data name="LIZR_KO_A1" xml:space="preserve">
+    <value>EPOS-Plan verwendet die nachfolgend genannten Komponenten und Daten Dritter. Deren jeweilige Lizenz- und Nutzungsbedingungen gelten fort und werden durch die Lizenzvereinbarung zu EPOS-Plan nicht berührt.</value>
+  </data>
+  <data name="LIZR_KO_U2" xml:space="preserve">
+    <value>Laufzeit und Bibliotheken</value>
+  </data>
+  <data name="LIZR_KO_A2" xml:space="preserve">
+    <value>Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und Bedienoberfläche.
+SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) - Ablage der Kenndaten-Datenbank.
+Microsoft Edge WebView2 Runtime (Microsoft Corporation) - Anzeige der Dialoge; Installation und Nutzung nach den Bedingungen von Microsoft.
+Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellung eines Access-Altbestands; Installation und Nutzung nach den Bedingungen von Microsoft.</value>
+  </data>
+  <data name="LIZR_KO_U3" xml:space="preserve">
+    <value>Klima- und Geodaten</value>
+  </data>
+  <data name="LIZR_KO_A3" xml:space="preserve">
+    <value>PVGIS - Photovoltaic Geographical Information System der Europäischen Kommission, Joint Research Centre: Herkunft der typischen meteorologischen Jahresdatensätze für Temperatur und Strahlung. Nutzung nach den Bedingungen der Europäischen Kommission, https://re.jrc.ec.europa.eu/
+OpenStreetMap / Nominatim: Ermittlung von Geokoordinaten zu Ortsnamen. Daten der OpenStreetMap-Mitwirkenden, verfügbar unter der Open Database License (ODbL), https://www.openstreetmap.org/copyright</value>
+  </data>
+  <data name="LIZR_KO_U4" xml:space="preserve">
+    <value>Produkt- und Herstellerdaten</value>
+  </data>
+  <data name="LIZR_KO_A4" xml:space="preserve">
+    <value>Datensätze zu Wärmepumpen, Heizkesseln, Pufferspeichern und Solarkollektoren können nach VDI 3805 aus Herstellerdatenbeständen eingelesen werden. Die Rechte an diesen Daten liegen bei den jeweiligen Herstellern; für Richtigkeit und Aktualität der Herstellerangaben wird keine Gewähr übernommen. Kennfelder und Kennwerte werden unverändert für die Berechnung verwendet.</value>
+  </data>
+  <data name="LIZR_KO_U5" xml:space="preserve">
+    <value>Optionaler Hilfe-Assistent</value>
+  </data>
+  <data name="LIZR_KO_A5" xml:space="preserve">
+    <value>Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.</value>
+  </data>
+  <data name="LIZR_KO_U6" xml:space="preserve">
+    <value>Semantische Suche in der Dokumentation</value>
+  </data>
+  <data name="LIZR_KO_A6" xml:space="preserve">
+    <value>ONNX Runtime (MIT-Lizenz, Microsoft Corporation) und Microsoft.ML.Tokenizers (MIT-Lizenz, Microsoft Corporation) - Ausführung des Einbettungsmodells auf diesem Rechner; Google Protocol Buffers (BSD-3-Clause, Google LLC) als deren Bestandteil.
+Einbettungsmodell {0} ({1}, Ubiquitous Knowledge Processing Lab / sentence-transformers): ordnet Fragen und Hilfetexte nach Bedeutung zu. Das Modell gehört nicht zum Lieferumfang; es wird bei Bedarf einmalig von huggingface.co bezogen und liegt danach im Benutzerprofil. Die Zuordnung selbst findet ausschließlich auf diesem Rechner statt - es werden dabei keinerlei Daten übertragen.</value>
+  </data>
+  <data name="LIZR_TITEL" xml:space="preserve">
+    <value>EPOS-Plan - License and legal information</value>
+  </data>
+  <data name="LIZR_TITEL_ZUSTIMMUNG" xml:space="preserve">
+    <value>EPOS-Plan - License agreement</value>
+  </data>
+  <data name="LIZR_KOPF_TITEL" xml:space="preserve">
+    <value>License and legal information</value>
+  </data>
+  <data name="LIZR_KOPF_UNTERTITEL" xml:space="preserve">
+    <value>EPOS-Plan - energy planning software - INEKON, Intelligente Energiekonzepte</value>
+  </data>
+  <data name="LIZR_REITER_VERTRAG" xml:space="preserve">
+    <value>License agreement</value>
+  </data>
+  <data name="LIZR_REITER_HINWEISE" xml:space="preserve">
+    <value>Legal information</value>
+  </data>
+  <data name="LIZR_REITER_KOMPONENTEN" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="LIZR_BTN_DATEI" xml:space="preserve">
+    <value>Choose file...</value>
+  </data>
+  <data name="LIZR_BTN_DRUCKEN" xml:space="preserve">
+    <value>Print...</value>
+  </data>
+  <data name="LIZR_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save as...</value>
+  </data>
+  <data name="LIZR_BTN_AKTIVIEREN" xml:space="preserve">
+    <value>Activate license...</value>
+  </data>
+  <data name="LIZR_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="LIZR_BTN_ZUSTIMMEN" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="LIZR_BTN_ABLEHNEN" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+  <data name="LIZR_ZUSTIMMUNG_HINWEIS" xml:space="preserve">
+    <value>Please read the agreement and accept it in order to use the program.</value>
+  </data>
+  <data name="LIZR_FUSS_LIZENZ" xml:space="preserve">
+    <value>License: {0}</value>
+  </data>
+  <data name="LIZR_FUSS_QUELLE" xml:space="preserve">
+    <value>Source: {0}</value>
+  </data>
+  <data name="LIZR_FUSS_STAND" xml:space="preserve">
+    <value>   ·   as of {0}</value>
+  </data>
+  <data name="LIZR_STATUS_UNBEKANNT" xml:space="preserve">
+    <value>Status cannot be determined</value>
+  </data>
+  <data name="LIZR_TEXT_ONLINE_LAEDT" xml:space="preserve">
+    <value>The license agreement is being loaded from epos-plan.de...
+
+If there is no connection, you will find the binding version at
+  {0}</value>
+  </data>
+  <data name="LIZR_TEXT_DATEI" xml:space="preserve">
+    <value>The license agreement is available as a file:
+{0}
+
+Use 'Save as...' to store the document and open it.</value>
+  </data>
+  <data name="LIZR_TEXT_LESEFEHLER" xml:space="preserve">
+    <value>The license file could not be read:
+{0}
+
+{1}</value>
+  </data>
+  <data name="LIZR_DLG_WAEHLEN_TITEL" xml:space="preserve">
+    <value>Choose license agreement</value>
+  </data>
+  <data name="LIZR_DLG_WAEHLEN_FILTER" xml:space="preserve">
+    <value>License agreement (*.rtf;*.docx;*.pdf)|*.rtf;*.docx;*.pdf|Rich Text (*.rtf)|*.rtf|All files (*.*)|*.*</value>
+  </data>
+  <data name="LIZR_DLG_SPEICHERN_VERTRAG_TITEL" xml:space="preserve">
+    <value>Save license agreement</value>
+  </data>
+  <data name="LIZR_DLG_SPEICHERN_VERTRAG_FILTER" xml:space="preserve">
+    <value>All files (*.*)|*.*</value>
+  </data>
+  <data name="LIZR_DLG_SPEICHERN_TEXT_TITEL" xml:space="preserve">
+    <value>Save text</value>
+  </data>
+  <data name="LIZR_DLG_SPEICHERN_TEXT_FILTER" xml:space="preserve">
+    <value>Text file (*.txt)|*.txt|All files (*.*)|*.*</value>
+  </data>
+  <data name="LIZR_DATEI_VERTRAG" xml:space="preserve">
+    <value>EPOS-Plan_License</value>
+  </data>
+  <data name="LIZR_DATEI_HINWEISE" xml:space="preserve">
+    <value>EPOS-Plan_Legal_information</value>
+  </data>
+  <data name="LIZR_DATEI_KOMPONENTEN" xml:space="preserve">
+    <value>EPOS-Plan_Components</value>
+  </data>
+  <data name="LIZR_MSG_GESPEICHERT_VERTRAG" xml:space="preserve">
+    <value>The license agreement has been saved:
+{0}</value>
+  </data>
+  <data name="LIZR_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Saved:
+{0}</value>
+  </data>
+  <data name="LIZR_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The file could not be saved:
+{0}</value>
+  </data>
+  <data name="LIZR_MSG_VERWALTUNG_FEHLER" xml:space="preserve">
+    <value>The license administration could not be opened:
+{0}</value>
+  </data>
+  <data name="LIZR_HINWEIS_SPRACHE" xml:space="preserve">
+    <value>Binding version in German.</value>
+  </data>
 </root>
