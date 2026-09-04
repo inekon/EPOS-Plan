@@ -1,4 +1,4 @@
-# WP-Plan / EPOS-Plan — Projektkontext
+﻿# WP-Plan / EPOS-Plan — Projektkontext
 
 Windows-Desktop-Anwendung zur Planung und Simulation von Energie- und Wärmeversorgungskonzepten
 (Wärmebedarf, Brauchwasser, Prozesswärme, Heizkessel, BHKW, Wärmepumpe, Solarthermie, Photovoltaik,
@@ -26,6 +26,10 @@ Kern verboten**; zwei Wächter (in `EPOS.Kern/CLAUDE.md`) müssen leer bleiben.
 Die **Oberfläche wächst seit dem 03.09.2026 (Paket iU8) in [`EPOS.UI`](EPOS.UI/)**, einer
 Razor-Klassenbibliothek ohne Windows-Bindung; die WinForms-Anwendung stellt nur noch die Hülle
 (`WindowsFormsApplication1/Allgemein/Blazor/`, ein `BlazorWebView` in einem modalen Fenster).
+Seit dem 04.09.2026 (Welle iU9‑W10b) ist die **Simulationskonfiguration** eine Razor-SEITE —
+die erste Fachseite, die auch die iOS-Wurzel `AppWurzel` erreicht; unter Windows steht sie bis
+W16 in derselben modalen Hülle wie ein Dialog, weil ihre beiden Aufrufer die modale Rückkehr
+brauchen (Entscheid R‑W10b‑1).
 **Arbeitsregel seit dem Stichtag iZ5: Jeder neue und jeder ohnehin anzufassende Dialog entsteht
 als Razor-Komponente in `EPOS.UI`, seine WinForms-Fassung wird im selben Schritt gelöscht** —
 nie zwei Fassungen derselben Maske. Die Datenbankseite gehört dabei in einen Controller im Kern,

@@ -1,4 +1,4 @@
-# Nachweisliste iU10 — die iOS-Hülle
+﻿# Nachweisliste iU10 — die iOS-Hülle
 
 **Stand 03.09.2026 · Branch `ios_migration` · ab `d4d5e20` (Basis `6f67a32`) —
 sieben Schritte iU10-1…iU10-7, dazu die Doku iU10-8**
@@ -301,9 +301,37 @@ sich beim Erststart nachladen lassen (E3). E4 (Volldownload beim Erststart) nur 
 
 ---
 
+## Nachtrag iU9-W10b (04.09.2026) — die erste FACHSEITE im iOS-Einstieg
+
+Bis hierher kannte `AppWurzel` drei Ansichten: die Projektliste und zwei Dialoge. Mit
+**iU9-W10b** kommt die **Simulationskonfiguration** als vierte dazu —
+`Seitenschluessel.SimulationKonfiguration` und ein Zweig in `AppWurzel.Zeige`, gebaut nach
+dem Muster `BhkwWirtschaftlichkeit`. Sie ist die erste **Fachseite** (kein Dialog), die die
+Wurzel zeigt, und damit der erste Beleg dafür, dass eine Seite mit Überlagerungen auf dem
+iPad genauso läuft wie unter Windows: Die sieben Dialoge der Welle 10a erscheinen darin als
+Überlagerung, ohne zweites Fenster.
+
+- [x] `dotnet build EPOS.UI -c Release` → **0 Fehler, 0 Warnungen**.
+- [x] `dotnet test WP-Plan.Kern.slnf -c Release` → **2 379/2 379**, darunter 26 bunit-Fälle
+      für die Seite und 7 für `AppWurzel` (unverändert).
+- [ ] **`IProjektQuelle` ist gewachsen** — `SimulationKonfigGaben(int idProjekt)` liefert den
+      Parametersatz. Die Methode hat eine **Standardumsetzung** (`=> null`), damit
+      `EPOS.iOS/Dienste/IosProjektQuelle` durch die Erweiterung **nicht bricht**: `EPOS.iOS`
+      steht bewusst weder in `WP-Plan.sln` noch im Solution-Filter, ein Pflichtmitglied hätte
+      den iOS-Job stumm gebrochen. **Offen:** Solange `IosProjektQuelle` die Methode nicht
+      umsetzt, meldet die Wurzel „Zu diesem Projekt lässt sich die Simulationskonfiguration
+      nicht öffnen" — die Seite ist auf dem Gerät also noch nicht erreichbar. Das Nachziehen
+      der Quelle (Controller, Delegatensatz, Texte) ist ein eigener Schritt in **iU11**.
+- [ ] **iOS-Job einmal laufen lassen** (`Actions → iOS → Run workflow`, bis Migrationsende
+      pauschal freigegeben). Er baut `EPOS.iOS` gegen die erweiterte Schnittstelle; die
+      Standardumsetzung muss ihn tragen, ohne dass die Hülle angefasst wurde.
+
+---
+
 ## Was iU10 bewusst **nicht** tut
 
-- **Kein Wizard.** `AppWurzel` ist eine Zustandsmaschine mit drei Ansichten, kein Router. Der
+- **Kein Wizard.** `AppWurzel` ist eine Zustandsmaschine mit VIER Ansichten (seit iU9-W10b),
+  kein Router. Der
   iL5-Wizard (Projekt → Bedarf → Erzeuger → Simulation → Bericht) ist **iU10-9**.
 - **Kein Anlegen einer Energieträger-Variante.** Der Schreibweg steht bis heute in
   `Views/Kosten/Form_Kosten.CreateNewEnergyCarrier` und hängt dort am Typ `EnergyCarrier` und an
