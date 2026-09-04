@@ -2387,6 +2387,9 @@ body {
 /* Vorgabefarbe; eine eigene Regel braucht sie nicht, sie steht nur     */
 /* damit jede Zeile eine Klasse traegt.                                */
 /* ------------------------------------------------------------------ */
+.epos-protokoll-kopf { margin: 0 0 8px; }
+.epos-protokoll-stufe { white-space: nowrap; }
+
 .epos-stufe--fehler { color: var(--epos-stufe-fehler); }
 .epos-stufe--warnung { color: var(--epos-stufe-warnung); }
 .epos-stufe--info { color: inherit; }

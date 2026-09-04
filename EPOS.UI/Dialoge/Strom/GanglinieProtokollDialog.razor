@@ -1,0 +1,178 @@
+﻿@* Pruefprotokoll des Lastgangimports (iU9-W12.1).
+
+   Vorbild: Views/Stromverbraucher/Form_GanglinieProtokoll.cs (148 Z.) und
+   .Designer.cs (122 Z.), AP5 / Fachkonzept 3.2.
+
+   WOZU. Der Vorlaeufer ersetzte die frueheren Abbruch-MessageBoxen des
+   Ganglinienimports durch EINE Liste: Fehler blockieren den Import, Warnungen
+   und Eingriffe (Schaltjahr, Sommerzeit, Minutenmittelung) werden zur
+   Bestaetigung vorgelegt, ein sauberer Lauf laeuft ohne Nachfrage durch.
+
+   DER SAUBERE LAUF ZEIGT GAR NICHTS. Im Vorlaeufer entschied das die statische
+   Tuer Zeigen() (":93": importMoeglich && !bestaetigungNoetig -> true, ohne
+   Fenster). Eine Razor-Komponente hat keine statische Tuer; die Entscheidung
+   steht jetzt als Noetig() daneben, und der WIRT fragt sie, bevor er die
+   Ueberlagerung aufmacht. Deshalb ist auch der dritte Kopftext IMPORT_KOPF_OK
+   hier erreichbar - ein Wirt, der die Komponente ohne Noetig() zeigt, bekommt
+   ihn (Befund der Vermessung zu :121-123).
+
+   DREI KOPFTEXTE, ZWEI KNOEPFE. Der Kopf haengt an den beiden Schaltern, der
+   zweite Knopf heisst "Abbrechen", solange ein Import moeglich ist, und
+   "Schliessen", wenn nicht - dann ist er der einzige Ausgang.
+
+   DIE FARBE IST EINE KLASSE. GanglienProtokollText.StufeFarbe gab
+   Color.FromArgb(176,0,32) bzw. (160,96,0) zurueck; im Kern gibt es
+   System.Drawing nicht mehr. StufeKlasse liefert epos-stufe--fehler /
+   --warnung / --info, die Werte stehen in epos-ui.css.
+
+   BEFUND W12-B17, BEHOBEN: Der Vorlaeufer war als einziger der Kette OHNE
+   InfoKnopf. Er hat jetzt einen - Ziel ist derselbe Hilfeeintrag wie bei den
+   Importoptionen (Strombedarf).
+
+   TASTATUR: Esc schliesst (= Abbrechen). Enter ist NICHT belegt - der Dialog
+   ist eine BESTAETIGUNG eines Eingriffs, kein reiner OK-Dialog (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-ganglinie-protokoll" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-protokoll-kopf" role="status">@Kopftext</p>
+
+    <Raster TZeile="ProtokollZeile" Zeilen="@Zeilen">
+        <KindInhalt>
+            <TemplateColumn TGridItem="ProtokollZeile" Title="@SpalteStufe" Class="epos-protokoll-stufe">
+                <span class="@context.Klasse">@context.Stufe</span>
+            </TemplateColumn>
+            <TemplateColumn TGridItem="ProtokollZeile" Title="@SpalteMeldung">
+                <span class="@context.Klasse">@context.Meldung</span>
+            </TemplateColumn>
+        </KindInhalt>
+    </Raster>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@ZweiterKnopfText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!ImportMoeglich)" @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    /// <summary>Die anzuzeigenden Meldungen (Lesen und Pruefen zusammengefuehrt).</summary>
+    [Parameter] public IReadOnlyList<PruefMeldung>? Meldungen { get; set; }
+
+    /// <summary>Kein Fehler im Protokoll — nur dann ist „OK" bedienbar.</summary>
+    [Parameter] public bool ImportMoeglich { get; set; }
+
+    /// <summary>An der Reihe wurde etwas veraendert; der Anwender soll bestaetigen.</summary>
+    [Parameter] public bool BestaetigungNoetig { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. <c>true</c> = weitermachen (nur moeglich, wenn
+    /// <see cref="ImportMoeglich"/>), <c>false</c> = abbrechen.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    /// <summary>Fenstertitel (IMPORT_TITEL_PROTOKOLL).</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.IMPORT_TITEL_PROTOKOLL;
+
+    /// <summary>Kopftext, wenn ein Fehler den Import blockiert (IMPORT_KOPF_FEHLER).</summary>
+    [Parameter] public string KopfFehler { get; set; } = Resource.IMPORT_KOPF_FEHLER;
+
+    /// <summary>Kopftext bei Eingriff oder Warnung (IMPORT_KOPF_EINGRIFF).</summary>
+    [Parameter] public string KopfEingriff { get; set; } = Resource.IMPORT_KOPF_EINGRIFF;
+
+    /// <summary>Kopftext eines sauberen Laufs (IMPORT_KOPF_OK).</summary>
+    [Parameter] public string KopfOk { get; set; } = Resource.IMPORT_KOPF_OK;
+
+    /// <summary>Spaltenkopf „Stufe" (IMPORT_SPALTE_STUFE).</summary>
+    [Parameter] public string SpalteStufe { get; set; } = Resource.IMPORT_SPALTE_STUFE;
+
+    /// <summary>Spaltenkopf „Meldung" (IMPORT_SPALTE_MELDUNG).</summary>
+    [Parameter] public string SpalteMeldung { get; set; } = Resource.IMPORT_SPALTE_MELDUNG;
+
+    /// <summary>Beschriftung des OK-Knopfes (SIM_BTN_OK).</summary>
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+
+    /// <summary>Beschriftung des zweiten Knopfes bei moeglichem Import (IMPORT_BTN_ABBRECHEN).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+
+    /// <summary>Beschriftung des zweiten Knopfes ohne moeglichen Import (IMPORT_BTN_SCHLIESSEN).</summary>
+    [Parameter] public string SchliessenText { get; set; } = Resource.IMPORT_BTN_SCHLIESSEN;
+
+    /// <summary>Ziel des Infoknopfes — dieselbe Zeile wie die Importoptionen (W12-B17).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_GanglinieImportOptionen.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    /// <summary>Eine Zeile der Protokollliste.</summary>
+    /// <param name="Stufe">Anzeigetext der Stufe (Fehler / Warnung / Info).</param>
+    /// <param name="Meldung">Der uebersetzte Meldungstext.</param>
+    /// <param name="Klasse">Die CSS-Klasse der Stufe.</param>
+    public sealed record ProtokollZeile(string Stufe, string Meldung, string Klasse);
+
+    private IQueryable<ProtokollZeile> Zeilen =>
+        (Meldungen ?? Array.Empty<PruefMeldung>())
+            .Select(m => new ProtokollZeile(GanglinienProtokollText.StufeText(m.Stufe),
+                                            GanglinienProtokollText.Text(m),
+                                            GanglinienProtokollText.StufeKlasse(m.Stufe)))
+            .AsQueryable();
+
+    /// <summary>Der Kopftext — dreistufig wie im Vorlaeufer (:42-45).</summary>
+    private string Kopftext => !ImportMoeglich
+        ? KopfFehler
+        : (BestaetigungNoetig ? KopfEingriff : KopfOk);
+
+    /// <summary>
+    /// „Abbrechen", solange ein Import moeglich ist; sonst „Schliessen" — dann ist
+    /// dieser Knopf der einzige Ausgang.
+    /// </summary>
+    private string ZweiterKnopfText => ImportMoeglich ? AbbrechenText : SchliessenText;
+
+    /// <summary>
+    /// <b>Die Entscheidung, die im Vorlaeufer in <c>Zeigen</c> stand.</b> Ein
+    /// fehlerfreier Lauf ohne Eingriff wird gar nicht erst vorgelegt — der Wirt
+    /// fragt hier, BEVOR er die Ueberlagerung aufmacht.
+    /// </summary>
+    /// <param name="importMoeglich">Kein Fehler im Protokoll.</param>
+    /// <param name="bestaetigungNoetig">Warnung oder Eingriff an der Reihe.</param>
+    /// <returns><c>false</c> = der Dialog bleibt zu, der Import laeuft weiter.</returns>
+    public static bool Noetig(bool importMoeglich, bool bestaetigungNoetig)
+        => !(importMoeglich && !bestaetigungNoetig);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private Task BeiOk() => ImportMoeglich ? Geschlossen.InvokeAsync(true) : Task.CompletedTask;
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+}
