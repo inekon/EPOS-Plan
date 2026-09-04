@@ -563,6 +563,108 @@ Energieträgerverwaltung** (Katalogkontext) · **Berichte & Kosten → Kosten �
 
 ---
 
+## 9a. Befunde aus der Windows-Abnahme
+
+### W4‑B‑1 (04.09.2026) — „Die Preisbasis wird teilweise nicht angezeigt oder doppelt"
+
+**Behoben mit `ca7c819`** (Code und Proben) auf dem Stand `e880bdd`.
+
+**Meldung.** Träger „Erdgas E" (Gruppe Gas): Das Auswahlfeld „Preisbasis" bietet
+**Nm³, kWh, Nm³** — Nm³ doppelt. Bei anderen Trägern bleibt das Feld leer.
+
+**Ursache — die Dublette.** Die Hülle baute die Liste aus der `to_unit`
+**jeder** Umrechnungsregel des Brennstoffs, ohne Filter und ohne
+Dublettenprüfung (`EnergietraegerHuelle.cs:424–426`, Stand `e880bdd`):
+
+```csharp
+for (int i = 0; i < _umrechnungen.Count; i++)
+    basen.Add(new ValueTuple<int, string>(i, _umrechnungen[i].ToUnitCode));
+```
+
+Das ist wortgleich der Vorläufer `ucFuelSettings.cs:1935–1954` — „kein Filter auf
+`from_unit`, `aktiv` oder Träger, **kein `ORDER BY`**", festgehalten in
+[`Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md`](../../../Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md)
+§ 2.2. Die Gas-Brennstoffe führen neben der Identitätsregel `Nm³ → Nm³` auch den
+z-Faktor `m³ → Nm³`; **beide zeigen auf dieselbe Zieleinheit**, also stand „Nm³"
+zweimal. Bei Erdgas E (Brennstoff 3) kommt Regel 67 `Nm³ → kWh` dazwischen —
+genau das gemeldete **Nm³, kWh, Nm³**.
+
+Gemessen auf `Referenzlaeufe/Kenndaten_Test.sqlite` (nur lesend): **8 der 27
+Träger** zeigten eine Dublette — 49, 52, 61, 63, 64, 65, 66, 68, alle Gas.
+
+| Brennstoff 3 (Erdgas E) | von | nach | Faktor |
+|---|---|---|---|
+| Regel 40 | Nm³ | Nm³ | 1 |
+| Regel 67 | Nm³ | kWh | 0,5 |
+| Regel 70 | m³ | Nm³ | 1 |
+
+**Ursache — das leere Feld.** `IndexZuEinheit` lieferte `null`, sobald der
+Brennstoff **gar keine** Regel führt (`_umrechnungen.Count == 0`). Der Baustein
+`Auswahlfeld` setzt dann `value=""`; ein `<select>` ohne passende Option zeigt
+nichts an. Betroffen sind in der Testdatenbank die **fünf** Träger 73–77
+(Steinkohle, Braunkohlebrikett, Scheitholz, Holzpellets, Holzhackschnitzel) —
+sie hängen an `ID_Brennstoff = 0` und haben keine einzige Regel.
+
+**Dritter, stiller Anteil.** Fand `IndexZuEinheit` die Einheit nicht, fiel es auf
+**Index 0** zurück — die erste beliebige Regel. Bei den Heizölträgern ist das
+`m3`, nicht die Abrechnungseinheit `L`; das ist die „Fehlvorwahl" aus § 2.2 des
+Einheitenkonzepts.
+
+**Behebung.** Die Liste entsteht jetzt in einer **datenbankfreien** Kernfunktion
+`EnergietraegerPreisCtrl.Preisbasen(abrechnungseinheit, umrechnungen)` —
+dort, weil die Windows-Hülle nicht im Solution-Filter `WP-Plan.Kern.slnf` steht
+und ein Fall in ihr vom Gate nicht erreicht würde; zugleich steht sie damit einer
+iOS-Hülle offen. Die Regel:
+
+1. **Die Abrechnungseinheit steht immer an erster Stelle.** Sie ist die Einheit,
+   in der die Werte in der Datenbank liegen — eine Liste ohne sie kann den
+   gespeicherten Zustand nicht zeigen.
+2. Danach die **Zieleinheiten der Regeln in Regelreihenfolge**, jede höchstens
+   einmal.
+3. Verglichen wird über `EinheitSchluessel`: getrimmt, ohne
+   Groß-/Kleinschreibung, „³"/„²" als „3"/„2" — **„Nm3" und „Nm³" sind dieselbe
+   Einheit**. Angezeigt wird die zuerst gefundene Schreibweise.
+4. Die Abrechnungseinheit hängt an der **Identitätsregel** (`from = to`), sonst
+   an der ersten Regel mit passender `to_unit`, sonst an keiner (Faktor 1).
+   **Das ist genau die Regel, die der Vorläufer über seinen Textvergleich fand** —
+   für jeden Träger des Katalogs ändert sich deshalb weder der Umrechnungsfaktor
+   noch die gespeicherte `ID_Umrechnung`.
+
+`PreisbasisId` ist seither der Index in **diese** Liste, nicht mehr in
+`_umrechnungen` (neues Feld `_preisbasen`, neuer Zugriff `AktuelleBasis()`) —
+sonst wäre jede Bereinigung der Liste eine Verschiebung der gewählten Zeile.
+`PreisbasisWechseln` grenzt gegen `_preisbasen.Count` ab und rechnet mit dem
+Faktor des Eintrags. Erdgas E zeigt jetzt **Nm³, kWh**, vorgewählt Nm³.
+
+**Warum m³ keine Preisbasis ist.** Eine Preisbasis ist eine ZIELeinheit: Es muss
+einen Faktor geben, der den Wert aus der Abrechnungseinheit dorthin trägt. „m³"
+steht bei den Gasen nur als `from_unit` des z-Faktors — eine Regel `Nm³ → m³`
+gibt es nicht. Seit Migrationsschritt 26a ist m³ zudem „keine Abrechnungseinheit
+eines Gasträgers mehr" (`DbWerte.cs:1794–1796`, Leitentscheidung L4).
+
+**Nicht mitbehoben.** Der Einheitenbruch selbst (`Tab_Brennstoff_Stamm.Einheit`
+gegen `energy_conversion`) und die Waise `energy_project_settings` ID 10076
+bleiben, was sie sind — dafür liegt das Einheitenkonzept mit den Wegen (a)/(b)/(c)
+vor. Diese Behebung berührt **keine** Datenzeile; sie ändert nur, was die Liste
+anbietet.
+
+**Nachweis.** `EPOS.Kern.Tests/PreisbasenTests.cs` (14 Fälle, davon zwei gegen
+eine Arbeitskopie der Testdatenbank: „kein Träger führt eine Einheit zweimal, und
+die Abrechnungseinheit ist überall vorgewählt" und „Erdgas E liefert Nm³ und
+kWh"); dazu ein bunit-Fall
+`EnergietraegerDialogTests.Die_Preisbasis_zeigt_jeden_Eintrag_einmal_und_meldet_seine_Id`
+für den Anteil des Dialogs — er zeigt die Einträge eins zu eins und meldet die
+**Id**, nicht die Position. Referenzlauf 1030/1007/1017 **byte-gleich**
+(815 043 Werte): Der Rechenkern rechnet über Hi/Hs, nicht über
+`energy_conversion.factor`.
+
+**Abnahmepunkt.** W4‑10 der Liste in § 9 deckt den Wechsel bereits ab; neu zu
+prüfen ist, dass die Liste **jede Einheit genau einmal** führt und bei den
+Trägern ohne Umrechnungsregel (Steinkohle, Scheitholz, Holzpellets,
+Holzhackschnitzel, Braunkohlebrikett) **nicht mehr leer** ist.
+
+---
+
 ## 10. Offene Punkte
 
 | # | Punkt |
