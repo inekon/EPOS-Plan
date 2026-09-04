@@ -89,6 +89,22 @@
 
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
+
+    /* ---- Gespraechsverlauf des KI-Assistenten (iU9-W15b.0h) ----------
+       Die acht Farben und zwei Schriftschnitte, die Form_KiChat.SchreibeZeile
+       je vergeben hat (Vermessung § 6.l) - sie werden im Baustein
+       Gespraechsverlauf zu zehn ROLLEN. Drei der acht gab es schon: die zwei
+       Ganglinienstufen aus W12 und die Warnschrift; sie werden hier nur unter
+       ihrem neuen Namen weitergereicht, damit der Baustein nicht wissen muss,
+       woher eine Farbe stammt. Fuenf sind neu. */
+    --epos-verlauf-anwender: #006400;       /* "Sie: ..." - gruen, fett     */
+    --epos-verlauf-assistent: var(--epos-text);  /* Antworttext - schwarz   */
+    --epos-verlauf-kopf: #005AA0;           /* "Assistent:", Zwischentitel  */
+    --epos-verlauf-leise: var(--epos-text-leise);   /* Quellen, Zaehler     */
+    --epos-verlauf-erfolg: #007800;         /* ausgefuehrt, erteilt         */
+    --epos-verlauf-warnung: var(--epos-stufe-warnung);  /* Hinweis, Verfall */
+    --epos-verlauf-fehler: var(--epos-stufe-fehler);    /* Fehler, abgelehnt*/
+    --epos-verlauf-bestaetigung: var(--epos-warn-text); /* Blocktitel, fett */
 }
 
 /* ==========================================================================
