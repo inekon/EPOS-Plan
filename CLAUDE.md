@@ -34,9 +34,13 @@ Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zw
 Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
 Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
 **Seit iU9‑W16c ist auch das HAUPTFENSTER eine Razor-Seite**
-(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 54 Punkten aus der erzeugten
-`Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter `AppWurzel` — **die
-gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel, zwei Schalen).
+(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 55 Punkten in **vier Köpfen** aus der
+erzeugten `Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter
+`AppWurzel` — **die gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel,
+zwei Schalen). Zwei Anwenderentscheide vom 04.09.2026 stecken darin: die zwei Sprachpunkte
+hängen unter einem Kopf **„Sprache"** (W16c‑E‑2), und **„Varianten und Bericht…" wechselt
+die Ansicht** auf `BERICHTE_KOSTEN`, statt den sechsten Reiter der Startseite nach vorn zu
+holen (W16c‑E‑3) — das Reiterblatt bleibt, nur der Menüweg führt in die Ansicht.
 `MDIMainForm` ist seither die **Hülle ohne Designer** (129 Zeilen); die Anwendung läuft
 „Per Monitor V2" (E‑6 / iF21), die `DpiInsel` ist gefallen. `WindowsFormsApplication1` führt
 damit **eine** Maske (`Form_HelpPopup`, bleibt bis iU11), **keine Fachmaske** und **null**

@@ -67,6 +67,17 @@ namespace WindowsFormsApplication1
                 ["Startansicht"] = Seitenschluessel.Startseite,
                 ["StartseiteGaben"] = _startseite.Gaben(),
 
+                // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): „Varianten und
+                // Bericht…" wechselt jetzt auf die ANSICHT BERICHTE_KOSTEN, und
+                // dafür braucht die Wurzel deren Parametersatz. Er kommt aus
+                // DERSELBEN BerichteKostenHuelle wie der sechste Reiter der
+                // Startseite — eine zweite wäre ein zweiter Stammzustand und
+                // damit eine zweite Wahrheit. Ohne diesen Eintrag fiele die
+                // Wurzel auf IProjektQuelle.BerichteKostenGaben zurück, und das
+                // ist unter Windows die Standardumsetzung (null): Die Ansicht
+                // bliebe stehen und zeigte nur ihr Banner.
+                ["BerichteKostenGaben"] = _startseite.BerichteGaben(),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
@@ -147,13 +158,15 @@ namespace WindowsFormsApplication1
                     AlsVarianteHuelle.Zeige(wirt, Dienste.Projekt.Id, Dienste.Projekt.Name);
                     return Task.FromResult(true);
 
-                case Seitenschluessel.BerichteKosten:
-                    // Der Reiter kommt in der Startseite nach vorn — kein zweites
-                    // Fenster und keine zweite Ansicht (wörtlich
-                    // MenuItem_VariantenBericht_Click).
-                    StartseiteHuelle.Aktuelle?.ZeigeBerichteKosten(
-                        EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_UEBERSICHT);
-                    return Task.FromResult(true);
+                // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): Seitenschluessel
+                // .BerichteKosten hat hier KEINEN Fall mehr. Bis dahin holte der
+                // Menüpunkt „Varianten und Bericht…" den sechsten Reiter der
+                // Startseite nach vorn (wörtlich MenuItem_VariantenBericht_Click
+                // → StartseiteHuelle.ZeigeBerichteKosten); jetzt fällt er durch,
+                // MaskeOeffnen meldet false — „BERICHTE_KOSTEN" steht in
+                // Ansichten, nicht in Masken —, und Hauptfenster.Springe lässt
+                // die AppWurzel auf die ANSICHT wechseln. Das ist derselbe Weg
+                // wie auf iOS; der Parametersatz dafür steht in Gaben().
 
                 // ---- Menü „Administration" ----------------------------------
                 case Seitenschluessel.Klimadaten:

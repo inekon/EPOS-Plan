@@ -9,7 +9,7 @@
 /// Tabelle beider Plattformen.</b> Bis dahin standen zwei nebeneinander: hier
 /// die sieben Schluessel der iOS-Wurzel, im Kern die 25 Maskenschluessel von
 /// <c>Masken</c>. Der Menueband-Baustein des Hauptfensters (W16c.1) verteilt
-/// seine 54 Punkte ueber DIESE Schluessel, und <see cref="AppWurzel"/> ist die
+/// seine 55 Punkte ueber DIESE Schluessel, und <see cref="AppWurzel"/> ist die
 /// gemeinsame Wurzel von Windows und iOS (E-1) - also braucht es genau einen
 /// Satz.</para>
 ///
@@ -124,6 +124,12 @@ public static class Seitenschluessel
     /// (<c>Ansichten.BerichteKosten</c>): Derselbe Text steht seit iU5 in
     /// <c>INavigation.AnsichtAktualisieren</c>, und zwei Zeichenketten fuer
     /// dieselbe Seite waeren zwei Wahrheiten.
+    ///
+    /// <para>ANWENDERENTSCHEID W16c-E-3 (04.09.2026): Der Menuepunkt „Varianten
+    /// und Bericht…" meldet diesen Schluessel auf BEIDEN Plattformen als
+    /// ANSICHTSWECHSEL. Bis dahin fing ihn die Windows-Huelle ab und holte den
+    /// sechsten Reiter der Startseite nach vorn; das Reiterblatt bleibt
+    /// bestehen, nur der Menueweg fuehrt jetzt in die Ansicht.</para>
     /// </remarks>
     public const string BerichteKosten = WindowsFormsApplication1.Ansichten.BerichteKosten;
 
