@@ -2685,3 +2685,66 @@ body {
         border-bottom: 1px solid var(--epos-karte-rahmen);
     }
 }
+
+/* --------------------------------------------------------------------------
+   Die EINE Projektliste (iU9-W15a.1).
+
+   Vier Listen des Bestands werden hier eine (Befund W15a-B52). Der Baustein
+   zeichnet eine gewoehnliche Tabelle mit der Hausklasse epos-raster - seine
+   Spaltenzahl haengt am Spaltensatz und entsteht zur Laufzeit.
+
+   Der Spaltenkopf ist ein KNOPF, weil ein Klick sortiert; er sieht aus wie ein
+   Text, ist aber ein Fokusziel und traegt sein Sortierzeichen selbst.
+   -------------------------------------------------------------------------- */
+.epos-projektliste {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
+.epos-projektliste-suche {
+    max-width: 22rem;
+}
+
+.epos-projektliste .epos-raster-huelle {
+    overflow: auto;
+}
+
+.epos-projektliste-raster {
+    width: 100%;
+}
+
+.epos-projektliste-wahl {
+    width: 56px;
+    text-align: center;
+}
+
+.epos-raster-kopf {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+    text-align: inherit;
+}
+
+.epos-raster-kopf:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: 2px;
+}
+
+.epos-projektliste-anzahl {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+@media (forced-colors: active) {
+    .epos-raster-kopf {
+        color: LinkText;
+    }
+}

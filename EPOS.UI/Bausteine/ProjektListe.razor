@@ -1,0 +1,362 @@
+﻿@* Die EINE Projektliste des Hauses (iU9-W15a.1).
+
+   WARUM ES DEN BAUSTEIN GIBT. Der Bestand fuehrte VIER Projektlisten
+   nebeneinander (Befund W15a-B52): das UserControl ProjektAuswahl (ListView,
+   drei Spalten, Suche, Sortierung, 408 Zeilen), das zweispaltige listView_Projekt
+   in "Speichern unter", die comboBox_Projekte in "Loeschen" (ueber die
+   Erweiterungsmethode ControllerListen.FillComboBox) und die eigene Schleife
+   cbProjekt in "Export/Import". Dazu als fuenfte die Razor-Seite Projektliste
+   (iOS-Einstieg). Das Konzept "Projektdialoge vereinheitlichen" fordert seit dem
+   29.08.2026 ausdruecklich "Eine Projektauswahl fuer alle" (:177) - hier ist sie.
+
+   VIER EIGENSCHAFTEN, DIE MITGENOMMEN SEIN WOLLEN, weil sie sonst still
+   verschwinden:
+     * Die SUCHE greift ueber Projektname, Kunde UND BESCHREIBUNG - und die
+       Beschreibung ist in der Liste gar nicht sichtbar (W15a-B22). Wer sie
+       vergisst, dem "findet die Suche nichts mehr".
+     * Der GLEICHSTAND wird immer ueber den Namen aufgeloest (ProjektAuswahl:332),
+       "damit die Reihenfolge bei gleichem Datum (Massenimport!) nicht bei jedem
+       Aufbau springt".
+     * Die ZAEHLZEILE ist ein Formatstring ("{0} von {1} Projekten"), der im
+       Vorlaeufer als Entwurfstext eines Labels getarnt war (W15a-B20). Hier ist
+       er ein Parameter.
+     * NurName und AutoVorauswahl sind die zwei Designer-Eigenschaften, mit denen
+       sich die zwei Wirte des UserControls unterschieden - der Assistent zeigt
+       nur die Namensspalte (rund 270 px) und will KEINE Vorauswahl, "damit
+       'Weiter' erst wirkt, wenn der Anwender ein Projekt ausdruecklich gewaehlt
+       hat".
+
+   WAS ERSATZLOS ENTFAELLT: das Feld _markiert des Vorlaeufers (W15a-B21). Es war
+   ein reiner WinForms-Umweg - ListView.SelectedItems bleibt leer, solange das
+   Steuerelement kein Fensterhandle hat.
+
+   EINE GEWOEHNLICHE TABELLE, KEIN Raster: Die Spaltenzahl haengt am Spaltensatz
+   und entsteht zur Laufzeit; ein QuickGrid braucht seine Spalten zur
+   Uebersetzungszeit (Hausregel EPOS.UI, "Eine Seite ist kein Dialog").
+
+   KEINE DATENBANK: Die Zeilen kommen fertig als [Parameter] aus
+   ProjektCtrl.NamenListe. *@
+
+@namespace EPOS.UI.Bausteine
+
+@using WindowsFormsApplication1
+
+<div class="epos-projektliste">
+
+    @if (MitSuche)
+    {
+        <div class="epos-projektliste-suche">
+            <Textfeld Bezeichnung="@SucheText" Wert="@Suche" WertChanged="SucheUebernehmen" />
+        </div>
+    }
+
+    @if (Sicht.Count == 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@LeerText" />
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-projektliste-raster">
+                <thead>
+                    <tr>
+                        @if (MitAuswahl)
+                        {
+                            <th scope="col" class="epos-projektliste-wahl">@WahlText</th>
+                        }
+                        @foreach (Spaltenkopf kopf in Koepfe)
+                        {
+                            int nummer = kopf.Nummer;
+                            <th scope="col">
+                                @if (MitSortierung && kopf.Sortierbar)
+                                {
+                                    <button type="button" class="epos-raster-kopf"
+                                            aria-label="@kopf.Titel"
+                                            @onclick="@(() => SortierenNach(nummer))">@kopf.Titel@Pfeil(nummer)</button>
+                                }
+                                else
+                                {
+                                    @kopf.Titel
+                                }
+                            </th>
+                        }
+                        @if (Zeilenaktionen is not null)
+                        {
+                            <th scope="col">@AktionenText</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ProjektKopfZeile zeile in Sicht)
+                    {
+                        ProjektKopfZeile z = zeile;
+                        <tr class="@(z.Id == Markiert ? "epos-zeile--markiert" : null)"
+                            @ondblclick="@(() => Uebernehmen(z))">
+                            @if (MitAuswahl)
+                            {
+                                <td class="epos-projektliste-wahl">
+                                    <Zeilenwahl Gewaehlt="@(z.Id == Markiert)" Kurztext="@WahlText"
+                                                Gewaehltwerden="@(() => Markieren(z))" />
+                                </td>
+                            }
+                            @foreach (Spaltenkopf kopf in Koepfe)
+                            {
+                                <td>@Zelle(z, kopf.Nummer)</td>
+                            }
+                            @if (Zeilenaktionen is not null)
+                            {
+                                <td>@Zeilenaktionen(z)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (MitZaehler)
+    {
+        <p class="epos-projektliste-anzahl">@Anzahlzeile</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die Spalte „Projektname" (auch der Sortierschluessel des Gleichstands).</summary>
+    public const int SPALTE_NAME = 0;
+
+    /// <summary>Die Spalte „Kunde".</summary>
+    public const int SPALTE_KUNDE = 1;
+
+    /// <summary>Die Spalte „Geändert".</summary>
+    public const int SPALTE_GEAENDERT = 2;
+
+    /// <summary>Die Spalte „Nr." (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_NUMMER = 3;
+
+    /// <summary>Die Spalte „Klimaregion" (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_KLIMA = 4;
+
+    /// <summary>Die Spalte „Ausstattung" (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_AUSSTATTUNG = 5;
+
+    /// <summary>Welche Spalten die Liste zeigt.</summary>
+    public enum Spaltensatz
+    {
+        /// <summary>Projektname, Kunde, Geändert — die drei Spalten der Projektdialoge.</summary>
+        Auswahl = 0,
+
+        /// <summary>Nr., Projekt, Klimaregion, Ausstattung — der iOS-Einstieg.</summary>
+        Einstieg
+    }
+
+    /// <summary>Die anzuzeigenden Projekte, fertig geladen (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>Der Suchtext. Bindbar über @@bind-Suche.</summary>
+    [Parameter] public string Suche { get; set; } = "";
+
+    /// <summary>Meldet jeden neuen Suchtext.</summary>
+    [Parameter] public EventCallback<string> SucheChanged { get; set; }
+
+    /// <summary>Nach welcher Spalte sortiert wird (<see cref="SPALTE_NAME"/> …).</summary>
+    [Parameter] public int SortSpalte { get; set; } = SPALTE_NAME;
+
+    /// <summary>Absteigend sortieren?</summary>
+    [Parameter] public bool SortAbsteigend { get; set; }
+
+    /// <summary>Die Id der markierten Zeile; 0 = keine. Bindbar über @@bind-Markiert.</summary>
+    [Parameter] public int Markiert { get; set; }
+
+    /// <summary>Meldet die neue Markierung (Id und Name, damit der Wirt beides hat).</summary>
+    [Parameter] public EventCallback<ProjektKopfZeile?> MarkiertChanged { get; set; }
+
+    /// <summary>Doppelklick auf eine Zeile — im Vorläufer „ProjektGewaehlt".</summary>
+    [Parameter] public EventCallback<ProjektKopfZeile> Gewaehlt { get; set; }
+
+    /// <summary>
+    /// Schmale Sicht: NUR die Spalte „Projektname". Vorbild
+    /// <c>ProjektAuswahl.NurNamensspalte</c> — die linke Spalte des Assistenten ist
+    /// rund 270 px breit, drei Spalten passten dort nicht hinein.
+    /// </summary>
+    [Parameter] public bool NurName { get; set; }
+
+    /// <summary>
+    /// Markiert die erste Zeile von selbst, wenn nichts markiert ist. Vorbild
+    /// <c>ProjektAuswahl.AutomatischeVorauswahl</c>; der Assistent setzt sie auf
+    /// <c>false</c>.
+    /// </summary>
+    [Parameter] public bool AutoVorauswahl { get; set; } = true;
+
+    /// <summary>Welche Spalten gezeigt werden.</summary>
+    [Parameter] public Spaltensatz Spalten { get; set; } = Spaltensatz.Auswahl;
+
+    /// <summary>Zeigt das Suchfeld.</summary>
+    [Parameter] public bool MitSuche { get; set; } = true;
+
+    /// <summary>Zeigt die Zählzeile unter der Liste.</summary>
+    [Parameter] public bool MitZaehler { get; set; } = true;
+
+    /// <summary>Zeigt die Wahlspalte und markiert Zeilen.</summary>
+    [Parameter] public bool MitAuswahl { get; set; } = true;
+
+    /// <summary>Sortiert die Liste. <c>false</c> = die übergebene Reihenfolge bleibt.</summary>
+    [Parameter] public bool MitSortierung { get; set; } = true;
+
+    /// <summary>Zusätzliche Zelle je Zeile (der iOS-Einstieg hängt dort seine zwei Knöpfe hinein).</summary>
+    [Parameter] public RenderFragment<ProjektKopfZeile>? Zeilenaktionen { get; set; }
+
+    /// <summary>
+    /// Der Satzbau der Zählzeile: <c>{0}</c> = gezeigte, <c>{1}</c> = vorhandene Projekte
+    /// (Befund W15a-B20).
+    /// </summary>
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+    [Parameter] public string SpalteNummer { get; set; } = "Nr.";
+    [Parameter] public string SpalteKlima { get; set; } = "Klimaregion";
+    [Parameter] public string SpalteAusstattung { get; set; } = "Ausstattung";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string AktionenText { get; set; } = "Öffnen";
+
+    /// <summary>Satz, wenn die Liste (nach Filter) leer ist.</summary>
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Ein Spaltenkopf: Nummer (der Sortierschlüssel), Titel, sortierbar.</summary>
+    private readonly record struct Spaltenkopf(int Nummer, string Titel, bool Sortierbar);
+
+    private IReadOnlyList<Spaltenkopf> Koepfe
+    {
+        get
+        {
+            if (Spalten == Spaltensatz.Einstieg)
+                return new[]
+                {
+                    new Spaltenkopf(SPALTE_NUMMER, SpalteNummer, false),
+                    new Spaltenkopf(SPALTE_NAME, SpalteName, true),
+                    new Spaltenkopf(SPALTE_KLIMA, SpalteKlima, false),
+                    new Spaltenkopf(SPALTE_AUSSTATTUNG, SpalteAusstattung, false)
+                };
+
+            if (NurName)
+                return new[] { new Spaltenkopf(SPALTE_NAME, SpalteName, true) };
+
+            return new[]
+            {
+                new Spaltenkopf(SPALTE_NAME, SpalteName, true),
+                new Spaltenkopf(SPALTE_KUNDE, SpalteKunde, true),
+                new Spaltenkopf(SPALTE_GEAENDERT, SpalteGeaendert, true)
+            };
+        }
+    }
+
+    /// <summary>Die gefilterte und sortierte Sicht auf <see cref="Zeilen"/>.</summary>
+    private IReadOnlyList<ProjektKopfZeile> Sicht
+    {
+        get
+        {
+            var sicht = new List<ProjektKopfZeile>();
+            foreach (ProjektKopfZeile z in Zeilen)
+                if (Passt(z)) sicht.Add(z);
+
+            if (MitSortierung) sicht.Sort(Vergleiche);
+            return sicht;
+        }
+    }
+
+    private string Anzahlzeile => string.Format(AnzahlFormat, Sicht.Count, Zeilen.Count);
+
+    /// <summary>
+    /// Die Suche greift ueber Projektname, Kunde UND Beschreibung — die letzte ist in
+    /// der Liste nicht sichtbar (Befund W15a-B22).
+    /// </summary>
+    private bool Passt(ProjektKopfZeile z)
+    {
+        string suche = (Suche ?? "").Trim();
+        if (suche.Length == 0) return true;
+        return Enthaelt(z.Name, suche) || Enthaelt(z.Kunde, suche) || Enthaelt(z.Beschreibung, suche);
+    }
+
+    private static bool Enthaelt(string wert, string suche)
+        => !string.IsNullOrEmpty(wert)
+           && wert.IndexOf(suche, StringComparison.CurrentCultureIgnoreCase) >= 0;
+
+    private int Vergleiche(ProjektKopfZeile a, ProjektKopfZeile b)
+    {
+        int v = SortSpalte switch
+        {
+            SPALTE_KUNDE => string.Compare(a.Kunde ?? "", b.Kunde ?? "", StringComparison.CurrentCultureIgnoreCase),
+            SPALTE_GEAENDERT => Nullable.Compare(a.Geaendert, b.Geaendert),
+            _ => string.Compare(a.Name ?? "", b.Name ?? "", StringComparison.CurrentCultureIgnoreCase)
+        };
+
+        // Gleichstand immer ueber den Namen aufloesen, damit die Reihenfolge
+        // bei gleichem Datum (Massenimport!) nicht bei jedem Aufbau springt.
+        if (v == 0 && SortSpalte != SPALTE_NAME)
+            v = string.Compare(a.Name ?? "", b.Name ?? "", StringComparison.CurrentCultureIgnoreCase);
+
+        return SortAbsteigend ? -v : v;
+    }
+
+    private string Zelle(ProjektKopfZeile z, int spalte) => spalte switch
+    {
+        SPALTE_KUNDE => z.Kunde ?? "",
+        SPALTE_GEAENDERT => z.Geaendert.HasValue ? z.Geaendert.Value.ToShortDateString() : "",
+        SPALTE_NUMMER => z.Id.ToString(),
+        SPALTE_KLIMA => z.Klimazone ?? "",
+        SPALTE_AUSSTATTUNG => z.Ausstattung ?? "",
+        _ => z.Name ?? ""
+    };
+
+    private string Pfeil(int spalte)
+        => (MitSortierung && spalte == SortSpalte) ? (SortAbsteigend ? " ▼" : " ▲") : "";
+
+    private Task SortierenNach(int spalte)
+    {
+        if (spalte == SortSpalte) SortAbsteigend = !SortAbsteigend;
+        else { SortSpalte = spalte; SortAbsteigend = false; }
+        return Task.CompletedTask;
+    }
+
+    private async Task SucheUebernehmen(string neu)
+    {
+        Suche = neu ?? "";
+        await SucheChanged.InvokeAsync(Suche);
+
+        // Faellt das markierte Projekt durch den Filter heraus, muss der Wirt das
+        // erfahren - im Vorlaeufer die Sonderbehandlung am Ende von ListeAufbauen.
+        if (Markiert != 0 && !Sicht.Any(z => z.Id == Markiert))
+        {
+            Markiert = 0;
+            await MarkiertChanged.InvokeAsync(null);
+        }
+        await Vorauswaehlen();
+    }
+
+    private async Task Markieren(ProjektKopfZeile z)
+    {
+        Markiert = z.Id;
+        await MarkiertChanged.InvokeAsync(z);
+    }
+
+    private async Task Uebernehmen(ProjektKopfZeile z)
+    {
+        await Markieren(z);
+        await Gewaehlt.InvokeAsync(z);
+    }
+
+    protected override async Task OnParametersSetAsync() => await Vorauswaehlen();
+
+    private async Task Vorauswaehlen()
+    {
+        if (!AutoVorauswahl || !MitAuswahl || Markiert != 0) return;
+
+        IReadOnlyList<ProjektKopfZeile> sicht = Sicht;
+        if (sicht.Count == 0) return;
+
+        Markiert = sicht[0].Id;
+        await MarkiertChanged.InvokeAsync(sicht[0]);
+    }
+}
