@@ -351,6 +351,15 @@ Banner; die Adapter sind iU11), mit `Seitenschluessel` als der einen Schlüsselt
 Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Fünfundzwanzigster Lauf 33913313694 (`ios.yml`, `macos-26`, 04.09.2026, 19:51–19:58 UTC, 6 min 29 s)** auf
+`853b8c6` — der Stand **nach den Nachträgen zu Welle 16** (W16c‑E‑2 Untermenü „Sprache", W16c‑E‑3 Ansichtswechsel auf
+`BERICHTE_KOSTEN`, W15c‑O‑2 `LizenzTexte`-Bündel, W16b‑O‑3 Klimazone als eine Wahrheit im Kern): grün. Erstmals mit
+dem Ansichtswechsel der `AppWurzel` auf die Berichte-Seite über den Menüweg (auf iOS der einzige Weg dorthin, die
+`Kopfleiste` bleibt leer) und mit `IosProjektKontext` als dünner Weiterleitung auf `ProjektKontextCtrl` — die
+Klimazone kommt jetzt aus dem Kern, die eigene Stammabfrage der Hülle ist gefallen. Bau, Simulatorstart, Erststart mit
+Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
