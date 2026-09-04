@@ -518,7 +518,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   wiederholt sich kein Muster, jede Maske ist ein eigener Gegenstand. An ihrer Stelle stehen
   **vier Hüllen** — `Views/Admin/GesetzeskatalogHuelle.cs`,
   `Views/Admin/KatalogDublettenHuelle.cs`, `Views/Admin/EinstellungenHuelle.cs` und
-  `Views/Admin/KlimaregionHuelle.cs`.
+  `Views/Admin/KlimadatenHuelle.cs`.
   **Der Befund der Welle: vier der fünf Fachteile lagen schon im Kern** (`GesetzKatalog`
   mit 1 123 Zeilen, `DublettenPruefung`/`KatalogBereinigung`/`KatalogRegistry`,
   `SolarPVGISCalculator`) — die Kern-Vorarbeit war Zuschnitt, kein neuer Rechenweg. Neu im

@@ -42,8 +42,15 @@ namespace WindowsFormsApplication1
         /// Fortschreibung der Nummer bleibt bei der Migration beschrieben (dort steht
         /// die Reihenfolge „erst Schrittkonstante, Methode und SCHRITTE-Eintrag, DANN
         /// das Ziel"). Wer eine neue Migrationsstufe anlegt, ändert die Zahl HIER.</para>
+        ///
+        /// <para><b>Nicht zu verwechseln mit dem FREEZE-Stand</b>
+        /// (<c>SchemaMigration.FREEZE_VERSION</c> = 61): Das ist der Stand, den der
+        /// eingefrorene ACCESS-Zweig erreicht. Seit dem ersten Schritt des SQLite-Zweigs
+        /// (<c>SCHRITT_62_KLIMAWAISEN</c>, iU9‑W14c) sind die beiden Zahlen verschieden —
+        /// das ZIEL steht auf 62, der Freeze-Stand bleibt bei 61. Der Kern kennt nur das
+        /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 61;
+        public const int Zielversion = 62;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

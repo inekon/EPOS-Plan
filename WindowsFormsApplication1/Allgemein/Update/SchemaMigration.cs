@@ -17,8 +17,9 @@ namespace WindowsFormsApplication1
     /// „Einstiegspunkte"):</para>
     /// <list type="bullet">
     ///   <item><description><see cref="Ausfuehren"/> - NORMALSTART auf der
-    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus und arbeitet die (heute leere)
-    ///     Liste der Schritte ab 62 ab. Keine OleDb-Verbindung.</description></item>
+    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus und arbeitet die Liste der
+    ///     Schritte ab 62 ab — seit iU9‑W14c ist das Schritt 62, die Altbereinigung der
+    ///     verwaisten Klimadaten. Keine OleDb-Verbindung.</description></item>
     ///   <item><description><see cref="HebeAltbestand"/> - EINGEFROREN. Fährt die
     ///     Schritte 1-61 auf einer Access-Datei; einziger Zweck ist die einmalige Hebung
     ///     eines Kundenbestands vor der Erstmigration (Implementierungskonzept 5.1 und
@@ -125,7 +126,15 @@ namespace WindowsFormsApplication1
         /// Schritt M-2): <see cref="SCHRITT_61_STEUER_JE_ANLAGE"/> — Steuerwahl und
         /// Hilfsenergie je Anlage. In derselben Reihenfolge angelegt: erst
         /// Schrittkonstante, Methode (<c>Schritt_61_SteuerJeAnlage</c>) und
-        /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab 62.</b>
+        /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel.
+        ///
+        /// 04.09.2026, iU9‑W14c (Anwenderentscheid E‑6 „Altbereinigung ausführen"):
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die verwaisten Klimadaten-Zeilen.
+        /// <b>Der erste Schritt des SQLITE-Zweigs</b>, also ein Eintrag in
+        /// <see cref="SCHRITTE_SQLITE"/> und nicht in <see cref="SCHRITTE"/>. Wieder in
+        /// derselben Reihenfolge angelegt: erst Schrittkonstante, Methode
+        /// (<c>Schritt_62_KlimaWaisen</c>) und Eintrag, DANN das Ziel.
+        /// <b>Neue Schritte ab 63.</b>
         ///
         /// <para>iU9‑W15a: Die ZAHL steht seither als <see cref="SchemaStand.Zielversion"/>
         /// im Kern und wird von hier nur noch WEITERGEREICHT. Grund ist der
@@ -133,9 +142,32 @@ namespace WindowsFormsApplication1
         /// und war allein wegen dieser Konstante an das Anwendungsprojekt gebunden
         /// (Befund W15a‑B30). Die öffentliche Fläche bleibt unverändert — jeder
         /// bestehende Aufrufer von <c>SchemaMigration.ZIEL_VERSION</c> gilt weiter.
-        /// <b>Geändert wird die Nummer künftig in <see cref="SchemaStand"/>.</b></para>
+        /// <b>Geändert wird die Nummer künftig in <see cref="SchemaStand"/>.</b>
+        /// <see cref="FREEZE_VERSION"/> bleibt hier: Sie gehört dem eingefrorenen
+        /// ACCESS-Zweig, den der Kern nicht kennt.</para>
         /// </summary>
         public const int ZIEL_VERSION = SchemaStand.Zielversion;
+
+        /// <summary>
+        /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>
+        /// fertig abliefert und den der eingefrorene ACCESS-Zweig
+        /// (<see cref="SCHRITTE"/>, Schritte 1 bis 61) erreicht.
+        ///
+        /// <para><b>Seit iU9‑W14c ist er NICHT mehr dasselbe wie
+        /// <see cref="ZIEL_VERSION"/></b>, und genau dafür gibt es ihn: Mit dem ersten
+        /// Schritt des SQLite-Zweigs (<see cref="SCHRITT_62_KLIMAWAISEN"/>) steht das
+        /// ZIEL auf 62, während der Freeze-Stand bei 61 bleibt. Wo „Freeze-Stand"
+        /// gemeint ist, muss diese Konstante stehen — sonst würde
+        /// <see cref="SchritteAbarbeitenSqlite"/> eine frisch migrierte Datei (Stand 61)
+        /// als „nicht auf Freeze-Stand" abweisen, statt Schritt 62 auf ihr zu fahren,
+        /// und <c>HebeAltbestand</c> meldete einen Fehlschlag, obwohl der Access-Zweig
+        /// alles getan hat, was er kann.</para>
+        ///
+        /// <para><b>Er wird nie wieder angehoben.</b> Der Access-Zweig ist eingefroren;
+        /// jeder neue Schritt gehört in <see cref="SCHRITTE_SQLITE"/> und hebt allein
+        /// <see cref="ZIEL_VERSION"/>.</para>
+        /// </summary>
+        public const int FREEZE_VERSION = 61;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -2248,6 +2280,38 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_61_STEUER_JE_ANLAGE = 61;
 
+        /// <summary>
+        /// Schritt 62 — <b>die Altbereinigung der verwaisten Klimadaten</b>
+        /// (Anwenderentscheid E-6 vom 04.09.2026: „Altbereinigung ausführen").
+        /// <b>Der ERSTE Schritt des SQLite-Zweigs</b> (<see cref="SCHRITTE_SQLITE"/>).
+        ///
+        /// <para><b>Anlass.</b> Bis iU9‑W14c löschte <c>Form_Klimadaten</c> nur den
+        /// Kopfsatz einer Klimaregion aus <c>Tab_Klimaregion_STAMM</c>; die 8 760
+        /// Stunden- und 365 Tageswerte blieben stehen (Befund W14c‑B23). Der Löschweg
+        /// räumt seit A‑8 mit ab — was VORHER liegen blieb, räumt dieser Schritt ab.</para>
+        ///
+        /// <para><b>Ergebnisneutralität.</b> Eine Waise hat keinen Kopfsatz und ist damit
+        /// über keine Oberfläche und über keinen Rechenweg erreichbar: Jede Abfrage auf
+        /// die zwei Datenblöcke geht über <c>ID_Klimaregion</c> einer VORHANDENEN Region
+        /// (<c>SolardatenCtrl.ReadAllStamm</c>, die Projektkopie beim Anlegen). Der
+        /// Referenzlauf rechnet ohnehin auf den PROJEKTtabellen.</para>
+        ///
+        /// <para><b>Idempotenz.</b> Zwei <c>DELETE</c> mit <c>NOT IN</c> auf den Kopfsatz;
+        /// ein zweiter Lauf findet nichts mehr und ändert nichts. Die zwei Anweisungen
+        /// stehen in <see cref="KlimaWaisenBereinigung"/> im Kern — dort liest sie auch
+        /// der Nachweis, damit es EINE Wahrheit über sie gibt.</para>
+        ///
+        /// <para><b>Auf dem Auslieferungsstand ein No-op:</b> Auf
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> gibt es 32 Regionen, 280 320
+        /// Stunden- und 11 680 Tageswerte und NULL Waisen (Zählung zu E‑6 im
+        /// Portprotokoll). Der Schritt ist für die ANWENDERdatenbanken da.</para>
+        ///
+        /// <para><b>Paketfolge:</b> Wie jeder Schemaschritt hebt er den Zielstand — ein
+        /// Projektpaket mit Schemastand 61 wird nach dem Update abgewiesen (Regel B2,
+        /// <c>ProjektExportImportCtrl</c>); beide Rechner müssen auf denselben Stand.</para>
+        /// </summary>
+        public const int SCHRITT_62_KLIMAWAISEN = 62;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3419,8 +3483,8 @@ namespace WindowsFormsApplication1
         //
         //   Ausfuehren(out bericht)          NORMALSTART. Fährt AUSSCHLIESSLICH den
         //                                    SQLite-Zweig: Stand lesen, Freeze-Stand 61
-        //                                    voraussetzen, die (heute leere) Liste
-        //                                    SCHRITTE_SQLITE abarbeiten. Kein Bootstrap,
+        //                                    voraussetzen, die Liste SCHRITTE_SQLITE
+        //                                    abarbeiten. Kein Bootstrap,
         //                                    kein OleDb, keine Abschlusspruefungen des
         //                                    Altzweigs - die arbeiten allesamt auf
         //                                    l.Conn und traegen unter SQLite nicht.
@@ -3522,7 +3586,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// EINGEFRORENER ACCESS-ZWEIG: hebt einen Altbestand (<c>.accdb</c>) über die
-        /// Schritte 1-61 auf den Freeze-Stand <see cref="ZIEL_VERSION"/>. Der einzige
+        /// Schritte 1-61 auf den Freeze-Stand <see cref="FREEZE_VERSION"/>. Der einzige
         /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1); aufgerufen
         /// wird er künftig aus dem Erststart-Assistenten (S8), VOR dem Lauf des
         /// <c>EposSqliteMigrator</c>.
@@ -3559,7 +3623,7 @@ namespace WindowsFormsApplication1
             l.Kopf(pfad);
             l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
             l.Kopf("Alt-Hebung des Access-Bestands (eingefrorener Zweig, Schritte 1-" +
-                   ZIEL_VERSION + ")");
+                   FREEZE_VERSION + ")");
 
             bool erfolg = false;
             try
@@ -4111,7 +4175,10 @@ namespace WindowsFormsApplication1
                             : " - jede BHKW-Zeile fuehrt ihre Investition jetzt in den fuenf " +
                               "Einzelposten, aus denen TechnikPlanwertCtrl.BasenFuellen sie liest."));
 
-            return alleOk && StandNachher >= ZIEL_VERSION;
+            // iU9-W14c: gemessen wird am FREEZE-Stand, nicht am Ziel. Der Access-Zweig
+            // endet bei 61 und wird nie wieder erweitert; die Schritte ab 62 laufen im
+            // SQLite-Zweig.
+            return alleOk && StandNachher >= FREEZE_VERSION;
         }
 
         // =================================================================================
@@ -4121,11 +4188,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Schritte des SQLite-Zweigs, also alles ab Nummer 62.
         ///
-        /// <para><b>Heute bewusst LEER.</b> Der Freeze-Stand 61 kommt fertig aus dem
-        /// <c>EposSqliteMigrator</c>; es gibt schlicht noch nichts nachzuziehen. Die Liste
-        /// steht trotzdem schon da, weil sonst der erste künftige Schritt zwischen zwei
-        /// Bauformen wählen müsste - und die naheliegende falsche Wahl wäre ein Eintrag in
-        /// <see cref="SCHRITTE"/>, also im eingefrorenen Access-Zweig.</para>
+        /// <para><b>Seit iU9‑W14c nicht mehr leer:</b> Der erste Eintrag ist
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die Altbereinigung der verwaisten
+        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kommt
+        /// weiterhin fertig aus dem <c>EposSqliteMigrator</c>; was danach kommt, steht
+        /// hier und nicht in <see cref="SCHRITTE"/>, also nicht im eingefrorenen
+        /// Access-Zweig.</para>
+        ///
+        /// <para><b>Seither sind Freeze-Stand und Ziel zweierlei:</b>
+        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator liefert),
+        /// <see cref="ZIEL_VERSION"/> steht auf 62. Wer beide verwechselt, weist eine
+        /// frisch migrierte Datei als „nicht auf Freeze-Stand" ab.</para>
         ///
         /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
         /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
@@ -4146,9 +4219,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly Schritt[] SCHRITTE_SQLITE =
         {
-            // Ab 62. Muster:
-            // new Schritt(SCHRITT_62_..., "Kurzbeschreibung", "Folge, wenn er scheitert",
-            //             Schritt_62_...),
+            new Schritt(SCHRITT_62_KLIMAWAISEN,
+                        "Verwaiste Klimadaten abraeumen (Stunden- und Tageswerte ohne Kopfsatz)",
+                        "Verwaiste Zeilen in Tab_Solar_STAMM bzw. Tab_Klimadaten_STAMM bleiben " +
+                        "stehen; sie stoeren keine Rechnung, blaehen die Datei aber auf.",
+                        Schritt_62_KlimaWaisen),
         };
 
         /// <summary>
@@ -4229,12 +4304,12 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (version < ZIEL_VERSION)
+            if (version < FREEZE_VERSION)
             {
-                l.Zeile("Bestand ist nicht auf Freeze-Stand " + ZIEL_VERSION +
+                l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION +
                         " - bitte Erstmigration mit EposSqliteMigrator fahren.");
                 l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
-                        ZIEL_VERSION + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +
+                        FREEZE_VERSION + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +
                         "auf einer SQLite-Datei nicht nachspielen. Der Weg führt über den " +
                         "Altbestand: erst SchemaMigration.HebeAltbestand auf der .accdb, " +
                         "dann der EposSqliteMigrator.");
@@ -4348,6 +4423,26 @@ namespace WindowsFormsApplication1
         /// <param name="objektName">Was angelegt wird; erscheint so im Bericht.</param>
         private static bool SqliteDdl(Lauf l, string sql, string objektName)
         {
+            return SqliteAusfuehren(l, sql, objektName, "angelegt");
+        }
+
+        /// <summary>
+        /// Dasselbe für eine DATENanweisung des SQLite-Zweigs (iU9-W14c, Entscheid E-6).
+        /// Gleiche Bauart wie <see cref="SqliteDdl"/> - derselbe Weg über
+        /// <c>DataRepository.ExecuteSQL</c>, nie über <c>Lauf.Conn</c>; nur das
+        /// Erfolgswort im Bericht ist ein anderes, denn ein <c>DELETE</c> legt nichts an.
+        /// </summary>
+        private static bool SqliteDml(Lauf l, string sql, string bezeichnung)
+        {
+            return SqliteAusfuehren(l, sql, bezeichnung, "ausgefuehrt");
+        }
+
+        /// <summary>
+        /// Der gemeinsame Körper von <see cref="SqliteDdl"/> und <see cref="SqliteDml"/>.
+        /// </summary>
+        private static bool SqliteAusfuehren(Lauf l, string sql, string bezeichnung,
+                                             string erfolgswort)
+        {
             using (DataRepository.EngineModus())
             {
                 DataRepository.StilleFehlerAbholen();          // Sammlung leeren
@@ -4356,7 +4451,7 @@ namespace WindowsFormsApplication1
 
                 if (ok)
                 {
-                    if (l != null) l.Notiz(objektName + ": angelegt");
+                    if (l != null) l.Notiz(bezeichnung + ": " + erfolgswort);
                     return true;
                 }
 
@@ -4369,9 +4464,31 @@ namespace WindowsFormsApplication1
                 if (l != null)
                 {
                     l.LetzterFehler = text;
-                    l.Notiz(objektName + ": FEHLER - " + text);
+                    l.Notiz(bezeichnung + ": FEHLER - " + text);
                 }
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Eine Zählung des SQLite-Zweigs (iU9-W14c, Entscheid E-6). <c>-1</c>, wenn sie
+        /// nicht gelesen werden konnte - der Bericht sagt dann „unbekannt", der Schritt
+        /// läuft trotzdem: Die Zahl ist Auskunft, keine Bedingung.
+        ///
+        /// <para>Bewusst NICHT über <c>Scalar(Lauf, …)</c>: Das arbeitet auf
+        /// <c>Lauf.Conn</c>, und die ist im SQLite-Zweig <c>null</c>.</para>
+        /// </summary>
+        private static long SqliteZahl(string sql)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object wert = DataRepository.ExecuteScalar(sql);
+                DataRepository.StilleFehlerAbholen();
+
+                if (wert == null || wert == DBNull.Value) return -1;
+                try { return Convert.ToInt64(wert, CultureInfo.InvariantCulture); }
+                catch { return -1; }
             }
         }
 
@@ -4443,6 +4560,58 @@ namespace WindowsFormsApplication1
             return SqliteDdl(l,
                              "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition,
                              bezeichnung);
+        }
+
+        // =================================================================================
+        // Schritt 62 - die Altbereinigung der verwaisten Klimadaten (Entscheid E-6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 62. Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/>.
+        ///
+        /// <para><b>Zwei DML-Anweisungen, KEIN DDL</b> — und beide aus
+        /// <see cref="KlimaWaisenBereinigung"/> im Kern, damit der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> DIESELBEN Texte fährt und nicht eine Abschrift.</para>
+        ///
+        /// <para><b>Die Zahlen stehen im Bericht</b>: Waisen je Tabelle vor und nach dem
+        /// Lauf. Sie sind Auskunft, keine Bedingung — lässt sich eine Zählung nicht
+        /// lesen, meldet der Bericht „unbekannt" und der Schritt läuft trotzdem.</para>
+        /// </summary>
+        private static bool Schritt_62_KlimaWaisen(Lauf l)
+        {
+            string[] tabellen = KlimaWaisenBereinigung.Datenblocktabellen();
+            long gesamtVorher = 0;
+
+            foreach (string tabelle in tabellen)
+            {
+                long vorher = SqliteZahl(KlimaWaisenBereinigung.ZaehlungZu(tabelle));
+                if (vorher > 0) gesamtVorher += vorher;
+
+                if (!SqliteDml(l, KlimaWaisenBereinigung.LoeschungZu(tabelle),
+                               tabelle + ": verwaiste Zeilen loeschen"))
+                    return false;
+
+                long nachher = SqliteZahl(KlimaWaisenBereinigung.ZaehlungZu(tabelle));
+
+                l.Zeile("Schritt 62 - " + tabelle + ": Waisen vorher " + Zahltext(vorher) +
+                        ", nachher " + Zahltext(nachher) + ".");
+            }
+
+            l.Notiz("62: Altbereinigung der Klimadaten-Waisen (Entscheid E-6). " +
+                    (gesamtVorher == 0
+                        ? "Es gab nichts zu tun - kein Datenblock ohne Kopfsatz."
+                        : gesamtVorher.ToString(CultureInfo.InvariantCulture) +
+                          " verwaiste Zeile(n) abgeraeumt.") +
+                    " KEIN Rechenergebnis aendert sich: Eine Waise hat keinen Kopfsatz und " +
+                    "ist ueber keine Abfrage des Programms erreichbar.");
+            return true;
+        }
+
+        /// <summary>Zahl oder „unbekannt" — <c>-1</c> heißt „nicht gelesen" (Schritt 62).</summary>
+        private static string Zahltext(long wert)
+        {
+            return wert < 0 ? "unbekannt" : wert.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>

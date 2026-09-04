@@ -13230,6 +13230,9 @@ Its hourly and daily values will be deleted as well.</value>
   <data name="ADM_SET_MSG_KI_FEHLER" xml:space="preserve">
     <value>The AI switch could not be read.</value>
   </data>
+  <data name="ADM_SET_HINT_PFADE_FEST" xml:space="preserve">
+    <value>Folders are fixed on this platform.</value>
+  </data>
   <data name="ADM_DUBLETTEN_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>

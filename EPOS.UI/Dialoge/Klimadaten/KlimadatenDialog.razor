@@ -1,4 +1,4 @@
-﻿@* Klimaregionen (iU9-W14c.7).
+﻿@* Klimadaten - der weltweite TMY-Import (iU9-W14c.7).
 
    VORBILD: Views/Klimadaten/Form_Klimadaten.cs (417 Z.) und .Designer.cs
    (503 Z.) - 27 Steuerelemente, drei Ebenen tief.
@@ -9,11 +9,18 @@
    2. die LISTE der vorhandenen Regionen mit Loeschen,
    3. ZWEI Diagramme (Jahrestemperatur, Sonnenwinkel) in zwei Reitern.
 
-   SIE HEISST KLIMAREGION, NICHT KLIMADATEN (Entscheid E-3). Der Menuetext
-   bleibt "Klimadaten"; die Komponente heisst anders, weil sonst
-   KlimazonenkarteDialog (W10a) und KlimadatenDialog nebeneinander staenden und
-   niemand sie auseinanderhielte - eine KLIMAZONE ist eine der 15 VDI-4640-Zonen
-   Deutschlands, eine KLIMAREGION ein TMY-Datensatz aus PVGIS.
+   SIE HEISST WIEDER KLIMADATEN (Entscheid E-3, Anwender 04.09.2026):
+   "Klimaregion ist eigentlich fuer Deutschland gedacht, Klimadaten fuer den
+   Download weltweit mit TMY-Daten." Der Menuetext bleibt "Klimadaten", und die
+   Komponente traegt denselben Namen. Damit stehen die beiden Begriffe fest:
+   - KLIMAREGION = die DEUTSCHEN Klimaregionen (Klimazonenkarte, Projektbezug
+     ueber ID_Klimaregion). Dort bleiben KlimazonenkarteDialog (W10a),
+     KlimaregionStammCtrl, KlimaregionCtrl und Tab_Klimaregion_STAMM - sie
+     werden NICHT umbenannt.
+   - KLIMADATEN = der WELTWEITE Download von TMY-Daten (PVGIS) in den
+     Stammkatalog. Genau das tut diese Maske, und deshalb heisst sie so.
+   Davon zu trennen bleibt die KLIMAZONE: eine der 15 VDI-4640-Zonen
+   Deutschlands, die die Klimazonenkarte zeigt.
 
    BEFUND W14c-B36, BEHOBEN: Die Maske hatte NULL MyResource-Zugriffe - auf
    englischer Oberflaeche war sie vollstaendig deutsch, samt Fenstertitel. Alle
