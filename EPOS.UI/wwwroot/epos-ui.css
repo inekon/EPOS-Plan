@@ -551,6 +551,23 @@ body {
     overflow-x: auto;
 }
 
+/* Virtualisierte Liste (iU9-W13.0l): QuickGrid virtualisiert nur, wenn es
+   einen Behaelter mit FESTER Hoehe zum Rollen gibt - sonst waechst die Tabelle
+   und es bleibt nichts auszulassen. 20 746 CEC-Zeilen brauchen das. */
+.epos-raster-huelle--hoch {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - bei 20 000 Zeilen ist das kein
+   Komfort, sondern die Voraussetzung, die Spalten noch zuzuordnen. */
+.epos-raster-huelle--hoch .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+}
+
 .epos-raster {
     width: 100%;
     border-collapse: collapse;

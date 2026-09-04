@@ -27,12 +27,22 @@
    nimmt den Zellen die senkrechte Polsterung, damit ein 44 px hohes
    Eingabefeld die Zeile nicht auf 60 px treibt, und laesst die Felder die
    Spaltenbreite fuellen. Am Verhalten aendert sie nichts - eine Zelle ist
-   bearbeitbar, weil ein Bedienelement darin steht, nicht wegen der Klasse. *@
+   bearbeitbar, weil ein Bedienelement darin steht, nicht wegen der Klasse.
+
+   LANGE LISTEN (iU9-W13.0l). Ein IQueryable allein virtualisiert NICHTS -
+   QuickGrid zeichnet ohne Virtualize jede Zeile. Fuer die 20 746 Zeilen der
+   CEC-Modulliste und die knapp 200 Saetze eines VDI-Katalogs setzt der Wirt
+   Virtualisiert="true"; QuickGrid haelt dann nur den sichtbaren Ausschnitt im
+   Baum. Zeilenhoehe ist das Mass, mit dem es rechnet, bevor es gemessen hat -
+   44 px ist die Hausgroesse eines Beruehrungsziels. Eine virtualisierte Liste
+   braucht einen Behaelter mit fester Hoehe (epos-raster-huelle--hoch), sonst
+   waechst sie und es gibt nichts zu virtualisieren. *@
 
 @typeparam TZeile
 
-<div class="epos-raster-huelle">
-    <QuickGrid Items="@Zeilen" Class="@Klasse">
+<div class="@HuellenKlasse">
+    <QuickGrid Items="@Zeilen" Class="@Klasse"
+               Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe">
         @KindInhalt
     </QuickGrid>
 </div>
@@ -50,5 +60,21 @@
     /// </summary>
     [Parameter] public bool Bearbeitbar { get; set; }
 
+    /// <summary>
+    /// Nur den sichtbaren Ausschnitt zeichnen (iU9-W13.0l). Fuer Listen ab
+    /// einigen hundert Zeilen; darunter kostet es mehr, als es bringt.
+    /// </summary>
+    [Parameter] public bool Virtualisiert { get; set; }
+
+    /// <summary>
+    /// Angenommene Zeilenhoehe in Pixeln fuer die Virtualisierung — die
+    /// Hausgroesse eines Beruehrungsziels.
+    /// </summary>
+    [Parameter] public float Zeilenhoehe { get; set; } = 44f;
+
     private string Klasse => Bearbeitbar ? "epos-raster epos-raster--bearbeitbar" : "epos-raster";
+
+    private string HuellenKlasse => Virtualisiert
+        ? "epos-raster-huelle epos-raster-huelle--hoch"
+        : "epos-raster-huelle";
 }
