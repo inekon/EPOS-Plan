@@ -801,8 +801,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Einstellungen_Click(object sender, EventArgs e)
         {
-            Form_AdminSettings frm = new Form_AdminSettings();
-            frm.ShowDialog();
+            // iU9-W14c.6: Mit Besitzer - der Vorlaeufer rief ShowDialog() ohne "this"
+            // und ohne using (Befund W14c-B34). Der Menuepunkt selbst bleibt: Er ist
+            // der Anker, an dem InitGesetzeMenue, InitDublettenMenue und
+            // InitLizenzMenue ihre Eintraege einhaengen (Befund W14c-B63).
+            EinstellungenHuelle.Oeffnen(this);
         }
 
         /// <summary>
