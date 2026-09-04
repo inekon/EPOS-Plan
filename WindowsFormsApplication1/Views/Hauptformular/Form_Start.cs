@@ -1227,18 +1227,17 @@ namespace WindowsFormsApplication1
         }
         private void btn_SimKonfig_Click(object sender, EventArgs e)
         {
-            Form_Simulation_Config frm = new Form_Simulation_Config();
-            KonfigurationCtrl ctrl = new KonfigurationCtrl();
-
-            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
-            frm.Konfiguration = ctrl.model;
-            frm.SetControls(m_ID_Projekt);
-            System.Drawing.Point p1 = btn_SimKonfig.Location;
-            p1 = tabControl_Wizard.PointToScreen(p1);
-            p1.Y /= 2;
-            p1.X /= 2;
-            frm.Location = p1;
-            frm.ShowDialog();
+            // Die Maske ist seit iU9-W10b.1 eine Razor-SEITE
+            // (EPOS.UI/Seiten/Simulation/SimulationKonfigSeite); die Huelle zeigt sie
+            // bis W16 in einem modalen Fenster (Entscheid R-W10b-1). Der Aufrufer las
+            // auch bisher nichts zurueck.
+            //
+            // ENTFALLEN (Befund W10-B37): das Lesen des Einstellungssatzes hier (das
+            // macht KonfigurationCtrl.LiesProjekt in der Huelle) und die Halbierung der
+            // Bildschirmkoordinaten fuer frm.Location. Damit entfaellt auch die Stelle,
+            // die iU9-W11a.2 hier parametrisiert hatte (Befund W11-B24) - dieselbe
+            // Abfrage, ein Aufrufer weniger.
+            SimulationKonfigHuelle.Oeffnen(this, m_ID_Projekt);
         }
 
         private void pBox_DetailSim_Click(object sender, EventArgs e)

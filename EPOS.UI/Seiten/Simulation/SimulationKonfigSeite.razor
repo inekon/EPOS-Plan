@@ -1,0 +1,1126 @@
+﻿@* Die SIMULATIONSKONFIGURATION als Seite (iU9-W10b.1).
+
+   VORBILD. WindowsFormsApplication1/Views/Simulation/Form_Simulation_Config
+   in vier Teildateien (4 558 Z.) samt drei Steuerelement-Klassen und dem
+   Zeichenmodell.
+
+   ENTSCHEID R-W10b-1. Der Wellenplan nennt sie eine SEITE, und als solche ist
+   sie gebaut: SeitenZustand fuer den Projektwechsel, ein Eintrag in
+   Seitenschluessel und AppWurzel, damit iOS sie als Seite zeigt. Unter Windows
+   erscheint sie BIS W16 in einer modalen Dialoghuelle
+   (BlazorDialogForm<SimulationKonfigSeite>), weil ihre beiden Aufrufer die
+   modale Rueckkehr brauchen (Form_Start und Form_Simulation_Detail springen
+   danach auf ihren gemerkten Reiter zurueck). Ein spaeteres Umhaengen in einen
+   Reiter aendert nur die Huelle.
+
+   ZWEI ANSICHTEN, EINE AUSWAHL. Der Umschalter rechts oben wechselt zwischen
+   den Kartenspalten und dem Schema; BEIDE zeigen dieselben Daten und teilen
+   sich _auswahl (den sprachneutralen Knotenschluessel). Die Auswahl ueberlebt
+   das Umschalten - sie haengt an einem Schluessel und nicht an einem Objekt.
+
+   NEUN AUFFRISCHUNGSSTELLEN WERDEN EINE. Der Vorlaeufer rief
+   AktualisiereErzeugerUebersicht an neun Stellen (Befund W10-B40, der
+   Quelltextkommentar sprach von acht). Hier gibt es genau ein Neuladen().
+
+   KEINE DATENBANK. Alles kommt ueber SimulationKonfigDienste herein; die
+   Huelle (Views/Simulation/SimulationKonfigHuelle.cs) haelt die Controller. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+@implements IDisposable
+
+<div class="epos-simkonfig">
+
+    <div class="epos-simkonfig-kopf">
+        <span class="epos-simkonfig-titel">@KopfText</span>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+
+        <span class="epos-simkonfig-ansicht">
+            <span class="epos-simkonfig-ansichtlabel">@AnsichtLabel</span>
+            <button type="button" class="@Ansichtklasse(ANSICHT_LISTE)"
+                    aria-pressed="@(_ansicht == ANSICHT_LISTE ? "true" : "false")"
+                    @onclick="() => AnsichtWaehlen(ANSICHT_LISTE)">@AnsichtListe</button>
+            <button type="button" class="@Ansichtklasse(ANSICHT_SCHEMA)"
+                    aria-pressed="@(_ansicht == ANSICHT_SCHEMA ? "true" : "false")"
+                    @onclick="() => AnsichtWaehlen(ANSICHT_SCHEMA)">@AnsichtSchema</button>
+        </span>
+    </div>
+
+    @if (_daten.Gesperrt)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_daten.Sperrgrund" />
+    }
+
+    <fieldset class="epos-simkonfig-bereich" disabled="@_daten.Gesperrt">
+
+        @if (_ansicht == ANSICHT_SCHEMA)
+        {
+            <Schema Layout="@_schema" Gewaehlt="@_auswahl"
+                    LeerText="@SchemaLeerText" WarnungText="@SchemaWarnungText"
+                    KetteKopfText="@SchemaKetteKopfText" KeineKetteText="@SchemaKeineKetteText"
+                    Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten" />
+        }
+        else
+        {
+            <div class="epos-simkonfig-spalten">
+
+                <section class="epos-simkonfig-erzeuger">
+                    <Gruppenkopf Titel="@KopfErzeuger" />
+
+                    @foreach (KachelGruppe gruppe in _daten.Gruppen)
+                    {
+                        <h3 class="epos-simkonfig-gruppe">@gruppe.Titel</h3>
+
+                        @foreach (ErzeugerZeile z in Sichtbare(gruppe))
+                        {
+                            ErzeugerZeile zeile = z;
+                            <ErzeugerKachel Aufbau="@zeile.Kachel"
+                                            AufnehmenText="@AufnehmenText"
+                                            TipHoch="@TipHoch" TipRunter="@TipRunter"
+                                            TipBearbeiten="@TipBearbeiten" TipEntfernen="@TipEntfernen"
+                                            TipAufnehmen="@TipAufnehmen" TipAufklappen="@TipAufklappen"
+                                            NachOben="() => Verschieben(zeile, -1)"
+                                            NachUnten="() => Verschieben(zeile, +1)"
+                                            Bearbeiten="() => KachelBearbeiten(zeile)"
+                                            Aufnehmen="() => Aufnehmen(zeile)"
+                                            Entfernen="() => Entfernen(zeile)"
+                                            ChipBearbeiten="c => ChipEditorOeffnen(zeile, c)"
+                                            Umschalten="() => StromUmschalten(zeile)"
+                                            Ausgewaehlt="() => KarteAusgewaehlt(zeile)" />
+                        }
+
+                        @if (!string.IsNullOrEmpty(gruppe.LeerText))
+                        {
+                            <p class="epos-simkonfig-hinweis">@gruppe.LeerText</p>
+                        }
+                    }
+
+                    @if (_verfuegbareZeigen || VerfuegbarVersteckt > 0)
+                    {
+                        <button type="button" class="epos-simkonfig-verfuegbar"
+                                @onclick="VerfuegbareUmschalten">
+                            @(_verfuegbareZeigen
+                                ? VerfuegbarAusblenden
+                                : string.Format(VerfuegbarEinblenden, VerfuegbarVersteckt))
+                        </button>
+                    }
+
+                    <p class="epos-simkonfig-hinweis">@AnlageHinzuText</p>
+                </section>
+
+                <section class="epos-simkonfig-speicher">
+                    <Gruppenkopf Titel="@KopfSpeicher" />
+
+                    @foreach (Bausteine.SpeicherKachelDaten s in _daten.Speicher)
+                    {
+                        Bausteine.SpeicherKachelDaten sp = s;
+                        <SpeicherKachel Inhalt="@sp" Aufgeklappt="@(sp.IdPuffer == _offenerSpeicher)"
+                                        BilanzText="@BilanzText"
+                                        TipBearbeiten="@TipSpeicherBearbeiten"
+                                        TipAufklappen="@TipSpeicherAufklappen"
+                                        Umschalten="SpeicherUmschalten"
+                                        Bearbeiten="PufferVerwaltungOeffnen"
+                                        Ausgewaehlt="SpeicherAusgewaehlt" />
+                    }
+
+                    @if (_daten.Speicher.Count == 0)
+                    {
+                        <p class="epos-simkonfig-hinweis">@_daten.SpeicherLeerText</p>
+                    }
+
+                    <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
+                            @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
+                </section>
+            </div>
+        }
+    </fieldset>
+
+    <div class="epos-simkonfig-fuss">
+
+        <div class="epos-simkonfig-schalter">
+            <Schalter Bezeichnung="@ExtrapolationText" Aktiv="@ExtrapolationBedienbar"
+                      Wert="@_daten.ExtrapolationErlaubt"
+                      WertChanged="ExtrapolationGesetzt" />
+
+            @if (_daten.BoosterSichtbar)
+            {
+                <Schalter Bezeichnung="@LesepunktText" Aktiv="@(!_daten.Gesperrt)"
+                          Wert="@_daten.BoosterDavor"
+                          WertChanged="LesepunktGesetzt" />
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(_status))
+        {
+            <Warnbanner Stufe="@_statusStufe" Text="@_status" />
+        }
+
+        <SpeichernLeiste MitSpeichern="true" MitAbbrechen="false"
+                         SatzMarkiert="true" Geaendert="true"
+                         SpeichernText="@BtnSpeichern" OkText="@BtnBeenden"
+                         Gespeichertwerden="Speichern"
+                         Ergebnis="_ => Geschlossen.InvokeAsync()" />
+    </div>
+
+    @* =================================================================
+       EBENE 1 — die Editoren, die aus einer Kachel oder aus dem Schema
+       heraus geoeffnet werden. Sie stehen IM selben Fenster (Risiko R2).
+       ================================================================= *@
+
+    <Ueberlagerung Offen="@(_ebene1 == Editor.Quellenwahl)" Titel="@QuellenwahlTitel"
+                   Geschlossen="Ebene1Schliessen">
+        <KindInhalt>
+            <div class="epos-simkonfig-quellenwahl" role="group" aria-label="@QuellenwahlTitel">
+                @foreach (Quellentyp t in _quellentypen)
+                {
+                    Quellentyp typ = t;
+                    <button type="button" class="@Quellenklasse(typ.Wert)"
+                            aria-pressed="@(typ.Wert == _quelleTypJetzt ? "true" : "false")"
+                            @onclick="() => QuelleGewaehlt(typ.Wert)">@typ.Text</button>
+                }
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <EPOS.UI.Dialoge.Simulation.WertAbfrage
+        Offen="@(_ebene1 == Editor.WpPrioritaet)" TitelText="@PrioTitel"
+        Beschriftung="@_wertFrage" Vorgabe="@_wertVorgabe"
+        Beantwortet="PrioBeantwortet" />
+
+    <EPOS.UI.Dialoge.Simulation.WertAbfrage
+        Offen="@(_ebene1 == Editor.QuelleKonstant)" TitelText="@KonstantTitel"
+        Beschriftung="@_wertFrage" Vorgabe="@_wertVorgabe"
+        Beantwortet="KonstantBeantwortet" />
+
+    <Rueckfrage Offen="@(_ebene1 == Editor.QuelleCsvFrage)" TitelText="@CsvTitel"
+                Frage="@_csvFrage" JaText="@CsvJaText" NeinText="@CsvNeinText"
+                Beantwortet="CsvBeantwortet" />
+
+    @if (_gaben1 is not null && _ebene1 == Editor.Betriebsmodus)
+    {
+        <Ueberlagerung Offen="true" Titel="@ModusTitel" Geschlossen="Ebene1Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.BetriebsmodusDialog @attributes="_gaben1"
+                                                                Geschlossen="ModusFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_gaben1 is not null && _ebene1 == Editor.Waermesenke)
+    {
+        <Ueberlagerung Offen="true" Titel="@SenkeTitel" Geschlossen="Ebene1Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.WaermesenkeDialog @attributes="_gaben1"
+                                                              Geschlossen="SenkeFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)
+    {
+        <Ueberlagerung Offen="true" Titel="@VerwaltungTitel" Geschlossen="Ebene1Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.PufferSpProjektDialog @attributes="_gaben1"
+                                                                  Geschlossen="VerwaltungFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @* =================================================================
+       EBENE 2 — die drei Quellendialoge aus der Quellenwahl. Ihre eigenen
+       Unterdialoge (Pufferverwaltung, Klimazonenkarte) bringen sie selbst
+       mit; das ist dann Ebene 3.
+       ================================================================= *@
+
+    @if (_gaben2 is not null && _ebene2 == Editor.QuellePuffer)
+    {
+        <Ueberlagerung Offen="true" Titel="@QuellePufferTitel" Geschlossen="Ebene2Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.QuellePufferspeicherDialog @attributes="_gaben2"
+                                                                       Geschlossen="QuellePufferFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_gaben2 is not null && _ebene2 == Editor.Quellprofil)
+    {
+        <Ueberlagerung Offen="true" Titel="@QuellprofilTitel" Geschlossen="Ebene2Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.QuellprofilDialog @attributes="_gaben2"
+                                                              Geschlossen="QuellprofilFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_gaben2 is not null && _ebene2 == Editor.QuelleErdreich)
+    {
+        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="Ebene2Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog @attributes="_gaben2"
+                                                                 Geschlossen="ErdreichFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+</div>
+
+@code {
+    // =====================================================================
+    // Steuerwerte der Ansicht (sprachneutral, Drei-Schichten-Regel)
+    // =====================================================================
+
+    /// <summary>Steuerwert der Kartenansicht.</summary>
+    public const string ANSICHT_LISTE = "LISTE";
+
+    /// <summary>Steuerwert der Schema-Ansicht.</summary>
+    public const string ANSICHT_SCHEMA = "SCHEMA";
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    /// <summary>Die Datenseite; ohne sie zeigt die Seite eine leere Konfiguration.</summary>
+    [Parameter] public SimulationKonfigDienste? Dienste { get; set; }
+
+    /// <summary>
+    /// Der geteilte Zustand der Huelle: Projektwechsel und Auffrischen. Ohne ihn
+    /// gilt <see cref="StartProjekt"/>.
+    /// </summary>
+    [Parameter] public EPOS.UI.Dienste.SeitenZustand? Zustand { get; set; }
+
+    /// <summary>Das Projekt beim Aufbau, wenn kein <see cref="Zustand"/> gesetzt ist.</summary>
+    [Parameter] public int StartProjekt { get; set; }
+
+    /// <summary>Die Seite moechte geschlossen werden („Beenden").</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    // ---- Texte (deutscher Rueckfall; die Huelle setzt die Ressourcen) ----
+
+    [Parameter] public string KopfText { get; set; } = "Erzeuger definieren, Pufferspeicher zuordnen:";
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Config.btn_Help";
+
+    [Parameter] public string AnsichtLabel { get; set; } = "Ansicht:";
+    [Parameter] public string AnsichtListe { get; set; } = "Liste";
+    [Parameter] public string AnsichtSchema { get; set; } = "Schema";
+
+    [Parameter] public string KopfErzeuger { get; set; } = "Komponenten der Simulation";
+    [Parameter] public string KopfSpeicher { get; set; } = "Speicher im Projekt";
+
+    [Parameter] public string AnlageHinzuText { get; set; }
+        = "+ Anlage hinzufügen: Anlagen werden über die Projektseite angelegt.";
+
+    [Parameter] public string VerfuegbarEinblenden { get; set; }
+        = "+ Nicht gewählte Komponenten anzeigen ({0}) …";
+    [Parameter] public string VerfuegbarAusblenden { get; set; }
+        = "− Nicht gewählte Komponenten ausblenden";
+
+    [Parameter] public string AufnehmenText { get; set; } = "+ aufnehmen";
+    [Parameter] public string TipHoch { get; set; } = "In der Kaskade nach vorn";
+    [Parameter] public string TipRunter { get; set; } = "In der Kaskade nach hinten";
+    [Parameter] public string TipBearbeiten { get; set; } = "Wärmesenken bearbeiten";
+    [Parameter] public string TipEntfernen { get; set; } = "Aus der Simulation nehmen";
+    [Parameter] public string TipAufnehmen { get; set; } = "In die Simulation aufnehmen";
+    [Parameter] public string TipAufklappen { get; set; } = "Gerätedaten anzeigen";
+
+    [Parameter] public string BilanzText { get; set; } = "{0} Lader · {1} Abnehmer";
+    [Parameter] public string TipSpeicherBearbeiten { get; set; } = "Pufferspeicher bearbeiten";
+    [Parameter] public string TipSpeicherAufklappen { get; set; } = "Einzelheiten anzeigen";
+    [Parameter] public string BtnPufferVerwalten { get; set; } = "Pufferspeicher anlegen / verwalten…";
+
+    [Parameter] public string ExtrapolationText { get; set; }
+        = "Extrapolation der WP-Kennlinie erlauben";
+    [Parameter] public string LesepunktText { get; set; }
+        = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
+
+    [Parameter] public string BtnSpeichern { get; set; } = "Konfiguration speichern";
+    [Parameter] public string BtnBeenden { get; set; } = "Beenden";
+
+    [Parameter] public string StatusGespeichert { get; set; }
+        = "✔ Konfiguration erfolgreich gespeichert";
+    [Parameter] public string StatusExtrapolationEin { get; set; }
+        = "Extrapolation der WP-Kennlinie erlaubt.";
+    [Parameter] public string StatusExtrapolationAus { get; set; }
+        = "Extrapolation der WP-Kennlinie abgewählt.";
+    [Parameter] public string StatusLesepunktDavor { get; set; }
+        = "Der Booster liest den Speicherzustand vom Stundenanfang.";
+    [Parameter] public string StatusLesepunktDanach { get; set; }
+        = "Der Booster liest den Speicherzustand nach der vorrangigen Anlage.";
+    [Parameter] public string StatusEinstellungFehler { get; set; }
+        = "Die Einstellung konnte nicht gespeichert werden.";
+
+    [Parameter] public string SchemaLeerText { get; set; }
+        = "Für dieses Projekt ist noch keine Hydraulik konfiguriert.";
+    [Parameter] public string SchemaWarnungText { get; set; } = "Vorlauf unter dem Puffer-Sollwert";
+    [Parameter] public string SchemaKetteKopfText { get; set; } = "Kaskadenkette";
+    [Parameter] public string SchemaKeineKetteText { get; set; }
+        = "Dieses Projekt führt keine Kaskade.";
+
+    // ---- Die Editoren: Titel, Fragen und Vorpruefungen -------------------
+
+    /// <summary>SIM_TITEL_BETRIEBSMODUS.</summary>
+    [Parameter] public string ModusTitel { get; set; } = "Betriebsmodus";
+
+    /// <summary>SIM_MSG_MODUS_NUR_WP ({0} = Anlagenname).</summary>
+    [Parameter] public string MsgModusNurWp { get; set; }
+        = "Der Betriebsmodus ist heute nur für Wärmepumpen wirksam.\n\nAnlage: {0}";
+
+    /// <summary>SIM_MSG_PV_AUSWAHL.</summary>
+    [Parameter] public string MsgPvAuswahl { get; set; }
+        = "Hinweis: Für den PV-optimierten Betrieb muss die Photovoltaik ausgewählt sein.";
+
+    /// <summary>Der Steuerwert „PV-optimiert" — nie ein Anzeigetext.</summary>
+    [Parameter] public string SteuerwertPv { get; set; } = "PV";
+
+    /// <summary>SIM_WPPRIO_DIALOG_TITEL / _TEXT.</summary>
+    [Parameter] public string PrioTitel { get; set; } = "WP-Priorität";
+    [Parameter] public string PrioFrage { get; set; } = "Einsatzreihenfolge von „{0}“:";
+
+    /// <summary>SIM_MSG_WPPRIO_NUR_WP ({0} = Anlagenname).</summary>
+    [Parameter] public string MsgWpPrioNurWp { get; set; }
+        = "Die WP-Priorität regelt die Reihenfolge der Wärmepumpen untereinander.\nFür {0} ist sie ohne Bedeutung.";
+
+    /// <summary>SIMQ_TITEL_WAERMEQUELLE.</summary>
+    [Parameter] public string QuellenwahlTitel { get; set; } = "Wärmequelle";
+
+    /// <summary>SIMQ_MSG_QUELLE_ART.</summary>
+    [Parameter] public string MsgQuelleArt { get; set; }
+        = "Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.";
+
+    /// <summary>SIMQ_MSG_LUFT_WASSER ({0} = Bauart).</summary>
+    [Parameter] public string MsgLuftWasser { get; set; }
+        = "Die Bauart „{0}“ bezieht ihre Wärme aus der Außenluft; eine andere Quelle ist nicht wählbar.";
+
+    /// <summary>SIMQ_KONSTANT_DIALOG_TITEL / _TEXT.</summary>
+    [Parameter] public string KonstantTitel { get; set; } = "Konstante Quelltemperatur";
+    [Parameter] public string KonstantFrage { get; set; } = "Quelltemperatur von „{0}“ [°C]:";
+
+    /// <summary>SIMQ_CSV_TITEL / _FRAGE_DATEI ({0} = Formathinweis).</summary>
+    [Parameter] public string CsvTitel { get; set; } = "Quellprofil aus Datei";
+    [Parameter] public string CsvFrage { get; set; } = "{0}\n\nJetzt Datei auswählen?";
+    [Parameter] public string CsvFormatHinweis { get; set; } = "";
+    [Parameter] public string CsvJaText { get; set; } = "OK";
+    [Parameter] public string CsvNeinText { get; set; } = "Abbrechen";
+
+    /// <summary>Die Steuerwerte der sechs Quellenzweige — nie Anzeigetexte.</summary>
+    [Parameter] public string SteuerwertQuelleKonstant { get; set; } = "Konstant";
+    [Parameter] public string SteuerwertQuellePuffer { get; set; } = "Pufferspeicher";
+    [Parameter] public string SteuerwertQuellprofil { get; set; } = "Profil";
+    [Parameter] public string SteuerwertQuelleCsv { get; set; } = "CSV";
+    [Parameter] public string SteuerwertQuelleErdreich { get; set; } = "Erdreich";
+
+    /// <summary>Titel der Überlagerungen der zweiten Ebene.</summary>
+    [Parameter] public string QuellePufferTitel { get; set; } = "Wärmequelle Pufferspeicher";
+    [Parameter] public string QuellprofilTitel { get; set; } = "Quellprofil";
+    [Parameter] public string ErdreichTitel { get; set; } = "Wärmequelle Erdreich";
+    [Parameter] public string SenkeTitel { get; set; } = "Wärmesenken";
+    [Parameter] public string VerwaltungTitel { get; set; } = "Pufferspeicher im Projekt";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private SimulationKonfigDaten _daten = new SimulationKonfigDaten();
+    private Bausteine.SchemaBild? _schema;
+
+    private string _ansicht = ANSICHT_LISTE;
+
+    /// <summary>
+    /// Das gemeinsame Auswahlelement beider Ansichten — der sprachneutrale
+    /// Knotenschluessel („ERZEUGER_11203", „SPEICHER_1018023"); "" = keine Auswahl.
+    /// Bewusst der SCHLUESSEL und kein Objekt: Die Kacheln werden bei jeder
+    /// Auffrischung neu gebaut, eine Objektreferenz ueberlebte das nicht.
+    /// </summary>
+    private string _auswahl = "";
+
+    /// <summary>
+    /// Stehen die NICHT gewaehlten Komponenten in der Spalte? Vorbelegung
+    /// <c>false</c>; Sitzungszustand, bewusst nicht persistiert.
+    /// </summary>
+    private bool _verfuegbareZeigen;
+
+    /// <summary>Aufgeklappte Speicherkachel (<c>Tab_Pufferspeicher.ID</c>); 0 = keine.</summary>
+    private int _offenerSpeicher;
+
+    /// <summary>Aufgeklappte Stromkachel als <c>ID_Type</c>; 0 = keine.</summary>
+    private int _offeneStromgruppe;
+
+    private string _status = "";
+    private WarnStufe _statusStufe = WarnStufe.Erfolg;
+
+    /// <summary>Das offene Projekt.</summary>
+    public int IdProjekt => Zustand?.ProjektId ?? StartProjekt;
+
+    /// <summary>Die sichtbare Ansicht (Pruefhilfe).</summary>
+    public string AktiveAnsicht => _ansicht;
+
+    /// <summary>Der ausgewaehlte Knotenschluessel (Pruefhilfe).</summary>
+    public string Auswahl => _auswahl;
+
+    private bool ExtrapolationBedienbar => !_daten.Gesperrt && _daten.ExtrapolationMoeglich;
+
+    // =====================================================================
+    // Laden
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        Neuladen();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+    }
+
+    private void BeiZustand()
+    {
+        // Der Zustand kommt vom Oberflaechenfaden der Huelle; gezeichnet wird
+        // ausschliesslich auf dem Renderfaden (Muster BerichteKostenSeite).
+        _ = InvokeAsync(() =>
+        {
+            _status = "";
+            Neuladen();
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// DER EINE Auffrischungsweg — er ersetzt die NEUN Aufrufstellen von
+    /// <c>AktualisiereErzeugerUebersicht</c> (Befund W10-B40).
+    /// </summary>
+    private void Neuladen()
+    {
+        _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationKonfigDaten();
+        AnsichtszustandAnwenden();
+        SchemaAuffrischen();
+    }
+
+    /// <summary>
+    /// Traegt Auswahl und Aufklappzustand in die frisch geladenen Kacheln nach.
+    /// Der Vorlaeufer tat das in <c>AuswahlInKartenZeigen</c> — aus demselben
+    /// Grund: Die Karten sind neu, die Anzeigevorlieben nicht.
+    /// </summary>
+    private void AnsichtszustandAnwenden()
+    {
+        int idAnlage = IdAusSchluessel(_auswahl, PRAEFIX_ERZEUGER);
+        if (idAnlage == 0) idAnlage = IdAusSchluessel(_auswahl, PRAEFIX_QUELLE);
+        int idPuffer = IdAusSchluessel(_auswahl, PRAEFIX_SPEICHER);
+
+        foreach (KachelGruppe g in _daten.Gruppen)
+            foreach (ErzeugerZeile z in g.Zeilen)
+            {
+                z.Kachel.Hervorgehoben = z.IdAnlage > 0 && z.IdAnlage == idAnlage;
+                z.Kachel.Aufgeklappt = z.IstStrom && z.IdType == _offeneStromgruppe;
+            }
+
+        foreach (Bausteine.SpeicherKachelDaten s in _daten.Speicher)
+            s.Hervorgehoben = idPuffer > 0 && s.IdPuffer == idPuffer;
+    }
+
+    /// <summary>
+    /// Das Schema rechnet NUR, wenn es auch sichtbar ist — woertlich wie
+    /// <c>AktualisiereSchema</c>:204-213. Das Modell holt je Aufbau eine Anlagen-,
+    /// eine Puffer- und je beteiligtem Speicher eine Ladeordnungsabfrage.
+    /// </summary>
+    private void SchemaAuffrischen()
+    {
+        _schema = _ansicht == ANSICHT_SCHEMA
+            ? Dienste?.SchemaLaden?.Invoke(IdProjekt)
+            : null;
+    }
+
+    // =====================================================================
+    // Umschalter
+    // =====================================================================
+
+    private string Ansichtklasse(string wert)
+        => wert == _ansicht
+            ? "epos-simkonfig-schalter--aktiv epos-simkonfig-ansichtknopf"
+            : "epos-simkonfig-ansichtknopf";
+
+    private void AnsichtWaehlen(string wunsch)
+    {
+        if (wunsch == _ansicht) return;
+
+        _ansicht = wunsch;
+        SchemaAuffrischen();
+    }
+
+    // =====================================================================
+    // Die Erzeugerspalte
+    // =====================================================================
+
+    /// <summary>
+    /// Die sichtbaren Zeilen einer Gruppe: die aufgenommenen immer, die
+    /// verfuegbaren nur, wenn der Schalter am Spaltenende sie eingeblendet hat.
+    /// </summary>
+    private IEnumerable<ErzeugerZeile> Sichtbare(KachelGruppe gruppe)
+    {
+        foreach (ErzeugerZeile z in gruppe.Zeilen)
+            if (_verfuegbareZeigen || !z.Verfuegbar) yield return z;
+    }
+
+    /// <summary>Wie viele Platzhalter der Schalter gerade verbirgt.</summary>
+    private int VerfuegbarVersteckt
+    {
+        get
+        {
+            if (_verfuegbareZeigen) return 0;
+
+            int n = 0;
+            foreach (KachelGruppe g in _daten.Gruppen)
+                foreach (ErzeugerZeile z in g.Zeilen)
+                    if (z.Verfuegbar) n++;
+            return n;
+        }
+    }
+
+    private void VerfuegbareUmschalten()
+    {
+        _verfuegbareZeigen = !_verfuegbareZeigen;
+    }
+
+    private void Verschieben(ErzeugerZeile z, int richtung)
+    {
+        Dienste?.Verschieben?.Invoke(z.DbWert, richtung);
+        Neuladen();
+    }
+
+    private void Aufnehmen(ErzeugerZeile z)
+    {
+        if (z.IstStrom) Dienste?.StromAuswahl?.Invoke(z.StromPlatz, z.DbWert);
+        else Dienste?.Aufnehmen?.Invoke(z.DbWert);
+
+        Neuladen();
+    }
+
+    private void Entfernen(ErzeugerZeile z)
+    {
+        if (z.IstStrom) Dienste?.StromAuswahl?.Invoke(z.StromPlatz, "");
+        else Dienste?.Entfernen?.Invoke(z.DbWert);
+
+        Neuladen();
+    }
+
+    /// <summary>
+    /// Umschalten des Detailbereichs einer STROMKACHEL. Hoechstens eine ist offen
+    /// (Konzept 3a); die Kachel kennt ihre Nachbarn nicht, die Regel gilt hier.
+    /// </summary>
+    private void StromUmschalten(ErzeugerZeile z)
+    {
+        if (!z.IstStrom) return;
+
+        _offeneStromgruppe = z.Kachel.Aufgeklappt ? 0 : z.IdType;
+        AnsichtszustandAnwenden();
+    }
+
+    /// <summary>Klick auf eine Erzeugerkachel — die Auswahl wandert ins Schema.</summary>
+    private void KarteAusgewaehlt(ErzeugerZeile z)
+    {
+        _auswahl = z.IdAnlage > 0 ? PRAEFIX_ERZEUGER + z.IdAnlage : "";
+        AnsichtszustandAnwenden();
+    }
+
+    // =====================================================================
+    // Die Speicherspalte
+    // =====================================================================
+
+    private void SpeicherUmschalten(int idPuffer)
+    {
+        _offenerSpeicher = _offenerSpeicher == idPuffer ? 0 : idPuffer;
+    }
+
+    private void SpeicherAusgewaehlt(int idPuffer)
+    {
+        _auswahl = idPuffer > 0 ? PRAEFIX_SPEICHER + idPuffer : "";
+        AnsichtszustandAnwenden();
+    }
+
+    // =====================================================================
+    // Fusszeile
+    // =====================================================================
+
+    /// <summary>
+    /// Schreibt SOFORT — die Einstellung gehoert nicht zu dem Satz, den
+    /// „Konfiguration speichern" wegschreibt. Bei Fehlschlag wird der Schalter
+    /// zurueckgenommen (woertlich :197-219).
+    /// </summary>
+    private void ExtrapolationGesetzt(bool wert)
+    {
+        if (IdProjekt <= 0) return;
+
+        if (Dienste?.ExtrapolationSchreiben?.Invoke(wert) == true)
+        {
+            _daten.ExtrapolationErlaubt = wert;
+            Melden(wert ? StatusExtrapolationEin : StatusExtrapolationAus, WarnStufe.Erfolg);
+            return;
+        }
+
+        Melden(StatusEinstellungFehler, WarnStufe.Fehler);
+    }
+
+    private void LesepunktGesetzt(bool davor)
+    {
+        if (IdProjekt <= 0) return;
+
+        if (Dienste?.LesepunktSchreiben?.Invoke(davor) == true)
+        {
+            _daten.BoosterDavor = davor;
+            Melden(davor ? StatusLesepunktDavor : StatusLesepunktDanach, WarnStufe.Erfolg);
+            return;
+        }
+
+        Melden(StatusEinstellungFehler, WarnStufe.Fehler);
+    }
+
+    private void Speichern()
+    {
+        if (Dienste?.Speichern?.Invoke() == true)
+            Melden(StatusGespeichert, WarnStufe.Erfolg);
+    }
+
+    /// <summary>
+    /// Die Statuszeile. Der Vorlaeufer blendete sie nach DREI SEKUNDEN aus
+    /// (statusTimer:91-95); hier bleibt sie bis zur naechsten Aktion stehen —
+    /// eine Meldung, die von selbst verschwindet, ist keine.
+    /// </summary>
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _status = text;
+        _statusStufe = stufe;
+    }
+
+    // =====================================================================
+    // Schluessel (dieselben Praefixe wie SchemaModell im Kern)
+    // =====================================================================
+
+    private const string PRAEFIX_QUELLE = "QUELLE_";
+    private const string PRAEFIX_ERZEUGER = "ERZEUGER_";
+    private const string PRAEFIX_SPEICHER = "SPEICHER_";
+
+    private static int IdAusSchluessel(string schluessel, string praefix)
+    {
+        if (string.IsNullOrEmpty(schluessel) ||
+            !schluessel.StartsWith(praefix, StringComparison.Ordinal)) return 0;
+
+        return int.TryParse(schluessel.Substring(praefix.Length), out int id) ? id : 0;
+    }
+
+    // =====================================================================
+    // Das Schema
+    // =====================================================================
+
+    /// <summary>Klick im Schema — die zugehoerige Kachel wird hervorgehoben.</summary>
+    private void SchemaAuswahl(string schluessel)
+    {
+        _auswahl = schluessel ?? "";
+
+        // Ein Speicher im Schema klappt seine Kachel auf (Konzept 3a).
+        int idPuffer = IdAusSchluessel(_auswahl, PRAEFIX_SPEICHER);
+        if (idPuffer > 0) _offenerSpeicher = idPuffer;
+
+        AnsichtszustandAnwenden();
+    }
+
+    /// <summary>
+    /// Doppelklick im Schema — DERSELBE Editor wie an der Kachel
+    /// (woertlich <c>SchemaBearbeiten</c>:302-342).
+    /// </summary>
+    private void SchemaBearbeiten(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel) || IdProjekt <= 0) return;
+
+        _auswahl = schluessel;
+
+        int idPuffer = IdAusSchluessel(schluessel, PRAEFIX_SPEICHER);
+        if (idPuffer > 0)
+        {
+            _offenerSpeicher = idPuffer;
+            PufferVerwaltungOeffnen(idPuffer);
+            return;
+        }
+
+        int idAnlage = IdAusSchluessel(schluessel, PRAEFIX_ERZEUGER);
+        if (idAnlage > 0)
+        {
+            // Der Senkendialog ist der Standard-Editor einer Erzeugerkachel.
+            ErzeugerZeile? erz = ZeileZuAnlage(idAnlage);
+            if (erz is not null) WaermesenkeBearbeiten(erz);
+            return;
+        }
+
+        int idQuelle = IdAusSchluessel(schluessel, PRAEFIX_QUELLE);
+        if (idQuelle > 0)
+        {
+            // Wie der Quellen-Chip der Kachel: nur Arten mit Quellenwahl bekommen
+            // den Editor, die uebrigen bleiben stumm (Etappe D5b).
+            ErzeugerZeile? q = ZeileZuAnlage(idQuelle);
+            if (q is not null && q.QuellenwahlMoeglich) WaermequelleBearbeiten(q);
+        }
+    }
+
+    private ErzeugerZeile? ZeileZuAnlage(int idAnlage)
+    {
+        foreach (KachelGruppe g in _daten.Gruppen)
+            foreach (ErzeugerZeile z in g.Zeilen)
+                if (z.IdAnlage == idAnlage) return z;
+
+        return null;
+    }
+
+    // =====================================================================
+    // Die Editoren — zwei Ebenen Ueberlagerung
+    // =====================================================================
+
+    /// <summary>Welcher Editor gerade offen ist.</summary>
+    private enum Editor
+    {
+        Keine,
+        Betriebsmodus,
+        WpPrioritaet,
+        Quellenwahl,
+        QuelleKonstant,
+        QuelleCsvFrage,
+        Waermesenke,
+        Pufferverwaltung,
+        QuellePuffer,
+        Quellprofil,
+        QuelleErdreich
+    }
+
+    private Editor _ebene1 = Editor.Keine;
+    private Editor _ebene2 = Editor.Keine;
+
+    private IReadOnlyDictionary<string, object>? _gaben1;
+    private IReadOnlyDictionary<string, object>? _gaben2;
+
+    /// <summary>Die Zeile, um deren Anlage es gerade geht; <c>null</c> = keine.</summary>
+    private ErzeugerZeile? _zeile;
+
+    private IReadOnlyList<Quellentyp> _quellentypen = Array.Empty<Quellentyp>();
+    private string _quelleTypJetzt = "";
+
+    /// <summary>Der Steuerwert, den die Quellenwahl gerade festlegt.</summary>
+    private string _quelleTypNeu = "";
+
+    private string _wertFrage = "";
+    private double? _wertVorgabe;
+    private string _csvFrage = "";
+
+    /// <summary>Der offene Editor der ersten Ebene (Pruefhilfe).</summary>
+    public string OffenerEditor => _ebene1.ToString();
+
+    /// <summary>Der offene Editor der zweiten Ebene (Pruefhilfe).</summary>
+    public string OffenerUntereditor => _ebene2.ToString();
+
+    private void Ebene1Schliessen()
+    {
+        _ebene1 = Editor.Keine;
+        _gaben1 = null;
+    }
+
+    private void Ebene2Schliessen()
+    {
+        _ebene2 = Editor.Keine;
+        _gaben2 = null;
+    }
+
+    /// <summary>
+    /// Der DISPATCHER: Welchen Editor oeffnet ein Doppelklick auf DIESEN Chip?
+    /// Er ersetzt den Spaltenindex-Dispatcher der alten Uebersicht; die
+    /// aufgerufenen Dialoge und ihre Vorbedingungen sind unveraendert
+    /// (woertlich <c>ChipEditorOeffnen</c>:1286-1313).
+    /// </summary>
+    private void ChipEditorOeffnen(ErzeugerZeile zeile, ChipDaten chip)
+    {
+        switch (chip.Ziel)
+        {
+            case ChipZiel.Senke:
+            case ChipZiel.Zweitsenke:
+                // Beide fuehren in denselben Dialog - Haupt- und Zweitsenke
+                // gehoeren fachlich zusammen (Konzept 4.2).
+                WaermesenkeBearbeiten(zeile);
+                break;
+
+            case ChipZiel.Modus:
+                BetriebsmodusBearbeiten(zeile);
+                break;
+
+            case ChipZiel.Prioritaet:
+                WpPrioritaetBearbeiten(zeile);
+                break;
+
+            case ChipZiel.Quelle:
+                WaermequelleBearbeiten(zeile);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Der Standard-Editor jeder Kachel ist der Senkendialog — er ist der
+    /// einzige, der fuer JEDEN Erzeugertyp etwas zu sagen hat (Konzept 4.2).
+    /// </summary>
+    private void KachelBearbeiten(ErzeugerZeile zeile)
+    {
+        if (zeile.IdAnlage > 0) WaermesenkeBearbeiten(zeile);
+    }
+
+    // ---- Betriebsmodus ---------------------------------------------------
+
+    private void BetriebsmodusBearbeiten(ErzeugerZeile zeile)
+    {
+        if (!zeile.IstWaermepumpe)
+        {
+            // Die Vorpruefung bleibt beim AUFRUFER (Vermessung § 1.i) - der
+            // Dialog selbst entscheidet nur.
+            Melden(string.Format(MsgModusNurWp, zeile.Bezeichner), WarnStufe.Hinweis);
+            return;
+        }
+
+        _zeile = zeile;
+        _gaben1 = Dienste?.BetriebsmodusGaben?.Invoke(zeile.IdAnlage);
+        if (_gaben1 is null) return;
+
+        _ebene1 = Editor.Betriebsmodus;
+    }
+
+    private void ModusFertig(string? modus)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene1Schliessen();
+
+        if (modus is null || zeile is null) return;
+
+        Dienste?.BetriebsmodusSchreiben?.Invoke(zeile.IdAnlage, modus);
+
+        // Der PV-Hinweis bleibt beim Aufrufer (woertlich :629-634).
+        if (string.Equals(modus, SteuerwertPv, StringComparison.Ordinal) && !_daten.PvGewaehlt)
+            Melden(MsgPvAuswahl, WarnStufe.Hinweis);
+
+        Neuladen();
+    }
+
+    // ---- WP-Prioritaet ---------------------------------------------------
+
+    private void WpPrioritaetBearbeiten(ErzeugerZeile zeile)
+    {
+        if (!zeile.IstWaermepumpe)
+        {
+            Melden(string.Format(MsgWpPrioNurWp, zeile.Bezeichner), WarnStufe.Hinweis);
+            return;
+        }
+
+        _zeile = zeile;
+        _wertFrage = string.Format(PrioFrage, zeile.Bezeichner);
+        _wertVorgabe = zeile.Prioritaet > 0 ? zeile.Prioritaet : 1;
+        _ebene1 = Editor.WpPrioritaet;
+    }
+
+    private void PrioBeantwortet(double? wert)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene1Schliessen();
+
+        // NUR Werte > 0 werden geschrieben (woertlich :673-679).
+        if (wert is null || zeile is null || wert.Value <= 0) return;
+
+        Dienste?.PrioritaetSchreiben?.Invoke(zeile.IdAnlage, (int)wert.Value);
+        Neuladen();
+    }
+
+    // ---- Waermequelle ----------------------------------------------------
+
+    private void WaermequelleBearbeiten(ErzeugerZeile zeile)
+    {
+        if (!zeile.QuellenwahlMoeglich)
+        {
+            Melden(MsgQuelleArt, WarnStufe.Hinweis);
+            return;
+        }
+
+        if (zeile.IstWaermepumpe && zeile.BauartGebunden)
+        {
+            Melden(string.Format(MsgLuftWasser, zeile.WpTypAnzeige), WarnStufe.Hinweis);
+            return;
+        }
+
+        _zeile = zeile;
+        _quellentypen = Dienste?.Quellentypen?.Invoke(zeile.IdType) ?? Array.Empty<Quellentyp>();
+        if (_quellentypen.Count == 0) return;
+
+        _quelleTypJetzt = Dienste?.QuelleTyp?.Invoke(zeile.IdAnlage) ?? "";
+        _ebene1 = Editor.Quellenwahl;
+    }
+
+    private string Quellenklasse(string wert)
+        => wert == _quelleTypJetzt ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
+
+    /// <summary>
+    /// Die sechs Zweige der Quellenwahl (woertlich
+    /// <c>WqCombo_SelectedIndexChanged</c>:841-1183). Zwei schreiben unmittelbar,
+    /// einer fragt eine Zahl, einer eine Datei, drei oeffnen einen Unterdialog.
+    /// </summary>
+    private void QuelleGewaehlt(string typ)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        if (zeile is null) return;
+
+        Ebene1Schliessen();
+        _zeile = zeile;
+        _quelleTypNeu = typ;
+
+        if (typ == SteuerwertQuellePuffer)
+        {
+            _gaben2 = Dienste?.QuellePufferGaben?.Invoke(zeile.IdAnlage);
+            if (_gaben2 is not null) _ebene2 = Editor.QuellePuffer;
+            return;
+        }
+
+        if (typ == SteuerwertQuellprofil)
+        {
+            _gaben2 = Dienste?.QuellprofilGaben?.Invoke(zeile.IdAnlage);
+            if (_gaben2 is not null) _ebene2 = Editor.Quellprofil;
+            return;
+        }
+
+        if (typ == SteuerwertQuelleErdreich)
+        {
+            _gaben2 = Dienste?.QuelleErdreichGaben?.Invoke(zeile.IdAnlage);
+            if (_gaben2 is not null) _ebene2 = Editor.QuelleErdreich;
+            return;
+        }
+
+        if (typ == SteuerwertQuelleKonstant)
+        {
+            _wertFrage = string.Format(KonstantFrage, zeile.Bezeichner);
+            _wertVorgabe = Dienste?.QuelleTemperatur?.Invoke(zeile.IdAnlage) ?? 10.0;
+            _ebene1 = Editor.QuelleKonstant;
+            return;
+        }
+
+        if (typ == SteuerwertQuelleCsv)
+        {
+            _csvFrage = string.Format(CsvFrage, CsvFormatHinweis);
+            _ebene1 = Editor.QuelleCsvFrage;
+            return;
+        }
+
+        // „Systemruecklauf" und „Aussenluft" schreiben unmittelbar.
+        Dienste?.QuelleEinfachSchreiben?.Invoke(zeile.IdAnlage, typ, 0.0);
+        Neuladen();
+    }
+
+    private void KonstantBeantwortet(double? wert)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        string typ = _quelleTypNeu;
+        Ebene1Schliessen();
+
+        if (wert is null || zeile is null) return;
+
+        Dienste?.QuelleEinfachSchreiben?.Invoke(zeile.IdAnlage, typ, wert.Value);
+        Neuladen();
+    }
+
+    private async Task CsvBeantwortet(bool? ja)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene1Schliessen();
+
+        if (ja != true || zeile is null || Dienste?.QuelleCsvWaehlen is null) return;
+
+        Rueckmeldung r = await Dienste.QuelleCsvWaehlen(zeile.IdAnlage);
+        if (!string.IsNullOrEmpty(r.Text))
+            Melden(r.Text, r.Erfolg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+
+        Neuladen();
+    }
+
+    private void QuellePufferFertig(EPOS.UI.Dialoge.Simulation.QuellePufferspeicherDaten? ergebnis)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene2Schliessen();
+
+        if (ergebnis is null || zeile is null) return;
+
+        Rueckmeldung r = Dienste?.QuellePufferSchreiben?.Invoke(zeile.IdAnlage, ergebnis)
+                         ?? Rueckmeldung.Still;
+        if (!string.IsNullOrEmpty(r.Text))
+            Melden(r.Text, r.Erfolg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+
+        Neuladen();
+    }
+
+    private void QuellprofilFertig(int? idProfil)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene2Schliessen();
+
+        if (idProfil is null || zeile is null) return;
+
+        Dienste?.QuellprofilSchreiben?.Invoke(zeile.IdAnlage, idProfil.Value);
+        Neuladen();
+    }
+
+    private void ErdreichFertig(EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten? ergebnis)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene2Schliessen();
+
+        if (ergebnis is null || zeile is null) return;
+
+        Dienste?.QuelleErdreichSchreiben?.Invoke(zeile.IdAnlage, ergebnis);
+        Neuladen();
+    }
+
+    // ---- Waermesenke ------------------------------------------------------
+
+    private void WaermesenkeBearbeiten(ErzeugerZeile zeile)
+    {
+        _zeile = zeile;
+        _gaben1 = Dienste?.WaermesenkeGaben?.Invoke(zeile.IdAnlage);
+        if (_gaben1 is null) return;
+
+        _ebene1 = Editor.Waermesenke;
+    }
+
+    private void SenkeFertig(EPOS.UI.Dialoge.Simulation.WaermesenkeErgebnis? ergebnis)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Ebene1Schliessen();
+
+        if (zeile is not null)
+        {
+            Rueckmeldung r = Dienste?.WaermesenkeFertig?.Invoke(zeile.IdAnlage, ergebnis)
+                             ?? Rueckmeldung.Still;
+            if (!string.IsNullOrEmpty(r.Text))
+                Melden(r.Text, r.Erfolg ? WarnStufe.Erfolg : WarnStufe.Fehler);
+        }
+
+        // DANACH IMMER - der Dialog kann ueber „Pufferspeicher anlegen…" einen
+        // neuen Puffer erzeugt haben, auch wenn er abgebrochen wurde.
+        Neuladen();
+    }
+
+    // ---- Pufferverwaltung -------------------------------------------------
+
+    private void PufferVerwaltungOeffnen(int idPuffer)
+    {
+        if (IdProjekt <= 0) return;
+
+        _gaben1 = Dienste?.PufferVerwaltungGaben?.Invoke(idPuffer);
+        if (_gaben1 is null) return;
+
+        _ebene1 = Editor.Pufferverwaltung;
+    }
+
+    private void VerwaltungFertig(int idPuffer)
+    {
+        Ebene1Schliessen();
+
+        // Die Verwaltung schreibt sofort; deshalb unabhaengig vom Ausgang neu
+        // aufbauen. Ein entfernter Puffer kann ausserdem Senken der Anlagen
+        // betreffen (ReferenzenLoesen).
+        Neuladen();
+    }
+}

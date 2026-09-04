@@ -117,7 +117,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**229 `.cs`**, davon 140 ohne Designer-Datei; **419 Dateien** mit `.resx`) —
+- **`Views/`** (**165 `.cs`**; **267 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -279,11 +279,31 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   selbst bleibt WinForms** und ist mit **W10b** an der Reihe.
   Die Welle nimmt nur FÜNF Designer-Dateien mit, weil Quellprofil und
   Wärmesenke nie einen hatten (Befund W10‑B38).
-  Der **Stapellauf der Formularkarte zählt seither 50 Masken** (55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  **Mit iU9‑W10b ist auch ihr Wirt weg** — `Form_Simulation_Config` mit
+  ihren vier Teildateien (678 + 2 248 + 433 + 1 199 = 4 558 Z.), dem
+  Designer (337 Z.) und der einzigen `.resx` der ganzen Welle; dazu die
+  drei Steuerelement-Klassen `ErzeugerKarte` (781 Z.), `SpeicherKarte`
+  (551 Z.) und `SchemaAnsicht` (789 Z.) sowie `Eingabefrage` (49 Z.,
+  letzter Nutzer). An ihrer Stelle steht **eine Hülle** —
+  `Views/Simulation/SimulationKonfigHuelle.cs` — und in `EPOS.UI` die
+  **Seite** `Seiten/Simulation/SimulationKonfigSeite` samt den drei neuen
+  Bausteinen `Schema`, `ErzeugerKachel` und `SpeicherKachel`.
+  **Entscheid R‑W10b‑1:** Die Komponente ist eine SEITE (mit
+  `SeitenZustand`, `Seitenschluessel.SimulationKonfiguration` und einem
+  Zweig in `AppWurzel` — die erste Fachseite, die iOS erreicht), erscheint
+  unter Windows aber **bis W16 in der modalen Dialoghülle**: Beide
+  Aufrufer brauchen die modale Rückkehr, `Form_Simulation_Detail` springt
+  danach auf seinen gemerkten Reiter zurück. Die Datenseite ist in den
+  Kern gewandert (`SchemaModell` verschoben, `SchemaLayout`, `Kaskade`,
+  `AnlagenInfo`, `WaermequelleClass.QuelleSchreiben` und fünf
+  Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
+  verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
+  Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
+  Der **Stapellauf der Formularkarte zählt seither 49 Masken** (50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **29** (37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **28** (29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht auf **49 von 50, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
+  Erreichbarkeit steht auf **48 von 49, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
   Zahl.
   **Mit iU9‑W11a ist KEINE Maske verschwunden** — die Welle verlegt, was ohne
   Oberfläche geht, in den Kern und hängt die sechs Ergebnismasken schon daran;
@@ -297,20 +317,23 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   (`SimulationErgebnisCtrl`, `SimulationLaufCtrl`, `SpeicherKennzahlenBlock`,
   `SpeicherAnzeigeCtrl`, `ErgebnisPraesenz`, `Ganglinie`).
   **`Form_Simulation_Detail.btn_Simulation_Click` läuft seither NEBENLÄUFIG** —
-  siehe „Nebenläufigkeit" unten. Protokoll:
+  siehe „Nebenläufigkeit" unten. `KonfigurationCtrl.LiesProjekt` haben W10b und
+  W11a gleichzeitig gebraucht; es gibt sie EINMAL (siehe dort). Protokoll:
   [`Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md`](Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md).
-- **`Allgemein/`** (**43** Dateien; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+- **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts
-  begründet. `Simulation/` (bis auf `SchemaModell.cs`), `Wirtschaftlichkeit/`, `Bericht/`
+  begründet. `Simulation/`, `Wirtschaftlichkeit/`, `Bericht/`
   (Daten **und** Ausgabe), `Lizenz/`, `Import/`, `Katalog/`, `Export/` und das KI-Wissen sind
   in den Kern gezogen. Hier bleiben: `Blazor/` (die Hülle, iU8), `Update/` (Schemamigration und
   Access-Zweig samt `DbParamOleDb`, `SchemaVersionAccess`, `GeraeteWaisen`), `GrafikTools/`,
   `Hilfe/`, die WinForms-nahen Teile von `KI/` (was der Assistent **bedient**),
   `Bericht/BerichtsDatenSammler.cs` (`ChartRendererGdi.cs` ist mit iF23 gelöscht), dazu `BaseForm`,
-  `Form_Hinweis`, `FensterEinpassung`, `SpeichernLeiste`, `IAssistentRahmen`, `StromTestClass`
-  und `Simulation/SchemaModell.cs`. Die vollständige Begründung je Datei steht in
+  `Form_Hinweis`, `FensterEinpassung`, `SpeichernLeiste`, `IAssistentRahmen` und `StromTestClass`.
+  **`Simulation/` führt seit iU9‑W10b keine `.cs` mehr** — `SchemaModell.cs` war die
+  letzte und liegt jetzt im Kern; im Ordner bleiben die Konzept- und
+  Umsetzungsprotokolle. Die vollständige Begründung je Datei steht in
   [`../EPOS.Kern/CLAUDE.md`](../EPOS.Kern/CLAUDE.md).
 
 Die Aufteilung im Einzelnen — was im Kern liegt und was mit Absicht hier geblieben ist — steht im
@@ -323,14 +346,14 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 |---|---|
 | `Bericht/` | **Nur noch eine Datei.** `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft. Alles andere liegt in `../EPOS.Kern/Allgemein/Bericht/`: die DATEN-Hälfte seit iU4, der Renderer `ChartRenderer` (SkiaSharp) seit iU7-5, die AUSGABE (`WordBerichtGenerator`, `ExcelBerichtGenerator`, `Bausteine/`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`, `IBerichtsBaustein`) seit iU5-U3. Die `.docx`-Vorlage bleibt hier und wird neben die EXE kopiert | `ChartRendererGdi` (GDI+-Stand) und `Referenzlauf/Bildvergleich.cs` sind mit iF23 am 03.09.2026 gelöscht |
 | `Wirtschaftlichkeit/` | **vollständig in `../EPOS.Kern/Allgemein/Wirtschaftlichkeit/`** (iU4): `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` und 16 weitere |
-| `Simulation/` | **bis auf `SchemaModell.cs` (Schema-Ansicht) in `../EPOS.Kern/Allgemein/Simulation/`** (iU4). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
+| `Simulation/` | **vollständig in `../EPOS.Kern/Allgemein/Simulation/`** (iU4; `SchemaModell.cs` als letzte Datei mit iU9‑W10b). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
 | ~~`Lizenz/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Lizenz/`**: `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, Zustände von `NichtAktiviert` bis `Lesemodus`. Die Ablage läuft über `Dienste.Lizenzablage`; **Geltungsbereich Gerät** (DPAPI `LocalMachine`) für Token und Zeitanker, **Benutzer** (`CurrentUser`) für den KI-Schlüssel — ein Wechsel entwertet jede installierte Lizenz |
 | `KI/` | **geteilt seit iU5-U2:** Was der Assistent **weiß** (`HilfeWissen`, `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiEinwilligung`, `KiSchreibschutz`, `KiSicherungspunkt`, die Textkataloge) liegt im Kern; was er **bedient**, bleibt hier — `KiChatService`, `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` und die `Aktionen/`. Inhaltlich unverändert: `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
 | ~~`Import/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Import/`**: `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `GanglinienDatei`, `AnsiEncoding`. Ebenso `Katalog/` und `Export/` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` (`KlimazonenKarte` ist mit iU9‑W10a.3 gelöscht — der Baustein `Bildkarte` in `EPOS.UI` tritt an seine Stelle) |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Blazor/` | **Die Hülle für Razor-Dialoge und -Seiten (iU8 / iU9-W5).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` für die fünf zeichengleichen Namensabfragen des Bestands (seit iU9-W2.1 alle fünf umgestellt: `Bezeichner`, `BezeichnerUndBeschreibung`, `FragenMitHinweis`); seit iU9-W2.2 `Sprungbruecke` — Schlüssel → `Form`, **modal aus dem Rückruf einer Razor-Komponente heraus** (nur WinForms-Ziele; seit iU9-W6.0d auch die vier Katalogverwaltungen der Erzeuger, seit iU9-W7.0f die Stammdaten der Solarthermieganglinien, seit iU9-W10a.0c die Pufferspeicher-Verwaltung NUR ZUM ANSEHEN — `PufferSpAdminNurLesen`, ein eigener Schlüssel, weil derselbe Sprung ohne das Kennzeichen aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs machte); seit iU9-W6.0e `BlazorAssistentSeite<T>` — dasselbe für eine ASSISTENTENSEITE: randlos, `TopLevel = false`-tauglich, die WebView verzögert in `Bestuecken` gebaut (Risiko R5), beim Wiederbesuch wird die Wurzelkomponente getauscht statt der WebView. Seit iU9-W4.0 gilt für Blazor-Ziele nicht mehr der nachgelagerte Sprung, sondern der Baustein `Ueberlagerung`: ein modaler Bereich IM selben Fenster, also ohne zweite WebView (Risiko R2). Die Hülle liefert dafür `Gaben()` statt `Oeffnen()`. **Seit iU9-W5.0 gibt es die zweite Hüllenform: `BlazorSeite<T> : UserControl`** — nicht-modal, für eine Seite, die in einer vorhandenen Maske sitzt und dort bleibt (`Form_Start.tabPage6`). Sie trägt dieselben `CreationProperties` wie die Dialoghülle, insbesondere denselben `UserDataFolder`: ein gemeinsamer Browserprozess für Dialoge und Seiten. **Eine WebView je Fenster** (Risiko R5) — umgeschaltet wird in der Komponente (Baustein `Reiter` bzw. die Navigation von `BerichteKostenSeite`), nicht durch eine zweite Hülle. Der Projektwechsel läuft über `EPOS.UI.Dienste.SeitenZustand`, ein Objekt mit Änderungsereignis, damit die WebView **nicht** neu gebaut wird. **DPI:** Die `DpiInsel` wirkt nur für den modalen Lauf; eine eingebettete Seite sitzt im Fenster der DpiUnaware-`Form_Start` und wird ab 125 % bitmapskaliert — `BlazorSeite` versucht es deshalb gar nicht erst und dokumentiert den Befund (offener Entscheid iF21). Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
-| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md` und `iU9_W9_Blazor_Port_Protokoll.md`, `iU9_W10a_Blazor_Port_Protokoll.md` und `iU9_W11a_Kern_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md`, `iU9_W9_Blazor_Port_Protokoll.md`, `iU9_W10a_Blazor_Port_Protokoll.md`, `iU9_W10b_Blazor_Port_Protokoll.md` und `iU9_W11a_Kern_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,

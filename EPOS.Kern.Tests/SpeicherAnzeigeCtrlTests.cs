@@ -49,15 +49,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// WOERTLICH uebernommene Luecke: Die Preissteuerung kennt der Vorlaeufer nicht
-        /// und zeigt ihren Persistenzwert. Das ist eine Fachfrage, keine Portfrage —
-        /// der Fall haelt sie fest, statt sie stillschweigend zu heilen.
+        /// Die Preissteuerung kennt er seit dem Zusammenfuehren mit W10b (W11a-O-4).
+        /// DREI der vier Fassungen des Bestands kannten sie NICHT und zeigten den
+        /// Persistenzwert „Arbitrage"; die vierte (Simulationskonfiguration) kannte sie —
+        /// und die hat gewonnen.
         /// </summary>
         [Fact]
-        public void BerechnungsartText_kennt_die_Preissteuerung_nicht()
+        public void BerechnungsartText_kennt_die_Preissteuerung()
         {
-            Assert.Equal(DbWerte.SP_BERECHNUNG_ARBITRAGE,
+            using var _ = new DeutscheOberflaeche();
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE,
                          SpeicherAnzeigeCtrl.BerechnungsartText(DbWerte.SP_BERECHNUNG_ARBITRAGE));
+            Assert.NotEqual(DbWerte.SP_BERECHNUNG_ARBITRAGE,
+                            SpeicherAnzeigeCtrl.BerechnungsartText(DbWerte.SP_BERECHNUNG_ARBITRAGE));
+        }
+
+        /// <summary>
+        /// Ein UNBEKANNTER Wert kommt unveraendert zurueck. Die vierte Fassung fiel dort
+        /// auf „Dauernutzung" zurueck — eine Behauptung ueber Daten, die man nicht kennt.
+        /// </summary>
+        [Fact]
+        public void BerechnungsartText_laesst_Unbekanntes_stehen()
+        {
+            Assert.Equal("Irgendwas", SpeicherAnzeigeCtrl.BerechnungsartText("Irgendwas"));
+            Assert.Equal("", SpeicherAnzeigeCtrl.BerechnungsartText(null));
         }
 
         [Fact]

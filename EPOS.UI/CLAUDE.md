@@ -53,6 +53,9 @@ entgegen — sie ist damit austauschbar.
 | `Kennzahlkachel` | Überschrift, großer Wert, leise Herkunftszeile — **Anzeige, kein Knopf**; leerer Wert = „—" | `UcBkKosten.Kachel` |
 | `Bildkarte` | Anklickbare Landkarte: ein Bild plus benannte SVG-Flächen darüber (Zeigen, Wählen, Übernehmen per Doppelklick) — **mit Tastatur**, jede Fläche ein Fokusziel | `Allgemein/GrafikTools/KlimazonenKarte.cs` (Regex über eine eingebettete SVG, iU9‑W10a.0e) |
 | `Fortschritt` | Balken, Text und Abbrechen einer laufenden Rechnung. `Anteil = null` heißt **unbestimmt** (der Balken läuft) — ehrlicher als eine erfundene Prozentzahl; **ohne `Abbrechen`-Rückruf kein Knopf** (iU9‑W11a.7) | `Views/Stromspeicher/Form_SpeicherOptimierung.cs` (`bar_Fortschritt`, `lbl_Status`, `btn_Abbruch` — die einzige nebenläufige Rechnung des Bestands) |
+| `Schema` | Das Hydraulikschema als **SVG**: vier Spalten, Knoten als Rundeck, Kanten als Bézier mit Pfeilspitze und Prioritätskreis, Kaskadenband und Legende. Die Anordnung kommt fertig aus dem Kern (`SchemaLayout`), die Farben aus `epos-ui.css`; jeder Kasten und jedes Bandglied ist ein Fokusziel | `Views/Simulation/SchemaAnsicht.cs` (789 Z. GDI+, iU9‑W10b.0c) |
+| `ErzeugerKachel` | Eine Anlage der Simulationskonfiguration: Rang, Titel, Chips in sechs Stilen mit sechs Editorzielen, ▲▼✎+× und ein Aufklappbereich — **acht Ereignisse** | `Views/Simulation/ErzeugerKarte.cs` (781 Z., iU9‑W10b.0d) |
+| `SpeicherKachel` | Ein Projekt-Pufferspeicher, zugeklappt eine Zeile: Badges, Flächenchips, Kurzbilanz; aufgeklappt die Detailzeilen und das Schwellenband (Inline-SVG) | `Views/Simulation/SpeicherKarte.cs` (551 Z. samt `SchwellenBand`, iU9‑W10b.0d) |
 
 ## Standards (`Standards/`)
 
@@ -91,7 +94,7 @@ Drei Schnittstellen nach außen — mehr sieht diese Bibliothek von der Umgebung
 | Schnittstelle | Wofür | Windows | iOS | ohne Umgebung |
 |---|---|---|---|---|
 | `IHilfeDienst` | Hilfetext und Wikiseite zu einem Schlüssel (`InfoKnopf`) | `WindowsHilfeDienst` am `HelpCatalog` | `IosHilfeDienst` (iU10-5) | `KeineHilfe` |
-| `IProjektQuelle` | die Daten der **Seiten**: Projektliste, Energieträgerliste, BHKW-Parametersatz, Übernahme des Anlegeergebnisses | — (dort ist die Startmaske der Einstieg) | `IosProjektQuelle` (iU10-7) | `KeineProjekte` |
+| `IProjektQuelle` | die Daten der **Seiten**: Projektliste, Energieträgerliste, BHKW-Parametersatz, Übernahme des Anlegeergebnisses, seit iU9‑W10b der Parametersatz der Simulationskonfiguration (**mit Standardumsetzung** `null`, damit eine vorhandene Quelle durch die Erweiterung nicht bricht) | — (dort ist die Startmaske der Einstieg) | `IosProjektQuelle` (iU10-7) | `KeineProjekte` |
 | `INavigationsZiel` | die **Gegenrichtung** zu `WindowsFormsApplication1.INavigation`: Was eine Oberfläche anbieten muss, damit ein Plattformadapter sie öffnen kann | `WinFormsNavigation` braucht sie nicht | `IosNavigation` reicht dorthin weiter | `Navigationsziel.Aktuell = null` |
 
 `SeitenZustand` (iU9‑W5.0) ist keine Schnittstelle, sondern ein **Objekt mit
@@ -115,7 +118,8 @@ einem zweiten Fenster geöffnet, sondern löst die Ansicht ab.
 |---|---|
 | `AppWurzel` | die Wurzelkomponente der iOS-Hülle: eine Zustandsmaschine über `Seitenschluessel` (Liste ↔ Dialog), Registrierung als `INavigationsZiel`, Statuszeile nach einem Dialog. **Noch kein Router** — der Wizard nach iL5 ist iU10-9 |
 | `Projektliste` | der Einstieg: Nr., Projekt, Klimaregion, Ausstattung im `Raster` und je Zeile zwei Knöpfe, die einen Maskenschlüssel melden |
-| `Seitenschluessel` | die drei sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`) |
+| `Seitenschluessel` | die vier sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`, `SIMULATION_KONFIGURATION`) |
+| `Simulation/SimulationKonfigSeite` | die **Simulationskonfiguration** (iU9‑W10b.1) — die erste FACHSEITE, die iOS über `AppWurzel` erreicht. Unter Windows steht dieselbe Komponente bis W16 in einer modalen Dialoghülle (Entscheid R‑W10b‑1), weil ihre beiden Aufrufer die modale Rückkehr brauchen. Datenseite: `Views/Simulation/SimulationKonfigHuelle.cs` |
 
 **`Seiten/Berichte/` — der Reiter „Berichte & Kosten" (iU9‑W5).** Die erste Gruppe von
 Seiten, die unter **Windows** läuft: `Form_Start.tabPage6` trägt eine
@@ -248,6 +252,16 @@ Quellendialog und als Überlagerung im Senkendialog, immer mit demselben
 Delegatensatz. Zwei der sieben Masken hatten **keinen Designer** (Befund
 W10‑B38); ihr Feldabgleich läuft gegen den Quelltext. Der Wirt
 `Form_Simulation_Config` bleibt bis **W10b** WinForms.
+
+**Eine Maske, drei Bausteine, zwei Ebenen** (iU9‑W10b): Der Wirt der sieben
+Dialoge — `Form_Simulation_Config` mit 4 558 Zeilen in vier Teildateien — ist die
+Seite `Seiten/Simulation/SimulationKonfigSeite`. Ihre drei Steuerelement-Klassen
+werden Bausteine (`Schema`, `ErzeugerKachel`, `SpeicherKachel`), ihr Zeichenmodell
+und dessen ANORDNUNG ziehen in den Kern (`SchemaModell`, `SchemaLayout`). Die Seite
+führt selbst ZWEI Überlagerungsebenen — Editoren (Modus, Priorität, Quellenwahl,
+Senke, Pufferverwaltung) und darunter die drei Quellendialoge; die tieferen bringen
+die Dialoge der Welle 10a selbst mit. Damit steht die Kette Seite → Quelle →
+Pufferverwaltung → Klimazonenkarte in EINEM Fenster.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen

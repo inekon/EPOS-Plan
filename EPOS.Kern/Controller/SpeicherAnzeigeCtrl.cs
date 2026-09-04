@@ -16,6 +16,13 @@ namespace WindowsFormsApplication1
     /// einen Engine-Zustand in Anzeigetexte — genau die Schichtgrenze, für die es die
     /// Drei-Schichten-Regel gibt.</para>
     ///
+    /// <para><b>Es war eine VIERFACHUNG, keine Dreifachung.</b> Die vierte Fassung stand
+    /// in <c>Form_Simulation_Config.Karten.cs</c> und ist mit iU9‑W10b nach
+    /// <c>SimulationKonfigHuelle</c> gewandert. Sie wich ab: Sie kannte die
+    /// Preissteuerung, die drei anderen nicht. Beim Zusammenführen der beiden Wellen
+    /// ist ihr Wissen hierher gezogen und die Hülle ruft diese Methoden — vier Kopien,
+    /// eine Wahrheit (W11a‑O‑4).</para>
+    ///
     /// <para><b>Zwei Ressourcenpaare für denselben Text.</b> Der Bestand führt
     /// <c>OPT_AMORT_NIE</c>/<c>OPT_AMORT_UEBER</c> (Optimierung, Variantenvergleich) UND
     /// <c>SP_ERG_NICHT_AMORTISIERBAR</c>/<c>SP_ERG_UEBER_NUTZUNGSDAUER</c>
@@ -49,11 +56,19 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Berechnungsart als Anzeigetext.
         ///
-        /// <para><b>Wörtlich übernommen, samt Lücke:</b> Der Vorläufer kennt
-        /// Nachtnutzung und Dauernutzung, NICHT aber
-        /// <c>DbWerte.SP_BERECHNUNG_ARBITRAGE</c> — die Preissteuerung erscheint dort
-        /// mit ihrem Persistenzwert. Das ist keine Portfrage und bleibt so
-        /// (offener Punkt im W11a-Protokoll).</para>
+        /// <para><b>Die Lücke ist beim Zusammenführen mit W10b geschlossen worden.</b>
+        /// Drei der vier Fassungen des Bestands (Variantenvergleich,
+        /// Auslegungsoptimierung, Ergebnisseite) kannten nur Nachtnutzung und
+        /// Dauernutzung; die Preissteuerung erschien dort mit ihrem Persistenzwert
+        /// „Arbitrage". Die VIERTE — <c>Form_Simulation_Config.BerechnungsartAnzeige</c>,
+        /// mit iU9‑W10b nach <c>SimulationKonfigHuelle</c> gewandert — kannte sie. Diese
+        /// Fassung ist die vollständigere und steht jetzt hier; alle vier Aufrufer
+        /// bekommen damit denselben Text (W11a‑O‑4).</para>
+        ///
+        /// <para>Ein unbekannter Wert kommt weiterhin unverändert zurück. Die vierte
+        /// Fassung fiel dort auf „Dauernutzung" zurück — das ist eine Behauptung über
+        /// Daten, die man nicht kennt; der Persistenzwert ist ehrlicher. Alle vier
+        /// Schreiber setzen ohnehin nur <c>DbWerte.SP_BERECHNUNG_*</c>.</para>
         /// </summary>
         public static string BerechnungsartText(string wert)
         {
@@ -61,6 +76,8 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
             if (wert == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG)
                 return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
+            if (wert == DbWerte.SP_BERECHNUNG_ARBITRAGE)
+                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE;
             return wert ?? "";
         }
 

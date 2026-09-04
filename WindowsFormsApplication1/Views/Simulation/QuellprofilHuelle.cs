@@ -26,35 +26,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class QuellprofilHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 700 × 612).</summary>
-        private static readonly Size MASS = new Size(940, 800);
-
-        /// <summary>
-        /// Zeigt den Dialog. Rückgabe: die Id des gespeicherten Profils, oder
-        /// <c>null</c>, wenn abgebrochen wurde.
-        /// </summary>
-        internal static int? Oeffnen(IWin32Window besitzer, QuellprofilDaten daten)
-        {
-            int? ergebnis = null;
-            BlazorDialogForm<QuellprofilDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(daten))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<int?>(
-                    new object(), id =>
-                    {
-                        ergebnis = id;
-                        if (dlg != null) dlg.Schliessen(id.HasValue);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<QuellprofilDialog>(Titel(daten), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(QuellprofilDaten daten)
@@ -234,13 +211,6 @@ namespace WindowsFormsApplication1
             var l = new string[7];
             for (int t = 0; t < 7; t++) l[t] = namen[(t + 1) % 7];
             return l;
-        }
-
-        private static string Titel(QuellprofilDaten daten)
-        {
-            return string.IsNullOrEmpty(daten?.WPName)
-                ? MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL
-                : string.Format(MyResource.Resource.SIMQ_QUELLPROFIL_TITEL_MIT_WP, daten.WPName);
         }
     }
 }

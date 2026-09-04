@@ -1597,6 +1597,26 @@ namespace WindowsFormsApplication1
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
         }
 
+        /// <summary>
+        /// Die ID des JUENGSTEN Ergebnisses eines Projekts; 0 = noch kein Lauf
+        /// (iU9-W10b.0b, Befund W10-B35).
+        ///
+        /// <para><b>Warum als eigene Methode.</b> Der Aufruf stand als inline-SQL in der
+        /// Anzeigeschicht (<c>Form_Simulation_Config.Karten.TObenSammeln</c>:2165-2190)
+        /// und ist dort mit dem Port der Maske entfallen. Zwei Abfragen statt einer
+        /// Unterabfrage bleiben: Erst der Ergebniskopf, dann seine Speicherzeilen — ein
+        /// Parameter in der Unterabfrage ist bei ACE eine bekannte Falle, und die
+        /// Kopfabfrage ist ohnehin billig.</para>
+        /// </summary>
+        public static int LetzteErgebnisId(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT MAX(ID) FROM [" + TAB_KOPF + "] WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+        }
+
         private static int I(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToInt32(r[col]) : 0; }
         /// <summary>Wie <see cref="D"/>, aber NULL bleibt NULL (P1-Vorgriff T_oben_*).</summary>
