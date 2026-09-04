@@ -1513,19 +1513,15 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private void EinstellungenOeffnen()
         {
-            using (Form_KiEinstellungen frm = new Form_KiEinstellungen())
-            {
-                if (frm.ShowDialog(this) != DialogResult.OK) return;
+            // Seit iU9-W15b.4 ist die Maske eine Razor-Komponente; die Huelle
+            // schreibt die Werte nach OK und liefert nur, ob OK gedrueckt wurde.
+            if (!KiEinstellungenHuelle.Oeffnen(this)) return;
 
-                KiChatService.ApiKey = frm.ApiSchluessel;
-                KiChatService.WegBErzwingen = frm.WegBErzwingen;
-
-                SchreibeZeile(KiChatService.IstEingerichtet
-                    ? MyResource.Resource.KI_EINST_MSG_GESPEICHERT
-                    : MyResource.Resource.KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL,
-                    Color.FromArgb(0, 120, 0), false);
-                SchreibeZeile("", Color.Black, false);
-            }
+            SchreibeZeile(KiChatService.IstEingerichtet
+                ? MyResource.Resource.KI_EINST_MSG_GESPEICHERT
+                : MyResource.Resource.KI_EINST_MSG_GESPEICHERT_OHNE_SCHLUESSEL,
+                Color.FromArgb(0, 120, 0), false);
+            SchreibeZeile("", Color.Black, false);
         }
 
         /// <summary>
