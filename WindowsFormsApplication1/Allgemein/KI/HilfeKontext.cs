@@ -141,12 +141,8 @@ namespace WindowsFormsApplication1
             // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
             { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
 
-            { "DashboardForm",               B_SIMULATION },
             { "ErzeugerKarte",               B_SIMULATION },
             { "SpeicherKarte",               B_SIMULATION },
-            { "NavigatorStrom",              B_SIMULATION },
-            { "NavigatorUebersicht",         B_SIMULATION },
-            { "NavigatorWaerme",             B_SIMULATION },
             // iU9-W10a.3: Form_QuelleErdreich ist geloescht. Der Bereich
             // B_QUELLE_ERDREICH bleibt - die HUELLE QuelleErdreichHuelle setzt ihn
             // ueber SetzeBereich, solange der Blazor-Dialog steht, und nimmt ihn
@@ -156,8 +152,14 @@ namespace WindowsFormsApplication1
             // iU9-W10b.1: Form_Simulation_Config ist geloescht (Razor-Seite). Den
             // Bereich meldet jetzt SimulationKonfigHuelle beim Aktivieren des
             // Fensters - derselbe Text, nur ohne Formularklasse dahinter.
-            { "Form_Simulation_Detail",      B_SIM_DETAIL },
             // iU9-W10a.7: Form_Waermesenke ist geloescht (Razor-Komponente).
+            // iU9-W11b.13: Form_Simulation_Detail, DashboardForm, NavigatorUebersicht,
+            // NavigatorStrom, NavigatorWaerme und Form_SpeicherVariantenVergleich sind
+            // geloescht (Razor-Seite SimulationErgebnisSeite). Den Bereich
+            // B_SIM_DETAIL meldet jetzt SimulationErgebnisHuelle beim Aktivieren des
+            // Fensters - derselbe Text, nur ohne Formularklasse dahinter; die fuenf
+            // Nebenmasken sind Reiter derselben Seite und brauchen keinen eigenen
+            // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
             { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },
@@ -166,7 +168,6 @@ namespace WindowsFormsApplication1
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
             { "Form_PeakShaving",            B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
-            { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
 
             // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
             // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.

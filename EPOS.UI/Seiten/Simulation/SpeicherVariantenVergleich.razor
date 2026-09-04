@@ -1,4 +1,4 @@
-@* Der VARIANTENVERGLEICH des Stromspeichers (iU9-W11b.12).
+﻿@* Der VARIANTENVERGLEICH des Stromspeichers (iU9-W11b.12).
 
    VORBILD. Form_SpeicherVariantenVergleich (855 Z. + 295 Designer): je
    SP_TYP-Anlagenzeile des Projekts eine Vergleichszeile mit elf Groessen nach
@@ -20,6 +20,13 @@
 @namespace EPOS.UI.Seiten.Simulation
 
 <div class="epos-simerg-block">
+
+    <div class="epos-simerg-kopf">
+        <span class="epos-simerg-titel">@Resource.VAR_VGL_TITEL</span>
+        @* Der Vorlaeufer haengte hier InfoKnopf.Anbringen(this) ein (:160) - der
+           Schluessel benennt die Wikiseite, nicht die Klasse (Regel seit W10a). *@
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
 
     <Fortschritt Sichtbar="@Laeuft" Anteil="@Anteil" Text="@FortschrittText" />
 
@@ -135,6 +142,8 @@
 </div>
 
 @code {
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpeicherVariantenVergleich.btn_Help";
+
     /// <summary>Die gerechneten Zeilen samt Status und Protokoll.</summary>
     [Parameter] public VergleichDaten Daten { get; set; } = new VergleichDaten();
 

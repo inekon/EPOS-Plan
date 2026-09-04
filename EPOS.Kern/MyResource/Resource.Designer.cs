@@ -34230,5 +34230,14 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbrauch: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
     }
 }

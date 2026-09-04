@@ -12095,4 +12095,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
     <value>Speicherladung</value>
   </data>
+  <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
+    <value>Stromverbrauch:</value>
+  </data>
 </root>
