@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Hilfe;
+﻿namespace EPOS.UI.Dialoge.Hilfe;
 
 /// <summary>
 /// Alle Anzeigetexte des Chatfensters — EIN Parameter statt dreissig.
@@ -34,6 +34,22 @@ public sealed class KiChatTexte
 
     /// <summary>„Heute genutzt: {0} von {1}" (<c>KI_CHAT_VERBRAUCH</c>).</summary>
     public string VerbrauchFormat { get; set; } = "{0}/{1}";
+
+    /// <summary>
+    /// Der Tooltip der Semantikzeile: Modell, Lizenz und Herkunft, FERTIG
+    /// eingesetzt (<c>KI_SEMANTIK_HERKUNFT</c> mit
+    /// <c>SemantikModell.NAME</c>/<c>LIZENZ</c>/<c>QUELLE</c>). Leer = kein
+    /// Tooltip.
+    /// </summary>
+    /// <remarks>
+    /// Der Vorlaeufer haengte ihn mit einem <c>ToolTip</c> an das Statuslabel
+    /// (<c>Form_KiChat:935-938</c>); mit dem Label fiel er weg (Anpassung A‑10,
+    /// offener Punkt W15b‑O‑2). Er kommt als <c>title</c> an
+    /// <c>.epos-kichat-status</c> zurueck — und zwar GEFUELLT aus der Huelle,
+    /// genau wie <see cref="VorschauKopf"/>: Die Komponente kennt weder
+    /// <c>SemantikModell</c> noch einen Ressourcenschluessel.
+    /// </remarks>
+    public string SemantikHerkunft { get; set; } = "";
 
     /// <summary>Beschriftung des Eingabefeldes.</summary>
     public string Eingabe { get; set; } = "";

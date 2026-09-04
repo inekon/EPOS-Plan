@@ -1433,9 +1433,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Maßparameter, Bestätigungsblock unten im Verlauf, keine Positionsrechnung, kein `DetectUrls`, Autoscroll nur unten, die
 > eine MessageBox wird ein Warnbanner, die 400‑ms-Sperruhr und der Flackerschutz entfallen. **Befunde** B1…B30 eingetreten,
 > vier neu (B31 Naht, B32 20 statt 17 Texte, B33, B34 `Schalter` hält seinen Zustand selbst — `@key` im Chat).
-> **Anwenderfragen:** E‑1b und E‑6 wie vorläufig entschieden, E‑8/E‑9/E‑10 umgesetzt; **offen:** W15b‑O‑1 (der Schnitt
-> der Naht `IKiAusfuehrung` — bestätigen?), W15b‑O‑2 (Tooltip der Semantikzeile Modell/Lizenz/Herkunft mit dem Label
-> entfallen — als `title` nachtragen?), W15b‑O‑3 (`Standards/Schalter`-Rücksetzer, 20 Nutzer, eigene Welle), W15b‑O‑4
+> **Anwenderfragen:** E‑1b und E‑6 wie vorläufig entschieden, E‑8/E‑9/E‑10 umgesetzt; **entschieden am 04.09.2026
+> (Empfehlungen angenommen, `13835f2`/`aaaacce`, gemerged als `4775213`):** W15b‑O‑1 — der Schnitt der Naht
+> `IKiAusfuehrung` ist bestätigt; die iOS-Hülle nutzt denselben Kern und läuft bis zu ihrer eigenen Fassung (O‑4) auf der
+> stillen Standardfassung `KeineAusfuehrung` (fragen und suchen ja, ausführen nein); W15b‑O‑2 — der Tooltip der
+> Semantikzeile ist als `title` zurück (wortgleich der alte Schlüssel `KI_SEMANTIK_HERKUNFT`, zwei Zeugen); **offen:** W15b‑O‑3 (`Standards/Schalter`-Rücksetzer, 20 Nutzer, eigene Welle), W15b‑O‑4
 > (iOS bedient `KiAssistentGaben` noch nicht, Handprobe in iU11), W15b‑O‑5 (`Form_HelpPopup` ist die einzige Maske, die
 > weder mit W15c noch mit W16 fällt).
 >
@@ -1452,7 +1454,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ohne Modell, Werkzeugliste mit Kulturregel, die vier Ausgänge der Bestätigung, Rechtshinweis aus dem Chat und beim
 > Erststart, „Modell neu erkennen" über Abbrechen hinweg, Kopieren, de/en, Esc je Ebene; **bekannter Schönheitsfehler
 > (Punkt 16):** die DPI-Insel greift nur im modalen Lauf, der nicht-modale Chat ist ab 125 % bitmapskaliert (iF21, W16c).
-> Der achtzehnte iOS-Lauf folgt auf diesem Stand.
+> Der achtzehnte iOS-Lauf (33876284942) auf diesem Stand war **rot** — CS0103 im iOS-Hilfedienst aus W15b.0g, den nur der
+> macOS-Läufer übersetzt; behoben in `f0e23a4`, der neunzehnte Lauf (33878903371) darauf ist grün.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
@@ -2382,7 +2385,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
