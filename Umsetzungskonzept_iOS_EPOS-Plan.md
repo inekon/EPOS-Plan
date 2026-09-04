@@ -1450,11 +1450,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `BerichteKostenGaben` aus derselben Hülle wie das sechste Reiterblatt, Rückweg über `ZurueckZurListe`; dabei Befund
 > W16c‑B11: `IProjektQuelle` fehlte im Windows-Dienstverzeichnis, `KeineProjekte` eingetragen — Abnahmepunkt W16c‑O‑6;
 > Gate auf dem gemergten Stand: 0 Fehler / 6 Warnungen, **4 012** Tests auch unter `en_US`, Formularkarte 122, Referenzlauf
-> byte-gleich). **E‑10 (`MDIMainForm` → `Hauptfenster`) bewusst nicht getan** (W16c‑O‑1; `Hauptfenster` ist bereits der
-> Name der Razor-Seite in `EPOS.UI.Seiten` — Empfehlung: `Hauptfensterrahmen` oder bis iU11 beim alten Namen bleiben,
-> Entscheid offen); **W16a‑E‑1/W16b‑O‑5** (Assistent modal) und **W16b‑E‑1/E‑2** offen. **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
-> `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3
-> (iOS-Klimazone auf `ProjektKontextCtrl`), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
+> byte-gleich). **E‑10 entschieden 04.09.2026: `MDIMainForm` → `Hauptfensterrahmen`** (eigener Commit nach dem Merge, folgt;
+> nicht `Hauptfenster`, das ist die Razor-Seite); **W16a‑E‑1/W16b‑O‑5 entschieden 04.09.2026: der Assistent wird in
+> iU11 zusammen mit der Transaktion W16a‑O‑1 eine freie Ansicht der `AppWurzel`**, bis dahin modal; **W16b‑E‑1 und
+> W16b‑E‑2 bestätigt 04.09.2026**; **iF30 entschieden 04.09.2026** (streng über die Schreibnaht im Kern, eigene Welle
+> nach der Windows-Abnahme, siehe Register). **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
+> `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3 erledigt
+> (`bd0592a`, eine Wahrheit im Kern), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
 > `Seitenschluessel` mit 34 Werten in einer Klasse (W16c‑O‑4, Teilung entlang Ansicht/Maske/Weg), keine Menüfreischaltung
 > nach Projektzustand wie im Bestand (W16c‑O‑5); die `WFO1000`-Herabstufung kann mit `Form_HelpPopup` entfallen.
 >
@@ -1507,7 +1509,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > entfällt, `IProjektKontext.Vorhanden = true` wie auf iOS, „Öffnen…"/„zuletzt geöffnet" setzen das Projekt aktiv statt
 > ein Detailformular zu zeigen, gerechnete Rechtsbündigkeit → CSS) und die Befunde W16b‑B1…B8, darunter:
 > **`IosProjektKontext` liest die Klimazone anders** (Stammname statt Projektkopie) — der Kern übernimmt den Windows-Weg,
-> die iOS-Angleichung ist W16b‑O‑3 (B2); `ProjektTransferDialogTests` flatterhaft, nicht von dieser Welle (B7,
+> **W16b‑O‑3 entschieden 04.09.2026 („iOS-Lösung"): die Messung zeigte, dass die iOS-Abfrage den falschen
+> Schlüsselraum las — `ID_Klimaregion` ist die Id der Projektkopie, der Stammname war auf iOS immer leer; umgesetzt als
+> EINE Wahrheit im Kern (`StartseiteCtrl.ProjektKlimazone` liest die Projektkopie, die Stammabfrage fällt),
+> `IosProjektKontext` läuft über `ProjektKontextCtrl`, N7 15 Fälle, `bd0592a`** (B2); `ProjektTransferDialogTests` flatterhaft, nicht von dieser Welle (B7,
 > W16b‑O‑2); die Stapellauf-Sollzahl „1/2" der Anweisung ist die von nach W16c, gemessen 2 Masken / 3 Designer (B8).
 > **Anwenderfragen:** **E‑7 umgesetzt** — verloren gehen die Gewerksübersicht in Listenform und das Drag & Drop
 > zwischen den zwölf Listen; an ihrer Stelle dieselben zwölf Gewerke als Kacheln mit Statuspunkt, jede führt in
@@ -1515,8 +1520,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > umgesetzt**; E‑1/E‑2 vorbereitet (K7 ist W16c); E‑9 umgesetzt; **W16a‑E‑1 bleibt offen** (der Assistent bleibt modal,
 > an ihm hängt ein Schreibweg — technisch wäre die freie Ansicht jetzt möglich, W16b‑O‑5); **neu W16b‑E‑1** (der Reiter
 > „Simulation" springt ohne Klimaregion sichtbar auf Reiter 1 zurück, die Meldung steht als Banner oben statt als
-> `MessageBox` — bestätigen?) und **W16b‑E‑2** (der Reiter „Berichte & Kosten" wird von Anfang an gehalten, ein
-> Ladevorgang mehr beim ersten Variantenwechsel). **Was W16c erbt:** `MDIMainForm` nur an vier Stellen angefasst
+> `MessageBox` — bestätigt 04.09.2026) und **W16b‑E‑2** (der Reiter „Berichte & Kosten" wird von Anfang an gehalten, ein
+> Ladevorgang mehr beim ersten Variantenwechsel — bestätigt 04.09.2026). **Was W16c erbt:** `MDIMainForm` nur an vier Stellen angefasst
 > (`MDIMainForm_Load`, `MenuItem_Neu`/`_ProjektBearbeiten` → `projektkontext.Setzen`, `_AlsVariante` → `Dienste.Projekt`,
 > `_VariantenBericht` → `StartseiteHuelle.Aktuelle`), Menü, `Init*`, Kopfband, F1 und Sprachwechsel unberührt; der
 > „ja"-Zeuge steht an `MDIMainForm` und ist beim Rückbau umzuhängen, der Maskenschlüssel-Zeuge ist gestrichen (W16b‑O‑1,
@@ -1570,7 +1575,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > hereingereichten `DbVorgang`, was R‑W16‑6 ohne Windows-Feldvergleich untersagt — offen; E‑9 für den
 > Kleinschreibungs-Zeugen umgesetzt (`Wizard_Komponenten` als Prüfmuster `Pruefmuster/Wizard/`); **neu W16a‑E‑1** (der
 > Assistent bleibt unter Windows modal, Begründung wie R‑W10b‑1 — mit W16b/W16c könnte er eine freie Ansicht in derselben
-> WebView werden: soll er?) und **W16a‑E‑2** (der NEU-Zweig schließt bei einem `Add_Projekt`-Fehlschlag nicht mehr
+> WebView werden: soll er? — **entschieden 04.09.2026: ja, in iU11 mit der Transaktion W16a‑O‑1**) und **W16a‑E‑2** (der NEU-Zweig schließt bei einem `Add_Projekt`-Fehlschlag nicht mehr
 > kommentarlos, die Eingaben bleiben erhalten — bestätigen?). **Was W16b erbt:** der Rückweg der Hülle an
 > `Program.startfrm.HinweisProjektGeoeffnet()` wird ein Rückruf an die Razor-Startseite, `IosProjektQuelle` setzt
 > `AssistentGaben` noch nicht um, `Form_Start.UpdateWizardSymbole` ist ersatzlos zu löschen (N6 belegt die Gleichheit),
@@ -2644,7 +2649,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
@@ -2881,7 +2886,7 @@ setzen sie voraus:**
 | **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
-| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt |
+| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** |
 
 ---
 
