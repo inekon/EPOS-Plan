@@ -270,12 +270,21 @@ Daraus folgt für die Messung:
   betrifft eine andere Waise — Datenblockzeilen ohne **Kopfsatz im Stamm** —, nicht die
   Projektkopie.
 
-**Folge für die Umsetzung:** Der Rückfall auf den Kopie-Bezeichner ist **nicht** der seltene
-Sonderfall, den die Anweisung annahm, sondern der **Normalfall** — er trägt jedes der dreizehn
-Referenzprojekte. Der Stammzweig ist auf diesem Datenbestand **tot**; die sichtbare Klimazone
-bleibt damit Wort für Wort dieselbe wie vor dem Entscheid. Gebaut ist trotzdem genau die
-beschlossene Reihenfolge (Stamm zuerst, Kopie als Rückfall) — siehe den neuen offenen Punkt
-**W16b‑O‑6** zur Kollisionsgefahr in einer frischen Datenbank.
+**Folge für die Umsetzung — die Messung hat den Entscheid geschärft.** Der Entscheid lautete
+„nehme iOS-Lösung", weil zwei Fassungen desselben Wertes nebeneinander standen. Die Messung zeigt,
+dass die iOS-Fassung **kein zweiter Weg war, sondern ein Fehler**: Sie hielt die Id der
+Projektkopie gegen den Stammschlüssel, antwortete deshalb für jedes Projekt des Bestands leer und
+hätte nur dort überhaupt geantwortet, wo die beiden Schlüsselräume zufällig kollidieren. Ein
+„Stamm zuerst, Kopie als Rückfall" hätte diesen Fehler als Sonderfall konserviert.
+
+**Umgesetzt ist daher (Anwender, 04.09.2026):** `StartseiteCtrl.ProjektKlimazone` liest
+**ausschließlich die Projektkopie** — wörtlich der bisherige Windows-Weg (`Form_Start:379-400`),
+parametriert —, **ohne Stammabfrage und ohne Rückfall**. Die Stammabfrage `:356` (zuletzt
+`KlimaregionName(int)`) ist ersatzlos gefallen; sie hatte seit K6‑a keinen Aufrufer und stand nur
+noch für diese Angleichung im Kern (Befund W16b‑B3). **Die Vereinheitlichung bleibt:**
+`IosProjektKontext` führt keine eigene Abfrage mehr, sondern reicht an `ProjektKontextCtrl` durch —
+eine Klasse, eine Antwort. Der offene Punkt **W16b‑O‑6** (Kollisionsgefahr in einer frischen
+Datenbank) ist damit **gegenstandslos**: Es gibt keinen Stammzweig mehr, der kollidieren könnte.
 
 ---
 
@@ -390,7 +399,7 @@ beantwortet: Er RECHNET einen bestehenden Projektstand nach, er wechselt kein Pr
 |---|---|
 | **W16b‑O‑1** | **Der Maskenschlüssel-Zeuge ist gestrichen** (`ErreichbarkeitTests.DieSprungtabelleLoestDieMaskenschluesselAuf`). Er prüfte, dass der Graph einen `Masken.*`-Schlüssel bis zur Maske auflöst; nach E‑7 gibt es keine solche Kette mehr. Rückholbar in W16c über einen Auszug der Sprungtabelle im Prüfmuster |
 | **W16b‑O‑2** | **`ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist` ist flatterhaft** (Befund W16b‑B7) — nicht von dieser Welle verursacht, aber im Gesamtlauf einmal rot |
-| **W16b‑O‑3** | ~~**`IosProjektKontext` liest die Klimazone anders als der Kern** (Befund W16b‑B2). Er sollte auf `ProjektKontextCtrl` gezogen werden — dieselbe Klasse, dieselbe Antwort; das ist iU11~~ — **Anwenderentscheid 04.09.2026: iOS-Lösung (Stammname) — umgesetzt** (Commits `32d5f79` Kern + Nachweis, `140309b` iOS, `f9ac47e` Messung). `StartseiteCtrl.ProjektKlimazone` löst `ProjektKlimaregion` ab: erst der **STAMMNAME** (`Tab_Klimaregion_STAMM.Name`), im Rückfall der `Bezeichner` der Projektkopie; `IosProjektKontext` ist seither eine **dünne Weiterleitung** auf `ProjektKontextCtrl` (nur das `try/catch` um `Uebernehmen` bleibt iOS-eigen). **Mit der Messung** (§ 6, Nachsatz zu W16b‑B2): Die beiden Wege lesen zwei Schlüsselräume — an `Tab_Projekt.ID_Klimaregion` steht die Id der **Projektkopie** (Kopie-Ids ab 1 006 017, Stamm-Ids 1…50, Überschneidung **0**). **Alle dreizehn** Referenzprojekte laufen deshalb in den Rückfall (11 in der Testdatenbank geprüft, 1011 und 1021 stehen dort nicht); der angezeigte Text bleibt Wort für Wort derselbe, geändert hat sich die **Quelle**. Nachweis N7 von 12 auf **16 Fälle** |
+| **W16b‑O‑3** | ~~**`IosProjektKontext` liest die Klimazone anders als der Kern** (Befund W16b‑B2). Er sollte auf `ProjektKontextCtrl` gezogen werden — dieselbe Klasse, dieselbe Antwort; das ist iU11~~ — **Anwenderentscheid 04.09.2026 „iOS-Lösung"; die Messung zeigte, dass die iOS-Abfrage den falschen Schlüsselraum las — umgesetzt als EINE Wahrheit im Kern (Projektkopie), iOS läuft über den Kern** (Commit `4dabd15`; Vorstufen `f9ac47e` Messung, `32d5f79` Kern, `140309b` iOS, `8819e5d` Doku). `StartseiteCtrl.ProjektKlimazone` löst `ProjektKlimaregion` ab und liest **nur** `Tab_Klimaregion.Bezeichner` über `Tab_Projekt.ID_Klimaregion` — parametriert, wörtlich `Form_Start:379-400`, **ohne Stammabfrage und ohne Rückfall**. Die Stammabfrage `:356` (zuletzt `KlimaregionName(int)`, Befund W16b‑B3) ist **ersatzlos gefallen**: Sie hatte keinen Aufrufer und stand nur für diese Angleichung im Kern. `IosProjektKontext` ist eine **dünne Weiterleitung** auf `ProjektKontextCtrl` (nur das `try/catch` um `Uebernehmen` bleibt iOS-eigen). Nachweis N7 von 12 auf **15 Fälle** |
 | **W16b‑O‑4** | **`Form_Start.btn_Help` (die Fensterhilfe) hat noch keinen neuen Ort.** Der Schlüssel steht in `help_mapping.txt`; W16c hängt ihn an das Hauptfenster (Befund W16b‑B5) |
 | **W16b‑O‑5** | **Der Assistent ist weiterhin modal** (W16a‑E‑1 / W16a‑O‑3). Die Startseite kann seit E‑5 Ansichten wechseln; der Umbau bräuchte dieselbe Behandlung der zwei Aufrufer wie bei den Simulationsseiten |
-| **W16b‑O‑6** | **Der Stammzweig aus W16b‑O‑3 kann in einer FRISCHEN Datenbank die falsche Region nennen.** `Tab_Klimaregion.ID` ist ein `INTEGER PRIMARY KEY AUTOINCREMENT` und beginnt in einem Neustand bei 1 — genau dort, wo auch die Stamm-Ids liegen. Trifft eine Kopie-Id zufällig einen Stammsatz, gewinnt nach dem Entscheid der **Stammname**, obwohl die Zahl die Kopie meint; im Altbestand ist das ausgeschlossen (Kopie-Ids ab 1 006 017, Überschneidung 0), in einer neu angelegten Datenbank nicht. Sichtbar wird es nur, wo `Bezeichner` und `Name` auseinanderfallen — der Bestand kennt keinen solchen Fall, weil die Kopie den Namen aus dem Stamm mitbekommt. **Die saubere Lösung ist eine Stammspalte an `Tab_Klimaregion`** (heute hängt die Kopie über den TEXT am Stamm, entgegen der Schemaregel „bei neuen Beziehungen IDs verwenden"); das ist ein Migrationsschritt und gehört nicht in diese Welle |
+| **W16b‑O‑6** | ~~**Der Stammzweig aus W16b‑O‑3 kann in einer FRISCHEN Datenbank die falsche Region nennen.** `Tab_Klimaregion.ID` ist ein `INTEGER PRIMARY KEY AUTOINCREMENT` und beginnt in einem Neustand bei 1 — genau dort, wo auch die Stamm-Ids liegen~~ — **gegenstandslos** (04.09.2026, mit `4dabd15`): **Es gibt keinen Stammzweig mehr.** `ProjektKlimazone` liest ausschließlich die Projektkopie, und die Stammabfrage ist aus dem Kern gefallen; eine Kollision der beiden Schlüsselräume kann die Anzeige damit nicht mehr erreichen. Der Zeuge dafür steht als N7-Fall `Ohne_Projektkopie_ist_die_Klimazone_leer` (Projekt 19 „Wöhler WP" trifft mit `ID_Klimaregion = 1` einen Stammsatz und meldet trotzdem `""`); kehrt die Stammabfrage zurück, wird er rot. **Bestehen bleibt der Schemabefund dahinter**: `Tab_Klimaregion` führt keine Stammspalte, sondern hängt über den TEXT am Stamm — entgegen der Regel „bei neuen Beziehungen IDs verwenden". Das zu ändern ist ein Migrationsschritt und gehört nicht in diese Welle |

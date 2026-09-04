@@ -12,12 +12,20 @@ namespace EPOS.iOS;
 /// eine EIGENE Umsetzung: Projekt lesen, Klimaregion nachschlagen,
 /// <c>Tab_Applikation</c> fortschreiben. Damit gab es zwei Fassungen derselben
 /// Zusage — und sie liefen in EINEM Punkt auseinander (Befund W16b-B2): Die
-/// Klimazone las Windows aus der PROJEKTKOPIE, iOS aus dem STAMM. Der Entscheid
-/// nimmt die iOS-Lesart, aber nur EINMAL: <c>ProjektKontextCtrl</c> liest jetzt
-/// den Stammnamen (mit Rueckfall auf die Projektkopie), und diese Klasse ruft
-/// ihn. <b>Dieselbe Klasse, dieselbe Antwort</b> — unter Windows legt
-/// <c>Program.Main</c> denselben Typ in <c>Dienste.Projekt</c>, hier tut es
-/// <c>MauiProgram.DiensteBelegen</c>.</para>
+/// Klimazone las Windows aus der PROJEKTKOPIE, iOS aus dem STAMM.</para>
+///
+/// <para><b>Der Stammnachschlag war ein Fehler DIESER Huelle</b>, kein zweiter
+/// Weg. Die Messung zum Entscheid (W16b-Protokoll Paragraph 6) zeigt, warum: An
+/// <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der PROJEKTKOPIE
+/// (<c>Tab_Klimaregion.ID</c>, Ids ab 1 006 017); die hiesige Abfrage hielt
+/// dieselbe Zahl gegen <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c> (Ids 1 bis 50).
+/// Zwei getrennte Schluesselraeume, Ueberschneidung null — die Abfrage antwortete
+/// fuer JEDES Projekt des Bestands leer und haette nur durch Kollision ueberhaupt
+/// geantwortet. Vereinheitlicht ist deshalb auf die Projektkopie:
+/// <c>ProjektKontextCtrl</c> liest sie, diese Klasse ruft ihn, und die eigene
+/// Abfrage ist ersatzlos weg. <b>Dieselbe Klasse, dieselbe Antwort</b> — unter
+/// Windows legt <c>Program.Main</c> denselben Typ in <c>Dienste.Projekt</c>, hier
+/// tut es <c>MauiProgram.DiensteBelegen</c>.</para>
 ///
 /// <para><b>Was NICHT weitergereicht, sondern hier bleibt: die zwei
 /// Schutznetze.</b> Der Kern laesst eine Ausnahme aus dem Datenzugriff nach
