@@ -83,8 +83,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_Stromganglinie.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Stromganglinie frm = new Form_Stromganglinie();
-            
+
             if (indexes.Count > 0)
             {
                 ListViewItem item = listView_Stromganglinie.Items[indexes[0]];
@@ -92,8 +91,10 @@ namespace WindowsFormsApplication1
 
                 listView_Stromganglinie.Items[indexes[0]].Remove();
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
-                
-                frm.DateiListe.Clear();
+
+                // BEFUND W12-B6, ersatzlos (iU9-W12.5): Hier entstand eine
+                // Form_Stromganglinie, nur um ihre DateiListe zu leeren - gezeigt
+                // wurde die Maske nie, und die Liste las danach niemand.
 
                 for (int i = 0; i < listView_Stromganglinie.Items.Count; i++)
                 {
@@ -116,23 +117,19 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Stromganglinie frm = new Form_Stromganglinie();
+            // iU9-W12.5: Die Zuordnung ist die Razor-Komponente StromganglinieDialog;
+            // die Huelle gibt die Liste zurueck, geschrieben wird hier (R-W12-4).
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
             // iU9-W12.0g: derselbe JOIN wie in Form_Start - jetzt einmal im Kern.
-            frm.DateiListe.Clear();
-            frm.DateiListe.AddRange(Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt));
+            List<Z_ProjektStromganglinieModel> liste =
+                Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            if (StromganglinieHuelle.Oeffnen(listView_Stromganglinie, m_ID_Projekt, liste))
             {
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
-                wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
+                wizctrl.Add_Stromganglinie(m_ID_Projekt, liste);
 
                 // BEFUND W12-B7, behoben (iU9-W12.0g): Hier stand ein zweiter
                 // OeffneGewerk-Aufruf mit Gewerke.WaermebedarfExtern - im
