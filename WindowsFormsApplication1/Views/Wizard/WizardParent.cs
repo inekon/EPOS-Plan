@@ -105,6 +105,18 @@ namespace WindowsFormsApplication1
         private readonly List<ProjektKopfDaten> m_ProjektKopf =
             new List<ProjektKopfDaten> { new ProjektKopfDaten() };
 
+        /// <summary>
+        /// Die GETEILTE Liste des Komponentenschritts — dreizehn Kacheln
+        /// (iU9-W16a.3, dieselbe Mechanik wie <see cref="m_ProjektKopf"/>).
+        ///
+        /// <para>Die Hülle baut sie bei jedem Bestücken aus
+        /// <see cref="KomponentenBestandCtrl"/> neu auf; die Seite schaltet darin um
+        /// und meldet jede Umschaltung als Seitenindex zurück. Der Rahmen liest sie
+        /// nicht — er wird über den Rückruf geschaltet.</para>
+        /// </summary>
+        private readonly List<EPOS.UI.Dialoge.Bedarf.KomponentenZeile> m_Komponenten =
+            new List<EPOS.UI.Dialoge.Bedarf.KomponentenZeile>();
+
         public int wizardmode;
         public bool gespeichert = false;
         private int top = WizardItemClass.KOMPONENTEN_ITEM;
@@ -335,7 +347,16 @@ namespace WindowsFormsApplication1
             // Typumbruch — für eine BlazorAssistentSeite<T> träfe der ohnehin nicht mehr.
             // Der Zweig steht VOR der Kette; die noch nicht umgestellten Seiten fallen
             // wie bisher durch sie hindurch.
-            if (page is IAssistentErzeugerSeite erzeugerSeite)
+            // iU9-W16a.3: Der Komponentenschritt ist eine Razor-Komponente und baut
+            // seine WebView erst beim Bestuecken (BlazorAssistentSeite). Er wird auf
+            // diesem Weg genau EINMAL erreicht - beim Oeffnen des Assistenten; danach
+            // stellt ihn ucProjektAuswahl_MarkierungGeaendert neu. Der Zweig steht
+            // ZUERST, weil er eine eigene Liste und einen eigenen Aufbau hat.
+            if (top == WizardItemClass.KOMPONENTEN_ITEM)
+            {
+                KomponentenSeiteBestuecken(page);
+            }
+            else if (page is IAssistentErzeugerSeite erzeugerSeite)
             {
                 erzeugerSeite.Modelle = list_werzmodel;
                 erzeugerSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
@@ -484,8 +505,21 @@ namespace WindowsFormsApplication1
             projctrl.ReadSingle(ucProjektAuswahl.GewaehlterName);
             projektID = projctrl.m_ID;
 
-            Form page = listPages.ElementAt(top).wizardform;
-            ((Wizard_Komponenten)page).BestandAnzeigen(KomponentenBestandCtrl.Lesen(projektID));
+            KomponentenSeiteBestuecken(listPages.ElementAt(top).wizardform);
+        }
+
+        /// <summary>
+        /// Reicht dem Komponentenschritt seine geteilte Liste herein und baut ihn auf
+        /// (iU9-W16a.3). Das LESEN des Bestands und das Schalten der Seiten liegt
+        /// seither in <c>KomponentenauswahlHuelle.Gaben</c> — es lief bis hierher in
+        /// <c>Wizard_Komponenten.BestandAnzeigen</c>.
+        /// </summary>
+        private void KomponentenSeiteBestuecken(Form page)
+        {
+            if (!(page is IAssistentListenSeite<EPOS.UI.Dialoge.Bedarf.KomponentenZeile> seite)) return;
+
+            seite.Modelle = m_Komponenten;
+            seite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName ?? "");
         }
 
         /// <summary>

@@ -33,7 +33,10 @@ namespace WindowsFormsApplication1
     {
         private static readonly Func<Form>[] ERZEUGER =
         {
-            /* 0  KOMPONENTEN_ITEM   */ () => new Wizard_Komponenten(),
+            // iU9-W16a.3: Der Komponentenschritt ist eine Razor-Komponente; die
+            // Huelle liest den Bestand aus KomponentenBestandCtrl (Kern) und
+            // schaltet damit die Seiten - genau wie BestandAnzeigen es tat.
+            /* 0  KOMPONENTEN_ITEM   */ () => KomponentenauswahlHuelle.AssistentSeite(),
             // iU9-W15a.6: Die Projektkopfseite ist eine Razor-Komponente; sie traegt
             // als einzige eine EINELEMENTIGE geteilte Liste (ProjektKopfDaten) statt
             // eines Get*-Rueckwegs (Befund W15a-B42, Weg (a)).
@@ -68,7 +71,8 @@ namespace WindowsFormsApplication1
 
         private static readonly ReadOnlyCollection<Type> _typen = new ReadOnlyCollection<Type>(new[]
         {
-            typeof(Wizard_Komponenten),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.KomponentenauswahlDialog,
+                                        EPOS.UI.Dialoge.Bedarf.KomponentenZeile>),
             typeof(BlazorAssistentSeite<EPOS.UI.Seiten.Assistent.ProjektKopfSeite, ProjektKopfDaten>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.GebaeudeDialog, Z_ProjGebModel>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.WaermebedarfExternDialog,
