@@ -495,9 +495,113 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// NACHWEIS zu Risiko R-W16-6, zweite Hälfte: Ein NEU-Lauf legt dasselbe an,
+        /// was er hereinbekommen hat.
+        ///
+        /// <para>Der Fall lädt den vollständigen Stand von Projekt 1030, stellt den
+        /// Lauf auf NEU um, gibt ihm einen anderen Namen und speichert. Verglichen
+        /// wird danach der INHALT des neuen Projekts mit dem der Vorlage: Zahl der
+        /// Zeilen je Zuordnungstabelle, Bitmaske und die Anlagenbezeichner je Typ.
+        /// Genau diese neun Schreibschritte laufen im Neu-Zweig — in ihrer bitgleich
+        /// übernommenen Reihenfolge.</para>
+        ///
+        /// <para><b>Brauchwasser zählt nicht mit.</b> Der Assistent führt dafür keine
+        /// Seite und schreibt <c>Z_Projekt_Brauchwasser</c> nirgends — das war im
+        /// Bestand so und bleibt so (die Kachel ist „nur Anzeige").</para>
+        ///
+        /// <para>Eigene Arbeitskopie, weil die Probe schreibt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Neu_Lauf_legt_dasselbe_an_was_er_bekommen_hat()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+
+                    const string VORLAGE = "Referenz BHKW-Kaskade (Regressionstest)";
+                    const int ID_VORLAGE = 1030;
+                    const string NEU = "W16a Neuanlage-Probe";
+
+                    Dictionary<string, int> vorher = Zaehlstand(ID_VORLAGE);
+                    string[] anlagenVorher = Anlagenbezeichner(ID_VORLAGE);
+
+                    AssistentCtrl a = new AssistentCtrl();
+                    a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
+                    a.ProjektId = ID_VORLAGE;
+                    a.Laden(VORLAGE);
+
+                    KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(ID_VORLAGE);
+                    for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
+                        a.SeiteSchalten(bestand[k].SeitenIndex, bestand[k].Vorhanden);
+
+                    ProjektKopfDaten kopf = ProjektCtrl.Kopf(VORLAGE);
+                    Assert.NotNull(kopf);
+
+                    // Jetzt der NEU-Zweig: anderer Name, geratene Id wie im Assistenten.
+                    a.Betriebsart = AssistentCtrl.BETRIEBSART_NEU;
+                    a.ProjektId = new ProjektCtrl().GetMaxID() + 1;
+                    a.Kopf[0].Name = NEU;
+                    a.Kopf[0].Beschreibung = kopf.Beschreibung;
+                    a.Kopf[0].Kunde = kopf.Kunde;
+                    a.Kopf[0].Bearbeiter = kopf.Bearbeiter;
+                    a.Kopf[0].Erstelldatum = kopf.Erstelldatum;
+                    a.Kopf[0].IdKlimaregion = kopf.IdKlimaregion;
+                    a.Kopf[0].Klimaname = kopf.Klimaname;
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+
+                    int idNeu = ProjektCtrl.IdVonName(NEU);
+                    Assert.True(idNeu > 0, "Das neue Projekt wurde nicht angelegt.");
+
+                    Dictionary<string, int> nachher = Zaehlstand(idNeu);
+
+                    // Die fuenf Zuordnungstabellen und die Anlagen: gleiche Zahl.
+                    foreach (string t in TABELLEN)
+                    {
+                        if (t == "Z_Projekt_Brauchwasser") continue;   // keine Assistentenseite
+                        Assert.True(vorher[t] == nachher[t],
+                                    t + ": " + vorher[t] + " statt " + nachher[t]);
+                    }
+
+                    // Die Anlagenbezeichner je Typ - bis auf die Pufferzeilen, die der
+                    // Assistent nach FR-1 gar nicht mitnimmt.
+                    string[] erwartet = OhnePuffer(anlagenVorher);
+                    Assert.Equal(erwartet, OhnePuffer(Anlagenbezeichner(idNeu)));
+
+                    // Der Kopf steht.
+                    ProjektKopfDaten neuKopf = ProjektCtrl.Kopf(NEU);
+                    Assert.Equal(NEU, neuKopf.Name);
+                    Assert.Equal(kopf.Beschreibung, neuKopf.Beschreibung);
+                    Assert.Equal(kopf.Klimaname, neuKopf.Klimaname);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
         // =========================================================================
         // Hilfen
         // =========================================================================
+
+        /// <summary>
+        /// Die Anlagenzeilen ohne die Pufferspeicher (ID_Type 12) — der Assistent
+        /// nimmt sie nach FR-1 nicht mit, und im Neu-Zweig entstehen sie deshalb
+        /// nicht.
+        /// </summary>
+        private static string[] OhnePuffer(string[] zeilen)
+        {
+            List<string> gefiltert = new List<string>();
+            foreach (string z in zeilen)
+                if (!z.StartsWith(WizardItemClass.PUFFER_TYP + "|", StringComparison.Ordinal))
+                    gefiltert.Add(z);
+            return gefiltert.ToArray();
+        }
 
         private static readonly string[] TABELLEN =
         {
