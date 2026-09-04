@@ -13593,4 +13593,31 @@ Import anyway?</value>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
     <value>The project name "{0}" is used {1} times. All {1} projects will be deleted. Continue?</value>
   </data>
+  <data name="LIZ_ST_GUELTIG" xml:space="preserve">
+    <value>{0} · valid until {1}</value>
+  </data>
+  <data name="LIZ_ST_KULANZ" xml:space="preserve">
+    <value>The license expired on {0} — the grace period is running, please renew.</value>
+  </data>
+  <data name="LIZ_ST_NACHPRUEFUNG" xml:space="preserve">
+    <value>An online re-check is due — please start once with an internet connection.</value>
+  </data>
+  <data name="LIZ_ST_LESEMODUS" xml:space="preserve">
+    <value>The license has expired — read-only mode (view and export projects).</value>
+  </data>
+  <data name="LIZ_ST_UHR" xml:space="preserve">
+    <value>The system clock has been set back — please correct the time or re-check online.</value>
+  </data>
+  <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
+    <value>Not activated — trial version or license key under Administration → License.</value>
+  </data>
+  <data name="LIZ_TYP_DEMO" xml:space="preserve">
+    <value>Trial version</value>
+  </data>
+  <data name="LIZ_TYP_PERSON" xml:space="preserve">
+    <value>Named-user license</value>
+  </data>
+  <data name="LIZ_TYP_FIRMA" xml:space="preserve">
+    <value>Company license</value>
+  </data>
 </root>

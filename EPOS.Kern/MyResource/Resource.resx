@@ -13600,4 +13600,31 @@ Trotzdem importieren?</value>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
     <value>Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren?</value>
   </data>
+  <data name="LIZ_ST_GUELTIG" xml:space="preserve">
+    <value>{0} · gültig bis {1}</value>
+  </data>
+  <data name="LIZ_ST_KULANZ" xml:space="preserve">
+    <value>Lizenz am {0} abgelaufen — Kulanzfenster läuft, bitte verlängern.</value>
+  </data>
+  <data name="LIZ_ST_NACHPRUEFUNG" xml:space="preserve">
+    <value>Online-Nachprüfung fällig — bitte einmal mit Internetverbindung starten.</value>
+  </data>
+  <data name="LIZ_ST_LESEMODUS" xml:space="preserve">
+    <value>Lizenz abgelaufen — Lesemodus (Projekte ansehen und exportieren).</value>
+  </data>
+  <data name="LIZ_ST_UHR" xml:space="preserve">
+    <value>Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrigieren oder online nachprüfen.</value>
+  </data>
+  <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
+    <value>Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.</value>
+  </data>
+  <data name="LIZ_TYP_DEMO" xml:space="preserve">
+    <value>Demoversion</value>
+  </data>
+  <data name="LIZ_TYP_PERSON" xml:space="preserve">
+    <value>Personenbezogene Lizenz</value>
+  </data>
+  <data name="LIZ_TYP_FIRMA" xml:space="preserve">
+    <value>Firmenlizenz</value>
+  </data>
 </root>

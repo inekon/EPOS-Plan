@@ -177,13 +177,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Lizenztyp als Anzeigetext.</summary>
+        /// <remarks>
+        /// Die drei Texte kommen seit iU9-W15c.3 aus <c>MyResource.Resource.LIZ_TYP_*</c>.
+        /// Der Wert von <see cref="Typ"/> selbst ist ein SCHLÜSSEL des Servers
+        /// (<c>demo</c>/<c>person</c>/<c>firma</c>) und bleibt unübersetzt — ein
+        /// unbekannter Typ wird durchgereicht statt geraten.
+        /// </remarks>
         public string TypText()
         {
             switch (Typ)
             {
-                case "demo": return "Demoversion";
-                case "person": return "Personenbezogene Lizenz";
-                case "firma": return "Firmenlizenz";
+                case "demo": return MyResource.Resource.LIZ_TYP_DEMO;
+                case "person": return MyResource.Resource.LIZ_TYP_PERSON;
+                case "firma": return MyResource.Resource.LIZ_TYP_FIRMA;
                 default: return Typ ?? "-";
             }
         }

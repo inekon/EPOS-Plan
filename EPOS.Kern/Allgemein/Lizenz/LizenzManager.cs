@@ -160,21 +160,35 @@ namespace WindowsFormsApplication1
         public static string StatusText()
         {
             LizenzStatus status = Pruefe();
-            LizenzToken t = _token;
+            return StatusText(status, _token);
+        }
+
+        /// <summary>
+        /// Derselbe Kurztext zu einem BEREITS ermittelten Zustand — ohne Ablage.
+        /// </summary>
+        /// <remarks>
+        /// Seit iU9-W15c.3 kommen die sechs Sätze aus <c>MyResource.Resource.LIZ_ST_*</c>
+        /// statt aus dem Quelltext. Sie waren der letzte unlokalisierte Anwendertext des
+        /// Lizenzwegs und erscheinen an drei Stellen: in der Lizenzverwaltung, in der
+        /// Fußzeile des Lizenzdialogs und in der Ablehnungsmeldung des KI-Assistenten.
+        /// </remarks>
+        internal static string StatusText(LizenzStatus status, LizenzToken t)
+        {
             switch (status)
             {
                 case LizenzStatus.Gueltig:
-                    return t.TypText() + " · gültig bis " + Datum(t.GueltigBis);
+                    return string.Format(MyResource.Resource.LIZ_ST_GUELTIG,
+                                         t.TypText(), Datum(t.GueltigBis));
                 case LizenzStatus.Kulanz:
-                    return "Lizenz am " + Datum(t.GueltigBis) + " abgelaufen — Kulanzfenster läuft, bitte verlängern.";
+                    return string.Format(MyResource.Resource.LIZ_ST_KULANZ, Datum(t.GueltigBis));
                 case LizenzStatus.NachpruefungFaellig:
-                    return "Online-Nachprüfung fällig — bitte einmal mit Internetverbindung starten.";
+                    return MyResource.Resource.LIZ_ST_NACHPRUEFUNG;
                 case LizenzStatus.Lesemodus:
-                    return "Lizenz abgelaufen — Lesemodus (Projekte ansehen und exportieren).";
+                    return MyResource.Resource.LIZ_ST_LESEMODUS;
                 case LizenzStatus.UhrManipuliert:
-                    return "Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrigieren oder online nachprüfen.";
+                    return MyResource.Resource.LIZ_ST_UHR;
                 default:
-                    return "Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.";
+                    return MyResource.Resource.LIZ_ST_NICHTAKTIVIERT;
             }
         }
 
