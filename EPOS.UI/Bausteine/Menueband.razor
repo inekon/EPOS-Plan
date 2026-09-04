@@ -1,0 +1,300 @@
+﻿@* DAS MENUEBAND (iU9-W16c.1) — die Windows-Schale des Hauptfensters.
+
+   VORBILD. MDIMainForm.menuToolbar: ein MenuStrip mit 45 ToolStripMenuItem und
+   sechs ToolStripSeparator im Designer, dazu neun Punkte und zwei Trenner, die
+   die acht Init*-Methoden programmatisch einhaengten. Zusammen 54 Punkte in
+   drei Ebenen.
+
+   ES IST DIE SCHALE, NICHT DIE WURZEL (Entscheid E-1, Vermessung § 9.3). Die
+   Wurzel beider Plattformen ist AppWurzel; darueber steht je Plattform eine
+   Schale. Unter Windows ist das dieses Band, auf dem iPad nichts weiter — iL5
+   sagt ausdruecklich "kein MDI, keine modalen Ketten", und eine Menueleiste mit
+   54 Punkten ist auf Touch unbedienbar. Deshalb ist das Band ein Baustein und
+   kein Teil der Wurzel.
+
+   DIE TABELLE IST DATEN. Eintraege kommt aus Menuetabelle (erzeugt aus dem
+   Designer, Auflage R-W16-8). Das Band kennt weder eine Maske noch einen
+   Delegaten: Es meldet den Seitenschluessel des angeklickten Punktes ueber
+   Gewaehlt, und der Wirt entscheidet. Damit gibt es EINEN Handler statt der 34
+   Ereignishandler und neun Lambdas des Vorlaeufers.
+
+   BEDIENUNG.
+   - role="menubar" / "menuitem" / "menu"; ein aufklappbarer Punkt traegt
+     aria-haspopup und aria-expanded, ein Trenner role="separator".
+   - Tastatur: ← → wandern in der obersten Ebene, ↓ oeffnet das Untermenue,
+     ↑ ↓ wandern darin, Esc schliesst, Enter/Leertaste waehlen. Nur der aktive
+     Punkt der obersten Ebene steht im Tabulatorzyklus (roving tabindex) -
+     dieselbe Regel wie im Baustein Reiter.
+   - 44 px Mindesthoehe je Zeile (--epos-touchziel), auch wenn dieses Band
+     unter Windows mit der Maus bedient wird.
+
+   KEIN ANZEIGETEXT ALS SCHLUESSEL. InitKiHilfe suchte das Hilfemenue, indem es
+   den ANZEIGETEXT jedes Punktes mit "Hilfe" bzw. "Help" verglich (Befund
+   W16-B23, die einzige solche Stelle des Bestands). Hier ist der KI-Assistent
+   eine Zeile der Tabelle mit dem Ziel KI_ASSISTENT. *@
+
+@namespace EPOS.UI.Bausteine
+@implements IDisposable
+
+<nav class="epos-menueband" role="menubar" aria-label="@Bezeichnung"
+     @onkeydown="BeiTaste" @onfocusout="BeiFokusVerlust">
+    @foreach (Menuepunkt punkt in Eintraege)
+    {
+        Menuepunkt p = punkt;
+
+        @if (p.Trenner)
+        {
+            <span class="epos-menueband-trenner" role="separator"></span>
+        }
+        else if (p.Klappt)
+        {
+            <div class="epos-menueband-punkt">
+                <button type="button" role="menuitem" class="epos-menueband-knopf"
+                        id="@Kennung(p)"
+                        aria-haspopup="true"
+                        aria-expanded="@(Offen(p) ? "true" : "false")"
+                        tabindex="@(Vorn(p) ? 0 : -1)"
+                        @onclick="@(() => Umschalten(p))">
+                    @Bild(p)<span class="epos-menueband-text">@p.Text</span>
+                </button>
+
+                @if (Offen(p))
+                {
+                    <div class="epos-menueband-klappe" role="menu"
+                         aria-labelledby="@Kennung(p)">
+                        @Untermenue(p)
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <button type="button" role="menuitem" class="epos-menueband-knopf"
+                    id="@Kennung(p)"
+                    tabindex="@(Vorn(p) ? 0 : -1)"
+                    @onclick="@(() => Waehlen(p))">
+                @Bild(p)<span class="epos-menueband-text">@p.Text</span>
+            </button>
+        }
+    }
+</nav>
+
+@code {
+    /// <summary>Die Punkte der obersten Ebene.</summary>
+    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Array.Empty<Menuepunkt>();
+
+    /// <summary>Ein Punkt wurde gewaehlt; gemeldet wird sein <c>Ziel</c>.</summary>
+    [Parameter] public EventCallback<Menuepunkt> Gewaehlt { get; set; }
+
+    /// <summary>Beschriftung der Leiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "Hauptmenü";
+
+    /// <summary>Der aufgeklappte Punkt der obersten Ebene; <c>null</c> = alles zu.</summary>
+    private Menuepunkt? _offen;
+
+    /// <summary>Der Punkt der obersten Ebene, der im Tabulatorzyklus steht.</summary>
+    private Menuepunkt? _vorn;
+
+    /// <summary>Die aufgeklappten Punkte der zweiten Ebene.</summary>
+    private readonly HashSet<string> _offeneUnter = new(StringComparer.Ordinal);
+
+    private IReadOnlyList<Menuepunkt> Bedienbar =>
+        Eintraege.Where(p => !p.Trenner).ToList();
+
+    private bool Offen(Menuepunkt p) =>
+        ReferenceEquals(_offen, p) || _offeneUnter.Contains(p.Name);
+
+    private bool Vorn(Menuepunkt p)
+    {
+        if (_vorn is not null) return ReferenceEquals(_vorn, p);
+        IReadOnlyList<Menuepunkt> liste = Bedienbar;
+        return liste.Count > 0 && ReferenceEquals(liste[0], p);
+    }
+
+    private static string Kennung(Menuepunkt p) => "menue-" + p.Name;
+
+    // =====================================================================
+    //  Zeichnen
+    // =====================================================================
+
+    private RenderFragment? Bild(Menuepunkt p)
+    {
+        if (string.IsNullOrEmpty(p.Bild)) return null;
+
+        return builder =>
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "class", "epos-menueband-bild");
+            builder.AddAttribute(2, "src", "_content/EPOS.UI/bilder/menue/" + p.Bild + ".png");
+            builder.AddAttribute(3, "alt", "");
+            builder.AddAttribute(4, "aria-hidden", "true");
+            builder.CloseElement();
+        };
+    }
+
+    private RenderFragment Untermenue(Menuepunkt eltern) => builder =>
+    {
+        int folge = 0;
+        foreach (Menuepunkt kind in eltern.Untereintraege)
+        {
+            Menuepunkt k = kind;
+
+            if (k.Trenner)
+            {
+                builder.OpenElement(folge++, "div");
+                builder.AddAttribute(folge++, "class", "epos-menueband-strich");
+                builder.AddAttribute(folge++, "role", "separator");
+                builder.CloseElement();
+                continue;
+            }
+
+            builder.OpenElement(folge++, "button");
+            builder.AddAttribute(folge++, "type", "button");
+            builder.AddAttribute(folge++, "role", "menuitem");
+            builder.AddAttribute(folge++, "class", "epos-menueband-zeile");
+            builder.AddAttribute(folge++, "id", Kennung(k));
+            if (k.Klappt)
+            {
+                builder.AddAttribute(folge++, "aria-haspopup", "true");
+                builder.AddAttribute(folge++, "aria-expanded", Offen(k) ? "true" : "false");
+                builder.AddAttribute(folge++, "onclick",
+                    EventCallback.Factory.Create<MouseEventArgs>(this, () => UnterUmschalten(k)));
+            }
+            else
+            {
+                builder.AddAttribute(folge++, "onclick",
+                    EventCallback.Factory.Create<MouseEventArgs>(this, () => Waehlen(k)));
+            }
+
+            if (!string.IsNullOrEmpty(k.Bild))
+            {
+                builder.OpenElement(folge++, "img");
+                builder.AddAttribute(folge++, "class", "epos-menueband-bild");
+                builder.AddAttribute(folge++, "src", "_content/EPOS.UI/bilder/menue/" + k.Bild + ".png");
+                builder.AddAttribute(folge++, "alt", "");
+                builder.AddAttribute(folge++, "aria-hidden", "true");
+                builder.CloseElement();
+            }
+
+            builder.OpenElement(folge++, "span");
+            builder.AddAttribute(folge++, "class", "epos-menueband-text");
+            builder.AddContent(folge++, k.Text);
+            builder.CloseElement();
+
+            if (!string.IsNullOrEmpty(k.Kuerzel))
+            {
+                builder.OpenElement(folge++, "span");
+                builder.AddAttribute(folge++, "class", "epos-menueband-kuerzel");
+                builder.AddContent(folge++, k.Kuerzel);
+                builder.CloseElement();
+            }
+
+            if (k.Klappt)
+            {
+                builder.OpenElement(folge++, "span");
+                builder.AddAttribute(folge++, "class", "epos-menueband-pfeil");
+                builder.AddAttribute(folge++, "aria-hidden", "true");
+                builder.AddContent(folge++, "▸");
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();   // button
+
+            if (k.Klappt && Offen(k))
+            {
+                builder.OpenElement(folge++, "div");
+                builder.AddAttribute(folge++, "class", "epos-menueband-klappe epos-menueband-klappe--tief");
+                builder.AddAttribute(folge++, "role", "menu");
+                builder.AddAttribute(folge++, "aria-labelledby", Kennung(k));
+                builder.AddContent(folge++, Untermenue(k));
+                builder.CloseElement();
+            }
+        }
+    };
+
+    // =====================================================================
+    //  Bedienung
+    // =====================================================================
+
+    private void Umschalten(Menuepunkt p)
+    {
+        _vorn = p;
+        _offeneUnter.Clear();
+        _offen = ReferenceEquals(_offen, p) ? null : p;
+    }
+
+    private void UnterUmschalten(Menuepunkt p)
+    {
+        if (!_offeneUnter.Remove(p.Name)) _offeneUnter.Add(p.Name);
+    }
+
+    private async Task Waehlen(Menuepunkt p)
+    {
+        // Erst schliessen, dann melden: Der Wirt zeigt womoeglich einen modalen
+        // Dialog, und das Band soll nicht offen dahinter stehen bleiben.
+        Schliessen();
+        if (!string.IsNullOrEmpty(p.Ziel)) await Gewaehlt.InvokeAsync(p);
+    }
+
+    /// <summary>Klappt alles zu — auch von aussen, wenn der Wirt die Ansicht wechselt.</summary>
+    public void Schliessen()
+    {
+        _offen = null;
+        _offeneUnter.Clear();
+    }
+
+    private void BeiFokusVerlust()
+    {
+        // Ein Menue, das offen bleibt, waehrend der Anwender anderswo tippt,
+        // faengt Tastendruecke ab, die ihm nicht gelten.
+        Schliessen();
+    }
+
+    private void BeiTaste(KeyboardEventArgs e)
+    {
+        IReadOnlyList<Menuepunkt> liste = Bedienbar;
+        if (liste.Count == 0) return;
+
+        int jetzt = _vorn is null ? 0 : Suchen(liste, _vorn);
+        if (jetzt < 0) jetzt = 0;
+
+        switch (e.Key)
+        {
+            case "Escape":
+                Schliessen();
+                break;
+
+            case "ArrowLeft":
+                _vorn = liste[(jetzt - 1 + liste.Count) % liste.Count];
+                if (_offen is not null) { _offen = _vorn; _offeneUnter.Clear(); }
+                break;
+
+            case "ArrowRight":
+                _vorn = liste[(jetzt + 1) % liste.Count];
+                if (_offen is not null) { _offen = _vorn; _offeneUnter.Clear(); }
+                break;
+
+            case "ArrowDown":
+                if (_vorn is not null && _vorn.Klappt) { _offen = _vorn; _offeneUnter.Clear(); }
+                break;
+
+            case "Home":
+                _vorn = liste[0];
+                break;
+
+            case "End":
+                _vorn = liste[liste.Count - 1];
+                break;
+        }
+    }
+
+    private static int Suchen(IReadOnlyList<Menuepunkt> liste, Menuepunkt gesucht)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (ReferenceEquals(liste[i], gesucht)) return i;
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Schliessen();
+}
