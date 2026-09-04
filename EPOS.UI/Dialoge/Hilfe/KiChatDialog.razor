@@ -99,7 +99,13 @@
             }
         </span>
 
-        <span class="epos-kichat-status">@_status</span>
+        @* Der Tooltip ist zurueck (Entscheid W15b-O-2, 04.09.2026): Modell,
+           Lizenz und Herkunft der oertlichen Semantiksuche. Er haengt an
+           DIESER Zeile, weil er im Bestand am Statuslabel hing
+           (Form_KiChat:935-938), und er erscheint nur, wenn die Zeile auch
+           etwas ueber die Semantik sagt. Der Text kommt FERTIG aus der
+           Huelle - die Komponente kennt SemantikModell nicht. *@
+        <span class="epos-kichat-status" title="@Semantiktipp">@_status</span>
 
         <span class="epos-kichat-knoepfe">
             <InfoKnopf Schluessel="Form_KiChat.btn_Help" />
@@ -277,6 +283,7 @@
     private bool _aktionen;
     private int _schalterfassung;
     private string _status = "";
+    private string _semantik = "";
     private Bereich _bereich = Bereich.Keiner;
     private string _textTitel = "";
     private string _textKopf = "";
@@ -301,6 +308,21 @@
     private string Kontextzeile => string.IsNullOrEmpty(Kontext)
         ? Texte.KontextLeer
         : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.KontextFormat, Kontext);
+
+    /// <summary>
+    /// Der Tooltip der Statuszeile — <c>null</c> heisst KEIN <c>title</c>-Merkmal
+    /// (Blazor laesst ein Merkmal mit dem Wert <c>null</c> weg; ein leerer Text
+    /// stuende dagegen als <c>title=""</c> im Markup und ergaebe einen leeren
+    /// Kasten unter dem Mauszeiger).
+    /// </summary>
+    /// <remarks>
+    /// Bedingung ist die SEMANTIKzeile, nicht der ganze Status: Steht dort nur
+    /// der Tagesverbrauch, sagt der Tooltip nichts, was zu ihm gehoerte.
+    /// </remarks>
+    private string? Semantiktipp =>
+        string.IsNullOrEmpty(_semantik) || string.IsNullOrEmpty(Texte.SemantikHerkunft)
+            ? null
+            : Texte.SemantikHerkunft;
 
     private RenderFragment? Bestaetigungsblock => !_bestaetigungOffen ? null : builder =>
     {
@@ -349,15 +371,15 @@
 
     private void StatusSetzen()
     {
-        string semantik = SemantikZeile is null ? "" : SemantikZeile();
+        _semantik = SemantikZeile is null ? "" : (SemantikZeile() ?? "");
         string verbrauch = HilfeBetrieb || !Eingerichtet
             ? ""
             : string.Format(System.Globalization.CultureInfo.CurrentCulture,
                             Texte.VerbrauchFormat, AnfragenHeute, Tageslimit);
 
-        _status = string.IsNullOrEmpty(semantik)
+        _status = string.IsNullOrEmpty(_semantik)
             ? verbrauch
-            : (verbrauch.Length > 0 ? verbrauch + " | " + semantik : semantik);
+            : (verbrauch.Length > 0 ? verbrauch + " | " + _semantik : _semantik);
     }
 
     // =====================================================================
