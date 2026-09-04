@@ -46,4 +46,17 @@ internal sealed class TestProjektquelle : IProjektQuelle
     }
 
     public BhkwDialogDaten? BhkwDaten(int idProjekt) => _bhkw;
+
+    /// <summary>
+    /// Der Parametersatz der Startseite (iU9-W16c.2, K7) - <c>null</c>, solange
+    /// keiner gesetzt ist; genau der Zustand der iOS-Huelle vor iU11.
+    /// </summary>
+    internal IReadOnlyDictionary<string, object>? Startseite { get; set; }
+
+    /// <summary>Der Parametersatz von „Berichte &amp; Kosten" (iU9-W16c.2, K7).</summary>
+    internal IReadOnlyDictionary<string, object>? BerichteKosten { get; set; }
+
+    public IReadOnlyDictionary<string, object>? StartseiteGaben(int idProjekt) => Startseite;
+
+    public IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => BerichteKosten;
 }
