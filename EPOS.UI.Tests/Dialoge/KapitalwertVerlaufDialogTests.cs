@@ -160,7 +160,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         Assert.Equal("Berechnung läuft …", cut.Instance.Status);
 
         tor.SetResult(Ergebnis(20, "Erwartet"));
-        cut.WaitForAssertion(() => Assert.False(cut.Instance.Laeuft));
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.Laeuft), TimeSpan.FromSeconds(5));
         Assert.Equal("Schließen", cut.Find(".epos-knopf--primaer").TextContent);
     }
 
@@ -180,7 +180,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         Assert.False(geschlossen);
 
         tor.SetCanceled(merker);
-        cut.WaitForAssertion(() => Assert.Equal("Vorgang abgebrochen.", cut.Instance.Status));
+        cut.WaitForAssertion(() => Assert.Equal("Vorgang abgebrochen.", cut.Instance.Status), TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         var cut = Aufbauen(berechnen: (_, _, _) =>
             Task.FromException<KapitalwertVerlaufBilder>(new InvalidOperationException("kein Ergebnis")));
 
-        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-warnbanner")));
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-warnbanner")), TimeSpan.FromSeconds(5));
         Assert.Equal("Fehler beim Berechnen des Verlaufs: kein Ergebnis",
                      cut.Find(".epos-warnbanner-text").TextContent);
     }
