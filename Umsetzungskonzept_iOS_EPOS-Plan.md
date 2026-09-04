@@ -1450,9 +1450,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `BerichteKostenGaben` aus derselben Hülle wie das sechste Reiterblatt, Rückweg über `ZurueckZurListe`; dabei Befund
 > W16c‑B11: `IProjektQuelle` fehlte im Windows-Dienstverzeichnis, `KeineProjekte` eingetragen — Abnahmepunkt W16c‑O‑6;
 > Gate auf dem gemergten Stand: 0 Fehler / 6 Warnungen, **4 012** Tests auch unter `en_US`, Formularkarte 122, Referenzlauf
-> byte-gleich). **E‑10 (`MDIMainForm` → `Hauptfenster`) bewusst nicht getan** (W16c‑O‑1; `Hauptfenster` ist bereits der
-> Name der Razor-Seite in `EPOS.UI.Seiten` — Empfehlung: `Hauptfensterrahmen` oder bis iU11 beim alten Namen bleiben,
-> Entscheid offen); **W16a‑E‑1/W16b‑O‑5** (Assistent modal) und **W16b‑E‑1/E‑2** offen. **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
+> byte-gleich). **E‑10 entschieden 04.09.2026: `MDIMainForm` → `Hauptfensterrahmen`** (eigener Commit nach dem Merge, folgt;
+> nicht `Hauptfenster`, das ist die Razor-Seite); **W16a‑E‑1/W16b‑O‑5 entschieden 04.09.2026: der Assistent wird in
+> iU11 zusammen mit der Transaktion W16a‑O‑1 eine freie Ansicht der `AppWurzel`**, bis dahin modal; **W16b‑E‑1 und
+> W16b‑E‑2 bestätigt 04.09.2026**; **iF30 entschieden 04.09.2026** (streng über die Schreibnaht im Kern, eigene Welle
+> nach der Windows-Abnahme, siehe Register). **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
 > `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3 erledigt
 > (`bd0592a`, eine Wahrheit im Kern), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
 > `Seitenschluessel` mit 34 Werten in einer Klasse (W16c‑O‑4, Teilung entlang Ansicht/Maske/Weg), keine Menüfreischaltung
@@ -1518,8 +1520,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > umgesetzt**; E‑1/E‑2 vorbereitet (K7 ist W16c); E‑9 umgesetzt; **W16a‑E‑1 bleibt offen** (der Assistent bleibt modal,
 > an ihm hängt ein Schreibweg — technisch wäre die freie Ansicht jetzt möglich, W16b‑O‑5); **neu W16b‑E‑1** (der Reiter
 > „Simulation" springt ohne Klimaregion sichtbar auf Reiter 1 zurück, die Meldung steht als Banner oben statt als
-> `MessageBox` — bestätigen?) und **W16b‑E‑2** (der Reiter „Berichte & Kosten" wird von Anfang an gehalten, ein
-> Ladevorgang mehr beim ersten Variantenwechsel). **Was W16c erbt:** `MDIMainForm` nur an vier Stellen angefasst
+> `MessageBox` — bestätigt 04.09.2026) und **W16b‑E‑2** (der Reiter „Berichte & Kosten" wird von Anfang an gehalten, ein
+> Ladevorgang mehr beim ersten Variantenwechsel — bestätigt 04.09.2026). **Was W16c erbt:** `MDIMainForm` nur an vier Stellen angefasst
 > (`MDIMainForm_Load`, `MenuItem_Neu`/`_ProjektBearbeiten` → `projektkontext.Setzen`, `_AlsVariante` → `Dienste.Projekt`,
 > `_VariantenBericht` → `StartseiteHuelle.Aktuelle`), Menü, `Init*`, Kopfband, F1 und Sprachwechsel unberührt; der
 > „ja"-Zeuge steht an `MDIMainForm` und ist beim Rückbau umzuhängen, der Maskenschlüssel-Zeuge ist gestrichen (W16b‑O‑1,
@@ -1573,7 +1575,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > hereingereichten `DbVorgang`, was R‑W16‑6 ohne Windows-Feldvergleich untersagt — offen; E‑9 für den
 > Kleinschreibungs-Zeugen umgesetzt (`Wizard_Komponenten` als Prüfmuster `Pruefmuster/Wizard/`); **neu W16a‑E‑1** (der
 > Assistent bleibt unter Windows modal, Begründung wie R‑W10b‑1 — mit W16b/W16c könnte er eine freie Ansicht in derselben
-> WebView werden: soll er?) und **W16a‑E‑2** (der NEU-Zweig schließt bei einem `Add_Projekt`-Fehlschlag nicht mehr
+> WebView werden: soll er? — **entschieden 04.09.2026: ja, in iU11 mit der Transaktion W16a‑O‑1**) und **W16a‑E‑2** (der NEU-Zweig schließt bei einem `Add_Projekt`-Fehlschlag nicht mehr
 > kommentarlos, die Eingaben bleiben erhalten — bestätigen?). **Was W16b erbt:** der Rückweg der Hülle an
 > `Program.startfrm.HinweisProjektGeoeffnet()` wird ein Rückruf an die Razor-Startseite, `IosProjektQuelle` setzt
 > `AssistentGaben` noch nicht um, `Form_Start.UpdateWizardSymbole` ist ersatzlos zu löschen (N6 belegt die Gleichheit),
@@ -2884,7 +2886,7 @@ setzen sie voraus:**
 | **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
-| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt |
+| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** |
 
 ---
 
