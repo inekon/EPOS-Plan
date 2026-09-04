@@ -11820,4 +11820,10 @@ Please check all entries!</value>
   <data name="SIM_HERLEITUNG_VERBUNDLISTE" xml:space="preserve">
     <value>Only tanks with the same use qualify for the parallel group — it is calculated as ONE heat store.</value>
   </data>
+  <data name="FORTSCHRITT_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="FORTSCHRITT_LAEUFT" xml:space="preserve">
+    <value>Calculation running …</value>
+  </data>
 </root>
