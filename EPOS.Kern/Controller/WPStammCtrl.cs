@@ -10,7 +10,8 @@ namespace WindowsFormsApplication1
     // Neues Feld ReadOnly: schreibgeschuetzte Stammdatensaetze koennen nicht ueberschrieben/geloescht werden.
     // Wird von den Waermepumpen-Dialogen verwendet: seit iU9-W7 von den Huellen
     // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
-    // weiterhin vom Import Form_WP_einlesen. Alle DB-Zugriffe laufen ueber DataRepository.
+    // seit iU9-W13 vom Katalogimport ueber WaermepumpeImportSatz. Alle DB-Zugriffe
+    // laufen ueber DataRepository.
     class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
