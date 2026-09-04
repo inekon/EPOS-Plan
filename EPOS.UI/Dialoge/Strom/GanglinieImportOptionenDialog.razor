@@ -1,0 +1,352 @@
+﻿@* Format und Vorschau des Lastgangimports (iU9-W12.2).
+
+   Vorbild: Views/Stromverbraucher/Form_GanglinieImportOptionen.cs (383 Z.) und
+   .Designer.cs (337 Z.), AP5 / Fachkonzept 3.2.
+
+   WOZU. Nach der Dateiwahl zeigt der Dialog das ERKANNTE Format, laesst jede
+   Vorbelegung uebersteuern und blendet die ersten zehn Zeilen der Datei als
+   Tabelle ein. Rueckgabe sind die bestaetigten Leseoptionen.
+
+   STEUERWERTE SIND PLAETZE, KEINE ANZEIGETEXTE (Drei-Schichten-Regel). Die
+   Wertelisten stehen seit iU9-W12.0e im Kern (GanglinienOptionenModell); hier
+   steht nur, welcher Platz gerade gewaehlt ist. Ein Sprachwechsel zur Laufzeit
+   verschiebt damit nichts.
+
+   DIE VORSCHAU IST NICHT REAKTIV - woertlich uebernommen. Eine Aenderung wirkt
+   erst nach "Vorschau aktualisieren"; der Knopf ruft GanglinienDatei.Vorschau,
+   das im Gegensatz zu Erkenne nichts raet, sondern mit dem GEWAEHLTEN
+   Trennzeichen und Blatt zerlegt. In Blazor waere eine Live-Vorschau billiger -
+   sie waere aber ein anderes Verhalten, und diese Welle weist Bitgleichheit
+   nach.
+
+   KEIN OK-PRUEFSCHRITT - ebenfalls woertlich (Befund W12-B16). Wert- und
+   Zeitspalte duerfen auf demselben Platz stehen; das faellt erst in
+   GanglinienDatei.Lies als Protokollfehler auf, und genau dort steht es auch
+   heute.
+
+   DIE BLATTWAHL ERSCHEINT NUR BEI EXCEL - im Vorlaeufer haengte die
+   Sichtbarkeit am Konstruktorparameter und konnte deshalb nicht im Designer
+   stehen.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-importoptionen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-importoptionen-datei">@DateiZeile</p>
+
+    <Gruppenkopf Titel="@GruppeFormat" />
+
+    <div class="epos-importoptionen-raster">
+        <Auswahlfeld Bezeichnung="@LabelTrennzeichen" Eintraege="@_trennzeichen"
+                     Auswahl="@_iTrennzeichen" AuswahlChanged="@(i => _iTrennzeichen = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelDezimal" Eintraege="@_dezimal"
+                     Auswahl="@_iDezimal" AuswahlChanged="@(i => _iDezimal = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelWertspalte" Eintraege="@_wertspalten"
+                     Auswahl="@_iWertspalte" AuswahlChanged="@(i => _iWertspalte = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelZeitspalte" Eintraege="@_zeitspalten"
+                     Auswahl="@_iZeitspalte" AuswahlChanged="@(i => _iZeitspalte = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@_einheit"
+                     Auswahl="@_iEinheit" AuswahlChanged="@(i => _iEinheit = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelRaster" Eintraege="@_raster"
+                     Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)" />
+        <Auswahlfeld Bezeichnung="@LabelKonvention" Eintraege="@_konvention"
+                     Auswahl="@_iKonvention" AuswahlChanged="@(i => _iKonvention = i ?? 0)" />
+        @if (IstExcel)
+        {
+            <Auswahlfeld Bezeichnung="@LabelBlatt" Eintraege="@_blaetter"
+                         Auswahl="@_iBlatt" AuswahlChanged="@(i => _iBlatt = i ?? 0)" />
+        }
+    </div>
+
+    <Schalter Bezeichnung="@LabelKopfzeile" Wert="@_kopfzeile"
+              WertChanged="@(w => _kopfzeile = w)" />
+
+    <Herleitungszeile Text="@HinweisText" />
+
+    <Gruppenkopf Titel="@GruppeVorschau" />
+
+    <Raster TZeile="VorschauZeile" Zeilen="@VorschauZeilen">
+        <KindInhalt>
+            <PropertyColumn TGridItem="VorschauZeile" TProp="string"
+                            Property="@(z => z.Nummer)" Title="@SpalteZeile" />
+            @for (int s = 0; s < Spaltenzahl; s++)
+            {
+                int spalte = s;
+                <TemplateColumn TGridItem="VorschauZeile" Title="@SpaltenTitel(spalte)">
+                    <span class="@(context.Kopfzeile ? "epos-vorschau-kopf" : "")">@context.Feld(spalte)</span>
+                </TemplateColumn>
+            }
+        </KindInhalt>
+    </Raster>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf" disabled="@(Vorschau is null)"
+                @onclick="BeiAktualisieren">@AktualisierenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben und Delegaten
+    // =====================================================================
+
+    /// <summary>Pfad der Quelldatei — nur fuer die Kopfzeile und die Neuzerlegung.</summary>
+    [Parameter] public string Pfad { get; set; } = "";
+
+    /// <summary>Der Dateiname im Kopf; leer = aus <see cref="Pfad"/> abgeleitet.</summary>
+    [Parameter] public string Dateiname { get; set; } = "";
+
+    /// <summary>Das Ergebnis der Formaterkennung (<c>GanglinienDatei.Erkenne</c>).</summary>
+    [Parameter] public GanglinienVorschau? Erkennung { get; set; }
+
+    /// <summary>
+    /// Zerlegt die Datei mit den GEWAEHLTEN Optionen neu
+    /// (<c>GanglinienDatei.Vorschau</c>). Ohne diesen Rueckruf bleibt der Knopf
+    /// „Vorschau aktualisieren" gesperrt — dieselbe Regel wie bei
+    /// <see cref="Dateiwahl"/>.
+    /// </summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende: die bestaetigten Optionen, oder <c>null</c> bei
+    /// Abbruch.
+    /// </summary>
+    [Parameter] public EventCallback<GanglinienImportOptionen?> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte (IMPORT_*)
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.IMPORT_TITEL_OPTIONEN;
+    [Parameter] public string VorlageDatei { get; set; } = Resource.IMPORT_LBL_DATEI;
+    [Parameter] public string GruppeFormat { get; set; } = Resource.IMPORT_GRP_OPTIONEN;
+    [Parameter] public string LabelTrennzeichen { get; set; } = Resource.IMPORT_LBL_TRENNZEICHEN;
+    [Parameter] public string LabelDezimal { get; set; } = Resource.IMPORT_LBL_DEZIMALTRENNER;
+    [Parameter] public string LabelWertspalte { get; set; } = Resource.IMPORT_LBL_WERTSPALTE;
+    [Parameter] public string LabelZeitspalte { get; set; } = Resource.IMPORT_LBL_ZEITSPALTE;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.IMPORT_LBL_EINHEIT;
+    [Parameter] public string LabelRaster { get; set; } = Resource.IMPORT_LBL_RASTER;
+    [Parameter] public string LabelKonvention { get; set; } = Resource.IMPORT_LBL_KONVENTION;
+    [Parameter] public string LabelBlatt { get; set; } = Resource.IMPORT_LBL_BLATT;
+    [Parameter] public string LabelKopfzeile { get; set; } = Resource.IMPORT_LBL_KOPFZEILE;
+    [Parameter] public string AktualisierenText { get; set; } = Resource.IMPORT_BTN_AKTUALISIEREN;
+    [Parameter] public string VorlageVorschau { get; set; } = Resource.IMPORT_GRP_VORSCHAU;
+    [Parameter] public string HinweisText { get; set; } = Resource.IMPORT_HINWEIS_OPTIONEN;
+    [Parameter] public string SpalteZeile { get; set; } = Resource.IMPORT_SPALTE_ZEILE;
+    [Parameter] public string VorlageSpalte { get; set; } = Resource.IMPORT_SPALTE_N;
+
+    /// <summary>
+    /// Beschriftung des Fussknopfes. WOERTLICH <c>SIM_BTN_OK</c> und nicht
+    /// <c>IMPORT_BTN_OK</c> („Einlesen"): Der Fachknopf dieses Dialogs ist
+    /// „Vorschau aktualisieren"; „OK" bestaetigt nur die Optionen. Die
+    /// Begruendung steht so schon im Vorlaeufer (:143-148).
+    /// </summary>
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+
+    /// <summary>Ziel des Infoknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_GanglinieImportOptionen.btn_Help";
+
+    // =====================================================================
+    // Zustand — Plaetze, keine Werte
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int _iTrennzeichen, _iDezimal, _iEinheit, _iRaster, _iKonvention;
+    private int _iWertspalte, _iZeitspalte, _iBlatt;
+    private bool _kopfzeile;
+
+    private GanglinienVorschau? _vorschau;
+    private List<string> _blattnamen = new();
+
+    private IReadOnlyList<(int Id, string Text)> _trennzeichen = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _dezimal = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _einheit = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _raster = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _konvention = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _wertspalten = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _zeitspalten = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _blaetter = Array.Empty<(int, string)>();
+
+    /// <summary>Quelle ist eine Excel-Mappe — nur dann gibt es die Blattwahl.</summary>
+    public bool IstExcel => _vorschau?.IstExcel ?? false;
+
+    /// <summary>Spaltenzahl der Vorschau (mindestens eine).</summary>
+    private int Spaltenzahl => Math.Max(_vorschau?.Spaltenzahl ?? 1, 1);
+
+    private string DateiZeile => string.Format(VorlageDatei,
+        string.IsNullOrEmpty(Dateiname) ? Kurzname(Pfad) : Dateiname);
+
+    private string GruppeVorschau => string.Format(VorlageVorschau, GanglinienDatei.VorschauZeilen);
+
+    private string SpaltenTitel(int spalte) => string.Format(VorlageSpalte, spalte + 1);
+
+    /// <summary>Eine Zeile der Vorschautabelle.</summary>
+    /// <param name="Nummer">Laufende Nummer, wie die erste Spalte des Vorlaeufers.</param>
+    /// <param name="Felder">Die Felder der Zeile.</param>
+    /// <param name="Kopfzeile">Erste Zeile UND „Kopfzeile" gesetzt — sie steht grau.</param>
+    public sealed record VorschauZeile(string Nummer, string[] Felder, bool Kopfzeile)
+    {
+        /// <summary>Das Feld einer Spalte; leer, wenn die Zeile kuerzer ist.</summary>
+        public string Feld(int spalte) => spalte < Felder.Length ? Felder[spalte] : "";
+    }
+
+    private IQueryable<VorschauZeile> VorschauZeilen
+    {
+        get
+        {
+            List<VorschauZeile> zeilen = new();
+            List<string[]>? quelle = _vorschau?.Zeilen;
+            if (quelle is null) return zeilen.AsQueryable();
+
+            for (int z = 0; z < quelle.Count; z++)
+                zeilen.Add(new VorschauZeile((z + 1).ToString(CultureInfo.CurrentCulture),
+                                             quelle[z], z == 0 && _kopfzeile));
+            return zeilen.AsQueryable();
+        }
+    }
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        if (_vorschau is not null) return;      // schon aufgebaut
+        _vorschau = Erkennung;
+        ListenFuellen(Erkennung);
+        OptionenInDialog(Erkennung?.Vorschlag ?? new GanglinienImportOptionen());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static IReadOnlyList<(int, string)> Paare(IReadOnlyList<string> texte)
+    {
+        List<(int, string)> liste = new();
+        for (int i = 0; i < texte.Count; i++) liste.Add((i, texte[i]));
+        return liste;
+    }
+
+    private void ListenFuellen(GanglinienVorschau? vorschau)
+    {
+        _trennzeichen = Paare(GanglinienOptionenModell.TrennzeichenTexte());
+        _dezimal = Paare(GanglinienOptionenModell.DezimalTexte());
+        _einheit = Paare(GanglinienOptionenModell.EinheitTexte());
+        _raster = Paare(GanglinienOptionenModell.RasterTexte());
+        _konvention = Paare(GanglinienOptionenModell.KonventionTexte());
+
+        _blattnamen = vorschau?.Blaetter ?? new List<string>();
+        _blaetter = Paare(_blattnamen);
+
+        int spalten = Math.Max(vorschau?.Spaltenzahl ?? 1, 1);
+        _wertspalten = Paare(GanglinienOptionenModell.SpaltenTexte(spalten));
+        _zeitspalten = Paare(GanglinienOptionenModell.ZeitspaltenTexte(spalten));
+    }
+
+    /// <summary>Die Optionen in die Plaetze — Rueckfallindizes woertlich (:203-213).</summary>
+    private void OptionenInDialog(GanglinienImportOptionen o)
+    {
+        _iTrennzeichen = GanglinienOptionenModell.Index(
+            GanglinienOptionenModell.Trennzeichenwerte, o.Trennzeichen,
+            GanglinienOptionenModell.RueckfallTrennzeichen);
+        _iDezimal = GanglinienOptionenModell.Index(
+            GanglinienOptionenModell.Dezimalwerte, o.Dezimaltrenner,
+            GanglinienOptionenModell.RueckfallDezimal);
+        _iEinheit = GanglinienOptionenModell.Index(GanglinienOptionenModell.Einheitswerte, o.Einheit, 0);
+        _iRaster = GanglinienOptionenModell.Index(GanglinienOptionenModell.Rasterwerte, o.Raster, 0);
+        _iKonvention = GanglinienOptionenModell.Index(GanglinienOptionenModell.Konventionswerte, o.Konvention, 0);
+        _kopfzeile = o.Kopfzeile;
+
+        _iWertspalte = Math.Max(GanglinienOptionenModell.Grenzen(o.WertSpalte, _wertspalten.Count), 0);
+        // Die Zeitspaltenliste beginnt mit "(keine)" - daher die Verschiebung um eins.
+        _iZeitspalte = Math.Max(GanglinienOptionenModell.Grenzen(o.ZeitSpalte + 1, _zeitspalten.Count), 0);
+
+        _iBlatt = 0;
+        if (_blattnamen.Count > 0)
+        {
+            int i = _blattnamen.IndexOf(o.Blattname ?? "");
+            _iBlatt = i >= 0 ? i : 0;
+        }
+    }
+
+    /// <summary>Die Plaetze zurueck in Optionen (<c>DialogInOptionen</c>).</summary>
+    public GanglinienImportOptionen Optionen()
+    {
+        return new GanglinienImportOptionen
+        {
+            Trennzeichen = GanglinienOptionenModell.Wert(
+                GanglinienOptionenModell.Trennzeichenwerte, _iTrennzeichen, '\0'),
+            Dezimaltrenner = GanglinienOptionenModell.Wert(
+                GanglinienOptionenModell.Dezimalwerte, _iDezimal, '.'),
+            Einheit = GanglinienOptionenModell.Wert(
+                GanglinienOptionenModell.Einheitswerte, _iEinheit, GanglinienEinheit.Kilowatt),
+            Raster = GanglinienOptionenModell.Wert(
+                GanglinienOptionenModell.Rasterwerte, _iRaster, GanglinienRaster.Unbekannt),
+            Konvention = GanglinienOptionenModell.Wert(
+                GanglinienOptionenModell.Konventionswerte, _iKonvention, IntervallKonvention.Automatisch),
+            Kopfzeile = _kopfzeile,
+            WertSpalte = Math.Max(0, _iWertspalte),
+            ZeitSpalte = _iZeitspalte - 1,
+            Blattname = _iBlatt >= 0 && _iBlatt < _blattnamen.Count ? _blattnamen[_iBlatt] : ""
+        };
+    }
+
+    // =====================================================================
+    // Vorschau aktualisieren (Aktualisieren_Click)
+    // =====================================================================
+
+    private async Task BeiAktualisieren()
+    {
+        if (Vorschau is null) return;
+
+        GanglinienImportOptionen behalten = Optionen();
+        GanglinienVorschau? neu = await Vorschau(Pfad, behalten);
+        if (neu is null || !neu.Lesbar) return;
+
+        // Woertlich: Die Listen werden neu gefuellt, die OPTIONEN aber gerettet.
+        _vorschau = neu;
+        ListenFuellen(neu);
+        OptionenInDialog(behalten);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private Task BeiOk() => Geschlossen.InvokeAsync(Optionen());
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+
+    private static string Kurzname(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return "";
+        int i = pfad.LastIndexOfAny(new[] { '/', '\\' });
+        return i >= 0 ? pfad.Substring(i + 1) : pfad;
+    }
+}
