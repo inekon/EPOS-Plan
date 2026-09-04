@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
     /// geht keine Anfrage hinaus" muss OHNE Fenster prüfbar sein - der Aktionsharnisch
     /// läuft ohne Netz, ohne Schlüssel und ohne Dialoge. Hier steht deshalb nur der
     /// Zustand und die Entscheidung; den Hinweistext zeigt
-    /// <c>Form_KiHinweis</c>, das sich beim Programmstart über
+    /// <c>KiHinweisHuelle</c> (seit iU9-W15b.3; davor <c>Form_KiHinweis</c>),
+    /// die sich beim Programmstart über
     /// <see cref="Nachfragen"/> einhängt. Ist kein Haken eingehängt (Harnisch, Tests,
     /// Konsolenlauf), kann keine Einwilligung entstehen - und damit auch keine
     /// Übertragung.

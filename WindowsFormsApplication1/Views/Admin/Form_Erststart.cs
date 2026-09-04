@@ -18,7 +18,8 @@ namespace WindowsFormsApplication1
     ///     Weg dorthin. Vor dem Start lässt sich das Fenster jederzeit beenden - dann
     ///     bleibt der Access-Bestand unangetastet liegen.</description></item>
     ///   <item><description><b>Kein Designer und keine .resx</b> - Hausmuster wie
-    ///     <see cref="Form_KiHinweis"/>. Der Designer würde bei 150 % Skalierung die
+    ///     <c>Form_KiHinweis</c> (mit iU9-W15b.3 durch
+    ///     <c>KiHinweisHuelle</c> und die Razor-Komponente <c>KiHinweisDialog</c> ersetzt). Der Designer würde bei 150 % Skalierung die
     ///     AutoScale-Basis verschreiben; ein programmatisch gebautes Fenster kann das
     ///     nicht passieren.</description></item>
     /// </list>
