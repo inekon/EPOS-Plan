@@ -56,7 +56,11 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static void Einhaengen()
         {
-            KiEinwilligung.Nachfragen = () => Einholen();
+            // Seit iU9-W15b.0b ist der Haken asynchron (Befund W15b-B12): Eine
+            // Razor-Ueberlagerung kann nur ueber einen Task antworten. Das modale
+            // WinForms-Fenster antwortet weiterhin sofort - Task.FromResult haelt
+            // die Zusage, ohne einen Faden zu wechseln.
+            KiEinwilligung.Nachfragen = () => System.Threading.Tasks.Task.FromResult(Einholen());
         }
 
         /// <summary>

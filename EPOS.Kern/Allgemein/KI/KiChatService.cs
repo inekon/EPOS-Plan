@@ -175,7 +175,7 @@ namespace WindowsFormsApplication1
     ///    Serverprotokollen
     ///  - SendeVorschau() liefert jederzeit genau den Text, den der nächste
     ///    Aufruf senden würde (Selbstprüfung im Chatfenster)
-    ///  - vor JEDER Anfrage steht Einwilligungsriegel(): ohne Einwilligung in den
+    ///  - vor JEDER Anfrage steht EinwilligungsriegelAsync(): ohne Einwilligung in den
     ///    Rechtshinweis und bei gesetztem Abschalter der Installation entsteht kein
     ///    einziger Modellaufruf (siehe KiEinwilligung)
     ///
@@ -406,10 +406,11 @@ namespace WindowsFormsApplication1
         /// auch vor dem eingespeisten <see cref="Modellkanal"/>. Nur so lässt sich ohne
         /// Netz nachweisen, dass ohne Einwilligung kein einziger Modellaufruf entsteht.
         /// </remarks>
-        private static string Einwilligungsriegel()
+        private static async Task<string> EinwilligungsriegelAsync()
         {
             if (KiEinwilligung.Abgeschaltet) return MyResource.Resource.KI_ABSCHALTER_MELDUNG;
-            if (!KiEinwilligung.Sicherstellen()) return MyResource.Resource.KI_HINWEIS_ABGELEHNT;
+            if (!await KiEinwilligung.SicherstellenAsync().ConfigureAwait(true))
+                return MyResource.Resource.KI_HINWEIS_ABGELEHNT;
             return null;
         }
 
@@ -499,7 +500,7 @@ namespace WindowsFormsApplication1
                 return antwort;
             }
 
-            string riegel = Einwilligungsriegel();
+            string riegel = await EinwilligungsriegelAsync().ConfigureAwait(true);
             if (riegel != null)
             {
                 antwort.Fehler = riegel;
@@ -1085,7 +1086,7 @@ namespace WindowsFormsApplication1
             // Der Aktionsbetrieb überträgt MEHR als der Hilfefall (Werkzeugkatalog,
             // Ergebnisse) - er verlangt aber dieselbe Einwilligung, weil der Hinweistext
             // beides ausdrücklich benennt.
-            string sperre = Einwilligungsriegel();
+            string sperre = await EinwilligungsriegelAsync().ConfigureAwait(true);
             if (sperre != null)
             {
                 antwort.Fehler = sperre;

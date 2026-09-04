@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -392,7 +392,7 @@ namespace WindowsFormsApplication1
             // Der Aktionsbetrieb ueberträgt mehr (Werkzeugkatalog, Ergebnisse) und
             // verlangt deshalb die Einwilligung schon beim Einschalten - nicht erst bei
             // der ersten Frage. Wer ablehnt, bekommt den Schalter zurueckgestellt.
-            _chkAktionen.CheckedChanged += (s, e) => AktionsschalterGeaendert();
+            _chkAktionen.CheckedChanged += async (s, e) => await AktionsschalterGeaendert();
 
             _btnWerkzeuge = new Button
             {
@@ -815,11 +815,14 @@ namespace WindowsFormsApplication1
         /// Der Aktionsschalter wurde umgelegt. Beim EINschalten wird die Einwilligung in
         /// den Rechtshinweis sichergestellt; ohne sie bleibt der Schalter aus.
         /// </summary>
-        private void AktionsschalterGeaendert()
+        private async System.Threading.Tasks.Task AktionsschalterGeaendert()
         {
             if (_schalterLaeuft) return;
 
-            if (_chkAktionen.Checked && !KiEinwilligung.Sicherstellen())
+            // Seit iU9-W15b.0b wird asynchron gefragt (Befund W15b-B12). Unter Windows
+            // steht dahinter weiterhin das modale Hinweisfenster, das sofort antwortet;
+            // die Fortsetzung laeuft ueber den UI-Faden zurueck.
+            if (_chkAktionen.Checked && !await KiEinwilligung.SicherstellenAsync())
             {
                 _schalterLaeuft = true;
                 try { _chkAktionen.Checked = false; }
