@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W10a umgesetzt, W10b und W11a in Arbeit | `427fd59` | **50** Designer-Masken offen (55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang` |
+| **iU9** Masken in Wellen | 🔄 W0 bis W10b umgesetzt, W11a in Arbeit | `a91ba2a` | **49** Designer-Masken offen (50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,48 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 10b umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `cd849f8`)**
+>
+> Der zweite Lauf der Welle 10: **`Form_Simulation_Config` mit ihren vier Teildateien
+> (4 558 Zeilen), den drei Steuerelement-Klassen `ErzeugerKarte`/`SpeicherKarte`/`SchemaAnsicht`
+> (2 121 Zeilen) und dem Zeichenmodell → eine Razor-Seite `SimulationKonfigSeite`** mit den
+> Bausteinen **`Schema`** (das Hydraulikbild als SVG), **`ErzeugerKachel`** und **`SpeicherKachel`**;
+> `SchemaModell` unverändert in den Kern, dazu `SchemaLayout` (die Anordnung headless prüfbar) und
+> `Kaskade` (Platzlogik der `Tool_1…6`). Die sieben W10a-Dialoge hängen als Überlagerungen an der
+> Seite; ihre Hüllen verlieren den Fensterweg. **Hosting-Entscheid R‑W10b‑1:** die Komponente ist
+> eine Seite (`SeitenZustand`, Eintrag für `AppWurzel`), auf Windows bis W16 in der modalen
+> Dialoghülle, weil beide Aufrufer (Startbild, Detailansicht) die modale Rückkehr brauchen.
+> Arbeitsanweisung `iU9_W10b_Arbeitsanweisung.md`. Acht Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `2e75393` `93bd88f` | **W10b.0a/b** `SchemaModell` in den Kern, `SchemaLayout` neu; fünf inline-SQL in vier Controller, `Kaskade` und Quellenwahl im Kern, `KonfigurationCtrl.LiesProjekt` |
+> | `cac6eb4` `4caee3f` | **W10b.0c/d** Baustein `Schema` (Knoten, Bézier-Kanten, Kaskadenband, Legende, Klick/Doppelklick, Tastatur), Bausteine `ErzeugerKachel`/`SpeicherKachel` (Chips mit sechs Stilen und sechs Zielen, Schwellenband als Inline-SVG) |
+> | `dd132ff` | **W10b.1** die Seite: zwei Kartenspalten, Umschalter Liste/Schema mit erhaltener Auswahl, zwei eigene Überlagerungsebenen (Betriebsmodus, WP-Priorität, Quellenwahl, Wärmesenke, Pufferverwaltung; Quelle Pufferspeicher, Quellprofil, Erdreich), Fußzeile mit Sofortschaltern — vier Teildateien und drei Controls gelöscht |
+> | `d75908c` `6bea64e` `a91ba2a` | **W10b.2–4** Befund W10b‑B42 (`DatenzugriffTests` ohne Sammlungsmarke riss DB-Tests mit), Formularkarte, Protokoll, vier CLAUDE.md, iOS-Einstieg (`IProjektQuelle.SimulationKonfigGaben` mit Standardumsetzung) |
+>
+> **Der Ertrag ist eine WebView für die ganze Konfiguration.** Drei Navigationen und ~9 000 Zeilen
+> WinForms sind eine Seite mit **einem** `Neuladen()` (statt neun Auffrischungsstellen, W10‑B40);
+> die Kette Seite → Quelle/Senke → Pufferverwaltung → Klimazonenkarte läuft in **einem** Fenster,
+> Esc schließt je Ebene; `SeitenZustand` wird genau einmal gebraucht. Alle Befunde W10‑B33…B40
+> erledigt, dazu W10b‑B41 (`listErzeuger` ohne Leser) und B42. Ein Entscheid für den Anwender:
+> soll „Speichern“ erst nach einer Änderung aktiv werden (W10b‑O‑3)? Das Schema ist ohne
+> Bildvergleich portiert (W10b‑O‑1) — Sichtabnahme gegen ein Foto des Bestands.
+>
+> **Nachweise** (auf dem gemergten Stand `a91ba2a`, Linux): Build → 0 Fehler, **12** Warnungen
+> (17 nach W10a; fünf WFO1000 der gelöschten Karten) · `dotnet test WP-Plan.Kern.slnf` → **2 379**
+> grün (2 284 nach W10a), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün ·
+> Stapellauf **49** Masken (50 − 1), 48 erreichbar, 0 × „nein“ · SQL-Prüfer 1 239 Texte,
+> 0 Fundstellen · ChartProben 16 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS,
+> byte-gleich** (815 043 Werte) · `dotnet publish` mit `wwwroot` samt neuer CSS.
+>
+> **Protokoll** mit 13 Abweichungen (A‑1…A‑13), 16 Windows-Abnahmewegen und sieben offenen
+> Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W10b_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: eine WebView für alles, Chipfolge je Anlagentyp, Schema gegen das
+> Foto des Bestands, synchrone Auswahl in beiden Ansichten, drei Überlagerungsebenen mit Esc je
+> Ebene, Rücksprung aus `Form_Simulation_Detail`, de/en. Der iOS-Job läuft nach dem Merge
+> (elfter Lauf).
 
 > **Statusblock iU9 — Welle 10a umgesetzt (03.09.2026, Basis `04fc474` nach W9, zusammengeführt mit `b6a72b0`)**
 >
