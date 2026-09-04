@@ -14386,4 +14386,16 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_ZULETZT_GEOEFFNET" xml:space="preserve">
     <value>zuletzt geöffnet</value>
   </data>
+  <data name="HAUPT_CLAIM" xml:space="preserve">
+    <value>Energie · Planung · Optimierung · Simulation</value>
+  </data>
+  <data name="HAUPT_UEBER_HAUS" xml:space="preserve">
+    <value>INEKON - Intelligente Energiekonzepte</value>
+  </data>
+  <data name="HAUPT_UEBER_TITEL" xml:space="preserve">
+    <value>Über {0}</value>
+  </data>
+  <data name="HAUPT_VERSION" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
 </root>
