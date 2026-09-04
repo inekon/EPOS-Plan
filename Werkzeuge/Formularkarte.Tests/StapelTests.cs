@@ -38,7 +38,9 @@ public sealed class StapelTests
         // Form_QuellePufferspeicher und Form_PufferSp_Projekt. Ihre beiden
         // Geschwister Form_Quellprofil und Form_Waermesenke hatten nie einen
         // Designer (Befund W10-B38) und zaehlen hier deshalb nicht mit.
-        Assert.True(dateien.Count >= 53, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Welle 10b nimmt die letzte dieser Reihe mit: Form_Simulation_Config,
+        // den Wirt der sieben Dialoge (50).
+        Assert.True(dateien.Count >= 52, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -66,8 +68,9 @@ public sealed class StapelTests
         // 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Welle 10a stellt
         // SIEBEN Masken um, aber nur FUENF davon hatte die Karte je gesehen:
         // Form_Quellprofil und Form_Waermesenke bauen ihre Oberflaeche im Code
-        // auf und haben keinen Designer (Befund W10-B38).
-        Assert.True(Lauf.Value.Masken >= 50, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // auf und haben keinen Designer (Befund W10-B38). Welle 10b nimmt EINE
+        // weitere mit - Form_Simulation_Config, den Wirt der sieben (49).
+        Assert.True(Lauf.Value.Masken >= 49, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -81,10 +84,13 @@ public sealed class StapelTests
         // sieben weitere (47), Welle 8 alle zehn (37) - auch die drei
         // Brauchwassermasken zeichnen ueber ApplyResources, obwohl ihre Texte
         // deutsche Literale in der neutralen .resx sind. Welle 9 nimmt acht
-        // weitere mit (29); nur Form_Brauchwasser war unlokalisiert.
+        // weitere mit (29); nur Form_Brauchwasser war unlokalisiert. Welle 10b
+        // nimmt die EINZIGE lokalisierte Maske ihrer Welle mit - die sieben
+        // Dialoge der Welle 10a hatten keine eigene .resx, ihr Wirt
+        // Form_Simulation_Config schon (28).
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 29,
+        Assert.True(Lauf.Value.Lokalisierte >= 28,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
