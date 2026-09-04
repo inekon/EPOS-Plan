@@ -5878,9 +5878,6 @@ Several arrays of the same module type are allowed — please check whether this
   <data name="GESETZ_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>
-  <data name="GESETZ_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Apply</value>
-  </data>
   <data name="GESETZ_BTN_ABBRECHEN" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -13023,5 +13020,247 @@ The CHP unit never generates more electricity than the current own demand. The u
   </data>
   <data name="ALLG_LBL_EINHEIT" xml:space="preserve">
     <value>Unit:</value>
+  </data>
+  <data name="KLIMA_TITEL" xml:space="preserve">
+    <value>Climate data</value>
+  </data>
+  <data name="KLIMA_LBL_IMPORT_KOPF" xml:space="preserve">
+    <value>Import the meteorological data sets (TMY) for the climate region here.</value>
+  </data>
+  <data name="KLIMA_GRP_STANDORT" xml:space="preserve">
+    <value>Select a place or enter longitude and latitude</value>
+  </data>
+  <data name="KLIMA_GRP_LISTE" xml:space="preserve">
+    <value>List of imported regions</value>
+  </data>
+  <data name="KLIMA_LBL_ORT" xml:space="preserve">
+    <value>Select or enter a region (e.g. Berlin):</value>
+  </data>
+  <data name="KLIMA_LBL_ODER" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="KLIMA_LBL_LONGITUDE" xml:space="preserve">
+    <value>Longitude:</value>
+  </data>
+  <data name="KLIMA_LBL_LATITUDE" xml:space="preserve">
+    <value>Latitude:</value>
+  </data>
+  <data name="KLIMA_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Designation:</value>
+  </data>
+  <data name="KLIMA_LBL_DETAILS" xml:space="preserve">
+    <value>Details on the region:</value>
+  </data>
+  <data name="KLIMA_FELD_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_FELD_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_REGION" xml:space="preserve">
+    <value>Climate region</value>
+  </data>
+  <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
+    <value>Read data</value>
+  </data>
+  <data name="KLIMA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KLIMA_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KLIMA_REITER_TEMPERATUR" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="KLIMA_REITER_SONNENWINKEL" xml:space="preserve">
+    <value>Solar elevation</value>
+  </data>
+  <data name="KLIMA_DIA_TEMPERATUR" xml:space="preserve">
+    <value>Annual temperature curve</value>
+  </data>
+  <data name="KLIMA_DIA_SONNENWINKEL" xml:space="preserve">
+    <value>Solar elevation curve</value>
+  </data>
+  <data name="KLIMA_ACHSE_X" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="KLIMA_ACHSE_TEMPERATUR" xml:space="preserve">
+    <value>Temperature [°C]</value>
+  </data>
+  <data name="KLIMA_ACHSE_SONNENWINKEL" xml:space="preserve">
+    <value>Solar elevation [°]</value>
+  </data>
+  <data name="KLIMA_REIHE_TEMPERATUR" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="KLIMA_REIHE_SONNENWINKEL" xml:space="preserve">
+    <value>Solar elevation</value>
+  </data>
+  <data name="KLIMA_MSG_READONLY" xml:space="preserve">
+    <value>This climate region is write-protected (read-only) and cannot be deleted.</value>
+  </data>
+  <data name="KLIMA_MSG_AUSWAEHLEN" xml:space="preserve">
+    <value>Please select a climate region.</value>
+  </data>
+  <data name="KLIMA_MSG_ORT_UNBEKANNT" xml:space="preserve">
+    <value>The place “{0}” could not be determined. {1}</value>
+  </data>
+  <data name="KLIMA_MSG_EINGABEN_PRUEFEN" xml:space="preserve">
+    <value>Check the entries: longitude, latitude and designation are mandatory.</value>
+  </data>
+  <data name="KLIMA_MSG_PVGIS_EINGABE" xml:space="preserve">
+    <value>Input error (PVGIS): {0}</value>
+  </data>
+  <data name="KLIMA_MSG_DOWNLOAD_FEHLER" xml:space="preserve">
+    <value>Error while downloading the climate data: {0}</value>
+  </data>
+  <data name="KLIMA_MSG_IMPORT_FEHLER" xml:space="preserve">
+    <value>The import was cancelled. All changes have been rolled back. Error: {0}</value>
+  </data>
+  <data name="KLIMA_MSG_ID_FEHLT" xml:space="preserve">
+    <value>The ID of the newly created climate region could not be determined.</value>
+  </data>
+  <data name="KLIMA_MSG_SCHON_VORHANDEN" xml:space="preserve">
+    <value>The climate region “{0}” already exists.</value>
+  </data>
+  <data name="KLIMA_MSG_KEINE_DATEN" xml:space="preserve">
+    <value>There are no hourly values for this region.</value>
+  </data>
+  <data name="KLIMA_MSG_IMPORT_FERTIG" xml:space="preserve">
+    <value>The climate region “{0}” has been created: {1} hourly values and {2} daily values.</value>
+  </data>
+  <data name="KLIMA_MSG_ABGEBROCHEN" xml:space="preserve">
+    <value>The import was cancelled.</value>
+  </data>
+  <data name="KLIMA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Really delete the climate region “{0}”?
+
+Its hourly and daily values will be deleted as well.</value>
+  </data>
+  <data name="KLIMA_FRAGE_LOESCHEN_TITEL" xml:space="preserve">
+    <value>Delete climate region</value>
+  </data>
+  <data name="KLIMA_SCHRITT_KOORDINATEN" xml:space="preserve">
+    <value>Determining coordinates…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_ABRUF" xml:space="preserve">
+    <value>Retrieving climate data…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_RECHNEN" xml:space="preserve">
+    <value>Computing solar positions…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_REGION" xml:space="preserve">
+    <value>Creating the climate region…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_STUNDEN" xml:space="preserve">
+    <value>Writing hourly values…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_TAGE" xml:space="preserve">
+    <value>Writing daily values…</value>
+  </data>
+  <data name="KLIMA_SCHRITT_FERTIG" xml:space="preserve">
+    <value>Done.</value>
+  </data>
+  <data name="ADM_SET_TITEL" xml:space="preserve">
+    <value>Administration – global application settings</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_VDI" xml:space="preserve">
+    <value>VDI data sets</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_DATENBANK" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_WEB" xml:space="preserve">
+    <value>Web interfaces (API)</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ANWENDUNG" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="ADM_SET_LBL_VDI_PFAD" xml:space="preserve">
+    <value>Folder of the VDI 3805 data sets:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_EXPORT" xml:space="preserve">
+    <value>Folder for database backups:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_IMPORT" xml:space="preserve">
+    <value>Folder for database imports:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_PFAD" xml:space="preserve">
+    <value>Folder of the database:</value>
+  </data>
+  <data name="ADM_SET_LBL_DB_NAME" xml:space="preserve">
+    <value>Name of the database file:</value>
+  </data>
+  <data name="ADM_SET_LBL_WORDPRESS" xml:space="preserve">
+    <value>Address of the wiki (WordPress):</value>
+  </data>
+  <data name="ADM_SET_LBL_PVGIS" xml:space="preserve">
+    <value>Address of the PVGIS interface:</value>
+  </data>
+  <data name="ADM_SET_LBL_GEOKODIERUNG" xml:space="preserve">
+    <value>Address of the geocoding service (Nominatim):</value>
+  </data>
+  <data name="ADM_SET_LBL_ALLGEMEIN" xml:space="preserve">
+    <value>General application folder:</value>
+  </data>
+  <data name="ADM_SET_BTN_DURCHSUCHEN" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="ADM_SET_BTN_STANDARDWERTE" xml:space="preserve">
+    <value>Defaults</value>
+  </data>
+  <data name="ADM_SET_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The settings have been saved.</value>
+  </data>
+  <data name="ADM_SET_MSG_NEUSTART" xml:space="preserve">
+    <value>The folder and the name of the database take effect only at the next program start.</value>
+  </data>
+  <data name="ADM_SET_MSG_ORDNER_FEHLER" xml:space="preserve">
+    <value>The folders could not be created. Please check the path entries. Error: {0}</value>
+  </data>
+  <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
+    <value>The default values have been loaded. Use “Save” to apply them.</value>
+  </data>
+  <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
+    <value>Really reset all settings to the factory defaults?</value>
+  </data>
+  <data name="ADM_SET_FRAGE_STANDARDWERTE_TITEL" xml:space="preserve">
+    <value>Restore default values</value>
+  </data>
+  <data name="ADM_SET_MSG_KI_FEHLER" xml:space="preserve">
+    <value>The AI switch could not be read.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
+    <value>Duplicate findings</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
+    <value>Searching for duplicates…</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_GELOESCHT" xml:space="preserve">
+    <value>deleted.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Deletion failed – the row remains.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_PROT_UMBENENNEN_FEHLER" xml:space="preserve">
+    <value>(renaming failed)</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_PROTOKOLL_LEER" xml:space="preserve">
+    <value>There is nothing to save yet – the log is empty.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT" xml:space="preserve">
+    <value>The log has been saved.</value>
+  </data>
+  <data name="ADM_DUBLETTEN_MSG_VERWENDUNG_FEHLER" xml:space="preserve">
+    <value>The usage check failed: {0}</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SP_SPALTE" xml:space="preserve">
+    <value>Column</value>
+  </data>
+  <data name="ADM_DUBLETTEN_SP_WERT" xml:space="preserve">
+    <value>Value</value>
   </data>
 </root>
