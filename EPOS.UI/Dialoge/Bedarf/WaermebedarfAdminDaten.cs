@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WindowsFormsApplication1;
@@ -34,9 +36,12 @@ namespace EPOS.UI.Dialoge.Bedarf
     /// </summary>
     public sealed class WaermebedarfImportRueckrufe
     {
-        /// <summary>Der Konfliktdialog (Namensdubletten im Katalog).</summary>
+        /// <summary>
+        /// Der Konfliktdialog (Namensdubletten im Katalog). <c>null</c> als
+        /// RUECKGABE heisst Abbruch: Es wird nichts geschrieben.
+        /// </summary>
         public Func<List<ImportPruefung>, HashSet<string>,
-                    Task<List<KonfliktEntscheidung>>> Konflikte;
+                    Task<List<KonfliktEntscheidung>?>>? Konflikte;
     }
 
     /// <summary>Wie der Import einer Waermebedarfsganglinie ausgegangen ist.</summary>

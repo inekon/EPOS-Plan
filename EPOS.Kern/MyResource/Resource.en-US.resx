@@ -117,6 +117,42 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CEC_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>File not found.</value>
+  </data>
+  <data name="CEC_MSG_FEHLER" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="CEC_MSG_GELADEN" xml:space="preserve">
+    <value>{0} modules loaded.</value>
+  </data>
+  <data name="CEC_MSG_KEINE_QUELLE" xml:space="preserve">
+    <value>No CEC data source reachable.</value>
+  </data>
+  <data name="CEC_MSG_LEER" xml:space="preserve">
+    <value>CSV empty.</value>
+  </data>
+  <data name="CEC_PROT_CACHE_ALT" xml:space="preserve">
+    <value>Using the existing cache…</value>
+  </data>
+  <data name="CEC_PROT_CACHE_LADEN" xml:space="preserve">
+    <value>Loading from the local cache…</value>
+  </data>
+  <data name="CEC_PROT_CACHE_SUCHEN" xml:space="preserve">
+    <value>Looking for the local cache…</value>
+  </data>
+  <data name="CEC_PROT_FEHLER" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="CEC_PROT_GESPEICHERT" xml:space="preserve">
+    <value>File saved, parsing data…</value>
+  </data>
+  <data name="CEC_PROT_VERBINDEN" xml:space="preserve">
+    <value>Connecting to the sources…</value>
+  </data>
+  <data name="CEC_PROT_VERSUCHE" xml:space="preserve">
+    <value>Trying: {0}…</value>
+  </data>
   <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
     <value>💾 Save</value>
   </data>
@@ -495,6 +531,12 @@
   <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
     <value>Delete item</value>
   </data>
+  <data name="PAN_MSG_GELESEN" xml:space="preserve">
+    <value>{0} modules from PAN files.</value>
+  </data>
+  <data name="PAN_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The PAN file could not be read: {0}</value>
+  </data>
   <data name="PEAK_MSG_RECHNET" xml:space="preserve">
     <value>Calculating the peak shaving …</value>
   </data>
@@ -556,6 +598,156 @@
     <value>Combined storage tank: heating and domestic hot water are covered from ONE heat reservoir.
 Here the full cycles are the annual throughput relative to the capacity —
 with a small tank the figure becomes large without any additional ageing.</value>
+  </data>
+  <data name="PVIMP_ALLE" xml:space="preserve">
+    <value>(all)</value>
+  </data>
+  <data name="PVIMP_BTN_CEC" xml:space="preserve">
+    <value>🌐 Load CEC ▶</value>
+  </data>
+  <data name="PVIMP_BTN_PAN" xml:space="preserve">
+    <value>🌿 Load PAN ▶</value>
+  </data>
+  <data name="PVIMP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>✔ Apply selection</value>
+  </data>
+  <data name="PVIMP_BTN_ZURUECKSETZEN" xml:space="preserve">
+    <value>✖ Reset</value>
+  </data>
+  <data name="PVIMP_EINH_W" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="PVIMP_HINWEIS_PAN" xml:space="preserve">
+    <value>PVsyst PAN files carry no NOCT temperature and no current or voltage temperature coefficients in the form the catalogue expects; they stay empty.</value>
+  </data>
+  <data name="PVIMP_KOPFBAND" xml:space="preserve">
+    <value>Import - CEC and PAN modules</value>
+  </data>
+  <data name="PVIMP_LBL_ALPHA_ISC" xml:space="preserve">
+    <value>α_Isc / aIsc [A/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_BAUJAHR" xml:space="preserve">
+    <value>Year of construction:</value>
+  </data>
+  <data name="PVIMP_LBL_BETA_VOC" xml:space="preserve">
+    <value>β_Voc / BVoco [V/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_BIFAZIAL" xml:space="preserve">
+    <value>Bifacial:</value>
+  </data>
+  <data name="PVIMP_LBL_BREITE" xml:space="preserve">
+    <value>Width [m]:</value>
+  </data>
+  <data name="PVIMP_LBL_EFFIZIENZ" xml:space="preserve">
+    <value>Efficiency [%]:</value>
+  </data>
+  <data name="PVIMP_LBL_EFFIZIENZ_VON" xml:space="preserve">
+    <value>Efficiency from:</value>
+  </data>
+  <data name="PVIMP_LBL_FLAECHE" xml:space="preserve">
+    <value>Area [m²]:</value>
+  </data>
+  <data name="PVIMP_LBL_GAMMA_PMP" xml:space="preserve">
+    <value>γ_r – power TC [%/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="PVIMP_LBL_IMP" xml:space="preserve">
+    <value>Imp [A]:</value>
+  </data>
+  <data name="PVIMP_LBL_ISC" xml:space="preserve">
+    <value>Isc [A]:</value>
+  </data>
+  <data name="PVIMP_LBL_LAENGE" xml:space="preserve">
+    <value>Length [m]:</value>
+  </data>
+  <data name="PVIMP_LBL_LEISTUNG" xml:space="preserve">
+    <value>Power [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_LEISTUNG_VON" xml:space="preserve">
+    <value>Power from:</value>
+  </data>
+  <data name="PVIMP_LBL_PMP" xml:space="preserve">
+    <value>Pmp [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_PTC" xml:space="preserve">
+    <value>PTC [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_STC" xml:space="preserve">
+    <value>STC [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_SUCHE" xml:space="preserve">
+    <value>🔍 Search</value>
+  </data>
+  <data name="PVIMP_LBL_TECHNOLOGIE" xml:space="preserve">
+    <value>Technology:</value>
+  </data>
+  <data name="PVIMP_LBL_TNOCT" xml:space="preserve">
+    <value>T-NOCT [°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_VMP" xml:space="preserve">
+    <value>Vmp [V]:</value>
+  </data>
+  <data name="PVIMP_LBL_VOC" xml:space="preserve">
+    <value>Voc [V]:</value>
+  </data>
+  <data name="PVIMP_MSG_AKTUALISIERT" xml:space="preserve">
+    <value>Record updated successfully.</value>
+  </data>
+  <data name="PVIMP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Record saved successfully.</value>
+  </data>
+  <data name="PVIMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select a PV module!</value>
+  </data>
+  <data name="PVIMP_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Error saving the record!</value>
+  </data>
+  <data name="PVIMP_PLATZHALTER_SUCHE" xml:space="preserve">
+    <value>e.g.  Trina*  or  *410*  or  *mono*2022*</value>
+  </data>
+  <data name="PVIMP_REITER_ELEKTRISCH" xml:space="preserve">
+    <value>⚡ Electrical</value>
+  </data>
+  <data name="PVIMP_REITER_THERMISCH" xml:space="preserve">
+    <value>🌡 Thermal</value>
+  </data>
+  <data name="PVIMP_REITER_UEBERSICHT" xml:space="preserve">
+    <value>📋 Overview</value>
+  </data>
+  <data name="PVIMP_SP_BIFAZIAL" xml:space="preserve">
+    <value>Bifacial</value>
+  </data>
+  <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
+    <value>Efficiency (%)</value>
+  </data>
+  <data name="PVIMP_SP_ISC" xml:space="preserve">
+    <value>Isc [A]</value>
+  </data>
+  <data name="PVIMP_SP_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="PVIMP_SP_MODULNAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
+  <data name="PVIMP_SP_PMP" xml:space="preserve">
+    <value>Pmp (W)</value>
+  </data>
+  <data name="PVIMP_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PVIMP_SP_VOC" xml:space="preserve">
+    <value>Voc [V]</value>
+  </data>
+  <data name="PVIMP_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready. Please load the CEC database or a PAN file.</value>
+  </data>
+  <data name="PVIMP_STATUS_GEFUNDEN" xml:space="preserve">
+    <value>Filter selection ({0} modules found)</value>
+  </data>
+  <data name="PVIMP_TITEL" xml:space="preserve">
+    <value>Photovoltaic module import</value>
   </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Source draw-off height (0…1):</value>

@@ -158,6 +158,14 @@ namespace WindowsFormsApplication1
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);
 
                 // --- Masken mit Argument ---------------------------------------------
+                // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
+                // PvModulImportDialog. Das Argument sagt, mit welcher Quelle sie
+                // aufmacht ("CEC" bzw. "PAN"); bis dahin oeffneten die beiden
+                // Menuepunkte dieselbe Maske im SELBEN Zustand (Befund W13-B51)
+                // und gingen ganz an der Navigation vorbei (B55).
+                case Masken.PvImport:
+                    return PvModulImportHuelle.Oeffnen(null, TextOder(argumente, 0, "CEC"));
+
                 // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
                 // PeakShavingDialog; die Huelle zeigt sie modal. Der Rueckgabewert
                 // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
@@ -359,6 +367,16 @@ namespace WindowsFormsApplication1
         {
             if (argumente == null || argumente.Length <= stelle) return "";
             return argumente[stelle] as string ?? "";
+        }
+
+        /// <summary>
+        /// Ein Textargument mit VORGABE (iU9-W13.3): Der PV-Modulimport braucht
+        /// seine Quelle auch dann, wenn ein Aufrufer sie nicht mitgibt.
+        /// </summary>
+        private static string TextOder(object[] argumente, int stelle, string vorgabe)
+        {
+            string wert = Text(argumente, stelle);
+            return wert.Length > 0 ? wert : vorgabe;
         }
     }
 }

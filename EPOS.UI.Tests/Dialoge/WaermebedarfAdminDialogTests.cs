@@ -356,7 +356,7 @@ public class WaermebedarfAdminDialogTests : BunitContext
                             Befund = ImportBefund.NameVorhanden,
                             Vorhanden = new KatalogSatz { Id = 1, Name = "jahr" } }
                 };
-                await rueckrufe.Konflikte(pruefungen, new HashSet<string> { "jahr" });
+                await rueckrufe.Konflikte!(pruefungen, new HashSet<string> { "jahr" });
                 wartet.TrySetResult(true);
                 return new WaermebedarfImportErgebnis();
             });

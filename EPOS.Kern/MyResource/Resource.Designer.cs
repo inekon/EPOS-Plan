@@ -3207,6 +3207,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei nicht gefunden. ähnelt.
+        /// </summary>
+        public static string CEC_MSG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("CEC_MSG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: {0} ähnelt.
+        /// </summary>
+        public static string CEC_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("CEC_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module geladen. ähnelt.
+        /// </summary>
+        public static string CEC_MSG_GELADEN {
+            get {
+                return ResourceManager.GetString("CEC_MSG_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine CEC-Datenquelle erreichbar. ähnelt.
+        /// </summary>
+        public static string CEC_MSG_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("CEC_MSG_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV leer. ähnelt.
+        /// </summary>
+        public static string CEC_MSG_LEER {
+            get {
+                return ResourceManager.GetString("CEC_MSG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwende vorhandenen Cache… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_CACHE_ALT {
+            get {
+                return ResourceManager.GetString("CEC_PROT_CACHE_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade aus lokalem Cache… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_CACHE_LADEN {
+            get {
+                return ResourceManager.GetString("CEC_PROT_CACHE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche lokalen Cache… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_CACHE_SUCHEN {
+            get {
+                return ResourceManager.GetString("CEC_PROT_CACHE_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: {0} ähnelt.
+        /// </summary>
+        public static string CEC_PROT_FEHLER {
+            get {
+                return ResourceManager.GetString("CEC_PROT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei gespeichert, parse Daten… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("CEC_PROT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbinde mit Quellen… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_VERBINDEN {
+            get {
+                return ResourceManager.GetString("CEC_PROT_VERBINDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versuche: {0}… ähnelt.
+        /// </summary>
+        public static string CEC_PROT_VERSUCHE {
+            get {
+                return ResourceManager.GetString("CEC_PROT_VERSUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung (kWh) ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
@@ -14056,6 +14164,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module aus PAN-Dateien. ähnelt.
+        /// </summary>
+        public static string PAN_MSG_GELESEN {
+            get {
+                return ResourceManager.GetString("PAN_MSG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PAN-Datei konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string PAN_MSG_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("PAN_MSG_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht amortisierbar ähnelt.
         /// </summary>
         public static string PEAK_AMORT_NIE {
@@ -17226,6 +17352,456 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_VOLLZYKLEN_KOMBI_TIP {
             get {
                 return ResourceManager.GetString("PSP_VOLLZYKLEN_KOMBI_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (alle) ähnelt.
+        /// </summary>
+        public static string PVIMP_ALLE {
+            get {
+                return ResourceManager.GetString("PVIMP_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🌐 CEC laden ▶ ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_CEC {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_CEC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🌿 PAN laden ▶ ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_PAN {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_PAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ✔ Auswahl übernehmen ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ✖ Zurücksetzen ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W ähnelt.
+        /// </summary>
+        public static string PVIMP_EINH_W {
+            get {
+                return ResourceManager.GetString("PVIMP_EINH_W", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVsyst-PAN-Dateien führen keine NOCT-Temperatur und keine St [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string PVIMP_HINWEIS_PAN {
+            get {
+                return ResourceManager.GetString("PVIMP_HINWEIS_PAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import - CEC und PAN Module ähnelt.
+        /// </summary>
+        public static string PVIMP_KOPFBAND {
+            get {
+                return ResourceManager.GetString("PVIMP_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die α_Isc / aIsc [A/°C]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_ALPHA_ISC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_ALPHA_ISC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_BAUJAHR {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die β_Voc / BVoco [V/°C]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_BETA_VOC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_BETA_VOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bifazial: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_BIFAZIAL {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_BIFAZIAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Breite [m]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_BREITE {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_BREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz [%]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_EFFIZIENZ {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_EFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz von: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_EFFIZIENZ_VON {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_EFFIZIENZ_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_FLAECHE {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die γ_r – Leistungs-TK [%/°C]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_GAMMA_PMP {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_GAMMA_PMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Imp [A]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_IMP {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_IMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Isc [A]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_ISC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_ISC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Länge [m]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_LAENGE {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [W]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung von: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_LEISTUNG_VON {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_LEISTUNG_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pmp [W]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_PMP {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_PMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PTC [W]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_PTC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_PTC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die STC [W]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_STC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_STC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🔍 Suchen ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_SUCHE {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technologie: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_TECHNOLOGIE {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_TECHNOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T-NOCT [°C]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_TNOCT {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_TNOCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vmp [V]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_VMP {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_VMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Voc [V]: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_VOC {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_VOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz erfolgreich aktualisiert. ähnelt.
+        /// </summary>
+        public static string PVIMP_MSG_AKTUALISIERT {
+            get {
+                return ResourceManager.GetString("PVIMP_MSG_AKTUALISIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz erfolgreich gespeichert. ähnelt.
+        /// </summary>
+        public static string PVIMP_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PVIMP_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein PV-Modul selektieren! ähnelt.
+        /// </summary>
+        public static string PVIMP_MSG_KEINE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("PVIMP_MSG_KEINE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern des Datensatzes! ähnelt.
+        /// </summary>
+        public static string PVIMP_MSG_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("PVIMP_MSG_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die z.B.  Trina*  oder  *410*  oder  *mono*2022* ähnelt.
+        /// </summary>
+        public static string PVIMP_PLATZHALTER_SUCHE {
+            get {
+                return ResourceManager.GetString("PVIMP_PLATZHALTER_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚡ Elektrisch ähnelt.
+        /// </summary>
+        public static string PVIMP_REITER_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("PVIMP_REITER_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🌡 Thermisch ähnelt.
+        /// </summary>
+        public static string PVIMP_REITER_THERMISCH {
+            get {
+                return ResourceManager.GetString("PVIMP_REITER_THERMISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 📋 Übersicht ähnelt.
+        /// </summary>
+        public static string PVIMP_REITER_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("PVIMP_REITER_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bifazial ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_BIFAZIAL {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_BIFAZIAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz (%) ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_EFFIZIENZ {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_EFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Isc [A] ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_ISC {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_ISC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_JAHR {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulname: ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_MODULNAME {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_MODULNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pmp (W) ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_PMP {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_PMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Voc [V] ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_VOC {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_VOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit. Bitte CEC Datenbank oder PAN Datei laden. ähnelt.
+        /// </summary>
+        public static string PVIMP_STATUS_BEREIT {
+            get {
+                return ResourceManager.GetString("PVIMP_STATUS_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter Auswahl ({0} Module gefunden) ähnelt.
+        /// </summary>
+        public static string PVIMP_STATUS_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("PVIMP_STATUS_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik Module Import ähnelt.
+        /// </summary>
+        public static string PVIMP_TITEL {
+            get {
+                return ResourceManager.GetString("PVIMP_TITEL", resourceCulture);
             }
         }
         

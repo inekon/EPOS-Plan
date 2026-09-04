@@ -780,16 +780,19 @@ namespace WindowsFormsApplication1
             menu.WP_Administration();
         }
 
+        // iU9-W13.0k: Beide Menuepunkte oeffnen dieselbe Razor-Komponente
+        // (PvModulImportDialog), jetzt aber im richtigen Zustand: Das Argument
+        // sagt, mit welcher Quelle sie aufmacht. Bis dahin brachte "PAN laden"
+        // die Maske NICHT in den PAN-Modus (Befund W13-B51), und beide gingen an
+        // der Navigation vorbei (B55).
         private void MenuItem_PV_Import_CEC_Click(object sender, EventArgs e)
         {
-            Main_PV_Test frm = new Main_PV_Test();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PvImport, "CEC");
         }
 
         private void MenuItem_PV_Import_PAN_Click(object sender, EventArgs e)
         {
-            Main_PV_Test frm = new Main_PV_Test();
-            frm.ShowDialog();
+            Dienste.Navigation.OeffneMaske(Masken.PvImport, "PAN");
         }
 
         private void MenuItem_Einstellungen_Click(object sender, EventArgs e)

@@ -341,9 +341,17 @@ namespace WindowsFormsApplication1
             Dienste.Navigation.OeffneMaske(Masken.BrauchwasserAdmin);
         }
 
+        /// <summary>
+        /// Herstellerdaten PV-Module einlesen — die CEC-Modulliste.
+        ///
+        /// <para><b>Sie war LEER</b> (Befund W13-B52): Der Menuepunkt
+        /// <c>MenuItem_PV_Import</c> rief sie, und es geschah nichts. Seit
+        /// iU9-W13.0k oeffnet sie die Maske ueber ihren Schluessel — wie jeder
+        /// andere Menueweg auch.</para>
+        /// </summary>
         public void PVImport()
         {
-
+            Dienste.Navigation.OeffneMaske(Masken.PvImport, "CEC");
         }
 
         public void SolarThermieImport()

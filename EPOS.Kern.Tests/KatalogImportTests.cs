@@ -477,7 +477,12 @@ namespace EPOS.Kern.Tests
             var r = svc.LoadFromFile(Probe("cec_module_50.csv"));
 
             Assert.True(r.success);
-            Assert.Equal("50 Module geladen.", r.message);
+            // iU9-W13.0j: Die Rueckmeldung ist ein SCHLUESSEL mit Platzhalterwerten
+            // und kein deutscher Satz mehr - der Kern kennt keine Anzeigetexte
+            // (Abweichung A-17). Beim Einfrieren am 04.09.2026 stand hier noch
+            // "50 Module geladen.".
+            Assert.Equal("CEC_MSG_GELADEN", r.meldung.Schluessel);
+            Assert.Equal("50", r.meldung.Werte[0]);
             Assert.Equal(50, svc.AllModules.Count);
 
             var m = svc.AllModules[0];
@@ -617,6 +622,133 @@ namespace EPOS.Kern.Tests
 
             Assert.False(m.Bifacial);
             Assert.Equal(0.70, m.BifacialityFactor, 6);
+        }
+
+        /// <summary>
+        /// <b>Der Bifazialschalter ist ein WAHRHEITSWERT</b> (iU9-W13.0j, Befund
+        /// W13-B50, Abweichung A-18): Bis dahin schrieb der Kern „Ja" bzw. „Nein"
+        /// — deutsche Anzeigetexte in der Schicht, die am wenigsten davon wissen
+        /// darf. Der Rohwert der CSV-Spalte bleibt unveraendert stehen.
+        /// </summary>
+        [Fact]
+        public void CecMeldetBifazialAlsWahrheitswert()
+        {
+            var svc = new CECDataService();
+            svc.LoadFromFile(Probe("cec_module_50.csv"));
+
+            Assert.All(svc.AllModules, m => Assert.Equal("0", m.Bifacial));
+            Assert.All(svc.AllModules, m => Assert.False(m.Bifazial));
+
+            var einseitig = new PVModule { Bifacial = "0" };
+            var beidseitig = new PVModule { Bifacial = "1" };
+            var wahr = new PVModule { Bifacial = "TRUE" };
+            Assert.False(einseitig.Bifazial);
+            Assert.True(beidseitig.Bifazial);
+            Assert.True(wahr.Bifazial);
+        }
+
+        /// <summary>
+        /// <b>Das Jahr kommt aus der Kopfzeile</b> (iU9-W13.0j, Befund W13-B48):
+        /// Der Vorlaeufer griff auf den FESTEN Spaltenindex 26 zu, obwohl jedes
+        /// andere Feld ueber die Kopfzeile aufgeloest wird. Eine geaenderte
+        /// Spaltenfolge haette den ganzen Import geworfen.
+        /// </summary>
+        [Fact]
+        public void CecLoestDasJahrUeberDieKopfzeileAuf()
+        {
+            var svc = new CECDataService();
+            svc.LoadFromFile(Probe("cec_module_50.csv"));
+
+            Assert.All(svc.AllModules, m => Assert.Equal(2024, m.Date));
+        }
+
+        // ==================================================================
+        // 6b — Die Aufraeumarbeiten an CEC und PAN (iU9-W13.0j)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die PTC-Naeherung steht im MODELL</b> (Befund W13-B43, Abweichung
+        /// A-19): Sie stand in <c>Form_CECImport.ShowDetail</c> :431-437 — eine
+        /// Fachaussage im Anzeigecode. Die Zahl ist unveraendert:
+        /// <c>PNom · (1 + muPmpReq/100 · 20)</c>.
+        /// </summary>
+        [Fact]
+        public void PanSchaetztDiePtcLeistungAusDerNennleistung()
+        {
+            PanModule m = PanDataService.ParsePan(
+                File.ReadAllText(Probe("pan_trina_tsm650.pan"), AnsiEncoding.Get()));
+
+            // 650 * (1 + (-0,34/100) * 20) = 650 * 0,932 = 605,8
+            Assert.Equal(650.0 * (1 + (-0.34 / 100.0) * 20), m.PtcGeschaetzt, 9);
+            Assert.Equal(605.8, m.PtcGeschaetzt, 6);
+        }
+
+        /// <summary>
+        /// <b>Die Sitzungsliste ist ein Instanzfeld</b> (Befund W13-B46,
+        /// Abweichung A-20): Statisch ueberlebte sie das Schliessen der Maske und
+        /// den Projektwechsel. Das SAMMELN mehrerer Dateien bleibt Absicht — es
+        /// war die Lebensdauer, die falsch war.
+        /// </summary>
+        [Fact]
+        public void PanSammeltJeSitzungUndNichtJeProzess()
+        {
+            var eine = new PanDataService();
+            eine.Einlesen(File.ReadAllText(Probe("pan_jinko_jkm260p.pan"), AnsiEncoding.Get()),
+                          "pan_jinko_jkm260p.pan");
+            eine.Einlesen(File.ReadAllText(Probe("pan_lg_320n1k.pan"), AnsiEncoding.Get()),
+                          "pan_lg_320n1k.pan");
+
+            Assert.Equal(2, eine.AllModules.Count);
+            Assert.Equal("Jinkosolar JKM 260P-60", eine.AllModules[0].Name);
+            Assert.Equal("LG Electronics LG 320 N1K-A5", eine.AllModules[1].Name);
+
+            // Eine ZWEITE Sitzung faengt bei null an.
+            Assert.Empty(new PanDataService().AllModules);
+
+            // Dieselbe Datei ein zweites Mal ERSETZT ihren Altbestand.
+            eine.Einlesen(File.ReadAllText(Probe("pan_jinko_jkm260p.pan"), AnsiEncoding.Get()),
+                          "pan_jinko_jkm260p.pan");
+            Assert.Equal(2, eine.AllModules.Count);
+
+            eine.Leeren();
+            Assert.Empty(eine.AllModules);
+        }
+
+        /// <summary>
+        /// <c>Einlesen</c> reicht den Dateinamen durch — <c>SourceFile</c> bleibt
+        /// nicht mehr leer (Befund W13-B45, Abweichung A-21).
+        /// </summary>
+        [Fact]
+        public void PanMerktSichDieHerkunftDerDatei()
+        {
+            var svc = new PanDataService();
+            PanModule m = svc.Einlesen(
+                File.ReadAllText(Probe("pan_lg_320n1k.pan"), AnsiEncoding.Get()),
+                "pan_lg_320n1k.pan");
+
+            Assert.Equal("pan_lg_320n1k", m.SourceFile);
+            Assert.Same(m, svc.AllModules[0].Source);
+        }
+
+        /// <summary>
+        /// Das aufgenommene Modul traegt den ROHWERT des Bifazialschalters, nicht
+        /// „Ja (0,70)" — der Faktor kommt ueber <c>Source</c> mit.
+        /// </summary>
+        [Fact]
+        public void PanNimmtDenRohwertDesBifazialschaltersAuf()
+        {
+            var svc = new PanDataService();
+            svc.Einlesen(File.ReadAllText(Probe("pan_trina_tsm650.pan"), AnsiEncoding.Get()),
+                         "pan_trina_tsm650.pan");
+
+            PVModule pv = svc.AllModules[0];
+            Assert.Equal("0", pv.Bifacial);
+            Assert.False(pv.Bifazial);
+            Assert.Equal(0.70, pv.Source.BifacialityFactor, 6);
+
+            UnifiedModule u = UnifiedModule.FromPanCec(pv);
+            Assert.False(u.Bifacial);
+            Assert.Equal(0.70, u.BifazialFaktor, 6);
         }
 
         // ==================================================================

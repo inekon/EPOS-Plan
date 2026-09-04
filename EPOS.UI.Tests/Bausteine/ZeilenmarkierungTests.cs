@@ -130,7 +130,7 @@ public class ZeilenmarkierungTests
 
         w.Anklicken(99, true, false);
         Assert.Equal(new[] { 7, 11 }, w.QuellIndizes(anzeige));
-        Assert.Empty(w.QuellIndizes(null));
+        Assert.Empty(w.QuellIndizes(null!));
     }
 
     [Fact]
