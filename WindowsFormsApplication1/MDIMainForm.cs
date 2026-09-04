@@ -674,9 +674,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Lizenz_Click(object sender, EventArgs e)
         {
-            // Lizenzvereinbarung und AGB anzeigen (Grundlage: LIZENZ-INEKON.rtf
-            // aus dem Projektstammverzeichnis)
-            Form_Lizenz.Anzeigen(this);
+            // Lizenzvereinbarung und rechtliche Hinweise anzeigen. Seit iU9-W15c.11
+            // ist das die Razor-Komponente LizenzDialog; die Huelle sucht den
+            // Vertragstext ueber LizenzTextCtrl (Datei, Zwischenspeicher oder die
+            // Online-Fassung von epos-plan.de).
+            LizenzHuelle.Anzeigen(this);
         }
 
         /// <summary>
