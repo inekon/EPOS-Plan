@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿﻿﻿using Xunit;
 
 namespace Formularkarte.Tests;
 
@@ -92,7 +92,12 @@ public sealed class StapelTests
         // Form_LizenzVerwaltung (14). Ihre zwei Geschwister zaehlten hier nie mit:
         // Form_Lizenz und Form_Erststart bauen ihre Oberflaeche im Code auf und
         // haben keinen Designer (Befund W15c-B2).
-        Assert.True(dateien.Count >= 14, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        //
+        // iU9-W16a.1 (04.09.2026): Die Teilwelle nimmt GENAU EINEN Designer mit -
+        // Wizard_Stromlastgang (13). Die Assistentenseite 6 ist seither DIESELBE
+        // Razor-Komponente wie der Dialog der Startkachel (StromganglinieDialog aus
+        // W12, Befund W12-O-3).
+        Assert.True(dateien.Count >= 13, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -145,7 +150,10 @@ public sealed class StapelTests
         // Welle 15c nimmt EINE mit (11): Form_LizenzVerwaltung. Form_Lizenz und
         // Form_Erststart fallen in derselben Welle, zaehlten hier aber nie mit -
         // beide bauen ihre Oberflaeche im Code auf (Befund W15c-B2).
-        Assert.True(Lauf.Value.Masken >= 11, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Welle 16a.1 nimmt EINE mit (10): Wizard_Stromlastgang, die
+        // Assistentenseite 6 - sie ist seither DIESELBE Razor-Komponente wie der
+        // Dialog der Startkachel (StromganglinieDialog aus W12).
+        Assert.True(Lauf.Value.Masken >= 10, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -196,7 +204,9 @@ public sealed class StapelTests
         // Texte werden im Code gesetzt, und zwar zu 93 % aus MyResource.Resource.KI_*.
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 7,
+        // Welle 16a.1 nimmt EINE lokalisierte mit (6): Wizard_Stromlastgang war in
+        // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache).
+        Assert.True(Lauf.Value.Lokalisierte >= 6,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
@@ -213,10 +223,13 @@ public sealed class StapelTests
         var bestand = Lauf.Value.Typen;
         var muster = PruefmusterTypen();
 
-        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "ListBox", "TabPage" })
+        // iU9-W16a.1: ListBox wechselt in die zweite Gruppe. Die beiden letzten
+        // ListBox des Bestands standen in Wizard_Stromlastgang; das Pruefmuster
+        // fuehrt den Typ weiter (Wizard_WPItem, Form_WP_einlesen).
+        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage" })
             Assert.True(bestand.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
 
-        foreach (var typ in new[] { "GroupBox", "CheckBox", "NumericUpDown", "DataGridView", "Chart" })
+        foreach (var typ in new[] { "GroupBox", "CheckBox", "NumericUpDown", "DataGridView", "Chart", "ListBox" })
             Assert.True(bestand.ContainsKey(typ) || muster.Contains(typ),
                         "Typ " + typ + " kam weder im Stapellauf noch im Pruefmuster vor.");
 

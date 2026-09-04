@@ -364,9 +364,14 @@ namespace WindowsFormsApplication1
                 stromSeite.Modelle = list_stromverbrauchermodel;
                 stromSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
             }
-            else if (top == WizardItemClass.STROMLASTGANG_ITEM)
+            // iU9-W16a.1: Der LETZTE harte Typumbruch der Kette ist entfallen
+            // (Befund W16-B15). Die Stromlastgangseite ist seither eine
+            // BlazorAssistentSeite<StromganglinieDialog, Z_ProjektStromganglinieModel>
+            // und faellt in den Zweig darunter - die Kette ist damit typfrei.
+            else if (page is IAssistentListenSeite<Z_ProjektStromganglinieModel> ganglinieSeite)
             {
-                ((Wizard_Stromlastgang)page).SetControls(ucProjektAuswahl.GewaehlterName);
+                ganglinieSeite.Modelle = list_stromlastmodel;
+                ganglinieSeite.Bestuecken(projektID, ucProjektAuswahl.GewaehlterName);
             }
 
             btnBack.Enabled = true;

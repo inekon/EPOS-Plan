@@ -160,6 +160,19 @@
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
+    /// <summary>
+    /// Meldung nach jeder Aenderung an <see cref="Zeilen"/> (iU9-W16a.1).
+    ///
+    /// <para><b>Wozu.</b> Im DIALOGbetrieb schreibt die Huelle die Liste nach dem
+    /// Schliessen zurueck (<c>ShowDialog</c> kehrt zurueck, dann laeuft
+    /// <c>Zurueckschreiben</c>). Als ASSISTENTENSEITE gibt es kein Schliessen: Der
+    /// Rahmen blaettert weiter, und die geteilte
+    /// <c>List&lt;Z_ProjektStromganglinieModel&gt;</c> muss den Stand SOFORT tragen.
+    /// Derselbe Rueckruf und derselbe Grund wie in <c>GebaeudeDialog.Geaendert</c>
+    /// (iU9-W9.2).</para>
+    /// </summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -270,6 +283,7 @@
 
         Zeilen.Add(neu);
         ProjektZeileWaehlen(neu);
+        Geaendert?.Invoke();
     }
 
     /// <summary>
@@ -282,6 +296,7 @@
         if (_projektZeile is null) return;
         Zeilen.Remove(_projektZeile);
         _projektZeile = null;
+        Geaendert?.Invoke();
     }
 
     // =====================================================================

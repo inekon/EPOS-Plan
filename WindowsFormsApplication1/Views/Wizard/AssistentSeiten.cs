@@ -48,7 +48,10 @@ namespace WindowsFormsApplication1
             // Bestuecken (siehe BlazorAssistentSeite).
             /* 4  PROZESS_ITEM       */ () => BedarfsProfileHuelle.AssistentSeiteProzess(),
             /* 5  STROMSTD_ITEM      */ () => BedarfsProfileHuelle.AssistentSeiteStrom(),
-            /* 6  STROMLASTGANG_ITEM */ () => new Wizard_Stromlastgang(),
+            // iU9-W16a.1: Die Stromlastgangseite ist DIESELBE Razor-Komponente wie der
+            // Dialog der Startkachel (StromganglinieDialog aus W12, Befund W12-O-3) -
+            // sie bearbeitet die geteilte Liste bereits an Ort und Stelle.
+            /* 6  STROMLASTGANG_ITEM */ () => StromganglinieHuelle.AssistentSeite(),
             // iU9-W7.5: Die WP-Seite ist eine Razor-Komponente; die Huelle baut ihre
             // WebView erst in Bestuecken (siehe BlazorAssistentSeite).
             /* 7  WP_ITEM            */ () => WaermepumpenHuelle.AssistentSeite(),
@@ -74,7 +77,8 @@ namespace WindowsFormsApplication1
                                         Z_ProjektProzesswaermeModel>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.BedarfsProfileDialog,
                                         Z_ProjektStromverbraucherModel>),
-            typeof(Wizard_Stromlastgang),
+            typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Strom.StromganglinieDialog,
+                                        Z_ProjektStromganglinieModel>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Erzeuger.PhotovoltaikDialog>),

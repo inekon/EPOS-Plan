@@ -29,11 +29,77 @@ namespace WindowsFormsApplication1
     /// „Bearbeiten…" zeigt <c>StromganglinieAdminDialog</c> in derselben WebView;
     /// die Hülle reicht dafür nur den Parametersatz
     /// <see cref="StromganglinieAdminHuelle.Gaben"/> durch (Risiko R2).</para>
+    ///
+    /// <para><b>Seit iU9-W16a.1 ist sie auch die ASSISTENTENSEITE 6</b> (Befund
+    /// W12-O-3: <c>Wizard_Stromlastgang</c> war derselbe Vorgang für den Assistenten,
+    /// nur mit zwei <c>ListBox</c> statt zweier Raster und mit einem konkatenierten
+    /// <c>SELECT</c> darin). Es entsteht KEINE zweite Komponente — dieselbe
+    /// <c>StromganglinieDialog</c> läuft mit <c>Wizard = true</c> (ohne Schlussleiste)
+    /// in einer <see cref="BlazorAssistentSeite{TKomponente, TModell}"/>. Der
+    /// Unterschied zum Dialogweg ist der RÜCKWEG: Dort schreibt
+    /// <see cref="Zurueckschreiben"/> nach dem Schließen, hier nach jeder Änderung
+    /// (Rückruf <c>Geaendert</c>) — der Assistent blättert weiter, es gibt kein
+    /// Schließen.</para>
     /// </summary>
     internal static class StromganglinieHuelle
     {
         /// <summary>Gewünschtes Innenmaß (Vorläufer: 678 × 345).</summary>
         private static readonly Size MASS = new Size(880, 520);
+
+        /// <summary>
+        /// Die STROMLASTGANG-SEITE des Assistenten (Index 6) — dieselbe Komponente,
+        /// randlose Hülle. Muster <c>GebaeudeHuelle.AssistentSeite()</c>.
+        /// </summary>
+        internal static Form AssistentSeite()
+        {
+            return new BlazorAssistentSeite<StromganglinieDialog, Z_ProjektStromganglinieModel>(
+                (projektId, projektName, modelle) =>
+                    new Dictionary<string, object>(Gaben(projektId, modelle, wizard: true)),
+                MASS);
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ der Komponente — für den Dialog- wie für den
+        /// Assistentenweg.
+        /// </summary>
+        /// <param name="projektId">Das Projekt (für die Zuordnungszeilen).</param>
+        /// <param name="liste">
+        /// Die geteilte Zuordnungsliste; sie wird an Ort und Stelle bearbeitet.
+        /// </param>
+        /// <param name="wizard">Assistentenbetrieb: keine OK/Abbrechen-Leiste.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int projektId, List<Z_ProjektStromganglinieModel> liste, bool wizard)
+        {
+            if (liste == null) throw new ArgumentNullException(nameof(liste));
+
+            List<GanglinienProjektZeile> zeilen = Zeilen(liste);
+
+            var werte = new Dictionary<string, object>
+            {
+                ["Zeilen"] = zeilen,
+                ["Wizard"] = wizard,
+                ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(KatalogLesen),
+                ["Verwaltung"] = StromganglinieAdminHuelle.Gaben()
+            };
+
+            // Der Assistent schliesst nicht - er blaettert. Deshalb geht der Stand nach
+            // JEDER Aenderung in die geteilte Liste zurueck; der Dialogweg tut es
+            // einmal nach ShowDialog.
+            if (wizard)
+                werte["Geaendert"] = new Action(() => Zurueckschreiben(projektId, zeilen, liste));
+
+            return werte;
+        }
+
+        /// <summary>Die Zuordnungsmodelle als Anzeigezeilen der Komponente.</summary>
+        private static List<GanglinienProjektZeile> Zeilen(List<Z_ProjektStromganglinieModel> liste)
+        {
+            List<GanglinienProjektZeile> zeilen = new List<GanglinienProjektZeile>();
+            foreach (Z_ProjektStromganglinieModel m in liste)
+                zeilen.Add(new GanglinienProjektZeile(m.m_ID_Z, m.m_ID_Stromganglinie,
+                                                      m.m_szStromganglinie ?? ""));
+            return zeilen;
+        }
 
         /// <summary>
         /// Zeigt die Zuordnung modal und schreibt die Liste an Ort und Stelle
@@ -50,25 +116,17 @@ namespace WindowsFormsApplication1
         {
             if (liste == null) throw new ArgumentNullException(nameof(liste));
 
-            List<GanglinienProjektZeile> zeilen = new List<GanglinienProjektZeile>();
-            foreach (Z_ProjektStromganglinieModel m in liste)
-                zeilen.Add(new GanglinienProjektZeile(m.m_ID_Z, m.m_ID_Stromganglinie,
-                                                      m.m_szStromganglinie ?? ""));
-
             bool ok = false;
             BlazorDialogForm<StromganglinieDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>
+            var werte = new Dictionary<string, object>(Gaben(projektId, liste, wizard: false));
+            List<GanglinienProjektZeile> zeilen = (List<GanglinienProjektZeile>)werte["Zeilen"];
+
+            werte["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
             {
-                ["Zeilen"] = zeilen,
-                ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(KatalogLesen),
-                ["Verwaltung"] = StromganglinieAdminHuelle.Gaben(),
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
+                ok = b;
+                if (dlg != null) dlg.Schliessen(b);
+            });
 
             dlg = new BlazorDialogForm<StromganglinieDialog>(
                 MyResource.Resource.STROMGL_TITEL, MASS, werte);
