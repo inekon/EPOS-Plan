@@ -76,39 +76,80 @@ namespace WindowsFormsApplication1
         /// Lizenzstatus bestimmen (rein offline, ohne Serverkontakt).
         /// Wird beim Programmstart und vor lizenzpflichtigen Aktionen gerufen.
         /// </summary>
+        /// <remarks>
+        /// Seit iU9-W15c.1 ist das nur noch die FASSADE: Token laden, Anker lesen,
+        /// <see cref="Bewerten"/> rufen, Anker fortschreiben. Die Rechnung selbst steht
+        /// in <see cref="Bewerten"/> und ist damit ohne Ablage und mit vorgegebenem
+        /// Datum prüfbar (Entscheid W15c-E-10, Weg W2). <b>Das Verhalten ist
+        /// unverändert</b> — dieselben Zeilen, nur verschoben.
+        /// </remarks>
         public static LizenzStatus Pruefe()
         {
             TokenLaden();
             DateTime heute = DateTime.UtcNow.Date;
+            DateTime anker = AnkerLesen();
 
+            // Die Geraete-Id wird NUR ermittelt, wenn es ueberhaupt ein Token gibt -
+            // genau wie vor der Zerlegung: Ohne Token bricht Bewerten vorher ab, und
+            // GeraeteId.Ermitteln() liest unter Windows Registry und Laufwerkskennung.
+            LizenzStatus status = Bewerten(_token,
+                                           _token == null ? "" : GeraeteId.Ermitteln(),
+                                           heute, anker);
+
+            // Der Anker wird fortgeschrieben, sobald die Uhrpruefung bestanden ist -
+            // dieselbe Stelle wie vorher (unmittelbar nach der Pruefung, vor allem
+            // Weiteren).
+            if (status != LizenzStatus.UhrManipuliert) AnkerSchreiben(heute);
+
+            return status;
+        }
+
+        /// <summary>
+        /// Die reine Zustandsrechnung: aus Token, Gerätebindung, Tagesdatum und
+        /// Zeitanker wird genau einer der sechs <see cref="LizenzStatus"/>-Werte.
+        /// Ohne Ablage, ohne Netz, ohne Nebenwirkung.
+        /// </summary>
+        /// <param name="token">Das geladene Token, oder <c>null</c>.</param>
+        /// <param name="geraeteId">Geräte-Id dieses Arbeitsplatzes (nur bei vorhandenem Token nötig).</param>
+        /// <param name="heute">Der heutige Tag (UTC, ohne Uhrzeit).</param>
+        /// <param name="anker">Höchster je gesehener Tag; <see cref="DateTime.MinValue"/> = keiner.</param>
+        /// <remarks>
+        /// <b>Die Reihenfolge ist Bedeutung</b> (Konzept „Zeitlich beschränkte
+        /// Lizenzierung", Kap. 4): Uhrprüfung, Token, Gerät, Lizenzlaufzeit,
+        /// Offline-Leine. Die Laufzeit sticht die Leine — wer abgelaufen ist, kommt nie
+        /// in <see cref="LizenzStatus.NachpruefungFaellig"/>. Ein fremdes Gerät sieht
+        /// aus wie „nicht aktiviert" und nicht wie „ungültig": Ein kopiertes Token soll
+        /// den Anwender zur Aktivierung führen.
+        /// </remarks>
+        internal static LizenzStatus Bewerten(LizenzToken token, string geraeteId,
+                                              DateTime heute, DateTime anker)
+        {
             // Uhr-Manipulationsschutz: Systemzeit darf nicht vor dem höchsten
             // je gesehenen Zeitpunkt liegen (1 Tag Toleranz für Zeitzonen u. Ä.).
             // Beim allerersten Start existiert noch kein Anker (DateTime.MinValue) —
             // dann entfällt die Prüfung; AddDays auf "heute" statt auf dem Anker,
             // damit MinValue.AddDays(-1) keine ArgumentOutOfRangeException wirft.
-            DateTime anker = AnkerLesen();
             if (anker > DateTime.MinValue && heute.AddDays(1) < anker)
                 return LizenzStatus.UhrManipuliert;
-            AnkerSchreiben(heute);
 
-            if (_token == null)
+            if (token == null)
                 return LizenzStatus.NichtAktiviert;
 
             // Gerätebindung
-            if (!string.Equals(_token.GeraeteId, GeraeteId.Ermitteln(), StringComparison.Ordinal))
+            if (!string.Equals(token.GeraeteId, geraeteId, StringComparison.Ordinal))
                 return LizenzStatus.NichtAktiviert;
 
             // Lizenzlaufzeit
-            if (_token.GueltigBis.HasValue && heute > _token.GueltigBis.Value)
+            if (token.GueltigBis.HasValue && heute > token.GueltigBis.Value)
             {
-                DateTime kulanzEnde = _token.GueltigBis.Value.AddDays(Math.Max(0, _token.KulanzTage));
+                DateTime kulanzEnde = token.GueltigBis.Value.AddDays(Math.Max(0, token.KulanzTage));
                 return heute <= kulanzEnde ? LizenzStatus.Kulanz : LizenzStatus.Lesemodus;
             }
 
             // Offline-Leine
-            if (_token.TokenBis.HasValue && heute > _token.TokenBis.Value)
+            if (token.TokenBis.HasValue && heute > token.TokenBis.Value)
             {
-                DateTime karenzEnde = _token.TokenBis.Value.AddDays(KARENZ_TAGE);
+                DateTime karenzEnde = token.TokenBis.Value.AddDays(KARENZ_TAGE);
                 return heute <= karenzEnde ? LizenzStatus.NachpruefungFaellig : LizenzStatus.Lesemodus;
             }
 
@@ -119,21 +160,35 @@ namespace WindowsFormsApplication1
         public static string StatusText()
         {
             LizenzStatus status = Pruefe();
-            LizenzToken t = _token;
+            return StatusText(status, _token);
+        }
+
+        /// <summary>
+        /// Derselbe Kurztext zu einem BEREITS ermittelten Zustand — ohne Ablage.
+        /// </summary>
+        /// <remarks>
+        /// Seit iU9-W15c.3 kommen die sechs Sätze aus <c>MyResource.Resource.LIZ_ST_*</c>
+        /// statt aus dem Quelltext. Sie waren der letzte unlokalisierte Anwendertext des
+        /// Lizenzwegs und erscheinen an drei Stellen: in der Lizenzverwaltung, in der
+        /// Fußzeile des Lizenzdialogs und in der Ablehnungsmeldung des KI-Assistenten.
+        /// </remarks>
+        internal static string StatusText(LizenzStatus status, LizenzToken t)
+        {
             switch (status)
             {
                 case LizenzStatus.Gueltig:
-                    return t.TypText() + " · gültig bis " + Datum(t.GueltigBis);
+                    return string.Format(MyResource.Resource.LIZ_ST_GUELTIG,
+                                         t.TypText(), Datum(t.GueltigBis));
                 case LizenzStatus.Kulanz:
-                    return "Lizenz am " + Datum(t.GueltigBis) + " abgelaufen — Kulanzfenster läuft, bitte verlängern.";
+                    return string.Format(MyResource.Resource.LIZ_ST_KULANZ, Datum(t.GueltigBis));
                 case LizenzStatus.NachpruefungFaellig:
-                    return "Online-Nachprüfung fällig — bitte einmal mit Internetverbindung starten.";
+                    return MyResource.Resource.LIZ_ST_NACHPRUEFUNG;
                 case LizenzStatus.Lesemodus:
-                    return "Lizenz abgelaufen — Lesemodus (Projekte ansehen und exportieren).";
+                    return MyResource.Resource.LIZ_ST_LESEMODUS;
                 case LizenzStatus.UhrManipuliert:
-                    return "Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrigieren oder online nachprüfen.";
+                    return MyResource.Resource.LIZ_ST_UHR;
                 default:
-                    return "Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.";
+                    return MyResource.Resource.LIZ_ST_NICHTAKTIVIERT;
             }
         }
 
@@ -143,7 +198,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool DarfSchreiben()
         {
-            LizenzStatus s = Pruefe();
+            return DarfSchreiben(Pruefe());
+        }
+
+        /// <summary>
+        /// Dieselbe Frage zu einem BEREITS ermittelten Zustand — ohne Ablage und ohne
+        /// Zeitanker (iU9-W15c.1). Genau drei Zustände sagen ja.
+        /// </summary>
+        internal static bool DarfSchreiben(LizenzStatus s)
+        {
             return s == LizenzStatus.Gueltig
                 || s == LizenzStatus.Kulanz
                 || s == LizenzStatus.NachpruefungFaellig;

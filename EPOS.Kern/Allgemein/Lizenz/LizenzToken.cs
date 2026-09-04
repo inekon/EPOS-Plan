@@ -145,14 +145,51 @@ namespace WindowsFormsApplication1
             return DateTime.TryParse(s, out DateTime d) ? d.Date : (DateTime?)null;
         }
 
+        /// <summary>
+        /// Baut ein Token für einen PRÜFSTAND — ohne Signatur, ohne
+        /// <see cref="RohJson"/> und damit ohne jede Möglichkeit, es abzulegen
+        /// (<c>LizenzManager.TokenSpeichern</c> schriebe <c>null</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Die eine Signaturprüfstelle bleibt unberührt</b> (Sicherheitsregel S3 der
+        /// Welle iU9-W15c): <see cref="SignaturPruefen"/> ist weiterhin der einzige Weg,
+        /// auf dem ein Token aus einer Zeichenkette entsteht. Diese Fabrik ist kein
+        /// zweiter Prüfweg, sondern eine Bauhilfe: Die vierzehn Zustandsfälle aus
+        /// <c>LizenzZustandTests</c> unterscheiden sich nur in Datum, Kulanztagen und
+        /// Gerätebindung — für sie gibt es kein echtes Server-Token, und ein echtes
+        /// gehörte auch nicht ins Repository (es trägt Firmen- und Benutzerdaten und
+        /// eine Gerätebindung).
+        /// </remarks>
+        internal static LizenzToken FuerPruefstand(string geraeteId,
+                                                   DateTime? gueltigBis = null,
+                                                   int kulanzTage = 0,
+                                                   DateTime? tokenBis = null,
+                                                   string typ = null)
+        {
+            return new LizenzToken
+            {
+                GeraeteId = geraeteId,
+                GueltigBis = gueltigBis,
+                KulanzTage = kulanzTage,
+                TokenBis = tokenBis,
+                Typ = typ,
+            };
+        }
+
         /// <summary>Lizenztyp als Anzeigetext.</summary>
+        /// <remarks>
+        /// Die drei Texte kommen seit iU9-W15c.3 aus <c>MyResource.Resource.LIZ_TYP_*</c>.
+        /// Der Wert von <see cref="Typ"/> selbst ist ein SCHLÜSSEL des Servers
+        /// (<c>demo</c>/<c>person</c>/<c>firma</c>) und bleibt unübersetzt — ein
+        /// unbekannter Typ wird durchgereicht statt geraten.
+        /// </remarks>
         public string TypText()
         {
             switch (Typ)
             {
-                case "demo": return "Demoversion";
-                case "person": return "Personenbezogene Lizenz";
-                case "firma": return "Firmenlizenz";
+                case "demo": return MyResource.Resource.LIZ_TYP_DEMO;
+                case "person": return MyResource.Resource.LIZ_TYP_PERSON;
+                case "firma": return MyResource.Resource.LIZ_TYP_FIRMA;
                 default: return Typ ?? "-";
             }
         }

@@ -86,8 +86,15 @@ namespace WindowsFormsApplication1
             { "Form_Gesetzesparameter",      B_ADMIN },
             { "Form_GesetzparameterZeile",   B_ADMIN },
             { "Form_KatalogDubletten",       B_ADMIN },
+            // iU9-W15c: Beide Lizenzmasken sind Razor-Komponenten. Die
+            // Klassennamen bleiben hier stehen - sie sind der Schluessel, unter dem
+            // HilfeAutomatik ein geoeffnetes Fenster erkennt -, und die zwei
+            // Komponenten kommen daneben. Dieselbe Praxis wie bei KiChatDialog
+            // (W15b.7) und BedarfAdminDialog (W14b.1).
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
+            { "LizenzVerwaltungDialog",      B_LIZENZ },
+            { "LizenzDialog",                B_LIZENZ },
 
             // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE Razor-Komponente
             // (KatalogBrowserDialog) mit vier Auspraegungen. Die Maskennamen bleiben

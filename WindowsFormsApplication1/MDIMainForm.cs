@@ -413,11 +413,10 @@ namespace WindowsFormsApplication1
             {
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     Dienste.Sprache.IstEnglisch ? "License…" : "Lizenz…");
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
-                        frm.ShowDialog(this);
-                };
+                // iU9-W15c.5: Die Lizenzverwaltung ist eine Razor-Komponente
+                // (EPOS.UI/Dialoge/Lizenz/LizenzVerwaltungDialog.razor); hier steht
+                // nur noch der Aufruf ihrer Windows-Huelle.
+                eintrag.Click += (s, e) => LizenzVerwaltungHuelle.Oeffnen(this);
                 eintrag.Image = Properties.Resources.lizenzen_32;
                 eintrag.ImageScaling = ToolStripItemImageScaling.None;
                 // Direkt unterhalb von "Einstellungen" einordnen
@@ -675,9 +674,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Lizenz_Click(object sender, EventArgs e)
         {
-            // Lizenzvereinbarung und AGB anzeigen (Grundlage: LIZENZ-INEKON.rtf
-            // aus dem Projektstammverzeichnis)
-            Form_Lizenz.Anzeigen(this);
+            // Lizenzvereinbarung und rechtliche Hinweise anzeigen. Seit iU9-W15c.11
+            // ist das die Razor-Komponente LizenzDialog; die Huelle sucht den
+            // Vertragstext ueber LizenzTextCtrl (Datei, Zwischenspeicher oder die
+            // Online-Fassung von epos-plan.de).
+            LizenzHuelle.Anzeigen(this);
         }
 
         /// <summary>

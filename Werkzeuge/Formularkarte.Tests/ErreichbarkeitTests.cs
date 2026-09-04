@@ -141,9 +141,14 @@ public sealed class ErreichbarkeitTests
     [Fact]
     public void DieUmgestelltenKostenmaskenStehenNichtMehrImGraphen()
     {
+        // iU9-W15c: Die drei Lizenz- und Erststartmasken kommen dazu. Zwei von
+        // ihnen hatten nie einen Designer und tauchten deshalb im Stapellauf nicht
+        // auf - im GRAPHEN standen sie sehr wohl, denn er liest den Quelltext:
+        // Form_Erststart war der einzige Maskenzweig an der Wurzel Program.
         foreach (var klasse in new[] { "Form_KostenKomponente", "Form_Energietraeger",
                                        "ucFuelSettings", "ucVorlagenZeile", "ucErtragBonus",
-                                       "ucStromAufschlaege", "ucBrennstoffBestandteile" })
+                                       "ucStromAufschlaege", "ucBrennstoffBestandteile",
+                                       "Form_Lizenz", "Form_LizenzVerwaltung", "Form_Erststart" })
         {
             Assert.True(Graph.Fuer(klasse) is null, "Der Graph kennt " + klasse + " noch.");
         }
@@ -323,9 +328,13 @@ public sealed class ErreichbarkeitTests
         // Welle 15a: 13 von 13, nach Welle 15b: 12 von 12 - sie nimmt GENAU EINE
         // Designer-Maske mit (Form_KiEinstellungen); ihre fuenf Geschwister haben
         // keinen Designer, bleiben (Form_HelpPopup, Entscheid E-2) oder fallen erst
-        // mit Welle 16 (Form_Hinweis, Entscheid E-1b). Die Zahl sinkt mit jeder
-        // Welle, der Anteil steht seit W14a auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 12,
+        // mit Welle 16 (Form_Hinweis, Entscheid E-1b). Nach Welle 15c: 11 von 11 -
+        // sie nimmt ebenfalls GENAU EINE Designer-Maske mit
+        // (Form_LizenzVerwaltung, der kuerzeste MDI-Pfad des ganzen Bestands mit
+        // zwei Gliedern); ihre zwei Geschwister Form_Lizenz und Form_Erststart
+        // haben keinen Designer und tauchten in dieser Zaehlung nie auf. Die Zahl
+        // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 11,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

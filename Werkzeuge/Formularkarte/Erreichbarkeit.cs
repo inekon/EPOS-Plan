@@ -148,8 +148,17 @@ public static class Erreichbarkeit
 
     /// <summary>
     /// Die Klasse mit dem Programmeinsprung. <c>Program.Main</c> laeuft vor jedem
-    /// Fenster und zeigt den Erststart-Dialog; ohne sie waere der verwaist.
+    /// Fenster.
     /// </summary>
+    /// <remarks>
+    /// <b>Seit iU9-W15c haengt an dieser Wurzel keine MASKE mehr</b> (Auflage O-2):
+    /// Ihre beiden Zweige - der Erststart-Assistent und die Lizenzzustimmung - sind
+    /// Razor-Komponenten, und <c>Program.Main</c> ruft nur noch ihre Huellen
+    /// (<c>ErststartHuelle.Zeigen</c>, <c>LizenzHuelle.ZustimmungSicherstellen</c>).
+    /// Die Wurzel bleibt trotzdem richtig und bleibt stehen: Sie ist der Ort, an dem
+    /// ein Weg VOR dem Hauptfenster beginnt, und der naechste solche Weg soll
+    /// wiedergefunden werden statt als verwaist zu gelten.
+    /// </remarks>
     public const string Wurzelklasse = "Program";
 
     private static readonly Dictionary<string, Erreichbarkeitsgraph> Graphen = new(StringComparer.Ordinal);
