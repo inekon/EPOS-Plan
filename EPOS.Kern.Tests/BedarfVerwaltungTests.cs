@@ -199,6 +199,88 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <see cref="BedarfStammCtrl.Bezeichner"/> (W14b.0a) liefert GENAU die Liste, die
+        /// <c>SetControls</c> gefuellt hat — Reihenfolge und Inhalt.
+        /// </summary>
+        [Fact]
+        public void Bezeichner_liefert_die_Liste_der_Maske()
+        {
+            if (!_db.Vorhanden) return;
+
+            var bw = new BrauchwasserStammCtrl();
+            bw.ReadAll();
+            Assert.Equal(Enumerable.Range(0, bw.rows).Select(i => bw.items[i].m_szBezeichner).ToList(),
+                         BedarfStammCtrl.Bezeichner(BedarfsArt.Brauchwasser));
+
+            var pw = new ProzesswaermeStammCtrl();
+            pw.ReadAll();
+            Assert.Equal(Enumerable.Range(0, pw.rows).Select(i => pw.items[i].m_szProzessname).ToList(),
+                         BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme));
+
+            var sv = new StromverbraucherStammCtrl();
+            sv.ReadAll();
+            Assert.Equal(Enumerable.Range(0, sv.rows).Select(i => sv.items[i].m_szBezeichner).ToList(),
+                         BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher));
+
+            Assert.Equal(16, BedarfStammCtrl.Bezeichner(BedarfsArt.Brauchwasser).Count);
+            Assert.Equal(32, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
+            Assert.Equal(41, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);
+        }
+
+        /// <summary>
+        /// <see cref="BedarfStammCtrl.Kopf"/> (W14b.0a) liefert dasselbe wie
+        /// <c>SetProzessInfo</c>; einen Satz, den es nicht gibt, meldet er als
+        /// <c>null</c> — der Vorlaeufer liess die Felder dann stehen.
+        /// </summary>
+        [Fact]
+        public void Kopf_liefert_Beschreibung_und_Typ()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(("3 Personenhaushalt mit 2,5 MWh jährlichem Stromverbrauch", "Test"),
+                         BedarfStammCtrl.Kopf(BedarfsArt.Brauchwasser, "Haushalt-3"));
+            Assert.Equal(("Wärmebedarf ist jahreszeitlich unabhängig", "CONT"),
+                         BedarfStammCtrl.Kopf(BedarfsArt.Prozesswaerme, "CONT"));
+            Assert.Equal(("Stromberdarf ist jahreszeitlich unabhängig", "Konst"),
+                         BedarfStammCtrl.Kopf(BedarfsArt.Stromverbraucher, "Büro_Konst"));
+
+            foreach (BedarfsArt art in ALLE)
+                Assert.Null(BedarfStammCtrl.Kopf(art, "gibt-es-nicht-" + Guid.NewGuid()));
+        }
+
+        /// <summary>
+        /// <see cref="BedarfStammCtrl.Loeschen"/> (W14b.0a) prueft die ReadOnly-Sperre
+        /// SELBST und meldet sie als Wert — der Stammcontroller haette dafuer einen
+        /// modalen Kasten gezeigt. Der Fall schreibt und legt sich seinen Satz selbst an.
+        /// </summary>
+        [Fact]
+        public void Loeschen_meldet_seine_drei_Ausgaenge()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Auslieferungsbestand bleibt stehen.
+            Assert.Equal(BedarfLoeschErgebnis.Schreibgeschuetzt,
+                         BedarfStammCtrl.Loeschen(BedarfsArt.Brauchwasser, "Haushalt-3"));
+            Assert.True(BedarfStammCtrl.Exists(BedarfsArt.Brauchwasser, "Haushalt-3"));
+
+            // Ein selbst angelegter Satz geht.
+            string name = "W14b-Probe-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            var monat = new double[12];
+            for (int m = 0; m < 12; m++) monat[m] = m + 1;
+            Assert.True(BedarfStammCtrl.SaveHead(BedarfsArt.Prozesswaerme, name, "CONT", "Probe", monat, true));
+            Assert.True(BedarfStammCtrl.Exists(BedarfsArt.Prozesswaerme, name));
+
+            Assert.Equal(BedarfLoeschErgebnis.Geloescht,
+                         BedarfStammCtrl.Loeschen(BedarfsArt.Prozesswaerme, name));
+            Assert.False(BedarfStammCtrl.Exists(BedarfsArt.Prozesswaerme, name));
+
+            // Ein leerer Name kommt gar nicht erst an die Datenbank.
+            Assert.Equal(BedarfLoeschErgebnis.Fehlgeschlagen,
+                         BedarfStammCtrl.Loeschen(BedarfsArt.Prozesswaerme, ""));
+        }
+
+        /// <summary>
         /// <c>Exists</c> und <c>IstReadOnly</c> — die beiden Sperren, an denen „Neues
         /// Profil" und „Loeschen" haengen. Der Brauchwasserkatalog ist der einzige der
         /// drei mit Auslieferungssaetzen.
