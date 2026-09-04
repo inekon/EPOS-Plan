@@ -283,6 +283,15 @@ Zweige `Gesetzesparameter`, `GesetzesparameterCo2` (W14c) und `SpeicherOptimieru
 Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der
 pauschalen Freigabe bis Migrationsende.
 
+**Sechzehnter Lauf 33861268537 (`ios.yml`, `macos-26`, 04.09.2026, 10:02–10:11 UTC, 9 min 28 s)** auf
+`0cc1495` — der Stand **nach der Welle 14c**: grün. Erstmals mit dem Gesetzeskatalog (`GesetzeskatalogDialog` mit
+Zeilendialog als Überlagerung), der Katalog-Dublettensuche über dem Baustein `Baumansicht`, dem Einstellungsdialog
+(`EinstellungenCtrl` im Kern über `Dienste.Pfade`/`Dienste.Einstellungen`) und den Klimaregionen (`KlimaregionStammCtrl`
+und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer); ohne `ChartManager` (die MS-Chart-Bindung ist beendet),
+ohne `RoundedPanel`, und die Sprungbrücke trägt nur noch den Zweig `SpeicherOptimierung`. Bau, Simulatorstart, Erststart
+mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe
+bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
