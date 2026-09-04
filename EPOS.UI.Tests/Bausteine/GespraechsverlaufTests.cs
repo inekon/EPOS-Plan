@@ -83,7 +83,7 @@ public class GespraechsverlaufTests : BunitContext
 
         Assert.Contains(klasse, zeile.ClassName);
         // Genau EINE Rollenklasse - sonst überlagern sich zwei Farben.
-        Assert.Single(zeile.ClassName!.Split(' ').Where(k => k.StartsWith("epos-verlauf-zeile--")));
+        Assert.Single(zeile.ClassName!.Split(' '), k => k.StartsWith("epos-verlauf-zeile--"));
     }
 
     /// <summary>Die zehn Rollen des Aufzählungstyps sind vollständig belegt.</summary>
