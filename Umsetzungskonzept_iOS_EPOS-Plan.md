@@ -1467,9 +1467,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > beim Erststart, Drucken, Speichern unter, de/en, 125 %. Der zwanzigste iOS-Lauf (33883210632) auf diesem Stand ist grün.
 >
 > **Rückweg-Anker für W16 (R‑W16‑12): `975ead5`** — der Statusblock-Commit dieser Welle, der letzte Stand vor W16a. Der
-> Git-Tag `vor-W16` liegt lokal in der CI-Umgebung, ließ sich aber nicht pushen (der Push-Zugang der Umgebung erlaubt nur
-> den Zweig `ios_migration`, Tag-Refs werden mit HTTP 403 abgewiesen). **Auf dem Windows-Arbeitsplatz nachholen:**
-> `git fetch origin ios_migration && git tag -a vor-W16 975ead5 -m "Stand vor Welle 16" && git push origin vor-W16`.
+> Git-Tag `vor-W16` ließ sich aus der CI-Umgebung nicht pushen (der Push-Zugang der Umgebung erlaubt nur den Zweig
+> `ios_migration`, Tag-Refs werden mit HTTP 403 abgewiesen); **der Anwender hat ihn am 04.09.2026 vom Arbeitsplatz aus
+> gesetzt** — `refs/tags/vor-W16` zeigt auf `975ead5`.
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
