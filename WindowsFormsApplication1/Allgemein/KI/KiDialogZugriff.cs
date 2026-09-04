@@ -151,8 +151,8 @@ namespace WindowsFormsApplication1
         /// <b>Die Besitzerkette gehoert zur Frage.</b> Ein blosser Vergleich mit
         /// <c>Form.ActiveForm</c> ginge im Betrieb nie auf: Der Anwender ruft den
         /// Assistenten ueber <see cref="KiAufrufKnopf"/> aus der Maske heraus, und
-        /// <c>Form_KiChat.Oeffnen(besitzer)</c> zeigt das Chatfenster als BESESSENES
-        /// Fenster der Maske (<c>Views\Help\Form_KiChat.cs:1491</c>). Im Augenblick des
+        /// <c>KiChatHuelle.Oeffnen(besitzer)</c> zeigt das Chatfenster als BESESSENES
+        /// Fenster der Maske (<c>Views\Help\KiChatHuelle.cs</c>, seit iU9-W15b.7). Im Augenblick des
         /// Klicks auf „Ausfuehren" ist deshalb der Chat aktiv und nicht die Maske. Genau
         /// diese Kette laeuft die Schleife hoch - und nur sie: Ein Fenster, das die Maske
         /// nicht besitzt, macht die Maske nicht zum Arbeitsplatz des Anwenders.

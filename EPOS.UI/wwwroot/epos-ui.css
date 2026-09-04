@@ -3095,3 +3095,238 @@ body {
     border-top: 1px solid var(--epos-rahmen);
     padding-top: 8px;
 }
+
+/* --------------------------------------------------------------------------
+   Das Chatfenster des KI-Assistenten (iU9-W15b.7).
+
+   Der Vorlaeufer dockte acht Bereiche in einem 720 x 580-Fenster (Docking, keine
+   absoluten Koordinaten). Hier ist es eine Spalte: Kontext, Feldsicherung,
+   Verlauf (der WAECHST), Schalterzeile, Eingabe, Hinweiszeile, Fussleiste.
+   -------------------------------------------------------------------------- */
+.epos-kichat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+}
+
+/* Die Kontextzeile - im Vorlaeufer ein 26 px hohes Label in #005AA0. */
+.epos-kichat-kontext {
+    margin: 0;
+    color: var(--epos-verlauf-kopf);
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-kichat-hinweiszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* Die Fussleiste: Links links, Status in der Mitte, Knoepfe rechts. */
+.epos-kichat-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kichat-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.epos-kichat-status {
+    flex: 1 1 auto;
+    text-align: center;
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-knoepfe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Ein Verweis ist ein KNOPF - die Komponente oeffnet nichts selbst, sie meldet.
+   Dieselbe Ueberlegung wie im Gespraechsverlauf (G-6). */
+.epos-kichat-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kichat-link:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Die Eingabezeile (Feld + zwei Knoepfe).
+   -------------------------------------------------------------------------- */
+.epos-kieingabe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieingabe-feld {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieingabe-knoepfe {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Der Bestaetigungsblock - gedaempftes Gelb wie im Vorlaeufer (255,249,226).
+   -------------------------------------------------------------------------- */
+.epos-kibest {
+    background: rgb(255, 249, 226);
+    border: 1px solid var(--epos-warn-text);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px;
+}
+
+.epos-kibest-titel {
+    margin: 0 0 6px 0;
+    color: var(--epos-verlauf-bestaetigung);
+    font-weight: 600;
+}
+
+.epos-kibest-text {
+    margin: 0 0 8px 0;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    padding: 6px 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kibest-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kibest-verfall {
+    color: var(--epos-verlauf-warnung);
+}
+
+@media (forced-colors: active) {
+    .epos-kibest { border: 2px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Die Werkzeugliste (Ueberlagerung): links die Aktionen, rechts Beschreibung
+   und Parameterfelder - im Vorlaeufer 240 px Liste in einem 780 x 520-Fenster.
+   -------------------------------------------------------------------------- */
+.epos-kiwerkzeuge {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-raster {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .epos-kiwerkzeuge-raster { grid-template-columns: 1fr; }
+}
+
+.epos-kiwerkzeuge-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 42vh;
+    overflow-y: auto;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche, #ffffff);
+}
+
+.epos-kiwerkzeuge-eintrag {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kiwerkzeuge-eintrag--gewaehlt {
+    background: var(--epos-karte-flaeche-hover);
+    font-weight: 600;
+}
+
+.epos-kiwerkzeuge-eintrag:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-kiwerkzeuge-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 30vh;
+    overflow-y: auto;
+}
+
+.epos-kiwerkzeuge-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-kiwerkzeuge-eintrag--gewaehlt {
+        background: Highlight;
+        color: HighlightText;
+    }
+}

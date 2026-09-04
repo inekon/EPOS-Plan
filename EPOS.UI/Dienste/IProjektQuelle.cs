@@ -132,6 +132,18 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ des KI-Hilfe-Assistenten (iU9-W15b.7,
+    /// Entscheid E-10).
+    ///
+    /// <para>Wie <see cref="SimulationKonfigGaben"/> ein Woerterbuch <b>mit
+    /// Standardumsetzung</b>: Solange die iOS-Huelle den Assistenten nicht bedient
+    /// (iU11), liefert sie <c>null</c>, und <c>AppWurzel</c> bleibt bei der Liste
+    /// stehen — derselbe Ausgang wie „Dialog geht nicht auf" unter Windows. Der
+    /// Assistent haengt an keinem PROJEKT; der Parameter bleibt der Form halber.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KiAssistentGaben(int idProjekt) => null;
+
+    /// <summary>
     /// Alles, was der Dialog „Projekt exportieren / importieren" braucht
     /// (iU9-W15a.0h); <c>null</c> = diese Huelle kann keinen Projekttransfer.
     ///

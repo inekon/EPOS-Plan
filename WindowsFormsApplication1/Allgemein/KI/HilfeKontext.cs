@@ -111,6 +111,13 @@ namespace WindowsFormsApplication1
 
             { "Form_HelpPopup",              B_HILFE },
             { "Form_KiChat",                 B_HILFE },
+            // iU9-W15b.7: Der Chat ist eine Razor-Komponente. Der Klassenname bleibt
+            // hier stehen - er ist der Schluessel, unter dem HilfeAutomatik ein
+            // geoeffnetes Fenster erkennt -, und die Komponente kommt daneben. Der
+            // Titelweg (BEREICH_JE_TITELANFANG, "Hilfe-Assistent") traegt den
+            // Windows-Fall ohnehin; auf iOS bildet KiChatKontext den Seitenschluessel
+            // KI_ASSISTENT auf denselben Bereich ab (Praxis seit W12).
+            { "KiChatDialog",                B_HILFE },
 
             { "Form_Klimadaten",             B_KLIMADATEN },
 

@@ -311,7 +311,7 @@ namespace WindowsFormsApplication1
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(MenuetextAssistent());
                 eintrag.ShortcutKeys = Keys.F1;
                 eintrag.ShowShortcutKeys = true;
-                eintrag.Click += (s, e) => Form_KiChat.Oeffnen(this);
+                eintrag.Click += (s, e) => KiChatHuelle.Oeffnen(this);
 
                 MenuStrip strip = SucheMenuStrip(this);
                 if (strip != null)
@@ -361,7 +361,7 @@ namespace WindowsFormsApplication1
                     if (e.KeyCode == Keys.F1)
                     {
                         e.Handled = true;
-                        Form_KiChat.Oeffnen(this);
+                        KiChatHuelle.Oeffnen(this);
                     }
                 };
             }
