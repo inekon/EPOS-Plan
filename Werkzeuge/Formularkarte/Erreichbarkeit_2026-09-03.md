@@ -24,10 +24,10 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
-> **Nachgezogen mit iU9‑W14a und iU9‑W14b** (04.09.2026): Die Tabellen unten stammen aus einem
-> frischen Stapellauf nach BEIDEN Wellen. Der Befund zählt jetzt **21 Masken, davon 21
-> erreichbar** — Welle 12 nahm fünf (38), Welle 13 sechs (32), Welle 14a sieben (25) und
-> Welle 14b vier (21).
+> **Nachgezogen mit iU9‑W14c** (04.09.2026): Die Tabellen unten stammen aus einem frischen
+> Stapellauf nach dieser Welle. Der Befund zählt jetzt **17 Masken, davon 17
+> erreichbar** — Welle 12 nahm fünf (38), Welle 13 sechs (32), Welle 14a sieben (25),
+> Welle 14b vier (21) und Welle 14c vier (17).
 >
 > **Welle 14a** nahm die vier Erzeuger-Katalogbrowser (sie werden EINE Razor-Komponente mit vier
 > Ausprägungen), den fehlenden vierten Katalogeditor und die zwei Modulkataloge (eine zweite
@@ -229,27 +229,40 @@ Welle 14b hat die vier ruhenden Verwaltungsmasken des Bedarfs umgestellt und gel
 keine Designer-Maske mehr**; `Views/Solarthermie` führt noch eine
 (`Form_SolarKollektorenAdmin`, Welle 14a).
 
+## Stand nach iU9-W14c (Gesetze, Klimadaten, Einstellungen, Dubletten, 04.09.2026)
+
+Welle 14c hat fünf Masken umgestellt und gelöscht — vier mit Designer, eine ohne:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Gesetzesparameter` | ja | gelöscht; `EPOS.UI/Dialoge/Wirtschaftlichkeit/GesetzeskatalogDialog` mit `GesetzeskatalogHuelle`. Ihre ZWEI `Sprungziel`e entfallen — beide Aufrufer sind selbst Razor und zeigen den Katalog als Überlagerung. |
+| `Form_GesetzparameterZeile` | ja | gelöscht; `GesetzeskatalogZeileDialog` als Überlagerung im Katalog, kein eigenes Fenster. |
+| `Form_AdminSettings` | ja | gelöscht; `EPOS.UI/Dialoge/Admin/EinstellungenDialog` mit `EinstellungenHuelle`. **Mit ihr wandert der „ja"-ZEUGE** des Tests (bis W12 `Form_Stromganglinie`) auf `MDIMainForm` — die Wurzel des Graphen, Pfadlänge 1, und die allerletzte Maske überhaupt (Welle 16). |
+| `Form_Klimadaten` | ja | **verschoben** nach `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/`; `EPOS.UI/Dialoge/Klimadaten/KlimaregionDialog` mit `KlimaregionHuelle`. Sie war die einzige Maske, deren `btn_Help` im DESIGNER stand — dort laufen seither fünf Testanker. **Mit ihr wandert der GROSSSCHREIBUNGS-Zeuge** auf `MDIMainForm.Designer.cs`. |
+| `Form_KatalogDubletten` | (nicht im Befund) | gelöscht; `EPOS.UI/Dialoge/Admin/KatalogDublettenDialog` mit `KatalogDublettenHuelle`. Sie hatte keinen Designer und erschien deshalb nie in dieser Tabelle (Befund W14c‑B61). |
+
+**`Views/Admin` führt seither nur noch `Form_LizenzVerwaltung`** (Welle 15c), und
+**`Views/Klimadaten` gibt es nicht mehr**. Mit `Form_Klimadaten` fällt der letzte Nutzer des
+`ChartManager`: Die MS-Chart-Bindung der Anwendung endet außerhalb der Designer mit dieser
+Welle, und **WFO1000 steht bei null**.
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 21 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 17 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 0 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 21 | |
+| gesamt | 17 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
 | FormMain | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain | `WindowsFormsApplication1/Views/Hauptformular/FormMain.Designer.cs` |
-| Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
-| Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
-| Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
 | Form_HelpPopup | ja | Form_Start → pBox_Heizkessel → Program.FillRoundedRectangle → Program.Main → HilfeAutomatik.Starten → HelpExtender.PopupBereitstellen → Form_HelpPopup | `WindowsFormsApplication1/Views/Help/Form_HelpPopup.Designer.cs` |
 | Form_Hinweis | ja | Form_Start → HinweisProjektGeoeffnet → Form_Hinweis | `WindowsFormsApplication1/Allgemein/Form_Hinweis.Designer.cs` |
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
-| Form_Klimadaten | ja | MDIMainForm → MenuItem_Klimadaten → Form_Klimadaten | `WindowsFormsApplication1/Views/Klimadaten/Form_Klimadaten.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
 | Form_ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/Form_ProjektAuswahl.Designer.cs` |
 | Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
@@ -262,4 +275,3 @@ keine Designer-Maske mehr**; `Views/Solarthermie` führt noch eine
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |
 | Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |
-
