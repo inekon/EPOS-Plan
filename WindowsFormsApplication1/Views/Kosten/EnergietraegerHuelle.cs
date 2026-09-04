@@ -50,6 +50,15 @@ namespace WindowsFormsApplication1
 
         private EnergietraegerStand _stand;
         private List<EnergyConversion> _umrechnungen = new List<EnergyConversion>();
+
+        /// <summary>
+        /// Die Klappliste „Preisbasis" — je Einheit ein Eintrag, Abrechnungseinheit
+        /// zuerst (Befund W4-B-1). <c>PreisbasisId</c> ist der Index HIER HINEIN,
+        /// nicht mehr in <see cref="_umrechnungen"/>: Sonst wäre jede Bereinigung
+        /// der Liste eine Verschiebung der gewählten Zeile.
+        /// </summary>
+        private List<EnergietraegerPreisCtrl.Preisbasis> _preisbasen
+            = new List<EnergietraegerPreisCtrl.Preisbasis>();
         private List<UmrechnungsRegel> _regeln = new List<UmrechnungsRegel>();
         private StromAufschlagModel _aufschlagModell;
         private BrennstoffBestandteilModel _bestandteilModell;
@@ -420,9 +429,12 @@ namespace WindowsFormsApplication1
                 EinheitGrundpreis = "€/a"
             };
 
+            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(
+                _gewaehlt.BillingUnit, _umrechnungen);
+
             var basen = new List<ValueTuple<int, string>>();
-            for (int i = 0; i < _umrechnungen.Count; i++)
-                basen.Add(new ValueTuple<int, string>(i, _umrechnungen[i].ToUnitCode));
+            for (int i = 0; i < _preisbasen.Count; i++)
+                basen.Add(new ValueTuple<int, string>(i, _preisbasen[i].Einheit));
             stand.Preisbasen = basen;
 
             EnergietraegerPreisCtrl.Projektpreis projekt =
@@ -487,25 +499,28 @@ namespace WindowsFormsApplication1
 
         private int? IndexZuEinheit(string einheit)
         {
-            if (string.IsNullOrEmpty(einheit)) return _umrechnungen.Count > 0 ? (int?)0 : null;
-            for (int i = 0; i < _umrechnungen.Count; i++)
-                if (string.Equals(_umrechnungen[i].ToUnitCode, einheit, StringComparison.Ordinal))
-                    return i;
-            return _umrechnungen.Count > 0 ? (int?)0 : null;
+            return EnergietraegerPreisCtrl.PreisbasisIndex(_preisbasen, einheit);
+        }
+
+        /// <summary>Die gewählte Preisbasis; <c>null</c> = keine Liste.</summary>
+        private EnergietraegerPreisCtrl.Preisbasis AktuelleBasis()
+        {
+            int? i = _stand != null ? _stand.PreisbasisId : null;
+            return i.HasValue && i.Value >= 0 && i.Value < _preisbasen.Count
+                ? _preisbasen[i.Value] : null;
         }
 
         private EnergyConversion AktuelleUmrechnung()
         {
-            int? i = _stand != null ? _stand.PreisbasisId : null;
-            return i.HasValue && i.Value >= 0 && i.Value < _umrechnungen.Count
-                ? _umrechnungen[i.Value] : null;
+            EnergietraegerPreisCtrl.Preisbasis b = AktuelleBasis();
+            return b != null ? b.Umrechnung : null;
         }
 
         private string AktuelleEinheit()
         {
-            EnergyConversion c = AktuelleUmrechnung();
-            return c != null && !string.IsNullOrEmpty(c.ToUnitCode)
-                ? c.ToUnitCode : (_gewaehlt != null ? _gewaehlt.BillingUnit ?? "" : "");
+            EnergietraegerPreisCtrl.Preisbasis b = AktuelleBasis();
+            return b != null && !string.IsNullOrEmpty(b.Einheit)
+                ? b.Einheit : (_gewaehlt != null ? _gewaehlt.BillingUnit ?? "" : "");
         }
 
         // =====================================================================
@@ -732,8 +747,9 @@ namespace WindowsFormsApplication1
         {
             if (_stand == null || _gewaehlt == null) return;
 
-            EnergyConversion conv = AktuelleUmrechnung();
-            string einheit = conv != null ? conv.ToUnitCode : _stand.Basiseinheit;
+            EnergietraegerPreisCtrl.Preisbasis basis = AktuelleBasis();
+            string einheit = basis != null && !string.IsNullOrEmpty(basis.Einheit)
+                ? basis.Einheit : _stand.Basiseinheit;
 
             _stand.EinheitArbeitspreis = _gewaehlt.HasHi ? "€/" + einheit : "€ / kWh";
             _stand.EinheitHeizwert = "kWh/" + einheit;
@@ -742,7 +758,7 @@ namespace WindowsFormsApplication1
 
             // Basiswerte aus den Anzeigewerten (der Vorläufer hielt sie in den
             // Value-Changed-Handlern nach).
-            double faktor = conv != null ? conv.Factor : 1.0;
+            double faktor = basis != null ? basis.Faktor : 1.0;
             _baseWork = _gewaehlt.HasHi ? _stand.Arbeitspreis * faktor : _stand.Arbeitspreis;
             _baseHi = _stand.Heizwert * faktor;
             _baseHs = _stand.Brennwert * faktor;
@@ -880,16 +896,19 @@ namespace WindowsFormsApplication1
 
         private void PreisbasisWechseln(int index)
         {
-            if (_stand == null || index < 0 || index >= _umrechnungen.Count) return;
+            if (_stand == null || index < 0 || index >= _preisbasen.Count) return;
 
             // Wortgleich aus CmbUnit_SelectedIndexChanged: die Basiswerte bleiben,
-            // die Anzeigewerte werden umgerechnet.
-            EnergyConversion conv = _umrechnungen[index];
+            // die Anzeigewerte werden umgerechnet. Der Index zeigt in die
+            // bereinigte Liste (W4-B-1) und verschiebt sich dabei nicht.
+            double faktor = _preisbasen[index].Faktor;
+            if (faktor == 0.0) return;
+
             _stand.PreisbasisId = index;
-            _stand.Arbeitspreis = _baseWork / conv.Factor;
-            _stand.Heizwert = _baseHi / conv.Factor;
-            if (_gewaehlt.HasPowerPrice) _stand.Leistungspreis = _basePower / conv.Factor;
-            if (_gewaehlt.HasHs) _stand.Brennwert = _baseHs / conv.Factor;
+            _stand.Arbeitspreis = _baseWork / faktor;
+            _stand.Heizwert = _baseHi / faktor;
+            if (_gewaehlt.HasPowerPrice) _stand.Leistungspreis = _basePower / faktor;
+            if (_gewaehlt.HasHs) _stand.Brennwert = _baseHs / faktor;
 
             Nachziehen();
         }

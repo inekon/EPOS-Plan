@@ -497,6 +497,39 @@ public class EnergietraegerDialogTests : BunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>
+    /// Befund W4‑B‑1 (Windows-Abnahme 04.09.2026): „Die Preisbasis wird
+    /// teilweise nicht angezeigt oder doppelt."
+    ///
+    /// <para>Die Ursache lag in der Hülle, die die Liste aus der
+    /// <c>to_unit</c> JEDER Umrechnungsregel baute — geprüft wird das im Kern
+    /// (<c>EPOS.Kern.Tests/PreisbasenTests</c>). Der Dialog hat seinen eigenen
+    /// Anteil daran: Er muss die Einträge <b>eins zu eins</b> zeigen und die
+    /// <b>Id</b> zurückmelden, nicht die Position — sonst verschöbe schon eine
+    /// bereinigte Liste die gewählte Zeile.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Preisbasis_zeigt_jeden_Eintrag_einmal_und_meldet_seine_Id()
+    {
+        int? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.PreisbasisGewechselt, (int id) => gemeldet = id));
+
+        var feld = cut.FindAll("select")
+                      .First(s => s.QuerySelectorAll("option")
+                                   .Any(o => o.TextContent.Trim() == "Nm³"));
+
+        var texte = feld.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Nm³", "kWh" }, texte);
+        Assert.Equal(texte.Length, texte.Distinct().Count());
+
+        // Der Wert der Option ist die Id des Standes, nicht ihr Listenplatz.
+        Assert.Equal(new[] { "0", "1" },
+                     feld.QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToArray());
+
+        feld.Change("1");
+        Assert.Equal(1, gemeldet);
+    }
+
     [Fact]
     public void Der_Hilfeschluessel_bleibt_der_der_Maske()
     {
