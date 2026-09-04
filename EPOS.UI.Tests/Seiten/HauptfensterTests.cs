@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Seiten;
 /// S2 — das HAUPTFENSTER (iU9-W16c.2), die Windows-Schale um
 /// <see cref="AppWurzel"/>.
 ///
-/// <para>Geprueft wird der Zuschnitt, der den Rueckbau von <c>MDIMainForm</c>
+/// <para>Geprueft wird der Zuschnitt, der den Rueckbau von <c>Hauptfensterrahmen</c>
 /// traegt: Menueband und Kopfband stehen ueber JEDER Ansicht, und
 /// <c>Springe</c> ist der EINZIGE Handler — erst der Weg der Huelle, dann die
 /// Wurzel. Faellt diese Reihenfolge, oeffnet ein Menuepunkt unter Windows eine

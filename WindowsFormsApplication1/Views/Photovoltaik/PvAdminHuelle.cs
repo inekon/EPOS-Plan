@@ -16,7 +16,7 @@ namespace WindowsFormsApplication1
     /// Mit der gemeinsamen Komponente steht sie auf dem Stand des Stromspeichers.</para>
     ///
     /// <para><b>Der Maskenschlüssel lebt seit W14a.0h.</b> Bis dahin legte
-    /// <c>MDIMainForm.MenuItem_PV_Bearbeiten_Click</c> die Maske selbst an, und
+    /// <c>Hauptfensterrahmen.MenuItem_PV_Bearbeiten_Click</c> die Maske selbst an, und
     /// <c>MenueCtrl.PV()</c>, <c>Masken.PvAdmin</c> und der Zweig in
     /// <c>WinFormsNavigation</c> waren eine tote Kette aus drei Stellen
     /// (Befund W14-B36).</para>

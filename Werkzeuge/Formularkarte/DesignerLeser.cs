@@ -111,8 +111,8 @@ public static class DesignerLeser
     /// spaeter <c>EPOS.UI/Dialoge/&lt;Fachbereich&gt;</c> wird.
     ///
     /// <para>
-    /// Nicht jede Designer-Datei liegt in einem Fachordner: <c>MDIMainForm</c>
-    /// liegt in der Projektwurzel, <c>Form_StromTest</c> unmittelbar in
+    /// Nicht jede Designer-Datei liegt in einem Fachordner: Das Hauptformular
+    /// lag in der Projektwurzel, <c>Form_StromTest</c> unmittelbar in
     /// <c>Views/</c>. Deren Ordnername ("WindowsFormsApplication1", "Views")
     /// waere als Namensraum falsch - er wuerde sogar das
     /// <c>@using WindowsFormsApplication1.MyResource</c> aus _Imports.razor

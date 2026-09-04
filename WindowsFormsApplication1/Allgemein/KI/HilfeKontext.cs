@@ -78,12 +78,18 @@ namespace WindowsFormsApplication1
         private static readonly Dictionary<string, string> BEREICH_JE_TYP =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            // iU9-W16c.3: "MDIMainForm" ist nur noch die HUELLE - ein Fenster mit
+            // iU9-W16c.3: Der Rahmen ist nur noch die HUELLE - ein Fenster mit
             // einer WebView. Der Eintrag bleibt trotzdem: Er ist der Schluessel,
             // unter dem HilfeAutomatik das offene Fenster erkennt, und das
-            // Fenster gibt es weiter. Die Umbenennung in "Hauptfenster"
-            // (Entscheid E-10) kommt nach dem Merge und fasst diese Zeile mit an.
-            { "MDIMainForm",                 B_HAUPTFENSTER },
+            // Fenster gibt es weiter.
+            //
+            // Anwenderentscheid E-10 (04.09.2026): Der Typ hiess bis dahin
+            // "MDIMainForm". Der SCHLUESSEL ist der Typname des offenen
+            // Fensters, also zieht er mit um; das ZIEL (B_HAUPTFENSTER) bleibt
+            // dasselbe. help_mapping.txt fuehrt keinen Schluessel dieses
+            // Fensters mehr - die Fensterhilfe sitzt seit W16c.6 als
+            // "Hauptfenster.btn_Help" im Kopfband der Razor-Seite.
+            { "Hauptfensterrahmen",          B_HAUPTFENSTER },
             // iU9-W16c.2: Die Oberflaeche des Fensters ist die Razor-Seite
             // "Hauptfenster" (EPOS.UI/Seiten/Hauptfenster.razor) - Menueband,
             // Kopfband und die Ansicht darunter.
