@@ -1,4 +1,4 @@
-﻿/* ===================================================================   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
+﻿﻿/* ===================================================================   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
    EPOS.UI (Umsetzungskonzept iOS, Paket iU8).
 
    Diese Datei wird als statisches Web-Asset ausgeliefert und von der Huelle
@@ -351,9 +351,17 @@ body {
     cursor: pointer;
 }
 
-.epos-kachel:hover {
+.epos-kachel:hover:enabled {
     background: var(--epos-karte-flaeche-hover);
     border-color: var(--epos-karte-rahmen-hover);
+}
+
+/* Nicht bedienbar (Kachel.Aktiv = false, iU9-W16a.2): Die Kachel sieht aus wie
+   bisher und zeigt ihren Bestand weiter - sie verspricht nur keine Aktion mehr.
+   Ersatz fuer die vierzehn Zeilen Cursors.Default in AktionsKarte. */
+.epos-kachel:disabled {
+    cursor: default;
+    color: var(--epos-karte-text);
 }
 
 .epos-kachel-bild {
@@ -385,6 +393,12 @@ body {
     height: var(--epos-karte-statuspunkt);
     background: var(--epos-karte-status);
     border-radius: 50%;
+}
+
+/* Zustand "Aus" (iU9-W16a.2): grauer Punkt statt gruenem - woertlich
+   KartenStil.KARTE_RAHMEN aus Wizard_Komponenten.KachelZeichnen (:160). */
+.epos-kachel-statuspunkt--aus {
+    background: var(--epos-karte-rahmen);
 }
 
 /* ==========================================================================
@@ -802,6 +816,11 @@ body {
     .epos-kachel-statuspunkt {
         forced-color-adjust: none;
         background: rgb(0, 160, 0);
+    }
+
+    .epos-kachel-statuspunkt--aus {
+        forced-color-adjust: none;
+        background: rgb(140, 140, 140);
     }
 
     .epos-knopf,
