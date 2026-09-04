@@ -222,6 +222,78 @@ public static class Seitenschluessel
     // Masken.Assistent traegt denselben Wert wie der Schluessel Assistent
     // weiter oben ("ASSISTENT"); er steht deshalb nur EINMAL in dieser Klasse.
 
+    // =====================================================================
+    //  Die WEGE des Hauptfensters (iU9-W16c.1)
+    //
+    //  Neunzehn Menuepunkte fuehren nicht auf eine Maske aus "Masken", sondern
+    //  auf einen zusammengesetzten Ablauf oder auf eine Windows-Eigenheit
+    //  (Sprachwechsel, Browser, Versionsmeldung). Im Bestand war jeder von
+    //  ihnen ein eigener Ereignishandler in MDIMainForm; hier ist er ein
+    //  Schluessel wie jeder andere, und Hauptfenster.Springe verteilt ihn -
+    //  entweder selbst oder ueber den Weg-Delegaten der Huelle.
+    //
+    //  Sie stehen bewusst in DIESER Klasse und nicht in einer zweiten: Das
+    //  Menueband kennt genau eine Schluesselart, und N4 prueft sie an einem
+    //  Ort.
+    // =====================================================================
+
+    /// <summary>Menue „Projekt -> Neu…" - der Assistent in Betriebsart NEU.</summary>
+    public const string ProjektNeu = "PROJEKT_NEU";
+
+    /// <summary>Menue „Projekt -> Öffnen…" - Projektauswahl, dann aktiv setzen.</summary>
+    public const string ProjektOeffnen = "PROJEKT_OEFFNEN";
+
+    /// <summary>Menue „Projekt -> Bearbeiten…" - der Assistent in Betriebsart BEARBEITEN.</summary>
+    public const string ProjektBearbeiten = "PROJEKT_BEARBEITEN";
+
+    /// <summary>Menue „Projekt -> zuletzt geöffnet" - ohne Dialog aktiv setzen.</summary>
+    public const string ProjektZuletzt = "PROJEKT_ZULETZT";
+
+    /// <summary>Menue „Projekt -> Löschen…" - Auswahl, Rueckfrage, die drei Loeschschritte.</summary>
+    public const string ProjektLoeschen = "PROJEKT_LOESCHEN";
+
+    /// <summary>Menue „Projekt -> Export/Import" (<c>ProjektTransferDialog</c>, W15a.5).</summary>
+    public const string ProjektTransfer = "PROJEKT_TRANSFER";
+
+    /// <summary>Menue „Projekt -> Als Variante speichern…" (<c>NamensDialog</c>, W2.1).</summary>
+    public const string ProjektAlsVariante = "PROJEKT_ALS_VARIANTE";
+
+    /// <summary>Menue „Administration -> Klimadaten" (<c>KlimadatenDialog</c>, W14c.7).</summary>
+    public const string Klimadaten = "KLIMADATEN";
+
+    /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
+    public const string Kostenverwaltung = "KOSTENVERWALTUNG";
+
+    /// <summary>Menue „Administration -> Kosten -> Energieträgerverwaltung…" (<c>EnergietraegerDialog</c>, W4.4).</summary>
+    public const string EnergietraegerVerwaltung = "ENERGIETRAEGER_VERWALTUNG";
+
+    /// <summary>Menue „Administration -> Einstellungen" (<c>EinstellungenDialog</c>, W14c.6).</summary>
+    public const string Einstellungen = "EINSTELLUNGEN";
+
+    /// <summary>Menue „Administration -> Gesetzliche Parameter" (<c>GesetzeskatalogDialog</c>, W14c.2).</summary>
+    public const string Gesetzeskatalog = "GESETZESKATALOG";
+
+    /// <summary>Menue „Administration -> Katalog-Dubletten" (<c>KatalogDublettenDialog</c>, W14c.5).</summary>
+    public const string KatalogDubletten = "KATALOG_DUBLETTEN";
+
+    /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
+    public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
+
+    /// <summary>Menue „Hilfe -> Lizenz" - der VERTRAGSTEXT (<c>LizenzDialog</c>, W15c.11).</summary>
+    public const string Lizenztext = "LIZENZTEXT";
+
+    /// <summary>Menue „Hilfe -> Version" - die Meldung „Über EPOS-Plan".</summary>
+    public const string Version = "VERSION";
+
+    /// <summary>Menue „Hilfe -> Dokumentation" - das Wiki im Browser.</summary>
+    public const string Dokumentation = "DOKUMENTATION";
+
+    /// <summary>Menue „Deutsch" - Oberflaechensprache umstellen und neu starten.</summary>
+    public const string SpracheDeutsch = "SPRACHE_DEUTSCH";
+
+    /// <summary>Menue „Englisch" - Oberflaechensprache umstellen und neu starten.</summary>
+    public const string SpracheEnglisch = "SPRACHE_ENGLISCH";
+
     /// <summary>
     /// Alle Schluessel dieser Klasse - fuer den Nachweis, dass sie ASCII,
     /// sprachneutral und untereinander verschieden sind (N4, W16c.1).
@@ -237,6 +309,11 @@ public static class Seitenschluessel
         WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         SolarkollektorenImport, PvImport, ProjektSpeichernUnter,
-        ProjektAuswahl, ProjektDelete
+        ProjektAuswahl, ProjektDelete,
+        ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
+        ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
+        Kostenverwaltung, EnergietraegerVerwaltung, Einstellungen,
+        Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
+        Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };
 }

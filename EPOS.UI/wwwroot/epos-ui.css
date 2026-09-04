@@ -3871,3 +3871,128 @@ body {
     padding-top: 8px;
     border-top: 1px solid var(--epos-rahmen-leise);
 }
+
+/* ==========================================================================
+   MENUEBAND (iU9-W16c.1) - die Windows-Schale des Hauptfensters.
+
+   Vorbild: MDIMainForm.menuToolbar, ein MenuStrip in AliceBlue mit 54 Punkten
+   in drei Ebenen. Hier steht dafuer Layout und Farbe aus dem Farbsatz; die
+   acht Bildchen sind dieselben PNG (wwwroot/bilder/menue/), damit der
+   Wiedererkennungswert bleibt.
+
+   OHNE FESTE PIXEL - iF21: Nach W16 hat die Oberflaeche keine gerechneten
+   Koordinaten mehr, und genau das ist die Voraussetzung fuer "Per Monitor V2".
+   ========================================================================== */
+
+.epos-menueband {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 2px;
+    padding: 2px 6px;
+    background: var(--epos-menue-flaeche, #f0f6fc);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-menueband-punkt {
+    position: relative;
+}
+
+.epos-menueband-knopf,
+.epos-menueband-zeile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--epos-touchziel);
+    padding: 0 12px;
+    background: transparent;
+    border: 0;
+    border-radius: var(--epos-ecke);
+    font: inherit;
+    color: var(--epos-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-menueband-zeile {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.epos-menueband-knopf:hover,
+.epos-menueband-zeile:hover,
+.epos-menueband-knopf:focus-visible,
+.epos-menueband-zeile:focus-visible {
+    background: var(--epos-menue-marke, #d9e8f7);
+    outline: none;
+}
+
+.epos-menueband-knopf[aria-expanded="true"] {
+    background: var(--epos-menue-marke, #d9e8f7);
+}
+
+.epos-menueband-bild {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.epos-menueband-text {
+    flex: 1 1 auto;
+}
+
+.epos-menueband-kuerzel {
+    flex: 0 0 auto;
+    padding-left: 24px;
+    color: var(--epos-text-leise);
+}
+
+.epos-menueband-pfeil {
+    flex: 0 0 auto;
+    padding-left: 12px;
+    color: var(--epos-text-leise);
+}
+
+/* Die aufgeklappte Liste. Sie liegt UEBER dem Inhalt, nicht daneben - ein
+   Menue, das die Seite verschoebe, waere bei jedem Aufklappen ein Sprung. */
+.epos-menueband-klappe {
+    position: absolute;
+    z-index: 40;
+    top: 100%;
+    left: 0;
+    min-width: 220px;
+    padding: 4px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* Die dritte Ebene klappt seitlich auf - so, wie es das ToolStrip tat. */
+.epos-menueband-klappe--tief {
+    position: static;
+    margin: 2px 0 2px 16px;
+    box-shadow: none;
+}
+
+.epos-menueband-strich {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--epos-rahmen-leise);
+}
+
+.epos-menueband-trenner {
+    width: 1px;
+    margin: 6px 4px;
+    background: var(--epos-rahmen-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-menueband-knopf[aria-expanded="true"],
+    .epos-menueband-knopf:hover,
+    .epos-menueband-zeile:hover {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}

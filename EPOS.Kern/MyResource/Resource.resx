@@ -14248,4 +14248,142 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="START_STATUS_KEINS" xml:space="preserve">
     <value>⚠</value>
   </data>
+  <data name="MENU_ADMINISTRATION" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  <data name="MENU_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="MENU_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="MENU_DAT_IMPORT" xml:space="preserve">
+    <value>Daten &amp; Import</value>
+  </data>
+  <data name="MENU_DEUTSCH" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="MENU_DOKUMENTATION" xml:space="preserve">
+    <value>Dokumentation</value>
+  </data>
+  <data name="MENU_EINSTELLUNGEN" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="MENU_ENERGIESYSTEME" xml:space="preserve">
+    <value>Energiesysteme</value>
+  </data>
+  <data name="MENU_ENGLISCH" xml:space="preserve">
+    <value>Englisch</value>
+  </data>
+  <data name="MENU_EXPORT_IMPORT" xml:space="preserve">
+    <value>Export/Import</value>
+  </data>
+  <data name="MENU_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="MENU_GEB_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MENU_GEB_TYPEN" xml:space="preserve">
+    <value>Gebäudetypen</value>
+  </data>
+  <data name="MENU_HELP" xml:space="preserve">
+    <value>Hilfe</value>
+  </data>
+  <data name="MENU_IMPORT_HEIZKESSEL" xml:space="preserve">
+    <value>Import Heizkessel VDI 3805</value>
+  </data>
+  <data name="MENU_KESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="MENU_KLIMA" xml:space="preserve">
+    <value>Klimadaten &amp; Umgebung</value>
+  </data>
+  <data name="MENU_KLIMADATEN" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="MENU_KOSTEN_VERWALTUNG" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="MENU_LIZENZ" xml:space="preserve">
+    <value>Lizenz</value>
+  </data>
+  <data name="MENU_LIZENZ_VERWALTUNG" xml:space="preserve">
+    <value>Lizenz…</value>
+  </data>
+  <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MENU_PROJEKTE" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="MENU_PROJEKT_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten...</value>
+  </data>
+  <data name="MENU_PROJEKT_LOESCHEN" xml:space="preserve">
+    <value>Löschen...</value>
+  </data>
+  <data name="MENU_PROJEKT_NEU" xml:space="preserve">
+    <value>Neu...</value>
+  </data>
+  <data name="MENU_PROJEKT_OEFFNEN" xml:space="preserve">
+    <value>Öffnen...</value>
+  </data>
+  <data name="MENU_PROZESSWAERME" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="MENU_PUFFER_SP" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="MENU_PUFFER_SP_VDI3805" xml:space="preserve">
+    <value>Import Pufferspeicher VDI 3805</value>
+  </data>
+  <data name="MENU_PV" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="MENU_PV_IMPORT_CEC" xml:space="preserve">
+    <value>Import Photovoltaik CEC/Pan</value>
+  </data>
+  <data name="MENU_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Solarkollektoren</value>
+  </data>
+  <data name="MENU_SOL_THERM_GANGLINIE" xml:space="preserve">
+    <value>Solarthermieganglinie</value>
+  </data>
+  <data name="MENU_STROMGANGLINIE" xml:space="preserve">
+    <value>Stromganglinie</value>
+  </data>
+  <data name="MENU_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="MENU_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Stromverbraucher</value>
+  </data>
+  <data name="MENU_STROM_BEDARFUND_SP" xml:space="preserve">
+    <value>Strombedarf &amp; Speicher</value>
+  </data>
+  <data name="MENU_ST_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MENU_ST_IMPORT" xml:space="preserve">
+    <value>Import Solarthermie VDI 3805</value>
+  </data>
+  <data name="MENU_VDI3805" xml:space="preserve">
+    <value>Import Wärmepumpen VDI 3805</value>
+  </data>
+  <data name="MENU_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="MENU_WAERMEBEDARF_EXTERN" xml:space="preserve">
+    <value>Wärmebedarf Lastgang</value>
+  </data>
+  <data name="MENU_WBUND_HEIZUNG" xml:space="preserve">
+    <value>Wärmebedarf &amp; Heizung</value>
+  </data>
+  <data name="MENU_WP" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="MENU_ZULETZT_GEOEFFNET" xml:space="preserve">
+    <value>zuletzt geöffnet</value>
+  </data>
 </root>
