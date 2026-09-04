@@ -14410,4 +14410,13 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="HAUPT_VERSION" xml:space="preserve">
     <value>Version {0}</value>
   </data>
+  <data name="BHW_SP_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="BHW_A_OHNE_WAHL" xml:space="preserve">
+    <value>Keine Anlage gewählt.</value>
+  </data>
+  <data name="BHW_S_SPRUNG_HINWEIS" xml:space="preserve">
+    <value>Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern.</value>
+  </data>
 </root>
