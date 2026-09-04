@@ -17,12 +17,18 @@ namespace WindowsFormsApplication1
     /// Feldsatz.</para>
     ///
     /// <para><b>Die Ableitungen des Vorläufers stehen hier</b>, nicht in der Komponente:
-    /// <c>Bewohner</c>, <c>Bauweise</c>, <c>gesamte_Fensterflaeche</c> und
+    /// <c>Bewohner</c>, <c>gesamte_Fensterflaeche</c> und
     /// <c>Wohnflaeche</c> entstehen beim Schreiben (<c>InitModelFromControls</c>:174-215),
     /// und die drei Kennzahlen, die keine Maske je anfasst
     /// (<c>spez_Waermeverbrauch</c>, <c>Waermebedarf</c>, <c>ID</c>), bleiben aus dem
     /// geladenen Satz erhalten — der Vorläufer schrieb ebenfalls das GELADENE Modell
     /// zurück und nicht ein frisches.</para>
+    ///
+    /// <para><b>Die <c>Bauweise</c> steht seit dem Entscheid des Anwenders vom
+    /// 04.09.2026 NICHT mehr hier</b> (W9‑O‑2 zu Befund W9‑B6). Sie hing am Index der
+    /// GEBÄUDEART-Klappliste; jetzt bestimmt sie die BAUART-Klappliste, und die bedient
+    /// der Dialog. Die Hülle reicht die Größe nur noch durch:
+    /// <c>AusModell</c> gibt sie heraus, <c>NachModell</c> nimmt sie entgegen.</para>
     /// </summary>
     internal static class GebaeudeKatalogHuelle
     {
@@ -342,7 +348,10 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
+                // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise; die
+                // Bauweise selbst geht mit, weil der Dialog sie ab jetzt bildet.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Wohnflaeche),
+                Bauweise = m.Bauweise,
 
                 WohnflaecheGesamt = m.Wohnflaeche_gesamt,
                 FlaecheNutzer = m.Flaeche_Nutzer,
@@ -424,8 +433,11 @@ namespace WindowsFormsApplication1
 
             m.Interne_Waermegewinne = d.Waermegewinne ?? 0;
 
-            // Befund W9-B6: Die Bauweise haengt am Index der GEBAEUDEART-Klappliste.
-            m.Bauweise = GebaeudeStammCtrl.BauweiseAusBauart(Artindex(d.Gebaeudeart), wfl);
+            // Entscheid W9-O-2 (Anwender, 04.09.2026) zu Befund W9-B6: Die BAUART
+            // bestimmt die Bauweise, nicht mehr die Gebaeudeart. Gebildet wird sie im
+            // Dialog (GebaeudeKatalogDialog.BauweiseNachfuehren), hier wird sie nur
+            // uebernommen.
+            m.Bauweise = d.Bauweise;
 
             m.Fensterflaeche_Sued = d.FensterflaecheSued ?? 0;
             m.Fensterflaeche_Ost = d.FensterflaecheOstWest ?? 0;
@@ -482,20 +494,6 @@ namespace WindowsFormsApplication1
             m.Waermebedarf = d.Waermebedarf;
 
             return m;
-        }
-
-        /// <summary>
-        /// Der Index der Gebäudeart in der ungefilterten Liste — der frühere
-        /// <c>comboBox_Gebaeudeart.SelectedIndex</c>. Ein Wert, den die Liste nicht führt,
-        /// ergibt −1; <c>BauweiseAusBauart</c> nimmt dafür 50 (Befund W9‑B6).
-        /// </summary>
-        private static int Artindex(string art)
-        {
-            if (string.IsNullOrEmpty(art)) return -1;
-            IReadOnlyList<string> liste = GebaeudeStammCtrl.Gebaeudearten(null);
-            for (int i = 0; i < liste.Count; i++)
-                if (string.Equals(liste[i], art, StringComparison.Ordinal)) return i;
-            return -1;
         }
 
         // =================================================================================

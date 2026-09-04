@@ -245,37 +245,30 @@ namespace WindowsFormsApplication1
         /// Die BAUART aus der gespeicherten Bauweise — <c>Form_Gebaeude1.SetControls</c>
         /// :107-110. 0 = leicht (&lt; 30), 1 = schwer, 2 = sehr schwer (&gt; 75).
         ///
-        /// <para>Der Vorlaeufer teilte ohne Nullpruefung; eine Wohnflaeche 0 ergab dort
-        /// <c>NaN</c> bzw. <c>Infinity</c>. <c>NaN</c> ist weder kleiner 30 noch groesser
-        /// 75, die Anzeige stand also auf „schwer" — genau darauf faellt eine Wohnflaeche
-        /// von 0 hier ausdruecklich zurueck.</para>
+        /// <para>Die Rechnung steht seit dem Entscheid W9-O-2 (04.09.2026) in der
+        /// oeffentlichen Hilfsklasse <see cref="Gebaeudebauweise"/>: Der
+        /// Katalogeditor in <c>EPOS.UI</c> braucht sie selbst, und dieser Controller
+        /// ist <c>internal</c>. Hier bleibt der Name aus W9.0b stehen.</para>
         /// </summary>
         public static int BauartAusBauweise(double bauweise, double wohnflaeche)
-        {
-            if (wohnflaeche == 0) return 1;
-            double spez = bauweise / wohnflaeche;
-            if (spez < 30) return 0;
-            if (spez > 75) return 2;
-            return 1;
-        }
+            => Gebaeudebauweise.BauartAusBauweise(bauweise, wohnflaeche);
 
         /// <summary>
         /// Der Rueckweg — <c>InitModelFromControls</c>:188-191. Index 0/1/2 ergeben
         /// Wohnflaeche × 20 / 50 / 100, jeder andere Index ergibt 50.
         ///
-        /// <para><b>Befund W9-B6.</b> Der Vorlaeufer nahm hier den Index der
-        /// <b>Gebaeudeart</b>-Klappliste (<c>comboBox_Gebaeudeart.SelectedIndex</c>) und
-        /// NICHT den der Bauart-Klappliste, obwohl die Bauart aus derselben Groesse
-        /// abgeleitet angezeigt wird. Woertlich uebernommen; die Huelle reicht denselben
-        /// Index herein.</para>
+        /// <para><b>Befund W9-B6, Entscheid W9-O-2 (Anwender, 04.09.2026).</b> Der
+        /// Vorlaeufer nahm hier den Index der <b>Gebaeudeart</b>-Klappliste
+        /// (<c>comboBox_Gebaeudeart.SelectedIndex</c>) und NICHT den der
+        /// Bauart-Klappliste, obwohl die Bauart aus derselben Groesse abgeleitet
+        /// angezeigt wurde. Der Anwender hat entschieden: Die BAUART bestimmt die
+        /// Bauweise. <c>GebaeudeKatalogDialog</c> bildet sie deshalb aus der
+        /// BAUART-Auswahl; <see cref="BauartAusBauweise"/> ist der Rueckweg beim
+        /// Laden. Die Rechnung selbst ist unveraendert und steht jetzt in
+        /// <see cref="Gebaeudebauweise"/>.</para>
         /// </summary>
         public static double BauweiseAusBauart(int index, double wohnflaeche)
-        {
-            if (index == 0) return wohnflaeche * 20;
-            if (index == 1) return wohnflaeche * 50;
-            if (index == 2) return wohnflaeche * 100;
-            return 50;
-        }
+            => Gebaeudebauweise.BauweiseAusBauart(index, wohnflaeche);
 
         #endregion
 
