@@ -105,7 +105,14 @@ namespace WindowsFormsApplication1
 
             { "Form_BHKWAdmin",              B_BHKW },
 
-            { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
+            // iU9-W14b.1: Die DREI Bedarfs-Katalogverwaltungen sind EINE
+            // Razor-Komponente mit drei Auspraegungen (BedarfAdminDialog). Der
+            // Bereich haengt damit nicht mehr am Klassennamen - er kaeme fuer alle
+            // drei gleich heraus; eingetragen ist der haeufigste Wirt. Die
+            // Schluessel des InfoKnopfes in help_mapping.txt heissen weiter nach
+            // den drei Masken, denn sie sind die Adresse des HILFETEXTES und nicht
+            // der Klasse (Praxis seit W12).
+            { "BedarfAdminDialog",           B_BRAUCHWASSER },
 
 
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
@@ -134,7 +141,8 @@ namespace WindowsFormsApplication1
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 
-            { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
+            // iU9-W14b.1: Form_Prozesswaerme_Admin ist geloescht - sie ist eine
+            // Auspraegung von BedarfAdminDialog (Eintrag oben bei B_BRAUCHWASSER).
 
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
@@ -161,7 +169,10 @@ namespace WindowsFormsApplication1
             // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
+            // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
+            // Razor-Komponente SolarganglinieAdminDialog; der Bereich bleibt.
+            { "SolarganglinieAdminDialog",   B_SOLARTHERMIE },
+            { "SolarganglinieDialog",        B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
             // iU9-W12.6: Form_PeakShaving ist die Razor-Komponente
@@ -187,7 +198,6 @@ namespace WindowsFormsApplication1
             { "GanglinieProtokollDialog",    B_STROMVERBRAUCHER },
             { "StromganglinieDialog",        B_STROMVERBRAUCHER },
             { "StromganglinieAdminDialog",   B_STROMVERBRAUCHER },
-            { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
             // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien ist
             // die Razor-Komponente WaermebedarfAdminDialog; der Bereich bleibt.

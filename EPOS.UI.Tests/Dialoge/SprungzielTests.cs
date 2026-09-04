@@ -67,8 +67,9 @@ public sealed class SprungzielTests
         Assert.Equal("PV_ADMIN", Sprungziel.PvAdmin);
         Assert.Equal("PUFFERSP_ADMIN", Sprungziel.PufferSpAdmin);
 
-        // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
-        Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
+        // iU9-W7.0f fuehrte SOLARGANGLINIE_ADMIN ein; mit iU9-W14b.2 ist es WEG -
+        // die Ganglinienverwaltung ist selbst Blazor und erscheint als
+        // Ueberlagerung im Projektdialog (Risiko R2), wie der Waermebedarf seit W13.
 
         // iU9-W10a.0c: derselbe Pufferspeicherkatalog NUR ZUM ANSEHEN. Er braucht
         // einen eigenen Schluessel, weil die Bruecke dort m_bReadOnly setzen muss -
@@ -85,16 +86,19 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_neun_Ziele_sind_da()
+    public void Alle_acht_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
         //
-        // iU9-W13.2: Es sind NEUN statt zehn. WaermebedarfExternAdmin ist weg,
+        // iU9-W13.2: Es waren NEUN statt zehn. WaermebedarfExternAdmin ist weg,
         // weil das Ziel selbst Blazor geworden ist: WaermebedarfExternDialog zeigt
         // die Verwaltung als Ueberlagerung im selben Fenster statt in einem
         // zweiten WinForms-Fenster (Risiko R2). Die Sprungbruecke ist fuer
         // WinForms-Ziele da - fuer ein Blazor-Ziel braucht es sie nicht.
-        Assert.Equal(9, Schluessel().Length);
+        //
+        // iU9-W14b.2: Jetzt sind es ACHT. SolarganglinieAdmin faellt aus demselben
+        // Grund - SolarganglinieDialog zeigt die Verwaltung als Ueberlagerung.
+        Assert.Equal(8, Schluessel().Length);
     }
 }

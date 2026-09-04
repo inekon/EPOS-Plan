@@ -102,8 +102,12 @@ namespace WindowsFormsApplication1
                         zuModell.Remove(zeile.Schluessel);
                     }),
 
-                // Die Ganglinienverwaltung bleibt bis Welle 14b eine WinForms-Maske.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W14b.2: Die Ganglinienverwaltung ist selbst Blazor und erscheint
+                // als UEBERLAGERUNG im selben Fenster; der Sprung ueber die
+                // Sprungbruecke entfaellt (Risiko R2). Sie laedt ihre Liste selbst -
+                // der Sprungzweig tat das NICHT und zeigte eine leere Liste
+                // (Befund W14-B73).
+                ["VerwaltungGaben"] = SolarganglinieAdminHuelle.Gaben(),
 
                 ["TitelText"] = Text_("SGL_TITEL", "Solarthermieganglinien"),
                 ["LabelProjektliste"] = Text_("SGL_LBL_PROJEKTLISTE", "Ausgewählt im Projekt"),
