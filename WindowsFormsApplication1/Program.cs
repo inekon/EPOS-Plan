@@ -192,6 +192,12 @@ namespace WindowsFormsApplication1
             // stille Fassung KeineAusfuehrung: leeres Register, jede Aktion abgelehnt.
             KiAusfuehrungsweg.Aktuell = new KiAusfuehrungAdapter();
 
+            // Bedienkontext des Assistenten: Die ZUORDNUNG (Positivliste, Tabellen)
+            // liegt seit iU9-W15b.0f im Kern, die ERMITTLUNG des aktiven Fensters
+            // bleibt hier - Form.ActiveForm gibt es auf iOS nicht (Befund W15b-B19).
+            // Ohne diesen Aufruf bleibt der Bereich "Unbekannter Bereich".
+            HilfeKontext.Einhaengen();
+
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.

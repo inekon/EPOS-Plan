@@ -27,59 +27,45 @@ namespace WindowsFormsApplication1
         //  Positivliste der Bereichsbezeichnungen
         // ------------------------------------------------------------------
 
+        // ------------------------------------------------------------------
+        //  iU9-W15b.0f: Die Positivliste und die Freigabeschranke stehen seit
+        //  dieser Welle im Kern (KiChatKontext) - sie sind reine Zeichenarbeit
+        //  und werden auf iOS ebenso gebraucht (Befund W15b-B19, Entscheid E-9).
+        //  Hier stehen nur noch die Kurznamen, damit die drei Nachschlagetabellen
+        //  unten unveraendert lesbar bleiben. EINE Liste, EIN Ort.
+        // ------------------------------------------------------------------
+
         /// <summary>Ersatzwert, wenn sich der Bereich nicht sicher zuordnen laesst.</summary>
-        public const string BEREICH_UNBEKANNT = "Unbekannter Bereich";
+        public const string BEREICH_UNBEKANNT = KiChatKontext.BEREICH_UNBEKANNT;
 
-        private const string B_ADMIN = "Administration";
-        // E5 (Projektdialoge, 29.08.2026): der Bereich heisst wie das Fenster
-        // "Projektassistent". Der Wert ist zugleich Schluessel in
-        // WikiWissen.SEITE_JE_BEREICH - beide Stellen nur gemeinsam aendern.
-        private const string B_ASSISTENT = "Projektassistent";
-        private const string B_BERICHT = "Bericht";
-        private const string B_BHKW = "BHKW";
-        private const string B_BRAUCHWASSER = "Brauchwasser";
-        private const string B_GEBAEUDE = "Gebäude";
-        private const string B_HAUPTFENSTER = "Hauptfenster";
-        private const string B_HEIZKESSEL = "Heizkessel";
-        private const string B_HILFE = "Hilfe";
-        private const string B_KLIMADATEN = "Klimadaten";
-        private const string B_KOSTEN = "Kosten und Preise";
-        private const string B_LIZENZ = "Lizenz";
-        private const string B_PHOTOVOLTAIK = "Photovoltaik";
-        private const string B_PROJEKT = "Projektverwaltung";
-        private const string B_PROZESSWAERME = "Prozesswärme";
-        private const string B_PUFFERSPEICHER = "Pufferspeicher";
-        private const string B_SIMULATION = "Simulation";
-        private const string B_SOLARTHERMIE = "Solarthermie";
-        private const string B_STROMSPEICHER = "Stromspeicher";
-        private const string B_STROMVERBRAUCHER = "Stromverbraucher";
-        private const string B_VARIANTEN = "Varianten";
-        private const string B_WAERMEBEDARF = "Wärmebedarf";
-        private const string B_WAERMEPUMPE = "Wärmepumpe";
-        private const string B_WIRTSCHAFT = "Wirtschaftlichkeit";
+        private const string B_ADMIN = KiChatKontext.B_ADMIN;
+        private const string B_ASSISTENT = KiChatKontext.B_ASSISTENT;
+        private const string B_BERICHT = KiChatKontext.B_BERICHT;
+        private const string B_BHKW = KiChatKontext.B_BHKW;
+        private const string B_BRAUCHWASSER = KiChatKontext.B_BRAUCHWASSER;
+        private const string B_GEBAEUDE = KiChatKontext.B_GEBAEUDE;
+        private const string B_HAUPTFENSTER = KiChatKontext.B_HAUPTFENSTER;
+        private const string B_HEIZKESSEL = KiChatKontext.B_HEIZKESSEL;
+        private const string B_HILFE = KiChatKontext.B_HILFE;
+        private const string B_KLIMADATEN = KiChatKontext.B_KLIMADATEN;
+        private const string B_KOSTEN = KiChatKontext.B_KOSTEN;
+        private const string B_LIZENZ = KiChatKontext.B_LIZENZ;
+        private const string B_PHOTOVOLTAIK = KiChatKontext.B_PHOTOVOLTAIK;
+        private const string B_PROJEKT = KiChatKontext.B_PROJEKT;
+        private const string B_PROZESSWAERME = KiChatKontext.B_PROZESSWAERME;
+        private const string B_PUFFERSPEICHER = KiChatKontext.B_PUFFERSPEICHER;
+        private const string B_SIMULATION = KiChatKontext.B_SIMULATION;
+        private const string B_SOLARTHERMIE = KiChatKontext.B_SOLARTHERMIE;
+        private const string B_STROMSPEICHER = KiChatKontext.B_STROMSPEICHER;
+        private const string B_STROMVERBRAUCHER = KiChatKontext.B_STROMVERBRAUCHER;
+        private const string B_VARIANTEN = KiChatKontext.B_VARIANTEN;
+        private const string B_WAERMEBEDARF = KiChatKontext.B_WAERMEBEDARF;
+        private const string B_WAERMEPUMPE = KiChatKontext.B_WAERMEPUMPE;
+        private const string B_WIRTSCHAFT = KiChatKontext.B_WIRTSCHAFT;
 
-        // Von Masken ueber SetzeBereich() gesetzte, bewusst feinere Bezeichnungen.
-        // Sie enthalten nur Fach- und Bedienbegriffe, keine Projektdaten.
-        private const string B_QUELLE_ERDREICH =
-            "Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)";
-        private const string B_SIM_KONFIG =
-            "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)";
-        private const string B_SIM_DETAIL = "Detaillierte Simulation";
-
-        /// <summary>
-        /// Alle Zeichenketten, die als Bereichsangabe den Rechner verlassen duerfen.
-        /// Was hier nicht steht, wird zu <see cref="BEREICH_UNBEKANNT"/>.
-        /// </summary>
-        private static readonly HashSet<string> POSITIVLISTE = new HashSet<string>(StringComparer.Ordinal)
-        {
-            BEREICH_UNBEKANNT,
-            B_ADMIN, B_ASSISTENT, B_BERICHT, B_BHKW, B_BRAUCHWASSER, B_GEBAEUDE,
-            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
-            B_PHOTOVOLTAIK, B_PROJEKT, B_PROZESSWAERME, B_PUFFERSPEICHER, B_SIMULATION,
-            B_SOLARTHERMIE, B_STROMSPEICHER, B_STROMVERBRAUCHER, B_VARIANTEN,
-            B_WAERMEBEDARF, B_WAERMEPUMPE, B_WIRTSCHAFT,
-            B_QUELLE_ERDREICH, B_SIM_KONFIG, B_SIM_DETAIL
-        };
+        private const string B_QUELLE_ERDREICH = KiChatKontext.B_QUELLE_ERDREICH;
+        private const string B_SIM_KONFIG = KiChatKontext.B_SIM_KONFIG;
+        private const string B_SIM_DETAIL = KiChatKontext.B_SIM_DETAIL;
 
         /// <summary>
         /// Detailangaben, die ueber ErgaenzeDetail() mitgesendet werden duerfen.
@@ -337,6 +323,22 @@ namespace WindowsFormsApplication1
             if (!_details.Contains(d)) _details.Add(d);
         }
 
+        /// <summary>
+        /// Meldet die Windows-Ermittlung des Bereichs beim Kern an (iU9-W15b.0f).
+        /// Aufruf einmalig beim Programmstart (<c>Program.Main</c>).
+        /// </summary>
+        /// <remarks>
+        /// Ohne diesen Aufruf bleibt <c>KiChatKontext.AktuellerBereich()</c> bei
+        /// „Unbekannter Bereich" - genau der Zustand, in dem der Aktionsharnisch, die
+        /// Konsolenwerkzeuge und (bis iU11) die iOS-Huelle laufen. Der Assistent
+        /// antwortet dann ohne Bereichsangabe: unschaerfer, aber nicht falsch.
+        /// </remarks>
+        public static void Einhaengen()
+        {
+            KiChatKontext.AktiverBereich =
+                () => !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
+        }
+
         /// <summary>Loescht den gesetzten Kontext (z. B. beim Schliessen einer Maske).</summary>
         public static void Zuruecksetzen()
         {
@@ -456,9 +458,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string Freigegeben(string bereich)
         {
-            if (string.IsNullOrWhiteSpace(bereich)) return BEREICH_UNBEKANNT;
-            string b = bereich.Trim();
-            return POSITIVLISTE.Contains(b) ? b : BEREICH_UNBEKANNT;
+            return KiChatKontext.Freigegeben(bereich);
         }
 
         /// <summary>
