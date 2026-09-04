@@ -145,6 +145,37 @@ namespace WindowsFormsApplication1
             return DateTime.TryParse(s, out DateTime d) ? d.Date : (DateTime?)null;
         }
 
+        /// <summary>
+        /// Baut ein Token für einen PRÜFSTAND — ohne Signatur, ohne
+        /// <see cref="RohJson"/> und damit ohne jede Möglichkeit, es abzulegen
+        /// (<c>LizenzManager.TokenSpeichern</c> schriebe <c>null</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Die eine Signaturprüfstelle bleibt unberührt</b> (Sicherheitsregel S3 der
+        /// Welle iU9-W15c): <see cref="SignaturPruefen"/> ist weiterhin der einzige Weg,
+        /// auf dem ein Token aus einer Zeichenkette entsteht. Diese Fabrik ist kein
+        /// zweiter Prüfweg, sondern eine Bauhilfe: Die vierzehn Zustandsfälle aus
+        /// <c>LizenzZustandTests</c> unterscheiden sich nur in Datum, Kulanztagen und
+        /// Gerätebindung — für sie gibt es kein echtes Server-Token, und ein echtes
+        /// gehörte auch nicht ins Repository (es trägt Firmen- und Benutzerdaten und
+        /// eine Gerätebindung).
+        /// </remarks>
+        internal static LizenzToken FuerPruefstand(string geraeteId,
+                                                   DateTime? gueltigBis = null,
+                                                   int kulanzTage = 0,
+                                                   DateTime? tokenBis = null,
+                                                   string typ = null)
+        {
+            return new LizenzToken
+            {
+                GeraeteId = geraeteId,
+                GueltigBis = gueltigBis,
+                KulanzTage = kulanzTage,
+                TokenBis = tokenBis,
+                Typ = typ,
+            };
+        }
+
         /// <summary>Lizenztyp als Anzeigetext.</summary>
         public string TypText()
         {
