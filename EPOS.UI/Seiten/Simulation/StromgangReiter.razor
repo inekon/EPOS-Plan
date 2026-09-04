@@ -1,0 +1,112 @@
+@* Der STROMGANG-Reiter der Ergebnisseite (NavigatorStrom, iU9-W11b.10).
+
+   VORBILD. NavigatorStrom (417 Z.): der Verbrauchsstapel (Lastgangprofil,
+   Waermepumpe, Heizstab, Kessel), darueber die Erzeugungslinien (BHKW, PV) und
+   die Kontrolllinie „Gesamt" - im Viertelstundenraster.
+
+   BEFUND W11-B41 BEHOBEN (A-Zeile): Der Vorlaeufer hatte KEINEN
+   Sortiert-Umschalter, anders als NavigatorWaerme und die drei Erzeugerseiten
+   der Detailansicht. Er ist ergaenzt; B2 kann es ohnehin.
+
+   BEFUND W11-B40 (A-Zeile): PROFIL_LASTGANG und BHKW_STROM trugen BEIDE
+   Color.Brown - im Stapel unten und als Linie darueber nicht zu unterscheiden.
+   Die Farben setzt jetzt die Huelle beim Bildauftrag; das BHKW bekommt dort
+   eine eigene.
+
+   FEHLENDE REIHEN WERDEN AUSGEBLENDET UND ABGEWAEHLT (:266) - sonst naehme der
+   CSV-Export eine unsichtbare Spalte mit.
+
+   WAS ENTFAELLT: CheckboxenAnordnen, SerieSchalten, ApplyCheckboxStates, die
+   sieben gleichfoermigen CheckedChanged-Handler und OptimizeYAxisScale (52 Z.
+   Achsenskalierung - sie gehoert in den Renderer). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <div class="epos-simerg-schalter">
+        <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                  WertChanged="@(w => _sortiert = w)" />
+    </div>
+
+    <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SERIENAUSWAHL"
+                     Eintraege="@Eintraege" Gewaehlt="@_gewaehlt"
+                     GewaehltChanged="@(w => _gewaehlt = w)" />
+
+    <ChartBild Png="@BildGang"
+               Alt="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE" />
+
+    @if (Csv.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="CsvGewuenscht">
+            @Resource.SIM_BTN_CSV_EXPORT
+        </button>
+    }
+
+</div>
+
+@code {
+    /// <summary>Die waehlbaren Reihen samt Praesenz.</summary>
+    [Parameter] public StromgangDaten Daten { get; set; } = new StromgangDaten();
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Der CSV-Export - nur die angehakten Reihen. Ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<string>> Csv { get; set; }
+
+    /// <summary>Die gewaehlten Serienschluessel (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Schluessel();
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    private bool _sortiert;
+    private IReadOnlyList<int> _gewaehlt = Array.Empty<int>();
+    private bool _erstBelegt;
+
+    private List<Ganglinienreihe> Vorhandene
+    {
+        get
+        {
+            var liste = new List<Ganglinienreihe>();
+            foreach (Ganglinienreihe r in Daten.Reihen) if (r.Vorhanden) liste.Add(r);
+            return liste;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Eintraege
+    {
+        get
+        {
+            List<Ganglinienreihe> da = Vorhandene;
+            var liste = new List<(int, string)>(da.Count);
+            for (int i = 0; i < da.Count; i++) liste.Add((i, da[i].Text));
+            return liste;
+        }
+    }
+
+    /// <summary>
+    /// Ausgangszustand „nur Gesamt an" — woertlich aus <c>SetControl</c> :224-228.
+    /// Die erste Reihe der Liste ist die Kontrolllinie.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (_erstBelegt || Vorhandene.Count == 0) return;
+        _erstBelegt = true;
+        _gewaehlt = new[] { 0 };
+    }
+
+    private IReadOnlyList<string> Schluessel()
+    {
+        List<Ganglinienreihe> da = Vorhandene;
+        var liste = new List<string>();
+        foreach (int i in _gewaehlt) if (i >= 0 && i < da.Count) liste.Add(da[i].Schluessel);
+        return liste;
+    }
+
+    private byte[]? BildGang =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel()));
+
+    private Task CsvGewuenscht() => Csv.InvokeAsync(Schluessel());
+}
