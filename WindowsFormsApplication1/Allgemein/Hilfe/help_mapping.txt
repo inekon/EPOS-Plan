@@ -237,6 +237,11 @@ FormMain.btn_Help = Projektverwaltung
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 Form_PufferSp_Admin.btn_Help = Pufferspeicher
+# iU9-W14a.2 (Befund W14-B23): Der Katalogeditor der Pufferspeicher hatte als
+# EINZIGE Maske des Gewerks keine Zeile - der Vorlaeufer haengte KiAufrufKnopf
+# statt InfoKnopf an und hatte deshalb gar keinen Hilfeknopf. Die Razor-Fassung
+# PufferSpKatalogDialog hat einen; hier ist sein Ziel.
+Form_PufferSp_Bearbeiten.btn_Help = Pufferspeicher
 Form_PufferSp_Projekt.btn_Help = Pufferspeicher
 Form_PufferSp_einlesen.btn_Help = Pufferspeicher
 Form_Quellprofil.btn_Help = Simulation

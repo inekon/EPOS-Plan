@@ -133,14 +133,20 @@ namespace WindowsFormsApplication1
                 case Masken.WpImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Waermepumpe);
 
+                // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE
+                // Razor-Komponente mit vier Auspraegungen (KatalogBrowserProfil im
+                // Kern); je Maskenschluessel steht eine schmale Huelle davor. Der
+                // Rueckgabewert sagt jetzt etwas: Drei der vier Vorlaeufer setzten
+                // ueberhaupt kein DialogResult und lieferten IMMER false
+                // (Befund W14-B4, Angleichung E-1).
                 case Masken.HeizkesselAdmin:
-                    using (Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin()) return MitOk(frm);
+                    return HeizkesselAdminHuelle.Oeffnen(null);
 
                 case Masken.BhkwAdmin:
-                    using (Form_BHKWAdmin frm = new Form_BHKWAdmin()) return MitOk(frm);
+                    return BhkwAdminHuelle.Oeffnen(null);
 
                 case Masken.SolarkollektorenAdmin:
-                    using (Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin()) return MitOk(frm);
+                    return SolarkollektorAdminHuelle.Oeffnen(null);
 
                 case Masken.PvAdmin:
                     using (Form_AdminPV frm = new Form_AdminPV()) return MitOk(frm);
@@ -152,7 +158,7 @@ namespace WindowsFormsApplication1
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Pufferspeicher);
 
                 case Masken.PufferSpAdmin:
-                    using (Form_PufferSp_Admin frm = new Form_PufferSp_Admin()) return MitOk(frm);
+                    return PufferSpAdminHuelle.Oeffnen(null);
 
                 case Masken.SolarkollektorenImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);

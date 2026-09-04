@@ -103,6 +103,12 @@ namespace WindowsFormsApplication1
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
 
+            // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE Razor-Komponente
+            // (KatalogBrowserDialog) mit vier Auspraegungen. Die Maskennamen bleiben
+            // hier stehen: Sie sind der Schluessel, unter dem HilfeAutomatik ein
+            // geoeffnetes Fenster erkennt, und die Blazor-Huelle traegt weiterhin den
+            // Titel der Auspraegung. Ein EINZIGER Eintrag fuer die Komponente ginge
+            // nicht - sie bedient vier verschiedene Bereiche.
             { "Form_BHKWAdmin",              B_BHKW },
 
             { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
@@ -138,6 +144,8 @@ namespace WindowsFormsApplication1
 
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
+            // iU9-W14a.2: derselbe Bereich fuer die Razor-Fassung des Katalogeditors.
+            { "PufferSpKatalogDialog",       B_PUFFERSPEICHER },
             // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
 
             { "ErzeugerKarte",               B_SIMULATION },

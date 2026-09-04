@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
                 ["PrioMax"] = Ladeordnung.PRIO_MAX,
 
                 ["VerwaltungGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    verwendung => PufferSpProjektHuelle.Gaben(idProjekt, verwendung, 0, null)),
+                    verwendung => PufferSpProjektHuelle.Gaben(idProjekt, verwendung, 0)),
                 ["VerwendungZuZiel"] = new Func<string, string>(VerwendungZuZiel),
 
                 ["TitelText"] = MyResource.Resource.SIM_SENKE_TITEL,
