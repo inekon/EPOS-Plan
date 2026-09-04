@@ -815,14 +815,17 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void LadeMeldungNenntNurDieZaehlerGroesserNull()
         {
-            Assert.Equal("3 von 5 Einträgen geladen.",
-                         VdiAuswahlFilter.LadeMeldung(3, 5, 0, 0));
+            DeutscheOberflaeche(() =>
+            {
+                Assert.Equal("3 von 5 Einträgen geladen.",
+                             VdiAuswahlFilter.LadeMeldung(3, 5, 0, 0));
 
-            Assert.Equal("3 von 5 Einträgen geladen." + Environment.NewLine + "Bereits eingelesen (übersprungen): 2",
-                         VdiAuswahlFilter.LadeMeldung(3, 5, 2, 0));
+                Assert.Equal("3 von 5 Einträgen geladen." + Environment.NewLine + "Bereits eingelesen (übersprungen): 2",
+                             VdiAuswahlFilter.LadeMeldung(3, 5, 2, 0));
 
-            Assert.Equal("0 von 1 Einträgen geladen." + Environment.NewLine + "Fehlgeschlagen: 1",
-                         VdiAuswahlFilter.LadeMeldung(0, 1, 0, 1));
+                Assert.Equal("0 von 1 Einträgen geladen." + Environment.NewLine + "Fehlgeschlagen: 1",
+                             VdiAuswahlFilter.LadeMeldung(0, 1, 0, 1));
+            });
         }
 
         /// <summary>
@@ -832,13 +835,42 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void LadeMeldungHaeltDieReihenfolgeDerSechsZaehler()
         {
-            string n = Environment.NewLine;
-            Assert.Equal("1 von 10 Einträgen geladen." + n
-                         + "Überschrieben: 2" + n
-                         + "Unter neuem Namen: 3" + n
-                         + "Bereits eingelesen (übersprungen): 4" + n
-                         + "Fehlgeschlagen: 5",
-                         VdiAuswahlFilter.LadeMeldung(1, 10, 4, 5, 2, 3));
+            DeutscheOberflaeche(() =>
+            {
+                string n = Environment.NewLine;
+                Assert.Equal("1 von 10 Einträgen geladen." + n
+                             + "Überschrieben: 2" + n
+                             + "Unter neuem Namen: 3" + n
+                             + "Bereits eingelesen (übersprungen): 4" + n
+                             + "Fehlgeschlagen: 5",
+                             VdiAuswahlFilter.LadeMeldung(1, 10, 4, 5, 2, 3));
+            });
+        }
+
+        /// <summary>
+        /// Pinnt die Oberflaechensprache auf de-DE (Regel seit W8, nachgeschaerft
+        /// nach dem roten Windows-Lauf vom 04.09.2026): Seit W13.0f kommen die
+        /// fuenf Bausteine der Sammelmeldung aus MyResource — sie haengen damit an
+        /// der Sprache, und der Windows-Laeufer laeuft englisch. Sich darauf zu
+        /// verlassen, dass eine andere Testklasse den Prozessstandard gesetzt hat,
+        /// war genau die Ursache.
+        /// </summary>
+        private static void DeutscheOberflaeche(Action fall)
+        {
+            var vorherKultur = System.Threading.Thread.CurrentThread.CurrentCulture;
+            var vorherOberflaeche = System.Threading.Thread.CurrentThread.CurrentUICulture;
+            try
+            {
+                var de = new CultureInfo("de-DE");
+                System.Threading.Thread.CurrentThread.CurrentCulture = de;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = de;
+                fall();
+            }
+            finally
+            {
+                System.Threading.Thread.CurrentThread.CurrentCulture = vorherKultur;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = vorherOberflaeche;
+            }
         }
 
         // ==================================================================

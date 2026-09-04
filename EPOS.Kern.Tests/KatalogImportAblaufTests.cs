@@ -227,20 +227,33 @@ namespace EPOS.Kern.Tests
             Assert.Empty(a.Saetze);
         }
 
-        /// <summary>Der Melder liefert Anfang und Ende des Lesens.</summary>
+        /// <summary>
+        /// Der Melder liefert Anfang und Ende des Lesens.
+        ///
+        /// <para>Der Prueflauf nimmt einen UNMITTELBAREN Melder und nicht
+        /// <see cref="Progress{T}"/>: Der marshalt ueber den
+        /// Synchronisationskontext, und ob es zum Zeitpunkt der Zusicherung schon
+        /// angekommen ist, haengt dann davon ab, wer sonst gerade laeuft. Der Wirt
+        /// braucht das Marshalling — der Test braucht die Aussage.</para>
+        /// </summary>
         [Fact]
         public void DerMelderBegleitetDasLesen()
         {
             var gesehen = new List<ImportFortschritt>();
             KatalogImportAblauf a = Ablauf(KatalogImportArt.Pufferspeicher);
 
-            a.Lesen(Probe("pufferspeicher_vaillant.vdi"),
-                    new Progress<ImportFortschritt>(f => gesehen.Add(f)));
+            a.Lesen(Probe("pufferspeicher_vaillant.vdi"), new Mitschrift(gesehen));
 
-            // Progress<T> marshalt; im Test ohne Synchronisationskontext laeuft es
-            // direkt. Beide Meldungen muessen angekommen sein.
             Assert.Contains(gesehen, f => f.Schluessel == "IMP_KAT_PROT_LESEN");
             Assert.Contains(gesehen, f => f.Schluessel == "IMP_KAT_PROT_GELESEN" && f.Werte[0] == "9");
+        }
+
+        /// <summary>Ein Melder, der unmittelbar in eine Liste schreibt.</summary>
+        private sealed class Mitschrift : IProgress<ImportFortschritt>
+        {
+            private readonly List<ImportFortschritt> _liste;
+            public Mitschrift(List<ImportFortschritt> liste) { _liste = liste; }
+            public void Report(ImportFortschritt wert) { _liste.Add(wert); }
         }
 
         /// <summary>Ein gesetztes Abbruchzeichen bricht das Lesen ab.</summary>
