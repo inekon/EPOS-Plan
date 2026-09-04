@@ -118,6 +118,18 @@ public interface IProjektQuelle
     /// Wer sie nicht umsetzt, kennt die Seite eben nicht.</para>
     /// </summary>
     IReadOnlyDictionary<string, object>? SimulationKonfigGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Ergebnisseite zu einem Projekt
+    /// (iU9-W11b.13); <c>null</c> = geht gerade nicht. Die Seite bleibt dann in
+    /// der Liste stehen.
+    ///
+    /// <para>Dieselbe Form und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
 }
 
 /// <summary>
