@@ -86,8 +86,13 @@ public sealed class Stapelergebnis
 /// </summary>
 public static class Stapel
 {
-    /// <summary>Ordner, die nie zum Bestand zaehlen - Bauordner und die eingefrorenen Pruefmuster.</summary>
-    private static readonly string[] Uebergangen = { "obj", "bin", "Pruefmuster" };
+    /// <summary>
+    /// Ordner, die nie zum Bestand zaehlen - Bauordner, die eingefrorenen Pruefmuster und die
+    /// Git-Nebenbaeume (<c>.claude/worktrees</c>): Dort liegen vollstaendige Kopien des Repos auf
+    /// einem anderen Stand, und ein Stapellauf ueber die Repowurzel zaehlte deren Masken mit
+    /// (04.09.2026: der Typzeuge fand NumericUpDown nur noch in einem Worktree vor W13).
+    /// </summary>
+    private static readonly string[] Uebergangen = { "obj", "bin", "Pruefmuster", ".claude", ".git" };
 
     /// <summary>
     /// Alle Designer-Dateien unterhalb eines Ordners, Gross-/Kleinschreibung egal.

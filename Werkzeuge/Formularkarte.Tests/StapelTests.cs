@@ -115,24 +115,53 @@ public sealed class StapelTests
         // lokalisierte mit (21) - Form_Heizkessel_einlesen, Form_PufferSp_einlesen,
         // Form_WP_einlesen und Form_AdminWaermeeinlesen; Form_SolarKollektoren_
         // einlesen hatte weder de-DE noch en-US (Befund W13-B27) und
-        // Form_CECImport eine LEERE .resx (B54).
+        // Form_CECImport eine LEERE .resx (B54). Gemessen OHNE die Git-Nebenbaeume
+        // unter .claude/worktrees (die der Stapellauf seit dem 04.09.2026 uebergeht)
+        // sind es 20: Der Lauf im W13-Worktree hatte eine Kopie des Bestands auf
+        // einem aelteren Stand mitgezaehlt.
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 21,
+        Assert.True(Lauf.Value.Lokalisierte >= 20,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
     [Fact]
     public void DieHaeufigstenTypenSindAbgedeckt()
     {
-        var typen = Lauf.Value.Typen;
+        // Der Bestand schrumpft mit jeder Welle von iU9. Die sechs Typen, die bis
+        // Welle 16 bleiben (Form_Start, MDIMainForm, WizardParent), muessen im Bestand
+        // vorkommen; die fuenf, die schon frueher fallen (NumericUpDown mit W13,
+        // DataGridView mit W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit
+        // W15c), genuegen im BESTAND ODER IM PRUEFMUSTER - das eingefrorene Muster
+        // ist die einzige Stelle, an der der Leser den Typ nach dem Rueckbau noch
+        // vorfindet. Kennen muss der Leser alle elf.
+        var bestand = Lauf.Value.Typen;
+        var muster = PruefmusterTypen();
+
+        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "ListBox", "TabPage" })
+            Assert.True(bestand.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
+
+        foreach (var typ in new[] { "GroupBox", "CheckBox", "NumericUpDown", "DataGridView", "Chart" })
+            Assert.True(bestand.ContainsKey(typ) || muster.Contains(typ),
+                        "Typ " + typ + " kam weder im Stapellauf noch im Pruefmuster vor.");
 
         foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "GroupBox", "TabPage",
                                     "CheckBox", "NumericUpDown", "ListBox", "DataGridView", "Chart" })
-        {
-            Assert.True(typen.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
             Assert.True(Typtabelle.Bekannt(typ), "Typ " + typ + " ist dem Leser unbekannt.");
+    }
+
+    /// <summary>Alle Steuerelementtypen der eingefrorenen Pruefmuster (der Stapellauf uebergeht den Ordner).</summary>
+    private static HashSet<string> PruefmusterTypen()
+    {
+        var typen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var datei in Directory.EnumerateFiles(Repowurzel.PruefmusterWurzel, "*.cs", SearchOption.AllDirectories)
+                     .Where(d => d.EndsWith(".Designer.cs", StringComparison.OrdinalIgnoreCase)))
+        {
+            var maske = Kartenbau.Vollstaendig(datei, null, Repowurzel.PruefmusterWurzel);
+            if (maske is null) continue;
+            foreach (var typ in Kartenbau.Typzaehlung(maske).Keys) typen.Add(typ);
         }
+        return typen;
     }
 
     [Fact]
