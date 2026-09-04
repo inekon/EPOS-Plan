@@ -1651,7 +1651,29 @@ body {
     white-space: nowrap;
 }
 
+/* BEFUND W5-B-1 (Windows-Abnahme 04.09.2026): Die Aktionsspalte der
+   Kostenseite war auf dem Bildschirm nicht zu sehen - weder die Zeilenwahl
+   noch der Papierkorb. Die Regel setzte display:flex auf das <td> SELBST.
+   Damit ist die Zelle KEINE Tabellenzelle mehr (CSS 2.1, 17.2.1 "Anonymous
+   table objects"): Der Browser schiebt eine ANONYME table-cell darunter, die
+   Spaltenbreite haengt nicht mehr an diesem <td>, und jede Zellenregel des
+   Hausblatts (.epos-raster td: Polsterung, Trennlinie) wie die Zeilenfarbe
+   (.epos-zeile--lose > td) trifft einen Kasten, der die Zelle nicht mehr ist.
+   In der Kostentabelle kam dazu, dass ihr erster <th> LEER ist - die Spalte
+   hatte damit ueberhaupt nichts, woraus sie ihre Breite nehmen konnte, waehrend
+   alle anderen Spalten mit white-space:nowrap ihre volle Breite forderten.
+   (Die Uebersichtstabelle traegt dieselbe Klasse, aber einen BESCHRIFTETEN
+   Spaltenkopf - dort fiel es nicht auf.)
+
+   Die Zelle bleibt jetzt Zelle; der Flexkasten steht DARIN
+   (.epos-zellenaktionen-inhalt), und width:1% gibt der Spalte genau die
+   Breite ihrer Knoepfe - nie weniger. */
 .epos-zellenaktionen {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.epos-zellenaktionen-inhalt {
     display: flex;
     gap: 2px;
     align-items: center;
@@ -1663,9 +1685,13 @@ body {
     background: #ffe6e6;
 }
 
-/* Positionen ohne (gueltige) Anlagenzuordnung - sie rechnen mit. */
+/* Positionen ohne (gueltige) Anlagenzuordnung - sie rechnen mit. Seit
+   W5-O3 (Anwenderentscheid 04.09.2026) loescht ein DOPPELKLICK auf diese
+   Zeile ihre Positionen - wie im Vorlaeufer (AE21). Deshalb markiert ein
+   Doppelklick hier keinen Text; der Knopf in der Zeile bleibt der erste Weg. */
 .epos-zeile--lose > td {
     background: #fff4cc;
+    user-select: none;
 }
 
 .epos-zeile--summe > td {

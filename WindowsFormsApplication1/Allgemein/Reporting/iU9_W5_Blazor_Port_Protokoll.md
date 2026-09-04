@@ -218,7 +218,7 @@ Zeilenfarben, Kurztexte, Tastatur und jeden Rückruf.
 |---|---|---|
 | **A‑1** | Der Übernahmedialog trägt einen **Infoknopf**; die WinForms-Fassung hatte keinen. | Jede Razor-Komponente des Hauses trägt ihn (H7). Die Zeile im Hilfekatalog ist nachgetragen. |
 | **A‑2** | Die vier Wertzeilen des Übernahmedialogs sind `Kohaerenzzeile`n statt Label-Paare; ein leerer Wert erscheint als „—". | Ein leeres Label sagt nicht, ob der Wert fehlt oder leer ist. |
-| **A‑3** | Ä21 löschte die losen Positionen per **Doppelklick** auf die gelbe Zeile; jetzt steht ein **Knopf** in der Zeile. | Ein Doppelklick ist auf einem Berührungsbildschirm kein Ziel (iL4) und in einer Tabelle nicht auffindbar. Die MessageBox-Rückfrage wird der Baustein `Rueckfrage`. |
+| **A‑3** | Ä21 löschte die losen Positionen per **Doppelklick** auf die gelbe Zeile; jetzt steht ein **Knopf** in der Zeile. | Ein Doppelklick ist auf einem Berührungsbildschirm kein Ziel (iL4) und in einer Tabelle nicht auffindbar. Die MessageBox-Rückfrage wird der Baustein `Rueckfrage`. **Erledigt 04.09.2026 (W5‑O3):** Der Doppelklick ist als ZWEITER Weg zurück, der Knopf bleibt der erste — beide gehen durch dieselbe Rückfrage. |
 | **A‑4** | Der Sammel-Einstieg „Tarifstruktur…" fehlt jetzt **ganz**. | Ä16 hatte ihn schon unsichtbar gesetzt; der Vorläufer trug ihn nur noch im Designer. Ein unsichtbarer Knopf ist kein Feld. |
 | **A‑5** | Die Vergleichstabelle der Wirtschaftlichkeit ist eine **Matrix**, kein `Raster`. | Ihre Spalten entstehen zur Laufzeit (eine je Version); ein `QuickGrid` braucht sie zur Übersetzungszeit. Sie trägt die Hausklasse `epos-raster` — dieselbe Optik, ohne dem Baustein eine Fähigkeit anzudichten. Dasselbe gilt für die vier Tabellen der Kosten- und Übersichtsseite: Sie tragen Zeilenfarben, Kurztexte je Zelle und Summenzeilen. |
 | **A‑6** | Die Stammzeile der Variantenlisten ist **gesperrt** statt „Abwählen wird zurückgedreht". | Der Vorläufer ließ den Haken zu und drehte ihn im `ItemCheck` zurück — sichtbar als Flackern. Die Meldung bleibt bereit, falls der Weg doch erreicht wird. |
@@ -486,7 +486,7 @@ neuen CSS-Klassen (`epos-reiter*`, `epos-kachelraster`, `epos-kennzahlkachel*`,
 | **F‑12** | Übersicht, Variantenzeile: die Unterschiede samt Aktionsspalte; ein Knopf, wo die Übernahme trägt, ein grauer Strich mit Begründung, wo nicht |
 | **F‑13** | Übernahme: Quellenwahl, Wertgegenüberstellung bzw. Klartext, „OK" schreibt, danach steht die Meldung und die Zeile bleibt markiert |
 | **F‑14** | Kosten: die drei Karten zeigen „—" statt 0,00, wo nichts erfasst ist; die Fußzeile nennt alle Befunde |
-| **F‑15** | Kosten: die gelbe Zeile trägt den Papierkorb (A‑3); die Rückfrage nennt die Komponente, „Ja" löscht |
+| **F‑15** | Kosten: die Aktionsspalte steht mit beschriftetem Kopf („Aktionen“, W5‑B‑1) und trägt Zeilenwahl und Papierkorb ohne Hover; die gelbe Zeile löscht über den Papierkorb (A‑3) **und** über den Doppelklick (W5‑O3) — beide Wege stellen dieselbe Rückfrage, sie nennt die Komponente, „Ja" löscht |
 | **F‑16** | Kosten: die Wahl einer Anlage kennzeichnet rechts ihren Energieträger (Ä19); „Kostenverwaltung öffnen…" startet mit genau dieser Komponente |
 | **F‑17** | Kosten: die Trägertabelle mit zehn Spalten — Köpfe umgebrochen, Werte lesbar, rote Fehlzeile mit Kurztext (A‑16) |
 | **F‑18** | Wirtschaftlichkeit: vier Karten, die Vergleichstabelle mit je einer Spalte pro Version, der Parameternachweis in einer Zeile |
@@ -506,7 +506,7 @@ neuen CSS-Klassen (`epos-reiter*`, `epos-kachelraster`, `epos-kennzahlkachel*`,
 |---|---|
 | **W5‑O1** | **DPI (R4) dem Anwender vorlegen** — der eigentliche Entscheid der Welle. Die Seiten sind ab 125 % bitmapskaliert, und das lässt sich nur durch iF21 (Anwendung insgesamt DPI-fähig) heilen. Bis dahin gilt: Dialoge scharf, Seiten unscharf. |
 | **W5‑O2** | **A‑16 sichtprüfen:** Die Trägertabelle hat ihre gerechneten Spaltenbreiten verloren. Verteilt der Browser sie brauchbar, oder braucht sie `min-width` je Spalte? |
-| **W5‑O3** | **A‑3 dem Anwender vorlegen:** Der Doppelklick auf die gelbe Zeile ist ein Knopf geworden. Fehlt der Doppelklick, ist er als zweiter Weg nachzurüsten — die Zeile trägt ihn ohnehin. |
+| **W5‑O3** | ~~**A‑3 dem Anwender vorlegen:** Der Doppelklick auf die gelbe Zeile ist ein Knopf geworden.~~ **Entschieden 04.09.2026 (Windows-Abnahme): Doppelklick als zweiter Weg nachgerüstet, Knopf bleibt; Sichtbarkeitsbefund W5‑B‑1 (`display:flex` auf dem `<td>` der Aktionsspalte, dazu ein leerer Spaltenkopf) behoben** (Commit `acc19a3`, § 12). |
 | **W5‑O4** | **Die Fokusfalle bleibt ungeprüft** (W4‑O4, hier F‑8). Sie trägt jetzt sechzehn Unterdialoge; fällt sie durch, braucht `EPOS.UI` doch eine JS-Schicht — dieselbe, die W1‑O4 für `SelectAll()` und W3‑O2 für das Zoomen erwägt. |
 | **W5‑O5** | **A‑12:** Der Fortschritt ist `<progress>`. Ob das reicht, bis Welle 11 den Baustein bringt, sagt die Abnahme — der Berichtslauf dauert bei fünf Varianten spürbar. |
 | **W5‑O6** | Die **Kopfzeile des Reiters** trägt Titel und Stammnamen; der Vorläufer setzte sie in `lblKopf`. Ob sie an dieser Stelle noch gebraucht wird, wo jede Seite ihren eigenen Titel führt, entscheidet die Sichtabnahme. |
@@ -576,3 +576,18 @@ GELOESCHT
   WindowsFormsApplication1/Views/Bericht/UcBericht.{cs,Designer.cs}
   WindowsFormsApplication1/Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.{cs,Designer.cs}
 ```
+
+---
+
+## 12. Windows-Abnahme 04.09.2026 — Befunde
+
+| # | Befund | Ursache | Behebung |
+|---|---|---|---|
+| **W5‑B‑1** | Kosten: In der Tabelle „Anlagenkomponenten" ist **keine Aktionsspalte** zu sehen — weder die `Zeilenwahl` noch der Papierkorb. Der Anwender sah damit keinen Weg, eine lose Position zu löschen. | **Das Stilblatt, nicht das Markup.** `.epos-zellenaktionen` setzte `display: flex` auf das `<td>` selbst. Damit ist die Zelle keine Tabellenzelle mehr (CSS 2.1, 17.2.1 „Anonymous table objects"): Der Browser schiebt eine **anonyme** `table-cell` darunter, die Spaltenbreite hängt nicht mehr an diesem `<td>`, und jede Zellenregel des Hausblatts (`.epos-raster td`: Polsterung, Trennlinie) wie die Zeilenfarbe (`.epos-zeile--lose > td`) trifft einen Kasten, der die Zelle nicht mehr ist. Dazu war der **erste `<th>` leer** — die Spalte hatte nichts, woraus sie ihre Breite nehmen konnte, während alle anderen Spalten mit `white-space: nowrap` ihre volle Breite forderten. Die Übersichtsseite trägt dieselbe Klasse, aber einen **beschrifteten** Spaltenkopf (F‑12, abgenommen) — dort fiel es nicht auf. | `.epos-zellenaktionen` ist wieder eine gewöhnliche Zelle (`width: 1%`, `white-space: nowrap`); der Flexkasten steht **darin** als `.epos-zellenaktionen-inhalt`. Der Spaltenkopf ist beschriftet (`SpalteAktionen`, Schlüssel `BK_KOSTEN_SP_AKTIONEN`, de „Aktionen" / en „Actions"). Die Knöpfe sind **ohne Hover** sichtbar (iL4). Wache: `KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex` liest das Stilblatt selbst — eine bunit-Probe hätte den Fehler nie gesehen, denn das Markup war richtig. |
+| **W5‑B‑2** | Kosten: „Heizkessel — ohne Anlage (gelb) wird mit **Doppelklick** nicht gelöscht." | Die Angleichung A‑3 hatte den Doppelklick des Vorläufers (Ä21) durch den Papierkorb-Knopf ersetzt; W5‑O3 hielt das zum Entscheid offen. | **W5‑O3 entschieden:** `@ondblclick` hängt wieder an jeder Zeile der Anlagentabelle und endet in derselben `LoeschenFragen(zeile)` wie der Knopf — eine Rückfrage, eine `Loeschen`-Gabe. Die eine Bedingung beider Wege steht **einmal** in `LoeschenFragen` (`!z.Loeschbar || LoeschFrage is null`), nicht zweimal im Markup; auf gebundenen Zeilen passiert nichts. Die gelbe Zeile trägt `user-select: none`, damit der Doppelklick keinen Text markiert. |
+
+**Grenze des Nachweises.** Beide Befunde sind auf Linux geprüft — sechs neue
+bunit-Proben (2 205 → **2 211**, auch unter `LANG=en_US.UTF-8`). Die
+**Sichtprüfung in WebView2 steht beim Anwender**: In der Arbeitsumgebung ist
+kein Browser erreichbar, der Befund W5‑B‑1 ist deshalb aus Markup, Stilblatt
+und Tabellenboxmodell hergeleitet, nicht am Bild gemessen.

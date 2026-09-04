@@ -21,6 +21,16 @@
    QuickGrid nur ueber Vorlagenspalten je Zelle koennte. Die Hausklasse
    epos-raster gibt beiden dieselbe Optik.
 
+   DIE AKTIONSSPALTE DER ANLAGENTABELLE traegt die Zeilenwahl und - auf der
+   gelben Zeile - den Papierkorb. Sie ist BESCHRIFTET ("Aktionen") und
+   heisst .epos-zellenaktionen; ihr Inhalt steht in einem eigenen Flexkasten
+   .epos-zellenaktionen-inhalt. Beides ist der Befund W5-B-1 der
+   Windows-Abnahme vom 04.09.2026: Die Spalte war nicht zu sehen, weil das
+   Stilblatt display:flex auf das <td> selbst setzte (die Zelle ist damit
+   keine Tabellenzelle mehr) und ihr Kopf leer war (die Spalte hatte nichts,
+   woraus sie ihre Breite nehmen konnte). Die Knoepfe sind OHNE Hover
+   sichtbar - Beruehrung kennt kein Hover (iL4).
+
    DIE ZWEI EINSTIEGE STEHEN IN EINER UEBERLAGERUNG. Die Kostenverwaltung und
    die Energietraegerverwaltung sind seit Welle 4 Razor-Komponenten; als
    zweites Fenster waeren sie eine zweite WebView (Risiko R2). *@
@@ -69,7 +79,7 @@
                 <table class="epos-raster epos-kostentabelle">
                     <thead>
                         <tr>
-                            <th scope="col"></th>
+                            <th scope="col" class="epos-zellenaktionen">@SpalteAktionen</th>
                             <th scope="col">@SpalteAnlage</th>
                             <th scope="col" class="epos-zahl">@SpalteSumme</th>
                             <th scope="col" class="epos-zahl">@SpalteBetrieb</th>
@@ -79,20 +89,32 @@
                         @foreach (KostenZeile z in _stand.Komponenten)
                         {
                             KostenZeile zeile = z;
-                            <tr class="@Zeilenklasse(zeile.Art)" title="@zeile.Kurztext">
+                            @* Der DOPPELKLICK ist der zweite Weg zum Loeschen (W5-O3,
+                               Anwenderentscheid 04.09.2026) - der Griff, den AE21 im
+                               Vorlaeufer hatte. Er haengt an JEDER Zeile und wird in
+                               LoeschenFragen entschieden: Wo Loeschbar nicht gilt,
+                               passiert nichts. So steht die Bedingung EINMAL, und beide
+                               Wege gehen durch dieselbe Rueckfrage. *@
+                            <tr class="@Zeilenklasse(zeile.Art)" title="@zeile.Kurztext"
+                                @ondblclick="@(() => LoeschenFragen(zeile))">
                                 <td class="epos-zellenaktionen">
-                                    @if (zeile.Art != ZeilenArt.Summe && zeile.Art != ZeilenArt.Hinweis)
-                                    {
-                                        <Zeilenwahl Gewaehlt="@(_anlage == zeile.Schluessel)"
-                                                    Kurztext="@WahlKurztext"
-                                                    Gewaehltwerden="@(() => AnlageWaehlen(zeile))" />
-                                    }
-                                    @if (zeile.Loeschbar && LoeschFrage is not null)
-                                    {
-                                        <button type="button" class="epos-knopf epos-zr-knopf"
-                                                title="@LoeschenKurztext"
-                                                @onclick="@(() => LoeschenFragen(zeile))">🗑️</button>
-                                    }
+                                    @* Der Flexkasten steht IN der Zelle, nicht auf ihr:
+                                       display:flex auf einem <td> nimmt ihm die Rolle als
+                                       Tabellenzelle (Befund W5-B-1). *@
+                                    <div class="epos-zellenaktionen-inhalt">
+                                        @if (zeile.Art != ZeilenArt.Summe && zeile.Art != ZeilenArt.Hinweis)
+                                        {
+                                            <Zeilenwahl Gewaehlt="@(_anlage == zeile.Schluessel)"
+                                                        Kurztext="@WahlKurztext"
+                                                        Gewaehltwerden="@(() => AnlageWaehlen(zeile))" />
+                                        }
+                                        @if (zeile.Loeschbar && LoeschFrage is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-zr-knopf"
+                                                    title="@LoeschenKurztext"
+                                                    @onclick="@(() => LoeschenFragen(zeile))">🗑️</button>
+                                        }
+                                    </div>
                                 </td>
                                 <td>@zeile.Anzeige</td>
                                 <td class="epos-zahl">@zeile.Summe</td>
@@ -216,6 +238,7 @@
     [Parameter] public string LabelKomponenten { get; set; }
         = "Investitionskosten je Anlage:";
     [Parameter] public string LabelTraeger { get; set; } = "Energieträger des Projekts:";
+    [Parameter] public string SpalteAktionen { get; set; } = "Aktionen";
     [Parameter] public string SpalteAnlage { get; set; } = "Anlage / Komponente";
     [Parameter] public string SpalteSumme { get; set; } = "Summe [€]";
     [Parameter] public string SpalteBetrieb { get; set; } = "Betrieb [€/a]";
@@ -345,12 +368,19 @@
     }
 
     // =====================================================================
-    // Lose Positionen löschen (Vorläufer: Doppelklick auf die gelbe Zeile)
+    // Lose Positionen löschen — ZWEI Wege auf dieselbe Rückfrage:
+    // der Papierkorb in der Zeile (A‑3) und der Doppelklick auf die gelbe
+    // Zeile (W5‑O3, wie im Vorläufer Ä21). Der Knopf ist der Weg, den
+    // Berührung und Tastatur erreichen (iL4); der Doppelklick ist der
+    // gewohnte Griff der Maus.
     // =====================================================================
 
     private void LoeschenFragen(KostenZeile z)
     {
-        if (LoeschFrage is null) return;
+        // Die EINE Bedingung beider Wege: Nur die lose Zeile lässt sich
+        // löschen. Der Knopf steht nur dort — der Doppelklick hängt an jeder
+        // Zeile und endet hier.
+        if (!z.Loeschbar || LoeschFrage is null) return;
         string frage = LoeschFrage(z);
         if (string.IsNullOrEmpty(frage)) return;
         _loeschzeile = z;

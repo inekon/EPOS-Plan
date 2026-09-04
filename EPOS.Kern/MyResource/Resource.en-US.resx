@@ -5483,6 +5483,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energy carriers of the project</value>
   </data>
+  <data name="BK_KOSTEN_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
   <data name="BK_KOSTEN_SP_KOMPONENTE" xml:space="preserve">
     <value>Component</value>
   </data>
