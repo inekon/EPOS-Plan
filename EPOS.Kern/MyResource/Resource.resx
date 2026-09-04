@@ -13976,4 +13976,24 @@ Wirklich entfernen?</value>
   <data name="KOMPAUSW_K_PUFFER" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="WIZ_KLIMA_FEHLT" xml:space="preserve">
+    <value>Bitte eine Klimazone auswählen!</value>
+  </data>
+  <data name="WIZ_KLIMA_FEHLT_TITEL" xml:space="preserve">
+    <value>Klimazone fehlt</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen Projektnamen eingeben!</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT_TITEL" xml:space="preserve">
+    <value>Projektname fehlt</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Das Projekt konnte nicht vollständig gespeichert werden.
+
+Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen.</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
+    <value>Speichern fehlgeschlagen</value>
+  </data>
 </root>
