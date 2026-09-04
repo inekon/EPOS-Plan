@@ -188,7 +188,9 @@ namespace WindowsFormsApplication1
             { "StromganglinieAdminDialog",   B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
-            { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
+            // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien ist
+            // die Razor-Komponente WaermebedarfAdminDialog; der Bereich bleibt.
+            { "WaermebedarfAdminDialog",     B_WAERMEBEDARF },
 
             // iU9-W13.1: Die VIER VDI-3805-Einlesemasken sind EINE Razor-Komponente
             // mit vier Auspraegungen (KatalogImportDialog). Der Bereich haengt

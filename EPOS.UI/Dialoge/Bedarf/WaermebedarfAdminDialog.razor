@@ -1,0 +1,409 @@
+﻿@* Verwaltung der externen Waermebedarfsganglinien (iU9-W13.2).
+
+   Vorbild: Views/Wärmebedarf/Form_AdminWaermeeinlesen.cs (167 Z.) und
+   .designer.cs (148 Z.).
+
+   WOZU. Die Liste aller Katalogeintraege in Tab_Waermebedarf_STAMM, das
+   Loeschen mit Projektzuordnungssperre, das Anzeigen des Dateiinhalts mit der
+   Systemanwendung und das EINLESEN einer Textdatei mit 8 760 Stundenwerten -
+   ein Wert je Zeile.
+
+   IHR ZWILLING IST NICHT DIE VDI-EINLESEMASKE, sondern
+   Form_Stromganglinie_Admin aus Welle 12: Liste, Loeschen mit Sperre,
+   Dateiwahl, Import in eine STAMM-Tabelle mit Datenblock. Diese Komponente
+   folgt deshalb StromganglinieAdminDialog Zug um Zug - nur haengt hier
+   GanglinienTextDatei ein, wo dort GanglinienImportAblauf steht.
+
+   BEFUND W13-B2, BEHOBEN: Die einzige Dublettenpruefung des Vorlaeufers war
+   listBox_Extern.FindString(...) - eine Suche in der ANZEIGE, still, ohne
+   Meldung, ohne Datenbankfrage. Seit W13.0g fuehrt der Katalog WAERMEBEDARF
+   ImportSpalten (leeres Array = Namenspruefung ohne Inhaltsvergleich), und der
+   Konfliktdialog erscheint als Ueberlagerung wie ueberall sonst.
+
+   BEFUND W13-B8, BEHOBEN: Die Sperre lief als inline-SQL mit
+   Zeichenkettenverkettung ueber den Anwendertext; sie steht seit W9.0d als
+   WaermebedarfStammCtrl.HatProjektzuordnung im Kern - die Maske rief sie nur nicht.
+
+   BEFUND W13-B9, BEHOBEN: Der Fehlschlag der verlustfreien Originalablage lief
+   in ein catch { }. Wer glaubt, sein Original sei gesichert, und es ist nicht
+   so, merkt es sonst erst, wenn er es braucht.
+
+   VIER TOTE FELDER FALLEN WEG: m_ID_Projekt, m_szProjekt, result und DateiListe
+   waren allesamt tot (result las niemand, DateiListe wurde befuellt und nie
+   gelesen und nie geleert - Befund W13-B5). Ebenso btn_Abbrechen_Click ohne
+   Knopf (B6), der leere listBox_Extern_SelectedIndexChanged und der 38-zeilige
+   NOTEBOOK-FIX-Block, der im Code nachtrug, was in den Designer gehoerte.
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-waermebedarf-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Gruppenkopf Titel="@LabelKatalog" />
+
+    <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
+        </KindInhalt>
+    </Raster>
+
+    <Gruppenkopf Titel="@GruppeEinlesenText" />
+
+    <Herleitungszeile Text="@HinweisStundenwerte" />
+
+    <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
+
+    <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+               Aktiv="@(!_laeuft)" />
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"
+                @onclick="BeiAnzeigen">@AnzeigenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!EinlesenErlaubt)"
+                @onclick="BeiEinlesen">@EinlesenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@BeendenText</button>
+    </div>
+
+    @* --- Rueckfrage vor dem Loeschen (A-Zeile) --------------------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                    Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Ganglinienkatalogs.</summary>
+    public sealed record Katalogzeile(int Id, string Bezeichner, bool NurLesen);
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Der Katalog (<c>WaermebedarfStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<Task<List<Katalogzeile>>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Gibt es zu dieser Ganglinie eine Projektzuordnung?
+    /// (<c>WaermebedarfStammCtrl.HatProjektzuordnung</c>, seit W9.0d im Kern —
+    /// die Maske rief sie nie, Befund W13-B8.)
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? HatProjektzuordnung { get; set; }
+
+    /// <summary>Loescht einen Katalogeintrag; <c>false</c> = er blieb stehen.</summary>
+    [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Legt die gewaehlte Datei verlustfrei im Anwenderordner ab und liefert den
+    /// dortigen Pfad. Ein Fehlschlag kommt als Meldung zurueck statt in ein
+    /// <c>catch { }</c> (Befund W13-B9).
+    /// </summary>
+    [Parameter] public Func<string, Task<AblageErgebnis>>? Ablegen { get; set; }
+
+    /// <summary>Oeffnet eine Datei mit der Systemanwendung (<c>Dienste.Datei.MitSystemOeffnen</c>).</summary>
+    [Parameter] public Func<string, Task<bool>>? MitSystemOeffnen { get; set; }
+
+    /// <summary>
+    /// Liest, prueft vor und schreibt — die ganze Kette in der Huelle, weil sie
+    /// 8 760 Zeilen liest und in einer Transaktion schreibt. Der Konfliktdialog
+    /// kommt als Rueckruf zurueck.
+    /// </summary>
+    [Parameter]
+    public Func<string, WaermebedarfImportRueckrufe, IProgress<ImportFortschritt>,
+                Task<WaermebedarfImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Der Ablageordner als Anzeigetext (<c>%APPDATA%…\Waermebedarf</c>).</summary>
+    [Parameter] public string Ordner { get; set; } = "";
+
+    /// <summary>Der Dialog ist zu Ende.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Meldet dem Wirt, dass sich der Katalog geaendert hat (Ueberlagerungsbetrieb).</summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.WBAD_TITEL;
+    [Parameter] public string LabelKatalog { get; set; } = Resource.WBAD_LBL_KATALOG;
+    [Parameter] public string SpalteBezeichnerText { get; set; } = Resource.WBAD_SPALTE_BEZEICHNER;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string GruppeEinlesenText { get; set; } = Resource.WBAD_GRP_EINLESEN;
+    [Parameter] public string HinweisStundenwerte { get; set; } = Resource.WBAD_LBL_STUNDENWERTE;
+    [Parameter] public string LabelOrdner { get; set; } = Resource.WBAD_LBL_ORDNER;
+    [Parameter] public string DateiText { get; set; } = Resource.WBAD_BTN_DATEI;
+    [Parameter] public string AnzeigenText { get; set; } = Resource.WBAD_BTN_ANZEIGEN;
+    [Parameter] public string EinlesenText { get; set; } = Resource.WBAD_BTN_EINLESEN;
+    [Parameter] public string LoeschenText { get; set; } = Resource.WBAD_BTN_LOESCHEN;
+    [Parameter] public string BeendenText { get; set; } = Resource.WBAD_BTN_BEENDEN;
+    [Parameter] public string Dateifilter { get; set; } = Resource.WBAD_DATEIFILTER;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.WBAD_FRAGE_LOESCHEN;
+    [Parameter] public string VorlageGeloescht { get; set; } = Resource.WBAD_MSG_GELOESCHT;
+    [Parameter] public string TextZuordnung { get; set; } = Resource.WBAD_MSG_PROJEKTZUORDNUNG;
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.IMPORT_MSG_SCHREIBGESCHUETZT;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_AdminWaermeeinlesen.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+
+    private List<Katalogzeile> _katalog = new();
+    private string _gewaehlt = "";
+
+    /// <summary>
+    /// Der Pfad der abgelegten Datei — ein PARAMETER der Kette, kein Feld. Im
+    /// Vorlaeufer war <c>filebasename</c> ein Feld: Brach der Anwender die
+    /// Dateiwahl ab, lief „Einlesen" mit der Datei des VORIGEN Laufs weiter
+    /// (Befund W13-B10).
+    /// </summary>
+    private string _pfad = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
+
+    /// <summary>Der gewaehlte Katalogeintrag (Pruefhilfe fuer Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Pfad der gewaehlten Datei (Pruefhilfe fuer Tests).</summary>
+    public string Pfad => _pfad;
+
+    private bool LoeschenErlaubt => _gewaehlt.Length > 0 && !_laeuft && Loeschen is not null;
+    private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && MitSystemOeffnen is not null;
+    private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Einlesen is not null;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await KatalogLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Laedt den Katalog neu (<c>SetControls</c> des Vorlaeufers).</summary>
+    public async Task KatalogLaden()
+    {
+        if (Katalog is null) return;
+        _katalog = await Katalog() ?? new List<Katalogzeile>();
+        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
+    }
+
+    private void Waehlen(Katalogzeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Loeschen (btn_Loeschen_Click)
+    // =====================================================================
+
+    private async Task BeiLoeschen()
+    {
+        if (!LoeschenErlaubt) return;
+
+        Katalogzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null) return;
+
+        // Pruefregel 1, woertlich: Eine zugeordnete Ganglinie bleibt stehen.
+        if (HatProjektzuordnung is not null && await HatProjektzuordnung(_gewaehlt))
+        {
+            Melden(TextZuordnung, WarnStufe.Warnung);
+            return;
+        }
+
+        // Pruefregel 2: Auslieferungssaetze bleiben stehen. Delete prueft es
+        // selbst; hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
+        if (zeile.NurLesen)
+        {
+            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
+            return;
+        }
+
+        // A-ZEILE: Der Vorlaeufer loeschte OHNE Rueckfrage.
+        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null) return;
+
+        string name = _gewaehlt;
+        bool weg = await Loeschen(name);
+        await KatalogLaden();
+        Geaendert?.Invoke();
+        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
+               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Datei waehlen und anzeigen (btn_Datei_Click / btn_Oeffnen_Click)
+    // =====================================================================
+
+    private async Task BeiDatei(string pfad)
+    {
+        _meldung = "";
+        if (string.IsNullOrEmpty(pfad)) { _pfad = ""; return; }
+
+        if (Ablegen is null) { _pfad = pfad; return; }
+
+        // Die verlustfreie Originalablage im Anwenderordner. Ein Fehlschlag ist
+        // eine Warnung - der Import laeuft dann mit der Originaldatei weiter.
+        AblageErgebnis erg = await Ablegen(pfad);
+        _pfad = erg.Pfad.Length > 0 ? erg.Pfad : pfad;
+        if (erg.Meldung.Length > 0) Melden(erg.Meldung, WarnStufe.Warnung);
+    }
+
+    private async Task BeiAnzeigen()
+    {
+        if (!AnzeigenErlaubt) return;
+        await MitSystemOeffnen!(_pfad);
+    }
+
+    // =====================================================================
+    // Einlesen (btn_Einlesen_Click)
+    // =====================================================================
+
+    private async Task BeiEinlesen()
+    {
+        if (!EinlesenErlaubt) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = f.Schluessel;
+                InvokeAsync(StateHasChanged);
+            });
+
+            WaermebedarfImportErgebnis erg = await Einlesen!(
+                _pfad,
+                new WaermebedarfImportRueckrufe { Konflikte = KonflikteFragen },
+                melder);
+
+            if (erg.Meldung.Length > 0)
+                Melden(erg.Meldung, erg.Erfolgreich ? WarnStufe.Erfolg : WarnStufe.Fehler);
+
+            if (erg.Erfolgreich)
+            {
+                await KatalogLaden();
+                Geaendert?.Invoke();
+                _pfad = "";
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+        }
+    }
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        List<ImportPruefung> pruefungen, HashSet<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_konflikteOffen || _loeschfrageOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

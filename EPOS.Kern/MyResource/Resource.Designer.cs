@@ -26096,6 +26096,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhalt anzeigen... ähnelt.
+        /// </summary>
+        public static string WBAD_BTN_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("WBAD_BTN_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string WBAD_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("WBAD_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Auswählen... ähnelt.
+        /// </summary>
+        public static string WBAD_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("WBAD_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei in DB Einlesen... ähnelt.
+        /// </summary>
+        public static string WBAD_BTN_EINLESEN {
+            get {
+                return ResourceManager.GetString("WBAD_BTN_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DB Ganglinie Löschen ähnelt.
+        /// </summary>
+        public static string WBAD_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("WBAD_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (*.txt)|*.txt ähnelt.
+        /// </summary>
+        public static string WBAD_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("WBAD_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie "{0}" aus dem Katalog löschen? ähnelt.
+        /// </summary>
+        public static string WBAD_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("WBAD_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei einlesen ähnelt.
+        /// </summary>
+        public static string WBAD_GRP_EINLESEN {
+            get {
+                return ResourceManager.GetString("WBAD_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinien aus DB ähnelt.
+        /// </summary>
+        public static string WBAD_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("WBAD_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Basis Ordner: ähnelt.
+        /// </summary>
+        public static string WBAD_LBL_ORDNER {
+            get {
+                return ResourceManager.GetString("WBAD_LBL_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string WBAD_LBL_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("WBAD_LBL_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Originaldatei konnte nicht in den Anwenderordner kopiert [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_ABLAGE {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_ABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie wurde nicht eingelesen. ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_AUSGELASSEN {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_AUSGELASSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie "{0}" wurde gelöscht. ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie "{0}" wurde mit {1} Werten eingelesen. ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es existiert eine Projektzuordnung, Löschen nicht möglich! ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_PROJEKTZUORDNUNG {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_PROJEKTZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_SCHREIBFEHLER {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_SCHREIBFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string WBAD_SPALTE_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("WBAD_SPALTE_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Ganglinie ähnelt.
+        /// </summary>
+        public static string WBAD_TITEL {
+            get {
+                return ResourceManager.GetString("WBAD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
