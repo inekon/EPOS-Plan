@@ -1,34 +1,21 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>Vom Anwender gewaehlte Aufloesung eines Import-Konflikts (Konzept 1.1).</summary>
-    public enum KonfliktAktion
-    {
-        Importieren,
-        Auslassen,
-        Ueberschreiben,
-        Umbenennen
-    }
-
-    /// <summary>Ergebniszeile des Konfliktdialogs: Pruefergebnis plus gewaehlte Aktion.</summary>
-    public class KonfliktEntscheidung
-    {
-        public ImportPruefung Pruefung;
-        public KonfliktAktion Aktion;
-        /// <summary>Bei <see cref="KonfliktAktion.Umbenennen"/>: der neue Name (getrimmt).</summary>
-        public string NeuerName;
-    }
-
     /// <summary>
     /// Gemeinsamer Konfliktdialog aller Importpfade (Konzept 4.1): EIN Dialog fuer die
     /// ganze Auswahl statt einer Meldung je Satz. Je Zeile Befund und waehlbare Aktion
     /// (Importieren/Auslassen/Ueberschreiben/Umbenennen); beim Umbenennen wird die
     /// Namenszelle editierbar. Reine Code-Form ohne Designer (Hausregel, Muster
     /// Form_Gesetzesparameter), Texte ueber MyResource.
+    ///
+    /// <para>Seit iU9-W12.0b holt diese Maske ihre Entscheidungsregeln aus
+    /// <see cref="ImportKonfliktModell"/> im Kern; hier steht nur noch das
+    /// Steuerelementgeruest. Mit iU9-W12.3 tritt
+    /// <c>EPOS.UI.Dialoge.Import.ImportKonflikteDialog</c> an ihre Stelle.</para>
     /// </summary>
     public class Form_ImportKonflikte : Form
     {
@@ -208,94 +195,12 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------- Inhalt ------
 
         private static string AktionText(KonfliktAktion a)
-        {
-            switch (a)
-            {
-                case KonfliktAktion.Importieren: return MyResource.Resource.IMP_KONFLIKT_AKTION_IMPORTIEREN;
-                case KonfliktAktion.Auslassen: return MyResource.Resource.IMP_KONFLIKT_AKTION_AUSLASSEN;
-                case KonfliktAktion.Ueberschreiben: return MyResource.Resource.IMP_KONFLIKT_AKTION_UEBERSCHREIBEN;
-                default: return MyResource.Resource.IMP_KONFLIKT_AKTION_UMBENENNEN;
-            }
-        }
-
-        /// <summary>Erlaubte Aktionen und Vorbelegung je Befund (Konzept 3.3).</summary>
-        private static List<KonfliktAktion> ErlaubteAktionen(ImportPruefung p, out KonfliktAktion vorbelegung)
-        {
-            List<KonfliktAktion> aktionen = new List<KonfliktAktion>();
-
-            if (p.NameDoppeltInAuswahl && p.Befund == ImportBefund.Neu)
-            {
-                // Zwei markierte Eintraege mit demselben Namen: nur einer darf ihn tragen.
-                aktionen.Add(KonfliktAktion.Auslassen);
-                aktionen.Add(KonfliktAktion.Umbenennen);
-                vorbelegung = KonfliktAktion.Auslassen;
-                return aktionen;
-            }
-
-            switch (p.Befund)
-            {
-                case ImportBefund.Neu:
-                    aktionen.Add(KonfliktAktion.Importieren);
-                    aktionen.Add(KonfliktAktion.Auslassen);
-                    vorbelegung = KonfliktAktion.Importieren;
-                    break;
-
-                case ImportBefund.InhaltsGleich:
-                    aktionen.Add(KonfliktAktion.Importieren);
-                    aktionen.Add(KonfliktAktion.Auslassen);
-                    vorbelegung = KonfliktAktion.Importieren;   // gewollte Varianten sind der Regelfall (Konzept 3.3)
-                    break;
-
-                default:   // Identisch, NameVorhanden
-                    aktionen.Add(KonfliktAktion.Auslassen);
-                    if (!p.NameMehrfachInDb) aktionen.Add(KonfliktAktion.Ueberschreiben);
-                    aktionen.Add(KonfliktAktion.Umbenennen);
-                    vorbelegung = KonfliktAktion.Auslassen;
-                    break;
-            }
-            return aktionen;
-        }
-
-        private static string BefundText(ImportPruefung p)
-        {
-            string text;
-            switch (p.Befund)
-            {
-                case ImportBefund.Identisch:
-                    text = MyResource.Resource.IMP_KONFLIKT_BEFUND_IDENTISCH;
-                    break;
-                case ImportBefund.NameVorhanden:
-                    text = string.Format(MyResource.Resource.IMP_KONFLIKT_BEFUND_NAME_VORHANDEN,
-                        string.Join(", ", p.AbweichendeSpalten));
-                    break;
-                case ImportBefund.InhaltsGleich:
-                    text = string.Format(MyResource.Resource.IMP_KONFLIKT_BEFUND_INHALT_GLEICH,
-                        p.Vorhanden != null ? p.Vorhanden.Name : "");
-                    break;
-                default:
-                    text = MyResource.Resource.IMP_KONFLIKT_BEFUND_NEU;
-                    break;
-            }
-
-            if (p.NameDoppeltInAuswahl)
-                text += Environment.NewLine + MyResource.Resource.IMP_KONFLIKT_BEFUND_AUSWAHL_DOPPELT;
-            if (p.NameMehrfachInDb)
-                text += Environment.NewLine + MyResource.Resource.IMP_KONFLIKT_BEFUND_NAME_MEHRFACH;
-            if (p.Vorhanden != null && p.Vorhanden.ReadOnly &&
-                (p.Befund == ImportBefund.Identisch || p.Befund == ImportBefund.NameVorhanden))
-                text += Environment.NewLine + MyResource.Resource.IMP_KONFLIKT_HINWEIS_READONLY;
-
-            return text;
-        }
+            => ImportKonfliktModell.AktionText(a);
 
         private void ZeilenFuellen()
         {
-            int konflikte = 0;
-            foreach (ImportPruefung p in _pruefungen)
-                if (p.Befund != ImportBefund.Neu || p.NameDoppeltInAuswahl) konflikte++;
-
-            _lblKopf.Text = string.Format(MyResource.Resource.IMP_KONFLIKT_KOPF,
-                _pruefungen.Count, konflikte);
+            _lblKopf.Text = ImportKonfliktModell.KopfText(
+                _pruefungen.Count, ImportKonfliktModell.Konflikte(_pruefungen));
 
             foreach (ImportPruefung p in _pruefungen)
             {
@@ -303,10 +208,10 @@ namespace WindowsFormsApplication1
                 DataGridViewRow row = _grid.Rows[zeile];
                 row.Tag = p;
                 row.Cells[SPALTE_NAME].Value = p.Kandidat.Name;
-                row.Cells[SPALTE_BEFUND].Value = BefundText(p);
+                row.Cells[SPALTE_BEFUND].Value = ImportKonfliktModell.BefundText(p);
 
                 KonfliktAktion vorbelegung;
-                List<KonfliktAktion> erlaubt = ErlaubteAktionen(p, out vorbelegung);
+                List<KonfliktAktion> erlaubt = ImportKonfliktModell.ErlaubteAktionen(p, out vorbelegung);
 
                 DataGridViewComboBoxCell combo = (DataGridViewComboBoxCell)row.Cells[SPALTE_AKTION];
                 foreach (KonfliktAktion a in erlaubt) combo.Items.Add(AktionText(a));
@@ -361,22 +266,14 @@ namespace WindowsFormsApplication1
         }
 
         private string NamensVorschlag(string name)
-        {
-            for (int i = 2; i < 100; i++)
-            {
-                string kandidat = name + " (" + i + ")";
-                if (!_vergebeneNamen.Contains(DublettenPruefung.NormalisiereName(kandidat)))
-                    return kandidat;
-            }
-            return name + " (neu)";
-        }
+            => ImportKonfliktModell.NamensVorschlag(name, _vergebeneNamen);
 
         private void BtnAlleAuslassen_Click(object sender, EventArgs e)
         {
             foreach (DataGridViewRow row in _grid.Rows)
             {
                 ImportPruefung p = (ImportPruefung)row.Tag;
-                if (p.Befund != ImportBefund.Neu || p.NameDoppeltInAuswahl)
+                if (ImportKonfliktModell.IstKonflikt(p))
                 {
                     row.Cells[SPALTE_AKTION].Value = AktionText(KonfliktAktion.Auslassen);
                     row.Cells[SPALTE_NAME].Value = p.Kandidat.Name;
@@ -388,32 +285,18 @@ namespace WindowsFormsApplication1
         {
             _grid.EndEdit();
 
-            // Validierung (Konzept 4.3): Umbenennen-Namen nicht leer, nicht im Bestand;
-            // finale Namen aller nicht ausgelassenen Zeilen paarweise eindeutig.
-            var finaleNamen = new HashSet<string>(StringComparer.Ordinal);
-            foreach (DataGridViewRow row in _grid.Rows)
+            // Die Pruefregel (Konzept 4.3) steht seit iU9-W12.0b im Kern.
+            List<KonfliktEntscheidung> entscheidungen = Entscheidungen();
+            ImportKonfliktModell.Beanstandung befund =
+                ImportKonfliktModell.Pruefe(entscheidungen, _vergebeneNamen);
+            if (befund != null)
             {
-                KonfliktAktion aktion = ZeilenAktion(row);
-                if (aktion == KonfliktAktion.Auslassen) continue;
-
-                string name = (Convert.ToString(row.Cells[SPALTE_NAME].Value) ?? "").Trim();
-                string norm = DublettenPruefung.NormalisiereName(name);
-
-                bool ungueltig = false;
-                if (aktion == KonfliktAktion.Umbenennen)
-                    ungueltig = norm.Length == 0 || _vergebeneNamen.Contains(norm);
-                if (!ungueltig && aktion != KonfliktAktion.Ueberschreiben && !finaleNamen.Add(norm))
-                    ungueltig = true;   // zweiter Eintrag mit demselben Zielnamen
-
-                if (ungueltig)
-                {
-                    MessageBox.Show(this,
-                        string.Format(MyResource.Resource.IMP_KONFLIKT_NAME_UNGUELTIG, name),
-                        MyResource.Resource.IMP_KONFLIKT_TITEL,
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    _grid.CurrentCell = row.Cells[SPALTE_NAME];
-                    return;
-                }
+                MessageBox.Show(this,
+                    ImportKonfliktModell.BeanstandungsText(befund),
+                    MyResource.Resource.IMP_KONFLIKT_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _grid.CurrentCell = _grid.Rows[befund.Zeile].Cells[SPALTE_NAME];
+                return;
             }
 
             DialogResult = DialogResult.OK;
