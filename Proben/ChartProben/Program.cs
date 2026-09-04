@@ -222,11 +222,313 @@ namespace ChartProben
                             },
                             "Monat", "Temperatur [°C]"));
 
+
+            // =========================================================================
+            // 17-30 - die sieben ERGEBNISBILDER der Welle 11 (iU9-W11a.6), je zwei Proben
+            // =========================================================================
+            //
+            // Je Bild ein "voller" und ein "magerer" Fall: der volle mit der Reihenzahl
+            // des Bestands, der magere mit einer einzigen Reihe. Der magere Fall ist der
+            // wichtigere - er trifft die Praesenzfilterung, und genau dort brachen die
+            // Vorlaeufer (drei parallele Listen, die gemeinsam gefiltert werden mussten,
+            // NavigatorUebersicht :304-306).
+
+            double[] gesamtlast = Jahresreihe(180, 120, 40, 0, Math.PI / 2);
+            double[] heizung = Jahresreihe(120, 90, 25, 0, Math.PI / 2);
+            double[] brauchwasser = Jahresreihe(40, 5, 10, 1.0, Math.PI / 2);
+            double[] prozess = Jahresreihe(20, 2, 5, 2.0, Math.PI / 2);
+
+            // --- B1: normierte Ganglinie ---------------------------------------------
+            var b1Reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red),
+                new ChartRenderer.Reihe("Heizung", heizung, SKColors.DeepSkyBlue),
+                new ChartRenderer.Reihe("Brauchwasser", brauchwasser, B1_VIOLETT),
+                new ChartRenderer.Reihe("Prozesswaerme", prozess, SKColors.Gray)
+            };
+            Pruefe(ziel, "ganglinie_normiert_chronologisch", 1240, 560,
+                   new[] { SKColors.Red, SKColors.DeepSkyBlue, B1_VIOLETT, SKColors.Gray },
+                   () => ChartRenderer.GanglinieNormiert("Waermelast Jahresganglinie", b1Reihen,
+                            "Anteil am Hoechstwert", ChartRenderer.Achse.Monate, false));
+
+            Pruefe(ziel, "ganglinie_normiert_sortiert", 1240, 560,
+                   new[] { SKColors.Red },
+                   () => ChartRenderer.GanglinieNormiert("Waermelast Jahresdauerlinie",
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red) },
+                            "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, true));
+
+            // --- B2/B3: Erzeugerstapel ------------------------------------------------
+            var b2Stapel = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Waermepumpe", Jahresreihe(60, 45, 12, 0, Math.PI / 2),
+                                        SKColors.Orange, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizstab", Jahresreihe(12, 9, 3, 0.4, Math.PI / 2),
+                                        SKColors.Yellow, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizkessel", Jahresreihe(50, 40, 10, 0.2, Math.PI / 2),
+                                        SKColors.Blue, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Solarthermie", Jahresreihe(18, 2, 6, 3.1, Math.PI / 2),
+                                        SKColors.Brown, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("BHKW", Jahresreihe(35, 25, 8, 0.8, Math.PI / 2),
+                                        SKColors.Red, ChartRenderer.Stapelart.Flaeche)
+            };
+            Pruefe(ziel, "erzeugerstapel_waerme", 1240, 560,
+                   new[] { SKColors.Orange, SKColors.Yellow, SKColors.Blue,
+                           SKColors.Brown, SKColors.Red, SKColors.Green, SKColors.DarkCyan },
+                   () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                            b2Stapel,
+                            new List<ChartRenderer.Reihe>(),
+                            new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
+                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                            "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
+                            new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan),
+                            "Bedarf [kW]"));
+
+            // Viertelstundenraster (Stromseite) mit vier Stapelreihen und zwei Linien.
+            var b2Strom = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Lastgangprofil", Viertelstundenreihe(90, 60, 20, 0),
+                                        SKColors.Brown, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Waermepumpe", Viertelstundenreihe(30, 20, 8, 0.5),
+                                        SKColors.Orange, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizstab", Viertelstundenreihe(8, 5, 2, 1.0),
+                                        SKColors.Yellow, ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizkessel", Viertelstundenreihe(12, 8, 3, 1.5),
+                                        SKColors.Blue, ChartRenderer.Stapelart.Saeule)
+            };
+            Pruefe(ziel, "erzeugerstapel_strom_viertelstunden", 1240, 560,
+                   new[] { SKColors.Brown, SKColors.Orange, SKColors.Yellow, SKColors.Blue,
+                           SKColors.BlueViolet, SKColors.Green },
+                   () => ChartRenderer.ErzeugerStapel("Stromverbrauch Jahresganglinie",
+                            b2Strom,
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Photovoltaik",
+                                                        Viertelstundenreihe(40, 5, 15, 2.0),
+                                                        SKColors.BlueViolet),
+                                new ChartRenderer.Reihe("Gesamt",
+                                                        Viertelstundenreihe(140, 95, 30, 0),
+                                                        SKColors.Green, ChartRenderer.Stapelart.Keine,
+                                                        false, 2f)
+                            },
+                            null, "Leistung [kW]", ChartRenderer.Achse.Monate, false));
+
+            // Sortiert - ohne Stapel, mit dickeren Dauerlinien (BorderWidth 4).
+            Pruefe(ziel, "erzeugerstapel_kessel_sortiert", 1240, 560,
+                   new[] { SKColors.Blue, SKColors.Green, SKColors.Red },
+                   () => ChartRenderer.ErzeugerStapel("Waermelast Jahresdauerlinie",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Waermeproduktion",
+                                                        Jahresreihe(50, 40, 10, 0.2, Math.PI / 2),
+                                                        SKColors.Blue, ChartRenderer.Stapelart.Saeule)
+                            },
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Restwaerme",
+                                                        Jahresreihe(30, 20, 8, 0.6, Math.PI / 2),
+                                                        SKColors.Green),
+                                new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.Red)
+                            },
+                            null, "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, true));
+
+            // Der MAGERE Fall von B2: nur zwei Linien, kein Stapel und keine Kontur -
+            // die Solarthermieseite (chart8) hat genau das.
+            Pruefe(ziel, "erzeugerstapel_solar_zwei_linien", 1240, 560,
+                   new[] { SKColors.Red, SKColors.Blue },
+                   () => ChartRenderer.ErzeugerStapel("Waermelast Jahresganglinie",
+                            new List<ChartRenderer.Reihe>(),
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.Red),
+                                new ChartRenderer.Reihe("Waermeproduktion",
+                                                        Jahresreihe(18, 2, 6, 3.1, Math.PI / 2),
+                                                        SKColors.Blue)
+                            },
+                            null, "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false));
+
+            // --- B4: Streuwolke -------------------------------------------------------
+            Pruefe(ziel, "streuwolke_drei_reihen", 1240, 560,
+                   new[] { STREU_ROT_AUF_WEISS, STREU_GELB_AUF_WEISS, STREU_BLAU_AUF_WEISS },
+                   () => ChartRenderer.Streuwolke("Leistung ueber Aussentemperatur",
+                            "Temperatur [°C]", "Leistung [kW]",
+                            new List<ChartRenderer.Punktreihe>
+                            {
+                                new ChartRenderer.Punktreihe("Waermebedarf", Wolke(0), STREU_ROT),
+                                new ChartRenderer.Punktreihe("Heizstab", Wolke(1), STREU_GELB),
+                                new ChartRenderer.Punktreihe("Waermeproduktion", Wolke(2), STREU_BLAU)
+                            }));
+
+            Pruefe(ziel, "streuwolke_eine_reihe", 1240, 560,
+                   new[] { STREU_BLAU_AUF_WEISS },
+                   () => ChartRenderer.Streuwolke("Leistung ueber Aussentemperatur",
+                            "Temperatur [°C]", "Leistung [kW]",
+                            new List<ChartRenderer.Punktreihe>
+                            { new ChartRenderer.Punktreihe("Waermeproduktion", Wolke(2), STREU_BLAU) }));
+
+            // --- B5: Ring -------------------------------------------------------------
+            Pruefe(ziel, "ring_waermedeckung", 720, 560,
+                   new[] { RING_WP, RING_SOLAR, RING_HEIZSTAB, RING_KESSEL, RING_REST },
+                   () => ChartRenderer.Ring("Waermedeckung",
+                            new List<ChartRenderer.Ringsegment>
+                            {
+                                new ChartRenderer.Ringsegment("Waermepumpe", 340, RING_WP),
+                                new ChartRenderer.Ringsegment("Solarthermie", 90, RING_SOLAR),
+                                new ChartRenderer.Ringsegment("Heizstab", 45, RING_HEIZSTAB),
+                                new ChartRenderer.Ringsegment("Spitzenkessel", 120, RING_KESSEL),
+                                new ChartRenderer.Ringsegment("Rest", 60, RING_REST)
+                            },
+                            89.4, "%"));
+
+            // Der MAGERE Fall: drei Segmente, davon eines mit Wert 0 - es darf weder
+            // gezeichnet noch in der Legende genannt werden (dynamische Legende).
+            Pruefe(ziel, "ring_stromdeckung", 720, 560,
+                   new[] { RING_WP, RING_SOLAR, RING_HEIZSTAB },
+                   () => ChartRenderer.Ring("Stromdeckung",
+                            new List<ChartRenderer.Ringsegment>
+                            {
+                                new ChartRenderer.Ringsegment("Photovoltaik", 220, RING_WP),
+                                new ChartRenderer.Ringsegment("BHKW", 130, RING_SOLAR),
+                                new ChartRenderer.Ringsegment("Speicherentladung", 0, RING_VIOLETT),
+                                new ChartRenderer.Ringsegment("Reststrom", 95, RING_HEIZSTAB)
+                            },
+                            78.6, "%"));
+
+            // --- B6: Monatsstapel -----------------------------------------------------
+            Pruefe(ziel, "monatsstapel_drei_reihen", 978, 542,
+                   new[] { SKColors.Gold, SKColors.LightGreen, SKColors.Red },
+                   () => ChartRenderer.MonatsStapel("Energie-Bedarf & Deckung", "kWh",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Eigenverbrauch (Direkt)",
+                                                        Monatsreihe(), SKColors.Gold),
+                                new ChartRenderer.Reihe("Eigenverbrauch (Speicher)",
+                                                        Monatsreihe(0.4), SKColors.LightGreen),
+                                new ChartRenderer.Reihe("Autarkie-Luecke (Netz)",
+                                                        Monatsreihe(0.9), SKColors.Red)
+                            }));
+
+            Pruefe(ziel, "monatsstapel_eine_reihe", 978, 542,
+                   new[] { SKColors.Gold },
+                   () => ChartRenderer.MonatsStapel("Eigenverbrauch", "kWh",
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Direkt", Monatsreihe(), SKColors.Gold) }));
+
+            // --- B7: Temperaturverlauf ------------------------------------------------
+            Pruefe(ziel, "temperaturverlauf_zwei_speicher", 1240, 560,
+                   new[] { TEMP_ROT, TEMP_BLAU, TEMP_QUELLE },
+                   () => ChartRenderer.Temperaturverlauf("Speichertemperaturen",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Puffer 1 oben",
+                                                        Temperaturreihe(62, 8, 0, 0), TEMP_ROT),
+                                new ChartRenderer.Reihe("Puffer 1 unten",
+                                                        Temperaturreihe(48, 6, 0, 0), TEMP_ROT,
+                                                        ChartRenderer.Stapelart.Keine, true),
+                                new ChartRenderer.Reihe("Puffer 2 oben",
+                                                        Temperaturreihe(55, 7, 1, 0), TEMP_BLAU),
+                                new ChartRenderer.Reihe("Puffer 2 unten",
+                                                        Temperaturreihe(41, 5, 1, 0), TEMP_BLAU,
+                                                        ChartRenderer.Stapelart.Keine, true),
+                                new ChartRenderer.Reihe("Quelltemperatur Erdreich",
+                                                        Temperaturreihe(11, 4, 0, -Math.PI / 2),
+                                                        TEMP_QUELLE)
+                            },
+                            minAuto: true));
+
+            // Der MAGERE Fall: EIN Speicher, und seine beiden Schichten liegen dicht
+            // beieinander - hier greift die Mindestspanne von 5 K.
+            Pruefe(ziel, "temperaturverlauf_ein_speicher", 1240, 560,
+                   new[] { TEMP_ROT },
+                   () => ChartRenderer.Temperaturverlauf("Speichertemperaturen",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Puffer 1 oben",
+                                                        Temperaturreihe(60, 0.4, 0, 0), TEMP_ROT),
+                                new ChartRenderer.Reihe("Puffer 1 unten",
+                                                        Temperaturreihe(59, 0.4, 0, 0), TEMP_ROT,
+                                                        ChartRenderer.Stapelart.Keine, true)
+                            },
+                            minAuto: true));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
             else Console.WriteLine("ERGEBNIS: FEHLGESCHLAGEN.");
             return _verstoesse == 0 ? 0 : 1;
+        }
+
+
+        // ------------------------------------------------- Farben der Welle-11-Bilder
+
+        /// <summary>Die dritte Kanalfarbe der Bedarfsseite: <c>ARGB(126, 87, 166)</c>.</summary>
+        private static readonly SKColor B1_VIOLETT = new SKColor(126, 87, 166);
+
+        /// <summary>
+        /// Die drei HALBTRANSPARENTEN Farben der Streuwolke — woertlich
+        /// <c>Color.FromArgb(120, Red|Yellow|Blue)</c> aus <c>chart4</c>.
+        /// </summary>
+        private static readonly SKColor STREU_ROT = new SKColor(255, 0, 0, 120);
+        private static readonly SKColor STREU_GELB = new SKColor(255, 255, 0, 120);
+        private static readonly SKColor STREU_BLAU = new SKColor(0, 0, 255, 120);
+
+        /// <summary>
+        /// Dieselben drei Farben, wie sie ueber Weiss ANKOMMEN — die Pixelpruefung
+        /// vergleicht exakt (derselbe Grund wie bei der Kostenprofil-Linie).
+        /// </summary>
+        private static readonly SKColor STREU_ROT_AUF_WEISS = new SKColor(255, 135, 135);
+        private static readonly SKColor STREU_GELB_AUF_WEISS = new SKColor(255, 255, 135);
+        private static readonly SKColor STREU_BLAU_AUF_WEISS = new SKColor(135, 135, 255);
+
+        /// <summary>Die Segmentfarben der beiden Donuts der <c>NavigatorUebersicht</c>.</summary>
+        private static readonly SKColor RING_WP = new SKColor(0x2E, 0xCC, 0x71);
+        private static readonly SKColor RING_SOLAR = new SKColor(0xE6, 0x7E, 0x22);
+        private static readonly SKColor RING_HEIZSTAB = new SKColor(0xF1, 0xC4, 0x0F);
+        private static readonly SKColor RING_KESSEL = new SKColor(0x95, 0xA5, 0xA6);
+        private static readonly SKColor RING_REST = new SKColor(0x34, 0x98, 0xDB);
+        private static readonly SKColor RING_VIOLETT = new SKColor(0x9B, 0x59, 0xB6);
+
+        /// <summary>Die Farbfolge der Speichertemperaturen (<c>TEMP_FARBEN</c>) und die Quellfarbe.</summary>
+        private static readonly SKColor TEMP_ROT = new SKColor(0xC0, 0x39, 0x2B);
+        private static readonly SKColor TEMP_BLAU = new SKColor(0x28, 0x80, 0xB9);
+        private static readonly SKColor TEMP_QUELLE = new SKColor(0xD8, 0x5A, 0x30);
+
+        /// <summary>Eine Viertelstundenreihe (35 040 Werte) — dieselbe Bauform wie <c>Jahresreihe</c>.</summary>
+        private static double[] Viertelstundenreihe(double mitte, double amplitude,
+                                                    double tagesamplitude, double phase)
+        {
+            var r = new double[STUNDEN * 4];
+            for (int i = 0; i < r.Length; i++)
+            {
+                double jahr = 2.0 * Math.PI * i / r.Length;
+                double tag = 2.0 * Math.PI * (i % 96) / 96.0;
+                r[i] = Math.Max(0, mitte + amplitude * Math.Sin(jahr + phase)
+                                         + tagesamplitude * Math.Sin(tag));
+            }
+            return r;
+        }
+
+        /// <summary>Eine zweite Monatsreihe mit VERSCHOBENER Phase — fuer den Stapel.</summary>
+        private static double[] Monatsreihe(double phase)
+        {
+            var w = new double[12];
+            for (int m = 0; m < 12; m++)
+                w[m] = Math.Round(24.0 + 11.0 * Math.Cos(2.0 * Math.PI * m / 12.0 + phase), 3);
+            return w;
+        }
+
+        /// <summary>Eine Punktwolke Temperatur/Leistung — fest verdrahtet, ohne Zufall.</summary>
+        private static List<(double X, double Y)> Wolke(int reihe)
+        {
+            var p = new List<(double X, double Y)>();
+            for (int i = 0; i < 2000; i++)
+            {
+                double t = -15.0 + 35.0 * i / 2000.0;
+                double grund = Math.Max(0, 60.0 - 2.2 * t);
+                double streuung = 6.0 * Math.Sin(i * 0.37 + reihe);
+                p.Add((t, Math.Max(0, grund * (1.0 - 0.25 * reihe) + streuung)));
+            }
+            return p;
         }
 
         // =================================================================================

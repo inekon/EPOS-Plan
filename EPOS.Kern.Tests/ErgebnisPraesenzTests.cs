@@ -18,8 +18,16 @@ namespace EPOS.Kern.Tests
     /// CI gegen die Basis rechnet). Ohne Testdatenbank schweigen die Faelle.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class ErgebnisPraesenzTests
+    public class ErgebnisPraesenzTests : IClassFixture<TestDatenbank>
     {
+        /// <summary>
+        /// EINE Arbeitskopie fuer die ganze Klasse (iU9-W11a.6). Die Faelle hier lesen
+        /// nur; eine Kopie je Testfall waere 77 MB Datei-Ein-/Ausgabe fuer nichts.
+        /// </summary>
+        private readonly TestDatenbank _db;
+
+        public ErgebnisPraesenzTests(TestDatenbank db) { _db = db; }
+
         private const int PROJEKT = 1030;
 
         /// <summary>
@@ -79,8 +87,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ermitteln_nach_Lauf_1030_meldet_jede_gerechnete_Stufe()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var laeufer = new SimulationRunner();
             string fehler;
@@ -115,8 +122,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ermitteln_zieht_den_Anlagenbestand_auch_ohne_Lauf_heran()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var sim = new SimulationControl();
             sim.m_ID_Projekt = PROJEKT;

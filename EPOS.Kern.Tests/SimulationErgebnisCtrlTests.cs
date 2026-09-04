@@ -25,8 +25,16 @@ namespace EPOS.Kern.Tests
     /// <para>Ohne Testdatenbank schweigen die Faelle.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class SimulationErgebnisCtrlTests
+    public class SimulationErgebnisCtrlTests : IClassFixture<TestDatenbank>
     {
+        /// <summary>
+        /// EINE Arbeitskopie fuer die ganze Klasse (iU9-W11a.6). Die Faelle hier lesen
+        /// nur; eine Kopie je Testfall waere 77 MB Datei-Ein-/Ausgabe fuer nichts.
+        /// </summary>
+        private readonly TestDatenbank _db;
+
+        public SimulationErgebnisCtrlTests(TestDatenbank db) { _db = db; }
+
         private const int PROJEKT = 1030;
 
         private static SimulationRunner Lauf(int idProjekt = PROJEKT)
@@ -42,8 +50,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Uebersicht_deckt_sich_mit_den_dreizehn_Feldern_der_Maske()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
@@ -71,8 +78,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Uebersicht_zaehlt_das_BHKW_in_die_Waermesumme()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
@@ -105,8 +111,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Waermepumpe_ohne_WP_im_Lauf_liefert_null()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             if (l.sim.bSimulationWP) return;   // Projektstand geaendert - dann greift der Fall unten
@@ -121,8 +126,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Waermepumpe_1007_haelt_Restbedarf_und_Deckung_zusammen()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf(1007);
             var wp = SimulationErgebnisCtrl.Waermepumpe(l.sim, l.simulation_Waermebedarf);
@@ -177,8 +181,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Pufferzeilen_gibt_es_auch_ohne_Waermepumpe()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var zeilen = SimulationErgebnisCtrl.Pufferzeilen(l.sim);
@@ -212,8 +215,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Heizkessel_haelt_Restbedarf_und_Deckung_zusammen()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var hk = SimulationErgebnisCtrl.Heizkessel(l.sim, l.simulation_Waermebedarf);
@@ -250,8 +252,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Solarthermie_ohne_Kollektor_im_Lauf_liefert_null()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             if (l.sim.bSimulationSolarthermie) return;
@@ -297,8 +298,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Bhkw_haelt_Restbedarf_und_Deckung_zusammen()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var bh = SimulationErgebnisCtrl.Bhkw(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
@@ -347,8 +347,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Photovoltaik_1030_meldet_keine_unbestimmte_Deckung()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var pv = SimulationErgebnisCtrl.Photovoltaik(l.sim);
@@ -364,8 +363,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Bedarf_liefert_Maxima_Summen_und_drei_Kanaele()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var b = SimulationErgebnisCtrl.Bedarf(l.simulation_Waermebedarf, l.simulation_Strombedarf);

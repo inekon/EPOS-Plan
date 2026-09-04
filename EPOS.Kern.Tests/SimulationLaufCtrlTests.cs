@@ -20,8 +20,16 @@ namespace EPOS.Kern.Tests
     /// ist die Sprache gepinnt (Regel seit iU9-W8).</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class SimulationLaufCtrlTests
+    public class SimulationLaufCtrlTests : IClassFixture<TestDatenbank>
     {
+        /// <summary>
+        /// EINE Arbeitskopie fuer die ganze Klasse (iU9-W11a.6). Die Faelle hier lesen
+        /// nur; eine Kopie je Testfall waere 77 MB Datei-Ein-/Ausgabe fuer nichts.
+        /// </summary>
+        private readonly TestDatenbank _db;
+
+        public SimulationLaufCtrlTests(TestDatenbank db) { _db = db; }
+
         private const int PROJEKT = 1030;
 
         // ---------------------------------------------------------------- Vorpruefen
@@ -121,8 +129,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Do_Simulation_meldet_die_Phasen_in_Reihenfolge()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var gemeldet = new List<LaufFortschritt>();
             var melder = new SofortMelder(gemeldet.Add);
@@ -154,8 +161,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Do_Simulation_ohne_Zusatzangaben_laeuft_wie_bisher()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var a = new SimulationRunner();
             string fehler;
@@ -178,8 +184,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Do_Simulation_bricht_an_der_ersten_Phasengrenze_ab()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var laeufer = new SimulationRunner();
             string fehler;
@@ -199,8 +204,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public async Task Laufen_im_Task_laesst_sich_abbrechen()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var laeufer = new SimulationRunner();
             string fehler;
@@ -221,8 +225,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public async Task Laufen_im_Task_liefert_dasselbe_Ergebnis()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var a = new SimulationRunner();
             string fehler;
@@ -245,8 +248,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Bedarf_fuellt_die_hereingereichten_Objekte()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(PROJEKT);

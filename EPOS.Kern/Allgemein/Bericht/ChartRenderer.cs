@@ -75,7 +75,37 @@ namespace WindowsFormsApplication1
         public class Reihe
         {
             public string Name; public double[] Werte; public SKColor Farbe;
+
+            /// <summary>
+            /// Zu welchem Stapel die Reihe gehoert (iU9-W11a.6). Der Vorlaeufer trennte
+            /// zwei Stapel in EINEM Diagramm ueber <c>StackedGroupName</c> — auf der
+            /// Waermepumpenseite „Bedarf" (Flaeche) und „Produktion" (Saeule). Nur
+            /// <see cref="ErzeugerStapel"/> wertet das Feld aus.
+            /// </summary>
+            public Stapelart Stapelgruppe = Stapelart.Keine;
+
+            /// <summary>
+            /// Gestrichelt zeichnen (iU9-W11a.6). Im Bestand traegt die UNTERE
+            /// Speicherschicht <c>ChartDashStyle.Dash</c> — zwei Temperaturen desselben
+            /// Behaelters gehoeren zusammen und sollen sich trotzdem unterscheiden.
+            /// </summary>
+            public bool Gestrichelt;
+
+            /// <summary>
+            /// Strichstaerke; <c>0</c> = die Vorgabe des jeweiligen Bildes. Im Bestand
+            /// tragen die Dauerlinien <c>BorderWidth 4</c> und die Konturlinie „Gesamt"
+            /// ebenfalls 4, die uebrigen 1 bis 2.
+            /// </summary>
+            public float Breite;
+
             public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
+
+            public Reihe(string n, double[] w, SKColor f, Stapelart gruppe,
+                         bool gestrichelt = false, float breite = 0f)
+            {
+                Name = n; Werte = w; Farbe = f;
+                Stapelgruppe = gruppe; Gestrichelt = gestrichelt; Breite = breite;
+            }
         }
 
         // =================================================================== Kuchen
@@ -1487,6 +1517,804 @@ namespace WindowsFormsApplication1
                 }
 
                 return Png(flaeche);
+            }
+        }
+
+        // ================================================== Ergebnisbilder (iU9-W11a.6)
+        //
+        // Die sieben Bilder der WELLE 11 (Simulationsergebnis). Sie loesen die
+        // 17 Zeichenflaechen der sechs Ergebnismasken ab; vier sind neu (B1, B2, B4, B5),
+        // drei verallgemeinern vorhandene Methoden (B3 als Option von B1/B2, B6 als
+        // freie Fassung von StrombilanzMonate/MonatsSaeulen, B7 als freie Fassung von
+        // Speichertemperaturen).
+        //
+        // WAS SIE VON DEN BERICHTSBILDERN UNTERSCHEIDET. JahresverlaufWaerme,
+        // DauerlinieWaerme, StrombilanzMonate und Speichertemperaturen nehmen einen
+        // ZeitreihenSatz und tragen feste deutsche Titel im Quelltext - sie sind
+        // Berichtsbilder. Der Bildschirm braucht freie Reihenlisten, freie Titel,
+        // umschaltbare Achsen und Praesenzfilterung. Die vorhandenen Bilder bleiben
+        // deshalb unangetastet (ChartProben prueft sie); ihre Zusammenfuehrung mit den
+        // neuen ist ein eigener Schritt (offener Punkt W11a-O-3).
+
+        /// <summary>Die x-Achse eines Ergebnisbildes.</summary>
+        public enum Achse
+        {
+            /// <summary>Monatsgrenzen 0…12 (<c>ConfigureXAxisWithMonths</c>).</summary>
+            Monate = 0,
+            /// <summary>Jahresstunden mit den Marken 2000/4000/6000/8000
+            /// (<c>ConfigureXAxisWithHours</c>).</summary>
+            Jahresstunden = 1
+        }
+
+        /// <summary>
+        /// Zu welchem Stapel eine Reihe gehoert. MS-Chart trennte zwei Stapel in EINEM
+        /// Diagramm ueber <c>StackedGroupName</c> — auf der Wärmepumpenseite „Bedarf"
+        /// (StackedArea) und „Produktion" (StackedColumn).
+        /// </summary>
+        public enum Stapelart
+        {
+            /// <summary>Kein Stapel — die Reihe ist eine Linie.</summary>
+            Keine = 0,
+            /// <summary>Gestapelte FLAECHE (Vorbild <c>SeriesChartType.StackedArea</c>).</summary>
+            Flaeche = 1,
+            /// <summary>Gestapelte SAEULE (Vorbild <c>SeriesChartType.StackedColumn</c>).</summary>
+            Saeule = 2
+        }
+
+        /// <summary>
+        /// Ein Segment eines Ringdiagramms (B5).
+        /// </summary>
+        /// <param name="Name">Anzeigetext der Legende.</param>
+        /// <param name="Wert">Der Anteil; Segmente mit <c>&lt;= 0</c> entfallen samt Legende.</param>
+        /// <param name="Farbe">Segmentfarbe — sie kommt vom Aufrufer, weil sie den
+        /// Erzeuger benennt.</param>
+        public sealed record Ringsegment(string Name, double Wert, SKColor Farbe);
+
+        /// <summary>
+        /// Eine Punktreihe der Streuwolke (B4).
+        /// </summary>
+        /// <param name="Name">Anzeigetext der Legende.</param>
+        /// <param name="Punkte">Die Punkte (x, y) in beliebiger Reihenfolge.</param>
+        /// <param name="Farbe">Punktfarbe — halbtransparent, damit sich 8 760 Punkte
+        /// nicht gegenseitig ausloeschen.</param>
+        public sealed record Punktreihe(string Name, IReadOnlyList<(double X, double Y)> Punkte,
+                                        SKColor Farbe);
+
+        // ------------------------------------------------------------------ B1
+
+        /// <summary>
+        /// <b>B1 — NORMIERTE GANGLINIE.</b> Eine bis vier Linien, jede auf DENSELBEN
+        /// Hoechstwert normiert und in Prozent gezeichnet (iU9-W11a.6).
+        ///
+        /// <para><b>Vorbild.</b> <c>chart1</c> (Waermelast) und <c>chart2</c>
+        /// (Strombedarf) der Bedarfsseite: <c>AxisY.Maximum = 100,2</c>, die Gesamtkurve
+        /// plus bis zu drei Kanalserien in Rot / DeepSkyBlue / <c>7E57A6</c>, x-Achse
+        /// umschaltbar zwischen Monatsgrenzen und Jahresstunden, Umschalter
+        /// Ganglinie/Dauerlinie.</para>
+        ///
+        /// <para><b>Warum 100,2 und nicht 100.</b> Woertlich aus <c>init_Chart</c> :3378 —
+        /// eine Kurve, die den Hoechstwert erreicht, laege sonst genau auf der oberen
+        /// Rahmenlinie.</para>
+        ///
+        /// <para><b>Der Bezugswert ist der GEMEINSAME Hoechstwert aller Reihen</b>, nicht
+        /// je Reihe einer: Die Kanalkurven sollen ihren Anteil an der Gesamtlast zeigen,
+        /// und drei je fuer sich normierte Kurven wuerden alle bei 100 % enden.</para>
+        ///
+        /// <para><b>Stunden- und Viertelstundenraster</b> ergeben sich aus der Laenge der
+        /// Reihen; gezeichnet wird ueber die eigene Laenge, nicht ueber 8 760.</para>
+        /// </summary>
+        /// <param name="titel">Ueberschrift.</param>
+        /// <param name="reihen">Ein bis vier Reihen; leere und ungueltige entfallen.</param>
+        /// <param name="yTitel">Beschriftung der y-Achse (der Prozentbezug).</param>
+        /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
+        /// <param name="sortiert">Dauerlinie statt Ganglinie — jede Reihe FUER SICH
+        /// absteigend sortiert (dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>).</param>
+        public static byte[] GanglinieNormiert(string titel, IReadOnlyList<Reihe> reihen,
+                                               string yTitel, Achse achse, bool sortiert)
+        {
+            int W = 1240, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+
+                List<Reihe> gueltig = Brauchbare(reihen);
+                if (gueltig.Count == 0)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        100f, 66f, W - 30f);
+
+                // Der gemeinsame Bezugswert (siehe Kopf).
+                double bezug = gueltig.Max(r => r.Werte.Max());
+                if (bezug <= 0) bezug = 1;
+
+                ProzentRaster(g, rc);
+                XAchse(g, rc, achse, gueltig[0].Werte.Length);
+                using (var f = Schrift(15f))
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+
+                foreach (Reihe r in gueltig)
+                {
+                    double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
+                    ZeichneLinie(g, rc, Normiert(werte, bezug), 0, Y_PROZENT_MAX,
+                                 r.Farbe, r.Breite > 0 ? r.Breite : 2f);
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Obergrenze der Prozentachse — woertlich aus <c>init_Chart</c> :3378.</summary>
+        private const double Y_PROZENT_MAX = 100.2;
+
+        // ------------------------------------------------------------------ B2 / B3
+
+        /// <summary>
+        /// <b>B2 — ERZEUGERSTAPEL.</b> Das Arbeitspferd der Welle: gestapelte Erzeugung,
+        /// Linien darueber, eine Konturlinie darunter — und wahlweise eine Reihe auf
+        /// einer zweiten y-Achse (B3). Es traegt SECHS der siebzehn Zeichenflaechen
+        /// (<c>chart3</c>, <c>chart_Kessel</c>, <c>chart8</c>, <c>chart_BHKW_Waerme</c>,
+        /// <c>chart_Waerme</c>, <c>chart7</c>).
+        ///
+        /// <para><b>Die Zeichenlage ist Fachaussage, nicht Geschmack</b> (Begruendung in
+        /// <c>NavigatorWaerme.SerienAufbauen</c> :587-635):</para>
+        /// <list type="number">
+        ///   <item>Die KONTUR („Gesamt") liegt UNTER dem Stapel — sie ist die Summe und
+        ///   darf ihn nicht ueberdecken.</item>
+        ///   <item>Der STAPEL in Kaskadenreihenfolge, von unten nach oben.</item>
+        ///   <item>Die LINIEN darueber, in ihrer Listenreihenfolge — die letzte liegt
+        ///   ganz oben (im Bestand ist das der Waermebedarf).</item>
+        /// </list>
+        ///
+        /// <para><b>Sortiert wird NICHT gestapelt</b> (<c>GanglinienDarstellung.Stapeltyp</c>):
+        /// In der Dauerlinie ist jede Reihe fuer sich sortiert, eine Summe daraus waere
+        /// frei erfunden. Der Stapel wird dann zu Linien, im Bestand mit
+        /// <c>BorderWidth 4</c> — deshalb die dickere Strichstaerke.</para>
+        ///
+        /// <para><b>Zwei Stapelgruppen.</b> <see cref="Reihe.Stapelgruppe"/> trennt sie
+        /// wie <c>StackedGroupName</c> im Vorlaeufer: Auf der Waermepumpenseite steht der
+        /// BEDARF als Flaeche und die PRODUKTION als Saeule im selben Bild. Beide Gruppen
+        /// starten bei null und werden nebeneinander gezeichnet, die Saeulen etwas
+        /// schmaler — so bleiben sie unterscheidbar.</para>
+        /// </summary>
+        /// <param name="titel">Ueberschrift.</param>
+        /// <param name="stapel">Die gestapelten Reihen in Kaskadenreihenfolge.</param>
+        /// <param name="linien">Linien ueber dem Stapel, in Zeichenreihenfolge.</param>
+        /// <param name="kontur">Die Summenlinie unter dem Stapel; <c>null</c> = keine.</param>
+        /// <param name="yTitel">Beschriftung der linken y-Achse.</param>
+        /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
+        /// <param name="sortiert">Dauerlinie statt Ganglinie — dann ohne Stapel.</param>
+        /// <param name="zweiteAchse">B3: eine Reihe mit eigener Skala rechts; <c>null</c> = keine.</param>
+        /// <param name="y2Titel">Beschriftung der rechten y-Achse.</param>
+        public static byte[] ErzeugerStapel(string titel, IReadOnlyList<Reihe> stapel,
+                                            IReadOnlyList<Reihe> linien, Reihe kontur,
+                                            string yTitel, Achse achse, bool sortiert,
+                                            Reihe zweiteAchse = null, string y2Titel = null)
+        {
+            int W = 1240, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                bool mitY2 = Brauchbar(zweiteAchse);
+                var rc = SKRect.Create(100f, 110f, W - (mitY2 ? 190f : 140f), 360f);
+
+                List<Reihe> stapelG = Brauchbare(stapel);
+                List<Reihe> linienG = Brauchbare(linien);
+                bool mitKontur = Brauchbar(kontur);
+
+                if (stapelG.Count == 0 && linienG.Count == 0 && !mitKontur)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                // Legende: Kontur zuerst (sie steht im Bestand als erste Serie), dann der
+                // Stapel, dann die Linien, zuletzt die Reihe der zweiten Achse.
+                var leg = new List<Segment>();
+                if (mitKontur) leg.Add(new Segment(kontur.Name, 0, kontur.Farbe));
+                leg.AddRange(stapelG.Select(r => new Segment(r.Name, 0, r.Farbe)));
+                leg.AddRange(linienG.Select(r => new Segment(r.Name, 0, r.Farbe)));
+                if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
+                Legende(g, leg, 100f, 66f, W - 30f);
+
+                int n = stapelG.Count > 0 ? stapelG[0].Werte.Length
+                      : linienG.Count > 0 ? linienG[0].Werte.Length
+                      : kontur.Werte.Length;
+
+                // Obergrenze: die hoechste Stapelsumme JE GRUPPE (die Gruppen stehen
+                // nebeneinander, nicht uebereinander), dazu Linien und Kontur.
+                double max = 0;
+                if (!sortiert)
+                {
+                    max = Math.Max(max, Stapelhoehe(stapelG, Stapelart.Flaeche, n));
+                    max = Math.Max(max, Stapelhoehe(stapelG, Stapelart.Saeule, n));
+                }
+                else
+                    foreach (Reihe r in stapelG) max = Math.Max(max, r.Werte.Max());
+                foreach (Reihe r in linienG) max = Math.Max(max, r.Werte.Max());
+                if (mitKontur) max = Math.Max(max, kontur.Werte.Max());
+                max = Nice(max);
+                if (max <= 0) max = 1;
+
+                YRaster(g, rc, max);
+                XAchse(g, rc, achse, n);
+                using (var f = Schrift(15f))
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+
+                // (1) Kontur UNTER dem Stapel.
+                if (mitKontur)
+                    ZeichneLinie(g, rc, sortiert ? AbsteigendKopie(kontur.Werte) : kontur.Werte,
+                                 0, max, kontur.Farbe, kontur.Breite > 0 ? kontur.Breite : 4f);
+
+                // (2) Der Stapel.
+                if (sortiert)
+                {
+                    // Ohne Stapel: jede Reihe fuer sich als Dauerlinie, BorderWidth 4.
+                    foreach (Reihe r in stapelG)
+                        ZeichneLinie(g, rc, AbsteigendKopie(r.Werte), 0, max, r.Farbe,
+                                     r.Breite > 0 ? r.Breite : 4f);
+                }
+                else
+                {
+                    bool zweiGruppen = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) &&
+                                       stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule);
+
+                    StapelZeichnen(g, rc, stapelG, Stapelart.Flaeche, n, max,
+                                   zweiGruppen ? -0.22f : 0f, zweiGruppen ? 0.5f : 1f);
+                    StapelZeichnen(g, rc, stapelG, Stapelart.Saeule, n, max,
+                                   zweiGruppen ? 0.22f : 0f, zweiGruppen ? 0.5f : 1f);
+                    // Reihen ohne ausdrueckliche Gruppe bilden den gemeinsamen Stapel.
+                    StapelZeichnen(g, rc, stapelG, Stapelart.Keine, n, max, 0f, 1f);
+                }
+
+                // (3) Die Linien darueber, in Zeichenreihenfolge.
+                foreach (Reihe r in linienG)
+                    ZeichneLinie(g, rc, sortiert ? AbsteigendKopie(r.Werte) : r.Werte,
+                                 0, max, r.Farbe, r.Breite > 0 ? r.Breite : 2.5f);
+
+                // (4) B3 — die zweite y-Achse mit EIGENER Skala.
+                if (mitY2)
+                {
+                    double[] w2 = sortiert ? AbsteigendKopie(zweiteAchse.Werte) : zweiteAchse.Werte;
+                    double max2 = Nice(w2.Max());
+                    if (max2 <= 0) max2 = 1;
+
+                    ZeichneLinie(g, rc, w2, 0, max2, zweiteAchse.Farbe,
+                                 zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f);
+
+                    using (var achsenstift = Strich(zweiteAchse.Farbe, 2f))
+                        g.DrawLine(rc.Right, rc.Top, rc.Right, rc.Bottom, achsenstift);
+                    using (var f = Schrift(15f))
+                    {
+                        for (int i = 0; i <= 4; i++)
+                        {
+                            double wert = max2 * i / 4.0;
+                            float y = (float)(rc.Bottom - wert / max2 * rc.Height);
+                            Text(g, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
+                                 rc.Right + 8f, y - TextHoehe(f) / 2f);
+                        }
+                        Text(g, y2Titel ?? "", f, zweiteAchse.Farbe, rc.Right - 40f, rc.Top - 24f);
+                    }
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Die hoechste Summe EINER Stapelgruppe ueber alle Stuetzstellen.</summary>
+        private static double Stapelhoehe(List<Reihe> stapel, Stapelart gruppe, int n)
+        {
+            var summe = new double[n];
+            foreach (Reihe r in stapel)
+            {
+                if (r.Stapelgruppe != gruppe) continue;
+                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Math.Max(r.Werte[i], 0);
+            }
+            return n > 0 ? summe.Max() : 0;
+        }
+
+        /// <summary>
+        /// Zeichnet EINE Stapelgruppe als kumulierte Flaechen.
+        /// <paramref name="versatz"/> und <paramref name="breite"/> in Anteilen der
+        /// Zeichenflaeche verschieben und schmaelern die Gruppe, damit zwei Gruppen
+        /// nebeneinander stehen koennen.
+        /// </summary>
+        private static void StapelZeichnen(SKCanvas g, SKRect rc, List<Reihe> stapel,
+                                           Stapelart gruppe, int n, double max,
+                                           float versatz, float breite)
+        {
+            var teil = stapel.Where(r => r.Stapelgruppe == gruppe).ToList();
+            if (teil.Count == 0) return;
+
+            SKRect ziel = breite >= 1f
+                ? rc
+                : SKRect.Create(rc.Left + rc.Width * (0.5f + versatz - breite / 2f),
+                                rc.Top, rc.Width * breite, rc.Height);
+
+            var unten = new double[n];
+            foreach (Reihe r in teil)
+            {
+                var oben = new double[n];
+                for (int i = 0; i < n; i++)
+                    oben[i] = unten[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                ZeichneFlaeche(g, ziel, unten, oben, max, r.Farbe);
+                unten = oben;
+            }
+        }
+
+        // ------------------------------------------------------------------ B4
+
+        /// <summary>
+        /// <b>B4 — STREUWOLKE.</b> Eine bis drei halbtransparente Punktreihen ueber einer
+        /// freien x-Groesse (iU9-W11a.6).
+        ///
+        /// <para><b>Vorbild.</b> <c>chart4</c> „Leistung ueber Aussentemperatur" der
+        /// Waermepumpenseite: drei Reihen (Waermebedarf, Heizstab, Waermeproduktion) als
+        /// XY-Punkte in <c>ARGB(120, …)</c>, x = Aussentemperatur, y = Leistung.</para>
+        ///
+        /// <para><b>Halbtransparent ist wesentlich.</b> 8 760 Punkte auf 1 000 Bildpunkten
+        /// liegen vielfach uebereinander; erst die Transparenz macht sichtbar, WO sich
+        /// die Wolke verdichtet. Der Aufrufer liefert die Farbe samt Alphawert — dieselbe
+        /// Entscheidung wie im Vorlaeufer.</para>
+        ///
+        /// <para><b>Die x-Achse kann ins Negative reichen</b> (Aussentemperatur) und
+        /// bekommt deshalb eine vorzeichenfaehige Skala; y beginnt bei null.</para>
+        /// </summary>
+        public static byte[] Streuwolke(string titel, string xTitel, string yTitel,
+                                        IReadOnlyList<Punktreihe> reihen)
+        {
+            int W = 1240, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+
+                var gueltig = (reihen ?? new List<Punktreihe>())
+                    .Where(r => r != null && r.Punkte != null && r.Punkte.Count > 0)
+                    .ToList();
+                if (gueltig.Count == 0)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
+                        100f, 66f, W - 30f);
+
+                double xMin = gueltig.Min(r => r.Punkte.Min(p => p.X));
+                double xMax = gueltig.Max(r => r.Punkte.Max(p => p.X));
+                if (xMax - xMin < 1e-9) { xMax = xMin + 1; }
+                double yMax = Nice(Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Y))));
+                if (yMax <= 0) yMax = 1;
+
+                YRaster(g, rc, yMax);
+
+                // x-Skala mit fuenf Marken ueber den vorkommenden Bereich.
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int i = 0; i <= 4; i++)
+                    {
+                        double wert = xMin + (xMax - xMin) * i / 4.0;
+                        float x = rc.Left + (float)i / 4f * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = wert.ToString("0.#", DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 30f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                }
+
+                foreach (Punktreihe r in gueltig)
+                    using (var punkt = Fuellung(r.Farbe))
+                        foreach (var p in r.Punkte)
+                        {
+                            if (double.IsNaN(p.X) || double.IsNaN(p.Y)) continue;
+                            float x = rc.Left + (float)((p.X - xMin) / (xMax - xMin)) * rc.Width;
+                            float y = (float)(rc.Bottom - Math.Max(0, p.Y) / yMax * rc.Height);
+                            if (y < rc.Top) y = rc.Top;
+                            g.DrawCircle(x, y, 2.5f, punkt);
+                        }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Dieselbe Farbe ohne Alphawert — fuer das Legendenkaestchen.</summary>
+        private static SKColor Undurchsichtig(SKColor f)
+        {
+            return new SKColor(f.Red, f.Green, f.Blue);
+        }
+
+        // ------------------------------------------------------------------ B5
+
+        /// <summary>
+        /// <b>B5 — RING.</b> Ein Kuchen mit Innenloch, der Kennzahl in der Mitte und
+        /// einer Legende, die NUR die vorhandenen Segmente nennt (iU9-W11a.6).
+        ///
+        /// <para><b>Vorbild.</b> Die beiden GDI-Donuts der <c>NavigatorUebersicht</c>
+        /// (Waerme- und Stromdeckung, <c>DonutChartDrawer.DrawChartWithDynamicLegend</c>).
+        /// Sie zeichneten Werte, Namen und Farben aus DREI parallelen Listen und mussten
+        /// alle drei gemeinsam filtern, sonst verrutschte die Farbzuordnung
+        /// (<c>NavigatorUebersicht</c> :304-306). Ein Segment traegt hier alles
+        /// zusammen — die Falle gibt es nicht mehr.</para>
+        ///
+        /// <para><b>Dynamisch heisst: Segmente mit Wert &lt;= 0 entfallen samt Legende.</b>
+        /// Ein Projekt ohne BHKW soll kein BHKW-Segment der Groesse null zeigen.</para>
+        /// </summary>
+        /// <param name="titel">Ueberschrift, z. B. „Waermebedarfsdeckung".</param>
+        /// <param name="segmente">Die Segmente in Zeichenreihenfolge.</param>
+        /// <param name="mitteWert">Die Zahl in der Mitte (im Vorlaeufer der Deckungsgrad).</param>
+        /// <param name="mitteEinheit">Ihre Einheit, z. B. „%".</param>
+        public static byte[] Ring(string titel, IReadOnlyList<Ringsegment> segmente,
+                                  double mitteWert, string mitteEinheit)
+        {
+            int W = 720, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                var gueltig = (segmente ?? new List<Ringsegment>())
+                    .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
+                    .ToList();
+
+                var rc = SKRect.Create(210f, 90f, 300f, 300f);
+
+                if (gueltig.Count == 0)
+                {
+                    Leerhinweis(g, SKRect.Create(60f, 100f, W - 120f, 100f));
+                    return Png(flaeche);
+                }
+
+                double summe = gueltig.Sum(s => s.Wert);
+                float start = -90f;   // 12 Uhr, wie im Vorlaeufer
+                foreach (Ringsegment s in gueltig)
+                {
+                    float winkel = (float)(s.Wert / summe * 360.0);
+                    using (var b = Fuellung(s.Farbe)) Kreissegment(g, rc, start, winkel, b);
+                    start += winkel;
+                }
+
+                // Das Innenloch: ein weisser Kreis auf demselben Mittelpunkt. Genau so
+                // machte es DonutChartDrawer.
+                using (var loch = Fuellung(SKColors.White))
+                    g.DrawCircle(rc.MidX, rc.MidY, rc.Width * 0.30f, loch);
+
+                string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
+                                                                   ? "" : " " + mitteEinheit);
+                using (var f = Schrift(26f, fett: true))
+                    Text(g, mitte, f, C_STAMM, rc.MidX - f.MeasureText(mitte) / 2f,
+                         rc.MidY - TextHoehe(f) / 2f);
+
+                Legende(g, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
+                        60f, 430f, W - 30f);
+
+                return Png(flaeche);
+            }
+        }
+
+        // ------------------------------------------------------------------ B6
+
+        /// <summary>
+        /// <b>B6 — MONATSSTAPEL.</b> Zwoelf gestapelte Monatssaeulen mit FREIER
+        /// Reihenliste (iU9-W11a.6).
+        ///
+        /// <para><b>Vorbild.</b> <c>chartSolar</c> des Dashboards: drei
+        /// <c>StackedColumn</c>-Reihen (Direktverbrauch Gold, Speichernutzung LightGreen,
+        /// Netzbezug Rot), Legende OBEN und ZENTRIERT, y ab null.</para>
+        ///
+        /// <para><b>Was ihn von <see cref="StrombilanzMonate"/> unterscheidet:</b> Der
+        /// Berichtsbruder nimmt einen <c>ZeitreihenSatz</c>, kennt seine vier Reihen
+        /// namentlich und behandelt „Einspeisung" als Nebenbalken. Hier kommt die
+        /// Reihenliste vom Aufrufer, und gestapelt wird alles.</para>
+        /// </summary>
+        /// <param name="titel">Ueberschrift.</param>
+        /// <param name="einheit">Einheit fuer die Ueberschrift; leer = ohne.</param>
+        /// <param name="reihen">Reihen mit je zwoelf Monatswerten, von unten nach oben.</param>
+        public static byte[] MonatsStapel(string titel, string einheit, IReadOnlyList<Reihe> reihen)
+        {
+            int W = 978, H = 542;
+            string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
+                                "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, string.IsNullOrEmpty(einheit) ? (titel ?? "")
+                                                       : (titel ?? "") + "  [" + einheit + "]", W);
+
+                var gueltig = (reihen ?? new List<Reihe>())
+                    .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
+                    .ToList();
+
+                var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
+                if (gueltig.Count == 0)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
+                float legendenbreite = Legendenbreite(gueltig);
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
+
+                var summe = new double[12];
+                for (int m = 0; m < 12; m++)
+                    foreach (Reihe r in gueltig) summe[m] += Math.Max(r.Werte[m], 0);
+                double max = Nice(summe.Max());
+                if (max <= 0) max = 1;
+
+                YRaster(g, rc, max);
+                using (var f = Schrift(15f))
+                    for (int m = 0; m < 12; m++)
+                    {
+                        float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
+                        Text(g, monate[m], f, SKColors.DimGray,
+                             x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
+                    }
+
+                float slot = rc.Width / 12f;
+                float balken = slot * 0.6f;
+                for (int m = 0; m < 12; m++)
+                {
+                    float x0 = rc.Left + m * slot + (slot - balken) / 2f;
+                    float unten = rc.Bottom;
+                    foreach (Reihe r in gueltig)
+                    {
+                        float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
+                        if (hoehe <= 0) continue;
+                        using (var br = Fuellung(r.Farbe))
+                            g.DrawRect(x0, unten - hoehe, balken, hoehe, br);
+                        unten -= hoehe;
+                    }
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Breite, die die Legende dieser Reihen braucht — fuer die Zentrierung.</summary>
+        private static float Legendenbreite(List<Reihe> reihen)
+        {
+            float breite = 0;
+            using (var f = Schrift(16f))
+                foreach (Reihe r in reihen) breite += 40f + f.MeasureText(r.Name ?? "") + 24f;
+            return breite;
+        }
+
+        // ------------------------------------------------------------------ B7
+
+        /// <summary>
+        /// <b>B7 — TEMPERATURVERLAUF.</b> n Linien mit FREIER Reihenliste, die untere
+        /// Schicht je Speicher gestrichelt, und eine y-Achse OHNE Nullpunkt
+        /// (iU9-W11a.6).
+        ///
+        /// <para><b>Vorbild.</b> <c>chart_Speichertemperatur</c> der Waermepumpenseite:
+        /// je Senkenspeicher zwei Reihen (oben/unten, die untere
+        /// <c>ChartDashStyle.Dash</c>), je temperaturgekoppeltem Erzeuger eine
+        /// Quelltemperatur, y-Achse aus Min/Max ueber alle Reihen mit einer
+        /// MINDESTSPANNE von 5 K.</para>
+        ///
+        /// <para><b>Was ihn von <see cref="Speichertemperaturen"/> unterscheidet:</b> Der
+        /// Berichtsbruder nimmt einen <c>ZeitreihenSatz</c> und zeigt drei
+        /// charakteristische Wochen in drei Feldern. Hier kommt die Reihenliste vom
+        /// Aufrufer, und gezeichnet wird das ganze Jahr in einem Feld.</para>
+        ///
+        /// <para><b>Die Mindestspanne 5 K</b> ist woertlich uebernommen (:2607-2620):
+        /// Ohne sie spreizt ein Speicher, der das ganze Jahr auf 60 °C steht, den
+        /// Rundungsfehler seiner letzten Nachkommastelle ueber die volle Bildhoehe.</para>
+        /// </summary>
+        /// <param name="titel">Ueberschrift.</param>
+        /// <param name="reihen">Die Temperaturreihen; <see cref="Reihe.Gestrichelt"/>
+        /// kennzeichnet die untere Schicht.</param>
+        /// <param name="minAuto">
+        /// <c>true</c> = die Achse beginnt beim kleinsten vorkommenden Wert (der Regelfall
+        /// des Vorlaeufers). <c>false</c> = sie beginnt bei null.
+        /// </param>
+        public static byte[] Temperaturverlauf(string titel, IReadOnlyList<Reihe> reihen, bool minAuto)
+        {
+            int W = 1240, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+
+                List<Reihe> gueltig = Brauchbare(reihen);
+                if (gueltig.Count == 0)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        100f, 66f, W - 30f);
+
+                double min = minAuto ? gueltig.Min(r => r.Werte.Min()) : 0;
+                double max = gueltig.Max(r => r.Werte.Max());
+
+                // MINDESTSPANNE 5 K, woertlich aus SpeichertemperaturAnzeigen :2607-2620.
+                if (max - min < TEMPERATUR_MINDESTSPANNE)
+                {
+                    double mitte = (max + min) / 2.0;
+                    min = mitte - TEMPERATUR_MINDESTSPANNE / 2.0;
+                    max = mitte + TEMPERATUR_MINDESTSPANNE / 2.0;
+                }
+                min = Math.Floor(min);
+                max = Math.Ceiling(max);
+
+                // Raster und y-Beschriftung ueber die vorzeichenfaehige Spanne.
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (int i = 0; i <= 5; i++)
+                    {
+                        double wert = min + (max - min) * i / 5.0;
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                XAchse(g, rc, Achse.Jahresstunden, gueltig[0].Werte.Length);
+
+                foreach (Reihe r in gueltig)
+                {
+                    int schrittweite = Math.Max(1, r.Werte.Length / (int)rc.Width);
+                    var punkte = new List<SKPoint>();
+                    for (int i = 0; i < r.Werte.Length; i += schrittweite)
+                    {
+                        float x = rc.Left + (float)i / (r.Werte.Length - 1) * rc.Width;
+                        float y = (float)(rc.Bottom - (r.Werte[i] - min) / (max - min) * rc.Height);
+                        punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                    }
+                    using (var strichel = r.Gestrichelt
+                               ? SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f) : null)
+                    using (var stift = Strich(r.Farbe, r.Breite > 0 ? r.Breite : 2f))
+                    {
+                        stift.StrokeJoin = SKStrokeJoin.Round;
+                        if (strichel != null) stift.PathEffect = strichel;
+                        Linienzug(g, punkte.ToArray(), stift);
+                    }
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Mindestspanne der Temperaturachse [K] — woertlich aus dem Vorlaeufer.</summary>
+        private const double TEMPERATUR_MINDESTSPANNE = 5.0;
+
+        // ------------------------------------------------------- geteilte Helfer
+
+        /// <summary>Die Reihen, die etwas zu zeichnen haben.</summary>
+        private static List<Reihe> Brauchbare(IReadOnlyList<Reihe> reihen)
+        {
+            return (reihen ?? new List<Reihe>()).Where(Brauchbar).ToList();
+        }
+
+        private static bool Brauchbar(Reihe r)
+        {
+            return r != null && r.Werte != null && r.Werte.Length >= 2 &&
+                   r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
+        }
+
+        private static void Leerhinweis(SKCanvas g, SKRect rc)
+        {
+            using (var f = Schrift(18f))
+                Text(g, BerichtTexte.T("Keine Simulationsdaten vorhanden."), f, SKColors.DimGray,
+                     rc.Left, rc.Top + 20f);
+        }
+
+        /// <summary>Eine absteigend sortierte KOPIE — dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>.</summary>
+        private static double[] AbsteigendKopie(double[] werte)
+        {
+            var kopie = (double[])werte.Clone();
+            Array.Sort(kopie);
+            Array.Reverse(kopie);
+            return kopie;
+        }
+
+        /// <summary>Die Werte in Prozent des Bezugswerts.</summary>
+        private static double[] Normiert(double[] werte, double bezug)
+        {
+            var r = new double[werte.Length];
+            for (int i = 0; i < werte.Length; i++) r[i] = werte[i] / bezug * 100.0;
+            return r;
+        }
+
+        /// <summary>Raster und y-Beschriftung einer Prozentachse 0…100,2.</summary>
+        private static void ProzentRaster(SKCanvas g, SKRect rc)
+        {
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var f = Schrift(15f))
+                for (int p = 0; p <= 100; p += 20)
+                {
+                    float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
+                    g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                    string lab = p.ToString(DE) + " %";
+                    Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                         y - TextHoehe(f) / 2f);
+                }
+            using (var achse = Strich(SKColors.DimGray, 2f))
+            {
+                g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+            }
+        }
+
+        /// <summary>Raster, y-Beschriftung und Achsen einer Skala 0…max mit fuenf Stufen.</summary>
+        private static void YRaster(SKCanvas g, SKRect rc, double max)
+        {
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var f = Schrift(15f))
+                for (int i = 0; i <= 5; i++)
+                {
+                    double wert = max * i / 5.0;
+                    float y = (float)(rc.Bottom - wert / max * rc.Height);
+                    g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                    string lab = wert.ToString(max >= 10 ? "N0" : "N1", DE);
+                    Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                         y - TextHoehe(f) / 2f);
+                }
+            using (var achse = Strich(SKColors.DimGray, 2f))
+            {
+                g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+            }
+        }
+
+        /// <summary>
+        /// Die x-Achse: entweder Monatsgrenzen 0…12 (<c>ConfigureXAxisWithMonths</c>)
+        /// oder die vier Stundenmarken 2000/4000/6000/8000
+        /// (<c>ConfigureXAxisWithHours</c>). <paramref name="n"/> ist die Laenge der
+        /// Reihen und traegt damit die Unterscheidung Stunden/Viertelstunden.
+        /// </summary>
+        private static void XAchse(SKCanvas g, SKRect rc, Achse achse, int n)
+        {
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var f = Schrift(15f))
+            {
+                if (achse == Achse.Monate)
+                {
+                    for (int m = 0; m <= 12; m++)
+                    {
+                        float x = rc.Left + m / 12f * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = m.ToString(DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+                    return;
+                }
+
+                // Jahresstunden: die vier Marken des Vorlaeufers, auf die Reihenlaenge
+                // bezogen - damit stimmt das Bild auch im Viertelstundenraster.
+                int[] stunden = { 2000, 4000, 6000, 8000 };
+                double stundenJeWert = n > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
+                foreach (int h in stunden)
+                {
+                    double index = h / stundenJeWert;
+                    if (index >= n) continue;
+                    float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
+                    g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                    string lab = h.ToString("N0", DE);
+                    Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
             }
         }
 
