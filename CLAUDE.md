@@ -10,10 +10,10 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **334 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **337 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
-Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 105 Controller. Die
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 107 Controller. Die
 Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
 Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
 
@@ -27,9 +27,14 @@ Die **Oberfläche wächst seit dem 03.09.2026 (Paket iU8) in [`EPOS.UI`](EPOS.UI
 Razor-Klassenbibliothek ohne Windows-Bindung; die WinForms-Anwendung stellt nur noch die Hülle
 (`WindowsFormsApplication1/Allgemein/Blazor/`, ein `BlazorWebView` in einem modalen Fenster).
 Seit dem 04.09.2026 (Welle iU9‑W10b) ist die **Simulationskonfiguration** eine Razor-SEITE —
-die erste Fachseite, die auch die iOS-Wurzel `AppWurzel` erreicht; unter Windows steht sie bis
-W16 in derselben modalen Hülle wie ein Dialog, weil ihre beiden Aufrufer die modale Rückkehr
-brauchen (Entscheid R‑W10b‑1).
+die erste Fachseite, die auch die iOS-Wurzel `AppWurzel` erreicht. **Seit iU9‑W16b ist auch die
+STARTSEITE eine Razor-Seite** (`EPOS.UI/Seiten/Start/Startseite.razor`): Kopfband, sechs Reiter
+mit 21 Kacheln, Fußleiste; `MDIMainForm` hängt sie als `BlazorSeite<Startseite>` ein, das offene
+Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zwei
+Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
+Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
+`WindowsFormsApplication1` führt seither **zwei** Masken (`MDIMainForm`, `Form_HelpPopup`) und
+**null** Inline-SQL.
 **Arbeitsregel seit dem Stichtag iZ5: Jeder neue und jeder ohnehin anzufassende Dialog entsteht
 als Razor-Komponente in `EPOS.UI`, seine WinForms-Fassung wird im selben Schritt gelöscht** —
 nie zwei Fassungen derselben Maske. Die Datenbankseite gehört dabei in einen Controller im Kern,
