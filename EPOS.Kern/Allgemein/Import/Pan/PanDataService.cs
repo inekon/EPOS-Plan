@@ -3,10 +3,36 @@ using System.IO;
 using System.Linq;
 using WindowsFormsApplication1;
 
+/// <summary>
+/// Die PAN-Dateien EINER Sitzung (iU9-W13.0j).
+///
+/// <para><b>Die Liste ist ein INSTANZFELD</b> und nicht mehr statisch
+/// (Befund W13-B46). Statisch ueberlebte sie das Schliessen der Maske, den
+/// Projektwechsel und das ganze Prozessleben: Wer heute frueh drei .pan-Dateien
+/// eingelesen hatte, fand sie am Nachmittag in einem anderen Projekt wieder.
+/// Das SAMMELN mehrerer Dateien einer Sitzung bleibt Absicht — es ist die
+/// Lebensdauer, die falsch war; sie ist jetzt die des Dialogs.</para>
+///
+/// <para><b><see cref="ParsePan"/> bleibt statisch</b>: Sie zerlegt nur Text und
+/// gehoert keiner Sitzung an. Neu ist, dass sie das Ergebnis NICHT mehr
+/// nebenbei in eine Liste haengt — das tut <see cref="Aufnehmen"/>, wenn ein
+/// Aufrufer es will.</para>
+/// </summary>
 public class PanDataService
 {
-    private static List<PVModule> _allModules = new List<PVModule>();
+    private readonly List<PVModule> _allModules = new List<PVModule>();
     public IReadOnlyList<PVModule> AllModules => _allModules;
+
+    /// <summary>Liest eine .pan-Datei und nimmt sie in die Sitzungsliste auf.</summary>
+    public PanModule Einlesen(string inhalt, string dateiname)
+    {
+        PanModule m = ParsePan(inhalt, dateiname);
+        Aufnehmen(m);
+        return m;
+    }
+
+    /// <summary>Leert die Sitzungsliste.</summary>
+    public void Leeren() => _allModules.Clear();
 
     // ── PAN-Datei parsen ───────────────────────────────────────────────
     public static PanModule ParsePan(string content, string fileName = "")
@@ -79,7 +105,6 @@ public class PanDataService
                 case "Model": if (string.IsNullOrEmpty(m.Model)) m.Model = val; break;
             }
         }
-        AddPVModul(m);
         return m;
     }
 
@@ -98,8 +123,22 @@ public class PanDataService
     public IEnumerable<string> GetTechnologies() =>
         _allModules.Select(m => m.Technology).Distinct().OrderBy(x => x);
 
-    public static void AddPVModul(PanModule m)
+    /// <summary>
+    /// Nimmt ein gelesenes PAN-Modul in die Sitzungsliste auf.
+    ///
+    /// <para><c>Bifacial</c> traegt jetzt den ROHWERT <c>"1"</c> bzw. <c>"0"</c>
+    /// statt „Ja (0,70)" bzw. „Nein" — der deutsche Anzeigetext stand im Kern
+    /// (Befund W13-B50); der Faktor kommt ueber <c>Source.BifacialityFactor</c>
+    /// unveraendert mit.</para>
+    ///
+    /// <para>Die Liste sammelt bewusst mehrere .pan-Dateien einer Sitzung. Ein
+    /// gleichnamiges Modul (erneut eingelesene Datei) ersetzt deshalb seinen
+    /// Altbestand, statt die Auswahlliste doppelt zu fuellen.</para>
+    /// </summary>
+    public void Aufnehmen(PanModule m)
     {
+        if (m == null) return;
+
         PVModule pv = new PVModule
         {
             Source = m,
@@ -107,7 +146,7 @@ public class PanDataService
             Name = $"{m.Manufacturer} {m.Model}",
             Manufacturer = m.Manufacturer,
             Technology = m.Technology,
-            Bifacial = m.Bifacial ? $"Ja ({m.BifacialityFactor:F2})" : "Nein",
+            Bifacial = m.Bifacial ? "1" : "0",
             STC = m.PNom,
             A_c = m.Area,
             I_sc_ref = m.Isc,
@@ -117,9 +156,6 @@ public class PanDataService
             Date = m.YearBegin
         };
 
-        // Die Liste ist statisch und sammelt bewusst mehrere .pan-Dateien einer
-        // Sitzung. Ein gleichnamiges Modul (erneut eingelesene Datei) ersetzt
-        // deshalb seinen Altbestand, statt die Auswahlliste doppelt zu fuellen.
         string name = (pv.Name ?? "").Trim();
         int idx = _allModules.FindIndex(x =>
             string.Equals((x.Name ?? "").Trim(), name, System.StringComparison.OrdinalIgnoreCase));

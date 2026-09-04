@@ -52,7 +52,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         bool wizard = false,
         Func<string, bool>? hatZuordnung = null,
         Func<string, bool>? katalogLoeschen = null,
-        Func<string, Task<bool>>? sprung = null,
+        IReadOnlyDictionary<string, object>? verwaltung = null,
         Action? geaendert = null,
         Action<bool>? geschlossen = null)
         => Render<WaermebedarfExternDialog>(p => p
@@ -65,7 +65,7 @@ public class WaermebedarfExternDialogTests : BunitContext
             })
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => false))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.Kanaele, KANAELE)
             .Add(x => x.Geaendert, geaendert)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
@@ -115,13 +115,13 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
     }
 
-    /// <summary>Ohne Sprungdelegat kein „Einlesen/Bearbeiten.."-Knopf.</summary>
+    /// <summary>Ohne Parametersatz der Verwaltung kein „Einlesen/Bearbeiten.."-Knopf.</summary>
     [Fact]
-    public void Ohne_Sprung_gibt_es_keinen_Bearbeitenknopf()
+    public void Ohne_Verwaltung_gibt_es_keinen_Bearbeitenknopf()
     {
         Assert.DoesNotContain("Einlesen/Bearbeiten..", Aufbauen().Markup);
         Assert.Contains("Einlesen/Bearbeiten..",
-                        Aufbauen(sprung: _ => Task.FromResult(true)).Markup);
+                        Aufbauen(verwaltung: new Dictionary<string, object>()).Markup);
     }
 
     // =================================================================================
@@ -253,16 +253,25 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.False(gerufen);
     }
 
+    /// <summary>
+    /// iU9-W13.2: „Einlesen/Bearbeiten.." zeigt die Ganglinienverwaltung als
+    /// ÜBERLAGERUNG im selben Fenster. Bis Welle 13 war es ein Sprung über die
+    /// <c>Sprungbruecke</c> in ein WinForms-Fenster; ist das Ziel selbst Blazor,
+    /// wären zwei WebViews übereinander Risiko R2.
+    /// </summary>
     [Fact]
-    public void Bearbeiten_springt_in_die_Ganglinienverwaltung()
+    public void Bearbeiten_zeigt_die_Ganglinienverwaltung_als_Ueberlagerung()
     {
-        string ziel = "";
-        var cut = Aufbauen(sprung: s => { ziel = s; return Task.FromResult(true); });
+        var cut = Aufbauen(verwaltung: new Dictionary<string, object>());
+
+        Assert.Empty(cut.FindAll("[role='dialog']"));
 
         Knopf(cut, "Einlesen/Bearbeiten..").Click();
 
-        Assert.Equal(Sprungziel.WaermebedarfExternAdmin, ziel);
+        Assert.Single(cut.FindAll("[role='dialog']"));
+        Assert.Contains("Wärmebedarf Ganglinie", cut.Markup);
     }
+
 
     // =================================================================================
     // Tastatur und Schlussleiste

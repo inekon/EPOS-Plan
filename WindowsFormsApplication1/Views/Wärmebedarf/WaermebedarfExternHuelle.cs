@@ -102,7 +102,10 @@ namespace WindowsFormsApplication1
                     name => new WaermebedarfStammCtrl().HatProjektzuordnung(name)),
                 ["KatalogLoeschen"] = new Func<string, bool>(
                     name => new WaermebedarfStammCtrl().Delete(name)),
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W13.2: Die Ganglinienverwaltung ist selbst Blazor. Statt des
+                // Sprungs in ein WinForms-Fenster bekommt der Dialog ihren
+                // PARAMETERSATZ und zeigt sie als Ueberlagerung (Risiko R2).
+                ["VerwaltungGaben"] = WaermebedarfAdminHuelle.Gaben(),
 
                 ["Kanaele"] = Kanaele(),
 

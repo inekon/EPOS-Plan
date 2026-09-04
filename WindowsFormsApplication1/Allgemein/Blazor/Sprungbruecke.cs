@@ -153,19 +153,6 @@ namespace WindowsFormsApplication1
                         using (Form_Solarganglinie_Admin f = new Form_Solarganglinie_Admin())
                             return MitOk(f, besitzer);
 
-                    // --- iU9-W9.0f: die Verwaltung der externen Waermebedarfsganglinien -
-                    // Dieselbe Maske, die Dienste.Navigation fuer
-                    // Masken.WaermebedarfExternAdmin zeigt; der Vorlaeufer
-                    // (Form_Waermebedarf.btn_Bearbeiten_Click:257) rief sie unmittelbar
-                    // samt SetControls(). Sie bleibt bis Welle 13 WinForms. Nach der
-                    // Rueckkehr laedt der Dialog seine Katalogliste neu.
-                    case Sprungziel.WaermebedarfExternAdmin:
-                        using (Form_AdminWaermeeinlesen f = new Form_AdminWaermeeinlesen())
-                        {
-                            f.SetControls();
-                            return MitOk(f, besitzer);
-                        }
-
                     // --- iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers ------
                     // Sie bleibt WinForms (iF22) - der einzige Ort des Programms, an dem
                     // ScottPlot laeuft (Heatmap und Schnittkurve der Rastersuche). Sie

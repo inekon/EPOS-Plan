@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,6 +10,26 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Ein Zwischenstand des CEC-Abrufs (iU9-W13.0j) — ein SCHLUESSEL und seine
+    /// Platzhalterwerte, kein fertiger Satz. Der Kern kennt keine Anzeigetexte;
+    /// der Wirt uebersetzt.
+    /// </summary>
+    public readonly struct CecFortschritt
+    {
+        public CecFortschritt(string schluessel, params string[] werte)
+        {
+            Schluessel = schluessel ?? "";
+            Werte = werte ?? Array.Empty<string>();
+        }
+
+        /// <summary>Sprachneutraler Schluessel, z. B. <c>CEC_PROT_VERBINDEN</c>.</summary>
+        public string Schluessel { get; }
+
+        /// <summary>Platzhalterwerte in der Reihenfolge <c>{0}</c>, <c>{1}</c>, …</summary>
+        public string[] Werte { get; }
+    }
+
     public class CECDataService
     {
         private const string Url1 = "https://raw.githubusercontent.com/NREL/SAM/refs/heads/develop/deploy/libraries/CEC%20Modules.csv";
@@ -31,21 +51,37 @@ namespace WindowsFormsApplication1
                 Dienste.Pfade.BenutzerLokalBasis, "CECModuleImporter", "cec_modules.csv");
         }
 
-        public async Task<(bool success, string message)> LoadDataAsync(IProgress<string> progress = null)
+        /// <summary>
+        /// Holt die CEC-Modulliste — aus dem Zwischenspeicher, wenn er juenger als
+        /// 30 Tage ist, sonst ueber HTTP von einer der drei Quellen.
+        ///
+        /// <para><b>Der Abbruch ist neu</b> (iU9-W13.0j, Risiko R-W13-3): Drei URLs
+        /// mit je 45 Sekunden Zeitgrenze sind im schlechtesten Fall mehr als zwei
+        /// Minuten, in denen der Anwender nichts tun konnte. Der Melder war schon
+        /// da — die Maske uebergab ihn nur nicht (Befund W13-B38).</para>
+        ///
+        /// <para><b>Die Fortschrittstexte sind SCHLUESSEL</b> und keine deutschen
+        /// Saetze mehr: Der Kern kennt keine Anzeigetexte. Der Wirt uebersetzt sie
+        /// (<c>Texte.Zu</c>); der Hostname der gerade versuchten Quelle reist als
+        /// Platzhalterwert mit.</para>
+        /// </summary>
+        public async Task<(bool success, CecFortschritt meldung)> LoadDataAsync(
+            IProgress<CecFortschritt> progress = null,
+            System.Threading.CancellationToken abbruch = default)
         {
-            progress?.Report("Suche lokalen Cache…");
+            progress?.Report(new CecFortschritt("CEC_PROT_CACHE_SUCHEN"));
 
             if (File.Exists(_localCachePath))
             {
                 var age = DateTime.Now - File.GetLastWriteTime(_localCachePath);
                 if (age.TotalDays < 30)
                 {
-                    progress?.Report("Lade aus lokalem Cache…");
+                    progress?.Report(new CecFortschritt("CEC_PROT_CACHE_LADEN"));
                     return ParseCsv(_localCachePath);
                 }
             }
 
-            progress?.Report("Verbinde mit Quellen…");
+            progress?.Report(new CecFortschritt("CEC_PROT_VERBINDEN"));
 
             using (var http = new HttpClient())
             {
@@ -54,10 +90,11 @@ namespace WindowsFormsApplication1
 
                 foreach (var url in new[] { Url1, Url2, Url3 })
                 {
+                    abbruch.ThrowIfCancellationRequested();
                     try
                     {
-                        progress?.Report($"Versuche: {new Uri(url).Host}…");
-                        var response = await http.GetAsync(url).ConfigureAwait(false);
+                        progress?.Report(new CecFortschritt("CEC_PROT_VERSUCHE", new Uri(url).Host));
+                        var response = await http.GetAsync(url, abbruch).ConfigureAwait(false);
 
                         if (!response.IsSuccessStatusCode) continue;
 
@@ -73,32 +110,36 @@ namespace WindowsFormsApplication1
                             await sw.WriteAsync(csv).ConfigureAwait(false);
                         }
 
-                        progress?.Report("Datei gespeichert, parse Daten…");
+                        progress?.Report(new CecFortschritt("CEC_PROT_GESPEICHERT"));
                         return ParseCsv(_localCachePath);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
                     }
                     catch (Exception ex)
                     {
-                        progress?.Report($"Fehler: {ex.Message}");
+                        progress?.Report(new CecFortschritt("CEC_PROT_FEHLER", ex.Message));
                     }
                 }
             }
 
             if (File.Exists(_localCachePath))
             {
-                progress?.Report("Verwende vorhandenen Cache…");
+                progress?.Report(new CecFortschritt("CEC_PROT_CACHE_ALT"));
                 return ParseCsv(_localCachePath);
             }
 
-            return (false, "Keine CEC-Datenquelle erreichbar.");
+            return (false, new CecFortschritt("CEC_MSG_KEINE_QUELLE"));
         }
 
-        public (bool success, string message) LoadFromFile(string filePath)
+        public (bool success, CecFortschritt meldung) LoadFromFile(string filePath)
         {
-            if (!File.Exists(filePath)) return (false, "Datei nicht gefunden.");
+            if (!File.Exists(filePath)) return (false, new CecFortschritt("CEC_MSG_DATEI_FEHLT"));
             return ParseCsv(filePath);
         }
 
-        private (bool success, string message) ParseCsv(string path)
+        private (bool success, CecFortschritt meldung) ParseCsv(string path)
         {
             try
             {
@@ -127,7 +168,7 @@ namespace WindowsFormsApplication1
                     dataLines.Add(line);
                 }
 
-                if (dataLines.Count <= 1) return (false, "CSV leer.");
+                if (dataLines.Count <= 1) return (false, new CecFortschritt("CEC_MSG_LEER"));
 
                 var headers = SplitCsvLine(dataLines[0]);
                 var colIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -146,7 +187,21 @@ namespace WindowsFormsApplication1
 
                     string GetF(int idx) => (idx >= 0 && idx < fields.Length) ? fields[idx].Trim() : "";
 
-                    DateTime dateTime = DateTime.Parse(fields[26], CultureInfo.InvariantCulture);
+                    // BEFUND W13-B48, BEHOBEN: Der Vorlaeufer griff hier auf den FESTEN
+                    // Spaltenindex 26 zu, obwohl JEDES andere Feld ueber die Kopfzeile
+                    // aufgeloest wird - eine geaenderte Spaltenfolge des NREL-Katalogs
+                    // haette den ganzen Import geworfen, nicht nur das Datum. Jetzt
+                    // kommt die Spalte aus derselben Kopfzeilenzuordnung, und ein
+                    // unlesbares Datum kostet die Zeile ihr Jahr, nicht die Datei
+                    // ihren Import.
+                    int jahr = 0;
+                    {
+                        string datumstext = GetF(GetCol("date"));
+                        DateTime datum;
+                        if (DateTime.TryParse(datumstext, CultureInfo.InvariantCulture,
+                                              DateTimeStyles.None, out datum))
+                            jahr = datum.Year;
+                    }
                     var mod = new PVModule
                     {
                         Database = "CEC",  
@@ -168,17 +223,18 @@ namespace WindowsFormsApplication1
                         beta_oc = SafeD(GetF(GetCol("beta_oc"))),
                         gamma_pmp = SafeD(GetF(GetCol("gamma_pmp"))),
                         T_NOCT = SafeD(GetF(GetCol("t_noct"))),
-                        Date = dateTime.Year,
+                        Date = jahr,
                         // ... füge hier weitere Felder nach Bedarf hinzu
                     };
                     _allModules.Add(mod);
                 }
 
-                return (true, $"{_allModules.Count} Module geladen.");
+                return (true, new CecFortschritt("CEC_MSG_GELADEN",
+                    _allModules.Count.ToString(CultureInfo.InvariantCulture)));
             }
             catch (Exception ex)
             {
-                return (false, "Fehler: " + ex.Message);
+                return (false, new CecFortschritt("CEC_MSG_FEHLER", ex.Message));
             }
         }
 
@@ -228,66 +284,14 @@ namespace WindowsFormsApplication1
             _allModules.Select(m => m.Technology).Distinct().OrderBy(x => x);
 
 
-        public IEnumerable<PVModule> Filter(
-           string manufacturer = null,
-           string namePattern = null,
-           string technology = null,
-           double? minPower = null,
-           double? maxPower = null,
-           double? minEfficiency = null,
-           double? maxEfficiency = null,
-           bool? bifacial = null)
-        {
-            var q = _allModules.AsEnumerable();
+        // iU9-W13.0j: Filter(...) und BuildWildcardMatcher sind GELOESCHT
+        // (Befund W13-B41). Sie waren die DRITTE Platzhaltersuche des Bestands -
+        // neben Form_CECImport.GetFilterRegex und EPOS.Kern/Allgemein/Suchmuster,
+        // das es seit W9 gibt. Beide hatte nie ein Aufrufer; die Maske filterte
+        // selbst. Der Nachfolger PvModulImportDialog nimmt Suchmuster.
+        //
+        // Mit ihnen faellt auch der Steuerwert "(alle)" aus dem Kern: Er war dort
+        // ein deutscher ANZEIGETEXT, gegen den verglichen wurde (Befund W13-B39).
 
-            if (!string.IsNullOrWhiteSpace(namePattern) && namePattern != "*")
-            {
-                var m = BuildWildcardMatcher(namePattern);
-                q = q.Where(x => m(x.Name));
-            }
-            if (!string.IsNullOrWhiteSpace(manufacturer) && manufacturer != "(alle)")
-            {
-                if (manufacturer.Contains('*') || manufacturer.Contains('?'))
-                {
-                    var m = BuildWildcardMatcher(manufacturer);
-                    q = q.Where(x => m(x.Manufacturer));
-                }
-                else
-                {
-                    q = q.Where(x => x.Manufacturer.Equals(manufacturer, StringComparison.OrdinalIgnoreCase));
-                }
-            }
- 
-            if (!string.IsNullOrWhiteSpace(technology) && technology != "(alle)")
-            {
-                if (technology.Contains('*') || technology.Contains('?'))
-                {
-                    var m = BuildWildcardMatcher(technology);
-                    q = q.Where(x => m(x.Technology));
-                }
-                else
-                {
-                    q = q.Where(x => x.Technology.Equals(technology, StringComparison.OrdinalIgnoreCase));
-                }
-            }
-            if (minPower.HasValue && minPower.Value > 0) q = q.Where(x => x.STC >= minPower.Value);
-            if (maxPower.HasValue && maxPower.Value < 99999) q = q.Where(x => x.STC <= maxPower.Value);
-            if (minEfficiency.HasValue && minEfficiency.Value > 0) q = q.Where(x => x.Efficiency >= minEfficiency.Value);
-            if (maxEfficiency.HasValue && maxEfficiency.Value < 30) q = q.Where(x => x.Efficiency <= maxEfficiency.Value);
-            if (bifacial.HasValue)
-                q = q.Where(x => bifacial.Value
-                    ? x.Bifacial == "1" || x.Bifacial.Equals("true", StringComparison.OrdinalIgnoreCase)
-                    : x.Bifacial != "1" && !x.Bifacial.Equals("true", StringComparison.OrdinalIgnoreCase));
-
-            return q.OrderBy(x => x.Manufacturer).ThenBy(x => x.Name);
-        }
-
-        public static Func<string, bool> BuildWildcardMatcher(string pattern)
-        {
-            if (string.IsNullOrWhiteSpace(pattern) || pattern == "*") return s => true;
-            var rx = "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
-            var reg = new Regex(rx, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            return s => reg.IsMatch(s ?? string.Empty);
-        }
     }
 }

@@ -551,6 +551,23 @@ body {
     overflow-x: auto;
 }
 
+/* Virtualisierte Liste (iU9-W13.0l): QuickGrid virtualisiert nur, wenn es
+   einen Behaelter mit FESTER Hoehe zum Rollen gibt - sonst waechst die Tabelle
+   und es bleibt nichts auszulassen. 20 746 CEC-Zeilen brauchen das. */
+.epos-raster-huelle--hoch {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - bei 20 000 Zeilen ist das kein
+   Komfort, sondern die Voraussetzung, die Spalten noch zuzuordnen. */
+.epos-raster-huelle--hoch .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+}
+
 .epos-raster {
     width: 100%;
     border-collapse: collapse;
@@ -2457,4 +2474,64 @@ body {
 
 @media (forced-colors: active) {
     .epos-wert--negativ { color: LinkText; }
+}
+
+/* ------------------------------------------------------------------ */
+/* KATALOGIMPORT VDI 3805 (iU9-W13.1)                                  */
+/*                                                                     */
+/* Die vier Vorlaeufer legten Filterzeile und Detailblock mit festen   */
+/* Location/Size-Werten aus; ihre en-US.resx trug dafuer eine ZWEITE   */
+/* Geometrie (Form_WP_einlesen: 13 Size, 14 Location, eigene           */
+/* ClientSize - Befund W13-B36). Hier fliesst beides: Die Filterzeile  */
+/* ist eine Reihe, die umbricht, der Detailblock ein Raster aus zwei   */
+/* Spalten, das bei schmalem Fenster auf eine faellt. Damit entfaellt  */
+/* die zweite Geometrie ersatzlos.                                     */
+/* ------------------------------------------------------------------ */
+.epos-katalogimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-katalogimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 4px 16px;
+    margin-top: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
+/*                                                                     */
+/* Der Vorlaeufer baute sein Kopfband als HeaderGradientPanel mit      */
+/* LinearGradientBrush von (30,87,153) nach (16,52,110), seine Knoepfe */
+/* mit MakeSmoothButton ueber GraphicsPath und seinen Gitterkopf mit   */
+/* einer eigenen Faerbung. Alle vier waren WinForms-Ersatz fuer das,   */
+/* was CSS ohnehin kann - hier bleibt die Filterzeile, die umbricht,   */
+/* und der Detailblock, der bei schmalem Fenster auf eine Spalte       */
+/* faellt. Der Farbverlauf entfaellt ersatzlos: Die Hausfarben sind    */
+/* die des uebrigen Programms.                                         */
+/* ------------------------------------------------------------------ */
+.epos-pvimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-pvimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 4px 16px;
+}
+
+/* Die Statuszeile des Vorlaeufers (statusStrip1) - jetzt rechts in der
+   Quellenleiste, leise. */
+.epos-pvimport-status {
+    color: var(--epos-text-leise);
+    font-size: 12px;
+    align-self: center;
 }

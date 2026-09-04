@@ -70,6 +70,67 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
+        /// <summary>
+        /// <b>Der Schreibweg des Katalogimports</b> (iU9-W13.0e): Duplikatpruefung und
+        /// Einfuegen in EINER Transaktion.
+        ///
+        /// <para><b>Was sich gegenueber dem Bestand aendert.</b> Nur die Klammer.
+        /// <c>Form_PufferSp_einlesen.UebernehmeEintrag</c> rief <see cref="Exists"/>
+        /// und <see cref="InsertFrom"/> nacheinander ueber ZWEI Verbindungen; wer
+        /// dazwischen denselben Bezeichner anlegte, bekam ihn zweimal. Konzept 6.3
+        /// verlangt die Klammer ausdruecklich („Pruefung und Schreiben je Eintrag
+        /// klammern; heute nur beim Heizkessel der Fall").</para>
+        /// </summary>
+        public VdiUebernahmeErgebnis ImportUebernehmen(PufferSpModel model, string nameOverride = null)
+        {
+            if (model == null) return VdiUebernahmeErgebnis.Fehler;
+
+            try
+            {
+                string bezeichner = nameOverride ?? model.Name;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
+                    int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
+
+                    string sql = @"INSERT INTO [" + TABLE + @"]
+                            (ID, Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen, Investitionskosten, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DbParam[] ps = {
+                        new DbParam("@id", neueId),
+                        new DbParam("@bez", bezeichner ?? ""),
+                        new DbParam("@her", (object)(model.Firma ?? "")),
+                        new DbParam("@typ", (object)(model.Speichertyp ?? "")),
+                        new DbParam("@bbv", model.Betriebsbereitschaftverlust),
+                        new DbParam("@vol", model.Gesamtvolumen),
+                        new DbParam("@inv", model.Investitionskosten),
+                        new DbParam("@ro", false)
+                    };
+
+                    v.Ausfuehren(sql, ps);
+                    v.Commit();
+                    this.ID = neueId;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Übernahme des Pufferspeichers: " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
+        }
+
         // Uebernimmt die Werte aus einem Model und legt einen neuen Stammdatensatz an.
         public bool InsertFrom(PufferSpModel m)
         {

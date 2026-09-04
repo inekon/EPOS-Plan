@@ -120,7 +120,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**152 `.cs`**; **246 Dateien** mit `.resx`) —
+- **`Views/`** (**134 `.cs`**; **207 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -302,11 +302,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 38 Masken** (43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 32 Masken** (38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **25** (27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **21** (25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht auf **37 von 38, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
+  Erreichbarkeit steht auf **31 von 32, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
   Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
   `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
@@ -377,8 +377,8 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   stand (mit Ablage in der Verwaltung, ohne in der Lastspitzenkappung); sie ist
   jetzt EIN Kern-Ablauf `GanglinienImportAblauf` mit drei Rückrufen, und die
   drei Zwischenmasken erscheinen als **Überlagerung** desselben Fensters.
-  `ImportKonflikteHuelle` ist **Zwischenstand**: Sie bedient die vier
-  Importmasken der Welle 13 (je eine geänderte Zeile) und wird dort gelöscht.
+  `ImportKonflikteHuelle` war **Zwischenstand**: Sie bediente die vier
+  Importmasken der Welle 13 und ist dort gelöscht.
   Neu im Kern sind `Allgemein/Import/GanglinienImportAblauf.cs`,
   `Allgemein/Import/GanglinienOptionenModell.cs`,
   `Allgemein/Import/GanglinienProtokollText.cs` (verschoben),
@@ -397,6 +397,42 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   keine Maske mehr**, `Views/Stromverbraucher` und `Views/Stromspeicher` je
   eine. Protokoll:
   [`Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W13 sind sechs weitere Masken verschwunden — die Katalog-Importe**,
+  zusammen 2 396 Zeilen `.cs`, 2 621 Zeilen Designer, 32 `MessageBox` und vier
+  indirekte: `Form_Heizkessel_einlesen` (500 Z.), `Form_PufferSp_einlesen`
+  (383 Z.), `Form_SolarKollektoren_einlesen` (264 Z.), `Form_WP_einlesen`
+  (424 Z.), `Form_AdminWaermeeinlesen` (167 Z.) und `Form_CECImport` (658 Z.,
+  Klasse `Main_PV_Test`). **Sechs Masken werden DREI Komponenten**: Die vier
+  VDI-3805-Einlesemasken sind VIERLINGE — dreizehn Bausteine standen viermal
+  WORTGLEICH im Bestand —, ihre Ausprägung ist ein Aufzählungstyp
+  (`KatalogImportArt`) und kein Sonderzweig; der Feldkartenabgleich läuft
+  deshalb je AUSPRÄGUNG, wie in W8. An ihrer Stelle stehen **drei Hüllen** —
+  `Views/Import/KatalogImportHuelle.cs` (eine für alle vier Maskenschlüssel),
+  `Views/Wärmebedarf/WaermebedarfAdminHuelle.cs`,
+  `Views/Photovoltaik/PvModulImportHuelle.cs`.
+  Neu im Kern sind `Allgemein/Import/KatalogImportProfil.cs`,
+  `…/KatalogImportSatz.cs`, `…/KatalogImportAblauf.cs` und
+  `…/GanglinienTextDatei.cs`, dazu vier transaktionale Schreibwege in den
+  Stamm-Controllern — **`Form_Heizkessel_einlesen.Insert(model, v)` war der
+  einzige Schreibweg der Welle, der nicht im Kern lag** (19 Spalten, `MAX(ID)+1`,
+  19 `DbParam` IM FORMULAR).
+  **`ImportKonflikteHuelle` ist gelöscht** — ihre vier Aufrufer sind jetzt selbst
+  Razor und zeigen den Konfliktdialog als Überlagerung; damit ist der
+  Zwischenstand aus W12 nach genau einer Welle wieder weg.
+  **Die Sprungbrücke verliert ein Ziel**: `WaermebedarfExternDialog` sprang in
+  die Ganglinienverwaltung; ist das Ziel selbst Blazor, wird daraus eine
+  Überlagerung im selben Fenster (Risiko R2) — neun Sprungziele statt zehn.
+  **Der Nachweis der Welle sind die IMPORT-PROBEN**: zwanzig Dateien unter
+  `Referenzlaeufe/Importproben/` mit eingefrorenen Erwartungswerten, angelegt VOR
+  jeder portierten Zeile — für die fünf Parser, `DublettenPruefung` und
+  `VdiAuswahlFilter` gab es bis dahin keinen einzigen Test. Der Referenzlauf
+  sieht keinen Katalogimport; die Angleichungen der Welle stehen deshalb je als
+  A‑Zeile und als Windows-Abnahmepunkt im Protokoll.
+  **`Views/Wärmebedarf` und `Views/Wärmepumpe` führen seither keine Designer-Maske
+  mehr**; `Form_WP_einlesen.designer.cs` ist nicht gelöscht, sondern nach
+  `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` verschoben — er ist der
+  Zeuge des Umlaut-Tests. Protokoll:
+  [`Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
 - **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
