@@ -103,14 +103,34 @@ public static class Stapel
     /// Sie sind Lesevorlagen fuer die Tests - wuerde der Stapellauf sie mitzaehlen,
     /// meldete das Vollstaendigkeitsnetz mehr Masken, als das Programm hat.
     /// </para>
+    ///
+    /// <para><b>Gemessen wird ab der SUCHWURZEL, nicht am ganzen Pfad</b> (iU9-W14b): Laeuft
+    /// der Stapellauf in einem Git-Nebenbaum, liegt dessen Wurzel SELBST unterhalb von
+    /// <c>.claude/worktrees/</c> - ein Vergleich ueber den absoluten Pfad wirft dann den
+    /// gesamten Bestand hinaus und meldet null Masken. Uebergangen wird also, was
+    /// UNTERHALB der Suchwurzel in einem dieser Ordner liegt.</para>
     /// </summary>
     public static List<string> Dateien(string ordner) =>
         Directory.EnumerateFiles(ordner, "*.cs", SearchOption.AllDirectories)
             .Where(d => d.EndsWith(".Designer.cs", StringComparison.OrdinalIgnoreCase))
-            .Where(d => !Uebergangen.Any(o => d.Contains(
-                Path.DirectorySeparatorChar + o + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
+            .Where(d => !Uebergeht(ordner, d))
             .OrderBy(d => d, StringComparer.Ordinal)
             .ToList();
+
+    /// <summary>
+    /// Liegt <paramref name="datei"/> unterhalb von <paramref name="wurzel"/> in einem der
+    /// <see cref="Uebergangen"/>-Ordner? Gemessen wird der RELATIVE Pfad.
+    /// </summary>
+    private static bool Uebergeht(string wurzel, string datei)
+    {
+        string relativ = Path.GetRelativePath(wurzel, datei);
+        string[] teile = relativ.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        // Der letzte Teil ist der Dateiname selbst - er zaehlt nicht als Ordner.
+        for (int i = 0; i < teile.Length - 1; i++)
+            if (Uebergangen.Contains(teile[i], StringComparer.Ordinal)) return true;
+        return false;
+    }
 
     /// <summary>Laeuft ueber alle Designer-Dateien; <paramref name="ziel"/> null = nur zaehlen.</summary>
     /// <param name="erreichbarkeit">
