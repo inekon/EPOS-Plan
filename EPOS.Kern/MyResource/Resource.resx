@@ -5496,6 +5496,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOSTEN_LBL_TRAEGER" xml:space="preserve">
     <value>Energieträger des Projekts</value>
   </data>
+  <data name="BK_KOSTEN_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
   <data name="BK_KOSTEN_SP_KOMPONENTE" xml:space="preserve">
     <value>Komponente</value>
   </data>
