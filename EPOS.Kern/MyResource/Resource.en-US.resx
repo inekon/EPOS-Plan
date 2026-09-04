@@ -13263,4 +13263,259 @@ Its hourly and daily values will be deleted as well.</value>
   <data name="ADM_DUBLETTEN_SP_WERT" xml:space="preserve">
     <value>Value</value>
   </data>
+  <data name="PRJ_LIST_SP_NAME" xml:space="preserve">
+    <value>Project name</value>
+  </data>
+  <data name="PRJ_LIST_SP_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="PRJ_LIST_SP_GEAENDERT" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="PRJ_LIST_LBL_SUCHE" xml:space="preserve">
+    <value>Search:</value>
+  </data>
+  <data name="PRJ_LIST_ANZAHL" xml:space="preserve">
+    <value>{0} of {1} projects</value>
+  </data>
+  <data name="PRJ_LIST_LEER" xml:space="preserve">
+    <value>No project has been created yet.</value>
+  </data>
+  <data name="PRJ_WAHL_TITEL" xml:space="preserve">
+    <value>Open project</value>
+  </data>
+  <data name="PRJ_WAHL_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Please select!</value>
+  </data>
+  <data name="PRJ_DEL_TITEL" xml:space="preserve">
+    <value>Delete Project</value>
+  </data>
+  <data name="PRJ_DEL_LBL_PROJEKT" xml:space="preserve">
+    <value>Project:</value>
+  </data>
+  <data name="PRJ_DEL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PRJ_DEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Confirm deletion of project</value>
+  </data>
+  <data name="PRJ_DEL_FRAGE" xml:space="preserve">
+    <value>Are you sure you want to permanently delete the project '{0}' and all data belonging to it?</value>
+  </data>
+  <data name="PRJ_DEL_MSG_ERFOLG" xml:space="preserve">
+    <value>The project '{0}' has been deleted successfully.</value>
+  </data>
+  <data name="PRJ_DEL_MSG_ERFOLG_TITEL" xml:space="preserve">
+    <value>Project deleted</value>
+  </data>
+  <data name="PRJ_DEL_MSG_APPFEHLER" xml:space="preserve">
+    <value>Error while resetting the application data: {0}</value>
+  </data>
+  <data name="PRJ_KOPIE_TITEL" xml:space="preserve">
+    <value>Save project as</value>
+  </data>
+  <data name="PRJ_KOPIE_LBL_AUSWAHL" xml:space="preserve">
+    <value>Project selection:</value>
+  </data>
+  <data name="PRJ_KOPIE_LBL_NEUERNAME" xml:space="preserve">
+    <value>New project name:</value>
+  </data>
+  <data name="PRJ_KOPIE_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="PRJ_KOPIE_LBL_KUNDE" xml:space="preserve">
+    <value>Customer:</value>
+  </data>
+  <data name="PRJ_KOPIE_LBL_BEARBEITER" xml:space="preserve">
+    <value>Editor:</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_NAME_LEER" xml:space="preserve">
+    <value>Please enter a new project name.</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Project name already exists!</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>The source project '{0}' was not found.</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_FEHLER" xml:space="preserve">
+    <value>Error while saving as: {0}</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>The copy '{0}' was not found. Description, customer and editor have not been transferred.</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_FELDER_NICHT" xml:space="preserve">
+    <value>Description, customer and editor could not be saved. The project copy itself has been created.</value>
+  </data>
+  <data name="PRJ_KOPIE_MSG_FELDER_FEHLER" xml:space="preserve">
+    <value>Description, customer and editor could not be saved: {0}
+The project copy itself has been created.</value>
+  </data>
+  <data name="PRJ_KOPIE_FORTSCHRITT" xml:space="preserve">
+    <value>Copying table {0}/{1}: {2}</value>
+  </data>
+  <data name="PRJ_KOPIE_FERTIGSTELLEN" xml:space="preserve">
+    <value>Finishing ...</value>
+  </data>
+  <data name="PRJ_KOPIE_FERTIG" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="PTR_TITEL" xml:space="preserve">
+    <value>Export / import project</value>
+  </data>
+  <data name="PTR_TAB_EXPORT" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="PTR_TAB_IMPORT" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="PTR_LBL_PROJEKT" xml:space="preserve">
+    <value>Project:</value>
+  </data>
+  <data name="PTR_LBL_VARIANTEN" xml:space="preserve">
+    <value>Export variants as well:</value>
+  </data>
+  <data name="PTR_BTN_EXPORT" xml:space="preserve">
+    <value>Export…</value>
+  </data>
+  <data name="PTR_BTN_DATEI" xml:space="preserve">
+    <value>Choose file…</value>
+  </data>
+  <data name="PTR_LBL_DATEI" xml:space="preserve">
+    <value>File:</value>
+  </data>
+  <data name="PTR_LBL_ZIELNAME" xml:space="preserve">
+    <value>Target name (empty = from file):</value>
+  </data>
+  <data name="PTR_LBL_KONFLIKT" xml:space="preserve">
+    <value>If this name already exists:</value>
+  </data>
+  <data name="PTR_OPT_NEUERNAME" xml:space="preserve">
+    <value>Import under a new name</value>
+  </data>
+  <data name="PTR_OPT_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Overwrite the existing project</value>
+  </data>
+  <data name="PTR_OPT_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PTR_CHK_SICHERUNG" xml:space="preserve">
+    <value>Create a backup copy of the database before importing</value>
+  </data>
+  <data name="PTR_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="PTR_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PTR_DATEIFILTER" xml:space="preserve">
+    <value>WP project (*.wpx)|*.wpx</value>
+  </data>
+  <data name="PTR_MSG_PROJEKT_WAEHLEN" xml:space="preserve">
+    <value>Please select a project.</value>
+  </data>
+  <data name="PTR_MSG_DATEI_WAEHLEN" xml:space="preserve">
+    <value>Please choose a file first.</value>
+  </data>
+  <data name="PTR_STATUS_EXPORT_OK" xml:space="preserve">
+    <value>Export completed.</value>
+  </data>
+  <data name="PTR_STATUS_EXPORT_FEHLER" xml:space="preserve">
+    <value>Export failed.</value>
+  </data>
+  <data name="PTR_MSG_EXPORT_OK" xml:space="preserve">
+    <value>Project exported{0}:
+{1}</value>
+  </data>
+  <data name="PTR_MSG_EXPORT_VARIANTEN" xml:space="preserve">
+    <value> (with {0} variant(s))</value>
+  </data>
+  <data name="PTR_MSG_EXPORT_TITEL" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="PTR_MSG_KEIN_PAKET" xml:space="preserve">
+    <value>Not a valid package (manifest.json is missing).</value>
+  </data>
+  <data name="PTR_MSG_PAKET_FEHLER" xml:space="preserve">
+    <value>The package could not be read: {0}</value>
+  </data>
+  <data name="PTR_INFO_PAKET" xml:space="preserve">
+    <value>Source project: {0} · Export date: {1} · Schema version: {2}</value>
+  </data>
+  <data name="PTR_INFO_VARIANTEN" xml:space="preserve">
+    <value>Variants ({0}): {1}</value>
+  </data>
+  <data name="PTR_FRAGE_UEBERSCHREIBEN" xml:space="preserve">
+    <value>An existing project with the same name will be overwritten irrevocably. Continue?</value>
+  </data>
+  <data name="PTR_FRAGE_UEBERSCHREIBEN_TITEL" xml:space="preserve">
+    <value>Overwrite</value>
+  </data>
+  <data name="PTR_STATUS_SICHERUNG" xml:space="preserve">
+    <value>Backup: {0}</value>
+  </data>
+  <data name="PTR_FRAGE_SICHERUNG" xml:space="preserve">
+    <value>The backup copy could not be created:
+{0}
+
+Import anyway?</value>
+  </data>
+  <data name="PTR_FRAGE_SICHERUNG_TITEL" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="PTR_STATUS_IMPORT_OK" xml:space="preserve">
+    <value>Import completed.</value>
+  </data>
+  <data name="PTR_MSG_IMPORT_OK_TITEL" xml:space="preserve">
+    <value>Import completed</value>
+  </data>
+  <data name="PTR_MSG_IMPORT_FEHLER" xml:space="preserve">
+    <value>Import failed:
+{0}</value>
+  </data>
+  <data name="PTR_MSG_IMPORT_TITEL" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="PTR_MSG_UNBEKANNT" xml:space="preserve">
+    <value>unknown error</value>
+  </data>
+  <data name="PTR_STATUS_TABELLE" xml:space="preserve">
+    <value>… {0}</value>
+  </data>
+  <data name="PTR_STATUS_BERICHT" xml:space="preserve">
+    <value>Report: {0}</value>
+  </data>
+  <data name="PKOPF_TITEL" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="PKOPF_KOPF" xml:space="preserve">
+    <value>Project configuration</value>
+  </data>
+  <data name="PKOPF_HINWEIS" xml:space="preserve">
+    <value>Enter the administrative project data here:</value>
+  </data>
+  <data name="PKOPF_LBL_NAME" xml:space="preserve">
+    <value>Project name</value>
+  </data>
+  <data name="PKOPF_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="PKOPF_LBL_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="PKOPF_LBL_BEARBEITER" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="PKOPF_LBL_AENDERUNG" xml:space="preserve">
+    <value>Modification date</value>
+  </data>
+  <data name="PKOPF_LBL_ERSTELLT" xml:space="preserve">
+    <value>Creation date</value>
+  </data>
+  <data name="PKOPF_LBL_KLIMA" xml:space="preserve">
+    <value>Climate region</value>
+  </data>
+  <data name="PRJ_MENUE_OEFFNEN" xml:space="preserve">
+    <value>Open…</value>
+  </data>
 </root>
