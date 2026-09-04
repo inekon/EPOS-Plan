@@ -27,6 +27,25 @@ namespace WindowsFormsApplication1
     public static class SchemaStand
     {
         /// <summary>
+        /// Der Schemastand, den ein vollständiger Migrationslauf dieser Programmfassung
+        /// erreicht — die ZAHL, nicht die Migration.
+        ///
+        /// <para>Sie steht hier und nicht bei <c>SchemaMigration</c>, weil der
+        /// PROJEKTTRANSFER sie braucht: <c>ProjektExportImportCtrl</c> schreibt sie in
+        /// das Manifest eines <c>.wpx</c>-Pakets und lehnt beim Import ein Paket mit
+        /// abweichendem Stand ab. Genau diese eine Konstante war bis iU9‑W15a die
+        /// einzige Kante, die den Transfercontroller (1 278 Zeilen, ohne jede
+        /// WinForms-Berührung) im Anwendungsprojekt festhielt — und damit den
+        /// Projekttransfer auf iOS unmöglich machte (Befund W15a‑B30).</para>
+        ///
+        /// <para><c>SchemaMigration.ZIEL_VERSION</c> verweist seither HIERHER; die
+        /// Fortschreibung der Nummer bleibt bei der Migration beschrieben (dort steht
+        /// die Reihenfolge „erst Schrittkonstante, Methode und SCHRITTE-Eintrag, DANN
+        /// das Ziel"). Wer eine neue Migrationsstufe anlegt, ändert die Zahl HIER.</para>
+        /// </summary>
+        public const int Zielversion = 61;
+
+        /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
         /// Konzept 13.4). Die SPALTE entsteht bereits in Schritt 2; dieser Schritt setzt
         /// ihren WERT einmalig auf WAHR und ist damit das zweite DML des Vorhabens.

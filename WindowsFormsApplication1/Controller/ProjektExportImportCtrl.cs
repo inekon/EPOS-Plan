@@ -6,7 +6,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -280,7 +279,7 @@ namespace WindowsFormsApplication1
                             formatVersion = FORMAT_VER,
                             // B2 (Konzept Projekttransfer T2): der echte Migrationsstand —
                             // der Import lehnt Pakete mit anderem Stand ab.
-                            schemaVersion = SchemaMigration.ZIEL_VERSION,
+                            schemaVersion = SchemaStand.Zielversion,
                             exportedUtc = DateTime.UtcNow.ToString("o"),
                             sourceProject = projektName,
                             tables = manifestTabellen,
@@ -326,11 +325,11 @@ namespace WindowsFormsApplication1
                 // die Datenmigrationen laufen datenbankweit genau einmal, ein Paket mit
                 // anderem Stand schleuste still Altdaten ein. schemaVersion 0 = Altpaket
                 // (vor T2 exportiert) und bleibt zugelassen.
-                if (man.schemaVersion != 0 && man.schemaVersion != SchemaMigration.ZIEL_VERSION)
+                if (man.schemaVersion != 0 && man.schemaVersion != SchemaStand.Zielversion)
                 {
                     fehler = "Das Paket wurde mit Schemastand " + man.schemaVersion +
                              " exportiert, dieser Rechner arbeitet mit Stand " +
-                             SchemaMigration.ZIEL_VERSION +
+                             SchemaStand.Zielversion +
                              ". Bitte beide Rechner auf denselben Programmstand bringen " +
                              "und das Projekt neu exportieren.";
                     return -1;

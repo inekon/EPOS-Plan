@@ -126,8 +126,16 @@ namespace WindowsFormsApplication1
         /// Hilfsenergie je Anlage. In derselben Reihenfolge angelegt: erst
         /// Schrittkonstante, Methode (<c>Schritt_61_SteuerJeAnlage</c>) und
         /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab 62.</b>
+        ///
+        /// <para>iU9‑W15a: Die ZAHL steht seither als <see cref="SchemaStand.Zielversion"/>
+        /// im Kern und wird von hier nur noch WEITERGEREICHT. Grund ist der
+        /// Projekttransfer: <c>ProjektExportImportCtrl</c> schreibt sie ins Paketmanifest
+        /// und war allein wegen dieser Konstante an das Anwendungsprojekt gebunden
+        /// (Befund W15a‑B30). Die öffentliche Fläche bleibt unverändert — jeder
+        /// bestehende Aufrufer von <c>SchemaMigration.ZIEL_VERSION</c> gilt weiter.
+        /// <b>Geändert wird die Nummer künftig in <see cref="SchemaStand"/>.</b></para>
         /// </summary>
-        public const int ZIEL_VERSION = 61;
+        public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
