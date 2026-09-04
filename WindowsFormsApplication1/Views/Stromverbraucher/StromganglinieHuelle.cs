@@ -46,17 +46,9 @@ namespace WindowsFormsApplication1
         /// <summary>Gewünschtes Innenmaß (Vorläufer: 678 × 345).</summary>
         private static readonly Size MASS = new Size(880, 520);
 
-        /// <summary>
-        /// Die STROMLASTGANG-SEITE des Assistenten (Index 6) — dieselbe Komponente,
-        /// randlose Hülle. Muster <c>GebaeudeHuelle.AssistentSeite()</c>.
-        /// </summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<StromganglinieDialog, Z_ProjektStromganglinieModel>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(Gaben(projektId, modelle, wizard: true)),
-                MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>
         /// Der PARAMETERSATZ der Komponente — für den Dialog- wie für den

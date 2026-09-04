@@ -63,4 +63,24 @@ public static class Seitenschluessel
     /// </para>
     /// </remarks>
     public const string KiAssistent = "KI_ASSISTENT";
+
+    /// <summary>
+    /// Der PROJEKTASSISTENT (<c>Seiten.Assistent.AssistentSeite</c>, iU9-W16a.5) —
+    /// die dritte Fachseite, die iOS ueber <see cref="AppWurzel"/> erreicht.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Er hat einen <c>Masken.*</c>-Zwilling: <c>Masken.Assistent</c> ist unter
+    /// Windows der Weg vom Menue und von den beiden Startkacheln in die modale
+    /// Huelle (<c>AssistentHuelle.Oeffnen</c>) — beide Aufrufer werten aus, ob
+    /// gespeichert wurde. Der Schluessel hier gilt fuer den iOS-Weg: Dort wird die
+    /// Ansicht ausgetauscht, es gibt kein zweites Fenster.
+    /// </para>
+    /// <para>
+    /// Die drei uebrigen Schluessel der Zusammenlegung (<c>STARTSEITE</c>,
+    /// <c>BERICHTE_KOSTEN</c> und die verbleibenden <c>Masken</c>-Werte, K7 der
+    /// Vermessung) kommen mit W16c.
+    /// </para>
+    /// </remarks>
+    public const string Assistent = "ASSISTENT";
 }

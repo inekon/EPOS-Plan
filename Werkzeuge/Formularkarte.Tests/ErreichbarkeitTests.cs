@@ -333,8 +333,9 @@ public sealed class ErreichbarkeitTests
         // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
         // Nach Welle 16a.1: 10 von 10 - sie nimmt GENAU EINE Designer-Maske mit
         // (Wizard_Stromlastgang, die Assistentenseite 6). Nach Welle 16a.3: 9 von 9
-        // (Wizard_Komponenten, die Assistentenseite 0).
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 9,
+        // (Wizard_Komponenten, die Assistentenseite 0). Nach Welle 16a.5: 7 von 7
+        // (WizardParent und das UserControl ProjektAuswahl).
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 7,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

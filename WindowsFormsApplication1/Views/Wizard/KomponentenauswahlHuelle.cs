@@ -1,7 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
 
 namespace WindowsFormsApplication1
@@ -17,11 +15,12 @@ namespace WindowsFormsApplication1
     /// dreizehn <see cref="KomponentenZeile"/> herein, schaltet darin um und meldet
     /// jede Umschaltung als Seitenindex zurück.</para>
     ///
-    /// <para><b>Der Rahmen wird über <c>WizardParent.Aktiver</c> erreicht</b> — genau
-    /// wie im Vorläufer (<c>Wizard_Komponenten.BestandAnzeigen</c> :121,
-    /// <c>karte_Geklickt</c> :196). Diese Kante fällt mit iU9-W16a.5, wenn der Rahmen
-    /// selbst eine Razor-Seite wird; bis dahin bleibt sie, damit die Teilwelle für
-    /// sich lauffähig ist.</para>
+    /// <para><b>Der Rahmen kommt als DELEGAT herein</b> (seit iU9-W16a.5). Der
+    /// Vorläufer holte ihn sich über die typisierte Anmeldung
+    /// <c>WizardParent.Aktiver</c> und griff ihm in die Seitenliste
+    /// (<c>Wizard_Komponenten.BestandAnzeigen</c> :121, <c>karte_Geklickt</c> :196);
+    /// jetzt reicht <c>AssistentHuelle</c> den Schaltweg herein — die Richtung stimmt
+    /// damit wieder: Der Wirt kennt seine Seiten, nicht umgekehrt.</para>
     ///
     /// <para><b>Vier tote Glieder entfallen</b> (Befund W16-B13):
     /// <c>TextNeuesProjektFrage</c>, <c>TextNeuesProjektTitel</c>, <c>IstAn(int)</c>
@@ -29,21 +28,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class KomponentenauswahlHuelle
     {
-        /// <summary>Wunschmaß der Seite im Assistentenfenster (Vorläufer: 831 × 744).</summary>
-        private static readonly Size MASS = new Size(880, 760);
-
-        /// <summary>
-        /// Die KOMPONENTENSEITE des Assistenten (Index 0) — Muster
-        /// <c>GebaeudeHuelle.AssistentSeite()</c>.
-        /// </summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<KomponentenauswahlDialog, KomponentenZeile>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(Gaben(projektId, modelle,
-                                                         Betriebsart(), SeiteSchalten)),
-                MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>
         /// Der PARAMETERSATZ der Komponente. Er LIEST dabei den Bestand des Projekts
@@ -92,7 +79,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Zeilen"] = zeilen,
-                ["BearbeitenModus"] = betriebsart == WizardParent.WIZARD_MODE_BEARBEITEN,
+                ["BearbeitenModus"] = betriebsart == AssistentCtrl.BETRIEBSART_BEARBEITEN,
                 ["Geschaltet"] = seiteSchalten ?? ((_, __) => { }),
 
                 ["KopfText"] = Text_("KOMPAUSW_KOPF", "Projekt-Erstellungskonfiguration"),
@@ -149,28 +136,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Betriebsart des laufenden Assistenten; Neu, wenn keiner läuft.</summary>
-        private static int Betriebsart()
-        {
-            IAssistentRahmen rahmen = WizardParent.Aktiver;
-            return rahmen == null ? WizardParent.WIZARD_MODE_NEU : rahmen.Betriebsart;
-        }
-
-        /// <summary>
-        /// Schaltet eine Assistentenseite frei oder ab — wörtlich
-        /// <c>Wizard_Komponenten.SeiteSchalten</c> (:143-151), ohne die dort
-        /// überflüssige Rückzuweisung in die Liste (<c>WizardSeite</c> ist eine
-        /// Klasse).
-        /// </summary>
-        private static void SeiteSchalten(int seitenIndex, bool aktiv)
-        {
-            IAssistentRahmen rahmen = WizardParent.Aktiver;
-            if (rahmen == null) return;
-            if (seitenIndex == KomponentenBestandCtrl.OHNE_SEITE) return;
-            if (rahmen.Seiten == null || seitenIndex >= rahmen.Seiten.Count) return;
-
-            rahmen.Seiten[seitenIndex].aktiv = aktiv;
-        }
+        // iU9-W16a.5: Betriebsart() und SeiteSchalten() sind entfallen. Sie holten
+        // sich den Rahmen ueber die typisierte Anmeldung WizardParent.Aktiver und
+        // griffen ihm in die Seitenliste; seit der Rahmen eine Razor-Seite ist,
+        // reicht ihn AssistentHuelle als Delegat herein (AssistentCtrl.SeiteSchalten)
+        // - die Richtung stimmt damit wieder: Der Wirt kennt seine Seiten, nicht
+        // umgekehrt.
 
         private static string Text_(string schluessel, string rueckfall)
         {

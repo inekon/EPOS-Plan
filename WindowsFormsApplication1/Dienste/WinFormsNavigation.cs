@@ -252,16 +252,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool AssistentZeigen(int betriebsart)
         {
-            WizardParent wizparent = new WizardParent(AssistentSeiten.Erzeugen());
-
-            // iU9-W16a.4: Die Anmeldung "ctrl.parentform = wizparent" ist entfallen -
-            // das Feld hatte im ganzen Bestand keinen Leser (Befund W16a-B2) und war
-            // die einzige WinForms-Kante von WizardCtrl. Ohne sie zieht der
-            // Schreibweg des Assistenten in den Kern.
-            wizparent.SetWizardMode(betriebsart);
-            wizparent.ShowDialog();
-
-            return wizparent.gespeichert;
+            // iU9-W16a.5: Der Assistent ist eine Razor-Seite (EPOS.UI/Seiten/Assistent/
+            // AssistentSeite.razor) in einer modalen Huelle - beide Aufrufer werten
+            // "gespeichert" aus und ziehen danach den Projektkontext nach.
+            return AssistentHuelle.Oeffnen(null, betriebsart);
         }
 
         /// <summary>

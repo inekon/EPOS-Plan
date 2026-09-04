@@ -13989,4 +13989,22 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Saving failed</value>
   </data>
+  <data name="WIZ_TITEL" xml:space="preserve">
+    <value>Project assistant</value>
+  </data>
+  <data name="WIZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="WIZ_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Back</value>
+  </data>
+  <data name="WIZ_BTN_WEITER" xml:space="preserve">
+    <value>Next ▶</value>
+  </data>
+  <data name="WIZ_LBL_PROJEKT" xml:space="preserve">
+    <value>Select existing project</value>
+  </data>
+  <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
+    <value>Open project</value>
+  </data>
 </root>

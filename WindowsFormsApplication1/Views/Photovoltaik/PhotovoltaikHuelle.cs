@@ -57,14 +57,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die PV-Seite des ASSISTENTEN — dieselbe Komponente, randlose Hülle.</summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<PhotovoltaikDialog>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(
-                        Gaben(null, projektId, WizardItemClass.PV_TYP, modelle, wizard: true)),
-                MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>Der PARAMETERSATZ des Dialogs.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(

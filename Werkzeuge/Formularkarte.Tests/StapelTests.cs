@@ -50,7 +50,16 @@ public sealed class StapelTests
         // und Form_Hinweis bleibt bis Welle 16 (Entscheid E-1b): Seine drei
         // Aufrufer liegen saemtlich in Form_Start, und die ist bis dahin WinForms.
         Assert.Contains(dateien, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
-        Assert.Contains(dateien, d => d.EndsWith("WizardParent.designer.cs", StringComparison.Ordinal));
+
+        // iU9-W16a.5 (Entscheid E-9): Der KLEINSCHREIBUNGS-Zeuge steht seither im
+        // PRUEFMUSTER. Nach dieser Teilwelle fuehrt WindowsFormsApplication1 KEINE
+        // kleingeschriebene Designer-Datei mehr - die letzten beiden waren
+        // WizardParent (W16a.5) und Wizard_Komponenten (W16a.3); letztere ist
+        // eingefroren nach Pruefmuster/Wizard/ gewandert und traegt den Zeugen
+        // weiter. Der Stapellauf uebergeht den Ordner (Stapel.Uebergangen), deshalb
+        // wird er hier ausdruecklich VON DORT AUS gezaehlt.
+        var muster = Stapel.Dateien(Repowurzel.PruefmusterWurzel);
+        Assert.Contains(muster, d => d.EndsWith("Wizard_Komponenten.designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
         // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
         // 105 nach iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die
@@ -96,8 +105,9 @@ public sealed class StapelTests
         // iU9-W16a.1 (04.09.2026): Die Teilwelle nimmt GENAU EINEN Designer mit -
         // Wizard_Stromlastgang (13). Die Assistentenseite 6 ist seither DIESELBE
         // Razor-Komponente wie der Dialog der Startkachel (StromganglinieDialog aus
-        // W12, Befund W12-O-3). W16a.3 nimmt Wizard_Komponenten mit (12).
-        Assert.True(dateien.Count >= 12, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // W12, Befund W12-O-3). W16a.3 nimmt Wizard_Komponenten mit (12), W16a.5
+        // den Rahmen WizardParent und das UserControl ProjektAuswahl (10).
+        Assert.True(dateien.Count >= 10, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -153,8 +163,10 @@ public sealed class StapelTests
         // Welle 16a.1 nimmt EINE mit (10): Wizard_Stromlastgang, die
         // Assistentenseite 6 - sie ist seither DIESELBE Razor-Komponente wie der
         // Dialog der Startkachel (StromganglinieDialog aus W12). Welle 16a.3 nimmt
-        // Wizard_Komponenten mit (9), die Assistentenseite 0.
-        Assert.True(Lauf.Value.Masken >= 9, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Wizard_Komponenten mit (9), die Assistentenseite 0. Welle 16a.5 nimmt den
+        // RAHMEN WizardParent und das UserControl ProjektAuswahl mit (7) - letzteres
+        // hatte seit W15a nur noch einen Wirt, und der war der Rahmen.
+        Assert.True(Lauf.Value.Masken >= 7, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -207,8 +219,9 @@ public sealed class StapelTests
         // beide Wege koennen, nicht nur den Designer.
         // Welle 16a.1 nimmt EINE lokalisierte mit (6): Wizard_Stromlastgang war in
         // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache). W16a.3 nimmt
-        // Wizard_Komponenten mit (5) - 11 .Text und 13 .Titel je Sprache.
-        Assert.True(Lauf.Value.Lokalisierte >= 5,
+        // Wizard_Komponenten mit (5) - 11 .Text und 13 .Titel je Sprache. W16a.5
+        // nimmt WizardParent und ProjektAuswahl mit (3).
+        Assert.True(Lauf.Value.Lokalisierte >= 3,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
