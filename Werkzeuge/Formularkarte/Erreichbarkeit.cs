@@ -143,8 +143,16 @@ public sealed class Erreichbarkeitsgraph
 /// </summary>
 public static class Erreichbarkeit
 {
-    /// <summary>Die Masken, an denen die Suche beginnt.</summary>
-    public static readonly string[] Wurzelmasken = { "MDIMainForm", "Form_Start" };
+    /// <summary>
+    /// Die Masken, an denen die Suche beginnt.
+    ///
+    /// <para><b>Seit iU9-W16b.3 ist es EINE</b> (Befund W16-B3, Risiko R-W16-10):
+    /// <c>Form_Start</c> ist eine Razor-Seite und damit keine Maske mehr. Der Graph
+    /// bleibt vollstaendig - <c>Form_HelpPopup</c>, die letzte Maske neben der
+    /// Huelle selbst, haengt weiter an <c>MDIMainForm</c> und meldet unveraendert
+    /// "ja".</para>
+    /// </summary>
+    public static readonly string[] Wurzelmasken = { "MDIMainForm" };
 
     /// <summary>
     /// Die Klasse mit dem Programmeinsprung. <c>Program.Main</c> laeuft vor jedem

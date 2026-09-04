@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -452,6 +453,15 @@ namespace WindowsFormsApplication1
             return this.MainMenuStrip;
         }
 
+        /// <summary>
+        /// Die Datenseite der Startseite (iU9-W16b.3) — die Nachfolge von
+        /// <c>Program.startfrm</c>.
+        /// </summary>
+        private StartseiteHuelle _startseite;
+
+        /// <summary>Die WebView, die die Startseite trägt.</summary>
+        private BlazorSeite<EPOS.UI.Seiten.Start.Startseite> _startbild;
+
         private void MenuItem_Neu_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
@@ -462,7 +472,7 @@ namespace WindowsFormsApplication1
             // geoeffnete Projekt, die Wizard-Kacheln schrieben also ins falsche Projekt.
             if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
             {
-                Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
+                Program.projektkontext?.Setzen(Program.wizardctrl.Projektname);
             }
         }
 
@@ -496,18 +506,15 @@ namespace WindowsFormsApplication1
             }
             label_OnlineDoku.Visible = false;
 
-            // Form_Start als eingebettete Hauptansicht (kein MDI-Child mehr).
-            // TopLevel=false erlaubt es, eine Form wie ein UserControl in Controls.Add zu hängen.
-            // Dock=Fill sorgt für korrekte Skalierung beim Resize/DPI-Wechsel.
-            Program.startfrm = new Form_Start
-            {
-                TopLevel = false,
-                FormBorderStyle = FormBorderStyle.None,
-                Dock = DockStyle.Fill,
-            };
-            this.Controls.Add(Program.startfrm);
-            Program.startfrm.BringToFront();
-            Program.startfrm.Show();
+            // iU9-W16b.3: Die Startseite ist eine RAZOR-SEITE. Bis hierher hing hier
+            // eine eingebettete Form_Start (TopLevel = false, Dock = Fill, "wie ein
+            // UserControl"); jetzt ist es eine BlazorSeite<Startseite> - und die IST
+            // ein UserControl, der Kunstgriff entfaellt.
+            _startseite = new StartseiteHuelle(() => this, Program.projektkontext);
+            _startbild = new BlazorSeite<EPOS.UI.Seiten.Start.Startseite>(
+                new Dictionary<string, object>(_startseite.Gaben()));
+            this.Controls.Add(_startbild);
+            _startbild.BringToFront();
 
             BaueVariantenMenue();
         }
@@ -543,16 +550,15 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_AlsVariante_Click(object sender, EventArgs e)
         {
-            Form_Start start = Program.startfrm;
             // iU9-W2.1: Der Ablauf liegt in AlsVarianteHuelle; die Namensabfrage
             // stellt die Razor-Komponente NamensDialog (Form_AlsVariante geloescht).
-            AlsVarianteHuelle.Zeige(this, start == null ? 0 : start.m_ID_Projekt,
-                                          start == null ? "" : start.m_szProjektname);
+            // iU9-W16b.3: Das offene Projekt kommt aus dem Kern statt aus der Maske.
+            AlsVarianteHuelle.Zeige(this, Dienste.Projekt.Id, Dienste.Projekt.Name);
         }
 
         private void MenuItem_VariantenBericht_Click(object sender, EventArgs e)
         {
-            Program.startfrm?.ZeigeBerichteKosten(
+            StartseiteHuelle.Aktuelle?.ZeigeBerichteKosten(
                 EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_UEBERSICHT);
         }
 
@@ -587,7 +593,7 @@ namespace WindowsFormsApplication1
             // Befund 3: wie bei "Neu" - ohne diese Zeile bleibt der Projektkontext der
             // Startseite auf dem vorher geoeffneten Projekt stehen.
             if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
-                Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
+                Program.projektkontext?.Setzen(Program.wizardctrl.Projektname);
         }
 
         private void MenuItem_ProjektOeffnen_Click(object sender, EventArgs e)

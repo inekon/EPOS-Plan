@@ -194,11 +194,11 @@ namespace WindowsFormsApplication1
             switch (bereich)
             {
                 case Ansichten.Varianten:
-                    Program.startfrm?.VariantenAnzeigeAktualisieren();
+                    StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren();
                     break;
 
                 case Ansichten.BerichteKosten:
-                    Program.startfrm?.ZeigeBerichteKosten();
+                    StartseiteHuelle.Aktuelle?.ZeigeBerichteKosten();
                     break;
 
             }

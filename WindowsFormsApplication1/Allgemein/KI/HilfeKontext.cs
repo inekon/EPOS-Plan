@@ -81,7 +81,9 @@ namespace WindowsFormsApplication1
             { "MDIMainForm",                 B_HAUPTFENSTER },
             // iU9-W16b.1 (E-7, K6-a): "FormMain" (das Detailformular
             // "Konfiguration Projekt") ist geloescht - sein Bereich entfaellt.
-            { "Form_Start",                  B_HAUPTFENSTER },
+            // iU9-W16b.3: Die Startmaske ist die Razor-Seite "Startseite"
+            // (EPOS.UI/Seiten/Start/Startseite.razor); der Bereich bleibt derselbe.
+            { "Startseite",                  B_HAUPTFENSTER },
 
             { "Form_AdminSettings",          B_ADMIN },
             { "Form_Gesetzesparameter",      B_ADMIN },
