@@ -444,31 +444,31 @@ namespace WindowsFormsApplication1
 
         private void pBox_StromMessdaten_Click(object sender, EventArgs e)
         {
-            Form_Stromganglinie frm = new Form_Stromganglinie();
+            // iU9-W12.5: Die Zuordnung ist die Razor-Komponente StromganglinieDialog;
+            // Form_Stromganglinie ist im selben Schritt GELOESCHT (Regel M1). Am
+            // Ablauf aendert sich nichts: Die Liste wird an Ort und Stelle
+            // bearbeitet, geschrieben wird hier (Risiko R-W12-4).
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
             // iU9-W12.0g: Der konkatenierte INNER JOIN stand dreimal im Bestand und
             // liegt jetzt als Z_ProjektStromganglinieCtrl.LiesProjekt im Kern.
-            frm.DateiListe.Clear();
-            frm.DateiListe.AddRange(Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt));
+            List<Z_ProjektStromganglinieModel> liste =
+                Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            if (StromganglinieHuelle.Oeffnen(this, m_ID_Projekt, liste))
             {
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
-                wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
+                wizctrl.Add_Stromganglinie(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
 
-            if (frm.DateiListe.Count > 0)
+            // Der Kachelstatus haengt UNABHAENGIG vom Ergebnis an der Liste -
+            // woertlich wie im Vorlaeufer (:487-490).
+            if (liste.Count > 0)
                 status |= 128;
             else status &= ~128;
             pBox_StromMessdaten.Invalidate();
