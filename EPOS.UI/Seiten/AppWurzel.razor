@@ -5,7 +5,7 @@
    SCHALEN (Vermessung § 9.3): Die Zustandsmaschine hier kennt die Ansichten,
    und darueber steht je Plattform eine Schale - unter Windows das Menueband
    (als Kopfleiste hereingereicht), auf dem iPad nichts weiter. iL5 sagt
-   ausdruecklich "kein MDI, keine modalen Ketten"; eine Menueleiste mit 54
+   ausdruecklich "kein MDI, keine modalen Ketten"; eine Menueleiste mit 55
    Punkten waere auf Touch unbedienbar, ein zweiter Navigationsbaum aber
    ebenso falsch. Deshalb ist die Schale ein RenderFragment und kein zweiter
    Baum.
@@ -50,10 +50,15 @@
 }
 else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not null)
 {
-    @* Der Reiter „Berichte & Kosten" (W5) als eigene Ansicht - der iOS-Weg.
-       Unter Windows ist er das sechste Reiterblatt der Startseite, und der
-       Menuepunkt „Varianten und Bericht…" holt ihn dort nach vorn. *@
-    <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten" />
+    @* „Berichte & Kosten" (W5) als eigene Ansicht - seit dem Anwenderentscheid
+       W16c-E-3 (04.09.2026) der Weg BEIDER Plattformen: Der Menuepunkt
+       „Varianten und Bericht…" wechselt hierher, statt unter Windows den
+       sechsten Reiter der Startseite nach vorn zu holen. Das Reiterblatt
+       bleibt bestehen - es ist die Kachelfassung derselben Seite -, nur der
+       MENUEWEG fuehrt jetzt in die Ansicht. Der Rueckweg ist derselbe wie bei
+       den zwei Simulationsansichten. *@
+    <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten"
+                                                 Geschlossen="ZurueckZurListe" />
 }
 else if (_ansicht == Seitenschluessel.Energietraeger)
 {
@@ -157,9 +162,14 @@ else
     [Parameter] public IReadOnlyDictionary<string, object>? StartseiteGaben { get; set; }
 
     /// <summary>
-    /// Der Parametersatz des Reiters „Berichte &amp; Kosten", wenn ihn die
-    /// Huelle stellt. Ohne ihn fragt die Wurzel
+    /// Der Parametersatz von „Berichte &amp; Kosten", wenn ihn die Huelle
+    /// stellt. Ohne ihn fragt die Wurzel
     /// <c>IProjektQuelle.BerichteKostenGaben</c>.
+    ///
+    /// <para>Seit dem Anwenderentscheid W16c-E-3 (04.09.2026) setzt ihn AUCH
+    /// die Windows-Huelle (<c>HauptfensterHuelle.Gaben</c>, aus derselben
+    /// <c>BerichteKostenHuelle</c> wie das sechste Reiterblatt der
+    /// Startseite) — vorher wurde die Ansicht unter Windows nie gezeigt.</para>
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
 
@@ -339,6 +349,7 @@ else
         _simErgebnis = null;
         _kiAssistent = null;
         _assistent = null;
+        _berichteKosten = null;   // W16c-E-3: auch diese Ansicht wird verlassen
 
         if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();

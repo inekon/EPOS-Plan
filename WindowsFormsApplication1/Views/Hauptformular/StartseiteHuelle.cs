@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
                 ["Bericht"] = new Func<Zusammenfassung>(Zusammenfassen),
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
-                ["BerichteGaben"] = Berichte.Gaben(),
+                ["BerichteGaben"] = BerichteGaben(),
 
                 // E-5: Die zwei Simulationsansichten bleiben IN dieser WebView -
                 // die Konfiguration als freie Ansicht, das Ergebnis als
@@ -162,6 +162,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der geteilte Zustand — die Seitenhülle reicht ihn hinein.</summary>
         internal SeitenZustand Zustand { get { return _zustand; } }
+
+        /// <summary>
+        /// Der Parametersatz von „Berichte &amp; Kosten" — für die ANSICHT der
+        /// <c>AppWurzel</c> (Anwenderentscheid W16c-E-3, 04.09.2026).
+        ///
+        /// <para>Es ist DIESELBE <see cref="BerichteKostenHuelle"/>, die auch
+        /// das sechste Reiterblatt der Startseite speist: Stammprojekt,
+        /// Markierung und Seitenwunsch stehen damit an EINER Stelle, gleich
+        /// über welchen der zwei Wege der Anwender hereinkommt. Der
+        /// <c>MyResource</c>-Text `BK_BTN_ZURUECK` fügt der Ansicht den
+        /// Rückwegknopf hinzu; im Reiterblatt fehlt der Rückruf, also auch der
+        /// Knopf.</para>
+        /// </summary>
+        internal IReadOnlyDictionary<string, object> BerichteGaben()
+        {
+            return Berichte.Gaben();
+        }
 
         private BerichteKostenHuelle Berichte
         {

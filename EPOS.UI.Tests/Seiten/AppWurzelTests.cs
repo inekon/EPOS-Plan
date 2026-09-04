@@ -237,4 +237,54 @@ public class AppWurzelTests : BunitContext
 
         Assert.Single(cut.FindAll(".epos-startseite"));
     }
+
+    [Fact]
+    public void Berichte_und_Kosten_ist_eine_Ansicht_mit_Rueckweg()
+    {
+        // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): BERICHTE_KOSTEN ist der Weg
+        // BEIDER Plattformen. Die Ansicht traegt deshalb einen Rueckwegknopf -
+        // sie loest die Startansicht ab, und ohne ihn gaebe es keinen Weg
+        // zurueck; als sechstes Reiterblatt der Startseite hat dieselbe
+        // Komponente ihn NICHT (dort fehlt der Rueckruf).
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            },
+            BerichteKosten = new Dictionary<string, object>
+            {
+                ["ZurueckText"] = "◀ Zurück"
+            }
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BerichteKosten));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+        Assert.Single(cut.FindAll(".epos-navigation"));
+
+        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Empty(cut.FindAll(".epos-navigation"));
+    }
+
+    [Fact]
+    public void Ohne_Parametersatz_bleibt_Berichte_und_Kosten_stehen_und_sagt_warum()
+    {
+        // Die Standardumsetzung von IProjektQuelle.BerichteKostenGaben liefert
+        // null. Dann wechselt die Wurzel NICHT, sondern nennt den Grund - der
+        // Zustand einer Huelle, die diese Seite nicht fuehrt.
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BerichteKosten));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-navigation"));
+    }
 }
