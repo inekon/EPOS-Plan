@@ -45,18 +45,12 @@ namespace WindowsFormsApplication1
         private string _kurzhinweis = "";
 
         /// <summary>
-        /// Die zwei Bedarfsobjekte des Reiters „Simulation" (Befund W16-B29).
-        /// <c>Form_Start</c> besaß sie und reichte sie an die Ergebnisseite; hier
-        /// gehören sie der Hülle, also dem offenen Projekt.
+        /// Die zwei Bedarfsrechnungen des offenen Projekts (Befund W16-B29,
+        /// Entscheid E-5). <c>Form_Start</c> besaß sie als zwei Felder und reichte
+        /// sie an die Ergebnisansicht durch — genau das machte deren Fenster modal.
+        /// Sie gehören jetzt dem PROJEKT und werden bei einem Wechsel verworfen.
         /// </summary>
-        private SimulationStrombedarf _simulationStrombedarf;
-        private SimulationWaermebedarf _simulationWaermebedarf;
-
-        private SimulationStrombedarf Strombedarf
-            => _simulationStrombedarf ??= new SimulationStrombedarf();
-
-        private SimulationWaermebedarf Waermebedarf
-            => _simulationWaermebedarf ??= new SimulationWaermebedarf();
+        private readonly BedarfsZustand _bedarf = new BedarfsZustand();
 
         /// <summary>
         /// Die zuletzt gebaute Hülle — der Weg der übrigen Windows-Wege an die
@@ -98,6 +92,18 @@ namespace WindowsFormsApplication1
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
                 ["BerichteGaben"] = Berichte.Gaben(),
+
+                // E-5: Die zwei Simulationsansichten bleiben IN dieser WebView -
+                // die Konfiguration als freie Ansicht, das Ergebnis als
+                // Ueberlagerung. Die beiden modalen Huellen sind damit entfallen.
+                ["SimulationKonfigGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(
+                        () => SimulationKonfigHuelle.Gaben(_kontext.Id)),
+                ["SimulationErgebnisGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(
+                        () => SimulationErgebnisHuelle.Gaben(
+                                  () => _besitzer?.Invoke() as Form, _kontext.Id, _bedarf)),
+                ["ErgebnisTitelText"] = MyResource.Resource.SIMERG_TITEL,
 
                 // ---- Texte (die 17 MyResource-Schluessel von Form_Start und die
                 //      78 neuen aus seinen drei .resx, iU9-W16b.2) --------------
@@ -182,6 +188,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void ProjektGewechselt()
         {
+            // E-5: Die zwei Bedarfsrechnungen gehoeren dem PROJEKT - ein Wechsel
+            // macht sie hinfaellig.
+            _bedarf.FuerProjekt(_kontext.Id);
+
             _berichte?.SetzeProjekt(_kontext.Id, _kontext.Name);
 
             _zustand.ProjektSetzen(_kontext.Id, _kontext.Name);
@@ -283,13 +293,15 @@ namespace WindowsFormsApplication1
             int idKlima = StartseiteCtrl.KlimaregionIdVonProjekt(_kontext.Name);
             if (idKlima == 0) return null;
 
-            Strombedarf.Berechnung(_kontext.Id);
-            Waermebedarf.Waermebedarf_berechnen(_kontext.Id, idKlima);
+            _bedarf.FuerProjekt(_kontext.Id);
+
+            _bedarf.Strom.Berechnung(_kontext.Id);
+            _bedarf.Waerme.Waermebedarf_berechnen(_kontext.Id, idKlima);
 
             return new Zusammenfassung(
                 _kontext.Name,
-                Waermebedarf.Waermebedarf_Gesamt.ToString("F2") + " MWh/a",
-                Strombedarf.Strombedarf_gesamt.ToString("F2") + " MWh/a",
+                _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a",
+                _bedarf.Strom.Strombedarf_gesamt.ToString("F2") + " MWh/a",
                 Technologien());
         }
 
@@ -435,9 +447,12 @@ namespace WindowsFormsApplication1
                 case Kachelschluessel.Stromspeicher: Stromspeicher(wirt); break;
                 case Kachelschluessel.Pufferspeicher: Pufferspeicher(wirt); break;
 
+                // E-5: Die zwei Simulationswege beantwortet die SEITE selbst - sie
+                // holt sich ihren Parametersatz ueber SimulationKonfigGaben bzw.
+                // SimulationErgebnisGaben und wechselt die Ansicht. Hier kommen sie
+                // deshalb gar nicht mehr an.
                 case Kachelschluessel.SimulationKonfiguration:
-                    SimulationKonfigHuelle.Oeffnen(wirt, _kontext.Id); break;
-                case Kachelschluessel.SimulationErgebnis: SimulationErgebnis(wirt); break;
+                case Kachelschluessel.SimulationErgebnis: break;
             }
         }
 
@@ -740,14 +755,5 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // ---- Reiter 5: Simulation ------------------------------------------
-
-        private void SimulationErgebnis(IWin32Window wirt)
-        {
-            // Woertlich pBox_DetailSim_Click (:1233-1248). Die beiden Bedarfsobjekte
-            // gehoeren jetzt der HUELLE (Befund W16-B29) und werden dort
-            // weitergeschrieben - fuer die Zusammenfassung des Reiters.
-            SimulationErgebnisHuelle.Oeffnen(wirt, _kontext.Id, Waermebedarf, Strombedarf);
-        }
     }
 }
