@@ -187,7 +187,6 @@
        nicht am Ordnerpfad hängt. -->
   <ItemGroup>
     <None Remove="Allgemein\Hilfe\help_mapping.txt" />
-    <None Remove="Views\Hauptformular\Form_Start.cs.bak" />
     <EmbeddedResource Include="Allgemein\Hilfe\help_mapping.txt">
       <LogicalName>help_mapping.txt</LogicalName>
     </EmbeddedResource>

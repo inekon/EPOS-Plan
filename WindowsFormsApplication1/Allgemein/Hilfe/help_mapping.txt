@@ -87,6 +87,11 @@
 # Strombedarf / ...). Es ist die Hilfe zum Formular als Ganzem, also zum
 # Ablauf des Programms - nicht zur Klimaregion (dafuer Form_Klimadaten) und
 # nicht zur Kurzanleitung (dafuer btn_Help_Kurzanleitung auf Reiter 1).
+# iU9-W16b.3: Die Startmaske ist die Razor-Seite EPOS.UI/Seiten/Start/Startseite.
+# Ihre fuenf Infoknoepfe tragen die Schluessel des Vorlaeufers WOERTLICH weiter
+# (InfoKnopf Schluessel="Form_Start.btn_Help_*"), damit die Hilfeziele stehen
+# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS; er gehoert seither
+# zum Hauptfenster und wird mit W16c umgehaengt.
 Form_Start.btn_Help               = Programmablauf
 
 # Reiter "Projekt": Einstieg in die Bedienung.

@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
     /// Bauen und Zeigen <c>Dienste.Navigation</c>; das offene Projekt fuehrt
     /// <c>Dienste.Projekt</c>. Vorher standen hier 25 Aufrufe der Bauform
     /// <c>new Form_X(); frm.ShowDialog();</c> und neun Zugriffe auf
-    /// <c>Program.startfrm</c>.</para>
+    /// <c>Program.startfrm</c> — das Feld selbst ist mit iU9-W16b.3 entfallen.</para>
     ///
     /// <para>Das Feld <c>wizparent</c> ist mit iU5 entfallen: Es wurde ausschliesslich
     /// beschrieben und von niemandem gelesen; der Assistentenrahmen haengt seit Paket P4

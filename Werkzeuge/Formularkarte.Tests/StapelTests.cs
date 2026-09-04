@@ -246,23 +246,27 @@ public sealed class StapelTests
     [Fact]
     public void DieHaeufigstenTypenSindAbgedeckt()
     {
-        // Der Bestand schrumpft mit jeder Welle von iU9. Die sechs Typen, die bis
-        // Welle 16 bleiben (Form_Start, MDIMainForm, WizardParent), muessen im Bestand
-        // vorkommen; die fuenf, die schon frueher fallen (NumericUpDown mit W13,
-        // DataGridView mit W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit
-        // W15c), genuegen im BESTAND ODER IM PRUEFMUSTER - das eingefrorene Muster
-        // ist die einzige Stelle, an der der Leser den Typ nach dem Rueckbau noch
-        // vorfindet. Kennen muss der Leser alle elf.
+        // Der Bestand schrumpft mit jeder Welle von iU9, und mit Welle 16b ist er
+        // leer: Was noch steht, sind MDIMainForm (die Huelle, ein Kartenzeile) und
+        // Form_HelpPopup. ALLE elf Typzeugen haengen deshalb seither am eingefrorenen
+        // PRUEFMUSTER (Entscheid E-9) - es ist die einzige Stelle, an der der Leser
+        // einen Typ nach dem Rueckbau noch vorfindet.
+        //
+        // Der Weg dahin, Welle fuer Welle: NumericUpDown mit W13, DataGridView mit
+        // W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit W15c, ListBox mit
+        // W16a.1 - und mit W16b.3 die letzten fuenf (Label, TextBox, Button,
+        // ComboBox, TabPage), die saemtlich auf Form_Start standen. Ihr Zeuge ist
+        // seither Pruefmuster/Hauptformular/Form_Start.Designer.cs: 108 Kartenzeilen,
+        // die groesste Maske, die der Bestand je hatte.
+        //
+        // GEPRUEFT WIRD WEITER DASSELBE: dass der Leser alle elf Typen kennt UND sie
+        // an einer lesbaren Maske findet. Nur der Fundort ist ein anderer.
         var bestand = Lauf.Value.Typen;
         var muster = PruefmusterTypen();
 
-        // iU9-W16a.1: ListBox wechselt in die zweite Gruppe. Die beiden letzten
-        // ListBox des Bestands standen in Wizard_Stromlastgang; das Pruefmuster
-        // fuehrt den Typ weiter (Wizard_WPItem, Form_WP_einlesen).
-        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage" })
-            Assert.True(bestand.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
-
-        foreach (var typ in new[] { "GroupBox", "CheckBox", "NumericUpDown", "DataGridView", "Chart", "ListBox" })
+        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage",
+                                    "GroupBox", "CheckBox", "NumericUpDown", "DataGridView",
+                                    "Chart", "ListBox" })
             Assert.True(bestand.ContainsKey(typ) || muster.Contains(typ),
                         "Typ " + typ + " kam weder im Stapellauf noch im Pruefmuster vor.");
 
@@ -291,6 +295,11 @@ public sealed class StapelTests
         // Alles, was der Leser nicht kennt, landet als "sonstig" in der Karte -
         // sichtbar, nicht geraten. Es duerfen nur die selbstgebauten Controls
         // des Bestands sein.
+        //
+        // iU9-W16b: Der Bestand fuehrt seit dieser Teilwelle KEINES mehr -
+        // AktionsKarte faellt mit Form_Start, ProjektAuswahl fiel mit W16a.5,
+        // KlimazonenKarte mit W10a.3. Die Liste bleibt stehen: Sie sagt, was
+        // zulaessig WAERE, und ein neues Haus-Steuerelement soll hier auffallen.
         Assert.All(Lauf.Value.Unbekannt.Keys,
                    typ => Assert.Contains(typ, new[] { "AktionsKarte", "ProjektAuswahl",
                                                        "HeaderGradientPanel", "KlimazonenKarte" }));

@@ -34,9 +34,12 @@ public sealed class ErreichbarkeitTests
     //  Die beiden Wurzeln
     // ==================================================================
 
+    // iU9-W16b.3: Es ist nur noch EINE Wurzel. Form_Start ist eine Razor-Seite
+    // (EPOS.UI/Seiten/Start/Startseite.razor) und damit keine Maske mehr; der
+    // Graph beginnt seither allein an MDIMainForm - und Form_HelpPopup, die
+    // letzte Maske neben der Huelle, haengt weiter daran (Befund W16-B3).
     [Theory]
     [InlineData("MDIMainForm")]
-    [InlineData("Form_Start")]
     public void DieBeidenEinstiegeSindWurzeln(string klasse)
     {
         var knoten = Knoten(klasse);

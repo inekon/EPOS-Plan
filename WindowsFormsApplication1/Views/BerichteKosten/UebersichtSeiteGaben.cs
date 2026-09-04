@@ -631,7 +631,7 @@ namespace WindowsFormsApplication1
 
                 // Ä19: Auch die Variantenliste des Projektkopfs kennt die neue
                 // Variante sofort.
-                if (Program.startfrm != null) Program.startfrm.VariantenAnzeigeAktualisieren();
+                StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren();
 
                 return string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT,
                                      (bezeichner ?? "").Trim());

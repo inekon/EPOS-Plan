@@ -249,6 +249,15 @@
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteGaben { get; set; }
 
     /// <summary>
+    /// Ein einmaliger KURZHINWEIS der Hülle, abgefragt bei jeder Änderung des
+    /// Zustands; leer = keiner. So kommt der Rückweg „Projekt öffnen" aus dem
+    /// Assistenten an seine Meldung, ohne dass die Hülle die Komponente kennen
+    /// müsste (Muster <c>BerichteKostenSeite.Seitenwunsch</c>). Der Vorläufer
+    /// öffnete dafür ein <c>Form_Hinweis</c> über der auslösenden Kachel.
+    /// </summary>
+    [Parameter] public Func<string>? Kurzhinweis { get; set; }
+
+    /// <summary>
     /// Die Uhr des Selbstverfalls — im Betrieb <c>Task.Delay</c>, im Prüfstand
     /// eine gesteuerte Fassung (dieselbe Bauart wie <c>Warnbanner.Uhr</c>).
     /// </summary>
@@ -439,6 +448,10 @@
         _ = InvokeAsync(() =>
         {
             Laden();
+
+            string satz = Kurzhinweis?.Invoke() ?? "";
+            if (!string.IsNullOrEmpty(satz)) HinweisProjektGeoeffnet(satz);
+
             StateHasChanged();
         });
     }
