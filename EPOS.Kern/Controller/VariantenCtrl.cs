@@ -216,12 +216,43 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Löscht eine Variante: Verknüpfung, Energieanlagen, Projekt (Detailtabellen
         /// fallen per Löschweitergabe mit weg). Kein Stammprojekt-Löschen über diesen Weg.
+        ///
+        /// <para><b>Ein Name, der MEHRERE Projekte trifft, wird nicht still mitgelöscht</b>
+        /// (iU9-W15a, Entscheid O-4 vom 04.09.2026 — dieselbe Vorprüfung und dieselbe
+        /// Rückfrage wie beim Projektlöschen, Entscheid O-3). Der letzte der drei
+        /// Schritte ist <c>ProjektCtrl.Delete(projektname)</c> und läuft damit über den
+        /// NAMEN; die beiden Schritte davor arbeiten über die Id. Trägt eine Datenbank
+        /// zwei Projekte desselben Namens — regulär unmöglich, <c>Tab_Projekt</c> hat
+        /// seit der SQLite-Migration den eindeutigen Index <c>Projektname</c>, ein
+        /// Altbestand ohne ihn kann es —, dann nähme der letzte Schritt beide mit.
+        /// Deshalb meldet der Weg <see cref="LoeschStand.Mehrdeutig"/> mit der Anzahl und
+        /// fasst NICHTS an. Erst mit <paramref name="mehrdeutigZugelassen"/> läuft er
+        /// bitgleich wie zuvor.</para>
+        ///
+        /// <para><b>Warum <see cref="LoeschBefund"/> statt <c>bool</c> + <c>out</c>.</b>
+        /// Der Aufrufer muss „mehrdeutig" von „fehlgeschlagen" unterscheiden können und
+        /// braucht die Anzahl für die Rückfrage — beides trägt ein Wahrheitswert nicht.
+        /// Es ist derselbe Befund, den <c>ProjektCtrl.LoeschenMitVorarbeiten</c> liefert;
+        /// eine zweite Bauform für denselben Zweck gäbe es sonst ohne Not.</para>
         /// </summary>
-        public bool LoescheVariante(int idProjekt, string projektname, out string fehler)
+        /// <param name="idProjekt">Id der zu löschenden Variante.</param>
+        /// <param name="projektname">Name des zugehörigen Projekts — der Schlüssel des letzten Schritts.</param>
+        /// <param name="mehrdeutigZugelassen">
+        /// <c>true</c> = der Anwender hat dem Löschen ALLER Projekte dieses Namens
+        /// ausdrücklich zugestimmt. Vorgabe <c>false</c>: mehrdeutig heißt abbrechen.
+        /// </param>
+        public LoeschBefund LoescheVariante(int idProjekt, string projektname,
+                                            bool mehrdeutigZugelassen = false)
         {
-            fehler = null;
             if (StammRefDerVariante(idProjekt) <= 0)
-            { fehler = "Das Projekt ist keine Variante (Stammprojekte werden hier nicht gelöscht)."; return false; }
+                return new LoeschBefund(LoeschStand.KeineVariante, projektname ?? "",
+                    "Das Projekt ist keine Variante (Stammprojekte werden hier nicht gelöscht).", 0);
+
+            // Entscheid O-4: VOR dem ersten Schritt zählen. Bis hierher ist nichts
+            // angefasst — der Abbruch lässt die Datenbank unberührt.
+            int gleichnamige = ProjektCtrl.AnzahlGleicherNamen(projektname);
+            if (gleichnamige > 1 && !mehrdeutigZugelassen)
+                return new LoeschBefund(LoeschStand.Mehrdeutig, projektname, "", gleichnamige);
 
             try
             {
@@ -232,12 +263,12 @@ namespace WindowsFormsApplication1
                 werz.Delete();
 
                 new ProjektCtrl().Delete(projektname);
-                return true;
+                return new LoeschBefund(LoeschStand.Geloescht, projektname ?? "", "", gleichnamige);
             }
             catch (Exception ex)
             {
-                fehler = "Fehler beim Löschen: " + ex.Message;
-                return false;
+                return new LoeschBefund(LoeschStand.Loeschfehler, projektname ?? "",
+                                        "Fehler beim Löschen: " + ex.Message, gleichnamige);
             }
         }
 
