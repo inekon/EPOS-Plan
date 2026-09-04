@@ -2950,3 +2950,80 @@ body {
     display: flex;
     justify-content: flex-end;
 }
+
+/* --------------------------------------------------------------------------
+   Rechtshinweis zur Datenuebertragung (iU9-W15b.3).
+
+   Der Vorlaeufer setzte vier Schriftrollen in einer RichTextBox: Ueberschrift
+   12 pt bzw. 9,5 pt fett in #005AA0, Absatz 9,5 pt schwarz, Grau 8,5 pt
+   DimGray, Leerzeile 5 pt. Hier sind es Elemente und Klassen; die Leerzeile
+   ist der Abstand zwischen zwei Absaetzen.
+
+   pre-line bleibt WICHTIG: Die Ressourcen tragen ihre Zeilenumbrueche als \n
+   (der Vorlaeufer musste sie eigens in Environment.NewLine uebersetzen). Gehen
+   sie verloren, steht der Rechtshinweis als Textwurst da.
+   -------------------------------------------------------------------------- */
+.epos-kihinweis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kihinweis-text {
+    max-height: 62vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    padding: 4px 12px 4px 0;
+}
+
+.epos-kihinweis-text:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+.epos-kihinweis-titel {
+    margin: 0 0 2px 0;
+    font-size: 16px;                        /* 12 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-ueberschrift {
+    margin: 14px 0 2px 0;
+    font-size: var(--epos-schriftgroesse);  /* 9,5 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-fassung {
+    margin: 0 0 12px 0;
+    font-size: 11px;                        /* 8,5 pt */
+    color: var(--epos-text-leise);
+}
+
+.epos-kihinweis-absatz {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kihinweis-stand {
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-knoepfe {
+    display: flex;
+    gap: 8px;
+}

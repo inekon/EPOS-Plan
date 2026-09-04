@@ -366,7 +366,7 @@ namespace WindowsFormsApplication1
                 Text = hinweisVorn + hinweisLink,
                 LinkArea = new LinkArea(hinweisVorn.Length, hinweisLink.Length)
             };
-            _linkHinweis.LinkClicked += (s, e) => Form_KiHinweis.Anzeigen(this);
+            _linkHinweis.LinkClicked += (s, e) => KiHinweisHuelle.Anzeigen(this);
             _hinweisZeile.Controls.Add(_linkHinweis);
 
             // --- Eingabebereich ---

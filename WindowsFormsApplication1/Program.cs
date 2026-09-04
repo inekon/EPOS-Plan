@@ -201,7 +201,7 @@ namespace WindowsFormsApplication1
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.
-            Form_KiHinweis.Einhaengen();
+            KiHinweisHuelle.Einhaengen();
 
             // -----------------------------------------------------------------------
             // Schema-Ausrollung (ADR-001): die versionierte Migration laeuft genau
