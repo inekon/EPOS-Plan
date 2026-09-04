@@ -16,9 +16,12 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <c>leerErlaubt</c>); die 28 des zweiten dürfen leer bleiben und zählen dann als 0
 /// (<c>Text2Wert</c>:109).</para>
 ///
-/// <para><b>Die abgeleiteten Größen stehen NICHT hier.</b> <c>Bewohner</c>,
-/// <c>Bauweise</c>, <c>gesamte_Fensterflaeche</c> und <c>Wohnflaeche</c> rechnet die
-/// Hülle beim Schreiben aus (wie <c>InitModelFromControls</c>); die vier Flags
+/// <para><b>Die abgeleiteten Größen stehen bis auf eine NICHT hier.</b>
+/// <c>Bewohner</c>, <c>gesamte_Fensterflaeche</c> und <c>Wohnflaeche</c> rechnet die
+/// Hülle beim Schreiben aus (wie <c>InitModelFromControls</c>). Die <c>Bauweise</c>
+/// steht seit dem Entscheid des Anwenders vom 04.09.2026 (W9‑O‑2) hier: Sie hängt
+/// jetzt an der BAUART-Klappliste, und die bedient der Dialog — siehe
+/// <see cref="Bauweise"/>. Die vier Flags
 /// <c>Wochenende</c>, <c>Ferien</c>, <c>WW_Bedarf</c> und der gehobene
 /// Winterferienbeginn entstehen beim Übernehmen des zweiten Reiters (wie
 /// <c>btn_Speichern_Click</c>).</para>
@@ -50,6 +53,21 @@ public sealed class GebaeudeKatalogDaten
 
     /// <summary>Index der Bauart (0 = leicht, 1 = schwer, 2 = sehr schwer).</summary>
     public int Bauart { get; set; } = 1;
+
+    /// <summary>
+    /// Die gespeicherte <c>Bauweise</c> (<c>Tab_Gebaeude_STAMM.Bauweise</c>) —
+    /// Wohnfläche × 20 / 50 / 100.
+    ///
+    /// <para><b>Entscheid des Anwenders vom 04.09.2026 zu W9‑O‑2 (Befund W9‑B6).</b>
+    /// Der Vorläufer bildete sie aus dem Index der GEBÄUDEART-Klappliste, obwohl er die
+    /// Bauart aus derselben Größe abgeleitet ANZEIGTE. Seither bestimmt die
+    /// <b>Bauart</b>-Klappliste die Bauweise: Der Dialog führt sie bei jeder Bauartwahl
+    /// und unmittelbar vor jedem Schreiben nach
+    /// (<c>Gebaeudebauweise.BauweiseAusBauart</c>) — die Anzeige ist damit zum ersten
+    /// Mal auch die Eingabe. Beim Laden geht der Rundweg zurück: die Bauart kommt aus
+    /// dieser Größe (<c>Gebaeudebauweise.BauartAusBauweise</c>).</para>
+    /// </summary>
+    public double Bauweise { get; set; }
 
     // ------------------------------------------------------- Kenngrößen (5)
 

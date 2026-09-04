@@ -444,7 +444,7 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 |---|---|---|
 | 1 | Startbild → **Gebäude** | Umschalter „Wohngebäude"/„Gewerbe+Sonstige" lädt Katalog UND Artenliste neu; die vier Filterkombinationen; Wildcard-Suche „Haus*_1990*"; ◀ legt eine Zeile mit „Wohnfläche [m²]", Nutzungsgrad 1 an; ▶ trifft die markierte Zeile |
 | 2 | In 1 → **„Ändern"** | Kopf nur lesbar; Bedarfsart wechselt die Einheitsanzeige; leeres Feld meldet; OK schreibt VIER Werte zurück — **auch den Schalter „Dezentrale Warmwasserbereitung" (A‑2)** |
-| 3 | In 1 → **„Gebäude in DB ändern…"** | Zwei Reiter; Baujahr ↔ Buchstabe; Bauart aus Bauweise; 17 Pflichtzahlen melden ihren Feldnamen; „Überschreiben" trifft den Ursprungsnamen |
+| 3 | In 1 → **„Gebäude in DB ändern…"** | Zwei Reiter; Baujahr ↔ Buchstabe; Bauart aus Bauweise beim Laden UND Bauweise aus Bauart beim Speichern (W9‑O‑2); 17 Pflichtzahlen melden ihren Feldnamen; „Überschreiben" trifft den Ursprungsnamen |
 | 4 | In 3 → Reiter **„Gebäudedaten – Raumtemperaturen …"** | „Werte übernehmen" leitet ab und prüft die vier Ferienregeln; ohne den Knopf bleibt der Satz unberührt; Winter über die Jahresgrenze |
 | 5 | In 4 → **„Brauchwasser…"** | Die Brauchwasserliste des laufenden Projekts als Überlagerung; OK schreibt die Zuordnung |
 | 6 | In 1 → **„Gebäude in DB neu…" / „…löschen" / „Gebäudetyp in DB ändern…"** | Neu ohne Markierung; Löschen fragt nach und meldet „Gebäude gelöscht!"; der Gebäudetyp ist die W8.4-Komponente |
@@ -464,7 +464,7 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 | # | Was | Vorschlag |
 |---|---|---|
 | **W9‑B1 / W9‑O‑1** | Der Katalogfilter „Gebäudeart gewählt, Baujahr Alle" filtert im Gebäudeart-Handler **ohne**, im Baujahr-Handler **mit** der Verwendung (`Form_Gebaeude`:359 gegen :392). Welche Liste erscheint, hängt davon ab, welche Klappliste zuletzt angefasst wurde | Wörtlich übernommen (Regel F3), sichtbar im Parameter `ausBaujahrwahl` und mit einem eigenen Testfall festgehalten. **Entscheid des Anwenders:** Soll der Zweig die Verwendung immer mitfiltern? Es wäre eine Zeile in `GebaeudeStammCtrl.FilterAusdruck` |
-| **W9‑B6 / W9‑O‑2** | Die gespeicherte **Bauweise** (`Wohnfläche × 20/50/100`) hängt am Index der **Gebäudeart**-Klappliste, nicht an der Bauart-Klappliste — obwohl die Bauart aus derselben Größe abgeleitet ANGEZEIGT wird (`InitModelFromControls`:188‑191) | Wörtlich übernommen. **Entscheid des Anwenders:** Soll die Bauart-Klappliste die Bauweise bestimmen? Dann wäre die Anzeige zum ersten Mal auch die Eingabe |
+| **W9‑B6 / W9‑O‑2** — **erledigt** | Die gespeicherte **Bauweise** (`Wohnfläche × 20/50/100`) hing am Index der **Gebäudeart**-Klappliste, nicht an der Bauart-Klappliste — obwohl die Bauart aus derselben Größe abgeleitet ANGEZEIGT wurde (`InitModelFromControls`:188‑191) | **Entscheid (Anwender, 04.09.2026): Bauart bestimmt die Bauweise — umgesetzt in Commit `iU9-W9: Bauart bestimmt die Bauweise im Gebaeudekatalog (Anwenderentscheid W9-O-2)`.** Die Anzeige ist damit zum ersten Mal auch die Eingabe: `GebaeudeKatalogDialog` führt `Daten.Bauweise` bei jeder Bauartwahl und vor jedem Schreiben nach (`Gebaeudebauweise.BauweiseAusBauart`), beim Laden kommt die Bauart weiterhin aus der gespeicherten Bauweise (`Gebaeudebauweise.BauartAusBauweise`) — der Rundweg bleibt konsistent. Die Gebäudeart-Klappliste behält nur ihre eigene Bedeutung; die Hülle reicht die Größe nur noch durch. Die Rechnung steht jetzt — wie `Ferienzeit` und `Suchmuster` — in der öffentlichen Kernklasse `Allgemein/Gebaeudebauweise.cs`, weil `GebaeudeStammCtrl` `internal` ist; dessen beide Namen aus W9.0b bleiben als Durchreiche stehen. Vier bunit-Fälle halten die Regel fest |
 | **W9‑B7 / W9‑O‑3** | Die Meldung bei ungültigem Jahresverbrauch nennt beim Stromverbraucher **kWh**, bei Prozess und Brauchwasser **MWh** — für dieselbe Größe, die überall in MWh angezeigt und gespeichert wird | Wörtlich übernommen. **Entscheid des Anwenders**, welche der beiden Einheiten richtig ist; eine davon ist um den Faktor 1000 daneben |
 | **W9‑B9 / W9‑O‑4** | „Überschreiben" im Katalogeditor trifft den URSPRUNGSNAMEN. Wer den Namen im Feld ändert und dann überschreibt, trifft nichts: Der Vorläufer setzte `Gebaeudename` aus dem Feld und schrieb `UPDATE … SET Bezeichner = ? WHERE Bezeichner = ?` mit demselben Wert — **0 Zeilen, stille Erfolgsmeldung** | Behoben, soweit es ohne Fachentscheid geht: Die Hülle schreibt jetzt gegen den Ursprungsnamen, ein Umbenennen wirkt also. **Frage an den Anwender:** Soll „Überschreiben" umbenennen dürfen, oder soll das Namensfeld im Modus Bearbeiten gesperrt sein? |
 | **W9‑B10 / W9‑O‑5** | Der Admin-Modus des Katalogeditors (`Form_Gebaeude1.m_bAdmin`) hat im ganzen Bestand keinen Aufrufer | Übernommen, weil vollständig ausformuliert. **Entscheid des Anwenders:** Soll er über einen Menüpunkt erreichbar werden, oder fällt er ersatzlos weg? |
@@ -490,7 +490,8 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 `WaermebedarfExternDaten.cs`, `BedarfsProfileDialog.razor`,
 `BedarfsProfileDaten.cs`.
 
-**Neu im Kern** (2): `Allgemein/Ferienzeit.cs`, `Allgemein/Suchmuster.cs`.
+**Neu im Kern** (3): `Allgemein/Ferienzeit.cs`, `Allgemein/Suchmuster.cs`,
+`Allgemein/Gebaeudebauweise.cs` (04.09.2026, Entscheid W9‑O‑2).
 **Geändert im Kern** (8 + Ressourcen): `Controller/GebaeudeStammCtrl.cs`,
 `Controller/BedarfStammCtrl.cs`, `Controller/Z_ProjGebCtrl.cs`,
 `Controller/Z_ProjektGebGanglinieCtrl.cs`,

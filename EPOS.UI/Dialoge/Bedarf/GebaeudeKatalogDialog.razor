@@ -30,10 +30,19 @@
    Ferienbeginn_1 und ueberschrieb sie unmittelbar danach ueber
    JahrestagUmrechner. Wirkungslos, entfaellt.
 
-   BEFUND W9-B6. Die BAUWEISE haengt am Index der GEBAEUDEART-Klappliste
-   (InitModelFromControls:188-191), nicht an der Bauart-Klappliste - obwohl
-   die Bauart aus derselben Groesse angezeigt wird. Woertlich uebernommen;
-   die Huelle rechnet mit GebaeudeStammCtrl.BauweiseAusBauart.
+   BEFUND W9-B6 / ENTSCHEID W9-O-2 (Anwender, 04.09.2026). Die BAUWEISE hing
+   im Vorlaeufer am Index der GEBAEUDEART-Klappliste
+   (InitModelFromControls:188-191) und NICHT an der Bauart-Klappliste - obwohl
+   die Bauart aus derselben Groesse abgeleitet ANGEZEIGT wurde. Der Anwender
+   hat entschieden: Die BAUART bestimmt die Bauweise. Dieser Dialog fuehrt
+   Daten.Bauweise deshalb bei jeder Bauartwahl und unmittelbar vor jedem
+   Schreiben nach (Gebaeudebauweise.BauweiseAusBauart(Bauart, Wohnflaeche));
+   die Anzeige ist damit zum ersten Mal auch die Eingabe. Der Rundweg bleibt:
+   Beim Laden eines Satzes kommt die Bauart aus der gespeicherten Bauweise
+   (Gebaeudebauweise.BauartAusBauweise). Die Gebaeudeart-Klappliste behaelt
+   nur ihre eigene Bedeutung. Die Rechnung selbst steht - wie Ferienzeit und
+   Suchmuster - als reine Hilfsklasse im Kern; ein Controller wird von dieser
+   Komponente nicht angefasst.
 
    BEFUND W9-B8. comboBox_Verwendung fuehrte die beiden STEUERWERTE
    "Wohngebaeude" / "Nicht Wohngebaeude" als Anzeigetexte - und die
@@ -94,7 +103,7 @@
                                          Auswahl="@Verwendungsindex" AuswahlChanged="VerwendungWaehlen" />
                             <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
                                          Auswahl="@Daten.Bauart"
-                                         AuswahlChanged="i => Daten.Bauart = i ?? 1" />
+                                         AuswahlChanged="BauartWaehlen" />
 
                             <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²"
                                         Feldname="@FeldWohnflaeche" Wert="@Daten.WohnflaecheGesamt"
@@ -612,6 +621,29 @@
         if (i.Value >= 0 && i.Value < _arten.Count) Daten.Gebaeudeart = _arten[i.Value];
     }
 
+    /// <summary>
+    /// Die Bauartwahl — und mit ihr die BAUWEISE (Entscheid W9‑O‑2 zu Befund W9‑B6,
+    /// Anwender 04.09.2026). Der Vorläufer nahm dafür den Index der
+    /// <b>Gebäudeart</b>-Klappliste; seither ist die Bauart die Eingabe.
+    /// </summary>
+    private void BauartWaehlen(int? i)
+    {
+        Daten.Bauart = i ?? 1;
+        BauweiseNachfuehren();
+    }
+
+    /// <summary>
+    /// <c>Bauweise = Wohnfläche × 20 / 50 / 100</c> aus der BAUART-Auswahl
+    /// (<c>Gebaeudebauweise.BauweiseAusBauart</c>).
+    ///
+    /// <para>Wird auch unmittelbar vor jedem Schreiben gerufen: Die Wohnfläche kann
+    /// nach der Bauartwahl noch geändert worden sein, und sie geht in die Größe
+    /// ein.</para>
+    /// </summary>
+    private void BauweiseNachfuehren()
+        => Daten.Bauweise = Gebaeudebauweise.BauweiseAusBauart(
+               Daten.Bauart, Daten.WohnflaecheGesamt ?? 0);
+
     private void VerwendungWaehlen(int? i)
     {
         if (i is null || i.Value < 0 || i.Value >= Verwendungswerte.Count) return;
@@ -635,6 +667,12 @@
         GebaeudeKatalogDaten? satz = Lies?.Invoke(name);
         if (satz is null) return;
         Daten = satz;
+
+        // Der Rundweg zu W9-O-2: Die BAUART kommt aus der gespeicherten Bauweise
+        // (SetControls:107-110). Geschrieben wird sie danach wieder aus der Bauart.
+        Daten.Bauart = Gebaeudebauweise.BauartAusBauweise(
+            Daten.Bauweise, Daten.WohnflaecheGesamt ?? 0);
+
         _ursprungsname = satz.Name ?? "";
         _meldung = "";
     }
@@ -810,6 +848,10 @@
     private void Schreiben(bool istNeu, string bezeichner)
     {
         if (Speichern is null) return;
+
+        // W9-O-2: Die Bauweise entsteht aus der BAUART und der Wohnflaeche - beide
+        // koennen bis hierher noch geaendert worden sein.
+        BauweiseNachfuehren();
 
         GebaeudeKatalogErgebnis ergebnis = Speichern(Daten, istNeu, bezeichner);
         if (!ergebnis.Erfolg)
