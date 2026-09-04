@@ -192,9 +192,11 @@ werden neu gebaut.
 | **P8b** | eine nicht vorhandene Kopie meldet `KopieFehlt` statt zu werfen | grün |
 | **P9** Löschkaskade | „Wöhler" (zwei Puffer mit Anlagenverweis, eine Berichtskonfiguration, zwei Varianten): danach 0 Zeilen in `Tab_Projekt`, `Berichtskonfiguration`, `Tab_Variante` (**beide Richtungen**), `Tab_Energieanlagen`, `Tab_Pufferspeicher`; **die Varianten selbst bleiben** | grün |
 | **P9b** | ohne Namen wird nichts angefasst | grün |
-| + 4 Fälle | `NamenListe` (Zahl, Sortierung, Kunde/Beschreibung/Datum), `IdVonName` (auch mit Apostroph), `ProjektCtrl.Kopf` (neun Felder, leerer Zweig, geratener Name), `KlimaregionStammCtrl` (Projektkopie und STAMM-Rückfall) | grün |
+| **P9c** mehrdeutiger Name | Arbeitskopie OHNE den eindeutigen Index `Projektname`, ein zweites Projekt desselben Namens: `LoeschenMitVorarbeiten` meldet `Mehrdeutig` mit Anzahl 2, **beide Zeilen stehen noch**, keine Vorarbeit ist gelaufen (Entscheid W15a‑O‑3) | grün |
+| **P9d** mit Freigabe | derselbe Stand mit `mehrdeutigZugelassen: true`: **beide** Projekte fallen, alle Vorarbeiten sind gelaufen | grün |
+| + 5 Fälle | `NamenListe` (Zahl, Sortierung, Kunde/Beschreibung/Datum), `IdVonName` (auch mit Apostroph), `AnzahlGleicherNamen` (Zählung, leerer Name, Apostroph), `ProjektCtrl.Kopf` (neun Felder, leerer Zweig, geratener Name), `KlimaregionStammCtrl` (Projektkopie und STAMM-Rückfall) | grün |
 
-**11 Fälle, 11 grün.**
+**14 Fälle, 14 grün** (11 aus der Welle, 3 aus dem Entscheid W15a‑O‑3 vom 04.09.2026).
 
 ### 3.3 P6 (optional) — Referenzlauf auf ein importiertes Projekt
 
@@ -211,7 +213,7 @@ ein Projekt exportieren, importieren und in beiden die Simulation rechnen.
 | Datei | Fälle | Gegenstand |
 |---|---|---|
 | `Bausteine/ProjektListeTests.cs` | 14 | Spalten, Suche über die unsichtbare Beschreibung, Sortierung mit Gleichstand, Zählzeile, `NurName`, `AutoVorauswahl`, Doppelklick, Spaltensatz „Einstieg", Datumsanzeige |
-| `Dialoge/ProjektWahlDialogTests.cs` | 11 | beide Zwecke, Meldung ohne Auswahl, Rückfrage mit Vorgabe „Nein", Doppelklick, Esc/Enter, Vorauswahl der Kachel, Hilfeknopf |
+| `Dialoge/ProjektWahlDialogTests.cs` | 15 | beide Zwecke, Meldung ohne Auswahl, Rückfrage mit Vorgabe „Nein", Doppelklick, Esc/Enter, Vorauswahl der Kachel, Hilfeknopf — dazu **vier Fälle zum Entscheid W15a‑O‑3**: die zweite Rückfrage bei mehrdeutigem Namen (auch sie mit Vorgabe „Nein"), „Nein" lässt den Dialog stehen, „Ja" meldet die Freigabe mit, ein eindeutiger Name fragt nicht nach |
 | `Dialoge/ProjektKopieDialogTests.cs` | 11 | Felder, Vorbelegung aus der Quelle, die drei Prüfungen, **die Gegenprobe zur Präfixsuche**, Fortschritt, Fehlerpolitik der Verwaltungsfelder, Doppelklick |
 | `Dialoge/ProjektTransferDialogTests.cs` | 15 | zwei Blätter, Variantenhaken „alle an", Paketvorschau, drei Konfliktmodi, beide Rückfragen, „kein Delegat = kein Schalter", Bericht |
 | `Seiten/ProjektKopfSeiteTests.cs` | 8 | neun Felder, gesperrte Datumsfelder, beide Betriebsarten, Schreiben AN ORT UND STELLE, Klimaregion über Id und über den Namen |
@@ -240,8 +242,13 @@ ein Projekt exportieren, importieren und in beiden die Simulation rechnen.
 > Exportknopf; eine volle Projektliste mit Suche und Zählzeile hätte das Blatt auf die doppelte
 > Höhe gebracht, und die Wahl ist dort ein Einzeiler ohne Kunden- oder Datumsbezug. Die
 > Datenquelle ist trotzdem dieselbe (`ProjektCtrl.NamenListe`), es gibt also **keine fünfte
-> Liste** mehr. **Anwenderfrage E‑5 gilt damit nur für „Löschen"** — für „Export" ist sie
-> offen (W15a‑O‑2).
+> Liste** mehr. **Anwenderfrage E‑5 gilt damit nur für „Löschen"**.
+>
+> **Entschieden am 04.09.2026** (W15a‑O‑2): Der Anwender hat die Empfehlung
+> angenommen — **der Transferdialog behält sein Auswahlfeld**, im Export gibt es keine
+> volle Projektliste. Die Begründung dieses Abschnitts gilt damit als Entscheid:
+> Variantenliste und Exportknopf stehen darunter, die Wahl ist ein Einzeiler ohne Kunden-
+> oder Datumsbezug, und die Datenquelle bleibt `ProjektCtrl.NamenListe`.
 
 ## 5 — Anwenderfragen
 
@@ -251,7 +258,7 @@ ein Projekt exportieren, importieren und in beiden die Simulation rechnen.
 | **E‑2** | Duplizierlauf abbrechbar (Kern-Parameter)? | **ja** — `Duplizieren(…, CancellationToken)`; der Abbruch wird ZWISCHEN den Tabellen geprüft und rollt zurück. Kein toter Knopf |
 | **E‑3** | Doppelklick: sofort duplizieren oder nur markieren? | **nur markieren** (A‑6) |
 | **E‑4** | Datumsformat: `de-DE` fest oder Programmsprache? | **Programmsprache** (A‑9) |
-| **E‑5** | Klapplisten durch die volle Projektliste ersetzen? | **„Löschen" ja, „Export" nein** — Begründung oben; offener Punkt W15a‑O‑2 |
+| **E‑5** | Klapplisten durch die volle Projektliste ersetzen? | **„Löschen" ja, „Export" nein** — Begründung oben. **Für „Export" entschieden: nein** (Anwender, 04.09.2026, W15a‑O‑2) |
 | **E‑6** | „Projekt → Öffnen…" wieder ins MDI-Menü? | **gegenstandslos.** Befund W15a‑B56: Der Menüpunkt IST da — `MenuItem_ProjektOeffnen` steht im Designer, in beiden `.resx` („Öffnen…" / „Open…") und ruft `MenuItem_ProjektOeffnen_Click:592` → `MenueCtrl.ProjektOeffnen()` ohne Argument, also den Zweig MIT Dialog. Die Vermessung (B25) hat nur `MDIMainForm:567–571` gelesen |
 
 ## 6 — Befunde
@@ -307,7 +314,7 @@ Die Vermessung führt B1…B54. Was diese Welle daraus gemacht hat, und zwei neu
 | B45 | Projektwechsel ist entkoppelt | **bestätigt und geschützt**: Das `Projektwahl`-Fach ist unverändert; die Hülle füllt es genau wie `WahlUebernehmen` |
 | B46 | die Razor-Projektliste in der falschen Bauform | **behoben** — sie baut auf dem Baustein auf |
 | B48 | `SELECT *` für eine Spalte, ein Parameter für zwei Zuweisungen | **halb behoben** — das `SELECT` holt nur `ID_Projekt`; die Zuweisung `ID_Projekt = 0` bleibt eine Konstante (das war schon vorher richtig) |
-| B49 | `Delete` löscht über den NAMEN | **unverändert** — der Löschweg ist bitgleich; die Doppelnamen-Frage bleibt offen (W15a‑O‑3) |
+| B49 | `Delete` löscht über den NAMEN | **unverändert im Schreibweg, mit Vorprüfung** — der Löschweg ist bitgleich (`WHERE Projektname=?` in `Delete` und den drei Vorarbeiten). **Entschieden am 04.09.2026** (W15a‑O‑3): `LoeschenMitVorarbeiten` zählt VOR dem ersten Schritt `SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ?`; bei mehr als einem Treffer meldet es den neuen Befund `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an. Der Löschdialog fragt daraufhin mit Vorgabe „Nein" nach (`PROJ_MSG_NAME_MEHRDEUTIG`), und erst `mehrdeutigZugelassen: true` lässt den Weg wie zuvor laufen |
 | B50 | doppelt gesicherte Löschreihenfolge | **unverändert, mit Kommentar** (R‑W15a‑12): `PufferReferenzenLoesen` bleibt in `ProjektCtrl.Delete` |
 | B52 | vier Projektlisten | **behoben** — ein Baustein, vier Nutzer |
 | B53 / B54 | `ProjektAuswahl` in zwei Wirten, Typzeuge | **Weg (a)** — das Control bleibt bis W16, `StapelTests:227` unverändert |
@@ -374,11 +381,11 @@ entsteht keine `CS0102`-Falle, wenn Visual Studio den Designer später selbst re
 | Prüfung | Sollwert | Ergebnis |
 |---|---|---|
 | `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** |
-| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue | **3 511** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 926, EPOS.Kern.Tests 798) |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue, dazu 7 aus dem Entscheid W15a‑O‑3 | **3 518** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 930, EPOS.Kern.Tests 801) |
 | dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | grün |
 | `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 124 | **124** |
 | Stapellauf `--alle … --erreichbarkeit` | 13 Masken / 14 Designer, 13 / 0 / 0 / 0 | **13 / 14, 13 ja** |
-| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 234 Texte, 184 dynamisch, 1 050 in Ordnung) |
+| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 235 Texte, 184 dynamisch, 1 051 in Ordnung — der eine neue Text ist die Zählung aus W15a‑O‑3) |
 | `ChartProben` | 32 unverändert | **32** |
 | Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **PASS, 815 043 Werte; `diff -rq` byte-gleich in allen drei** |
 | Wächter `Program.*`/`MessageBox`/`Registry`/DPAPI/`SpecialFolder`/`System.Windows.Forms` im Kern | leer | **leer** |
@@ -419,6 +426,6 @@ dort vollständig zu sehen.
 | Nr | Punkt |
 |---|---|
 | **W15a‑O‑1** | P6 (Referenzlauf auf ein importiertes Projekt) ist nicht gelaufen — der Referenzlauf kann eine geänderte Projekt-Id nicht gegen die Basis halten. Ersatz: Abnahmepunkt 4 |
-| **W15a‑O‑2** | E‑5 für den Transferdialog: Auswahlfeld statt Projektliste (Begründung § 4) |
-| **W15a‑O‑3** | B49: `ProjektCtrl.Delete` löscht über den NAMEN; zwei Projekte gleichen Namens würden beide gelöscht. Unverändert übernommen — eine Änderung gehört in eine eigene Etappe |
+| **W15a‑O‑2** | E‑5 für den Transferdialog: Auswahlfeld statt Projektliste (Begründung § 4). **Entschieden 04.09.2026: Empfehlung angenommen, Auswahlfeld bleibt** — keine volle Projektliste im Export; die Datenquelle bleibt `ProjektCtrl.NamenListe` |
+| **W15a‑O‑3** | B49: `ProjektCtrl.Delete` löscht über den NAMEN; zwei Projekte gleichen Namens würden beide gelöscht. **Entschieden 04.09.2026** — der Anwender wörtlich: „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall." **Deutung:** Projektnamen SIND eindeutig — `Tab_Projekt` trägt seit der SQLite-Migration den eindeutigen Index `Projektname` (`CREATE UNIQUE INDEX "Projektname" ON "Tab_Projekt" ("Projektname")`, nachgesehen im `sqlite_master` von `Referenzlaeufe/Kenndaten_Test.sqlite`), und „Speichern unter" prüft über `ProjektDuplizierenCtrl.PruefeNamen`. **Das Löschen über den Namen bleibt deshalb bitgleich.** Für einen Altbestand OHNE diesen Index wird VOR dem Löschen nachgefragt, statt still beide Projekte mitzunehmen: `LoeschenMitVorarbeiten` zählt zuerst, meldet `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; der Löschdialog stellt die Rückfrage mit Vorgabe „Nein" hinter der unveränderten Sicherheitsabfrage (A‑7), und erst `mehrdeutigZugelassen: true` lässt alle fallen. Proben: P9c/P9d in `ProjektpflegeTests` (Arbeitskopie ohne Index) und vier bunit-Fälle in `ProjektWahlDialogTests` |
 | **W16** | `ProjektAuswahl` (uc) löschen (§ 7); T1 streichen oder auf ein Prüfmuster umziehen, T2 streichen (§ 8) |

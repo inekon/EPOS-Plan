@@ -13528,4 +13528,10 @@ Trotzdem importieren?</value>
   <data name="PRJ_MENUE_OEFFNEN" xml:space="preserve">
     <value>Öffnen…</value>
   </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Projektname mehrfach vergeben</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren?</value>
+  </data>
 </root>

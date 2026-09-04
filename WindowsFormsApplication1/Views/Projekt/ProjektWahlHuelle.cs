@@ -41,8 +41,23 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
                                      out ProjektKopfZeile ergebnis,
                                      string vorauswahl = "", bool zuletztGeaendertZuerst = false)
+            => Oeffnen(besitzer, zweck, out ergebnis, out _, vorauswahl, zuletztGeaendertZuerst);
+
+        /// <summary>
+        /// Dieselbe Auswahl, dazu die Antwort auf die Mehrdeutigkeits-Rückfrage
+        /// (iU9-W15a, Entscheid O-3 vom 04.09.2026).
+        /// </summary>
+        /// <param name="alleGleichenNamens">
+        /// <c>true</c> = der Anwender hat dem Löschen ALLER Projekte dieses Namens
+        /// ausdrücklich zugestimmt. Regulär <c>false</c> — <c>Tab_Projekt</c> trägt den
+        /// eindeutigen Index <c>Projektname</c>.
+        /// </param>
+        internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
+                                     out ProjektKopfZeile ergebnis, out bool alleGleichenNamens,
+                                     string vorauswahl = "", bool zuletztGeaendertZuerst = false)
         {
             ProjektKopfZeile gewaehlt = null;
+            bool alle = false;
             BlazorDialogForm<ProjektWahlDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(Gaben(zweck, vorauswahl, zuletztGeaendertZuerst))
@@ -51,7 +66,11 @@ namespace WindowsFormsApplication1
                 {
                     gewaehlt = z;
                     if (dlg != null) dlg.Schliessen(z != null);
-                })
+                }),
+
+                // Entscheid O-3: Der Dialog fragt nach, WENN der Name mehrere Projekte
+                // trifft; die Antwort reicht der Aufrufer an den Kern weiter.
+                ["MehrdeutigZugelassen"] = EventCallback.Factory.Create<bool>(new object(), b => alle = b)
             };
 
             dlg = new BlazorDialogForm<ProjektWahlDialog>(Titel(zweck), MASS, werte);
@@ -62,6 +81,7 @@ namespace WindowsFormsApplication1
             }
 
             ergebnis = gewaehlt;
+            alleGleichenNamens = alle;
             return gewaehlt != null && gewaehlt.Id > 0;
         }
 
@@ -72,7 +92,8 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
                                      object[] argumente)
         {
-            if (!Oeffnen(besitzer, zweck, out ProjektKopfZeile gewaehlt)) return false;
+            if (!Oeffnen(besitzer, zweck, out ProjektKopfZeile gewaehlt, out bool alleGleichenNamens))
+                return false;
 
             Projektwahl fach = argumente != null && argumente.Length > 0
                 ? argumente[0] as Projektwahl
@@ -82,6 +103,7 @@ namespace WindowsFormsApplication1
 
             fach.Id = gewaehlt.Id;
             fach.Name = gewaehlt.Name ?? "";
+            fach.AlleGleichenNamens = alleGleichenNamens;
             return true;
         }
 
@@ -113,6 +135,17 @@ namespace WindowsFormsApplication1
                 ["FrageFormat"] = loeschen ? Text_("PRJ_DEL_FRAGE",
                     "Sind Sie sicher, dass Sie das Projekt '{0}' und alle dazugehörigen Daten "
                     + "unwiderruflich löschen möchten?") : "",
+
+                // Entscheid O-3 vom 04.09.2026: Trifft der Name MEHRERE Projekte, wird
+                // gefragt statt still beide zu loeschen. Die Zaehlung ist DIESELBE, mit
+                // der ProjektCtrl.LoeschenMitVorarbeiten abbricht - die Komponente
+                // ruehrt keine Datenbank an (Hausregel EPOS.UI).
+                ["NamensAnzahl"] = loeschen ? (Func<string, int>)ProjektCtrl.AnzahlGleicherNamen : null,
+                ["MehrdeutigTitel"] = Text_("PROJ_MSG_NAME_MEHRDEUTIG_TITEL",
+                    "Projektname mehrfach vergeben"),
+                ["MehrdeutigFormat"] = loeschen ? Text_("PROJ_MSG_NAME_MEHRDEUTIG",
+                    "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                    + "gelöscht. Fortfahren?") : "",
 
                 ["MeldungKeineWahl"] = MyResource.Resource.Text_Select,
 
