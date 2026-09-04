@@ -5,6 +5,26 @@ using System.Data;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Wie das Loeschen eines Bedarfs-Kopfsatzes ausgegangen ist (iU9-W14b.0a).
+    ///
+    /// <para>Der Vorlaeufer kannte nur <c>true</c>/<c>false</c> und liess den
+    /// Stammcontroller die Sperre selbst MELDEN — ein modaler Kasten mitten im
+    /// Loeschweg. Hier ist der Grund ein Wert, und der Dialog entscheidet, ob daraus
+    /// ein Warnbanner oder eine Erfolgsmeldung wird.</para>
+    /// </summary>
+    internal enum BedarfLoeschErgebnis
+    {
+        /// <summary>Der Satz ist weg.</summary>
+        Geloescht = 0,
+
+        /// <summary>Auslieferungsbestand (<c>ReadOnly</c>) — er bleibt stehen.</summary>
+        Schreibgeschuetzt = 1,
+
+        /// <summary>Das DELETE hat nicht gegriffen.</summary>
+        Fehlgeschlagen = 2
+    }
+
+    /// <summary>
     /// Der Verteiler der drei Bedarfs-STAMMKOEPFE (iU9-W8.0b) — Datenseite von
     /// <c>EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor</c>, das
     /// <c>Form_EingDBStromverbraucher</c>, <c>Form_EingDBProzess</c> und
@@ -107,6 +127,102 @@ namespace WindowsFormsApplication1
             double summe = 0;
             for (int i = 0; i < 12; i++) summe += monat[i];
             return summe;
+        }
+
+        /// <summary>
+        /// Die LISTENSPALTE einer Auspraegung — was <c>SetControls</c> der drei
+        /// Verwaltungsmasken in ihre Liste schrieb (iU9-W14b.0a).
+        ///
+        /// <para><b>Zwei Modellfelder, eine Spalte.</b> Die Prozesswaerme fuellte aus
+        /// <c>m_szProzessname</c>, die beiden anderen aus <c>m_szBezeichner</c> — dahinter
+        /// steht in allen drei Faellen dieselbe DB-Spalte <c>Bezeichner</c>
+        /// (<c>ProzesswaermeStammCtrl.MapRow</c>). Die Reihenfolge ist die der
+        /// <c>ReadAll</c>: <c>ORDER BY Bezeichner</c>.</para>
+        /// </summary>
+        internal static IReadOnlyList<string> Bezeichner(BedarfsArt art)
+        {
+            var liste = new List<string>();
+
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    {
+                        var ctrl = new StromverbraucherStammCtrl();
+                        ctrl.ReadAll();
+                        for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szBezeichner ?? "");
+                        return liste;
+                    }
+                case BedarfsArt.Prozesswaerme:
+                    {
+                        var ctrl = new ProzesswaermeStammCtrl();
+                        ctrl.ReadAll();
+                        for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szProzessname ?? "");
+                        return liste;
+                    }
+                default:
+                    {
+                        var ctrl = new BrauchwasserStammCtrl();
+                        ctrl.ReadAll();
+                        for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szBezeichner ?? "");
+                        return liste;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Beschreibung und Typ eines Kopfsatzes — <c>SetProzessInfo</c> der drei Masken
+        /// (iU9-W14b.0a). <c>null</c>, wenn es den Satz nicht gibt: Der Vorlaeufer prueft
+        /// <c>rows &gt; 0</c> und liess die drei Anzeigefelder dann UNVERAENDERT stehen.
+        /// </summary>
+        internal static (string Beschreibung, string Typ)? Kopf(BedarfsArt art, string bezeichner)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    {
+                        var ctrl = new StromverbraucherStammCtrl();
+                        ctrl.ReadSingle(bezeichner);
+                        if (ctrl.rows == 0) return null;
+                        return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
+                    }
+                case BedarfsArt.Prozesswaerme:
+                    {
+                        var ctrl = new ProzesswaermeStammCtrl();
+                        ctrl.ReadSingle(bezeichner);
+                        if (ctrl.rows == 0) return null;
+                        return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
+                    }
+                default:
+                    {
+                        var ctrl = new BrauchwasserStammCtrl();
+                        ctrl.ReadSingle(bezeichner);
+                        if (ctrl.rows == 0) return null;
+                        return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Loescht einen Kopfsatz (iU9-W14b.0a).
+        ///
+        /// <para><b>Die ReadOnly-Sperre prueft diese Methode VORHER</b>, genau wie
+        /// <see cref="SaveHead"/> es vom Aufrufer verlangt: Die drei <c>Delete</c> der
+        /// Stammcontroller melden sie ueber <c>Meldung.Hinweis</c>, und das waere in einer
+        /// WebView ein modaler Kasten ueber dem Dialog statt eines Warnbanners darin.</para>
+        /// </summary>
+        internal static BedarfLoeschErgebnis Loeschen(BedarfsArt art, string bezeichner)
+        {
+            if (string.IsNullOrEmpty(bezeichner)) return BedarfLoeschErgebnis.Fehlgeschlagen;
+            if (IstReadOnly(art, bezeichner)) return BedarfLoeschErgebnis.Schreibgeschuetzt;
+
+            bool weg;
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: weg = new StromverbraucherStammCtrl().Delete(bezeichner); break;
+                case BedarfsArt.Prozesswaerme:    weg = new ProzesswaermeStammCtrl().Delete(bezeichner); break;
+                default:                          weg = new BrauchwasserStammCtrl().Delete(bezeichner); break;
+            }
+            return weg ? BedarfLoeschErgebnis.Geloescht : BedarfLoeschErgebnis.Fehlgeschlagen;
         }
 
         /// <summary>Gibt es den Bezeichner schon? („Name existiert bereits!")</summary>
