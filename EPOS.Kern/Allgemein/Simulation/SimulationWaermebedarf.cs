@@ -885,6 +885,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Weist die gerechnete Stundenreihe <see cref="prozesswerte"/> [kWh] als
+        /// Energiemenge <see cref="Waermebedarf_Prozess"/> aus — <b>in MWh</b>, der
+        /// Einheit, die dieses Feld führt (<see cref="Waermebedarf_berechnen"/> setzt es
+        /// ebenso, und die Ergebnisanzeige liest es als MWh).
+        ///
+        /// <para><b>Warum es die Methode gibt.</b> Die Vorschauwege setzten das Feld
+        /// bisher jeder für sich: Die Prozesswärme-Verwaltung mit einem nackten
+        /// <c>/ 1000</c>, der Bedarfsprofildialog (W9) mit der blanken Summe — also in
+        /// kWh, während die Anzeige MWh las. Dort stand „Wärmebedarf Prozess" um den
+        /// Faktor 1000 zu groß (Entscheid W9‑O‑3 vom 04.09.2026). Die Umrechnung steht
+        /// jetzt einmal, an dem Feld, das sie betrifft, und geht über
+        /// <see cref="Energieeinheit"/> statt über einen Teiler im Aufrufer.</para>
+        ///
+        /// <para><b>Der Rechenweg bleibt unberührt.</b>
+        /// <see cref="Waermebedarf_berechnen"/> rechnet weiter mit seiner eigenen Zeile;
+        /// diese Methode bedient nur die Vorschauwege, und der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        /// </summary>
+        public void ProzesssummeUebernehmen()
+        {
+            Waermebedarf_Prozess = Energieeinheit.MWh.AusKWh(prozesswerte.Sum());
+        }
+
+        /// <summary>
         /// Brauchwasserprofile des Projekts (bzw. des Katalogs) in
         /// <see cref="brauchwasserwerte"/> und <see cref="Waermebedarf_Brauchwasser_Monat"/>.
         /// Aufbau und Begründung wie bei <see cref="Prozesswaerme_berechnen"/> — beide
