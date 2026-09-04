@@ -282,6 +282,15 @@ stünde **WFO1000** wieder bei vier statt bei null (Stand seit iU9‑W14c).
 | `git diff` auf `ILizenzAblage`, `DpapiLizenzAblage`, `IosLizenzAblage`, `GeraeteId`, `IosGeraeteId` | leer (S1/S2) | **leer** |
 | `git grep` auf die drei gefallenen Klassen | nur Kommentare, Protokolle, `help_mapping.txt` und `HilfeKontext` | erfüllt |
 
+**Nach dem Merge von `origin/ios_migration`** (`5a73fd6` — der W15b-Statusblock,
+die Anwenderentscheide W15b‑O‑1/O‑2 und der neunzehnte iOS-Lauf) ist das ganze Gate
+ein zweites Mal gelaufen: Build **0 / 6**, **3 833** grün (EPOS.UI.Tests 2 091 — die
+zwei Fälle kommen aus dem Merge, nicht aus dieser Welle) und ebenso unter `en_US`,
+Formularkarte **124**, Stapellauf **11 / 14** mit 11 / 0 / 0 / 0, SQL **0 von 1 235**,
+ChartProben **32**, Referenzlauf **byte-gleich in allen drei Projekten**, beide
+Wächter leer. **Der Merge lief ohne Konflikt** — die andere Seite hat die beiden
+`Resource.resx` nicht angefasst.
+
 **Zur 400-Zeilen-Grenze** (R‑W15b‑1, sinngemäß fortgeführt): `LizenzDialog.razor`
 steht bei 450 Zeilen, `LizenzVerwaltungDialog.razor` bei 452. Davon sind **84 bzw. 77
 Zeilen XML-Dokumentation** an den Parametern und **14 bzw. 19 Zeilen
