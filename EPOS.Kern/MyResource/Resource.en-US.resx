@@ -13521,4 +13521,10 @@ Import anyway?</value>
   <data name="PRJ_MENUE_OEFFNEN" xml:space="preserve">
     <value>Open…</value>
   </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Project name used more than once</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>The project name "{0}" is used {1} times. All {1} projects will be deleted. Continue?</value>
+  </data>
 </root>
