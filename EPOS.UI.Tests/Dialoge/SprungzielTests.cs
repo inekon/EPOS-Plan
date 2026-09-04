@@ -61,8 +61,10 @@ public sealed class SprungzielTests
         Assert.Equal("GESETZESPARAMETER", Sprungziel.Gesetzesparameter);
         Assert.Equal("GESETZESPARAMETER_CO2", Sprungziel.GesetzesparameterCo2);
 
-        // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
-        Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
+        // iU9-W6.0d fuehrte die vier Katalogverwaltungen der Erzeugerdialoge ein,
+        // iU9-W7.0f SOLARGANGLINIE_ADMIN. Mit iU9-W14a und W14b sind alle fuenf
+        // bzw. sechs WEG - ihre Ziele sind selbst Blazor und erscheinen als
+        // Ueberlagerung im Projektdialog (Risiko R2), wie der Waermebedarf seit W13.
 
         // iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers. Sie ist das
         // erste Brueckenziel MIT Parameter (der gerechnete Lauf) und das erste,
@@ -72,19 +74,25 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_vier_Ziele_sind_da()
+    public void Alle_drei_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
         //
-        // iU9-W13.2: NEUN statt zehn - WaermebedarfExternAdmin fiel weg, weil das
-        // Ziel selbst Blazor geworden ist.
-        // iU9-W14a: VIER statt neun - HeizkesselAdmin, StromspeicherAdmin, PvAdmin,
-        // PufferSpAdmin und PufferSpAdminNurLesen fallen aus demselben Grund. Die vier
-        // Katalogbrowser sind EINE Razor-Komponente, die beiden Modulkataloge eine
-        // zweite, und beide erscheinen als Ueberlagerung im selben Fenster
-        // (Risiko R2). Die Sprungbruecke ist fuer WinForms-Ziele da - fuer ein
-        // Blazor-Ziel braucht es sie nicht.
-        Assert.Equal(4, Schluessel().Length);
+        // iU9-W13.2: Es waren NEUN statt zehn. WaermebedarfExternAdmin ist weg,
+        // weil das Ziel selbst Blazor geworden ist: WaermebedarfExternDialog zeigt
+        // die Verwaltung als Ueberlagerung im selben Fenster statt in einem
+        // zweiten WinForms-Fenster (Risiko R2). Die Sprungbruecke ist fuer
+        // WinForms-Ziele da - fuer ein Blazor-Ziel braucht es sie nicht.
+        //
+        // iU9-W14b.2: SolarganglinieAdmin faellt aus demselben Grund.
+        // iU9-W14a.4: HeizkesselAdmin, StromspeicherAdmin, PvAdmin, PufferSpAdmin
+        // und PufferSpAdminNurLesen ebenso - die vier Katalogbrowser sind EINE
+        // Razor-Komponente, die beiden Modulkataloge eine zweite.
+        //
+        // Nach BEIDEN Wellen bleiben DREI: die zwei Gesetzesparameter-Ziele und
+        // die Auslegungsoptimierung des Stromspeichers, die einzige Maske, die
+        // nach iF22 bewusst WinForms bleibt.
+        Assert.Equal(3, Schluessel().Length);
     }
 }

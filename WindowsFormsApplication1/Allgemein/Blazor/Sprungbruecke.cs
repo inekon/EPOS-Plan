@@ -114,16 +114,6 @@ namespace WindowsFormsApplication1
                     // Aufrufer bekommen den Parametersatz der Verwaltung als
                     // VerwaltungGaben statt eines Sprungschluessels.
 
-                    // --- iU9-W7.0f: die Stammdaten der Solarthermieganglinien ----------
-                    // Dieselbe Maske, die Dienste.Navigation fuer Masken.SolarganglinieAdmin
-                    // zeigt; der Vorlaeufer rief sie ueber MenueCtrl.Solarganglinie(). Sie
-                    // bleibt bis Welle 14b WinForms. Nach der Rueckkehr laedt der Dialog
-                    // seine Katalogliste neu - der Anwender kann dort etwas geaendert und
-                    // mit Abbrechen geschlossen haben (A-19 aus Welle 6).
-                    case Sprungziel.SolarganglinieAdmin:
-                        using (Form_Solarganglinie_Admin f = new Form_Solarganglinie_Admin())
-                            return MitOk(f, besitzer);
-
                     // --- iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers ------
                     // Sie bleibt WinForms (iF22) - der einzige Ort des Programms, an dem
                     // ScottPlot laeuft (Heatmap und Schnittkurve der Rastersuche). Sie

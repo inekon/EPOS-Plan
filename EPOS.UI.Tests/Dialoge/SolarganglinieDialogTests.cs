@@ -35,11 +35,19 @@ public class SolarganglinieDialogTests : BunitContext
     private static ErzeugerZeile Zeile(int schluessel, string name, int ganglinieId)
         => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = ganglinieId };
 
+    /// <summary>
+    /// Ein leerer Parametersatz der Ganglinienverwaltung (iU9-W14b.2): Er genügt für
+    /// den Knopf „Bearbeiten…"; die Verwaltung selbst prüft
+    /// <c>SolarganglinieAdminDialogTests</c>.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, object> LEERER_SATZ =
+        new Dictionary<string, object>();
+
     private IRenderedComponent<SolarganglinieDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
         Func<int, ErzeugerZeile?>? aufnehmen = null,
         Action<ErzeugerZeile>? entfernen = null,
-        Func<string, Task<bool>>? sprung = null,
+        IReadOnlyDictionary<string, object>? verwaltungGaben = null,
         Func<IReadOnlyList<KatalogZeile>>? katalog = null,
         Action<bool>? geschlossen = null)
         => Render<SolarganglinieDialog>(p => p
@@ -47,7 +55,7 @@ public class SolarganglinieDialogTests : BunitContext
             .Add(x => x.Katalog, katalog ?? (() => Katalog))
             .Add(x => x.Aufnehmen, aufnehmen ?? (id => Zeile(100000, "Ganglinie Süd", id)))
             .Add(x => x.Entfernen, entfernen)
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltungGaben)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Knopf(IRenderedComponent<SolarganglinieDialog> cut, string text)
@@ -60,7 +68,7 @@ public class SolarganglinieDialogTests : BunitContext
     [Fact]
     public void Der_Feldbestand_der_Karte_steht()
     {
-        var cut = Aufbauen(sprung: _ => Task.FromResult(true));
+        var cut = Aufbauen(verwaltungGaben: LEERER_SATZ);
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
         Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
@@ -104,14 +112,18 @@ public class SolarganglinieDialogTests : BunitContext
         Assert.Contains("Description:", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
     }
 
+    /// <summary>
+    /// Ohne Parametersatz der Verwaltung bleibt „Bearbeiten…" weg — seit iU9-W14b.2
+    /// hängt der Knopf an <c>VerwaltungGaben</c> statt am Sprung-Delegaten.
+    /// </summary>
     [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Sprung()
+    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltung()
     {
         var ohne = Aufbauen();
         Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent.Trim()),
                               t => t == "Bearbeiten...");
 
-        var mit = Aufbauen(sprung: _ => Task.FromResult(true));
+        var mit = Aufbauen(verwaltungGaben: LEERER_SATZ);
         Assert.Contains("Bearbeiten...", mit.FindAll("button").Select(b => b.TextContent.Trim()));
     }
 
@@ -195,20 +207,19 @@ public class SolarganglinieDialogTests : BunitContext
     // Sprung, Abschluss, Tastatur
     // =================================================================================
 
+    /// <summary>
+    /// „Bearbeiten…" öffnet die Verwaltung als ÜBERLAGERUNG (iU9-W14b.2) — bis dahin
+    /// war es ein Sprung in ein WinForms-Fenster über
+    /// <c>Sprungziel.SolarganglinieAdmin</c>, den es nicht mehr gibt.
+    /// </summary>
     [Fact]
-    public void Bearbeiten_springt_und_zieht_den_Katalog_neu()
+    public void Bearbeiten_oeffnet_die_Verwaltung_als_Ueberlagerung()
     {
-        string? ziel = null;
-        int gezogen = 0;
-        var cut = Aufbauen(
-            sprung: s => { ziel = s; return Task.FromResult(true); },
-            katalog: () => { gezogen++; return Katalog; });
+        var cut = Aufbauen(verwaltungGaben: LEERER_SATZ);
 
-        int vorher = gezogen;
+        Assert.False(cut.Instance.VerwaltungOffen);
         Knopf(cut, "Bearbeiten...").Click();
-
-        Assert.Equal(Sprungziel.SolarganglinieAdmin, ziel);
-        Assert.Equal(vorher + 1, gezogen);
+        Assert.True(cut.Instance.VerwaltungOffen);
     }
 
     [Fact]

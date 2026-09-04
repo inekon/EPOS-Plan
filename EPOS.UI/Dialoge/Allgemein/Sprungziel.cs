@@ -58,14 +58,6 @@ public static class Sprungziel
     // statt eines Schluessels. Die Sprungbruecke bleibt fuer die WinForms-Ziele.
 
     /// <summary>
-    /// Katalog „Stammdaten Solarthermieganglinien" — der Knopf „Bearbeiten…" des
-    /// Solarganglinien-Dialogs (Vorläufer:
-    /// <c>Form_Solarganglinie.btn_Bearbeiten_Click</c> über <c>MenueCtrl.Solarganglinie()</c>,
-    /// iU9-W7.0f). Die Verwaltung selbst bleibt bis Welle 14b eine WinForms-Maske.
-    /// </summary>
-    public const string SolarganglinieAdmin = "SOLARGANGLINIE_ADMIN";
-
-    /// <summary>
     /// „Auslegung optimieren …" — die Rastersuche des Stromspeichers
     /// (<c>Form_SpeicherOptimierung</c>, Vorläufer
     /// <c>Form_Simulation_Detail.SpOptimierung_Click</c>:5992, iU9-W11b.0).

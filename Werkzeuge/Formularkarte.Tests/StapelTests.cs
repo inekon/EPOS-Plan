@@ -20,16 +20,22 @@ public sealed class StapelTests
         // (.designer.cs). Wer nur die grosse Schreibweise sucht, uebersieht ueber
         // ein Drittel der Masken.
         //
-        // iU9-W6 (03.09.2026): Beide Zeugen sind neu. Bis dahin standen hier
-        // Form_Heizkessel (gross; davor Form_KostenKomponente, davor
+        // iU9-W6 (03.09.2026): Beide Zeugen waren damals neu. Bis dahin standen
+        // hier Form_Heizkessel (gross; davor Form_KostenKomponente, davor
         // Form_Kosten_VarAuswahl) und Form_BHKWEing (klein) - beide sind mit
-        // iU9-W6.3 bzw. W6.4 geloescht (Regel M1). Die neuen Zeugen halten
-        // laenger: Form_Klimadaten kommt erst in Welle 14c an die Reihe,
-        // Form_Brauchwasser_Admin in Welle 14b.
+        // iU9-W6.3 bzw. W6.4 geloescht (Regel M1).
+        //
+        // iU9-W14b (04.09.2026): Der KLEINSCHREIBUNGS-Zeuge wandert von
+        // Form_Brauchwasser_Admin auf WizardParent - die Bedarfsverwaltung ist
+        // mit dieser Welle gefallen. Nach W14a und W14b bleiben genau ZWEI
+        // kleingeschriebene Designer im Bestand, WizardParent und
+        // Wizard_Komponenten, und beide kommen erst mit Welle 16 an die Reihe;
+        // der Zeuge haelt damit so lange wie moeglich. Der GROSSschreibungs-Zeuge
+        // Form_Klimadaten bleibt (Welle 14c).
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
         Assert.Contains(dateien, d => d.EndsWith("Form_Klimadaten.Designer.cs", StringComparison.Ordinal));
-        Assert.Contains(dateien, d => d.EndsWith("Form_Brauchwasser_Admin.designer.cs", StringComparison.Ordinal));
+        Assert.Contains(dateien, d => d.EndsWith("WizardParent.designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
         // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
         // 105 nach iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die
@@ -51,8 +57,10 @@ public sealed class StapelTests
         // CEC-Modulimport. Der Designer der Waermepumpe ist dabei nicht
         // geloescht, sondern nach Pruefmuster/Wärmepumpe/ VERSCHOBEN - er ist
         // der Zeuge des Umlaut-Tests (RazorSchreiberTests) und liegt damit
-        // ausserhalb dieses Stapellaufs.
-        Assert.True(dateien.Count >= 28, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // ausserhalb dieses Stapellaufs. Welle 14b nimmt VIER mit (29): die drei
+        // Bedarfs-Katalogverwaltungen (EINE Komponente mit drei Auspraegungen)
+        // und die Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 24.
+        Assert.True(dateien.Count >= 24, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -91,7 +99,10 @@ public sealed class StapelTests
         // dazu die Waermebedarfsverwaltung und der CEC-Modulimport. Welle 14a nimmt
         // SIEBEN mit (25): vier Katalogbrowser werden EINE Komponente, zwei
         // Modulkataloge eine zweite, dazu der fehlende vierte Katalogeditor.
-        Assert.True(Lauf.Value.Masken >= 25, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Welle 14b nimmt VIER mit: die drei Bedarfs-Katalogverwaltungen werden
+        // EINE Komponente mit drei Auspraegungen, dazu die
+        // Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 21.
+        Assert.True(Lauf.Value.Masken >= 21, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -124,10 +135,13 @@ public sealed class StapelTests
         // lokalisiert (Befund W14-B11). Gemessen OHNE die Git-Nebenbaeume
         // unter .claude/worktrees (die der Stapellauf seit dem 04.09.2026 uebergeht)
         // sind es 20: Der Lauf im W13-Worktree hatte eine Kopie des Bestands auf
-        // einem aelteren Stand mitgezaehlt.
+        // einem aelteren Stand mitgezaehlt. Welle 14b nimmt DREI lokalisierte mit
+        // (17) - Form_Prozesswaerme_Admin, Form_Stromverbraucher_Admin und
+        // Form_Solarganglinie_Admin; Form_Brauchwasser_Admin war als einzige der
+        // vier gar nicht lokalisiert (Befund W14-B54).
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 14,
+        Assert.True(Lauf.Value.Lokalisierte >= 11,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

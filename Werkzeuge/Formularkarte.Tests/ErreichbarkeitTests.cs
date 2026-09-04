@@ -302,10 +302,11 @@ public sealed class ErreichbarkeitTests
         // 63 nach W8, 71 von 73 nach W7, 79 von 81 nach W6, 86 von 88 nach W5,
         // 89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die eine uebrige ist
         // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43, nach
-        // Welle 12: 37 von 38, nach Welle 13: 31 von 32. Mit Welle 14a faellt die
-        // letzte "unklar"-Maske: 25 von 25 - ALLE erreichbar. Die Zahl sinkt mit
-        // jeder Welle, der Anteil steht jetzt auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 25,
+        // Welle 12: 37 von 38, nach Welle 13: 31 von 32, nach Welle 14b: 27 von
+        // 28. Mit Welle 14a faellt die letzte "unklar"-Maske: nach BEIDEN Wellen
+        // sind es 21 von 21 - ALLE erreichbar. Die Zahl sinkt mit jeder Welle,
+        // der Anteil steht jetzt auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 21,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

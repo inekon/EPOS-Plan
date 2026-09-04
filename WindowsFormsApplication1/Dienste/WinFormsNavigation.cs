@@ -93,38 +93,33 @@ namespace WindowsFormsApplication1
                 case Masken.WaermebedarfExternAdmin:
                     return WaermebedarfAdminHuelle.Oeffnen(null);
 
+                // iU9-W14b.1: Die drei Bedarfs-Katalogverwaltungen sind EINE
+                // Razor-Komponente mit drei Auspraegungen; die Huelle waehlt sie
+                // ueber BedarfsArt. Die drei WinForms-Masken sind im selben Schritt
+                // GELOESCHT (Regel M1). Der Aufruf frm.SetControls("") entfaellt: Die
+                // Komponente laedt ihre Liste selbst, und ein Projekt hatten die drei
+                // Verwaltungen ohnehin nie.
                 case Masken.ProzesswaermeAdmin:
-                    using (Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Prozesswaerme);
 
                 case Masken.StromverbraucherAdmin:
-                    using (Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Stromverbraucher);
 
                 // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
                 // StromganglinieAdminDialog; die Huelle zeigt sie modal.
                 case Masken.StromganglinieAdmin:
                     return StromganglinieAdminHuelle.Oeffnen(null);
 
+                // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
+                // Razor-Komponente SolarganglinieAdminDialog; die Huelle zeigt sie
+                // modal. Der Rueckgabewert sagt jetzt etwas: Beim Vorlaeufer war er
+                // IMMER false, weil btn_OK_Click nur ein Feld "result" setzte und nie
+                // this.DialogResult (Befund W14-B4).
                 case Masken.SolarganglinieAdmin:
-                    using (Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return SolarganglinieAdminHuelle.Oeffnen(null);
 
                 case Masken.BrauchwasserAdmin:
-                    using (Form_Brauchwasser_Admin frm = new Form_Brauchwasser_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
 
                 // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
                 // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie

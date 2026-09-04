@@ -117,6 +117,105 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BADM_BTN_AENDERN_BRAUCHWASSER" xml:space="preserve">
+    <value>Profil ändern...</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
+    <value>Prozess ändern</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
+    <value>Verbraucher in DB ändern</value>
+  </data>
+  <data name="BADM_BTN_GRAFIK" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
+    <value>Profil löschen</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_PROZESS" xml:space="preserve">
+    <value>Prozess löschen</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_STROM" xml:space="preserve">
+    <value>Verbraucher in DB löschen</value>
+  </data>
+  <data name="BADM_BTN_NEU_BRAUCHWASSER" xml:space="preserve">
+    <value>Neues Profil...</value>
+  </data>
+  <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
+    <value>Neuer Prozess</value>
+  </data>
+  <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
+    <value>Verbraucher in DB neu</value>
+  </data>
+  <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
+    <value>Profiltyp ändern...</value>
+  </data>
+  <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
+    <value>Typ ändern</value>
+  </data>
+  <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
+    <value>Typ in DB ändern</value>
+  </data>
+  <data name="BADM_EINHEIT_STROM" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="BADM_EINHEIT_WAERME" xml:space="preserve">
+    <value>MWth</value>
+  </data>
+  <data name="BADM_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_BRAUCHWASSER" xml:space="preserve">
+    <value>jährlicher Wärmebedarf:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_PROZESS" xml:space="preserve">
+    <value>jährlicher Prozesswärmebedarf:</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_STROM" xml:space="preserve">
+    <value>jährlicher Strombedarf:</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_BRAUCHWASSER" xml:space="preserve">
+    <value>Datenbank Brauchwasserprofile</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_PROZESS" xml:space="preserve">
+    <value>Datenbank Prozesswärme:</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_STROM" xml:space="preserve">
+    <value>Datenbank Stromverbraucher</value>
+  </data>
+  <data name="BADM_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="BADM_LBL_TYP" xml:space="preserve">
+    <value>Typ:</value>
+  </data>
+  <data name="BADM_MSG_GELOESCHT" xml:space="preserve">
+    <value>"{0}" wurde gelöscht.</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_BRAUCHWASSER" xml:space="preserve">
+    <value>Bitte wählen Sie zuerst ein Profil aus!</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_PROZESS" xml:space="preserve">
+    <value>Bitte wählen Sie einen Prozess aus, den Sie löschen möchten.</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_STROM" xml:space="preserve">
+    <value>Bitte wählen Sie zuerst einen Verbraucher aus!</value>
+  </data>
+  <data name="BADM_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Datensatz konnte nicht aus der Datenbank gelöscht werden.</value>
+  </data>
+  <data name="BADM_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="BADM_TITEL_BRAUCHWASSER" xml:space="preserve">
+    <value>Administration Brauchwasser</value>
+  </data>
+  <data name="BADM_TITEL_PROZESS" xml:space="preserve">
+    <value>Prozesswärme Verwaltung</value>
+  </data>
+  <data name="BADM_TITEL_STROM" xml:space="preserve">
+    <value>Stromverbraucher Verwaltung</value>
+  </data>
   <data name="BHKWK_MSG_SCHUTZ" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.</value>
   </data>
@@ -1042,6 +1141,45 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   </data>
   <data name="PVIMP_TITEL" xml:space="preserve">
     <value>Photovoltaik Module Import</value>
+  </data>
+  <data name="SGAD_BTN_ANZEIGEN" xml:space="preserve">
+    <value>Datei bearbeiten...</value>
+  </data>
+  <data name="SGAD_BTN_DATEI" xml:space="preserve">
+    <value>Datei Auswählen...</value>
+  </data>
+  <data name="SGAD_BTN_EINLESEN" xml:space="preserve">
+    <value>Datei Einlesen...</value>
+  </data>
+  <data name="SGAD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Ganglinie Löschen</value>
+  </data>
+  <data name="SGAD_GRP_EINLESEN" xml:space="preserve">
+    <value>Ganglinie aus Datei Einlesen</value>
+  </data>
+  <data name="SGAD_LBL_DATEI" xml:space="preserve">
+    <value>Gewählte Datei:</value>
+  </data>
+  <data name="SGAD_LBL_KATALOG" xml:space="preserve">
+    <value>Ganglinien in DB</value>
+  </data>
+  <data name="SGAD_LBL_ORDNER" xml:space="preserve">
+    <value>Datei Basis Ordner:</value>
+  </data>
+  <data name="SGAD_LBL_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte über 1 Jahr als Textdatei</value>
+  </data>
+  <data name="SGAD_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert.</value>
+  </data>
+  <data name="SGAD_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese Solarganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="SGAD_MSG_VORHANDEN" xml:space="preserve">
+    <value>Solarganglinie ist bereits in Datenbank vorhanden!</value>
+  </data>
+  <data name="SGAD_TITEL" xml:space="preserve">
+    <value>Solarthermie Ganglinie</value>
   </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Quell-Entnahmehöhe (0…1):</value>

@@ -405,6 +405,17 @@ ebenfalls **verschoben statt gelöscht** — nach `Pruefmuster/Solarthermie/`, w
 | Wächter Plattform (`System.Windows.Forms` …) | leer | **leer** |
 | `git grep` auf die sieben Klassennamen, `PufferSpFilter`, `SpeichernLeiste`, `KiAufrufKnopf` | 0 außerhalb Protokoll/Prüfmuster | **0** |
 
+**Nach dem Abschluss-Merge von `origin/ios_migration` (Welle W14b, `c9855b1`)** — die Zahlen
+der Tabelle sind die der Welle allein, die des gemeinsamen Standes stehen hier:
+
+| Prüfung | Ergebnis nach dem Merge |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler, 12 Warnungen** |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | **3 227** (450 + 337 + 1 764 + 676) |
+| `dotnet test Werkzeuge/Formularkarte.Tests` | **124** |
+| Stapellauf `--alle` | **21 Masken, 24 Designer-Dateien, 11 lokalisiert, 21 von 21 erreichbar, 0/0/0** |
+| Referenzlauf 1030/1007/1017 | **PASS, byte-gleich** |
+
 ---
 
 ## 9 Windows-Abnahme

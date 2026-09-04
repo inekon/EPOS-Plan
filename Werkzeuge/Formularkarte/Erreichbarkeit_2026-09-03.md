@@ -24,11 +24,16 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
-> **Nachgezogen mit iU9‑W14a** (04.09.2026): Die Tabellen unten stammen aus einem frischen
-> Stapellauf. Der Befund zählt jetzt **25 Masken, davon 25 erreichbar** — Welle 12 nahm fünf
-> (38), Welle 13 sechs (32), Welle 14a sieben weitere: die vier Erzeuger-Katalogbrowser (sie
-> werden EINE Razor-Komponente mit vier Ausprägungen), der fehlende vierte Katalogeditor und
-> die zwei Modulkataloge (eine zweite Komponente mit zwei Ausprägungen).
+> **Nachgezogen mit iU9‑W14a und iU9‑W14b** (04.09.2026): Die Tabellen unten stammen aus einem
+> frischen Stapellauf nach BEIDEN Wellen. Der Befund zählt jetzt **21 Masken, davon 21
+> erreichbar** — Welle 12 nahm fünf (38), Welle 13 sechs (32), Welle 14a sieben (25) und
+> Welle 14b vier (21).
+>
+> **Welle 14a** nahm die vier Erzeuger-Katalogbrowser (sie werden EINE Razor-Komponente mit vier
+> Ausprägungen), den fehlenden vierten Katalogeditor und die zwei Modulkataloge (eine zweite
+> Komponente mit zwei Ausprägungen). **Welle 14b** die drei Bedarfs-Katalogverwaltungen
+> (`Form_Brauchwasser_Admin`, `Form_Prozesswaerme_Admin`, `Form_Stromverbraucher_Admin` — EINE
+> Komponente mit drei Ausprägungen) und `Form_Solarganglinie_Admin`.
 >
 > **Mit Welle 14a fällt der LETZTE „unklar"-Zustand des Bestands.** Er hing an
 > `Form_PufferSp_Bearbeiten`: Ihre Mutter `Form_PufferSp_Admin` schaltete `btn_Neu` und
@@ -205,26 +210,40 @@ Zuordnung der Projektganglinien und die Lastspitzenkappung; zusammen 2 134 Zeile
 | `Form_Stromganglinie` | ja | gelöscht; `StromganglinieDialog` mit `StromganglinieHuelle`. **Mit ihr fällt der Anker des Erreichbarkeitstests**: Von den zwölf Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13/W14 (Befund W12‑B26). Nachfolger ist `Form_AdminSettings` über `MDIMainForm → MenuItem_Einstellungen` — W14c ist die letzte der W13/W14-Wellen. |
 | `Form_PeakShaving` | ja | gelöscht; `PeakShavingDialog` mit `PeakShavingHuelle` (`Masken.PeakShaving`, mit Projekt-Id). |
 
-**`Views/Stromverbraucher` und `Views/Stromspeicher` führen seither je eine
+**`Views/Stromverbraucher` und `Views/Stromspeicher` führten danach je eine
 Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 `Views/Import` führt gar keine mehr.
+
+## Stand nach iU9-W14b (Bedarfs-Admin, 04.09.2026)
+
+Welle 14b hat die vier ruhenden Verwaltungsmasken des Bedarfs umgestellt und gelöscht:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Stromverbraucher_Admin` | ja | gelöscht; Ausprägung `Stromverbraucher` von `EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog` mit `BedarfAdminHuelle`. |
+| `Form_Prozesswaerme_Admin` | ja | gelöscht; Ausprägung `Prozesswaerme` derselben Komponente. |
+| `Form_Brauchwasser_Admin` | ja | gelöscht; Ausprägung `Brauchwasser` derselben Komponente. **Mit ihr wandert der KLEINSCHREIBUNGS-Zeuge** des Tests `FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise` auf `WizardParent.designer.cs` (Welle 16). |
+| `Form_Solarganglinie_Admin` | ja | gelöscht; `EPOS.UI/Dialoge/Solarthermie/SolarganglinieAdminDialog` mit `SolarganglinieAdminHuelle`. Ihr `Sprungziel` entfällt — der Projektdialog zeigt sie als Überlagerung. |
+
+**`Views/Brauchwasser`, `Views/Prozesswärme` und `Views/Stromverbraucher` führen seither
+keine Designer-Maske mehr**; `Views/Solarthermie` führt noch eine
+(`Form_SolarKollektorenAdmin`, Welle 14a).
 
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 25 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 21 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 0 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 25 | |
+| gesamt | 21 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
 | FormMain | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain | `WindowsFormsApplication1/Views/Hauptformular/FormMain.Designer.cs` |
 | Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
-| Form_Brauchwasser_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Brauchwasser → Masken.BrauchwasserAdmin → Form_Brauchwasser_Admin | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser_Admin.designer.cs` |
 | Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
 | Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
 | Form_HelpPopup | ja | Form_Start → pBox_Heizkessel → Program.FillRoundedRectangle → Program.Main → HilfeAutomatik.Starten → HelpExtender.PopupBereitstellen → Form_HelpPopup | `WindowsFormsApplication1/Views/Help/Form_HelpPopup.Designer.cs` |
@@ -235,11 +254,8 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 | Form_ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/Form_ProjektAuswahl.Designer.cs` |
 | Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
 | Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
-| Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
-| Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
-| Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
 | ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
 | WizardParent | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent | `WindowsFormsApplication1/Views/Wizard/WizardParent.designer.cs` |
