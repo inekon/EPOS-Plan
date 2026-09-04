@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W14b umgesetzt, W14c in Arbeit | `4e77221` | **21** Designer-Masken offen (28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar** |
+| **iU9** Masken in Wellen | 🔄 W0 bis W14c umgesetzt, W15a in Arbeit | `f7e2758` | **17** Designer-Masken offen (21 nach W14a, 28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar**; seit W14c die **Verwaltung** — `GesetzeskatalogDialog` (Zeilendialog als Überlagerung), `KatalogDublettenDialog` mit dem Baustein `Baumansicht`, `EinstellungenDialog` (`EinstellungenCtrl` im Kern), `KlimaregionDialog` (`KlimaregionStammCtrl` und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer → 32 Proben); die **letzten zwei ablösbaren Sprungziele** → Überlagerungen, `ChartManager` (die MS-Chart-Bindung) und `RoundedPanel` gefallen, **WFO1000 6 → 0**, Warnungen der Mappe 12 → 6 |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,54 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
+>
+> **Fünf Masken — 2 198 Zeilen `.cs`, 1 425 Designer, 26 `MessageBox` + 2 indirekte — sind fünf Razor-Komponenten in
+> vier Fenstern:** `GesetzeskatalogDialog` mit `GesetzeskatalogZeileDialog` als Überlagerung (`EPOS.UI/Dialoge/Admin/`;
+> aus dem Kostendialog und dem Wirtschaftlichkeits-Parameterdialog erscheint der Katalog jetzt IM Dialog, E‑1),
+> `KatalogDublettenDialog` über dem neuen Baustein **`Baumansicht`** (der einzige `TreeView` des Bestands; 14 bunit-Fälle:
+> Rollen und Ebenen, Dreieck klappt ohne zu wählen, ein `tabindex`, die vier Pfeiltasten, Auswahl überlebt den Neuaufbau),
+> `EinstellungenDialog` (`EinstellungenCtrl` im Kern über `Dienste.Pfade`/`Dienste.Einstellungen`, vier Rubriken als
+> `Reiter`) und `KlimaregionDialog` (`KlimaregionStammCtrl` in den Kern gezogen, `KlimaImportAblauf` mit Abbruch, die zwei
+> Klimabilder im Renderer → **32 Proben**). **Vier der fünf Fachteile lagen schon im Kern** (`GesetzKatalog`,
+> `DublettenPruefung`/`KatalogBereinigung`/`KatalogRegistry`, `SolarPVGISCalculator`) — die Vorarbeit war Zuschnitt, kein
+> neuer Rechenweg; der Nachweis (`KatalogpflegeTests`, 104 Fälle über eine Arbeitskopie) entstand vor der ersten Maske,
+> weil es für acht Kern-Klassen **keinen einzigen Test** gab (B62). Mit der Welle fallen die **letzten zwei ablösbaren
+> `Sprungziel`-Zweige** (`Sprungbruecke` führt nur noch `SpeicherOptimierung`, bis W16 — R‑W14c‑11), `ChartManager`
+> (560 Z., **die MS-Chart-Bindung endet**), `RoundedPanel` und **alle sechs WFO1000** der Mappe (Warnungen 12 → 6, Rest
+> Altbestand). Neun Sachcommits, ein Merge und ein Gate-Nachtrag (`8ee59d7` … `c1b049e`), auf `ios_migration` als
+> `f7e2758`; 80 Textschlüssel de/en für zwei nie lokalisierte Masken.
+>
+> **17 Angleichungen, zwei hingenommene Abweichungen** (A‑1…A‑17): `Rueckfrage.VorgabeNein` für sechs Löschfragen,
+> der Klimaimport lässt sich abbrechen, Klimaregion löschen fragt **und räumt die 8 760 + 365 Datenzeilen ab** (der alte
+> Weg ließ Waisen), die Dublettenprüfung des Imports fragt die Datenbank statt der Präfixsuche, **ein** PVGIS-Abruf statt
+> vier (kein gespeichertes Byte ändert sich), „Standardwerte" setzt den Datenbanknamen ins richtige Feld (B53, der einzige
+> Rechenfehler), Dublettenscan im Hintergrund mit Fortschritt; hingenommen: Legende in den Klimabildern, kein Mausrad-Zoom.
+> Sechs Befunde wörtlich trotz Befund (B3, B5, B8, B16, B30, B39). **Anwenderfragen:** E‑3 (Komponente heißt
+> `KlimaregionDialog`, der Menütext bleibt „Klimadaten" — Umbenennen?), E‑5 (iOS ohne die fünf „Durchsuchen…"-Knöpfe der
+> Einstellungen — reicht das?), E‑6 (Altwaisen: `Kenndaten_Test.sqlite` hat **null** — 32 Regionen × 8 760 und × 365
+> exakt; für die Anwenderdatenbank offen), E‑7 (`Ortsnamen.txt` fehlt in Auslieferung und Repo — Variante (c) umgesetzt:
+> vorhanden → Vorschläge, fehlend → leere Liste, nie ein Absturz; der Vorläufer öffnete ohne Datei gar nicht), E‑8 (Hinweis:
+> ohne WebView2-Laufzeit bleiben die letzten vier Admin-Masken leer). **Testanker:** `Form_Klimadaten` als Prüfmuster
+> `Pruefmuster/Klimadaten/` (fünf Anker und der `Chart`-Typzeuge), drei Anker auf `MDIMainForm` (fällt als letzte, W16);
+> Schwellen 20 / 17 / 11 / 17. Abweichung von der Vermessung benannt: der Test zählt 20 Designer-Dateien repoweit
+> (18 + 2 generierte des Kerns).
+>
+> **Nachweise** (auf dem gemergten Stand `f7e2758`, Linux): Build → 0 Fehler, **6** Warnungen (12 nach W14a) ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 430** grün (3 227 nach W14a), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **124** grün · Stapellauf **17** Masken (21 − 4; `Form_KatalogDubletten` war eine Code-Form ohne
+> Designer), 18 Designer, 17 erreichbar, **0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer 1 232 Texte, 0 Fundstellen ·
+> ChartProben **32** Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · beide
+> Wächter leer.
+>
+> **Protokoll** mit Feldkartenabgleich je Maske, der WFO1000-Bilanz, 17 Abweichungen, den Befunden B1…B64, der Zählung
+> zu E‑6 und 13 Abnahmepunkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Katalog aus beiden Razor-Aufrufern mit Esc-Ebenen, Klimaimport einmal echt gegen PVGIS
+> vorher/nachher zahlengleich, Abbrechen, die zwei Bilder gegen den Bestand, Löschen mit Kaskade (`SELECT COUNT(*)`),
+> Dublettenscan mit Fortschritt und Baum per Tastatur, Einstellungen speichern/zurücksetzen, KI-Schalter mit
+> Maschinenriegel, Reihenfolge des Administrationsmenüs (B63), de/en, 125 %, fehlende Ortsliste. Der sechzehnte
+> iOS-Lauf folgt auf diesem Stand.
 
 > **Statusblock iU9 — Welle 14a umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `c9855b1` nach W14b)**
 >
