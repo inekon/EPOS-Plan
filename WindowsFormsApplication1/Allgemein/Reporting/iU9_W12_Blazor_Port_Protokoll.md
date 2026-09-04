@@ -1,0 +1,517 @@
+﻿# iU9 — Welle 12: Stromganglinie, Peak-Shaving, Importkonflikte
+
+**Stand 04.09.2026.** Vermessung: `iU9_W12_Vermessung.md` (1 300 Zeilen, Stand
+`d1683bd`) mit den Befunden W12‑B1 … W12‑B26. Basis dieser Welle: `73a4338`
+(`ios_migration` nach W11b).
+
+Vorbilder für Form und Tiefe: `iU9_W11b_Blazor_Port_Protokoll.md`,
+`iU9_W10a_Blazor_Port_Protokoll.md`.
+
+---
+
+## 1. Auftrag und Ergebnis
+
+**Sechs WinForms-Masken — 2 134 Zeilen `.cs`, 1 409 Zeilen Designer, zehn
+`MessageBox` und dreizehn indirekte über `Program.ZahlPruefen` — sind sechs
+Razor-Komponenten.** Jede WinForms-Fassung ist gelöscht (Regel M1).
+
+| Nr | Komponente (`EPOS.UI/`) | ersetzt | Windows-Hülle |
+|---|---|---|---|
+| W12.1 | `Dialoge/Strom/GanglinieProtokollDialog` | `Form_GanglinieProtokoll` (148 + 122) | — (Überlagerung in 2 und 6) |
+| W12.2 | `Dialoge/Strom/GanglinieImportOptionenDialog` | `Form_GanglinieImportOptionen` (383 + 337) | — (Überlagerung in 2 und 6) |
+| W12.3 | `Dialoge/Import/ImportKonflikteDialog` | `Form_ImportKonflikte` (441, **ohne Designer**) | `Views/Import/ImportKonflikteHuelle.cs` (fällt mit W13) |
+| W12.4 | `Dialoge/Strom/StromganglinieAdminDialog` | `Form_Stromganglinie_Admin` (276 + 142 + 3 `.resx`) | `Views/Stromverbraucher/StromganglinieAdminHuelle.cs` |
+| W12.5 | `Dialoge/Strom/StromganglinieDialog` | `Form_Stromganglinie` (125 + 128 + 3 `.resx`) | `Views/Stromverbraucher/StromganglinieHuelle.cs` |
+| W12.6 | `Dialoge/Strom/PeakShavingDialog` | `Form_PeakShaving` (761 + 680 + leere `.resx`) | `Views/Stromspeicher/PeakShavingHuelle.cs` |
+
+**Der rote Faden ist die AP5-Importkette.** Sie stand zweimal wörtlich im
+Bestand — `Form_Stromganglinie_Admin.btn_Einlesen_Click` (:93‑261, mit Ablage)
+und `Form_PeakShaving.Datei_Click` (:322‑396, ohne). Seit W12.0d ist sie **ein**
+Kern-Ablauf mit zwei Ausprägungen und drei Rückrufen
+(`EPOS.Kern/Allgemein/Import/GanglinienImportAblauf.cs`).
+
+**Der Nachweis der Welle ist der bitgleiche Import.** Dafür gab es keinen
+einzigen Test (Befund W12‑B14). Die zwölf Proben und ihre eingefrorenen
+Erwartungswerte sind deshalb der **erste** Schritt der Welle, nicht der letzte.
+
+### Commits (15, auf `73a4338`)
+
+| Commit | Schritt |
+|---|---|
+| `72dd8ba` | W12.0i — zwölf Ganglinien-Proben und der bitgleiche Nachweis des Imports |
+| `d1f65be` | W12.0a — `PeakShavingCtrl` in den Kern, `OleDbException` aufgelöst |
+| `cd99e77` | W12.0b — die Konfliktregeln des Imports in den Kern |
+| `a85d426` | W12.0c — `GanglinienProtokollText` in den Kern, Farbe wird Stufe |
+| `c303751` | W12.0d — die AP5-Importkette als EIN Kern-Ablauf |
+| `e71d568` | W12.0e — die acht Auswahllisten des Importdialogs in den Kern |
+| `d83b76e` | W12.0f — der Kennzahlenblock der Lastspitzenkappung in den Kern |
+| `5c6f163` | W12.0g — das inline-SQL der Stromganglinien in den Kern, Befund B7 behoben |
+| `4419051` | W12.1 — das Prüfprotokoll des Lastgangimports |
+| `08bb8f0` | W12.2 — Format und Vorschau des Lastgangimports |
+| `0ddd8f3` | W12.3 — der gemeinsame Konfliktdialog samt Hülle |
+| `1c8c7c3` | W12.4 — die Stromganglinien-Verwaltung |
+| `58d02f6` | W12.5 — die Stromganglinien-Zuordnung |
+| `5069180` | W12.6 — die Lastspitzenkappung |
+| `5a99cab` | W12.6a — die zwei Zwischenmasken der Importkette gelöscht |
+
+W12.7 (Ressourcen), W12.8 (Formularkarte) und W12.9 (Protokoll, Statusblöcke)
+stehen im Abschlusscommit dieser Datei.
+
+**W12.0h ist ohne eigenen Commit geblieben** — siehe § 3.4: Der Auftrag sah
+einen neuen Renderer vor, der Bestand trug ihn schon.
+
+---
+
+## 2. Die zwei Entscheidungen der Welle
+
+### 2.1 `Form_ImportKonflikte` wird in W12 gebaut — Blatt vor Host, mit Hülle
+
+Der Konfliktdialog hat **fünf** Aufrufer: einer wird mit W12.4 Blazor, die vier
+Importmasken der Welle 13 bleiben bis dahin WinForms. Bliebe die alte Fassung
+stehen, müsste `StromganglinieAdminDialog` **mitten in einem Rückruf** ein
+modales WinForms-Fenster öffnen *und* eine `List<KonfliktEntscheidung>`
+zurückbekommen. Die `Sprungbruecke` kann das nicht: Sie löst Schlüssel → `Form`
+auf und liefert einen `bool`.
+
+Deshalb: Komponente **und** `ImportKonflikteHuelle` mit der Signatur des
+Vorläufers. Die vier W13-Aufrufer
+(`Form_Heizkessel_einlesen:240`, `Form_PufferSp_einlesen:227`,
+`Form_WP_einlesen:197`, `Form_CECImport:484`) ändern **je eine Zeile**. Die
+Hülle wird mit Welle 13 gelöscht; Lebensdauer eine Welle, Kosten rund 80 Zeilen.
+
+### 2.2 Kein neuer Renderer für das Peak-Shaving-Bild (W12.0h)
+
+Der Auftrag ließ die Wahl: `ChartRenderer.ErzeugerStapel` prüfen und, wenn es
+trägt, **nutzen** — sonst `ChartRenderer.LastgangKappung` neu bauen.
+
+`ErzeugerStapel` trägt seit iU9‑W11a (Bild B3) eine **Sekundärachse**
+(`zweiteAchse`, `y2Titel`), zeichnet Linien ohne Stapel, y2 ab null und ohne
+Hauptgitter, misst 1 240 × 560 und rechnet die vier Jahresstundenmarken über die
+Reihenlänge um — also auch im Viertelstundenraster, ohne auf 8 760 zu kappen.
+Genau das ist die Falle, an der `ChartZeichnen` des Vorläufers zwei Schalter
+brauchte (`MaxXVALUE` **und** `MitViertelStunde`, Kommentar :676‑681).
+
+**Also kein neuer Renderer und keine neue ChartProbe.** Neu ist nur
+`EPOS.Kern/Allgemein/Bericht/PeakShavingBild.cs` (77 Z.), das die drei Reihen
+mit den Farben des Vorläufers zusammenstellt und `ErzeugerStapel` ruft. Die Zahl
+der geprüften Bilder bleibt **30**.
+
+---
+
+## 3. Bauweise
+
+### 3.1 Die Importkette — ein Ablauf, drei Rückrufe
+
+`GanglinienImportAblauf.MitAblage(pfad, rasterVorgabe, rueckrufe)` und
+`OhneAblage(pfad, rueckrufe)`. Die Schritte sind die des Kommentarblocks
+`Form_Stromganglinie_Admin.cs:79‑92`: Erkenne → Optionen → Lies → Prüfe →
+Protokoll → Dubletten/Konflikte → Ablage **oder** Rückgabe.
+
+**Der Ablauf zeigt nichts an.** Er legt Entscheidungen als `Func<…, Task<…>>`
+vor und liefert seine Meldungen (`IMPORT_MSG_*`) als fertigen Text im Ergebnis;
+ob daraus ein Warnbanner, eine `MessageBox` oder eine iOS-Blase wird,
+entscheidet der Wirt.
+
+**Der Wirt zeigt sie als Überlagerung.** Jeder Rückruf setzt seinen
+Sichtbarkeitsschalter, ruft `InvokeAsync(StateHasChanged)` und wartet auf eine
+`TaskCompletionSource`, die der Unterdialog beim Schließen auflöst. Kein zweites
+Fenster, keine zweite WebView (Risiko R2). Die Kette selbst läuft in der Hülle
+auf `Task.Run`.
+
+**Ein sauberer Lauf legt das Protokoll gar nicht erst vor** — dieselbe Regel wie
+`Form_GanglinieProtokoll.Zeigen` :93. Die statische Tür des Vorläufers ist eine
+Hilfsfunktion des Wirts geworden (`Noetig(importMoeglich, bestaetigungNoetig)`).
+
+### 3.2 Was in den Kern gezogen ist
+
+| Datei (neu bzw. verschoben) | Herkunft | Grund |
+|---|---|---|
+| `Controller/PeakShavingCtrl.cs` (331) | `WindowsFormsApplication1/Controller/` | oberflächenfrei, aber für `EPOS.UI` unerreichbar (B23) |
+| `Allgemein/Katalog/ImportKonfliktModell.cs` | `Form_ImportKonflikte` :9‑24, :222‑417 | sonst zöge `EPOS.UI` eine WinForms-Datei (B18) |
+| `Allgemein/Import/GanglinienProtokollText.cs` | `Views/Stromverbraucher/` | vier Aufrufstellen in zwei Masken, beide werden Razor |
+| `Allgemein/Import/GanglinienImportAblauf.cs` | die Kette, zweimal im Bestand | **B1**, der Kern der Welle |
+| `Allgemein/Import/GanglinienOptionenModell.cs` | `Form_GanglinieImportOptionen` :36‑63 | Blazor und iOS brauchen dieselben Listen |
+| `Controller/PeakShavingKennzahlenBlock.cs` | `Form_PeakShaving` :583‑608 | Muster `SpeicherKennzahlenBlock` (W11a) |
+| `Controller/PeakShavingEingaben.cs` | `Form_PeakShaving.ParameterLesen` :419‑480 | vier Regeln und vier Umrechnungen — Fachaussagen |
+| `Allgemein/Bericht/PeakShavingBild.cs` | `Form_PeakShaving.ChartZeichnen` :682‑728 | eine Wahrheit über Reihen und Farben |
+| `Z_ProjektStromganglinieCtrl.LiesProjekt`, `StromganglinieStammCtrl.FindeStamm` | drei inline-SQL | **B4**, Konkatenation mit Anwendertext |
+
+**Zwei Zählungen der Vermessung sind dabei nachgerechnet worden** (W12.0f): Es
+sind **18** Kennzahlen, nicht 17 (5 + 4 + 3 + 6), und **12** Monatszeilen, nicht
+13 — „Gesamtreihe" (Monat 0) ist die Sammelposition der Engine für ein Raster
+ohne ganzzahliges Tagesmaß, keine dreizehnte Zeile.
+
+### 3.3 Der Rechenlauf läuft nebenher (Befund W12‑B22, behoben)
+
+`BerechnePeakShaving` über 35 040 Werte und `MinimaleSchwelleKw` mit ihrer
+Suchschleife über ganze Jahresläufe liefen im Oberflächenfaden. **In einer
+WebView ist der Renderfaden derselbe Faden.** Beide gehen deshalb über einen
+Delegaten, den `PeakShavingHuelle` auf `Task.Run` legt; ebenso das Lesen der
+Ganglinienwerte (`PeakShavingCtrl.LeseWerte`, bis 35 040 Zeilen) und das
+Zeichnen des Bildes. Der Wirt zeigt für die Dauer den Baustein `Fortschritt`
+mit unbestimmtem Balken und sperrt alle Felder.
+
+**Ohne Abbrechen-Knopf, mit Absicht.** Die Engine kennt keinen Abbruch; ein
+Knopf ohne Wirkung wäre schlechter als keiner (Regel des Bausteins,
+iU9‑W11a.7).
+
+### 3.4 Das Bild
+
+`PeakShavingBild.Lastgang(ergebnis, mitSoC)` → `ChartRenderer.ErzeugerStapel`
+mit leerem Stapel, zwei Linien, ohne Kontur, `Achse.Jahresstunden`,
+`sortiert = false` und — nur wenn der Schalter steht — dem Ladezustand als
+`zweiteAchse`. Farben wörtlich: `(190, 90, 90)`, `(40, 110, 180)`,
+`(120, 130, 140)`.
+
+---
+
+## 4. Feldkarten-Abgleich
+
+Die Feldkarte wurde für jede der fünf Masken mit Designer **neu gezogen**
+(`dotnet run --project Werkzeuge/Formularkarte -- <Designer.cs>`), zuletzt für
+`Form_Stromganglinie` (7 Zeilen: 2 ListBox, 5 Button) und `Form_PeakShaving`
+(59 Steuerelemente).
+
+| Maske | Kartenzeilen | in der Komponente |
+|---|---|---|
+| `Form_GanglinieProtokoll` | 6 | Kopftext, Raster (Stufe / Meldung), OK, zweiter Fußknopf |
+| `Form_GanglinieImportOptionen` | 8 Listen + Schalter + Vorschau | acht `Auswahlfeld`, `Schalter`, Vorschauraster, drei Fußknöpfe |
+| `Form_ImportKonflikte` | (ohne Designer, gegen den Quelltext) | Raster Eintrag / Befund / Aktion, „Alle auslassen", Übernehmen, Abbrechen |
+| `Form_Stromganglinie_Admin` | 10 | Katalogliste, Rasterliste (2 Einträge), Dateiwahl, Löschen, OK |
+| `Form_Stromganglinie` | **7** | 2 Listen, ◀, ▶, „Bearbeiten…", OK, Abbrechen |
+| `Form_PeakShaving` | **59** | Optionsgruppe, Auswahlfeld, Dateiwahl, 14 `Zahlenfeld`, 3 `Schalter`, 2 Knöpfe, 3 `Reiterblatt`, CSV, Schließen |
+
+**Kein Feld ist verlorengegangen.** Was ersatzlos entfällt, steht in § 5.
+
+---
+
+## 5. Abweichungen (A‑Zeilen)
+
+| Nr | Abweichung | Begründung |
+|---|---|---|
+| **A‑1** | „▶" entfernt die **gewählte Zeile**, nicht den ersten Namensvetter | `btn_Entfernen_Click` :89 verglich `m_szStromganglinie == listBox.Text`; zwei gleich benannte Zuordnungen trafen immer die erste. Dieselbe A‑Zeile wie in W7.8. |
+| **A‑2** | `SetControls(szProjekt)` ersatzlos | Der Parameter wurde nicht benutzt, und der Datenbankzugriff :43‑44 las ohne Verwendung (**B2**). |
+| **A‑3** | `Z_ProjWaermebedarfModel` als Zwischenablage ersatzlos | Typverwechslung, folgenlos, aber irreführend (**B3**). |
+| **A‑4** | Die ReadOnly-Meldung steht als `IMPORT_MSG_SCHREIBGESCHUETZT` im Katalog | Sie stand hartkodiert deutsch im Quelltext (**B12**). |
+| **A‑5** | **Rückfrage vor dem Löschen** eines Katalogeintrags | Der Vorläufer löschte ohne jede Sicherheitsabfrage (**B12**, zweite Hälfte). |
+| **A‑6** | Der Fehlschlag der Originalkopie steht als Warnung im Protokoll | `catch { }` verschluckte ihn (**B13**). Wer glaubt, sein Original sei gesichert, und es ist nicht so, merkt es sonst erst, wenn er es braucht. |
+| **A‑7** | Der Pfad ist Parameter, kein Feld | `filebasename` war ein Feld: Brach der Anwender ab, lief die Kette mit der Datei des **vorigen** Laufs weiter (**B13b**). |
+| **A‑8** | Das Protokoll hat einen `InfoKnopf` | Es war als einziges Glied der Kette ohne Hilfeeinstieg (**B17**); Ziel ist die vorhandene Zeile `Form_GanglinieImportOptionen.btn_Help`. |
+| **A‑9** | `HilfeKontext` kennt den Konfliktdialog | Er hatte als einzige der sechs Masken keinen Bereich, obwohl `help_mapping.txt:167` seit H1/H2 eine Zeile führt (**B20**). |
+| **A‑10** | Die Konfliktaktion ist ein **Wert** | Der Vorläufer las sie aus dem Anzeigetext der Zelle zurück (**B19**); ein Sprachwechsel zur Laufzeit hätte die Zuordnung zerrissen. |
+| **A‑11** | Der Fehlsprung `Gewerke.WaermebedarfExtern` ist gestrichen | `StromganglinieKontextMenuCtrl:152` sprang mitten im Stromganglinien-Ablauf in ein fremdes Gewerk (**B7**); die richtige Auffrischung stand unmittelbar danach. |
+| **A‑12** | Beide Rechenläufe laufen in `Task.Run` mit `Fortschritt` | **B22**; in einer WebView ist der Renderfaden derselbe Faden. |
+| **A‑13** | `catch (OleDbException)` → `catch (Exception)` | Seit der SQLite-Umstellung wirft der Zugriff `SqliteException`; der Rückfall auf die Vorgaben griff gar nicht mehr (**B25**). |
+| **A‑14** | Die Zahlenmeldung kommt aus dem Baustein | `Program.ZahlPruefen` zeigte eine hartkodiert deutsche `MessageBox` (**B9**); das `Zahlenfeld` färbt und meldet seinen Namen (`HZKK_MSG_ZAHL`). |
+| **A‑15** | Der dritte Kopftext `IMPORT_KOPF_OK` ist erreichbar | Im Vorläufer toter Code, weil `Zeigen` bei sauberem Lauf gar kein Fenster öffnete. |
+| **A‑16** | Die beanstandete Konfliktzeile wird **hervorgehoben**, nicht fokussiert | Ein Raster hat keinen Zellfokus. |
+| **A‑17** | Die Wahlspalte heißt „Wahl" (`KFAK_SP_WAHL`) | W12.4 trug dafür zunächst `SIM_BTN_OK` („OK") ein — eine Spaltenüberschrift „OK" über runden Wahlknöpfen. Der Hausschlüssel steht seit W1.5 fest. |
+| **A‑18** | Die y‑Obergrenze des Bildes ist die geglättete Datenobergrenze, nicht `PAltMax × 1,05` | Der Bestandsrenderer rundet selbst auf einen glatten Wert; eine eigene Obergrenze hätte einen zweiten Renderer gekostet (§ 2.2). Eine x‑Achsenbeschriftung kennt das Bild nicht — die Jahresstundenmarken stehen an der Achse. |
+| **A‑19** | `Views/Stromspeicher` bekommt kein interaktives Chart mehr | Der `ChartManager` bleibt (`Form_Klimadaten`), sein Kommentar ist nachgezogen. |
+
+### Wörtlich trotz Befund
+
+| Nr | Verhalten | warum es bleibt |
+|---|---|---|
+| **B5** | **Keine Dublettenprüfung beim Hinzufügen** — derselbe Katalogeintrag lässt sich beliebig oft zuordnen | Das ist heute so. Ob es so bleiben soll, ist eine **Anwenderfrage** (offener Punkt W12‑O‑1). |
+| **B15** | Die Abbildung kennt drei Raster-Plätze, die Auswahlliste hat zwei — `case 2` ist unerreichbar | Die Aussage des Vorläufers; ein dritter Listeneintrag könnte sie morgen brauchen. |
+| **B16** | Der OK-Knopf der Importoptionen prüft nichts | Wert- und Zeitspalte dürfen auf demselben Platz stehen; das fällt erst in `GanglinienDatei.Lies` als Protokollfehler auf. |
+| **B24** | `MitOk` liefert für Peak-Shaving **immer** `false` | Der einzige Fußknopf trug `DialogResult.Cancel`; niemand wertet den Rückgabewert aus. Die Hülle liefert ihn unverändert. |
+| — | Die Vorschau ist **nicht** reaktiv | „Vorschau aktualisieren" ruft `GanglinienDatei.Vorschau`, das nichts rät. Eine Live-Vorschau wäre billiger — und ein anderes Verhalten. |
+| — | `chk_Adaptiv` steht beim Öffnen **immer** an | Feste Vorgabe des Vorläufers (:250), nicht aus der Variante. |
+| — | Der Engine-Text geht ungefiltert in die Meldung | Wörtlich :533‑538. |
+| — | Der Fußknopf der Importoptionen heißt `SIM_BTN_OK`, nicht `IMPORT_BTN_OK` | Begründung des Vorläufers (:143‑148): Der Fachknopf dieses Dialogs ist „Vorschau aktualisieren". |
+
+### Ersatzlos entfallen
+
+`Program.ZahlFaerben`/`ZahlPruefen` (→ `Zahlenfeld`), `FensterEinpassung`,
+`m_ID_Projekt`/`m_szProjekt`/`result`/`DateiListe` der Verwaltungsmaske,
+`btn_Abbrechen_Click` ohne Knopf (**B11**), der Leseweg von `SetControls`
+(**B2**), `btn_Minimal.Enabled = true` ohne Wirkung (:407), die sechs verwaisten
+`.resx`-Einträge (**B8**, **B8b**) und die nie gezeigte Maske in
+`StromganglinieKontextMenuCtrl:86` (**B6**).
+
+---
+
+## 6. Texte (W12.7)
+
+**Die 18 wirksamen en-Texte der beiden lokalisierten Masken stehen im
+Kern-Katalog**; die sechs verwaisten sind entfallen.
+
+| Herkunft | Ziel |
+|---|---|
+| `Form_Stromganglinie.en-US.resx` (8 wirksam) | `STROMGL_*` (7 neu in W12.4), `SIM_BTN_OK`, `IMPORT_BTN_ABBRECHEN`, `HZK_TIP_*` |
+| `Form_Stromganglinie_Admin.en-US.resx` (10 wirksam) | `IMPORT_*` (10 neu in W12.4) |
+| verwaist: `Label3`, `btn_Hilfe`, `textBox_Name`, `btn_Oeffnen`, `btn_Datei`, `label6` | entfallen |
+
+**Neue Schlüssel dieser Welle: 19**, beide Sprachen —
+17 in W12.4 (`IMPORT_*`, `STROMGL_*`, darunter
+`IMPORT_MSG_SCHREIBGESCHUETZT` für A‑4) und **zwei** in W12.6
+(`PEAK_MSG_RECHNET`, `PEAK_MSG_SUCHE` für die Fortschrittszeile).
+Die vorhandenen Kataloge sind unverändert wiederverwendet:
+`IMPORT_*` (54) + `IMPORT_PROT_*` (40), `IMP_KONFLIKT_*` (20), `PEAK_*` (90).
+
+**Beide `.resx` haben denselben Schlüsselsatz** — 3 935 Einträge, 0 nur in einer
+Sprache (geprüft mit einem Mengenvergleich über beide Dateien).
+
+---
+
+## 7. Formularkarte (W12.8)
+
+**Der Anker des Erreichbarkeitstests hing an `Form_Stromganglinie`** und musste
+umgehängt werden. Er kann seine Form („über die **Startseite**") nicht behalten:
+Von den zwölf Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder
+W14 — alle W13/W14-Masken hängen am Menü des `MDIMainForm` (**Befund W12‑B26**).
+
+**Nachfolger: `Form_AdminSettings`** über `MDIMainForm → MenuItem_Einstellungen`
+— der kürzeste und stabilste Weg im Bestand, und W14c ist die **letzte** der
+W13/W14-Wellen. Der Test heißt jetzt
+`FormAdminSettingsIstUeberDasHauptfensterZuErreichen`; der zweite Zeuge in
+`DieUebersichtZaehltDieErreichbarkeit…` prüft `| Form_AdminSettings | ja |`.
+
+| Zählung | vor W12 | nach W12 |
+|---|---|---|
+| Designer-Dateien (Repo) | 44 | **39** |
+| Masken (Repo) | 43 | **38** |
+| davon lokalisiert | 27 | **25** |
+| erreichbar „ja" (`WindowsFormsApplication1`) | 42 von 43 | **37 von 38** |
+| „nein" / „verwaist" / „unklar" | 0 / 0 / 1 | 0 / 0 / 1 |
+
+Die eine „unklar"-Maske bleibt `Form_PufferSp_Bearbeiten` (Welle 14a).
+`Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md` ist nachgezogen.
+
+**`help_mapping.txt` bleibt unverändert.** Die sechs Zeilen der Welle
+(`:167`, `:249‑253`) sind die Adresse eines **Hilfetextes**, nicht einer Klasse;
+die Razor-Komponenten führen sie als `HilfeSchluessel` weiter — dieselbe Praxis
+wie bei `Form_Solarganglinie.btn_Help` seit W7.8. `HilfeKontext` dagegen bildet
+**Klassennamen** ab und ist umbenannt: `PeakShavingDialog`,
+`StromganglinieDialog`, `StromganglinieAdminDialog`,
+`GanglinieImportOptionenDialog`, `GanglinieProtokollDialog`,
+`ImportKonflikteDialog`.
+
+---
+
+## 8. Nachweise
+
+### 8.1 Build
+
+```
+dotnet build WP-Plan.sln -c Release -p:Platform=x64
+→ Build succeeded. 0 Fehler, 12 Warnungen
+```
+
+Die zwölf sind die bekannten: 6 × WFO1000, 2 × CS0108, 2 × CS0109,
+1 × WFO0003, 1 × CA2255. **Keine neue.**
+
+### 8.2 Tests
+
+```
+dotnet test WP-Plan.Kern.slnf -c Release
+→ EPOS.Kern.Tests      480 gruen
+  EPOS.UI.Tests      1 540 gruen
+  SpeicherEngine.Tests 337 gruen
+  KiKern.Tests         450 gruen
+  = 2 807 gruen, 0 rot
+
+dasselbe mit LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+→ 2 807 gruen, 0 rot
+```
+
+Basis vor der Welle: 2 614, also **193 Fälle mehr**. 189 davon stehen in
+fünfzehn neuen Klassen, die übrigen vier in vorhandenen:
+
+| Datei | Fälle | Gegenstand |
+|---|---|---|
+| `EPOS.Kern.Tests/GanglinienProbenTests.cs` | 18 | der bitgleiche Import, zwölf Proben |
+| `EPOS.Kern.Tests/GanglinienImportAblaufTests.cs` | 12 | dieselben Proben durch den neuen Ablauf |
+| `EPOS.Kern.Tests/ImportKonfliktModellTests.cs` | 22 | die Regeltabelle des Konzepts, Zeile für Zeile |
+| `EPOS.Kern.Tests/GanglinienAnzeigeTests.cs` | 11 | Protokolltexte und die acht Steuerwertlisten |
+| `EPOS.Kern.Tests/PeakShavingCtrlTests.cs` | 6 | Vorbelegung ohne Speicherprojekt, Ganglinienliste, Rasterwiederholung |
+| `EPOS.Kern.Tests/PeakShavingKennzahlenBlockTests.cs` | 9 | 18 Kennzahlen, 12 Monatszeilen, Negativkennzeichen |
+| `EPOS.Kern.Tests/StromganglinieSqlTests.cs` | 4 | `LiesProjekt`, `FindeStamm`, Apostroph |
+| `EPOS.Kern.Tests/PeakShavingEingabenTests.cs` | 13 | vier Regeln, vier Umrechnungen, Vorbelegung |
+| `EPOS.Kern.Tests/PeakShavingBildTests.cs` | 6 | PNG, 1 240 × 560, Sekundärachse, Determinismus |
+| `EPOS.UI.Tests/Dialoge/GanglinieProtokollDialogTests.cs` | 15 | W12.1 |
+| `EPOS.UI.Tests/Dialoge/GanglinieImportOptionenDialogTests.cs` | 14 | W12.2 |
+| `EPOS.UI.Tests/Dialoge/ImportKonflikteDialogTests.cs` | 16 | W12.3 |
+| `EPOS.UI.Tests/Dialoge/StromganglinieAdminDialogTests.cs` | 14 | W12.4 |
+| `EPOS.UI.Tests/Dialoge/StromganglinieDialogTests.cs` | 12 | W12.5 |
+| `EPOS.UI.Tests/Dialoge/PeakShavingDialogTests.cs` | 17 | W12.6 |
+
+Die Texttests pinnen die Oberflächensprache (Regel seit W8);
+`TestDatenbank` wird nur lesend je Klasse geteilt (Regel seit W11a).
+
+### 8.3 Die Import-Proben — der eigentliche Nachweis
+
+```
+EPOS.Kern.Tests/Proben/Ganglinien/
+  p01_stunden_semikolon_komma_kopf.csv       8 760, ';'  ','  mit Kopf
+  p02_stunden_komma_punkt_ohne_kopf.csv      8 760, ','  '.'  ohne Kopf
+  p03_stunden_tab_komma_kopf.csv             8 760, Tab  ','  mit Kopf
+  p04_stunden_einspaltig_punkt.txt           8 760, einspaltig '.'
+  p05_viertelstunden_semikolon_punkt_kopf.csv 35 040, ';' '.'  mit Kopf
+  p06_viertelstunden_einspaltig_komma.txt    35 040, einspaltig ','
+  p07_schaltjahr_stunden_semikolon_kopf.csv   8 784, Schaltjahr
+  p08_sommerzeit_luecke_stunden.csv           8 759, Zeitumstellung Frühjahr
+  p09_sommerzeit_dublette_stunden.csv         8 761, Zeitumstellung Herbst
+  p10_viertelstunden_kwh_je_intervall.csv    35 040, Einheit kWh je Intervall
+  p11_stunden_excel.xlsx                      8 760, ClosedXML
+  (p12)                                     525 600 Minutenwerte, im Test erzeugt
+```
+
+**Die Erwartungswerte sind aus dem Bestand vom 04.09.2026 eingefroren** — VOR
+dem Umbau der Kette, auf die letzte Stelle: Vorschlag der Erkennung, Rohreihe,
+Prüfergebnis samt Protokoll, Stichwerten und Summe.
+`GanglinienImportAblaufTests` fährt **dieselben** Proben durch den neuen Ablauf
+und erwartet **dieselben** Zahlen. Beides grün.
+
+**Befund W12‑B27 (neu, behoben):** Der Excel-Zweig war überhaupt nicht
+benutzbar. `ExcelBulkRead` legt sein `object[,]` eins größer an, damit es sich
+1‑basiert wie Excel ansprechen lässt; die drei Leseschleifen zählten aber bis
+`GetLength()` statt bis `GetLength() - 1`. Jeder `.xlsx`-Import endete in
+`IMPORT_PROT_LESEFEHLER` „Index was outside the bounds of the array". Damit ist
+der offene Nachweispunkt `Umsetzung_iU0_iU1_Nachweise.md:136` erklärt — und mit
+Probe p11 belegt; die Zeile ist abgehakt.
+
+### 8.4 SQL-Dialektprüfer
+
+```
+python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
+→ 1 231 SQL-Texte geprueft: 0 Fundstellen, 171 dynamisch, 1 060 in Ordnung
+```
+
+1 233 → 1 231: Die drei konkatenierten Anweisungen der Masken sind zwei
+parametrisierte Kern-Wege geworden (W12.0g).
+
+### 8.5 ChartProben
+
+```
+dotnet run --project Proben/ChartProben -c Release
+→ 30 Bilder geprueft, 0 Verstoesse. ERGEBNIS: alle gruen.
+```
+
+**Unverändert 30** — die Welle bringt kein neues Renderer-Bild (§ 2.2).
+
+### 8.6 Referenzlauf
+
+```
+dotnet run --project EPOS.Referenzlauf -c Release -- \
+  lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017 \
+  --ziel artifacts/reflauf/w12
+→ Erfolgreich: 3 von 3
+
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  vergleich artifacts/reflauf/ref artifacts/reflauf/w12
+→ Projekt_1007: PASS (29 Dateien, 324 219 Werte)
+  Projekt_1017: PASS (21 Dateien, 254 154 Werte)
+  Projekt_1030: PASS (22 Dateien, 236 670 Werte)
+  GESAMT: PASS (815 043 Werte innerhalb der Toleranz)
+
+diff -rq je Projekt gegen Referenzlaeufe/2026-08-30_B3-Kaskade
+→ BYTE-GLEICH: Projekt_1030, Projekt_1007, Projekt_1017
+```
+
+**Byte-gleich, nicht nur innerhalb der Toleranz.** Die Welle fasst den
+Rechenweg nicht an.
+
+### 8.7 Formularkarte
+
+```
+dotnet test Werkzeuge/Formularkarte.Tests -c Release
+→ 123 gruen
+
+dotnet run --project Werkzeuge/Formularkarte -- --alle WindowsFormsApplication1
+→ 38 Masken, 25 lokalisiert, 37 erreichbar, 0 nein, 0 verwaist, 1 unklar
+```
+
+### 8.8 Keine Typverwendung ist übrig
+
+`git grep` über `*.cs` und `*.razor` nach den sechs Klassennamen und den zwei
+verschobenen Begleitklassen findet **nur noch Kommentare, Maskenschlüssel und
+Hilfeadressen** — keinen Aufruf, kein `new`, keine Typreferenz.
+
+---
+
+## 9. Grenzen
+
+- **`ImportKonflikteHuelle` ist Zwischenstand.** Sie lebt eine Welle: Sobald die
+  vier Importmasken der Welle 13 selbst Razor sind, wird sie gelöscht.
+- **`StromganglinieDialog` schreibt nichts.** Die Hülle gibt die Liste zurück,
+  abgelegt wird beim Aufrufer (`Form_Start`, `StromganglinieKontextMenuCtrl`) —
+  bis W16 den Assistenten umstellt (Risiko R‑W12‑4).
+- **Der Assistentenschnitt ist vorbereitet, nicht benutzt.**
+  `StromganglinieDialog` führt `Wizard` und eine geteilte Liste; `Wizard_Stromlastgang`
+  (W16) kann sie ohne zweiten Bau übernehmen (**B10**), ist aber noch WinForms.
+- **Keine Bildschirmabnahme.** Diese Umgebung hat kein Windows; alle
+  Oberflächenaussagen stützen sich auf bunit und die Feldkarte. Die Liste in
+  § 10 ist deshalb offen.
+
+---
+
+## 10. Abnahmeliste Windows (iZ5)
+
+- [ ] Menü → **Stromganglinien-Verwaltung**: Liste, Rasterwahl (zwei Einträge),
+      „Ganglinie Löschen" mit Rückfrage, ReadOnly-Sperre.
+- [ ] Dort **Datei einlesen**, CSV mit `;` und mit `,`, dazu eine `.xlsx` —
+      Optionen, Protokoll, Konfliktdialog (Umbenennen, Überschreiben, Auslassen).
+- [ ] Startbild → **Strom-Messdaten**: ◀ / ▶, „Bearbeiten…" als Überlagerung,
+      Katalog danach frisch; Kachelstatus stimmt auch nach Abbrechen.
+- [ ] Menü → **Lastspitzenkappung**: Ganglinie und Datei, „Berechnen" mit
+      laufendem Balken, „Minimale haltbare Schwelle" (Wert landet im Feld,
+      adaptiv geht aus), drei Reiter, SoC-Schalter, CSV-Export.
+- [ ] Dieselbe Maske **ohne geöffnetes Projekt** (Projekt-Id 0).
+- [ ] **W13-Importmasken** → Konfliktdialog über die Hülle: Heizkessel,
+      Pufferspeicher, Wärmepumpe, CEC — je ein Aufruf.
+- [ ] de **und** en, 125 %, Esc je Ebene.
+
+---
+
+## 11. Offene Punkte
+
+| Nr | Punkt |
+|---|---|
+| **W12‑O‑1** | **Anwenderfrage: Dublettenprüfung beim Hinzufügen (Befund B5).** Derselbe Katalogeintrag lässt sich einem Projekt beliebig oft zuordnen — heute wie früher. Soll die Maske das künftig verhindern, oder ist die Mehrfachzuordnung gewollt (wie bei den Erzeugern der Welle 6, wo sie es ausdrücklich ist)? |
+| **W12‑O‑2** | **Befund B28 (neu, wörtlich behalten).** Trägt der Ablageordner `%LOCALAPPDATA%\WP-Plan\Strom` schon eine gleichnamige Datei, wird **diese** gelesen und nicht die soeben gewählte (Bestandsverhalten :132‑133). Eine zweite Datei gleichen Namens mit anderem Inhalt geht damit still verloren. |
+| **W12‑O‑3** | Der Wizard-Zwilling `Wizard_Stromlastgang` ist bis **W16** eine zweite Fassung derselben Sache (**B10**). Die Komponente ist dafür geschnitten. |
+| **W12‑O‑4** | `ImportKonflikteHuelle` wird mit **W13** gelöscht. |
+| **W12‑O‑5** | Die Windows-Abnahme (§ 10) steht aus. |
+
+---
+
+## 12. Geänderte und neue Dateien
+
+**Neu in `EPOS.Kern`:** `Allgemein/Import/GanglinienImportAblauf.cs`,
+`Allgemein/Import/GanglinienOptionenModell.cs`,
+`Allgemein/Import/GanglinienProtokollText.cs` (verschoben),
+`Allgemein/Katalog/ImportKonfliktModell.cs`,
+`Allgemein/Bericht/PeakShavingBild.cs`,
+`Controller/PeakShavingCtrl.cs` (verschoben),
+`Controller/PeakShavingKennzahlenBlock.cs`,
+`Controller/PeakShavingEingaben.cs`.
+
+**Neu in `EPOS.UI`:** `Dialoge/Import/ImportKonflikteDialog.razor`,
+`Dialoge/Strom/GanglinieProtokollDialog.razor`,
+`Dialoge/Strom/GanglinieImportOptionenDialog.razor`,
+`Dialoge/Strom/StromganglinieAdminDialog.razor`,
+`Dialoge/Strom/StromganglinieDialog.razor`,
+`Dialoge/Strom/StromganglinieDaten.cs`,
+`Dialoge/Strom/PeakShavingDialog.razor`.
+
+**Neu in `WindowsFormsApplication1`:** `Views/Import/ImportKonflikteHuelle.cs`,
+`Views/Stromverbraucher/StromganglinieAdminHuelle.cs`,
+`Views/Stromverbraucher/StromganglinieHuelle.cs`,
+`Views/Stromspeicher/PeakShavingHuelle.cs`.
+
+**Gelöscht (18 Dateien):** die sechs Masken mit ihren fünf Designern und sechs
+`.resx`, dazu `Views/Stromverbraucher/GanglinienProtokollText.cs` und
+`Controller/PeakShavingCtrl.cs` an ihren alten Plätzen.
+
+**Geändert:** `EPOS.Kern/Allgemein/Import/GanglinienDatei.cs` (B27),
+`Controller/StromganglinieStammCtrl.cs`, `Controller/Z_ProjektStromganglinieCtrl.cs`,
+die drei `MyResource`-Dateien, `EPOS.UI/wwwroot/epos-ui.css`,
+`Dienste/WinFormsNavigation.cs`, `Controller/StromganglinieKontextMenuCtrl.cs`,
+`Views/Hauptformular/Form_Start.cs`, die vier W13-Importmasken (je eine Zeile),
+`Allgemein/KI/HilfeKontext.cs`, `Allgemein/GrafikTools/ChartManager.cs`,
+`Werkzeuge/Formularkarte.Tests/{StapelTests,ErreichbarkeitTests}.cs`,
+`Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`,
+`Umsetzung_iU0_iU1_Nachweise.md`.

@@ -42,7 +42,12 @@ public sealed class StapelTests
         // den Wirt der sieben Dialoge (50). Welle 11b nimmt SECHS auf einmal -
         // Form_Simulation_Detail, DashboardForm, die drei Navigatoren und
         // Form_SpeicherVariantenVergleich (44); sie werden EINE Razor-Seite.
-        Assert.True(dateien.Count >= 44, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Welle 12 nimmt FUENF mit (39): Form_GanglinieProtokoll,
+        // Form_GanglinieImportOptionen, Form_Stromganglinie_Admin,
+        // Form_Stromganglinie und Form_PeakShaving. Form_ImportKonflikte faellt
+        // in derselben Welle, zaehlte hier aber nie mit - sie hatte keinen
+        // Designer (Befund W12-B21).
+        Assert.True(dateien.Count >= 39, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -74,8 +79,10 @@ public sealed class StapelTests
         // weitere mit - Form_Simulation_Config, den Wirt der sieben (49). Welle 11b
         // nimmt SECHS auf einmal (43): die Ergebnisansicht und ihre fuenf
         // Nebenmasken werden EINE Seite (Regel R-W11-2: maskenweise, nicht
-        // reiterweise - sonst zwei WebViews in einem Fenster).
-        Assert.True(Lauf.Value.Masken >= 43, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // reiterweise - sonst zwei WebViews in einem Fenster). Welle 12 nimmt
+        // FUENF mit (38): die vier Glieder der AP5-Importkette und die
+        // Lastspitzenkappung.
+        Assert.True(Lauf.Value.Masken >= 38, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -95,10 +102,12 @@ public sealed class StapelTests
         // Form_Simulation_Config schon (28). Welle 11b nimmt ebenfalls genau EINE
         // lokalisierte mit - Form_Simulation_Detail mit ihren 3 049 neutralen und
         // 248 englischen Eintraegen; die fuenf Nebenmasken hatten keine eigene
-        // .resx (27).
+        // .resx (27). Welle 12 nimmt ZWEI lokalisierte mit -
+        // Form_Stromganglinie und Form_Stromganglinie_Admin; die drei anderen
+        // Masken der Welle setzten ihre Texte im Code (25).
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 27,
+        Assert.True(Lauf.Value.Lokalisierte >= 25,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
