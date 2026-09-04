@@ -34,6 +34,11 @@ internal static class Dateifilter
         [".xlsx"] = "org.openxmlformats.spreadsheetml.sheet",
         [".doc"] = "com.microsoft.word.doc",
         [".docx"] = "org.openxmlformats.wordprocessingml.document",
+        // iU9-W15c (Auflage O-3): Die Lizenzvereinbarung kann als .rtf vorliegen -
+        // der Dateiwaehler des Lizenzdialogs bietet sie an. Fuer ".lic" gibt es
+        // keine registrierte Typkennung; dort bleibt public.data die richtige
+        // Antwort (Befund W15c-B14).
+        [".rtf"] = "public.rtf",
         [".png"] = "public.png",
         [".jpg"] = "public.jpeg",
         [".jpeg"] = "public.jpeg",

@@ -141,9 +141,14 @@ public sealed class ErreichbarkeitTests
     [Fact]
     public void DieUmgestelltenKostenmaskenStehenNichtMehrImGraphen()
     {
+        // iU9-W15c: Die drei Lizenz- und Erststartmasken kommen dazu. Zwei von
+        // ihnen hatten nie einen Designer und tauchten deshalb im Stapellauf nicht
+        // auf - im GRAPHEN standen sie sehr wohl, denn er liest den Quelltext:
+        // Form_Erststart war der einzige Maskenzweig an der Wurzel Program.
         foreach (var klasse in new[] { "Form_KostenKomponente", "Form_Energietraeger",
                                        "ucFuelSettings", "ucVorlagenZeile", "ucErtragBonus",
-                                       "ucStromAufschlaege", "ucBrennstoffBestandteile" })
+                                       "ucStromAufschlaege", "ucBrennstoffBestandteile",
+                                       "Form_Lizenz", "Form_LizenzVerwaltung", "Form_Erststart" })
         {
             Assert.True(Graph.Fuer(klasse) is null, "Der Graph kennt " + klasse + " noch.");
         }
