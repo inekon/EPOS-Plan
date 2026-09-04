@@ -342,6 +342,15 @@ Migrationsende. Der Lauf Nr. 23 (33898901613) auf demselben Stand war eine verse
 ging vor einem Neustart des Sitzungsprozesses durch, seine Bestätigung ging verloren) und wurde nach 100 Sekunden
 abgebrochen; der nächste echte Lauf trägt die Nummer 24.
 
+**Vierundzwanzigster Lauf 33904433007 (`ios.yml`, `macos-26`, 04.09.2026, 18:10–18:18 UTC, 8 min 43 s)** auf
+`555ef11` — der Stand **nach der Teilwelle 16c, dem Ende der Mischphase (M9)**: grün. Erstmals mit `Hauptfenster`,
+`Menueband` und der `AppWurzel` als gemeinsamer Wurzel beider Plattformen (N9 — die `Kopfleiste` ist auf iOS leer,
+`StartseiteGaben`, `BerichteKostenGaben` und `AdresseOeffnen` laufen in die Standardumsetzung, die `AppWurzel` sagt es im
+Banner; die Adapter sind iU11), mit `Seitenschluessel` als der einen Schlüsseltabelle (K7) und ohne den Designer der
+`MDIMainForm`. `EPOS.iOS` selbst ist in W16c nicht angefasst worden. Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
