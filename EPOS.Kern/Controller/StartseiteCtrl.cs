@@ -53,6 +53,14 @@ namespace WindowsFormsApplication1
     /// hier parametriert (<c>DbParam</c>) und laufen damit durch den
     /// <c>SqlDialektPruefer</c>.</para>
     ///
+    /// <para><b>Seit dem Anwenderentscheid W16b‑O‑3 (04.09.2026) sind es drei
+    /// Methoden statt vier:</b> <c>ProjektKlimaregion</c> (nur die Projektkopie) und
+    /// der Stammnachschlag <see cref="KlimaregionName"/> sind zu
+    /// <see cref="ProjektKlimazone"/> zusammengelegt — Stammname zuerst, Projektkopie
+    /// als Rückfall. Die zwei SQL-Texte von <c>:382</c> und <c>:390</c> stehen
+    /// unverändert dort, <see cref="KlimaregionName"/> bleibt als eigener Weg für
+    /// <c>:356</c> bestehen.</para>
+    ///
     /// <para><b>Was hier NICHT steht.</b> Die Fensteranteile der Vorlage: das Füllen
     /// eines <c>ComboBox</c>, das Ab- und Anhängen von <c>SelectedIndexChanged</c>, das
     /// Ausrechnen der Aufklappbreite (<c>SetzeDropDownBreite</c>) und die sieben
@@ -134,18 +142,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Klimaregion EINES PROJEKTS — <c>Form_Start.GetProjektKlimaregion</c>
-        /// (:379-400), wörtlich: Erst <c>Tab_Projekt.ID_Klimaregion</c> lesen, dann
-        /// dazu den <c>Bezeichner</c> der PROJEKTKOPIE (<c>Tab_Klimaregion</c>).
+        /// Die Klimazone EINES PROJEKTS — die eine Antwort für Windows UND iOS
+        /// (<b>Anwenderentscheid W16b‑O‑3 vom 04.09.2026: „nehme iOS-Lösung"</b>).
         ///
-        /// <para><b>Bewusst OHNE den Stamm-Rückfall</b> von
-        /// <c>KlimaregionStammCtrl.NameZuProjektregion</c>: Diese Methode füllt das
-        /// Auswahlfeld des Kopfbandes und damit <c>IProjektKontext.Klimazone</c>. Wer
-        /// hier den Stammnamen einsetzte, wo die Projektkopie fehlt, änderte den
-        /// gemeldeten Kontext — genau das, was Risiko R-W16-4 verbietet. Der
-        /// Unterschied der beiden Wege ist als Befund W16b-B2 festgehalten.</para>
+        /// <para><b>Die Reihenfolge ist der Entscheid.</b> Erst
+        /// <c>Tab_Projekt.ID_Klimaregion</c> lesen (<c>Form_Start:379-385</c>), dann
+        /// dazu den <b>STAMMNAMEN</b> (<see cref="KlimaregionName"/>,
+        /// <c>Tab_Klimaregion_STAMM.Name</c>) — den Weg, den
+        /// <c>EPOS.iOS/Dienste/IosProjektKontext</c> bisher allein ging. Gibt es zu
+        /// der Id keinen Stammsatz, antwortet der <b>Rückfall</b> mit dem
+        /// <c>Bezeichner</c> der PROJEKTKOPIE (<c>Tab_Klimaregion</c>, wörtlich
+        /// <c>Form_Start:386-397</c>) — der bisherige Windows-Weg
+        /// <c>ProjektKlimaregion</c>, der damit als eigene Methode entfällt.</para>
+        ///
+        /// <para><b>Der Rückfall ist der Normalfall, nicht die Ausnahme</b> (Messung
+        /// vom 04.09.2026, W16b-Protokoll § 6). Die beiden Wege lesen ZWEI
+        /// SCHLÜSSELRÄUME: An <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der
+        /// PROJEKTKOPIE (<c>Tab_Klimaregion.ID</c>) — so schreibt es
+        /// <see cref="KlimaregionSpeichern"/> ausdrücklich —, der Stammzweig hält
+        /// denselben Zahlenwert gegen <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c>. In
+        /// der Testdatenbank laufen die Stamm-Ids von 1 bis 50, die Kopie-Ids ab
+        /// 1 006 017; die Überschneidung ist <b>0</b>, und <b>alle dreizehn</b>
+        /// Referenzprojekte laufen in den Rückfall. Die angezeigte Klimazone bleibt
+        /// dadurch Wort für Wort dieselbe wie vor dem Entscheid. Die Projektkopie
+        /// führt gar keine Stammspalte — sie hängt über den TEXT am Stamm, und
+        /// <c>Bezeichner</c> und <c>Name</c> sind im Bestand zeichengleich.</para>
+        ///
+        /// <para><b>Warum nicht <c>KlimaregionStammCtrl.NameZuProjektregion</c>:</b>
+        /// Der dreht die Reihenfolge um (Kopie zuerst, Stamm als Rückfall) und
+        /// verlangt zusätzlich die Projekt-Id in der <c>WHERE</c>-Bedingung. Er bleibt
+        /// dem Assistentenkopf; hier gilt der Entscheid.</para>
         /// </summary>
-        public static string ProjektKlimaregion(int idProjekt)
+        public static string ProjektKlimazone(int idProjekt)
         {
             if (idProjekt <= 0) return "";
 
@@ -159,8 +187,13 @@ namespace WindowsFormsApplication1
                 int idRegion = Convert.ToInt32(v);
                 if (idRegion == 0) return "";
 
-                // Am Projekt ist die ID der Projekt-Kopie (Tab_Klimaregion.ID)
-                // gespeichert - woertlich Form_Start:386-397.
+                // W16b-O-3: Der STAMMNAME ist der fuehrende Weg (die iOS-Loesung).
+                string stammname = KlimaregionName(idRegion);
+                if (!string.IsNullOrEmpty(stammname)) return stammname;
+
+                // Rueckfall: die PROJEKTKOPIE - woertlich Form_Start:386-397. An
+                // Tab_Projekt.ID_Klimaregion steht die ID der Kopie, deshalb greift
+                // dieser Zweig im Bestand IMMER; ohne ihn bliebe die Anzeige leer.
                 object b = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID = ?",
                     new DbParam("@idRegion", idRegion));
@@ -169,7 +202,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Klimaregion des Projekts konnte nicht gelesen werden: " + ex.Message);
+                Console.WriteLine("Klimazone des Projekts konnte nicht gelesen werden: " + ex.Message);
                 return "";
             }
         }

@@ -40,8 +40,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ohne_Projekt_ist_alles_leer()
         {
-            Assert.Equal("", StartseiteCtrl.ProjektKlimaregion(0));
-            Assert.Equal("", StartseiteCtrl.ProjektKlimaregion(-1));
+            Assert.Equal("", StartseiteCtrl.ProjektKlimazone(0));
+            Assert.Equal("", StartseiteCtrl.ProjektKlimazone(-1));
             Assert.Equal("", StartseiteCtrl.Projektname(0));
             Assert.Equal("", StartseiteCtrl.KlimaregionName(0));
             Assert.Equal(0, StartseiteCtrl.KlimaregionStammId(""));
@@ -117,23 +117,29 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Klimaregion eines Projekts kommt aus der PROJEKTKOPIE
-        /// (<c>Tab_Klimaregion.Bezeichner</c>), nicht aus dem Stammsatz — genau das
-        /// zeigte das Auswahlfeld der Startmaske an, und genau das gibt
-        /// <c>IProjektKontext.Klimazone</c> heraus.
+        /// Die Klimazone eines Projekts ist seit dem <b>Anwenderentscheid W16b‑O‑3</b>
+        /// (04.09.2026, „nehme iOS-Lösung") der STAMMNAME und erst im Rückfall der
+        /// Bezeichner der Projektkopie. Der ANGEZEIGTE Text ändert sich dadurch nicht:
+        /// An <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der KOPIE, zu der es
+        /// keinen Stammsatz gibt — der Rückfall trägt jedes Projekt des Bestands
+        /// (Messung im W16b-Protokoll § 6).
         /// </summary>
         [Fact]
-        public void Die_Klimaregion_des_Projekts_ist_die_Projektkopie()
+        public void Die_Klimazone_des_Projekts_faellt_auf_die_Projektkopie_zurueck()
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal("München", StartseiteCtrl.ProjektKlimaregion(ID_1030));
-            Assert.Equal("stuttgart", StartseiteCtrl.ProjektKlimaregion(1007));
+            Assert.Equal("München", StartseiteCtrl.ProjektKlimazone(ID_1030));
+            Assert.Equal("stuttgart", StartseiteCtrl.ProjektKlimazone(1007));
 
             // Die Id am Projekt ist die der KOPIE, nicht die des Stammsatzes.
             int idKopie = StartseiteCtrl.KlimaregionIdVonProjekt(NAME_1030);
             Assert.True(idKopie > 0);
             Assert.NotEqual(StartseiteCtrl.KlimaregionStammId("München"), idKopie);
+
+            // Und genau deshalb greift der Stammzweig hier nicht: Zu der Kopie-Id gibt
+            // es keinen Stammsatz.
+            Assert.Equal("", StartseiteCtrl.KlimaregionName(idKopie));
         }
 
         /// <summary>Der Projektname zu einer Id — und nichts zu einer unbekannten.</summary>
@@ -197,12 +203,12 @@ namespace EPOS.Kern.Tests
             {
                 if (!eigen.Vorhanden) return;
 
-                Assert.Equal("München", StartseiteCtrl.ProjektKlimaregion(ID_1030));
+                Assert.Equal("München", StartseiteCtrl.ProjektKlimazone(ID_1030));
 
                 Assert.Equal(KlimaStand.Gespeichert,
                              StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, "Berlin"));
 
-                Assert.Equal("Berlin", StartseiteCtrl.ProjektKlimaregion(ID_1030));
+                Assert.Equal("Berlin", StartseiteCtrl.ProjektKlimazone(ID_1030));
 
                 // Am Projekt steht die Id der PROJEKTKOPIE, nicht die des Stammsatzes.
                 int idAmProjekt = StartseiteCtrl.KlimaregionIdVonProjekt(NAME_1030);
@@ -224,7 +230,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(KlimaStand.RegionNichtGefunden,
                              StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, "Nirgendwo"));
 
-                Assert.Equal("München", StartseiteCtrl.ProjektKlimaregion(ID_1030));
+                Assert.Equal("München", StartseiteCtrl.ProjektKlimazone(ID_1030));
             }
         }
     }

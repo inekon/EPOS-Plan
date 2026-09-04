@@ -391,5 +391,215 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vorher, ProjektKontextCtrl.ZuletztGeoeffnet());
             }
         }
+
+        // =========================================================================
+        // Die Klimazone - Anwenderentscheid W16b-O-3 vom 04.09.2026
+        // =========================================================================
+
+        /// <summary>
+        /// Die dreizehn Projekte der Referenzbasis <c>2026-08-30_B3-Kaskade</c> — die
+        /// Menge, gegen die die Messung zu W16b-O-3 gelaufen ist.
+        /// </summary>
+        private static readonly int[] REFERENZPROJEKTE =
+        {
+            1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042
+        };
+
+        /// <summary>
+        /// <b>Die Messung als eingefrorener Zustand</b> (Anwenderentscheid W16b‑O‑3,
+        /// W16b-Protokoll § 6). Für JEDES Referenzprojekt der Testdatenbank gilt:
+        /// <list type="bullet">
+        /// <item>zu <c>Tab_Projekt.ID_Klimaregion</c> gibt es <b>keinen</b> Stammsatz
+        ///       — der iOS-Weg allein antwortet leer;</item>
+        /// <item>zu derselben Id gibt es sehr wohl eine PROJEKTKOPIE mit einem
+        ///       Bezeichner;</item>
+        /// <item><see cref="IProjektKontext.Klimazone"/> gibt genau diesen Bezeichner
+        ///       heraus — der Rückfall trägt also ALLE dreizehn.</item>
+        /// </list>
+        ///
+        /// <para><b>Warum der Fall den Zustand einfriert und nicht nur beschreibt.</b>
+        /// Die beiden Wege lesen zwei SCHLÜSSELRÄUME: An <c>Tab_Projekt</c> steht die
+        /// Id der Kopie (<c>Tab_Klimaregion.ID</c>, Stamm-Ids 1…50, Kopie-Ids ab
+        /// 1 006 017). Verschöbe jemand das — etwa indem er am Projekt die STAMM-Id
+        /// speicherte —, änderte sich die angezeigte Klimazone jedes Projekts
+        /// stillschweigend. Dieser Fall würde dann rot.</para>
+        ///
+        /// <para>1011 und 1021 gehören zur Referenzliste, stehen aber nicht in
+        /// <c>Kenndaten_Test.sqlite</c> (sie kommen aus dem produktiven Bestand); sie
+        /// werden übersprungen und mitgezählt.</para>
+        /// </summary>
+        [Fact]
+        public void Fuer_alle_Referenzprojekte_traegt_der_Rueckfall_die_Klimazone()
+        {
+            if (!_db.Vorhanden) return;
+
+            System.Globalization.CultureInfo vorher = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture =
+                    new System.Globalization.CultureInfo("de-DE");
+
+                int geprueft = 0, uebersprungen = 0;
+
+                foreach (int idProjekt in REFERENZPROJEKTE)
+                {
+                    int idRegion = KlimaIdVonProjekt(idProjekt);
+                    if (idRegion == 0) { uebersprungen++; continue; }
+
+                    string stamm = StartseiteCtrl.KlimaregionName(idRegion);
+                    string kopie = KopieBezeichner(idRegion);
+
+                    // Der iOS-Weg allein antwortet fuer JEDES Referenzprojekt leer ...
+                    Assert.Equal("", stamm);
+                    // ... die Projektkopie dagegen traegt einen Bezeichner ...
+                    Assert.NotEqual("", kopie);
+
+                    // ... und genau der steht als Klimazone im Kontext. Setzen statt
+                    // Uebernehmen: Der Fall laeuft auf der GETEILTEN Arbeitskopie und
+                    // darf Tab_Applikation nicht fortschreiben.
+                    ProjektKontextCtrl k = new ProjektKontextCtrl();
+                    Assert.True(k.Setzen(StartseiteCtrl.Projektname(idProjekt)));
+                    Assert.Equal(idProjekt, k.Id);
+                    Assert.Equal(kopie, k.Klimazone);
+
+                    geprueft++;
+                }
+
+                // 11 von 13 stehen in dieser Datenbank; 1011 und 1021 nicht.
+                Assert.Equal(11, geprueft);
+                Assert.Equal(2, uebersprungen);
+            }
+            finally { System.Globalization.CultureInfo.CurrentCulture = vorher; }
+        }
+
+        /// <summary>
+        /// <b>Der Entscheid selbst: der STAMMNAME schlägt die Projektkopie.</b> Steht
+        /// am Projekt eine Id, zu der es einen Stammsatz gibt, gibt
+        /// <see cref="IProjektKontext.Klimazone"/> dessen <c>Name</c> heraus — auch
+        /// dann, wenn unter derselben Id eine Projektkopie mit einem ANDEREN
+        /// Bezeichner liegt. Genau das war bisher der Unterschied zwischen Windows
+        /// (Kopie) und iOS (Stamm), Befund W16b‑B2.
+        ///
+        /// <para>Der Fall stellt sich seine Lage selbst her — im Bestand gibt es sie
+        /// nicht (siehe die Messung). Deshalb auf einer EIGENEN Arbeitskopie:
+        /// <c>Tab_Projekt</c> und <c>Tab_Klimaregion</c> werden beschrieben.</para>
+        /// </summary>
+        [Fact]
+        public void Gibt_es_einen_Stammsatz_ist_die_Klimazone_der_Stammname()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                // Ein Stammsatz, dessen Name NICHT der bisherige Anzeigetext ist.
+                int idStamm = StartseiteCtrl.KlimaregionStammId("Berlin");
+                Assert.True(idStamm > 0);
+                Assert.Equal("Berlin", StartseiteCtrl.KlimaregionName(idStamm));
+
+                // Unter derselben Id eine Projektkopie mit einem anderen Bezeichner -
+                // sonst bewiese der Fall nur, dass IRGENDWER geantwortet hat.
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_Klimaregion (ID, ID_Projekt, Bezeichner) VALUES (?, ?, ?)",
+                    new DbParam("@id", idStamm),
+                    new DbParam("@idProjekt", ID_1030),
+                    new DbParam("@bez", "Kopie-Bezeichner")));
+                Assert.Equal("Kopie-Bezeichner", KopieBezeichner(idStamm));
+
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Projekt SET ID_Klimaregion = ? WHERE ID = ?",
+                    new DbParam("@idRegion", idStamm),
+                    new DbParam("@id", ID_1030)));
+
+                ProjektKontextCtrl k = new ProjektKontextCtrl();
+                Assert.True(k.Setzen(NAME_1030));
+
+                // Der STAMMNAME gewinnt - der Entscheid vom 04.09.2026.
+                Assert.Equal("Berlin", k.Klimazone);
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Stammeintrag greift der Rückfall</b> — die Auflage der
+        /// Orchestrierung zu W16b‑O‑3: Die Anzeige darf durch den Entscheid nicht leer
+        /// werden. Der Fall nimmt dem Projekt 1030 die Stammdeckung, indem er die Id
+        /// auf eine Kopie ohne Stammsatz stellt, und prüft, dass die Klimazone
+        /// trotzdem steht.
+        ///
+        /// <para>Auf einer EIGENEN Arbeitskopie: <c>Tab_Projekt</c> wird beschrieben.</para>
+        /// </summary>
+        [Fact]
+        public void Ohne_Stammsatz_liefert_der_Rueckfall_den_Kopie_Bezeichner()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                // Die Kopie-Id des Projekts 1007 - zu ihr gibt es keinen Stammsatz.
+                int idKopie = KlimaIdVonProjekt(ID_1007);
+                Assert.True(idKopie > 0);
+                Assert.Equal("", StartseiteCtrl.KlimaregionName(idKopie));
+                Assert.Equal(KLIMA_1007, KopieBezeichner(idKopie));
+
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Projekt SET ID_Klimaregion = ? WHERE ID = ?",
+                    new DbParam("@idRegion", idKopie),
+                    new DbParam("@id", ID_1030)));
+
+                ProjektKontextCtrl k = new ProjektKontextCtrl();
+                Assert.True(k.Setzen(NAME_1030));
+
+                // Nicht leer, sondern der Bezeichner der Projektkopie.
+                Assert.Equal(KLIMA_1007, k.Klimazone);
+            }
+        }
+
+        /// <summary>
+        /// Gibt es weder Stammsatz noch Projektkopie, ist die Klimazone leer — und der
+        /// Kontext steht trotzdem (Id und Name sind gesetzt). Der Rückfall erfindet
+        /// nichts.
+        /// </summary>
+        [Fact]
+        public void Ohne_Stammsatz_und_ohne_Kopie_bleibt_die_Klimazone_leer()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                // Eine Id, die es in KEINER der beiden Tabellen gibt.
+                const int IRGENDEINE = 987654;
+                Assert.Equal("", StartseiteCtrl.KlimaregionName(IRGENDEINE));
+                Assert.Equal("", KopieBezeichner(IRGENDEINE));
+
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Projekt SET ID_Klimaregion = ? WHERE ID = ?",
+                    new DbParam("@idRegion", IRGENDEINE),
+                    new DbParam("@id", ID_1030)));
+
+                ProjektKontextCtrl k = new ProjektKontextCtrl();
+                Assert.True(k.Setzen(NAME_1030));
+
+                Assert.Equal(ID_1030, k.Id);
+                Assert.Equal(NAME_1030, k.Name);
+                Assert.Equal("", k.Klimazone);
+            }
+        }
+
+        /// <summary><c>Tab_Projekt.ID_Klimaregion</c> eines Projekts; 0 = keins.</summary>
+        private static int KlimaIdVonProjekt(int idProjekt)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                new DbParam("@id", idProjekt));
+            return v == null || v == DBNull.Value ? 0 : Convert.ToInt32(v);
+        }
+
+        /// <summary>Der Bezeichner der PROJEKTKOPIE zu einer Id; <c>""</c>, wenn es sie nicht gibt.</summary>
+        private static string KopieBezeichner(int idRegion)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID = ?",
+                new DbParam("@id", idRegion));
+            return v == null || v == DBNull.Value ? "" : (Convert.ToString(v) ?? "");
+        }
     }
 }

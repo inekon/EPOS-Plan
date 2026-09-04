@@ -29,14 +29,24 @@ namespace WindowsFormsApplication1
     /// Oberfläche und bleibt es: Die Razor-Startseite hängt sich an
     /// <see cref="Gewechselt"/> und zieht es dort nach.</para>
     ///
-    /// <para><b>Die Klimazone ist die PROJEKTKOPIE, nicht der Stammsatz.</b>
-    /// <c>Form_Start</c> füllte das Auswahlfeld über <c>GetProjektKlimaregion</c>
-    /// (<c>Tab_Projekt.ID_Klimaregion</c> → <c>Tab_Klimaregion.Bezeichner</c>), und
-    /// <c>IProjektKontext.Klimazone</c> gab genau diesen Text heraus. Der Weg steht als
-    /// <see cref="StartseiteCtrl.ProjektKlimaregion"/> im Kern; hier wird er nur
-    /// gerufen. <b>Achtung:</b> <c>EPOS.iOS/Dienste/IosProjektKontext</c> liest an
-    /// derselben Stelle den STAMMNAMEN (<c>Tab_Klimaregion_STAMM.Name</c>) — die beiden
-    /// Fassungen sind darin bis heute verschieden (Befund W16b-B3).</para>
+    /// <para><b>Die Klimazone ist seit dem 04.09.2026 der STAMMNAME</b>
+    /// (Anwenderentscheid W16b‑O‑3: „nehme iOS-Lösung"). Bis dahin las Windows die
+    /// PROJEKTKOPIE (<c>Tab_Projekt.ID_Klimaregion</c> →
+    /// <c>Tab_Klimaregion.Bezeichner</c>) und <c>EPOS.iOS/Dienste/IosProjektKontext</c>
+    /// den Stammnamen (<c>Tab_Klimaregion_STAMM.Name</c> über dieselbe Id) — zwei
+    /// Wahrheiten für denselben Wert (Befund W16b‑B2). Jetzt gibt es EINEN Weg:
+    /// <see cref="StartseiteCtrl.ProjektKlimazone"/> nimmt den Stammnamen und fällt auf
+    /// den Bezeichner der Projektkopie zurück, wenn es zu der Id keinen Stammsatz gibt;
+    /// hier wird er nur gerufen, und <c>IosProjektKontext</c> ruft seit derselben
+    /// Änderung DIESE Klasse.</para>
+    ///
+    /// <para><b>Der Rückfall trägt den ganzen Bestand.</b> Die Messung vom 04.09.2026
+    /// (W16b-Protokoll § 6) zeigt: An <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der
+    /// PROJEKTKOPIE, nicht die des Stammsatzes — zwei Schlüsselräume ohne
+    /// Überschneidung. <b>Alle dreizehn</b> Referenzprojekte laufen deshalb in den
+    /// Rückfall, und die gemeldete Klimazone ist Wort für Wort dieselbe wie vorher. Der
+    /// Entscheid ändert damit die QUELLE, nicht den Text — genau das, was Risiko
+    /// R-W16-4 verlangt.</para>
     ///
     /// <para><b>Risiko R-W16-4.</b> Ein falsch umgehängter Projektkontext schreibt in
     /// das falsche Projekt. Deshalb steht diese Klasse am ANFANG der Teilwelle, mit
@@ -133,7 +143,7 @@ namespace WindowsFormsApplication1
 
             _name = ctrl_projekt.m_szProjektname ?? "";
             _id = ctrl_projekt.m_ID;
-            _klimazone = StartseiteCtrl.ProjektKlimaregion(_id);
+            _klimazone = StartseiteCtrl.ProjektKlimazone(_id);
 
             Action h = Gewechselt;
             if (h != null) h();
