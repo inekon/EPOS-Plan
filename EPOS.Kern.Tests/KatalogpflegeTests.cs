@@ -969,6 +969,108 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // ==================================================================
+        //  8 — EinstellungenCtrl (W14c.0i)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die neun Schluesselnamen und die vier Vorgabepfade, eingefroren.</b> Sie
+        /// stehen so auch in der <c>user.config</c> des Anwenders - wer sie umbenennt,
+        /// verliert den gespeicherten Stand.
+        ///
+        /// <para>Der Fall arbeitet auf dem laufenden Settings-Stand des Testlaufs; er
+        /// prueft die REGELN, nicht die Werte eines bestimmten Rechners.</para>
+        /// </summary>
+        [Fact]
+        public void DieVierVorgabepfadeFolgenIhrenRegeln()
+        {
+            string vdi = EinstellungenCtrl.VdiPfadOderVorgabe();
+            Assert.False(string.IsNullOrWhiteSpace(vdi));
+            Assert.EndsWith("WP-Plan", vdi);
+
+            // Export und Import bauen AUF dem VDI-Pfad auf, solange nichts gespeichert
+            // ist - das ist die Reihenfolge, die Load des Vorlaeufers erzwang.
+            Assert.EndsWith(Path.Combine("frei", "Backup"),
+                            EinstellungenCtrl.ExportPfadOderVorgabe("frei"));
+            Assert.EndsWith(Path.Combine("frei", "Import"),
+                            EinstellungenCtrl.ImportPfadOderVorgabe("frei"));
+
+            // Der Datenbankordner heisst EPOS_PLAN, nicht WP-Plan.
+            Assert.EndsWith("EPOS_PLAN", EinstellungenCtrl.DbPfadOderVorgabe());
+
+            // Der Allgemein-Pfad hat KEINEN Parameter mehr (Befund W14c-B54).
+            Assert.EndsWith("WP-Plan", EinstellungenCtrl.AllgemeinPfadOderVorgabe());
+        }
+
+        /// <summary>
+        /// <c>Lesen</c> fuellt alle neun Werte - kein Feld bleibt <c>null</c>, auch wenn
+        /// die Einstellung leer ist.
+        /// </summary>
+        [Fact]
+        public void LesenFuelltAlleNeunWerte()
+        {
+            Einstellungensatz s = EinstellungenCtrl.Lesen();
+
+            Assert.NotNull(s.VdiPfad);
+            Assert.NotNull(s.DbExportPfad);
+            Assert.NotNull(s.DbImportPfad);
+            Assert.NotNull(s.DbPfad);
+            Assert.NotNull(s.DbName);
+            Assert.NotNull(s.WikiUrl);
+            Assert.NotNull(s.PvgisUrl);
+            Assert.NotNull(s.GeokodierungUrl);
+            Assert.NotNull(s.AllgemeinPfad);
+
+            // Die Pfade sind nie leer - sie fallen auf ihre Vorgabe zurueck.
+            Assert.False(string.IsNullOrWhiteSpace(s.VdiPfad));
+            Assert.False(string.IsNullOrWhiteSpace(s.DbPfad));
+        }
+
+        /// <summary>
+        /// <b>Ein unbeschreibbarer Ordner meldet sich, statt still zu scheitern.</b>
+        /// <c>Speichern</c> legt die fuenf Ordner an; schlaegt das fehl, kommt der
+        /// Grund zurueck - und <c>Save()</c> laeuft NICHT, der PERSISTENTE Stand bleibt
+        /// also, was er war.
+        ///
+        /// <para><b>Woertlich uebernommen:</b> Die neun Werte stehen zu diesem Zeitpunkt
+        /// bereits IM SPEICHER - der Vorlaeufer schrieb sie ebenfalls VOR dem Anlegen
+        /// der Ordner. Erst <c>Reload()</c> holt den gespeicherten Stand zurueck.</para>
+        /// </summary>
+        [Fact]
+        public void EinUnmoeglicherOrdnerMeldetSichBeimSpeichern()
+        {
+            CultureInfo vorherUi = System.Threading.Thread.CurrentThread.CurrentUICulture;
+            try
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+
+                var satz = new Einstellungensatz
+                {
+                    VdiPfad = "\0:ungueltig|pfad\0",     // ein Pfad, den kein System anlegt
+                    DbName = "Kenndaten.sqlite"
+                };
+
+                SpeicherBefund befund = EinstellungenCtrl.Speichern(satz);
+
+                Assert.False(befund.Ok);
+                Assert.False(string.IsNullOrEmpty(befund.Meldung));
+                Assert.Contains("Ordner", befund.Meldung);
+            }
+            finally
+            {
+                // Der Speicherstand wird verworfen; gespeichert wurde ohnehin nichts.
+                WindowsFormsApplication1.Properties.Settings.Default.Reload();
+                System.Threading.Thread.CurrentThread.CurrentUICulture = vorherUi;
+            }
+        }
+
+        /// <summary>Ein leerer Satz wird abgelehnt, ohne zu schreiben.</summary>
+        [Fact]
+        public void EinLeererSatzWirdAbgelehnt()
+        {
+            Assert.False(EinstellungenCtrl.Speichern(null).Ok);
+        }
+
         /// <summary>
         /// <b><c>VerwendungZaehlen</c> meldet einen Fehlschlag, statt ihn als „nicht
         /// verwendet" auszugeben</b> (Befund W14c-B44).
