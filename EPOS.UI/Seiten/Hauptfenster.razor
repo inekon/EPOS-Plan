@@ -35,6 +35,7 @@
 <div class="epos-hauptfenster">
 
     <AppWurzel @ref="_wurzel"
+               Zustand="@Zustand"
                Startansicht="@Startansicht"
                StartseiteGaben="@StartseiteGaben"
                BerichteKostenGaben="@BerichteKostenGaben">
@@ -112,6 +113,28 @@
     // =====================================================================
     //  Die Wurzel
     // =====================================================================
+
+    /// <summary>
+    /// Der geteilte Zustand der SEITENHUELLE — Projektwechsel und Auffrischen
+    /// (Befund W16c‑B12, 04.09.2026).
+    ///
+    /// <para><b>Warum diese Seite ihn tragen MUSS.</b>
+    /// <c>BlazorSeite&lt;T&gt;</c> traegt ihn IMMER nach (dort Z. 93‑96): Wer
+    /// keinen mitgibt, bekommt einen frischen, und der Schluessel
+    /// <c>SeitenZustand.PARAMETER</c> steht danach in JEDEM Parametersatz. Bis
+    /// W16b war die Wurzel der Huelle <c>BlazorSeite&lt;Startseite&gt;</c> und
+    /// die Startseite trug den Parameter; seit W16c ist es
+    /// <c>BlazorSeite&lt;Hauptfenster&gt;</c> — und ein Parametersatz mit einem
+    /// Schluessel ohne <c>[Parameter]</c> wirft beim ERSTEN Zeichnen
+    /// (<c>InvalidOperationException: does not have a property matching the
+    /// name 'Zustand'</c>), also im Verteiler und damit als
+    /// <c>TargetInvocationException</c> an <c>Application.Run</c>.</para>
+    ///
+    /// <para><b>Er ist nicht bloss geduldet, er wirkt:</b> Die Wurzel haengt
+    /// sich an sein Ereignis (<c>AppWurzel.Zustand</c>) und zeichnet neu. Das
+    /// ist der Weg, den <c>BlazorSeite.ProjektSetzen</c> beschreibt.</para>
+    /// </summary>
+    [Parameter] public SeitenZustand? Zustand { get; set; }
 
     /// <summary>Die Ansicht, mit der das Fenster aufmacht.</summary>
     [Parameter] public string Startansicht { get; set; } = Seitenschluessel.Startseite;

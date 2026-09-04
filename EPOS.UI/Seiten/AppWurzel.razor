@@ -148,6 +148,26 @@ else
     [Parameter] public RenderFragment? Kopfleiste { get; set; }
 
     /// <summary>
+    /// Der geteilte Zustand der SEITENHUELLE (Befund W16c‑B12, 04.09.2026).
+    /// Unter Windows reicht ihn <c>BlazorSeite&lt;Hauptfenster&gt;</c> ueber
+    /// <c>Hauptfenster.Zustand</c> herein; auf iOS gibt es keine Seitenhuelle
+    /// und damit keinen.
+    ///
+    /// <para><b>Wozu.</b> <c>BlazorSeite.ProjektSetzen</c> stellt die Seite auf
+    /// ein anderes Projekt ein, OHNE die WebView neu zu bauen — die Wurzel
+    /// haengt sich dafuer an <see cref="SeitenZustand.Geaendert"/> und zeichnet
+    /// neu.</para>
+    ///
+    /// <para><b>Er ueberschreibt nichts.</b> Die Ansichten bekommen ihren
+    /// eigenen Zustand aus dem Parametersatz der Huelle
+    /// (<c>StartseiteHuelle</c> und <c>BerichteKostenHuelle</c> fuehren je
+    /// einen und melden darueber den Projektwechsel). Nur wo ein Parametersatz
+    /// KEINEN traegt, legt <see cref="MitZustand"/> diesen hier bei — sonst
+    /// gaebe es zwei Zustaende fuer dieselbe Ansicht.</para>
+    /// </summary>
+    [Parameter] public SeitenZustand? Zustand { get; set; }
+
+    /// <summary>
     /// Die Ansicht, mit der die Wurzel aufmacht, und das Ziel des Rueckwegs.
     /// Vorgabe ist die Projektliste (der iOS-Einstieg); Windows setzt
     /// <c>STARTSEITE</c>.
@@ -182,6 +202,7 @@ else
     protected override void OnInitialized()
     {
         Navigationsziel.Aktuell = this;
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
         // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
         // Wechsel - sonst gaebe es zwei Stellen, an denen eine Ansicht entsteht.
         if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
@@ -191,7 +212,41 @@ else
     /// <inheritdoc />
     public void Dispose()
     {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
         if (ReferenceEquals(Navigationsziel.Aktuell, this)) Navigationsziel.Aktuell = null;
+    }
+
+    /// <summary>
+    /// Die Huelle hat das Projekt gewechselt oder um Auffrischen gebeten.
+    /// Geschrieben wird aus dem Oberflaechenfaden von WinForms, gezeichnet
+    /// ausschliesslich auf dem Renderfaden — dasselbe Muster wie
+    /// <see cref="OeffneMaske"/>.
+    /// </summary>
+    private void BeiZustand()
+    {
+        _ = InvokeAsync(() =>
+        {
+            Laden();
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// Legt <see cref="Zustand"/> einem Parametersatz bei, der KEINEN fuehrt.
+    /// Ein mitgelieferter Zustand hat Vorrang: Unter Windows meldet
+    /// <c>StartseiteHuelle</c> den Projektwechsel ueber IHREN, und zwei
+    /// Zustaende fuer dieselbe Ansicht waeren zwei Wahrheiten.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? MitZustand(
+        IReadOnlyDictionary<string, object>? gaben)
+    {
+        if (gaben is null || Zustand is null) return gaben;
+        if (gaben.ContainsKey(SeitenZustand.PARAMETER)) return gaben;
+
+        var kopie = new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, object> paar in gaben) kopie[paar.Key] = paar.Value;
+        kopie[SeitenZustand.PARAMETER] = Zustand;
+        return kopie;
     }
 
     // =====================================================================
@@ -224,7 +279,7 @@ else
             // Der Parametersatz der Huelle hat Vorrang: Unter Windows haelt
             // StartseiteHuelle den Projektkontext, die zwei Bedarfsobjekte und
             // die 21 Kachelwege - eine Projektquelle koennte das nicht.
-            _startseite = StartseiteGaben ?? Quelle.StartseiteGaben(_projekt?.Id ?? 0);
+            _startseite = MitZustand(StartseiteGaben ?? Quelle.StartseiteGaben(_projekt?.Id ?? 0));
             if (_startseite is null)
             {
                 _statuszeile = KeineStartseiteText;
@@ -236,7 +291,7 @@ else
 
         if (maske == Seitenschluessel.BerichteKosten)
         {
-            _berichteKosten = BerichteKostenGaben ?? Quelle.BerichteKostenGaben(_projekt?.Id ?? 0);
+            _berichteKosten = MitZustand(BerichteKostenGaben ?? Quelle.BerichteKostenGaben(_projekt?.Id ?? 0));
             if (_berichteKosten is null)
             {
                 _statuszeile = KeineBerichteText;
