@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Dom;
+using System.Globalization;
 using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
@@ -23,9 +24,27 @@ public class GanglinieProtokollDialogTests : BunitContext
 {
     public GanglinieProtokollDialogTests()
     {
+        DeutscheOberflaeche();
         // QuickGrid ruft beim Zeichnen JS - im Test genuegt der lockere Modus.
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit iU9-W8, Muster
+    /// <c>DeutscheOberflaeche</c> aus <c>EPOS.Kern.Tests</c>) — Kultur UND Thread-Kultur,
+    /// damit ein Lauf auf einem en-US-Läufer dieselben deutschen Texte sieht wie hier.
+    /// Windows-Lauf 33839255709 fiel ohne das Pinnen mit "Cancel" statt "Abbrechen".
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     private static PruefMeldung Fehler() => new(PruefStufe.Fehler, "IMPORT_PROT_DATEI_LEER");
