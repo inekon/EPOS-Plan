@@ -13996,4 +13996,22 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Speichern fehlgeschlagen</value>
   </data>
+  <data name="WIZ_TITEL" xml:space="preserve">
+    <value>Projektassistent</value>
+  </data>
+  <data name="WIZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="WIZ_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Zurück</value>
+  </data>
+  <data name="WIZ_BTN_WEITER" xml:space="preserve">
+    <value>Weiter ▶</value>
+  </data>
+  <data name="WIZ_LBL_PROJEKT" xml:space="preserve">
+    <value>Bestehendes Projekt auswählen</value>
+  </data>
+  <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
+    <value>Projekt öffnen</value>
+  </data>
 </root>

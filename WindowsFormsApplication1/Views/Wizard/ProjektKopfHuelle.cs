@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -27,17 +27,9 @@ namespace WindowsFormsApplication1
         /// <summary>Wunschmaß der Seite im Assistentenfenster (Vorläufer: 631 × 558).</summary>
         private static readonly Size MASS = new Size(760, 560);
 
-        /// <summary>
-        /// Die Seite für <c>AssistentSeiten.ERZEUGER</c> — Muster
-        /// <c>GebaeudeHuelle.AssistentSeite()</c>.
-        /// </summary>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<ProjektKopfSeite, ProjektKopfDaten>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(Gaben(projektName, modelle)),
-                MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>Der PARAMETERSATZ der Seite.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(

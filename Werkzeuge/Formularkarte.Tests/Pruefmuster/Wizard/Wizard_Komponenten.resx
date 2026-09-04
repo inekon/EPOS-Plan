@@ -1,0 +1,776 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>831, 122</value>
+  </data>
+  <data name="pictureBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
+    <value>pictureBox1</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="label1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt, style=Bold</value>
+  </data>
+  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 122</value>
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>831, 53</value>
+  </data>
+  <data name="label1.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Projektkonfiguration Erstellung</value>
+  </data>
+  <data name="&gt;&gt;label1.Name" xml:space="preserve">
+    <value>label1</value>
+  </data>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="label2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
+  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 180</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>710, 72</value>
+  </data>
+  <data name="label2.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Der Projektassistent führt Sie durch alle notwendigen Schritte. Alle zu einem Projekt notwendigen Eingaben werden dadurch vollständig durchgeführt. Navigieren Sie mit Weiter und Zurück, um die nächsten Eingaben zu machen bzw. um Eingaben nachträglich anzupassen.</value>
+  </data>
+  <data name="&gt;&gt;label2.Name" xml:space="preserve">
+    <value>label2</value>
+  </data>
+  <data name="&gt;&gt;label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="label3.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt</value>
+  </data>
+  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 262</value>
+  </data>
+  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>710, 24</value>
+  </data>
+  <data name="label3.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Wärmeerzeuger bzw. Energieerzeuger Komponenten auswählen:</value>
+  </data>
+  <data name="&gt;&gt;label3.Name" xml:space="preserve">
+    <value>label3</value>
+  </data>
+  <data name="&gt;&gt;label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label3.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="karte_Gebaeude.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 296</value>
+  </data>
+  <data name="karte_Gebaeude.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Gebaeude.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="karte_Gebaeude.Titel" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="&gt;&gt;karte_Gebaeude.Name" xml:space="preserve">
+    <value>karte_Gebaeude</value>
+  </data>
+  <data name="&gt;&gt;karte_Gebaeude.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Gebaeude.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Gebaeude.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="karte_WBedarfDaten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>300, 296</value>
+  </data>
+  <data name="karte_WBedarfDaten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_WBedarfDaten.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="karte_WBedarfDaten.Titel" xml:space="preserve">
+    <value>Wärmebedarfsdaten</value>
+  </data>
+  <data name="&gt;&gt;karte_WBedarfDaten.Name" xml:space="preserve">
+    <value>karte_WBedarfDaten</value>
+  </data>
+  <data name="&gt;&gt;karte_WBedarfDaten.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_WBedarfDaten.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_WBedarfDaten.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="karte_Prozess.Location" type="System.Drawing.Point, System.Drawing">
+    <value>564, 296</value>
+  </data>
+  <data name="karte_Prozess.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Prozess.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="karte_Prozess.Titel" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="&gt;&gt;karte_Prozess.Name" xml:space="preserve">
+    <value>karte_Prozess</value>
+  </data>
+  <data name="&gt;&gt;karte_Prozess.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Prozess.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Prozess.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="karte_Brauchwasser.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 384</value>
+  </data>
+  <data name="karte_Brauchwasser.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Brauchwasser.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="karte_Brauchwasser.Titel" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="&gt;&gt;karte_Brauchwasser.Name" xml:space="preserve">
+    <value>karte_Brauchwasser</value>
+  </data>
+  <data name="&gt;&gt;karte_Brauchwasser.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Brauchwasser.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Brauchwasser.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="karte_StdStromprofil.Location" type="System.Drawing.Point, System.Drawing">
+    <value>300, 384</value>
+  </data>
+  <data name="karte_StdStromprofil.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_StdStromprofil.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="karte_StdStromprofil.Titel" xml:space="preserve">
+    <value>Standard-Stromlastprofil</value>
+  </data>
+  <data name="&gt;&gt;karte_StdStromprofil.Name" xml:space="preserve">
+    <value>karte_StdStromprofil</value>
+  </data>
+  <data name="&gt;&gt;karte_StdStromprofil.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_StdStromprofil.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_StdStromprofil.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="karte_Stromlastgang.Location" type="System.Drawing.Point, System.Drawing">
+    <value>564, 384</value>
+  </data>
+  <data name="karte_Stromlastgang.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Stromlastgang.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="karte_Stromlastgang.Titel" xml:space="preserve">
+    <value>Stromlastgang</value>
+  </data>
+  <data name="&gt;&gt;karte_Stromlastgang.Name" xml:space="preserve">
+    <value>karte_Stromlastgang</value>
+  </data>
+  <data name="&gt;&gt;karte_Stromlastgang.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Stromlastgang.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Stromlastgang.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="karte_WP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 472</value>
+  </data>
+  <data name="karte_WP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_WP.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="karte_WP.Titel" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="&gt;&gt;karte_WP.Name" xml:space="preserve">
+    <value>karte_WP</value>
+  </data>
+  <data name="&gt;&gt;karte_WP.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_WP.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_WP.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="karte_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>300, 472</value>
+  </data>
+  <data name="karte_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="karte_BHKW.Titel" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="&gt;&gt;karte_BHKW.Name" xml:space="preserve">
+    <value>karte_BHKW</value>
+  </data>
+  <data name="&gt;&gt;karte_BHKW.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_BHKW.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_BHKW.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="karte_Kessel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>564, 472</value>
+  </data>
+  <data name="karte_Kessel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Kessel.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="karte_Kessel.Titel" xml:space="preserve">
+    <value>Spitzenkessel</value>
+  </data>
+  <data name="&gt;&gt;karte_Kessel.Name" xml:space="preserve">
+    <value>karte_Kessel</value>
+  </data>
+  <data name="&gt;&gt;karte_Kessel.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Kessel.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Kessel.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="karte_Solar.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 560</value>
+  </data>
+  <data name="karte_Solar.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Solar.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="karte_Solar.Titel" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="&gt;&gt;karte_Solar.Name" xml:space="preserve">
+    <value>karte_Solar</value>
+  </data>
+  <data name="&gt;&gt;karte_Solar.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Solar.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Solar.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="karte_PV.Location" type="System.Drawing.Point, System.Drawing">
+    <value>300, 560</value>
+  </data>
+  <data name="karte_PV.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_PV.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="karte_PV.Titel" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="&gt;&gt;karte_PV.Name" xml:space="preserve">
+    <value>karte_PV</value>
+  </data>
+  <data name="&gt;&gt;karte_PV.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_PV.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_PV.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="karte_StromSp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>564, 560</value>
+  </data>
+  <data name="karte_StromSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_StromSp.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="karte_StromSp.Titel" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;karte_StromSp.Name" xml:space="preserve">
+    <value>karte_StromSp</value>
+  </data>
+  <data name="&gt;&gt;karte_StromSp.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_StromSp.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_StromSp.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="karte_Puffer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 648</value>
+  </data>
+  <data name="karte_Puffer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 80</value>
+  </data>
+  <data name="karte_Puffer.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="karte_Puffer.Titel" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="&gt;&gt;karte_Puffer.Name" xml:space="preserve">
+    <value>karte_Puffer</value>
+  </data>
+  <data name="&gt;&gt;karte_Puffer.Type" xml:space="preserve">
+    <value>WindowsFormsApplication1.AktionsKarte, WindowsFormsApplication1, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;karte_Puffer.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;karte_Puffer.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panel_Textvorlagen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 740</value>
+  </data>
+  <data name="panel_Textvorlagen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 130</value>
+  </data>
+  <data name="panel_Textvorlagen.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="&gt;&gt;panel_Textvorlagen.Name" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;panel_Textvorlagen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel_Textvorlagen.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;panel_Textvorlagen.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label_TextEnthalten.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextEnthalten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="label_TextEnthalten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextEnthalten.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="label_TextEnthalten.Text" xml:space="preserve">
+    <value>{0} im Projekt</value>
+  </data>
+  <data name="&gt;&gt;label_TextEnthalten.Name" xml:space="preserve">
+    <value>label_TextEnthalten</value>
+  </data>
+  <data name="&gt;&gt;label_TextEnthalten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextEnthalten.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextEnthalten.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="label_TextOhne.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextOhne.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 18</value>
+  </data>
+  <data name="label_TextOhne.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextOhne.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="label_TextOhne.Text" xml:space="preserve">
+    <value>nicht im Projekt</value>
+  </data>
+  <data name="&gt;&gt;label_TextOhne.Name" xml:space="preserve">
+    <value>label_TextOhne</value>
+  </data>
+  <data name="&gt;&gt;label_TextOhne.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextOhne.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextOhne.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="label_TextNurAnzeige.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextNurAnzeige.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 36</value>
+  </data>
+  <data name="label_TextNurAnzeige.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextNurAnzeige.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="label_TextNurAnzeige.Text" xml:space="preserve">
+    <value>nur Anzeige</value>
+  </data>
+  <data name="&gt;&gt;label_TextNurAnzeige.Name" xml:space="preserve">
+    <value>label_TextNurAnzeige</value>
+  </data>
+  <data name="&gt;&gt;label_TextNurAnzeige.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextNurAnzeige.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextNurAnzeige.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="label_TextFrage.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextFrage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 54</value>
+  </data>
+  <data name="label_TextFrage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextFrage.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="label_TextFrage.Text" xml:space="preserve">
+    <value>„{0}" wird aus dem Projekt genommen.
+
+Beim Speichern werden {1} Einträge gelöscht:
+{2}
+
+Wirklich entfernen?</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrage.Name" xml:space="preserve">
+    <value>label_TextFrage</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrage.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrage.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label_TextFrageTitel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextFrageTitel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 72</value>
+  </data>
+  <data name="label_TextFrageTitel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextFrageTitel.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="label_TextFrageTitel.Text" xml:space="preserve">
+    <value>Komponente entfernen</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrageTitel.Name" xml:space="preserve">
+    <value>label_TextFrageTitel</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrageTitel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrageTitel.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextFrageTitel.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="label_TextNeuFrage.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextNeuFrage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 90</value>
+  </data>
+  <data name="label_TextNeuFrage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextNeuFrage.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="label_TextNeuFrage.Text" xml:space="preserve">
+    <value>Der Assistent wechselt auf ein neues Projekt.
+
+Die Eingaben dieses Durchlaufs werden verworfen.
+
+Fortfahren?</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuFrage.Name" xml:space="preserve">
+    <value>label_TextNeuFrage</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuFrage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuFrage.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuFrage.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label_TextNeuTitel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_TextNeuTitel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 108</value>
+  </data>
+  <data name="label_TextNeuTitel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>600, 15</value>
+  </data>
+  <data name="label_TextNeuTitel.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="label_TextNeuTitel.Text" xml:space="preserve">
+    <value>Neues Projekt beginnen</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuTitel.Name" xml:space="preserve">
+    <value>label_TextNeuTitel</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuTitel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuTitel.Parent" xml:space="preserve">
+    <value>panel_Textvorlagen</value>
+  </data>
+  <data name="&gt;&gt;label_TextNeuTitel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>7, 15</value>
+  </data>
+  <data name="$this.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>831, 744</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Komponenten auswählen</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>Wizard_Komponenten</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+</root>

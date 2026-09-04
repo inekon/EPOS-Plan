@@ -36,23 +36,25 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>P4 (Projektdialoge vereinheitlichen): eine Seitenliste statt zwei.</b>
         /// Die dreizehn Zeilen Seitenaufbau standen hier und in
-        /// <see cref="ProjektBearbeiten"/> wortgleich doppelt; sie liegen jetzt in
-        /// <see cref="AssistentSeiten"/>. Reihenfolge und Inhalt sind unverändert —
-        /// die beiden Einstiege unterscheiden sich nur noch im <c>SetWizardMode</c>.
+        /// <see cref="ProjektBearbeiten"/> wortgleich doppelt; sie liegen seit
+        /// iU9-W16a.5 in <c>EPOS.UI/Seiten/Assistent/AssistentSeite.razor</c>.
+        /// Reihenfolge und Inhalt sind unverändert — die beiden Einstiege
+        /// unterscheiden sich nur noch in der Betriebsart.
         /// </para>
         /// </summary>
         public void ProjektNeu()
         {
-            AssistentZeigen(WizardParent.WIZARD_MODE_NEU);
+            AssistentZeigen(AssistentCtrl.BETRIEBSART_NEU);
         }
 
         /// <summary>
         /// Öffnet den Projektassistenten für ein BESTEHENDES Projekt (linke Spalte =
-        /// <see cref="ProjektAuswahl"/>). Seitenliste wie in <see cref="ProjektNeu"/>.
+        /// der Baustein <c>ProjektListe</c>). Seitenliste wie in
+        /// <see cref="ProjektNeu"/>.
         /// </summary>
         public void ProjektBearbeiten()
         {
-            AssistentZeigen(WizardParent.WIZARD_MODE_BEARBEITEN);
+            AssistentZeigen(AssistentCtrl.BETRIEBSART_BEARBEITEN);
         }
 
         private void AssistentZeigen(int betriebsart)

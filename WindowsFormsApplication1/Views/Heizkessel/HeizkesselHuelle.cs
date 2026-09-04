@@ -717,23 +717,8 @@ namespace WindowsFormsApplication1
             internal int Naechster = 100000;
         }
 
-        /// <summary>
-        /// Die Kesselseite des ASSISTENTEN (iU9-W6.3) — dieselbe Komponente, andere
-        /// Hülle: randlos, <c>TopLevel = false</c>-tauglich, ohne OK/Abbrechen und ohne
-        /// Kostenleiste (<c>Wizard = true</c>).
-        /// </summary>
-        /// <remarks>
-        /// Der Parametersatz wird erst in <c>Bestuecken</c> erfragt, weil Projekt-Id,
-        /// Projektname und die geteilte Liste erst dort feststehen —
-        /// <c>AssistentSeiten.Erzeugen</c> baut alle dreizehn Seiten im Voraus.
-        /// </remarks>
-        internal static Form AssistentSeite()
-        {
-            return new BlazorAssistentSeite<HeizkesselDialog>(
-                (projektId, projektName, modelle) =>
-                    new Dictionary<string, object>(
-                        Gaben(null, projektId, WizardItemClass.KESSEL_TYP, modelle, wizard: true)),
-                PROJEKT_MASS);
-        }
+        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
+        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
+        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
     }
 }

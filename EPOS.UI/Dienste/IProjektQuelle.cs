@@ -156,6 +156,27 @@ public interface IProjektQuelle
     /// Knopf).</para>
     /// </summary>
     ProjektTransferDaten? TransferDaten() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des PROJEKTASSISTENTEN (iU9-W16a.5, K6);
+    /// <c>null</c> = diese Huelle kann keinen Assistentenlauf.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die
+    /// Erweiterung nicht bricht.</para>
+    ///
+    /// <para><b>Zwei Angaben statt einer.</b> Der Assistent hat ZWEI Einstiege, die
+    /// sich nur in der Betriebsart unterscheiden (neues Projekt / vorhandenes
+    /// bearbeiten) — das war schon im Bestand so (<c>MenueCtrl.ProjektNeu</c> und
+    /// <c>…ProjektBearbeiten</c> riefen dieselbe Seitenliste mit anderem
+    /// <c>SetWizardMode</c>). Die Projekt-Id ist im Bearbeiten-Zweig die Vorauswahl
+    /// des linken Bandes; 0 heisst „noch keine".</para>
+    /// </summary>
+    /// <param name="betriebsart">0 = neues Projekt, 1 = vorhandenes bearbeiten.</param>
+    /// <param name="idProjekt">Vorausgewaehltes Projekt im Bearbeiten-Zweig; 0 = keines.</param>
+    IReadOnlyDictionary<string, object>? AssistentGaben(int betriebsart, int idProjekt) => null;
 }
 
 /// <summary>

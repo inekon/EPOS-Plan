@@ -53,6 +53,15 @@ else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not 
     <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_simErgebnis"
                                                        Geschlossen="ZurueckZurListe" />
 }
+else if (_ansicht == Seitenschluessel.Assistent && _assistent is not null)
+{
+    @* Der Projektassistent (iU9-W16a.5). Unter Windows steht dieselbe Komponente
+       in einer MODALEN Huelle (AssistentHuelle) - beide Aufrufer werten aus, ob
+       gespeichert wurde; hier loest sie die Ansicht ab, weil es auf dem iPad kein
+       zweites Fenster gibt. *@
+    <EPOS.UI.Seiten.Assistent.AssistentSeite @attributes="_assistent"
+                                             Geschlossen="BeiAssistentFertig" />
+}
 else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
 {
     @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
@@ -83,6 +92,7 @@ else
     private IReadOnlyDictionary<string, object>? _simKonfig;
     private IReadOnlyDictionary<string, object>? _simErgebnis;
     private IReadOnlyDictionary<string, object>? _kiAssistent;
+    private IReadOnlyDictionary<string, object>? _assistent;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -178,6 +188,24 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.Assistent)
+        {
+            // Betriebsart BEARBEITEN, wenn ein Projekt gewaehlt ist - sonst NEU;
+            // dieselbe Unterscheidung wie MenueCtrl.ProjektNeu/ProjektBearbeiten.
+            int betriebsart = (_projekt?.Id ?? 0) > 0 ? 1 : 0;
+            _assistent = Quelle.AssistentGaben(betriebsart, _projekt?.Id ?? 0);
+            if (_assistent is null)
+            {
+                // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
+                // die Liste stehen und sagt warum - der Windows-Zustand "Fenster geht
+                // nicht auf".
+                _statuszeile = KeinProjektassistentText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.KiAssistent)
         {
             _kiAssistent = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
@@ -208,6 +236,7 @@ else
         _bhkw = null;
         _simKonfig = null;
         _kiAssistent = null;
+        _assistent = null;
         Laden();
     }
 
@@ -227,6 +256,17 @@ else
                 : string.Format(MeldungAngelegt, name);
         }
 
+        ZurueckZurListe();
+    }
+
+    /// <summary>
+    /// Der Assistent ist zu Ende — gespeichert (<c>true</c>) oder abgebrochen.
+    /// Danach steht die Projektliste wieder, und sie wird neu geladen: Ein
+    /// gespeicherter Lauf hat ein Projekt angelegt oder fortgeschrieben.
+    /// </summary>
+    private void BeiAssistentFertig(bool gespeichert)
+    {
+        _statuszeile = gespeichert ? MeldungGespeichert : "";
         ZurueckZurListe();
     }
 
@@ -250,6 +290,7 @@ else
                     || maske == Seitenschluessel.SimulationKonfiguration
                     || maske == Seitenschluessel.SimulationErgebnis
                     || maske == Seitenschluessel.KiAssistent
+                    || maske == Seitenschluessel.Assistent
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
@@ -303,4 +344,11 @@ else
     /// </summary>
     [Parameter] public string KeinAssistentText { get; set; } =
         "Der Hilfe-Assistent steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn der Projektassistent nicht zu öffnen ist — der Zustand,
+    /// solange die iOS-Hülle ihn nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeinProjektassistentText { get; set; } =
+        "Der Projektassistent steht auf diesem Gerät noch nicht zur Verfügung.";
 }

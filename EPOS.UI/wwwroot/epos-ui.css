@@ -402,6 +402,59 @@ body {
 }
 
 /* ==========================================================================
+   Baustein: Assistent (Vorbild Views/Wizard/WizardParent.cs, iU9-W16a.5)
+
+   DREI TEILE STATT DREI PANEL. pnlLeft (linkes Band), pnlContent
+   (Inhaltsflaeche) und pnlBottom (Fussleiste) werden ein Raster mit zwei
+   Spalten und zwei Zeilen; ohne Band nimmt der Inhalt beide Spalten.
+   LoadNewForm - 32 Zeilen gerechnete Fenstergroesse - entfaellt.
+   ========================================================================== */
+
+.epos-assistent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 0;
+    min-height: 100%;
+}
+
+.epos-assistent-band {
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 280px;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-flaeche-gedaempft, #EFEFEF);
+    border-right: 1px solid var(--epos-karte-rahmen);
+    overflow: auto;
+}
+
+.epos-assistent-inhalt {
+    grid-column: 2;
+    padding: var(--epos-karte-rand);
+    overflow: auto;
+}
+
+/* Ohne Band beginnt der Inhalt in Spalte 1. */
+.epos-assistent > .epos-assistent-inhalt:first-child {
+    grid-column: 1 / 3;
+}
+
+.epos-assistent-fuss {
+    grid-column: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-karte-rahmen);
+}
+
+.epos-assistent > .epos-assistent-inhalt:first-child ~ .epos-assistent-fuss {
+    grid-column: 1 / 3;
+}
+
+/* ==========================================================================
    Bausteine: Herleitungszeile und Kohaerenzzeile
    ========================================================================== */
 
