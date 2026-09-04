@@ -302,16 +302,19 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 32 Masken** (38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 28 Masken** (32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **21** (25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **17** (20 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht auf **31 von 32, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
+  Erreichbarkeit steht auf **27 von 28, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
   Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
   `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
   (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
-  behalten.
+  behalten. **Der Kleinschreibungs-Zeuge des Stapellauf-Tests hängt seit iU9‑W14b
+  an `WizardParent.designer.cs`** (vorher `Form_Brauchwasser_Admin`): Nach W14a und
+  W14b bleiben genau zwei kleingeschriebene Designer, `WizardParent` und
+  `Wizard_Komponenten`, und beide kommen erst mit Welle 16 an die Reihe.
   **Mit iU9‑W11b sind sechs weitere Masken verschwunden — die letzten des
   Simulationsbereichs**, zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer,
   21 MessageBox und 17 Zeichenflächen: `Form_Simulation_Detail` (7 629 Z. +
