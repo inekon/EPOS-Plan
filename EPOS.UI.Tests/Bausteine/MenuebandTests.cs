@@ -13,7 +13,7 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <summary>
 /// NACHWEIS N4 (Vermessung § 11.8) — das Menueband des Hauptfensters.
 ///
-/// <para>Geprueft wird genau das, was der Rueckbau von <c>MDIMainForm</c>
+/// <para>Geprueft wird genau das, was der Rueckbau von <c>Hauptfensterrahmen</c>
 /// aufgibt: die VOLLZAEHLIGKEIT der Punkte, ihre BESCHRIFTUNG in beiden
 /// Sprachen und die Zusicherung, dass jeder Klick einen
 /// <see cref="Seitenschluessel"/> meldet — und nichts sonst. Fiele einer der

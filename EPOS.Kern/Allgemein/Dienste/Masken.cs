@@ -55,7 +55,7 @@
         /// Herstellerdaten PV-Module einlesen (CEC-Modulliste bzw. PVsyst-.pan).
         ///
         /// <para><b>Neu mit iU9-W13.0k</b> (Befund W13-B55): Diese Maske war als
-        /// einzige ihrer Welle OHNE Maskenschluessel — <c>MDIMainForm</c> erzeugte
+        /// einzige ihrer Welle OHNE Maskenschluessel — <c>Hauptfensterrahmen</c> erzeugte
         /// sie an zwei Stellen unmittelbar mit <c>new</c>. Damit hing sie an zwei
         /// Zeilen des Hauptfensters statt an der Navigation.</para>
         ///

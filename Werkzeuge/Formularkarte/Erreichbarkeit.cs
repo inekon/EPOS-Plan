@@ -9,7 +9,9 @@ namespace Formularkarte;
 /// <summary>Wie steht es um den Einstieg in eine Maske?</summary>
 public enum Erreichbar
 {
-    /// <summary>Es gibt einen Weg von einer Wurzel (MDIMainForm, Form_Start) bis zur Maske.</summary>
+    /// <summary>
+    /// Es gibt einen Weg von einer Wurzel (Hauptfensterrahmen, Form_Start) bis zur Maske.
+    /// </summary>
     Ja,
     /// <summary>Oeffner stehen im Quelltext, sind aber selbst nicht zu erreichen.</summary>
     Nein,
@@ -31,7 +33,7 @@ public sealed class Maskenknoten
     /// <summary>Datei der Klasse, relativ zum Elternordner der Suchwurzel.</summary>
     public string Datei { get; set; } = "";
 
-    /// <summary>Ist die Maske selbst ein Einstieg (MDIMainForm, Form_Start)?</summary>
+    /// <summary>Ist die Maske selbst ein Einstieg (Hauptfensterrahmen, Form_Start)?</summary>
     public bool Wurzel { get; set; }
 
     /// <summary>Wird die Datei ueberhaupt uebersetzt (kein <c>Compile Remove</c> in der .csproj)?</summary>
@@ -132,7 +134,7 @@ public sealed class Erreichbarkeitsgraph
 /// <c>AssistentSeiten</c>, die <c>*KontextMenuCtrl</c>); solche Klassen sind
 /// deshalb Zwischenknoten: Wer einen von ihnen erzeugt, erbt seine Kanten.</para>
 ///
-/// <para><b>Wurzeln</b> sind <c>MDIMainForm</c> und <c>Form_Start</c>, dazu die
+/// <para><b>Wurzeln</b> sind <c>Hauptfensterrahmen</c> und <c>Form_Start</c>, dazu die
 /// Einsprungklasse <c>Program</c> (sie zeigt vor dem Hauptfenster den
 /// Erststart-Dialog). Abgezogen werden die Wege, die es zur Laufzeit nicht mehr
 /// gibt: Handler entfernter Steuerelemente
@@ -149,10 +151,10 @@ public static class Erreichbarkeit
     /// <para><b>Seit iU9-W16b.3 ist es EINE</b> (Befund W16-B3, Risiko R-W16-10):
     /// <c>Form_Start</c> ist eine Razor-Seite und damit keine Maske mehr. Der Graph
     /// bleibt vollstaendig - <c>Form_HelpPopup</c>, die letzte Maske neben der
-    /// Huelle selbst, haengt weiter an <c>MDIMainForm</c> und meldet unveraendert
+    /// Huelle selbst, haengt weiter an <c>Hauptfensterrahmen</c> und meldet unveraendert
     /// "ja".</para>
     /// </summary>
-    public static readonly string[] Wurzelmasken = { "MDIMainForm" };
+    public static readonly string[] Wurzelmasken = { "Hauptfensterrahmen" };
 
     /// <summary>
     /// Die Klasse mit dem Programmeinsprung. <c>Program.Main</c> laeuft vor jedem

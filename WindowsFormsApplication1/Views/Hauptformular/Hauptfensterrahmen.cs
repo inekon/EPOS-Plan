@@ -25,18 +25,22 @@ namespace WindowsFormsApplication1
     /// als Daten (<c>Menuetabelle</c>, 55 Punkte), das Kopfband als Markup, die
     /// Wege als <see cref="HauptfensterHuelle"/>.</para>
     ///
-    /// <para><b>Der Name lügt seit langem</b> (Befund W16-B10): <c>IsMdiContainer</c>
-    /// stand schon vor dieser Welle auf <c>false</c>, es gibt in der ganzen
-    /// Anwendung kein MDI-Kind. Der Name bleibt bis zur Umbenennung nach dem
-    /// Merge (Entscheid E-10) — er hängt an <c>HilfeKontext</c>, am
-    /// Erreichbarkeitsgraphen und an <c>help_mapping.txt</c>.</para>
+    /// <para><b>Der Name hieß bis zum 04.09.2026 <c>MDIMainForm</c></b> und log
+    /// seit langem (Befund W16-B10): <c>IsMdiContainer</c> stand schon vor
+    /// dieser Welle auf <c>false</c>, es gibt in der ganzen Anwendung kein
+    /// MDI-Kind. Mit Anwenderentscheid E-10 heißt die Klasse
+    /// <c>Hauptfensterrahmen</c> — nicht <c>Hauptfenster</c> (so heißt die
+    /// Razor-SEITE in <c>EPOS.UI.Seiten</c>) und nicht
+    /// <c>HauptfensterHuelle</c> (so heißt die Blazor-Hülle dieser Seite): Der
+    /// RAHMEN ist das Fenster mit <c>Application.Run</c>, der
+    /// <c>BlazorWebView</c>, F1 und dem Sprachwechsel.</para>
     ///
     /// <para><b>Kein Designer mehr.</b> <c>MDIMainForm.Designer.cs</c> und die
     /// drei <c>.resx</c> sind gelöscht; sie stehen eingefroren unter
     /// <c>Werkzeuge/Formularkarte.Tests/Pruefmuster/Hauptformular/</c>
     /// (Entscheid E-9).</para>
     /// </summary>
-    public class MDIMainForm : Form
+    public class Hauptfensterrahmen : Form
     {
         /// <summary>
         /// Produktname für Titelleiste, Kopfband und Meldungen. Ein Markenname
@@ -58,10 +62,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die EINE WebView des Fensters (Risiko R5: eine je Fenster).</summary>
         private BlazorSeite<EPOS.UI.Seiten.Hauptfenster> _bild;
 
-        public MDIMainForm()
+        public Hauptfensterrahmen()
         {
-            // Der Name lügt (Befund W16-B10): reguläre SDI-Hauptform, kein
-            // MDI-Wirt. Die Zeile stand schon vor dieser Welle hier.
+            // Reguläre SDI-Hauptform, kein MDI-Wirt (Befund W16-B10). Die Zeile
+            // stand schon vor dieser Welle hier; seit E-10 sagt es auch der Name.
             IsMdiContainer = false;
 
             // Beim Start vollflächig, aber später vom Nutzer skalierbar.

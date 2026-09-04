@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt die Dublettensuche als eigenes Fenster — der Weg von
-        /// <c>MDIMainForm.InitDublettenMenue</c>.
+        /// <c>Hauptfensterrahmen.InitDublettenMenue</c>.
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {

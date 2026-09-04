@@ -5,13 +5,13 @@
 // Sprungtabelle, hier der Anfang des Wegs. Zusammen bilden sie die Kette, die der Bestand
 // nach iU9-W16b nicht mehr hergibt:
 //
-//     MDIMainForm  →  Masken.PufferSpAdmin  →  WinFormsNavigation.OeffneMaske
-//                  →  Form_PufferSp_Admin   („ja", Pfadlänge 4)
+//     Hauptfensterrahmen  →  Masken.PufferSpAdmin  →  WinFormsNavigation.OeffneMaske
+//                         →  Form_PufferSp_Admin   („ja", Pfadlänge 4)
 //
 // Der Erreichbarkeitsgraph kennt genau eine Wurzelmaske (`Erreichbarkeit.Wurzelmasken` =
-// { "MDIMainForm" }); deshalb muss der Weg an DIESER Klasse beginnen. Sie ist im
+// { "Hauptfensterrahmen" }); deshalb muss der Weg an DIESER Klasse beginnen. Sie ist im
 // Prüfmusterbaum bereits als partielle Klasse angelegt — Pruefmuster/Pufferspeicher/
-// MDIMainForm.Auszug.cs trägt den UNMITTELBAREN Weg, der für den „unklar"-Fall gebraucht
+// Hauptfensterrahmen.Auszug.cs trägt den UNMITTELBAREN Weg, der für den „unklar"-Fall gebraucht
 // wird. Dieser Teil trägt den Weg ÜBER DEN SCHLÜSSEL; beide zeigen auf dieselbe Maske und
 // stören einander nicht.
 //
@@ -20,7 +20,7 @@
 
 namespace WindowsFormsApplication1
 {
-    public partial class MDIMainForm : Form
+    public partial class Hauptfensterrahmen : Form
     {
         public void PufferspeicherUeberDieSprungtabelle()
         {

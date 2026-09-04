@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt den Katalog als eigenes Fenster — der Weg von
-        /// <c>MDIMainForm.InitGesetzeMenue</c>.
+        /// <c>Hauptfensterrahmen.InitGesetzeMenue</c>.
         /// </summary>
         /// <param name="besitzer">Das Fenster, über dem der Dialog erscheint.</param>
         /// <param name="vorwahlKlasse">Vorgewählter Bereich; leer = der erste.</param>
