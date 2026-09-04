@@ -1437,7 +1437,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 04.09.2026:** W15a‑O‑2 (Empfehlung angenommen — der Transferdialog behält sein Auswahlfeld, keine volle Projektliste im
 > Export) und W15a‑O‑3 („Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall": Namen sind über den
 > eindeutigen Index `Projektname` eindeutig, das Löschen über den Namen bleibt; trifft ein Name mehrere Projekte, fragt das
-> Programm mit Vorgabe „Nein" nach statt still beide zu löschen — Umsetzung folgt als eigener Commit).
+> Programm mit Vorgabe „Nein" nach statt still beide zu löschen — umgesetzt in `ba806b7`, gemerged als `fe07e82`:
+> `LoeschStand.Mehrdeutig` mit Anzahl in `ProjektCtrl.LoeschenMitVorarbeiten`, zweite `Rueckfrage` im `ProjektWahlDialog`,
+> sieben Tests, darunter zwei auf einer Arbeitskopie ohne den Index). **Neu offen W15a‑O‑4:** `VariantenCtrl.LoescheVariante`
+> ruft `ProjektCtrl.Delete(name)` direkt und kennt die Vorprüfung nicht — dieselbe Rückfrage auch dort?
 > **Testanker:** der Maskenschlüssel-Zeuge steht jetzt auf `FormMain`/`Masken.ProjektDetail`, zwei W16-Aufträge (T1, T2)
 > stehen in den Tests und im Protokoll.
 >
