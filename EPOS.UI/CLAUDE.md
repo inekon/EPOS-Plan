@@ -221,6 +221,8 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Import/KatalogImportDialog` | **vier** Masken: `Form_Heizkessel_einlesen`, `Form_PufferSp_einlesen`, `Form_SolarKollektoren_einlesen`, `Form_WP_einlesen` (iU9‑W13.1) | `Views/Import/KatalogImportHuelle.cs` → `KatalogImportProfil`, `KatalogImportAblauf`; EINE Hülle für alle vier Maskenschlüssel, Lesen und Schreiben in `Task.Run` |
 | `Bedarf/WaermebedarfAdminDialog` | `Form_AdminWaermeeinlesen` (iU9‑W13.2) | `Views/Wärmebedarf/WaermebedarfAdminHuelle.cs` → `WaermebedarfStammCtrl`, `GanglinienTextDatei`, `DublettenPruefung`; erscheint auch als Überlagerung in `WaermebedarfExternDialog` |
 | `Photovoltaik/PvModulImportDialog` | `Form_CECImport` / Klasse `Main_PV_Test` (iU9‑W13.3) | `Views/Photovoltaik/PvModulImportHuelle.cs` → `CECDataService`, `PanDataService`, `PhotovoltaikStammCtrl`; Netzabruf mit `Fortschritt` und Abbrechen, 20 746 Zeilen im virtualisierten `Raster` |
+| `Bedarf/BedarfAdminDialog` | **drei** Masken: `Form_Stromverbraucher_Admin`, `Form_Prozesswaerme_Admin`, `Form_Brauchwasser_Admin` (iU9‑W14b.1) | `Views/Bedarf/BedarfAdminHuelle.cs` → `BedarfStammCtrl`, `BedarfsVorschauCtrl`; EINE Hülle für drei Maskenschlüssel, **vier** Überlagerungen aus Welle 8 |
+| `Solarthermie/SolarganglinieAdminDialog` | `Form_Solarganglinie_Admin` (iU9‑W14b.2) | `Views/Solarthermie/SolarganglinieAdminHuelle.cs` → `SolarganglinieStammCtrl`, `GanglinienTextDatei` (mit Kopfzeile); erscheint auch als Überlagerung in `SolarganglinieDialog` |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -344,6 +346,28 @@ IMPORT-PROBEN mit eingefrorenen Erwartungswerten, angelegt VOR jeder portierten
 Zeile. Die Wärmebedarfsverwaltung folgt dem W12-Zwilling
 `StromganglinieAdminDialog`; ihr Sprung über die `Sprungbruecke` ENTFÄLLT, weil
 das Ziel selbst Blazor wird — aus dem zweiten Fenster wird eine Überlagerung.
+
+**Vier Masken, zwei Komponenten** (iU9‑W14b): Die drei Bedarfs-KATALOGVERWALTUNGEN
+— Stromverbraucher, Prozesswärme, Brauchwasser — sind DRILLINGE wie ihre
+Projektblätter aus W8 und W9: Designer zeichengleich bis auf die Bezeichner,
+`SetControls`, `SetProzessInfo` und `Prozesssumme` dreimal WORTGLEICH. Von
+dreizehn Unterschieden sind **vier echte Ausprägung** — `BedarfsArt`,
+Simulationsklasse, Engine-Methode, Teiler —, und die drei letzten liegen ohnehin
+hinter `BedarfsArt`; alles andere ist Nachzug oder Zufall. Der
+Feldkartenabgleich läuft deshalb je AUSPRÄGUNG. **Fünf von sieben Knöpfen führten
+schon vorher in Blazor** (`TypStammDialog`, `TypProfilDialog`,
+`BedarfErgebnisDialog` — bis dahin als zweites modales Fenster ÜBER der
+WinForms-Maske); sie werden Überlagerungen derselben Komponente, dazu die
+Namensabfrage. Der SECHSTE Knopf war eine Täuschung: `btn_ErgebnisseVerbrauch_Click`
+stand in allen drei Masken, ein Knopf dazu in KEINEM Designer (Befund W14‑B78) —
+damit sind zwei seit Welle 8 offene Entscheide gegenstandslos. Die
+Solarganglinien-Verwaltung folgt dem W13-Zwilling `WaermebedarfAdminDialog`, nur
+liest sie MIT Kopfzeile (`GanglinienTextDatei.Lies(…, mitKopfzeile: true)` — die
+Klasse ist mit W13.0h für genau diesen zweiten Aufrufer so gebaut worden); ihr
+Sprung entfällt aus demselben Grund wie beim Wärmebedarf, **`Sprungziel` führt
+danach acht Konstanten**. Der Nachweis der Welle sind 37 EINGEFRORENE Fälle,
+angelegt VOR der ersten portierten Zeile: Für diese vier Masken gab es weder
+Referenzlauf noch ChartProbe noch Kern-Test.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen

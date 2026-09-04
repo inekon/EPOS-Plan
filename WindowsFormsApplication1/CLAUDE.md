@@ -120,7 +120,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**134 `.cs`**; **207 Dateien** mit `.resx`) —
+- **`Views/`** (**128 `.cs`**; **191 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -436,6 +436,30 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` verschoben — er ist der
   Zeuge des Umlaut-Tests. Protokoll:
   [`Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W14b sind vier weitere Masken verschwunden — die ruhenden
+  Verwaltungen des Bedarfs**, zusammen 670 Zeilen `.cs`, 937 Zeilen Designer und
+  11 `MessageBox`: `Form_Stromverbraucher_Admin` (177 Z.),
+  `Form_Prozesswaerme_Admin` (177 Z.), `Form_Brauchwasser_Admin` (163 Z.) und
+  `Form_Solarganglinie_Admin` (153 Z.). **Vier Masken werden ZWEI Komponenten**:
+  Die drei Bedarfskataloge sind DRILLINGE wie ihre Projektblätter aus W8 und W9 —
+  ihre Ausprägung ist derselbe Aufzählungstyp `BedarfsArt`, und der
+  Feldkartenabgleich läuft je AUSPRÄGUNG. An ihrer Stelle stehen **zwei Hüllen** —
+  `Views/Bedarf/BedarfAdminHuelle.cs` (EINE für drei Maskenschlüssel) und
+  `Views/Solarthermie/SolarganglinieAdminHuelle.cs`.
+  Neu im Kern ist `Controller/BedarfsVorschauCtrl.cs` (die Rechnung hinter
+  „Grafik", die dreimal im Formularcode stand); erweitert sind `BedarfStammCtrl`
+  (`Bezeichner`, `Kopf`, `Loeschen`) und `SolarganglinieStammCtrl` (`Exists`,
+  `HatProjektzuordnung`). **`EPOS.Kern/Allgemein/ToolsClass.cs` fällt** — sie
+  hatte genau zwei Nutzer, und beide sind mit W13.2 bzw. W14b.2 gefallen.
+  **Die Sprungbrücke verliert ein weiteres Ziel**: `SolarganglinieDialog` zeigt
+  die Verwaltung als Überlagerung; `Sprungziel` führt danach acht Konstanten.
+  Der Nachweis der Welle sind **37 eingefrorene Fälle**
+  (`EPOS.Kern.Tests/BedarfVerwaltungTests.cs`), angelegt VOR der ersten
+  portierten Zeile: Für diese vier Masken gab es weder Referenzlauf noch
+  ChartProbe noch Kern-Test (Befund W14‑B77).
+  **`Views/Brauchwasser`, `Views/Prozesswärme` und `Views/Stromverbraucher`
+  führen seither keine Designer-Maske mehr.** Protokoll:
+  [`Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md).
 - **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
