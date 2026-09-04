@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W10b umgesetzt, W11a in Arbeit | `a91ba2a` | **49** Designer-Masken offen (50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView |
+| **iU9** Masken in Wellen | 🔄 W0 bis W11a umgesetzt, W11b in Arbeit | `8c9ecbe` | **49** Designer-Masken offen (50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt` |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,43 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
+>
+> Die Welle 11 des Wellenplans (Simulationsergebnis: `Form_Simulation_Detail` mit elf Reitern,
+> Dashboard, drei Navigatoren, Variantenvergleich — 11 031 Zeilen, 17 Zeichenflächen) läuft in zwei
+> Läufen. **W11a** verlegt alles, was ohne Oberfläche geht, in den Kern und hängt die WinForms-Masken
+> schon daran — **ohne eine Maske zu löschen**; W11b baut danach die Ergebnisseite in einem Schritt.
+> Vermessung `iU9_W11_Vermessung.md` (1 734 Zeilen, 50 Befunde), Arbeitsanweisung
+> `iU9_W11a_Arbeitsanweisung.md`. Acht Sachcommits und zwei Merges:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `d0b64b9` `fd1e750` | **W11a.1/2** `ErgebnisPraesenz` (public) und `Ganglinie` (Dauerlinie) im Kern; **elf** inline-SQL-Stellen der Welle als Controller-Methoden (`KonfigurationCtrl.LiesProjekt`, `HeizkesselStammCtrl.BrennstoffartenJeProjekt`, `WErzeugerCtrl.AnlagenJeTyp`, `StromspeicherStammCtrl.KapazitaetJeProjekt` …) |
+> | `a2665db` `5ebecdf` | **W11a.3/5** `SimulationErgebnisCtrl` — die Reiterzahlen als **sieben DTOs**, die vier Eigenanteil-Rechnungen mit dem `SimulationRunner` geteilt (**eine Wahrheit**), `SpeicherKennzahlenBlock` (39 Zeilen); `SpeicherAnzeigeCtrl` (vier Kopien der Anzeigetexte → eine), CO₂-Faktoren in `EmissionsVorgaben`, Speicherkapazität über Controller |
+> | `88fceb5` | **W11a.4** `SimulationLaufCtrl` (Vorprüfen, Bedarf, Bestücken, Laufen, Abbruchgrund, Speichern); `SimulationControl.Do_Simulation` mit `IProgress<LaufFortschritt>` (fünf Phasen) und `CancellationToken` — **die Detailansicht rechnet nebenläufig**, mit Balken und Abbrechen, statt das Fenster einzufrieren (W11‑B48); kein Lesevorgang musste vorgezogen werden (R‑W10a‑2 gilt) |
+> | `52f76ae` `35a8d76` | **W11a.6/7** sieben Ergebnisbilder im `ChartRenderer` — `GanglinieNormiert`, `ErzeugerStapel` (mit zweiter Achse; trägt sechs der siebzehn Flächen), `Streuwolke`, `Ring`, `MonatsStapel`, `Temperaturverlauf` — **16 → 30 Proben**; Baustein **`Fortschritt`** |
+> | `b8dfd01` `9f00c91` `c3c75c5` `8c9ecbe` | Merge W6–W10a-Nachweise; Protokoll und drei CLAUDE.md; Merge W10b (sieben Konflikte, u. a. beide Wellen hatten `LiesProjekt` — eine Fassung); Merge auf `ios_migration` |
+>
+> **Der Ertrag ist der Zahlenabzug.** 95 Kennzahlen je Projekt vor und nach dem Umbau verglichen:
+> **92 unverändert**, drei geändert und begründet — die Restwärme rechnet jetzt wie der
+> `SimulationRunner` (BHKW mitgezählt: Projekt 1030 Gesamtwärme 5 403 → 6 139 MWh, Restwärme
+> 734 → −1,76 MWh; W11‑B35), der PV-Deckungsgrad ohne Strombedarf ist 0 statt `NaN` (B22).
+> **Entscheid für den Anwender (W11a‑O‑1):** Restwärme auf ≥ 0 klemmen? Dazu W11a‑O‑2 (CO₂-Faktoren
+> 0,42/0,20 wörtlich, `EmissionsVorgaben` hatte kein Gegenstück), O‑3 (Zusammenführung der vier
+> Berichtsbilder mit den neuen), O‑5 (`KonfigurationCtrl` liest zwei Modelle — Netzverluste faktisch 0 %,
+> Referenzstand wörtlich). Nebenbefund behoben: `TestDatenbank` kopierte 77 MB je Testfall.
+>
+> **Nachweise** (auf dem gemergten Stand `8c9ecbe`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 502** grün (2 379 nach W10b), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf **49** Masken (unverändert, keine
+> Maske gelöscht) · SQL-Prüfer 1 233 Texte, 0 Fundstellen · **ChartProben 30 Bilder**, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) — nach jedem Teilschritt geprüft.
+>
+> **Protokoll**: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md` (Zahlenabzug
+> je DTO, Fadenprüfung, 30 Proben, § 11 Merge-Nachtrag). **Windows-Abnahme steht aus** (acht Punkte):
+> nebenläufiger Start mit Balken, Abbrechen, Reiterlage nach dem Automatikstart, die drei geänderten
+> Zahlen, 39 Kennzahlzeilen mit Ampelfarben, Variantenvergleich/Optimierung, Autarkie-Kachel, beide Sprachen.
 
 > **Statusblock iU9 — Welle 10b umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `cd849f8`)**
 >
