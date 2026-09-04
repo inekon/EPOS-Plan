@@ -33528,5 +33528,707 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Detaillierte Simulation ähnelt.
+        /// </summary>
+        public static string SIMERG_TITEL {
+            get {
+                return ResourceManager.GetString("SIMERG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string SIMERG_TAB_PARAMETER {
+            get {
+                return ResourceManager.GetString("SIMERG_TAB_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht ähnelt.
+        /// </summary>
+        public static string SIMERG_TAB_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("SIMERG_TAB_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme-/Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMERG_TAB_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_TAB_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmproduktion ähnelt.
+        /// </summary>
+        public static string SIMERG_TAB_WP_PRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMERG_TAB_WP_PRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbrauch ähnelt.
+        /// </summary>
+        public static string SIMERG_TAB_WP_STROM {
+            get {
+                return ResourceManager.GetString("SIMERG_TAB_WP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation starten ▶ ähnelt.
+        /// </summary>
+        public static string SIMERG_BTN_SIMULATION {
+            get {
+                return ResourceManager.GetString("SIMERG_BTN_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ... ähnelt.
+        /// </summary>
+        public static string SIMERG_BTN_KONFIGURATION {
+            get {
+                return ResourceManager.GetString("SIMERG_BTN_KONFIGURATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string SIMERG_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Details... ähnelt.
+        /// </summary>
+        public static string SIMERG_BTN_DETAILS {
+            get {
+                return ResourceManager.GetString("SIMERG_BTN_DETAILS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Simulation läuft … ähnelt.
+        /// </summary>
+        public static string SIMERG_LAUF_LAEUFT {
+            get {
+                return ResourceManager.GetString("SIMERG_LAUF_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiebedarf ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ENERGIEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ENERGIEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf des Nahwärmenetzes: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEBEDARF_NETZ {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEBEDARF_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTWAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTSTROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTSTROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion WP: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbrauch WP: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMVERBRAUCH_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbrauch Heizstab: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der Spitzenkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbrauch SPK: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMVERBRAUCH_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion BHKW: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION_BHKW {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion BHKW: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMPRODUKTION_BHKW {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMPRODUKTION_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solare Wärme: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SOLARE_WAERME {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SOLARE_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion PV: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMPRODUKTION_PV {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMPRODUKTION_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Wärmelast ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MAX_WAERMELAST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MAX_WAERMELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Wärmebedarf ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMT_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMT_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MAX_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MAX_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMT_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMT_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdeckung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEBEDARFSDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEBEDARFSDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarfsdeckung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMBEDARFSDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMBEDARFSDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BIVALENZPUNKT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BIVALENZPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die durchschnittliche Vollbenutzungsstunden: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität des Pufferspeichers: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PUFFERKAPAZITAET {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PUFFERKAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minimale Spitzenkesselleistung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MIN_SPK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MIN_SPK_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffverbrauch der Spitzenkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Wärmeleistung der Heizkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMTLEISTUNG_KESSEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMTLEISTUNG_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximaler Gasbezug: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MAX_GASBEZUG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MAX_GASBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Wärmeleistung der Module: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMTLEISTUNG_MODULE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMTLEISTUNG_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Stromerzeugung der Module [MWh/a]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_GESAMT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß [MWh/a]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarfsdeckung [%]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_DECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf MWh/a: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf MWh/a: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_REST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale solare Leistung [W/m²]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MAX_SOLARE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MAX_SOLARE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß anzeigen ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_PV_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_PV_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherfüllung anzeigen ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_SPEICHERFUELLUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_SPEICHERFUELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden gesamt ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BETRIEBSSTUNDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BETRIEBSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden Durchschnitt ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BETRIEBSSTUNDEN_MITTEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BETRIEBSSTUNDEN_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromproduktion: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROMPRODUKTION {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROMPRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeüberschuß (*): ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEUEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEUEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffverbrauch: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BRENNSTOFFVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BRENNSTOFFVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NETZVERLUSTE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BEREITSCHAFT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BEREITSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Leistungsgrenze der Module [30%] ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_UNTERE_LEISTUNGSGRENZE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_UNTERE_LEISTUNGSGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegeführt ähnelt.
+        /// </summary>
+        public static string SIMERG_OPT_WAERMEGEFUEHRT {
+            get {
+                return ResourceManager.GetString("SIMERG_OPT_WAERMEGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromgeführt ähnelt.
+        /// </summary>
+        public static string SIMERG_OPT_STROMGEFUEHRT {
+            get {
+                return ResourceManager.GetString("SIMERG_OPT_STROMGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Stromeinspeisung ähnelt.
+        /// </summary>
+        public static string SIMERG_OPT_OHNE_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_OPT_OHNE_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Heizstab (falls vorhanden) ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegeführt (Standard) Das BHKW richtet sich nach dem Heiz- … ähnelt.
+        /// </summary>
+        public static string SIMERG_INFO_BHKW {
+            get {
+                return ResourceManager.GetString("SIMERG_INFO_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string SIMERG_ACHSE_MONAT {
+            get {
+                return ResourceManager.GetString("SIMERG_ACHSE_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MWh/a ähnelt.
+        /// </summary>
+        public static string SIMERG_ACHSE_MWH_A {
+            get {
+                return ResourceManager.GetString("SIMERG_ACHSE_MWH_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmedeckung ähnelt.
+        /// </summary>
+        public static string SIMERG_KACHEL_WAERMEDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_KACHEL_WAERMEDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromdeckung ähnelt.
+        /// </summary>
+        public static string SIMERG_KACHEL_STROMDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_KACHEL_STROMDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bedarf lässt sich keine Deckung ausweisen. ähnelt.
+        /// </summary>
+        public static string SIMERG_MSG_OHNE_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_MSG_OHNE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Kapazität ist eine Was-wäre-wenn-Größe und wird nicht  … ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAPAZITAET_HINWEIS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAPAZITAET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ERZEUGERAUSWAHL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ERZEUGERAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SPEICHERAUSWAHL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SPEICHERAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SERIENAUSWAHL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SERIENAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon in den Speicher: ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SPEICHERLADUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Speicher gedeckt: ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SPEICHERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SPEICHERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherladung ähnelt.
+        /// </summary>
+        public static string SIMDET_BHKW_SERIE_SPEICHERLADUNG {
+            get {
+                return ResourceManager.GetString("SIMDET_BHKW_SERIE_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
     }
 }
