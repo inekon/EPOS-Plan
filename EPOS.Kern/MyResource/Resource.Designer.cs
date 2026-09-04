@@ -4977,6 +4977,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei Einlesen... ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_EINLESEN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie Löschen ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromganglinie "{0}" wird gelöscht. Fortfahren? ähnelt.
+        /// </summary>
+        public static string IMPORT_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("IMPORT_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie aus Datei in Datenbank Einlesen ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_EINLESEN {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte über 1 Jahr als Textdatei ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_JAHRESWERTE {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_JAHRESWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinien in Datenbank ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitinterval ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_ZEITINTERVAL {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_ZEITINTERVAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromganglinie "{0}" wurde gelöscht. ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Stromganglinie ist schreibgeschützt (ReadOnly) und  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien Administration ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_ADMIN {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_ADMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_ABBRECHEN {
@@ -23885,6 +23975,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STEUER_STROMST_RAEUMLICH {
             get {
                 return ResourceManager.GetString("STEUER_STROMST_RAEUMLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten... ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▶ ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ◀ ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählt im Projekt ähnelt.
+        /// </summary>
+        public static string STROMGL_LBL_AUSWAHL {
+            get {
+                return ResourceManager.GetString("STROMGL_LBL_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinie aus DB ähnelt.
+        /// </summary>
+        public static string STROMGL_LBL_KATALOG {
+            get {
+                return ResourceManager.GetString("STROMGL_LBL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string STROMGL_SPALTE_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("STROMGL_SPALTE_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien ähnelt.
+        /// </summary>
+        public static string STROMGL_TITEL {
+            get {
+                return ResourceManager.GetString("STROMGL_TITEL", resourceCulture);
             }
         }
         

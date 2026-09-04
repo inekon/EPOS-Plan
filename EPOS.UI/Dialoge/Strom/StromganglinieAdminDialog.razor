@@ -1,0 +1,410 @@
+﻿@* Stammdatenverwaltung der Stromganglinien (iU9-W12.4).
+
+   Vorbild: Views/Stromverbraucher/Form_Stromganglinie_Admin.cs (276 Z.) und
+   .designer.cs (142 Z.).
+
+   WOZU. Die Liste aller Katalogeintraege, das Loeschen mit ReadOnly-Sperre und
+   das EINLESEN einer Lastgangdatei - die vollstaendige AP5-Kette samt Ablage in
+   einer Transaktion.
+
+   DIE KETTE LIEGT IM KERN. Seit iU9-W12.0d ist sie GanglinienImportAblauf;
+   diese Komponente liefert ihr die drei Entscheidungen als Rueckrufe und zeigt
+   sie als UEBERLAGERUNG im selben Fenster - kein zweites Fenster, keine zweite
+   WebView (Risiko R2). Ein Rueckruf wartet auf eine TaskCompletionSource, die
+   der jeweilige Unterdialog beim Schliessen aufloest.
+
+   DREI TOTE FELDER FALLEN WEG. m_ID_Projekt, m_szProjekt, result und DateiListe
+   des Vorlaeufers waren allesamt tot: Die beiden Aufrufer werteten ShowDialog
+   aus, nicht result, und DateiListe wurde befuellt und nie gelesen. Ebenso der
+   Handler btn_Abbrechen_Click (Befund W12-B11) - es gab keinen solchen Knopf.
+
+   BEFUND W12-B12, BEHOBEN: Die ReadOnly-Meldung stand hartkodiert deutsch im
+   Quelltext; sie steht jetzt als IMPORT_MSG_SCHREIBGESCHUETZT im Katalog. Und
+   VOR dem Loeschen fragt die Maske nach - der Vorlaeufer loeschte ohne
+   Rueckfrage.
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-stromganglinie-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Gruppenkopf Titel="@LabelKatalog" />
+
+    <Raster TZeile="GanglinienKatalogZeile" Zeilen="@Katalogzeilen">
+        <KindInhalt>
+            <TemplateColumn TGridItem="GanglinienKatalogZeile" Title="@SpalteWahl">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahl"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="GanglinienKatalogZeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
+            <PropertyColumn TGridItem="GanglinienKatalogZeile" TProp="int"
+                            Property="@(z => z.Zeitinterval)" Title="@LabelZeitinterval" />
+        </KindInhalt>
+    </Raster>
+
+    <Gruppenkopf Titel="@GruppeEinlesen" />
+
+    <Herleitungszeile Text="@LabelJahreswerte" />
+
+    <Auswahlfeld Bezeichnung="@LabelZeitinterval" Eintraege="@_rasterliste"
+                 Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)"
+                 Aktiv="@(!_laeuft)" />
+
+    <Dateiwahl Bezeichnung="" KnopfText="@EinlesenText" Filter="@Dateifilter"
+               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+               Aktiv="@(!_laeuft)" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@OkText</button>
+    </div>
+
+    @* --- Rueckfrage vor dem Loeschen (A-Zeile zu Befund W12-B12) --------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- Die drei Ueberlagerungen der Importkette ----------------------- *@
+    <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_optionenOffen)
+            {
+                <GanglinieImportOptionenDialog Pfad="@_optionenPfad" Erkennung="@_optionenErkennung"
+                                               Vorschau="@Vorschau" Geschlossen="OptionenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_protokollOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_protokollOffen)
+            {
+                <GanglinieProtokollDialog Meldungen="@_protokollMeldungen"
+                                          ImportMoeglich="@_protokollMoeglich"
+                                          BestaetigungNoetig="@_protokollBestaetigen"
+                                          Geschlossen="ProtokollFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                    Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Der Katalog (<c>StromganglinieStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<Task<List<GanglinienKatalogZeile>>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Loescht einen Katalogeintrag (<c>StromganglinieStammCtrl.Delete</c>).
+    /// <c>false</c> = es blieb stehen.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Faehrt die Importkette MIT Ablage
+    /// (<c>GanglinienImportAblauf.MitAblage</c>). Die drei Entscheidungen kommen
+    /// von dieser Komponente.
+    /// </summary>
+    [Parameter]
+    public Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Zerlegt eine Datei mit gesetzten Optionen neu (fuer den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende. <c>true</c> = mit OK geschlossen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.IMPORT_TITEL_ADMIN;
+    [Parameter] public string LabelKatalog { get; set; } = Resource.IMPORT_LBL_KATALOG;
+    [Parameter] public string SpalteBezeichner { get; set; } = Resource.STROMGL_SPALTE_BEZEICHNER;
+    [Parameter] public string SpalteWahl { get; set; } = Resource.SIM_BTN_OK;
+    [Parameter] public string LabelZeitinterval { get; set; } = Resource.IMPORT_LBL_ZEITINTERVAL;
+    [Parameter] public string GruppeEinlesen { get; set; } = Resource.IMPORT_GRP_EINLESEN;
+    [Parameter] public string LabelJahreswerte { get; set; } = Resource.IMPORT_LBL_JAHRESWERTE;
+    [Parameter] public string EinlesenText { get; set; } = Resource.IMPORT_BTN_EINLESEN;
+    [Parameter] public string LoeschenText { get; set; } = Resource.IMPORT_BTN_LOESCHEN;
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.IMPORT_FRAGE_LOESCHEN;
+    [Parameter] public string VorlageGeloescht { get; set; } = Resource.IMPORT_MSG_GELOESCHT;
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.IMPORT_MSG_SCHREIBGESCHUETZT;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromganglinie_Admin.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+
+    private List<GanglinienKatalogZeile> _katalog = new();
+    private string _gewaehlt = "";
+    private int _iRaster;
+    private string _pfad = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private bool _optionenOffen;
+    private string _optionenPfad = "";
+    private GanglinienVorschau? _optionenErkennung;
+    private TaskCompletionSource<GanglinienImportOptionen?>? _optionenWartet;
+
+    private bool _protokollOffen;
+    private IReadOnlyList<PruefMeldung>? _protokollMeldungen;
+    private bool _protokollMoeglich, _protokollBestaetigen;
+    private TaskCompletionSource<bool>? _protokollWartet;
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    private IReadOnlyList<(int Id, string Text)> _rasterliste = Array.Empty<(int, string)>();
+
+    private IQueryable<GanglinienKatalogZeile> Katalogzeilen => _katalog.AsQueryable();
+
+    /// <summary>Der gewaehlte Katalogeintrag (Pruefhilfe fuer Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Nur mit Auswahl, und nur wenn gerade nichts laeuft.</summary>
+    private bool LoeschenErlaubt => _gewaehlt.Length > 0 && !_laeuft && Loeschen is not null;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        // ZWEI Eintraege, wie comboBox_Zeitinterval des Vorlaeufers - der dritte
+        // Fall der Abbildung (Minute) bleibt unerreichbar (Befund W12-B15).
+        List<(int, string)> liste = new();
+        List<string> texte = GanglinienOptionenModell.AdminRasterTexte();
+        for (int i = 0; i < texte.Count; i++) liste.Add((i, texte[i]));
+        _rasterliste = liste;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await KatalogLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Laedt den Katalog neu (<c>SetControls</c> des Vorlaeufers).</summary>
+    public async Task KatalogLaden()
+    {
+        if (Katalog is null) return;
+        _katalog = await Katalog() ?? new List<GanglinienKatalogZeile>();
+        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
+    }
+
+    private void Waehlen(GanglinienKatalogZeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Loeschen (btn_Loeschen_Click)
+    // =====================================================================
+
+    private void BeiLoeschen()
+    {
+        if (!LoeschenErlaubt) return;
+
+        GanglinienKatalogZeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null) return;
+
+        // Pruefregel 1, woertlich: Auslieferungssaetze bleiben stehen.
+        if (zeile.NurLesen)
+        {
+            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
+            return;
+        }
+
+        // A-ZEILE zu Befund W12-B12: Der Vorlaeufer loeschte OHNE Rueckfrage.
+        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null) return;
+
+        string name = _gewaehlt;
+        bool weg = await Loeschen(name);
+        await KatalogLaden();
+        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
+               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Einlesen (btn_Einlesen_Click) - die Kette liegt im Kern
+    // =====================================================================
+
+    private async Task BeiDatei(string pfad)
+    {
+        _pfad = pfad;
+        if (string.IsNullOrEmpty(pfad) || Einlesen is null) return;
+
+        _laeuft = true;
+        _meldung = "";
+        try
+        {
+            GanglinienImportErgebnis erg = await Einlesen(
+                pfad,
+                GanglinienOptionenModell.RasterAusIndex(_iRaster),
+                new GanglinienImportRueckrufe
+                {
+                    Optionen = OptionenFragen,
+                    Protokoll = ProtokollFragen,
+                    Konflikte = KonflikteFragen
+                });
+
+            if (!string.IsNullOrEmpty(erg.Meldung))
+                Melden(erg.Meldung, erg.MeldungStufe switch
+                {
+                    PruefStufe.Fehler => WarnStufe.Fehler,
+                    PruefStufe.Warnung => WarnStufe.Warnung,
+                    _ => erg.Ausgang == ImportAusgang.Erfolg ? WarnStufe.Erfolg : WarnStufe.Hinweis
+                });
+
+            if (erg.Ausgang == ImportAusgang.Erfolg) await KatalogLaden();
+        }
+        finally
+        {
+            _laeuft = false;
+            _pfad = "";
+        }
+    }
+
+    // --- Rueckruf 1: die Optionen ---------------------------------------
+
+    private async Task<GanglinienImportOptionen?> OptionenFragen(string pfad, GanglinienVorschau vorschau)
+    {
+        _optionenPfad = pfad;
+        _optionenErkennung = vorschau;
+        _optionenOffen = true;
+        _optionenWartet = new TaskCompletionSource<GanglinienImportOptionen?>();
+        await InvokeAsync(StateHasChanged);
+        return await _optionenWartet.Task;
+    }
+
+    private void OptionenFertig(GanglinienImportOptionen? optionen)
+    {
+        _optionenOffen = false;
+        _optionenWartet?.TrySetResult(optionen);
+    }
+
+    // --- Rueckruf 2: das Protokoll --------------------------------------
+
+    private async Task<bool> ProtokollFragen(IList<PruefMeldung> meldungen, bool moeglich, bool bestaetigen)
+    {
+        _protokollMeldungen = meldungen as IReadOnlyList<PruefMeldung> ?? meldungen.ToList();
+        _protokollMoeglich = moeglich;
+        _protokollBestaetigen = bestaetigen;
+        _protokollOffen = true;
+        _protokollWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _protokollWartet.Task;
+    }
+
+    private void ProtokollFertig(bool weiter)
+    {
+        _protokollOffen = false;
+        _protokollWartet?.TrySetResult(weiter);
+    }
+
+    // --- Rueckruf 3: die Konflikte --------------------------------------
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        List<ImportPruefung> pruefungen, HashSet<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
+        // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
+        if (_optionenOffen || _protokollOffen || _konflikteOffen || _loeschfrageOffen)
+            return Task.CompletedTask;
+
+        return Geschlossen.InvokeAsync(false);
+    }
+}

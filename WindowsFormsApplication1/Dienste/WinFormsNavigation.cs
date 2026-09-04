@@ -104,12 +104,10 @@ namespace WindowsFormsApplication1
                         return MitOk(frm);
                     }
 
+                // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
+                // StromganglinieAdminDialog; die Huelle zeigt sie modal.
                 case Masken.StromganglinieAdmin:
-                    using (Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return StromganglinieAdminHuelle.Oeffnen(null);
 
                 case Masken.SolarganglinieAdmin:
                     using (Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin())
