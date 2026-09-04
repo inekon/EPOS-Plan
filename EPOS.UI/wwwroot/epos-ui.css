@@ -3689,3 +3689,185 @@ body {
         gap: 6px;
     }
 }
+
+/* ==========================================================================
+   Seite: Startseite (Vorbild Views/Hauptformular/Form_Start.cs, iU9-W16b.2)
+
+   DER GANZE ANSTRICH IST CSS. Der Vorlaeufer zeichnete dreizehn Statuspunkte
+   mit je ~45 Zeilen GraphicsPath und Halbdeckkraft, malte den Rahmen der
+   beiden Kopfkaesten in panelKlima_Paint/panelVariante_Paint selbst und
+   rechnete die Rechtsbuendigkeit der Zusammenfassung in drei Left-Zuweisungen
+   aus. Hier steht dafuer nichts als Layout.
+
+   OHNE FESTE PIXEL. Die Designer-Flaeche mass 1620 x 932 und brauchte deshalb
+   AutoScroll; das Raster hier bricht um, sobald es eng wird (iF21: nach W16
+   gibt es keine fest gerechneten Koordinaten mehr, und genau das ist die
+   Voraussetzung fuer "Per Monitor V2").
+   ========================================================================== */
+
+.epos-startseite {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-abstand, 12px);
+    padding: var(--epos-abstand, 12px);
+}
+
+/* ---- Kopfband ---------------------------------------------------------- */
+
+.epos-startseite-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-startseite-marke {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.epos-startseite-gattung {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+/* Die zwei Kaesten des Vorlaeufers (panelVariante, panelKlima): abgerundeter
+   Rahmen in #b4bec9 - hier derselbe Klang aus dem Farbsatz statt aus einem
+   Pen mit 1,5 px Breite. */
+.epos-startseite-projekt,
+.epos-startseite-klima {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-startseite-projekt > label,
+.epos-startseite-klima > label {
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-startseite-projekt .epos-eingabe,
+.epos-startseite-klima .epos-eingabe {
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+.epos-startseite-klimahinweis {
+    flex: 1 1 100%;
+    color: var(--epos-text-leise);
+}
+
+/* label_ProjektStatus: gruener Haken bei offenem Projekt, rotes Warnzeichen
+   sonst (Form_Start :188-189 und :1211-1212, Color.Green / 192,0,0). */
+.epos-startseite-status {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+}
+
+.epos-startseite-status--offen {
+    color: rgb(0, 128, 0);
+}
+
+.epos-startseite-status--keins {
+    color: rgb(192, 0, 0);
+}
+
+/* ---- Ein Reiterblatt --------------------------------------------------- */
+
+.epos-startreiter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.epos-startreiter-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.epos-startreiter-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-startreiter-text {
+    margin: 2px 0 0 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-startreiter-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
+   radioButton_Ganglinie). Sie steht UNTER ihrer Kachel, weil sie nur diese
+   eine betrifft. */
+.epos-startkachel-mit-wahl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-startkachel-wahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-left: var(--epos-karte-rand);
+}
+
+.epos-startkachel-wahl > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+}
+
+/* ---- Projektzusammenfassung (Reiter Simulation) ------------------------ */
+
+.epos-startzusammenfassung {
+    padding: 12px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-startzusammenfassung-liste {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 8px 0 0 0;
+}
+
+.epos-startzusammenfassung-liste > dt {
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-startzusammenfassung-liste > dd {
+    margin: 0;
+    color: var(--epos-text);
+}
+
+/* ---- Fussleiste -------------------------------------------------------- */
+
+.epos-startseite-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}

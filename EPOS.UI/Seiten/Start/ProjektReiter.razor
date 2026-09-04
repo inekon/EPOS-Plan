@@ -1,0 +1,58 @@
+﻿@* Reiter 1 der Startseite: „Projekt" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage1 - Kopfzeile (label3), Erlaeuterung (label1) und
+   SECHS AktionsKarte. Es sind hier FUENF: "Projekt Details" war der einzige Weg
+   in den Altzweig FormMain (Befund W16-B20) und ist mit dem Anwenderentscheid
+   E-7 (K6-a) entfallen.
+
+   KEIN STATUSPUNKT. Die fuenf Kacheln fuehren keinen Bestand - es gibt nichts zu
+   zaehlen. StartKachel.Zustand ist deshalb null, und Kachel zeigt wie bisher
+   keinen Punkt.
+
+   Der Infoknopf stand im Bestand als btn_Help_Kurzanleitung frei auf der
+   Reiterflaeche; hier steht er im FLUSS der Kopfzeile und kann nichts mehr
+   ueberdecken (dieselbe Angleichung wie in BerichteKostenSeite, H11). *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Kachelraster Mindestbreite="320">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Zustand="@k.Zustand"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — fünf.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>Überschrift (<c>label3</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Projekt einrichten";
+
+    /// <summary>Erläuterung (<c>label1</c>).</summary>
+    [Parameter] public string Text { get; set; }
+        = "Erstellen Sie ein neues Projekt oder öffnen Sie ein bestehendes.";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Kurzanleitung";
+}
