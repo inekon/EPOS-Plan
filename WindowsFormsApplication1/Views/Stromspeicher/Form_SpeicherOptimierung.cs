@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
     /// Simulationskette laeuft bisher synchron im Bedienfaden (nur
     /// <c>Cursor.WaitCursor</c> und <c>Application.DoEvents()</c> als Notbehelf);
     /// <c>async</c> gab es bislang nur fuer einen Netzabruf
-    /// (<c>MDIMainForm_Load</c> -&gt; <c>HelpCatalog.LoadAllAsync</c>), nicht fuer
+    /// (<c>Hauptfensterrahmen.BeimLaden</c> -&gt; <c>HelpCatalog.LoadAllAsync</c>), nicht fuer
     /// Rechenarbeit und ohne Fortschritt oder Abbruch. Die Rastersuche laeuft hier
     /// stattdessen in <c>Task.Run</c>, meldet ihren Fortschritt ueber
     /// <see cref="IProgress{T}"/> und laesst sich ueber einen

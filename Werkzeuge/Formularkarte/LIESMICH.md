@@ -132,7 +132,7 @@ Ein Knopf gilt als Schließknopf, wenn sein Name nach dem Abstreifen der Vorsilb
 Vorbild ist der erste fertige Dialog `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor`:
 
 * `@namespace EPOS.UI.Dialoge.<Fachbereich>` — der Ordnername der Designer-Datei, Umlaute
-  umschrieben (`Wärmepumpe` → `Waermepumpe`). Masken außerhalb eines Fachordners (`MDIMainForm`,
+  umschrieben (`Wärmepumpe` → `Waermepumpe`). Masken außerhalb eines Fachordners (`Hauptfensterrahmen`,
   `Form_StromTest`) bekommen `Allgemein`;
 * Wurzel-`div` mit `tabindex="-1"`, `@ref` und `@onkeydown` — Enter und Esc beantwortet die
   Komponente selbst, denn eine `BlazorWebView` sieht `AcceptButton` und `CancelButton` nicht;
@@ -211,7 +211,7 @@ Menüpunkte selbst an). Feldinitialisierer laufen mit, sobald irgendein Mitglied
 nur so werden die dreizehn Assistentenseiten gefunden, die in `AssistentSeiten` als statisches
 Erzeugerfeld stehen.
 
-**Wurzeln** sind `MDIMainForm` und `Form_Start`. Erst wenn von dort nichts mehr zu holen ist,
+**Wurzeln** sind `Hauptfensterrahmen` und `Form_Start`. Erst wenn von dort nichts mehr zu holen ist,
 kommt die Einsprungklasse `Program` dazu — sie zeigt den Erststart-Dialog, bevor es ein Fenster
 gibt. Die Reihenfolge ist Absicht: So nennt der Pfad den Weg, den der Anwender geht, und nicht
 den Umweg über `Program.Main`.
@@ -395,7 +395,7 @@ Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung ge
    `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester; die ist mit **iU9-1** selbst gelöscht,
    seither steht dort `Form_KostenKomponente`. **Nimm dafür eine Maske, deren Öffner erreichbar
    ist** — sonst hängt der Test an der nächsten Löschung wieder; die Spalte „Öffner erreichbar"
-   sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`,
+   sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `Hauptfensterrahmen`,
    `KostenKnoepfe`, `Wizard_WPItem`); `Form_KostenfaktorItem` läge im selben Ordner, steht aber
    selbst auf „nein" — es hängt am einstiegslosen `Form_Kosten`.
 5. `PruefmusterTests` um die neue Maske ergänzen — `Muster` für eine umgestellte Maske (mit
