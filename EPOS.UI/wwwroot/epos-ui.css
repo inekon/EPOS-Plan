@@ -2398,3 +2398,21 @@ body {
     .epos-stufe--fehler,
     .epos-stufe--warnung { color: LinkText; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Format und Vorschau des Lastgangimports (iU9-W12.2)                 */
+/*                                                                     */
+/* Die acht Auswahllisten standen im Vorlaeufer in einer GroupBox mit   */
+/* fester Pixelgeometrie; hier ist es ein Raster, das umbricht, sobald  */
+/* das Fenster schmal wird. Die graue erste Vorschauzeile ist der       */
+/* SystemColors.GrayText des Vorlaeufers.                              */
+/* ------------------------------------------------------------------ */
+.epos-importoptionen-datei { margin: 0 0 8px; font-weight: 600; }
+
+.epos-importoptionen-raster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 4px 16px;
+}
+
+.epos-vorschau-kopf { color: var(--epos-text-leise, GrayText); }
