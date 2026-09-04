@@ -1,0 +1,217 @@
+﻿@* Der VARIANTENVERGLEICH des Stromspeichers (iU9-W11b.12).
+
+   VORBILD. Form_SpeicherVariantenVergleich (855 Z. + 295 Designer): je
+   SP_TYP-Anlagenzeile des Projekts eine Vergleichszeile mit elf Groessen nach
+   Fachkonzept 7.3; die beste nach ΔJ ist hinterlegt, die aktive fett, eine
+   nicht rechenbare in Firebrick mit dem Grund als Mouseover.
+
+   ER RECHNET AUF DEM BEREITS GERECHNETEN LAUF - kein zweiter Rechenweg
+   (Klassenkopf des Vorlaeufers :26-33). Neu ist nur, dass er das NEBENLAEUFIG
+   tut: Der Vorlaeufer lief synchron im Bedienfaden mit Cursor.WaitCursor und
+   ohne Abbruch. Hier ist der Fortschritt ECHT - die Schleife kennt ihre Laenge
+   („Variante 3 von 7").
+
+   KEIN NEURECHNEN NACH DEM UMSTELLEN. Die Zahlen gehoeren zu den Varianten
+   selbst und aendern sich nicht dadurch, welche als aktiv gilt; es wandert nur
+   die Markierung. Der Simulationslauf im Hintergrund bleibt ebenfalls stehen -
+   er beschreibt, was gerechnet WURDE, und das sagt die Rueckfrage auch
+   (Begruendung :588-593). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <div class="epos-simerg-kopf">
+        <span class="epos-simerg-titel">@Resource.VAR_VGL_TITEL</span>
+        @* Der Vorlaeufer haengte hier InfoKnopf.Anbringen(this) ein (:160) - der
+           Schluessel benennt die Wikiseite, nicht die Klasse (Regel seit W10a). *@
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Fortschritt Sichtbar="@Laeuft" Anteil="@Anteil" Text="@FortschrittText" />
+
+    @if (!Laeuft)
+    {
+        <p class="@(Daten.StatusWarnung ? "epos-simerg-status epos-simerg-warn" : "epos-simerg-status")">
+            @Daten.Status
+        </p>
+
+        @if (Daten.Zeilen.Count > 0)
+        {
+            <table class="epos-simerg-vergleich">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.VAR_VGL_SP_AKTIV</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_BEZEICHNUNG</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_BETRIEBSART</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_BERECHNUNGSART</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_KAPAZITAET</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_LEISTUNG</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_INVESTITION</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_ERTRAG</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_DELTAJ</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_AMORTISATION</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_NPV</th>
+                        <th scope="col">@Resource.VAR_VGL_SP_VOLLZYKLEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Zeilen.Count; i++)
+                    {
+                        int index = i;
+                        Vergleichszeile z = Daten.Zeilen[index];
+                        <tr class="@Zeilenklasse(index, z)" title="@(z.Gerechnet ? null : z.Hinweis)"
+                            @ondblclick="() => AktivFragen(index)">
+                            <td>
+                                <Zeilenwahl Gewaehlt="@(_markiert == index)"
+                                            Kurztext="@Resource.VAR_VGL_SP_AKTIV"
+                                            Gewaehltwerden="() => _markiert = index" />
+                                @if (z.Aktiv)
+                                {
+                                    <span>@Resource.VAR_VGL_MARKER_AKTIV</span>
+                                }
+                            </td>
+                            <td>@z.Bezeichnung</td>
+                            <td>@z.Betriebsart</td>
+                            <td>@z.Berechnungsart</td>
+                            @if (z.Gerechnet)
+                            {
+                                <td class="epos-simerg-zahl">@z.Kapazitaet</td>
+                                <td class="epos-simerg-zahl">@z.Leistung</td>
+                                <td class="epos-simerg-zahl">@z.Investition</td>
+                                <td class="epos-simerg-zahl">@z.Ertrag</td>
+                                <td class="epos-simerg-zahl">@z.DeltaJ</td>
+                                <td>@z.Amortisation</td>
+                                <td class="epos-simerg-zahl">@z.Kapitalwert</td>
+                                <td class="epos-simerg-zahl">@z.Vollzyklen</td>
+                            }
+                            else
+                            {
+                                @* Fehlerzeile: leere Zahlenspalten, der Grund an der Stelle
+                                   der Vergleichsgroesse (woertlich :438-446). *@
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>@Resource.VAR_VGL_FEHLER_ZEILE</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <p class="epos-simerg-hinweis">@Resource.VAR_VGL_LEGENDE</p>
+
+            @if (Daten.HinweisKeineAktive)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.VAR_VGL_HINWEIS_KEINE_AKTIVE" />
+            }
+        }
+
+        @if (!string.IsNullOrEmpty(Daten.Protokoll))
+        {
+            <Textfeld Bezeichnung="@Resource.VAR_VGL_PROTOKOLL" Wert="@Daten.Protokoll"
+                      Mehrzeilig="true" Zeilen="6" NurLesen="true" Festbreite="true" />
+        }
+
+        @if (!string.IsNullOrEmpty(_meldung))
+        {
+            <Warnbanner Stufe="WarnStufe.Fehler" Text="@_meldung" />
+        }
+
+        <div class="epos-simerg-fuss">
+            <button type="button" @onclick="AktivKnopf" disabled="@(Daten.Zeilen.Count == 0)">
+                @Resource.VAR_VGL_BTN_AKTIV
+            </button>
+            @if (Csv.HasDelegate)
+            {
+                <button type="button" @onclick="Csv" disabled="@(Daten.Zeilen.Count == 0)">
+                    @Resource.OPT_BTN_CSV
+                </button>
+            }
+            <button type="button" @onclick="Geschlossen">@Resource.OPT_BTN_SCHLIESSEN</button>
+        </div>
+    }
+
+    <Rueckfrage Offen="@(_frage >= 0)" TitelText="@Resource.VAR_VGL_TITEL"
+                Frage="@_frageText" Beantwortet="FrageBeantwortet" />
+
+</div>
+
+@code {
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpeicherVariantenVergleich.btn_Help";
+
+    /// <summary>Die gerechneten Zeilen samt Status und Protokoll.</summary>
+    [Parameter] public VergleichDaten Daten { get; set; } = new VergleichDaten();
+
+    /// <summary>Rechnet die Huelle gerade? Dann steht nur der Fortschritt da.</summary>
+    [Parameter] public bool Laeuft { get; set; }
+
+    /// <summary>Der ECHTE Anteil (n von m); <c>null</c> = unbestimmt.</summary>
+    [Parameter] public double? Anteil { get; set; }
+
+    /// <summary>Der Fortschrittstext („Variante 3 von 7").</summary>
+    [Parameter] public string FortschrittText { get; set; } = "";
+
+    /// <summary>Setzt die Variante der Anlagenzeile aktiv.</summary>
+    [Parameter] public EventCallback<int> AktivSetzen { get; set; }
+
+    /// <summary>Schreibt die Tabelle als CSV; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Die Ueberlagerung moechte geschlossen werden.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Die markierte Zeile (Pruefhilfe); −1 = keine.</summary>
+    public int Markiert => _markiert;
+
+    private int _markiert = -1;
+    private int _frage = -1;
+    private string _frageText = "";
+    private string _meldung = "";
+
+    private string Zeilenklasse(int index, Vergleichszeile z)
+    {
+        var klassen = new List<string>();
+        if (index == Daten.BesteZeile) klassen.Add("epos-simerg-beste");
+        if (z.Aktiv) klassen.Add("epos-simerg-aktiv");
+        if (!z.Gerechnet) klassen.Add("epos-simerg-fehler");
+        return string.Join(" ", klassen);
+    }
+
+    private void AktivKnopf()
+    {
+        _meldung = "";
+        if (_markiert < 0)
+        {
+            // Woertlich :598-602: erst markieren, dann setzen.
+            _meldung = Resource.VAR_VGL_MSG_KEINE_AUSWAHL;
+            return;
+        }
+        AktivFragen(_markiert);
+    }
+
+    private void AktivFragen(int index)
+    {
+        if (index < 0 || index >= Daten.Zeilen.Count) return;
+
+        // Eine bereits aktive Zeile: stiller Ruecksprung (woertlich :604).
+        if (Daten.Zeilen[index].Aktiv) return;
+
+        _markiert = index;
+        _frageText = string.Format(Resource.VAR_MSG_AKTIV_FRAGE, Daten.Zeilen[index].Bezeichnung);
+        _frage = index;
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        int index = _frage;
+        _frage = -1;
+        if (antwort != true || index < 0 || index >= Daten.Zeilen.Count) return;
+
+        await AktivSetzen.InvokeAsync(Daten.Zeilen[index].IdEnergieanlage);
+    }
+}

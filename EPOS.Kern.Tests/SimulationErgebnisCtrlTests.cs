@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -71,29 +71,58 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// W11-B35: Die Summe fuehrt den BHKW-Term — die Fassung des Navigators. Die
-        /// Kesselwaerme ist dabei <c>S_Waerme_spk</c> und damit BITGLEICH der Summe
-        /// <c>s_waerme_Gas_Spk + s_waerme_Oel_Spk</c>, die die Detailansicht bildete.
+        /// ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Die sechs Summen fuehren die DECKUNG
+        /// je Erzeuger — Direktdeckung plus zugerechnete Speicherentladung, je Kanal —
+        /// und nicht die Produktion. Der Heizstab hat dabei seine EIGENE Zeile; das BHKW
+        /// zaehlt mit (W11-B35).
         /// </summary>
         [Fact]
-        public void Uebersicht_zaehlt_das_BHKW_in_die_Waermesumme()
+        public void Uebersicht_summiert_die_Deckung_je_Erzeuger()
         {
             if (!_db.Vorhanden) return;
 
             var l = Lauf();
             var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
 
-            // Der Weg der Detailansicht ueber die Kesselliste ergibt denselben Wert.
-            double ueberDieListe = 0;
-            for (int i = 0; i < l.sim.simulation_spk.spk_list.Count; i++)
-                ueberDieListe += l.sim.simulation_spk.s_waerme_Gas_Spk[i] +
-                                 l.sim.simulation_spk.s_waerme_Oel_Spk[i];
-            Assert.Equal(ueberDieListe, u.WaermeKesselMwh, 9);
+            Assert.Equal(Kanalsumme(SimulationRunner.Summiere(
+                             l.sim.simulation_spk.Direktdeckung_Kanal,
+                             l.sim.simulation_spk.Speicherentladung_Kanal)),
+                         u.WaermeKesselMwh, 9);
+            Assert.Equal(Kanalsumme(SimulationRunner.Summiere(
+                             l.sim.simulation_bhkw.Direktdeckung_Kanal,
+                             l.sim.simulation_bhkw.Speicherentladung_Kanal)),
+                         u.WaermeBhkwMwh, 9);
+            Assert.Equal(Kanalsumme(SimulationRunner.Summiere(l.sim.simulation_wp.Heizstab_Kanal)),
+                         u.WaermeHeizstabMwh, 9);
 
             Assert.Equal(u.WaermeKesselMwh + u.WaermeWpMwh + u.WaermeHeizstabMwh +
                          u.WaermeSolarMwh + u.WaermeBhkwMwh, u.WaermeGesamtMwh, 9);
-            Assert.Equal(l.sim.simulation_Waermebedarf.Waermebedarf_Gesamt - u.WaermeGesamtMwh,
-                         u.RestwaermebedarfMwh, 9);
+        }
+
+        /// <summary>
+        /// Die zweite Haelfte des Entscheids: Die Uebersicht fuehrt EINE Restwaermezahl,
+        /// und die ist die Bilanzgroesse des Laufs — nie negativ.
+        /// </summary>
+        [Fact]
+        public void Uebersicht_fuehrt_EINE_Restwaermezahl_und_die_ist_nicht_negativ()
+        {
+            if (!_db.Vorhanden) return;
+
+            var l = Lauf();
+            var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
+
+            Assert.Equal(u.RestwaermeMwh, u.RestwaermebedarfMwh);
+            Assert.Equal(l.sim.Restwaerme, u.RestwaermebedarfMwh);
+            Assert.True(u.RestwaermebedarfMwh >= 0.0,
+                        "Eine negative Restwaerme zeigt eine falsche Zuordnung zu den Erzeugern.");
+        }
+
+        /// <summary>Summe einer Kanalzeile [kWh] als [MWh].</summary>
+        private static double Kanalsumme(double[] kanalKwh)
+        {
+            double summe = 0.0;
+            foreach (double k in kanalKwh) summe += k;
+            return summe / 1000.0;
         }
 
         [Fact]

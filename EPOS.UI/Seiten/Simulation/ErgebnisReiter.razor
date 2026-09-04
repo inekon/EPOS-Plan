@@ -1,0 +1,165 @@
+@* Der ERGEBNIS-Reiter der Ergebnisseite (R11 + DashboardForm, iU9-W11b.11).
+
+   VORBILD. tabPage_Ergebnis hatte NULL Designer-Kinder; sein Inhalt entstand im
+   TabNavigationManager (242 Z.): ein SplitContainer 10/90, links VIER Knoepfe,
+   rechts ein Inhaltspanel, in das je nach Knopf NavigatorUebersicht,
+   DashboardForm, NavigatorWaerme oder NavigatorStrom eingesetzt wurde.
+
+   AUS DEN VIER KNOEPFEN WIRD EIN INNERER <Reiter>. Die drei Fremdinhalte
+   reicht der Wirt als RenderFragment herein - so bleibt diese Komponente das,
+   was sie ist: die Navigation und die AUTARKIE-ANALYSE.
+
+   VIER BEFUNDE ENTFALLEN MIT DEM TabNavigationManager:
+     W11-B43  vier RowStyles bei RowCount = 3,
+     W11-B44  bei JEDEM Knopfdruck ein neues DashboardForm, ohne Dispose des
+              vorherigen - GDI-Handles und Chart-Objekte sammelten sich an,
+     W11-B45  RecordSet mit string-konkateniertem SQL in der Navigationsklasse
+              (seit W11a StromspeicherStammCtrl.KapazitaetJeProjekt),
+     W11-B46  case 0 fuegte das Control zweimal ein, case 1 rief Show() auf
+              einem TopLevel=false-Formular,
+     W11-B47  RefreshActivePage() prueft auf INavigatableContent, das
+              DashboardForm bediente sie nicht - nach einem neuen Lauf zeigte die
+              Autarkiekachel weiter die Zahlen des vorigen. Ein Blatt, das erst
+              beim Betreten entsteht, kann das nicht.
+
+   BEFUND W11-B31 IST IN W11a BEHOBEN: Die zwei Emissionsfaktoren (0,42 und
+   0,20) standen hartkodiert in der Oberflaeche; sie stehen jetzt in
+   EmissionsVorgaben - Werte unveraendert (offener Punkt W11a-O-2).
+
+   BEFUND W11-B32, WOERTLICH UEBERNOMMEN UND JETZT BENANNT: Die Kapazitaet der
+   Autarkiekachel wird NIE zurueckgeschrieben - sie ist eine reine
+   Was-waere-wenn-Groesse. Der Vorlaeufer sagte das nirgends; hier steht der
+   Satz unter dem Feld. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+            <Reiterblatt Schluessel="UEBERSICHT" Titel="@Resource.SIM_NAV_UEBERSICHT">
+                <KindInhalt>@UebersichtInhalt</KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="AUTARKIE" Titel="@Resource.SIM_NAV_AUTARKIE_ANALYSE">
+                <KindInhalt>
+
+                    <Kachelraster>
+                        <KindInhalt>
+                            @if (Autarkie.HatPv)
+                            {
+                                <div class="epos-simerg-block">
+                                    <Kennzahlkachel Titel="@Resource.SIM_DASH_GRUPPE_PV"
+                                                    Wert="@Prozent(Autarkie.AutarkiePvProzent)" />
+                                    <meter min="0" max="100" value="@Geklemmt(Autarkie.AutarkiePvProzent)"
+                                           aria-label="@Resource.SIM_DASH_GRUPPE_PV"></meter>
+                                </div>
+                            }
+
+                            @if (Autarkie.HatSolarthermie)
+                            {
+                                <div class="epos-simerg-block">
+                                    <Kennzahlkachel Titel="@Resource.SIM_DASH_GRUPPE_ST"
+                                                    Wert="@(Autarkie.DeckungStBekannt
+                                                              ? Prozent(Autarkie.DeckungStProzent)
+                                                              : Resource.SIM_ANZEIGE_NICHT_BENOETIGT)"
+                                                    Quelle="@string.Format(Resource.SIM_ANZEIGE_THERM_NUTZUNGSGRAD,
+                                                                           Zahl(Autarkie.NutzungsgradStProzent, "F1"))" />
+                                    <meter min="0" max="100" value="@Geklemmt(Autarkie.DeckungStProzent)"
+                                           aria-label="@Resource.SIM_DASH_GRUPPE_ST"></meter>
+                                </div>
+                            }
+
+                            <Kennzahlkachel Titel="@Resource.SIM_ERGEBNIS"
+                                            Wert="@string.Format(Resource.SIM_ANZEIGE_CO2_ERSPARNIS,
+                                                                 Zahl(Autarkie.Co2ErsparnisKg, "N0"))"
+                                            Quelle="@string.Format(Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
+                                                                   Zahl(Autarkie.SpeichernutzenKwh, "N0"))" />
+                        </KindInhalt>
+                    </Kachelraster>
+
+                    @if (Autarkie.HatPv)
+                    {
+                        <div class="epos-simerg-felder">
+                            <Zahlenfeld Bezeichnung="@Resource.SIM_DASH_SPEICHER_INFO"
+                                        Wert="@Autarkie.SpeicherKwh" Einheit="kWh"
+                                        WertChanged="KapazitaetGesetzt" />
+                            <p class="epos-simerg-hinweis">@Resource.SIMERG_LBL_KAPAZITAET_HINWEIS</p>
+                        </div>
+                    }
+
+                    <ChartBild Png="@BildMonate" Alt="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
+
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="WAERMEGANG" Titel="@Resource.SIM_NAV_WAERMEPRODUKTION_CHART">
+                <KindInhalt>@WaermegangInhalt</KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="STROMGANG" Titel="@Resource.SIM_NAV_STROMPRODUKTION_CHART">
+                <KindInhalt>@StromgangInhalt</KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+</div>
+
+@code {
+    /// <summary>Die Zahlen der Autarkie-Analyse.</summary>
+    [Parameter] public AutarkieDaten Autarkie { get; set; } = new AutarkieDaten();
+
+    /// <summary>Liefert den Monatsstapel (B6) zur gewaehlten Kapazitaet.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>
+    /// Die Was-waere-wenn-Kapazitaet hat sich geaendert — die Huelle rechnet die
+    /// Kacheln neu. Sie wird NICHT gespeichert (Befund W11-B32).
+    /// </summary>
+    [Parameter] public EventCallback<double> KapazitaetGeaendert { get; set; }
+
+    /// <summary>Der Navigatorteil des Uebersichtsreiters.</summary>
+    [Parameter] public RenderFragment? UebersichtInhalt { get; set; }
+
+    /// <summary>Der Waermegang-Reiter.</summary>
+    [Parameter] public RenderFragment? WaermegangInhalt { get; set; }
+
+    /// <summary>Der Stromgang-Reiter.</summary>
+    [Parameter] public RenderFragment? StromgangInhalt { get; set; }
+
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Ergebnis";
+
+    /// <summary>Das sichtbare Blatt (Pruefhilfe).</summary>
+    public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    private Reiter? _reiter;
+    private string _blatt = "";
+
+    private byte[]? BildMonate =>
+        Bild?.Invoke(new Bildauftrag(Bilder.AutarkieMonate, false, -1, null, Autarkie.SpeicherKwh));
+
+    private Task KapazitaetGesetzt(double? wert)
+    {
+        Autarkie.SpeicherKwh = wert ?? 0.0;
+        return KapazitaetGeaendert.InvokeAsync(Autarkie.SpeicherKwh);
+    }
+
+    private static string Prozent(double wert) => Zahl(wert, "F1") + " %";
+
+    private static string Zahl(double wert, string format)
+        => wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>
+    /// Der Balken zeigt 0…100 — woertlich wie <c>pbPV.Value</c>/<c>pbST.Value</c>,
+    /// die der Vorlaeufer auf denselben Bereich klemmte.
+    /// </summary>
+    private static string Geklemmt(double wert)
+    {
+        double w = wert;
+        if (double.IsNaN(w) || w < 0) w = 0;
+        if (w > 100) w = 100;
+        return w.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}

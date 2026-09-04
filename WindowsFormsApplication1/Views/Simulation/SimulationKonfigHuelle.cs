@@ -195,6 +195,19 @@ namespace WindowsFormsApplication1
         // Der Parametersatz der Seite
         // =================================================================
 
+        /// <summary>
+        /// Der PARAMETERSATZ der Seite zu einem Projekt — ohne Fenster (iU9-W11b.13).
+        ///
+        /// <para>Die Ergebnisseite zeigt die Konfiguration als ÜBERLAGERUNG (Risiko
+        /// R-W11-6): Blazor über Blazor gehört in dasselbe Fenster, nicht in eine
+        /// zweite WebView (Regel seit W4.0). Sie braucht dafür genau diesen Satz und
+        /// setzt <c>Geschlossen</c> selbst.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt)
+        {
+            return new SimulationKonfigHuelle(idProjekt).Gaben();
+        }
+
         /// <summary>Der PARAMETERSATZ der Seite — ohne <c>Geschlossen</c>.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {

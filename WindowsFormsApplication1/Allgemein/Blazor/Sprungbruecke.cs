@@ -55,7 +55,14 @@ namespace WindowsFormsApplication1
         /// Regel die <c>BlazorDialogForm</c> selbst. <c>null</c> ist erlaubt.</param>
         /// <returns>Ein Delegat, der zu einem Schlüssel aus <see cref="Sprungziel"/>
         /// das Fenster zeigt und meldet, ob es mit OK geschlossen wurde.</returns>
-        internal static Func<string, Task<bool>> Fuer(IWin32Window besitzer)
+        /// <param name="lauf">
+        /// Der gerechnete Simulationslauf — nur <see cref="Sprungziel.SpeicherOptimierung"/>
+        /// braucht ihn (iU9-W11b.0). Ohne ihn bleibt dieser Zweig wirkungslos.
+        /// </param>
+        /// <param name="idProjekt">Das Projekt zum <paramref name="lauf"/>.</param>
+        internal static Func<string, Task<bool>> Fuer(IWin32Window besitzer,
+                                                      SimulationControl lauf = null,
+                                                      int idProjekt = 0)
         {
             Control anker = besitzer as Control;
 
@@ -66,11 +73,11 @@ namespace WindowsFormsApplication1
                     // Nicht im Oberflaechenfaden: hinueberwechseln. Invoke wartet,
                     // die Aufgabe ist danach schon fertig.
                     object antwort = anker.Invoke(
-                        new Func<bool>(() => Zeigen(besitzer, schluessel)));
+                        new Func<bool>(() => Zeigen(besitzer, schluessel, lauf, idProjekt)));
                     return Task.FromResult(antwort is bool b && b);
                 }
 
-                return Task.FromResult(Zeigen(besitzer, schluessel));
+                return Task.FromResult(Zeigen(besitzer, schluessel, lauf, idProjekt));
             };
         }
 
@@ -78,7 +85,8 @@ namespace WindowsFormsApplication1
         /// Schlüssel → Maske. Ein unbekannter Schlüssel ist kein Fehler; er tut
         /// nichts (derselbe Umgang wie <see cref="WinFormsNavigation.OeffneMaske"/>).
         /// </summary>
-        private static bool Zeigen(IWin32Window besitzer, string schluessel)
+        private static bool Zeigen(IWin32Window besitzer, string schluessel,
+                                   SimulationControl lauf = null, int idProjekt = 0)
         {
             if (string.IsNullOrEmpty(schluessel)) return false;
 
@@ -156,6 +164,25 @@ namespace WindowsFormsApplication1
                         {
                             f.SetControls();
                             return MitOk(f, besitzer);
+                        }
+
+                    // --- iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers ------
+                    // Sie bleibt WinForms (iF22) - der einzige Ort des Programms, an dem
+                    // ScottPlot laeuft (Heatmap und Schnittkurve der Rastersuche). Sie
+                    // braucht als einzige Bruecke einen PARAMETER: den gerechneten Lauf,
+                    // auf dem die Rastersuche arbeitet.
+                    //
+                    // ANTWORT ist hier NICHT "mit OK geschlossen", sondern
+                    // AuslegungUebernommen - die Maske hat kein DialogResult, sondern
+                    // eine fachliche Rueckgabe (woertlich wie
+                    // Form_Simulation_Detail.SpOptimierung_Click:5992). Bei true liest
+                    // die Ergebnisseite die Speichervariante neu.
+                    case Sprungziel.SpeicherOptimierung:
+                        if (lauf == null || idProjekt <= 0) return false;
+                        using (Form_SpeicherOptimierung f = new Form_SpeicherOptimierung(lauf, idProjekt))
+                        {
+                            if (besitzer != null) f.ShowDialog(besitzer); else f.ShowDialog();
+                            return f.AuslegungUebernommen;
                         }
 
                     default:

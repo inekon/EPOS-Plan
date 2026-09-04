@@ -79,13 +79,19 @@ public sealed class SprungzielTests
         // geworden (Befund W10-B28).
         Assert.Equal("PUFFERSP_ADMIN_NUR_LESEN", Sprungziel.PufferSpAdminNurLesen);
         Assert.NotEqual(Sprungziel.PufferSpAdmin, Sprungziel.PufferSpAdminNurLesen);
+
+        // iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers. Sie ist das
+        // erste Brueckenziel MIT Parameter (der gerechnete Lauf) und das erste,
+        // dessen Antwort NICHT "mit OK geschlossen" heisst, sondern
+        // Form_SpeicherOptimierung.AuslegungUebernommen.
+        Assert.Equal("SPEICHER_OPTIMIERUNG", Sprungziel.SpeicherOptimierung);
     }
 
     [Fact]
-    public void Alle_neun_Ziele_sind_da()
+    public void Alle_zehn_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
-        Assert.Equal(9, Schluessel().Length);
+        Assert.Equal(10, Schluessel().Length);
     }
 }

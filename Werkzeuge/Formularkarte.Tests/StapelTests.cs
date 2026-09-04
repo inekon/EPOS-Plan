@@ -39,8 +39,10 @@ public sealed class StapelTests
         // Geschwister Form_Quellprofil und Form_Waermesenke hatten nie einen
         // Designer (Befund W10-B38) und zaehlen hier deshalb nicht mit.
         // Welle 10b nimmt die letzte dieser Reihe mit: Form_Simulation_Config,
-        // den Wirt der sieben Dialoge (50).
-        Assert.True(dateien.Count >= 52, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // den Wirt der sieben Dialoge (50). Welle 11b nimmt SECHS auf einmal -
+        // Form_Simulation_Detail, DashboardForm, die drei Navigatoren und
+        // Form_SpeicherVariantenVergleich (44); sie werden EINE Razor-Seite.
+        Assert.True(dateien.Count >= 44, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -69,8 +71,11 @@ public sealed class StapelTests
         // SIEBEN Masken um, aber nur FUENF davon hatte die Karte je gesehen:
         // Form_Quellprofil und Form_Waermesenke bauen ihre Oberflaeche im Code
         // auf und haben keinen Designer (Befund W10-B38). Welle 10b nimmt EINE
-        // weitere mit - Form_Simulation_Config, den Wirt der sieben (49).
-        Assert.True(Lauf.Value.Masken >= 49, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // weitere mit - Form_Simulation_Config, den Wirt der sieben (49). Welle 11b
+        // nimmt SECHS auf einmal (43): die Ergebnisansicht und ihre fuenf
+        // Nebenmasken werden EINE Seite (Regel R-W11-2: maskenweise, nicht
+        // reiterweise - sonst zwei WebViews in einem Fenster).
+        Assert.True(Lauf.Value.Masken >= 43, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -87,10 +92,13 @@ public sealed class StapelTests
         // weitere mit (29); nur Form_Brauchwasser war unlokalisiert. Welle 10b
         // nimmt die EINZIGE lokalisierte Maske ihrer Welle mit - die sieben
         // Dialoge der Welle 10a hatten keine eigene .resx, ihr Wirt
-        // Form_Simulation_Config schon (28).
+        // Form_Simulation_Config schon (28). Welle 11b nimmt ebenfalls genau EINE
+        // lokalisierte mit - Form_Simulation_Detail mit ihren 3 049 neutralen und
+        // 248 englischen Eintraegen; die fuenf Nebenmasken hatten keine eigene
+        // .resx (27).
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 28,
+        Assert.True(Lauf.Value.Lokalisierte >= 27,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

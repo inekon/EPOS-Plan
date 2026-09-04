@@ -1,0 +1,151 @@
+@* Der WAERMEGANG-Reiter der Ergebnisseite (NavigatorWaerme, iU9-W11b.10).
+
+   VORBILD. NavigatorWaerme (1 083 Z.) - das reichste Diagramm der Anwendung:
+   Jahresganglinie ODER Jahresdauerlinie, wahlweise als PRODUKTION je Erzeuger
+   oder als DECKUNG je Bedarfsart, dazu die Fuellstaende aller Speicher und die
+   Bedarfslinie auf einer zweiten Y-Achse.
+
+   DREI ZUSTANDSACHSEN, woertlich uebernommen:
+     _bedarfskanal   -1 = Gesamt (Produktion), sonst Kanalindex (Deckung),
+     _sortiert       Ganglinie <-> Dauerlinie,
+     _praesenz       welche Erzeuger zum Ergebnis gehoeren.
+   Die Ereignissperre _imAufbau entfaellt: Ein Modellfeld loest kein Ereignis aus.
+
+   FEHLENDE REIHEN WERDEN AUSGEBLENDET UND ABGEWAEHLT - sonst naehme der
+   CSV-Export eine unsichtbare Spalte mit (NavigatorStrom :266, dieselbe Regel
+   hier). Die Auswahl haengt deshalb an den Schluesseln der VORHANDENEN Reihen.
+
+   DER EXPORT IST IMMER CHRONOLOGISCH, auch im sortierten Modus - woertlich
+   (Begruendung NavigatorWaerme :295-297): Eine Dauerlinie hat keine Zeitachse,
+   und eine CSV ohne Zeitstempel ist keine.
+
+   WAS ENTFAELLT: CheckboxenAnordnen (72 Z. Pixelarithmetik), SerieAnlegen,
+   ApplyCheckboxStates, WaermebedarfAchseAktualisieren (70 Z. zweite Achse) und
+   SchluesselEintrag - ein Auswahlfeld trennt Steuerwert und Anzeigetext
+   ohnehin. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <div class="epos-simerg-schalter">
+        <Auswahlfeld Bezeichnung="@Resource.SIM_LABEL_BEDARFSART"
+                     Eintraege="@Bedarfsarten" Auswahl="@_bedarfsart"
+                     AuswahlChanged="BedarfsartGesetzt" />
+
+        <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                  WertChanged="@(w => _sortiert = w)" />
+
+        <Schalter Bezeichnung="@Resource.SIM_CHK_WAERMEBEDARF_EINBLENDEN" Wert="@_bedarfslinie"
+                  WertChanged="@(w => _bedarfslinie = w)" />
+    </div>
+
+    <div class="epos-simerg-spalten">
+        <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_ERZEUGERAUSWAHL"
+                         Eintraege="@Eintraege(Vorhandene(Daten.Erzeuger))"
+                         Gewaehlt="@_erzeuger" GewaehltChanged="@(w => _erzeuger = w)" />
+
+        @if (Vorhandene(Daten.Speicher).Count > 0)
+        {
+            <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SPEICHERAUSWAHL"
+                             Eintraege="@Eintraege(Vorhandene(Daten.Speicher))"
+                             Gewaehlt="@_speicher" GewaehltChanged="@(w => _speicher = w)" />
+        }
+    </div>
+
+    <ChartBild Png="@BildGang" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+
+    @if (Csv.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="CsvGewuenscht">
+            @Resource.SIM_BTN_CSV_EXPORT
+        </button>
+    }
+
+</div>
+
+@code {
+    /// <summary>Erzeugerreihen, Speicherreihen und die waehlbaren Bedarfsarten.</summary>
+    [Parameter] public WaermegangDaten Daten { get; set; } = new WaermegangDaten();
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>
+    /// Der CSV-Export: Bedarfsart, gewaehlte Erzeuger, gewaehlte Speicher.
+    /// Ohne Delegat kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<(int Kanal, IReadOnlyList<string> Erzeuger,
+                                      IReadOnlyList<string> Speicher)> Csv { get; set; }
+
+    /// <summary>Die gewaehlte Bedarfsart; −1 = Gesamt/Produktion (Pruefhilfe).</summary>
+    public int Bedarfsart => _bedarfsart ?? -1;
+
+    /// <summary>Die gewaehlten Erzeugerschluessel (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteErzeuger => Schluessel(Vorhandene(Daten.Erzeuger), _erzeuger);
+
+    /// <summary>Die gewaehlten Speicherschluessel (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteSpeicher => Schluessel(Vorhandene(Daten.Speicher), _speicher);
+
+    private int? _bedarfsart = -1;
+    private bool _sortiert;
+    private bool _bedarfslinie;
+    private IReadOnlyList<int> _erzeuger = Array.Empty<int>();
+    private IReadOnlyList<int> _speicher = Array.Empty<int>();
+
+    private IReadOnlyList<(int Id, string Text)> Bedarfsarten
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            foreach ((int Kanal, string Text) e in Daten.Bedarfsarten) liste.Add((e.Kanal, e.Text));
+            return liste;
+        }
+    }
+
+    private void BedarfsartGesetzt(int? wert) => _bedarfsart = wert ?? -1;
+
+    /// <summary>
+    /// Nur die Reihen, die der Lauf FUEHRT. Fehlende erscheinen gar nicht — und
+    /// koennen damit auch nicht in den Export geraten.
+    /// </summary>
+    private static List<Ganglinienreihe> Vorhandene(IReadOnlyList<Ganglinienreihe> alle)
+    {
+        var liste = new List<Ganglinienreihe>();
+        foreach (Ganglinienreihe r in alle) if (r.Vorhanden) liste.Add(r);
+        return liste;
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<Ganglinienreihe> reihen)
+    {
+        var liste = new List<(int, string)>(reihen.Count);
+        for (int i = 0; i < reihen.Count; i++) liste.Add((i, reihen[i].Text));
+        return liste;
+    }
+
+    private static IReadOnlyList<string> Schluessel(IReadOnlyList<Ganglinienreihe> reihen,
+                                                    IReadOnlyList<int> gewaehlt)
+    {
+        var liste = new List<string>();
+        foreach (int i in gewaehlt) if (i >= 0 && i < reihen.Count) liste.Add(reihen[i].Schluessel);
+        return liste;
+    }
+
+    /// <summary>
+    /// Die Reihenliste des Bildes: Erzeuger, Speicher und - als eigener
+    /// Schluessel - die Bedarfslinie auf der zweiten Achse (B3).
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>(GewaehlteErzeuger);
+        liste.AddRange(GewaehlteSpeicher);
+        if (_bedarfslinie) liste.Add("WAERMEBEDARF");
+        return liste;
+    }
+
+    private byte[]? BildGang =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Waermegang, _sortiert, Bedarfsart, Reihen()));
+
+    private Task CsvGewuenscht()
+        => Csv.InvokeAsync((Bedarfsart, GewaehlteErzeuger, GewaehlteSpeicher));
+}

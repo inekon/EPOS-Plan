@@ -1,0 +1,344 @@
+@* Der PARAMETER-Reiter der Ergebnisseite (R1 samt P1…P5, iU9-W11b.1).
+
+   VORBILD. tabPage_Parameter mit tabControl_Einstellungen und seinen FUENF
+   Unterblaettern (Befund W11-B1: fuenf, nicht vier) — Bedarf, BHKW,
+   Stromspeicher, Waermepumpe, Heizkessel. Der TabListMapper (462 Z.) baute die
+   Reiterleiste noch einmal in eine Menueliste um; hier ist es EIN <Reiter>
+   (Befund W11-B11).
+
+   JEDES FELD SCHREIBT SOFORT — woertlich wie der Vorlaeufer
+   (SpeichereKonfigurationsAenderung :5394, SpeichereVariantenAenderung :6379).
+   Es gibt keinen Speichernknopf auf dieser Seite und gab nie einen.
+
+   ZWEI BEFUNDE ENTFALLEN ERSATZLOS.
+   - W11-B8: Die Ereignisrueckkopplung der Betriebsart (LeseKonfiguration
+     meldete das CheckedChanged nur fuer EINEN der drei RadioButton ab und
+     schrieb den gerade gelesenen Wert zurueck). Ein Modellfeld loest kein
+     Ereignis aus; die Sperre braucht es nicht mehr.
+   - W11-B10: Die vier leeren Ereignisbehandler. Die drei Einheitenlisten sind
+     fachlich fest und stehen als Text, das Leistungsfeld ist ein Geraetedatum
+     und steht als gesperrtes Zahlenfeld (Aktiv=false, Standard seit W2).
+
+   TOT UND NICHT PORTIERT: tabControl3 mit tabPage1/tabPage2 (8x8 px, leer,
+   Visible=false seit D2 — Befund W11-B50). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-parameter">
+
+    <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+            @foreach (string schluessel in Daten.Unterblaetter)
+            {
+                string s = schluessel;
+                <Reiterblatt Schluessel="@s" Titel="@BlattTitel(s)">
+                    <KindInhalt>
+                        @BlattInhalt(s)
+                    </KindInhalt>
+                </Reiterblatt>
+            }
+
+        </KindInhalt>
+    </Reiter>
+
+</div>
+
+@code {
+    /// <summary>Die Werte der Seite; ohne sie steht nur das Bedarfsblatt da.</summary>
+    [Parameter] public ParameterDaten Daten { get; set; } = new ParameterDaten();
+
+    /// <summary>Die Datenseite; ohne Delegat schreibt kein Feld.</summary>
+    [Parameter] public SimulationErgebnisDienste? Dienste { get; set; }
+
+    /// <summary>Gesperrt (Schemamigration) — die Felder bleiben sichtbar und lesbar.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Ruft die Auslegungsoptimierung (Sprungbruecke); ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Optimierung { get; set; }
+
+    /// <summary>Zeigt die Auslegungsoptimierung an? Ohne Sprungdelegat bleibt sie weg.</summary>
+    [Parameter] public bool OptimierungMoeglich { get; set; }
+
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Parameter";
+
+    /// <summary>
+    /// Das sichtbare Unterblatt (Pruefhilfe). Ohne eigene Wahl steht das erste
+    /// angemeldete Blatt vorn — das weiss der <see cref="Reiter"/>, nicht der Wirt.
+    /// </summary>
+    public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    private Reiter? _reiter;
+    private string _blatt = "";
+
+    // =====================================================================
+    // Titel und Inhalt je Blatt
+    // =====================================================================
+
+    private static string BlattTitel(string schluessel) => schluessel switch
+    {
+        ParameterBlatt.Bedarf => Resource.SIMERG_TAB_BEDARF,
+        ParameterBlatt.Bhkw => Resource.SIM_ERZEUGERNAME_BHKW,
+        ParameterBlatt.Stromspeicher => Resource.SIM_STROMSPEICHER,
+        ParameterBlatt.Waermepumpe => Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+        ParameterBlatt.Heizkessel => Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
+        _ => schluessel
+    };
+
+    private RenderFragment BlattInhalt(string schluessel) => schluessel switch
+    {
+        ParameterBlatt.Bedarf => BlattBedarf,
+        ParameterBlatt.Bhkw => BlattBhkw,
+        ParameterBlatt.Stromspeicher => BlattStromspeicher,
+        ParameterBlatt.Waermepumpe => BlattWaermepumpe,
+        ParameterBlatt.Heizkessel => BlattHeizkessel,
+        _ => builder => { }
+    };
+
+    // ---- P1 -------------------------------------------------------------
+
+    private RenderFragment BlattBedarf => @<div class="epos-simerg-felder">
+        <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
+                    Wert="@Daten.Netzverluste" Einheit="@Daten.NetzverlusteEinheit"
+                    Aktiv="@(!Gesperrt)"
+                    WertChanged="NetzverlusteGesetzt" />
+    </div>;
+
+    private void NetzverlusteGesetzt(double? wert)
+    {
+        Daten.Netzverluste = wert ?? 0.0;
+        Dienste?.NetzverlusteSchreiben?.Invoke(Daten.Netzverluste, Daten.NetzverlusteEinheit);
+    }
+
+    // ---- P2 -------------------------------------------------------------
+
+    private RenderFragment BlattBhkw => @<div class="epos-simerg-felder">
+        <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
+                       Eintraege="@BETRIEBSARTEN" Auswahl="@Daten.Betriebsart"
+                       Aktiv="@(!Gesperrt)" AuswahlChanged="BetriebsartGesetzt" />
+
+        <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE"
+                      Wert="@Daten.UntersteLeistungsgrenze" Min="0" Max="100"
+                      Aktiv="@(!Gesperrt)" WertChanged="LeistungsgrenzeGesetzt" />
+
+        <p class="epos-simerg-info">@Resource.SIMERG_INFO_BHKW</p>
+    </div>;
+
+    /// <summary>
+    /// Die drei Betriebsarten. Die Steuerwerte 0/1/2 sind die des Vorlaeufers
+    /// (RadioButton.Tag, <c>bhkwSimulationsArt</c>) und stehen so in
+    /// <c>Tab_Einstellungen</c>.
+    /// </summary>
+    private static readonly (int Id, string Text)[] BETRIEBSARTEN =
+    {
+        (0, Resource.SIMERG_OPT_WAERMEGEFUEHRT),
+        (1, Resource.SIMERG_OPT_STROMGEFUEHRT),
+        (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
+    };
+
+    private void BetriebsartGesetzt(int? wert)
+    {
+        Daten.Betriebsart = wert ?? 0;
+        Dienste?.BetriebsartSchreiben?.Invoke(Daten.Betriebsart);
+    }
+
+    private void LeistungsgrenzeGesetzt(int? wert)
+    {
+        Daten.UntersteLeistungsgrenze = wert ?? 0;
+        Dienste?.LeistungsgrenzeSchreiben?.Invoke(Daten.UntersteLeistungsgrenze);
+    }
+
+    // ---- P4 -------------------------------------------------------------
+
+    private RenderFragment BlattWaermepumpe => @<div class="epos-simerg-felder">
+        <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@Daten.Heizstab"
+                  Aktiv="@(!Gesperrt)" WertChanged="HeizstabGesetzt" />
+    </div>;
+
+    private void HeizstabGesetzt(bool wert)
+    {
+        Daten.Heizstab = wert;
+        Dienste?.HeizstabSchreiben?.Invoke(wert);
+    }
+
+    // ---- P5 -------------------------------------------------------------
+
+    private RenderFragment BlattHeizkessel => @<div class="epos-simerg-felder">
+        <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
+                    Wert="@Daten.Bereitschaft" Einheit="h/a"
+                    Aktiv="@(!Gesperrt)" WertChanged="BereitschaftGesetzt" />
+    </div>;
+
+    private void BereitschaftGesetzt(double? wert)
+    {
+        Daten.Bereitschaft = wert ?? 0.0;
+        Dienste?.BereitschaftSchreiben?.Invoke(Daten.Bereitschaft);
+    }
+
+    // ---- P3: das Stromspeicherblatt (302 Zeilen im Vorlaeufer) ------------
+
+    private SpeicherParameterDaten Sp => Daten.Speicher;
+
+    private bool SpAktiv => !Gesperrt && Sp.VarianteVorhanden;
+
+    private RenderFragment BlattStromspeicher => @<div class="epos-simerg-speicherparameter">
+
+        <div class="epos-simerg-felder">
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MIN" Wert="@Sp.SoCMinProzent"
+                        Einheit="%" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.SoCMin, w, v => Sp.SoCMinProzent = v))" />
+            <span class="epos-simerg-aequivalent">@Sp.SoCMinKwh</span>
+
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MAX" Wert="@Sp.SoCMaxProzent"
+                        Einheit="%" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.SoCMax, w, v => Sp.SoCMaxProzent = v))" />
+            <span class="epos-simerg-aequivalent">@Sp.SoCMaxKwh</span>
+
+            @* Geraetedaten: sichtbar und lesbar, aber gesperrt (Befund W11-B10). *@
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LADELEISTUNG"
+                        Wert="@Sp.LadeleistungKw" Einheit="kW" Aktiv="false" />
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPAZITAET"
+                        Wert="@Sp.KapazitaetKwh" Einheit="kWh" Aktiv="false" />
+
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LADESCHWELLE"
+                        Wert="@Sp.Ladeschwellwert" Einheit="kW" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.Ladeschwelle, w, v => Sp.Ladeschwellwert = v))" />
+        </div>
+
+        <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_LADELEISTUNG</p>
+
+        <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" />
+        <div class="epos-simerg-felder">
+            <Auswahlfeld Bezeichnung="@Resource.SP_PARAM_LABEL_BETRIEBSART"
+                         Eintraege="@Eintraege(Sp.Betriebsarten)"
+                         Auswahl="@Index(Sp.Betriebsarten, Sp.Betriebsart)"
+                         Aktiv="@SpAktiv"
+                         AuswahlChanged="@(i => SpWahl(SpeicherFeld.Betriebsart, Sp.Betriebsarten, i, v => Sp.Betriebsart = v))" />
+
+            <Auswahlfeld Bezeichnung="@Resource.SP_PARAM_LABEL_BERECHNUNGSART"
+                         Eintraege="@Eintraege(Sp.Berechnungsarten)"
+                         Auswahl="@Index(Sp.Berechnungsarten, Sp.Berechnungsart)"
+                         Aktiv="@SpAktiv"
+                         AuswahlChanged="@(i => SpWahl(SpeicherFeld.Berechnungsart, Sp.Berechnungsarten, i, v => Sp.Berechnungsart = v))" />
+
+            <Schalter Bezeichnung="@Resource.SP_PARAM_LABEL_KOMPATIBILITAET"
+                      Wert="@Sp.Kompatibilitaet"
+                      Aktiv="@(SpAktiv && Sp.KompatibilitaetMoeglich)"
+                      WertChanged="@(w => SpSchalter(SpeicherFeld.Kompatibilitaet, w, v => Sp.Kompatibilitaet = v))" />
+        </div>
+        <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET</p>
+
+        <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_QUELLEN" />
+        <div class="epos-simerg-felder">
+            <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_PV" Wert="@Sp.LadenAusPv" Aktiv="@SpAktiv"
+                      WertChanged="@(w => SpSchalter(SpeicherFeld.LadenPv, w, v => Sp.LadenAusPv = v))" />
+            <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW" Wert="@Sp.LadenAusBhkw" Aktiv="@SpAktiv"
+                      WertChanged="@(w => SpSchalter(SpeicherFeld.LadenBhkw, w, v => Sp.LadenAusBhkw = v))" />
+            <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_NETZENTLADUNG" Wert="@Sp.Netzentladung" Aktiv="@SpAktiv"
+                      WertChanged="@(w => SpSchalter(SpeicherFeld.Netzentladung, w, v => Sp.Netzentladung = v))" />
+            @* Ausbaustufe 11: sichtbar, aber ohne Rechenweg — dauerhaft gesperrt. *@
+            <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT"
+                      Wert="@Sp.BhkwStromgefuehrt" Aktiv="false" />
+        </div>
+        <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_AUSBAUSTUFE</p>
+
+        <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_WIRTSCHAFT" />
+        <div class="epos-simerg-felder">
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPITALZINS" Wert="@Sp.Kapitalzins"
+                        Einheit="%" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.Kapitalzins, w, v => Sp.Kapitalzins = v))" />
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NUTZUNGSDAUER" Wert="@Sp.Nutzungsdauer"
+                        Einheit="a" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.Nutzungsdauer, w, v => Sp.Nutzungsdauer = v))" />
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LEISTUNGSPREIS" Wert="@Sp.Leistungspreis"
+                        Einheit="€/(kW·a)" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.Leistungspreis, w, v => Sp.Leistungspreis = v))" />
+            <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG" Wert="@Sp.Netzladeaufschlag"
+                        Einheit="ct/kWh" Aktiv="@SpAktiv"
+                        WertChanged="@(w => SpZahl(SpeicherFeld.Netzladeaufschlag, w, v => Sp.Netzladeaufschlag = v))" />
+        </div>
+
+        <Gruppenkopf Titel="@Resource.PREIS_PARAM_GRUPPE_PREISQUELLE" />
+        <div class="epos-simerg-felder">
+            <Auswahlfeld Bezeichnung="@Resource.PREIS_PARAM_LABEL_PREISQUELLE"
+                         Eintraege="@Eintraege(Sp.Preisquellen)"
+                         Auswahl="@Index(Sp.Preisquellen, Sp.Preisquelle)"
+                         Aktiv="@SpAktiv"
+                         AuswahlChanged="@(i => SpWahl(SpeicherFeld.Preisquelle, Sp.Preisquellen, i, v => Sp.Preisquelle = v))" />
+
+            <Auswahlfeld Bezeichnung="@Sp.PreisreiheLabel" Eintraege="@Sp.Preisreihen"
+                         Auswahl="@(Sp.PreisreiheId > 0 ? Sp.PreisreiheId : (int?)null)"
+                         Aktiv="@(SpAktiv && Sp.PreisreiheMoeglich)"
+                         AuswahlChanged="PreisreiheGesetzt" />
+
+            <Schalter Bezeichnung="@Resource.PREIS_PARAM_CHK_AUFSCHLAG" Wert="@Sp.Aufschlag" Aktiv="@SpAktiv"
+                      WertChanged="@(w => SpSchalter(SpeicherFeld.Aufschlag, w, v => Sp.Aufschlag = v))" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(Sp.Preisinfo))
+        {
+            <p class="@(Sp.PreisinfoWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">@Sp.Preisinfo</p>
+        }
+
+        <p class="@(Sp.VarianteVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">@Sp.Variantenstatus</p>
+
+        @if (OptimierungMoeglich)
+        {
+            <button type="button" class="epos-simerg-knopf" @onclick="Optimierung" disabled="@Gesperrt"
+                    title="@Resource.OPT_HINWEIS_ZIELFUNKTION">@Resource.OPT_BTN_OEFFNEN</button>
+        }
+    </div>;
+
+    // =====================================================================
+    // Schreibwege — jedes Feld schreibt sofort
+    // =====================================================================
+
+    private void SpZahl(string feld, double? wert, Action<double> merken)
+    {
+        double w = wert ?? 0.0;
+        merken(w);
+        Dienste?.SpeicherfeldSchreiben?.Invoke(
+            feld, w.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private void SpSchalter(string feld, bool wert, Action<bool> merken)
+    {
+        merken(wert);
+        Dienste?.SpeicherfeldSchreiben?.Invoke(feld, wert ? "1" : "0");
+    }
+
+    private void SpWahl(string feld, IReadOnlyList<Steuerwahl> liste, int? index,
+                        Action<string> merken)
+    {
+        if (index is null || index < 0 || index >= liste.Count) return;
+        string wert = liste[index.Value].Wert;
+        merken(wert);
+        Dienste?.SpeicherfeldSchreiben?.Invoke(feld, wert);
+    }
+
+    private void PreisreiheGesetzt(int? id)
+    {
+        Sp.PreisreiheId = id ?? 0;
+        Dienste?.SpeicherfeldSchreiben?.Invoke(
+            SpeicherFeld.Preisreihe,
+            Sp.PreisreiheId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    // =====================================================================
+    // Steuerwert ↔ Listenplatz (Drei-Schichten-Regel)
+    // =====================================================================
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<Steuerwahl> liste)
+    {
+        var ergebnis = new List<(int, string)>(liste.Count);
+        for (int i = 0; i < liste.Count; i++) ergebnis.Add((i, liste[i].Text));
+        return ergebnis;
+    }
+
+    private static int? Index(IReadOnlyList<Steuerwahl> liste, string wert)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i].Wert, wert, StringComparison.Ordinal)) return i;
+        return null;
+    }
+}

@@ -48,6 +48,11 @@ else if (_ansicht == Seitenschluessel.SimulationKonfiguration && _simKonfig is n
     <EPOS.UI.Seiten.Simulation.SimulationKonfigSeite @attributes="_simKonfig"
                                                      Geschlossen="ZurueckZurListe" />
 }
+else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not null)
+{
+    <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_simErgebnis"
+                                                       Geschlossen="ZurueckZurListe" />
+}
 else
 {
     @if (!string.IsNullOrEmpty(_statuszeile))
@@ -68,6 +73,7 @@ else
     private IReadOnlyList<(int Id, string Name)> _energietraeger = Array.Empty<(int, string)>();
     private BhkwDialogDaten? _bhkw;
     private IReadOnlyDictionary<string, object>? _simKonfig;
+    private IReadOnlyDictionary<string, object>? _simErgebnis;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -149,6 +155,20 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.SimulationErgebnis)
+        {
+            _simErgebnis = Quelle.SimulationErgebnisGaben(_projekt?.Id ?? 0);
+            if (_simErgebnis is null)
+            {
+                // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt
+                // warum - der Windows-Zustand „Seite geht nicht auf".
+                _statuszeile = KeinSimErgebnisText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Projektliste)
         {
             _ansicht = maske;
@@ -203,6 +223,7 @@ else
         bool bekannt = maske == Seitenschluessel.Energietraeger
                     || maske == Seitenschluessel.BhkwWirtschaftlichkeit
                     || maske == Seitenschluessel.SimulationKonfiguration
+                    || maske == Seitenschluessel.SimulationErgebnis
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
@@ -245,4 +266,8 @@ else
     /// <summary>Meldung, wenn die Simulationskonfiguration nicht zu laden ist.</summary>
     [Parameter] public string KeineSimKonfigText { get; set; } =
         "Zu diesem Projekt lässt sich die Simulationskonfiguration nicht öffnen.";
+
+    /// <summary>Meldung, wenn das Simulationsergebnis nicht zu laden ist.</summary>
+    [Parameter] public string KeinSimErgebnisText { get; set; } =
+        "Zu diesem Projekt lässt sich das Simulationsergebnis nicht öffnen.";
 }
