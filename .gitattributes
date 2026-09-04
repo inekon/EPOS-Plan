@@ -60,3 +60,13 @@ Kenndaten_Backup.accdb filter=lfs diff=lfs merge=lfs -text
 # werden soll.
 ###############################################################################
 EPOS.Kern.Tests/Proben/Ganglinien/** -text
+
+###############################################################################
+# Import-Proben der Welle iU9-W13 (Schritt W13.0i)
+#
+# Dieselbe Begruendung wie oben: Die Ausschnitte aus den VDI-3805-Katalogen
+# tragen die Kodierung des Originals (Windows-1252) und CRLF; die CEC- und
+# PAN-Proben ihre eigene. "text=auto" wuerde sie beim naechsten Auschecken
+# umschreiben und damit genau das aendern, was hier bewiesen werden soll.
+###############################################################################
+Referenzlaeufe/Importproben/** -text
