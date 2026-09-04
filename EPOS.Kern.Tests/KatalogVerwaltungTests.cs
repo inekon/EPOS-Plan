@@ -713,6 +713,278 @@ namespace EPOS.Kern.Tests
                             "Speichertyp \"" + m.Speichertyp + "\" wird nicht erkannt.");
         }
 
+
+        // =================================================================================
+        // 10 - SpeichernAus / Anlegen / Ueberschreiben / Loeschen (W14a.0e)
+        //
+        // Alle Faelle enden VOR dem Schreiben: Sie pruefen die Ablehnungsgruende, nicht
+        // den Schreibvorgang selbst. Die Arbeitskopie bleibt damit unberuehrt und kann
+        // von der ganzen Klasse geteilt werden (Regel seit W11a).
+        // =================================================================================
+
+        /// <summary>
+        /// „Speichern unter" auf einen vergebenen Namen wird abgelehnt — der
+        /// <c>Exists</c>-Vorabtest von <c>Form_PufferSp_Bearbeiten</c> (Z. 226, 297).
+        /// </summary>
+        [Fact]
+        public void PufferSp_Anlegen_lehnt_einen_vergebenen_Namen_ab()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var daten = new PufferSpModel { Firma = "W14a", Speichertyp = "Pufferspeicher" };
+            var ergebnis = PufferSpStammCtrl.Anlegen(daten, "Puffer 3000Ltr");
+
+            Assert.False(ergebnis.Ok);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, ergebnis.Meldung);
+            Assert.Equal("", ergebnis.Name);
+        }
+
+        /// <summary>Ohne Namen geht gar nichts — und die Meldung sagt das auch.</summary>
+        [Fact]
+        public void PufferSp_Anlegen_und_Ueberschreiben_verlangen_einen_Bezeichner()
+        {
+            using var _ = new DeutscheOberflaeche();
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PufferSpStammCtrl.Anlegen(new PufferSpModel(), "  ").Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PufferSpStammCtrl.Anlegen(null, "X").Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PufferSpStammCtrl.Ueberschreiben(new PufferSpModel { Name = "" }).Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PufferSpStammCtrl.Loeschen("").Meldung);
+        }
+
+        /// <summary>
+        /// Befund W14-B33: Der Modulkatalog der Photovoltaik lehnt einen vergebenen Namen
+        /// ab — und meldet den Grund, statt zu schweigen.
+        /// </summary>
+        [Fact]
+        public void Photovoltaik_SpeichernAus_lehnt_einen_vergebenen_Namen_ab()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var daten = new PhotovoltaikModel { m_szName = "Ablytek 6MN6A270" };
+            var ergebnis = PhotovoltaikStammCtrl.SpeichernAus(daten, neu: true, schluessel: null);
+
+            Assert.False(ergebnis.Ok);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, ergebnis.Meldung);
+        }
+
+        /// <summary>
+        /// Befund W14-B47: Der Stromspeicher bekommt seinen <c>Exists</c>-Vorabtest —
+        /// bis hierher legte er ohne Vorabtest an.
+        /// </summary>
+        [Fact]
+        public void Stromspeicher_SpeichernAus_lehnt_einen_vergebenen_Namen_ab()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var daten = new StromspeicherModel { m_szBezeichner = "BYD HVS+ 12.8" };
+            var ergebnis = StromspeicherStammCtrl.SpeichernAus(daten, neu: true, schluessel: null);
+
+            Assert.False(ergebnis.Ok);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, ergebnis.Meldung);
+        }
+
+        /// <summary>Ein leerer Bezeichner wird in beiden Modulkatalogen abgelehnt.</summary>
+        [Fact]
+        public void Modulkataloge_verlangen_einen_Bezeichner()
+        {
+            using var _ = new DeutscheOberflaeche();
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PhotovoltaikStammCtrl.SpeichernAus(new PhotovoltaikModel(), true, null).Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         StromspeicherStammCtrl.SpeichernAus(new StromspeicherModel(), true, null).Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         PhotovoltaikStammCtrl.Loeschen(null).Meldung);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
+                         StromspeicherStammCtrl.Loeschen(" ").Meldung);
+        }
+
+        /// <summary>
+        /// Der BHKW-Speicherweg lehnt einen geschuetzten Satz ab, SOLANGE die Rueckfrage
+        /// nicht bejaht ist — und schreibt dabei nichts. Genau die Regel von
+        /// <c>Form_BHKWAdmin.cs:418-430</c>.
+        /// </summary>
+        [Fact]
+        public void Bhkw_Speicherweg_haelt_am_Schreibschutz_an()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var vorher = BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas");
+            var felder = new BHKWStammCtrl.AnzeigefelderBhkw("W14a-Probe", 1, 2, 3, 4, 5);
+
+            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben("2G 250kw.el Gas", felder,
+                                                                schreibschutzUebergehen: false);
+            Assert.False(ergebnis.Ok);
+            Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
+
+            // Und der Satz steht unveraendert da.
+            var nachher = BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas");
+            Assert.Equal(vorher[KatalogBrowserProfil.FeldFirma], nachher[KatalogBrowserProfil.FeldFirma]);
+        }
+
+        /// <summary>
+        /// Der Heizkessel-Speicherweg bricht bei einem unbekannten Bezeichner ab, ohne zu
+        /// schreiben.
+        /// </summary>
+        [Fact]
+        public void Heizkessel_Speicherweg_bricht_ohne_Satz_ab()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel("x", 1, 2, true, 3, 4);
+            var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben("W14a-gibt-es-nicht", felder);
+
+            Assert.False(ergebnis.Ok);
+            Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
+            Assert.Equal("", ergebnis.Name);
+        }
+
+        // =================================================================================
+        // 11 - ModulKatalogProfil (W14a.0a) und die zwei Vorgabewerte (W14a.0f)
+        // =================================================================================
+
+        /// <summary>
+        /// Beide Auspraegungen fuehren dreizehn Felder; nur der Stromspeicher hat eine
+        /// zweite Feldgruppe (AP3-Gerätetechnik).
+        /// </summary>
+        [Fact]
+        public void Modulkatalogprofil_kennt_zwei_Auspraegungen_mit_je_dreizehn_Feldern()
+        {
+            Assert.Equal(2, ModulKatalogProfil.AlleArten.Count());
+
+            var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
+            var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
+
+            Assert.Equal(13, sp.Felder.Count);
+            Assert.Equal(13, pv.Felder.Count);
+
+            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 0));
+            Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(13, pv.Felder.Count(f => f.Gruppe == 0));
+            Assert.Equal("", pv.GruppeZwei);
+
+            // Der Bezeichner ist in beiden der Schluessel und deshalb gesperrt.
+            Assert.Equal(ModulKatalogProfil.FeldBezeichner, sp.Felder[0].Schluessel);
+            Assert.Equal(ModulKatalogProfil.FeldBezeichner, pv.Felder[0].Schluessel);
+            Assert.True(sp.Felder[0].Gesperrt);
+            Assert.True(pv.Felder[0].Gesperrt);
+        }
+
+        /// <summary>
+        /// <b>BITGLEICH:</b> die <c>leerErlaubt</c>-Regel je Feld. Photovoltaik: NEUN von
+        /// zehn Zahlfeldern duerfen leer sein, die Nennleistung nicht. Stromspeicher:
+        /// KEINES der fuenf Bestandsfelder, ALLE SECHS AP3-Felder.
+        /// </summary>
+        [Fact]
+        public void Modulkatalogprofil_haelt_die_leerErlaubt_Regel_je_Feld()
+        {
+            var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
+            var zahlen = pv.Felder.Where(f => f.Art != BrowserFeldArt.Text &&
+                                              f.Art != BrowserFeldArt.Mehrzeilig).ToList();
+            Assert.Equal(10, zahlen.Count);
+            Assert.Equal(9, zahlen.Count(f => f.LeerErlaubt));
+            Assert.False(pv.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldLeistung).LeerErlaubt);
+
+            var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
+            var bestand = sp.Felder.Where(f => f.Gruppe == 0 && f.Art != BrowserFeldArt.Text).ToList();
+            Assert.Equal(5, bestand.Count);
+            Assert.All(bestand, f => Assert.False(f.LeerErlaubt));
+            Assert.All(sp.Felder.Where(f => f.Gruppe == 1), f => Assert.True(f.LeerErlaubt));
+
+            // Der Typ ist ein TEXTfeld und darf ebenfalls nicht leer sein
+            // ("Eingaben ueberpruefen!", Form_AdminStromspeicher.cs:99-103).
+            Assert.False(sp.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldTyp).LeerErlaubt);
+        }
+
+        /// <summary>
+        /// Die Vorbelegungen nach „Neu…" — dreizehn beim Stromspeicher (mit den zwei
+        /// fachlichen Vorgaben), dreizehn bei der Photovoltaik (zwei leer, zehn Nullen).
+        /// </summary>
+        [Fact]
+        public void Modulkatalogprofil_traegt_die_Vorbelegungen_von_Neu()
+        {
+            using var _ = new DeutscheOberflaeche();
+
+            var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
+            Assert.Equal("", Vorgabe(sp, ModulKatalogProfil.FeldBezeichner));
+            Assert.Equal("Lithium-Ionen", Vorgabe(sp, ModulKatalogProfil.FeldTyp));
+            Assert.Equal("0,9", Vorgabe(sp, ModulKatalogProfil.FeldWirkungsgradRt));
+            Assert.Equal("0,025", Vorgabe(sp, ModulKatalogProfil.FeldVerschleisskosten));
+            Assert.Equal("0", Vorgabe(sp, ModulKatalogProfil.FeldEnergie));
+
+            var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
+            Assert.Equal("", Vorgabe(pv, ModulKatalogProfil.FeldFirma));
+            Assert.Equal("", Vorgabe(pv, ModulKatalogProfil.FeldBeschreibung));
+            Assert.Equal(10, pv.Felder.Count(f => f.Vorgabe == "0"));
+
+            static string Vorgabe(ModulKatalogProfil p, string schluessel) =>
+                p.Felder.First(f => f.Schluessel == schluessel).Vorgabe;
+        }
+
+        /// <summary>
+        /// W14a.0f: die zwei fachlichen Vorgaben stehen jetzt beieinander, und der
+        /// Persistenzwert der Zelltechnologie in <see cref="DbWerte"/>. Werte
+        /// unveraendert.
+        /// </summary>
+        [Fact]
+        public void Die_zwei_Vorgabewerte_und_der_Persistenzwert_stehen_im_Kern()
+        {
+            Assert.Equal(0.90, StromspeicherModel.WIRKUNGSGRAD_RT_VORGABE, 9);
+            Assert.Equal(0.025, StromspeicherModel.C_VER_VORGABE, 9);
+            Assert.Equal("Lithium-Ionen", DbWerte.SP_TYP_LITHIUM_IONEN);
+        }
+
+        /// <summary>
+        /// Der Detailblock des Speicherkatalogs beantwortet jedes Profilfeld — auch die
+        /// sechs AP3-Spalten, die auf einer aelteren Datenbank fehlen koennen.
+        /// </summary>
+        [Fact]
+        public void Stromspeicher_Katalogsatz_beantwortet_alle_dreizehn_Felder()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var satz = StromspeicherStammCtrl.KatalogsatzAnzeige("BYD HVS+ 12.8");
+            Assert.NotNull(satz);
+
+            var profil = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
+            Assert.Equal(profil.Felder.Count, satz.Count);
+            foreach (var feld in profil.Felder)
+                Assert.True(satz.ContainsKey(feld.Schluessel), "Feld " + feld.Schluessel + " fehlt.");
+
+            Assert.Equal("BYD HVS+ 12.8", satz[ModulKatalogProfil.FeldBezeichner]);
+            Assert.Equal("Lithium-Ionen-Akkus", satz[ModulKatalogProfil.FeldTyp]);
+            Assert.Equal("12,8", satz[ModulKatalogProfil.FeldEnergie]);
+
+            // Ein Satz ohne gepflegte AP3-Werte zeigt dort leere Felder statt einer 0.
+            var ohneAp3 = StromspeicherStammCtrl.KatalogsatzAnzeige("VARTA element backup");
+            Assert.Equal("", ohneAp3[ModulKatalogProfil.FeldWirkungsgradRt]);
+            Assert.Equal("", ohneAp3[ModulKatalogProfil.FeldZyklen]);
+        }
+
+        /// <summary>Die Speicherliste kommt sortiert — fuenf Saetze.</summary>
+        [Fact]
+        public void Stromspeicher_Katalogzeilen_kommen_sortiert()
+        {
+            if (!_db.Vorhanden) return;
+
+            var zeilen = StromspeicherStammCtrl.KatalogZeilen();
+            Assert.Equal(5, zeilen.Count);
+
+            var namen = zeilen.Select(z => z.Bezeichner).ToList();
+            Assert.Equal(namen.OrderBy(n => n, StringComparer.Ordinal).ToList(), namen);
+            Assert.All(zeilen, z => Assert.True(z.Id > 0));
+        }
+
         /// <summary>
         /// Pinnt Kultur und Oberflaechensprache auf de-DE — die Zahlenformate <c>F2</c>
         /// und die Ressourcentexte haengen daran (Regel seit iU9-W8).

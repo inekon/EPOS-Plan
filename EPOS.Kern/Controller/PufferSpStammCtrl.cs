@@ -694,5 +694,134 @@ namespace WindowsFormsApplication1
             int ausText = SpeichertypIndex(text, anzeigetexte);
             return ausText >= 0 ? SPEICHERTYP_DB_WERTE[ausText] : text;
         }
+
+        // =================================================================================
+        // W14a.0e - der EINE Schreibeinstieg des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat — dieselbe Form wie
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c> (W6.0).
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an — der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter" (<c>Form_PufferSp_Bearbeiten</c> Z. 203-252 und 288-316).
+        /// </summary>
+        /// <remarks>
+        /// Der Ablauf ist woertlich: <see cref="Exists"/> als Vorabtest, dann
+        /// <see cref="InsertFrom"/>. Neu ist nur, dass der Grund ZURUECKKOMMT statt zu
+        /// erscheinen — eine Razor-Komponente hat keine <c>MessageBox</c>.
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(PufferSpModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PufferSpStammCtrl();
+                string bezeichner = name.Trim();
+
+                if (ctrl.Exists(bezeichner))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, "");
+
+                daten.Name = bezeichner;
+                if (!ctrl.InsertFrom(daten))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, bezeichner);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck — der Weg des Knopfes
+        /// „Überschreiben" (<c>Form_PufferSp_Bearbeiten</c> Z. 328-353).
+        /// </summary>
+        /// <remarks>
+        /// <b>Befund W14-B22 behoben.</b> Der Vorlaeufer setzte bei einem Fehlschlag
+        /// <c>DialogResult.Cancel</c> und schloss den Dialog OHNE Meldung — der Anwender
+        /// sah nur, dass sein Fenster verschwand. Der Grund kommt jetzt zurueck: entweder
+        /// der Schreibschutz oder der allgemeine Schreibfehler.
+        /// </remarks>
+        public static SpeicherErgebnis Ueberschreiben(PufferSpModel daten)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.Name))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                // Der Schutz wird VOR dem Schreiben gefragt, damit der Grund als Text
+                // zurueckkommt; Update() zeigt ihn sonst selbst ueber Meldung.Hinweis.
+                if (IsReadOnlyStatic(daten.Name))
+                    return new SpeicherErgebnis(false, Text("PSPK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+                var ctrl = new PufferSpStammCtrl();
+                if (!ctrl.UpdateFrom(daten))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.Name);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Loescht einen Katalogsatz und sagt, warum es nicht ging — der Weg des Knopfes
+        /// „Löschen" im Katalogbrowser.
+        /// </summary>
+        public static SpeicherErgebnis Loeschen(string szName)
+        {
+            if (string.IsNullOrWhiteSpace(szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                if (IsReadOnlyStatic(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_SCHUTZ_LOESCHEN",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden."), "");
+
+                var ctrl = new PufferSpStammCtrl();
+                if (!ctrl.Delete(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_LOESCHEN_FEHLER",
+                        "Der Datensatz konnte nicht gelöscht werden."), "");
+
+                return new SpeicherErgebnis(true, "", szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }
