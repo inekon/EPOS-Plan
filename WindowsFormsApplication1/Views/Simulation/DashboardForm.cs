@@ -354,8 +354,11 @@ namespace WindowsFormsApplication1
 
             double nutzungsgradST = stPotenzialGesamt > 0 ? (stGenutztSumme / stPotenzialGesamt) * 100 : 0;
 
-            // CO2 Ersparnis (PV-Deckung + ST-Nutzung)
-            double co2Saved = ((pvDirektSumme + pvAusSpeicherSumme) * 0.42) + (stGenutztSumme * 0.20);
+            // CO2 Ersparnis (PV-Deckung + ST-Nutzung). iU9-W11a.5 (Befund W11-B31):
+            // Die beiden Substitutionsfaktoren standen als Literale in dieser Zeile;
+            // sie stehen jetzt in EmissionsVorgaben - woertlich, samt Formel.
+            double co2Saved = EmissionsVorgaben.Co2ErsparnisKg(
+                                  pvDirektSumme + pvAusSpeicherSumme, stGenutztSumme);
 
             // UI Updates
             lblPVAutarkie.Text = $"{autarkiePV:F1} %";  
