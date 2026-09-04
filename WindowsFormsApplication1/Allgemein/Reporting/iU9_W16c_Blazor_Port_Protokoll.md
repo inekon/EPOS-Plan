@@ -243,6 +243,16 @@ dritten Wurzel werden.
 | Wächter `System.Windows.Forms`/`MessageBox.`/`Registry.`/`ProtectedData`/`OleDb`/`SpecialFolder` im Kern | leer | **leer** (nur die dokumentierten Kommentare und die eine begründete `SpecialFolder`-Stelle in `DataRepository`) |
 | `git grep` auf jeden gefallenen Bezeichner | nur Kommentare, Protokolle und das eingefrorene Prüfmuster | **erfüllt** |
 
+**Nach dem Merge von `origin/ios_migration`** (`97b048c` — der zweiundzwanzigste
+iOS-Lauf auf dem Stand nach W16b, die Nachweisliste und das Konzept) ist das
+ganze Gate ein zweites Mal gelaufen: Build **0 / 6** (Vollneubau), **4 002**
+grün und ebenso unter `en_US`, Formularkarte **122**, Stapellauf **1 / 2** mit
+0 lokalisiert und 1 / 0 / 0 / 0, SQL **0 von 1 200**, ChartProben **32**,
+Referenzlauf **byte-gleich in allen drei Projekten** (815 043 Werte), beide
+Wächter leer. **Der Merge lief ohne Konflikt** — die andere Seite hat nur
+`Umsetzung_iU10_Nachweise.md` und `Umsetzungskonzept_iOS_EPOS-Plan.md`
+angefasst, keine Quelldatei.
+
 **Der Referenzlauf ist byte-gleich, und das war zu erwarten:** Der Rechenkern
 ist nicht angefasst. Der Berührungspunkt dieser Teilwelle ist der **Startweg** —
 Erststart, Lizenz, `LizenzManager.NachpruefungImHintergrund()` —, und der ist
