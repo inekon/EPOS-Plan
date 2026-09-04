@@ -292,6 +292,16 @@ ohne `RoundedPanel`, und die Sprungbrücke trägt nur noch den Zweig `SpeicherOp
 mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe
 bis Migrationsende.
 
+**Siebzehnter Lauf 33867643966 (`ios.yml`, `macos-26`, 04.09.2026, 11:22–11:33 UTC, 10 min 30 s)** auf
+`c11f13d` — der Stand **nach der Welle 15a und den W14c-Entscheiden**: grün. Erstmals mit dem Baustein
+`ProjektListe` unter der iOS-Projektliste (`Seiten/Projektliste` baut darauf, die fünf Fälle unverändert), den
+Projektdialogen (`ProjektWahlDialog`, `ProjektKopieDialog`, `ProjektTransferDialog` — `ProjektExportImportCtrl` im Kern,
+`IProjektQuelle.TransferDaten()` mit Standardumsetzung, damit `IosProjektQuelle` unverändert bleibt), der Assistentenseite
+`ProjektKopfSeite`, dem Schema-Schritt 62 (`SchemaStand.Zielversion` 62 im Kern; die Seed-Kopie trägt keine Waisen) und
+den festen Pfaden des Einstellungsdialogs ohne Ordnerwähler (E‑5). Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
