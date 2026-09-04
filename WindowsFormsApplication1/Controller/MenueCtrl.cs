@@ -117,8 +117,10 @@ namespace WindowsFormsApplication1
         /// <see cref="ProjektKontextCtrl"/> (K2, seit iU9-W16b.0 im Kern); das Merken
         /// in <c>Tab_Applikation</c> ebenfalls dort.
         /// Beides wird hier nur AUFGERUFEN, nichts davon nachgebaut. Die Klimaregion
-        /// liest dabei über <c>StartseiteCtrl.ProjektKlimaregion</c> die PROJEKTKOPIE
-        /// der Klimaregion (<c>Tab_Klimaregion</c>) statt des Stammsatzes.
+        /// liest dabei über <c>StartseiteCtrl.ProjektKlimazone</c> die PROJEKTKOPIE
+        /// (<c>Tab_Klimaregion</c>) statt des Stammsatzes — seit dem
+        /// Anwenderentscheid W16b‑O‑3 (04.09.2026) auf beiden Plattformen dieselbe
+        /// Antwort; die abweichende Stammabfrage der iOS-Hülle ist gefallen.
         /// </para>
         /// </summary>
         /// <param name="szProjekt">Projektname — der führende Schlüssel.</param>

@@ -391,5 +391,187 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vorher, ProjektKontextCtrl.ZuletztGeoeffnet());
             }
         }
+
+        // =========================================================================
+        // Die Klimazone - Anwenderentscheid W16b-O-3 vom 04.09.2026
+        // =========================================================================
+
+        /// <summary>
+        /// Die dreizehn Projekte der Referenzbasis <c>2026-08-30_B3-Kaskade</c> — die
+        /// Menge, gegen die die Messung zu W16b-O-3 gelaufen ist.
+        /// </summary>
+        private static readonly int[] REFERENZPROJEKTE =
+        {
+            1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042
+        };
+
+        /// <summary>Ein Projekt OHNE Projektkopie der Klimaregion — der Zeuge des leeren Falls.</summary>
+        private const int ID_OHNE_KOPIE = 19;
+        private const string NAME_OHNE_KOPIE = "Wöhler WP";
+
+        /// <summary>
+        /// <b>Die Klimazone ist der <c>Bezeichner</c> der PROJEKTKOPIE</b> — für jedes
+        /// Referenzprojekt der Testdatenbank, eingefroren als Messung zum
+        /// Anwenderentscheid W16b‑O‑3 (W16b-Protokoll § 6).
+        ///
+        /// <para>Der Entscheid lautete „nehme iOS-Lösung". Die Messung zeigte, dass
+        /// die iOS-Abfrage (<c>Tab_Klimaregion_STAMM.Name</c> über
+        /// <c>Tab_Projekt.ID_Klimaregion</c>) den <b>falschen Schlüsselraum</b> las —
+        /// sie antwortete für jedes Projekt des Bestands leer. Vereinheitlicht wurde
+        /// deshalb auf die Projektkopie; dieser Fall hält fest, was dabei
+        /// herauskommt.</para>
+        ///
+        /// <para>1011 und 1021 gehören zur Referenzliste, stehen aber nicht in
+        /// <c>Kenndaten_Test.sqlite</c> (sie kommen aus dem produktiven Bestand); sie
+        /// werden übersprungen und mitgezählt.</para>
+        ///
+        /// <para><c>Setzen</c> statt <c>Uebernehmen</c>: Der Fall läuft auf der
+        /// GETEILTEN Arbeitskopie und darf <c>Tab_Applikation</c> nicht
+        /// fortschreiben.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Klimazone_ist_der_Bezeichner_der_Projektkopie()
+        {
+            if (!_db.Vorhanden) return;
+
+            System.Globalization.CultureInfo vorher = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture =
+                    new System.Globalization.CultureInfo("de-DE");
+
+                int geprueft = 0, uebersprungen = 0;
+
+                foreach (int idProjekt in REFERENZPROJEKTE)
+                {
+                    int idRegion = KlimaIdVonProjekt(idProjekt);
+                    if (idRegion == 0) { uebersprungen++; continue; }
+
+                    string kopie = KopieBezeichner(idRegion);
+                    Assert.NotEqual("", kopie);
+
+                    ProjektKontextCtrl k = new ProjektKontextCtrl();
+                    Assert.True(k.Setzen(StartseiteCtrl.Projektname(idProjekt)));
+                    Assert.Equal(idProjekt, k.Id);
+                    Assert.Equal(kopie, k.Klimazone);
+
+                    geprueft++;
+                }
+
+                // 11 von 13 stehen in dieser Datenbank; 1011 und 1021 nicht.
+                Assert.Equal(11, geprueft);
+                Assert.Equal(2, uebersprungen);
+            }
+            finally { System.Globalization.CultureInfo.CurrentCulture = vorher; }
+        }
+
+        /// <summary>
+        /// <b>Ohne Projektkopie ist die Klimazone LEER</b> — und zwar auch dann, wenn
+        /// die Id am Projekt zufällig einen Stammsatz trifft.
+        ///
+        /// <para><b>Der schärfste Fall des Entscheids.</b> Projekt 19 „Wöhler WP" führt
+        /// <c>ID_Klimaregion = 1</c>, hat aber keine Zeile in <c>Tab_Klimaregion</c>;
+        /// im STAMM steht unter <c>ID_Klimaregion = 1</c> sehr wohl etwas
+        /// (<c>stuttgart</c>). Es ist der einzige Satz der ganzen Testdatenbank, für
+        /// den die alte iOS-Abfrage überhaupt geantwortet hätte — und sie hätte es aus
+        /// einer <b>Schlüsselraum-Kollision</b> getan, nicht aus einer Beziehung. Der
+        /// Kontext meldet deshalb <c>""</c>: <b>Ein Stamm-Rückfall wäre ein Griff in
+        /// den falschen Schlüsselraum.</b> Wird dieser Fall rot, ist die Stammabfrage
+        /// zurückgekehrt.</para>
+        ///
+        /// <para>Id und Name stehen trotzdem — die leere Klimazone ist kein
+        /// gescheitertes <c>Setzen</c>.</para>
+        /// </summary>
+        [Fact]
+        public void Ohne_Projektkopie_ist_die_Klimazone_leer()
+        {
+            if (!_db.Vorhanden) return;
+
+            int idRegion = KlimaIdVonProjekt(ID_OHNE_KOPIE);
+            Assert.True(idRegion > 0);
+
+            // Keine Projektkopie - aber sehr wohl ein Stammsatz zu derselben Zahl.
+            Assert.Equal("", KopieBezeichner(idRegion));
+            Assert.NotEqual("", StammName(idRegion));
+
+            ProjektKontextCtrl k = new ProjektKontextCtrl();
+            Assert.True(k.Setzen(NAME_OHNE_KOPIE));
+
+            Assert.Equal(ID_OHNE_KOPIE, k.Id);
+            Assert.Equal(NAME_OHNE_KOPIE, k.Name);
+            Assert.Equal("", k.Klimazone);
+        }
+
+        /// <summary>
+        /// <b>Der Messfall: eine Kopie-Id trifft nie den Stammschlüssel.</b>
+        /// <c>Tab_Klimaregion.ID</c> und <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c>
+        /// sind zwei getrennte Schlüsselräume — im Bestand ohne eine einzige
+        /// Überschneidung. Genau deshalb war die alte iOS-Abfrage kein zweiter Weg,
+        /// sondern ein Fehler.
+        ///
+        /// <para>Der Fall misst die DATENBANK, nicht den Kern: Die Stammabfrage steht
+        /// hier im Prüfstand, weil sie im Kern nicht mehr existiert. Verschiebt jemand
+        /// die Schlüsselvergabe — etwa indem er am Projekt die STAMM-Id speicherte —,
+        /// wird er rot, und der Entscheid gehört neu betrachtet (vgl. den gefallenen
+        /// offenen Punkt W16b‑O‑6).</para>
+        /// </summary>
+        [Fact]
+        public void Eine_Kopie_Id_trifft_nie_den_Stammschluessel()
+        {
+            if (!_db.Vorhanden) return;
+
+            // Kein einziger Kopie-Schluessel liegt im Stamm-Schluesselraum.
+            object ueberschneidung = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Klimaregion WHERE ID IN " +
+                "(SELECT ID_Klimaregion FROM Tab_Klimaregion_STAMM)");
+            Assert.Equal(0, Convert.ToInt32(ueberschneidung));
+
+            // Und je Referenzprojekt: Kopie ja, Stamm nein.
+            foreach (int idProjekt in REFERENZPROJEKTE)
+            {
+                int idRegion = KlimaIdVonProjekt(idProjekt);
+                if (idRegion == 0) continue;
+
+                Assert.NotEqual("", KopieBezeichner(idRegion));
+                Assert.Equal("", StammName(idRegion));
+            }
+        }
+
+        /// <summary><c>Tab_Projekt.ID_Klimaregion</c> eines Projekts; 0 = keins.</summary>
+        private static int KlimaIdVonProjekt(int idProjekt)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                new DbParam("@id", idProjekt));
+            return v == null || v == DBNull.Value ? 0 : Convert.ToInt32(v);
+        }
+
+        /// <summary>Der Bezeichner der PROJEKTKOPIE zu einer Id; <c>""</c>, wenn es sie nicht gibt.</summary>
+        private static string KopieBezeichner(int idRegion)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_Klimaregion WHERE ID = ?",
+                new DbParam("@id", idRegion));
+            return v == null || v == DBNull.Value ? "" : (Convert.ToString(v) ?? "");
+        }
+
+        /// <summary>
+        /// Der Name des STAMMSATZES zu einer Id; <c>""</c>, wenn es ihn nicht gibt.
+        ///
+        /// <para><b>Steht mit Absicht hier und nicht im Kern.</b> Es ist die Abfrage,
+        /// die <c>Form_Start:356</c> führte und die bis W16b‑O‑3 als
+        /// <c>StartseiteCtrl.KlimaregionName</c> im Kern stand — ohne Aufrufer, nur
+        /// für die Angleichung der iOS-Fassung aufbewahrt (Befund W16b‑B3). Die
+        /// Angleichung hat sie widerlegt; im Kern ist sie gefallen. Der Prüfstand
+        /// braucht sie weiter, um die Trennung der beiden Schlüsselräume zu
+        /// MESSEN.</para>
+        /// </summary>
+        private static string StammName(int idRegion)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Name FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                new DbParam("@id", idRegion));
+            return v == null || v == DBNull.Value ? "" : (Convert.ToString(v) ?? "");
+        }
     }
 }
