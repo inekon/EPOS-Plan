@@ -107,7 +107,11 @@ namespace WindowsFormsApplication1
                     }),
 
                 // Die Speicherverwaltung ist bis Welle 14 eine WinForms-Maske.
-                ["Sprung"] = Sprungbruecke.Fuer(besitzer),
+                // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
+                // ModulKatalogDialog und erscheint als UEBERLAGERUNG im selben
+                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
+                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    StromspeicherAdminHuelle.Gaben),
 
                 ["TitelText"] = Text_("SPD_TITEL", "Verwaltung Stromspeicher"),
                 ["KopfbandText"] = Text_("SPD_KOPFBAND", "Geben Sie Daten der Stromspeicher ein"),

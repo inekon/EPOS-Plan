@@ -52,7 +52,7 @@ public sealed class StapelTests
         // geloescht, sondern nach Pruefmuster/Wärmepumpe/ VERSCHOBEN - er ist
         // der Zeuge des Umlaut-Tests (RazorSchreiberTests) und liegt damit
         // ausserhalb dieses Stapellaufs.
-        Assert.True(dateien.Count >= 30, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        Assert.True(dateien.Count >= 28, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -88,8 +88,10 @@ public sealed class StapelTests
         // FUENF mit (38): die vier Glieder der AP5-Importkette und die
         // Lastspitzenkappung. Welle 13 nimmt SECHS mit (32): die vier
         // VDI-3805-Einlesemasken werden EINE Komponente mit vier Auspraegungen,
-        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport.
-        Assert.True(Lauf.Value.Masken >= 27, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport. Welle 14a nimmt
+        // SIEBEN mit (25): vier Katalogbrowser werden EINE Komponente, zwei
+        // Modulkataloge eine zweite, dazu der fehlende vierte Katalogeditor.
+        Assert.True(Lauf.Value.Masken >= 25, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -115,13 +117,17 @@ public sealed class StapelTests
         // lokalisierte mit (21) - Form_Heizkessel_einlesen, Form_PufferSp_einlesen,
         // Form_WP_einlesen und Form_AdminWaermeeinlesen; Form_SolarKollektoren_
         // einlesen hatte weder de-DE noch en-US (Befund W13-B27) und
-        // Form_CECImport eine LEERE .resx (B54). Gemessen OHNE die Git-Nebenbaeume
+        // Form_CECImport eine LEERE .resx (B54). Welle 14a nimmt SECHS lokalisierte
+        // mit (14) - Form_Heizkessel_Admin, Form_SolarKollektorenAdmin,
+        // Form_PufferSp_Admin, Form_PufferSp_Bearbeiten, Form_AdminPV und
+        // Form_AdminStromspeicher; Form_BHKWAdmin war als einzige der sieben gar nicht
+        // lokalisiert (Befund W14-B11). Gemessen OHNE die Git-Nebenbaeume
         // unter .claude/worktrees (die der Stapellauf seit dem 04.09.2026 uebergeht)
         // sind es 20: Der Lauf im W13-Worktree hatte eine Kopie des Bestands auf
         // einem aelteren Stand mitgezaehlt.
         // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 16,
+        Assert.True(Lauf.Value.Lokalisierte >= 14,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

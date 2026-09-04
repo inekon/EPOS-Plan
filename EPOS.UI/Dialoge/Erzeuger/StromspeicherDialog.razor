@@ -34,7 +34,19 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-    </div>
+        @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
+    @* Der Knopf "Bearbeiten" oeffnete bis hierher Form_AdminStromspeicher ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <ModulKatalogDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+</div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
 
@@ -78,7 +90,7 @@
                 </KindInhalt>
             </Raster>
 
-            @if (Sprung is not null)
+            @if (VerwaltungGaben is not null)
             {
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
@@ -119,14 +131,35 @@
     /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
     [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
 
-    /// <summary>Weiterführung in die Speicherverwaltung; ohne Delegat kein Knopf.</summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+    /// <summary>
+    /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
+    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
+    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>
+    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
+    /// nach der Rückkehr aus dem zweiten Fenster.
+    /// </summary>
+    private void VerwaltungFertig(ModulErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
+        KatalogNeuLaden();
+    }
+
 
     // --- Texte -----------------------------------------------------------------
 
@@ -234,13 +267,9 @@
 
     private async Task BeiBearbeiten()
     {
-        if (Sprung is null) return;
-
-        // Der Vorlaeufer lud die Liste nur bei DialogResult.OK neu; hier ist es billig
-        // genug, sie immer zu ziehen - der Anwender kann im Katalog etwas geaendert und
-        // dann mit Abbrechen geschlossen haben.
-        await Sprung(Sprungziel.StromspeicherAdmin);
-        KatalogNeuLaden();
+        if (VerwaltungGaben is null) return;
+        _verwaltungGaben = VerwaltungGaben();
+        await Task.CompletedTask;
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);

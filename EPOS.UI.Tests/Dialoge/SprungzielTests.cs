@@ -61,12 +61,6 @@ public sealed class SprungzielTests
         Assert.Equal("GESETZESPARAMETER", Sprungziel.Gesetzesparameter);
         Assert.Equal("GESETZESPARAMETER_CO2", Sprungziel.GesetzesparameterCo2);
 
-        // iU9-W6.0d: die zwei verbliebenen Katalogverwaltungen der Erzeugerdialoge.
-        // Heizkessel und Pufferspeicher sind mit iU9-W14a.1 zu Ueberlagerungen
-        // geworden; diese beiden folgen mit W14a.3.
-        Assert.Equal("STROMSPEICHER_ADMIN", Sprungziel.StromspeicherAdmin);
-        Assert.Equal("PV_ADMIN", Sprungziel.PvAdmin);
-
         // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
         Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
 
@@ -78,19 +72,19 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_sechs_Ziele_sind_da()
+    public void Alle_vier_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
         //
         // iU9-W13.2: NEUN statt zehn - WaermebedarfExternAdmin fiel weg, weil das
         // Ziel selbst Blazor geworden ist.
-        // iU9-W14a.1: SECHS statt neun - HeizkesselAdmin, PufferSpAdmin und
-        // PufferSpAdminNurLesen fallen aus demselben Grund; ihre vier
-        // Katalogverwaltungen sind jetzt EINE Razor-Komponente und erscheinen als
-        // Ueberlagerung im selben Fenster (Risiko R2). StromspeicherAdmin und
-        // PvAdmin folgen mit W14a.3/W14a.4. Die Sprungbruecke ist fuer
-        // WinForms-Ziele da - fuer ein Blazor-Ziel braucht es sie nicht.
-        Assert.Equal(6, Schluessel().Length);
+        // iU9-W14a: VIER statt neun - HeizkesselAdmin, StromspeicherAdmin, PvAdmin,
+        // PufferSpAdmin und PufferSpAdminNurLesen fallen aus demselben Grund. Die vier
+        // Katalogbrowser sind EINE Razor-Komponente, die beiden Modulkataloge eine
+        // zweite, und beide erscheinen als Ueberlagerung im selben Fenster
+        // (Risiko R2). Die Sprungbruecke ist fuer WinForms-Ziele da - fuer ein
+        // Blazor-Ziel braucht es sie nicht.
+        Assert.Equal(4, Schluessel().Length);
     }
 }

@@ -13926,6 +13926,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte "{0}" ausfüllen. ähnelt.
+        /// </summary>
+        public static string MODK_MSG_FELD_LEER {
+            get {
+                return ResourceManager.GetString("MODK_MSG_FELD_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string MODK_MSG_SCHUTZ {

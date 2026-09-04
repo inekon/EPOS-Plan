@@ -105,20 +105,10 @@ namespace WindowsFormsApplication1
                         using (Form_Gesetzesparameter f = new Form_Gesetzesparameter())
                             return MitOk(f, besitzer);
 
-                    // --- iU9-W6.0d: die zwei verbliebenen Katalogverwaltungen ----------
-                    // Beide bleiben bis iU9-W14a.3 WinForms-Masken; nach der Rueckkehr
-                    // laedt die Huelle die Katalogliste neu.
-                    case Sprungziel.StromspeicherAdmin:
-                        using (Form_AdminStromspeicher f = new Form_AdminStromspeicher())
-                            return MitOk(f, besitzer);
-
-                    case Sprungziel.PvAdmin:
-                        using (Form_AdminPV f = new Form_AdminPV())
-                            return MitOk(f, besitzer);
-
-                    // --- iU9-W14a.1: die drei Katalogverwaltungen sind WEG -------------
-                    // Bis W14a standen hier auch HeizkesselAdmin, PufferSpAdmin und -
-                    // seit W10a.0c - PufferSpAdminNurLesen. Ihre Ziele sind jetzt
+                    // --- iU9-W14a: die FUENF Katalogverwaltungen sind WEG --------------
+                    // Bis W14a standen hier fuenf Zweige: HeizkesselAdmin,
+                    // StromspeicherAdmin, PvAdmin, PufferSpAdmin und - seit W10a.0c -
+                    // PufferSpAdminNurLesen. Ihre Ziele sind jetzt
                     // selbst Blazor: Aus jedem Sprung ist eine UEBERLAGERUNG im
                     // selben Fenster geworden (Muster W4/W10a, Risiko R2), und die
                     // Aufrufer bekommen den Parametersatz der Verwaltung als
