@@ -268,6 +268,90 @@ namespace WindowsFormsApplication1
             return this.ID > 0 ? Update() : Insert();
         }
 
+        /// <summary>
+        /// <b>Der Schreibweg des Katalogimports</b> (iU9-W13.0e): Duplikatpruefung und
+        /// Einfuegen in EINER Transaktion.
+        ///
+        /// <para><b>Warum es das hier gibt.</b> Bis Welle 13 stand dieser Weg in
+        /// <c>Form_Heizkessel_einlesen</c> — ein 19-spaltiges INSERT mit
+        /// <c>MAX(ID)+1</c> und 19 <c>DbParam</c> IM FORMULAR, der einzige
+        /// Schreibweg der Welle, der nicht im Kern lag (Befund W13-B16). Der Rumpf
+        /// ist woertlich uebernommen; nur die <c>MessageBox</c> ist zum
+        /// Rueckgabewert geworden, damit der Aufrufer die Meldung waehlt.</para>
+        ///
+        /// <para>Die Spaltenliste bleibt die des Imports: <c>Wartungskosten_Einheit</c>,
+        /// <c>Brennwert</c>, <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT
+        /// (anders als <see cref="Insert"/>) — sie sind Anwenderfelder.</para>
+        /// </summary>
+        /// <param name="model">Die Importwerte; <c>Name</c> ist der Bezeichner.</param>
+        /// <param name="nameOverride">Beim Umbenennen der vom Anwender vergebene Bezeichner.</param>
+        public VdiUebernahmeErgebnis ImportUebernehmen(HeizkesselModel model, string nameOverride = null)
+        {
+            if (model == null) return VdiUebernahmeErgebnis.Fehler;
+
+            try
+            {
+                string bezeichner = nameOverride ?? model.Name;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    // Zweite Verteidigungslinie hinter der Vorpruefung des
+                    // Konfliktdialogs - sie prueft auch den Umbenennen-Namen.
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
+                    int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
+
+                    string sql = @"INSERT INTO [" + TABLE + @"]
+                            (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl,
+                             Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
+                             Betriebsbereitschaftverlust, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DbParam[] ps = {
+                        new DbParam("@id", neueId),
+                        new DbParam("@nam", (object)bezeichner ?? DBNull.Value),
+                        new DbParam("@bes", (object)model.Beschreibung ?? DBNull.Value),
+                        new DbParam("@fir", (object)model.Firma ?? DBNull.Value),
+                        new DbParam("@pth", model.Ptherm),
+                        new DbParam("@bre", model.Brennstoff),
+                        new DbParam("@wgg", model.Wirkungsgrad_Gas),
+                        new DbParam("@wgo", model.Wirkungsgrad_Oel),
+                        new DbParam("@inv", model.Investitionskosten),
+                        new DbParam("@rau", model.Raumbedarf),
+                        new DbParam("@war", model.Wartungskosten),
+                        new DbParam("@nut", model.Nutzungsdauer),
+                        new DbParam("@co2", model.CO2),
+                        new DbParam("@so2", model.SO2),
+                        new DbParam("@nox", model.NOx),
+                        new DbParam("@co", model.CO),
+                        new DbParam("@sta", model.Staub),
+                        new DbParam("@bbv", model.Betriebsbereitschaftverlust),
+                        new DbParam("@ro", false)
+                    };
+
+                    v.Ausfuehren(sql, ps);
+                    v.Commit();
+                    this.ID = neueId;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                // DbVorgang.Dispose rollt beim Verlassen des using zurueck, wenn
+                // kein Commit gesehen wurde - ein eigener Rollback ist unnoetig.
+                Console.WriteLine("Fehler bei Heizkessel Übernehmen: " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
+        }
+
         public bool Insert()
         {
             int neueId = DataRepository.GetMaxID(TABLE) + 1;

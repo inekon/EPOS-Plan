@@ -5067,6 +5067,519 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei VDI 3805 einlesen... ähnelt.
+        /// </summary>
+        public static string IMP_KAT_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_KAT_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP aus Datei VDI 3805 einlesen... ähnelt.
+        /// </summary>
+        public static string IMP_KAT_BTN_DATEI_WP {
+            get {
+                return ResourceManager.GetString("IMP_KAT_BTN_DATEI_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern DB ähnelt.
+        /// </summary>
+        public static string IMP_KAT_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_KW {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWcool ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_KWCOOL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_KWCOOL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh/d ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_KWHD {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_KWHD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWth ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_KWTH {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_KWTH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die l ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_LITER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_LITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die m² ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_M2 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_M2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_PROZENT {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W/m² ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_WM2 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_WM2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W/(m²K) ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_WM2K {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_WM2K", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Linearer Verlustkoeffizient: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_A1 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_A1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quadratischer Verlustkoeffizient: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_A2 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_A2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_APERTUR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufstellung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_AUFSTELLUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_AUFSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_BAUART {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firma: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_FIRMA {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optischer Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_H0 {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_H0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Korrekturfaktor für diffuse Strahlung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KDIFF {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KDIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfallswinkel-Korrekturfaktor für die Direktstrahlung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KDIR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KDIR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Vorlauf: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_MAXVORLAUF {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_MAXVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_NAME {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenleistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_SPITZENLEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_SPITZENLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_STUFEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermische Leistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_THLEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_THLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_TYP {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverluste: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_VERLUSTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_VOLUMEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Zuheizung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_ZUSATZHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_ZUSATZHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche [m²] von: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_APERTUR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_BIS {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung [kW] von: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_SUCHE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen [l] von: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_VOLUMEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenschaften ähnelt.
+        /// </summary>
+        public static string IMP_KAT_GRP_EIGENSCHAFTEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_GRP_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die * 0=modulierend ähnelt.
+        /// </summary>
+        public static string IMP_KAT_HINWEIS_STUFEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_HINWEIS_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten bereits eingelesen! ähnelt.
+        /// </summary>
+        public static string IMP_KAT_MSG_BEREITS_EINGELESEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_MSG_BEREITS_EINGELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: Name existiert bereits oder Datenbankfehler! ähnelt.
+        /// </summary>
+        public static string IMP_KAT_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Eintrag wählen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_MSG_KEINE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_MSG_KEINE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz erfolgreich neu angelegt. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_MSG_NEU_ANGELEGT {
+            get {
+                return ResourceManager.GetString("IMP_KAT_MSG_NEU_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekannter Aufstellungsindex "{0}" – die Aufstellung des vo [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_AUFSTELLUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_AUFSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme abgeschlossen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_FERTIG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einträge gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei wird gelesen… ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_LESEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrag {0} von {1} wird übernommen… ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrag ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_EINTRAG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel Einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher Einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren Einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_SOLAR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_WP {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_ABBRECHEN {
@@ -6089,6 +6602,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_TRENN_TABULATOR {
             get {
                 return ResourceManager.GetString("IMPORT_TRENN_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string IMP_LADE_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("IMP_LADE_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Einträgen geladen. ähnelt.
+        /// </summary>
+        public static string IMP_LADE_GELADEN {
+            get {
+                return ResourceManager.GetString("IMP_LADE_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrieben: {0} ähnelt.
+        /// </summary>
+        public static string IMP_LADE_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("IMP_LADE_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereits eingelesen (übersprungen): {0} ähnelt.
+        /// </summary>
+        public static string IMP_LADE_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_LADE_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter neuem Namen: {0} ähnelt.
+        /// </summary>
+        public static string IMP_LADE_UMBENANNT {
+            get {
+                return ResourceManager.GetString("IMP_LADE_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde keine Datei gewählt. ähnelt.
+        /// </summary>
+        public static string IMP_TXT_KEIN_PFAD {
+            get {
+                return ResourceManager.GetString("IMP_TXT_KEIN_PFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0} ist leer. Die Datei muss je Zeile genau einen Wert [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMP_TXT_LEERZEILE {
+            get {
+                return ResourceManager.GetString("IMP_TXT_LEERZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string IMP_TXT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_TXT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format Fehler in Zeile {0}: Die Zeile endet auf „{1}“. Werte [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMP_TXT_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("IMP_TXT_TRENNZEICHEN", resourceCulture);
             }
         }
         

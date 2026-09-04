@@ -216,6 +216,204 @@
   <data name="IMPORT_TITEL_ADMIN" xml:space="preserve">
     <value>Electricity requirement</value>
   </data>
+  <data name="IMP_KAT_BTN_DATEI" xml:space="preserve">
+    <value>Read file VDI 3805...</value>
+  </data>
+  <data name="IMP_KAT_BTN_DATEI_WP" xml:space="preserve">
+    <value>Read WP from file VDI 3805...</value>
+  </data>
+  <data name="IMP_KAT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Save DB</value>
+  </data>
+  <data name="IMP_KAT_EINH_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWCOOL" xml:space="preserve">
+    <value>kWcool</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWHD" xml:space="preserve">
+    <value>kWh/d</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWTH" xml:space="preserve">
+    <value>kWth</value>
+  </data>
+  <data name="IMP_KAT_EINH_LITER" xml:space="preserve">
+    <value>l</value>
+  </data>
+  <data name="IMP_KAT_EINH_M2" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="IMP_KAT_EINH_PROZENT" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="IMP_KAT_EINH_WM2" xml:space="preserve">
+    <value>W/m²</value>
+  </data>
+  <data name="IMP_KAT_EINH_WM2K" xml:space="preserve">
+    <value>W/(m²K)</value>
+  </data>
+  <data name="IMP_KAT_FELD_A1" xml:space="preserve">
+    <value>Linear loss coefficient:</value>
+  </data>
+  <data name="IMP_KAT_FELD_A2" xml:space="preserve">
+    <value>Quadratic loss coefficient:</value>
+  </data>
+  <data name="IMP_KAT_FELD_APERTUR" xml:space="preserve">
+    <value>Aperture area:</value>
+  </data>
+  <data name="IMP_KAT_FELD_AUFSTELLUNG" xml:space="preserve">
+    <value>Lineup:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BAUART" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel:</value>
+  </data>
+  <data name="IMP_KAT_FELD_FIRMA" xml:space="preserve">
+    <value>Company:</value>
+  </data>
+  <data name="IMP_KAT_FELD_H0" xml:space="preserve">
+    <value>Optical efficiency:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KDIFF" xml:space="preserve">
+    <value>Correction factor for diffuse radiation:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KDIR" xml:space="preserve">
+    <value>Incidence angle modifier for direct radiation:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MAXVORLAUF" xml:space="preserve">
+    <value>max. flow:</value>
+  </data>
+  <data name="IMP_KAT_FELD_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="IMP_KAT_FELD_SPEICHERTYP" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_SPITZENLEISTUNG" xml:space="preserve">
+    <value>Peak power:</value>
+  </data>
+  <data name="IMP_KAT_FELD_STUFEN" xml:space="preserve">
+    <value>Stages:</value>
+  </data>
+  <data name="IMP_KAT_FELD_THLEISTUNG" xml:space="preserve">
+    <value>thermal performance:</value>
+  </data>
+  <data name="IMP_KAT_FELD_TYP" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_VERLUSTE" xml:space="preserve">
+    <value>Standby losses:</value>
+  </data>
+  <data name="IMP_KAT_FELD_VOLUMEN" xml:space="preserve">
+    <value>Total volume:</value>
+  </data>
+  <data name="IMP_KAT_FELD_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Efficiency:</value>
+  </data>
+  <data name="IMP_KAT_FELD_ZUSATZHEIZUNG" xml:space="preserve">
+    <value>electric additional heating:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_APERTUR" xml:space="preserve">
+    <value>Aperture area [m²] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_BIS" xml:space="preserve">
+    <value>to:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_LEISTUNG" xml:space="preserve">
+    <value>Th. output [kW] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_SUCHE" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_VOLUMEN" xml:space="preserve">
+    <value>Volume [l] from:</value>
+  </data>
+  <data name="IMP_KAT_GRP_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_STUFEN" xml:space="preserve">
+    <value>* 0=modulating</value>
+  </data>
+  <data name="IMP_KAT_MSG_BEREITS_EINGELESEN" xml:space="preserve">
+    <value>Data already imported!</value>
+  </data>
+  <data name="IMP_KAT_MSG_FEHLER" xml:space="preserve">
+    <value>Error: name already exists or database error!</value>
+  </data>
+  <data name="IMP_KAT_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select an entry.</value>
+  </data>
+  <data name="IMP_KAT_MSG_NEU_ANGELEGT" xml:space="preserve">
+    <value>Record successfully created.</value>
+  </data>
+  <data name="IMP_KAT_PROT_AUFSTELLUNG" xml:space="preserve">
+    <value>Unknown installation index "{0}" – the previous record's installation is kept.</value>
+  </data>
+  <data name="IMP_KAT_PROT_FERTIG" xml:space="preserve">
+    <value>Import completed.</value>
+  </data>
+  <data name="IMP_KAT_PROT_GELESEN" xml:space="preserve">
+    <value>{0} entries read.</value>
+  </data>
+  <data name="IMP_KAT_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+  </data>
+  <data name="IMP_KAT_PROT_LESEN" xml:space="preserve">
+    <value>Reading file…</value>
+  </data>
+  <data name="IMP_KAT_PROT_SCHREIBEN" xml:space="preserve">
+    <value>Applying entry {0} of {1}…</value>
+  </data>
+  <data name="IMP_KAT_SP_EINTRAG" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="IMP_KAT_TITEL_HEIZKESSEL" xml:space="preserve">
+    <value>Read boiler</value>
+  </data>
+  <data name="IMP_KAT_TITEL_PUFFERSPEICHER" xml:space="preserve">
+    <value>Reading buffer storage</value>
+  </data>
+  <data name="IMP_KAT_TITEL_SOLAR" xml:space="preserve">
+    <value>Read solar collectors</value>
+  </data>
+  <data name="IMP_KAT_TITEL_WP" xml:space="preserve">
+    <value>Read in heat pumps</value>
+  </data>
+  <data name="IMP_LADE_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Failed: {0}</value>
+  </data>
+  <data name="IMP_LADE_GELADEN" xml:space="preserve">
+    <value>{0} of {1} entries loaded.</value>
+  </data>
+  <data name="IMP_LADE_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Overwritten: {0}</value>
+  </data>
+  <data name="IMP_LADE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Already imported (skipped): {0}</value>
+  </data>
+  <data name="IMP_LADE_UMBENANNT" xml:space="preserve">
+    <value>Under new name: {0}</value>
+  </data>
+  <data name="IMP_TXT_KEIN_PFAD" xml:space="preserve">
+    <value>No file selected.</value>
+  </data>
+  <data name="IMP_TXT_LEERZEILE" xml:space="preserve">
+    <value>Line {0} is empty. The file must contain exactly one value per line.</value>
+  </data>
+  <data name="IMP_TXT_LESEFEHLER" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+  </data>
+  <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
+    <value>Format error in line {0}: the line ends with “{1}”. Values must be line oriented without a ',' or ';' separator at the end of the line.</value>
+  </data>
   <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
     <value>{0} (no unit in the project)</value>
   </data>
