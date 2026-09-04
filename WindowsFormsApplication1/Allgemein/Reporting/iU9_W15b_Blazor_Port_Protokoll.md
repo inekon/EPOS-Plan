@@ -1,4 +1,4 @@
-# iU9 Welle 15b — Hilfe und KI: Portprotokoll
+﻿# iU9 Welle 15b — Hilfe und KI: Portprotokoll
 
 > Vermessung `iU9_W15b_Vermessung.md` (2 013 Z., 04.09.2026), Arbeitsanweisung
 > `iU9_W15b_Arbeitsanweisung.md`. Form nach `iU9_W15a_Blazor_Port_Protokoll.md`.
@@ -271,16 +271,24 @@ baut.
 | Prüfung | Sollwert | Ergebnis |
 |---|---|---|
 | `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** (Vollneubau) |
-| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 511 + neue | **3 672** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 2 015, EPOS.Kern.Tests 870) |
-| dieselben Tests unter `LANG=en_US.UTF-8` | gleich | **3 672 grün** |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 511 + neue | **3 672** vor dem Merge (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 2 015, EPOS.Kern.Tests 870); **3 679 nach dem Merge** von `origin/ios_migration` (2 019 / 873) |
+| dieselben Tests unter `LANG=en_US.UTF-8` | gleich | **grün**, vor und nach dem Merge |
 | `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 124 | **124**, auch unter `en_US` |
 | Stapellauf `--alle .` | **12 Masken / 15 Designer**, 12 / 0 / 0 / 0, lokalisiert **7 unverändert** | **12 / 15, 7 lokalisiert, 12 ja / 0 nein / 0 verwaist / 0 unklar** |
-| `SqlDialektPruefer` | 0 Fundstellen, 1 234 Texte unverändert | **0** (1 234 Texte, 184 dynamisch, 1 050 in Ordnung) |
+| `SqlDialektPruefer` | 0 Fundstellen, 1 234 Texte unverändert | **0** (1 234 Texte vor dem Merge; **1 235 danach** — der eine neue Text kommt aus `origin/ios_migration`, nicht aus dieser Welle: sie hat kein SQL) |
 | `ChartProben` | 32 unverändert | **32, 0 Verstöße** |
 | Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **PASS, 815 043 Werte; `diff -rq` byte-gleich in allen drei** |
 | Wächter `Program.*` / `MessageBox` / `Registry` / DPAPI / `SpecialFolder` / `System.Windows.Forms` im Kern | leer | **leer** (nach dem `git mv` besonders geprüft) |
 | `git grep` auf die vier gefallenen Klassen | nur Kommentare, Protokolle, `help_mapping.txt` (H‑3) und der `HilfeKontext`-Eintrag (H‑4) | erfüllt |
 | keine `.razor` über 400 Zeilen (R‑W15b‑1) | erfüllt | `KiChatDialog.razor` **413** — siehe unten |
+
+**Nach dem Merge von `origin/ios_migration`** (`08cbc2a`, W15a‑Statusblock und
+Entscheid O‑3) ist das ganze Gate ein zweites Mal gelaufen: Build 0/6,
+3 679 grün (auch unter `en_US`), Formularkarte 124, Stapellauf 12/15,
+SQL 0 von 1 235, ChartProben 32, Referenzlauf byte-gleich, beide Wächter leer.
+**Der einzige Konflikt waren die beiden `Resource.resx`** — beide Seiten hatten
+am Ende Schlüssel angefügt; beide sind erhalten (4 410 Einträge je Datei, keine
+Dublette, `KI_*` 419/419).
 
 **Zur 400‑Zeilen-Grenze.** `KiChatDialog.razor` steht bei 413 Zeilen. Davon sind
 **35 Zeilen Kopfkommentar** (die fünf Entscheide, die im Markup stecken) und rund
