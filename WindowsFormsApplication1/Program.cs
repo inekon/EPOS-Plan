@@ -200,12 +200,15 @@ namespace WindowsFormsApplication1
             }
 
             // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
-            // Windows-Benutzer; Ablage HKCU\Software\wp-plan\LizenzZugestimmt mit
-            // Programmversion und Datum, siehe Form_Lizenz.ZustimmungMerken).
+            // Windows-Benutzer; Ablage ueber Dienste.Einstellungen und damit
+            // unveraendert HKCU\Software\wp-plan\LizenzZugestimmt mit
+            // Programmversion und Datum, siehe ZustimmungCtrl.Merken). Seit
+            // iU9-W15c.11 zeigt die Huelle dafuer den Razor-Dialog - BESITZERLOS,
+            // es gibt noch kein Fenster.
             // NACH der ACE-Prüfung - eine nicht startfähige Installation braucht
             // keine Zustimmung - und VOR der Schema-Migration: Wer ablehnt, dessen
             // Datenbank wird nicht angefasst.
-            if (!Form_Lizenz.ZustimmungSicherstellen()) return;
+            if (!LizenzHuelle.ZustimmungSicherstellen()) return;
 
             // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
             // KiKern seine Schluessel in der eingestellten Sprache beantwortet
