@@ -80,7 +80,8 @@ umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
 
 Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
-- **`Program.cs`** — `Main` startet die Oberfläche. Hält `mdifrm`, `projektkontext`,
+- **`Program.cs`** — `Main` startet die Oberfläche. Hält `rahmen` (bis zum
+  Anwenderentscheid E‑10 vom 04.09.2026: `mdifrm`), `projektkontext`,
   `menuectrl`, `wizardctrl` — mit iU9‑W16c ist keines davon verwaist: `menuectrl` liest
   `AssistentHuelle`, `wizardctrl` die Startseiten- und die Hauptfensterhülle. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
   das Detailformular `FormMain` ist gelöscht (E‑7), und die Startseite ist eine
@@ -330,13 +331,18 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **3** (7 nach W15c, 11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
   Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W16b **2 von 2 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
-  es bleiben `MDIMainForm` (die Hülle) und `Form_HelpPopup`.
-  **`Erreichbarkeit.Wurzelmasken` kennt seit iU9‑W16b.3 nur noch `MDIMainForm`** —
+  es bleiben `Hauptfensterrahmen` (die Hülle) und `Form_HelpPopup`.
+  **`Erreichbarkeit.Wurzelmasken` kennt seit iU9‑W16b.3 nur noch die eine Wurzel** —
   `Form_Start` ist eine Razor-Seite und damit keine Maske mehr; `Form_HelpPopup` hängt
   weiter an der verbliebenen Wurzel und meldet unverändert „ja" (Befund W16‑B3 erledigt).
+  Die Wurzel **heißt seit dem Anwenderentscheid E‑10 vom 04.09.2026
+  `Hauptfensterrahmen`** (vorher `MDIMainForm`); mit ihr sind die zwei
+  Prüfmuster-Auszüge umgezogen, die sie tragen
+  (`Pruefmuster/Pufferspeicher/Hauptfensterrahmen.Auszug.cs` und
+  `Pruefmuster/Hauptformular/Hauptfensterrahmen.Sprungtabelle.Auszug.cs`).
   **Alle elf Typzeugen des Stapellaufs hängen seither am PRÜFMUSTER** (Entscheid E‑9):
   Die letzten fünf (`Label`, `TextBox`, `Button`, `ComboBox`, `TabPage`) standen sämtlich
-  auf `Form_Start` und stehen jetzt in `Pruefmuster/Hauptformular/Form_Start.Designer.cs`. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
+  auf `Form_Start` und stehen jetzt in `Pruefmuster/Hauptformular/Form_Start.Designer.cs`. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c am `Hauptfensterrahmen`** (der
   Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
   `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
   Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16;
@@ -671,7 +677,9 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   **Mit iU9‑W16c ist die MISCHPHASE ZU ENDE — das Hauptfenster ist Razor.**
   `MDIMainForm.Designer.cs` (493 Z., 45 `ToolStripMenuItem`, 6
   `ToolStripSeparator`) und die drei `.resx` (1 729 / 1 086 / 1 185 Z.) sind
-  gelöscht; `MDIMainForm.cs` fällt von **873 auf 129 Zeilen** und ist nur noch
+  gelöscht; `MDIMainForm.cs` fällt von **873 auf 129 Zeilen**, heißt seit dem
+  Anwenderentscheid **E‑10** vom 04.09.2026
+  `Views/Hauptformular/Hauptfensterrahmen.cs` und ist nur noch
   die **Hülle**: Fenstergeometrie und Titel, EINE `BlazorSeite<Hauptfenster>`,
   der Besitzer für jede `BlazorDialogForm`, `KeyPreview` + F1, der Ladeanstoß
   des Hilfekatalogs und die stille Lizenz-Nachprüfung. Gefallen sind die 34
@@ -687,7 +695,13 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Skript, Auflage R‑W16‑8; der Kopf **„Sprache"** ist der Anwenderentscheid
   **W16c‑E‑2** vom 04.09.2026 und hat als einzige Zeile keine
   Designer-Herkunft — die zwei Sprachpunkte hängen seither unter ihm statt
-  neben „Hilfe" zu stehen). **`MenueCtrl` schrumpft von 347 auf 258 Zeilen** — die 21
+  neben „Hilfe" zu stehen).
+  **Drei Namen, drei Dinge** (Anwenderentscheid **E‑10**, 04.09.2026):
+  `Hauptfensterrahmen` ist das WinForms-Fenster mit `Application.Run`, dem
+  `BlazorWebView`, F1 und dem Sprachwechsel; `EPOS.UI/Seiten/Hauptfenster.razor`
+  ist die SEITE darin; `HauptfensterHuelle` ist deren Blazor-Hülle (die
+  Datenseite). Der alte Name `MDIMainForm` log seit langem — `IsMdiContainer`
+  stand seit jeher auf `false` (Befund W16‑B10). **`MenueCtrl` schrumpft von 347 auf 258 Zeilen** — die 21
   Einzeiler `Dienste.Navigation.OeffneMaske(Masken.X)` hatten als einzigen
   Aufrufer das Menü; es bleiben die sechs zusammengesetzten Abläufe.
   **`WinFormsNavigation` verliert `MitOk` und `WahlUebernehmen`**, die letzten
