@@ -1439,8 +1439,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > eindeutigen Index `Projektname` eindeutig, das Löschen über den Namen bleibt; trifft ein Name mehrere Projekte, fragt das
 > Programm mit Vorgabe „Nein" nach statt still beide zu löschen — umgesetzt in `ba806b7`, gemerged als `fe07e82`:
 > `LoeschStand.Mehrdeutig` mit Anzahl in `ProjektCtrl.LoeschenMitVorarbeiten`, zweite `Rueckfrage` im `ProjektWahlDialog`,
-> sieben Tests, darunter zwei auf einer Arbeitskopie ohne den Index). **Neu offen W15a‑O‑4:** `VariantenCtrl.LoescheVariante`
-> ruft `ProjektCtrl.Delete(name)` direkt und kennt die Vorprüfung nicht — dieselbe Rückfrage auch dort?
+> sieben Tests, darunter zwei auf einer Arbeitskopie ohne den Index). **W15a‑O‑4 (entschieden 04.09.2026, Empfehlung
+> angenommen):** `VariantenCtrl.LoescheVariante` rief `ProjektCtrl.Delete(name)` direkt — jetzt dieselbe Vorprüfung
+> (`LoeschBefund` statt `bool`, `Mehrdeutig` mit Anzahl) und dieselbe zweite Rückfrage in der `UebersichtSeite`, sechs
+> Tests; umgesetzt in `5104ea3`, gemerged als `1c49f38`.
 > **Testanker:** der Maskenschlüssel-Zeuge steht jetzt auf `FormMain`/`Masken.ProjektDetail`, zwei W16-Aufträge (T1, T2)
 > stehen in den Tests und im Protokoll.
 >
