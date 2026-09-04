@@ -13,7 +13,19 @@ namespace EPOS.Kern.Tests
     /// Zeichenketten bzw. Werten, und die Vertragsprobe fragt nur nach dem Typ hinter der
     /// Fassade. Kein Fall hier oeffnet eine Verbindung - das bleibt den Referenzlaeufen
     /// vorbehalten.</para>
+    ///
+    /// <para><b>BEFUND W10b-B42 (iU9-W10b): Diese Klasse gehoert trotzdem in die
+    /// Sammlung „Testdatenbank".</b> <c>Pfadueberschreibung_schlaegt_die_Einstellungen</c>
+    /// SETZT <see cref="DataRepository.PfadUeberschreibung"/> - das statische Feld, um
+    /// dessentwillen es die Sammlung ueberhaupt gibt. Ohne die Sammlung lief sie NEBEN
+    /// den datenbankgestuetzten Klassen: Traf sie deren Zeitfenster, zeigten die
+    /// Arbeitskopien ploetzlich auf <c>/tmp/probe/Kenndaten.sqlite</c>, und ein ganzer
+    /// Block von Faellen fiel auf einmal aus (gemessen: 12 Ausfaelle in
+    /// <c>EnergietraegerVarianteCtrlTests</c> und <c>BedarfProfilTests</c> in EINEM von
+    /// zehn Laeufen). Die Wiederherstellung am Ende machte es schlimmer, weil sie den
+    /// Pfad der gerade laufenden Arbeitskopie festschrieb.</para>
     /// </summary>
+    [Collection("Testdatenbank")]
     public class DatenzugriffTests
     {
         // =================================================================================
