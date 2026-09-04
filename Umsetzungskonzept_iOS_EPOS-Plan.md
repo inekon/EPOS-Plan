@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W11a umgesetzt, W11b in Arbeit | `8c9ecbe` | **49** Designer-Masken offen (50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt` |
+| **iU9** Masken in Wellen | 🔄 W0 bis W11b umgesetzt, W12 in Arbeit | `73a4338` | **43** Designer-Masken offen (49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1406,6 +1406,47 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
 
+> **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
+>
+> Der zweite Lauf der Welle 11: **`Form_Simulation_Detail` (7 766 Zeilen + 3 082 Designer), `DashboardForm`,
+> `NavigatorUebersicht`, `NavigatorStrom`, `NavigatorWaerme` und `Form_SpeicherVariantenVergleich` → eine
+> Razor-Seite `SimulationErgebnisSeite`** (`EPOS.UI/Seiten/Simulation/`) mit **zehn** Blättern (R3 „Simulation“
+> war nur der Behälter der Menüliste, A‑1), dem Ergebnis-Blatt mit Autarkie-Analyse, den Ganglinien-Navigatoren
+> Wärme/Strom und dem Variantenvergleich als Überlagerung; `TabNavigationManager`, `TabListMapper`,
+> `DonutChartDrawer`/`Kacheln` gelöscht (`ChartManager` bleibt für Klimadaten und Peak-Shaving, A‑12).
+> **Hosting-Entscheid R‑W11‑1:** Seite mit `SeitenZustand` (iOS erreicht sie über `AppWurzel`), auf Windows
+> bis W16 in der modalen Dialoghülle, weil die Bedarfsobjekte der Startmaske gehören. Die Hülle fährt
+> `SimulationLaufCtrl.Laufen` in `Task.Run` mit `Fortschritt` und Abbrechen; der Automatikstart beim Öffnen
+> bleibt, Endlage Übersicht. **Sprungbrücke `SpeicherOptimierung`** (bleibt WinForms, iF22) mit Rückgabe
+> `AuslegungUebernommen`; `SimulationKonfigSeite` (W10b) als Überlagerung — `SeitenZustand` wird **nicht**
+> doppelt gebraucht. **Bilanz 78 Dateien, +11 159 / −27 103 Zeilen.** Vierzehn Sachcommits und ein Merge
+> (`5ac1703` … `2c47cf0`), auf `ios_migration` als `73a4338`.
+>
+> **Der Ertrag ist eine WebView für das ganze Simulationsergebnis** — drei Navigationen und ~130
+> Laufzeit-Steuerelemente sind ein `Reiter`; die 17 Zeichenflächen laufen über die sieben W11a-Bilder.
+> **Anwenderentscheid W11a‑O‑1 umgesetzt (A‑19):** „Wärme gesamt“ ist die Summe der **Deckung** je Erzeuger,
+> die Restwärme ist **eine** Zahl (`sim.Restwaerme`) und kann rechnerisch nicht negativ werden — 1030
+> 6 137,56 − 6 137,56 = 0,00, 1007 6,04, 1017 0,00; Bedarf − Deckung trifft die Bilanzgröße in allen drei
+> Projekten. Zehn Befunde in W11b behoben (u. a. zwei Fülllogiken für `chart2`, Heizstab in beiden
+> Zweigen derselbe Anteil, Stromgang mit Sortiertumschalter, BHKW-Strom eigene Farbe, die elf Reitertitel
+> erstmals englisch), 19 entfallen mit den Masken. Offen: W11b‑O‑1 (14 stille `Console.WriteLine`),
+> O‑2 (17 Flächen ohne Foto des Bestands — Sichtabnahme am Gerät), O‑3 (erstes Blatt des Ergebnis-Reiters
+> doppelt zur Übersicht?), O‑4 (`Form_SpeicherOptimierung` modal über der WebView), O‑5 (`IosProjektQuelle`
+> liefert den Satz noch nicht).
+>
+> **Nachweise** (auf dem gemergten Stand `73a4338`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 614** grün (2 502 nach W11a), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **123** grün · Stapellauf **43** Masken (49 − 6), 42 erreichbar, 0 × „nein“ · SQL-Prüfer
+> 1 233 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS,
+> byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Reiter, 19 Abweichungen (A‑1…A‑19), 17 Windows-Abnahmewegen und
+> sechs offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Automatikstart mit Balken und bedienbarem Fenster, Abbrechen, Endlage
+> Übersicht, die 17 Flächen gegen ein Foto des Bestands, Konfiguration als Überlagerung mit Rücksprung,
+> Variantenvergleich mit echtem Fortschritt, Optimierung modal über der WebView, die sechs CSV-Exporte, de/en,
+> 125 %. Der zwölfte iOS-Lauf (33832613617) auf diesem Stand ist grün.
+
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
 > Die Welle 11 des Wellenplans (Simulationsergebnis: `Form_Simulation_Detail` mit elf Reitern,
@@ -2021,7 +2062,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
