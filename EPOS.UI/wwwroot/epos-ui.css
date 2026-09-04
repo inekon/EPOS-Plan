@@ -3330,3 +3330,39 @@ body {
         color: HighlightText;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Der KI-Einstieg aus einer Maske (iU9-W15b.5).
+
+   Der Vorlaeufer KiAufrufKnopf war ein 24-40 px breiter Knopf oben rechts,
+   LINKS neben dem Infoknopf (Kollisionsregel InfoKnopf.cs:99). In einer
+   Knopfleiste genuegt die Reihenfolge; die Hoehe haelt er mit dem Infoknopf
+   gleich, damit beide auf einer Linie sitzen.
+   -------------------------------------------------------------------------- */
+.epos-kiknopf {
+    height: var(--epos-infoknopf);
+    min-width: var(--epos-infoknopf);
+    padding: 0 8px;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    background: transparent;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-kiknopf:hover {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+/* Er ist NICHT tabulierbar (tabindex="-1", wie TabStop = false im Vorlaeufer) -
+   ein Umrandungsring bei :focus-visible waere damit irrefuehrend. Ein
+   Mausklick zieht den Fokus ohnehin nicht aus dem bearbeiteten Feld. */
+.epos-kiknopf:focus {
+    outline: none;
+}
+
+@media (forced-colors: active) {
+    .epos-kiknopf { border: 1px solid CanvasText; }
+}
