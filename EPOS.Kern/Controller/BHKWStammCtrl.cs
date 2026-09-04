@@ -605,5 +605,137 @@ namespace WindowsFormsApplication1
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
+
+        // =================================================================================
+        // W14a.0c - der Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_BHKWAdmin.FillDetails</c> (Z. 111-138). <c>null</c>, wenn es den
+        /// Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer war als einziger der vier Browser bereits parametrisiert
+        /// (<c>DbParam</c>, Z. 113-115); der Wortlaut ist unveraendert uebernommen,
+        /// einschliesslich der ROHEN Zahlenanzeige ohne Format (Z. 126-130) — anders als
+        /// beim Heizkessel, der <c>F2</c> nimmt. Die Schluessel sind die Feldschluessel
+        /// aus <see cref="KatalogBrowserProfil"/>.
+        /// </remarks>
+        public static IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@name", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldFirma] = Feld(r, "Firma");
+            werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
+            werte[KatalogBrowserProfil.FeldPtherm] = Feld(r, "Ptherm");
+            werte[KatalogBrowserProfil.FeldPel] = Feld(r, "Pel");
+            werte[KatalogBrowserProfil.FeldGrenzleistung] = Feld(r, "Grenzleistung");
+            werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
+            werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        /// <summary>
+        /// Traegt der Katalogsatz den Schreibschutz der Auslieferung? Der Katalogbrowser
+        /// fragt danach, bevor er ueberschreibt — in der Auslieferungsdatenbank sind ALLE
+        /// Saetze von <c>Tab_BHKW_STAMM</c> geschuetzt, die Rueckfrage ist dort also der
+        /// Regelfall (<c>Form_BHKWAdmin.cs:413-417</c>).
+        /// </summary>
+        public static bool IstSchreibgeschuetzt(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", szBezeichner ?? ""));
+            return v != null && v != DBNull.Value && Convert.ToBoolean(v);
+        }
+
+        // =================================================================================
+        // W14a.0c - der Speicherweg des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt
+        /// (<c>Form_BHKWAdmin.Speicherfelder</c> Z. 338-345).
+        /// </summary>
+        public sealed record AnzeigefelderBhkw(string Firma, double Ptherm, double Pel,
+                                               double Grenzleistung, int Vorlauf, int Ruecklauf);
+
+        /// <summary>
+        /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
+        /// Knopfes „Speichern" im Browser.
+        /// </summary>
+        /// <remarks>
+        /// <para>Woertlich aus <c>Form_BHKWAdmin.SpeichereStammsatz</c> (Z. 385-438): Der
+        /// Satz wird VOLLSTAENDIG gelesen und nur in den angezeigten Feldern geaendert,
+        /// weil <see cref="Update"/> alle Spalten schreibt und ein halb gefuelltes Modell
+        /// Kosten, Emissionen und Wirkungsgrad nullen wuerde.</para>
+        /// <para><paramref name="schreibschutzUebergehen"/> ist die Antwort auf die
+        /// Rueckfrage <c>ADM_SCHUTZ_FRAGE</c>, die der Aufrufer stellt, wenn
+        /// <see cref="IstSchreibgeschuetzt"/> zutrifft. Der Schutz wird nur fuer genau
+        /// diesen Schreibvorgang aufgehoben — dieselbe Regel wie beim Knopf
+        /// „Überschreiben" des Katalogeditors.</para>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderBhkw felder,
+                                                              bool schreibschutzUebergehen)
+        {
+            if (string.IsNullOrEmpty(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                var leser = new BHKWStammCtrl();
+                BHKWStammModel m = leser.ReadModel(bezeichner);
+                if (m == null)
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                m.m_szFirma = felder.Firma ?? "";
+                m.m_Ptherm = felder.Ptherm;
+                m.m_Pel = felder.Pel;
+                m.m_Grenzleistung = felder.Grenzleistung;
+                m.m_Vorlauf = felder.Vorlauf;
+                m.m_Ruecklauf = felder.Ruecklauf;
+
+                var schreiber = new BHKWStammCtrl { model = m };
+                if (m.m_bReadOnly)
+                {
+                    if (!schreibschutzUebergehen)
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_SCHUTZ",
+                            "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+                    schreiber.SchreibschutzUebergehen = true;
+                }
+
+                if (!schreiber.Update())
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), bezeichner);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
     }
 }
