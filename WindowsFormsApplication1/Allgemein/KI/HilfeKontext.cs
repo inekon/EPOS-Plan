@@ -78,7 +78,16 @@ namespace WindowsFormsApplication1
         private static readonly Dictionary<string, string> BEREICH_JE_TYP =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            // iU9-W16c.3: "MDIMainForm" ist nur noch die HUELLE - ein Fenster mit
+            // einer WebView. Der Eintrag bleibt trotzdem: Er ist der Schluessel,
+            // unter dem HilfeAutomatik das offene Fenster erkennt, und das
+            // Fenster gibt es weiter. Die Umbenennung in "Hauptfenster"
+            // (Entscheid E-10) kommt nach dem Merge und fasst diese Zeile mit an.
             { "MDIMainForm",                 B_HAUPTFENSTER },
+            // iU9-W16c.2: Die Oberflaeche des Fensters ist die Razor-Seite
+            // "Hauptfenster" (EPOS.UI/Seiten/Hauptfenster.razor) - Menueband,
+            // Kopfband und die Ansicht darunter.
+            { "Hauptfenster",                B_HAUPTFENSTER },
             // iU9-W16b.1 (E-7, K6-a): "FormMain" (das Detailformular
             // "Konfiguration Projekt") ist geloescht - sein Bereich entfaellt.
             // iU9-W16b.3: Die Startmaske ist die Razor-Seite "Startseite"

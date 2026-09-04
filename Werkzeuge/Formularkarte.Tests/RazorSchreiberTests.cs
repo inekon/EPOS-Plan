@@ -156,11 +156,34 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void MaskenAusserhalbEinesFachordnersLandenInAllgemein()
     {
-        // MDIMainForm liegt in der Projektwurzel; hiesse der Namensraum
+        // MDIMainForm lag in der PROJEKTWURZEL; hiesse der Namensraum
         // "EPOS.UI.Dialoge.WindowsFormsApplication1", verdeckte er das
         // @using WindowsFormsApplication1.MyResource aus _Imports.razor.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Datei("WindowsFormsApplication1/MDIMainForm.Designer.cs"));
+        //
+        // iU9-W16c.5: MDIMainForm ist mit dem Rueckbau der Huelle ohne Designer
+        // (er steht eingefroren unter Pruefmuster/Hauptformular/, Entscheid E-9),
+        // und im PROJEKTORDNER selbst liegt danach keine Designer-Datei mehr. Der
+        // Zeuge wandert deshalb auf den ZWEITEN Zweig derselben Regel
+        // (DesignerLeser.Fachbereich:122-128): Ein Ordner namens "Views" oder
+        // "Properties" ist ebenfalls kein Fachbereich. Properties/Resources.Designer.cs
+        // ist die erzeugte Ressourcendatei jedes WinForms-Projekts - sie kann
+        // keine Welle mehr wegnehmen.
+        // Beide Zweige der Regel, unmittelbar an ihrer Quelle:
+        Assert.Equal("Allgemein", DesignerLeser.Fachbereich(
+            Repowurzel.Datei("WindowsFormsApplication1/Properties/Resources.Designer.cs")));
 
-        Assert.Equal("EPOS.UI.Dialoge.Allgemein", RazorSchreiber.Namensraum(maske));
+        // ... und der PROJEKTORDNER selbst, in dem MDIMainForm.Designer.cs bis
+        // iU9-W16c.3 lag - erkannt an der .csproj daneben.
+        Assert.Equal("Allgemein", DesignerLeser.Fachbereich(
+            Repowurzel.Datei("WindowsFormsApplication1/Program.cs")));
+
+        // Und der Gegenbeweis am eingefrorenen Muster: Dieselbe Maske in einem
+        // Ordner MIT Namen bekommt diesen Namen - samt der Umsetzung in den
+        // Namensraum, um die es hier geht.
+        var imMuster = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Hauptformular/MDIMainForm.Designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
+
+        Assert.Equal("EPOS.UI.Dialoge.Hauptformular", RazorSchreiber.Namensraum(imMuster));
     }
 }

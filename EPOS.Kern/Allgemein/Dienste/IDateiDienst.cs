@@ -32,5 +32,22 @@
         /// <c>false</c>, wenn das nicht möglich war.
         /// </summary>
         bool MitSystemOeffnen(string pfad);
+
+        /// <summary>
+        /// Öffnet eine ADRESSE (http/https) im Standardbrowser; <c>false</c>, wenn
+        /// das nicht möglich war.
+        ///
+        /// <para><b>Warum nicht <see cref="MitSystemOeffnen"/></b> (iU9-W16c.3):
+        /// Der prüft <c>File.Exists</c> und liefert für eine Adresse deshalb
+        /// immer <c>false</c>. Der einzige Aufrufer im Bestand war der Menüpunkt
+        /// „Hilfe → Dokumentation", der bis W16c unmittelbar <c>Process.Start</c>
+        /// rief — die letzte Windows-API dieser Art im Hauptfenster.</para>
+        ///
+        /// <para><b>Mit Standardumsetzung</b> (<c>false</c>), damit vorhandene
+        /// Fassungen — <c>KeineDateiwahl</c> und der iOS-Adapter — durch die
+        /// Erweiterung nicht brechen. Auf iOS gibt es das Menü nicht; wer den
+        /// Weg dort braucht, legt die Fassung mit iU11 nach.</para>
+        /// </summary>
+        bool AdresseOeffnen(string adresse) => false;
     }
 }

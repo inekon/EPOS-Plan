@@ -14241,4 +14241,154 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="START_STATUS_KEINS" xml:space="preserve">
     <value>⚠</value>
   </data>
+  <data name="MENU_ADMINISTRATION" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  <data name="MENU_BHKW" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="MENU_BRAUCHWASSER" xml:space="preserve">
+    <value>Industrial water</value>
+  </data>
+  <data name="MENU_DAT_IMPORT" xml:space="preserve">
+    <value>Data &amp; import</value>
+  </data>
+  <data name="MENU_DEUTSCH" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="MENU_DOKUMENTATION" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="MENU_EINSTELLUNGEN" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="MENU_ENERGIESYSTEME" xml:space="preserve">
+    <value>Energy systems</value>
+  </data>
+  <data name="MENU_ENGLISCH" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="MENU_EXPORT_IMPORT" xml:space="preserve">
+    <value>Export/Import</value>
+  </data>
+  <data name="MENU_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="MENU_GEB_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MENU_GEB_TYPEN" xml:space="preserve">
+    <value>Building types</value>
+  </data>
+  <data name="MENU_HELP" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="MENU_IMPORT_HEIZKESSEL" xml:space="preserve">
+    <value>Import boiler VDI 3805</value>
+  </data>
+  <data name="MENU_KESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="MENU_KLIMA" xml:space="preserve">
+    <value>Climate data &amp; environment</value>
+  </data>
+  <data name="MENU_KLIMADATEN" xml:space="preserve">
+    <value>Climate data</value>
+  </data>
+  <data name="MENU_KOSTEN_VERWALTUNG" xml:space="preserve">
+    <value>Costs</value>
+  </data>
+  <data name="MENU_LIZENZ" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="MENU_LIZENZ_VERWALTUNG" xml:space="preserve">
+    <value>License…</value>
+  </data>
+  <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MENU_PROJEKTE" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="MENU_PROJEKT_BEARBEITEN" xml:space="preserve">
+    <value>Edit...</value>
+  </data>
+  <data name="MENU_PROJEKT_LOESCHEN" xml:space="preserve">
+    <value>Delete...</value>
+  </data>
+  <data name="MENU_PROJEKT_NEU" xml:space="preserve">
+    <value>New...</value>
+  </data>
+  <data name="MENU_PROJEKT_OEFFNEN" xml:space="preserve">
+    <value>Open...</value>
+  </data>
+  <data name="MENU_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="MENU_PUFFER_SP" xml:space="preserve">
+    <value>Buffer memory</value>
+  </data>
+  <data name="MENU_PUFFER_SP_VDI3805" xml:space="preserve">
+    <value>Import buffer storage VDI 3805</value>
+  </data>
+  <data name="MENU_PV" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="MENU_PV_IMPORT_CEC" xml:space="preserve">
+    <value>Import photovoltaics CEC/Pan</value>
+  </data>
+  <data name="MENU_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Solar panels</value>
+  </data>
+  <data name="MENU_SOL_THERM_GANGLINIE" xml:space="preserve">
+    <value>Solar thermal hydrograph</value>
+  </data>
+  <data name="MENU_STROMGANGLINIE" xml:space="preserve">
+    <value>Current hydrograph</value>
+  </data>
+  <data name="MENU_STROMSPEICHER" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="MENU_STROMVERBRAUCHER" xml:space="preserve">
+    <value>Electricity consumers</value>
+  </data>
+  <data name="MENU_STROM_BEDARFUND_SP" xml:space="preserve">
+    <value>Power requirements &amp; storage</value>
+  </data>
+  <data name="MENU_ST_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MENU_ST_IMPORT" xml:space="preserve">
+    <value>Import solar thermal energy VDI 3805</value>
+  </data>
+  <data name="MENU_VDI3805" xml:space="preserve">
+    <value>Import heat pumps VDI 3805</value>
+  </data>
+  <data name="MENU_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="MENU_WAERMEBEDARF_EXTERN" xml:space="preserve">
+    <value>Heat requirement load profile</value>
+  </data>
+  <data name="MENU_WBUND_HEIZUNG" xml:space="preserve">
+    <value>Heat requirement &amp; heating</value>
+  </data>
+  <data name="MENU_WP" xml:space="preserve">
+    <value>Heat pumps</value>
+  </data>
+  <data name="MENU_ZULETZT_GEOEFFNET" xml:space="preserve">
+    <value>last opened</value>
+  </data>
+  <data name="HAUPT_CLAIM" xml:space="preserve">
+    <value>Energy · Planning · Optimisation · Simulation</value>
+  </data>
+  <data name="HAUPT_UEBER_HAUS" xml:space="preserve">
+    <value>INEKON - Intelligente Energiekonzepte</value>
+  </data>
+  <data name="HAUPT_UEBER_TITEL" xml:space="preserve">
+    <value>About {0}</value>
+  </data>
+  <data name="HAUPT_VERSION" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
 </root>

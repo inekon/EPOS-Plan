@@ -49,7 +49,15 @@ public sealed class StapelTests
         // Razor-Fassung; die Maske faellt mit HelpCatalog/HelpExtender in iU11),
         // und Form_Hinweis bleibt bis Welle 16 (Entscheid E-1b): Seine drei
         // Aufrufer liegen saemtlich in Form_Start, und die ist bis dahin WinForms.
-        Assert.Contains(dateien, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
+        //
+        // iU9-W16c.3 (Entscheid E-9): Der GROSSSCHREIBUNGS-Zeuge steht seither
+        // ebenfalls im PRUEFMUSTER. Mit dem Rueckbau von MDIMainForm auf die
+        // Huelle faellt ihr Designer; im Bestand bleibt als einzige
+        // grossgeschriebene Designer-Datei einer MASKE noch Form_HelpPopup
+        // (bis iU11, Entscheid W15b-E-2), dazu die drei erzeugten Ressourcen-
+        // und Einstellungsdateien. Beide Schreibweisen-Zeugen liegen damit im
+        // Muster, und der Bestandslauf prueft nur noch, DASS er liest.
+        Assert.Contains(dateien, d => d.EndsWith("Form_HelpPopup.Designer.cs", StringComparison.Ordinal));
 
         // iU9-W16a.5 (Entscheid E-9): Der KLEINSCHREIBUNGS-Zeuge steht seither im
         // PRUEFMUSTER. Nach dieser Teilwelle fuehrt WindowsFormsApplication1 KEINE
@@ -60,6 +68,7 @@ public sealed class StapelTests
         // wird er hier ausdruecklich VON DORT AUS gezaehlt.
         var muster = Stapel.Dateien(Repowurzel.PruefmusterWurzel);
         Assert.Contains(muster, d => d.EndsWith("Wizard_Komponenten.designer.cs", StringComparison.Ordinal));
+        Assert.Contains(muster, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
         // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
         // 105 nach iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die
@@ -114,7 +123,14 @@ public sealed class StapelTests
         // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
         // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
         // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
-        Assert.True(dateien.Count >= 5, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        //
+        // iU9-W16c.3: Die Teilwelle nimmt den LETZTEN Designer einer Fachmaske mit
+        // (MDIMainForm). Ueber die Repowurzel gezaehlt bleiben VIER Dateien: zwei
+        // unter WindowsFormsApplication1 (Form_HelpPopup.Designer.cs und das
+        // erzeugte Properties/Resources.Designer.cs) und zwei erzeugte des Kerns
+        // (Resource, Settings). NACHWEIS N1 (Vermessung § 11.8) - siehe
+        // JedeMaskeLiefertEineKarte.
+        Assert.True(dateien.Count >= 4, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -180,7 +196,20 @@ public sealed class StapelTests
         // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
         // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
         // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
-        Assert.True(Lauf.Value.Masken >= 2, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        //
+        // iU9-W16c.3 - NACHWEIS N1 (Vermessung § 11.8, "Der Bestand ist leer"):
+        // Mit dem Rueckbau von MDIMainForm auf die Huelle faellt der letzte
+        // Designer einer FACHMASKE. Es bleibt GENAU EINE Maske, und sie ist keine
+        // Fachmaske: Form_HelpPopup, das Hilfe-Sprechblasenfenster, das mit
+        // HelpCatalog/HelpExtender in iU11 faellt (Entscheid W15b-E-2).
+        //
+        // Die Anweisung nennt fuer N1 "Masken == 0". Der Sollwert der VERMESSUNG
+        // ist vom Stand vor W15b gerechnet, als Form_HelpPopup noch als
+        // umzustellend galt; mit Entscheid W15b-E-2 bleibt sie. Nachgerechnet vom
+        // heutigen Stand ist die Zahl 1 (Befund W16c-B7). Geprueft wird deshalb
+        // die STARKE Form: genau eine, und zwar diese.
+        Assert.Equal(1, Lauf.Value.Masken);
+        Assert.Single(Lauf.Value.Zeilen, z => z.Bezeichner == "Form_HelpPopup");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -239,8 +268,19 @@ public sealed class StapelTests
         // (FormMain und Form_Start); Form_StromTest, Form_Hinweis und AktionsKarte
         // haben keine Satelliten. Es bleibt EINE von ZWEI - der Anteil steht damit
         // weiterhin bei der Haelfte.
-        Assert.True(Lauf.Value.Lokalisierte >= 1,
-                    "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
+        // iU9-W16c.3: MDIMainForm war die LETZTE lokalisierte Maske des Bestands
+        // (44 de-DE- und 40 en-US-Eintraege); mit ihrem Designer ist der Zaehler
+        // auf NULL - Form_HelpPopup traegt kein ApplyResources. Damit ist auch
+        // dieser Zeuge im PRUEFMUSTER: Pruefmuster/Hauptformular/ und
+        // Pruefmuster/Wärmepumpe/ fuehren lokalisierte Masken, und der Leser muss
+        // beide Wege weiterhin koennen (NACHWEIS N2).
+        Assert.Equal(0, Lauf.Value.Lokalisierte);
+
+        var musterlauf = Stapel.Laufen(Repowurzel.PruefmusterWurzel, ziel: null,
+                                       erreichbarkeit: false);
+        Assert.True(musterlauf.Lokalisierte >= 1,
+                    "Im Pruefmuster wurden nur " + musterlauf.Lokalisierte +
+                    " lokalisierte Masken erkannt.");
     }
 
     [Fact]
@@ -316,8 +356,11 @@ public sealed class StapelTests
 
         // iU9-W14c.9: Bis dahin stand hier Form_Klimadaten; sie ist mit dieser
         // Welle gefallen. Der Zeuge braucht nur IRGENDEINEN Maskennamen aus der
-        // Uebersicht - MDIMainForm faellt als allerletzte (Welle 16).
-        Assert.Contains("MDIMainForm", uebersicht, StringComparison.Ordinal);
+        // Uebersicht.
+        //
+        // iU9-W16c.3: MDIMainForm ist die Huelle und hat keinen Designer mehr;
+        // die einzige Maske des Bestands ist Form_HelpPopup (bis iU11).
+        Assert.Contains("Form_HelpPopup", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
