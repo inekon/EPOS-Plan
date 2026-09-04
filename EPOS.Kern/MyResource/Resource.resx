@@ -186,6 +186,36 @@
   <data name="ETV_UEBERNAHME_FRAGE" xml:space="preserve">
     <value>Welche Katalogträger sollen ins Projekt?</value>
   </data>
+  <data name="IMPORT_BTN_EINLESEN" xml:space="preserve">
+    <value>Datei Einlesen...</value>
+  </data>
+  <data name="IMPORT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Ganglinie Löschen</value>
+  </data>
+  <data name="IMPORT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Stromganglinie "{0}" wird gelöscht. Fortfahren?</value>
+  </data>
+  <data name="IMPORT_GRP_EINLESEN" xml:space="preserve">
+    <value>Ganglinie aus Datei in Datenbank Einlesen</value>
+  </data>
+  <data name="IMPORT_LBL_JAHRESWERTE" xml:space="preserve">
+    <value>Werte über 1 Jahr als Textdatei</value>
+  </data>
+  <data name="IMPORT_LBL_KATALOG" xml:space="preserve">
+    <value>Ganglinien in Datenbank</value>
+  </data>
+  <data name="IMPORT_LBL_ZEITINTERVAL" xml:space="preserve">
+    <value>Zeitinterval</value>
+  </data>
+  <data name="IMPORT_MSG_GELOESCHT" xml:space="preserve">
+    <value>Die Stromganglinie "{0}" wurde gelöscht.</value>
+  </data>
+  <data name="IMPORT_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese Stromganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="IMPORT_TITEL_ADMIN" xml:space="preserve">
+    <value>Stromganglinien Administration</value>
+  </data>
   <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
     <value>{0} (keine Anlage im Projekt)</value>
   </data>
@@ -624,6 +654,27 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Vorlauf unter dem Puffer-Sollwert</value>
+  </data>
+  <data name="STROMGL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten...</value>
+  </data>
+  <data name="STROMGL_BTN_ENTFERNEN" xml:space="preserve">
+    <value>▶</value>
+  </data>
+  <data name="STROMGL_BTN_HINZUFUEGEN" xml:space="preserve">
+    <value>◀</value>
+  </data>
+  <data name="STROMGL_LBL_AUSWAHL" xml:space="preserve">
+    <value>Ausgewählt im Projekt</value>
+  </data>
+  <data name="STROMGL_LBL_KATALOG" xml:space="preserve">
+    <value>Stromganglinie aus DB</value>
+  </data>
+  <data name="STROMGL_SPALTE_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="STROMGL_TITEL" xml:space="preserve">
+    <value>Stromganglinien</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
     <value>Bitte auswählen!</value>

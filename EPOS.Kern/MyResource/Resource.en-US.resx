@@ -186,6 +186,36 @@
   <data name="ETV_UEBERNAHME_FRAGE" xml:space="preserve">
     <value>Which catalogue carriers should be added to the project?</value>
   </data>
+  <data name="IMPORT_BTN_EINLESEN" xml:space="preserve">
+    <value>Read file...</value>
+  </data>
+  <data name="IMPORT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete curve</value>
+  </data>
+  <data name="IMPORT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>The current loop "{0}" will be deleted. Continue?</value>
+  </data>
+  <data name="IMPORT_GRP_EINLESEN" xml:space="preserve">
+    <value>Import current loop from file</value>
+  </data>
+  <data name="IMPORT_LBL_JAHRESWERTE" xml:space="preserve">
+    <value>Values over 1 year as a text file</value>
+  </data>
+  <data name="IMPORT_LBL_KATALOG" xml:space="preserve">
+    <value>Curves in DB</value>
+  </data>
+  <data name="IMPORT_LBL_ZEITINTERVAL" xml:space="preserve">
+    <value>time interval</value>
+  </data>
+  <data name="IMPORT_MSG_GELOESCHT" xml:space="preserve">
+    <value>The current loop "{0}" was deleted.</value>
+  </data>
+  <data name="IMPORT_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This current loop is write-protected (ReadOnly) and cannot be deleted.</value>
+  </data>
+  <data name="IMPORT_TITEL_ADMIN" xml:space="preserve">
+    <value>Electricity requirement</value>
+  </data>
   <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
     <value>{0} (no unit in the project)</value>
   </data>
@@ -624,6 +654,27 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Flow below the buffer set point</value>
+  </data>
+  <data name="STROMGL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit...</value>
+  </data>
+  <data name="STROMGL_BTN_ENTFERNEN" xml:space="preserve">
+    <value>▶</value>
+  </data>
+  <data name="STROMGL_BTN_HINZUFUEGEN" xml:space="preserve">
+    <value>◀</value>
+  </data>
+  <data name="STROMGL_LBL_AUSWAHL" xml:space="preserve">
+    <value>Selected in the project</value>
+  </data>
+  <data name="STROMGL_LBL_KATALOG" xml:space="preserve">
+    <value>Current curve from DB</value>
+  </data>
+  <data name="STROMGL_SPALTE_BEZEICHNER" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="STROMGL_TITEL" xml:space="preserve">
+    <value>Current loop</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
     <value>Please select!</value>

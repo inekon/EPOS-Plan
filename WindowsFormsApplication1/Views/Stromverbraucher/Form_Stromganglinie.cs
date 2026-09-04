@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -106,13 +106,13 @@ namespace WindowsFormsApplication1
 
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin();
             StromganglinieStammCtrl spctrl = new StromganglinieStammCtrl();
 
             listBox_Auswahl.SelectedItems.Clear();
-            frm.SetControls();
 
-            if (frm.ShowDialog() == DialogResult.OK)
+            // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
+            // StromganglinieAdminDialog. Diese Maske faellt mit W12.5.
+            if (StromganglinieAdminHuelle.Oeffnen(this))
             {
                 listBox_Extern.Items.Clear();
                 spctrl.ReadAll();

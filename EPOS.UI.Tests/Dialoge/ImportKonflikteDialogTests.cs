@@ -30,7 +30,7 @@ public class ImportKonflikteDialogTests : BunitContext
     private static ImportPruefung Pruefung(ImportBefund befund, string name,
                                            bool nameMehrfachInDb = false,
                                            bool nameDoppeltInAuswahl = false,
-                                           KatalogSatz vorhanden = null)
+                                           KatalogSatz? vorhanden = null)
         => new()
         {
             Kandidat = new ImportKandidat { Name = name },
@@ -42,9 +42,9 @@ public class ImportKonflikteDialogTests : BunitContext
         };
 
     private IRenderedComponent<ImportKonflikteDialog> Zeige(
-        IReadOnlyList<ImportPruefung> pruefungen = null,
-        IReadOnlyCollection<string> vergeben = null,
-        Action<List<KonfliktEntscheidung>> geschlossen = null)
+        IReadOnlyList<ImportPruefung>? pruefungen = null,
+        IReadOnlyCollection<string>? vergeben = null,
+        Action<List<KonfliktEntscheidung>?>? geschlossen = null)
     {
         return Render<ImportKonflikteDialog>(p => p
             .Add(x => x.Pruefungen, pruefungen ?? new[]
@@ -53,7 +53,7 @@ public class ImportKonflikteDialogTests : BunitContext
                 Pruefung(ImportBefund.NameVorhanden, "Werk Süd")
             })
             .Add(x => x.VergebeneNamen, vergeben ?? new HashSet<string>(StringComparer.Ordinal))
-            .Add(x => x.Geschlossen, (List<KonfliktEntscheidung> l) => geschlossen?.Invoke(l)));
+            .Add(x => x.Geschlossen, (List<KonfliktEntscheidung>? l) => geschlossen?.Invoke(l)));
     }
 
     private static IElement Knopf(IRenderedComponent<ImportKonflikteDialog> cut, int i)
@@ -220,7 +220,7 @@ public class ImportKonflikteDialogTests : BunitContext
     [Fact]
     public void Uebernehmen_meldet_alle_Zeilen()
     {
-        List<KonfliktEntscheidung> ergebnis = null;
+        List<KonfliktEntscheidung>? ergebnis = null;
         var cut = Zeige(geschlossen: l => ergebnis = l);
 
         Knopf(cut, 2).Click();
@@ -238,7 +238,7 @@ public class ImportKonflikteDialogTests : BunitContext
     [Fact]
     public void Ein_leerer_Umbenennungsname_haelt_den_Dialog_offen()
     {
-        List<KonfliktEntscheidung> ergebnis = null;
+        List<KonfliktEntscheidung>? ergebnis = null;
         var cut = Zeige(geschlossen: l => ergebnis = l);
 
         Aktion(cut, 1).Change("2");
@@ -252,7 +252,7 @@ public class ImportKonflikteDialogTests : BunitContext
     [Fact]
     public void Zwei_Zeilen_mit_demselben_Zielnamen_werden_beanstandet()
     {
-        List<KonfliktEntscheidung> ergebnis = null;
+        List<KonfliktEntscheidung>? ergebnis = null;
         var cut = Zeige(new[]
         {
             Pruefung(ImportBefund.Neu, "Gleich"),
@@ -268,7 +268,7 @@ public class ImportKonflikteDialogTests : BunitContext
     [Fact]
     public void Abbrechen_meldet_null()
     {
-        List<KonfliktEntscheidung> ergebnis = new();
+        List<KonfliktEntscheidung>? ergebnis = new();
         var cut = Zeige(geschlossen: l => ergebnis = l);
 
         Knopf(cut, 1).Click();
@@ -278,7 +278,7 @@ public class ImportKonflikteDialogTests : BunitContext
     [Fact]
     public void Esc_meldet_ebenfalls_null()
     {
-        List<KonfliktEntscheidung> ergebnis = new();
+        List<KonfliktEntscheidung>? ergebnis = new();
         var cut = Zeige(geschlossen: l => ergebnis = l);
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
