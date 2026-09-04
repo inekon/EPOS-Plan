@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -23,6 +24,24 @@ public class KostenSeiteTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+        DeutscheOberflaeche();
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
+    /// <c>UebersichtSeiteTests</c>) — Kultur UND Thread-Kultur, damit ein Lauf
+    /// unter <c>LANG=en_US.UTF-8</c> dieselben Beschriftungen und dieselbe
+    /// Zahlschreibweise sieht.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     // ---- Probendaten -----------------------------------------------------
@@ -332,5 +351,129 @@ public class KostenSeiteTests : BunitContext
         var cut = Zeige();
 
         Assert.Equal("UcBkKosten.btn_Help", cut.Instance.HilfeSchluessel);
+    }
+
+    // =====================================================================
+    // W5-O3 (Anwenderentscheid 04.09.2026): der Doppelklick als ZWEITER Weg
+    // =====================================================================
+
+    [Fact]
+    public void Der_Doppelklick_auf_die_lose_Zeile_stellt_dieselbe_Rueckfrage()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.LoeschFrage, (KostenZeile z) => "Alle Positionen ohne Zuordnung löschen?"));
+
+        Anlagenzeilen(cut)[2].DoubleClick();
+
+        Assert.Contains("ohne Zuordnung löschen", cut.Find(".epos-rueckfrage-text").TextContent);
+    }
+
+    [Fact]
+    public void Der_Doppelklick_loescht_bei_Ja_und_nicht_bei_Nein()
+    {
+        KostenZeile? geloescht = null;
+        var cut = Zeige(p => p
+            .Add(x => x.LoeschFrage, (KostenZeile z) => "Alle Positionen ohne Zuordnung löschen?")
+            .Add(x => x.Loeschen, (KostenZeile z) => { geloescht = z; return "2 Position(en) gelöscht."; }));
+
+        Anlagenzeilen(cut)[2].DoubleClick();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // Nein
+        Assert.Null(geloescht);
+
+        Anlagenzeilen(cut)[2].DoubleClick();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        Assert.NotNull(geloescht);
+        Assert.Equal(13, geloescht!.Schluessel);
+        Assert.Equal("2 Position(en) gelöscht.", cut.Instance.Status);
+    }
+
+    [Fact]
+    public void Der_Doppelklick_auf_eine_gebundene_Zeile_tut_nichts()
+    {
+        KostenZeile? geloescht = null;
+        var cut = Zeige(p => p
+            .Add(x => x.LoeschFrage, (KostenZeile z) => "wirklich löschen?")
+            .Add(x => x.Loeschen, (KostenZeile z) => { geloescht = z; return "gelöscht"; }));
+
+        Anlagenzeilen(cut)[0].DoubleClick();   // gewöhnliche Zeile
+        Anlagenzeilen(cut)[1].DoubleClick();   // rosa: Gewerk ohne Position
+        Anlagenzeilen(cut)[3].DoubleClick();   // Summenzeile
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Null(geloescht);
+    }
+
+    // =====================================================================
+    // Befund W5-B-1: die Aktionsspalte war auf dem Bildschirm nicht zu sehen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Papierkorb_der_losen_Zeile_ist_gerendert_und_traegt_seinen_Kurztext()
+    {
+        var cut = Zeige(p => p.Add(x => x.LoeschFrage, (KostenZeile z) => "wirklich löschen?"));
+
+        IElement knopf = Anlagenzeilen(cut)[2].QuerySelector(".epos-zellenaktionen .epos-zr-knopf")!;
+
+        Assert.Equal("Positionen ohne Anlagenzuordnung löschen", knopf.GetAttribute("title"));
+        Assert.Contains("🗑", knopf.TextContent);
+    }
+
+    [Fact]
+    public void Die_Aktionsspalte_ist_eine_echte_Tabellenzelle_mit_eigenem_Flexkasten()
+    {
+        var cut = Zeige(p => p.Add(x => x.LoeschFrage, (KostenZeile z) => "wirklich löschen?"));
+
+        // Der Spaltenkopf ist BESCHRIFTET — eine leere Spalte hat nichts,
+        // woraus sie ihre Breite nehmen könnte (Befund W5-B-1).
+        IElement kopf = cut.FindAll(".epos-kostentabelle thead th")[0];
+        Assert.Equal("Aktionen", kopf.TextContent);
+        Assert.Contains("epos-zellenaktionen", kopf.ClassName);
+
+        // Die Zelle ist ein <td> und trägt den Flexkasten IN sich, nicht auf sich.
+        IElement zelle = Anlagenzeilen(cut)[2].QuerySelector("td.epos-zellenaktionen")!;
+        IElement inhalt = zelle.QuerySelector(".epos-zellenaktionen-inhalt")!;
+
+        Assert.Equal(2, inhalt.QuerySelectorAll("button").Length);   // Wahl + Papierkorb
+        Assert.Single(inhalt.QuerySelectorAll(".epos-anlagenwahl"));
+        Assert.Single(inhalt.QuerySelectorAll(".epos-zr-knopf"));
+    }
+
+    /// <summary>
+    /// Die Regressionswache zu W5-B-1. Der Fehler stand NUR im Stilblatt —
+    /// keine bunit-Probe hätte ihn je gesehen, denn das Markup war richtig.
+    /// Deshalb liest dieser Test das Stilblatt selbst: <c>display:flex</c> auf
+    /// einem <c>&lt;td&gt;</c> nimmt der Zelle ihre Rolle als Tabellenzelle
+    /// (CSS 2.1, 17.2.1), und ein Aktionsknopf darf nie erst bei
+    /// <c>:hover</c> erscheinen — Berührung kennt kein Hover (iL4).
+    /// </summary>
+    [Fact]
+    public void Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex()
+    {
+        string block = Stilblock(".epos-zellenaktionen {");
+
+        Assert.DoesNotContain("display", block);
+        Assert.DoesNotContain("hover", block);
+        Assert.Contains("width", block);
+
+        // Der Flexkasten steht in der EIGENEN Klasse.
+        Assert.Contains("display: flex", Stilblock(".epos-zellenaktionen-inhalt {"));
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
 }
