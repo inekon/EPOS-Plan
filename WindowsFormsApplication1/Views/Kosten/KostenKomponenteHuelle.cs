@@ -196,6 +196,13 @@ namespace WindowsFormsApplication1
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     () => KostenfaktorKatalogHuelle.Gaben()),
 
+                // iU9-W14c.3: die SECHSTE Ueberlagerung. Bis dahin sprang das
+                // Reiterblatt "Ertrag/Bonus" ueber die Sprungbruecke in das
+                // WinForms-Fenster Form_Gesetzesparameter; das Ziel ist jetzt selbst
+                // Razor (Risiko R2). Ohne diese Gaben bleibt der Knopf im Blatt weg.
+                ["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => GesetzeskatalogHuelle.Gaben()),
+
                 ["BannerText"] = T("KDLG_BANNER", "Alle Beträge und alle Bezugsgrößen sind NETTO."),
                 ["BannerZuKurztext"] = T("KKOMP_BANNER_ZU", "Hinweis ausblenden"),
                 ["LabelKomponente"] = T("KDLG_LBL_KOMPONENTE", "Komponente:"),

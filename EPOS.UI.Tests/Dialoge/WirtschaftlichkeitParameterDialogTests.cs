@@ -27,9 +27,28 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
 {
     public WirtschaftlichkeitParameterDialogTests()
     {
-        Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+        // Seit iU9-W14c.3 steht der Gesetzeskatalog als Ueberlagerung in diesem
+        // Dialog, und der bringt ein Raster (QuickGrid) mit - das laedt sein
+        // JS-Modul beim Zeichnen.
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberflaeche wird auf de-DE gepinnt (Muster
+    /// <c>GebaeudeKatalogDialogTests</c>, Regel seit W8, verschaerft am 04.09.2026).
+    /// Diese Klasse prueft deutsche Beschriftungen; sich darauf zu verlassen, dass
+    /// eine andere Klasse den Prozessstandard gesetzt hat, war die Ursache der
+    /// W12-Rotmeldung auf dem Windows-Laeufer.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private static WirtschaftlichkeitParameter Satz() => new WirtschaftlichkeitParameter
@@ -57,7 +76,7 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         bool bhkw = false, bool brennstoff = false,
         Func<bool>? speichern = null,
         Action<WirtParameterErgebnis>? geschlossen = null,
-        Func<string, Task<bool>>? sprung = null)
+        Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null)
     {
         return Render<WirtschaftlichkeitParameterDialog>(p => p
             .Add(x => x.Parameter, satz)
@@ -66,7 +85,7 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
             .Add(x => x.Kraftwerksparks, new[] { (0, "(keine Emissionsbilanz)"), (3, "Netzmix 2030") })
             .Add(x => x.ReferenzkesselZeile, "Referenzkessel (aus Projekt): Kessel A — η 92 %, Erdgas")
             .Add(x => x.Co2PrognoseAb, 2028)
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.GesetzeGaben, gesetzeGaben)
             .Add(x => x.Speichern, speichern ?? (() => true))
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
@@ -115,7 +134,8 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
     [Fact]
     public void Mit_Brennstoff_erscheint_die_Emissionsgruppe_vollstaendig()
     {
-        var cut = Aufbauen(Satz(), brennstoff: true, sprung: _ => Task.FromResult(true));
+        var cut = Aufbauen(Satz(), brennstoff: true,
+                           gesetzeGaben: () => new Dictionary<string, object>());
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
 
         Assert.Contains("Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel)", titel);
@@ -240,23 +260,44 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
     }
 
     [Fact]
-    public void Der_Katalogknopf_ruft_die_Sprungbruecke_und_haelt_den_Dialog_offen()
+    public void Der_Katalogknopf_oeffnet_die_Ueberlagerung_und_haelt_den_Dialog_offen()
     {
-        // iU9-W2.2: Der Gesetzeskatalog ist eine WinForms-Maske und erscheint
-        // MODAL ueber dem Dialog - der Dialog bleibt stehen.
-        string? gerufen = null;
+        // iU9-W14c.3: Bis dahin fuehrte der Knopf ueber die Sprungbruecke
+        // (Sprungziel.GesetzesparameterCo2) zu einem WinForms-Fenster ueber dem
+        // Dialog. Der Katalog ist jetzt selbst Razor und steht als UEBERLAGERUNG im
+        // selben Fenster (Risiko R2) - der Dialog bleibt stehen.
+        int gerufen = 0;
         WirtParameterErgebnis? ergebnis = null;
         var cut = Aufbauen(Satz(), brennstoff: true, geschlossen: e => ergebnis = e,
-                           sprung: s => { gerufen = s; return Task.FromResult(true); });
+                           gesetzeGaben: () => { gerufen++; return new Dictionary<string, object>(); });
 
         cut.Find("button.epos-sprung").Click();
 
-        Assert.Equal(Sprungziel.GesetzesparameterCo2, gerufen);
+        Assert.Equal(1, gerufen);
+        Assert.True(cut.Instance.KatalogOffen);
         Assert.Null(ergebnis);
     }
 
+    /// <summary>
+    /// Esc schliesst die OBERSTE Ebene: steht der Katalog, bleibt der Dialog stehen.
+    /// </summary>
     [Fact]
-    public void Ohne_Sprungbruecke_fehlt_der_Katalogknopf()
+    public void Esc_schliesst_erst_den_Katalog_und_nicht_den_Dialog()
+    {
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(Satz(), brennstoff: true, geschlossen: e => ergebnis = e,
+                           gesetzeGaben: () => new Dictionary<string, object>());
+
+        cut.Find("button.epos-sprung").Click();
+        Assert.True(cut.Instance.KatalogOffen);
+
+        cut.Find("div.epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.Null(ergebnis);          // der Dialog steht noch
+    }
+
+    [Fact]
+    public void Ohne_Gaben_fehlt_der_Katalogknopf()
     {
         var cut = Aufbauen(Satz(), brennstoff: true);
 

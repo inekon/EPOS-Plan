@@ -103,11 +103,7 @@ namespace WindowsFormsApplication1
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     MyResource.Resource.GESETZ_MENUE);
                 eintrag.Name = "MenuItem_Gesetzesparameter";
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_Gesetzesparameter frm = new Form_Gesetzesparameter())
-                        frm.ShowDialog(this);
-                };
+                eintrag.Click += (s, e) => GesetzeskatalogHuelle.Oeffnen(this);
                 eintrag.Image = Properties.Resources.gesetzliche_parameter_32;
                 eintrag.ImageScaling = ToolStripItemImageScaling.None;
 

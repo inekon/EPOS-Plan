@@ -19,9 +19,12 @@ namespace WindowsFormsApplication1
     /// Datenseite und steht deshalb hier — die Razor-Komponente
     /// <c>ErtragBonus</c> bekommt die fertigen Sätze.</para>
     ///
-    /// <para><b>Der Sprung in den Gesetzeskatalog</b> läuft über die
-    /// Sprungbrücke (iU9-W2.2): <c>Form_Gesetzesparameter</c> ist bis Welle 14c
-    /// eine WinForms-Maske und erscheint modal über dem Blazor-Dialog.</para>
+    /// <para><b>Der Gesetzeskatalog ist seit iU9-W14c.3 eine Ueberlagerung.</b> Bis
+    /// dahin sprang das Reiterblatt über die Sprungbrücke (iU9-W2.2) in das
+    /// WinForms-Fenster <c>Form_Gesetzesparameter</c>. Das Ziel ist jetzt selbst eine
+    /// Razor-Komponente; der Wunsch geht deshalb als <c>GesetzeGewuenscht</c> an den
+    /// Wirt <c>KostenKomponenteDialog</c>, der den Katalog im selben Fenster zeigt
+    /// (Risiko R2) und danach diese Gaben neu bauen lässt.</para>
     /// </summary>
     internal static class ErtragBonusGaben
     {
@@ -147,10 +150,14 @@ namespace WindowsFormsApplication1
                 "Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, " +
                 "Kontingent-Override) werden dort je Anlage gepflegt.");
 
-            // Der Katalog kann sich nach dem Sprung geändert haben — wie
-            // btnGesetze_Click, das danach BhkwFuellen erneut rief. Die Brücke
-            // führt nur WinForms-Ziele; Form_Gesetzesparameter ist bis W14c eines.
-            werte["Sprung"] = Sprungbruecke.Fuer(null);
+            // iU9-W14c.3: Bis hierher stand hier Sprungbruecke.Fuer(null) und die
+            // Komponente sprang mit Sprungziel.Gesetzesparameter in ein
+            // WinForms-Fenster. Der Katalog ist jetzt selbst eine Razor-Komponente;
+            // ErtragBonus ist ein REITERBLATT und kann keine Ueberlagerung oeffnen -
+            // es meldet den Wunsch als GesetzeGewuenscht nach oben, und
+            // KostenKomponenteDialog zeigt den Katalog (Risiko R2). Der Wirt laedt
+            // danach die Gaben dieses Reiterblatts neu, wie es btnGesetze_Click mit
+            // BhkwFuellen tat.
         }
 
         private static string Z(string schluessel, string rueckfall, string wert)

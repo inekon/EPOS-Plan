@@ -525,6 +525,59 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Single(cut.FindAll(".epos-ertragbonus"));
     }
 
+    /// <summary>
+    /// <b>Die SECHSTE Ueberlagerung: der Gesetzeskatalog</b> (iU9-W14c.3). Bis dahin
+    /// sprang <c>ErtragBonus</c> mit <c>Sprungziel.Gesetzesparameter</c> ueber die
+    /// <c>Sprungbruecke</c> in ein WinForms-Fenster; das Ziel ist jetzt selbst Razor,
+    /// und zwei WebViews uebereinander sind Risiko R2. Das Reiterblatt kann keine
+    /// Ueberlagerung oeffnen - es meldet den Wunsch nach oben.
+    /// </summary>
+    [Fact]
+    public void Der_Gesetzeskatalog_erscheint_als_sechste_Ueberlagerung()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstBhkw"] = true
+        };
+
+        int gerufen = 0;
+        var cut = Zeige(p => p.Add(x => x.GesetzeGaben, () =>
+        {
+            gerufen++;
+            return (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+            {
+                ["Klassenvorrat"] = (IReadOnlyList<(string, string)>)new[] { ("KWKG", "KWK-Gesetz") }
+            };
+        }), stand: mit);
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();          // Reiter Ertrag/Bonus
+        Assert.False(cut.Instance.UeberlagerungOffen);
+
+        cut.Find(".epos-ertragbonus button").Click();          // "Gesetzesparameter..."
+
+        Assert.Equal(1, gerufen);
+        Assert.True(cut.Instance.UeberlagerungOffen);
+        Assert.Single(cut.FindComponents<EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog>());
+    }
+
+    /// <summary>
+    /// Ohne Gaben bleibt der Knopf im Reiterblatt weg - "kein Delegat, kein Knopf".
+    /// </summary>
+    [Fact]
+    public void Ohne_Gesetzesgaben_fehlt_der_Katalogknopf()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object> { ["IstBhkw"] = true };
+
+        var cut = Zeige(stand: mit);
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+
+        Assert.Empty(cut.FindAll(".epos-ertragbonus button"));
+    }
+
     // =====================================================================
     // Tastatur
     // =====================================================================
@@ -538,6 +591,73 @@ public class KostenKomponenteDialogTests : BunitContext
         cut.Find(".epos-dialog").KeyDown(key: "Escape");
 
         Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Esc schliesst immer nur die OBERSTE Ebene</b> (R-W14c-3): Steht eine
+    /// Ueberlagerung, bleibt der Wirt stehen - je Ebene geprueft, auch fuer die neue
+    /// sechste.
+    /// </summary>
+    [Theory]
+    [InlineData("editor")]
+    [InlineData("uebernahme")]
+    [InlineData("katalog")]
+    [InlineData("gesetze")]
+    public void Esc_laesst_den_Wirt_stehen_solange_eine_Ueberlagerung_offen_ist(string ebene)
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object> { ["IstBhkw"] = true };
+
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok)
+            .Add(x => x.EditorGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Bezeichnung"] = z.Bezeichnung,
+                    ["Kostenarten"] = (IReadOnlyList<(int, string)>)new[] { (0, "kapitalgebunden") }
+                })
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") }
+                })
+            .Add(x => x.KatalogGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zeilen"] = (IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>)
+                        new[] { new KostenfaktorKatalogDialog.KostenfaktorZeile(1, "Faktor") }
+                })
+            .Add(x => x.GesetzeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Klassenvorrat"] = (IReadOnlyList<(string, string)>)new[] { ("KWKG", "KWK-Gesetz") }
+                }),
+            stand: mit);
+
+        switch (ebene)
+        {
+            case "editor":
+                cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[0].Click();
+                break;
+            case "uebernahme":
+                cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();
+                break;
+            case "katalog":
+                cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[2].Click();
+                break;
+            case "gesetze":
+                cut.FindAll(".epos-reiter-knopf")[1].Click();
+                cut.Find(".epos-ertragbonus button").Click();
+                break;
+        }
+
+        Assert.True(cut.Instance.UeberlagerungOffen, "Die Ebene " + ebene + " steht nicht.");
+
+        cut.Find(".epos-dialog").KeyDown(key: "Escape");
+
+        Assert.Null(ergebnis);
     }
 
     [Fact]
