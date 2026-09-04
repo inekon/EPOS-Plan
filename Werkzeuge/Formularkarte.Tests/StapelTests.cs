@@ -71,9 +71,14 @@ public sealed class StapelTests
         // Designer der Klimadaten ist dabei nicht geloescht, sondern nach
         // Pruefmuster/Klimadaten/ VERSCHOBEN - er traegt fuenf Testanker und liegt
         // damit ausserhalb dieser Zaehlung (der Stapellauf uebergeht den Ordner).
-        // Gezaehlt wird ueber die REPOWURZEL: 18 unter WindowsFormsApplication1
+        // Welle 15a nimmt VIER mit (16): Form_ProjektAuswahl, Form_ProjektDelete,
+        // Form_ProjektSpeichernUnter und Wizard_Projekt. Das UserControl
+        // ProjektAuswahl BLEIBT bis Welle 16 - es lebt in zwei Wirten, und der
+        // zweite (WizardParent.pnlLeft) faellt erst dort (Entscheid R-W15a-1,
+        // ausdrueckliche Ausnahme von der Arbeitsregel iZ5).
+        // Gezaehlt wird ueber die REPOWURZEL: 14 unter WindowsFormsApplication1
         // plus die zwei generierten des Kerns (Resource, Settings).
-        Assert.True(dateien.Count >= 20, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        Assert.True(dateien.Count >= 16, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -118,8 +123,12 @@ public sealed class StapelTests
         // Welle 14c nimmt VIER mit (17): die zwei Gesetzesmasken, die
         // Einstellungen und die Klimadaten. Form_KatalogDubletten faellt in
         // derselben Welle, zaehlte hier aber nie mit - sie hatte keinen Designer
-        // (Befund W14c-B61).
-        Assert.True(Lauf.Value.Masken >= 17, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // (Befund W14c-B61). Welle 15a nimmt VIER mit (13): die zwei Projektwahl-
+        // masken werden EINE Komponente mit zwei Zwecken, dazu "Speichern unter"
+        // und die erste Assistentenseite. Form_ProjektExportImport faellt in
+        // derselben Welle, zaehlte hier aber nie mit - auch sie hatte keinen
+        // Designer (Befund W15a-B24).
+        Assert.True(Lauf.Value.Masken >= 13, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -159,10 +168,13 @@ public sealed class StapelTests
         // lokalisierte mit: Von ihren fuenf Masken traegt keine ein
         // ApplyResources - die vier .resx des Wellenumfangs sind leere
         // 119-Zeilen-Ruempfe (Befunde W14c-B2/B36/B58). Die Zahl bleibt damit
-        // bei 11.
-        // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
+        // bei 11. Welle 15a nimmt VIER lokalisierte mit (7): Ihre vier
+        // Designer-Masken melden ALLE "lokalisiert: ja" - die umgekehrte Lage zu
+        // Welle 14c und der eigentliche Aufwandstreiber dieser Welle (461
+        // .resx-Eintraege, aber nur sechs MyResource-Zugriffe).
+        // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 11,
+        Assert.True(Lauf.Value.Lokalisierte >= 7,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

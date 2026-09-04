@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 
+using EPOS.UI.Dialoge.Projekt;
+
 namespace WindowsFormsApplication1
 {
     /// <summary>
@@ -176,24 +178,23 @@ namespace WindowsFormsApplication1
                 case Masken.PeakShaving:
                     return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
 
+                // iU9-W15a.4: „Speichern unter" ist die Razor-Komponente ProjektKopieDialog;
+                // ausgewertet wird wie beim Vorlaeufer nur das DialogResult.
                 case Masken.ProjektSpeichernUnter:
-                    using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
-                        return MitOk(frm);
+                    return ProjektKopieHuelle.Oeffnen(null);
 
                 // --- Masken, die eine Projektwahl herausgeben -------------------------
+                // iU9-W15a.3: Beide Schluessel zeigen auf DIESELBE Razor-Komponente
+                // (ProjektWahlDialog) - sie unterscheiden sich nur im Zweck. Das
+                // Projektwahl-Fach fuellt die Huelle genau wie WahlUebernehmen zuvor;
+                // an ihm haengt der ganze Projektwechsel (Befund W15a-B45).
                 case Masken.ProjektAuswahl:
-                    using (Form_ProjektAuswahl frm = new Form_ProjektAuswahl())
-                    {
-                        if (!MitOk(frm)) return false;
-                        return WahlUebernehmen(argumente, frm.m_ID_Projekt, frm.m_szProjekt);
-                    }
+                    return ProjektWahlHuelle.Oeffnen(null,
+                               ProjektWahlDialog.ProjektZweck.Oeffnen, argumente);
 
                 case Masken.ProjektDelete:
-                    using (Form_ProjektDelete frm = new Form_ProjektDelete())
-                    {
-                        if (!MitOk(frm)) return false;
-                        return WahlUebernehmen(argumente, frm.ID_Projekt, frm.szProjekt);
-                    }
+                    return ProjektWahlHuelle.Oeffnen(null,
+                               ProjektWahlDialog.ProjektZweck.Loeschen, argumente);
 
                 // --- Zusammengesetzte Abläufe ----------------------------------------
                 case Masken.Assistent:

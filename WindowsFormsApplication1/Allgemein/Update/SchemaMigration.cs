@@ -135,8 +135,18 @@ namespace WindowsFormsApplication1
         /// derselben Reihenfolge angelegt: erst Schrittkonstante, Methode
         /// (<c>Schritt_62_KlimaWaisen</c>) und Eintrag, DANN das Ziel.
         /// <b>Neue Schritte ab 63.</b>
+        ///
+        /// <para>iU9‑W15a: Die ZAHL steht seither als <see cref="SchemaStand.Zielversion"/>
+        /// im Kern und wird von hier nur noch WEITERGEREICHT. Grund ist der
+        /// Projekttransfer: <c>ProjektExportImportCtrl</c> schreibt sie ins Paketmanifest
+        /// und war allein wegen dieser Konstante an das Anwendungsprojekt gebunden
+        /// (Befund W15a‑B30). Die öffentliche Fläche bleibt unverändert — jeder
+        /// bestehende Aufrufer von <c>SchemaMigration.ZIEL_VERSION</c> gilt weiter.
+        /// <b>Geändert wird die Nummer künftig in <see cref="SchemaStand"/>.</b>
+        /// <see cref="FREEZE_VERSION"/> bleibt hier: Sie gehört dem eingefrorenen
+        /// ACCESS-Zweig, den der Kern nicht kennt.</para>
         /// </summary>
-        public const int ZIEL_VERSION = 62;
+        public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
         /// <summary>
         /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>

@@ -2,8 +2,20 @@
 
    Vorbild ist die Variantenliste der Startmaske (Views/Hauptformular/Form_Start,
    Reiter "Projekte"): Nummer, Name, Klimaregion, Ausstattung. Uebernommen ist die
-   SPALTENFOLGE, nicht der Aufbau - statt eines ListView steht hier das Raster des
-   Hauses (QuickGrid).
+   SPALTENFOLGE, nicht der Aufbau.
+
+   iU9-W15a.7: DIE TABELLE IST DER BAUSTEIN ProjektListe. Bis dahin stand hier ein
+   eigenes Raster - die FUENFTE Projektliste des Bestands neben den vier der
+   WinForms-Masken (Befund W15a-B52). Der Baustein traegt beide Sichten: den
+   Spaltensatz "Auswahl" der drei Projektdialoge und den Spaltensatz "Einstieg"
+   dieser Seite. Was hier bleibt, ist die Seite drumherum - Kopfzeile mit Zaehler,
+   Leertext und die ZWEI AKTIONSKNOEPFE je Zeile; die gehoeren dieser Seite und
+   nicht dem Baustein.
+
+   Suche, Zaehlzeile und Zeilenmarkierung sind hier ABGESCHALTET: Diese Liste ist
+   kein Auswahldialog, sondern der Einstieg - ihre Knoepfe oeffnen Masken, sie
+   liefert kein Ergebnis zurueck. Aus demselben Grund sortiert sie nicht: Die
+   Reihenfolge kommt fertig aus IProjektQuelle.Projekte().
 
    KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen kommen fertig als [Parameter];
    geladen werden sie von der Huelle ueber IProjektQuelle.
@@ -15,7 +27,8 @@
 
 @namespace EPOS.UI.Seiten
 
-@using Microsoft.AspNetCore.Components.QuickGrid
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
 
 <div class="epos-seite">
 
@@ -24,31 +37,23 @@
         <span class="epos-seite-anzahl">@Zeilen.Count</span>
     </div>
 
-    @if (Zeilen.Count == 0)
-    {
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@LeerText" />
-    }
-    else
-    {
-        <Raster TZeile="ProjektZeile" Zeilen="@Zeilen.AsQueryable()">
-            <KindInhalt>
-                <PropertyColumn TGridItem="ProjektZeile" TProp="int" Property="@(z => z.Id)" Title="@SpalteNummer" />
-                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Name)" Title="@SpalteName" />
-                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Klimazone)" Title="@SpalteKlimazone" />
-                <PropertyColumn TGridItem="ProjektZeile" TProp="string" Property="@(z => z.Ausstattung)" Title="@SpalteAusstattung" />
-                <TemplateColumn TGridItem="ProjektZeile" Title="@SpalteAktionen">
-                    <button type="button" class="epos-knopf epos-projekt-energie"
-                            @onclick="@(() => Oeffne(context, Seitenschluessel.Energietraeger))">
-                        @KnopfEnergietraeger
-                    </button>
-                    <button type="button" class="epos-knopf epos-projekt-bhkw"
-                            @onclick="@(() => Oeffne(context, Seitenschluessel.BhkwWirtschaftlichkeit))">
-                        @KnopfBhkw
-                    </button>
-                </TemplateColumn>
-            </KindInhalt>
-        </Raster>
-    }
+    <ProjektListe Zeilen="@Kopfzeilen"
+                  Spalten="ProjektListe.Spaltensatz.Einstieg"
+                  MitSuche="false" MitZaehler="false" MitAuswahl="false" MitSortierung="false"
+                  SpalteNummer="@SpalteNummer" SpalteName="@SpalteName"
+                  SpalteKlima="@SpalteKlimazone" SpalteAusstattung="@SpalteAusstattung"
+                  AktionenText="@SpalteAktionen" LeerText="@LeerText">
+        <Zeilenaktionen Context="kopf">
+            <button type="button" class="epos-knopf epos-projekt-energie"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.Energietraeger))">
+                @KnopfEnergietraeger
+            </button>
+            <button type="button" class="epos-knopf epos-projekt-bhkw"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.BhkwWirtschaftlichkeit))">
+                @KnopfBhkw
+            </button>
+        </Zeilenaktionen>
+    </ProjektListe>
 </div>
 
 @code {
@@ -89,6 +94,19 @@
     /// <summary>Beschriftung des Knopfes „BHKW-Wirtschaftlichkeit".</summary>
     [Parameter] public string KnopfBhkw { get; set; } = "BHKW-Wirtschaftlichkeit…";
 
-    private Task Oeffne(ProjektZeile projekt, string maske)
-        => Oeffnen.InvokeAsync((projekt, maske));
+    /// <summary>
+    /// Die Zeilen in der Form des Bausteins. Klimaregion und Ausstattung sind die zwei
+    /// Zusatzfelder von <c>ProjektKopfZeile</c>, die es nur fuer diesen Einstieg gibt;
+    /// Kunde, Beschreibung und Aenderungsdatum kennt diese Seite nicht.
+    /// </summary>
+    private IReadOnlyList<ProjektKopfZeile> Kopfzeilen
+        => Zeilen.Select(z => new ProjektKopfZeile(z.Id, z.Name,
+                                                   Klimazone: z.Klimazone,
+                                                   Ausstattung: z.Ausstattung)).ToList();
+
+    private Task Oeffne(int id, string maske)
+    {
+        ProjektZeile? projekt = Zeilen.FirstOrDefault(z => z.Id == id);
+        return projekt is null ? Task.CompletedTask : Oeffnen.InvokeAsync((projekt, maske));
+    }
 }

@@ -5,6 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Rectangle = System.Drawing.Rectangle;
 
+using EPOS.UI.Dialoge.Projekt;
+
 namespace WindowsFormsApplication1
 {
     public partial class Form_Start : Form
@@ -727,7 +729,8 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Applikation</c>) — der P3-Zwischenstand zeigte hier die
         /// Projektliste und verfehlte damit den Ein-Klick-Zweck der Kachel
         /// („es wird der Dialog Öffnen gezeigt und nicht das zuletzt geöffnete
-        /// Projekt"). Die Liste <see cref="Form_ProjektAuswahl"/> bleibt nur
+        /// Projekt"). Die Liste (seit iU9-W15a die Razor-Komponente
+        /// <c>ProjektWahlDialog</c>, davor <c>Form_ProjektAuswahl</c>) bleibt nur
         /// als Rückfall, wenn noch kein Projekt gemerkt ist oder das gemerkte
         /// inzwischen gelöscht wurde — vorsortiert nach „Geändert". Wer die
         /// Liste bewusst will, nimmt die Kachel „Projekt öffnen/bearbeiten"
@@ -753,12 +756,15 @@ namespace WindowsFormsApplication1
             {
                 // Rückfall: nichts gemerkt oder das gemerkte Projekt existiert
                 // nicht mehr - dann (und nur dann) die Projektliste zeigen.
-                using (Form_ProjektAuswahl dlg = new Form_ProjektAuswahl())
-                {
-                    dlg.ZuletztGeaendertZuerst(gewaehlt);
-                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                    gewaehlt = dlg.m_szProjekt;
-                }
+                // iU9-W15a.2: derselbe Razor-Dialog wie hinter Masken.ProjektAuswahl,
+                // hier aber DIREKT (nicht ueber die Sprungtabelle) - so war es schon
+                // beim Vorlaeufer, weil nur dieser Weg die Sicht "zuletzt geaendert
+                // zuerst" mit Vorauswahl braucht.
+                if (!ProjektWahlHuelle.Oeffnen(this, ProjektWahlDialog.ProjektZweck.Oeffnen,
+                                               out ProjektKopfZeile wahl,
+                                               vorauswahl: gewaehlt,
+                                               zuletztGeaendertZuerst: true)) return;
+                gewaehlt = wahl.Name ?? "";
 
                 if (gewaehlt == "" || !ProjektKontextUebernehmen(gewaehlt))
                 {

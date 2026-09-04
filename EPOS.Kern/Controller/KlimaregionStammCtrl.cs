@@ -120,6 +120,65 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
+        /// <summary>
+        /// Die Stamm-Id zu einem Regionsnamen; 0, wenn es ihn nicht gibt
+        /// (iU9-W15a.0f) — die parametrierte Fassung von
+        /// <c>Wizard_Projekt.comboBox_Klima_SelectedIndexChanged</c>.
+        ///
+        /// <para>Der Vorlaeufer verkettete den ANWENDERTEXT in das WHERE
+        /// (<c>"... where Name='" + comboBox_Klima.Text + "'"</c>) und brach bei einem
+        /// Apostroph im Namen — dieselbe Falle wie <c>Form_ProjektDelete:48</c>
+        /// (Befund W15a-B32).</para>
+        ///
+        /// <para>Inhaltlich dasselbe wie <see cref="GetStammId"/>; diese Fassung ist
+        /// STATISCH, weil der Aufrufer dafuer keinen geladenen Controller braucht.</para>
+        /// </summary>
+        public static int IdVonName(string szName)
+        {
+            if (string.IsNullOrWhiteSpace(szName)) return 0;
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID_Klimaregion FROM " + TAB_REGION_STAMM + " WHERE Name = ?",
+                new DbParam("@name", szName));
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
+        /// <summary>
+        /// Der ANZEIGENAME der Klimaregion eines Projekts (iU9-W15a.0f).
+        ///
+        /// <para><b>Zwei Wege, wie im Vorlaeufer</b> (<c>Wizard_Projekt:51-73</c>): Neue
+        /// Speicherweise ist die Id der PROJEKTKOPIE (<c>Tab_Klimaregion.ID</c>, auf
+        /// dieses Projekt eingeschraenkt, Spalte <c>Bezeichner</c>). Findet sich dort
+        /// nichts, gilt der Rueckfall auf den Stammsatz
+        /// (<c>Tab_Klimaregion_STAMM.ID_Klimaregion</c>, Spalte <c>Name</c>) — so lesen
+        /// sich aeltere Projekte, die noch die STAMM-Id fuehren.</para>
+        ///
+        /// <para>Beide Abfragen sind hier PARAMETRIERT; der Vorlaeufer verkettete die
+        /// Zahlen (ungefaehrlich, aber uneinheitlich) und las zweimal <c>SELECT *</c>
+        /// fuer eine einzige Spalte.</para>
+        /// </summary>
+        /// <param name="idKlimaregion">Der Wert aus <c>Tab_Projekt.ID_Klimaregion</c>.</param>
+        /// <param name="idProjekt">Das Projekt, auf das die Kopie eingeschraenkt wird.</param>
+        /// <returns>Der Regionsname; <c>""</c>, wenn keiner der beiden Wege trifft.</returns>
+        public static string NameZuProjektregion(int idKlimaregion, int idProjekt)
+        {
+            if (idKlimaregion == 0) return "";
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM " + TAB_REGION_PROJEKT + " WHERE ID = ? AND ID_Projekt = ?",
+                new DbParam("@id", idKlimaregion),
+                new DbParam("@idProj", idProjekt));
+
+            string name = (v != null && v != DBNull.Value) ? Convert.ToString(v) : "";
+            if (!string.IsNullOrEmpty(name)) return name;
+
+            v = DataRepository.ExecuteScalar(
+                "SELECT Name FROM " + TAB_REGION_STAMM + " WHERE ID_Klimaregion = ?",
+                new DbParam("@id", idKlimaregion));
+
+            return (v != null && v != DBNull.Value) ? (Convert.ToString(v) ?? "") : "";
+        }
+
         #endregion
 
         #region --- WRITE OPERATIONS (STAMM / Admin) ---

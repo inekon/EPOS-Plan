@@ -92,6 +92,19 @@ namespace WindowsFormsApplication1
 
         public ProjektModel m_Projektmodel = new ProjektModel();
 
+        /// <summary>
+        /// Die GETEILTE Liste der ersten Assistentenseite - sie traegt genau EIN
+        /// Element (iU9-W15a.6, Weg (a) der Vermessung § 13.5).
+        ///
+        /// <para><c>Wizard_Projekt</c> war die einzige Seite, die dieser Rahmen an sechs
+        /// Stellen mit hartem Typumbruch auslas (<c>((Wizard_Projekt)page).Get*()</c>,
+        /// Befund W15a-B42). Die Razor-Fassung bearbeitet stattdessen diese Liste AN
+        /// ORT UND STELLE - dieselbe Mechanik wie die vier Bedarfsseiten aus iU9-W9.0a,
+        /// nur mit einer einelementigen Liste und ohne einen neuen Vertrag.</para>
+        /// </summary>
+        private readonly List<ProjektKopfDaten> m_ProjektKopf =
+            new List<ProjektKopfDaten> { new ProjektKopfDaten() };
+
         public int wizardmode;
         public bool gespeichert = false;
         private int top = WizardItemClass.KOMPONENTEN_ITEM;
@@ -264,13 +277,7 @@ namespace WindowsFormsApplication1
             if (top == WizardItemClass.PROJEKT_ITEM)
             {
                 page = listPages.ElementAt(top).wizardform;
-                m_Projektmodel.m_szProjektname = ((Wizard_Projekt)page).GetProjektName();
-                m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)page).GetBeschreibung();
-                m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)page).GetBearbeiter();
-                m_Projektmodel.m_szKunde = ((Wizard_Projekt)page).GetKunde();
-                m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)page).GetDatum();
-                m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)page).GetErstellDatum();
-                m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)page).GetIDKlimaregion();
+                ProjektkopfUebernehmen();
 
                 if (!bBereitsGeladen)
                 {
@@ -307,8 +314,8 @@ namespace WindowsFormsApplication1
                 }
                 else if (top == WizardItemClass.PROJEKT_ITEM)
                 {
-                    ((Wizard_Projekt)page).SetEditProjektName(false);
-                    ((Wizard_Projekt)page).SetProjektbezeichner(ucProjektAuswahl.GewaehlterName);
+                    // Bearbeiten: der Projektname ist gesetzt und NICHT aenderbar.
+                    ProjektkopfSeiteBestuecken(page, ucProjektAuswahl.GewaehlterName, aenderbar: false);
                 }
             }
             else
@@ -318,8 +325,8 @@ namespace WindowsFormsApplication1
                 projektID = prjctrl.GetMaxID() + 1;
                 if (top == WizardItemClass.PROJEKT_ITEM)
                 {
-                    ((Wizard_Projekt)page).SetEditProjektName(true);
-                    ((Wizard_Projekt)page).SetProjektbezeichner("");
+                    // Neu: leerer Name, und er DARF geaendert werden.
+                    ProjektkopfSeiteBestuecken(page, "", aenderbar: true);
                 }
             }
 
@@ -549,11 +556,48 @@ namespace WindowsFormsApplication1
             wizardmode = mode;
         }
 
+        /// <summary>
+        /// Uebernimmt die sieben Kopffelder der ersten Assistentenseite in
+        /// <see cref="m_Projektmodel"/> (iU9-W15a.6).
+        ///
+        /// <para>Der Vorlaeufer las sie ueber sieben <c>((Wizard_Projekt)page).Get*()</c>
+        /// aus, und zwei davon logen: <c>GetDatum()</c> lieferte <c>DateTime.Now</c>
+        /// statt des Feldes (Befund W15a-B39), <c>GetErstellDatum()</c> parste den
+        /// ANGEZEIGTEN Text ohne Kultur (B40). Hier steht das Aenderungsdatum
+        /// ausdruecklich auf JETZT - das war die Absicht hinter <c>GetDatum</c> und
+        /// bleibt so.</para>
+        /// </summary>
+        private void ProjektkopfUebernehmen()
+        {
+            ProjektKopfDaten kopf = m_ProjektKopf[0];
+            m_Projektmodel.m_szProjektname = kopf.Name ?? "";
+            m_Projektmodel.m_szBeschreibung = kopf.Beschreibung ?? "";
+            m_Projektmodel.m_szBearbeiter = kopf.Bearbeiter ?? "";
+            m_Projektmodel.m_szKunde = kopf.Kunde ?? "";
+            m_Projektmodel.m_Aenderungsdatum = DateTime.Now;
+            m_Projektmodel.m_Erstelldatum = kopf.Erstelldatum;
+            m_Projektmodel.m_ID_Klimaregion = kopf.IdKlimaregion;
+        }
+
+        /// <summary>
+        /// Reicht der ersten Assistentenseite die geteilte Liste herein und baut sie auf
+        /// (iU9-W15a.6). <see cref="ProjektKopfDaten.NameAenderbar"/> wird VOR
+        /// <c>Bestuecken</c> gesetzt - es ist der Ersatz fuer
+        /// <c>SetEditProjektName(bool)</c>.
+        /// </summary>
+        private void ProjektkopfSeiteBestuecken(Form page, string projektName, bool aenderbar)
+        {
+            if (!(page is IAssistentListenSeite<ProjektKopfDaten> seite)) return;
+
+            m_ProjektKopf[0].NameAenderbar = aenderbar;
+            seite.Modelle = m_ProjektKopf;
+            seite.Bestuecken(projektID, projektName ?? "");
+        }
+
         private void SpeichernAusfuehren()
         {
-            Form pageproj = listPages.ElementAt(WizardItemClass.PROJEKT_ITEM).wizardform;
-            Program.wizardctrl.Klimazone = ((Wizard_Projekt)pageproj).GetKlimaname();
-            Program.wizardctrl.Projektname = ((Wizard_Projekt)pageproj).GetProjektName();
+            Program.wizardctrl.Klimazone = m_ProjektKopf[0].Klimaname ?? "";
+            Program.wizardctrl.Projektname = m_ProjektKopf[0].Name ?? "";
             Program.wizardctrl.speichern = false;
 
             // iU9-W9.0a: Das Ruecklesen der drei Listen aus ihren Seiten ist entfallen.
@@ -579,15 +623,10 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            m_Projektmodel.m_szProjektname = ((Wizard_Projekt)pageproj).GetProjektName();
-            m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)pageproj).GetBeschreibung();
-            m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)pageproj).GetBearbeiter();
-            m_Projektmodel.m_szKunde = ((Wizard_Projekt)pageproj).GetKunde();
-            m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)pageproj).GetDatum();
-            m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)pageproj).GetErstellDatum();
+            ProjektkopfUebernehmen();
             // Nur den Namen der Klimaregion fuehren; die korrekte ID_Klimaregion (Projekt-Kopie)
             // wird beim Speichern in WizardCtrl.Add_Projekt/Update_Projekt gesetzt.
-            m_Projektmodel.m_szKlimaregion = ((Wizard_Projekt)pageproj).GetKlimaname();
+            m_Projektmodel.m_szKlimaregion = m_ProjektKopf[0].Klimaname ?? "";
             m_Projektmodel.m_ID_Klimaregion = 0;
 
             gespeichert = false;
@@ -676,10 +715,10 @@ namespace WindowsFormsApplication1
                 if (!result) return;
 
                 m_Projektmodel.m_Aenderungsdatum = DateTime.Now;
-                m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)pageproj).GetBearbeiter();
-                m_Projektmodel.m_szKunde = ((Wizard_Projekt)pageproj).GetKunde();
-                m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)pageproj).GetBeschreibung();
-                m_Projektmodel.m_szKlimaregion = ((Wizard_Projekt)pageproj).GetKlimaname();
+                m_Projektmodel.m_szBearbeiter = m_ProjektKopf[0].Bearbeiter ?? "";
+                m_Projektmodel.m_szKunde = m_ProjektKopf[0].Kunde ?? "";
+                m_Projektmodel.m_szBeschreibung = m_ProjektKopf[0].Beschreibung ?? "";
+                m_Projektmodel.m_szKlimaregion = m_ProjektKopf[0].Klimaname ?? "";
 
                 result = Program.wizardctrl.Update_Projekt(projektID, m_Projektmodel);
                 if (!result) return;

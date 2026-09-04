@@ -497,7 +497,8 @@ Zielkomponenten über alle 2377 Zeilen: Text 671, `Textfeld` 584, eigener Knopf 
 Optionsgruppe 45, `Ganzzahlfeld` 37, `InfoKnopf` 33, `ChartBild` 27, `Datumsfeld` 4.
 
 Unbekannte Typen — und damit die einzigen echten Lücken der Tabelle — sind die vier
-selbstgebauten Steuerelemente des Hauses: `AktionsKarte` (2 Masken), `ProjektAuswahl` (2),
+selbstgebauten Steuerelemente des Hauses: `AktionsKarte` (2 Masken), `ProjektAuswahl` (1 — seit iU9‑W15a; die Hüllform ist gefallen,
+es bleibt der Assistent),
 `HeaderGradientPanel` (1), `KlimazonenKarte` (1). Sie stehen in der Karte als „sonstig" mit ihrem
 Typnamen und als „prüfen".
 

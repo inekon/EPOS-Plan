@@ -173,7 +173,17 @@ public sealed class ErreichbarkeitTests
     {
         // Die Seiten stehen als Erzeugerliste in einem statischen Feld von
         // AssistentSeiten; wer nur Methodenrumpfe liest, findet sie nicht.
-        foreach (var klasse in new[] { "Wizard_Komponenten", "Wizard_Projekt", "Wizard_Stromlastgang" })
+        //
+        // iU9-W15a.9: Wizard_Projekt ist der dritte Zeuge gewesen und mit W15a.6
+        // gefallen (die Seite ist die Razor-Komponente ProjektKopfSeite). ZWEI
+        // Zeugen genuegen - der Test prueft die MECHANIK des Lesers, nicht die
+        // Vollzaehligkeit der Seiten. Eine der elf portierten Seiten koennte hier
+        // nicht einspringen: Ihr Knoten heisst BlazorAssistentSeite<...>, nicht
+        // Wizard_Gebaeude.
+        //
+        // WELLE 16 MUSS IHN GANZ STREICHEN: Wizard_Komponenten und
+        // Wizard_Stromlastgang sind die letzten zwei WinForms-Assistentenseiten.
+        foreach (var klasse in new[] { "Wizard_Komponenten", "Wizard_Stromlastgang" })
         {
             Assert.Equal(Erreichbar.Ja, Knoten(klasse).Status);
         }
@@ -184,17 +194,24 @@ public sealed class ErreichbarkeitTests
     {
         // Die Kette der Zeugen: Bis iU9-W7.10 stand hier Form_WP
         // (Masken.WpAdministration, mit W7.3 geloescht), danach bis iU9-W14a.7
-        // Form_AdminStromspeicher (Masken.StromspeicherAdmin, mit W14a.3 geloescht).
+        // Form_AdminStromspeicher (Masken.StromspeicherAdmin, mit W14a.3 geloescht),
+        // danach bis iU9-W15a.9 Form_ProjektSpeichernUnter (Masken.ProjektSpeichernUnter,
+        // mit W15a.4 geloescht).
         //
-        // Form_ProjektSpeichernUnter wird ebenso NUR ueber die Sprungtabelle
-        // geoeffnet - Masken.ProjektSpeichernUnter, vom MDI-Menue ueber MenueCtrl und
-        // WinFormsNavigation - und kommt erst in Welle 15a an die Reihe. Von den fuenf
-        // Maskenschluesseln, hinter denen nach W14 noch eine WinForms-Maske steht, ist
-        // sie der kuerzeste Weg (Vermessung W14 § 14.1).
-        var knoten = Knoten("Form_ProjektSpeichernUnter");
+        // FormMain wird ueber Masken.ProjektDetail geoeffnet - vom MDI-Menue ueber
+        // MenueCtrl.ProjektInFormMainLaden und WinFormsNavigation.ProjektDetailZeigen.
+        // Nach W15a sind es die LETZTEN ZWEI Maskenschluessel mit einer WinForms-Maske
+        // dahinter (Masken.ProjektDetail und Masken.Assistent); alle 22 uebrigen haben
+        // eine Razor-Fassung. ProjektDetail ist von beiden der kuerzere Weg.
+        //
+        // WELLE 16 MUSS DIESEN TEST STRICHEN ODER AUF EIN PRUEFMUSTER UMZIEHEN:
+        // Danach gibt es keinen Maskenschluessel mit einer WinForms-Maske mehr
+        // (Risiko R-W15a-10, dieselbe Entscheidung, die W14a fuer
+        // EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa treffen musste).
+        var knoten = Knoten("FormMain");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Contains("Masken.ProjektSpeichernUnter", knoten.Pfad, StringComparison.Ordinal);
+        Assert.Contains("Masken.ProjektDetail", knoten.Pfad, StringComparison.Ordinal);
     }
 
     // ==================================================================
@@ -302,9 +319,10 @@ public sealed class ErreichbarkeitTests
         // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43, nach
         // Welle 12: 37 von 38, nach Welle 13: 31 von 32, nach Welle 14b: 27 von
         // 28. Mit Welle 14a faellt die letzte "unklar"-Maske: nach BEIDEN Wellen
-        // sind es 21 von 21 - ALLE erreichbar. Nach Welle 14c: 17 von 17. Die Zahl
-        // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 17,
+        // sind es 21 von 21 - ALLE erreichbar. Nach Welle 14c: 17 von 17, nach
+        // Welle 15a: 13 von 13. Die Zahl sinkt mit jeder Welle, der Anteil steht
+        // seit W14a auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 13,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

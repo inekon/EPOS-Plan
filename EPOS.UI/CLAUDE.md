@@ -57,6 +57,7 @@ entgegen — sie ist damit austauschbar.
 | `Schema` | Das Hydraulikschema als **SVG**: vier Spalten, Knoten als Rundeck, Kanten als Bézier mit Pfeilspitze und Prioritätskreis, Kaskadenband und Legende. Die Anordnung kommt fertig aus dem Kern (`SchemaLayout`), die Farben aus `epos-ui.css`; jeder Kasten und jedes Bandglied ist ein Fokusziel | `Views/Simulation/SchemaAnsicht.cs` (789 Z. GDI+, iU9‑W10b.0c) |
 | `ErzeugerKachel` | Eine Anlage der Simulationskonfiguration: Rang, Titel, Chips in sechs Stilen mit sechs Editorzielen, ▲▼✎+× und ein Aufklappbereich — **acht Ereignisse** | `Views/Simulation/ErzeugerKarte.cs` (781 Z., iU9‑W10b.0d) |
 | `SpeicherKachel` | Ein Projekt-Pufferspeicher, zugeklappt eine Zeile: Badges, Flächenchips, Kurzbilanz; aufgeklappt die Detailzeilen und das Schwellenband (Inline-SVG) | `Views/Simulation/SpeicherKarte.cs` (551 Z. samt `SchwellenBand`, iU9‑W10b.0d) |
+| `ProjektListe` | Die EINE Projektliste des Hauses: Suche ueber Name, Kunde **und die unsichtbare Beschreibung**, Sortierung per Spaltenklick mit Gleichstandsaufloesung ueber den Namen, Zaehlzeile als FORMATSTRING (im Vorlaeufer als Steuerelementtext getarnt), Zeilenmarkierung, Doppelklick, zwei Spaltensaetze (`Auswahl` fuer die Projektdialoge, `Einstieg` fuer die iOS-Seite) und `NurName`/`AutoVorauswahl` je Wirt. Eine gewoehnliche Tabelle mit der Hausklasse `epos-raster`, kein QuickGrid — die Spaltenzahl entsteht zur Laufzeit | **vier** Listen des Bestands: `ProjektAuswahl` (uc), `Form_ProjektSpeichernUnter.listView_Projekt`, `Form_ProjektDelete.comboBox_Projekte`, `Form_ProjektExportImport.cbProjekt` (iU9‑W15a.1, Befund W15a‑B52) |
 | `Baumansicht` + `Baumknoten` | Ein vierstufiger Baum: `role="tree"/"treeitem"/"group"`, `aria-level`/`setsize`/`posinset`, `aria-expanded` NUR an Knoten mit Kindern, roving `tabindex` über die **abgeflachte Sichtliste** (↓↑ → ← Pos1 Ende Enter/Leertaste, kein Typeahead), Einrückung per CSS, `forced-colors`. Das Dreieck ist ein eigenes 44‑px‑Klickziel und **wählt nicht**; das Kennzeichen (»[Auslieferung]«) steht als eigenes `<span>` neben dem Text, nicht darin. Der Aufklappzustand kommt aus den DATEN (`VonVornOffen`) und überlebt einen Neuaufbau, solange die Schlüssel gleich bleiben. **Kein Kontextmenü, keine Mehrfachauswahl** — die kleinste tragfähige Fassung für den einen Nutzer (R‑W14c‑8) | `Views/Admin/Form_KatalogDubletten._tree` — der **einzige** `TreeView` des Bestands (iU9‑W14c.4); die Daten kommen als `DublettenBaum` aus dem Kern |
 
 ## Standards (`Standards/`)
@@ -95,6 +96,8 @@ fünfzehn `@ref` auf seine Felder halten muss.
 `Func<string, Task<string?>>` herein — unter Windows aus `Dienste.Datei.DateiOeffnen`, auf iOS
 aus der Dokumentenauswahl. Ohne Delegat bleibt der Knopf weg.
 
+`Dateiwahl` fuehrt seit iU9‑W15a.5 zusaetzlich `Speichern`/`Namensvorschlag`/`Zielwaehlen`: Der Bestand kannte nur „Datei oeffnen“, der Projektexport braucht „Datei speichern unter“ MIT einem Namensvorschlag (`<Projekt>.wpx`). Der Unterschied ist nicht kosmetisch — ein Speichern-Dialog laesst einen Namen zu, den es noch nicht gibt. Auch hier gilt: kein Delegat, kein Knopf.
+
 ## Dienste (`Dienste/`)
 
 Drei Schnittstellen nach außen — mehr sieht diese Bibliothek von der Umgebung nicht.
@@ -129,6 +132,7 @@ einem zweiten Fenster geöffnet, sondern löst die Ansicht ab.
 | `Seitenschluessel` | die fünf sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`, `SIMULATION_KONFIGURATION`, `SIMULATION_ERGEBNIS`) |
 | `Simulation/SimulationKonfigSeite` | die **Simulationskonfiguration** (iU9‑W10b.1) — die erste FACHSEITE, die iOS über `AppWurzel` erreicht. Unter Windows steht dieselbe Komponente bis W16 in einer modalen Dialoghülle (Entscheid R‑W10b‑1), weil ihre beiden Aufrufer die modale Rückkehr brauchen. Datenseite: `Views/Simulation/SimulationKonfigHuelle.cs` |
 | `Simulation/SimulationErgebnisSeite` | das **Simulationsergebnis** (iU9‑W11b.13) — die zweite Fachseite für `AppWurzel`, unter Windows ebenfalls bis W16 modal (Entscheid R‑W11‑1, 1 474 × 821). **Ein `Reiter` für zehn Blätter**: Parameter (mit fünf Unterblättern), Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis — dazu vier Überlagerungen. Datenseite: `Views/Simulation/SimulationErgebnisHuelle.cs` in vier Teildateien |
+| `Assistent/ProjektKopfSeite` | die **erste Assistentenseite** (iU9‑W15a.6) — neun Verwaltungsfelder des Projekts. Sie ist die einzige Seite mit einem ERGEBNIS: `BlazorAssistentSeite<ProjektKopfSeite, ProjektKopfDaten>` trägt eine EINELEMENTIGE geteilte Liste, die die Seite an Ort und Stelle beschreibt (Weg (a), Befund W15a‑B42). Datenseite: `Views/Wizard/ProjektKopfHuelle.cs` |
 | `Simulation/ParameterReiter` … `SpeicherVariantenVergleich` | die **zwölf Reiterkomponenten** der Ergebnisseite. Sie nehmen die DTO aus `EPOS.Kern/Controller/SimulationErgebnisCtrl` unmittelbar entgegen — die sind für genau diese Seite gebaut worden (iU9‑W11a.3) und wären als zweite Datenform eine zweite Wahrheit. Die Bilder kommen als PNG aus dem Kern-Renderer, **erst beim Betreten eines Reiters** und je Schalterstellung zwischengespeichert |
 
 **`Seiten/Berichte/` — der Reiter „Berichte & Kosten" (iU9‑W5).** Die erste Gruppe von
@@ -231,6 +235,9 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Wirtschaftlichkeit/GesetzeskatalogZeileDialog` | `Form_GesetzparameterZeile` (iU9‑W14c.1) | keine Hülle — eine Überlagerung im Katalog; Schlüssel und Klasse sind beim Ändern gesperrt, ein leeres Wertfeld ist NULL und nicht 0 |
 | `Admin/KatalogDublettenDialog` | `Form_KatalogDubletten` (iU9‑W14c.5, ohne Designer) | `Views/Admin/KatalogDublettenHuelle.cs` → `DublettenPruefung`, `DublettenBaum`, `DublettenBefundText`, `KatalogBereinigung`; der Scan läuft in `Task.Run` mit `Fortschritt`, das Umbenennen ist der `NamensDialog` **mit Prüfung** |
 | `Admin/EinstellungenDialog` | `Form_AdminSettings` (iU9‑W14c.6) | `Views/Admin/EinstellungenHuelle.cs` → `EinstellungenCtrl`; die Rubrikenliste ist ein SENKRECHTER `Reiter` mit vier Blättern, der KI-Abschalter läuft über `KiEinwilligung` |
+| `Projekt/ProjektWahlDialog` | **zwei** Masken: `Form_ProjektAuswahl` und `Form_ProjektDelete` (iU9‑W15a.2) | `Views/Projekt/ProjektWahlHuelle.cs` → `ProjektCtrl.NamenListe`; der Zweck (Öffnen/Löschen) entscheidet über Titel, Knopftext und die Sicherheitsabfrage |
+| `Projekt/ProjektKopieDialog` | `Form_ProjektSpeichernUnter` (iU9‑W15a.4) | `Views/Projekt/ProjektKopieHuelle.cs` → `ProjektDuplizierenCtrl.PruefeNamen`/`Duplizieren`/`VerwaltungsfelderSetzen`; der Kopierlauf läuft in `Task.Run` mit `Fortschritt` und Abbrechen |
+| `Projekt/ProjektTransferDialog` | `Form_ProjektExportImport` (iU9‑W15a.5, ohne Designer) | `Views/Projekt/ProjektTransferHuelle.cs` → `ProjektExportImportCtrl` (seit W15a.0e im Kern); vier Pfaddelegaten — Dateiwahl lesend und schreibend, Sicherungskopie, Importbericht |
 | `Klimadaten/KlimadatenDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimadatenHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
@@ -408,6 +415,23 @@ Baustein `Baumansicht` für den einzigen `TreeView` des Bestands. Was bleibt, is
 ein Entscheid: `Sprungziel` führt danach EINE Konstante
 (`SpeicherOptimierung`) — sie steht bis Welle 16, und wer sie aufräumt, bricht
 `Form_SpeicherOptimierung` (iF22).
+
+**Sechs Bauteile, fünf Komponenten, vier Fenster** (iU9‑W15a): Die Projektdialoge, der
+Transfer und der Assistentenkopf. Der Befund der Welle ist eine Zahl: **der Bestand führte
+VIER Projektlisten nebeneinander** (ListView mit drei Spalten und Suche, ListView mit zwei
+Spalten, ComboBox über eine Erweiterungsmethode, ComboBox mit eigener Schleife) — dazu als
+fünfte die fertige Razor-Seite `Seiten/Projektliste`. Sie werden EIN Baustein, und das
+Konzept „Eine Projektauswahl für alle" ist damit eingelöst. Zwei Masken werden dabei EINE
+Komponente: „Projekt öffnen" und „Projekt löschen" taten dasselbe — ein Projekt auswählen —,
+sie unterscheiden sich in Titel, Knopftext und der Sicherheitsabfrage. **Diese Masken sind
+als einzige der ganzen Reihe LOKALISIERT** (461 `.resx`-Einträge, aber nur sechs
+`MyResource`-Zugriffe); der Port hebt 83 Texte in den Katalog, davon 27 für eine Maske, die
+**gar nicht übersetzt war**. Der Nachweis der Welle entsteht ZUERST und findet dabei den
+Befund W15a‑B55: **der Projektimport war seit der SQLite-Umstellung kaputt** — zwei Stellen
+trugen benannte Platzhalter im SQL-Text, und die Zugriffsschicht bindet nach Position.
+`ProjektAuswahl` (das UserControl) BLEIBT bis Welle 16 im Bestand: Es lebt in zwei Wirten,
+und der zweite ist der Assistentenrahmen — für genau eine Welle gibt es zwei Fassungen
+derselben Liste (ausdrückliche Ausnahme von iZ5, Muster W4‑O1).
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
