@@ -516,6 +516,73 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, ctrl.GetStammId("gibt-es-nicht"));
         }
 
+        /// <summary>
+        /// <see cref="SolarganglinieStammCtrl.Exists"/> (W14b.0d) fragt die DATENBANK.
+        /// Der Vorlaeufer nahm <c>listBox_Extern.FindString</c> — eine PRAEFIXsuche in
+        /// der Anzeige (Befund W14-B70): „Tsol" haette dort „Tsol1" getroffen und den
+        /// Import abgelehnt, obwohl der Name frei ist.
+        /// </summary>
+        [Fact]
+        public void Exists_der_Solarganglinie_ist_keine_Praefixsuche()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ctrl = new SolarganglinieStammCtrl();
+
+            Assert.True(ctrl.Exists("Tsol1"));
+            Assert.False(ctrl.Exists("Tsol"));          // der Praefix trifft NICHT mehr
+            Assert.False(ctrl.Exists("Tsol1_2026"));
+            Assert.False(ctrl.Exists(""));
+            Assert.False(ctrl.Exists(null));
+        }
+
+        /// <summary>
+        /// <see cref="SolarganglinieStammCtrl.HatProjektzuordnung"/> (W14b.0d) — die
+        /// Sperre vor dem Loeschen. In der Testdatenbank ist
+        /// <c>Z_ProjektSolarganglinie</c> leer, also sperrt nichts.
+        /// </summary>
+        [Fact]
+        public void HatProjektzuordnung_sperrt_nur_zugeordnete_Ganglinien()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ctrl = new SolarganglinieStammCtrl();
+            Assert.False(ctrl.HatProjektzuordnung("Tsol1"));
+            Assert.False(ctrl.HatProjektzuordnung("gibt-es-nicht"));
+            Assert.False(ctrl.HatProjektzuordnung(null));
+        }
+
+        /// <summary>
+        /// Der ganze Weg des Knopfes „Datei Einlesen…" auf einer eigenen Arbeitskopie:
+        /// lesen, Dublettenpruefung, schreiben, wiederfinden, loeschen. Der Fall
+        /// SCHREIBT und legt sich deshalb seine eigene Kopie an.
+        /// </summary>
+        [Fact]
+        public void Der_Einleseweg_der_Solarganglinie_traegt_Kopf_und_8760_Werte()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            GanglinienTextErgebnis datei = GanglinienTextDatei.Lies(Probe("solarganglinie_8760.txt"),
+                                                                    mitKopfzeile: true);
+            Assert.True(datei.Erfolgreich);
+
+            var ctrl = new SolarganglinieStammCtrl();
+            string name = "W14b-SG-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+
+            Assert.False(ctrl.Exists(name));
+            Assert.True(ctrl.ImportGanglinie(name, datei.Beschreibung, datei.Werte));
+            Assert.True(ctrl.Exists(name));
+
+            ctrl.ReadAll();
+            SolarganglinieModel satz = ctrl.items.First(m => m.m_szBezeichner == name);
+            Assert.Equal("Solarganglinie Sued 45 Grad, Leistung Solarsystem [W]", satz.m_szBeschreibung);
+
+            Assert.False(ctrl.HatProjektzuordnung(name));
+            Assert.True(ctrl.Delete(name));
+            Assert.False(ctrl.Exists(name));
+        }
+
         // ==================================================================
         //  5 — Die Ganglinien-Textdatei MIT Kopfzeile
         // ==================================================================
