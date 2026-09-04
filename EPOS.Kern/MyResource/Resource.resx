@@ -297,6 +297,12 @@
   <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
     <value>Position löschen</value>
   </data>
+  <data name="PEAK_MSG_RECHNET" xml:space="preserve">
+    <value>Die Lastspitzenkappung wird gerechnet …</value>
+  </data>
+  <data name="PEAK_MSG_SUCHE" xml:space="preserve">
+    <value>Die kleinste haltbare Zielschwelle wird gesucht …</value>
+  </data>
   <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
     <value>Speicher im Projekt</value>
   </data>

@@ -2429,3 +2429,32 @@ body {
 .epos-konflikt-befund { white-space: normal; }
 .epos-konflikt-beanstandet { color: var(--epos-stufe-fehler); font-weight: 600; }
 .epos-leiste-fueller { flex: 1 1 auto; }
+
+/* ------------------------------------------------------------------ */
+/* Lastspitzenkappung (iU9-W12.6)                                      */
+/*                                                                     */
+/* Der Rechenknopf steht fuer sich zwischen Parametern und Ergebnis -  */
+/* im Vorlaeufer ein einzelner Knopf ueber dem Reiterblock.            */
+/*                                                                     */
+/* Negative Betraege stehen rot: "Hausmuster ZahlFaerben: negative     */
+/* Betraege rot, damit der Blick sie findet" (Form_PeakShaving         */
+/* :617-619, Color.FromArgb(176, 0, 0)). Der Kern liefert dafuer das   */
+/* Kennzeichen Zeile.Negativ, nicht die Farbe.                         */
+/*                                                                     */
+/* Die Trennzeile zwischen zwei Kennzahlgruppen war im Vorlaeufer ein  */
+/* leeres ListViewItem; hier ist sie eine flache Zeile mit einer       */
+/* Trennlinie - sichtbar auch ohne Zeilenhoehe.                        */
+/* ------------------------------------------------------------------ */
+.epos-peakshaving-rechnen { justify-content: flex-end; }
+
+.epos-wert--negativ { color: var(--epos-stufe-fehler); }
+
+.epos-zeile--trenner > td {
+    height: 8px;
+    padding: 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-wert--negativ { color: LinkText; }
+}

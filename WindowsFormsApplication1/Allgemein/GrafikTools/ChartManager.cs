@@ -552,9 +552,11 @@ namespace WindowsFormsApplication1
     // Stelle treten ChartRenderer.Ring (B5, aus dem Kern) und der Baustein
     // Kennzahlkachel.
     //
-    // Der ChartManager selbst BLEIBT: Form_Klimadaten und Form_PeakShaving fuehren
-    // weiter interaktive WinForms-Charts (geprueft, Wellenauftrag „kein anderer
-    // Nutzer" trifft auf ihn nicht zu).
+    // Der ChartManager selbst BLEIBT: Form_Klimadaten fuehrt weiter ein interaktives
+    // WinForms-Chart (geprueft, Wellenauftrag „kein anderer Nutzer" trifft auf ihn
+    // nicht zu). Form_PeakShaving stand hier bis iU9-W12.6; sein Vorher/Nachher-Bild
+    // kommt jetzt als PNG aus dem Kern (PeakShavingBild ueber
+    // ChartRenderer.ErzeugerStapel).
 
 
 }

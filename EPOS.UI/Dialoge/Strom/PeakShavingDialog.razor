@@ -1,0 +1,854 @@
+﻿@* Lastspitzenkappung (Peak-Shaving) — AP7 (iU9-W12.6).
+
+   Vorbild: Views/Stromspeicher/Form_PeakShaving.cs (761 Z.) und
+   .Designer.cs (680 Z., 59 Steuerelemente, 5 MessageBox + 13 indirekte).
+
+   WOZU. Eingang ist allein ein Lastgang - eine Ganglinie aus Projekt oder
+   Stammkatalog ODER eine ad hoc importierte Datei. Ein geoeffnetes Projekt ist
+   nicht noetig. Bezugsgroesse der Spitze ist das Jahresmaximum der
+   Viertelstundenleistung; abgelegt wird nichts, Exportweg ist CSV. Beides steht
+   woertlich als Hinweiszeile in der Maske.
+
+   DIE IMPORTKETTE LIEGT IM KERN (GanglinienImportAblauf.OhneAblage, W12.0d).
+   Der Vorlaeufer trug sie ein zweites Mal woertlich im Quelltext; hier reicht
+   die Komponente zwei Rueckrufe herein - Optionen und Protokoll - und zeigt sie
+   als UEBERLAGERUNG im selben Fenster (Risiko R2). Konflikte gibt es hier
+   nicht: es wird ja nichts abgelegt.
+
+   DER RECHENLAUF LAEUFT NEBENHER (Befund W12-B22, behoben). 35 040 Werte und
+   bei der Schwellensuche eine Schleife ueber ganze Jahreslaeufe liefen im
+   Vorlaeufer im Oberflaechenfaden; in einer WebView ist der Renderfaden
+   derselbe Faden. Beide Laeufe gehen deshalb ueber einen Delegaten, den die
+   Huelle auf Task.Run legt, und melden sich am Baustein Fortschritt. Ein
+   ABBRUCH ist nicht vorgesehen - die Engine kennt keinen, und ein Knopf ohne
+   Wirkung waere schlechter als keiner (Regel des Bausteins).
+
+   DIE PRUEFREGELN UND DIE UMRECHNUNG LIEGEN IM KERN
+   (PeakShavingEingaben, W12.6): vier Regeln woertlich, das SoC-Band in Prozent
+   an der Maske und in kWh in der Engine, DtH = 0,25 fest, Degradation 0.
+
+   DAS BILD IST EIN BESTANDSBILD. ChartRenderer.ErzeugerStapel traegt seit
+   iU9-W11a eine Sekundaerachse - genau das, was der Ladezustand hier braucht.
+   Kein neuer Renderer, keine neue ChartProbe (PeakShavingBild, W12.0h).
+
+   WOERTLICH TROTZ BEFUND: W12-B24 - der einzige Fussknopf schliesst mit
+   "Abbrechen", die Huelle liefert deshalb immer false. W12-B9 entfaellt: die
+   hartkodiert deutsche Zahlenmeldung von Program.ZahlPruefen ersetzt das
+   Zahlenfeld, das faerbt und seinen Namen meldet.
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-peakshaving" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Herleitungszeile Text="@HinweisText" />
+
+    @* ================================================== Quelle des Lastgangs *@
+    <Gruppenkopf Titel="@GruppeQuelle">
+        <KindInhalt>
+            <Optionsgruppe Bezeichnung="@GruppeQuelle" Eintraege="@Quellen"
+                           Auswahl="@_quelle" AuswahlChanged="QuelleGeaendert"
+                           Aktiv="@(!_laeuft)" />
+
+            <Auswahlfeld Bezeichnung="@LabelGanglinie" Eintraege="@Ganglinien"
+                         Auswahl="@_iGanglinie" AuswahlChanged="GanglinieGeaendert"
+                         Aktiv="@(_quelle == QuelleGanglinie && !_laeuft)" />
+
+            @if (DateiWaehlen is not null)
+            {
+                <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                           Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                           Aktiv="@(_quelle == QuelleDatei && !_laeuft)" />
+            }
+
+            @* lbl_Reihe: leer = "Kein Lastgang geladen." in Grau; der Baustein
+               Herleitungszeile ist die leise Zeile des Hauses. *@
+            <Herleitungszeile Text="@_reiheText" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ============================================ Speicher- und Bewertungsparameter *@
+    <Gruppenkopf Titel="@GruppeParameter">
+        <KindInhalt>
+            <Herleitungszeile Text="@_herkunft" />
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelP" Einheit="kW" Feldname="@LabelP"
+                            Wert="@_pKw" WertChanged="w => _pKw = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelKapazitaet" Einheit="kWh" Feldname="@LabelKapazitaet"
+                            Wert="@_kapazitaet" WertChanged="w => _kapazitaet = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelEta" Feldname="@LabelEta"
+                            Wert="@_eta" WertChanged="w => _eta = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelSoCMin" Einheit="%" Feldname="@LabelSoCMin"
+                            Wert="@_socMin" WertChanged="w => _socMin = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelSoCMax" Einheit="%" Feldname="@LabelSoCMax"
+                            Wert="@_socMax" WertChanged="w => _socMax = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelStartSoC" Einheit="%" Feldname="@LabelStartSoC"
+                            Wert="@_startSoC" WertChanged="w => _startSoC = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <Schalter Bezeichnung="@LabelAdaptiv" Wert="@_adaptiv" WertChanged="AdaptivGeaendert"
+                      Aktiv="@(!_laeuft)" />
+
+            <div class="epos-feldpaar">
+                @* Woertlich: die Zielschwelle ist gesperrt, solange nachgezogen wird -
+                   sie bleibt dabei SICHTBAR und lesbar. *@
+                <Zahlenfeld Bezeichnung="@LabelZiel" Einheit="kW" Feldname="@LabelZiel"
+                            Wert="@_ziel" WertChanged="w => _ziel = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_adaptiv && !_laeuft)" />
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="BeiMinimal">@MinimalText</button>
+            </div>
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelLp" Feldname="@LabelLp"
+                            Wert="@_lp" WertChanged="w => _lp = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelBezugspreis" Feldname="@LabelBezugspreis"
+                            Wert="@_bezugspreis" WertChanged="w => _bezugspreis = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <Schalter Bezeichnung="@LabelKompatibel" Wert="@_kompatibel"
+                      WertChanged="w => _kompatibel = w" Aktiv="@(!_laeuft)" />
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelCCap" Feldname="@LabelCCap"
+                            Wert="@_cCap" WertChanged="w => _cCap = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelCPow" Feldname="@LabelCPow"
+                            Wert="@_cPow" WertChanged="w => _cPow = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <div class="epos-feldpaar">
+                <Zahlenfeld Bezeichnung="@LabelIFix" Feldname="@LabelIFix"
+                            Wert="@_iFix" WertChanged="w => _iFix = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelZins" Einheit="%" Feldname="@LabelZins"
+                            Wert="@_zins" WertChanged="w => _zins = w"
+                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            </div>
+
+            <Zahlenfeld Bezeichnung="@LabelNutzungsdauer" Einheit="a" Feldname="@LabelNutzungsdauer"
+                        Wert="@_nutzungsdauer" WertChanged="w => _nutzungsdauer = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <div class="epos-leiste epos-peakshaving-rechnen">
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="BeiRechnen">@RechnenText</button>
+    </div>
+
+    @if (_laeuft)
+    {
+        <Fortschritt Anteil="null" Text="@_fortschritt" />
+    }
+
+    @* ============================================================ Ergebnis *@
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+        <KindInhalt>
+
+            <Reiterblatt Schluessel="KENNZAHLEN" Titel="@ReiterKennzahlen">
+                <KindInhalt>
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster">
+                            <thead>
+                                <tr>
+                                    <th>@SpalteGroesse</th>
+                                    <th>@SpalteWert</th>
+                                    <th>@SpalteEinheit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (PeakShavingKennzahlenBlock.Zeile z in _kennzahlen)
+                                {
+                                    <tr class="@(z.IstTrenner ? "epos-zeile--trenner" : null)">
+                                        <td>@z.Bezeichnung</td>
+                                        <td class="@(z.Negativ ? "epos-wert--negativ" : null)">@z.Wert</td>
+                                        <td>@z.Einheit</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="CHART" Titel="@ReiterChart">
+                <KindInhalt>
+                    <Schalter Bezeichnung="@LabelSoC" Wert="@_socZeigen" WertChanged="SoCGeaendert"
+                              Aktiv="@(!_laeuft)" />
+                    <ChartBild Png="@_bild" Alt="@ReiterChart" PlatzhalterText="@LeerText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="MONATE" Titel="@ReiterMonate">
+                <KindInhalt>
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster">
+                            <thead>
+                                <tr>
+                                    <th>@SpalteMonat</th>
+                                    <th>@SpalteAlt</th>
+                                    <th>@SpalteNeu</th>
+                                    <th>@SpalteKappung</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (PeakShavingKennzahlenBlock.Monatszeile m in _monate)
+                                {
+                                    <tr>
+                                        <td>@m.Monat</td>
+                                        <td>@m.Alt</td>
+                                        <td>@m.Neu</td>
+                                        <td>@m.Kappung</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        @if (CsvSpeichern is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="BeiCsv">@CsvText</button>
+        }
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    @* ------------------- Die zwei Ueberlagerungen der Importkette ---------- *@
+    <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_optionenOffen)
+            {
+                <GanglinieImportOptionenDialog Pfad="@_optionenPfad" Erkennung="@_optionenErkennung"
+                                               Vorschau="@Vorschau" Geschlossen="OptionenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_protokollOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_protokollOffen)
+            {
+                <GanglinieProtokollDialog Meldungen="@_protokollMeldungen"
+                                          ImportMoeglich="@_protokollMoeglich"
+                                          BestaetigungNoetig="@_protokollBestaetigen"
+                                          Geschlossen="ProtokollFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Steuerwert der Optionsgruppe: vorhandene Ganglinie.</summary>
+    public const int QuelleGanglinie = 0;
+
+    /// <summary>Steuerwert der Optionsgruppe: Datei importieren.</summary>
+    public const int QuelleDatei = 1;
+
+    // =====================================================================
+    // Eingaben und Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Die waehlbaren Ganglinien (<c>PeakShavingCtrl.LeseGanglinien</c>), fertig
+    /// beschriftet: <c>Id</c> ist der Platz in der Liste der Huelle.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Ganglinien { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorbelegung aus Geraet und aktiver Variante; <c>null</c> = die Vorgaben der Modelle.</summary>
+    [Parameter] public PeakShavingVorbelegung? Vorgaben { get; set; }
+
+    /// <summary>Liest die Werte einer Ganglinie (<c>PeakShavingCtrl.LeseWerte</c>).</summary>
+    [Parameter] public Func<int, Task<double[]>>? Werte { get; set; }
+
+    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Faehrt die Importkette OHNE Ablage
+    /// (<c>GanglinienImportAblauf.OhneAblage</c>). Die zwei Entscheidungen kommen
+    /// von dieser Komponente.
+    /// </summary>
+    [Parameter] public Func<string, GanglinienImportRueckrufe,
+                            Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Neuzerlegung mit den gewaehlten Optionen (fuer den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau>>? Vorschau { get; set; }
+
+    /// <summary>Der Rechenlauf; die Huelle legt ihn auf <c>Task.Run</c>.</summary>
+    [Parameter] public Func<double[], PeakShavingEingaben, Task<PeakShavingErgebnis>>? Rechnen { get; set; }
+
+    /// <summary>Die Suche nach der kleinsten haltbaren Schwelle; ebenfalls nebenher.</summary>
+    [Parameter] public Func<double[], PeakShavingEingaben, Task<double>>? MinimaleSchwelle { get; set; }
+
+    /// <summary>Zeichnet das Vorher/Nachher-Bild (<c>PeakShavingBild.Lastgang</c>).</summary>
+    [Parameter] public Func<PeakShavingErgebnis, bool, Task<byte[]?>>? Bild { get; set; }
+
+    /// <summary>Schreibt die fuenf Spalten als CSV; ohne Delegat kein Knopf.</summary>
+    [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. <b>Befund W12-B24, woertlich:</b> Der einzige
+    /// Fussknopf des Vorlaeufers trug <c>DialogResult.Cancel</c> — es kommt immer
+    /// <c>false</c> heraus.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.PEAK_TITEL;
+    [Parameter] public string HinweisText { get; set; } = Resource.PEAK_HINWEIS;
+    [Parameter] public string GruppeQuelle { get; set; } = Resource.PEAK_GRP_QUELLE;
+    [Parameter] public string OptGanglinie { get; set; } = Resource.PEAK_OPT_GANGLINIE;
+    [Parameter] public string OptDatei { get; set; } = Resource.PEAK_OPT_DATEI;
+    [Parameter] public string LabelGanglinie { get; set; } = Resource.PEAK_GRP_QUELLE;
+    [Parameter] public string DateiText { get; set; } = Resource.PEAK_BTN_DATEI;
+    [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
+    [Parameter] public string GruppeParameter { get; set; } = Resource.PEAK_GRP_PARAMETER;
+
+    [Parameter] public string LabelP { get; set; } = Resource.PEAK_LBL_P;
+    [Parameter] public string LabelKapazitaet { get; set; } = Resource.PEAK_LBL_KAPAZITAET;
+    [Parameter] public string LabelEta { get; set; } = Resource.PEAK_LBL_ETA;
+    [Parameter] public string LabelSoCMin { get; set; } = Resource.PEAK_LBL_SOCMIN;
+    [Parameter] public string LabelSoCMax { get; set; } = Resource.PEAK_LBL_SOCMAX;
+    [Parameter] public string LabelStartSoC { get; set; } = Resource.PEAK_LBL_STARTSOC;
+    [Parameter] public string LabelZiel { get; set; } = Resource.PEAK_LBL_ZIEL;
+    [Parameter] public string LabelLp { get; set; } = Resource.PEAK_LBL_LP;
+    [Parameter] public string LabelBezugspreis { get; set; } = Resource.PEAK_LBL_BEZUGSPREIS;
+    [Parameter] public string LabelCCap { get; set; } = Resource.PEAK_LBL_CCAP;
+    [Parameter] public string LabelCPow { get; set; } = Resource.PEAK_LBL_CPOW;
+    [Parameter] public string LabelIFix { get; set; } = Resource.PEAK_LBL_IFIX;
+    [Parameter] public string LabelZins { get; set; } = Resource.PEAK_LBL_ZINS;
+    [Parameter] public string LabelNutzungsdauer { get; set; } = Resource.PEAK_LBL_NUTZUNGSDAUER;
+    [Parameter] public string LabelAdaptiv { get; set; } = Resource.PEAK_CHK_ADAPTIV;
+    [Parameter] public string LabelKompatibel { get; set; } = Resource.PEAK_CHK_KOMPAT;
+    [Parameter] public string LabelSoC { get; set; } = Resource.PEAK_CHK_SOC;
+    [Parameter] public string MinimalText { get; set; } = Resource.PEAK_BTN_MINIMAL;
+    [Parameter] public string RechnenText { get; set; } = Resource.PEAK_BTN_RECHNEN;
+    [Parameter] public string CsvText { get; set; } = Resource.PEAK_BTN_CSV;
+    [Parameter] public string SchliessenText { get; set; } = Resource.PEAK_BTN_SCHLIESSEN;
+
+    [Parameter] public string ReiterKennzahlen { get; set; } = Resource.PEAK_TAB_KENNZAHLEN;
+    [Parameter] public string ReiterChart { get; set; } = Resource.PEAK_TAB_CHART;
+    [Parameter] public string ReiterMonate { get; set; } = Resource.PEAK_TAB_MONATE;
+    [Parameter] public string SpalteGroesse { get; set; } = Resource.PEAK_SP_GROESSE;
+    [Parameter] public string SpalteWert { get; set; } = Resource.PEAK_SP_WERT;
+    [Parameter] public string SpalteEinheit { get; set; } = Resource.PEAK_SP_EINHEIT;
+    [Parameter] public string SpalteMonat { get; set; } = Resource.PEAK_SP_MONAT;
+    [Parameter] public string SpalteAlt { get; set; } = Resource.PEAK_SP_ALT;
+    [Parameter] public string SpalteNeu { get; set; } = Resource.PEAK_SP_NEU;
+    [Parameter] public string SpalteKappung { get; set; } = Resource.PEAK_SP_KAPPUNG;
+
+    [Parameter] public string TextKeineReihe { get; set; } = Resource.PEAK_LBL_KEINE_REIHE;
+    [Parameter] public string VorlageReihe { get; set; } = Resource.PEAK_LBL_REIHE;
+    [Parameter] public string VorlageHerkunft { get; set; } = Resource.PEAK_HERKUNFT_PROJEKT;
+    [Parameter] public string TextHerkunftVorgabe { get; set; } = Resource.PEAK_HERKUNFT_VORGABE;
+    [Parameter] public string TextKeineReiheMeldung { get; set; } = Resource.PEAK_MSG_KEINE_REIHE;
+    [Parameter] public string TextKeinErgebnis { get; set; } = Resource.PEAK_MSG_KEIN_ERGEBNIS;
+    [Parameter] public string VorlageMinimal { get; set; } = Resource.PEAK_MSG_MINIMAL;
+    [Parameter] public string VorlageGerissen { get; set; } = Resource.PEAK_MSG_GERISSEN;
+    [Parameter] public string TextRechnet { get; set; } = Resource.PEAK_MSG_RECHNET;
+    [Parameter] public string TextSucht { get; set; } = Resource.PEAK_MSG_SUCHE;
+    [Parameter] public string LeerText { get; set; } = Resource.PEAK_MSG_KEIN_ERGEBNIS;
+
+    /// <summary>
+    /// Die Zahlenmeldung des Bausteins — sie ersetzt die hartkodiert deutsche
+    /// <c>MessageBox</c> von <c>Program.ZahlPruefen</c> (Befund W12-B9).
+    /// </summary>
+    [Parameter] public string MeldungZahlUngueltig { get; set; } = Resource.HZKK_MSG_ZAHL;
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PeakShaving.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _quelle = QuelleGanglinie;
+    private int? _iGanglinie;
+    private string _pfad = "";
+    private string _importName = "";
+    private double[]? _lastgang;
+    private string _reiheText = "";
+    private string _herkunft = "";
+
+    private double? _pKw, _kapazitaet, _socMin, _socMax, _startSoC, _eta, _ziel;
+    private double? _lp, _bezugspreis, _cCap, _cPow, _iFix, _zins, _nutzungsdauer;
+    private bool _adaptiv = true;
+    private bool _kompatibel;
+    private readonly List<string> _fehlerhaft = new();
+
+    private bool _laeuft;
+    private string _fortschritt = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private PeakShavingErgebnis? _ergebnis;
+    private List<PeakShavingKennzahlenBlock.Zeile> _kennzahlen = new();
+    private List<PeakShavingKennzahlenBlock.Monatszeile> _monate = new();
+    private byte[]? _bild;
+    private bool _socZeigen;
+    private string _reiter = "KENNZAHLEN";
+
+    private bool _optionenOffen;
+    private string _optionenPfad = "";
+    private GanglinienVorschau? _optionenErkennung;
+    private TaskCompletionSource<GanglinienImportOptionen?>? _optionenWartet;
+
+    private bool _protokollOffen;
+    private IReadOnlyList<PruefMeldung>? _protokollMeldungen;
+    private bool _protokollMoeglich, _protokollBestaetigen;
+    private TaskCompletionSource<bool>? _protokollWartet;
+
+    private IReadOnlyList<(int Id, string Text)> Quellen => new[]
+    {
+        (QuelleGanglinie, OptGanglinie),
+        (QuelleDatei, OptDatei)
+    };
+
+    /// <summary>Der geladene Lastgang (Pruefhilfe fuer die Tests).</summary>
+    public IReadOnlyList<double>? Lastgang => _lastgang;
+
+    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer die Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Kennzahlzeilen (Pruefhilfe fuer die Tests).</summary>
+    public IReadOnlyList<PeakShavingKennzahlenBlock.Zeile> Kennzahlen => _kennzahlen;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        PeakShavingEingaben v = PeakShavingEingaben.Aus(Vorgaben);
+
+        _pKw = v.PKw;
+        _kapazitaet = v.KapazitaetKwh;
+        _socMin = v.SoCMinProzent;
+        _socMax = v.SoCMaxProzent;
+        _startSoC = v.StartSoCProzent;
+        _eta = v.WirkungsgradRt;
+        _lp = v.LeistungspreisEurProKwA;
+        _bezugspreis = v.BezugspreisMittelCtKwh;
+        _cCap = v.CCapEurProKwh;
+        _cPow = v.CPowEurProKw;
+        _iFix = v.IFixEur;
+        _zins = v.KapitalzinsProzent;
+        _nutzungsdauer = v.NutzungsdauerA;
+        _kompatibel = v.Kompatibilitaetsmodus;
+        _adaptiv = true;                       // feste Vorgabe, nicht aus der Variante (:250)
+
+        _herkunft = Vorgaben is not null && Vorgaben.AusProjekt
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                            VorlageHerkunft, Vorgaben.Bezeichner)
+            : TextHerkunftVorgabe;
+
+        // Woertlich (:227-228): Gibt es keine Ganglinie, steht die Quelle auf Datei.
+        if (Ganglinien.Count > 0) _iGanglinie = Ganglinien[0].Id;
+        else _quelle = QuelleDatei;
+
+        _reiheText = TextKeineReihe;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+
+        // Der Vorlaeufer rief QuelleGeaendert am Ende des Konstruktors - die erste
+        // Ganglinie steht damit gleich geladen da.
+        await LastgangLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Quelle
+    // =====================================================================
+
+    private async Task QuelleGeaendert(int? quelle)
+    {
+        _quelle = quelle ?? QuelleGanglinie;
+        await LastgangLaden();
+    }
+
+    private async Task GanglinieGeaendert(int? i)
+    {
+        _iGanglinie = i;
+        if (_quelle == QuelleGanglinie) await LastgangLaden();
+    }
+
+    /// <summary>
+    /// Laedt die Reihe der gewaehlten Quelle und verwirft ein vorhandenes Ergebnis —
+    /// woertlich <c>QuelleGeaendert</c> (:268-295).
+    /// </summary>
+    private async Task LastgangLaden()
+    {
+        ErgebnisLeeren();
+
+        if (_quelle == QuelleDatei)
+        {
+            ReiheAnzeigen(_importName);
+            return;
+        }
+
+        if (_iGanglinie is null || Werte is null) { _lastgang = null; ReiheAnzeigen(""); return; }
+
+        _lastgang = await Werte(_iGanglinie.Value);
+        ReiheAnzeigen(NameZu(_iGanglinie.Value));
+    }
+
+    private string NameZu(int id)
+    {
+        foreach ((int Id, string Text) e in Ganglinien) if (e.Id == id) return e.Text;
+        return "";
+    }
+
+    private void ReiheAnzeigen(string bezeichner)
+    {
+        if (_lastgang is null || _lastgang.Length == 0)
+        {
+            _reiheText = TextKeineReihe;
+            return;
+        }
+
+        double max = double.NegativeInfinity;
+        for (int i = 0; i < _lastgang.Length; i++) if (_lastgang[i] > max) max = _lastgang[i];
+
+        var kultur = System.Globalization.CultureInfo.CurrentCulture;
+        _reiheText = string.Format(kultur, VorlageReihe, bezeichner ?? "",
+                                   _lastgang.Length.ToString("N0", kultur),
+                                   max.ToString("0.#", kultur));
+    }
+
+    // =====================================================================
+    // Direktimport - die Kette OHNE Ablage
+    // =====================================================================
+
+    private async Task BeiDatei(string pfad)
+    {
+        _pfad = pfad;
+        if (string.IsNullOrEmpty(pfad) || Einlesen is null) return;
+
+        _laeuft = true;
+        _fortschritt = TextRechnet;
+        _meldung = "";
+        try
+        {
+            GanglinienImportErgebnis erg = await Einlesen(pfad, new GanglinienImportRueckrufe
+            {
+                Optionen = OptionenFragen,
+                Protokoll = ProtokollFragen
+            });
+
+            if (!string.IsNullOrEmpty(erg.Meldung)) Melden(erg.Meldung, Stufe(erg.MeldungStufe));
+
+            if (erg.Ausgang == ImportAusgang.Erfolg)
+            {
+                // Schritt 6 lautet hier „KEINE Ablage": die Reihe bleibt im Speicher.
+                _importName = erg.Bezeichner;
+                _lastgang = erg.Werte;
+                _quelle = QuelleDatei;
+                ErgebnisLeeren();
+                ReiheAnzeigen(_importName);
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+            _pfad = "";
+        }
+    }
+
+    private async Task<GanglinienImportOptionen?> OptionenFragen(string pfad, GanglinienVorschau vorschau)
+    {
+        _optionenPfad = pfad;
+        _optionenErkennung = vorschau;
+        _optionenOffen = true;
+        _optionenWartet = new TaskCompletionSource<GanglinienImportOptionen?>();
+        await InvokeAsync(StateHasChanged);
+        return await _optionenWartet.Task;
+    }
+
+    private void OptionenFertig(GanglinienImportOptionen? optionen)
+    {
+        _optionenOffen = false;
+        _optionenWartet?.TrySetResult(optionen);
+    }
+
+    private async Task<bool> ProtokollFragen(IList<PruefMeldung> meldungen, bool moeglich, bool bestaetigen)
+    {
+        _protokollMeldungen = meldungen as IReadOnlyList<PruefMeldung> ?? meldungen.ToList();
+        _protokollMoeglich = moeglich;
+        _protokollBestaetigen = bestaetigen;
+        _protokollOffen = true;
+        _protokollWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _protokollWartet.Task;
+    }
+
+    private void ProtokollFertig(bool weiter)
+    {
+        _protokollOffen = false;
+        _protokollWartet?.TrySetResult(weiter);
+    }
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    private void AdaptivGeaendert(bool adaptiv)
+    {
+        _adaptiv = adaptiv;
+        // Der Vorlaeufer setzte hier zusaetzlich btn_Minimal.Enabled = true - eine
+        // Zuweisung ohne Wirkung (Vermessung :407). Sie entfaellt.
+    }
+
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft)
+        {
+            if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+        }
+        else
+        {
+            _fehlerhaft.Remove(meldung.Feld);
+        }
+    }
+
+    /// <summary>
+    /// Die 13 Zahlenpruefungen und die vier Fachregeln des Vorlaeufers
+    /// (<c>ParameterLesen</c>). Die Fachregeln stehen im Kern
+    /// (<see cref="PeakShavingEingaben.Pruefe"/>); hier bleibt, welches Feld leer
+    /// sein darf: Leistungspreis, Bezugspreis, die drei Investitionsanteile und der
+    /// Zins — woertlich <c>leerErlaubt = true</c> (:433-438).
+    /// </summary>
+    /// <param name="zielNoetig">
+    /// <c>false</c> fuer die Schwellensuche: sie bestimmt P_ziel gerade erst.
+    /// </param>
+    private PeakShavingEingaben? EingabenLesen(bool zielNoetig = true)
+    {
+        if (_fehlerhaft.Count > 0)
+        {
+            Melden(string.Format(MeldungZahlUngueltig, _fehlerhaft[0]), WarnStufe.Warnung);
+            return null;
+        }
+
+        string? fehlt = Pflicht(_pKw, LabelP) ?? Pflicht(_kapazitaet, LabelKapazitaet)
+                     ?? Pflicht(_socMin, LabelSoCMin) ?? Pflicht(_socMax, LabelSoCMax)
+                     ?? Pflicht(_startSoC, LabelStartSoC) ?? Pflicht(_eta, LabelEta)
+                     ?? Pflicht(_nutzungsdauer, LabelNutzungsdauer);
+
+        if (fehlt is null && zielNoetig && !_adaptiv) fehlt = Pflicht(_ziel, LabelZiel);
+
+        if (fehlt is not null)
+        {
+            Melden(string.Format(MeldungZahlUngueltig, fehlt), WarnStufe.Warnung);
+            return null;
+        }
+
+        PeakShavingEingaben e = new PeakShavingEingaben
+        {
+            PKw = _pKw ?? 0.0,
+            KapazitaetKwh = _kapazitaet ?? 0.0,
+            SoCMinProzent = _socMin ?? 0.0,
+            SoCMaxProzent = _socMax ?? 0.0,
+            StartSoCProzent = _startSoC ?? 0.0,
+            WirkungsgradRt = _eta ?? 0.0,
+            ZielschwelleKw = _ziel ?? 0.0,
+            LeistungspreisEurProKwA = _lp ?? 0.0,
+            BezugspreisMittelCtKwh = _bezugspreis ?? 0.0,
+            CCapEurProKwh = _cCap ?? 0.0,
+            CPowEurProKw = _cPow ?? 0.0,
+            IFixEur = _iFix ?? 0.0,
+            KapitalzinsProzent = _zins ?? 0.0,
+            NutzungsdauerA = _nutzungsdauer ?? 0.0,
+            Adaptiv = _adaptiv,
+            Kompatibilitaetsmodus = _kompatibel
+        };
+
+        string regel = e.Pruefe(out PeakShavingEingaben.Feld _);
+        if (regel.Length > 0) { Melden(regel, WarnStufe.Warnung); return null; }
+
+        return e;
+    }
+
+    private static string? Pflicht(double? wert, string name) => wert is null ? name : null;
+
+    private bool ReiheVorhanden()
+    {
+        if (_lastgang is not null && _lastgang.Length > 0) return true;
+        Melden(TextKeineReiheMeldung, WarnStufe.Hinweis);
+        return false;
+    }
+
+    // =====================================================================
+    // Rechnen - beide Laeufe nebenher (Befund W12-B22)
+    // =====================================================================
+
+    private async Task BeiMinimal()
+    {
+        _meldung = "";
+        if (!ReiheVorhanden() || MinimaleSchwelle is null) return;
+
+        PeakShavingEingaben? e = EingabenLesen(false);
+        if (e is null) return;
+
+        _laeuft = true;
+        _fortschritt = TextSucht;
+        try
+        {
+            double minimal = await MinimaleSchwelle(_lastgang!, e);
+
+            // Woertlich: das Ergebnis steht im Schwellenfeld, und die adaptive Suche
+            // wird ausgeschaltet - sonst ueberschriebe der naechste Lauf sie wieder.
+            _adaptiv = false;
+            _ziel = minimal;
+            Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageMinimal,
+                                 minimal.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+                   WarnStufe.Hinweis);
+        }
+        catch (ArgumentException ex)
+        {
+            Melden(ex.Message, WarnStufe.Warnung);
+        }
+        finally { _laeuft = false; }
+    }
+
+    private async Task BeiRechnen()
+    {
+        _meldung = "";
+        if (!ReiheVorhanden() || Rechnen is null) return;
+
+        PeakShavingEingaben? e = EingabenLesen();
+        if (e is null) return;
+
+        _laeuft = true;
+        _fortschritt = TextRechnet;
+        try
+        {
+            _ergebnis = await Rechnen(_lastgang!, e);
+        }
+        catch (ArgumentException ex)
+        {
+            // Der Engine-Text geht ungefiltert in die Meldung - woertlich (:533-538).
+            Melden(ex.Message, WarnStufe.Warnung);
+            _ergebnis = null;
+            _laeuft = false;
+            return;
+        }
+        finally { _laeuft = false; }
+
+        _kennzahlen = PeakShavingKennzahlenBlock.Zeilen(_ergebnis);
+        _monate = PeakShavingKennzahlenBlock.Monatszeilen(_ergebnis);
+        await BildZeichnen();
+
+        if (_ergebnis is not null && _ergebnis.SchwelleGerissen)
+            Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageGerissen,
+                                 _ergebnis.PNeuMaxKw.ToString("0.#",
+                                     System.Globalization.CultureInfo.CurrentCulture)),
+                   WarnStufe.Warnung);
+    }
+
+    private void ErgebnisLeeren()
+    {
+        _ergebnis = null;
+        _kennzahlen = new List<PeakShavingKennzahlenBlock.Zeile>();
+        _monate = new List<PeakShavingKennzahlenBlock.Monatszeile>();
+        _bild = null;
+    }
+
+    private async Task SoCGeaendert(bool an)
+    {
+        _socZeigen = an;
+        await BildZeichnen();
+    }
+
+    private async Task BildZeichnen()
+    {
+        if (_ergebnis is null || Bild is null) { _bild = null; return; }
+        _bild = await Bild(_ergebnis, _socZeigen);
+    }
+
+    // =====================================================================
+    // CSV
+    // =====================================================================
+
+    private async Task BeiCsv()
+    {
+        if (_ergebnis is null) { Melden(TextKeinErgebnis, WarnStufe.Hinweis); return; }
+        if (CsvSpeichern is null) return;
+        await CsvSpeichern(_ergebnis);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private static WarnStufe Stufe(PruefStufe stufe) => stufe switch
+    {
+        PruefStufe.Fehler => WarnStufe.Fehler,
+        PruefStufe.Warnung => WarnStufe.Warnung,
+        _ => WarnStufe.Hinweis
+    };
+
+    /// <summary>
+    /// <b>Befund W12-B24, woertlich:</b> Der einzige Fussknopf schliesst mit
+    /// „Abbrechen" — es kommt immer <c>false</c> heraus.
+    /// </summary>
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(false);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_optionenOffen || _protokollOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

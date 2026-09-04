@@ -151,9 +151,12 @@ namespace WindowsFormsApplication1
                     using (Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen()) return MitOk(frm);
 
                 // --- Masken mit Argument ---------------------------------------------
+                // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
+                // PeakShavingDialog; die Huelle zeigt sie modal. Der Rueckgabewert
+                // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
+                // einziger Fussknopf trug DialogResult.Cancel.
                 case Masken.PeakShaving:
-                    using (Form_PeakShaving frm = new Form_PeakShaving(Ganzzahl(argumente, 0)))
-                        return MitOk(frm);
+                    return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
 
                 case Masken.ProjektSpeichernUnter:
                     using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
