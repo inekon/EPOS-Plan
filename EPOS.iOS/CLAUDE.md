@@ -42,7 +42,7 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `IDateiDienst` | `IosDateiDienst` | `FilePicker`, `Share` | `DateiSpeichern` liefert einen Pfad unter `Documents`; `OrdnerWaehlen` = `""` |
 | `IDialogDienst` | `IosDialogDienst` | `Page.DisplayAlert` | vom Hauptfaden aus wird **nicht** gefragt, sondern „nein"/„Abbruch" geantwortet (iR-f) |
 | `INavigation` | `IosNavigation` | — | reicht an `EPOS.UI.Dienste.Navigationsziel` weiter |
-| `IProjektKontext` | `IosProjektKontext` | — | führt das offene Projekt selbst und schreibt `Tab_Applikation` fort |
+| `IProjektKontext` | `IosProjektKontext` | — | **dünne Weiterleitung auf `EPOS.Kern/Controller/ProjektKontextCtrl`** (Anwenderentscheid W16b‑O‑3, 04.09.2026): dieselbe Klasse wie unter Windows, dieselbe Antwort. Bis dahin führte sie das Projekt selbst — und las die Klimazone als einzige aus dem STAMM (`Tab_Klimaregion_STAMM.Name`), während Windows die Projektkopie nahm (Befund W16b‑B2). Der Entscheid nimmt die iOS-Lesart, aber nur EINMAL: Der Kern liest jetzt den Stammnamen mit Rückfall auf die Kopie. **iOS-eigen bleibt allein das `try/catch` um `Uebernehmen`** — der Kern lässt eine Ausnahme aus dem Datenzugriff durch, und hier liegt die Datenbank in der Sandbox und wird beim Erststart erst kopiert |
 
 ## Regeln für Änderungen hier
 
