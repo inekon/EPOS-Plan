@@ -17,8 +17,14 @@ namespace EPOS.UI.Tests.Bausteine;
 /// aufgibt: die VOLLZAEHLIGKEIT der Punkte, ihre BESCHRIFTUNG in beiden
 /// Sprachen und die Zusicherung, dass jeder Klick einen
 /// <see cref="Seitenschluessel"/> meldet — und nichts sonst. Fiele einer der
-/// 54 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
+/// 55 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
 /// Designer, der ihn bisher belegte, ist mit W16c.3 geloescht.</para>
+///
+/// <para>ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Die zwei Sprachpunkte
+/// haengen seither unter dem Kopf „Sprache" statt in der obersten Ebene. Das
+/// aendert drei Zahlen dieses Nachweises — 55 statt 54 Punkte, VIER statt
+/// fuenf Koepfe, 13 statt 12 aufklappende — und den Sprachfall: Der Kopf will
+/// erst geoeffnet werden.</para>
 ///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
@@ -65,16 +71,49 @@ public class MenuebandTests : BunitContext
         // 45 aus MDIMainForm.Designer.cs (dort als ToolStripMenuItem gezaehlt)
         // und 9 aus den acht Init*-Methoden von MDIMainForm.cs. Die Zahl 45 der
         // Arbeitsanweisung ist die DESIGNER-Zahl; das Menue des laufenden
-        // Programms hatte immer 54 Punkte (Befund W16c-B2).
-        Assert.Equal(54, Punkte.Count);
+        // Programms hatte immer 54 Punkte (Befund W16c-B2). Der 55. ist der
+        // Kopf "Sprache" des Anwenderentscheids W16c-E-2 (04.09.2026) - er
+        // kommt hinzu, es faellt keiner weg.
+        Assert.Equal(55, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
-        // und InitKiHilfe programmatisch ein.
+        // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
         Assert.Equal(8, Menuetabelle.Alle.Count(p => p.Trenner));
 
-        // Fuenf Punkte der obersten Ebene: Projekt, Administration, Hilfe,
-        // Deutsch, Englisch (menuToolbar.Items.AddRange).
-        Assert.Equal(5, Menuetabelle.Eintraege.Count);
+        // VIER Koepfe der obersten Ebene: Projekt, Administration, Hilfe,
+        // Sprache. Im Bestand waren es fuenf (menuToolbar.Items.AddRange =
+        // Projekt, Administration, Hilfe, Deutsch, Englisch); die zwei
+        // Sprachpunkte sind mit W16c-E-2 unter EINEN Kopf gewandert.
+        Assert.Equal(4, Menuetabelle.Eintraege.Count);
+        Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
+                     Menuetabelle.Eintraege.Select(p => p.Name).ToArray());
+    }
+
+    [Fact]
+    public void Der_Kopf_Sprache_traegt_die_zwei_Sprachpunkte_des_Bestands()
+    {
+        // Anwenderentscheid W16c-E-2: Der Kopf steht dort, wo bis dahin
+        // "Deutsch" stand - ganz rechts, nach "Hilfe". Er klappt nur auf; die
+        // zwei Punkte behalten Namen, Bild und Seitenschluessel, damit
+        // help_mapping.txt und HauptfensterHuelle.Weg weiter greifen.
+        Menuepunkt sprache = Menuetabelle.Eintraege[^1];
+
+        Assert.Equal("Sprache", sprache.Name);
+        Assert.Equal("MENU_SPRACHE", sprache.TextSchluessel);
+        Assert.True(string.IsNullOrEmpty(sprache.Ziel));
+        Assert.True(sprache.Klappt);
+
+        Assert.Equal(2, sprache.Untereintraege.Count);
+
+        Menuepunkt deutsch = sprache.Untereintraege[0];
+        Assert.Equal("Deutsch", deutsch.Name);
+        Assert.Equal(Seitenschluessel.SpracheDeutsch, deutsch.Ziel);
+        Assert.Equal("germany", deutsch.Bild);
+
+        Menuepunkt englisch = sprache.Untereintraege[1];
+        Assert.Equal("Englisch", englisch.Name);
+        Assert.Equal(Seitenschluessel.SpracheEnglisch, englisch.Ziel);
+        Assert.Equal("usa", englisch.Bild);
     }
 
     [Fact]
@@ -115,13 +154,14 @@ public class MenuebandTests : BunitContext
     [Fact]
     public void Die_Blaetter_des_Baums_sind_die_Handlungen()
     {
-        // 42 der 54 Punkte handeln, 12 klappen nur auf (Projekt,
+        // 42 der 55 Punkte handeln, 13 klappen nur auf (Projekt,
         // Administration, die sieben Untermenues der Administration, PV,
-        // Solarkollektoren und Hilfe). Der Vorlaeufer fuehrte dafuer 34
-        // Designer-Handler und neun Lambdas in den Init*-Methoden - die
-        // Differenz von einem ist MenuItem_PV_Import_PAN, dessen Handler zu
-        // KEINEM Steuerelement gehoerte (Befund W16-B24).
-        Assert.Equal(12, Punkte.Count(p => p.Klappt));
+        // Solarkollektoren, Hilfe und - seit W16c-E-2 - Sprache). Der
+        // Vorlaeufer fuehrte dafuer 34 Designer-Handler und neun Lambdas in den
+        // Init*-Methoden - die Differenz von einem ist MenuItem_PV_Import_PAN,
+        // dessen Handler zu KEINEM Steuerelement gehoerte (Befund W16-B24).
+        // Der neue Kopf handelt NICHT: Die Zahl der Handlungen bleibt 42.
+        Assert.Equal(13, Punkte.Count(p => p.Klappt));
         Assert.Equal(42, Punkte.Count(p => !p.Klappt));
     }
 
@@ -191,6 +231,15 @@ public class MenuebandTests : BunitContext
         Assert.Equal("Climate data", englisch["MenuItem_Klimadaten"]);
         Assert.Equal("Hilfe", deutsch["Help"]);
         Assert.Equal("Help", englisch["Help"]);
+
+        // Der Kopf aus W16c-E-2 - der einzige Textschluessel des Menues, der
+        // KEINE Entsprechung im geloeschten Designer hat.
+        Assert.Equal("Sprache", deutsch["Sprache"]);
+        Assert.Equal("Language", englisch["Sprache"]);
+        Assert.Equal("Deutsch", deutsch["Deutsch"]);
+        Assert.Equal("German", englisch["Deutsch"]);
+        Assert.Equal("Englisch", deutsch["Englisch"]);
+        Assert.Equal("English", englisch["Englisch"]);
     }
 
     [Fact]
@@ -211,16 +260,26 @@ public class MenuebandTests : BunitContext
     // =====================================================================
 
     [Fact]
-    public void Das_Band_zeigt_die_fuenf_Punkte_der_obersten_Ebene()
+    public void Das_Band_zeigt_die_vier_Punkte_der_obersten_Ebene()
     {
         var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
 
         var knoepfe = cut.FindAll(".epos-menueband > .epos-menueband-punkt > .epos-menueband-knopf, " +
                                   ".epos-menueband > .epos-menueband-knopf");
-        Assert.Equal(5, knoepfe.Count);
+        Assert.Equal(4, knoepfe.Count);
         Assert.Equal("Projekt", knoepfe[0].TextContent.Trim());
         Assert.Equal("Administration", knoepfe[1].TextContent.Trim());
         Assert.Equal("Hilfe", knoepfe[2].TextContent.Trim());
+
+        // W16c-E-2: "Sprache" steht ganz rechts, wo bis dahin "Deutsch" stand,
+        // und klappt auf, statt unmittelbar zu handeln.
+        Assert.Equal("Sprache", knoepfe[3].TextContent.Trim());
+        Assert.Equal("true", knoepfe[3].GetAttribute("aria-haspopup"));
+
+        // Zugeklappt nennt das Band die zwei Sprachen NICHT mehr.
+        string sichtbar = cut.Find(".epos-menueband").TextContent;
+        Assert.DoesNotContain("Deutsch", sichtbar, StringComparison.Ordinal);
+        Assert.DoesNotContain("Englisch", sichtbar, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -272,17 +331,71 @@ public class MenuebandTests : BunitContext
     }
 
     [Fact]
-    public void Ein_Sprachpunkt_der_obersten_Ebene_meldet_unmittelbar()
+    public void Ein_Sprachpunkt_im_Untermenue_Sprache_meldet_beim_Klick()
+    {
+        // ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Bis dahin meldete ein
+        // Sprachpunkt der OBERSTEN Ebene unmittelbar. Jetzt geht der Weg ueber
+        // den Kopf: aufklappen, waehlen - und das Band steht wieder zu, weil
+        // HauptfensterHuelle.SpracheSetzen das Programm neu startet.
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        // Zugeklappt gibt es die Sprachpunkte nicht.
+        Assert.Empty(cut.FindAll("#menue-Deutsch"));
+
+        cut.Find("#menue-Sprache").Click();
+        Assert.Equal("true", cut.Find("#menue-Sprache").GetAttribute("aria-expanded"));
+        Assert.Equal(2, cut.FindAll(".epos-menueband-klappe .epos-menueband-zeile").Count);
+
+        cut.Find("#menue-Deutsch").Click();
+
+        Assert.NotNull(gemeldet);
+        Assert.Equal(Seitenschluessel.SpracheDeutsch, gemeldet!.Ziel);
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+    }
+
+    [Fact]
+    public void Der_zweite_Sprachpunkt_meldet_ebenso()
     {
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
             .Add(x => x.Eintraege, Menuetabelle.Eintraege)
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
+        cut.Find("#menue-Sprache").Click();
         cut.Find("#menue-Englisch").Click();
 
         Assert.NotNull(gemeldet);
         Assert.Equal(Seitenschluessel.SpracheEnglisch, gemeldet!.Ziel);
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+    }
+
+    [Fact]
+    public void Die_Pfeiltasten_wandern_ueber_die_vier_Koepfe_und_oeffnen_Sprache()
+    {
+        // Die Tastatur bedient das Band unveraendert (A-1); nur sind es seit
+        // W16c-E-2 VIER Koepfe statt fuenf, und der letzte klappt auf, statt zu
+        // handeln. Nach links vom ersten ist der letzte - das ist "Sprache".
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var band = cut.Find(".epos-menueband");
+
+        band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("0", cut.Find("#menue-Sprache").GetAttribute("tabindex"));
+
+        band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("true", cut.Find("#menue-Sprache").GetAttribute("aria-expanded"));
+        Assert.NotNull(cut.Find("#menue-Deutsch"));
+
+        // Und wieder nach rechts: der erste Kopf, das Untermenue wandert mit.
+        band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.Equal("0", cut.Find("#menue-Projekte").GetAttribute("tabindex"));
+        Assert.Equal("true", cut.Find("#menue-Projekte").GetAttribute("aria-expanded"));
+
+        // Ende springt an den letzten Kopf - "Sprache", nicht "Englisch".
+        band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "End" });
+        Assert.Equal("0", cut.Find("#menue-Sprache").GetAttribute("tabindex"));
     }
 
     [Fact]
@@ -305,6 +418,9 @@ public class MenuebandTests : BunitContext
         // Untermenues, Einstellungen und die zwei Sprachfahnen), zwei weitere
         // kamen aus den Init*-Methoden (Gesetze, Lizenz). Die elf PNG liegen
         // jetzt unter wwwroot/bilder/menue/ und sind dieselben Dateien.
+        // W16c-E-2 aendert daran nichts: Die zwei Fahnen sind mit ihren Punkten
+        // eine Ebene tiefer gewandert, der neue Kopf "Sprache" traegt KEIN Bild
+        // (kein vorhandenes PNG meint das Menue als Ganzes).
         var mitBild = Menuetabelle.Alle.Where(p => p.Bild.Length > 0)
                                        .ToDictionary(p => p.Name, p => p.Bild, StringComparer.Ordinal);
 

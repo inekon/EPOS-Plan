@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
@@ -60,15 +61,29 @@ public class HauptfensterTests : BunitContext
             ["ProjektId"] = new Func<int>(() => 1030),
         };
 
+    /// <summary>
+    /// Der kleinste Parametersatz von „Berichte &amp; Kosten". Ohne
+    /// <c>SeitenGaben</c> steht statt einer Seite der Hinweis — der Rahmen
+    /// (Navigation, Kopfzeile, Rückwegknopf) steht trotzdem, und der ist hier
+    /// der Gegenstand.
+    /// </summary>
+    private static IReadOnlyDictionary<string, object> Berichtegaben() =>
+        new Dictionary<string, object>
+        {
+            ["ZurueckText"] = "◀ Zurück",
+        };
+
     private IRenderedComponent<Hauptfenster> Fenster(
         Func<string, string, Task<bool>>? weg = null,
         IReadOnlyDictionary<string, object>? startgaben = null,
+        IReadOnlyDictionary<string, object>? berichtegaben = null,
         string startansicht = Seitenschluessel.Projektliste)
     {
         return Render<Hauptfenster>(p => p
             .Add(x => x.Weg, weg)
             .Add(x => x.Startansicht, startansicht)
             .Add(x => x.StartseiteGaben, startgaben)
+            .Add(x => x.BerichteKostenGaben, berichtegaben)
             .Add(x => x.VersionText, "Version 1.0.0.0"));
     }
 
@@ -173,8 +188,9 @@ public class HauptfensterTests : BunitContext
     [Fact]
     public async Task Ein_Punkt_ohne_Ziel_tut_nichts()
     {
-        // Die zwoelf aufklappenden Punkte und die acht Trenner tragen kein
-        // Ziel; ein Klick auf sie darf keinen Weg anstossen.
+        // Die dreizehn aufklappenden Punkte (seit W16c-E-2 mit "Sprache") und
+        // die acht Trenner tragen kein Ziel; ein Klick auf sie darf keinen Weg
+        // anstossen.
         int rufe = 0;
         var cut = Fenster(weg: (_, _) => { rufe++; return Task.FromResult(true); });
 
@@ -221,11 +237,80 @@ public class HauptfensterTests : BunitContext
     {
         var cut = Fenster();
 
-        // Fuenf Punkte der obersten Ebene, deutsche Beschriftung.
-        Assert.Contains("Projekt", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Administration", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Hilfe", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Deutsch", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Englisch", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
+        // VIER Punkte der obersten Ebene, deutsche Beschriftung. Bis zum
+        // Anwenderentscheid W16c-E-2 (04.09.2026) standen "Deutsch" und
+        // "Englisch" als eigene Koepfe daneben.
+        string band = cut.Find(".epos-menueband").TextContent;
+        Assert.Contains("Projekt", band, StringComparison.Ordinal);
+        Assert.Contains("Administration", band, StringComparison.Ordinal);
+        Assert.Contains("Hilfe", band, StringComparison.Ordinal);
+        Assert.Contains("Sprache", band, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Varianten_und_Bericht_wechselt_auf_die_Ansicht_BerichteKosten()
+    {
+        // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): Der Menuepunkt holt NICHT
+        // mehr den sechsten Reiter der Startseite nach vorn
+        // (StartseiteHuelle.ZeigeBerichteKosten), sondern wechselt die ANSICHT
+        // der AppWurzel - derselbe Weg wie auf iOS. Der Weg der Huelle meldet
+        // dafuer false; "BERICHTE_KOSTEN" steht in Ansichten, nicht in Masken.
+        var cut = Fenster(weg: (_, _) => Task.FromResult(false),
+                          startgaben: Startgaben(),
+                          berichtegaben: Berichtegaben(),
+                          startansicht: Seitenschluessel.Startseite);
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+
+        Menuepunkt punkt = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_VariantenBericht");
+        Assert.Equal(Seitenschluessel.BerichteKosten, punkt.Ziel);
+
+        await cut.Instance.Springe(punkt);
+        cut.Render();
+
+        // Die Startseite ist ABGELOEST, die Seite "Berichte & Kosten" steht -
+        // und das Menueband darueber wie ueber jeder Ansicht.
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+        Assert.Single(cut.FindAll(".epos-navigation"));
+        Assert.Single(cut.FindAll(".epos-menueband"));
+    }
+
+    [Fact]
+    public async Task Der_Rueckweg_aus_Berichte_und_Kosten_fuehrt_zur_Startansicht()
+    {
+        // Der Rueckwegknopf gibt es nur, weil AppWurzel einen "Geschlossen"-
+        // Rueckruf setzt (ZurueckZurListe); im sechsten Reiterblatt der
+        // Startseite fehlt er - dort fuehrt die Reiterleiste zurueck.
+        var cut = Fenster(weg: (_, _) => Task.FromResult(false),
+                          startgaben: Startgaben(),
+                          berichtegaben: Berichtegaben(),
+                          startansicht: Seitenschluessel.Startseite);
+
+        await cut.Instance.Springe(
+            Menuetabelle.Alle.Single(p => p.Name == "MenuItem_VariantenBericht"));
+        cut.Render();
+
+        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Empty(cut.FindAll(".epos-navigation"));
+    }
+
+    [Fact]
+    public async Task Der_Sprachwechsel_geht_ueber_das_Untermenue_Sprache()
+    {
+        // W16c-E-2: Der Weg der Huelle bekommt denselben Seitenschluessel wie
+        // vorher (HauptfensterHuelle.SpracheSetzen + Application.Restart) - nur
+        // haengt der Punkt jetzt unter dem Kopf "Sprache".
+        string? gemeldet = null;
+        var cut = Fenster(weg: (ziel, _) => { gemeldet = ziel; return Task.FromResult(true); });
+
+        cut.Find("#menue-Sprache").Click();
+        cut.Find("#menue-Englisch").Click();
+
+        await Task.Yield();
+
+        Assert.Equal(Seitenschluessel.SpracheEnglisch, gemeldet);
     }
 }

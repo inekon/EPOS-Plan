@@ -8,6 +8,14 @@
 //
 // Wer das Menue aendert, aendert die TABELLE - der Designer ist mit W16c.3
 // geloescht.
+//
+// EINE ZEILE STAMMT NICHT VOM ERZEUGER: der Kopf "Sprache" (MENU_SPRACHE). Er
+// ist der ANWENDERENTSCHEID W16c-E-2 vom 04.09.2026 - die zwei Sprachpunkte
+// standen im Bestand als Koepfe der obersten Ebene und sind seither seine
+// Untereintraege. Ihre Namen, Bilder und Seitenschluessel sind unveraendert;
+// der Kopf hat KEINE Designer-Herkunft und kein Ziel. Das Erzeugerskript
+// w16c_menue.py liegt nicht im Repository - wer es je neu laufen laesst, traegt
+// diesen Kopf von Hand nach.
 
 using System;
 using System.Collections.Generic;
@@ -18,11 +26,17 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>54 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>55 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
-/// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es 54
-/// gleichrangige Zeilen. Dazu 8 Trennstriche.</para>
+/// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
+/// gleichrangige Zeilen. Dazu kommt der Kopf "Sprache" aus dem
+/// Anwenderentscheid W16c-E-2 (04.09.2026), unter dem die zwei Sprachpunkte
+/// haengen: zusammen 55 Punkte und 8 Trennstriche.</para>
+///
+/// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
+/// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
+/// vier klappen nur auf; von den 55 Punkten handeln 42, 13 klappen auf.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -125,8 +139,19 @@ public static class Menuetabelle
             Menuepunkt.Trennstrich("MenuItem_TrennerKiHilfe"),
             new Menuepunkt("MenuItem_KiAssistent", "KI_MENUE_ASSISTENT", Seitenschluessel.KiAssistent, kuerzel: "F1"),
         },
-        new Menuepunkt("Deutsch", "MENU_DEUTSCH", Seitenschluessel.SpracheDeutsch, bild: "germany"),
-        new Menuepunkt("Englisch", "MENU_ENGLISCH", Seitenschluessel.SpracheEnglisch, bild: "usa"),
+        // ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Die zwei Sprachpunkte standen
+        // im Bestand als eigene Koepfe der obersten Ebene (menuToolbar.Items =
+        // Projekt, Administration, Hilfe, Deutsch, Englisch). Sie sind jetzt die
+        // Untereintraege EINES Kopfes "Sprache" an derselben Stelle - ganz
+        // rechts, nach "Hilfe". Der Kopf klappt nur auf und traegt deshalb kein
+        // Ziel; Namen, Bilder und Seitenschluessel der zwei Punkte sind
+        // unveraendert, damit help_mapping.txt und HauptfensterHuelle.Weg
+        // weiterhin greifen.
+        new Menuepunkt("Sprache", "MENU_SPRACHE", "")
+        {
+            new Menuepunkt("Deutsch", "MENU_DEUTSCH", Seitenschluessel.SpracheDeutsch, bild: "germany"),
+            new Menuepunkt("Englisch", "MENU_ENGLISCH", Seitenschluessel.SpracheEnglisch, bild: "usa"),
+        },
     };
 
     /// <summary>Alle Punkte des Baums, Trennstriche eingeschlossen.</summary>

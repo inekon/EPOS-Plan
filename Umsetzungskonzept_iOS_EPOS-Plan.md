@@ -1443,13 +1443,16 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Bereinigung (B9); `AppWurzel.ZurueckZurListe` räumte `_simErgebnis` nicht ab (B10, behoben). **R‑W16‑10 eingelöst**
 > (`Form_HelpPopup` meldet „ja", `MDIMainForm` bleibt als Klasse Wurzel des Graphen, ist aber keine Maske mehr),
 > **W16b‑O‑1 erledigt** (der Maskenschlüssel-Zeuge ist über einen Sprungtabellen-Auszug im Prüfmuster zurück).
-> **Anwenderfragen:** E‑1, E‑2, E‑6, E‑8a, E‑9 vorläufig ja und umgesetzt — bestätigen; **E‑10 (`MDIMainForm` →
-> `Hauptfenster`) bewusst nicht getan** (W16c‑O‑1, eigener Commit nach dem Merge; `Hauptfenster` ist bereits der Name der
-> Razor-Seite in `EPOS.UI.Seiten` — die Orchestrierung legt die Frage mit Empfehlung vor); **W16a‑E‑1/W16b‑O‑5** (Assistent
-> modal) und **W16b‑E‑1/E‑2** unberührt; **neu W16c‑E‑1** (Klick statt Überfahren — bestätigen?), **W16c‑E‑2**
-> (Deutsch/Englisch bleiben Köpfe erster Ebene ganz rechts, ein Untermenü „Sprache" wäre üblicher, W16c‑O‑3), **W16c‑E‑3**
-> („Varianten und Bericht…" holt den sechsten Reiter der Startseite nach vorn und wechselt keine Ansicht;
-> `Seitenschluessel.BERICHTE_KOSTEN` ist der iOS-Weg). **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
+> **Anwenderentscheide 04.09.2026:** E‑1, E‑2, E‑6, E‑8a, E‑9 bestätigt; W16c‑E‑1 (das Menü klappt beim Klick auf)
+> bestätigt; **W16c‑E‑2: Untermenü „Sprache"** und **W16c‑E‑3: Ansichtswechsel** umgesetzt (`a9797d1`: die zwei Sprachpunkte
+> sind Untereinträge des Kopfes „Sprache", N4 jetzt 55 Punkte / 8 Trenner / 4 Köpfe, W16c‑O‑3 erledigt; „Varianten und
+> Bericht…" wechselt die Ansicht der `AppWurzel` auf `BERICHTE_KOSTEN` wie auf iOS, Windows liefert die
+> `BerichteKostenGaben` aus derselben Hülle wie das sechste Reiterblatt, Rückweg über `ZurueckZurListe`; dabei Befund
+> W16c‑B11: `IProjektQuelle` fehlte im Windows-Dienstverzeichnis, `KeineProjekte` eingetragen — Abnahmepunkt W16c‑O‑6;
+> Gate auf dem gemergten Stand: 0 Fehler / 6 Warnungen, **4 012** Tests auch unter `en_US`, Formularkarte 122, Referenzlauf
+> byte-gleich). **E‑10 (`MDIMainForm` → `Hauptfenster`) bewusst nicht getan** (W16c‑O‑1; `Hauptfenster` ist bereits der
+> Name der Razor-Seite in `EPOS.UI.Seiten` — Empfehlung: `Hauptfensterrahmen` oder bis iU11 beim alten Namen bleiben,
+> Entscheid offen); **W16a‑E‑1/W16b‑O‑5** (Assistent modal) und **W16b‑E‑1/E‑2** offen. **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
 > `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3
 > (iOS-Klimazone auf `ProjektKontextCtrl`), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
 > `Seitenschluessel` mit 34 Werten in einer Klasse (W16c‑O‑4, Teilung entlang Ansicht/Maske/Weg), keine Menüfreischaltung

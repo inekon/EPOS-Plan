@@ -683,8 +683,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   — `Views/Hauptformular/HauptfensterHuelle.cs` (die Datenseite mit dem EINEN
   `Weg`) — und in `EPOS.UI` die Seite `Seiten/Hauptfenster.razor` samt dem
   Baustein `Bausteine/Menueband.razor` und der **erzeugten** `Menuetabelle.cs`
-  (54 Punkte, aus dem Designer und den drei `.resx` per Skript, Auflage
-  R‑W16‑8). **`MenueCtrl` schrumpft von 347 auf 258 Zeilen** — die 21
+  (**55 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
+  Skript, Auflage R‑W16‑8; der Kopf **„Sprache"** ist der Anwenderentscheid
+  **W16c‑E‑2** vom 04.09.2026 und hat als einzige Zeile keine
+  Designer-Herkunft — die zwei Sprachpunkte hängen seither unter ihm statt
+  neben „Hilfe" zu stehen). **`MenueCtrl` schrumpft von 347 auf 258 Zeilen** — die 21
   Einzeiler `Dienste.Navigation.OeffneMaske(Masken.X)` hatten als einzigen
   Aufrufer das Menü; es bleiben die sechs zusammengesetzten Abläufe.
   **`WinFormsNavigation` verliert `MitOk` und `WahlUebernehmen`**, die letzten
