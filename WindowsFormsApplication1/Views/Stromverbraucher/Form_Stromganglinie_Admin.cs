@@ -202,7 +202,7 @@ namespace WindowsFormsApplication1
             {
                 // EIN Konfliktdialog (eine Zeile) statt der frueheren Abbruch-Meldung.
                 // "Importieren" bietet der Dialog bei Namenskonflikt selbst nicht an.
-                List<KonfliktEntscheidung> entscheidungen = Form_ImportKonflikte.Zeigen(
+                List<KonfliktEntscheidung> entscheidungen = ImportKonflikteHuelle.Zeigen(
                     this, pruefungen, DublettenPruefung.VergebeneNamen(k));
                 if (entscheidungen == null) return;   // Abbruch: stiller Ausstieg
 

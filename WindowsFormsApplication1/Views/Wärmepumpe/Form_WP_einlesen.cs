@@ -194,7 +194,7 @@ namespace WindowsFormsApplication1
             if (konflikt)
             {
                 // EIN Dialog fuer die ganze Auswahl statt einer Meldung je Satz.
-                entscheidungen = Form_ImportKonflikte.Zeigen(this, pruefungen,
+                entscheidungen = ImportKonflikteHuelle.Zeigen(this, pruefungen,
                     DublettenPruefung.VergebeneNamen(katalog));
                 if (entscheidungen == null) return;
             }
