@@ -189,7 +189,7 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Solarthermie/SolarkollektorenDialog` | `Form_SolarKollektoren` (iU9‑W7.7) | dieselbe Hülle; Assistentenseite 8 |
 | `Solarthermie/SolarganglinieDialog` | `Form_Solarganglinie` (iU9‑W7.8) | `SolarganglinieHuelle` → `SolarganglinieStammCtrl`, `Z_ProjektSolarganglinieCtrl`; Sprungbrücke zur Ganglinienverwaltung |
 | `Bedarf/TypStammDialog` | **drei** Masken: `Form_EingDBStromverbraucher`, `Form_EingDBProzess`, `Form_EingDBBrauchwasser` (iU9‑W8.1) | `Views/Bedarf/TypStammHuelle.cs` → `BedarfStammCtrl` |
-| `Bedarf/BedarfErgebnisDialog` | **drei** Masken: `Form_ErgStromverbraucher`, `Form_ErgProzesswaerme`, `Form_ErgBrauchwasserwaerme` (iU9‑W8.2) | `Views/Bedarf/BedarfErgebnisHuelle.cs`; keine Datenbank — die Hülle friert das Rechenobjekt ein und rendert die Bilder vorab |
+| `Bedarf/BedarfErgebnisDialog` | **drei** Masken: `Form_ErgStromverbraucher`, `Form_ErgProzesswaerme`, `Form_ErgBrauchwasserwaerme` (iU9‑W8.2) | `Views/Bedarf/BedarfErgebnisHuelle.cs`; keine Datenbank — die Hülle friert das Rechenobjekt ein und rendert die Bilder vorab, seit dem Entscheid W8‑O‑5 **je Einheit eine Fassung** |
 | `Bedarf/TypProfilDialog` | **drei** Masken: `Form_EingStromTyp`, `Form_EingProzTyp`, `Form_EingBrauchwasserTyp` (iU9‑W8.3) | dieselbe Hüllendatei wie W8.1 → `TypProfilCtrl`, `ChartRenderer.Stundenprofil` |
 | `Bedarf/GebaeudetypDialog` | `Form_EingGebTyp` (iU9‑W8.4) | `Views/Bedarf/GebaeudetypHuelle.cs` → `TagVCtrl` |
 | `Bedarf/GebaeudeWohnflaecheDialog` | `Form_GebWohnflaeche` (iU9‑W9.3) | keine Datenseite; Ergebnis-Record |
@@ -251,6 +251,20 @@ wie in Welle 8 DRILLINGE und werden EINE Komponente mit der Ausprägung
 Razor-Komponente** — die Seiten 2 bis 5 kamen dazu, und die
 Assistentenschnittstelle trägt seither jeden Listentyp
 (`IAssistentListenSeite<T>`, W9.0a).
+
+**Eine Einheit, zwei Dialoge** (Anwenderentscheid W8‑O‑5 / W9‑O‑3 vom 04.09.2026):
+Energiemengen zeigen **MWh als Vorgabe, kWh wählbar** — im `BedarfsProfileDialog` und im
+`BedarfErgebnisDialog`, der aus ihm als Überlagerung kommt. Die Einheit ist deshalb KEIN
+Text mehr neben der Zahl: Die Hülle nennt je Wert die **Quelleneinheit**
+(`WindowsFormsApplication1.Energieeinheit`, im Kern), die Komponente rechnet auf die
+gewählte Anzeigeeinheit um. Damit ist der nackte Teiler 1000 verschwunden, den nur eine
+der beiden Ergebnisansichten zog (Befund W8‑B4). Beide Dialoge lesen dieselbe gemerkte
+Wahl (`BedarfEinheitWahl` über `Dienste.Einstellungen`) und melden eine Änderung über
+`EinheitGewaehlt` an die Hülle zurück — die Komponenten greifen selbst auf keine
+Einstellungsablage zu. **Ein PNG lässt sich nicht umrechnen**: Das Säulenbild kommt in
+zwei Fassungen aus der Hülle (`Monatssicht.Bild` und `.BildKWh`), weil hier kein Renderer
+gerufen wird. Ein Datensatz ohne Zahl und Quelleneinheit bleibt, wie er ist — dann
+erscheint auch kein Wahlfeld.
 
 **Sieben Masken, sieben Komponenten** (iU9‑W10a): die Dialoge, die
 `Form_Simulation_Config` öffnet. Hier wiederholt sich kein Muster — jede Maske

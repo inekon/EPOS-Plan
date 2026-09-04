@@ -30,7 +30,7 @@ mit seinen beiden WFO1000 löschte).
 
 | Ordner | Inhalt |
 |---|---|
-| `Allgemein/` (21) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test`, seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode; seit iU9‑W11a.5 zusätzlich die beiden SUBSTITUTIONSFAKTOREN der Autarkiekachel — `CO2_NETZSTROM_KG_JE_KWH` 0,42 und `CO2_WAERME_KG_JE_KWH` 0,20, wörtlich aus `DashboardForm.cs:355`, Befund W11‑B31), seit iU9-W9 `Ferienzeit` (die vier Ferienregeln des Gebäudekatalogs samt der Umrechnung Tag/Monat ↔ Jahrestag) und `Suchmuster` (die Platzhaltersuche, die zuvor zweimal wortgleich dastand) |
+| `Allgemein/` (21) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test`, seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode; seit iU9‑W11a.5 zusätzlich die beiden SUBSTITUTIONSFAKTOREN der Autarkiekachel — `CO2_NETZSTROM_KG_JE_KWH` 0,42 und `CO2_WAERME_KG_JE_KWH` 0,20, wörtlich aus `DashboardForm.cs:355`, Befund W11‑B31), seit iU9-W9 `Ferienzeit` (die vier Ferienregeln des Gebäudekatalogs samt der Umrechnung Tag/Monat ↔ Jahrestag), `Suchmuster` (die Platzhaltersuche, die zuvor zweimal wortgleich dastand) und `Gebaeudebauweise` (der Rundweg Bauart ↔ Bauweise, Entscheid W9‑O‑2) — seit dem 04.09.2026 dazu `Energieeinheit` und `BedarfEinheitWahl` |
 | `Allgemein/Simulation/` (33) | die vollständige Engine — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb`. **Mit iU9‑W10a** kommen die Rechen- und Anzeigewege der sieben Simulationsdialoge dazu: `WaermesenkeClass.SenkeAnzeige`/`SENKE_LEER` (sie war eine STATISCHE Methode auf `Form_Waermesenke` mit drei fremden Aufrufern, Befund W10‑B22), `VDI4640Pruefung.Sondenmeter`/`Volllaststunden`, `ErdreichAuswertung.ErdreichLaufErgebnis`/`ErgebnisZuordnen` (die Zuordnung stand doppelt in Maske und Aufrufer, W10‑B8) und die **erzeugte** Datei `KlimazonenPfade.cs` — 15 Zonen als SVG-Pfade, gebaut von `../Werkzeuge/KlimazonenPfade/erzeugen.py`, weil der Vorläufer die Karte zur Laufzeit mit einem Regex aus einer eingebetteten SVG las (W10‑B5). **Mit iU9‑W10b** kommt der Rest der Simulationskonfiguration dazu: `SchemaModell.cs` (unverändert verschoben — die letzte Datei, die noch in der Anwendung lag), `SchemaLayout.cs` (die ANORDNUNG des Schemas, bis dahin GDI+ in `SchemaAnsicht`: Spaltenbreiten, Knotenhöhen, Bézierbögen, Kaskadenband, Legende — headless prüfbar), `Kaskade.cs` (die vier Plätze `Tab_Einstellungen.Tool_1..4` samt den beiden Stromplätzen, bis dahin sechs unsichtbare Steuerelemente) und `WaermequelleClass.QuelleSchreiben` mit dem Satz `QuelleErgebnis` (die sechs Zweige der Quellenwahl als EIN Schreibweg). **Mit iU9‑W11a** kommen `ErgebnisPraesenz` (war `internal` in `Views/Simulation/` und steuert fünf der sechs Ergebnismasken), `Ganglinie` (`Dauerlinie`/`Anzeigewerte` aus `GanglinienDarstellung`; `Stapeltyp`/`StapelEinstellen` arbeiten auf einer WinForms-`Series` und bleiben) und `LaufFortschritt` dazu. **`SimulationControl.Do_Simulation` nimmt seither `IProgress<LaufFortschritt>` und `CancellationToken` entgegen** — ohne die beiden Zusatzangaben unverändert; der Abbruch wird ZWISCHEN den fünf Phasen geprüft (Start, Kaskade, Photovoltaik, Stromspeicher, Abschluss). Eine Meldung je Erzeuger gibt der Rechenweg nicht her: Die Kaskade läuft stundenweise und bedient in jeder Stunde alle Erzeuger nacheinander. **Die vier EIGENANTEILE** (`SimulationRunner.EigenanteilWpMwh`/`…KesselMwh`/`…SolarKwh`/`…BhkwMwh`) und die zwei Ableitungen `RestNachEigenanteil`/`DeckungProzent` sind aus `BaueErgebnis` herausgezogen: Dieselben Ausdrücke standen wortgleich in `Form_Simulation_Detail` |
 | `Allgemein/Wirtschaftlichkeit/` (20) | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
 | `Allgemein/Bericht/` (14 + 4) | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`; seit iU7-5 der **Renderer** `ChartRenderer` (seit iU9‑W10a mit `Jahresgang` — 1 304 × 440, zwei Reihen, Monatsachse 0…12, vorzeichenfähige y-Achse, für das Quelltemperaturbild des Erdreichdialogs); seit iU5-U3 die **AUSGABE** `WordBerichtGenerator`, `ExcelBerichtGenerator`, `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` und `Bausteine/` (4 Dateien); seit iU9‑W12 `PeakShavingBild` — die drei Reihen und Farben des Vorher/Nachher-Bildes der Lastspitzenkappung. Es ist **kein neuer Renderer**: `ChartRenderer.ErzeugerStapel` trägt seit iU9‑W11a eine Sekundärachse, und genau die braucht der Ladezustand (kWh und kW teilen keine Skala) |
@@ -323,6 +323,27 @@ Pixelvergleich gegen GDI+ läuft unter Windows.
 in `EPOS.Kern.csproj` und in `EPOS.Kern.Tests.csproj`. Welche Native passt, entscheidet die
 Bauumgebung und nicht das TargetFramework; jede Umgebung zieht genau ihre eigene statt aller
 drei. Win32 steht mit dabei, weil `windows.yml` `dotnet test WP-Plan.Kern.slnf` fährt.
+
+## Die Anzeigeeinheit einer Energiemenge
+
+`Allgemein/Energieeinheit.cs` (öffentlich, ohne Datenbank, ohne Oberfläche) trägt seit dem
+Anwenderentscheid W8‑O‑5 / W9‑O‑3 vom **04.09.2026** die beiden Einheiten **MWh (Vorgabe)** und
+**kWh**: `Text`, `Format` (`F2` bzw. `F0`), `Alle` als Auswahlliste, `AusKWh`/`AusMWh`/`Aus` für
+die Anzeige und `NachKWh`/`NachMWh` für den Rückweg einer Eingabe. **Die Identität ist bitgleich** —
+`AusMWh` auf `MWh` gibt den Wert unverändert zurück, statt ihn über `× 1000 × 0,001` zu schicken;
+ohne diese Fallunterscheidung wäre eine Anzeige bei der Vorgabe nicht mehr zeichengleich zum
+Bestand.
+
+**Der Rechenkern bleibt unberührt.** Die Klasse rechnet ANZEIGEN um, nicht Simulationen:
+`SimulationWaermebedarf` und `SimulationStrombedarf` teilen weiter selbst durch 1 000 bzw. 4 000,
+und der Referenzlauf bleibt byte-gleich. Wozu sie da ist: Der Bestand trug die Einheit als
+Zeichenkette **neben** der Zahl und dazwischen ein nacktes `/ 1000`, das nur in EINEM der beiden
+Wege stand (Befund W8‑B4). Jetzt sagt die Hülle, **in welcher Einheit ihre Zahl vorliegt**, und die
+Anzeige rechnet um.
+
+`BedarfEinheitWahl` merkt die Wahl über `Dienste.Einstellungen` unter dem Schlüssel
+`BedarfEinheit` (ohne Eintrag MWh), damit der Bedarfsprofildialog (W9) und der daraus geöffnete
+Ergebnisdialog (W8) dieselbe Einheit zeigen.
 
 ## Nachweis
 
