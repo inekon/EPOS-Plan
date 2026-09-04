@@ -239,7 +239,8 @@ Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
 Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
-FormMain.btn_Help = Projektverwaltung
+# iU9-W16b.1 (E-7, K6-a): FormMain.btn_Help ist entfallen - das Detailformular
+# "Konfiguration Projekt" ist geloescht.
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 Form_PufferSp_Admin.btn_Help = Pufferspeicher

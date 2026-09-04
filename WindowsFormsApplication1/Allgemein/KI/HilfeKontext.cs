@@ -79,7 +79,8 @@ namespace WindowsFormsApplication1
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "MDIMainForm",                 B_HAUPTFENSTER },
-            { "FormMain",                    B_HAUPTFENSTER },
+            // iU9-W16b.1 (E-7, K6-a): "FormMain" (das Detailformular
+            // "Konfiguration Projekt") ist geloescht - sein Bereich entfaellt.
             { "Form_Start",                  B_HAUPTFENSTER },
 
             { "Form_AdminSettings",          B_ADMIN },
@@ -188,9 +189,9 @@ namespace WindowsFormsApplication1
             { "PeakShavingDialog",           B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
 
-            // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
-            // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
-            { "Form_StromTest",              B_STROMSPEICHER },
+            // iU9-W16b.1 (E-7, K6-a): "Form_StromTest" - die Entwicklermaske hinter
+            // dem unbeschrifteten Knopf "SP" des Detailformulars - ist geloescht
+            // (Befund W16-B31: ein Pruefstand im Auslieferungsstand).
 
             // BEFUND W12-B20, nachgetragen (iU9-W12.3): Der Konfliktdialog hatte als
             // einzige der sechs Masken der Welle 12 KEINEN Bereich, obwohl

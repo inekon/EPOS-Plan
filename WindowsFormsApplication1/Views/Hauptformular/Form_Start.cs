@@ -64,6 +64,10 @@ namespace WindowsFormsApplication1
             // Umsetzen der Funktion nur wieder eingeschaltet werden muss.
             OptimierungskachelVerbergen();
 
+            // iU9-W16b.1 (E-7, K6-a): Die Kachel "Projekt Details" fuehrte als einzige
+            // in das geloeschte Detailformular FormMain.
+            ProjektDetailKachelVerbergen();
+
             // P1/P2 (Projektdialoge): Der Aufruf FensterEinpassung.Einhaengen(this) stand
             // hier als "Notebook-Schutz" - er war jedoch WIRKUNGSLOS und ist deshalb
             // entfernt. FensterEinpassung.Zustaendig schliesst Formulare mit
@@ -144,7 +148,6 @@ namespace WindowsFormsApplication1
         public void SetTextProjekt(string szProjekt)
         {
             textBox_ProjektOpen.Text = szProjekt;
-            karte_ProjektDetails.Enabled = true;
 
             // Den Namen auch im Auswahlfeld des Projektkopfs zeigen: es steht an der
             // Stelle, an der bis dahin das blaue Textfeld stand. Diese Methode ist die
@@ -1473,20 +1476,35 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// H11-Muster: Die Kachel „Projekt Details" ist mit iU9-W16b.1 STILLGELEGT
+        /// (Anwenderentscheid E-7, K6-a).
+        ///
+        /// <para>Sie war der einzige Weg der Startmaske in den Altzweig
+        /// <c>FormMain</c> (Befund W16-B20); das Detailformular ist gelöscht. Der
+        /// Handler bleibt stehen, weil der Designer ihn auf
+        /// <c>karte_ProjektDetails.Geklickt</c> verdrahtet — die Karte selbst ist
+        /// ausgeblendet (<see cref="ProjektDetailKachelVerbergen"/>) und fällt mit
+        /// der Maske in W16b.5. Was sie zeigte — die zwölf Gewerkslisten eines
+        /// Projekts —, führt die Startseite als Kacheln.</para>
+        /// </summary>
         private void pBox_ProjektDetails_Click(object sender, EventArgs e)
         {
-            if (textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
-            {
-                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
-                System.Drawing.Point p1 = karte_ProjektDetails.Location;
-                p1 = this.PointToScreen(p1);
-                frm.Location = p1;
-                frm.ShowDialog();
-                return;
-            }
+        }
 
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.ProjektOeffnen(true);
+        /// <summary>
+        /// Blendet die stillgelegte Kachel „Projekt Details" aus — dasselbe Vorgehen
+        /// wie bei <see cref="OptimierungskachelVerbergen"/> und aus demselben Grund:
+        /// Ein Bedienelement, das bedienbar aussieht und nichts tut, ist schlechter
+        /// als keines. Per Code und nicht im Designer, weil die Startmaske ihre
+        /// Koordinaten je Sprache in eigenen <c>.resx</c>-Dateien führt.
+        /// </summary>
+        private void ProjektDetailKachelVerbergen()
+        {
+            if (karte_ProjektDetails == null) return;
+
+            karte_ProjektDetails.Visible = false;
+            karte_ProjektDetails.Cursor = Cursors.Default;
         }
 
         private void label47_Click(object sender, EventArgs e)

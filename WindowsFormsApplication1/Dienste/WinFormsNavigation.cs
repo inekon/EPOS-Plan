@@ -9,53 +9,21 @@ namespace WindowsFormsApplication1
     /// Die Windows-Fassung von <see cref="INavigation"/>: Hier — und nur hier — kennt
     /// die Anwendung die Zuordnung von Schlüssel zu Maske.
     ///
-    /// <para><b>Zwei Tabellen, ein Ort.</b> <see cref="OeffneGewerk"/> ordnet die zwölf
-    /// Gewerksschlüssel den zwölf <c>Set*Control</c>-Methoden von <c>FormMain</c> zu;
-    /// <see cref="OeffneMaske"/> ordnet die Maskenschlüssel den Formularklassen zu.
-    /// Vorher standen diese Zuordnungen 35- bzw. 45-mal im Programmtext verstreut, jedes
-    /// Mal als direkter Zugriff auf <c>Program.mainfrm</c> bzw. als <c>new Form_X()</c>.</para>
+    /// <para><b>Eine Tabelle, ein Ort.</b> <see cref="OeffneMaske"/> ordnet die
+    /// Maskenschlüssel den Formularklassen bzw. — nach Paket iU9 — den Razor-Hüllen zu.
+    /// Vorher standen diese Zuordnungen 45-mal im Programmtext verstreut, jedes Mal als
+    /// <c>new Form_X(); frm.ShowDialog();</c>.</para>
     ///
-    /// <para><b>Was hier ABSICHTLICH nicht steht.</b> Die Bearbeitungsdialoge der
-    /// Kontextmenüs (<c>Form_BHKWEing</c>, <c>Form_PufferSp</c>, <c>Form_Gebaeude</c> …).
-    /// Sie tauschen mit ihrem Aufrufer typisierte Modelllisten und Auswahlzeilen aus —
-    /// füllen, zeigen, zurücklesen. Ein Schlüssel plus <c>object[]</c> könnte das nur
-    /// abbilden, indem der halbe Kontextmenü-Controller hierher zöge; die
-    /// <c>*KontextMenuCtrl</c> sind ohnehin Oberflächenbausteine (sie führen
-    /// <c>ListView</c> und <c>ContextMenuStrip</c>) und wandern mit ihren Masken in
-    /// Paket iU9. Siehe den iU5-Statusblock im Umsetzungskonzept.</para>
-    ///
-    /// <para><b>Kein geöffnetes Detailformular ist kein Fehler.</b> <c>Program.mainfrm</c>
-    /// ist <c>null</c>, solange der Anwender kein Projekt geöffnet hat. Der Bestand
-    /// stürzte an dieser Stelle ab; hier wird still nichts getan — eine Liste, die es
-    /// nicht gibt, muss nicht aufgefrischt werden.</para>
+    /// <para><b>Seit iU9-W16b.1 ohne <c>OeffneGewerk</c>.</b> Die zweite Tabelle ordnete
+    /// zwölf Gewerksschlüssel den zwölf <c>Set*Control</c>-Methoden des Detailformulars
+    /// <c>FormMain</c> zu. Mit dem Anwenderentscheid E-7 (K6-a) ist dieser Altzweig
+    /// stillgelegt: <c>FormMain</c>, <c>Form_StromTest</c>, <c>StromTestClass</c> und die
+    /// zwölf <c>*KontextMenuCtrl</c> sind gelöscht (3 811 Zeilen, Befunde W16-B27/B28),
+    /// und mit ihnen die Methode, die Konstantenklasse <c>Gewerke</c> und der
+    /// Maskenschlüssel <c>Masken.ProjektDetail</c>.</para>
     /// </summary>
     public sealed class WinFormsNavigation : INavigation
     {
-        /// <inheritdoc/>
-        public void OeffneGewerk(string gewerk, int idProjekt, string projektname)
-        {
-            FormMain frm = Program.mainfrm;
-            if (frm == null || string.IsNullOrEmpty(gewerk)) return;
-
-            string name = projektname ?? "";
-
-            switch (gewerk)
-            {
-                case Gewerke.Waermepumpe: frm.SetWPControl(name); break;
-                case Gewerke.Bhkw: frm.SetBHKWControl(name); break;
-                case Gewerke.Stromspeicher: frm.SetSPControl(name); break;
-                case Gewerke.Heizkessel: frm.SetHeizkesselControl(name); break;
-                case Gewerke.Gebaeude: frm.SetGebaeudeControl(name); break;
-                case Gewerke.WaermebedarfExtern: frm.SetWaermebedarfExternControl(name); break;
-                case Gewerke.Prozesswaerme: frm.SetProzesswaermeControl(idProjekt); break;
-                case Gewerke.Strombedarf: frm.SetStrombedarfControl(idProjekt); break;
-                case Gewerke.Stromganglinie: frm.SetStromganglinieControl(name); break;
-                case Gewerke.Photovoltaik: frm.SetPVControl(name); break;
-                case Gewerke.Pufferspeicher: frm.SetPufferSpControl(name); break;
-                case Gewerke.Solarthermie: frm.SetSolarControl(name); break;
-            }
-        }
-
         /// <inheritdoc/>
         public bool OeffneMaske(string maske, params object[] argumente)
         {
@@ -200,8 +168,6 @@ namespace WindowsFormsApplication1
                 case Masken.Assistent:
                     return AssistentZeigen(Ganzzahl(argumente, 0));
 
-                case Masken.ProjektDetail:
-                    return ProjektDetailZeigen(Text(argumente, 0), Ganzzahl(argumente, 1));
             }
 
             return false;
@@ -235,9 +201,6 @@ namespace WindowsFormsApplication1
                     Program.startfrm?.ZeigeBerichteKosten();
                     break;
 
-                case Ansichten.ProjektDetail:
-                    ProjektnameNachziehen();
-                    break;
             }
         }
 
@@ -256,86 +219,6 @@ namespace WindowsFormsApplication1
             // AssistentSeite.razor) in einer modalen Huelle - beide Aufrufer werten
             // "gespeichert" aus und ziehen danach den Projektkontext nach.
             return AssistentHuelle.Oeffnen(null, betriebsart);
-        }
-
-        /// <summary>
-        /// Der EINE Ladeweg ins Detailformular „Konfiguration Projekt": Stammdaten, alle
-        /// Gewerkslisten, alle Kontextmenüs, Anzeige als Dialog, danach den
-        /// Projektkontext der Startseite nachziehen.
-        ///
-        /// <para>Der Ablauf stand bis iU5 in <c>MenueCtrl.ProjektInFormMainLaden</c> und
-        /// ist zeilengleich hierher gezogen — er ist von der ersten bis zur letzten
-        /// Anweisung Oberflächenarbeit und gehört damit in den Adapter, nicht in einen
-        /// Controller.</para>
-        /// </summary>
-        private static bool ProjektDetailZeigen(string szProjekt, int idProjekt)
-        {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            ctrlproj.ReadSingle(szProjekt);
-
-            Program.mainfrm = new FormMain();
-            FormMain frmmain = Program.mainfrm;
-
-            string szKlima = frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion);
-
-            frmmain.SetProjekt(szProjekt);
-            frmmain.SetIDProjekt(idProjekt);
-            frmmain.SetKlima(szKlima);
-            Program.startfrm.SetKlima(szKlima);
-            frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
-            frmmain.SetKunde(ctrlproj.m_szKunde);
-            frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
-            frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
-            frmmain.SetWPControl(szProjekt);
-            frmmain.SetBHKWControl(szProjekt);
-            frmmain.SetSPControl(szProjekt);
-            frmmain.SetHeizkesselControl(szProjekt);
-            frmmain.SetGebaeudeControl(szProjekt);
-            frmmain.SetWaermebedarfExternControl(szProjekt);
-            frmmain.SetProzesswaermeControl(idProjekt);
-            frmmain.SetStrombedarfControl(idProjekt);
-            frmmain.SetStromganglinieControl(szProjekt);
-            frmmain.SetPVControl(szProjekt);
-            frmmain.SetPufferSpControl(szProjekt);
-            frmmain.SetSolarControl(szProjekt);
-            frmmain.Add_WPKontext();
-            frmmain.Add_BHKWKontext();
-            frmmain.Add_GebäudeKontext();
-            frmmain.Add_HeizkesselKontext();
-            frmmain.Add_WaermebedarfExternKontext();
-            frmmain.Add_ProzesswaermeKontext();
-            frmmain.Add_StrombedarfKontext();
-            frmmain.Add_StromganglinieKontext();
-            frmmain.Add_SpKontext();
-            frmmain.Add_PVKontext();
-            frmmain.Add_SolarKontext();
-
-            frmmain.ShowDialog();
-
-            // iU9-W16b.0 (K2): Den Kontext des KERNS mitziehen - er ist seit dieser
-            // Teilwelle die Wahrheit hinter Dienste.Projekt. Die drei Zeilen darunter
-            // spiegeln ihn nur noch in die Startmaske; beides faellt mit K6-a (W16b.1).
-            FormStartProjektKontext.Kontext.Setzen(szProjekt);
-
-            Program.startfrm.m_szProjektname = szProjekt;
-            Program.startfrm.m_ID_Projekt = idProjekt;
-            Program.startfrm.SetTextProjekt(szProjekt);
-            return true;
-        }
-
-        /// <summary>
-        /// Zieht den Projektnamen aus <c>Tab_Applikation</c> in den Kopf des
-        /// Detailformulars nach — der Inhalt des bisherigen
-        /// <c>MenueCtrl.SetProjektname</c>.
-        /// </summary>
-        private static void ProjektnameNachziehen()
-        {
-            FormMain frm = Program.mainfrm;
-            if (frm == null) return;
-
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            ctrl.ReadSingle();
-            frm.SetProjekt(ctrl.m_szProjektname);
         }
 
         // ==================================================================
