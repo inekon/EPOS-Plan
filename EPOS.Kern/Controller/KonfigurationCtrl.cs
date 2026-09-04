@@ -29,12 +29,48 @@ namespace WindowsFormsApplication1
             rows = 0;
         }
 
+        /// <summary>
+        /// Liest den Einstellungssatz EINES Projekts (iU9-W10b.0b).
+        ///
+        /// <para><b>Warum es diese Methode gibt.</b> Sechs Aufrufstellen der Oberflaeche
+        /// setzten dafuer denselben SQL-Text von Hand zusammen
+        /// (<c>"select * from Tab_Einstellungen where ID_Projekt=" + id</c>) — die
+        /// Projektnummer als Zeichenkette in die Anweisung geklebt. Der Weg ueber einen
+        /// <see cref="DbParam"/> steht jetzt an EINER Stelle; die Auswertung der Zeile
+        /// bleibt <see cref="ReadSingle(string)"/>, damit sich an der Ordinalkette
+        /// nichts aendert.</para>
+        ///
+        /// <para>Rueckgabe <c>null</c> = kein Satz zum Projekt (neues Projekt). Der
+        /// Aufrufer legt dann selbst einen leeren an — genau das taten die
+        /// Aufrufstellen bisher ueber <c>rows == 0</c>.</para>
+        /// </summary>
+        public static KonfigurationModel LiesProjekt(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+            ctrl.ReadSingle("SELECT * FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                            new DbParam("?", idProjekt));
+            return ctrl.rows > 0 ? ctrl.model : null;
+        }
+
+        /// <summary>
+        /// Wie <see cref="ReadSingle(string)"/>, aber mit Parametern statt zusammen-
+        /// gesetztem Text.
+        /// </summary>
+        public void ReadSingle(string sql, params DbParam[] parameter)
+        {
+            ReadZeile(DataRepository.GetDataTable(sql, parameter));
+        }
+
         public void ReadSingle(string sql)
         {
-            rows = 0;
+            ReadZeile(DataRepository.GetDataTable(sql));
+        }
 
-            // Nutzt dein DataRepository (intern OLEDB) statt ODBC
-            DataTable dt = DataRepository.GetDataTable(sql);
+        private void ReadZeile(DataTable dt)
+        {
+            rows = 0;
 
             if (dt != null && dt.Rows.Count > 0)
             {
