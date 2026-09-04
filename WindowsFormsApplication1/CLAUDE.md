@@ -120,7 +120,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**134 `.cs`**; **207 Dateien** mit `.resx`) —
+- **`Views/`** (**127 `.cs`**; **182 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -302,12 +302,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 32 Masken** (38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 25 Masken** (32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **21** (25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **14** (21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht auf **31 von 32, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
-  Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
+  Erreichbarkeit steht seit iU9‑W14a auf **25 von 25 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
   `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
   (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
@@ -433,7 +433,42 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` verschoben — er ist der
   Zeuge des Umlaut-Tests. Protokoll:
   [`Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
-- **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+  **Mit iU9‑W14a sind sieben weitere Masken verschwunden — die Erzeuger-Katalogverwaltung**,
+  zusammen 2 387 Zeilen `.cs`, 2 369 Zeilen Designer, 39 `MessageBox` und 32 indirekte:
+  `Form_Heizkessel_Admin` (365 Z.), `Form_BHKWAdmin` (465 Z.),
+  `Form_SolarKollektorenAdmin` (188 Z.), `Form_PufferSp_Bearbeiten` (354 Z.),
+  `Form_PufferSp_Admin` (213 Z.), `Form_AdminPV` (297 Z.) und
+  `Form_AdminStromspeicher` (505 Z.). **Sieben Masken werden ZWEI Komponenten**: Vier
+  der sieben sind BEHÄLTER um Editoren, die seit W6/W7 schon Razor sind — sie werden
+  `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil` im Kern); der
+  fehlende VIERTE Katalogeditor entsteht dabei (`PufferSpKatalogDialog`), und die zwei
+  Modulkataloge werden `ModulKatalogDialog` mit zwei Ausprägungen. An ihrer Stelle
+  stehen **sieben Hüllen** — `Views/Erzeuger/KatalogBrowserHuelle.cs` und
+  `Views/Erzeuger/ModulKatalogHuelle.cs` (die gemeinsamen Kerne),
+  `Views/Heizkessel/HeizkesselAdminHuelle.cs`, `Views/BHKW/BhkwAdminHuelle.cs`,
+  `Views/Solarthermie/SolarkollektorAdminHuelle.cs`,
+  `Views/Pufferspeicher/PufferSpAdminHuelle.cs` (mit `NurLesen`),
+  `Views/Stromspeicher/StromspeicherAdminHuelle.cs` und
+  `Views/Photovoltaik/PvAdminHuelle.cs`.
+  **Die Sprungbrücke verliert FÜNF Ziele** (`HeizkesselAdmin`, `StromspeicherAdmin`,
+  `PvAdmin`, `PufferSpAdmin`, `PufferSpAdminNurLesen`): Ihre Aufrufer sind selbst Razor,
+  aus jedem Sprung wird eine Überlagerung im selben Fenster (Risiko R2) — vier
+  Sprungziele statt neun.
+  **Drei Dateien verlieren ihren letzten Nutzer und fallen**:
+  `Views/Pufferspeicher/PufferSpFilter.cs` (96 Z.), `Allgemein/SpeichernLeiste.cs`
+  (128 Z.) und `Allgemein/KI/KiAufrufKnopf.cs` (270 Z.) — mit der letzten verschwindet
+  der KI-Einstieg aus jeder Maske, bis W15b den `Gespraechsverlauf` baut
+  (Anwenderfrage E‑10).
+  **Der Nachweis der Welle entsteht ZUERST** (`EPOS.Kern.Tests/KatalogVerwaltungTests.cs`,
+  50 Fälle mit eingefrorenen Trefferzahlen): Bis dahin berührte weder ein Referenzlauf
+  noch eine ChartProbe noch ein Kern-Test die sieben Masken fachlich (Befund W14‑B77).
+  **`Views/BHKW`, `Views/Solarthermie` und `Views/Photovoltaik` führen seither keine
+  Designer-Maske mehr**; `Form_PufferSp_Bearbeiten` (samt einem gekürzten
+  `Form_PufferSp_Admin`) und `Form_SolarKollektorenAdmin` sind nicht gelöscht, sondern
+  nach `Werkzeuge/Formularkarte.Tests/Pruefmuster/` VERSCHOBEN — sie sind der
+  „unklar"-Anker und der `DataGridView`-Typzeuge. Protokoll:
+  [`Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md).
+- **`Allgemein/`** (**40** `.cs`; 42 vor iU9‑W14a — `SpeichernLeiste.cs` und `KI/KiAufrufKnopf.cs` haben ihre letzten Nutzer verloren; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts

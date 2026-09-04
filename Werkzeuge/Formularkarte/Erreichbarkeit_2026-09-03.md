@@ -24,12 +24,22 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
-> **Nachgezogen mit iU9‑W13** (04.09.2026): Die Tabellen unten stammen aus einem frischen
-> Stapellauf. Der Befund zählt jetzt **32 Masken, davon 31 erreichbar** — Welle 12 nahm fünf
-> (38), Welle 13 sechs weitere: die vier VDI‑3805‑Einlesemasken (sie werden EINE Razor-Komponente
-> mit vier Ausprägungen), die Wärmebedarfsverwaltung und den CEC‑Modulimport. Die eine
-> „unklar"-Maske bleibt `Form_PufferSp_Bearbeiten` (Welle 14a). Der erklärende Teil oben ist
-> unverändert.
+> **Nachgezogen mit iU9‑W14a** (04.09.2026): Die Tabellen unten stammen aus einem frischen
+> Stapellauf. Der Befund zählt jetzt **25 Masken, davon 25 erreichbar** — Welle 12 nahm fünf
+> (38), Welle 13 sechs (32), Welle 14a sieben weitere: die vier Erzeuger-Katalogbrowser (sie
+> werden EINE Razor-Komponente mit vier Ausprägungen), der fehlende vierte Katalogeditor und
+> die zwei Modulkataloge (eine zweite Komponente mit zwei Ausprägungen).
+>
+> **Mit Welle 14a fällt der LETZTE „unklar"-Zustand des Bestands.** Er hing an
+> `Form_PufferSp_Bearbeiten`: Ihre Mutter `Form_PufferSp_Admin` schaltete `btn_Neu` und
+> `btn_Bearbeiten` in einem Zweig ab und nie wieder ein. Der Befund zählt seither
+> **0 nein / 0 verwaist / 0 unklar** — jede Maske des Bestands ist vom Einstieg aus erreichbar.
+> Die REGEL selbst („ein dauerhaft gesperrter Knopf macht den Weg unklar, nicht ja") bleibt
+> prüfbar: Beide Masken liegen eingefroren unter
+> `Werkzeuge/Formularkarte.Tests/Pruefmuster/Pufferspeicher/`, samt einer Wurzel, und der
+> Testfall `EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa` läuft dort.
+>
+> Der erklärende Teil oben ist unverändert.
 
 ## Stand nach iU9-W0 (Anwenderentscheid iF29)
 
@@ -54,7 +64,7 @@ nur `Form_Variantentest` geöffnet hat:
 | Maske | Zustand | Befund und Vorschlag |
 |---|---|---|
 | `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
-| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
+| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). **Erledigt mit iU9‑W14a.1** — sie ist `PufferSpKatalogDialog`, ihre Mutter ist eine Ausprägung von `KatalogBrowserDialog`, und beide liegen eingefroren unter `Pruefmuster/Pufferspeicher/`. Damit gibt es im Bestand **keinen „unklar"-Zustand mehr**. |
 
 Die übrigen 89 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
@@ -203,25 +213,20 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 31 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 25 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
-| unklar | 1 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 32 | |
+| unklar | 0 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
+| gesamt | 25 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
-| Form_PufferSp_Bearbeiten | unklar | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin → btn_Bearbeiten → Form_PufferSp_Bearbeiten — Öffner: Form_PufferSp_Admin.btn_Bearbeiten_Click (Form_PufferSp_Admin.cs:164) — zweifelhaft: Steuerelement btn_Bearbeiten bleibt auf Visible/Enabled = false; Form_PufferSp_Admin.btn_Neu_Click (Form_PufferSp_Admin.cs:181) — zweifelhaft: Steuerelement btn_Neu bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Bearbeiten.designer.cs` |
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
 | FormMain | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain | `WindowsFormsApplication1/Views/Hauptformular/FormMain.Designer.cs` |
-| Form_AdminPV | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV | `WindowsFormsApplication1/Views/Photovoltaik/Form_AdminPV.designer.cs` |
 | Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
-| Form_AdminStromspeicher | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.StromspeicherBearbeiten → Masken.StromspeicherAdmin → Form_AdminStromspeicher | `WindowsFormsApplication1/Views/Stromspeicher/Form_AdminStromspeicher.designer.cs` |
-| Form_BHKWAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.BHKW → Masken.BhkwAdmin → Form_BHKWAdmin | `WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.designer.cs` |
 | Form_Brauchwasser_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Brauchwasser → Masken.BrauchwasserAdmin → Form_Brauchwasser_Admin | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser_Admin.designer.cs` |
 | Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
 | Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
-| Form_Heizkessel_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Kessel → Masken.HeizkesselAdmin → Form_Heizkessel_Admin | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.Designer.cs` |
 | Form_HelpPopup | ja | Form_Start → pBox_Heizkessel → Program.FillRoundedRectangle → Program.Main → HilfeAutomatik.Starten → HelpExtender.PopupBereitstellen → Form_HelpPopup | `WindowsFormsApplication1/Views/Help/Form_HelpPopup.Designer.cs` |
 | Form_Hinweis | ja | Form_Start → HinweisProjektGeoeffnet → Form_Hinweis | `WindowsFormsApplication1/Allgemein/Form_Hinweis.Designer.cs` |
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
@@ -231,8 +236,6 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 | Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
 | Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
 | Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
-| Form_PufferSp_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Admin.Designer.cs` |
-| Form_SolarKollektorenAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarkollektoren → Masken.SolarkollektorenAdmin → Form_SolarKollektorenAdmin | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektorenAdmin.designer.cs` |
 | Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |

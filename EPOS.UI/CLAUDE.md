@@ -221,6 +221,9 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Import/KatalogImportDialog` | **vier** Masken: `Form_Heizkessel_einlesen`, `Form_PufferSp_einlesen`, `Form_SolarKollektoren_einlesen`, `Form_WP_einlesen` (iU9‑W13.1) | `Views/Import/KatalogImportHuelle.cs` → `KatalogImportProfil`, `KatalogImportAblauf`; EINE Hülle für alle vier Maskenschlüssel, Lesen und Schreiben in `Task.Run` |
 | `Bedarf/WaermebedarfAdminDialog` | `Form_AdminWaermeeinlesen` (iU9‑W13.2) | `Views/Wärmebedarf/WaermebedarfAdminHuelle.cs` → `WaermebedarfStammCtrl`, `GanglinienTextDatei`, `DublettenPruefung`; erscheint auch als Überlagerung in `WaermebedarfExternDialog` |
 | `Photovoltaik/PvModulImportDialog` | `Form_CECImport` / Klasse `Main_PV_Test` (iU9‑W13.3) | `Views/Photovoltaik/PvModulImportHuelle.cs` → `CECDataService`, `PanDataService`, `PhotovoltaikStammCtrl`; Netzabruf mit `Fortschritt` und Abbrechen, 20 746 Zeilen im virtualisierten `Raster` |
+| `Erzeuger/KatalogBrowserDialog` | **vier** Masken: `Form_Heizkessel_Admin`, `Form_BHKWAdmin`, `Form_SolarKollektorenAdmin`, `Form_PufferSp_Admin` (iU9‑W14a.1) | vier Hüllen mit gemeinsamem Kern (`Views/Erzeuger/KatalogBrowserHuelle.cs`) → `KatalogBrowserProfil`; der Katalogeditor und die Namensabfrage sind Überlagerungen, `NurLesen` ist der Lesemodus des Pufferspeichers |
+| `Erzeuger/PufferSpKatalogDialog` | `Form_PufferSp_Bearbeiten` (iU9‑W14a.2) | `Views/Pufferspeicher/PufferSpAdminHuelle.cs` → `PufferSpStammCtrl.Anlegen`/`Ueberschreiben`, `SpeichertypAbbildung`; erscheint als Überlagerung im Browser |
+| `Erzeuger/ModulKatalogDialog` | **zwei** Masken: `Form_AdminStromspeicher`, `Form_AdminPV` (iU9‑W14a.3) | `Views/Stromspeicher/StromspeicherAdminHuelle.cs`, `Views/Photovoltaik/PvAdminHuelle.cs` → `ModulKatalogProfil`; Browser und Editor in EINER Komponente |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -344,6 +347,23 @@ IMPORT-PROBEN mit eingefrorenen Erwartungswerten, angelegt VOR jeder portierten
 Zeile. Die Wärmebedarfsverwaltung folgt dem W12-Zwilling
 `StromganglinieAdminDialog`; ihr Sprung über die `Sprungbruecke` ENTFÄLLT, weil
 das Ziel selbst Blazor wird — aus dem zweiten Fenster wird eine Überlagerung.
+
+**Sieben Masken, zwei Komponenten** (iU9‑W14a): Die Erzeuger-Katalogverwaltung.
+Die vier Admin-Masken Heizkessel, BHKW, Solarkollektoren und Pufferspeicher sind
+BEHÄLTER um Editoren, die seit W6/W7 schon Razor sind — sie tun nichts, was
+`HeizkesselKatalogDialog`, `BhkwKatalogDialog` und `SolarkollektorKatalogDialog`
+nicht könnten, außer Liste, Filter und Löschen. Was sie trennt, sind acht Werte;
+die stehen als `KatalogBrowserProfil` im Kern, der Feldkartenabgleich läuft je
+AUSPRÄGUNG. Der fehlende VIERTE Katalogeditor entsteht dabei
+(`PufferSpKatalogDialog`) und erscheint als Überlagerung im Browser, nicht als
+zweites Fenster. Die zwei Modulkataloge (Stromspeicher, Photovoltaik) sind
+Browser UND Editor in einem und werden eine zweite Komponente mit zwei
+Ausprägungen — die gepflegte Fassung zieht die liegengebliebene mit. **Mit dieser
+Welle fällt der LETZTE „unklar"-Zustand des Bestands** (`Form_PufferSp_Bearbeiten`
+hinter zwei dauerhaft gesperrten Knöpfen): Der Erreichbarkeitsbefund zählt
+seither 0 nein / 0 verwaist / 0 unklar. Die fünf verbliebenen
+Erzeuger-`Sprungziel`e fallen mit ihr — ihre Ziele sind selbst Blazor, und aus
+jedem Sprung wird eine Überlagerung (Risiko R2).
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
