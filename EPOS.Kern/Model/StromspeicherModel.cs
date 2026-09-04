@@ -32,6 +32,18 @@
         /// </summary>
         public const double WIRKUNGSGRAD_RT_VORGABE = 0.90;
 
+        /// <summary>
+        /// Vorgabewert der Zyklus-Verschleisskosten c_ver [€/(kWh·Zyklus)]
+        /// (Fachkonzept 5.4).
+        /// </summary>
+        /// <remarks>
+        /// iU9-W14a.0f (Befund W14-B44): Der Wert stand als <c>C_VER_VORGABE</c> IN der
+        /// Maske <c>Form_AdminStromspeicher</c> (Z. 389), waehrend sein Zwilling
+        /// <see cref="WIRKUNGSGRAD_RT_VORGABE"/> hier lag - zwei fachliche Vorgaben an
+        /// zwei Orten. Jetzt stehen beide beieinander; der Wert selbst ist unveraendert.
+        /// </remarks>
+        public const double C_VER_VORGABE = 0.025;
+
         public StromspeicherModel()
         {
             m_ID = 0;
