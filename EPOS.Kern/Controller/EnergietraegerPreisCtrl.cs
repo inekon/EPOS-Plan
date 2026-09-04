@@ -120,6 +120,158 @@ namespace WindowsFormsApplication1
             return (dt != null && dt.Rows.Count > 0) ? Convert.ToInt32(dt.Rows[0]["ID"]) : -1;
         }
 
+        // =====================================================================
+        // Die waehlbaren Preisbasen (W4-B-1)
+        // =====================================================================
+
+        /// <summary>
+        /// Eine waehlbare Preisbasis der Klappliste „Preisbasis" — die Einheit,
+        /// in der Arbeitspreis, Heiz- und Brennwert angezeigt werden.
+        ///
+        /// <para><see cref="Umrechnung"/> ist die Regel, die den Wert aus der
+        /// Abrechnungseinheit in diese Basis traegt; <c>null</c> heisst „keine
+        /// Regel" — dann ist die Basis die Abrechnungseinheit selbst und
+        /// <see cref="Faktor"/> ist 1. Beim Speichern wird daraus wie bisher
+        /// <c>ID_Umrechnung = -1</c> (<see cref="UmrechnungsId"/>).</para>
+        /// </summary>
+        public sealed class Preisbasis
+        {
+            /// <summary>Der Anzeigetext, in der Schreibweise der Quelle.</summary>
+            public string Einheit;
+
+            /// <summary>Abrechnungseinheit → diese Basis.</summary>
+            public double Faktor;
+
+            /// <summary>Die tragende Regel; <c>null</c> = die Abrechnungseinheit selbst.</summary>
+            public EnergyConversion Umrechnung;
+        }
+
+        /// <summary>
+        /// Die Klappliste „Preisbasis" eines Traegers — JE EINHEIT GENAU EIN
+        /// EINTRAG, die Abrechnungseinheit zuerst, danach die Zieleinheiten der
+        /// Regeln in Regelreihenfolge.
+        ///
+        /// <para><b>Befund W4-B-1 (Windows-Abnahme 04.09.2026).</b> Der Vorlaeufer
+        /// fuellte die Liste mit der <c>to_unit</c> JEDER Regel des Brennstoffs
+        /// (<c>ucFuelSettings.cs:1935–1954</c> — „kein Filter auf <c>from_unit</c>,
+        /// <c>aktiv</c> oder Traeger, kein <c>ORDER BY</c>", festgehalten in
+        /// <c>Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md</c> § 2.2), und
+        /// die Blazor-Huelle uebernahm das wortgleich. Weil die Gas-Brennstoffe
+        /// neben der Identitaetsregel <c>Nm³ → Nm³</c> auch den z-Faktor
+        /// <c>m³ → Nm³</c> fuehren, stand „Nm³" ZWEIMAL in der Liste; bei Erdgas E
+        /// kam ueber Regel 67 (<c>Nm³ → kWh</c>) das gemeldete „Nm³, kWh, Nm³"
+        /// zustande. Umgekehrt blieb die Liste — und damit das Feld — LEER,
+        /// sobald der Brennstoff gar keine Regel fuehrt.</para>
+        ///
+        /// <para><b>Die Abrechnungseinheit steht immer an erster Stelle.</b> Sie
+        /// ist die Einheit, in der die Werte in der Datenbank liegen; eine Liste,
+        /// die sie nicht anbietet, kann den gespeicherten Zustand nicht zeigen.
+        /// Traegt der Brennstoff eine Regel auf diese Einheit, haengt der Eintrag
+        /// an ihr — bevorzugt an der Identitaetsregel (<c>from = to</c>), sonst an
+        /// der ersten Regel mit passender <c>to_unit</c>. Das ist genau die Regel,
+        /// die der Vorlaeufer ueber seinen Textvergleich fand, weshalb sich fuer
+        /// jeden Traeger des Katalogs weder Faktor noch gespeicherte
+        /// <c>ID_Umrechnung</c> aendern.</para>
+        ///
+        /// <para><b>Verglichen wird normalisiert</b> (<see cref="EinheitSchluessel"/>):
+        /// ohne Rand-Leerzeichen, ohne Gross-/Kleinschreibung und mit „³"/„²" auf
+        /// „3"/„2" — „Nm3" und „Nm³" sind dieselbe Einheit. Angezeigt wird die
+        /// zuerst gefundene Schreibweise.</para>
+        /// </summary>
+        /// <param name="abrechnungseinheit"><c>energy_carrier.billing_unit</c>; leer erlaubt.</param>
+        /// <param name="umrechnungen">Die Regeln des Brennstoffs in Lesereihenfolge; <c>null</c> erlaubt.</param>
+        public static List<Preisbasis> Preisbasen(string abrechnungseinheit,
+                                                  IReadOnlyList<EnergyConversion> umrechnungen)
+        {
+            var liste = new List<Preisbasis>();
+            var gesehen = new HashSet<string>(StringComparer.Ordinal);
+
+            string basis = (abrechnungseinheit ?? "").Trim();
+            if (basis.Length > 0)
+            {
+                liste.Add(new Preisbasis
+                {
+                    Einheit = basis,
+                    Umrechnung = BasisRegel(basis, umrechnungen),
+                    Faktor = 1.0
+                });
+                // Der Faktor der Basis ist der Faktor ihrer Regel - ohne Regel 1.
+                if (liste[0].Umrechnung != null) liste[0].Faktor = liste[0].Umrechnung.Factor;
+                gesehen.Add(EinheitSchluessel(basis));
+            }
+
+            if (umrechnungen != null)
+            {
+                foreach (EnergyConversion c in umrechnungen)
+                {
+                    if (c == null) continue;
+                    string ziel = (c.ToUnitCode ?? "").Trim();
+                    if (ziel.Length == 0) continue;
+                    if (!gesehen.Add(EinheitSchluessel(ziel))) continue;
+
+                    liste.Add(new Preisbasis { Einheit = ziel, Umrechnung = c, Faktor = c.Factor });
+                }
+            }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Regel, an der die Abrechnungseinheit haengt: erst die
+        /// Identitaetsregel (<c>from = to = Abrechnungseinheit</c>), sonst die
+        /// erste Regel mit passender <c>to_unit</c>, sonst <c>null</c>.
+        /// </summary>
+        private static EnergyConversion BasisRegel(string basis,
+                                                   IReadOnlyList<EnergyConversion> umrechnungen)
+        {
+            if (umrechnungen == null) return null;
+            string schluessel = EinheitSchluessel(basis);
+
+            foreach (EnergyConversion c in umrechnungen)
+                if (c != null
+                    && EinheitSchluessel(c.ToUnitCode) == schluessel
+                    && EinheitSchluessel(c.FromUnit) == schluessel)
+                    return c;
+
+            foreach (EnergyConversion c in umrechnungen)
+                if (c != null && EinheitSchluessel(c.ToUnitCode) == schluessel)
+                    return c;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Der Vergleichsschluessel einer Einheit: getrimmt, ohne
+        /// Gross-/Kleinschreibung, „³"/„²" als „3"/„2". Kulturunabhaengig —
+        /// derselbe Schluessel unter jeder Oberflaechensprache.
+        /// </summary>
+        public static string EinheitSchluessel(string einheit)
+        {
+            if (string.IsNullOrEmpty(einheit)) return "";
+            return einheit.Trim()
+                          .Replace('\u00b3', '3')
+                          .Replace('\u00b2', '2')
+                          .ToUpperInvariant();
+        }
+
+        /// <summary>
+        /// Der Index der Preisbasis mit dieser Einheit; <c>null</c>, wenn die
+        /// Liste leer ist. Eine unbekannte oder leere Einheit faellt auf den
+        /// ersten Eintrag zurueck — das ist seit der Bereinigung die
+        /// Abrechnungseinheit und nicht mehr die erste beliebige Regel.
+        /// </summary>
+        public static int? PreisbasisIndex(IReadOnlyList<Preisbasis> basen, string einheit)
+        {
+            if (basen == null || basen.Count == 0) return null;
+
+            string schluessel = EinheitSchluessel(einheit);
+            if (schluessel.Length > 0)
+                for (int i = 0; i < basen.Count; i++)
+                    if (EinheitSchluessel(basen[i].Einheit) == schluessel) return i;
+
+            return 0;
+        }
+
         /// <summary>Eine Zeile der Preishistorie (<c>energy_price</c>).</summary>
         public sealed class Historienzeile
         {

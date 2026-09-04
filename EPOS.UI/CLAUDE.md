@@ -102,6 +102,18 @@ Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit
 nicht gewählten Rechenmodells, statt ihn auszublenden — die Werte des anderen Modells gehen so
 nicht verloren (iU9‑W2.3, Vorbild `Form_Tarifstruktur.ModusUebernehmen`).
 
+**Die Liste am `Auswahlfeld` gehört dem Wirt — und muss dublettenfrei sein und den
+gespeicherten Wert enthalten.** Die Komponente zeigt `Eintraege` eins zu eins und meldet die
+**Id** zurück, nicht die Position; sie ordnet nichts, faltet nichts zusammen und rät keinen
+Rückfall. Wer die Liste baut, schuldet deshalb dreierlei: **je Wert genau einen Eintrag**,
+**stabile Ids über einen Neuaufbau** (sonst zeigt die gemerkte Id danach auf eine andere Zeile)
+und **den gespeicherten Wert als Eintrag** — steht er nicht drin, hat `Auswahl` keine passende
+Option, und ein `<select>` ohne Treffer zeigt **nichts** an. Beleg ist der Befund W4‑B‑1: Die
+Klappliste „Preisbasis" führte „Nm³" doppelt, weil zwei Umrechnungsregeln dieselbe Zieleinheit
+tragen, und blieb bei Trägern ohne Regel leer (`iU9_W4_Blazor_Port_Protokoll.md` § 9a). Der
+Zuschnitt gehört in den **Kern**, nicht in die Hülle: Dort erreicht ihn das Gate
+(`WP-Plan.Kern.slnf`), und die zweite Schale bekommt ihn geschenkt.
+
 `Textfeld` führt seit iU9‑W3.0 `Mehrzeilig`/`Zeilen`/`NurLesen` und (seit W3.2) `Festbreite`:
 dasselbe Feld als `textarea` — der Ersatz für die MultiLine-`TextBox` (Protokolle). `NurLesen`
 lässt den Inhalt markierbar, anders als ein gesperrtes Feld.
