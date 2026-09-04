@@ -1564,6 +1564,15 @@ body {
     color: #1f4e79;
 }
 
+/* Der Rueckweg der Seite "Berichte & Kosten", wenn sie als eigene ANSICHT
+   steht statt als sechstes Reiterblatt (Anwenderentscheid W16c-E-3). Er
+   waechst nicht mit der Kopfzeile mit und traegt das Touchziel des Hauses. */
+.epos-navigation-zurueck {
+    flex: 0 0 auto;
+    min-height: var(--epos-touchziel);
+    font-weight: 400;
+}
+
 /* Die Vergleichsmatrix der Wirtschaftlichkeitsseite (iU9-W5.3). Ihre Spalten
    entstehen zur Laufzeit - eine je Version -, deshalb ist sie eine
    gewoehnliche Tabelle mit der Hausklasse epos-raster. Der Zeilentitel steht

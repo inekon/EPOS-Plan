@@ -25,7 +25,7 @@ Fachmaske mehr.**
 
 Neu in `EPOS.UI`: der Baustein **`Menueband.razor`** (300 Z.) mit
 **`Menuepunkt.cs`** (115 Z.) und der **erzeugten** **`Menuetabelle.cs`**
-(143 Z., 54 Punkte), die Seite **`Hauptfenster.razor`** (150 Z.) und die
+(54 Punkte; seit W16c‑E‑2 **55**), die Seite **`Hauptfenster.razor`** und die
 elf Menübildchen unter `wwwroot/bilder/menue/`. Erweitert: **`Seitenschluessel`**
 (86 → 319 Z., die EINE Schlüsseltabelle beider Plattformen) und **`AppWurzel`**
 (354 → 473 Z., die gemeinsame Wurzel).
@@ -125,6 +125,15 @@ Skript, samt ihrer Einhängestelle („unmittelbar unter `Einstellungen`",
 | aus den acht `Init*` | **9** | wörtlich die alten Schlüssel: `PEAK_MENUE`, `KDLG_MENUE_VORLAGEN`, `KDLG_MENUE_ENERGIETRAEGER`, `GESETZ_MENUE`, `ADM_DUBLETTEN_MENUE`, `KI_MENUE_ASSISTENT`, `MENU_VARIANTE_SPEICHERN`, `MENU_VARIANTEN_BERICHT` — dazu **ein** neuer (`MENU_LIZENZ_VERWALTUNG`, im Bestand ein Code-Literal) |
 | Trennstriche | **8** | 6 aus dem Designer, 2 aus `BaueVariantenMenue` und `InitKiHilfe` |
 | Bilder | **11** | 9 aus dem Designer, 2 aus `InitGesetzeMenue`/`InitLizenzMenue` — dieselben PNG unter `EPOS.UI/wwwroot/bilder/menue/` (zusammen 30 KB) |
+| **nachgetragen (W16c‑E‑2)** | **1** | der Kopf **„Sprache"** (`MENU_SPRACHE`, en „Language"). Er hat **keine Designer-Herkunft** — er ist der Anwenderentscheid vom 04.09.2026; die Tabelle sagt das im Kopfkommentar, denn das Erzeugerskript liegt nicht im Repository |
+
+Damit führt die Tabelle **55 Punkte** (54 des Bestands + 1) in **vier Köpfen**
+der obersten Ebene — Projekt, Administration, Hilfe, Sprache. Von den 55
+**handeln 42** (unverändert: der neue Kopf handelt nicht) und **13 klappen auf**
+(12 + „Sprache"); Trennstriche und Bilder sind unverändert 8 und 11. Der
+Menüpunkt „Varianten und Bericht…" meldet weiterhin `BERICHTE_KOSTEN` — was
+sich mit W16c‑E‑3 geändert hat, ist nicht die Tabelle, sondern was die Hülle
+damit tut (§ 6).
 
 Ein zweites kleines Skript, **`w16c_texte.py`**, legt die vier Texte des
 Kopfbands und der „Über"-Meldung an (`HAUPT_CLAIM`, `HAUPT_VERSION`,
@@ -152,19 +161,25 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 
 ## 6 — Anwenderfragen
 
+> **Nachtrag 04.09.2026.** Der Anwender hat entschieden: **E‑1, E‑2, E‑6,
+> E‑8a und E‑9 sind bestätigt**, **W16c‑E‑1 ist ok**, und **W16c‑E‑2** und
+> **W16c‑E‑3** sind zugunsten der jeweils anderen Form entschieden und
+> umgesetzt (Commits `03c5947` und `74e0cc1`). Offen bleiben **E‑10** (die
+> Umbenennung, ausdrücklich nach dem Merge) und **W16a‑E‑1 / W16b‑O‑5**.
+
 | # | Frage | Stand |
 |---|---|---|
-| **E‑1** | Wird `AppWurzel` die gemeinsame Wurzel? | **Vorläufig ja, umgesetzt.** Eine Wurzel, zwei Schalen: Die Zustandsmaschine kennt die Ansichten, `Kopfleiste` (`RenderFragment`) trägt je Plattform die Schale — unter Windows das Menüband samt Markenkopf, auf iOS **nichts**. `Startansicht` ist die Ansicht beim Aufmachen und zugleich das Ziel des Rückwegs; damit ist `ZurueckZurListe` auf beiden Plattformen derselbe Programmtext. **Bestätigen?** |
-| **E‑2** | `Masken` und `Seitenschluessel` zusammenlegen? | **Vorläufig ja, umgesetzt.** `Seitenschluessel` führt 34 Werte: die sieben der iOS-Wurzel, `STARTSEITE`, `BERICHTE_KOSTEN`/`VARIANTEN`, die 25 Maskenschlüssel und die 19 Wege des Hauptfensters. **Die übernommenen sind VERWEISE** (`= WindowsFormsApplication1.Masken.X`), keine Abschriften — `INavigation.OeffneMaske` bleibt unverändert gültig, `Masken` bleibt im Kern die Quelle. Die Richtung ist die einzig mögliche: EPOS.UI kennt EPOS.Kern, nicht umgekehrt |
-| **E‑6** | iF21 (Per Monitor V2, `DpiInsel` weg) in W16c? | **Vorläufig ja, umgesetzt.** `app.manifest` `dpiAware=true/pm` + `dpiAwareness=PerMonitorV2`, `Program.Main` `HighDpiMode.PerMonitorV2`, die `DpiInsel` und die zwei `ShowDialog`-Überladungen gelöscht. **Auf Linux ist nur der Bau prüfbar** — die Abnahme bei 100/125/150 % steht in § 9 und in `Umsetzung_iU9_Nachweise.md` § 12.1 |
-| **E‑8a** | Formularkarte behalten, Bestandstests aufs Prüfmuster? | **Umgesetzt.** Sechs Anker sind umgehängt, einer ist **zurückgeholt** (§ 8) |
-| **E‑9** | Wohin mit den Zeugen? | **Umgesetzt.** `MDIMainForm.Designer.cs` und seine drei `.resx` (3 493 Z.) sind **vor** dem Rückbau eingefroren; der Großschreibungs-Zeuge und der Wurzelnamensraum-Zeuge hängen seither dort, und der Prüfmusterbaum trägt jetzt auch einen **Sprungtabellen-Auszug** |
+| **E‑1** | Wird `AppWurzel` die gemeinsame Wurzel? | **Vorläufig ja, umgesetzt.** Eine Wurzel, zwei Schalen: Die Zustandsmaschine kennt die Ansichten, `Kopfleiste` (`RenderFragment`) trägt je Plattform die Schale — unter Windows das Menüband samt Markenkopf, auf iOS **nichts**. `Startansicht` ist die Ansicht beim Aufmachen und zugleich das Ziel des Rückwegs; damit ist `ZurueckZurListe` auf beiden Plattformen derselbe Programmtext. **Bestätigt** (Anwender, 04.09.2026) |
+| **E‑2** | `Masken` und `Seitenschluessel` zusammenlegen? | **Vorläufig ja, umgesetzt.** `Seitenschluessel` führt 34 Werte: die sieben der iOS-Wurzel, `STARTSEITE`, `BERICHTE_KOSTEN`/`VARIANTEN`, die 25 Maskenschlüssel und die 19 Wege des Hauptfensters. **Die übernommenen sind VERWEISE** (`= WindowsFormsApplication1.Masken.X`), keine Abschriften — `INavigation.OeffneMaske` bleibt unverändert gültig, `Masken` bleibt im Kern die Quelle. Die Richtung ist die einzig mögliche: EPOS.UI kennt EPOS.Kern, nicht umgekehrt. **Bestätigt** (Anwender, 04.09.2026) |
+| **E‑6** | iF21 (Per Monitor V2, `DpiInsel` weg) in W16c? | **Vorläufig ja, umgesetzt.** `app.manifest` `dpiAware=true/pm` + `dpiAwareness=PerMonitorV2`, `Program.Main` `HighDpiMode.PerMonitorV2`, die `DpiInsel` und die zwei `ShowDialog`-Überladungen gelöscht. **Auf Linux ist nur der Bau prüfbar** — die Abnahme bei 100/125/150 % steht in § 9 und in `Umsetzung_iU9_Nachweise.md` § 12.1. **Bestätigt** (Anwender, 04.09.2026) |
+| **E‑8a** | Formularkarte behalten, Bestandstests aufs Prüfmuster? | **Umgesetzt.** Sechs Anker sind umgehängt, einer ist **zurückgeholt** (§ 8). **Bestätigt** (Anwender, 04.09.2026) |
+| **E‑9** | Wohin mit den Zeugen? | **Umgesetzt.** `MDIMainForm.Designer.cs` und seine drei `.resx` (3 493 Z.) sind **vor** dem Rückbau eingefroren; der Großschreibungs-Zeuge und der Wurzelnamensraum-Zeuge hängen seither dort, und der Prüfmusterbaum trägt jetzt auch einen **Sprungtabellen-Auszug**. **Bestätigt** (Anwender, 04.09.2026) |
 | **E‑10** | `MDIMainForm` → `Hauptfenster` umbenennen? | **NICHT getan** — ausdrücklich außerhalb dieser Teilwelle. Sie kommt nach dem Merge als eigener Commit der Orchestrierung. Betroffen wären: die Klasse und ihre Datei, `Program.Main`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP`, `help_mapping.txt`, die Prüfmuster-Auszüge und die Kommentare in rund einem Dutzend Hüllen |
 | **W16a‑E‑1 / W16b‑O‑5** | Wird der Assistent eine freie Ansicht? | **W16c hat es nicht getan** (Auflage der Anweisung). Er bleibt eine modale `BlazorDialogForm`; `Seitenschluessel.ProjektNeu`/`…Bearbeiten` gehen über `HauptfensterHuelle.Weg` in dieselbe Hülle wie bisher — samt dem Nachzug des Projektkontexts („Befund 3"). **Anwenderfrage bleibt offen** |
 | **W16b‑E‑1 / W16b‑E‑2** | (aus W16b) | **Nicht angefasst** |
-| **W16c‑E‑1 (neu)** | **Das Menü klappt beim KLICK auf, nicht beim Überfahren** (A‑1) | Der `MenuStrip` öffnete ein Untermenü, sobald die Maus darüber stand — und schloss das vorige. Wer das Menü mit der Maus „durchfährt", muss jetzt jeden Kopf anklicken. Die Tastaturbedienung ist dieselbe geblieben (← → ↓ Pos1 Ende Esc). Bestätigen? |
-| **W16c‑E‑2 (neu)** | **Die zwei Sprachpunkte stehen weiter GANZ RECHTS in der Menüleiste**, als eigene Köpfe neben „Hilfe" | Das ist der Bestand (`menuToolbar.Items` = Projekt, Administration, Hilfe, Deutsch, Englisch). In einer Razor-Leiste wäre ein Untermenü „Sprache" mit zwei Einträgen die üblichere Form — **wörtlich übernommen**, weil die Welle nichts umbauen soll, was sie nur umzieht |
-| **W16c‑E‑3 (neu)** | **Der Menüpunkt „Varianten und Bericht…" wechselt KEINE Ansicht**, er holt den sechsten Reiter der Startseite nach vorn | Wörtlich der Bestand (`MenuItem_VariantenBericht_Click` → `StartseiteHuelle.Aktuelle.ZeigeBerichteKosten`). `Seitenschluessel.BERICHTE_KOSTEN` gibt es trotzdem — er ist der **iOS**-Weg, wo es keine Reiter der Startseite gibt |
+| **W16c‑E‑1 (neu)** | **Das Menü klappt beim KLICK auf, nicht beim Überfahren** (A‑1) | Der `MenuStrip` öffnete ein Untermenü, sobald die Maus darüber stand — und schloss das vorige. Wer das Menü mit der Maus „durchfährt", muss jetzt jeden Kopf anklicken. Die Tastaturbedienung ist dieselbe geblieben (← → ↓ Pos1 Ende Esc). **ok** (Anwender, 04.09.2026) |
+| **W16c‑E‑2** | Die zwei Sprachpunkte als eigene Köpfe neben „Hilfe" — oder ein Untermenü „Sprache"? | **Anwenderentscheid 04.09.2026: Untermenü „Sprache" — umgesetzt** (Commit `03c5947`). Der Bestand führte fünf Köpfe (`menuToolbar.Items` = Projekt, Administration, Hilfe, Deutsch, Englisch); W16c hatte das wörtlich übernommen, weil die Welle nichts umbauen sollte, was sie nur umzieht. Jetzt steht **ganz rechts, wo „Deutsch" stand, der Kopf „Sprache"** (`MENU_SPRACHE`, en „Language"); er klappt nur auf, die zwei Punkte sind seine Untereinträge und behalten Name, Bild (`germany`/`usa`) und Seitenschlüssel — `help_mapping.txt` und `HauptfensterHuelle.Weg` greifen unverändert, `Application.Restart()` bleibt. Zahlen: **55** Punkte, **4** Köpfe, **13** aufklappende, 42 handelnde, 8 Trenner, 11 Bilder |
+| **W16c‑E‑3** | Holt „Varianten und Bericht…" den sechsten Reiter der Startseite nach vorn — oder wechselt er die Ansicht? | **Anwenderentscheid 04.09.2026: Ansichtswechsel — umgesetzt** (Commit `74e0cc1`). Bis dahin wörtlich der Bestand (`MenuItem_VariantenBericht_Click` → `StartseiteHuelle.Aktuelle.ZeigeBerichteKosten`), und `BERICHTE_KOSTEN` war allein der **iOS**-Weg. Jetzt ist es der Weg **beider** Plattformen: Der Fall in `HauptfensterHuelle.Weg` ist gefallen — der Schlüssel steht in `Ansichten`, nicht in `Masken`, also meldet `MaskeOeffnen` false und `Hauptfenster.Springe` lässt die `AppWurzel` auf die Ansicht wechseln. **Das sechste Reiterblatt bleibt bestehen** (dieselbe Komponente, dieselbe `BerichteKostenHuelle`); nur der Menüweg führt in die Ansicht. Der Rückweg geht über `ZurueckZurListe` auf die `Startansicht` — dafür hat `BerichteKostenSeite` einen `Geschlossen`-Rückruf und den Knopf `BK_BTN_ZURUECK` bekommen, den es **ohne** Rückruf (also im Reiterblatt) nicht gibt |
 
 ---
 
@@ -182,6 +197,7 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 | **W16c‑B8** | **`Dienste.Datei.MitSystemOeffnen` taugt nicht für eine Adresse** — es prüft `File.Exists` und liefert für `https://…` immer `false` | Neues Glied `AdresseOeffnen(string)` mit Standardumsetzung `false`; die Windows-Fassung trägt den Rumpf des alten Menühandlers. Auf iOS bleibt es bei `false` (kein Menü, kein Aufrufer) — nachzuziehen mit iU11 |
 | **W16c‑B9** | **`Program.cs` brauchte KEINE Bereinigung.** Nach dem Rückbau ist keines der vier Felder verwaist: `mdifrm` trägt `Application.Run`, `projektkontext` ist `Dienste.Projekt`, `menuectrl` liest `AssistentHuelle`, `wizardctrl` die Startseiten- und die Hauptfensterhülle | Die Anweisung nennt „`Program` bereinigen"; es gab nichts zu bereinigen — `startfrm` und `mainfrm` sind schon mit W16b gefallen |
 | **W16c‑B10** | **`AppWurzel.ZurueckZurListe` räumte `_simErgebnis` nicht ab** (die übrigen fünf Zwischenspeicher schon) | Beim Umbau erledigt. Wirkung im Bestand: keine — die Ansicht wird über `_ansicht` gewählt; der Satz blieb bloß am Leben |
+| **W16c‑B11** (04.09.2026, bei W16c‑E‑3 gefunden) | **`IProjektQuelle` stand im Windows-Dienstverzeichnis GAR NICHT** — `BlazorDienste.Erzeugen` trug allein `IHilfeDienst`. `AppWurzel` fordert die Quelle seit W16c.2 per `@inject` an und wird seither in **jedem** Windows-Start gezeichnet; ein fehlendes `@inject`-Ziel wirft beim Aufbau der Komponente | `BlazorDienste` trägt jetzt `KeineProjekte` ein. Unter Windows liefert die Quelle bewusst nichts — jede Ansicht bekommt ihren Parametersatz von der Hülle —, aber eingetragen muss sie sein. Auf Linux ist das nicht nachweisbar (die Windows-Abnahme steht als W16c‑O‑2 aus); der Befund kam beim Nachrechnen des Weges für W16c‑E‑3 heraus |
 
 ---
 
@@ -253,6 +269,26 @@ Wächter leer. **Der Merge lief ohne Konflikt** — die andere Seite hat nur
 `Umsetzung_iU10_Nachweise.md` und `Umsetzungskonzept_iOS_EPOS-Plan.md`
 angefasst, keine Quelldatei.
 
+**Gate der zwei Anwenderentscheide vom 04.09.2026** (Commits `03c5947` und
+`74e0cc1`, Basis `555ef11`):
+
+| Prüfung | Sollwert | Ergebnis |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** (Vollneubau, beide Male) |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 4 002 + neue | **4 006** nach W16c‑E‑2 (+4), **4 012** nach W16c‑E‑3 (+6) — nur `EPOS.UI.Tests` (2 194 → **2 204**) |
+| dieselben Tests unter `LANG=en_US.UTF-8` | gleich | **grün** |
+| `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 122 | **122**, unverändert (keine Maske berührt) |
+| Wächter `Program.*` / WinForms im Kern | leer | **leer** (am Kern nur vier `MyResource`-Einträge: `MENU_SPRACHE`, `BK_BTN_ZURUECK`) |
+| `ChartProben`, `SqlDialektPruefer`, Referenzlauf | nicht berührt | **kein Rechenweg, kein SQL, kein Bild angefasst** — der Referenzlauf läuft in der Orchestrierung |
+
+**Der Nachweis N4 hat neue Zahlen** (§ 4): 55 Punkte, 4 Köpfe, 13
+aufklappende, 42 handelnde. Der Fall „Ein Sprachpunkt der obersten Ebene
+meldet unmittelbar" heißt jetzt „Ein Sprachpunkt im Untermenü Sprache meldet
+beim Klick"; dazu kamen der Aufbau des Kopfes, der zweite Sprachpunkt, die
+Pfeiltasten über **vier** Köpfe mit öffnendem „Sprache" und — für W16c‑E‑3 —
+der Ansichtswechsel samt Rückweg an `Hauptfenster` und `AppWurzel` sowie der
+Rückwegknopf mit und ohne Rückruf an `BerichteKostenSeite`.
+
 **Der Referenzlauf ist byte-gleich, und das war zu erwarten:** Der Rechenkern
 ist nicht angefasst. Der Berührungspunkt dieser Teilwelle ist der **Startweg** —
 Erststart, Lizenz, `LizenzManager.NachpruefungImHintergrund()` —, und der ist
@@ -268,16 +304,16 @@ Ende von `BeimLaden`).
 |---|---|---|
 | 1 | **Erststart** auf einem Rechner ohne Datenbank | Unverändert: Erststartdialog, Lizenzvereinbarung, dann das Hauptfenster. Beide Dialoge laufen besitzerlos VOR dem Fenster (W15c) und sind vom Rückbau nicht berührt |
 | 2 | **Lizenz** — Zustände, Karenz, „Lizenz…" im Menü Administration | Unverändert; die stille Nachprüfung läuft beim Start weiter im Hintergrund |
-| 3 | **Alle 54 Menüpunkte durchklicken** | Projekt 8 (+2 Trenner-Gruppen), Administration 11 mit sieben Untermenüs, Hilfe 4, Deutsch, Englisch. Jeder führt in denselben Dialog wie vorher |
+| 3 | **Alle 55 Menüpunkte durchklicken** | **VIER Köpfe** (W16c‑E‑2): Projekt 8 (+2 Trenner-Gruppen), Administration 11 mit sieben Untermenüs, Hilfe 4 und ganz rechts **„Sprache" mit genau zwei Einträgen** (Deutsch, Englisch — mit ihren Fahnen). Jeder Punkt führt in denselben Dialog wie vorher |
 | 4 | **Die drei Ebenen**: Administration → Energiesysteme → Photovoltaik → Bearbeiten | Das Untermenü der dritten Ebene klappt seitlich eingerückt auf |
-| 5 | **Tastatur im Menü**: ← → ↓ Pos1 Ende Esc | Wandern in der obersten Ebene, Öffnen, Schließen. Tab verlässt die Leiste nach EINEM Druck |
+| 5 | **Tastatur im Menü**: ← → ↓ Pos1 Ende Esc | Wandern über die **vier** Köpfe, Öffnen (auch von „Sprache"), Schließen. Ende springt auf „Sprache", nicht mehr auf „Englisch". Tab verlässt die Leiste nach EINEM Druck |
 | 6 | **F1** irgendwo im Fenster | Der KI-Assistent geht auf — auch wenn der Fokus in der WebView steht |
 | 7 | **Kopfband** | „EPOS-Plan", darunter „Energieplanungs-Software · Energie · Planung · Optimierung · Simulation", rechts der Fragezeichenknopf (Ziel „Programmablauf") und „Version x.y.z" |
 | 8 | **21 Kacheln der Startseite**, Projektwechsel im Kopfband, Klimaregion | Unverändert gegenüber W16b — das Menüband steht darüber und verschwindet nie |
 | 9 | **Assistent** über Menü „Projekt → Neu…" und „→ Bearbeiten…" | Modal wie bisher; danach zeigt die Startseite das neue Projekt (Nachzug des Kontexts) |
 | 10 | **Simulation**: „Simulation Konfiguration…" und die Ergebniskachel | Konfiguration als freie Ansicht, Ergebnis als Überlagerung — **mit dem Menüband darüber** |
-| 11 | **Bericht**: Menü „Projekt → Varianten und Bericht…" | Der Reiter „Berichte & Kosten" kommt nach vorn, Seite „Übersicht" |
-| 12 | **Sprachwechsel** auf Englisch und zurück | Alle 54 Menüpunkte englisch, Kopfband englisch („Energy planning software · Energy · Planning · Optimisation · Simulation"), „Über EPOS-Plan" → „About EPOS-Plan". Das Programm startet neu |
+| 11 | **Bericht**: Menü „Projekt → Varianten und Bericht…" | **W16c‑E‑3:** Die ANSICHT wechselt auf „Berichte & Kosten" (Seite „Übersicht"), die Startseite ist abgelöst, das Menüband steht darüber. Links oben in der Kopfzeile steht **„◀ Zurück"** und führt zur Startseite zurück. Der **sechste Reiter der Startseite zeigt dieselbe Seite** und dort **ohne** Rückwegknopf — beide Wege müssen denselben Stamm und dieselbe Markierung zeigen |
+| 12 | **Sprachwechsel** auf Englisch und zurück — jetzt über „Sprache → Englisch" | Alle 55 Menüpunkte englisch, der Kopf heißt **„Language"**, Kopfband englisch („Energy planning software · Energy · Planning · Optimisation · Simulation"), „Über EPOS-Plan" → „About EPOS-Plan". Das Programm startet neu |
 | 13 | **DPI 100 / 125 / 150 %** — Menüband, Kopfband, Startseite, ein modaler Dialog | **Scharf** (Per Monitor V2). Das ist der Unterschied zu allen Wellen davor |
 | 14 | **DPI: `Form_HelpPopup`** (Fragezeichenknopf → Sprechblase) und **`Form_SpeicherOptimierung`** (aus der Ergebnisseite) | Die zwei letzten WinForms-Fenster. **Hier könnte eine echte Abweichung auftreten** — sie sind die einzigen Masken, die von der DPI-Umstellung betroffen sind |
 | 15 | **Zwei Monitore mit verschiedener Skalierung**, Fenster hinüberziehen | Der eigentliche Gewinn von „Per Monitor V2" — unter DpiUnaware gar nicht möglich |
@@ -306,6 +342,7 @@ Ende von `BeimLaden`).
 |---|---|
 | **W16c‑O‑1** | **Die Umbenennung `MDIMainForm` → `Hauptfenster` (E‑10) steht aus** — ausdrücklich nicht Teil dieser Teilwelle. Betroffen: Klasse und Datei, `Program.Main`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP`, `help_mapping.txt`, die zwei Prüfmuster-Auszüge und die Kommentare in rund einem Dutzend Hüllen |
 | **W16c‑O‑2** | **Die DPI-Abnahme steht aus.** Auf Linux ist nur der Bau prüfbar; die 16 Punkte in § 10 (besonders 13–15) brauchen ein Windows-Gerät. `Form_HelpPopup` und `Form_SpeicherOptimierung` sind die zwei Kandidaten für eine echte Abweichung |
-| **W16c‑O‑3** | **Der Menüpunkt „Deutsch"/„Englisch" bleibt ein Kopf erster Ebene** (W16c‑E‑2). Ein Untermenü „Sprache" wäre die üblichere Form; die Welle übernimmt wörtlich |
+| ~~**W16c‑O‑3**~~ | ~~Der Menüpunkt „Deutsch"/„Englisch" bleibt ein Kopf erster Ebene~~ — **erledigt** (04.09.2026, Commit `03c5947`): Der Anwender hat **W16c‑E‑2** zugunsten des Untermenüs entschieden. „Sprache" ist ein Kopf, die zwei Punkte hängen darunter; N4 führt seither 55 Punkte in vier Köpfen |
+| **W16c‑O‑6** (neu) | **Die Windows-Abnahme der zwei Entscheide steht aus.** Auf Linux ist beides nur als bunit-Fall geprüft: dass „Sprache" aufklappt und der Klick meldet (W16c‑E‑2), und dass „Varianten und Bericht…" die Ansicht wechselt und „◀ Zurück" zurückführt (W16c‑E‑3). Was ein Windows-Gerät zeigen muss, steht als Punkt 3, 5, 11 und 12 in § 10 — dazu **Befund W16c‑B11**: dass die Anwendung überhaupt startet, ist auf Linux nicht nachweisbar |
 | **W16c‑O‑4** | **`Seitenschluessel` führt 34 Werte in einer Klasse** — Ansichten, Masken und Wege nebeneinander. Das ist gewollt (das Menüband kennt genau eine Schlüsselart, N4 prüft an einem Ort), aber die Klasse ist mit 319 Zeilen die größte Konstantenklasse des Hauses. Wenn iU11 sie teilt, dann entlang „Ansicht / Maske / Weg" — und mit einem gemeinsamen `Alle` |
 | **W16c‑O‑5** | **Das Menüband hat keine Freischaltung nach Projektzustand.** Der Bestand hatte sie auch nicht (`WinFormsNavigation.MenueAktualisieren` ist seit iU5 leer, mit Begründung); die Reitersperre der Startseite trägt das. Wer sie je will, hat mit der Tabelle jetzt den Ort dafür |
