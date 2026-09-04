@@ -258,6 +258,14 @@ am Gerät also noch nicht erreichbar. Bau, Simulatorstart, Erststart mit Seed-Ko
 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Dreizehnter Lauf 33838762108 (`ios.yml`, `macos-26`, 04.09.2026, 04:58–05:04 UTC, 6 min 30 s)** auf
+`62b3457` — der Stand **nach der Welle 12**: grün. Erstmals mit `GanglinienImportAblauf` und den zwölf
+Ganglinien-Proben im Kern, den sechs neuen Razor-Dialogen (Stromganglinie, Ganglinien-Verwaltung,
+Importprotokoll, Importoptionen, Konfliktdialog, Lastspitzenkappung) und ohne `Form_Stromganglinie`,
+`Form_Stromganglinie_Admin`, `Form_PeakShaving`, `Form_GanglinieProtokoll`, `Form_GanglinieImportOptionen`.
+Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per
+`workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
