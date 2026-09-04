@@ -325,6 +325,13 @@ und den ersten Lizenztests im Kern, `LizenzCtrl`/`LizenzTextCtrl`/`ZustimmungCtr
 Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
 Freigabe bis Migrationsende.
 
+**Einundzwanzigster Lauf 33890882150 (`ios.yml`, `macos-26`, 04.09.2026, 15:41–15:49 UTC, 8 min 03 s)** auf
+`84d7c16` — der Stand **nach der Teilwelle 16a**: grün. Erstmals mit dem Assistenten hinter
+`IProjektQuelle.AssistentGaben` in der `AppWurzel` (N9 — `IosProjektQuelle` setzt die Gaben noch nicht um, der Assistent
+ist auf iOS angekündigt, aber nicht bedienbar, W16a‑O‑4), mit `KomponentenBestandCtrl` und `AssistentCtrl` im Kern und
+ohne `BlazorAssistentSeite`, `WizardParent` und `ProjektAuswahl`. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
+1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
