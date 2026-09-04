@@ -14343,6 +14343,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="MENU_SOL_THERM_GANGLINIE" xml:space="preserve">
     <value>Solar thermal hydrograph</value>
   </data>
+  <data name="MENU_SPRACHE" xml:space="preserve">
+    <value>Language</value>
+  </data>
   <data name="MENU_STROMGANGLINIE" xml:space="preserve">
     <value>Current hydrograph</value>
   </data>
