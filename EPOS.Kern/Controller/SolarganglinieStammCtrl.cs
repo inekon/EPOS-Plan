@@ -59,6 +59,40 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
+        /// <summary>
+        /// Gibt es diesen Bezeichner im Katalog? (iU9-W14b.0d)
+        ///
+        /// <para><b>Der Vorlaeufer fragte die ANZEIGE, nicht die Datenbank</b>:
+        /// <c>listBox_Extern.FindString(name) != ListBox.NoMatches</c>
+        /// (<c>Form_Solarganglinie_Admin</c>:123). <c>FindString</c> ist eine
+        /// PRAEFIXsuche — „Zeile" traf damit auch „Zeile_2024", und der Import wurde
+        /// abgelehnt, obwohl der Name frei war (Befund W14-B70; derselbe Befund wie
+        /// W13-B2 beim Waermebedarf).</para>
+        /// </summary>
+        public bool Exists(string szName)
+        {
+            if (string.IsNullOrEmpty(szName)) return false;
+            return GetStammId(szName) > 0;
+        }
+
+        /// <summary>
+        /// Gibt es zu dieser Ganglinie eine PROJEKTZUORDNUNG? (iU9-W14b.0d) — die Sperre
+        /// vor dem Loeschen aus <c>Form_Solarganglinie_Admin.btn_Loeschen_Click</c>:79.
+        ///
+        /// <para><b>Der Vorlaeufer las die ganze Zuordnungstabelle</b> mit einem
+        /// verketteten <c>Select * from Z_ProjektSolarganglinie where Bezeichner ='…'</c>
+        /// ueber den Anwendertext und zaehlte die Zeilen (Befund W14-B12). Hier steht
+        /// dieselbe Bedingung als <c>COUNT(*)</c> mit Parameter — ergebnisgleich, ohne
+        /// Zeichenkettenverkettung. Vorbild: <c>WaermebedarfStammCtrl</c> (W9.0d).</para>
+        /// </summary>
+        public bool HatProjektzuordnung(string szName)
+        {
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Z_ProjektSolarganglinie WHERE Bezeichner = ?",
+                new DbParam("@bez", szName ?? ""));
+            return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
+        }
+
         // Loescht eine Stamm-Ganglinie samt Daten, sofern nicht schreibgeschuetzt.
         public bool Delete(string szName)
         {
