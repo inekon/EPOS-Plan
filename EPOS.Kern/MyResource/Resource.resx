@@ -13528,4 +13528,67 @@ Trotzdem importieren?</value>
   <data name="PRJ_MENUE_OEFFNEN" xml:space="preserve">
     <value>Öffnen…</value>
   </data>
+  <data name="HILFE_IOS_BESCHREIBUNG" xml:space="preserve">
+    <value>Die ausführliche Beschreibung steht in der Dokumentation.</value>
+  </data>
+  <data name="KI_CHAT_ABSCHNITTE" xml:space="preserve">
+    <value>Gefundene Hilfeabschnitte:</value>
+  </data>
+  <data name="KI_CHAT_ABSCHNITTE_ERSATZ" xml:space="preserve">
+    <value>Passende Hilfeabschnitte:</value>
+  </data>
+  <data name="KI_CHAT_AUS_CACHE" xml:space="preserve">
+    <value>(aus dem lokalen Zwischenspeicher - ohne erneute Anfrage)</value>
+  </data>
+  <data name="KI_CHAT_BEGRUESSUNG" xml:space="preserve">
+    <value>Stellen Sie Ihre Frage zur Bedienung oder zur Rechenlogik. Der Assistent kennt den Bereich, in dem Sie gerade arbeiten, und antwortet auf Basis der Hilfe-Dokumentation.</value>
+  </data>
+  <data name="KI_CHAT_BEGRUESSUNG_DATEN" xml:space="preserve">
+    <value>Es werden nur Hilfetexte, Ihre Frage und der Bereichsname übertragen - keine Projekt- oder Kundendaten.</value>
+  </data>
+  <data name="KI_CHAT_BTN_EINSTELLUNGEN" xml:space="preserve">
+    <value>Einstellungen...</value>
+  </data>
+  <data name="KI_CHAT_BTN_FRAGEN" xml:space="preserve">
+    <value>Fragen</value>
+  </data>
+  <data name="KI_CHAT_BTN_SUCHEN" xml:space="preserve">
+    <value>Nur suchen</value>
+  </data>
+  <data name="KI_CHAT_DENKT" xml:space="preserve">
+    <value>Der Assistent denkt nach...</value>
+  </data>
+  <data name="KI_CHAT_FEHLER" xml:space="preserve">
+    <value>Hinweis: {0}</value>
+  </data>
+  <data name="KI_CHAT_KEINE_TREFFER" xml:space="preserve">
+    <value>Hilfe: Keine passenden Abschnitte gefunden. Versuchen Sie es mit anderen Stichworten oder stellen Sie die Frage über die Schaltfläche 'Fragen'.</value>
+  </data>
+  <data name="KI_CHAT_KONTEXT" xml:space="preserve">
+    <value>Kontext: {0}</value>
+  </data>
+  <data name="KI_CHAT_KONTEXT_LEER" xml:space="preserve">
+    <value>Kontext: (nicht erkannt)</value>
+  </data>
+  <data name="KI_CHAT_OHNE_SCHLUESSEL" xml:space="preserve">
+    <value>Es ist noch kein API-Schlüssel hinterlegt. Die Schaltfläche 'Nur suchen' funktioniert bereits - sie durchsucht die Hilfe lokal und kostenlos. Für die KI-Antworten bitte über 'Einstellungen...' einen Google-AI-Studio-Schlüssel eintragen.</value>
+  </data>
+  <data name="KI_CHAT_QUELLEN" xml:space="preserve">
+    <value>Quellen: {0}</value>
+  </data>
+  <data name="KI_CHAT_ROLLE_ANWENDER" xml:space="preserve">
+    <value>Sie: </value>
+  </data>
+  <data name="KI_CHAT_ROLLE_ASSISTENT" xml:space="preserve">
+    <value>Assistent:</value>
+  </data>
+  <data name="KI_CHAT_TITEL" xml:space="preserve">
+    <value>Hilfe-Assistent</value>
+  </data>
+  <data name="KI_CHAT_VERBRAUCH" xml:space="preserve">
+    <value>Heute genutzt: {0} von {1}</value>
+  </data>
+  <data name="KI_CHAT_VERBRAUCH_LANG" xml:space="preserve">
+    <value>Heute genutzt: {0} von {1} Anfragen.</value>
+  </data>
 </root>
