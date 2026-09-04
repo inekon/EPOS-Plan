@@ -54,13 +54,15 @@ public class StromganglinieDialogTests : BunitContext
         Func<Task<List<GanglinienKatalogZeile>>>? katalog = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
         bool wizard = false,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Action? geaendert = null)
     {
         return Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<GanglinienProjektZeile>())
             .Add(x => x.Katalog, katalog ?? (() => Task.FromResult(Katalog())))
             .Add(x => x.Verwaltung, verwaltung ?? VerwaltungsGaben())
             .Add(x => x.Wizard, wizard)
+            .Add(x => x.Geaendert, geaendert)
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
     }
 
@@ -288,8 +290,9 @@ public class StromganglinieDialogTests : BunitContext
     }
 
     /// <summary>
-    /// Assistentenbetrieb (Vorbereitung für W16, Zwilling <c>Wizard_Stromlastgang</c>):
-    /// keine Schlussleiste, und Esc meldet nichts — die Knöpfe stellt der Assistent.
+    /// Assistentenbetrieb (seit iU9-W16a.1 die Assistentenseite 6, vorher der
+    /// Zwilling <c>Wizard_Stromlastgang</c>): keine Schlussleiste, und Esc meldet
+    /// nichts — die Knöpfe stellt der Assistent.
     /// </summary>
     [Fact]
     public void Im_Assistentenbetrieb_faellt_die_Schlussleiste_weg()
@@ -302,5 +305,51 @@ public class StromganglinieDialogTests : BunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// iU9-W16a.1 — der RÜCKWEG der Assistentenseite. Im Dialogbetrieb schreibt die
+    /// Hülle die Liste nach dem Schließen zurück; als Assistentenseite gibt es kein
+    /// Schließen, deshalb meldet die Komponente JEDE Änderung an
+    /// <c>Zeilen</c> über <c>Geaendert</c>.
+    /// </summary>
+    [Fact]
+    public void Jede_Aenderung_der_Zuordnung_wird_gemeldet()
+    {
+        int meldungen = 0;
+        var zeilen = new List<GanglinienProjektZeile>();
+        var cut = Zeige(zeilen, wizard: true, geaendert: () => meldungen++);
+
+        cut.WaitForAssertion(() => Assert.Equal(2, Zeilen(cut, 1).Length));
+
+        // Hinzufuegen meldet.
+        Waehle(cut, 1, 0);
+        Hinzu(cut).Click();
+        Assert.Single(zeilen);
+        Assert.Equal(1, meldungen);
+
+        // Entfernen meldet.
+        Waehle(cut, 0, 0);
+        Entfernen(cut).Click();
+        Assert.Empty(zeilen);
+        Assert.Equal(2, meldungen);
+    }
+
+    /// <summary>
+    /// Ohne den Rückruf (Dialogbetrieb) bleibt alles beim Alten — die Liste wird
+    /// trotzdem an Ort und Stelle bearbeitet.
+    /// </summary>
+    [Fact]
+    public void Ohne_Rueckruf_wird_die_Liste_trotzdem_gepflegt()
+    {
+        var zeilen = new List<GanglinienProjektZeile>();
+        var cut = Zeige(zeilen);
+
+        cut.WaitForAssertion(() => Assert.Equal(2, Zeilen(cut, 1).Length));
+
+        Waehle(cut, 1, 0);
+        Hinzu(cut).Click();
+
+        Assert.Single(zeilen);
     }
 }

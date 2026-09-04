@@ -1,4 +1,4 @@
-﻿using Xunit;
+﻿﻿using Xunit;
 
 namespace Formularkarte.Tests;
 
@@ -186,9 +186,13 @@ public sealed class ErreichbarkeitTests
         // nicht einspringen: Ihr Knoten heisst BlazorAssistentSeite<...>, nicht
         // Wizard_Gebaeude.
         //
-        // WELLE 16 MUSS IHN GANZ STREICHEN: Wizard_Komponenten und
-        // Wizard_Stromlastgang sind die letzten zwei WinForms-Assistentenseiten.
-        foreach (var klasse in new[] { "Wizard_Komponenten", "Wizard_Stromlastgang" })
+        // iU9-W16a.1: Wizard_Stromlastgang ist der zweite Zeuge gewesen und mit
+        // W16a.1 gefallen (die Seite ist seither DIESELBE Razor-Komponente wie der
+        // Dialog der Startkachel, StromganglinieDialog aus W12). EIN Zeuge bleibt.
+        //
+        // WELLE 16a.5 MUSS IHN GANZ STREICHEN: Wizard_Komponenten ist die LETZTE
+        // WinForms-Assistentenseite und faellt mit dem Rahmen.
+        foreach (var klasse in new[] { "Wizard_Komponenten" })
         {
             Assert.Equal(Erreichbar.Ja, Knoten(klasse).Status);
         }
@@ -334,7 +338,9 @@ public sealed class ErreichbarkeitTests
         // zwei Gliedern); ihre zwei Geschwister Form_Lizenz und Form_Erststart
         // haben keinen Designer und tauchten in dieser Zaehlung nie auf. Die Zahl
         // sinkt mit jeder Welle, der Anteil steht seit W14a auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 11,
+        // Nach Welle 16a.1: 10 von 10 - sie nimmt GENAU EINE Designer-Maske mit
+        // (Wizard_Stromlastgang, die Assistentenseite 6).
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 10,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

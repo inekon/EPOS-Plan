@@ -221,10 +221,13 @@ namespace WindowsFormsApplication1
             { "KatalogImportDialog",         B_HEIZKESSEL },
 
 
+            // iU9-W16a.1: Wizard_Stromlastgang ist gefallen - die Seite ist seither
+            // DIESELBE Komponente wie der Dialog der Startkachel (StromganglinieDialog,
+            // :207, Bereich Stromverbraucher). Wizard_Projekt (W15a.6) steht hier
+            // ebenfalls nicht mehr; ihr Nachfolger ProjektKopfSeite laeuft im Rahmen
+            // und wird ueber dessen Fenstertyp nachgeschlagen.
             { "WizardParent",                B_ASSISTENT },
-            { "Wizard_Projekt",              B_ASSISTENT },
-            { "Wizard_Komponenten",          B_ASSISTENT },
-            { "Wizard_Stromlastgang",        B_ASSISTENT }
+            { "Wizard_Komponenten",          B_ASSISTENT }
         };
 
         /// <summary>
