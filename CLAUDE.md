@@ -10,7 +10,7 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **310 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **313 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
 Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 95 Controller. Die
