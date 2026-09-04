@@ -1,0 +1,234 @@
+﻿@* Eine Kachel je Erzeugeranlage in der Simulationskonfiguration (iU9-W10b.0d).
+
+   VORBILD. WindowsFormsApplication1/Views/Simulation/ErzeugerKarte.cs (781 Z.) -
+   ein UserControl mit eigenem OnPaint, einem FlowLayoutPanel je Chipbereich und
+   fuenf Label-Glyphen als Schalter.
+
+   SIE IST NICHT NUR ANZEIGE. Die vier Waermeerzeuger-Auswahlfelder samt Haken
+   trafen ZWEI Entscheidungen: WELCHE Technologie mitgerechnet wird
+   (Tab_Einstellungen.Tool_1..6) und in welcher REIHENFOLGE. Beides bildet die
+   Kachel ab - Rang und ▲▼ die Reihenfolge, +/× die Teilnahme.
+
+   WAS ENTFAELLT. Die gesamte Pixelarithmetik: Neuordnen (46 Z.), Innenbreite
+   (MaximumSize gegen einen FlowLayoutPanel, der ohne Breitenvorgabe alles in
+   EINE Zeile legte), HoeheNachfuehren und das verzoegerte Melden ueber
+   BeginInvoke (der Empfaenger entsorgte die Karte aus ihrem eigenen
+   Klick-Ereignis heraus - in Blazor gibt es dieses Problem nicht, weil kein
+   Steuerelement entsorgt wird).
+
+   WAS WOERTLICH BLEIBT. Sechs Chipstile, sechs Chipziele, acht Ereignisse,
+   ▲▼ bleiben SICHTBAR und nur ausgegraut, wenn sie nicht moeglich sind (sonst
+   rutschte die Kopfzeile bei jedem Verschieben), das ▸/▾ erscheint nur bei
+   vorhandenen Detailchips, und ein Klick auf eine Kachel MIT Detailbereich
+   klappt sie auf UND waehlt sie aus (Abnahmebefund 2). *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="@Kachelklasse" @onclick="KachelGeklickt" @ondblclick="KachelDoppelklick">
+
+    <div class="epos-erzeugerkachel-kopf">
+
+        @if (Daten.Detailchips.Count > 0)
+        {
+            <button type="button" class="epos-erzeugerkachel-pfeil" title="@TipAufklappen"
+                    aria-expanded="@(Daten.Aufgeklappt ? "true" : "false")"
+                    @onclick="BeiUmschalten" @onclick:stopPropagation="true">
+                @(Daten.Aufgeklappt ? "▾" : "▸")
+            </button>
+        }
+
+        @if (!string.IsNullOrEmpty(Daten.Rang))
+        {
+            <span class="epos-erzeugerkachel-rang">@Daten.Rang</span>
+        }
+
+        <span class="epos-erzeugerkachel-titel" title="@Daten.Titel">@Daten.Titel</span>
+
+        <span class="epos-erzeugerkachel-schalter">
+            @if (Daten.Reihenfolge)
+            {
+                <button type="button" class="epos-erzeugerkachel-glyphe" title="@TipHoch"
+                        disabled="@(!Daten.AufMoeglich)"
+                        @onclick="() => NachOben.InvokeAsync(Daten.Schluessel)"
+                        @onclick:stopPropagation="true">▲</button>
+
+                <button type="button" class="epos-erzeugerkachel-glyphe" title="@TipRunter"
+                        disabled="@(!Daten.AbMoeglich)"
+                        @onclick="() => NachUnten.InvokeAsync(Daten.Schluessel)"
+                        @onclick:stopPropagation="true">▼</button>
+            }
+
+            @if (Daten.Editierbar)
+            {
+                <button type="button" class="epos-erzeugerkachel-glyphe" title="@TipBearbeiten"
+                        @onclick="() => Bearbeiten.InvokeAsync(Daten.Schluessel)"
+                        @onclick:stopPropagation="true">✎</button>
+            }
+
+            @if (Daten.Umschaltbar && Daten.Zustand == Kachelzustand.Aufgenommen)
+            {
+                <button type="button" class="epos-erzeugerkachel-glyphe" title="@TipEntfernen"
+                        @onclick="() => Entfernen.InvokeAsync(Daten.Schluessel)"
+                        @onclick:stopPropagation="true">×</button>
+            }
+
+            @if (Daten.Umschaltbar && Daten.Zustand == Kachelzustand.Verfuegbar)
+            {
+                <button type="button" class="epos-erzeugerkachel-aufnehmen" title="@TipAufnehmen"
+                        @onclick="() => Aufnehmen.InvokeAsync(Daten.Schluessel)"
+                        @onclick:stopPropagation="true">@AufnehmenText</button>
+            }
+        </span>
+    </div>
+
+    @if (Daten.Chips.Count > 0)
+    {
+        <div class="epos-erzeugerkachel-chips">
+            @foreach (ChipDaten c in Daten.Chips)
+            {
+                @ChipZeichnen(c)
+            }
+        </div>
+    }
+
+    @if (Daten.Aufgeklappt && Daten.Detailchips.Count > 0)
+    {
+        <div class="epos-erzeugerkachel-detail">
+            @foreach (ChipDaten c in Daten.Detailchips)
+            {
+                @ChipZeichnen(c)
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Der Inhalt der Kachel; nie <c>null</c>.</summary>
+    [Parameter] public ErzeugerKachelDaten? Aufbau { get; set; }
+
+    private static readonly ErzeugerKachelDaten LEER = new ErzeugerKachelDaten();
+
+    private ErzeugerKachelDaten Daten => Aufbau ?? LEER;
+
+    // ---- Die acht Ereignisse des Vorlaeufers ----------------------------
+
+    /// <summary>Klick auf ▲ — die Anlage soll in der Kaskade nach vorn.</summary>
+    [Parameter] public EventCallback<string> NachOben { get; set; }
+
+    /// <summary>Klick auf ▼ — die Anlage soll in der Kaskade nach hinten.</summary>
+    [Parameter] public EventCallback<string> NachUnten { get; set; }
+
+    /// <summary>Klick auf ✎ oder Doppelklick ohne eigenen Chip-Editor.</summary>
+    [Parameter] public EventCallback<string> Bearbeiten { get; set; }
+
+    /// <summary>Klick auf „+ aufnehmen" — die Komponente soll mitgerechnet werden.</summary>
+    [Parameter] public EventCallback<string> Aufnehmen { get; set; }
+
+    /// <summary>Klick auf „×" — die Komponente soll nicht mehr mitgerechnet werden.</summary>
+    [Parameter] public EventCallback<string> Entfernen { get; set; }
+
+    /// <summary>Doppelklick (oder Eingabetaste) auf einen Chip mit eigenem Editor.</summary>
+    [Parameter] public EventCallback<ChipDaten> ChipBearbeiten { get; set; }
+
+    /// <summary>Klick auf ▸/▾ — der Detailbereich soll auf- bzw. zuklappen.</summary>
+    [Parameter] public EventCallback<string> Umschalten { get; set; }
+
+    /// <summary>Einfacher Klick auf die Kachel — die Auswahl, die das Schema mitfuehrt.</summary>
+    [Parameter] public EventCallback<string> Ausgewaehlt { get; set; }
+
+    // ---- Texte ----------------------------------------------------------
+
+    /// <summary>SIM_KARTE_AUFNEHMEN.</summary>
+    [Parameter] public string AufnehmenText { get; set; } = "+ aufnehmen";
+
+    [Parameter] public string TipHoch { get; set; } = "In der Kaskade nach vorn";
+    [Parameter] public string TipRunter { get; set; } = "In der Kaskade nach hinten";
+    [Parameter] public string TipBearbeiten { get; set; } = "Wärmesenken bearbeiten";
+    [Parameter] public string TipEntfernen { get; set; } = "Aus der Simulation nehmen";
+    [Parameter] public string TipAufnehmen { get; set; } = "In die Simulation aufnehmen";
+    [Parameter] public string TipAufklappen { get; set; } = "Gerätedaten anzeigen";
+
+    // =====================================================================
+    // Darstellung
+    // =====================================================================
+
+    private string Kachelklasse
+    {
+        get
+        {
+            string s = "epos-erzeugerkachel";
+            if (Daten.Zustand == Kachelzustand.Verfuegbar) s += " epos-erzeugerkachel--verfuegbar";
+            if (Daten.Hervorgehoben) s += " epos-erzeugerkachel--hervor";
+            return s;
+        }
+    }
+
+    private static string Chipklasse(ChipDaten c) => c.Stil switch
+    {
+        ChipStil.Quelle => "epos-chip epos-chip--quelle",
+        ChipStil.QuelleKaskade => "epos-chip epos-chip--quelle epos-chip--gestrichelt",
+        ChipStil.Senke => "epos-chip epos-chip--senke",
+        ChipStil.Flaeche => "epos-chip epos-chip--flaeche",
+        ChipStil.Warnung => "epos-chip epos-chip--warnung",
+        _ => "epos-chip"
+    };
+
+    /// <summary>
+    /// Ein Chip. MIT Editorziel ist er ein Knopf (Handzeiger, Tastatur, Sprachausgabe),
+    /// ohne Ziel ein reiner Ausweis — genau die Unterscheidung, die der Vorlaeufer ueber
+    /// <c>Cursors.Hand</c> und den Doppelklick-Handler traf (<c>Setzen</c>:542-561).
+    /// </summary>
+    private RenderFragment ChipZeichnen(ChipDaten c) => builder =>
+    {
+        if (string.IsNullOrEmpty(c.Text)) return;
+
+        bool mitZiel = c.Ziel != ChipZiel.Keines;
+
+        builder.OpenElement(0, mitZiel ? "button" : "span");
+        builder.AddAttribute(1, "class", Chipklasse(c) + (mitZiel ? " epos-chip--ziel" : ""));
+        if (!string.IsNullOrEmpty(c.Hinweis)) builder.AddAttribute(2, "title", c.Hinweis);
+
+        if (mitZiel)
+        {
+            builder.AddAttribute(3, "type", "button");
+            builder.AddAttribute(4, "ondblclick",
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                    this, _ => ChipBearbeiten.InvokeAsync(c)));
+            builder.AddEventStopPropagationAttribute(5, "ondblclick", true);
+            builder.AddAttribute(6, "onkeydown",
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.KeyboardEventArgs>(
+                    this, e => BeiChipTaste(e, c)));
+        }
+
+        builder.AddContent(7, c.Text);
+        builder.CloseElement();
+    };
+
+    /// <summary>
+    /// Der Tastaturweg zum Doppelklick: Eingabe auf einem Chip mit Ziel oeffnet
+    /// seinen Editor. Der Vorlaeufer kannte nur die Maus.
+    /// </summary>
+    private Task BeiChipTaste(KeyboardEventArgs e, ChipDaten c)
+        => e.Key == "Enter" ? ChipBearbeiten.InvokeAsync(c) : Task.CompletedTask;
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    /// <summary>
+    /// Einfacher Klick auf die Kachel.
+    ///
+    /// <para><b>Abnahmebefund 2 — die ganze ZEILE schaltet um, nicht nur die
+    /// Glyphe.</b> Eine Kachel MIT Detailbereich klappt auf und waehlt zugleich aus;
+    /// eine ohne Detailbereich waehlt nur.</para>
+    /// </summary>
+    private async Task KachelGeklickt()
+    {
+        if (Daten.Detailchips.Count > 0) await Umschalten.InvokeAsync(Daten.Schluessel);
+        await Ausgewaehlt.InvokeAsync(Daten.Schluessel);
+    }
+
+    private Task KachelDoppelklick() => Bearbeiten.InvokeAsync(Daten.Schluessel);
+
+    private Task BeiUmschalten() => Umschalten.InvokeAsync(Daten.Schluessel);
+}
