@@ -5394,6 +5394,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Treffer. ähnelt.
+        /// </summary>
+        public static string ETV_SUCHE_LEER {
+            get {
+                return ResourceManager.GetString("ETV_SUCHE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preishistorie ähnelt.
         /// </summary>
         public static string ETV_TITEL_HISTORIE {
