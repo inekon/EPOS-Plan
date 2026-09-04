@@ -150,7 +150,8 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Die Besitzerkette gehoert zur Frage.</b> Ein blosser Vergleich mit
         /// <c>Form.ActiveForm</c> ginge im Betrieb nie auf: Der Anwender ruft den
-        /// Assistenten ueber <see cref="KiAufrufKnopf"/> aus der Maske heraus, und
+        /// Assistenten ueber den KI-Knopf der Maske heraus (bis W14a <c>KiAufrufKnopf</c>,
+        /// seit iU9-W15b.5 der Baustein <c>EPOS.UI.Bausteine.KiKnopf</c>), und
         /// <c>KiChatHuelle.Oeffnen(besitzer)</c> zeigt das Chatfenster als BESESSENES
         /// Fenster der Maske (<c>Views\Help\KiChatHuelle.cs</c>, seit iU9-W15b.7). Im Augenblick des
         /// Klicks auf „Ausfuehren" ist deshalb der Chat aktiv und nicht die Maske. Genau

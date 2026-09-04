@@ -1,11 +1,20 @@
 ﻿# CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **320 `.cs`-Dateien** (168 aus iU4, dazu
+Der plattformfreie Kern von EPOS-Plan: **328 `.cs`-Dateien** (168 aus iU4, dazu
 `IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
 aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b, die **74 Dateien des zweiten Umzugs**
-iU5-U1…U5, die sechs Dateien der Ergebnisseite aus iU9‑W11a und die **acht Dateien der
-Importkette und der Lastspitzenkappung** aus iU9‑W12), `net10.0` **ohne**
-`-windows`, AnyCPU.
+iU5-U1…U5, die sechs Dateien der Ergebnisseite aus iU9‑W11a, die **acht Dateien der
+Importkette und der Lastspitzenkappung** aus iU9‑W12 und die **sechs Dateien des
+KI-Assistenten** aus iU9‑W15b), `net10.0` **ohne** `-windows`, AnyCPU.
+
+**Der KI-Assistent ist mit iU9‑W15b vollständig hier** (bis auf das, was an lebenden
+`Control`/`Form` hängt): `Allgemein/KI/KiChatService` (1 751 Z., der Gemini-Zugang),
+`KiAusfuehrungsweg` mit `IKiAusfuehrung` und `KiVorbereitung` (die Naht zur
+Ausführungsschicht — dieselbe Bauart wie `Dienste.*`, mit stiller Standardfassung),
+`KiChatKontext` (Positivliste und Bereichszuordnung, plattformfrei), `KiVerlaufstexte`
+(was im Gesprächsverlauf steht — der Kern sagt, WAS eine Zeile ist, `EPOS.UI` wie sie
+aussieht), `KiWerkzeugWerte` (die Kulturgrenze der Werkzeugliste) und
+`Allgemein/Hilfe/Kurzbeschreibung` (der Umbruch der Hilfe-Kurzbeschreibung).
 Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
 `../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
 auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
@@ -62,12 +71,12 @@ Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie ü
 
 | Was | Warum |
 |---|---|
-| `BaseForm`, `Form_Hinweis` (+ Designer), `FensterEinpassung`, `SpeichernLeiste`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`) | Oberflächenbausteine — WinForms und GDI+ |
+| `BaseForm`, `Form_Hinweis` (+ Designer), `FensterEinpassung`, `SpeichernLeiste`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`), `Views/Help/Form_HelpPopup` | Oberflächenbausteine — WinForms und GDI+. **`Form_Hinweis` bleibt bis Welle 16** (iU9‑W15b, Entscheid E‑1b): Sein Nachfolger `Warnbanner.Verfaellt` ist gebaut und geprüft, aber seine drei Aufrufer liegen sämtlich in `Form_Start`, und die ist bis W16 WinForms. **`Form_HelpPopup` bleibt bis iU11** (Entscheid E‑2): Sein Ersatz ist nicht eine Razor-Fassung, sondern `IHilfeDienst` mit Windows- und iOS-Fassung — beide gebaut; die Maske fällt mit `HelpCatalog`/`HelpExtender`. Die Zeichenrechnung `BeschreibungUmbrechen` ist mit W15b.0e als `Allgemein/Hilfe/Kurzbeschreibung` in den Kern gezogen |
 | `Blazor/BlazorDialogForm`, `Blazor/BlazorDienste`, `Hilfe/WindowsHilfeDienst` | die Blazor-Hülle selbst (iU8-6/iU8-7): ein modales `Form` mit `BlazorWebView`, sein Dienstverzeichnis und die Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`. Sie **sind** die Oberfläche und können nie in den Kern |
 | `Update/SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb` |
 | `Bericht/BerichtsDatenSammler` | `EnergieMengen` aus `Views/Varianten/` |
-| `KI/KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` | greifen auf lebende `Control`/`Form` zu |
-| `KI/KiChatService`, `KiAktionen` (trägt `KiHilfe`), `KiAktionenDialog`, `-Energie`, `-Lastgang`, `-Projekt`, `-Schreiben`, `-Sitzung`, `-Uebernahme`, `-Wirtschaft` | hängen an den vier obigen, an `HelpEntry` oder an `OleDbException` |
+| `KI/KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext` | greifen auf lebende `Control`/`Form` zu. `KiAufrufKnopf` ist mit iU9‑W14a gefallen und mit iU9‑W15b.5 durch den Baustein `KiKnopf` ersetzt |
+| `KI/KiAktionen` (trägt `KiHilfe`), `KiAktionenDialog`, `-Energie`, `-Lastgang`, `-Projekt`, `-Schreiben`, `-Sitzung`, `-Uebernahme`, `-Wirtschaft` | hängen an den obigen, an `HelpEntry` oder an `OleDbException`. **`KiChatService` steht seit iU9‑W15b.0a HIER im Kern** (Befund W15b‑B1: 1 751 Zeilen ohne einen einzigen WinForms-, `Program.`-, `Registry`-, DPAPI- oder `SpecialFolder`-Bezug); die Naht zur Ausführungsschicht ist `IKiAusfuehrung`/`KiAusfuehrungsweg` |
 | `IAssistentRahmen`, `StromTestClass` | `WizardSeite` aus `Views/Wizard/` bzw. Testgerüst am Rechenweg |
 | die 12 `*KontextMenuCtrl` | `ListView`/`ContextMenuStrip` |
 | `KlimaregionStammCtrl` | `ComboBox`/`ListBox` in `FillComboBox`/`FillListBox` |

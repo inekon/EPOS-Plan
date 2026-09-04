@@ -355,7 +355,7 @@ public class KiChatDialogTests : BunitContext
     /// Block verschwindet.
     /// </summary>
     [Fact]
-    public void Der_Bestaetigungsblock_steht_im_Verlauf()
+    public async Task Der_Bestaetigungsblock_steht_im_Verlauf()
     {
         KiChatSteuerung? steuerung = null;
         var cut = Zeigen(p => p.Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s)));
@@ -375,15 +375,15 @@ public class KiChatDialogTests : BunitContext
         Assert.Contains("Ich würde Projekt 42 umbenennen.",
                         cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
 
-        steuerung.Beenden(false);
-        Assert.False(antwort.Result);
+        await steuerung.Beenden(false);
+        Assert.False(await antwort);
     }
 
     /// <summary>„Ausführen" liefert ja, „Abbrechen" nein.</summary>
     [Theory]
     [InlineData("Ausführen", true)]
     [InlineData("Abbrechen", false)]
-    public void Der_Block_liefert_die_Entscheidung(string knopf, bool erwartet)
+    public async Task Der_Block_liefert_die_Entscheidung(string knopf, bool erwartet)
     {
         KiChatSteuerung? steuerung = null;
         var cut = Zeigen(p => p.Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s)));
@@ -394,7 +394,7 @@ public class KiChatDialogTests : BunitContext
         cut.FindAll("div.epos-kibest button")
            .First(b => b.TextContent.Trim() == knopf).Click();
 
-        Assert.Equal(erwartet, antwort.Result);
+        Assert.Equal(erwartet, await antwort);
     }
 
     /// <summary>
@@ -402,7 +402,7 @@ public class KiChatDialogTests : BunitContext
     /// keine Sammelbestätigung — eine zweite wird sofort abgelehnt.
     /// </summary>
     [Fact]
-    public void Eine_zweite_Vorschau_wird_sofort_abgelehnt()
+    public async Task Eine_zweite_Vorschau_wird_sofort_abgelehnt()
     {
         KiChatSteuerung? steuerung = null;
         var cut = Zeigen(p => p.Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s)));
@@ -410,10 +410,11 @@ public class KiChatDialogTests : BunitContext
         Task<bool> erste = steuerung!.Zeigen("Erste", "60 s");
         cut.Render();
 
-        Assert.False(steuerung.Zeigen("Zweite", "60 s").Result);
+        Assert.False(await steuerung.Zeigen("Zweite", "60 s"));
         Assert.False(erste.IsCompleted);
 
-        steuerung.Beenden(false);
+        await steuerung.Beenden(false);
+        await erste;
     }
 
     /// <summary>
@@ -422,7 +423,7 @@ public class KiChatDialogTests : BunitContext
     /// bestätigen.
     /// </summary>
     [Fact]
-    public void Der_Wirt_kann_die_Vorschau_von_aussen_beenden()
+    public async Task Der_Wirt_kann_die_Vorschau_von_aussen_beenden()
     {
         KiChatSteuerung? steuerung = null;
         var cut = Zeigen(p => p.Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s)));
@@ -431,10 +432,10 @@ public class KiChatDialogTests : BunitContext
         cut.Render();
         Assert.NotEmpty(cut.FindAll("div.epos-kibest"));
 
-        steuerung.Beenden(false);
+        await steuerung.Beenden(false);
         cut.Render();
 
-        Assert.False(antwort.Result);
+        Assert.False(await antwort);
         Assert.Empty(cut.FindAll("div.epos-kibest"));
     }
 
