@@ -10,7 +10,8 @@ namespace WindowsFormsApplication1
     // Neues Feld ReadOnly: schreibgeschuetzte Stammdatensaetze koennen nicht ueberschrieben/geloescht werden.
     // Wird von den Waermepumpen-Dialogen verwendet: seit iU9-W7 von den Huellen
     // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
-    // weiterhin vom Import Form_WP_einlesen. Alle DB-Zugriffe laufen ueber DataRepository.
+    // seit iU9-W13 vom Katalogimport ueber WaermepumpeImportSatz. Alle DB-Zugriffe
+    // laufen ueber DataRepository.
     class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
@@ -303,6 +304,130 @@ namespace WindowsFormsApplication1
                     new DbParam("@nam", WPName ?? (object)DBNull.Value));
             }
             catch (Exception ex) { Console.WriteLine("Fehler bei Delete (STAMM): " + ex.Message); return false; }
+        }
+
+        /// <summary>
+        /// <b>Der Schreibweg des Katalogimports</b> (iU9-W13.0e): Duplikatpruefung,
+        /// Stammsatz UND beide Kennlinientabellen in EINER Transaktion.
+        ///
+        /// <para><b>Was sich gegenueber dem Bestand aendert.</b>
+        /// <c>Form_WP_einlesen.UebernehmeEintrag</c> schrieb DREI Tabellen ohne
+        /// Transaktion und kompensierte mit einer <c>finally</c>-Aufraeumklammer:
+        /// Scheiterte ein Kennlinien-Insert, wurde der schon angelegte Stammsatz
+        /// wieder geloescht (Befund W13-B33). Der Grund war, dass die Controller
+        /// ueber getrennte Verbindungen schrieben — mit dieser Methode nicht mehr.
+        /// Der Zwilling <see cref="UeberschreibeMitKennlinien"/> zeigte laengst,
+        /// dass es geht; hier steht dieselbe Klammer fuer die Neuanlage.</para>
+        ///
+        /// <para>Die ID des Stammsatzes ist ein AutoWert und kommt aus
+        /// <c>DbVorgang.EinfuegenUndId</c> — dieselbe Anweisung wie in
+        /// <see cref="Insert"/>, nur ohne zwischenzeitliches Commit.</para>
+        /// </summary>
+        public VdiUebernahmeErgebnis ImportMitKennlinien(
+            string nameOverride,
+            IList<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenndaten,
+            IList<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlung)
+        {
+            string bezeichner = nameOverride ?? WPName;
+
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM " + TABLE + " WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    string sql = @"INSERT INTO " + TABLE + @"
+                            (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
+                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    DbParam[] ps = {
+                        new DbParam("@nam", (object)bezeichner ?? DBNull.Value),
+                        new DbParam("@fir", Firma ?? (object)DBNull.Value),
+                        new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
+                        new DbParam("@typ", Typ ?? (object)DBNull.Value),
+                        new DbParam("@bau", Baujahr),
+                        new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
+                        new DbParam("@nen", Nennleistung),
+                        new DbParam("@max", maxPTherm),
+                        new DbParam("@hei", Heizung),
+                        new DbParam("@reg", Regelung ?? (object)DBNull.Value),
+                        new DbParam("@mod", Modulkosten),
+                        new DbParam("@bart", Bauart ?? (object)DBNull.Value),
+                        new DbParam("@kuehl", Kuehlleistung),
+                        new DbParam("@ro", false)
+                    };
+
+                    int neueId = v.EinfuegenUndId(sql, ps);
+                    if (neueId <= 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Fehler;
+                    }
+
+                    if (kenndaten != null && kenndaten.Count > 0)
+                    {
+                        int naechsteId;
+                        {
+                            object m = v.Skalar("SELECT MAX(ID) FROM " + CURVE);
+                            naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
+
+                        foreach (var k in kenndaten)
+                        {
+                            v.Ausfuehren(
+                                "INSERT INTO " + CURVE + " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                new DbParam("@wp", DbParamTyp.Integer) { Wert = neueId },
+                                new DbParam("@vor", DbParamTyp.Integer) { Wert = k.Vorlauf },
+                                new DbParam("@tem", DbParamTyp.Integer) { Wert = k.Temperatur },
+                                new DbParam("@cop", DbParamTyp.Double) { Wert = k.COP },
+                                new DbParam("@pth", DbParamTyp.Double) { Wert = k.Ptherm },
+                                new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
+                        }
+                    }
+
+                    if (kuehlung != null && kuehlung.Count > 0)
+                    {
+                        int naechsteId;
+                        {
+                            object m = v.Skalar("SELECT MAX(ID) FROM " + CURVE_K);
+                            naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                        }
+
+                        foreach (var k in kuehlung)
+                        {
+                            v.Ausfuehren(
+                                "INSERT INTO " + CURVE_K + " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                new DbParam("@wp", DbParamTyp.Integer) { Wert = neueId },
+                                new DbParam("@vor", DbParamTyp.Integer) { Wert = k.Vorlauf },
+                                new DbParam("@tem", DbParamTyp.Integer) { Wert = k.Temperatur },
+                                new DbParam("@cop", DbParamTyp.Double) { Wert = k.COP },
+                                new DbParam("@pk", DbParamTyp.Double) { Wert = k.Pkuehl },
+                                new DbParam("@last", DbParamTyp.Integer) { Wert = k.Last });
+                        }
+                    }
+
+                    v.Commit();
+                    ID = neueId;
+                    WPName = bezeichner;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Kein Aufraeumen noetig: Ohne Commit rollt DbVorgang.Dispose den
+                // ganzen Vorgang zurueck - Stammsatz UND Kennlinien.
+                Console.WriteLine("Fehler beim WP-Import '" + bezeichner + "': " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
         }
 
         // Legt einen neuen Stammdatensatz an (Import). ReadOnly = false. Die ID ist ein

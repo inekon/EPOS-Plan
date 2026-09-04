@@ -43,7 +43,8 @@ entgegen — sie ist damit austauschbar.
 | `Herleitungszeile` | Leise Erläuterung, optional mit Formel | Inline-Labels der Kostenmasken |
 | `Kohaerenzzeile` | Text mit Zustand „stimmig" / „abweichend" | Inline-Labels der Kostenmasken |
 | `Optionsgruppe` | Sich ausschließende Optionen (`fieldset role="radiogroup"`), einzeln sperrbar | die 45 `RadioButton` des Bestands |
-| `Zeilenwahl` | Der runde Wahlknopf einer Rasterzeile (`aria-pressed`, 44 px) | die Zeilenmarkierung von `ListView`/`DataGridView`, die ein `Raster` nicht kennt |
+| `Zeilenwahl` | Der runde Wahlknopf einer Rasterzeile (`aria-pressed`, 44 px); seit iU9‑W13.0l mit **Mehrfachmodus** — `Mehrfach` macht daraus ein Kontrollkästchen (`role="checkbox"`), und `Tastenwahl` meldet `Strg`/`Umschalt` mit | die Zeilenmarkierung von `ListView`/`DataGridView`, die ein `Raster` nicht kennt |
+| `Zeilenmarkierung` | **kein Markup, eine Regel**: die Markierung einer Rasterliste über Anzeigeindizes — Klick wählt eine, `Strg` nimmt dazu oder weg, `Umschalt` wählt den Bereich ab dem Anker; `AufAnzahlBegrenzen` wirft nach einem Filterwechsel hinaus, was hinter der neuen Liste liegt, `QuellIndizes` bildet auf die Importliste ab (Zwilling von `VdiAuswahlFilter.QuellIndizes`) | `ListBox.SelectionMode = MultiExtended` der vier Einlesemasken (iU9‑W13.0l) |
 | `Ueberlagerung` | Modaler Bereich **innerhalb** der Komponente — Abdunkelung, `role="dialog"`, Esc, Fokusfalle ohne JS | ein zweites modales `Form`, das es in der WebView nicht geben darf (R2) |
 | `Rueckfrage` | Ja / Nein / Abbrechen über der `Ueberlagerung` | die ≈ 500 `MessageBox`-Rückfragen des Bestands |
 | `Zeilenraster` | Spaltenkopf, Bearbeitungszeilen, Abschlusszeile, Summenfuß — CSS-Raster mit `display:contents` | `Views/Kosten/Form_KostenKomponente` (pnlRasterKopf + pnlZeilen + pnlFuss) |
@@ -62,6 +63,12 @@ entgegen — sie ist damit austauschbar.
 `Zahlenfeld`, `Ganzzahlfeld`, `Textfeld`, `Auswahlfeld`, `Datumsfeld`, `Schalter`,
 `Dateiwahl`, `Raster<TZeile>` (um `QuickGrid`), `ChartBild` (PNG aus dem Kern-Renderer als
 `data:`-URL).
+
+`Raster` führt seit iU9‑W13.0l `Virtualisiert` und `Zeilenhoehe`: Ein `IQueryable` allein
+virtualisiert **nichts** — QuickGrid zeichnet ohne `Virtualize` jede Zeile. Für die 20 746 Zeilen
+der CEC-Modulliste setzt der Wirt den Schalter; die Hülle bekommt damit die Klasse
+`epos-raster-huelle--hoch` (feste Höhe, stehender Spaltenkopf), ohne die es nichts zu rollen und
+also nichts zu virtualisieren gäbe.
 
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des
@@ -211,6 +218,9 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Strom/StromganglinieAdminDialog` | `Form_Stromganglinie_Admin` (iU9‑W12.4) | `Views/Stromverbraucher/StromganglinieAdminHuelle.cs` → `StromganglinieStammCtrl`, `GanglinienImportAblauf`; **drei** Überlagerungen der Importkette |
 | `Strom/StromganglinieDialog` | `Form_Stromganglinie` (iU9‑W12.5) | `Views/Stromverbraucher/StromganglinieHuelle.cs` → `Z_ProjektStromganglinieCtrl`, `StromganglinieStammCtrl`; Verwaltung als Überlagerung, Assistentenschnitt für W16 |
 | `Strom/PeakShavingDialog` | `Form_PeakShaving` (iU9‑W12.6) | `Views/Stromspeicher/PeakShavingHuelle.cs` → `PeakShavingCtrl`, `PeakShavingEingaben`, `PeakShavingKennzahlenBlock`, `PeakShavingBild`; **beide Rechenläufe** in `Task.Run` mit `Fortschritt` |
+| `Import/KatalogImportDialog` | **vier** Masken: `Form_Heizkessel_einlesen`, `Form_PufferSp_einlesen`, `Form_SolarKollektoren_einlesen`, `Form_WP_einlesen` (iU9‑W13.1) | `Views/Import/KatalogImportHuelle.cs` → `KatalogImportProfil`, `KatalogImportAblauf`; EINE Hülle für alle vier Maskenschlüssel, Lesen und Schreiben in `Task.Run` |
+| `Bedarf/WaermebedarfAdminDialog` | `Form_AdminWaermeeinlesen` (iU9‑W13.2) | `Views/Wärmebedarf/WaermebedarfAdminHuelle.cs` → `WaermebedarfStammCtrl`, `GanglinienTextDatei`, `DublettenPruefung`; erscheint auch als Überlagerung in `WaermebedarfExternDialog` |
+| `Photovoltaik/PvModulImportDialog` | `Form_CECImport` / Klasse `Main_PV_Test` (iU9‑W13.3) | `Views/Photovoltaik/PvModulImportHuelle.cs` → `CECDataService`, `PanDataService`, `PhotovoltaikStammCtrl`; Netzabruf mit `Fortschritt` und Abbrechen, 20 746 Zeilen im virtualisierten `Raster` |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
@@ -302,6 +312,24 @@ Rechnung der Oberfläche mit (`Task.Run` + `Fortschritt`, wie W11a) und das
 erste Bild, das eine SEKUNDÄRACHSE braucht — dafür genügt der
 Bestandsrenderer `ChartRenderer.ErzeugerStapel`, ein neuer wäre eine zweite
 Wahrheit über dieselbe Zeichnung.
+
+**Sechs Masken, drei Komponenten** (iU9‑W13): Die vier VDI-3805-Katalogimporte
+— Heizkessel (Blatt 3), Pufferspeicher (20), Solarkollektoren (19) und
+Wärmepumpen (22) — sind VIERLINGE: Dreizehn Bausteine standen viermal
+WORTGLEICH im Bestand, bis hin zum falschen Handlernamen
+`Liste_WP_SelectedIndexChanged` in drei von vier. Was sie trennt, sind sieben
+WERTE — Katalogschlüssel, Unterordner, Dateifilter, Filtergröße samt
+Vorbelegung, Detailfeldliste, Vergleichswerte, Schreibweg —, und die stehen als
+`KatalogImportProfil` im Kern, mit `KatalogImportArt` als Aufzählungstyp
+(Muster `BedarfsArt` aus W8). Der Feldkartenabgleich läuft deshalb je
+AUSPRÄGUNG, nicht je Komponente. Der Ablauf selbst ist `KatalogImportAblauf`:
+Lesen, Filtern, Vorprüfen, Ausführen — der Konfliktdialog ist dort **kein
+Rückruf**, sondern eine Zäsur zwischen zwei Aufrufen, damit der Fadenwechsel
+auf zwei klare Stellen beschränkt bleibt. Der Nachweis der Welle sind zwanzig
+IMPORT-PROBEN mit eingefrorenen Erwartungswerten, angelegt VOR jeder portierten
+Zeile. Die Wärmebedarfsverwaltung folgt dem W12-Zwilling
+`StromganglinieAdminDialog`; ihr Sprung über die `Sprungbruecke` ENTFÄLLT, weil
+das Ziel selbst Blazor wird — aus dem zweiten Fenster wird eine Überlagerung.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen

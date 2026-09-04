@@ -1,4 +1,5 @@
 ﻿using NReco.Csv;
+using SpeicherEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -48,6 +49,16 @@ namespace WindowsFormsApplication1
         static string[] _Aufstellung = { "innen", "außen", "innen/außen", "innen Eck" };
         static string[] _Bauart = { "Kompakt", "Split" };
 
+        /// <summary>
+        /// Was beim Lesen aufgefallen ist (iU9-W13.0d). Bis dahin gab es keinen
+        /// Kanal dafuer: Ein Aufstellungsindex ausserhalb der Tabelle liess
+        /// <c>_Aufstellung[...]</c> werfen und riss den GANZEN Dateiimport mit
+        /// (Befund W13-B35) - aus einem Katalog mit 129 Waermepumpen wurde so
+        /// wegen eines Satzes nichts. Jetzt steht eine Warnung hier, der Satz
+        /// behaelt die zuletzt gelesene Aufstellung, und die Datei laeuft durch.
+        /// </summary>
+        public List<PruefMeldung> Meldungen = new List<PruefMeldung>();
+
         public void Import(string filename)
         {
             DateTime a = DateTime.Now;
@@ -74,6 +85,7 @@ namespace WindowsFormsApplication1
             _attrribute dat = null;
             _attrribute temp = null;
             _list.Clear();
+            Meldungen.Clear();
 
             while (csvReader.Read())
             {
@@ -100,7 +112,20 @@ namespace WindowsFormsApplication1
                     }
                     else if (csvReader[0] == "450")
                     {
-                        szAufstellung = _Aufstellung[Int32.Parse(csvReader[1])-1];
+                        // Ein Index ausserhalb 1..4 ist kein Grund, die ganze Datei
+                        // fallen zu lassen (Befund W13-B35): Er wird protokolliert,
+                        // und der Satz behaelt die zuletzt gelesene Aufstellung.
+                        int nAufstellung;
+                        if (Int32.TryParse(csvReader[1], out nAufstellung)
+                            && nAufstellung >= 1 && nAufstellung <= _Aufstellung.Length)
+                        {
+                            szAufstellung = _Aufstellung[nAufstellung - 1];
+                        }
+                        else
+                        {
+                            Meldungen.Add(new PruefMeldung(PruefStufe.Warnung,
+                                "IMP_KAT_PROT_AUFSTELLUNG", csvReader[1] ?? ""));
+                        }
                         DatenGefunden = false;
                     }
                     else if (csvReader[0] == "700")
@@ -196,6 +221,72 @@ namespace WindowsFormsApplication1
             time = b - a;
             string g = String.Format("{0}.{1}", time.Seconds, time.Milliseconds.ToString().PadLeft(3, '0'));
 
+        }
+
+        /// <summary>
+        /// <b>Die Kennlinien eines Satzes, typisiert</b> (iU9-W13.0d).
+        ///
+        /// <para><b>Warum es hierher gehoert.</b> Der Parser legt die Saetze
+        /// <c>710.09</c> und <c>710.91</c> als <c>';'</c>-verkettete Rohzeilen in
+        /// <see cref="_attrribute.x"/> ab — und <c>Form_WP_einlesen.SammleKennlinien</c>
+        /// (:359-404) zerlegte sie ein ZWEITES Mal mit <c>Split(';')</c>, um dieselben
+        /// Felder herauszuholen, die der Parser gerade weggeworfen hatte
+        /// (Befund W13-B34). Parsercode im Formular; hier steht er einmal, an der
+        /// Stelle, die die Satzarten ohnehin kennt.</para>
+        ///
+        /// <para>Die Zerlegung ist WOERTLICH uebernommen: Heizen ist
+        /// <c>710.09</c> mit Feld 2 = <c>"1"</c> (Vorlauf aus Feld 3), Kuehlen
+        /// dasselbe mit <c>"2"</c> (dazu die Lastangabe aus Feld 7, wobei
+        /// <c>MAX</c> als 100 zaehlt); die Wertzeilen <c>710.91</c> liefern
+        /// Temperatur (2), Ptherm bzw. Pkuehl (3) und COP (5).</para>
+        /// </summary>
+        public void KennlinienZu(int index,
+            out List<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenndaten,
+            out List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlung)
+        {
+            kenndaten = new List<(int Vorlauf, int Temperatur, double COP, double Ptherm)>();
+            kuehlung = new List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)>();
+
+            if (index < 0 || index >= _list.Count) return;
+
+            string vorlauf = "";
+            string last = "";
+            bool anfang = false;
+            bool anfang_kuehl = false;
+            List<string> datlines = _list[index].x;
+
+            for (int i = 0; i < datlines.Count; i++)
+            {
+                string[] token = datlines[i].Split(';');
+                if (token[0] == "710.09" && token[2] == "1")
+                {
+                    vorlauf = token[3];
+                    anfang = true;
+                }
+                else if (token[0] == "710.09" && token[2] == "2")
+                {
+                    vorlauf = token[3];
+                    anfang_kuehl = true;
+                    anfang = false;
+                    last = token[7];
+                }
+                else if (anfang && (token[0] == "710.91"))
+                {
+                    kenndaten.Add((ZahlText.NachInt(vorlauf),
+                                   ZahlText.NachInt(token[2]),
+                                   ZahlText.NachDouble(token[5]),
+                                   ZahlText.NachDouble(token[3])));
+                }
+                else if (anfang_kuehl && (token[0] == "710.91"))
+                {
+                    int nLast = last.ToUpper() == "MAX" ? 100 : ZahlText.NachInt(last);
+                    kuehlung.Add((ZahlText.NachInt(vorlauf),
+                                  ZahlText.NachInt(token[2]),
+                                  ZahlText.NachDouble(token[5]),
+                                  ZahlText.NachDouble(token[3]),
+                                  nLast));
+                }
+            }
         }
 
         private bool checkDaten(CsvReader csvReader, int stufen)

@@ -108,31 +108,43 @@ namespace WindowsFormsApplication1
         public static string LadeMeldung(int gespeichert, int markiert, int uebersprungen, int fehler,
                                          int ueberschrieben, int umbenannt)
         {
+            // Die fuenf Bausteine standen bis iU9-W13.0f HARTKODIERT DEUTSCH hier
+            // im Kern (Befund W13-B19) - ein Verstoss gegen die Drei-Schichten-Regel
+            // in der Schicht, die am wenigsten davon wissen darf. Jetzt kommen sie
+            // aus MyResource; der WORTLAUT ist unveraendert, nur der Zeilenumbruch
+            // ist aus dem Platzhalter {0} in die Verkettung gewandert.
             string meldung = string.Format(CultureInfo.CurrentCulture,
-                                           "{0} von {1} Einträgen geladen.",
+                                           MyResource.Resource.IMP_LADE_GELADEN,
                                            gespeichert, markiert);
 
             if (ueberschrieben > 0)
-                meldung += string.Format(CultureInfo.CurrentCulture,
-                                         "{0}Überschrieben: {1}",
-                                         Environment.NewLine, ueberschrieben);
+                meldung += Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                                         MyResource.Resource.IMP_LADE_UEBERSCHRIEBEN, ueberschrieben);
 
             if (umbenannt > 0)
-                meldung += string.Format(CultureInfo.CurrentCulture,
-                                         "{0}Unter neuem Namen: {1}",
-                                         Environment.NewLine, umbenannt);
+                meldung += Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                                         MyResource.Resource.IMP_LADE_UMBENANNT, umbenannt);
 
             if (uebersprungen > 0)
-                meldung += string.Format(CultureInfo.CurrentCulture,
-                                         "{0}Bereits eingelesen (übersprungen): {1}",
-                                         Environment.NewLine, uebersprungen);
+                meldung += Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                                         MyResource.Resource.IMP_LADE_UEBERSPRUNGEN, uebersprungen);
 
             if (fehler > 0)
-                meldung += string.Format(CultureInfo.CurrentCulture,
-                                         "{0}Fehlgeschlagen: {1}",
-                                         Environment.NewLine, fehler);
+                meldung += Environment.NewLine + string.Format(CultureInfo.CurrentCulture,
+                                         MyResource.Resource.IMP_LADE_FEHLGESCHLAGEN, fehler);
 
             return meldung;
+        }
+
+        /// <summary>
+        /// Die Sammelmeldung aus einer <see cref="ImportBilanz"/> (iU9-W13.0b) —
+        /// dieselben sechs Zahlen, nur nicht mehr einzeln durchgereicht.
+        /// </summary>
+        public static string LadeMeldung(ImportBilanz bilanz)
+        {
+            if (bilanz == null) return "";
+            return LadeMeldung(bilanz.Gespeichert, bilanz.Markiert, bilanz.Duplikat,
+                               bilanz.Fehler, bilanz.Ueberschrieben, bilanz.Umbenannt);
         }
 
         /// <summary>

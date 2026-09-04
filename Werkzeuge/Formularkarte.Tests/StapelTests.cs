@@ -46,8 +46,13 @@ public sealed class StapelTests
         // Form_GanglinieImportOptionen, Form_Stromganglinie_Admin,
         // Form_Stromganglinie und Form_PeakShaving. Form_ImportKonflikte faellt
         // in derselben Welle, zaehlte hier aber nie mit - sie hatte keinen
-        // Designer (Befund W12-B21).
-        Assert.True(dateien.Count >= 39, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // Designer (Befund W12-B21). Welle 13 nimmt SECHS mit (33): die vier
+        // VDI-3805-Einlesemasken, die Waermebedarfsverwaltung und den
+        // CEC-Modulimport. Der Designer der Waermepumpe ist dabei nicht
+        // geloescht, sondern nach Pruefmuster/Wärmepumpe/ VERSCHOBEN - er ist
+        // der Zeuge des Umlaut-Tests (RazorSchreiberTests) und liegt damit
+        // ausserhalb dieses Stapellaufs.
+        Assert.True(dateien.Count >= 33, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -81,8 +86,10 @@ public sealed class StapelTests
         // Nebenmasken werden EINE Seite (Regel R-W11-2: maskenweise, nicht
         // reiterweise - sonst zwei WebViews in einem Fenster). Welle 12 nimmt
         // FUENF mit (38): die vier Glieder der AP5-Importkette und die
-        // Lastspitzenkappung.
-        Assert.True(Lauf.Value.Masken >= 38, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Lastspitzenkappung. Welle 13 nimmt SECHS mit (32): die vier
+        // VDI-3805-Einlesemasken werden EINE Komponente mit vier Auspraegungen,
+        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport.
+        Assert.True(Lauf.Value.Masken >= 32, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -104,10 +111,14 @@ public sealed class StapelTests
         // 248 englischen Eintraegen; die fuenf Nebenmasken hatten keine eigene
         // .resx (27). Welle 12 nimmt ZWEI lokalisierte mit -
         // Form_Stromganglinie und Form_Stromganglinie_Admin; die drei anderen
-        // Masken der Welle setzten ihre Texte im Code (25).
-        // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
+        // Masken der Welle setzten ihre Texte im Code (25). Welle 13 nimmt VIER
+        // lokalisierte mit (21) - Form_Heizkessel_einlesen, Form_PufferSp_einlesen,
+        // Form_WP_einlesen und Form_AdminWaermeeinlesen; Form_SolarKollektoren_
+        // einlesen hatte weder de-DE noch en-US (Befund W13-B27) und
+        // Form_CECImport eine LEERE .resx (B54).
+        // Der ANTEIL bleibt bei rund zwei Dritteln: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 25,
+        Assert.True(Lauf.Value.Lokalisierte >= 21,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 

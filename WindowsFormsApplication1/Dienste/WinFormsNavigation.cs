@@ -83,12 +83,13 @@ namespace WindowsFormsApplication1
                 case Masken.GebaeudetypenAdmin:
                     return GebaeudetypHuelle.Oeffnen(null);
 
+                // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien
+                // ist die Razor-Komponente WaermebedarfAdminDialog. Der
+                // Rueckgabewert sagt jetzt etwas: Beim Vorlaeufer war er IMMER
+                // false, weil btn_OK_Click nur ein Feld "result" setzte und nie
+                // this.DialogResult (Befund W13-B4).
                 case Masken.WaermebedarfExternAdmin:
-                    using (Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return WaermebedarfAdminHuelle.Oeffnen(null);
 
                 case Masken.ProzesswaermeAdmin:
                     using (Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin())
@@ -123,8 +124,14 @@ namespace WindowsFormsApplication1
                         return MitOk(frm);
                     }
 
+                // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
+                // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
+                // ueber KatalogImportArt. Der Rueckgabewert sagt jetzt, ob etwas
+                // geschrieben wurde - beim Vorlaeufer Form_WP_einlesen war er
+                // IMMER false, weil die Maske ihr DialogResult nie setzte
+                // (Befund W13-B4b).
                 case Masken.WpImport:
-                    using (Form_WP_einlesen frm = new Form_WP_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Waermepumpe);
 
                 case Masken.HeizkesselAdmin:
                     using (Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin()) return MitOk(frm);
@@ -139,18 +146,26 @@ namespace WindowsFormsApplication1
                     using (Form_AdminPV frm = new Form_AdminPV()) return MitOk(frm);
 
                 case Masken.HeizkesselImport:
-                    using (Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Heizkessel);
 
                 case Masken.PufferSpImport:
-                    using (Form_PufferSp_einlesen frm = new Form_PufferSp_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Pufferspeicher);
 
                 case Masken.PufferSpAdmin:
                     using (Form_PufferSp_Admin frm = new Form_PufferSp_Admin()) return MitOk(frm);
 
                 case Masken.SolarkollektorenImport:
-                    using (Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);
 
                 // --- Masken mit Argument ---------------------------------------------
+                // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
+                // PvModulImportDialog. Das Argument sagt, mit welcher Quelle sie
+                // aufmacht ("CEC" bzw. "PAN"); bis dahin oeffneten die beiden
+                // Menuepunkte dieselbe Maske im SELBEN Zustand (Befund W13-B51)
+                // und gingen ganz an der Navigation vorbei (B55).
+                case Masken.PvImport:
+                    return PvModulImportHuelle.Oeffnen(null, TextOder(argumente, 0, "CEC"));
+
                 // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
                 // PeakShavingDialog; die Huelle zeigt sie modal. Der Rueckgabewert
                 // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
@@ -352,6 +367,16 @@ namespace WindowsFormsApplication1
         {
             if (argumente == null || argumente.Length <= stelle) return "";
             return argumente[stelle] as string ?? "";
+        }
+
+        /// <summary>
+        /// Ein Textargument mit VORGABE (iU9-W13.3): Der PV-Modulimport braucht
+        /// seine Quelle auch dann, wenn ein Aufrufer sie nicht mitgibt.
+        /// </summary>
+        private static string TextOder(object[] argumente, int stelle, string vorgabe)
+        {
+            string wert = Text(argumente, stelle);
+            return wert.Length > 0 ? wert : vorgabe;
         }
     }
 }

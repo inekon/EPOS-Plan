@@ -111,7 +111,7 @@
             </div>
 
             <div class="epos-leiste">
-                @if (Sprung is not null)
+                @if (VerwaltungGaben is not null)
                 {
                     <button type="button" class="epos-knopf"
                             @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
@@ -129,6 +129,22 @@
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText" Frage="@Loeschfrage"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* --- Die Ganglinienverwaltung als UEBERLAGERUNG (iU9-W13.2) -----------
+       Bis Welle 13 war das ein SPRUNG ueber die Sprungbruecke in ein
+       WinForms-Fenster (Sprungziel.WaermebedarfExternAdmin). Ist das Ziel
+       selbst Blazor, wird daraus eine Ueberlagerung im selben Fenster - kein
+       zweiter WebView (Risiko R2), dasselbe Muster wie die neun Unterdialoge
+       der Kostenseite aus W4. *@
+    <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_verwaltungOffen)
+            {
+                <WaermebedarfAdminDialog @attributes="@VerwaltungGaben"
+                                         Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -154,10 +170,12 @@
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
     /// <summary>
-    /// „Einlesen/Bearbeiten.." — der Sprung in die Ganglinienverwaltung
-    /// (<see cref="Sprungziel.WaermebedarfExternAdmin"/>). Kein Delegat = kein Knopf.
+    /// „Einlesen/Bearbeiten.." — der PARAMETERSATZ der Ganglinienverwaltung
+    /// (<c>WaermebedarfAdminHuelle.Gaben</c>, iU9-W13.2). Sie erscheint als
+    /// Überlagerung im selben Fenster; bis Welle 13 war es ein Sprung in ein
+    /// WinForms-Fenster. Kein Parametersatz = kein Knopf.
     /// </summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+    [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
 
     /// <summary>Meldet der Hülle, dass sich die Zuordnungsliste geändert hat.</summary>
     [Parameter] public Action? Geaendert { get; set; }
@@ -215,6 +233,9 @@
     private string? _katalogname;
     private WaermebedarfExternZeile? _gewaehlt;
     private bool _loeschfrage;
+
+    /// <summary>Steht die Ganglinienverwaltung als Ueberlagerung offen? (iU9-W13.2)</summary>
+    private bool _verwaltungOffen;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
@@ -329,10 +350,19 @@
     // Katalog
     // =================================================================================
 
-    private async Task BeiBearbeiten()
+    private void BeiBearbeiten()
     {
-        if (Sprung is null) return;
-        await Sprung(Sprungziel.WaermebedarfExternAdmin);
+        if (VerwaltungGaben is null) return;
+        _verwaltungOffen = true;
+    }
+
+    /// <summary>
+    /// Die Verwaltung ist zu. Der Katalog wird neu geladen — der Anwender kann
+    /// dort eingelesen oder gelöscht und mit „Beenden" geschlossen haben.
+    /// </summary>
+    private void VerwaltungFertig(bool _)
+    {
+        _verwaltungOffen = false;
         KatalogLaden();
     }
 
@@ -375,7 +405,7 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _loeschfrage) return Task.CompletedTask;
+        if (e.Key != "Escape" || _loeschfrage || _verwaltungOffen) return Task.CompletedTask;
         return Geschlossen.InvokeAsync(false);
     }
 }

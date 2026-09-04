@@ -102,15 +102,6 @@ public static class Sprungziel
     public const string SolarganglinieAdmin = "SOLARGANGLINIE_ADMIN";
 
     /// <summary>
-    /// Katalog „Wärmebedarfsganglinien einlesen" — der Knopf „Bearbeiten" des
-    /// Dialogs „Wärmebedarf extern" (Vorläufer:
-    /// <c>Form_Waermebedarf.btn_Bearbeiten_Click</c>:257, iU9-W9.0f). Dieselbe
-    /// Maske, die <c>Dienste.Navigation</c> für <c>Masken.WaermebedarfExternAdmin</c>
-    /// zeigt (<c>Form_AdminWaermeeinlesen</c>); sie bleibt bis Welle 13 WinForms.
-    /// </summary>
-    public const string WaermebedarfExternAdmin = "WAERMEBEDARF_EXTERN_ADMIN";
-
-    /// <summary>
     /// „Auslegung optimieren …" — die Rastersuche des Stromspeichers
     /// (<c>Form_SpeicherOptimierung</c>, Vorläufer
     /// <c>Form_Simulation_Detail.SpOptimierung_Click</c>:5992, iU9-W11b.0).

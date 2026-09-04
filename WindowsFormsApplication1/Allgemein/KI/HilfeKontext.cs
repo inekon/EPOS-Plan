@@ -109,7 +109,6 @@ namespace WindowsFormsApplication1
 
 
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
-            { "Form_Heizkessel_einlesen",    B_HEIZKESSEL },
 
             { "Form_HelpPopup",              B_HILFE },
             { "Form_KiChat",                 B_HILFE },
@@ -119,13 +118,14 @@ namespace WindowsFormsApplication1
             { "Form_Kosten_Auswahl",         B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
-            { "Form_CECImport",              B_PHOTOVOLTAIK },
 
-            // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE
-            // aber Main_PV_Test - nachgeschlagen wird der Typname, der Eintrag
-            // darueber griff also nie. Er bleibt stehen, falls die Klasse einmal
-            // wie ihre Datei heisst.
-            { "Main_PV_Test",                B_PHOTOVOLTAIK },
+            // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
+            // PvModulImportDialog. Damit fallen ZWEI Eintraege weg: der tote
+            // "Form_CECImport" (der Dateiname, nachgeschlagen wird der TYPNAME -
+            // Befund W13-B37) und der wirksame "Main_PV_Test". Der Bereich bleibt
+            // derselbe; die Zeile in help_mapping.txt heisst weiter nach der
+            // Maske, denn sie ist die Adresse des HILFETEXTES (Praxis seit W12).
+            { "PvModulImportDialog",         B_PHOTOVOLTAIK },
 
             // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
             // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das
@@ -139,7 +139,6 @@ namespace WindowsFormsApplication1
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
             // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
-            { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
 
             { "ErzeugerKarte",               B_SIMULATION },
             { "SpeicherKarte",               B_SIMULATION },
@@ -162,7 +161,6 @@ namespace WindowsFormsApplication1
             // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },
             { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
@@ -191,12 +189,18 @@ namespace WindowsFormsApplication1
             { "StromganglinieAdminDialog",   B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
-            { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
+            // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien ist
+            // die Razor-Komponente WaermebedarfAdminDialog; der Bereich bleibt.
+            { "WaermebedarfAdminDialog",     B_WAERMEBEDARF },
 
-            // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
-            // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der
-            // Klassenname sagt das nicht, deshalb der Eintrag (H7).
-            { "Form_WP_einlesen",            B_WAERMEPUMPE },
+            // iU9-W13.1: Die VIER VDI-3805-Einlesemasken sind EINE Razor-Komponente
+            // mit vier Auspraegungen (KatalogImportDialog). Der Bereich haengt
+            // damit nicht mehr am Klassennamen - er kaeme fuer alle vier gleich
+            // heraus. Nachgeschlagen wird deshalb der Bereich des WIRTES; die
+            // Schluessel des InfoKnopfes in help_mapping.txt heissen weiter nach
+            // den vier Masken, denn sie sind die Adresse des HILFETEXTES und
+            // nicht der Klasse (Praxis seit W12).
+            { "KatalogImportDialog",         B_HEIZKESSEL },
 
 
             { "WizardParent",                B_ASSISTENT },

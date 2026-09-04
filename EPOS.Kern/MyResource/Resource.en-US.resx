@@ -117,6 +117,42 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CEC_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>File not found.</value>
+  </data>
+  <data name="CEC_MSG_FEHLER" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="CEC_MSG_GELADEN" xml:space="preserve">
+    <value>{0} modules loaded.</value>
+  </data>
+  <data name="CEC_MSG_KEINE_QUELLE" xml:space="preserve">
+    <value>No CEC data source reachable.</value>
+  </data>
+  <data name="CEC_MSG_LEER" xml:space="preserve">
+    <value>CSV empty.</value>
+  </data>
+  <data name="CEC_PROT_CACHE_ALT" xml:space="preserve">
+    <value>Using the existing cache…</value>
+  </data>
+  <data name="CEC_PROT_CACHE_LADEN" xml:space="preserve">
+    <value>Loading from the local cache…</value>
+  </data>
+  <data name="CEC_PROT_CACHE_SUCHEN" xml:space="preserve">
+    <value>Looking for the local cache…</value>
+  </data>
+  <data name="CEC_PROT_FEHLER" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="CEC_PROT_GESPEICHERT" xml:space="preserve">
+    <value>File saved, parsing data…</value>
+  </data>
+  <data name="CEC_PROT_VERBINDEN" xml:space="preserve">
+    <value>Connecting to the sources…</value>
+  </data>
+  <data name="CEC_PROT_VERSUCHE" xml:space="preserve">
+    <value>Trying: {0}…</value>
+  </data>
   <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
     <value>💾 Save</value>
   </data>
@@ -216,6 +252,204 @@
   <data name="IMPORT_TITEL_ADMIN" xml:space="preserve">
     <value>Electricity requirement</value>
   </data>
+  <data name="IMP_KAT_BTN_DATEI" xml:space="preserve">
+    <value>Read file VDI 3805...</value>
+  </data>
+  <data name="IMP_KAT_BTN_DATEI_WP" xml:space="preserve">
+    <value>Read WP from file VDI 3805...</value>
+  </data>
+  <data name="IMP_KAT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Save DB</value>
+  </data>
+  <data name="IMP_KAT_EINH_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWCOOL" xml:space="preserve">
+    <value>kWcool</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWHD" xml:space="preserve">
+    <value>kWh/d</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWTH" xml:space="preserve">
+    <value>kWth</value>
+  </data>
+  <data name="IMP_KAT_EINH_LITER" xml:space="preserve">
+    <value>l</value>
+  </data>
+  <data name="IMP_KAT_EINH_M2" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="IMP_KAT_EINH_PROZENT" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="IMP_KAT_EINH_WM2" xml:space="preserve">
+    <value>W/m²</value>
+  </data>
+  <data name="IMP_KAT_EINH_WM2K" xml:space="preserve">
+    <value>W/(m²K)</value>
+  </data>
+  <data name="IMP_KAT_FELD_A1" xml:space="preserve">
+    <value>Linear loss coefficient:</value>
+  </data>
+  <data name="IMP_KAT_FELD_A2" xml:space="preserve">
+    <value>Quadratic loss coefficient:</value>
+  </data>
+  <data name="IMP_KAT_FELD_APERTUR" xml:space="preserve">
+    <value>Aperture area:</value>
+  </data>
+  <data name="IMP_KAT_FELD_AUFSTELLUNG" xml:space="preserve">
+    <value>Lineup:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BAUART" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="IMP_KAT_FELD_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel:</value>
+  </data>
+  <data name="IMP_KAT_FELD_FIRMA" xml:space="preserve">
+    <value>Company:</value>
+  </data>
+  <data name="IMP_KAT_FELD_H0" xml:space="preserve">
+    <value>Optical efficiency:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KDIFF" xml:space="preserve">
+    <value>Correction factor for diffuse radiation:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KDIR" xml:space="preserve">
+    <value>Incidence angle modifier for direct radiation:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MAXVORLAUF" xml:space="preserve">
+    <value>max. flow:</value>
+  </data>
+  <data name="IMP_KAT_FELD_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="IMP_KAT_FELD_SPEICHERTYP" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_SPITZENLEISTUNG" xml:space="preserve">
+    <value>Peak power:</value>
+  </data>
+  <data name="IMP_KAT_FELD_STUFEN" xml:space="preserve">
+    <value>Stages:</value>
+  </data>
+  <data name="IMP_KAT_FELD_THLEISTUNG" xml:space="preserve">
+    <value>thermal performance:</value>
+  </data>
+  <data name="IMP_KAT_FELD_TYP" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="IMP_KAT_FELD_VERLUSTE" xml:space="preserve">
+    <value>Standby losses:</value>
+  </data>
+  <data name="IMP_KAT_FELD_VOLUMEN" xml:space="preserve">
+    <value>Total volume:</value>
+  </data>
+  <data name="IMP_KAT_FELD_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Efficiency:</value>
+  </data>
+  <data name="IMP_KAT_FELD_ZUSATZHEIZUNG" xml:space="preserve">
+    <value>electric additional heating:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_APERTUR" xml:space="preserve">
+    <value>Aperture area [m²] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_BIS" xml:space="preserve">
+    <value>to:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_LEISTUNG" xml:space="preserve">
+    <value>Th. output [kW] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_SUCHE" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_VOLUMEN" xml:space="preserve">
+    <value>Volume [l] from:</value>
+  </data>
+  <data name="IMP_KAT_GRP_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_STUFEN" xml:space="preserve">
+    <value>* 0=modulating</value>
+  </data>
+  <data name="IMP_KAT_MSG_BEREITS_EINGELESEN" xml:space="preserve">
+    <value>Data already imported!</value>
+  </data>
+  <data name="IMP_KAT_MSG_FEHLER" xml:space="preserve">
+    <value>Error: name already exists or database error!</value>
+  </data>
+  <data name="IMP_KAT_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select an entry.</value>
+  </data>
+  <data name="IMP_KAT_MSG_NEU_ANGELEGT" xml:space="preserve">
+    <value>Record successfully created.</value>
+  </data>
+  <data name="IMP_KAT_PROT_AUFSTELLUNG" xml:space="preserve">
+    <value>Unknown installation index "{0}" – the previous record's installation is kept.</value>
+  </data>
+  <data name="IMP_KAT_PROT_FERTIG" xml:space="preserve">
+    <value>Import completed.</value>
+  </data>
+  <data name="IMP_KAT_PROT_GELESEN" xml:space="preserve">
+    <value>{0} entries read.</value>
+  </data>
+  <data name="IMP_KAT_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+  </data>
+  <data name="IMP_KAT_PROT_LESEN" xml:space="preserve">
+    <value>Reading file…</value>
+  </data>
+  <data name="IMP_KAT_PROT_SCHREIBEN" xml:space="preserve">
+    <value>Applying entry {0} of {1}…</value>
+  </data>
+  <data name="IMP_KAT_SP_EINTRAG" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="IMP_KAT_TITEL_HEIZKESSEL" xml:space="preserve">
+    <value>Read boiler</value>
+  </data>
+  <data name="IMP_KAT_TITEL_PUFFERSPEICHER" xml:space="preserve">
+    <value>Reading buffer storage</value>
+  </data>
+  <data name="IMP_KAT_TITEL_SOLAR" xml:space="preserve">
+    <value>Read solar collectors</value>
+  </data>
+  <data name="IMP_KAT_TITEL_WP" xml:space="preserve">
+    <value>Read in heat pumps</value>
+  </data>
+  <data name="IMP_LADE_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Failed: {0}</value>
+  </data>
+  <data name="IMP_LADE_GELADEN" xml:space="preserve">
+    <value>{0} of {1} entries loaded.</value>
+  </data>
+  <data name="IMP_LADE_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Overwritten: {0}</value>
+  </data>
+  <data name="IMP_LADE_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Already imported (skipped): {0}</value>
+  </data>
+  <data name="IMP_LADE_UMBENANNT" xml:space="preserve">
+    <value>Under new name: {0}</value>
+  </data>
+  <data name="IMP_TXT_KEIN_PFAD" xml:space="preserve">
+    <value>No file selected.</value>
+  </data>
+  <data name="IMP_TXT_LEERZEILE" xml:space="preserve">
+    <value>Line {0} is empty. The file must contain exactly one value per line.</value>
+  </data>
+  <data name="IMP_TXT_LESEFEHLER" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+  </data>
+  <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
+    <value>Format error in line {0}: the line ends with “{1}”. Values must be line oriented without a ',' or ';' separator at the end of the line.</value>
+  </data>
   <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
     <value>{0} (no unit in the project)</value>
   </data>
@@ -297,6 +531,12 @@
   <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
     <value>Delete item</value>
   </data>
+  <data name="PAN_MSG_GELESEN" xml:space="preserve">
+    <value>{0} modules from PAN files.</value>
+  </data>
+  <data name="PAN_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The PAN file could not be read: {0}</value>
+  </data>
   <data name="PEAK_MSG_RECHNET" xml:space="preserve">
     <value>Calculating the peak shaving …</value>
   </data>
@@ -358,6 +598,156 @@
     <value>Combined storage tank: heating and domestic hot water are covered from ONE heat reservoir.
 Here the full cycles are the annual throughput relative to the capacity —
 with a small tank the figure becomes large without any additional ageing.</value>
+  </data>
+  <data name="PVIMP_ALLE" xml:space="preserve">
+    <value>(all)</value>
+  </data>
+  <data name="PVIMP_BTN_CEC" xml:space="preserve">
+    <value>🌐 Load CEC ▶</value>
+  </data>
+  <data name="PVIMP_BTN_PAN" xml:space="preserve">
+    <value>🌿 Load PAN ▶</value>
+  </data>
+  <data name="PVIMP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>✔ Apply selection</value>
+  </data>
+  <data name="PVIMP_BTN_ZURUECKSETZEN" xml:space="preserve">
+    <value>✖ Reset</value>
+  </data>
+  <data name="PVIMP_EINH_W" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="PVIMP_HINWEIS_PAN" xml:space="preserve">
+    <value>PVsyst PAN files carry no NOCT temperature and no current or voltage temperature coefficients in the form the catalogue expects; they stay empty.</value>
+  </data>
+  <data name="PVIMP_KOPFBAND" xml:space="preserve">
+    <value>Import - CEC and PAN modules</value>
+  </data>
+  <data name="PVIMP_LBL_ALPHA_ISC" xml:space="preserve">
+    <value>α_Isc / aIsc [A/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_BAUJAHR" xml:space="preserve">
+    <value>Year of construction:</value>
+  </data>
+  <data name="PVIMP_LBL_BETA_VOC" xml:space="preserve">
+    <value>β_Voc / BVoco [V/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_BIFAZIAL" xml:space="preserve">
+    <value>Bifacial:</value>
+  </data>
+  <data name="PVIMP_LBL_BREITE" xml:space="preserve">
+    <value>Width [m]:</value>
+  </data>
+  <data name="PVIMP_LBL_EFFIZIENZ" xml:space="preserve">
+    <value>Efficiency [%]:</value>
+  </data>
+  <data name="PVIMP_LBL_EFFIZIENZ_VON" xml:space="preserve">
+    <value>Efficiency from:</value>
+  </data>
+  <data name="PVIMP_LBL_FLAECHE" xml:space="preserve">
+    <value>Area [m²]:</value>
+  </data>
+  <data name="PVIMP_LBL_GAMMA_PMP" xml:space="preserve">
+    <value>γ_r – power TC [%/°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="PVIMP_LBL_IMP" xml:space="preserve">
+    <value>Imp [A]:</value>
+  </data>
+  <data name="PVIMP_LBL_ISC" xml:space="preserve">
+    <value>Isc [A]:</value>
+  </data>
+  <data name="PVIMP_LBL_LAENGE" xml:space="preserve">
+    <value>Length [m]:</value>
+  </data>
+  <data name="PVIMP_LBL_LEISTUNG" xml:space="preserve">
+    <value>Power [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_LEISTUNG_VON" xml:space="preserve">
+    <value>Power from:</value>
+  </data>
+  <data name="PVIMP_LBL_PMP" xml:space="preserve">
+    <value>Pmp [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_PTC" xml:space="preserve">
+    <value>PTC [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_STC" xml:space="preserve">
+    <value>STC [W]:</value>
+  </data>
+  <data name="PVIMP_LBL_SUCHE" xml:space="preserve">
+    <value>🔍 Search</value>
+  </data>
+  <data name="PVIMP_LBL_TECHNOLOGIE" xml:space="preserve">
+    <value>Technology:</value>
+  </data>
+  <data name="PVIMP_LBL_TNOCT" xml:space="preserve">
+    <value>T-NOCT [°C]:</value>
+  </data>
+  <data name="PVIMP_LBL_VMP" xml:space="preserve">
+    <value>Vmp [V]:</value>
+  </data>
+  <data name="PVIMP_LBL_VOC" xml:space="preserve">
+    <value>Voc [V]:</value>
+  </data>
+  <data name="PVIMP_MSG_AKTUALISIERT" xml:space="preserve">
+    <value>Record updated successfully.</value>
+  </data>
+  <data name="PVIMP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Record saved successfully.</value>
+  </data>
+  <data name="PVIMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select a PV module!</value>
+  </data>
+  <data name="PVIMP_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Error saving the record!</value>
+  </data>
+  <data name="PVIMP_PLATZHALTER_SUCHE" xml:space="preserve">
+    <value>e.g.  Trina*  or  *410*  or  *mono*2022*</value>
+  </data>
+  <data name="PVIMP_REITER_ELEKTRISCH" xml:space="preserve">
+    <value>⚡ Electrical</value>
+  </data>
+  <data name="PVIMP_REITER_THERMISCH" xml:space="preserve">
+    <value>🌡 Thermal</value>
+  </data>
+  <data name="PVIMP_REITER_UEBERSICHT" xml:space="preserve">
+    <value>📋 Overview</value>
+  </data>
+  <data name="PVIMP_SP_BIFAZIAL" xml:space="preserve">
+    <value>Bifacial</value>
+  </data>
+  <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
+    <value>Efficiency (%)</value>
+  </data>
+  <data name="PVIMP_SP_ISC" xml:space="preserve">
+    <value>Isc [A]</value>
+  </data>
+  <data name="PVIMP_SP_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="PVIMP_SP_MODULNAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
+  <data name="PVIMP_SP_PMP" xml:space="preserve">
+    <value>Pmp (W)</value>
+  </data>
+  <data name="PVIMP_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PVIMP_SP_VOC" xml:space="preserve">
+    <value>Voc [V]</value>
+  </data>
+  <data name="PVIMP_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready. Please load the CEC database or a PAN file.</value>
+  </data>
+  <data name="PVIMP_STATUS_GEFUNDEN" xml:space="preserve">
+    <value>Filter selection ({0} modules found)</value>
+  </data>
+  <data name="PVIMP_TITEL" xml:space="preserve">
+    <value>Photovoltaic module import</value>
   </data>
   <data name="SIMQ_PUFFER_ANSCHLUSSHOEHE" xml:space="preserve">
     <value>Source draw-off height (0…1):</value>
@@ -5194,6 +5584,63 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="WBAD_BTN_ANZEIGEN" xml:space="preserve">
+    <value>Show content...</value>
+  </data>
+  <data name="WBAD_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WBAD_BTN_DATEI" xml:space="preserve">
+    <value>Select file...</value>
+  </data>
+  <data name="WBAD_BTN_EINLESEN" xml:space="preserve">
+    <value>Read file into DB...</value>
+  </data>
+  <data name="WBAD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete DB curve</value>
+  </data>
+  <data name="WBAD_DATEIFILTER" xml:space="preserve">
+    <value>(*.txt)|*.txt</value>
+  </data>
+  <data name="WBAD_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the curve "{0}" from the catalogue?</value>
+  </data>
+  <data name="WBAD_GRP_EINLESEN" xml:space="preserve">
+    <value>Read file</value>
+  </data>
+  <data name="WBAD_LBL_KATALOG" xml:space="preserve">
+    <value>Curves from DB</value>
+  </data>
+  <data name="WBAD_LBL_ORDNER" xml:space="preserve">
+    <value>File base folder:</value>
+  </data>
+  <data name="WBAD_LBL_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values over 1 year as a text file (decimal separator '.')</value>
+  </data>
+  <data name="WBAD_MSG_ABLAGE" xml:space="preserve">
+    <value>The original file could not be copied to the user folder: {0}</value>
+  </data>
+  <data name="WBAD_MSG_AUSGELASSEN" xml:space="preserve">
+    <value>The curve was not imported.</value>
+  </data>
+  <data name="WBAD_MSG_GELOESCHT" xml:space="preserve">
+    <value>The curve "{0}" was deleted.</value>
+  </data>
+  <data name="WBAD_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The curve "{0}" was imported with {1} values.</value>
+  </data>
+  <data name="WBAD_MSG_PROJEKTZUORDNUNG" xml:space="preserve">
+    <value>A project assignment exists, deletion is not possible!</value>
+  </data>
+  <data name="WBAD_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The curve could not be saved.</value>
+  </data>
+  <data name="WBAD_SPALTE_BEZEICHNER" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="WBAD_TITEL" xml:space="preserve">
+    <value>Heat requirement</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
