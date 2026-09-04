@@ -22,6 +22,18 @@ entgegen — sie ist damit austauschbar.
   also `@Resource.KAUSW_TITEL`. Solange ein Schlüssel fehlt, steht der deutsche Literaltext als
   Standardwert eines `[Parameter] string`-Textes in der Komponente — die Hülle kann ihn dann ohne
   Änderung der Komponente auf den Ressourcenschlüssel umstellen.
+- **Ab etwa zehn Anzeigetexten ein BÜNDEL statt einzelner Parameter.** Ein Satz Beschriftungen
+  als `*Texte`-Klasse, EIN `[Parameter]`; jede Eigenschaft nennt ihren Ressourcenschlüssel im
+  Kommentar. Sonst verstecken dreißig `[Parameter] string` die Fachparameter zwischen
+  Knopfbeschriftungen und treiben die Komponente über die Hausgrenze von 400 Zeilen. Zwei
+  Bauarten: **`KiChatTexte`** (W15b) lässt die Hülle füllen — dort hängen Werte an
+  Fallunterscheidungen (Hilfe-Betrieb, Einwilligung, Modellname); **`LizenzTexte`** (W15c‑O‑2,
+  ein Bündel für `LizenzDialog` **und**, unter `.Verwaltung`, für `LizenzVerwaltungDialog`) füllt
+  sich SELBST aus `MyResource` in der Oberflächensprache, weil es reine Katalogeinträge sind —
+  die Hülle überschreibt nur, was sie zusammensetzt. Ein fehlender Schlüssel fällt auf den
+  deutschen Wortlaut zurück, ein vorhandener **leerer** bleibt leer (`LIZR_HINWEIS_SPRACHE` ist
+  auf Deutsch mit Absicht leer). Ein Bündel trägt **Beschriftungen**, keinen Zustand — der steht
+  weiter in `*Gaben` (`LizenzGaben`, `LizenzTextGaben`).
 - **Zahlen komma- und punkttolerant**, kein Tausendertrennzeichen, invariant geparst — dieselbe
   Regel wie `WindowsFormsApplication1/Program.cs` (`ZahlParsen`/`GanzzahlParsen`). Eine Fehleingabe
   **färbt** das Feld (`epos-fehleingabe`), sie meldet nicht.
