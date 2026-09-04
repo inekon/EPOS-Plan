@@ -317,6 +317,14 @@ dem Baustein `Gespraechsverlauf`, den KI-Dialogen, `Seitenschluessel.KiAssistent
 und den Rückfragen bei mehrdeutigem Projekt- und Variantennamen (O‑3/O‑4). Bau, Simulatorstart, Erststart mit Seed-Kopie,
 Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Zwanzigster Lauf 33883210632 (`ios.yml`, `macos-26`, 04.09.2026, 14:20–14:31 UTC, 10 min 14 s)** auf
+`975ead5` — der Stand **nach der Welle 15c** (Rückweg-Anker `vor-W16`): grün. Erstmals mit `LizenzManager.Bewerten`
+und den ersten Lizenztests im Kern, `LizenzCtrl`/`LizenzTextCtrl`/`ZustimmungCtrl`, den vier Hüllenzusätzen an
+`BlazorDialogForm<T>` und den Lizenz- und Erststartkomponenten in `EPOS.UI`; der WebView2-Riegel aus `Program.Main`
+(E‑8) betrifft nur die Windows-Anwendung, die iOS-Hülle startet unverändert über `AppWurzel`. Bau, Simulatorstart,
+Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
