@@ -297,6 +297,12 @@
   <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
     <value>Delete item</value>
   </data>
+  <data name="PEAK_MSG_RECHNET" xml:space="preserve">
+    <value>Calculating the peak shaving …</value>
+  </data>
+  <data name="PEAK_MSG_SUCHE" xml:space="preserve">
+    <value>Searching for the smallest feasible target threshold …</value>
+  </data>
   <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
     <value>Storage in the project</value>
   </data>

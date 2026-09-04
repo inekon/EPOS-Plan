@@ -14092,6 +14092,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lastspitzenkappung wird gerechnet … ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_RECHNET {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_RECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kleinste haltbare Zielschwelle wird gesucht … ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_SUCHE {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer muss größer als 0 sein. ähnelt.
         /// </summary>
         public static string PEAK_MSG_NUTZUNGSDAUER {
