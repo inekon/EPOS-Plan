@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace WindowsFormsApplication1
 {
@@ -156,7 +156,20 @@ namespace WindowsFormsApplication1
         /// hier ab, OHNE zu loeschen — sonst zeigte der gemerkte Projektstand auf ein
         /// Projekt, das es nicht mehr gibt.
         /// </summary>
-        ApplikationsdatenFehler
+        ApplikationsdatenFehler,
+
+        /// <summary>
+        /// Der Name trifft MEHRERE Projekte, und der Aufrufer hat das Loeschen aller
+        /// nicht ausdruecklich verlangt (Entscheid W15a-O-3 vom 04.09.2026). Es wurde
+        /// NICHTS angefasst; <c>Anzahl</c> sagt, wie viele Projekte den Namen tragen.
+        ///
+        /// <para>Regulaer kann das nicht vorkommen: <c>Tab_Projekt</c> traegt seit der
+        /// SQLite-Migration den eindeutigen Index <c>Projektname</c>, und „Speichern
+        /// unter" prueft ueber <c>PruefeNamen</c>. Ein Altbestand OHNE diesen Index kann
+        /// den Fall aber fuehren — und dann darf der Loeschweg, der ueber den NAMEN
+        /// laeuft, nicht still zwei Projekte mitnehmen.</para>
+        /// </summary>
+        Mehrdeutig
     }
 
     /// <summary>
@@ -165,5 +178,10 @@ namespace WindowsFormsApplication1
     /// <param name="Stand">Wie weit der Weg gekommen ist.</param>
     /// <param name="Projektname">Der Name des geloeschten Projekts (fuer die Erfolgsmeldung).</param>
     /// <param name="Fehlertext">Der Ausnahmetext bei <see cref="LoeschStand.ApplikationsdatenFehler"/>; sonst leer.</param>
-    public sealed record LoeschBefund(LoeschStand Stand, string Projektname, string Fehlertext = "");
+    /// <param name="Anzahl">
+    /// Wie viele Projekte den Namen tragen (iU9-W15a, Entscheid O-3). Regulaer 1; bei
+    /// <see cref="LoeschStand.Mehrdeutig"/> die Zahl, die in der Rueckfrage steht; bei
+    /// <see cref="LoeschStand.NameLeer"/> 0.
+    /// </param>
+    public sealed record LoeschBefund(LoeschStand Stand, string Projektname, string Fehlertext = "", int Anzahl = 1);
 }
