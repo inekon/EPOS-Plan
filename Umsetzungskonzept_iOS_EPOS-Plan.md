@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W13 und W14b umgesetzt, W14a in Arbeit | `c9855b1` | **28** Designer-Masken offen (32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3) |
+| **iU9** Masken in Wellen | 🔄 W0 bis W14b umgesetzt, W14c in Arbeit | `4e77221` | **21** Designer-Masken offen (28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar** |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,44 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 14a umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `c9855b1` nach W14b)**
+>
+> **Sieben Masken — 2 387 Zeilen `.cs`, 2 369 Designer, 39 `MessageBox` + 32 indirekte — sind drei Razor-Komponenten:**
+> `KatalogBrowserDialog` (`EPOS.UI/Dialoge/Erzeuger/`) mit **vier Ausprägungen** über `KatalogBrowserProfil` (Heizkessel,
+> BHKW, Solarkollektoren, Pufferspeicher mit `NurLesen`) — vier Masken waren Behälter um Editoren, die seit W6/W7 Razor
+> sind —, `PufferSpKatalogDialog` (**der fehlende vierte Katalogeditor**, als Überlagerung im Browser) und
+> `ModulKatalogDialog` mit zwei Ausprägungen (Stromspeicher als Vorbild, Photovoltaik bekommt dessen gepflegte Bauart).
+> Im Kern: `KatalogZeilen`/`KatalogsatzAnzeige`/`SpeichernAus` je Katalog, die Speichertyp-Abbildung, `ModulKatalogProfil`,
+> `DbWerte.SP_TYP_LITHIUM_IONEN`, `StromspeicherModel.C_VER_VORGABE` — und **`HeizkesselStammCtrl.Filtern` berichtigt**
+> (W14‑B2: der Kern trug die Brennstoffkette der mit W6.3 gelöschten Maske; Fernwärme, Sonstige Energieträger und
+> Wasserstoff filterten in **beiden** Heizkesseldialogen nicht — Vorher/Nachher-Zählung je Gruppe im Protokoll). Mit der
+> Welle fallen die **letzten fünf ablösbaren `Sprungziel`-Zweige** (ihre Aufrufer sind Razor → Überlagerungen),
+> `Views/Pufferspeicher/PufferSpFilter.cs`, `Allgemein/SpeichernLeiste.cs` und `Allgemein/KI/KiAufrufKnopf.cs` (E‑10:
+> der KI-Einstieg aus einer Maske kommt mit W15b zurück). **Der Erreichbarkeitsbefund steht erstmals auf 0 nein /
+> 0 verwaist / 0 unklar** — `Form_PufferSp_Bearbeiten` und `Form_SolarKollektorenAdmin` sind als Prüfmuster eingefroren
+> (der „unklar"-Zeuge und der `DataGridView`-Typzeuge). Elf Sachcommits und ein Merge (`5fdbb4b` … `e5f387c`), auf
+> `ios_migration` als `4e77221`. Der Nachweis (50 eingefrorene Fälle `KatalogVerwaltungTests`) entstand vor der ersten
+> Maske; 97 Textschlüssel de/en für zwei nie lokalisierte Masken.
+>
+> **16 Abweichungen** (A‑1…A‑16), u. a.: „OK" liefert OK, ein Löschtext mit Namen, die achte BHKW-Leistungsstufe trifft
+> (79 statt 8 Treffer vorher), `Exists`-Vorabtest überall, Löschen mit Rückfrage auch bei PV, der echte Löschgrund statt
+> „Projektzuordnung", keine modale Prüfung beim Feldverlassen, der Kontextmenüweg des Stromspeichers öffnet den Katalog,
+> Hersteller- und Speicherlisten sortiert. **Anwenderfragen:** E‑2 (Aperturfläche im Feld „Kollektorfläche" — wörtlich),
+> E‑9 (je zwei Menüpunkte für Heizkessel und Pufferspeicher — beide behalten), **E‑11 neu** (die Solarkollektoren-Verwaltung
+> hat zwei Flächenfelder, „Kollektorfläche" wird nirgends gefüllt — Modulfläche zeigen oder Feld streichen?).
+>
+> **Nachweise** (auf dem gemergten Stand `4e77221`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 227** grün (3 087 nach W14b), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **124** grün · Stapellauf **21** Masken (28 − 7), 21 erreichbar, **0 nein / 0 verwaist / 0 unklar** ·
+> SQL-Prüfer 1 232 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> **PASS, byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, der Brennstoffzählung, 16 Abweichungen, den Befunden B1…B79 und
+> 13 Abnahmepunkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`. **Windows-Abnahme
+> steht aus**: die Brennstoffkette in beiden Heizkesseldialogen, die achte BHKW-Stufe, Löschrückfrage PV, `NurLesen` des
+> Pufferspeicherbrowsers, Kontextmenüweg Stromspeicher, die Überlagerungen statt Sprüngen, de/en, 125 %. Der fünfzehnte
+> iOS-Lauf folgt auf diesem Stand.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
