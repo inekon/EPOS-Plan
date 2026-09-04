@@ -242,22 +242,23 @@ public class BedarfsProfileDialogTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Befund W9‑B7:</b> derselbe Wert, zwei Einheiten in der Meldung — MWh bei Prozess
-    /// und Brauchwasser, kWh beim Stromverbraucher. Wörtlich übernommen.
+    /// <b>Befund W9‑B7, erledigt:</b> Der Bestand nannte beim Stromverbraucher kWh, bei
+    /// Prozess und Brauchwasser MWh — für dieselbe Größe. Seit dem Entscheid des
+    /// Anwenders vom 04.09.2026 steht in allen drei Ausprägungen derselbe Text, und die
+    /// Einheit ist der Platzhalter <c>{0}</c>.
     /// </summary>
-    [Fact]
-    public void Ein_negativer_Wert_meldet_die_Einheit_der_Auspraegung()
+    [Theory]
+    [InlineData(BedarfsArt.Prozesswaerme)]
+    [InlineData(BedarfsArt.Stromverbraucher)]
+    [InlineData(BedarfsArt.Brauchwasser)]
+    public void Ein_negativer_Wert_meldet_die_gewaehlte_Einheit(BedarfsArt art)
     {
-        var cutProzess = Aufbauen(BedarfsArt.Prozesswaerme);
-        cutProzess.Find("input[inputmode=decimal]").Input("-1");
-        Knopf(cutProzess, "Übernehmen").Click();
-        Assert.Contains("MWh", cutProzess.Instance.Meldung);
+        var cut = Aufbauen(art);
+        cut.Find("input[inputmode=decimal]").Input("-1");
+        Knopf(cut, "Übernehmen").Click();
 
-        var cutStrom = Aufbauen(BedarfsArt.Stromverbraucher,
-                                meldungWert: "Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.");
-        cutStrom.Find("input[inputmode=decimal]").Input("-1");
-        Knopf(cutStrom, "Übernehmen").Click();
-        Assert.Contains("kWh", cutStrom.Instance.Meldung);
+        Assert.Equal("Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
+                     cut.Instance.Meldung);
     }
 
     // =================================================================================

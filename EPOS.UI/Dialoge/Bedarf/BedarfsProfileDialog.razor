@@ -21,10 +21,10 @@
    einer WebView waere das ein eingefrorener Dialog. An seiner Stelle steht
    eine Meldung (A-10, wie W8 A-5).
 
-   BEFUND W9-B7. Die Meldung bei ungueltigem Jahresverbrauch nennt beim
-   Stromverbraucher kWh, bei Prozess und Brauchwasser MWh - fuer DIESELBE
-   Groesse, die ueberall in MWh angezeigt wird. Woertlich uebernommen, Frage
-   an den Anwender.
+   BEFUND W9-B7, ERLEDIGT. Die Meldung bei ungueltigem Jahresverbrauch nannte
+   beim Stromverbraucher kWh, bei Prozess und Brauchwasser MWh - fuer DIESELBE
+   Groesse. Seit dem Entscheid des Anwenders vom 04.09.2026 gibt es EINEN Text
+   mit einem Platzhalter fuer die Einheit (BPF_MSG_WERT).
 
    "MONATLICHER VERLAUF" IST BIS ZUR ERSTEN SIMULATION GESPERRT - Bestand
    (SetControls setzt Enabled = false, btn_Simulation gibt frei).
@@ -330,11 +330,14 @@
         = "Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!";
 
     /// <summary>
-    /// Der Text bei ungültigem Jahresverbrauch. Er nennt beim Stromverbraucher kWh, bei
-    /// Prozess und Brauchwasser MWh — <b>Befund W9‑B7</b>, wörtlich übernommen.
+    /// Der Text bei ungültigem Jahresverbrauch. <c>{0}</c> ist die Einheit — der
+    /// Bestand hatte hier DREI Texte und nannte beim Stromverbraucher kWh, bei Prozess
+    /// und Brauchwasser MWh, für dieselbe Größe (<b>Befund W9‑B7</b>). Seit dem
+    /// Entscheid des Anwenders vom 04.09.2026 ist es ein Text, und die Einheit kommt
+    /// aus der Wahl im Dialog.
     /// </summary>
     [Parameter] public string MeldungWertUngueltig { get; set; }
-        = "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.";
+        = "Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.";
 
     /// <summary>Die Bestätigung nach „Übernehmen" — der Ersatz für den 500‑ms-Bildblitz.</summary>
     [Parameter] public string MeldungUebernommen { get; set; } = "Jahresverbrauch übernommen.";
@@ -523,7 +526,7 @@
         }
         if (_neuerWert.Value < 0)
         {
-            Melden(MeldungWertUngueltig, WarnStufe.Warnung);
+            Melden(string.Format(MeldungWertUngueltig, EinheitVerbrauch), WarnStufe.Warnung);
             return;
         }
 
