@@ -3996,3 +3996,51 @@ body {
         color: HighlightText;
     }
 }
+
+/* ==========================================================================
+   HAUPTFENSTER (iU9-W16c.2) - Menueband, Kopfband, Inhalt.
+
+   Vorbild: InitMarke (MDIMainForm.cs:217-294) - ein Panel von 52 px mit zwei
+   Labels, einem FlowLayoutPanel, einem Versionslabel, einem ToolTip und einem
+   eigenen Paint-Handler (feine Trennlinie unten, 4 px Farbakzent links). Hier
+   ist es dieselbe Anmutung aus dem Farbsatz.
+   ========================================================================== */
+
+.epos-hauptfenster {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.epos-hauptfenster-marke {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 18px 8px 18px;
+    background: var(--epos-flaeche-hell, #ffffff);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+/* Der 4-px-Farbakzent links, den InitMarke mit einem SolidBrush zeichnete. */
+.epos-hauptfenster-marke-links {
+    display: flex;
+    flex-direction: column;
+    padding-left: 12px;
+    border-left: 4px solid var(--epos-marke, #005aa0);
+}
+
+.epos-hauptfenster-name {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-marke, #005aa0);
+}
+
+.epos-hauptfenster-untertitel {
+    color: var(--epos-text-leise);
+}
+
+.epos-hauptfenster-version {
+    color: var(--epos-text-leise);
+}

@@ -199,6 +199,36 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyList<EPOS.UI.Seiten.Start.StartKachel> Startkacheln(int idProjekt)
         => Array.Empty<EPOS.UI.Seiten.Start.StartKachel>();
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der STARTSEITE (iU9-W16c.2, K7);
+    /// <c>null</c> = diese Huelle fuehrt keine Startseite.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="AssistentGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    ///
+    /// <para><b>Unter Windows wird dieser Weg NICHT gegangen.</b> Dort reicht
+    /// <c>Hauptfenster</c> den Satz von <c>StartseiteHuelle.Gaben()</c> als
+    /// Parameter an <see cref="EPOS.UI.Seiten.AppWurzel"/> weiter — die Huelle
+    /// haelt den Projektkontext, die Bedarfsobjekte und die 21 Kachelwege und
+    /// waere als Projektquelle nicht abzubilden. <see cref="Startkacheln"/>
+    /// bleibt der iOS-Weg fuer den KACHELBESTAND.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? StartseiteGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des Reiters „Berichte &amp; Kosten"
+    /// (iU9-W16c.2, K7); <c>null</c> = diese Huelle fuehrt ihn nicht.
+    ///
+    /// <para>Die Seite gibt es als Razor seit Welle 5; in <c>AppWurzel</c> war
+    /// sie bis W16c bloss nicht verdrahtet (Vermessung § 9.2 — das fuenfte der
+    /// fuenf fehlenden Stuecke). Unter Windows steht sie als sechster REITER in
+    /// der Startseite; der Menuepunkt „Varianten und Bericht…" holt ihn nach
+    /// vorn, statt eine zweite Ansicht zu oeffnen.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => null;
 }
 
 /// <summary>
