@@ -13899,4 +13899,119 @@ Besteht keine Verbindung, finden Sie die verbindliche Fassung unter
   <data name="LIZR_HINWEIS_SPRACHE" xml:space="preserve">
     <value></value>
   </data>
+  <data name="KOMPAUSW_TITEL" xml:space="preserve">
+    <value>Komponenten auswählen</value>
+  </data>
+  <data name="KOMPAUSW_KOPF" xml:space="preserve">
+    <value>Projekt-Erstellungskonfiguration</value>
+  </data>
+  <data name="KOMPAUSW_HINWEIS" xml:space="preserve">
+    <value>Der Projektassistent führt Sie durch alle notwendigen Schritte. Alle zu einem Projekt notwendigen Eingaben werden dadurch vollständig durchgeführt. Navigieren Sie mit Weiter und Zurück, um die nächsten Eingaben zu machen bzw. um Eingaben nachträglich anzupassen.</value>
+  </data>
+  <data name="KOMPAUSW_AUSWAHL" xml:space="preserve">
+    <value>Wärmeerzeuger bzw. Energieerzeuger Komponenten auswählen:</value>
+  </data>
+  <data name="KOMPAUSW_ENTHALTEN" xml:space="preserve">
+    <value>{0} im Projekt</value>
+  </data>
+  <data name="KOMPAUSW_OHNE" xml:space="preserve">
+    <value>nicht im Projekt</value>
+  </data>
+  <data name="KOMPAUSW_NURANZEIGE" xml:space="preserve">
+    <value>nur Anzeige</value>
+  </data>
+  <data name="KOMPAUSW_FRAGE" xml:space="preserve">
+    <value>„{0}“ wird aus dem Projekt genommen.
+
+Beim Speichern werden {1} Einträge gelöscht:
+{2}
+
+Wirklich entfernen?</value>
+  </data>
+  <data name="KOMPAUSW_FRAGE_TITEL" xml:space="preserve">
+    <value>Komponente entfernen</value>
+  </data>
+  <data name="KOMPAUSW_BTN_JA" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="KOMPAUSW_BTN_NEIN" xml:space="preserve">
+    <value>Nein</value>
+  </data>
+  <data name="KOMPAUSW_K_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="KOMPAUSW_K_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarfsdaten</value>
+  </data>
+  <data name="KOMPAUSW_K_PROZESS" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="KOMPAUSW_K_BRAUCHWASSER" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="KOMPAUSW_K_STROMSTD" xml:space="preserve">
+    <value>Standard-Stromlastprofil</value>
+  </data>
+  <data name="KOMPAUSW_K_STROMLASTGANG" xml:space="preserve">
+    <value>Stromlastgang</value>
+  </data>
+  <data name="KOMPAUSW_K_WP" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="KOMPAUSW_K_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="KOMPAUSW_K_KESSEL" xml:space="preserve">
+    <value>Spitzenkessel</value>
+  </data>
+  <data name="KOMPAUSW_K_SOLAR" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="KOMPAUSW_K_PV" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="KOMPAUSW_K_SP" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="KOMPAUSW_K_PUFFER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="WIZ_KLIMA_FEHLT" xml:space="preserve">
+    <value>Bitte eine Klimazone auswählen!</value>
+  </data>
+  <data name="WIZ_KLIMA_FEHLT_TITEL" xml:space="preserve">
+    <value>Klimazone fehlt</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT" xml:space="preserve">
+    <value>Bitte einen Projektnamen eingeben!</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT_TITEL" xml:space="preserve">
+    <value>Projektname fehlt</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Das Projekt konnte nicht vollständig gespeichert werden.
+
+Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen.</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
+    <value>Speichern fehlgeschlagen</value>
+  </data>
+  <data name="WIZ_TITEL" xml:space="preserve">
+    <value>Projektassistent</value>
+  </data>
+  <data name="WIZ_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="WIZ_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Zurück</value>
+  </data>
+  <data name="WIZ_BTN_WEITER" xml:space="preserve">
+    <value>Weiter ▶</value>
+  </data>
+  <data name="WIZ_LBL_PROJEKT" xml:space="preserve">
+    <value>Bestehendes Projekt auswählen</value>
+  </data>
+  <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
+    <value>Projekt öffnen</value>
+  </data>
 </root>
