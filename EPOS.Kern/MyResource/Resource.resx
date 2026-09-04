@@ -5292,6 +5292,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_NAV_BERICHT" xml:space="preserve">
     <value>Bericht</value>
   </data>
+  <data name="BK_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Zurück</value>
+  </data>
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Übersicht — Stammprojekt und Varianten</value>
   </data>

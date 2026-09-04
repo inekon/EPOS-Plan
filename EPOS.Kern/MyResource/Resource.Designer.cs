@@ -2413,6 +2413,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ◀ Zurück ähnelt.
+        /// </summary>
+        public static string BK_BTN_ZURUECK {
+            get {
+                return ResourceManager.GetString("BK_BTN_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur Stammprojekte ähnelt.
         /// </summary>
         public static string BK_CHK_NURSTAEMME {

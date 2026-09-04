@@ -5276,6 +5276,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_NAV_BERICHT" xml:space="preserve">
     <value>Report</value>
   </data>
+  <data name="BK_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Back</value>
+  </data>
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Overview — base project and variants</value>
   </data>
