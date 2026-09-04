@@ -985,6 +985,131 @@ namespace EPOS.Kern.Tests
             Assert.All(zeilen, z => Assert.True(z.Id > 0));
         }
 
+
+        // =================================================================================
+        // 12 - Textkatalog W14a (W14a.0g) - jeder Schluessel in BEIDEN Sprachen
+        // =================================================================================
+
+        /// <summary>
+        /// Jeder Beschriftungsschluessel der beiden Profile hat einen deutschen UND einen
+        /// englischen Text.
+        /// </summary>
+        /// <remarks>
+        /// <para>Zwei der sieben Masken waren gar nicht lokalisiert
+        /// (<c>Form_BHKWAdmin</c> mit 26 deutschen Literalen, Befund W14-B11) und eine
+        /// hatte genau EINEN englischen Text bei 29 (<c>Form_AdminPV</c>, Befund
+        /// W14-B37). Diese Probe haelt fest, dass das nicht wiederkehrt: Sie faehrt beide
+        /// Profile mit dem echten Ressourcenkatalog und laesst keinen Schluessel
+        /// unaufgeloest.</para>
+        /// <para>Sie ersetzt keine Uebersetzung, sie prueft ihre ANWESENHEIT — die
+        /// Pruefrezeptur <c>Allgemein/Simulation/Lokalisierung_Pruefung.md</c> bleibt
+        /// daneben bestehen.</para>
+        /// </remarks>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Jeder_Textschluessel_der_Welle_ist_in_beiden_Sprachen_da(string sprache)
+        {
+            var kultur = new System.Globalization.CultureInfo(sprache);
+            var fehlend = new List<string>();
+
+            string Uebersetzen(string schluessel)
+            {
+                string t = WindowsFormsApplication1.MyResource.Resource
+                               .ResourceManager.GetString(schluessel, kultur);
+                if (string.IsNullOrEmpty(t)) fehlend.Add(schluessel);
+                return t ?? schluessel;
+            }
+
+            foreach (var art in KatalogBrowserProfil.AlleArten)
+            {
+                var p = KatalogBrowserProfil.Finde(art, Uebersetzen);
+                Assert.False(string.IsNullOrEmpty(p.Titel));
+                Assert.False(string.IsNullOrEmpty(p.Listenbeschriftung));
+                Assert.False(string.IsNullOrEmpty(p.Detailueberschrift));
+                Assert.All(p.Detailfelder, f => Assert.False(string.IsNullOrEmpty(f.Bezeichnung)));
+            }
+
+            foreach (var art in ModulKatalogProfil.AlleArten)
+            {
+                var p = ModulKatalogProfil.Finde(art, Uebersetzen);
+                Assert.False(string.IsNullOrEmpty(p.Titel));
+                Assert.False(string.IsNullOrEmpty(p.Listenbeschriftung));
+                Assert.All(p.Felder, f => Assert.False(string.IsNullOrEmpty(f.Bezeichnung)));
+            }
+
+            Assert.True(fehlend.Count == 0,
+                        sprache + ": " + string.Join(", ", fehlend.Distinct()));
+        }
+
+        /// <summary>
+        /// Die Texte des Pufferspeicher-Editors und die drei Speichertypen der
+        /// Auswahlliste — ebenfalls in beiden Sprachen.
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Die_Texte_des_Katalogeditors_sind_in_beiden_Sprachen_da(string sprache)
+        {
+            var kultur = new System.Globalization.CultureInfo(sprache);
+            string[] schluessel =
+            {
+                "PSPK_TITEL", "PSPK_GRP_BEZEICHNUNG", "PSPK_LBL_NAME", "PSPK_LBL_HERSTELLER",
+                "PSPK_LBL_SPEICHERTYP", "PSPK_GRP_TECHNIK", "PSPK_LBL_VERLUSTE",
+                "PSPK_LBL_VOLUMEN", "PSPK_GRP_KOSTEN", "PSPK_LBL_INVEST",
+                "PSPK_FELD_VOLUMEN", "PSPK_FELD_VERLUSTE", "PSPK_FELD_INVEST",
+                "PSPK_TYP_SOLAR", "PSPK_TYP_PUFFER", "PSPK_TYP_KOMBI", "PSPK_MSG_SCHUTZ",
+                "BHKWK_MSG_SCHUTZ", "MODK_MSG_SCHUTZ", "MODK_MSG_TYP_FEHLT",
+                "KBROW_BTN_NEU", "KBROW_BTN_BEARBEITEN", "KBROW_BTN_LOESCHEN",
+                "KBROW_MSG_AUSWAHL_BHKW", "KBROW_MSG_AUSWAHL_KOLLEKTOR",
+                "KBROW_MSG_SCHUTZ_LOESCHEN", "KBROW_MSG_LOESCHEN_FEHLER", "KBROW_TITEL_SCHUTZ",
+                "KBROW_SPALTE_NAME", "KBROW_SPALTE_EIGENSCHAFTEN"
+            };
+
+            foreach (string s in schluessel)
+                Assert.False(string.IsNullOrEmpty(
+                    WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s, kultur)),
+                    sprache + ": " + s + " fehlt.");
+        }
+
+        /// <summary>
+        /// <b>Befund W14-B24 behoben.</b> Der englische Text des Namensfeldes im
+        /// Pufferspeicher-Editor lautete „Boiler name:" — der Speichername, beschriftet
+        /// als Kessel. Er heisst jetzt „Storage name:".
+        /// </summary>
+        [Fact]
+        public void Der_Pufferspeicher_Editor_nennt_seinen_Namen_nicht_mehr_Kessel()
+        {
+            var en = new System.Globalization.CultureInfo("en-US");
+            string text = WindowsFormsApplication1.MyResource.Resource
+                              .ResourceManager.GetString("PSPK_LBL_NAME", en);
+
+            Assert.Equal("Storage name:", text);
+            Assert.DoesNotContain("Boiler", text, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Die drei Anzeigetexte der Speichertyp-Auswahl sind auf DEUTSCH genau die drei
+        /// Persistenzwerte — deshalb trifft der Leseweg auch ohne Anzeigeliste.
+        /// </summary>
+        [Fact]
+        public void Die_Speichertyp_Anzeigetexte_stimmen_auf_deutsch_mit_den_DB_Werten_ueberein()
+        {
+            var de = new System.Globalization.CultureInfo("de-DE");
+            var rm = WindowsFormsApplication1.MyResource.Resource.ResourceManager;
+
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[0], rm.GetString("PSPK_TYP_SOLAR", de));
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[1], rm.GetString("PSPK_TYP_PUFFER", de));
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[2], rm.GetString("PSPK_TYP_KOMBI", de));
+
+            // Und auf ENGLISCH genau die drei eingefrorenen Altwerte - der Grund, warum
+            // sie ueberhaupt in der Datenbank landen konnten (Befund L0-1).
+            var en = new System.Globalization.CultureInfo("en-US");
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_ALTWERTE_EN[0], rm.GetString("PSPK_TYP_SOLAR", en));
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_ALTWERTE_EN[1], rm.GetString("PSPK_TYP_PUFFER", en));
+            Assert.Equal(PufferSpStammCtrl.SPEICHERTYP_ALTWERTE_EN[2], rm.GetString("PSPK_TYP_KOMBI", en));
+        }
+
         /// <summary>
         /// Pinnt Kultur und Oberflaechensprache auf de-DE — die Zahlenformate <c>F2</c>
         /// und die Ressourcentexte haengen daran (Regel seit iU9-W8).
