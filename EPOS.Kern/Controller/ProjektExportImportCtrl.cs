@@ -6,7 +6,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -280,7 +279,7 @@ namespace WindowsFormsApplication1
                             formatVersion = FORMAT_VER,
                             // B2 (Konzept Projekttransfer T2): der echte Migrationsstand —
                             // der Import lehnt Pakete mit anderem Stand ab.
-                            schemaVersion = SchemaMigration.ZIEL_VERSION,
+                            schemaVersion = SchemaStand.Zielversion,
                             exportedUtc = DateTime.UtcNow.ToString("o"),
                             sourceProject = projektName,
                             tables = manifestTabellen,
@@ -326,11 +325,11 @@ namespace WindowsFormsApplication1
                 // die Datenmigrationen laufen datenbankweit genau einmal, ein Paket mit
                 // anderem Stand schleuste still Altdaten ein. schemaVersion 0 = Altpaket
                 // (vor T2 exportiert) und bleibt zugelassen.
-                if (man.schemaVersion != 0 && man.schemaVersion != SchemaMigration.ZIEL_VERSION)
+                if (man.schemaVersion != 0 && man.schemaVersion != SchemaStand.Zielversion)
                 {
                     fehler = "Das Paket wurde mit Schemastand " + man.schemaVersion +
                              " exportiert, dieser Rechner arbeitet mit Stand " +
-                             SchemaMigration.ZIEL_VERSION +
+                             SchemaStand.Zielversion +
                              ". Bitte beide Rechner auf denselben Programmstand bringen " +
                              "und das Projekt neu exportieren.";
                     return -1;
@@ -765,8 +764,12 @@ namespace WindowsFormsApplication1
                 if (!row.ContainsKey(k.pk)) continue;
                 object pkRoh = JsonToObject(row[k.pk]);
 
+                // Fragezeichen als Platzhalter, NICHT "@id": Die Zugriffsschicht bindet
+                // nach POSITION und benennt jeden Parameter in @p0 ... @pN um
+                // (SqliteDatenzugriff.UebersetzeParameterzeichen). Ein Name im SQL-Text
+                // bliebe stehen und faende seinen Wert nicht mehr - Befund W15a-B55.
                 object schonDa = v.Skalar(
-                    "SELECT COUNT(*) FROM [" + k.name + "] WHERE [" + k.pk + "] = @id",
+                    "SELECT COUNT(*) FROM [" + k.name + "] WHERE [" + k.pk + "] = ?",
                     MacheParam("@id", pkRoh, TypVon(zielTypen, k.pk)));
                 if (Convert.ToInt32(schonDa) > 0) continue;   // schon vorhanden -> nichts tun
 
@@ -779,7 +782,7 @@ namespace WindowsFormsApplication1
                 {
                     v.Ausfuehren("INSERT INTO [" + k.name + "] (" +
                        string.Join(",", cs.Select(x => "[" + x + "]")) + ") VALUES (" +
-                       string.Join(",", cs.Select((_, n) => "@c" + n)) + ")", cps.ToArray());
+                       string.Join(",", cs.Select(_ => "?")) + ")", cps.ToArray());
                 }
                 catch (Exception ex) { throw new Exception(Diagnose("Referenzdaten " + k.name, cs, cps, zielTypen) + " :: " + ex.Message, ex); }
             }
@@ -797,7 +800,9 @@ namespace WindowsFormsApplication1
                 var wo = new List<string>(); var ps = new List<DbParam>(); int i = 0;
                 foreach (var key in k.naturalKey)
                 {
-                    string p = "@k" + (i++); wo.Add("[" + key + "] = " + p);
+                    // Platzhalter "?" (Bindung nach Position, Befund W15a-B55); der Name
+                    // bleibt sprechend, weil ihn die Diagnose ausgibt.
+                    string p = "@k" + (i++); wo.Add("[" + key + "] = ?");
                     ps.Add(MacheParam(p, JsonToObject(row[key]), TypVon(zielTypen, key)));
                 }
 
@@ -824,7 +829,7 @@ namespace WindowsFormsApplication1
                             // der Verbindung des Vorgangs (frueher SELECT @@IDENTITY).
                             neuId = v.EinfuegenUndId("INSERT INTO [" + k.name + "] (" +
                                string.Join(",", cs.Select(x => "[" + x + "]")) + ") VALUES (" +
-                               string.Join(",", cs.Select((_, n) => "@c" + n)) + ")", cps.ToArray());
+                               string.Join(",", cs.Select(_ => "?")) + ")", cps.ToArray());
                         }
                         catch (Exception ex) { throw new Exception(Diagnose("Katalog-INSERT " + k.name, cs, cps, zielTypen) + " :: " + ex.Message, ex); }
                     }
@@ -1230,7 +1235,7 @@ namespace WindowsFormsApplication1
         /// Beziehungs-Rowset — <c>pragma_foreign_key_list</c> antwortet je Tabelle, also
         /// wird über die Tabellenliste gelaufen. Ergebnis und Aufbau sind identisch.
         ///
-        /// ARBEITSPAKET S4e: Die frühere Überladung mit <see cref="OleDbConnection"/>
+        /// ARBEITSPAKET S4e: Die frühere Überladung mit <c>OleDbConnection</c>
         /// (Rückfall über <c>GetOleDbSchemaTable</c> auf der Transaktionsverbindung) ist
         /// ersatzlos entfallen — auf SQLite lieferte sie nie ein Rowset. Es gilt allein
         /// diese verbindungsfreie Fassung.

@@ -851,13 +851,15 @@ namespace WindowsFormsApplication1
         /// <c>ProjektDuplizierenCtrl.ZeigeExportImportDialog</c> im Controller und war
         /// dessen einzige WinForms-Kante - bei genau diesem einen Aufrufer. Er steht
         /// deshalb jetzt hier, wo das Fenster ohnehin zu Hause ist.
+        ///
+        /// <para>iU9-W15a.5: Das Fenster ist die Razor-Komponente
+        /// <c>ProjektTransferDialog</c>; die Huelle zeigt sie modal. Der Rueckgabewert
+        /// sagt jetzt ehrlich, ob ein Import gelungen ist - der Vorlaeufer wertete das
+        /// <c>DialogResult</c> gar nicht aus (Befund W15a-B37).</para>
         /// </summary>
         private void MenuItem_ExportImport_Click(object sender, EventArgs e)
         {
-            using (var dlg = new Form_ProjektExportImport())
-            {
-                dlg.ShowDialog(this);
-            }
+            ProjektTransferHuelle.Oeffnen(this);
         }
     }
 }

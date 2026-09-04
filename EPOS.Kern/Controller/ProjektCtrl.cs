@@ -46,6 +46,98 @@ namespace WindowsFormsApplication1
             return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
         }
 
+        /// <summary>
+        /// Die Id zu einem Projektnamen; 0, wenn es ihn nicht gibt (iU9-W15a.0a).
+        ///
+        /// <para><b>Was sie abloest.</b> <c>Form_ProjektDelete.comboBox_Projekte_SelectedIndexChanged</c>
+        /// tat dasselbe in fuenf Zeilen mit drei Fehlern (Befund W15a-B1): verkettetes SQL
+        /// mit einem ANWENDERTEXT im WHERE (ein Projektname mit Apostroph brach die
+        /// Anweisung), <c>rs.Next()</c> ohne Rueckgabepruefung mit anschliessendem
+        /// <c>(int)rs.Read("ID")</c>, und <c>SELECT *</c> fuer eine einzige Spalte.</para>
+        /// </summary>
+        public static int IdVonName(string projektname)
+        {
+            if (string.IsNullOrWhiteSpace(projektname)) return 0;
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Projekt WHERE Projektname = ?",
+                new DbParam("@name", projektname));
+
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
+        /// <summary>
+        /// Alle Projekte als Anzeigezeilen, nach Namen sortiert (iU9-W15a.0a).
+        ///
+        /// <para><b>Die EINE Projektliste.</b> Bis iU9-W15a las jede der vier Masken
+        /// ihre eigene (Befund W15a-B52). Sortiert wird wie in <see cref="ReadAll"/>,
+        /// damit sich an der bisherigen Reihenfolge nichts aendert; die Feinsortierung
+        /// nach Kunde oder Aenderungsdatum macht die Anzeige.</para>
+        ///
+        /// <para><b>Die Beschreibung reist mit, obwohl sie keine Spalte hat</b> — die
+        /// Suche greift ueber sie (Befund W15a-B22).</para>
+        /// </summary>
+        public static IReadOnlyList<ProjektKopfZeile> NamenListe()
+        {
+            var liste = new List<ProjektKopfZeile>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Projektname, Kunde, Beschreibung, Aenderungsdatum " +
+                    "FROM Tab_Projekt ORDER BY Projektname");
+                if (dt == null) return liste;
+
+                foreach (DataRow r in dt.Rows)
+                    liste.Add(new ProjektKopfZeile(
+                        r["ID"] != DBNull.Value ? Convert.ToInt32(r["ID"]) : 0,
+                        Convert.ToString(r["Projektname"]) ?? "",
+                        Convert.ToString(r["Kunde"]) ?? "",
+                        Convert.ToString(r["Beschreibung"]) ?? "",
+                        r["Aenderungsdatum"] != DBNull.Value ? Convert.ToDateTime(r["Aenderungsdatum"]) : (DateTime?)null));
+            }
+            catch (Exception ex)
+            {
+                // Wie im Vorlaeufer (ProjektAuswahl.Laden, Befund W15a-B23): eine
+                // unlesbare Liste ist kein Dialog wert - sie bleibt leer, und der
+                // Aufrufer zeigt seinen Leertext.
+                Console.WriteLine("Projektliste konnte nicht gelesen werden: " + ex.Message);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die neun Kopffelder eines Projekts fuer die erste Assistentenseite
+        /// (iU9-W15a.0g); <c>null</c>, wenn es das Projekt nicht gibt.
+        ///
+        /// <para>Ein leerer Name liefert einen LEEREN Satz mit heutigem Datum — genau
+        /// der Zweig <c>Wizard_Projekt.SetProjektbezeichner("")</c> des Neu-Modus.</para>
+        ///
+        /// <para>Der Anzeigename der Klimaregion kommt aus
+        /// <c>KlimaregionStammCtrl.NameZuProjektregion</c> (mit dem STAMM-Rueckfall fuer
+        /// aeltere Projekte, iU9-W15a.0f).</para>
+        /// </summary>
+        public static ProjektKopfDaten Kopf(string projektname)
+        {
+            if (string.IsNullOrEmpty(projektname))
+                return new ProjektKopfDaten();
+
+            var ctrl = new ProjektCtrl();
+            ctrl.ReadSingle(projektname);
+            if (ctrl.rows == 0) return null;
+
+            return new ProjektKopfDaten
+            {
+                Name = ctrl.m_szProjektname ?? "",
+                Beschreibung = ctrl.m_szBeschreibung ?? "",
+                Kunde = ctrl.m_szKunde ?? "",
+                Bearbeiter = ctrl.m_szBearbeiter ?? "",
+                Erstelldatum = ctrl.m_Erstelldatum,
+                Aenderungsdatum = ctrl.m_Aenderungsdatum,
+                IdKlimaregion = ctrl.m_ID_Klimaregion,
+                Klimaname = KlimaregionStammCtrl.NameZuProjektregion(ctrl.m_ID_Klimaregion, ctrl.m_ID)
+            };
+        }
+
         public bool Insert()
         {
             m_ID = GetMaxID() + 1;
@@ -112,6 +204,65 @@ namespace WindowsFormsApplication1
             string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
             DbParam[] ps = { new DbParam("@pname", szProjekt) };
             return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
+        /// Der VOLLSTAENDIGE Loeschweg eines Projekts (iU9-W15a.0d) — die sechs Schritte,
+        /// die bis dahin in <c>MenueCtrl.ProjektDelete</c> standen, OHNE die zwei
+        /// Dialogaufrufe. Rueckfrage und Erfolgsmeldung bleiben Oberflaeche.
+        ///
+        /// <para><b>Die Reihenfolge ist die alte:</b> (3) <c>Tab_Applikation</c>
+        /// zuruecksetzen, falls das geloeschte Projekt das gemerkte ist — scheitert das,
+        /// wird ABGEBROCHEN und nichts geloescht; (4) die Energieanlagen ueber
+        /// <see cref="WErzeugerCtrl.Delete"/>; (5) <see cref="Delete"/> mit seinen drei
+        /// Vorarbeiten. Die Schritte 1, 2 und 6 — Auswahl, Sicherheitsabfrage,
+        /// Erfolgsmeldung — gehoeren der Oberflaeche.</para>
+        ///
+        /// <para><b>Die doppelte Sicherung bleibt, und das ist Absicht</b> (Befund
+        /// W15a-B50, Risiko R-W15a-12): Schritt 4 loescht die Energieanlagen vorher,
+        /// <see cref="Delete"/> loest ueber <c>PufferReferenzenLoesen</c> dieselben
+        /// Verweise noch einmal — damit die B0-6b-Kaskade nicht von der
+        /// Aufrufreihenfolge abhaengt. Wer das „aufraeumt", bricht sie.</para>
+        ///
+        /// <para><b>Was gegenueber dem Vorlaeufer BERICHTIGT ist:</b> Das UPDATE auf
+        /// <c>Tab_Applikation</c> band EINEN Parameter fuer zwei Zuweisungen und las
+        /// vorher <c>SELECT *</c> fuer eine einzige Spalte (Befund W15a-B48). Hier steht
+        /// die eine Spalte im SELECT; die Zuweisung <c>ID_Projekt = 0</c> ist wie zuvor
+        /// eine Konstante.</para>
+        /// </summary>
+        /// <param name="idProjekt">Id des zu loeschenden Projekts (fuer den Vergleich mit <c>Tab_Applikation</c>).</param>
+        /// <param name="projektname">Name des zu loeschenden Projekts — der fuehrende Schluessel.</param>
+        public static LoeschBefund LoeschenMitVorarbeiten(int idProjekt, string projektname)
+        {
+            if (string.IsNullOrEmpty(projektname))
+                return new LoeschBefund(LoeschStand.NameLeer, "");
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable("SELECT ID_Projekt FROM Tab_Applikation");
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    DataRow row = dt.Rows[0];
+                    if (row["ID_Projekt"] != DBNull.Value && Convert.ToInt32(row["ID_Projekt"]) == idProjekt)
+                        DataRepository.ExecuteNonQuery(
+                            "UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0",
+                            new DbParam("@name", ""));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
+                return new LoeschBefund(LoeschStand.ApplikationsdatenFehler, projektname, ex.Message);
+            }
+
+            var anlagen = new WErzeugerCtrl { ID_Projekt = idProjekt };
+            anlagen.Delete();
+
+            var projekt = new ProjektCtrl { m_szProjektname = projektname };
+            projekt.Delete(projektname);
+
+            return new LoeschBefund(LoeschStand.Geloescht, projektname);
         }
 
         /// <summary>

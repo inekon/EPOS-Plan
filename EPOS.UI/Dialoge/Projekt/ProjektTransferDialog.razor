@@ -1,0 +1,443 @@
+﻿@* „Projekt exportieren / importieren" - der Projekttransfer zwischen Rechnern
+   (iU9-W15a.5, Konzept_Projekttransfer_EPOS-Plan.md, Etappen T1-T6).
+
+   SIE LOEST Form_ProjektExportImport AB (320 Z., KEIN Designer, 7 MessageBox) -
+   die groesste Maske der Welle und die einzige, die im Vollstaendigkeitsnetz gar
+   nicht auftauchte: keine Feldkarte, keine Zeile im Stapellauf, keine im
+   Erreichbarkeitsbefund (Befund W15a-B24). Ihre Feldkarte ist von Hand aus
+   BaueUi():46-126 geschrieben, 23 Steuerelemente.
+
+   ZWEI BLAETTER UND EINE FUSSZEILE: "Exportieren" (Projekt, Variantenhaken,
+   Zieldatei), "Importieren" (Paketdatei, Vorschau aus dem manifest.json, Zielname,
+   drei Konfliktmodi, Sicherungshaken) und darunter Fortschritt, Statuszeile und
+   "Schliessen". Der Wellenplan zaehlt "3 TabPage" - es sind zwei, die dritte Zeile
+   der Inventarliste ist die Fusszeile (Befund W15a-B26).
+
+   A-8: DIE MASKE IST JETZT UEBERSETZT. Ihre 27 sichtbaren Texte waren deutsche
+   Literale im Quelltext - kein MyResource, keine Satelliten-.resx; ein englischer
+   Anwender sah eine vollstaendig deutsche Maske (Befund W15a-B36/B51).
+
+   A-10/A-11: SICHERUNGSKOPIE UND IMPORTBERICHT BEKOMMEN EINEN ZIELPFAD. Der
+   Vorlaeufer legte die Sicherung fest neben die Datenbank (77 MB je Import, ohne
+   Aufraeumen - B28) und den Bericht fest neben die Paketdatei (auf iOS ein
+   Fremdpfad aus dem Dokumentenwaehler, in den die App nicht schreiben darf - B29).
+   Beide sind jetzt Delegaten; unter Windows verhalten sie sich wie bisher.
+
+   KEIN DELEGAT IST KEIN KNOPF (Hausregel A-18): Ohne SicherungAnlegen erscheint
+   der Schalter "Sicherungskopie" gar nicht erst.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Projektliste, Varianten, Vorschau, Export
+   und Import kommen als ProjektTransferDaten herein. *@
+
+@namespace EPOS.UI.Dialoge.Projekt
+
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Dienste
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-projekttransfer" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
+    </div>
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+        <KindInhalt>
+
+            @* ================================================== Exportieren *@
+            <Reiterblatt Schluessel="EXPORT" Titel="@ReiterExport">
+                <KindInhalt>
+
+                    <Auswahlfeld Bezeichnung="@LabelProjekt" Eintraege="@Projektnamen"
+                                 Auswahl="@_projektIndex" AuswahlChanged="ProjektGewaehlt"
+                                 Aktiv="@(!_laeuft)" />
+
+                    <Mehrfachauswahl Bezeichnung="@LabelVarianten"
+                                     Eintraege="@_variantenEintraege" Gewaehlt="@_variantenGewaehlt"
+                                     GewaehltChanged="@(w => _variantenGewaehlt = w)"
+                                     Aktiv="@(!_laeuft)" LeerText="@LeerVarianten" />
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-export"
+                                disabled="@(_laeuft || Daten is null)" @onclick="Exportieren">@BtnExport</button>
+                    </div>
+                </KindInhalt>
+            </Reiterblatt>
+
+            @* ================================================== Importieren *@
+            <Reiterblatt Schluessel="IMPORT" Titel="@ReiterImport">
+                <KindInhalt>
+
+                    <Dateiwahl Bezeichnung="@LabelDatei" Pfad="@_paketpfad" PfadChanged="PaketGewaehlt"
+                               Filter="@Dateifilter" KnopfText="@BtnDatei" Aktiv="@(!_laeuft)"
+                               Waehlen="@PaketWaehlen" />
+
+                    @if (_vorschau is not null)
+                    {
+                        <Warnbanner Stufe="@(string.IsNullOrEmpty(_vorschau.Fehler) ? WarnStufe.Hinweis : WarnStufe.Warnung)"
+                                    Text="@Vorschautext" />
+                    }
+
+                    <Textfeld Bezeichnung="@LabelZielname" Wert="@_zielname"
+                              WertChanged="@(w => _zielname = w)" NurLesen="@_laeuft" />
+
+                    <Optionsgruppe Bezeichnung="@LabelKonflikt" Eintraege="@Konfliktmodi"
+                                   Auswahl="@((int)_modus)" AuswahlChanged="ModusGewaehlt"
+                                   Aktiv="@(!_laeuft)" />
+
+                    @if (Daten?.SicherungAnlegen is not null)
+                    {
+                        <Schalter Bezeichnung="@LabelSicherung" Wert="@_sicherung"
+                                  WertChanged="@(w => _sicherung = w)" Aktiv="@(!_laeuft)" />
+                    }
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-import"
+                                disabled="@(_laeuft || string.IsNullOrEmpty(_paketpfad))"
+                                @onclick="Importieren">@BtnImport</button>
+                    </div>
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+
+    @if (_laeuft)
+    {
+        <Fortschritt Anteil="@_anteil" Text="@_status" />
+    }
+    else if (!string.IsNullOrEmpty(_status))
+    {
+        <Warnbanner Stufe="@_statusStufe" Text="@_status" />
+    }
+
+    @if (_bericht.Count > 0)
+    {
+        <Textfeld Bezeichnung="@TitelImportFertig" Wert="@string.Join("\n", _bericht)"
+                  Mehrzeilig="true" Zeilen="6" NurLesen="true" Festbreite="true" />
+    }
+
+    <SpeichernLeiste OkText="@BtnSchliessen" MitAbbrechen="false" Ergebnis="BeiErgebnis" />
+
+    <Rueckfrage Offen="@(_frage != Frageart.Keine)" TitelText="@FrageTitel" Frage="@Fragetext"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiFrage" />
+</div>
+
+@code {
+    /// <summary>Welche Rückfrage gerade steht.</summary>
+    private enum Frageart { Keine = 0, Ueberschreiben, Sicherung }
+
+    /// <summary>Alles, was der Dialog an Daten und Wegen braucht; <c>null</c> = Prüfstand.</summary>
+    [Parameter] public ProjektTransferDaten? Daten { get; set; }
+
+    /// <summary>Der Dialog ist zu; <c>true</c>, wenn ein Import gelungen ist.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    [Parameter] public string TitelText { get; set; } = "Projekt exportieren / importieren";
+    [Parameter] public string ReiterExport { get; set; } = "Exportieren";
+    [Parameter] public string ReiterImport { get; set; } = "Importieren";
+    [Parameter] public string LabelProjekt { get; set; } = "Projekt:";
+    [Parameter] public string LabelVarianten { get; set; } = "Varianten mitexportieren:";
+    [Parameter] public string LeerVarianten { get; set; } = "Keine Einträge zur Auswahl.";
+    [Parameter] public string BtnExport { get; set; } = "Exportieren…";
+    [Parameter] public string BtnDatei { get; set; } = "Datei wählen…";
+    [Parameter] public string LabelDatei { get; set; } = "Datei:";
+    [Parameter] public string LabelZielname { get; set; } = "Zielname (leer = aus Datei):";
+    [Parameter] public string LabelKonflikt { get; set; } = "Falls dieser Name bereits existiert:";
+    [Parameter] public string OptNeuerName { get; set; } = "Unter neuem Namen importieren";
+    [Parameter] public string OptUeberschreiben { get; set; } = "Vorhandenes Projekt überschreiben";
+    [Parameter] public string OptAbbrechen { get; set; } = "Abbrechen";
+    [Parameter] public string LabelSicherung { get; set; } = "Sicherungskopie der Datenbank vor dem Import anlegen";
+    [Parameter] public string BtnImport { get; set; } = "Importieren…";
+    [Parameter] public string BtnSchliessen { get; set; } = "Schließen";
+    [Parameter] public string Dateifilter { get; set; } = "WP-Projekt (*.wpx)|*.wpx";
+
+    [Parameter] public string MeldungProjektWaehlen { get; set; } = "Bitte ein Projekt auswählen.";
+    [Parameter] public string MeldungDateiWaehlen { get; set; } = "Bitte zuerst eine Datei wählen.";
+    [Parameter] public string StatusExportOk { get; set; } = "Export abgeschlossen.";
+    [Parameter] public string StatusExportFehler { get; set; } = "Export fehlgeschlagen.";
+    [Parameter] public string MeldungExportOk { get; set; } = "Projekt exportiert{0}:\r\n{1}";
+    [Parameter] public string MeldungExportVarianten { get; set; } = " (mit {0} Variante(n))";
+    [Parameter] public string InfoPaket { get; set; } = "Quellprojekt: {0} · Exportdatum: {1} · Schema-Version: {2}";
+    [Parameter] public string InfoVarianten { get; set; } = "Varianten ({0}): {1}";
+    [Parameter] public string FrageUeberschreiben { get; set; } =
+        "Ein evtl. vorhandenes Projekt gleichen Namens wird unwiderruflich überschrieben. Fortfahren?";
+    [Parameter] public string FrageUeberschreibenTitel { get; set; } = "Überschreiben";
+    [Parameter] public string StatusSicherung { get; set; } = "Sicherung: {0}";
+    [Parameter] public string FrageSicherung { get; set; } =
+        "Die Sicherungskopie konnte nicht angelegt werden:\n{0}\n\nTrotzdem importieren?";
+    [Parameter] public string FrageSicherungTitel { get; set; } = "Sicherung";
+    [Parameter] public string StatusImportOk { get; set; } = "Import abgeschlossen.";
+    [Parameter] public string TitelImportFertig { get; set; } = "Import abgeschlossen";
+    [Parameter] public string MeldungImportFehler { get; set; } = "Import fehlgeschlagen:\n{0}";
+    [Parameter] public string MeldungUnbekannt { get; set; } = "unbekannter Fehler";
+    [Parameter] public string StatusTabelle { get; set; } = "… {0}";
+    [Parameter] public string StatusBericht { get; set; } = "Bericht: {0}";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private string _reiter = "EXPORT";
+    private string _projekt = "";
+    private int? _projektIndex;
+    private IReadOnlyList<(int Id, string Text)> _variantenEintraege = Array.Empty<(int, string)>();
+    private IReadOnlyList<string> _variantennamen = Array.Empty<string>();
+    private IReadOnlyList<int> _variantenGewaehlt = Array.Empty<int>();
+
+    private string _paketpfad = "";
+    private string _zielname = "";
+    private PaketVorschau? _vorschau;
+    private ProjektExportImportCtrl.BeiVorhandenem _modus = ProjektExportImportCtrl.BeiVorhandenem.NeuerName;
+    private bool _sicherung = true;
+
+    private bool _laeuft;
+    private double? _anteil;
+    private string _status = "";
+    private WarnStufe _statusStufe = WarnStufe.Hinweis;
+    private List<string> _bericht = new();
+
+    private Frageart _frage = Frageart.Keine;
+    private string _fragegrund = "";
+    private bool _importErfolgreich;
+
+    /// <summary>Das gewählte Quellprojekt (Prüfhilfe für Tests).</summary>
+    public string Projekt => _projekt;
+
+    /// <summary>Die gewählten Variantennamen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> GewaehlteVarianten
+        => _variantenGewaehlt.Select(i => _variantennamen[i]).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> Projektnamen
+        => Daten is null
+            ? Array.Empty<(int, string)>()
+            : Daten.Projekte.Select((z, i) => (i, z.Name)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> Konfliktmodi => new (int, string)[]
+    {
+        ((int)ProjektExportImportCtrl.BeiVorhandenem.NeuerName,      OptNeuerName),
+        ((int)ProjektExportImportCtrl.BeiVorhandenem.Ueberschreiben, OptUeberschreiben),
+        ((int)ProjektExportImportCtrl.BeiVorhandenem.Abbrechen,      OptAbbrechen)
+    };
+
+    private string Fragetext => _frage switch
+    {
+        Frageart.Ueberschreiben => FrageUeberschreiben,
+        Frageart.Sicherung => string.Format(FrageSicherung, _fragegrund),
+        _ => ""
+    };
+
+    private string FrageTitel => _frage == Frageart.Sicherung ? FrageSicherungTitel : FrageUeberschreibenTitel;
+
+    private string Vorschautext
+    {
+        get
+        {
+            if (_vorschau is null) return "";
+            if (!string.IsNullOrEmpty(_vorschau.Fehler)) return _vorschau.Fehler;
+
+            string satz = string.Format(InfoPaket, _vorschau.Quellprojekt,
+                                        _vorschau.Exportdatum, _vorschau.Schemastand);
+            if (_vorschau.Varianten.Count > 0)
+                satz += "\n" + string.Format(InfoVarianten, _vorschau.Varianten.Count,
+                                             string.Join(", ", _vorschau.Varianten));
+            return satz;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Vorbelegung: das erste Projekt (cbProjekt.SelectedIndex = 0 des Vorlaeufers).
+        if (Daten is null || _projektIndex.HasValue || Daten.Projekte.Count == 0) return;
+        ProjektGewaehlt(0);
+    }
+
+    private void ProjektGewaehlt(int? index)
+    {
+        _projektIndex = index;
+        _projekt = (Daten is not null && index.HasValue && index.Value >= 0
+                    && index.Value < Daten.Projekte.Count)
+                   ? Daten.Projekte[index.Value].Name
+                   : "";
+        VariantenLaden();
+    }
+
+    private void ModusGewaehlt(int? wert)
+        => _modus = (ProjektExportImportCtrl.BeiVorhandenem)(wert ?? 0);
+
+    /// <summary>
+    /// Die Varianten des gewaehlten Projekts, VORBELEGT ALLE AN (TF2) — genau wie
+    /// <c>clbVarianten.Items.Add(name, true)</c> des Vorlaeufers.
+    /// </summary>
+    private void VariantenLaden()
+    {
+        _variantennamen = Daten is null || string.IsNullOrEmpty(_projekt)
+            ? Array.Empty<string>()
+            : Daten.Varianten(_projekt);
+
+        _variantenEintraege = _variantennamen.Select((n, i) => (i, n)).ToList();
+        _variantenGewaehlt = Enumerable.Range(0, _variantennamen.Count).ToList();
+    }
+
+    private Func<string, Task<string?>>? PaketWaehlen
+        => Daten?.PaketLesen is null
+            ? null
+            : _ => Task.FromResult(Daten!.PaketLesen!());
+
+    private void PaketGewaehlt(string pfad)
+    {
+        _paketpfad = pfad ?? "";
+        _bericht.Clear();
+        _vorschau = null;
+        if (string.IsNullOrEmpty(_paketpfad) || Daten is null) return;
+
+        _vorschau = Daten.Vorschau(_paketpfad);
+
+        // Der Vorlaeufer belegte den Zielnamen mit dem Quellprojekt vor, wenn das
+        // Feld noch leer war.
+        if (string.IsNullOrWhiteSpace(_zielname) && string.IsNullOrEmpty(_vorschau.Fehler))
+            _zielname = _vorschau.Quellprojekt ?? "";
+    }
+
+    // =============================================================================
+    //  Export
+    // =============================================================================
+    private async Task Exportieren()
+    {
+        if (Daten is null) return;
+
+        if (string.IsNullOrEmpty(_projekt)) { Melden(MeldungProjektWaehlen, WarnStufe.Warnung); return; }
+        if (Daten.PaketSchreiben is null) return;
+
+        string? ziel = Daten.PaketSchreiben(_projekt + ".wpx");
+        if (string.IsNullOrEmpty(ziel)) return;      // abgebrochen
+
+        IReadOnlyList<string> varianten = GewaehlteVarianten;
+
+        _laeuft = true;
+        _anteil = null;
+        _status = "";
+        _bericht.Clear();
+        StateHasChanged();
+
+        var melder = new Progress<string>(t => { _status = t; StateHasChanged(); });
+        bool ok = await Task.Run(() => Daten.Exportieren(_projekt, varianten, ziel!, melder));
+
+        _laeuft = false;
+        if (!ok) { Melden(StatusExportFehler, WarnStufe.Fehler); return; }
+
+        string zusatz = varianten.Count > 0 ? string.Format(MeldungExportVarianten, varianten.Count) : "";
+        Melden(StatusExportOk + " " + string.Format(MeldungExportOk, zusatz, ziel), WarnStufe.Hinweis);
+    }
+
+    // =============================================================================
+    //  Import
+    // =============================================================================
+    private Task Importieren()
+    {
+        if (Daten is null) return Task.CompletedTask;
+
+        if (string.IsNullOrEmpty(_paketpfad)) { Melden(MeldungDateiWaehlen, WarnStufe.Warnung); return Task.CompletedTask; }
+
+        // Die Ueberschreiben-Rueckfrage kommt VOR der Sicherung - dieselbe
+        // Reihenfolge wie im Vorlaeufer.
+        if (_modus == ProjektExportImportCtrl.BeiVorhandenem.Ueberschreiben)
+        {
+            _frage = Frageart.Ueberschreiben;
+            return Task.CompletedTask;
+        }
+        return SicherungUndImport();
+    }
+
+    private async Task BeiFrage(bool? antwort)
+    {
+        Frageart war = _frage;
+        _frage = Frageart.Keine;
+
+        if (antwort != true) return;                       // "Nein" bricht ab
+
+        if (war == Frageart.Ueberschreiben) await SicherungUndImport();
+        else if (war == Frageart.Sicherung) await ImportLauf();
+    }
+
+    private async Task SicherungUndImport()
+    {
+        if (Daten?.SicherungAnlegen is not null && _sicherung)
+        {
+            try
+            {
+                string pfad = Daten.SicherungAnlegen();
+                Melden(string.Format(StatusSicherung, pfad), WarnStufe.Hinweis);
+            }
+            catch (Exception ex)
+            {
+                _fragegrund = ex.Message;
+                _frage = Frageart.Sicherung;               // "Trotzdem importieren?"
+                return;
+            }
+        }
+        await ImportLauf();
+    }
+
+    private async Task ImportLauf()
+    {
+        if (Daten is null) return;
+
+        string? name = string.IsNullOrWhiteSpace(_zielname) ? null : _zielname.Trim();
+
+        _laeuft = true;
+        _anteil = null;
+        _bericht.Clear();
+        StateHasChanged();
+
+        var melder = new Progress<string>(t => { _status = t; StateHasChanged(); });
+        ImportErgebnis e = await Task.Run(() => Daten.Importieren(_paketpfad, name ?? "", _modus, melder));
+
+        _laeuft = false;
+
+        if (e.Id <= 0)
+        {
+            Melden(string.Format(MeldungImportFehler,
+                       string.IsNullOrEmpty(e.Fehler) ? MeldungUnbekannt : e.Fehler), WarnStufe.Fehler);
+            return;
+        }
+
+        _importErfolgreich = true;
+        _bericht = new List<string>(e.Bericht);
+        _status = StatusImportOk;
+        _statusStufe = WarnStufe.Hinweis;
+
+        // T4/TF5: den Bericht ablegen - WOHIN, entscheidet die Huelle (A-11).
+        if (Daten.BerichtSchreiben is not null && _bericht.Count > 0)
+        {
+            string? abgelegt = Daten.BerichtSchreiben(_paketpfad, string.Join(Environment.NewLine, _bericht));
+            if (!string.IsNullOrEmpty(abgelegt))
+                _status += "  " + string.Format(StatusBericht, abgelegt);
+        }
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _status = text;
+        _statusStufe = stufe;
+    }
+
+    private Task BeiErgebnis(bool ok) => Schliessen();
+
+    private Task Schliessen()
+    {
+        if (_laeuft) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(_importErfolgreich);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (_frage != Frageart.Keine || _laeuft) return Task.CompletedTask;
+        return e.Key == "Escape" ? Schliessen() : Task.CompletedTask;
+    }
+}

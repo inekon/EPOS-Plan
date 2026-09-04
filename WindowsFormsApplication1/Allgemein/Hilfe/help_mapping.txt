@@ -160,6 +160,12 @@ Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
 # Duplizieren daneben.
 Form_ProjektAuswahl.btn_Help        = Projektverwaltung
 
+# iU9-W15a: "Projekt loeschen" hatte als einzige der drei Projektdialoge keinen
+# Hilfeknopf (Befund W15a-B8), obwohl der Loeschweg in denselben Wikibereich
+# fuehrt. Seit dem Port ist es dieselbe Komponente wie "Projekt oeffnen" - sie
+# traegt den Knopf, also braucht sie ein Ziel.
+Form_ProjektDelete.btn_Help         = Projektverwaltung
+
 # --- Import ---------------------------------------------------------------
 #
 # Der Konfliktdialog gehoert zum Uebernehmen fremder Projekte, also zur

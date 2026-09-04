@@ -25,7 +25,7 @@
     <span class="epos-feld-zeile epos-dateiwahl">
         <input class="epos-eingabe" type="text" value="@Pfad" readonly="@NurLesen"
                placeholder="@Platzhalter" aria-label="@Bezeichnung" @oninput="BeiEingabe" />
-        @if (Waehlen is not null)
+        @if (Waehler is not null)
         {
             <button type="button" class="epos-knopf" disabled="@(!Aktiv)"
                     @onclick="BeiKlick">@KnopfText</button>
@@ -72,6 +72,30 @@
     /// <summary>Bedienbar? <c>false</c> sperrt den Knopf.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 
+    /// <summary>
+    /// SPEICHERN statt oeffnen (iU9-W15a.5). Der Bestand kannte nur „Datei
+    /// oeffnen"; der Projektexport braucht „Datei speichern unter" mit einem
+    /// NAMENSVORSCHLAG (<c>&lt;Projekt&gt;.wpx</c>). Der Unterschied ist nicht
+    /// kosmetisch: Ein Speichern-Dialog laesst einen Namen zu, den es noch nicht
+    /// gibt, ein Oeffnen-Dialog nicht.
+    /// </summary>
+    [Parameter] public bool Speichern { get; set; }
+
+    /// <summary>
+    /// Der vorgeschlagene Dateiname im Speichern-Modus; leer = ohne Vorschlag.
+    /// </summary>
+    [Parameter] public string Namensvorschlag { get; set; } = "";
+
+    /// <summary>
+    /// Der SPEICHERN-Waehler der Plattform: Filter und Namensvorschlag hinein, der
+    /// gewaehlte Zielpfad heraus (<c>null</c> = abgebrochen). Ohne ihn erscheint im
+    /// Speichern-Modus kein Knopf — dieselbe Regel wie bei <see cref="Waehlen"/>.
+    /// </summary>
+    [Parameter] public Func<string, string, Task<string?>>? Zielwaehlen { get; set; }
+
+    /// <summary>Der Waehler, der zum Modus passt; <c>null</c> = kein Knopf.</summary>
+    private object? Waehler => Speichern ? Zielwaehlen : Waehlen;
+
     private async Task BeiEingabe(ChangeEventArgs e)
     {
         if (NurLesen) return;
@@ -81,9 +105,18 @@
 
     private async Task BeiKlick()
     {
-        if (Waehlen is null) return;
+        string? gewaehlt;
+        if (Speichern)
+        {
+            if (Zielwaehlen is null) return;
+            gewaehlt = await Zielwaehlen(Filter, Namensvorschlag ?? "");
+        }
+        else
+        {
+            if (Waehlen is null) return;
+            gewaehlt = await Waehlen(Filter);
+        }
 
-        string? gewaehlt = await Waehlen(Filter);
         if (string.IsNullOrEmpty(gewaehlt)) return;   // abgebrochen: der alte Pfad bleibt
 
         Pfad = gewaehlt;

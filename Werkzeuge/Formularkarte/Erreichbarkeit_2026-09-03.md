@@ -24,10 +24,10 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
-> **Nachgezogen mit iU9‑W14c** (04.09.2026): Die Tabellen unten stammen aus einem frischen
-> Stapellauf nach dieser Welle. Der Befund zählt jetzt **17 Masken, davon 17
+> **Nachgezogen mit iU9‑W15a** (04.09.2026): Die Tabellen unten stammen aus einem frischen
+> Stapellauf nach dieser Welle. Der Befund zählt jetzt **13 Masken, davon 13
 > erreichbar** — Welle 12 nahm fünf (38), Welle 13 sechs (32), Welle 14a sieben (25),
-> Welle 14b vier (21) und Welle 14c vier (17).
+> Welle 14b vier (21), Welle 14c vier (17) und Welle 15a vier (13).
 >
 > **Welle 14a** nahm die vier Erzeuger-Katalogbrowser (sie werden EINE Razor-Komponente mit vier
 > Ausprägungen), den fehlenden vierten Katalogeditor und die zwei Modulkataloge (eine zweite
@@ -246,15 +246,32 @@ Welle 14c hat fünf Masken umgestellt und gelöscht — vier mit Designer, eine 
 `ChartManager`: Die MS-Chart-Bindung der Anwendung endet außerhalb der Designer mit dieser
 Welle, und **WFO1000 steht bei null**.
 
+## Stand nach iU9-W15a (Projektdialoge, Transfer, Assistentenkopf, 04.09.2026)
+
+Welle 15a hat sechs Bauteile umgestellt — vier mit Designer, eines ohne, und ein
+UserControl, das **bleibt**:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_ProjektAuswahl` | ja | gelöscht; `EPOS.UI/Dialoge/Projekt/ProjektWahlDialog` (Zweck `Oeffnen`) mit `ProjektWahlHuelle`. |
+| `Form_ProjektDelete` | ja | gelöscht; DIESELBE Komponente mit Zweck `Loeschen` — beide Masken taten dasselbe: ein Projekt auswählen. **Mit ihr fällt der Weg über die Klappliste**: „Löschen" zeigt seither dieselbe Liste mit Suche wie „Öffnen" (A‑12). |
+| `Form_ProjektSpeichernUnter` | ja | gelöscht; `ProjektKopieDialog` mit `ProjektKopieHuelle`. **Mit ihr wandert der MASKENSCHLÜSSEL-Zeuge** des Tests `DieSprungtabelleLoestDieMaskenschluesselAuf` auf `FormMain` / `Masken.ProjektDetail` — nach dieser Welle gibt es nur noch zwei Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16. |
+| `Form_ProjektExportImport` | (nicht im Befund) | gelöscht; `ProjektTransferDialog` mit `ProjektTransferHuelle`. Sie hatte keinen Designer und erschien deshalb nie in dieser Tabelle (Befund W15a‑B24). |
+| `Wizard_Projekt` | ja | gelöscht; `EPOS.UI/Seiten/Assistent/ProjektKopfSeite` mit `ProjektKopfHuelle`. **Mit ihr verliert der ASSISTENTEN-Zeuge** seinen dritten Namen; `Wizard_Komponenten` und `Wizard_Stromlastgang` bleiben, beide Welle 16. |
+| `ProjektAuswahl` (UserControl) | ja | **BLEIBT bis Welle 16.** Es lebt in ZWEI Wirten; der eine (`Form_ProjektAuswahl`) fällt hier, der andere (`WizardParent.pnlLeft`) erst dort. Sein Erreichbarkeitspfad führt seither über den Assistenten statt über die gefallene Hüllform. Das ist eine ausdrückliche Ausnahme von der Arbeitsregel iZ5 (Entscheid R‑W15a‑1). |
+
+**`Views/Projekt` führt seither genau eine Designer-Maske** — das UserControl —, und
+`Views/Wizard` noch drei (`WizardParent`, `Wizard_Komponenten`, `Wizard_Stromlastgang`).
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 17 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 13 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 0 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 17 | |
+| gesamt | 13 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -264,14 +281,10 @@ Welle, und **WFO1000 steht bei null**.
 | Form_Hinweis | ja | Form_Start → HinweisProjektGeoeffnet → Form_Hinweis | `WindowsFormsApplication1/Allgemein/Form_Hinweis.Designer.cs` |
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
-| Form_ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/Form_ProjektAuswahl.Designer.cs` |
-| Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
-| Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
-| ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
+| ProjektAuswahl | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
 | WizardParent | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent | `WindowsFormsApplication1/Views/Wizard/WizardParent.designer.cs` |
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |
-| Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |

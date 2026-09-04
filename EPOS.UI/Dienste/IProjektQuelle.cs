@@ -130,6 +130,20 @@ public interface IProjektQuelle
     /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
     /// </summary>
     IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Alles, was der Dialog „Projekt exportieren / importieren" braucht
+    /// (iU9-W15a.0h); <c>null</c> = diese Huelle kann keinen Projekttransfer.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — <b>mit Standardumsetzung</b>, damit eine
+    /// vorhandene Quelle (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die
+    /// Erweiterung nicht bricht. Anders als dort ist das Ergebnis ein DATENSATZ und
+    /// kein Woerterbuch: Es sind neun benannte Dinge, nicht vierzig, und drei davon
+    /// sind Pfaddelegaten, deren Fehlen der Dialog SEHEN muss (kein Delegat = kein
+    /// Knopf).</para>
+    /// </summary>
+    ProjektTransferDaten? TransferDaten() => null;
 }
 
 /// <summary>

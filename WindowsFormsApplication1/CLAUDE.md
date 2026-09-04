@@ -106,9 +106,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**16** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
-  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `EnergietraegerKatalogCtrl` und
-  `ProjektExportImportCtrl`.
+- **`Controller/`** (**15** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
+  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl` und `EnergietraegerKatalogCtrl`.
+  **`ProjektExportImportCtrl` ist mit iU9‑W15a.0e in den Kern gezogen** — seine einzige
+  Kante war die ZAHL `SchemaMigration.ZIEL_VERSION`; sie steht seither als
+  `SchemaStand.Zielversion` im Kern, und der `using System.Windows.Forms` der Datei war
+  ohnehin unbenutzt (Befund W15a‑B30). Damit ist der Projekttransfer auf iOS möglich.
   **`KlimaregionStammCtrl` ist mit iU9‑W14c.0d in den Kern gezogen** — er zog über
   `FillComboBox(ComboBox)`/`FillListBox(ListBox)` `System.Windows.Forms` in die
   Controllerschicht (Befund W14c‑B33). An ihre Stelle tritt `Bezeichner()`; sein `Delete`
@@ -306,13 +309,20 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 21 Masken** (25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 13 Masken** (17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **11** (14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **7** (11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf **21 von 21 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
-  jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
-  `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
+  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15a **13 von 13 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
+  Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
+  `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
+  Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16;
+  **der Test ist dort zu streichen oder auf ein Prüfmuster umzuziehen** (Risiko
+  R‑W15a‑10). Der **Assistenten-Zeuge** führt seit W15a.9 nur noch zwei Klassen
+  (`Wizard_Komponenten`, `Wizard_Stromlastgang`) — auch er fällt mit Welle 16.
+  Der historische Stand: bis iU9‑W12 hing der Erreichbarkeitsanker an
+  `Form_AdminSettings` (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
   Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
   (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
   behalten. **Der Kleinschreibungs-Zeuge des Stapellauf-Tests hängt seit iU9‑W14b
@@ -528,6 +538,40 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/` VERSCHOBEN — sie war die einzige
   Maske, deren `btn_Help` im Designer stand, und trägt dort fünf Testanker. Protokoll:
   [`Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
+  Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
+  Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über
+  `Meldung.Zeigen`): `Form_ProjektAuswahl` (99 Z.), `Form_ProjektDelete` (55 Z.),
+  `Form_ProjektSpeichernUnter` (268 Z.), `Form_ProjektExportImport` (320 Z., ohne
+  Designer) und `Wizard_Projekt` (104 Z.). **Fünf Masken werden VIER Komponenten**:
+  „Projekt öffnen" und „Projekt löschen" taten dasselbe — ein Projekt auswählen — und
+  werden EINE Komponente mit dem Parameter `Zweck`. An ihrer Stelle stehen **vier
+  Hüllen** — `Views/Projekt/ProjektWahlHuelle.cs`, `Views/Projekt/ProjektKopieHuelle.cs`,
+  `Views/Projekt/ProjektTransferHuelle.cs`, `Views/Wizard/ProjektKopfHuelle.cs`.
+  **Der Befund der Welle ist eine Zahl: der Bestand führte VIER Projektlisten
+  nebeneinander** (Befund W15a‑B52); sie werden der neue Baustein `ProjektListe`, und
+  damit ist „Eine Projektauswahl für alle" aus
+  `Konzept_Projektdialoge_Vereinheitlichung.md:177` eingelöst.
+  **`ProjektAuswahl` (das UserControl) BLEIBT bis Welle 16** — es lebt in ZWEI Wirten,
+  und der zweite ist `WizardParent.pnlLeft`; für genau eine Welle gibt es damit zwei
+  Fassungen derselben Liste (ausdrückliche Ausnahme von der Arbeitsregel iZ5,
+  Entscheid R‑W15a‑1, Muster W4‑O1).
+  Neu im Kern sind `Model/ProjektAngaben.cs` (`ProjektKopfZeile`, `ProjektKopfDaten` und
+  die drei Befundtypen) und der umgezogene `Controller/ProjektExportImportCtrl.cs`;
+  erweitert sind `ProjektCtrl` (der ganze Löschweg als `LoeschenMitVorarbeiten`),
+  `ProjektDuplizierenCtrl` (`PruefeNamen`, `VerwaltungsfelderSetzen`, `Duplizieren` mit
+  `CancellationToken`) und `KlimaregionStammCtrl` (`IdVonName`, `NameZuProjektregion`).
+  **Der Nachweis der Welle entsteht ZUERST** — `EPOS.Kern.Tests/ProjekttransferTests.cs`
+  (P1–P5) und `ProjektpflegeTests.cs` (P7–P9): Bis dahin rief KEIN Test `Exportieren`
+  oder `Importieren` auch nur auf (Befund W15a‑B34), und die Proben fanden sofort, dass
+  **der Import seit der SQLite-Umstellung kaputt war** (W15a‑B55: benannte Platzhalter
+  im SQL-Text, während die Zugriffsschicht nach Position bindet).
+  **Diese Masken waren als einzige der ganzen Reihe LOKALISIERT** — 461
+  `.resx`-Einträge, aber nur sechs `MyResource`-Zugriffe; der Port hebt **83 Texte** in
+  beide Sprachkataloge, davon 27 für eine Maske, die gar nicht übersetzt war (W15a‑B36).
+  **`Views/Projekt` führt seither genau eine Designer-Maske** (das UserControl),
+  `Views/Wizard` noch drei. Protokoll:
+  [`Allgemein/Reporting/iU9_W15a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W15a_Blazor_Port_Protokoll.md).
 - **`Allgemein/`** (**38** `.cs`; 40 vor iU9‑W14c — `GrafikTools/ChartManager.cs` (560 Z. samt
   `ChartMouseWheel2`) und `GrafikTools/RoundedPanel.cs` sind mit ihrer letzten bzw. ohne
   Nutzerin gefallen; **die MS-Chart-Bindung der Anwendung endet damit außerhalb der
