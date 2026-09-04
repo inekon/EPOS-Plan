@@ -50,6 +50,35 @@ namespace WindowsFormsApplication1
             return v != null && v != DBNull.Value && Convert.ToBoolean(v);
         }
 
+        /// <summary>
+        /// Der Katalogsatz zu einem Bezeichner — der Ersatz fuer das konkatenierte
+        /// <c>"SELECT * from Tab_Stromganglinie_STAMM where Bezeichner='" + text + "'"</c>
+        /// aus <c>Form_Stromganglinie.cs:72</c> (Befund W12-B4: ein Bezeichner mit
+        /// Apostroph brach die Abfrage).
+        /// </summary>
+        /// <param name="szName">Bezeichner des Katalogeintrags.</param>
+        /// <returns>Der Satz oder <c>null</c>, wenn es ihn nicht gibt.</returns>
+        public static StromganglinieModel FindeStamm(string szName)
+        {
+            if (string.IsNullOrEmpty(szName)) return null;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, Zeitinterval FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                new DbParam("@bez", szName));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow row = dt.Rows[0];
+            StromganglinieModel model = new StromganglinieModel();
+            if (row["ID"] != DBNull.Value)
+            {
+                model.ID = Convert.ToInt32(row["ID"]);
+                model.m_ID_Ganglinie = model.ID;
+            }
+            if (row["Bezeichner"] != DBNull.Value) model.m_szBezeichner = row["Bezeichner"].ToString();
+            if (row["Zeitinterval"] != DBNull.Value) model.m_Zeitinterval = Convert.ToInt32(row["Zeitinterval"]);
+            return model;
+        }
+
         public int GetStammId(string szName)
         {
             object v = DataRepository.ExecuteScalar(

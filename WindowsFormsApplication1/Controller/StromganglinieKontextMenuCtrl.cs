@@ -119,27 +119,10 @@ namespace WindowsFormsApplication1
             Form_Stromganglinie frm = new Form_Stromganglinie();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            RecordSet rs = new RecordSet();
 
+            // iU9-W12.0g: derselbe JOIN wie in Form_Start - jetzt einmal im Kern.
             frm.DateiListe.Clear();
-
-            string sql = "SELECT Z_ProjektStromganglinie.ID AS ID, Z_ProjektStromganglinie.ID_Projekt, " +
-                  "Z_ProjektStromganglinie.ID_Ganglinie, Tab_Stromganglinie.Bezeichner " +
-                  "FROM Z_ProjektStromganglinie INNER JOIN Tab_Stromganglinie ON " +
-                  "Z_ProjektStromganglinie.ID_Ganglinie = Tab_Stromganglinie.ID " +
-                  " where Z_ProjektStromganglinie.ID_Projekt=" + m_ID_Projekt;
-   
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektStromganglinieCtrl item = new Z_ProjektStromganglinieCtrl();
-                item.m_ID_Z = (int)rs.Read("ID");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Stromganglinie = (int)rs.Read("ID_Ganglinie");
-                item.m_szStromganglinie = (string)rs.Read("Bezeichner");//item.Text;
-                frm.DateiListe.Add(item);
-            }
-            rs.Close(); 
+            frm.DateiListe.AddRange(Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt));
 
             frm.m_ID_Projekt = m_ID_Projekt;
             frm.SetControls(m_szProjektname);
@@ -150,8 +133,12 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
                 wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
-                Dienste.Navigation.OeffneGewerk(Gewerke.WaermebedarfExtern, m_ID_Projekt, m_szProjektname);
 
+                // BEFUND W12-B7, behoben (iU9-W12.0g): Hier stand ein zweiter
+                // OeffneGewerk-Aufruf mit Gewerke.WaermebedarfExtern - im
+                // Stromganglinien-Ablauf offensichtlich falsch. Er ist ersatzlos
+                // gestrichen; die richtige Auffrischung steht am Ende des Blocks
+                // (Gewerke.Stromganglinie) und lief ohnehin unmittelbar danach.
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
