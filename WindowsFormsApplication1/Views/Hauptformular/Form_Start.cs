@@ -1242,12 +1242,19 @@ namespace WindowsFormsApplication1
 
         private void pBox_DetailSim_Click(object sender, EventArgs e)
         {
-            Form_Simulation_Detail frm = new Form_Simulation_Detail(m_ID_Projekt);
-            frm.simulation_Strombedarf = simulationStrombedarf;
-            frm.simulation_Waermebedarf = simulationWaermebedarf;
-
-            frm.SetControls();
-            frm.ShowDialog();
+            // Die Ergebnisansicht ist seit iU9-W11b.13 eine Razor-SEITE
+            // (EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite); die Huelle zeigt sie
+            // bis W16 in einem modalen Fenster (Entscheid R-W11-1).
+            //
+            // DIE BEIDEN BEDARFSOBJEKTE GEHOEREN WEITERHIN DIESER MASKE (Befund
+            // W11-B3): Sie werden hereingereicht, dort weitergeschrieben und hier fuer
+            // die Kachelbeschriftungen weiterverwendet. Genau deshalb bleibt die Huelle
+            // modal - nebeneinander offen waeren beide Fenster im Streit.
+            //
+            // ENTFALLEN (Befund W11-B26): der Aufruf von SetControls(), der leer war und
+            // trotzdem gerufen wurde. Zurueckgelesen wurde auch bisher nichts.
+            SimulationErgebnisHuelle.Oeffnen(this, m_ID_Projekt,
+                                             simulationWaermebedarf, simulationStrombedarf);
         }
 
         private void pBox_Solarthermie_Click(object sender, EventArgs e)

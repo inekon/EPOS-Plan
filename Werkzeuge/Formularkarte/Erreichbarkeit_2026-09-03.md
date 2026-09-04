@@ -146,21 +146,46 @@ dieser Liste also nicht auf.
 Damit führt `Views/Simulation` keine Designer-Maske der Simulationskonfiguration mehr;
 übrig bleiben dort `Form_Simulation_Detail`, die drei `Navigator*` und `DashboardForm`.
 
+## Stand nach iU9-W11b (Simulationsergebnis II: die Ergebnisseite)
+
+Welle 11b stellt die **Ergebnisansicht** um — und mit ihr in EINEM Schritt ihre fünf
+Nebenmasken (Regel R‑W11‑2: maskenweise, nicht reiterweise; reiterweise stünden zwei
+WebViews in einem Fenster). Zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer und
+21 `MessageBox`.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Simulation_Detail` | ja | gelöscht; `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite` mit `SimulationErgebnisHuelle` (vier Teildateien). Die Komponente ist eine **Seite** (Entscheid R‑W11‑1) und erscheint unter Windows bis W16 in der modalen Dialoghülle, 1 474 × 821. |
+| `DashboardForm` | ja | gelöscht; die Autarkie-Analyse ist ein Blatt des `ErgebnisReiter`. |
+| `NavigatorUebersicht` | ja | gelöscht; ihr Inhalt ist der `UebersichtReiter` in seiner zweiten Rolle (`NurNavigator`). |
+| `NavigatorStrom` | ja | gelöscht; `StromgangReiter` — jetzt MIT Sortiertumschalter (Befund W11‑B41). |
+| `NavigatorWaerme` | ja | gelöscht; `WaermegangReiter`. |
+| `Form_SpeicherVariantenVergleich` | ja | gelöscht; `SpeicherVariantenVergleich` als **Überlagerung** der Ergebnisseite, mit echtem Fortschritt („n von m"). |
+
+Ohne Designer und deshalb nie in dieser Liste: `TabNavigationManager` (226 Z.),
+`TabListMapper` (462 Z.), `GanglinienDarstellung` (97 Z., Rest) und
+`SchluesselEintrag` (37 Z.) — alle vier ebenfalls gelöscht.
+
+**`Views/Simulation` führt seither KEINE Designer-Maske mehr**; `Views/Stromspeicher`
+noch zwei (`Form_AdminStromspeicher`, `Form_PeakShaving`).
+`Form_SpeicherOptimierung` bleibt WinForms (iF22) und hatte nie einen Designer —
+sie ist ab jetzt über die **Sprungbrücke** (`Sprungziel.SpeicherOptimierung`) zu
+erreichen, aus dem Parameterblatt der Ergebnisseite heraus.
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 48 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 42 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 1 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 49 | |
+| gesamt | 43 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
 | Form_PufferSp_Bearbeiten | unklar | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin → btn_Bearbeiten → Form_PufferSp_Bearbeiten — Öffner: Form_PufferSp_Admin.btn_Bearbeiten_Click (Form_PufferSp_Admin.cs:164) — zweifelhaft: Steuerelement btn_Bearbeiten bleibt auf Visible/Enabled = false; Form_PufferSp_Admin.btn_Neu_Click (Form_PufferSp_Admin.cs:181) — zweifelhaft: Steuerelement btn_Neu bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Bearbeiten.designer.cs` |
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
-| DashboardForm | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → DashboardForm | `WindowsFormsApplication1/Views/Simulation/DashboardForm.Designer.cs` |
 | FormMain | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain | `WindowsFormsApplication1/Views/Hauptformular/FormMain.Designer.cs` |
 | Form_AdminPV | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV | `WindowsFormsApplication1/Views/Photovoltaik/Form_AdminPV.designer.cs` |
 | Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
@@ -187,11 +212,9 @@ Damit führt `Views/Simulation` keine Designer-Maske der Simulationskonfiguratio
 | Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
 | Form_PufferSp_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Admin.Designer.cs` |
 | Form_PufferSp_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSPImport → Masken.PufferSpImport → Form_PufferSp_einlesen | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_einlesen.designer.cs` |
-| Form_Simulation_Detail | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.Designer.cs` |
 | Form_SolarKollektorenAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarkollektoren → Masken.SolarkollektorenAdmin → Form_SolarKollektorenAdmin | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektorenAdmin.designer.cs` |
 | Form_SolarKollektoren_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SolarThermieImport → Masken.SolarkollektorenImport → Form_SolarKollektoren_einlesen | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektoren_einlesen.designer.cs` |
 | Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
-| Form_SpeicherVariantenVergleich | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_SpVariantenVergleich → Form_SpeicherVariantenVergleich | `WindowsFormsApplication1/Views/Stromspeicher/Form_SpeicherVariantenVergleich.Designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
 | Form_Stromganglinie | ja | Form_Start → pBox_StromMessdaten_Click → Form_Stromganglinie | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie.designer.cs` |
@@ -199,9 +222,6 @@ Damit führt `Views/Simulation` keine Designer-Maske der Simulationskonfiguratio
 | Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
 | Form_WP_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WPImport → Masken.WpImport → Form_WP_einlesen | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP_einlesen.designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
-| NavigatorStrom | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorStrom | `WindowsFormsApplication1/Views/Simulation/NavigatorStrom.Designer.cs` |
-| NavigatorUebersicht | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorUebersicht | `WindowsFormsApplication1/Views/Simulation/NavigatorUebersicht.Designer.cs` |
-| NavigatorWaerme | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorWaerme | `WindowsFormsApplication1/Views/Simulation/NavigatorWaerme.Designer.cs` |
 | ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
 | WizardParent | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent | `WindowsFormsApplication1/Views/Wizard/WizardParent.designer.cs` |
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |

@@ -11854,4 +11854,248 @@ Alle Eingaben überprüfen!</value>
   <data name="FORTSCHRITT_LAEUFT" xml:space="preserve">
     <value>Die Rechnung läuft …</value>
   </data>
+  <data name="SIMERG_TITEL" xml:space="preserve">
+    <value>Detaillierte Simulation</value>
+  </data>
+  <data name="SIMERG_TAB_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="SIMERG_TAB_UEBERSICHT" xml:space="preserve">
+    <value>Übersicht</value>
+  </data>
+  <data name="SIMERG_TAB_BEDARF" xml:space="preserve">
+    <value>Wärme-/Strombedarf</value>
+  </data>
+  <data name="SIMERG_TAB_WP_PRODUKTION" xml:space="preserve">
+    <value>Wärmproduktion</value>
+  </data>
+  <data name="SIMERG_TAB_WP_STROM" xml:space="preserve">
+    <value>Stromverbrauch</value>
+  </data>
+  <data name="SIMERG_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation starten ▶</value>
+  </data>
+  <data name="SIMERG_BTN_KONFIGURATION" xml:space="preserve">
+    <value>Konfiguration ...</value>
+  </data>
+  <data name="SIMERG_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="SIMERG_BTN_DETAILS" xml:space="preserve">
+    <value>Details...</value>
+  </data>
+  <data name="SIMERG_LAUF_LAEUFT" xml:space="preserve">
+    <value>Die Simulation läuft …</value>
+  </data>
+  <data name="SIMERG_LBL_ENERGIEBEDARF" xml:space="preserve">
+    <value>Energiebedarf</value>
+  </data>
+  <data name="SIMERG_LBL_ERGEBNISSE" xml:space="preserve">
+    <value>Ergebnisse</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
+    <value>Wärmebedarf des Nahwärmenetzes:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF" xml:space="preserve">
+    <value>Restwärmebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTSTROMBEDARF" xml:space="preserve">
+    <value>Reststrombedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Wärmeproduktion WP:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMVERBRAUCH_WP" xml:space="preserve">
+    <value>Stromverbrauch WP:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB" xml:space="preserve">
+    <value>Stromverbrauch Heizstab:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
+    <value>Wärmeproduktion der Spitzenkessel:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMVERBRAUCH_SPK" xml:space="preserve">
+    <value>Stromverbrauch SPK:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_BHKW" xml:space="preserve">
+    <value>Wärmeproduktion BHKW:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMPRODUKTION_BHKW" xml:space="preserve">
+    <value>Stromproduktion BHKW:</value>
+  </data>
+  <data name="SIMERG_LBL_SOLARE_WAERME" xml:space="preserve">
+    <value>Solare Wärme:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMPRODUKTION_PV" xml:space="preserve">
+    <value>Stromproduktion PV:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_WAERMELAST" xml:space="preserve">
+    <value>max. Wärmelast</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_WAERMEBEDARF" xml:space="preserve">
+    <value>Gesamter Wärmebedarf</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_STROMBEDARF" xml:space="preserve">
+    <value>max. Strombedarf</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_STROMBEDARF" xml:space="preserve">
+    <value>Gesamter Strombedarf</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEBEDARFSDECKUNG" xml:space="preserve">
+    <value>Wärmebedarfsdeckung:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMBEDARFSDECKUNG" xml:space="preserve">
+    <value>Strombedarfsdeckung:</value>
+  </data>
+  <data name="SIMERG_LBL_BIVALENZPUNKT" xml:space="preserve">
+    <value>Bivalenzpunkt:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN" xml:space="preserve">
+    <value>durchschnittliche Vollbenutzungsstunden:</value>
+  </data>
+  <data name="SIMERG_LBL_PUFFERKAPAZITAET" xml:space="preserve">
+    <value>Kapazität des Pufferspeichers:</value>
+  </data>
+  <data name="SIMERG_LBL_MIN_SPK_LEISTUNG" xml:space="preserve">
+    <value>Minimale Spitzenkesselleistung:</value>
+  </data>
+  <data name="SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK" xml:space="preserve">
+    <value>Brennstoffverbrauch der Spitzenkessel:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK" xml:space="preserve">
+    <value>Wärmeproduktion der einzelnen Spitzenkessel:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTLEISTUNG_KESSEL" xml:space="preserve">
+    <value>Gesamte Wärmeleistung der Heizkessel:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
+    <value>Maximaler Gasbezug:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
+    <value>Gesamte Wärmeleistung der Module:</value>
+  </data>
+  <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschuß:</value>
+  </data>
+  <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
+    <value>Gesamte Stromerzeugung der Module [MWh/a]:</value>
+  </data>
+  <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschuß [MWh/a]:</value>
+  </data>
+  <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
+    <value>Strombedarfsdeckung [%]:</value>
+  </data>
+  <data name="SIMERG_LBL_PV_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf MWh/a:</value>
+  </data>
+  <data name="SIMERG_LBL_PV_REST" xml:space="preserve">
+    <value>Reststrombedarf MWh/a:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
+    <value>Maximale solare Leistung [W/m²]:</value>
+  </data>
+  <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschuß anzeigen</value>
+  </data>
+  <data name="SIMERG_CHK_SPEICHERFUELLUNG" xml:space="preserve">
+    <value>Speicherfüllung anzeigen</value>
+  </data>
+  <data name="SIMERG_LBL_BETRIEBSSTUNDEN" xml:space="preserve">
+    <value>Betriebsstunden gesamt</value>
+  </data>
+  <data name="SIMERG_LBL_BETRIEBSSTUNDEN_MITTEL" xml:space="preserve">
+    <value>Betriebsstunden Durchschnitt</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Wärmeproduktion:</value>
+  </data>
+  <data name="SIMERG_LBL_STROMPRODUKTION" xml:space="preserve">
+    <value>Stromproduktion:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEUEBERSCHUSS" xml:space="preserve">
+    <value>Wärmeüberschuß (*):</value>
+  </data>
+  <data name="SIMERG_LBL_BRENNSTOFFVERBRAUCH" xml:space="preserve">
+    <value>Brennstoffverbrauch:</value>
+  </data>
+  <data name="SIMERG_LBL_NETZVERLUSTE" xml:space="preserve">
+    <value>Netzverluste</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFT" xml:space="preserve">
+    <value>Betriebsbereitschaft:</value>
+  </data>
+  <data name="SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
+    <value>Untere Leistungsgrenze der Module [30%]</value>
+  </data>
+  <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
+    <value>Wärmegeführt</value>
+  </data>
+  <data name="SIMERG_OPT_STROMGEFUEHRT" xml:space="preserve">
+    <value>Stromgeführt</value>
+  </data>
+  <data name="SIMERG_OPT_OHNE_EINSPEISUNG" xml:space="preserve">
+    <value>ohne Stromeinspeisung</value>
+  </data>
+  <data name="SIMERG_CHK_HEIZSTAB" xml:space="preserve">
+    <value>mit Heizstab (falls vorhanden)</value>
+  </data>
+  <data name="SIMERG_INFO_BHKW" xml:space="preserve">
+    <value>Wärmegeführt (Standard)
+Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
+
+Stromgeführt (Wirtschaftlich)
+Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
+
+Ohne Einspeisung (Zero-Export)
+Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
+  </data>
+  <data name="SIMERG_ACHSE_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="SIMERG_ACHSE_MWH_A" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="SIMERG_KACHEL_WAERMEDECKUNG" xml:space="preserve">
+    <value>Wärmedeckung</value>
+  </data>
+  <data name="SIMERG_KACHEL_STROMDECKUNG" xml:space="preserve">
+    <value>Stromdeckung</value>
+  </data>
+  <data name="SIMERG_MSG_OHNE_BEDARF" xml:space="preserve">
+    <value>Ohne Bedarf lässt sich keine Deckung ausweisen.</value>
+  </data>
+  <data name="SIMERG_LBL_KAPAZITAET_HINWEIS" xml:space="preserve">
+    <value>Diese Kapazität ist eine Was-wäre-wenn-Größe und wird nicht gespeichert.</value>
+  </data>
+  <data name="SIMERG_LBL_ERZEUGERAUSWAHL" xml:space="preserve">
+    <value>Erzeuger:</value>
+  </data>
+  <data name="SIMERG_LBL_SPEICHERAUSWAHL" xml:space="preserve">
+    <value>Speicher:</value>
+  </data>
+  <data name="SIMERG_LBL_SERIENAUSWAHL" xml:space="preserve">
+    <value>Reihen:</value>
+  </data>
+  <data name="SIMDET_BHKW_SPEICHERLADUNG" xml:space="preserve">
+    <value>davon in den Speicher:</value>
+  </data>
+  <data name="SIMDET_BHKW_SPEICHERDECKUNG" xml:space="preserve">
+    <value>aus dem Speicher gedeckt:</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
+    <value>Speicherladung</value>
+  </data>
+  <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
+    <value>Stromverbrauch:</value>
+  </data>
 </root>

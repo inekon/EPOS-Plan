@@ -1,0 +1,217 @@
+﻿@* Der UEBERSICHTS-Reiter der Ergebnisseite (R2 + NavigatorUebersicht, iU9-W11b.2).
+
+   ZWEI ROLLEN, EINE KOMPONENTE. Sie erscheint als Hauptreiter „Uebersicht"
+   (voll: Energiebedarf, Ergebnisblock, Kuchen UND der Navigatorteil) und als
+   erstes Blatt des Ergebnisreiters (NurNavigator: nur die zwei Ringe, die zwei
+   Kacheln und das Eigenanteilsraster). Dieselbe Ueberlegung wie beim
+   PufferSpProjektDialog aus W10a, der in drei Rollen erscheint: Zwei Fassungen
+   derselben Anzeige waeren zwei Wahrheiten.
+
+   PRAESENZ STATT NULLZEILEN. In einem Projekt aus Waermepumpe und Kessel stand
+   im Ergebnisblock „Waermeproduktion BHKW: 0,00", eine leere „Solare Waerme"
+   und eine leere „Stromproduktion PV". Die Zeilen werden nach ErgebnisPraesenz
+   AUSGEBLENDET; das Nachruecken auf die Entwurfsanker (AnkerAnordnen,
+   SpalteAnordnen, 90 Z. Geometrie) entfaellt ersatzlos - ein Rasterfluss ordnet
+   sich selbst.
+
+   BEFUND W11-B36. Ohne Strombedarf setzte der Vorlaeufer den Mittelwert des
+   Strom-Rings HART AUF 100 - das Bild behauptete 100 % Deckung, wo es gar
+   keinen Bedarf gibt. Ohne Bedarf steht jetzt kein Ring, sondern der Satz, dass
+   sich ohne Bedarf keine Deckung ausweisen laesst.
+
+   BEFUND W11-B35 ist in W11a behoben: Die sechs Summen standen zweimal und
+   wichen um den BHKW-Term voneinander ab; hier kommt EIN DTO herein. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (!NurNavigator)
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_LBL_ENERGIEBEDARF" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, K.WaermebedarfGesamtMwh, MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, K.StrombedarfGesamtMwh, MWH)
+                </dl>
+
+                <Gruppenkopf Titel="@Resource.SIMERG_LBL_ERGEBNISSE" />
+                <dl class="epos-simerg-werte">
+                    @* Die vier Waermezeilen in der Reihenfolge des Entwurfs
+                       (UebersichtZeilenVorbereiten :4067-4072). *@
+                    @if (Daten.Waermepumpe)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, K.WpWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Bhkw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_BHKW, K.BhkwWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Solarthermie)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_SOLARE_WAERME, K.SolarWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Heizkessel)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, K.KesselWaermeproduktionMwh, MWH)
+                    }
+
+                    @* … und die fuenf Stromzeilen (:4075-4081). *@
+                    @if (Daten.Waermepumpe)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, K.WpStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Heizstab)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, K.HeizstabStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Bhkw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_BHKW, K.BhkwStromproduktionMwh, MWH)
+                    }
+                    @if (Daten.Photovoltaik)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_PV, K.PvStromproduktionMwh, MWH)
+                    }
+                    @if (Daten.Heizkessel)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_SPK, K.KesselStromverbrauchMwh, MWH)
+                    }
+
+                    @* Die beiden Restzeilen beschreiben das PROJEKT und nicht eine
+                       Komponente - sie bleiben immer stehen.
+
+                       ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Es gibt nur noch EINE
+                       Restwaermezahl. Der Vorlaeufer fuehrte zwei - das Feld
+                       „Restwaermebedarf" (sim.Restwaerme) und den Ergebnisblock
+                       (Bedarf minus PRODUKTION), und die zweite konnte negativ werden.
+                       Beide Felder des DTO tragen jetzt denselben Wert; die Kachel
+                       unten zeigt dieselbe Zahl. *@
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, K.RestwaermeMwh, MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH)
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <ChartBild Png="@Kuchen" Alt="@Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG"
+                           PlatzhalterText="@Resource.SIMERG_MSG_OHNE_BEDARF" />
+            </section>
+
+        </div>
+    }
+
+    @* ---- Der Navigatorteil: zwei Ringe, zwei Kacheln, das Eigenanteilsraster ---- *@
+
+    <div class="epos-simerg-spalten">
+        <section class="epos-simerg-block">
+            @if (Daten.WaermebedarfVorhanden)
+            {
+                <ChartBild Png="@RingWaerme" Alt="@Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG" />
+            }
+            else
+            {
+                <p class="epos-simerg-hinweis">@Resource.SIMERG_MSG_OHNE_BEDARF</p>
+            }
+        </section>
+
+        <section class="epos-simerg-block">
+            @if (Daten.StrombedarfVorhanden)
+            {
+                <ChartBild Png="@RingStrom" Alt="@Resource.SIMERG_KACHEL_STROMDECKUNG" />
+            }
+            else
+            {
+                <p class="epos-simerg-hinweis">@Resource.SIMERG_MSG_OHNE_BEDARF</p>
+            }
+        </section>
+    </div>
+
+    <Kachelraster>
+        <KindInhalt>
+            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTSTROMBEDARF"
+                            Wert="@Zahl(Daten.ReststromMwh, "N2")" Quelle="@MWH" />
+            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTWAERMEBEDARF"
+                            Wert="@Zahl(Daten.RestwaermeMwh, "N2")" Quelle="@MWH" />
+        </KindInhalt>
+    </Kachelraster>
+
+    @if (Daten.Eigenanteil.Count > 0)
+    {
+        <table class="epos-raster">
+            <thead>
+                <tr>
+                    @foreach (string kopf in Daten.EigenanteilSpalten)
+                    {
+                        <th scope="col">@kopf</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Rasterzeile z in Daten.Eigenanteil)
+                {
+                    <tr>
+                        @for (int i = 0; i < z.Zellen.Count; i++)
+                        {
+                            <td class="@(i == 0 ? "" : "epos-simerg-zahl")">@z.Zellen[i]</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (BedarfDetails.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="BedarfDetails">
+            @Resource.SIM_BTN_WAERMEBEDARF_UEBERSICHT
+        </button>
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    /// <summary>Die 13 Zahlen und die sechs Summen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen? Kennzahlen { get; set; }
+
+    /// <summary>Praesenz, Ringmittelwerte und das Eigenanteilsraster.</summary>
+    [Parameter] public UebersichtDaten Daten { get; set; } = new UebersichtDaten();
+
+    /// <summary>Der Kuchen der Waermebedarfsdeckung (<c>ueb_chart</c>).</summary>
+    [Parameter] public byte[]? Kuchen { get; set; }
+
+    /// <summary>Der Ring „Waermedeckung" (Befund W11-B5, GDI-Donut des Navigators).</summary>
+    [Parameter] public byte[]? RingWaerme { get; set; }
+
+    /// <summary>Der Ring „Stromdeckung".</summary>
+    [Parameter] public byte[]? RingStrom { get; set; }
+
+    /// <summary>
+    /// Nur der Navigatorteil — die Rolle im Ergebnisreiter. Voll: mit
+    /// Energiebedarf, Ergebnisblock und Kuchen.
+    /// </summary>
+    [Parameter] public bool NurNavigator { get; set; }
+
+    /// <summary>„Waermebedarf Uebersicht…" — ohne Rueckruf kein Knopf.</summary>
+    [Parameter] public EventCallback BedarfDetails { get; set; }
+
+    private WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen K =>
+        Kennzahlen ?? new WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen();
+
+    /// <summary>
+    /// Eine Wertzeile: Beschriftung, Zahl, Einheit. Format „F2" woertlich wie
+    /// <c>FuelleUebersicht</c> :3936-3954.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@Zahl(wert, "F2")</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+
+    private static string Zahl(double wert, string format)
+        => wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture);
+}

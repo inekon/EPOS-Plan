@@ -61,7 +61,13 @@ namespace WindowsFormsApplication1
             public double SolarWaermeproduktionMwh;
             public double PvStromproduktionMwh;
 
-            // --- die sechs Summen (Ergebnisblock / NavigatorUebersicht) ---
+            // --- die sechs Summen (Ergebnisblock und Eigenanteilsraster) ---
+            //
+            // ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Sie führen die DECKUNG je
+            // Erzeuger, nicht die Produktion — Direktdeckung plus die zugerechnete
+            // Speicherentladung, je Kanal, genau die Summanden, aus denen auch das
+            // Eigenanteilsraster seine drei Kanalspalten bildet. Damit gilt
+            // „Bedarf − Summe Deckung = Restwärme ≥ 0" PER KONSTRUKTION.
             public double WaermeKesselMwh;
             public double WaermeWpMwh;
             public double WaermeHeizstabMwh;
@@ -69,8 +75,21 @@ namespace WindowsFormsApplication1
             public double WaermeBhkwMwh;
             public double WaermeGesamtMwh;
             /// <summary>
-            /// <c>Projektwärmebedarf − Summe der Erzeugerproduktion</c>. Eine ANZEIGEgröße,
-            /// nicht die Restwärme des Laufs — siehe <see cref="RestwaermeMwh"/>.
+            /// Der Restwärmebedarf — dieselbe Zahl wie <see cref="RestwaermeMwh"/>.
+            ///
+            /// <para><b>Anwenderentscheid 04.09.2026 (W11a-O-1).</b> Bis dahin stand hier
+            /// <c>Projektwärmebedarf − Summe der PRODUKTION</c>, und das konnte NEGATIV
+            /// werden: Geladene Speicherwärme steht in der Produktion und deckt trotzdem
+            /// keinen Bedarf (Projekt 1030: −1,76 MWh). Eine negative Restwärme darf
+            /// rechnerisch nicht entstehen — sie zeigt eine falsche Zuordnung zu den
+            /// Erzeugern. Geklemmt wird sie deshalb NICHT; die Übersicht führt EINE
+            /// Restwärmezahl, und das ist die Bilanzgröße des Laufs
+            /// (<c>SimulationControl.Restwaerme</c>, gespeichert als
+            /// <c>Tab_Ergebnis.Waermerestbedarf</c>).</para>
+            ///
+            /// <para>Übersteigt die Produktion eines Erzeugers seine Deckung, ist das ein
+            /// ÜBERSCHUSS (Feld <c>Wärmeüberschuss</c>, wie beim BHKW) — nicht
+            /// Restwärme.</para>
             /// </summary>
             public double RestwaermebedarfMwh;
         }
@@ -95,11 +114,22 @@ namespace WindowsFormsApplication1
         ///   Projekt mit BHKW einen zu großen Rest aus (Projekt 1030: 734,46 MWh statt
         ///   −1,76 MWh; der Lauf selbst meldet 0,00 MWh).</item>
         /// </list>
-        /// <para>Dass die gewählte Fassung für 1030 einen NEGATIVEN Wert liefert, ist die
-        /// Kehrseite: „Produktion" ist nicht „Deckung" — geladene Speicherwärme steht in
-        /// der Produktion und deckt trotzdem keinen Bedarf. Ob der Rest deshalb geklemmt
-        /// werden soll (dann 0,00 und damit gleich <see cref="UebersichtKennzahlen.RestwaermeMwh"/>),
-        /// ist eine Fachfrage — offener Punkt W11a-O-1.</para>
+        /// <para><b>W11a-O-1 ist entschieden (Anwender, 04.09.2026) — und damit ist der
+        /// BHKW-Streit gegenstandslos geworden.</b> Die Summen führen seither die
+        /// DECKUNG je Erzeuger und nicht die Produktion: Direktdeckung plus die
+        /// zugerechnete Speicherentladung, je Kanal — genau die Summanden, aus denen
+        /// <c>NavigatorUebersicht.FillTableWithData</c> seine Kanalspalten bildete. Der
+        /// Grund: „Produktion" ist nicht „Deckung"; geladene Speicherwärme steht in der
+        /// Produktion und deckt trotzdem keinen Bedarf, und deshalb konnte
+        /// <c>Bedarf − Produktion</c> NEGATIV werden (Projekt 1030: −1,76 MWh). Eine
+        /// negative Restwärme darf rechnerisch nicht entstehen — sie zeigt eine falsche
+        /// Zuordnung zu den Erzeugern. Geklemmt wird deshalb nichts; gerechnet wird
+        /// richtig, und der Rest ist die Bilanzgröße des Laufs.</para>
+        ///
+        /// <para><b>Zwei Zahlen werden eine.</b>
+        /// <see cref="UebersichtKennzahlen.RestwaermebedarfMwh"/> ist seither identisch
+        /// mit <see cref="UebersichtKennzahlen.RestwaermeMwh"/> — Übersichtsreiter und
+        /// Ergebnisreiter zeigen denselben Wert, wie es der Entscheid verlangt.</para>
         /// </summary>
         public static UebersichtKennzahlen Uebersicht(SimulationControl sim,
                                                       SimulationWaermebedarf wb,
@@ -123,20 +153,45 @@ namespace WindowsFormsApplication1
             u.SolarWaermeproduktionMwh = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000.0;
             u.PvStromproduktionMwh = sim.simulation_pv.Stromproduktion_gesamt / 1000.0;
 
-            u.WaermeKesselMwh = sim.simulation_spk.S_Waerme_spk;
-            u.WaermeWpMwh = u.WpWaermeproduktionMwh;
-            u.WaermeHeizstabMwh = u.HeizstabStromverbrauchMwh;
-            u.WaermeSolarMwh = u.SolarWaermeproduktionMwh;
-            u.WaermeBhkwMwh = u.BhkwWaermeproduktionMwh;
+            // ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): DECKUNG statt Produktion.
+            // Dieselben Summanden, aus denen NavigatorUebersicht.FillTableWithData seine
+            // Kanalspalten bildete - Direktdeckung plus zugerechnete Speicherentladung,
+            // der Heizstab in EIGENER Zeile (er gehoert in der Ergebnispersistenz zur
+            // Waermepumpe, auf dem Bildschirm bekommt er seine eigene).
+            u.WaermeWpMwh = DeckungMwh(SimulationRunner.Summiere(
+                sim.simulation_wp.Direktdeckung_Kanal, sim.simulation_wp.Speicherentladung_Kanal));
+            u.WaermeHeizstabMwh = DeckungMwh(SimulationRunner.Summiere(
+                sim.simulation_wp.Heizstab_Kanal));
+            u.WaermeSolarMwh = DeckungMwh(SimulationRunner.Summiere(
+                sim.simulation_solarthermie.Direktdeckung_Kanal,
+                sim.simulation_solarthermie.Speicherentladung_Kanal));
+            u.WaermeKesselMwh = DeckungMwh(SimulationRunner.Summiere(
+                sim.simulation_spk.Direktdeckung_Kanal, sim.simulation_spk.Speicherentladung_Kanal));
+            u.WaermeBhkwMwh = DeckungMwh(SimulationRunner.Summiere(
+                sim.simulation_bhkw.Direktdeckung_Kanal, sim.simulation_bhkw.Speicherentladung_Kanal));
+
             u.WaermeGesamtMwh = u.WaermeKesselMwh + u.WaermeWpMwh + u.WaermeHeizstabMwh +
                                 u.WaermeSolarMwh + u.WaermeBhkwMwh;
 
-            double projektbedarf = sim.simulation_Waermebedarf != null
-                                       ? sim.simulation_Waermebedarf.Waermebedarf_Gesamt
-                                       : u.WaermebedarfGesamtMwh;
-            u.RestwaermebedarfMwh = projektbedarf - u.WaermeGesamtMwh;
+            // EINE Restwaermezahl: die Bilanzgroesse des Laufs. Sie ist per Konstruktion
+            // nicht negativ, und sie ist dieselbe, die Tab_Ergebnis.Waermerestbedarf
+            // fuehrt - Uebersichtsreiter und Ergebnisreiter zeigen damit denselben Wert.
+            u.RestwaermebedarfMwh = u.RestwaermeMwh;
 
             return u;
+        }
+
+        /// <summary>
+        /// Summe einer Kanalzeile [kWh] als [MWh] — die Umrechnung, die auch
+        /// <c>NavigatorUebersicht.Zeile</c> je Kanalspalte vornahm.
+        /// </summary>
+        private static double DeckungMwh(double[] kanalKwh)
+        {
+            double summe = 0.0;
+            if (kanalKwh == null) return summe;
+
+            foreach (double k in kanalKwh) summe += k;
+            return summe / 1000.0;
         }
 
         // =================================================================

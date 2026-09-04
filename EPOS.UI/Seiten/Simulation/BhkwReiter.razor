@@ -1,0 +1,189 @@
+@* Der BHKW-Reiter der Ergebnisseite (R8, iU9-W11b.7).
+
+   VORBILD. tabPage_BHKW mit 15 Feldern (davon drei programmatischen
+   Kennzahlzeilen), dem Brennstoffblock aus zehn Aufrufstellen von
+   ErstelleBrennstoffZeile, der Modultabelle (dataGridView_BHKW - trotz des
+   Namens eine ListView) und chart_BHKW_Waerme samt Umschalter „sortiert".
+
+   BEFUND W11-B21 ENTFAELLT. Die drei Texte SIMDET_BHKW_* lagen in der
+   Form-.resx und wurden ueber einen ZWEITEN ResourceManager gelesen
+   (TextAusFormResx :2148-2174). Sie stehen seit W11b.0 im gemeinsamen Katalog;
+   das hartkodierte „MWh/a" der Brennstoffzeile (:7676) ist eine Einheit und
+   steht als solche.
+
+   BEZUGSGROESSEN, WOERTLICH UEBERNOMMEN. Der Deckungsgrad bezieht sich auf den
+   PROJEKTbedarf, die Bedarfslinie des Diagramms auf den STUFENEINGANG - die
+   Begruendung steht im Blockkommentar des Vorlaeufers (:2129-2147): Die
+   Restwaerme-Ganglinie des Kerns ist stundenweise als „Stufeneingang −
+   Direktdeckung − zugerechnete Entladung" definiert; mit dem Projektbedarf als
+   Linie ginge die Summe im Bild sichtbar nicht auf.
+
+   ETAPPE E2. Die beiden Bestandszeilen heissen richtig „Vbh thermisch, Summe
+   Module" und „…, Mittel Module" - sie fuehrten nie Betriebsstunden. Darunter
+   die elektrischen Vollbenutzungsstunden; ohne gepflegte elektrische
+   Nennleistung steht dort „—" und keine erfundene Zahl. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_SUMME,
+                               Daten.BetriebsstundenThermisch.ToString("F0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_MITTEL,
+                               Daten.BetriebsstundenDurchschnitt.ToString("F0", Kultur), "h/a")
+                    @if (Praesent)
+                    {
+                        @Wertzeile(Resource.SIM_BHKW_VBH_EL,
+                                   Daten.VbhElektrischBekannt
+                                       ? Daten.VbhElektrisch.ToString("F0", Kultur)
+                                       : "—", "h/a")
+                    }
+
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEUEBERSCHUSS, Zahl(Daten.WaermeueberschussMwh), MWH)
+
+                    @* Der Speicherbeitrag, im Vorlaeufer bis Live-Test 1 nirgends
+                       sichtbar: wohin die Produktion geht und woher die Deckung kommt.
+                       Beide Zeilen folgen der Praesenzregel des Diagramms. *@
+                    @if (Praesent)
+                    {
+                        @Wertzeile(Resource.SIMDET_BHKW_SPEICHERLADUNG, Zahl(Daten.SpeicherladungMwh), MWH)
+                        @Wertzeile(Resource.SIMDET_BHKW_SPEICHERDECKUNG, Zahl(Daten.SpeicherdeckungMwh), MWH)
+                    }
+
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
+                               WaermebedarfVorhanden ? Zahl(Daten.WaermedeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARFSDECKUNG,
+                               StrombedarfVorhanden ? Zahl(Daten.StromdeckungProzent) : "0", "%")
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_LBL_BRENNSTOFFVERBRAUCH" />
+                @if (SichtbareBrennstoffe == 0)
+                {
+                    @* „Falls GAR kein Brennstoff aktiv war" - woertlich :7614. *@
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF" />
+                }
+                else
+                {
+                    <dl class="epos-simerg-werte">
+                        @foreach (Brennstoffzeile b in Brennstoffe)
+                        {
+                            if (!b.Sichtbar) { continue; }
+                            @Wertzeile(b.Bezeichnung, Zahl(b.Wert), MWH)
+                        }
+                    </dl>
+                }
+            </section>
+
+        </div>
+
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_ERZEUGERNAME_BHKW</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var m = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            @* Der Ersatztext bleibt in der Oberflaeche - das DTO fuehrt den
+                               Namen des Laufs und erfindet keinen (:4770). *@
+                            <td>@(string.IsNullOrEmpty(m.Name) ? Resource.SIM_BHKW_MODUL_STANDARD : m.Name)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.WaermeMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.StromMwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Praesent)
+        {
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                          WertChanged="@(w => _sortiert = w)" />
+            </div>
+
+            <ChartBild Png="@BildBhkw" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.BhkwErgebnis? Daten { get; set; }
+
+    /// <summary>Die Brennstoffzeilen - nur die mit Verbrauch &gt; 0 (woertlich :7566-7612).</summary>
+    [Parameter] public IReadOnlyList<Brennstoffzeile> Brennstoffe { get; set; }
+        = Array.Empty<Brennstoffzeile>();
+
+    /// <summary>
+    /// Gehoert das BHKW zum Ergebnis (<c>ErgebnisPraesenz.BHKW</c>)? Nur dann stehen
+    /// Diagramm, Umschalter, die zwei Speicherzeilen und die Vbh-Zeile da
+    /// (<c>BhkwErgebnisAnzeigen</c> :2178-2196).
+    /// </summary>
+    [Parameter] public bool Praesent { get; set; } = true;
+
+    [Parameter] public bool WaermebedarfVorhanden { get; set; } = true;
+    [Parameter] public bool StrombedarfVorhanden { get; set; } = true;
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    private bool _sortiert;
+
+    private int SichtbareBrennstoffe
+    {
+        get
+        {
+            int n = 0;
+            foreach (Brennstoffzeile b in Brennstoffe) if (b.Sichtbar) n++;
+            return n;
+        }
+    }
+
+    private byte[]? BildBhkw => Bild?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert));
+
+    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+
+    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

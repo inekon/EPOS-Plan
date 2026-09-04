@@ -1,0 +1,127 @@
+@* Der PHOTOVOLTAIK-Reiter der Ergebnisseite (R9, iU9-W11b.8).
+
+   VORBILD. tabPage_Photovoltaik mit sechs Feldern, der programmatischen
+   Modultabelle (listView_SimPV) und chart_PV: vier Reihen im
+   Viertelstundenraster, von denen zwei beim Aufbau ABGESCHALTET werden
+   (Speicherfuellstand und Ueberschuss) und ueber zwei Haken wieder dazukommen.
+
+   B3 - DIE ZWEITE Y-ACHSE. Der Speicherfuellstand geht in kWh auf die rechte
+   Achse; der Vorlaeufer rechnete dafuer InnerPlotPosition von Hand
+   (checkBox_Speicherzustand_CheckedChanged :5168-5243, 75 Zeilen samt
+   NaN-Schutz und Untergrenze 10). Der Renderer macht das selbst - der
+   Bildauftrag traegt nur, WELCHE Reihen an sind.
+
+   BEFUND W11-B22 IST IN W11a BEHOBEN: Der Deckungsgrad teilte ungepruefte
+   Summen; in zwei von drei Referenzprojekten stand hier „NaN". Das DTO liefert
+   0,00. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
+                    @Wertzeile(Resource.SIMERG_LBL_PV_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxLeistungKw), "kW")
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                @* Beide Haken stehen beim Aufbau AUS - woertlich :4676-4679. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_PV_UEBERSCHUSS" Wert="@_ueberschuss"
+                              WertChanged="@(w => _ueberschuss = w)" />
+                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_SPEICHERFUELLUNG" Wert="@_speicher"
+                              WertChanged="@(w => _speicher = w)" />
+                </div>
+
+                <ChartBild Png="@BildPv" Alt="@Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE" />
+            </section>
+
+        </div>
+
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_PHOTOVOLTAIK</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var m = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            <td>@m.Name</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
+                            <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.StromproduktionMwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.PhotovoltaikErgebnis? Daten { get; set; }
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    private bool _ueberschuss;
+    private bool _speicher;
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes. Strombedarf und Photovoltaik sind
+    /// immer an; Ueberschuss und Speicherfuellstand kommen ueber die Haken dazu.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string> { "STROMBEDARF", "PHOTOVOLTAIK" };
+        if (_ueberschuss) liste.Add("UEBERSCHUSS");
+        if (_speicher) liste.Add("SPEICHERFUELLSTAND");
+        return liste;
+    }
+
+    private byte[]? BildPv =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Photovoltaik, false, -1, Reihen()));
+
+    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+
+    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

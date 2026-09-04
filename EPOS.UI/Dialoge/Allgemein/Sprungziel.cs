@@ -109,4 +109,22 @@ public static class Sprungziel
     /// zeigt (<c>Form_AdminWaermeeinlesen</c>); sie bleibt bis Welle 13 WinForms.
     /// </summary>
     public const string WaermebedarfExternAdmin = "WAERMEBEDARF_EXTERN_ADMIN";
+
+    /// <summary>
+    /// „Auslegung optimieren …" — die Rastersuche des Stromspeichers
+    /// (<c>Form_SpeicherOptimierung</c>, Vorläufer
+    /// <c>Form_Simulation_Detail.SpOptimierung_Click</c>:5992, iU9-W11b.0).
+    ///
+    /// <para><b>Warum sie eine Brücke braucht und keine Überlagerung.</b> Die Maske
+    /// bleibt WinForms (Entscheid iF22): Sie ist der einzige Ort des Programms, an dem
+    /// <c>ScottPlot.WinForms</c> läuft — Heatmap und Schnittkurve der Rastersuche. Eine
+    /// Razor-Fassung gibt es dafür bis auf Weiteres nicht.</para>
+    ///
+    /// <para><b>Was die Antwort bedeutet.</b> <c>true</c> heißt hier NICHT „mit OK
+    /// geschlossen", sondern <c>Form_SpeicherOptimierung.AuslegungUebernommen</c> —
+    /// der Anwender hat den Bestpunkt übernommen, und damit hat sich die Speichervariante
+    /// geändert. Die Seite liest sie danach neu; neu gerechnet wird bewusst nicht
+    /// (wörtlich wie im Vorläufer).</para>
+    /// </summary>
+    public const string SpeicherOptimierung = "SPEICHER_OPTIMIERUNG";
 }
