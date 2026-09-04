@@ -2923,3 +2923,30 @@ body {
     .epos-verlauf { border: 1px solid CanvasText; }
     .epos-verlauf-verweis { color: LinkText; }
 }
+
+/* --------------------------------------------------------------------------
+   Nur-Lese-Textanzeige (iU9-W15b.2) - Aktionsprotokoll und Sendevorschau des
+   Assistenten. Der Vorlaeufer war ein zweites modales Fenster mit fest
+   gerechneten Massen (900 x 480 bzw. 720 x 520); hier zaehlt die Zeilenzahl des
+   Feldes, den Rest macht das Raster der Ueberlagerung.
+   -------------------------------------------------------------------------- */
+.epos-textanzeige {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Die graue Hinweiszeile der Vorschau - im Vorlaeufer ein 66 px hohes Label in
+   DimGray. Umbrueche im Text bleiben erhalten (sie nennt Modell und Endpunkt in
+   getrennten Zeilen). */
+.epos-textanzeige-kopf {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-textanzeige-fuss {
+    display: flex;
+    justify-content: flex-end;
+}
