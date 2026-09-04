@@ -107,7 +107,14 @@ public sealed class StapelTests
         // Razor-Komponente wie der Dialog der Startkachel (StromganglinieDialog aus
         // W12, Befund W12-O-3). W16a.3 nimmt Wizard_Komponenten mit (12), W16a.5
         // den Rahmen WizardParent und das UserControl ProjektAuswahl (10).
-        Assert.True(dateien.Count >= 10, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        //
+        // iU9-W16b (04.09.2026): Die Teilwelle nimmt FUENF Designer-Masken mit -
+        // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
+        // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
+        // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
+        // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
+        Assert.True(dateien.Count >= 5, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -166,7 +173,14 @@ public sealed class StapelTests
         // Wizard_Komponenten mit (9), die Assistentenseite 0. Welle 16a.5 nimmt den
         // RAHMEN WizardParent und das UserControl ProjektAuswahl mit (7) - letzteres
         // hatte seit W15a nur noch einen Wirt, und der war der Rahmen.
-        Assert.True(Lauf.Value.Masken >= 7, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        //
+        // iU9-W16b (04.09.2026): Die Teilwelle nimmt FUENF Designer-Masken mit -
+        // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
+        // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
+        // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
+        // ZWEI Masken: MDIMainForm (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
+        Assert.True(Lauf.Value.Masken >= 2, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -221,30 +235,38 @@ public sealed class StapelTests
         // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache). W16a.3 nimmt
         // Wizard_Komponenten mit (5) - 11 .Text und 13 .Titel je Sprache. W16a.5
         // nimmt WizardParent und ProjektAuswahl mit (3).
-        Assert.True(Lauf.Value.Lokalisierte >= 3,
+        // iU9-W16b: Von den fuenf Masken der Teilwelle sind ZWEI lokalisiert
+        // (FormMain und Form_Start); Form_StromTest, Form_Hinweis und AktionsKarte
+        // haben keine Satelliten. Es bleibt EINE von ZWEI - der Anteil steht damit
+        // weiterhin bei der Haelfte.
+        Assert.True(Lauf.Value.Lokalisierte >= 1,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
     [Fact]
     public void DieHaeufigstenTypenSindAbgedeckt()
     {
-        // Der Bestand schrumpft mit jeder Welle von iU9. Die sechs Typen, die bis
-        // Welle 16 bleiben (Form_Start, MDIMainForm, WizardParent), muessen im Bestand
-        // vorkommen; die fuenf, die schon frueher fallen (NumericUpDown mit W13,
-        // DataGridView mit W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit
-        // W15c), genuegen im BESTAND ODER IM PRUEFMUSTER - das eingefrorene Muster
-        // ist die einzige Stelle, an der der Leser den Typ nach dem Rueckbau noch
-        // vorfindet. Kennen muss der Leser alle elf.
+        // Der Bestand schrumpft mit jeder Welle von iU9, und mit Welle 16b ist er
+        // leer: Was noch steht, sind MDIMainForm (die Huelle, ein Kartenzeile) und
+        // Form_HelpPopup. ALLE elf Typzeugen haengen deshalb seither am eingefrorenen
+        // PRUEFMUSTER (Entscheid E-9) - es ist die einzige Stelle, an der der Leser
+        // einen Typ nach dem Rueckbau noch vorfindet.
+        //
+        // Der Weg dahin, Welle fuer Welle: NumericUpDown mit W13, DataGridView mit
+        // W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit W15c, ListBox mit
+        // W16a.1 - und mit W16b.3 die letzten fuenf (Label, TextBox, Button,
+        // ComboBox, TabPage), die saemtlich auf Form_Start standen. Ihr Zeuge ist
+        // seither Pruefmuster/Hauptformular/Form_Start.Designer.cs: 108 Kartenzeilen,
+        // die groesste Maske, die der Bestand je hatte.
+        //
+        // GEPRUEFT WIRD WEITER DASSELBE: dass der Leser alle elf Typen kennt UND sie
+        // an einer lesbaren Maske findet. Nur der Fundort ist ein anderer.
         var bestand = Lauf.Value.Typen;
         var muster = PruefmusterTypen();
 
-        // iU9-W16a.1: ListBox wechselt in die zweite Gruppe. Die beiden letzten
-        // ListBox des Bestands standen in Wizard_Stromlastgang; das Pruefmuster
-        // fuehrt den Typ weiter (Wizard_WPItem, Form_WP_einlesen).
-        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage" })
-            Assert.True(bestand.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
-
-        foreach (var typ in new[] { "GroupBox", "CheckBox", "NumericUpDown", "DataGridView", "Chart", "ListBox" })
+        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage",
+                                    "GroupBox", "CheckBox", "NumericUpDown", "DataGridView",
+                                    "Chart", "ListBox" })
             Assert.True(bestand.ContainsKey(typ) || muster.Contains(typ),
                         "Typ " + typ + " kam weder im Stapellauf noch im Pruefmuster vor.");
 
@@ -273,6 +295,11 @@ public sealed class StapelTests
         // Alles, was der Leser nicht kennt, landet als "sonstig" in der Karte -
         // sichtbar, nicht geraten. Es duerfen nur die selbstgebauten Controls
         // des Bestands sein.
+        //
+        // iU9-W16b: Der Bestand fuehrt seit dieser Teilwelle KEINES mehr -
+        // AktionsKarte faellt mit Form_Start, ProjektAuswahl fiel mit W16a.5,
+        // KlimazonenKarte mit W10a.3. Die Liste bleibt stehen: Sie sagt, was
+        // zulaessig WAERE, und ein neues Haus-Steuerelement soll hier auffallen.
         Assert.All(Lauf.Value.Unbekannt.Keys,
                    typ => Assert.Contains(typ, new[] { "AktionsKarte", "ProjektAuswahl",
                                                        "HeaderGradientPanel", "KlimazonenKarte" }));

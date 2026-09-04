@@ -38757,5 +38757,707 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("KI_CHAT_KOPIEREN", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string START_REITER_PROJEKT {
+            get {
+                return ResourceManager.GetString("START_REITER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string START_REITER_WAERME {
+            get {
+                return ResourceManager.GetString("START_REITER_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string START_REITER_STROM {
+            get {
+                return ResourceManager.GetString("START_REITER_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieerzeuger ähnelt.
+        /// </summary>
+        public static string START_REITER_ERZEUGER {
+            get {
+                return ResourceManager.GetString("START_REITER_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string START_REITER_SIMULATION {
+            get {
+                return ResourceManager.GetString("START_REITER_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichte & Kosten ähnelt.
+        /// </summary>
+        public static string START_REITER_BERICHTE {
+            get {
+                return ResourceManager.GetString("START_REITER_BERICHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieplanungs-Software ähnelt.
+        /// </summary>
+        public static string START_GATTUNG {
+            get {
+                return ResourceManager.GetString("START_GATTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt: ähnelt.
+        /// </summary>
+        public static string START_LBL_PROJEKT {
+            get {
+                return ResourceManager.GetString("START_LBL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion auswählen: ähnelt.
+        /// </summary>
+        public static string START_LBL_KLIMA {
+            get {
+                return ResourceManager.GetString("START_LBL_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region auswählen ähnelt.
+        /// </summary>
+        public static string START_KLIMA_REGION {
+            get {
+                return ResourceManager.GetString("START_KLIMA_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für alle Berechnungen im Projekt ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HINWEIS {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ▶ ähnelt.
+        /// </summary>
+        public static string START_BTN_WEITER {
+            get {
+                return ResourceManager.GetString("START_BTN_WEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ◀ Zurück ähnelt.
+        /// </summary>
+        public static string START_BTN_ZURUECK {
+            get {
+                return ResourceManager.GetString("START_BTN_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt einrichten ähnelt.
+        /// </summary>
+        public static string START_P_KOPF {
+            get {
+                return ResourceManager.GetString("START_P_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellen Sie ein neues Projekt oder öffnen Sie ein bestehendes. ähnelt.
+        /// </summary>
+        public static string START_P_TEXT {
+            get {
+                return ResourceManager.GetString("START_P_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Projekt ähnelt.
+        /// </summary>
+        public static string START_K_NEU_T {
+            get {
+                return ResourceManager.GetString("START_K_NEU_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starten Sie ein komplett neues Energieprojekt ähnelt.
+        /// </summary>
+        public static string START_K_NEU_B {
+            get {
+                return ResourceManager.GetString("START_K_NEU_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt öffnen/bearbeiten ähnelt.
+        /// </summary>
+        public static string START_K_OEFFNEN_T {
+            get {
+                return ResourceManager.GetString("START_K_OEFFNEN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie ein gespeichertes Projekt bzw. bearbeiten Sie ein bestehende [...] ähnelt.
+        /// </summary>
+        public static string START_K_OEFFNEN_B {
+            get {
+                return ResourceManager.GetString("START_K_OEFFNEN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuletzt geöffnet ähnelt.
+        /// </summary>
+        public static string START_K_ZULETZT_T {
+            get {
+                return ResourceManager.GetString("START_K_ZULETZT_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselt direkt zum zuletzt geöffneten Projekt ähnelt.
+        /// </summary>
+        public static string START_K_ZULETZT_B {
+            get {
+                return ResourceManager.GetString("START_K_ZULETZT_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
+        /// </summary>
+        public static string START_K_SPEICHERNUNTER_T {
+            get {
+                return ResourceManager.GetString("START_K_SPEICHERNUNTER_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern Sie ein Projekt unter anderem Namen ähnelt.
+        /// </summary>
+        public static string START_K_SPEICHERNUNTER_B {
+            get {
+                return ResourceManager.GetString("START_K_SPEICHERNUNTER_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt löschen ähnelt.
+        /// </summary>
+        public static string START_K_LOESCHEN_T {
+            get {
+                return ResourceManager.GetString("START_K_LOESCHEN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen Sie ein bestehendes Projekt ähnelt.
+        /// </summary>
+        public static string START_K_LOESCHEN_B {
+            get {
+                return ResourceManager.GetString("START_K_LOESCHEN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf definieren ähnelt.
+        /// </summary>
+        public static string START_W_KOPF {
+            get {
+                return ResourceManager.GetString("START_W_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfassen Sie den Wärmebedarf Ihres Projekts. ähnelt.
+        /// </summary>
+        public static string START_W_TEXT {
+            get {
+                return ResourceManager.GetString("START_W_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string START_W_HINWEIS_TITEL {
+            get {
+                return ResourceManager.GetString("START_W_HINWEIS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können Gebäudedaten manuell eingeben oder aus einer Datei importie [...] ähnelt.
+        /// </summary>
+        public static string START_W_HINWEIS {
+            get {
+                return ResourceManager.GetString("START_W_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten eingeben ähnelt.
+        /// </summary>
+        public static string START_K_GEBAEUDE_T {
+            get {
+                return ResourceManager.GetString("START_K_GEBAEUDE_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfassen Sie Fläche, Dämmung und andere Parameter ähnelt.
+        /// </summary>
+        public static string START_K_GEBAEUDE_B {
+            get {
+                return ResourceManager.GetString("START_K_GEBAEUDE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten importieren ähnelt.
+        /// </summary>
+        public static string START_K_WBDATEN_T {
+            get {
+                return ResourceManager.GetString("START_K_WBDATEN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie Wärmebedarfsdaten aus einer Datei ähnelt.
+        /// </summary>
+        public static string START_K_WBDATEN_B {
+            get {
+                return ResourceManager.GetString("START_K_WBDATEN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string START_K_PROZESS_T {
+            get {
+                return ResourceManager.GetString("START_K_PROZESS_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Definieren Sie industrielle Prozesswärme ähnelt.
+        /// </summary>
+        public static string START_K_PROZESS_B {
+            get {
+                return ResourceManager.GetString("START_K_PROZESS_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserwärme ähnelt.
+        /// </summary>
+        public static string START_K_BRAUCHWASSER_T {
+            get {
+                return ResourceManager.GetString("START_K_BRAUCHWASSER_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Definieren Sie ein Brauchwasserprofil ähnelt.
+        /// </summary>
+        public static string START_K_BRAUCHWASSER_B {
+            get {
+                return ResourceManager.GetString("START_K_BRAUCHWASSER_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf definieren ähnelt.
+        /// </summary>
+        public static string START_S_KOPF {
+            get {
+                return ResourceManager.GetString("START_S_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfassen Sie den elektrischen Energiebedarf ähnelt.
+        /// </summary>
+        public static string START_S_TEXT {
+            get {
+                return ResourceManager.GetString("START_S_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardlastprofil ähnelt.
+        /// </summary>
+        public static string START_K_STDLAST_T {
+            get {
+                return ResourceManager.GetString("START_K_STDLAST_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwenden Sie ein typisches Lastprofil ähnelt.
+        /// </summary>
+        public static string START_K_STDLAST_B {
+            get {
+                return ResourceManager.GetString("START_K_STDLAST_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenes Profil ähnelt.
+        /// </summary>
+        public static string START_K_EIGENESPROFIL_T {
+            get {
+                return ResourceManager.GetString("START_K_EIGENESPROFIL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellen Sie ein individuelles Stromprofil ähnelt.
+        /// </summary>
+        public static string START_K_EIGENESPROFIL_B {
+            get {
+                return ResourceManager.GetString("START_K_EIGENESPROFIL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messdaten importieren ähnelt.
+        /// </summary>
+        public static string START_K_MESSDATEN_T {
+            get {
+                return ResourceManager.GetString("START_K_MESSDATEN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie reale Verbrauchsdaten ähnelt.
+        /// </summary>
+        public static string START_K_MESSDATEN_B {
+            get {
+                return ResourceManager.GetString("START_K_MESSDATEN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieerzeuger auswählen ähnelt.
+        /// </summary>
+        public static string START_E_KOPF {
+            get {
+                return ResourceManager.GetString("START_E_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Energieerzeugungstechnologien für Ihr System. ähnelt.
+        /// </summary>
+        public static string START_E_TEXT {
+            get {
+                return ResourceManager.GetString("START_E_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tipp ähnelt.
+        /// </summary>
+        public static string START_E_TIPP_TITEL {
+            get {
+                return ResourceManager.GetString("START_E_TIPP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewüns [...] ähnelt.
+        /// </summary>
+        public static string START_E_TIPP {
+            get {
+                return ResourceManager.GetString("START_E_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string START_E_PROFIL {
+            get {
+                return ResourceManager.GetString("START_E_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
+        /// </summary>
+        public static string START_E_GANGLINIE {
+            get {
+                return ResourceManager.GetString("START_E_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string START_K_WP_T {
+            get {
+                return ResourceManager.GetString("START_K_WP_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effiziente Wärmeerzeugung aus Umweltwärme ähnelt.
+        /// </summary>
+        public static string START_K_WP_B {
+            get {
+                return ResourceManager.GetString("START_K_WP_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string START_K_HEIZKESSEL_T {
+            get {
+                return ResourceManager.GetString("START_K_HEIZKESSEL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konventionelle Wärmeerzeugung ähnelt.
+        /// </summary>
+        public static string START_K_HEIZKESSEL_B {
+            get {
+                return ResourceManager.GetString("START_K_HEIZKESSEL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string START_K_SOLAR_T {
+            get {
+                return ResourceManager.GetString("START_K_SOLAR_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeerzeugung aus Sonnenenergie ähnelt.
+        /// </summary>
+        public static string START_K_SOLAR_B {
+            get {
+                return ResourceManager.GetString("START_K_SOLAR_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string START_K_BHKW_T {
+            get {
+                return ResourceManager.GetString("START_K_BHKW_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blockheizkraftwerk für Wärme und Strom ähnelt.
+        /// </summary>
+        public static string START_K_BHKW_B {
+            get {
+                return ResourceManager.GetString("START_K_BHKW_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string START_K_STROMSPEICHER_T {
+            get {
+                return ResourceManager.GetString("START_K_STROMSPEICHER_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batteriespeicher für überschüssigen Strom ähnelt.
+        /// </summary>
+        public static string START_K_STROMSPEICHER_B {
+            get {
+                return ResourceManager.GetString("START_K_STROMSPEICHER_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string START_K_PV_T {
+            get {
+                return ResourceManager.GetString("START_K_PV_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromerzeugung aus Sonnenenergie ähnelt.
+        /// </summary>
+        public static string START_K_PV_B {
+            get {
+                return ResourceManager.GetString("START_K_PV_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string START_K_PUFFER_T {
+            get {
+                return ResourceManager.GetString("START_K_PUFFER_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschüssige Wärme aus der Heizung speichern ähnelt.
+        /// </summary>
+        public static string START_K_PUFFER_B {
+            get {
+                return ResourceManager.GetString("START_K_PUFFER_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation durchführen ähnelt.
+        /// </summary>
+        public static string START_SIM_KOPF {
+            get {
+                return ResourceManager.GetString("START_SIM_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnen Sie die Energieflüsse und Systemleistung. ähnelt.
+        /// </summary>
+        public static string START_SIM_TEXT {
+            get {
+                return ResourceManager.GetString("START_SIM_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation Konfiguration... ähnelt.
+        /// </summary>
+        public static string START_SIM_BTN_KONFIG {
+            get {
+                return ResourceManager.GetString("START_SIM_BTN_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektzusammenfassung ähnelt.
+        /// </summary>
+        public static string START_SIM_ZUSAMMENFASSUNG {
+            get {
+                return ResourceManager.GetString("START_SIM_ZUSAMMENFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektname: ähnelt.
+        /// </summary>
+        public static string START_SIM_PROJEKTNAME {
+            get {
+                return ResourceManager.GetString("START_SIM_PROJEKTNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf: ähnelt.
+        /// </summary>
+        public static string START_SIM_WBEDARF {
+            get {
+                return ResourceManager.GetString("START_SIM_WBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: ähnelt.
+        /// </summary>
+        public static string START_SIM_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("START_SIM_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Technologien: ähnelt.
+        /// </summary>
+        public static string START_SIM_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("START_SIM_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string START_K_DETAILSIM_T {
+            get {
+                return ResourceManager.GetString("START_K_DETAILSIM_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Präzise Jahressimulation mit allen Details ähnelt.
+        /// </summary>
+        public static string START_K_DETAILSIM_B {
+            get {
+                return ResourceManager.GetString("START_K_DETAILSIM_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst ein Projekt auswählen. ähnelt.
+        /// </summary>
+        public static string START_KLIMA_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("START_KLIMA_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ✔ ähnelt.
+        /// </summary>
+        public static string START_STATUS_OFFEN {
+            get {
+                return ResourceManager.GetString("START_STATUS_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ ähnelt.
+        /// </summary>
+        public static string START_STATUS_KEINS {
+            get {
+                return ResourceManager.GetString("START_STATUS_KEINS", resourceCulture);
+            }
+        }
 }
 }

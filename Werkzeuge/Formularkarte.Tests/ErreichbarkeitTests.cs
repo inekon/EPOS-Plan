@@ -34,9 +34,12 @@ public sealed class ErreichbarkeitTests
     //  Die beiden Wurzeln
     // ==================================================================
 
+    // iU9-W16b.3: Es ist nur noch EINE Wurzel. Form_Start ist eine Razor-Seite
+    // (EPOS.UI/Seiten/Start/Startseite.razor) und damit keine Maske mehr; der
+    // Graph beginnt seither allein an MDIMainForm - und Form_HelpPopup, die
+    // letzte Maske neben der Huelle, haengt weiter daran (Befund W16-B3).
     [Theory]
     [InlineData("MDIMainForm")]
-    [InlineData("Form_Start")]
     public void DieBeidenEinstiegeSindWurzeln(string klasse)
     {
         var knoten = Knoten(klasse);
@@ -173,48 +176,42 @@ public sealed class ErreichbarkeitTests
         Assert.Equal("MDIMainForm", knoten.Pfad);
     }
 
-    /// <summary>
-    /// iU9-W16a.3 — der AUFTRAG T2 aus dem Protokoll der Welle 15a (§ 8) ist
-    /// erledigt: <c>DerAssistentZiehtSeineDreizehnSeitenMit</c> ist gestrichen.
-    ///
-    /// <para>Er pruefte, dass der Leser Klassennamen auch in der Erzeugerliste eines
-    /// STATISCHEN FELDES findet (<c>AssistentSeiten.ERZEUGER</c>) und nicht nur in
-    /// Methodenruempfen. Seine drei Zeugen sind der Reihe nach gefallen:
-    /// <c>Wizard_Projekt</c> mit W15a.6, <c>Wizard_Stromlastgang</c> mit W16a.1,
-    /// <c>Wizard_Komponenten</c> mit W16a.3. Ein Ersatz ist im Bestand nicht
-    /// moeglich: In der Liste stehen seither ausschliesslich Huellenaufrufe, und
-    /// eine Huelle ist keine Maske - ihr Knoten hiesse
-    /// <c>BlazorAssistentSeite&lt;...&gt;</c>.</para>
-    ///
-    /// <para>Die MECHANIK selbst bleibt geprueft: <c>DasPruefmusterIstUnerreichbarUndSagtWarum</c>
-    /// und <c>WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar</c> lesen
-    /// denselben Graphen am eingefrorenen Pruefmuster.</para>
-    /// </summary>
+    // iU9-W16a.3 - der AUFTRAG T2 aus dem Protokoll der Welle 15a (Paragraph 8) ist
+    // erledigt: DerAssistentZiehtSeineDreizehnSeitenMit ist gestrichen.
+    //
+    // Er prueft, dass der Leser Klassennamen auch in der Erzeugerliste eines
+    // STATISCHEN FELDES findet (AssistentSeiten.ERZEUGER) und nicht nur in
+    // Methodenruempfen. Seine drei Zeugen sind der Reihe nach gefallen:
+    // Wizard_Projekt mit W15a.6, Wizard_Stromlastgang mit W16a.1,
+    // Wizard_Komponenten mit W16a.3. Ein Ersatz ist im Bestand nicht moeglich: In der
+    // Liste stehen seither ausschliesslich Huellenaufrufe, und eine Huelle ist keine
+    // Maske - ihr Knoten hiesse BlazorAssistentSeite<...>.
+    //
+    // Die MECHANIK selbst bleibt geprueft: DasPruefmusterIstUnerreichbarUndSagtWarum
+    // und WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar lesen denselben
+    // Graphen am eingefrorenen Pruefmuster.
 
-    [Fact]
-    public void DieSprungtabelleLoestDieMaskenschluesselAuf()
-    {
-        // Die Kette der Zeugen: Bis iU9-W7.10 stand hier Form_WP
-        // (Masken.WpAdministration, mit W7.3 geloescht), danach bis iU9-W14a.7
-        // Form_AdminStromspeicher (Masken.StromspeicherAdmin, mit W14a.3 geloescht),
-        // danach bis iU9-W15a.9 Form_ProjektSpeichernUnter (Masken.ProjektSpeichernUnter,
-        // mit W15a.4 geloescht).
-        //
-        // FormMain wird ueber Masken.ProjektDetail geoeffnet - vom MDI-Menue ueber
-        // MenueCtrl.ProjektInFormMainLaden und WinFormsNavigation.ProjektDetailZeigen.
-        // Nach W15a sind es die LETZTEN ZWEI Maskenschluessel mit einer WinForms-Maske
-        // dahinter (Masken.ProjektDetail und Masken.Assistent); alle 22 uebrigen haben
-        // eine Razor-Fassung. ProjektDetail ist von beiden der kuerzere Weg.
-        //
-        // WELLE 16 MUSS DIESEN TEST STRICHEN ODER AUF EIN PRUEFMUSTER UMZIEHEN:
-        // Danach gibt es keinen Maskenschluessel mit einer WinForms-Maske mehr
-        // (Risiko R-W15a-10, dieselbe Entscheidung, die W14a fuer
-        // EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa treffen musste).
-        var knoten = Knoten("FormMain");
-
-        Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Contains("Masken.ProjektDetail", knoten.Pfad, StringComparison.Ordinal);
-    }
+    // iU9-W16b.1: DER MASKENSCHLUESSEL-ZEUGE IST GESTRICHEN.
+    //
+    // Die Kette der Zeugen lautete: Form_WP (Masken.WpAdministration, mit iU9-W7.3
+    // geloescht) -> Form_AdminStromspeicher (Masken.StromspeicherAdmin, W14a.3) ->
+    // Form_ProjektSpeichernUnter (Masken.ProjektSpeichernUnter, W15a.4) -> FormMain
+    // (Masken.ProjektDetail). Mit dem Anwenderentscheid E-7 (K6-a) ist FormMain
+    // geloescht UND der Schluessel Masken.ProjektDetail mit ihm; Masken.Assistent, der
+    // letzte verbliebene zusammengesetzte Ablauf, fuehrt seit W16a.5 in eine
+    // RAZOR-Huelle und damit auf keine Designer-Maske mehr.
+    //
+    // Damit gibt es im Bestand keinen Maskenschluessel mit einer WinForms-Maske
+    // dahinter - genau das ist der Zweck der Welle. Der Test hat seinen Gegenstand
+    // verloren und ist gestrichen; die MECHANIK selbst bleibt geprueft
+    // (DasPruefmusterIstUnerreichbarUndSagtWarum und
+    // WasAmEinstiegslosenFormKostenHingIstEbenfallsUnerreichbar lesen denselben
+    // Graphen am eingefrorenen Pruefmuster).
+    //
+    // OFFENER PUNKT W16b-O-1: W16c legt nach Entscheid E-9 das grosse Pruefmuster an
+    // (Form_Start.Designer.cs, MDIMainForm.Designer.cs). Wer dort einen Auszug der
+    // Sprungtabelle mit einfriert, bekommt diesen Zeugen zurueck - dann gegen das
+    // Pruefmuster statt gegen den Bestand.
 
     // ==================================================================
     //  Unklar
@@ -335,7 +332,11 @@ public sealed class ErreichbarkeitTests
         // (Wizard_Stromlastgang, die Assistentenseite 6). Nach Welle 16a.3: 9 von 9
         // (Wizard_Komponenten, die Assistentenseite 0). Nach Welle 16a.5: 7 von 7
         // (WizardParent und das UserControl ProjektAuswahl).
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 7,
+        // Nach Welle 16b: 2 von 2 - sie nimmt FUENF Designer-Masken mit (FormMain
+        // und Form_StromTest mit E-7/K6-a, AktionsKarte und Form_Hinweis mit der
+        // Razor-Startseite, Form_Start selbst). Es bleiben die beiden Wurzelmasken
+        // MDIMainForm und Form_HelpPopup.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 2,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);

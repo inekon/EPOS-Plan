@@ -555,16 +555,10 @@ namespace WindowsFormsApplication1
                 return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
                     false, MyResource.Resource.VAR_MSG_AKTIV_FEHLER);
 
-            // Änderungsdatum fortschreiben und die Startmaske auffrischen (:652-669).
-            try
-            {
-                projektCtrl.ReadSingle(m_ID_Projekt);
-                Program.mainfrm.SetSPControl(projektCtrl.m_szProjektname);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Startmaske konnte nicht aufgefrischt werden: " + ex.Message);
-            }
+            // iU9-W16b.1 (E-7, K6-a): Hier stand ein Auffrischen der
+            // Stromspeicherliste im Detailformular (Program.mainfrm.SetSPControl,
+            // :652-669). FormMain ist gelöscht; die Startseite liest ihren Bestand
+            // beim nächsten Zeichnen ohnehin neu.
 
             VarianteLesen();
             return EPOS.UI.Seiten.Simulation.Rueckmeldung.Still;

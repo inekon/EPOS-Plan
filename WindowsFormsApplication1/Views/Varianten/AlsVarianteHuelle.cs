@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
 
                 // Startseite nachziehen: Variantenauswahl und – falls schon aufgebaut –
                 // der Reiter „Berichte & Kosten" kennen die neue Variante sonst nicht.
-                Program.startfrm?.VariantenAnzeigeAktualisieren();
+                StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren();
 
                 MessageBox.Show(besitzer,
                     string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner),

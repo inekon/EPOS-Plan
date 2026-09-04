@@ -14014,4 +14014,238 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
     <value>Projekt öffnen</value>
   </data>
+  <data name="START_REITER_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="START_REITER_WAERME" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="START_REITER_STROM" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="START_REITER_ERZEUGER" xml:space="preserve">
+    <value>Energieerzeuger</value>
+  </data>
+  <data name="START_REITER_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="START_REITER_BERICHTE" xml:space="preserve">
+    <value>Berichte &amp; Kosten</value>
+  </data>
+  <data name="START_GATTUNG" xml:space="preserve">
+    <value>Energieplanungs-Software</value>
+  </data>
+  <data name="START_LBL_PROJEKT" xml:space="preserve">
+    <value>Projekt:</value>
+  </data>
+  <data name="START_LBL_KLIMA" xml:space="preserve">
+    <value>Klimaregion auswählen:</value>
+  </data>
+  <data name="START_KLIMA_REGION" xml:space="preserve">
+    <value>Region auswählen</value>
+  </data>
+  <data name="START_KLIMA_HINWEIS" xml:space="preserve">
+    <value>Gilt für alle Berechnungen im Projekt</value>
+  </data>
+  <data name="START_BTN_WEITER" xml:space="preserve">
+    <value>Weiter ▶</value>
+  </data>
+  <data name="START_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Zurück</value>
+  </data>
+  <data name="START_P_KOPF" xml:space="preserve">
+    <value>Projekt einrichten</value>
+  </data>
+  <data name="START_P_TEXT" xml:space="preserve">
+    <value>Erstellen Sie ein neues Projekt oder öffnen Sie ein bestehendes.</value>
+  </data>
+  <data name="START_K_NEU_T" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="START_K_NEU_B" xml:space="preserve">
+    <value>Starten Sie ein komplett neues Energieprojekt</value>
+  </data>
+  <data name="START_K_OEFFNEN_T" xml:space="preserve">
+    <value>Projekt öffnen/bearbeiten</value>
+  </data>
+  <data name="START_K_OEFFNEN_B" xml:space="preserve">
+    <value>Laden Sie ein gespeichertes Projekt bzw. bearbeiten Sie ein bestehendes Projekt</value>
+  </data>
+  <data name="START_K_ZULETZT_T" xml:space="preserve">
+    <value>Zuletzt geöffnet</value>
+  </data>
+  <data name="START_K_ZULETZT_B" xml:space="preserve">
+    <value>Wechselt direkt zum zuletzt geöffneten Projekt</value>
+  </data>
+  <data name="START_K_SPEICHERNUNTER_T" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="START_K_SPEICHERNUNTER_B" xml:space="preserve">
+    <value>Speichern Sie ein Projekt unter anderem Namen</value>
+  </data>
+  <data name="START_K_LOESCHEN_T" xml:space="preserve">
+    <value>Projekt löschen</value>
+  </data>
+  <data name="START_K_LOESCHEN_B" xml:space="preserve">
+    <value>Löschen Sie ein bestehendes Projekt</value>
+  </data>
+  <data name="START_W_KOPF" xml:space="preserve">
+    <value>Wärmebedarf definieren</value>
+  </data>
+  <data name="START_W_TEXT" xml:space="preserve">
+    <value>Erfassen Sie den Wärmebedarf Ihres Projekts.</value>
+  </data>
+  <data name="START_W_HINWEIS_TITEL" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="START_W_HINWEIS" xml:space="preserve">
+    <value>Sie können Gebäudedaten manuell eingeben oder aus einer Datei importieren.</value>
+  </data>
+  <data name="START_K_GEBAEUDE_T" xml:space="preserve">
+    <value>Gebäudedaten eingeben</value>
+  </data>
+  <data name="START_K_GEBAEUDE_B" xml:space="preserve">
+    <value>Erfassen Sie Fläche, Dämmung und andere Parameter</value>
+  </data>
+  <data name="START_K_WBDATEN_T" xml:space="preserve">
+    <value>Daten importieren</value>
+  </data>
+  <data name="START_K_WBDATEN_B" xml:space="preserve">
+    <value>Laden Sie Wärmebedarfsdaten aus einer Datei</value>
+  </data>
+  <data name="START_K_PROZESS_T" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="START_K_PROZESS_B" xml:space="preserve">
+    <value>Definieren Sie industrielle Prozesswärme</value>
+  </data>
+  <data name="START_K_BRAUCHWASSER_T" xml:space="preserve">
+    <value>Brauchwasserwärme</value>
+  </data>
+  <data name="START_K_BRAUCHWASSER_B" xml:space="preserve">
+    <value>Definieren Sie ein Brauchwasserprofil</value>
+  </data>
+  <data name="START_S_KOPF" xml:space="preserve">
+    <value>Strombedarf definieren</value>
+  </data>
+  <data name="START_S_TEXT" xml:space="preserve">
+    <value>Erfassen Sie den elektrischen Energiebedarf</value>
+  </data>
+  <data name="START_K_STDLAST_T" xml:space="preserve">
+    <value>Standardlastprofil</value>
+  </data>
+  <data name="START_K_STDLAST_B" xml:space="preserve">
+    <value>Verwenden Sie ein typisches Lastprofil</value>
+  </data>
+  <data name="START_K_EIGENESPROFIL_T" xml:space="preserve">
+    <value>Eigenes Profil</value>
+  </data>
+  <data name="START_K_EIGENESPROFIL_B" xml:space="preserve">
+    <value>Erstellen Sie ein individuelles Stromprofil</value>
+  </data>
+  <data name="START_K_MESSDATEN_T" xml:space="preserve">
+    <value>Messdaten importieren</value>
+  </data>
+  <data name="START_K_MESSDATEN_B" xml:space="preserve">
+    <value>Laden Sie reale Verbrauchsdaten</value>
+  </data>
+  <data name="START_E_KOPF" xml:space="preserve">
+    <value>Energieerzeuger auswählen</value>
+  </data>
+  <data name="START_E_TEXT" xml:space="preserve">
+    <value>Wählen Sie die Energieerzeugungstechnologien für Ihr System.</value>
+  </data>
+  <data name="START_E_TIPP_TITEL" xml:space="preserve">
+    <value>Tipp</value>
+  </data>
+  <data name="START_E_TIPP" xml:space="preserve">
+    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.</value>
+  </data>
+  <data name="START_E_PROFIL" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="START_E_GANGLINIE" xml:space="preserve">
+    <value>Ganglinie</value>
+  </data>
+  <data name="START_K_WP_T" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="START_K_WP_B" xml:space="preserve">
+    <value>Effiziente Wärmeerzeugung aus Umweltwärme</value>
+  </data>
+  <data name="START_K_HEIZKESSEL_T" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="START_K_HEIZKESSEL_B" xml:space="preserve">
+    <value>Konventionelle Wärmeerzeugung</value>
+  </data>
+  <data name="START_K_SOLAR_T" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="START_K_SOLAR_B" xml:space="preserve">
+    <value>Wärmeerzeugung aus Sonnenenergie</value>
+  </data>
+  <data name="START_K_BHKW_T" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="START_K_BHKW_B" xml:space="preserve">
+    <value>Blockheizkraftwerk für Wärme und Strom</value>
+  </data>
+  <data name="START_K_STROMSPEICHER_T" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="START_K_STROMSPEICHER_B" xml:space="preserve">
+    <value>Batteriespeicher für überschüssigen Strom</value>
+  </data>
+  <data name="START_K_PV_T" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="START_K_PV_B" xml:space="preserve">
+    <value>Stromerzeugung aus Sonnenenergie</value>
+  </data>
+  <data name="START_K_PUFFER_T" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="START_K_PUFFER_B" xml:space="preserve">
+    <value>Überschüssige Wärme aus der Heizung speichern</value>
+  </data>
+  <data name="START_SIM_KOPF" xml:space="preserve">
+    <value>Simulation durchführen</value>
+  </data>
+  <data name="START_SIM_TEXT" xml:space="preserve">
+    <value>Berechnen Sie die Energieflüsse und Systemleistung.</value>
+  </data>
+  <data name="START_SIM_BTN_KONFIG" xml:space="preserve">
+    <value>Simulation Konfiguration...</value>
+  </data>
+  <data name="START_SIM_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Projektzusammenfassung</value>
+  </data>
+  <data name="START_SIM_PROJEKTNAME" xml:space="preserve">
+    <value>Projektname:</value>
+  </data>
+  <data name="START_SIM_WBEDARF" xml:space="preserve">
+    <value>Wärmebedarf:</value>
+  </data>
+  <data name="START_SIM_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf:</value>
+  </data>
+  <data name="START_SIM_KOMPONENTEN" xml:space="preserve">
+    <value>Ausgewählte Technologien:</value>
+  </data>
+  <data name="START_K_DETAILSIM_T" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="START_K_DETAILSIM_B" xml:space="preserve">
+    <value>Präzise Jahressimulation mit allen Details</value>
+  </data>
+  <data name="START_KLIMA_PLATZHALTER" xml:space="preserve">
+    <value>Bitte zuerst ein Projekt auswählen.</value>
+  </data>
+  <data name="START_STATUS_OFFEN" xml:space="preserve">
+    <value>✔</value>
+  </data>
+  <data name="START_STATUS_KEINS" xml:space="preserve">
+    <value>⚠</value>
+  </data>
 </root>

@@ -87,6 +87,11 @@
 # Strombedarf / ...). Es ist die Hilfe zum Formular als Ganzem, also zum
 # Ablauf des Programms - nicht zur Klimaregion (dafuer Form_Klimadaten) und
 # nicht zur Kurzanleitung (dafuer btn_Help_Kurzanleitung auf Reiter 1).
+# iU9-W16b.3: Die Startmaske ist die Razor-Seite EPOS.UI/Seiten/Start/Startseite.
+# Ihre fuenf Infoknoepfe tragen die Schluessel des Vorlaeufers WOERTLICH weiter
+# (InfoKnopf Schluessel="Form_Start.btn_Help_*"), damit die Hilfeziele stehen
+# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS; er gehoert seither
+# zum Hauptfenster und wird mit W16c umgehaengt.
 Form_Start.btn_Help               = Programmablauf
 
 # Reiter "Projekt": Einstieg in die Bedienung.
@@ -239,7 +244,8 @@ Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
 Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
-FormMain.btn_Help = Projektverwaltung
+# iU9-W16b.1 (E-7, K6-a): FormMain.btn_Help ist entfallen - das Detailformular
+# "Konfiguration Projekt" ist geloescht.
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 Form_PufferSp_Admin.btn_Help = Pufferspeicher

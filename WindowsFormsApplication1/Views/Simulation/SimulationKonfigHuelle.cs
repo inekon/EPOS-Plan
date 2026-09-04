@@ -37,45 +37,23 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class SimulationKonfigHuelle
     {
-        /// <summary>Wunschgröße des Fensters — die des Vorläufers (Karten.cs:73-74).</summary>
-        private static readonly Size MASS = new Size(1120, 620);
-
         // =================================================================
-        // Öffnen
+        // iU9-W16b.4 (Entscheid E-5): KEIN MODALES FENSTER MEHR
+        //
+        // Hier stand "Oeffnen(besitzer, idProjekt)" - ein BlazorDialogForm mit der
+        // Seite darin, 1120 x 620. Es war der Zwischenstand aus W10b (Entscheid
+        // R-W10b-1: "die Huelle zeigt sie bis W16 in einem modalen Fenster, weil
+        // ihre beiden Aufrufer die modale Rueckkehr brauchen").
+        //
+        // Beide Aufrufer sind seither Razor: die STARTSEITE zeigt die Seite als
+        // freie Ansicht in derselben WebView, die ERGEBNISSEITE als Ueberlagerung.
+        // Der Grund fuer die Modalitaet ist damit weg - und ein zweites Fenster
+        // mit einer zweiten WebView darin waere Risiko R2 und R5 zugleich.
+        //
+        // Was bleibt, ist der PARAMETERSATZ (Gaben) - er hat sich nicht geaendert.
+        // Den Bereich fuer den KI-Hilfe-Assistenten meldet jetzt die Huelle beim
+        // Bauen des Satzes statt das Fenster beim Aktivieren.
         // =================================================================
-
-        /// <summary>
-        /// Zeigt die Seite in einem modalen Fenster (R-W10b-1). Der Aufrufer liest
-        /// nichts zurück — das tat auch der Vorläufer nicht.
-        /// </summary>
-        internal static void Oeffnen(IWin32Window besitzer, int idProjekt)
-        {
-            SimulationKonfigHuelle huelle = new SimulationKonfigHuelle(idProjekt);
-
-            BlazorDialogForm<SimulationKonfigSeite> dlg = null;
-
-            var werte = new Dictionary<string, object>(huelle.Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create(
-                    new object(), () => { if (dlg != null) dlg.Schliessen(true); })
-            };
-
-            dlg = new BlazorDialogForm<SimulationKonfigSeite>(
-                MyResource.Resource.SIM_KONFIG_TITEL, MASS, werte);
-
-            using (dlg)
-            {
-                // Bereich für den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
-                // keine Projekt- oder Kundendaten) - wörtlich wie im Vorläufer :114.
-                dlg.Activated += delegate
-                {
-                    HilfeKontext.SetzeBereich(
-                        "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)");
-                };
-
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-        }
 
         // =================================================================
         // Zustand
@@ -205,6 +183,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt)
         {
+            // Bereich fuer den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
+            // keine Projekt- oder Kundendaten) - woertlich wie im Vorlaeufer :114,
+            // nur nicht mehr am Activated-Ereignis eines Fensters.
+            HilfeKontext.SetzeBereich(
+                "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)");
+
             return new SimulationKonfigHuelle(idProjekt).Gaben();
         }
 

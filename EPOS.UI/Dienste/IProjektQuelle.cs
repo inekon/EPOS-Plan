@@ -177,6 +177,28 @@ public interface IProjektQuelle
     /// <param name="betriebsart">0 = neues Projekt, 1 = vorhandenes bearbeiten.</param>
     /// <param name="idProjekt">Vorausgewaehltes Projekt im Bearbeiten-Zweig; 0 = keines.</param>
     IReadOnlyDictionary<string, object>? AssistentGaben(int betriebsart, int idProjekt) => null;
+
+    /// <summary>
+    /// Die <b>21 Kacheln der Startseite</b> zu einem Projekt (iU9-W16b.2, K6);
+    /// leere Liste = diese Huelle fuehrt keine Startseite.
+    ///
+    /// <para><b>Warum eine eigene Methode und kein Gaben-Woerterbuch.</b> Die
+    /// Startseite ist die einzige Seite, deren Inhalt sich nach JEDER Bedienung
+    /// aendert: Jeder Kachelweg kann den Bestand des Projekts veraendern, und der
+    /// Statuspunkt haengt daran. Ein einmal gebautes Woerterbuch waere nach dem
+    /// ersten Klick veraltet; hier wird bei jedem Auffrischen neu gefragt — genau
+    /// das tut auch die Windows-Huelle (<c>StartseiteHuelle.Kacheln</c>).</para>
+    ///
+    /// <para>Der Bestand kommt aus <c>KomponentenBestandCtrl.Bitmaske</c> (K1,
+    /// Entscheid E-3, Nachweis N6) — dieselbe Wahrheit, die der Komponentenschritt
+    /// des Assistenten zeigt.</para>
+    ///
+    /// <para><b>Mit Standardumsetzung</b>, damit eine vorhandene Quelle durch die
+    /// Erweiterung nicht bricht. <c>AppWurzel</c> bekommt ihren Zweig mit W16c
+    /// (K7, <c>Seitenschluessel.STARTSEITE</c>).</para>
+    /// </summary>
+    IReadOnlyList<EPOS.UI.Seiten.Start.StartKachel> Startkacheln(int idProjekt)
+        => Array.Empty<EPOS.UI.Seiten.Start.StartKachel>();
 }
 
 /// <summary>
