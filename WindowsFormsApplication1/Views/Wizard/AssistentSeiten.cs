@@ -34,7 +34,10 @@ namespace WindowsFormsApplication1
         private static readonly Func<Form>[] ERZEUGER =
         {
             /* 0  KOMPONENTEN_ITEM   */ () => new Wizard_Komponenten(),
-            /* 1  PROJEKT_ITEM       */ () => new Wizard_Projekt(),
+            // iU9-W15a.6: Die Projektkopfseite ist eine Razor-Komponente; sie traegt
+            // als einzige eine EINELEMENTIGE geteilte Liste (ProjektKopfDaten) statt
+            // eines Get*-Rueckwegs (Befund W15a-B42, Weg (a)).
+            /* 1  PROJEKT_ITEM       */ () => ProjektKopfHuelle.AssistentSeite(),
             // iU9-W9.2: Die Gebaeudeseite ist eine Razor-Komponente; die Huelle baut
             // ihre WebView erst in Bestuecken (siehe BlazorAssistentSeite).
             /* 2  GEBAEUDE_ITEM      */ () => GebaeudeHuelle.AssistentSeite(),
@@ -62,7 +65,8 @@ namespace WindowsFormsApplication1
 
         private static readonly ReadOnlyCollection<Type> _typen = new ReadOnlyCollection<Type>(new[]
         {
-            typeof(Wizard_Komponenten), typeof(Wizard_Projekt),
+            typeof(Wizard_Komponenten),
+            typeof(BlazorAssistentSeite<EPOS.UI.Seiten.Assistent.ProjektKopfSeite, ProjektKopfDaten>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.GebaeudeDialog, Z_ProjGebModel>),
             typeof(BlazorAssistentSeite<EPOS.UI.Dialoge.Bedarf.WaermebedarfExternDialog,
                                         Z_ProjWaermebedarfModel>),
