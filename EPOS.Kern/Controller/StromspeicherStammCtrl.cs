@@ -200,5 +200,148 @@ namespace WindowsFormsApplication1
             FillFromRow(m, row);
             return m;
         }
+
+        /// <summary>
+        /// Der RUECKFALL der Dashboard-Kachel, wenn das Projekt keinen Stromspeicher
+        /// fuehrt: 5 kWh (iU9-W11a.2).
+        ///
+        /// <para>Woertlich uebernommen aus <c>TabNavigationManager</c> Z. 154
+        /// (<c>if (speicherKWh == 0) dashForm.speicherKWh = 5;</c>). Der Wert ist eine
+        /// ANZEIGEvorgabe fuer das Was-waere-wenn-Feld der Autarkiekachel und geht
+        /// nirgends in die Datenbank (Befund W11-B32) — er darf deshalb hier stehen und
+        /// nicht in <c>DbWerte</c>.</para>
+        /// </summary>
+        public const double KAPAZITAET_RUECKFALL_KWH = 5.0;
+
+        /// <summary>
+        /// Kapazitaet [kWh] und Lade-/Entladeleistung [kW] der Einheit, die auch
+        /// GERECHNET wird (iU9-W11a.2; woertlich aus
+        /// <c>Form_Simulation_Detail.SpGeraetedaten</c>, Z. 6446-6510).
+        ///
+        /// <para><b>Die „zwei Fassungen" der Vermessung sind Abfrage und Rueckfall</b>,
+        /// nicht zwei Meinungen ueber dieselbe Frage — deshalb wandern BEIDE hierher und
+        /// keine wird gestrichen. Die erste engt auf die Anlagenzeile der AKTIVEN
+        /// Variante ein, die zweite summiert ueber alle Speicheranlagen des Projekts.
+        /// Genau diese Reihenfolge nimmt auch
+        /// <c>StromspeicherSimCtrl.LeseParameter(int)</c> (Fachkonzept 7.3).</para>
+        ///
+        /// <para><b>Warum die Einengung die richtige ist.</b> Seit AP9b rechnet die
+        /// Simulation die Anlagenzeile der aktiven Variante, nicht deren Summe. Ohne die
+        /// Einengung zeigte die Parameterseite bei mehreren Varianten eine Leistung, mit
+        /// der nie jemand gerechnet hat (Abnahmebefund 1: Projekt 1011 der Produktiv-DB,
+        /// vier Speicherzeilen, angezeigt wurden 43,9 kW statt der 11,04 kW der aktiven
+        /// Variante). Der Rueckfall bleibt genau dort, wo ihn auch der Controller nimmt:
+        /// wenn sich keine aktive Variantenzeile bestimmen laesst (Altprojekt vor
+        /// Migrationsschritt 11d, oder eine Variante, die auf keine Speicheranlage dieses
+        /// Projekts mehr zeigt).</para>
+        ///
+        /// <param name="idAnlageAktiveVariante">Die Anlagenzeile der aktiven Variante;
+        /// 0 oder kleiner heisst „keine" und fuehrt sofort zur Aggregation.</param>
+        /// </summary>
+        public static (double Kwh, double Kw) KapazitaetUndLeistung(
+            int idProjekt, int idAnlageAktiveVariante = 0)
+        {
+            if (idProjekt <= 0) return (0.0, 0.0);
+
+            try
+            {
+                string sql =
+                    "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
+                    "FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
+
+                List<DbParam> parameter = new List<DbParam>
+                {
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP)
+                };
+
+                // Die Anlage der aktiven Variante, sofern sie eine Speicheranlage dieses
+                // Projekts ist - die WHERE-Bedingung oben prueft das gleich mit.
+                if (idAnlageAktiveVariante > 0)
+                {
+                    sql += " AND a.ID = ?";
+                    parameter.Add(new DbParam("@anlage", idAnlageAktiveVariante));
+                }
+
+                (double Kwh, double Kw)? treffer = Summenzeile(
+                    DataRepository.GetDataTable(sql, parameter.ToArray()));
+                if (treffer.HasValue) return treffer.Value;
+
+                // Rueckfall: Die aktive Variante zeigt ins Leere - dann gilt wieder die
+                // Aggregation ueber alle Speicheranlagen (Verhalten bis AP9a).
+                if (parameter.Count > 2)
+                {
+                    treffer = Summenzeile(DataRepository.GetDataTable(
+                        "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
+                        "FROM Tab_Energieanlagen AS a " +
+                        "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                        "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                        parameter[0], parameter[1]));
+                    if (treffer.HasValue) return treffer.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Geraetedaten des Speichers konnten nicht gelesen werden: " + ex.Message);
+            }
+
+            return (0.0, 0.0);
+        }
+
+        /// <summary>Die Summenzeile einer der beiden Abfragen; <c>null</c>, wenn nichts steht.</summary>
+        private static (double Kwh, double Kw)? Summenzeile(DataTable dt)
+        {
+            if (dt == null || dt.Rows.Count == 0 || dt.Rows[0]["C"] == DBNull.Value) return null;
+
+            double kwh = Convert.ToDouble(dt.Rows[0]["C"]);
+            double kw = dt.Rows[0]["P"] != DBNull.Value ? Convert.ToDouble(dt.Rows[0]["P"]) : 0.0;
+            return (kwh, kw);
+        }
+
+        /// <summary>
+        /// Die SUMME der Speicherkapazitaeten eines Projekts [kWh], mit dem
+        /// 5-kWh-Rueckfall der Autarkiekachel (iU9-W11a.2, Befund W11-B45).
+        ///
+        /// <para><b>Woher sie kommt.</b> Bis hierher stand sie in der
+        /// NAVIGATIONSklasse <c>TabNavigationManager</c> (Z. 142-154) — mit einem
+        /// <c>RecordSet</c> und string-konkateniertem SQL
+        /// (<c>"select * from Tab_Stromspeicher where ID=" + id</c>), also mit dem
+        /// Altbestandsweg, den <c>WindowsFormsApplication1/CLAUDE.md</c> ausdruecklich
+        /// nicht mehr vorsieht.</para>
+        ///
+        /// <para><b>Der Weg bleibt derselbe:</b> ueber die Anlagenzeilen des Projekts vom
+        /// Typ SP und deren <c>ID_SP</c> in <c>Tab_Stromspeicher</c>. Er nimmt bewusst
+        /// ALLE Speicheranlagen (nicht die aktive Variante wie
+        /// <see cref="KapazitaetUndLeistung"/>): Die Kachel fragt „was koennte ein
+        /// Speicher bringen", nicht „was hat der gerechnete gebracht" (Befund W11-B32,
+        /// reine Was-waere-wenn-Groesse ohne Rueckschreiben).</para>
+        /// </summary>
+        public static double KapazitaetJeProjekt(int idProjekt)
+        {
+            double summe = 0.0;
+            if (idProjekt <= 0) return KAPAZITAET_RUECKFALL_KWH;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT SUM(sp.Energie) AS C " +
+                    "FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP));
+
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
+                    summe = Convert.ToDouble(dt.Rows[0]["C"]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Speicherkapazitaet des Projekts konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            return summe == 0.0 ? KAPAZITAET_RUECKFALL_KWH : summe;
+        }
     }
 }

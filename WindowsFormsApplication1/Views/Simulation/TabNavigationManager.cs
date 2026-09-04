@@ -131,27 +131,13 @@ public class TabNavigationManager
                 newControl.Dock = DockStyle.Fill;
                 newControl.Location = new Point(10, 10);
 
-                WErzeugerCtrl ctrl = new WErzeugerCtrl();
-                int id = 0;
-                double speicherKWh = 0; //Standardwert, z.B. 5 kWh
-
-                // Alle Stromspeicher des AKTIVEN Projekts durchgehen und die Kapazität
-                // aufsummieren. Bis AP2b stand hier die Projekt-ID 15 fest verdrahtet -
-                // die Kachel zeigte damit in jedem Projekt die Speichergröße eines
-                // fremden Datensatzes (oder den 5-kWh-Rückfall).
-                ctrl.ReadAllFilter("ID_Projekt=" + simctrl.m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-                for (int i = 0; i < ctrl.rows; i++)
-                {
-                    id = ctrl.items[i].ID_SP;
-                    RecordSet rs = new RecordSet();
-                    rs.Open("select * from Tab_Stromspeicher where ID=" + id);
-                    if (rs.Next())
-                    {
-                        speicherKWh += (double)rs.Read("Energie");
-                    }
-                    rs.Close();
-                }
-                if (speicherKWh == 0) dashForm.speicherKWh = 5; else dashForm.speicherKWh = speicherKWh;
+                // Alle Stromspeicher des AKTIVEN Projekts aufsummieren - seit
+                // iU9-W11a.2 im Kern (StromspeicherStammCtrl.KapazitaetJeProjekt,
+                // Befund W11-B45). Hier standen ein RecordSet und string-konkateniertes
+                // SQL in einer NAVIGATIONSklasse; der 5-kWh-Rueckfall ist mitgewandert
+                // und dort eine Konstante mit Begruendung.
+                dashForm.speicherKWh =
+                    StromspeicherStammCtrl.KapazitaetJeProjekt(simctrl.m_ID_Projekt);
                 dashForm.Init();
 
                 // Die theoretische Stromproduktion übergeben, Wirkungsgrad Wechselrichter 5% abgezogen

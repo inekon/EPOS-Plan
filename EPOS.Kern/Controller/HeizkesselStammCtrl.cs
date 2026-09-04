@@ -860,5 +860,47 @@ namespace WindowsFormsApplication1
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
+
+        /// <summary>
+        /// Die BRENNSTOFFARTEN, die die Heizkessel EINES Projekts fuehren
+        /// (iU9-W11a.2; SQL woertlich aus <c>Form_Simulation_Detail
+        /// .KesselBrennstoffartenLesen</c>, Z. 1194-1221).
+        ///
+        /// <para><b>Wozu.</b> Die Heizkessel-Ergebnisseite blendet eine der zehn
+        /// Brennstoffzeilen ein, wenn ihr Jahreswert &gt; 0 ist ODER ein Kessel des
+        /// Projekts diesen Brennstoff fuehrt. Der zweite Teil ist diese Abfrage — die
+        /// einzige echte Fachabfrage jener Maske und damit ein Kern-Kandidat.</para>
+        ///
+        /// <para><b>Der Verbund laeuft ueber den Bezeichner</b>, nicht ueber eine Id:
+        /// <c>Tab_Heizkessel.Bezeichner = Tab_Energieanlagen.Bezeichner</c>. Das ist die
+        /// Textverknuepfung des Altschemas (Wurzel-CLAUDE.md, „Namenskonventionen");
+        /// der Wortlaut bleibt unveraendert, damit die Anzeige dieselbe bleibt.</para>
+        ///
+        /// <para>Dialogfrei ueber <see cref="StilleDb"/> wie
+        /// <see cref="ErgebnisPraesenz"/>: Schlaegt die Abfrage fehl, bleibt die Menge
+        /// leer, und der Aufrufer faellt auf die vollstaendige Anzeige zurueck.</para>
+        /// </summary>
+        public static HashSet<int> BrennstoffartenJeProjekt(int idProjekt)
+        {
+            HashSet<int> arten = new HashSet<int>();
+            if (idProjekt <= 0) return arten;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
+                "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
+                "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
+
+            if (dt == null) return arten;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
+                if (a >= 0) arten.Add(a);
+            }
+            return arten;
+        }
     }
 }

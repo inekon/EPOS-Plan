@@ -126,7 +126,9 @@ namespace WindowsFormsApplication1
 
             // Konfiguration des Projekts lesen.
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + idProjekt);
+            // iU9-W11a.2: parametrisiert statt string-konkateniert (Befund W11-B24).
+            // Wortgleiches Verhalten - dieselbe Zeile, dieselbe Feldabbildung.
+            ctrl.ProjektLesen(idProjekt);
             if (ctrl.rows == 0)
             {
                 fehler = string.Format(MyResource.Resource.SIMENG_KEINE_KONFIGURATION, idProjekt);
