@@ -13,8 +13,17 @@ namespace WindowsFormsApplication1
     static class Program
     {
         public static MDIMainForm mdifrm = null;
-        public static FormMain mainfrm = null;
-        public static Form_Start startfrm = null;
+
+        // iU9-W16b.1 (Anwenderentscheid E-7, K6-a): Das Feld "mainfrm" ist ersatzlos
+        // entfallen - das Detailformular FormMain ("Konfiguration Projekt") mit seinen
+        // zwoelf Gewerkslisten und elf Kontextmenues ist geloescht. Was es zeigte, fuehrt
+        // die Startseite als Kacheln.
+        //
+        // iU9-W16b.3: Ebenso "startfrm". Die Startseite ist eine Razor-Seite
+        // (EPOS.UI/Seiten/Start/Startseite.razor) in einer BlazorSeite<>; wer sie
+        // erreichen will, geht ueber StartseiteHuelle.Aktuelle, und wer das offene
+        // Projekt braucht, ueber Dienste.Projekt (ProjektKontextCtrl, K2).
+        public static ProjektKontextCtrl projektkontext = null;
         public static MenueCtrl menuectrl = null;
         public static WizardCtrl wizardctrl = null;
         /// <summary>
@@ -119,7 +128,12 @@ namespace WindowsFormsApplication1
             Dienste.GeraeteId = new WindowsGeraeteId();
             Dienste.Sprache = sprache;
             Dienste.Navigation = new WinFormsNavigation();
-            Dienste.Projekt = new FormStartProjektKontext();
+
+            // iU9-W16b.3 (K2): Der Projektkontext liegt im KERN. Bis hierher stand
+            // hier FormStartProjektKontext - eine Fassade auf Program.startfrm, also
+            // auf ein FELD der Startmaske (Befund W16-B6).
+            projektkontext = new ProjektKontextCtrl();
+            Dienste.Projekt = projektkontext;
 
             // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
             // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,

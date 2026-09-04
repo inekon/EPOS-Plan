@@ -80,8 +80,11 @@ umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
 
 Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
-- **`Program.cs`** — `Main` startet die MDI-Oberfläche. Hält `mdifrm`, `mainfrm`, `startfrm`,
-  `menuectrl`, `wizardctrl`. Globaler veränderlicher Zustand — Seiteneffekte bei Änderungen
+- **`Program.cs`** — `Main` startet die Oberfläche. Hält `mdifrm`, `projektkontext`,
+  `menuectrl`, `wizardctrl`. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
+  das Detailformular `FormMain` ist gelöscht (E‑7), und die Startseite ist eine
+  Razor-Seite — wer sie erreichen will, geht über `StartseiteHuelle.Aktuelle`, wer das
+  offene Projekt braucht, über `Dienste.Projekt` (`ProjektKontextCtrl`, K2). Globaler veränderlicher Zustand — Seiteneffekte bei Änderungen
   mitdenken. **Weiterleitungen** (kein eigener Zustand mehr): `nLanguage`, `ZahlParsen` und
   `GanzzahlParsen` auf `Sprache` bzw. `ZahlText` (iU4-1); `ApplicationPath_Common/_User` auf
   `Dienste.Pfade`, `HelpCatalog` auf `WikiHelpCatalog.Aktueller`, `WIKI_STANDARD` auf
@@ -97,7 +100,9 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Gewerksschlüsseln zu Formularklassen:
   `WindowsDialogDienst`, `WindowsDateiDienst`, `WindowsPfade`, `RegistryEinstellungen`,
   `SettingsEinstellungen` (Brücke zu `Properties.Settings`), `DpapiLizenzAblage`,
-  `WindowsGeraeteId`, `WindowsSprache`, `WinFormsNavigation`, `FormStartProjektKontext`.
+  `WindowsGeraeteId`, `WindowsSprache`, `WinFormsNavigation`. **`FormStartProjektKontext`
+  ist mit iU9‑W16b.3 gefallen** — der Projektkontext liegt seither als
+  `EPOS.Kern/Controller/ProjektKontextCtrl` im Kern (K2).
   **Neue plattformabhängige Aufrufe gehören hierher, nicht in `Allgemein/` oder `Controller/`** —
   dort läuft der Wächter aus `../EPOS.Kern/CLAUDE.md`.
   Zwei benannte Ausnahmen seit iU8, beide sind ihrem Wesen nach Windows-Hülle und tauchen
@@ -106,8 +111,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**15** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
-  `*KontextMenuCtrl`, `MenueCtrl`, `EnergietraegerKatalogCtrl` und `ErststartCtrl`.
+- **`Controller/`** (**3** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: `MenueCtrl`,
+  `EnergietraegerKatalogCtrl` und `ErststartCtrl`. **Die zwölf `*KontextMenuCtrl` sind
+  mit iU9‑W16b.1 gelöscht** (Anwenderentscheid E‑7, K6‑a): Ihr einziger Erzeuger war
+  `FormMain` (Befund W16‑B28), und mit ihnen fallen `Gewerke`,
+  `INavigation.OeffneGewerk` in allen drei Fassungen und `Masken.ProjektDetail`.
   **`WizardCtrl` ist mit iU9‑W16a.4 in den Kern gezogen** — seine einzige WinForms-Kante
   war das Feld `public WizardParent parentform` mit genau EINEM Schreiber und KEINEM
   Leser im ganzen Bestand (Befund W16a‑B2); erst danach konnte `AssistentCtrl` (K3)
@@ -313,17 +321,26 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 7 Masken** (11 nach iU9‑W15c, 12 nach iU9‑W15b, 13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 2 Masken** (7 nach iU9‑W16a, 11 nach iU9‑W15c, 12 nach iU9‑W15b, 13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
   iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **3** (7 nach W15c, 11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W16a **7 von 7 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
-  jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
+  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W16b **2 von 2 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  es bleiben `MDIMainForm` (die Hülle) und `Form_HelpPopup`.
+  **`Erreichbarkeit.Wurzelmasken` kennt seit iU9‑W16b.3 nur noch `MDIMainForm`** —
+  `Form_Start` ist eine Razor-Seite und damit keine Maske mehr; `Form_HelpPopup` hängt
+  weiter an der verbliebenen Wurzel und meldet unverändert „ja" (Befund W16‑B3 erledigt).
+  **Alle elf Typzeugen des Stapellaufs hängen seither am PRÜFMUSTER** (Entscheid E‑9):
+  Die letzten fünf (`Label`, `TextBox`, `Button`, `ComboBox`, `TabPage`) standen sämtlich
+  auf `Form_Start` und stehen jetzt in `Pruefmuster/Hauptformular/Form_Start.Designer.cs`. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
   Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
   `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
   Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16;
-  **der Test ist dort zu streichen oder auf ein Prüfmuster umzuziehen** (Risiko
-  R‑W15a‑10). Der **Assistenten-Zeuge** (`DerAssistentZiehtSeineDreizehnSeitenMit`)
+  **der Test ist mit iU9‑W16b.1 GESTRICHEN** (Risiko R‑W15a‑10, Auftrag T1 erledigt):
+  Nach dem Anwenderentscheid E‑7 gibt es keinen `Masken.*`-Schlüssel mit einer
+  WinForms-Maske dahinter — `Masken.ProjektDetail` ist mit `FormMain` gefallen, und
+  `Masken.Assistent` führt seit W16a.5 in eine Razor-Hülle. Rückholbar in W16c über
+  einen Auszug der Sprungtabelle im Prüfmuster (offener Punkt W16b‑O‑1). Der **Assistenten-Zeuge** (`DerAssistentZiehtSeineDreizehnSeitenMit`)
   ist mit **iU9‑W16a.3 GESTRICHEN** — seine drei Zeugen sind der Reihe nach gefallen
   (`Wizard_Projekt` W15a.6, `Wizard_Stromlastgang` W16a.1, `Wizard_Komponenten`
   W16a.3), und in `AssistentSeiten.ERZEUGER` standen zuletzt nur noch Hüllenaufrufe;
@@ -622,6 +639,29 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Views/Wizard` führt seither KEINE Designer-Maske mehr, `Views/Projekt` ebenfalls
   nicht. Protokoll:
   [`Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W16b ist die STARTSEITE verschwunden — und der Altzweig mit ihr**:
+  fünf Masken, 34 Dateien, 6 175 Zeilen `.cs`, 2 276 Zeilen Designer und
+  4 700 Zeilen `.resx`. `Form_Start` (2 339 Z. + 1 864 `.bak` + 1 381 Designer)
+  wird die Razor-Seite `EPOS.UI/Seiten/Start/Startseite` mit fünf
+  Reiterkomponenten; ihre Datenseite ist `Views/Hauptformular/StartseiteHuelle.cs`
+  (753 Z.). Mit dem **Anwenderentscheid E‑7 (K6‑a)** fallen dazu das
+  Detailformular `FormMain` (1 345 Z. + 634 Designer), der Prüfstand
+  `Form_StromTest` (80 Z., Befund W16‑B31), `Allgemein/StromTestClass.cs` und die
+  **zwölf `Controller/*KontextMenuCtrl.cs`** (2 381 Z.) — ihr einziger Erzeuger war
+  `FormMain` (Befund W16‑B28). Ohne Ersatz gefallen sind ferner
+  `Views/GemeinsameBausteine/AktionsKarte` (Nachfolge: der Baustein `Kachel` mit
+  `Zustand`/`Aktiv` aus W16a.2), `Allgemein/Form_Hinweis` (Nachfolge:
+  `Warnbanner.Verfaellt` aus W15b.1 — Entscheid W15b‑E‑1b eingelöst) und
+  `Dienste/FormStartProjektKontext` (Nachfolge: `ProjektKontextCtrl` im Kern, K2).
+  **Der Projektkontext liegt damit im KERN**: `Dienste.Projekt` ist seit W16b.3
+  `ProjektKontextCtrl`, und `Program.startfrm` und `Program.mainfrm` gibt es nicht
+  mehr. Neu im Kern sind außerdem `StartseiteCtrl` (K4) und `BedarfsZustand` (E‑5).
+  **`Views/Hauptformular` führt seither keine Maske mehr**; `Form_Start.Designer.cs`
+  ist nicht gelöscht, sondern samt seinen drei `.resx` nach
+  `Werkzeuge/Formularkarte.Tests/Pruefmuster/Hauptformular/` verschoben — mit
+  108 Kartenzeilen die größte Maske, die der Bestand je hatte, und seither der Zeuge
+  für die fünf letzten Steuerelementtypen des Stapellaufs (Entscheid E‑9). Protokoll:
+  [`Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
   Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
   Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über

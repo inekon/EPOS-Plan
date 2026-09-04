@@ -58,36 +58,34 @@ namespace WindowsFormsApplication1
         /// Das Wärmebedarfsobjekt des Aufrufers — es wird hier WEITERGESCHRIEBEN und
         /// dort für die Kachelbeschriftungen weiterverwendet (Befund W11-B3).
         /// </param>
-        internal static void Oeffnen(IWin32Window besitzer, int idProjekt,
-                                     SimulationWaermebedarf waermebedarf,
-                                     SimulationStrombedarf strombedarf)
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            Func<Form> besitzer, int idProjekt, BedarfsZustand bedarf)
         {
+            // iU9-W16b.4 (Entscheid E-5): KEIN ZWEITES FENSTER MEHR.
+            //
+            // Hier stand "Oeffnen(besitzer, idProjekt, waermebedarf, strombedarf)" -
+            // ein BlazorDialogForm mit der Seite darin, 1474 x 821. Es war der
+            // Zwischenstand aus W11b (Entscheid R-W11-1); der ausdrueckliche Grund
+            // fuer die Modalitaet war Befund W11-B3: Die zwei Bedarfsobjekte
+            // gehoerten Form_Start und wurden hier weitergeschrieben - nebeneinander
+            // offen waeren beide Fenster im Streit gewesen.
+            //
+            // Sie gehoeren jetzt dem PROJEKT (BedarfsZustand im Kern), und die Seite
+            // erscheint als Ueberlagerung DERSELBEN WebView. Modal bleibt sie -
+            // der Lauf startet beim Oeffnen von selbst -, aber ohne zweites Fenster.
+            if (bedarf == null) throw new ArgumentNullException(nameof(bedarf));
+
+            bedarf.FuerProjekt(idProjekt);
+
             SimulationErgebnisHuelle huelle =
-                new SimulationErgebnisHuelle(idProjekt, waermebedarf, strombedarf);
+                new SimulationErgebnisHuelle(idProjekt, bedarf.Waerme, bedarf.Strom);
+            huelle._besitzer = besitzer;
 
-            BlazorDialogForm<SimulationErgebnisSeite> dlg = null;
+            // Bereich fuer den KI-Hilfe-Assistenten melden - woertlich wie im
+            // Vorlaeufer (:436, Befund W11-B5), nur nicht mehr am Activated-Ereignis.
+            HilfeKontext.SetzeBereich("Detaillierte Simulation");
 
-            var werte = new Dictionary<string, object>(huelle.Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create(
-                    new object(), () => { if (dlg != null) dlg.Schliessen(true); })
-            };
-
-            dlg = new BlazorDialogForm<SimulationErgebnisSeite>(
-                MyResource.Resource.SIMERG_TITEL, MASS, werte);
-
-            using (dlg)
-            {
-                huelle._fenster = dlg;
-
-                // Bereich für den KI-Hilfe-Assistenten melden - wörtlich wie im
-                // Vorläufer (:436, Befund W11-B5: dort stand der deutsche Literaltext
-                // NEBEN dem Katalogeintrag HilfeKontext.cs:154; jetzt gibt es ihn
-                // einmal).
-                dlg.Activated += delegate { HilfeKontext.SetzeBereich("Detaillierte Simulation"); };
-
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
+            return huelle.Gaben();
         }
 
         // =================================================================
@@ -105,7 +103,14 @@ namespace WindowsFormsApplication1
         private readonly EPOS.UI.Dienste.SeitenZustand _zustand =
             new EPOS.UI.Dienste.SeitenZustand();
 
-        private Form _fenster;
+        /// <summary>
+        /// Das Fenster, über dem Unterdialoge erscheinen. Bis iU9-W16b.4 war das die
+        /// eigene modale Hülle; seither ist es das Hauptfenster, denn die Seite hat
+        /// kein eigenes mehr (Entscheid E-5).
+        /// </summary>
+        private Func<Form> _besitzer;
+
+        private Form _fenster { get { return _besitzer?.Invoke(); } }
 
         /// <summary>Die aktive Speichervariante — die Parameterseite bearbeitet sie.</summary>
         private StromspeicherVarianteModel _speicherVariante;
@@ -728,20 +733,11 @@ namespace WindowsFormsApplication1
             bool ok = SimulationLaufCtrl.ErgebnisSpeichern(
                 m_ID_Projekt, _waermebedarf, _strombedarf, sim);
 
-            if (ok)
-            {
-                // Die Kacheln der Startmaske auffrischen - wörtlich :3748-3749, in
-                // try/catch, weil die Startmaske geschlossen sein kann.
-                try
-                {
-                    projektCtrl.ReadSingle(m_ID_Projekt);
-                    Program.mainfrm.SetSPControl(projektCtrl.m_szProjektname);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Die Startmaske konnte nicht aufgefrischt werden: " + ex.Message);
-                }
-            }
+            // iU9-W16b.1 (E-7, K6-a): Hier stand ein Auffrischen der
+            // Stromspeicherliste im Detailformular (Program.mainfrm.SetSPControl,
+            // wörtlich :3748-3749, in try/catch, weil das Fenster geschlossen sein
+            // konnte). FormMain ist gelöscht; die Startseite liest ihren Bestand beim
+            // nächsten Zeichnen ohnehin neu.
 
             return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
                 ok,

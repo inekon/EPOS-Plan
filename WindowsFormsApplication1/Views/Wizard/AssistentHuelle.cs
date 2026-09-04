@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -66,13 +66,18 @@ namespace WindowsFormsApplication1
             }
 
             // Der Rueckweg "Projekt oeffnen" schliesst den Assistenten OHNE zu
-            // speichern; die Startmaske meldet den Wechsel danach kurz. Close()
+            // speichern; die Startseite meldet den Wechsel danach kurz. Close()
             // blendet den modalen Rahmen nur aus - der Hinweis liegt deshalb erst
-            // hier ueber der Startmaske und nicht unter dem Assistenten.
+            // hier ueber der Startseite und nicht unter dem Assistenten.
+            //
+            // iU9-W16b.3: Aus dem Aufruf an Program.startfrm ist ein Rueckruf an die
+            // RAZOR-Startseite geworden (StartseiteHuelle merkt den Satz vor, die
+            // Seite holt ihn beim naechsten Auffrischen ab und zeigt ihn als
+            // Warnbanner mit Verfaellt = 3 s - genau die Lebensdauer von Form_Hinweis).
             if (_hinweisFaellig)
             {
                 _hinweisFaellig = false;
-                if (Program.startfrm != null) Program.startfrm.HinweisProjektGeoeffnet();
+                StartseiteHuelle.Aktuelle?.HinweisProjektGeoeffnet();
             }
 
             return gespeichert && ctrl.Gespeichert;
