@@ -1,9 +1,10 @@
 ﻿# CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **268 `.cs`-Dateien** (168 aus iU4, dazu
+Der plattformfreie Kern von EPOS-Plan: **291 `.cs`-Dateien** (168 aus iU4, dazu
 `IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
-aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b und die **74 Dateien des zweiten Umzugs**
-iU5-U1…U5), `net10.0` **ohne** `-windows`, AnyCPU.
+aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b, die **74 Dateien des zweiten Umzugs**
+iU5-U1…U5 und die sechs Dateien der Ergebnisseite aus iU9‑W11a), `net10.0` **ohne**
+`-windows`, AnyCPU.
 Seit Paket iU4 (03.09.2026) liegen sie physisch hier; bis dahin waren sie aus
 `../WindowsFormsApplication1/` verlinkt. Seit Paket iU6 (03.09.2026) **ohne jeden Verweis
 auf `System.Data.OleDb`** — weder im Quelltext noch als `PackageReference`; **CA1416 steht
@@ -16,7 +17,7 @@ bei 0**. Fachdomäne und Datenmodell stehen in der
 
 ```powershell
 dotnet build ..\EPOS.Kern\EPOS.Kern.csproj -c Release   # 0 Fehler, 3 Warnungen
-dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 1 906 Tests (Stand iU9-W8)
+dotnet test  ..\WP-Plan.Kern.slnf -c Release            # 2 406 Tests (Stand iU9-W11a)
 ```
 
 Die dritte Warnung ist mit `Controller\StromverbraucherStammCtrl.cs` aus der Anwendung
@@ -28,8 +29,8 @@ mit seinen beiden WFO1000 löschte).
 
 | Ordner | Inhalt |
 |---|---|
-| `Allgemein/` (20) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test`, seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode), seit iU9-W9 `Ferienzeit` (die vier Ferienregeln des Gebäudekatalogs samt der Umrechnung Tag/Monat ↔ Jahrestag) und `Suchmuster` (die Platzhaltersuche, die zuvor zweimal wortgleich dastand) |
-| `Allgemein/Simulation/` (26) | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb`. **Mit iU9‑W10a** kommen die Rechen- und Anzeigewege der sieben Simulationsdialoge dazu: `WaermesenkeClass.SenkeAnzeige`/`SENKE_LEER` (sie war eine STATISCHE Methode auf `Form_Waermesenke` mit drei fremden Aufrufern, Befund W10‑B22), `VDI4640Pruefung.Sondenmeter`/`Volllaststunden`, `ErdreichAuswertung.ErdreichLaufErgebnis`/`ErgebnisZuordnen` (die Zuordnung stand doppelt in Maske und Aufrufer, W10‑B8) und die **erzeugte** Datei `KlimazonenPfade.cs` — 15 Zonen als SVG-Pfade, gebaut von `../Werkzeuge/KlimazonenPfade/erzeugen.py`, weil der Vorläufer die Karte zur Laufzeit mit einem Regex aus einer eingebetteten SVG las (W10‑B5) |
+| `Allgemein/` (20) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `ToolsClass`, `FileDlgClass`, `chart_test`, seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode; seit iU9‑W11a.5 zusätzlich die beiden SUBSTITUTIONSFAKTOREN der Autarkiekachel — `CO2_NETZSTROM_KG_JE_KWH` 0,42 und `CO2_WAERME_KG_JE_KWH` 0,20, wörtlich aus `DashboardForm.cs:355`, Befund W11‑B31), seit iU9-W9 `Ferienzeit` (die vier Ferienregeln des Gebäudekatalogs samt der Umrechnung Tag/Monat ↔ Jahrestag) und `Suchmuster` (die Platzhaltersuche, die zuvor zweimal wortgleich dastand) |
+| `Allgemein/Simulation/` (28) | die vollständige Engine außer `SchemaModell.cs` — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb`. **Mit iU9‑W10a** kommen die Rechen- und Anzeigewege der sieben Simulationsdialoge dazu: `WaermesenkeClass.SenkeAnzeige`/`SENKE_LEER` (sie war eine STATISCHE Methode auf `Form_Waermesenke` mit drei fremden Aufrufern, Befund W10‑B22), `VDI4640Pruefung.Sondenmeter`/`Volllaststunden`, `ErdreichAuswertung.ErdreichLaufErgebnis`/`ErgebnisZuordnen` (die Zuordnung stand doppelt in Maske und Aufrufer, W10‑B8) und die **erzeugte** Datei `KlimazonenPfade.cs` — 15 Zonen als SVG-Pfade, gebaut von `../Werkzeuge/KlimazonenPfade/erzeugen.py`, weil der Vorläufer die Karte zur Laufzeit mit einem Regex aus einer eingebetteten SVG las (W10‑B5). **Mit iU9‑W11a** kommen `ErgebnisPraesenz` (war `internal` in `Views/Simulation/` und steuert fünf der sechs Ergebnismasken), `Ganglinie` (`Dauerlinie`/`Anzeigewerte` aus `GanglinienDarstellung`; `Stapeltyp`/`StapelEinstellen` arbeiten auf einer WinForms-`Series` und bleiben) und `LaufFortschritt` dazu. **`SimulationControl.Do_Simulation` nimmt seither `IProgress<LaufFortschritt>` und `CancellationToken` entgegen** — ohne die beiden Zusatzangaben unverändert; der Abbruch wird ZWISCHEN den fünf Phasen geprüft (Start, Kaskade, Photovoltaik, Stromspeicher, Abschluss). Eine Meldung je Erzeuger gibt der Rechenweg nicht her: Die Kaskade läuft stundenweise und bedient in jeder Stunde alle Erzeuger nacheinander. **Die vier EIGENANTEILE** (`SimulationRunner.EigenanteilWpMwh`/`…KesselMwh`/`…SolarKwh`/`…BhkwMwh`) und die zwei Ableitungen `RestNachEigenanteil`/`DeckungProzent` sind aus `BaueErgebnis` herausgezogen: Dieselben Ausdrücke standen wortgleich in `Form_Simulation_Detail` |
 | `Allgemein/Wirtschaftlichkeit/` (20) | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
 | `Allgemein/Bericht/` (13 + 4) | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`; seit iU7-5 der **Renderer** `ChartRenderer` (seit iU9‑W10a mit `Jahresgang` — 1 304 × 440, zwei Reihen, Monatsachse 0…12, vorzeichenfähige y-Achse, für das Quelltemperaturbild des Erdreichdialogs); seit iU5-U3 die **AUSGABE** `WordBerichtGenerator`, `ExcelBerichtGenerator`, `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` und `Bausteine/` (4 Dateien) |
 | `Allgemein/Dienste/` (22) | die **neun Umgebungsdienste** (iU5): `Dienste` (Halter), `IDialogDienst`, `IDateiDienst`, `IPfade`, `IEinstellungen`, `ILizenzAblage`, `IGeraeteId`, `ISprache`, `INavigation`, `IProjektKontext`, ihre Standardfassungen (`StilleDialoge`, `KeineDateiwahl`, `StandardPfade`, `FluechtigeEinstellungen`, `KeineAblage`, `KeineGeraeteId`, `StandardSprache`, `KeineNavigation`, `LeererProjektKontext`) und die sprachneutralen Schlüssel `Gewerke`, `Masken`, `Ansichten`, `Projektwahl` |
@@ -40,7 +41,7 @@ mit seinen beiden WFO1000 löschte).
 | `Allgemein/Export/` (1) | seit iU5-U1: `CsvExportClass` |
 | `Allgemein/KI/` (11) | seit iU5-U2 das, was der Assistent **weiß**: `HilfeWissen` (`WissensAbschnitt`), `WikiWissen`, `SemantikIndex`, `SemantikModell` (ONNX), `KiSchreibschutz`, `KiSicherungspunkt`, `KiEinwilligung`, `KiTextlieferant`, `Aktionen/KiAktionsTexte`, `Dialoge/KiDialoge`, `Dialoge/KiDialogTexte`. Was er **bedient**, bleibt bei der Oberfläche |
 | `Allgemein/Hilfe/` (1) | seit iU5-U5: `DokuUebersetzung` (Wiki-URL durch den Übersetzungs-Proxy) |
-| `Controller/` (83) | 83 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor. **Mit iU9‑W7** kommen `WPCtrl` (Umzug), `WaermepumpeGeraeteCtrl` (die zweistufige Geräteauskunft Ä22) und die Datenwege der acht Wärmepumpen- und Solarmasken dazu: `WPStammCtrl.KatalogZeilen`/`GesperrtDurchProjekt`/`Speichern`, `KenndatenCtrl.Reihen`/`LiesStamm`/`Abgleichen` (transaktional), `KenndatenKuehlungCtrl.Reihen`/`HatKenndaten`, `WErzeugerCtrl.AnlagenzeileNachziehen`, `KostenSummenCtrl.AnlagenSumme`, `Z_ProjektSolarganglinieCtrl.LiesProjekt` und `SolarkollektorenStammCtrl.IdZu`/`ReadById`. **Mit iU9‑W8** kommen die drei Bedarfsblätter dazu: `BedarfStammCtrl` und `TypProfilCtrl` (neu — EINE Schnittstelle für drei Tabellen mit zwei verschiedenen Schlüsselspalten), die Schreibwege `ProzesswaermeStammCtrl.Exists`/`SaveHead`/`TypIsReadOnly`/`TypNew`/`TypDelete` (sie standen inline in zwei Masken) und die vollständige Gebäudetyp-Verwaltung in `TagVCtrl` (`Typen`, `Lies`, `Speichern`, `Anlegen`, `Loeschen`, `KurvenNamen`). **Mit iU9‑W10a** kommen `PufferSpStammCtrl.Katalogzeilen` (das inline-SQL auf `Tab_Pufferspeicher_STAMM`, das in der Maske stand, Befund W10‑B27) und die drei Serialisierungswege des Quellprofils dazu — `QuellprofilCtrl.MonatswerteParsen`, `MonatswerteText` und `WochenwerteParsen` (der Text `"t1;…;t12"` und die 168 Wochenwerte wurden im FORMULAR zerlegt, W10‑B21) |
+| `Controller/` (91) | 91 Controller ohne Oberflächenbezug — 50 aus iU4, 29 aus iU5-U4, `EnergietraegerVarianteCtrl` aus iU8-8b (die Datenseite des ersten Blazor-Dialogs), `KostenfaktorCtrl` aus iU9-W1.5, `KostenSummenCtrl` aus iU9-W0.1 und `EnergietraegerPreisCtrl` aus iU9-W4.4 (die neun SQL-Anweisungen der Trägerkarte). **Mit iU9-W6 hat die Erzeugerseite ihre Datenseite bekommen:** `EnergietraegerVarianteCtrl.Anlegen`/`VariantenDerGruppe`/`TraegerUmhaengen` (die 185 Zeilen `CreateNewEnergyCarrier`, die ZWEIMAL wortgleich in der Oberfläche standen), die Katalogfilter und Detailblöcke in `HeizkesselStammCtrl`/`HeizkesselCtrl`/`BHKWStammCtrl`/`BHKWCtrl`/`PhotovoltaikStammCtrl`/`PufferSpStammCtrl`/`PufferSpCtrl` sowie die beiden Schreibeinstiege `Ueberschreiben`/`Anlegen` je Katalogeditor. **Mit iU9‑W7** kommen `WPCtrl` (Umzug), `WaermepumpeGeraeteCtrl` (die zweistufige Geräteauskunft Ä22) und die Datenwege der acht Wärmepumpen- und Solarmasken dazu: `WPStammCtrl.KatalogZeilen`/`GesperrtDurchProjekt`/`Speichern`, `KenndatenCtrl.Reihen`/`LiesStamm`/`Abgleichen` (transaktional), `KenndatenKuehlungCtrl.Reihen`/`HatKenndaten`, `WErzeugerCtrl.AnlagenzeileNachziehen`, `KostenSummenCtrl.AnlagenSumme`, `Z_ProjektSolarganglinieCtrl.LiesProjekt` und `SolarkollektorenStammCtrl.IdZu`/`ReadById`. **Mit iU9‑W8** kommen die drei Bedarfsblätter dazu: `BedarfStammCtrl` und `TypProfilCtrl` (neu — EINE Schnittstelle für drei Tabellen mit zwei verschiedenen Schlüsselspalten), die Schreibwege `ProzesswaermeStammCtrl.Exists`/`SaveHead`/`TypIsReadOnly`/`TypNew`/`TypDelete` (sie standen inline in zwei Masken) und die vollständige Gebäudetyp-Verwaltung in `TagVCtrl` (`Typen`, `Lies`, `Speichern`, `Anlegen`, `Loeschen`, `KurvenNamen`). **Mit iU9‑W10a** kommen `PufferSpStammCtrl.Katalogzeilen` (das inline-SQL auf `Tab_Pufferspeicher_STAMM`, das in der Maske stand, Befund W10‑B27) und die drei Serialisierungswege des Quellprofils dazu — `QuellprofilCtrl.MonatswerteParsen`, `MonatswerteText` und `WochenwerteParsen` (der Text `"t1;…;t12"` und die 168 Wochenwerte wurden im FORMULAR zerlegt, W10‑B21). **Mit iU9‑W11a** kommen vier Controller der Ergebnisseite dazu: `SimulationErgebnisCtrl` (sieben DTO je Erzeuger — die rund 600 Zeilen Fachrechnung, die in `Form_Simulation_Detail` standen), `SimulationLaufCtrl` (`Vorpruefen`/`Bedarf`/`Bestuecken`/`Laufen`/`Abbruchgrund`/`ErgebnisSpeichern` — der Lauf als Kernvorgang, Fehler als RÜCKGABE statt als Dialog), `SpeicherKennzahlenBlock` (die 39 Kennzahlzeilen des Stromspeichers samt `KennzahlStufe` statt vier `Color.FromArgb`) und `SpeicherAnzeigeCtrl` (`BetriebsartText`/`BerechnungsartText`/`AmortisationText` — sie standen dreifach im Oberflächencode). Erweitert sind `KonfigurationCtrl.LiesProjekt`/`ProjektLesen` (die achtmal string-konkatenierte Lesung von `Tab_Einstellungen`), `HeizkesselStammCtrl.BrennstoffartenJeProjekt`, `WErzeugerCtrl.AnlagenJeTyp`/`ModelleJeTyp`/`AnlagenBezeichner` und `StromspeicherStammCtrl.KapazitaetUndLeistung`/`KapazitaetJeProjekt` |
 | `Model/` (47) | alle 47 Modelle; seit iU9‑W8 dazu der Aufzählungstyp `BedarfsArt` — er liegt hier und nicht in `EPOS.UI`, weil ihn BEIDE Seiten brauchen: Die Controller verteilen danach auf drei Tabellen, die Razor-Komponenten wählen danach ihre Beschriftungen |
 | `MyResource/` | `Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs` — der Anzeigetext-Katalog beider Sprachen |
 | `Properties/` | `Settings.settings`, `Settings.Designer.cs`, `Settings.cs` |
@@ -247,6 +248,29 @@ Die „schönen Schritte" der y-Achse sind wörtlich aus `SkaliereYAchse`
 Zehntel. Die Dialoge dazu stehen in `EPOS.UI/Dialoge/Bedarf/`, gezeichnet wird
 in den drei Hüllen unter `Views/Bedarf/`.
 
+**Seit iU9‑W11a.6 zeichnet er die ERGEBNISBILDER der Simulation.** Sieben Methoden
+lösen die **17 Zeichenflächen** der sechs Ergebnismasken ab:
+`ChartRenderer.GanglinieNormiert` (1240 × 560 — ein bis vier Linien, alle auf DENSELBEN
+Höchstwert normiert, y-Achse 0…100,2 % wie `init_Chart`, x wahlweise Monatsgrenzen oder
+die vier Stundenmarken 2000/4000/6000/8000),
+`ErzeugerStapel` (1240 × 560 — **das Arbeitspferd**: es trägt SECHS der siebzehn Flächen.
+Zwei Stapelgruppen wie `StackedGroupName` im Vorläufer, Linien darüber in
+Zeichenreihenfolge, die Konturlinie „Gesamt" UNTER dem Stapel, sortiert ohne Stapel, eine
+Reihe auf einer zweiten y-Achse),
+`Streuwolke` (1240 × 560 — halbtransparente XY-Punkte über einer vorzeichenfähigen
+x-Achse), `Ring` (720 × 560 — Kuchen mit Innenloch, Zahl in der Mitte und einer Legende,
+die nur Segmente > 0 nennt), `MonatsStapel` (978 × 542) und `Temperaturverlauf`
+(1240 × 560 — gestrichelte Zwillingsreihe je Speicher, y-Achse OHNE Nullpunkt mit einer
+Mindestspanne von 5 K). `Reihe` trägt dafür seit W11a.6 `Stapelgruppe`, `Gestrichelt` und
+`Breite`; der alte Konstruktor ist unverändert.
+
+**Die vier BERICHTSBILDER bleiben unangetastet.** `JahresverlaufWaerme` und
+`DauerlinieWaerme` sind zwei feste Ausprägungen von `ErzeugerStapel`,
+`StrombilanzMonate`/`MonatsSaeulen` zwei von `MonatsStapel`, `Speichertemperaturen` eine
+von `Temperaturverlauf` — sie nehmen aber einen `ZeitreihenSatz` und tragen feste deutsche
+Titel im Quelltext. Ihre Zusammenführung mit den neuen ist ein eigener Schritt mit eigenem
+Nachweis (offener Punkt W11a‑O‑3), keine Nebenarbeit.
+
 **Die AUSGABE liegt seit iU5-U3 ebenfalls hier:** `WordBerichtGenerator` (OpenXML),
 `ExcelBerichtGenerator` (ClosedXML), `IBerichtsBaustein`, `BerichtsKonfiguration`,
 `ZeitreihenExtraktor` und `Bausteine/`. Word und Excel sind Dateiformate, keine Windows-APIs —
@@ -286,7 +310,7 @@ Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
 sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W8.0c **fünfzehn** Bilder und
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W11a.6 **dreißig** Bilder und
 prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
