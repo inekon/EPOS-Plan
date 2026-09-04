@@ -571,8 +571,11 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Klimadaten_Click(object sender, EventArgs e)
         {
-            Form_Klimadaten frm = new Form_Klimadaten();
-            frm.ShowDialog();
+            // iU9-W14c.7: Mit Besitzer - der Vorlaeufer rief ShowDialog() ohne "this"
+            // und ohne using; das Fenster erschien nicht ueber dem Hauptfenster und
+            // wurde nie entsorgt (Befund W14c-B34). Der MENUETEXT bleibt "Klimadaten"
+            // (Entscheid E-3), die Komponente heisst KlimaregionDialog.
+            KlimaregionHuelle.Oeffnen(this);
         }
 
         private void MenuItem_ProjektBearbeiten_Click(object sender, EventArgs e)

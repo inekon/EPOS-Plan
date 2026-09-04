@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -966,6 +967,243 @@ namespace EPOS.Kern.Tests
                 // Ungueltige Kennungen werden abgelehnt, ohne zu schreiben.
                 Assert.False(KatalogBereinigung.SatzUmbenennen(k, 0, "x"));
                 Assert.False(KatalogBereinigung.SatzUmbenennen(null, id, "x"));
+            }
+        }
+
+        // ==================================================================
+        //  7b — Der Klimaimport (W14c.0e) - OHNE NETZ
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die Tagtyp-Regeln, eingefroren</b> (<c>GetSeasonalValue</c> des
+        /// Vorlaeufers): Quartal x Wochenende -> 1...8.
+        /// </summary>
+        [Theory]
+        [InlineData("2026-01-15", 1)]     // Q1, Donnerstag
+        [InlineData("2026-01-17", 2)]     // Q1, Samstag
+        [InlineData("2026-05-14", 3)]     // Q2, Donnerstag
+        [InlineData("2026-05-17", 4)]     // Q2, Sonntag
+        [InlineData("2026-08-13", 5)]     // Q3, Donnerstag
+        [InlineData("2026-08-15", 6)]     // Q3, Samstag
+        [InlineData("2026-11-12", 7)]     // Q4, Donnerstag
+        [InlineData("2026-11-15", 8)]     // Q4, Sonntag
+        public void DerJahreszeitwertIstEingefroren(string datum, int erwartet)
+        {
+            DateTime d = DateTime.ParseExact(datum, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            Assert.Equal(erwartet, KlimaImportAblauf.Jahreszeitwert(d));
+        }
+
+        /// <summary>
+        /// <b>Die drei Tagtypen je Tageswert</b>: Wochenende = Sa/So,
+        /// <c>TagTyp_W</c> = 2, sobald der Diffusanteil ueber der HAELFTE der
+        /// Globalstrahlung liegt, sonst 1.
+        /// </summary>
+        [Fact]
+        public void DieTagtypenFolgenDerHalbenGlobalstrahlung()
+        {
+            var tage = new List<TmyHourlyData>
+            {
+                new TmyHourlyData { TimeString = "17.01." + DateTime.Now.Year,
+                                    GlobalIrradiance = 100, DiffuseIrradiance = 60 },
+                new TmyHourlyData { TimeString = "15.01." + DateTime.Now.Year,
+                                    GlobalIrradiance = 100, DiffuseIrradiance = 40 }
+            };
+
+            KlimaImportAblauf.Tagtypen(tage);
+
+            Assert.True(tage[0].WE);            // Samstag
+            Assert.Equal(2, tage[0].TagTyp_W);  // 60 > 50
+            Assert.Equal(2, tage[0].TagTyp_NW); // Q1, Wochenende
+
+            Assert.False(tage[1].WE);           // Donnerstag
+            Assert.Equal(1, tage[1].TagTyp_W);  // 40 < 50
+            Assert.Equal(1, tage[1].TagTyp_NW);
+        }
+
+        /// <summary>
+        /// <b>Die vier Fassadenwerte und der Sonnenwinkel</b> aus der eingefrorenen
+        /// TMY-Antwort — die einzige Fachrechnung des Imports.
+        ///
+        /// <para><b>Der Sonnenwinkel ist derselbe, egal nach welchem der vier Aufrufe
+        /// man ihn liest</b> (Befund W14c-B29): Er haengt nur an Ort, Tag und Stunde,
+        /// nicht an der Fassade. Genau deshalb ist die Umstellung vom statischen Feld
+        /// auf den Wert nach dem ERSTEN Aufruf bitgleich zum Vorlaeufer, der ihn nach
+        /// dem VIERTEN las.
+        /// </para>
+        /// </summary>
+        [Fact]
+        public void DerImportRechnetVierFassadenUndDenSonnenwinkel()
+        {
+            string db;
+            List<TmyHourlyData> s = Probe(out db);
+            const double lon = 9.1829, lat = 48.7758;
+
+            KlimaImportAblauf.Rechnen(s, lon, lat);
+
+            // Mitternacht: alle vier Fassaden bei 0, der Winkel negativ.
+            Assert.Equal(0.0, s[0].Sol_sued);
+            Assert.Equal(0.0, s[0].Sol_ost);
+            Assert.Equal(0.0, s[0].Sol_nord);
+            Assert.Equal(0.0, s[0].Sol_west);
+            Assert.True(s[0].Sonnenwinkel < 0);
+
+            // Mittag: Sued traegt am meisten, Nord am wenigsten.
+            Assert.True(s[12].Sol_sued > s[12].Sol_ost);
+            Assert.True(s[12].Sol_sued > s[12].Sol_west);
+            Assert.True(s[12].Sol_sued > s[12].Sol_nord);
+            Assert.InRange(s[12].Sonnenwinkel, 16.0, 18.0);
+
+            // Der Winkel nach dem VIERTEN Aufruf ist derselbe wie der gespeicherte -
+            // die Reihenfolge des Lesens spielt keine Rolle.
+            SolarCalculator.CalculateHourly(lon, lat, 90, 90, s[12].GlobalIrradiance,
+                s[12].DirectIrradiance, s[12].DiffuseIrradiance, s[12].Temperature, 1, 12);
+            Assert.Equal(SolarCalculator.sonnenwinkel, s[12].Sonnenwinkel, 9);
+        }
+
+        /// <summary>
+        /// <b>Der Ablauf laeuft ohne Netz</b> (Risiko R-W14c-5): Die TMY-Antwort kommt
+        /// als Delegat aus der eingefrorenen Datei. Der Fall schreibt in eine EIGENE
+        /// Arbeitskopie und prueft die drei Schritte der Transaktion.
+        /// </summary>
+        [Fact]
+        public async Task DerKlimaimportSchreibtKopfStundenUndTage()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                int vorherRegionen = Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Klimaregion_STAMM"), CultureInfo.InvariantCulture);
+
+                var auftrag = new KlimaImportAuftrag
+                {
+                    Art = KlimaImportArt.AusKoordinaten,
+                    Bezeichnung = "W14c Probe",
+                    Longitude = 9.1829,
+                    Latitude = 48.7758
+                };
+
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    auftrag, (lon, lat, azimut) => Task.FromResult(Probe(out _)));
+
+                Assert.True(erg.Erfolgreich, erg.Meldung);
+                Assert.Equal("W14c Probe", erg.Bezeichner);
+                Assert.True(erg.Id > 0);
+                Assert.Equal(72, erg.Stundenwerte);       // die 72 Stunden der Probe
+                Assert.Equal(3, erg.Tageswerte);          // auf drei Tage verdichtet
+
+                Assert.Equal(vorherRegionen + 1, Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Klimaregion_STAMM"), CultureInfo.InvariantCulture));
+                Assert.Equal(72, Zaehle("Tab_Solar_STAMM", erg.Id));
+                Assert.Equal(3, Zaehle("Tab_Klimadaten_STAMM", erg.Id));
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Dublettenpruefung fragt die DATENBANK und MELDET</b> (Befund
+        /// W14c-B26, A-9): Der Vorlaeufer prueft mit einer Praefixsuche in der ANZEIGE
+        /// und kehrte still zurueck.
+        /// </summary>
+        [Fact]
+        public async Task EinBereitsVergebenerRegionsnameWirdGemeldet()
+        {
+            if (!_db.Vorhanden) return;
+
+            string vorhanden = Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Name FROM Tab_Klimaregion_STAMM ORDER BY ID_Klimaregion"));
+
+            var auftrag = new KlimaImportAuftrag
+            {
+                Art = KlimaImportArt.AusKoordinaten,
+                Bezeichnung = vorhanden,
+                Longitude = 9.0,
+                Latitude = 48.0
+            };
+
+            KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                auftrag, (lon, lat, azimut) => Task.FromResult(Probe(out _)));
+
+            Assert.Equal(KlimaImportAusgang.Dublette, erg.Ausgang);
+            Assert.Contains(vorhanden, erg.Meldung);
+        }
+
+        /// <summary>Eine leere Bezeichnung ist ein Eingabefehler, kein Absturz.</summary>
+        [Fact]
+        public async Task EineLeereBezeichnungWirdAbgelehnt()
+        {
+            var auftrag = new KlimaImportAuftrag
+            {
+                Art = KlimaImportArt.AusKoordinaten,
+                Bezeichnung = "   ",
+                Longitude = 9.0,
+                Latitude = 48.0
+            };
+
+            KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                auftrag, (lon, lat, azimut) => Task.FromResult(Probe(out _)));
+
+            Assert.Equal(KlimaImportAusgang.Eingabefehler, erg.Ausgang);
+        }
+
+        /// <summary>
+        /// <b>Der Ablauf laesst sich abbrechen</b> (A-4) — der Vorlaeufer hatte keine
+        /// Abbruchmarke.
+        /// </summary>
+        [Fact]
+        public async Task EinAbgebrochenerImportSchreibtNichts()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                int vorher = Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Klimaregion_STAMM"), CultureInfo.InvariantCulture);
+
+                var marke = new System.Threading.CancellationTokenSource();
+                marke.Cancel();
+
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "W14c Abbruch",
+                        Longitude = 9.0,
+                        Latitude = 48.0
+                    },
+                    (lon, lat, azimut) => Task.FromResult(Probe(out _)),
+                    abbruch: marke.Token);
+
+                Assert.Equal(KlimaImportAusgang.Abgebrochen, erg.Ausgang);
+                Assert.Equal(vorher, Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Klimaregion_STAMM"), CultureInfo.InvariantCulture));
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Regionsname steht auch in den TAGESwerten</b> (Befund W14c-B31,
+        /// A-11): Schritt E schrieb sie mit <c>comboBox_Ort.Text</c> - im
+        /// Handeingabe-Zweig war das Feld LEER.
+        /// </summary>
+        [Fact]
+        public async Task DieTageswerteHaengenAnDerselbenRegionsId()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "W14c Handeingabe",
+                        Longitude = 9.1829,
+                        Latitude = 48.7758
+                    },
+                    (lon, lat, azimut) => Task.FromResult(Probe(out _)));
+
+                Assert.True(erg.Erfolgreich, erg.Meldung);
+                Assert.Equal(3, Zaehle("Tab_Klimadaten_STAMM", erg.Id));
+                Assert.Equal(72, Zaehle("Tab_Solar_STAMM", erg.Id));
             }
         }
 

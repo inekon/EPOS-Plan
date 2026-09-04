@@ -413,7 +413,7 @@ public class KatalogDublettenDialogTests : BunitContext
         cut.FindAll(".epos-leiste button")[1].Click();
 
         Assert.Contains("keine Verwendungsprüfung", cut.Instance.Meldung);
-        Assert.Single(cut.FindComponents<Rueckfrage>().Where(f => f.Instance.Offen));
+        Assert.Single(cut.FindComponents<Rueckfrage>(), f => f.Instance.Offen);
     }
 
     [Fact]
