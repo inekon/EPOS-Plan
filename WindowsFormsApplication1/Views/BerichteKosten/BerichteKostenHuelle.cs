@@ -62,7 +62,14 @@ namespace WindowsFormsApplication1
                 ["NavBericht"] = MyResource.Resource.BK_NAV_BERICHT,
                 ["NavigationBezeichnung"] = MyResource.Resource.BK_KOPF_UEBERSICHT,
                 ["KeinStammText"] = MyResource.Resource.BK_MSG_KEIN_STAMM,
-                ["HilfeSchluessel"] = "UcBerichteKosten.btn_Help"
+                ["HilfeSchluessel"] = "UcBerichteKosten.btn_Help",
+
+                // Der Rückwegknopf erscheint nur, wo ein „Geschlossen"-Rückruf
+                // gesetzt ist — also in der ANSICHT der AppWurzel
+                // (Anwenderentscheid W16c-E-3), nicht im sechsten Reiterblatt
+                // der Startseite. Der Text steht trotzdem immer bereit; ihn nur
+                // im einen Fall zu setzen, wäre eine zweite Gabenfassung.
+                ["ZurueckText"] = MyResource.Resource.BK_BTN_ZURUECK
             };
         }
 

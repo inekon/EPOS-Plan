@@ -266,4 +266,37 @@ public class BerichteKostenSeiteTests : BunitContext
 
         Assert.Equal(vorher, _gefragt.Count);
     }
+
+    // =====================================================================
+    // Der Rueckweg (Anwenderentscheid W16c-E-3, 04.09.2026)
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Rueckruf_gibt_es_keinen_Rueckwegknopf()
+    {
+        // Als sechstes REITERBLATT der Startseite hat die Seite kein "Zurueck":
+        // Dort fuehrt die Reiterleiste hinaus, und ein zweiter Weg waere ein
+        // Knopf, der nichts tut.
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-navigation-zurueck"));
+    }
+
+    [Fact]
+    public void Mit_Rueckruf_steht_der_Rueckwegknopf_und_meldet()
+    {
+        // Als eigene ANSICHT der AppWurzel (Menuepunkt "Varianten und
+        // Bericht…") ist er der einzige Weg zurueck zur Startansicht.
+        int gemeldet = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.ZurueckText, "◀ Zurück")
+            .Add(x => x.Geschlossen, () => gemeldet++));
+
+        var knopf = cut.Find(".epos-navigation-zurueck");
+        Assert.Equal("◀ Zurück", knopf.TextContent.Trim());
+
+        knopf.Click();
+
+        Assert.Equal(1, gemeldet);
+    }
 }

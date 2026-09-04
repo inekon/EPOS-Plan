@@ -5276,6 +5276,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_NAV_BERICHT" xml:space="preserve">
     <value>Report</value>
   </data>
+  <data name="BK_BTN_ZURUECK" xml:space="preserve">
+    <value>◀ Back</value>
+  </data>
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Overview — base project and variants</value>
   </data>
@@ -14342,6 +14345,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="MENU_SOL_THERM_GANGLINIE" xml:space="preserve">
     <value>Solar thermal hydrograph</value>
+  </data>
+  <data name="MENU_SPRACHE" xml:space="preserve">
+    <value>Language</value>
   </data>
   <data name="MENU_STROMGANGLINIE" xml:space="preserve">
     <value>Current hydrograph</value>

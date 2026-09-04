@@ -9,7 +9,8 @@
    ist die Huelle MDIMainForm (W16c.3).
 
    AUFBAU (Vermessung § 12.6):
-     Menueband   54 Punkte in drei Ebenen, aus Menuetabelle (erzeugt)
+     Menueband   55 Punkte in drei Ebenen, aus Menuetabelle (erzeugt;
+                 der Kopf "Sprache" aus dem Entscheid W16c-E-2)
      Kopfband    PRODUKTNAME · GATTUNG · CLAIM · Version
      Inhalt      AppWurzel - dieselbe Wurzel, die auf iOS laeuft (E-1)
 
@@ -72,7 +73,7 @@
     //  Das Menue
     // =====================================================================
 
-    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (54 Punkte).</summary>
+    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (55 Punkte).</summary>
     [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Menuetabelle.Eintraege;
 
     /// <summary>Beschriftung der Menueleiste fuer die Sprachausgabe.</summary>

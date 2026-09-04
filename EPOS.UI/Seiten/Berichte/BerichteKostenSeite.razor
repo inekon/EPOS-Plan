@@ -54,6 +54,17 @@
          aria-labelledby="@("bknav-" + _seite)">
 
         <div class="epos-navigation-kopf">
+            @if (Geschlossen.HasDelegate)
+            {
+                @* DER RUECKWEG (Anwenderentscheid W16c-E-3, 04.09.2026). Die
+                   Seite ist seither auch eine EIGENE ANSICHT der AppWurzel -
+                   der Menuepunkt "Varianten und Bericht…" wechselt dorthin,
+                   statt einen Reiter nach vorn zu holen. Eine Ansicht braucht
+                   einen Weg zurueck; ein Reiterblatt nicht, und dort haengt
+                   auch kein Rueckruf. Muster: SimulationKonfigSeite. *@
+                <button type="button" class="epos-knopf epos-navigation-zurueck"
+                        @onclick="() => Geschlossen.InvokeAsync()">@ZurueckText</button>
+            }
             <span>@Kopfzeile</span>
             <InfoKnopf Schluessel="@HilfeSchluessel" />
         </div>
@@ -135,6 +146,17 @@
     /// <summary>Hilfeschlüssel der Kopfzeile — der der alten Maske.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcBerichteKosten.btn_Help";
 
+    /// <summary>
+    /// Die Seite möchte verlassen werden — der Rückweg zur
+    /// <c>AppWurzel.Startansicht</c> (Anwenderentscheid W16c-E-3, 04.09.2026).
+    ///
+    /// <para>OHNE Rückruf gibt es keinen Rückwegknopf: So steht die Seite als
+    /// sechstes REITERBLATT der Startseite unverändert da (dort trägt der
+    /// Reiterkopf die Navigation), und als eigene ANSICHT der Wurzel bekommt
+    /// sie ihn. Dieselbe Weiche wie bei <c>SimulationKonfigSeite</c>.</para>
+    /// </summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
     // ---- Texte ----------------------------------------------------------
 
     [Parameter] public string NavUebersicht { get; set; } = "Übersicht";
@@ -142,6 +164,9 @@
     [Parameter] public string NavWirtschaft { get; set; } = "Wirtschaftlichkeit";
     [Parameter] public string NavBericht { get; set; } = "Bericht";
     [Parameter] public string NavigationBezeichnung { get; set; } = "Berichte und Kosten";
+
+    /// <summary>Beschriftung des Rückwegknopfes (BK_BTN_ZURUECK).</summary>
+    [Parameter] public string ZurueckText { get; set; } = "◀ Zurück";
 
     /// <summary>Hinweis ohne Stammprojekt (BK_MSG_KEIN_STAMM).</summary>
     [Parameter] public string KeinStammText { get; set; }
