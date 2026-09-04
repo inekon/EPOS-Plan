@@ -55,6 +55,47 @@ public class LizenzVerwaltungDialogTests : BunitContext
                         : "Keine Lizenz auf diesem Arbeitsplatz.",
                hatToken, PORTAL);
 
+    /// <summary>
+    /// Der Textsatz des Prüfstands — seit W15c-O-2 EIN Parameter statt neunundzwanzig.
+    /// Die Werte stehen hier weiterhin wörtlich, damit jede Zusage dieses Zeugen an
+    /// einem Literal hängt und nicht am Katalog; dass sich das Bündel OHNE Angabe
+    /// selbst aus <c>MyResource</c> füllt, prüft <see cref="LizenzTexteTests"/>.
+    /// „Ja" und „Nein" bleiben ungesetzt — sie stehen so im Bündel.
+    /// </summary>
+    private static LizenzTexte Texte() => new()
+    {
+        Verwaltung =
+        {
+            Titel = "Lizenz — EPOS-Plan",
+            GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
+            GruppeAktivieren = "Aktivieren",
+            GruppeAktionen = "Weitere Aktionen",
+            LabelSchluessel = "Lizenzschlüssel:",
+            LabelEmail = "E-Mail (Benutzer):",
+            KnopfLic = "Lizenzdatei (.lic)…",
+            KnopfAktivieren = "Jetzt aktivieren",
+            KnopfTrial = "Testversion anfordern…",
+            KnopfFreigeben = "Gerät von der Lizenz lösen",
+            KnopfSchliessen = "Schließen",
+            HinweisAktivierung = "Die Aktivierung benötigt einmalig eine Internetverbindung.",
+            LinkPortal = "Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen)",
+            MsgEingabeFehlt = "Bitte Lizenzschlüssel und E-Mail-Adresse angeben.",
+            MsgEmailUngueltig = "Die E-Mail-Adresse \"{0}\" ist ungültig — bitte prüfen (Beispiel: name@firma.de).",
+            MsgAktiviert = "Die Lizenz wurde erfolgreich aktiviert.",
+            MsgAktivierungFehler = "Die Aktivierung ist fehlgeschlagen.",
+            MsgLicOhneSchluessel = "In der gewählten Datei wurde kein gültiger Lizenzschlüssel gefunden.",
+            MsgTrialEmail = "Bitte oben eine gültige E-Mail-Adresse eintragen (Beispiel: name@firma.de).",
+            MsgTrialOk = "Der Test-Lizenzschlüssel wurde per E-Mail versandt.",
+            MsgTrialFehler = "Die Anforderung ist fehlgeschlagen.",
+            MsgFreigebenFrage = "Dieses Gerät von der Lizenz lösen?",
+            MsgServerNichtErreichbar = "Der Lizenzserver ist zurzeit nicht erreichbar — bitte später erneut versuchen.",
+            StatusAktivierung = "Aktivierung läuft…",
+            StatusTrial = "Testversion wird angefordert…",
+            StatusFreigabe = "Gerät wird freigegeben…",
+            HinweisLicGeladen = "Lizenzdatei geladen — bitte mit ‚Jetzt aktivieren' abschließen.",
+        }
+    };
+
     private IRenderedComponent<LizenzVerwaltungDialog> Zeigen(
         LizenzGaben? lage = null,
         Func<string, string, Task<(bool Ok, string Meldung)>>? aktivieren = null,
@@ -69,33 +110,7 @@ public class LizenzVerwaltungDialogTests : BunitContext
             p.Add(x => x.Lage, lage ?? Lage())
              .Add(x => x.EmailVorgabe, emailVorgabe)
              .Add(x => x.EmailPruefen, (Func<string, bool>)EmailRegel)
-             .Add(x => x.TitelText, "Lizenz — EPOS-Plan")
-             .Add(x => x.GruppeStatus, "Lizenzstatus auf diesem Arbeitsplatz")
-             .Add(x => x.GruppeAktivieren, "Aktivieren")
-             .Add(x => x.GruppeAktionen, "Weitere Aktionen")
-             .Add(x => x.LabelSchluessel, "Lizenzschlüssel:")
-             .Add(x => x.LabelEmail, "E-Mail (Benutzer):")
-             .Add(x => x.KnopfLic, "Lizenzdatei (.lic)…")
-             .Add(x => x.KnopfAktivieren, "Jetzt aktivieren")
-             .Add(x => x.KnopfTrial, "Testversion anfordern…")
-             .Add(x => x.KnopfFreigeben, "Gerät von der Lizenz lösen")
-             .Add(x => x.KnopfSchliessen, "Schließen")
-             .Add(x => x.HinweisAktivierung, "Die Aktivierung benötigt einmalig eine Internetverbindung.")
-             .Add(x => x.LinkPortal, "Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen)")
-             .Add(x => x.MsgEingabeFehlt, "Bitte Lizenzschlüssel und E-Mail-Adresse angeben.")
-             .Add(x => x.MsgEmailUngueltig, "Die E-Mail-Adresse \"{0}\" ist ungültig — bitte prüfen (Beispiel: name@firma.de).")
-             .Add(x => x.MsgAktiviert, "Die Lizenz wurde erfolgreich aktiviert.")
-             .Add(x => x.MsgAktivierungFehler, "Die Aktivierung ist fehlgeschlagen.")
-             .Add(x => x.MsgLicOhneSchluessel, "In der gewählten Datei wurde kein gültiger Lizenzschlüssel gefunden.")
-             .Add(x => x.MsgTrialEmail, "Bitte oben eine gültige E-Mail-Adresse eintragen (Beispiel: name@firma.de).")
-             .Add(x => x.MsgTrialOk, "Der Test-Lizenzschlüssel wurde per E-Mail versandt.")
-             .Add(x => x.MsgTrialFehler, "Die Anforderung ist fehlgeschlagen.")
-             .Add(x => x.MsgFreigebenFrage, "Dieses Gerät von der Lizenz lösen?")
-             .Add(x => x.MsgServerNichtErreichbar, "Der Lizenzserver ist zurzeit nicht erreichbar — bitte später erneut versuchen.")
-             .Add(x => x.StatusAktivierung, "Aktivierung läuft…")
-             .Add(x => x.StatusTrial, "Testversion wird angefordert…")
-             .Add(x => x.StatusFreigabe, "Gerät wird freigegeben…")
-             .Add(x => x.HinweisLicGeladen, "Lizenzdatei geladen — bitte mit ‚Jetzt aktivieren' abschließen.");
+             .Add(x => x.Texte, Texte());
 
             if (aktivieren is not null) p.Add(x => x.Aktivierenweg, aktivieren);
             if (licLesen is not null) p.Add(x => x.LicLesen, licLesen);
@@ -455,7 +470,7 @@ public class LizenzVerwaltungDialogTests : BunitContext
         var cut = Render<LizenzVerwaltungDialog>(p =>
         {
             p.Add(x => x.Lage, Lage())
-             .Add(x => x.KnopfSchliessen, "Schließen")
+             .Add(x => x.Texte, Texte())
              .Add(x => x.Geschlossen, EventCallback.Factory.Create(new object(), () => rufe++));
         });
 

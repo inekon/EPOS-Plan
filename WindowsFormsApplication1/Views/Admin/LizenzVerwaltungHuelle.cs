@@ -90,35 +90,11 @@ namespace WindowsFormsApplication1
                 ["Auffrischen"] = (Func<Task<LizenzGaben>>)(() => Task.FromResult(Lage())),
                 ["EmailPruefen"] = (Func<string, bool>)LizenzCtrl.EmailGueltig,
 
-                ["TitelText"] = Titel(),
-                ["GruppeStatus"] = MyResource.Resource.LIZ_GRP_STATUS,
-                ["GruppeAktivieren"] = MyResource.Resource.LIZ_GRP_AKTIVIEREN,
-                ["GruppeAktionen"] = MyResource.Resource.LIZ_GRP_AKTIONEN,
-                ["LabelSchluessel"] = MyResource.Resource.LIZ_LBL_SCHLUESSEL,
-                ["LabelEmail"] = MyResource.Resource.LIZ_LBL_EMAIL,
-                ["KnopfLic"] = MyResource.Resource.LIZ_BTN_LIC,
-                ["KnopfAktivieren"] = MyResource.Resource.LIZ_BTN_AKTIVIEREN,
-                ["KnopfTrial"] = MyResource.Resource.LIZ_BTN_TRIAL,
-                ["KnopfFreigeben"] = MyResource.Resource.LIZ_BTN_FREIGEBEN,
-                ["KnopfSchliessen"] = MyResource.Resource.LIZ_BTN_SCHLIESSEN,
-                ["HinweisAktivierung"] = MyResource.Resource.LIZ_HINWEIS_AKTIVIERUNG,
-                ["LinkPortal"] = MyResource.Resource.LIZ_LINK_PORTAL,
-                ["MsgEingabeFehlt"] = MyResource.Resource.LIZ_MSG_EINGABE_FEHLT,
-                ["MsgEmailUngueltig"] = MyResource.Resource.LIZ_MSG_EMAIL_UNGUELTIG,
-                ["MsgAktiviert"] = MyResource.Resource.LIZ_MSG_AKTIVIERT,
-                ["MsgAktivierungFehler"] = MyResource.Resource.LIZ_MSG_AKTIVIERUNG_FEHLER,
-                ["MsgLicOhneSchluessel"] = MyResource.Resource.LIZ_MSG_LIC_OHNE_SCHLUESSEL,
-                ["MsgTrialEmail"] = MyResource.Resource.LIZ_MSG_TRIAL_EMAIL,
-                ["MsgTrialOk"] = MyResource.Resource.LIZ_MSG_TRIAL_OK,
-                ["MsgTrialFehler"] = MyResource.Resource.LIZ_MSG_TRIAL_FEHLER,
-                ["MsgFreigebenFrage"] = MyResource.Resource.LIZ_MSG_FREIGEBEN_FRAGE,
-                ["MsgServerNichtErreichbar"] = MyResource.Resource.LIZ_MSG_SERVER_NICHT_ERREICHBAR,
-                ["StatusAktivierung"] = MyResource.Resource.LIZ_STATUS_AKTIVIERUNG,
-                ["StatusTrial"] = MyResource.Resource.LIZ_STATUS_TRIAL,
-                ["StatusFreigabe"] = MyResource.Resource.LIZ_STATUS_FREIGABE,
-                ["HinweisLicGeladen"] = MyResource.Resource.LIZ_HINWEIS_LIC_GELADEN,
-                ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
-                ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
+                // Die 29 Beschriftungen als EIN Satz (offener Punkt W15c-O-2,
+                // umgesetzt 04.09.2026). Das Buendel holt sie selbst aus
+                // MyResource.LIZ_* in der Oberflaechensprache; ueberschrieben wird
+                // hier nur der Fenstertitel, weil er den Produktnamen mitfuehrt.
+                ["Texte"] = new LizenzTexte { Verwaltung = { Titel = Titel() } },
             };
         }
 
