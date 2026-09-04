@@ -132,29 +132,16 @@ namespace WindowsFormsApplication1
                 ["Lizenzstatus"] = Lizenzstatus(),
                 ["Hinweise"] = Hinweise(),
                 ["Komponenten"] = Komponenten(),
-                ["SprachHinweis"] = MyResource.Resource.LIZR_HINWEIS_SPRACHE,
 
                 ["DateiWaehlen"] = (Func<Task<LizenzTextGaben>>)DateiWaehlen,
                 ["Speichern"] = (Func<string, string, Task<string>>)SpeichernUnter,
                 ["VerwaltungGaben"] = LizenzVerwaltungHuelle.Gaben(),
 
-                ["KopfTitel"] = MyResource.Resource.LIZR_KOPF_TITEL,
-                ["KopfUntertitel"] = MyResource.Resource.LIZR_KOPF_UNTERTITEL,
-                ["ReiterVertrag"] = MyResource.Resource.LIZR_REITER_VERTRAG,
-                ["ReiterHinweise"] = MyResource.Resource.LIZR_REITER_HINWEISE,
-                ["ReiterKomponenten"] = MyResource.Resource.LIZR_REITER_KOMPONENTEN,
-                ["KnopfDatei"] = MyResource.Resource.LIZR_BTN_DATEI,
-                ["KnopfDrucken"] = MyResource.Resource.LIZR_BTN_DRUCKEN,
-                ["KnopfSpeichern"] = MyResource.Resource.LIZR_BTN_SPEICHERN,
-                ["KnopfAktivieren"] = MyResource.Resource.LIZR_BTN_AKTIVIEREN,
-                ["KnopfSchliessen"] = MyResource.Resource.LIZR_BTN_SCHLIESSEN,
-                ["KnopfZustimmen"] = MyResource.Resource.LIZR_BTN_ZUSTIMMEN,
-                ["KnopfAblehnen"] = MyResource.Resource.LIZR_BTN_ABLEHNEN,
-                ["ZustimmungHinweis"] = MyResource.Resource.LIZR_ZUSTIMMUNG_HINWEIS,
-                ["FussLizenz"] = MyResource.Resource.LIZR_FUSS_LIZENZ,
-                ["FussQuelle"] = MyResource.Resource.LIZR_FUSS_QUELLE,
-                ["FussStand"] = MyResource.Resource.LIZR_FUSS_STAND,
-                ["MsgGespeichert"] = MyResource.Resource.LIZR_MSG_GESPEICHERT,
+                // Die 18 Beschriftungen als EIN Satz (offener Punkt W15c-O-2,
+                // umgesetzt 04.09.2026). Das Buendel holt sie selbst aus
+                // MyResource.LIZR_* in der Oberflaechensprache; hier ist nichts
+                // mehr einzeln zu setzen.
+                ["Texte"] = new LizenzTexte(),
             };
 
             // Nachgeliefert wird die Online-Fassung NUR, wenn keine oertliche Datei
