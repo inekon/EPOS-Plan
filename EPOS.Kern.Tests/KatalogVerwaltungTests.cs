@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1;
@@ -460,6 +460,282 @@ namespace EPOS.Kern.Tests
             Assert.Equal(13, puffer.rows);
             Assert.Equal(6, pv.rows);
             Assert.Equal(5, speicher.rows);
+        }
+
+        // =================================================================================
+        // 8 - KatalogZeilen und KatalogsatzAnzeige (W14a.0c)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Detailblock des Heizkesselbrowsers: acht Schluessel, die Zahlen mit
+        /// <c>F2</c>, der Brennstoff als Nachschlag, <c>NULL</c> als leerer Text.
+        /// </summary>
+        [Fact]
+        public void Heizkessel_Katalogsatz_zeigt_die_acht_Felder_wie_der_Bestand()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var ctrl = new HeizkesselStammCtrl();
+            var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
+
+            Assert.NotNull(satz);
+            Assert.Equal(8, satz.Count);
+            Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
+            Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
+            Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
+            Assert.Equal("22,00", satz[KatalogBrowserProfil.FeldPtherm]);
+            Assert.Equal("0,00", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+            Assert.Equal("1", satz[KatalogBrowserProfil.FeldBrennwert]);
+
+            // Vorlauf und Ruecklauf sind NULL - der Bestand zeigte dort einen leeren Text.
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldVorlauf]);
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldRuecklauf]);
+
+            Assert.Null(ctrl.KatalogsatzAnzeige("W14a-gibt-es-nicht"));
+        }
+
+        /// <summary>
+        /// Jedes Profilfeld findet einen Wert — kein Feld bleibt ohne Antwort, und kein
+        /// Wert steht ohne Feld da. Das ist die Klammer zwischen Profil und Controller.
+        /// </summary>
+        [Fact]
+        public void Jeder_Katalogsatz_beantwortet_genau_die_Felder_seines_Profils()
+        {
+            if (!_db.Vorhanden) return;
+
+            Pruefe(KatalogBrowserArt.Heizkessel,
+                   new HeizkesselStammCtrl().KatalogsatzAnzeige("GC7000F 22 23 - MX25"));
+            Pruefe(KatalogBrowserArt.Bhkw,
+                   BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas"));
+            Pruefe(KatalogBrowserArt.Solarkollektoren,
+                   SolarkollektorenStammCtrl.KatalogsatzAnzeige("SO4000TFV-FCC220-2V"));
+            Pruefe(KatalogBrowserArt.Pufferspeicher,
+                   PufferSpStammCtrl.KatalogsatzAnzeige("Puffer 3000Ltr"));
+
+            static void Pruefe(KatalogBrowserArt art, IReadOnlyDictionary<string, string> satz)
+            {
+                Assert.NotNull(satz);
+                var profil = KatalogBrowserProfil.Finde(art);
+                Assert.Equal(profil.Detailfelder.Count, satz.Count);
+                foreach (var feld in profil.Detailfelder)
+                    Assert.True(satz.ContainsKey(feld.Schluessel),
+                                art + ": Feld " + feld.Schluessel + " fehlt in der Anzeige.");
+            }
+        }
+
+        /// <summary>
+        /// Der BHKW-Detailblock zeigt seine Zahlen ROH, ohne Format — anders als der
+        /// Heizkessel, der <c>F2</c> nimmt (Vermessung § 2 b gegen § 1 b).
+        /// </summary>
+        [Fact]
+        public void Bhkw_Katalogsatz_zeigt_die_Zahlen_ohne_Format()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var satz = BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas");
+            Assert.NotNull(satz);
+            Assert.Equal("2-G Energietechnik GmbH", satz[KatalogBrowserProfil.FeldFirma]);
+            Assert.Equal("250", satz[KatalogBrowserProfil.FeldPtherm]);
+            Assert.Equal("250", satz[KatalogBrowserProfil.FeldPel]);
+            Assert.Equal("15", satz[KatalogBrowserProfil.FeldGrenzleistung]);
+            Assert.Equal("85", satz[KatalogBrowserProfil.FeldVorlauf]);
+            Assert.Equal("65", satz[KatalogBrowserProfil.FeldRuecklauf]);
+        }
+
+        /// <summary>
+        /// Der Auslieferungskatalog des BHKW ist vollstaendig schreibgeschuetzt — die
+        /// Rueckfrage beim Ueberschreiben ist dort der Regelfall
+        /// (<c>Form_BHKWAdmin.cs:413-417</c>).
+        /// </summary>
+        [Fact]
+        public void Bhkw_Auslieferungskatalog_ist_schreibgeschuetzt()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(BHKWStammCtrl.IstSchreibgeschuetzt("2G 250kw.el Gas"));
+            Assert.False(BHKWStammCtrl.IstSchreibgeschuetzt("W14a-gibt-es-nicht"));
+        }
+
+        /// <summary>
+        /// Die Kollektorliste: sieben Saetze, sortiert, mit den drei Werten der zweiten
+        /// Rasterspalte.
+        /// </summary>
+        [Fact]
+        public void Solarkollektoren_Katalogzeilen_tragen_die_Zweitspalte()
+        {
+            if (!_db.Vorhanden) return;
+
+            var zeilen = SolarkollektorenStammCtrl.KatalogZeilen();
+            Assert.Equal(7, zeilen.Count);
+
+            var namen = zeilen.Select(z => z.Bezeichner).ToList();
+            Assert.Equal(namen.OrderBy(n => n, StringComparer.Ordinal).ToList(), namen);
+
+            var erste = zeilen.First(z => z.Bezeichner == "SO4000TFV-FCC220-2V");
+            Assert.Equal("Junkers Bosch", erste.Firma);
+            Assert.Equal("Flachkollektor", erste.Kollektortyp);
+            Assert.Equal(1.94, erste.Aperturflaeche, 6);
+        }
+
+        /// <summary>
+        /// Befund W14a-B78 / W14-B15: „Kollektorfläche" bleibt LEER, „Aperturfläche"
+        /// traegt die Aperturflaeche. Woertlich wie der Bestand — Entscheide E-2 und E-11.
+        /// </summary>
+        [Fact]
+        public void Solarkollektoren_Kollektorflaeche_bleibt_leer()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var satz = SolarkollektorenStammCtrl.KatalogsatzAnzeige("SO4000TFV-FCC220-2V");
+            Assert.NotNull(satz);
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldModulflaeche]);
+            Assert.Equal("1,94", satz[KatalogBrowserProfil.FeldAperturflaeche]);
+        }
+
+        /// <summary>
+        /// Der Pufferspeicher-Detailblock zeigt ROH, nicht mit einer Nachkommastelle wie
+        /// <c>PufferSpStammCtrl.Detail</c> des PROJEKTdialogs — zwei Masken, zwei
+        /// Anzeigeregeln, beide woertlich.
+        /// </summary>
+        [Fact]
+        public void PufferSp_Katalogsatz_zeigt_roh_und_nicht_wie_der_Projektdialog()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var satz = PufferSpStammCtrl.KatalogsatzAnzeige("Puffer 3000Ltr");
+            Assert.NotNull(satz);
+            Assert.Equal("Bosch", satz[KatalogBrowserProfil.FeldFirma]);
+            Assert.Equal("Pufferspeicher", satz[KatalogBrowserProfil.FeldSpeichertyp]);
+            Assert.Equal("3,34", satz[KatalogBrowserProfil.FeldVerluste]);
+            Assert.Equal("3000", satz[KatalogBrowserProfil.FeldVolumen]);
+            Assert.Equal("0", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+
+            // Der Projektdialog formatiert dieselben Werte mit einer Nachkommastelle.
+            var detail = PufferSpStammCtrl.Detail("Puffer 3000Ltr");
+            Assert.Equal("3,3", detail.Bereitschaftsverluste);
+        }
+
+        // =================================================================================
+        // 9 - SpeichertypAbbildung (W14a.0d)
+        // =================================================================================
+
+        /// <summary>
+        /// Die drei DB-Werte und ihre Reihenfolge — sie sind Persistenz und duerfen sich
+        /// nicht bewegen.
+        /// </summary>
+        [Fact]
+        public void Speichertyp_DB_Werte_stehen_in_der_Reihenfolge_der_Auswahlliste()
+        {
+            Assert.Equal(new[] { "Solarspeicher", "Pufferspeicher", "Kombispeicher" },
+                         PufferSpStammCtrl.SPEICHERTYP_DB_WERTE);
+            Assert.Equal(DbWerte.PSP_SPEICHERTYP_SOLAR, PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[0]);
+            Assert.Equal(DbWerte.PSP_SPEICHERTYP_PUFFER, PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[1]);
+            Assert.Equal(DbWerte.PSP_SPEICHERTYP_KOMBI, PufferSpStammCtrl.SPEICHERTYP_DB_WERTE[2]);
+        }
+
+        /// <summary>
+        /// Die drei EINGEFRORENEN englischen Altwerte (Befund L0-1). Sie beschreiben
+        /// Altdaten, nicht die heutige Oberflaeche, und duerfen sich mit einer
+        /// Uebersetzungskorrektur NICHT mitaendern.
+        /// </summary>
+        [Fact]
+        public void Speichertyp_Altwerte_bleiben_eingefroren()
+        {
+            Assert.Equal(new[] { "Solar storage", "Buffer storage", "Combination storage" },
+                         PufferSpStammCtrl.SPEICHERTYP_ALTWERTE_EN);
+        }
+
+        /// <summary>
+        /// Der LESEWEG erkennt drei Stufen: DB-Wert, angezeigter Text, englischer Altwert.
+        /// Alles andere ist <c>-1</c> und bleibt als Freitext stehen.
+        /// </summary>
+        [Fact]
+        public void Speichertyp_Index_kennt_die_drei_Stufen()
+        {
+            var anzeige = new[] { "Solarspeicher", "Pufferspeicher", "Kombispeicher" };
+
+            // Stufe 1 - der DB-Wert, auch mit abweichender Gross-/Kleinschreibung.
+            Assert.Equal(0, PufferSpStammCtrl.SpeichertypIndex("Solarspeicher", anzeige));
+            Assert.Equal(1, PufferSpStammCtrl.SpeichertypIndex("PUFFERSPEICHER", anzeige));
+
+            // Stufe 2 - der angezeigte Text der aktuellen Sprache.
+            Assert.Equal(2, PufferSpStammCtrl.SpeichertypIndex("Kombispeicher",
+                                                               new[] { "a", "b", "Kombispeicher" }));
+
+            // Stufe 3 - der englische Altwert (Bestandstoleranz).
+            Assert.Equal(0, PufferSpStammCtrl.SpeichertypIndex("Solar storage", anzeige));
+            Assert.Equal(1, PufferSpStammCtrl.SpeichertypIndex("Buffer storage", anzeige));
+            Assert.Equal(2, PufferSpStammCtrl.SpeichertypIndex("Combination storage", anzeige));
+
+            Assert.Equal(-1, PufferSpStammCtrl.SpeichertypIndex("Eiswürfelspeicher", anzeige));
+            Assert.Equal(-1, PufferSpStammCtrl.SpeichertypIndex("", anzeige));
+            Assert.Equal(-1, PufferSpStammCtrl.SpeichertypIndex(null, anzeige));
+        }
+
+        /// <summary>
+        /// Der SCHREIBWEG: massgeblich ist der Index. Ohne Auswahl entscheidet der Text,
+        /// und ein unbekannter Freitext geht unveraendert durch — er wird nicht
+        /// stillschweigend umgeschrieben.
+        /// </summary>
+        [Fact]
+        public void Speichertyp_DbWert_nimmt_den_Index_und_laesst_Freitext_stehen()
+        {
+            Assert.Equal("Solarspeicher", PufferSpStammCtrl.SpeichertypDbWert(0));
+            Assert.Equal("Pufferspeicher", PufferSpStammCtrl.SpeichertypDbWert(1));
+            Assert.Equal("Kombispeicher", PufferSpStammCtrl.SpeichertypDbWert(2));
+
+            // Englischer Altwert ohne Auswahl -> der deutsche Persistenzwert.
+            Assert.Equal("Pufferspeicher", PufferSpStammCtrl.SpeichertypDbWert(-1, "Buffer storage"));
+
+            // Unbekannter Freitext bleibt stehen.
+            Assert.Equal("Eiswürfelspeicher",
+                         PufferSpStammCtrl.SpeichertypDbWert(-1, "Eiswürfelspeicher"));
+            Assert.Equal("", PufferSpStammCtrl.SpeichertypDbWert(-1, ""));
+        }
+
+        /// <summary>
+        /// Jeder Speichertyp der Testdatenbank wird vom Leseweg erkannt — sonst ginge der
+        /// Wert beim naechsten Speichern verloren.
+        /// </summary>
+        [Fact]
+        public void Speichertyp_jeder_Bestandswert_wird_erkannt()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ctrl = new PufferSpStammCtrl();
+            ctrl.ReadAll();
+            foreach (var m in ctrl.items)
+                Assert.True(PufferSpStammCtrl.SpeichertypIndex(m.Speichertyp) >= 0,
+                            "Speichertyp \"" + m.Speichertyp + "\" wird nicht erkannt.");
+        }
+
+        /// <summary>
+        /// Pinnt Kultur und Oberflaechensprache auf de-DE — die Zahlenformate <c>F2</c>
+        /// und die Ressourcentexte haengen daran (Regel seit iU9-W8).
+        /// </summary>
+        private sealed class DeutscheOberflaeche : IDisposable
+        {
+            private readonly System.Globalization.CultureInfo _kultur =
+                System.Threading.Thread.CurrentThread.CurrentCulture;
+            private readonly System.Globalization.CultureInfo _sprache =
+                System.Threading.Thread.CurrentThread.CurrentUICulture;
+
+            public DeutscheOberflaeche()
+            {
+                var de = new System.Globalization.CultureInfo("de-DE");
+                System.Threading.Thread.CurrentThread.CurrentCulture = de;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = de;
+            }
+
+            public void Dispose()
+            {
+                System.Threading.Thread.CurrentThread.CurrentCulture = _kultur;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = _sprache;
+            }
         }
     }
 }
