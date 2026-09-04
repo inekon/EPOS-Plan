@@ -39,6 +39,24 @@
   </ItemGroup>
 
   <!-- ================================================================== -->
+  <!-- VORUEBERGEHEND (iU9-W15a.0j)                                        -->
+  <!--                                                                    -->
+  <!-- Die fuenf Transferproben P1-P5 entstehen VOR dem Umzug von          -->
+  <!-- ProjektExportImportCtrl in den Kern (Risiko R-W15a-2): Der          -->
+  <!-- Controller wird nur VERSCHOBEN, und die Proben sollen bezeugen,     -->
+  <!-- dass er danach dasselbe tut. Solange er noch im Anwendungsprojekt   -->
+  <!-- liegt, wird seine Datei hier MITUEBERSETZT - sie enthaelt keine     -->
+  <!-- WinForms-Berührung mehr (iU9-W15a.0e, 1. Haelfte).                  -->
+  <!--                                                                    -->
+  <!-- DIESER BLOCK FAELLT MIT W15a.0e (2. Haelfte), sobald die Datei      -->
+  <!-- unter EPOS.Kern/Controller/ liegt.                                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <Compile Include="..\WindowsFormsApplication1\Controller\ProjektExportImportCtrl.cs"
+             Link="Vorher\ProjektExportImportCtrl.cs" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
   <!-- DIAGRAMME (iU7-8)                                                   -->
   <!--                                                                    -->
   <!-- ChartRendererTests zeichnet wirklich - und dafuer reicht das        -->
