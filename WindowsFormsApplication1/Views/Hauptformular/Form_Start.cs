@@ -5,6 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Rectangle = System.Drawing.Rectangle;
 
+using EPOS.UI.Dialoge.Projekt;
+
 namespace WindowsFormsApplication1
 {
     public partial class Form_Start : Form
@@ -753,12 +755,15 @@ namespace WindowsFormsApplication1
             {
                 // Rückfall: nichts gemerkt oder das gemerkte Projekt existiert
                 // nicht mehr - dann (und nur dann) die Projektliste zeigen.
-                using (Form_ProjektAuswahl dlg = new Form_ProjektAuswahl())
-                {
-                    dlg.ZuletztGeaendertZuerst(gewaehlt);
-                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
-                    gewaehlt = dlg.m_szProjekt;
-                }
+                // iU9-W15a.2: derselbe Razor-Dialog wie hinter Masken.ProjektAuswahl,
+                // hier aber DIREKT (nicht ueber die Sprungtabelle) - so war es schon
+                // beim Vorlaeufer, weil nur dieser Weg die Sicht "zuletzt geaendert
+                // zuerst" mit Vorauswahl braucht.
+                if (!ProjektWahlHuelle.Oeffnen(this, ProjektWahlDialog.ProjektZweck.Oeffnen,
+                                               out ProjektKopfZeile wahl,
+                                               vorauswahl: gewaehlt,
+                                               zuletztGeaendertZuerst: true)) return;
+                gewaehlt = wahl.Name ?? "";
 
                 if (gewaehlt == "" || !ProjektKontextUebernehmen(gewaehlt))
                 {

@@ -1,0 +1,222 @@
+﻿@* Projektauswahl - EINE Maske fuer zwei Zwecke (iU9-W15a.2).
+
+   SIE LOEST ZWEI WINFORMS-MASKEN AB, die dasselbe taten:
+     * Form_ProjektAuswahl ("Projekt oeffnen", 99 Z. + das UserControl
+       ProjektAuswahl mit 408 Z.) - Liste, OK, Abbrechen, Hilfeknopf.
+     * Form_ProjektDelete ("Projekt Loeschen", 55 Z.) - eine Klappliste, OK,
+       Abbrechen. Der Kopfkommentar in Masken.cs:62 sagt es woertlich: "nur die
+       AUSWAHL des Projekts; geloescht wird danach vom Aufrufer."
+   Beide liefern (Id, Name) und sonst nichts. Der Unterschied ist der Zweck - und
+   damit Titel, Knopftext und die Sicherheitsabfrage.
+
+   WAS SICH FUER DEN ANWENDER AENDERT (Angleichungen der Welle):
+     * A-12: "Loeschen" zeigt jetzt DIESELBE Liste wie "Oeffnen" - mit Suche,
+       Kunde und Aenderungsdatum statt einer Klappliste. Das ist die sichtbarste
+       Aenderung der Welle (Anwenderfrage E-5).
+     * A-7: Der Loeschdialog bekommt Esc und einen Standardknopf. Form_ProjektDelete
+       hatte weder AcceptButton noch CancelButton - Esc schloss sie nicht (B6).
+     * Die Sicherheitsabfrage steht jetzt IM Dialog statt danach. Ihre Stellung in
+       der Schrittfolge ist dieselbe (Auswahl -> Rueckfrage -> loeschen ->
+       Erfolgsmeldung), nur sieht der Anwender sie dort, wo er gerade ist.
+
+   BITGLEICH BLEIBT das Rueckgabefach: Der Dialog meldet (Id, Name), der Aufrufer
+   fuellt daraus die Projektwahl (Befund W15a-B45 - der ganze Projektwechsel
+   haengt daran).
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen kommen fertig als [Parameter]
+   aus ProjektCtrl.NamenListe; geloescht wird ausserhalb. *@
+
+@namespace EPOS.UI.Dialoge.Projekt
+
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-projektwahl" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
+    </div>
+
+    <ProjektListe Zeilen="@Zeilen"
+                  Suche="@_suche" SucheChanged="@(s => _suche = s)"
+                  SortSpalte="@SortSpalte" SortAbsteigend="@SortAbsteigend"
+                  Markiert="@_markiert" MarkiertChanged="BeiMarkierung"
+                  Gewaehlt="BeiDoppelklick"
+                  AutoVorauswahl="@AutoVorauswahl"
+                  AnzahlFormat="@AnzahlFormat"
+                  SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
+                  SpalteGeaendert="@SpalteGeaendert" SucheText="@SucheText"
+                  WahlText="@WahlText" LeerText="@LeerText" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiErgebnis" />
+
+    <Rueckfrage Offen="@_frageOffen" TitelText="@FrageTitel" Frage="@Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiFrage" />
+</div>
+
+@code {
+    /// <summary>Wozu die Liste da ist.</summary>
+    public enum ProjektZweck
+    {
+        /// <summary>„Projekt öffnen" — der Dialog hinter <c>Masken.ProjektAuswahl</c>.</summary>
+        Oeffnen = 0,
+
+        /// <summary>„Projekt löschen" — der Dialog hinter <c>Masken.ProjektDelete</c>.</summary>
+        Loeschen
+    }
+
+    /// <summary>Öffnen oder Löschen — der einzige echte Unterschied der beiden Masken.</summary>
+    [Parameter] public ProjektZweck Zweck { get; set; } = ProjektZweck.Oeffnen;
+
+    /// <summary>Die wählbaren Projekte (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Der Name, der beim Öffnen vorgewählt sein soll; leer = keiner. Vorbild
+    /// <c>Form_ProjektAuswahl.ZuletztGeaendertZuerst</c>, das die Startmasken-Kachel
+    /// „Zuletzt geöffnet" benutzt.
+    /// </summary>
+    [Parameter] public string Vorauswahl { get; set; } = "";
+
+    /// <summary>Nach welcher Spalte sortiert wird (Vorgabe: Projektname).</summary>
+    [Parameter] public int SortSpalte { get; set; } = ProjektListe.SPALTE_NAME;
+
+    /// <summary>Absteigend? Die Kachel „Zuletzt geöffnet" sortiert nach Datum absteigend.</summary>
+    [Parameter] public bool SortAbsteigend { get; set; }
+
+    /// <summary>Markiert die erste Zeile von selbst (Vorbild <c>AutomatischeVorauswahl</c>).</summary>
+    [Parameter] public bool AutoVorauswahl { get; set; } = true;
+
+    /// <summary>
+    /// Das Ergebnis: die gewählte Zeile bei OK, <c>null</c> bei Abbrechen. Der Aufrufer
+    /// füllt daraus die <c>Projektwahl</c> — das Rückgabefach bleibt unverändert (B45).
+    /// </summary>
+    [Parameter] public EventCallback<ProjektKopfZeile?> Geschlossen { get; set; }
+
+    [Parameter] public string TitelText { get; set; } = "Projekt öffnen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Der Titel der Sicherheitsabfrage.</summary>
+    [Parameter] public string FrageTitel { get; set; } = "";
+
+    /// <summary>
+    /// Die Sicherheitsabfrage; <c>{0}</c> = Projektname. Wörtlich aus
+    /// <c>MenueCtrl.ProjektDelete:193</c>.
+    /// </summary>
+    [Parameter] public string FrageFormat { get; set; } = "";
+
+    /// <summary>Meldung, wenn OK ohne Auswahl gedrückt wird (Schlüssel <c>Text_Select</c>).</summary>
+    [Parameter] public string MeldungKeineWahl { get; set; } = "Bitte auswählen!";
+
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private string _suche = "";
+    private int _markiert;
+    private ProjektKopfZeile? _gewaehlt;
+    private string _meldung = "";
+    private bool _frageOffen;
+
+    /// <summary>Die gerade markierte Zeile (Prüfhilfe für Tests).</summary>
+    public ProjektKopfZeile? Markiert => _gewaehlt;
+
+    /// <summary>Steht die Sicherheitsabfrage? (Prüfhilfe für Tests.)</summary>
+    public bool FrageOffen => _frageOffen;
+
+    private string Frage => string.Format(FrageFormat ?? "", _gewaehlt?.Name ?? "");
+
+    protected override void OnParametersSet()
+    {
+        // Vorauswahl EINMAL scharfstellen - danach gehoert die Markierung dem Anwender.
+        if (_markiert != 0 || string.IsNullOrEmpty(Vorauswahl)) return;
+
+        foreach (ProjektKopfZeile z in Zeilen)
+            if (string.Equals(z.Name, Vorauswahl, StringComparison.CurrentCultureIgnoreCase))
+            {
+                _markiert = z.Id;
+                _gewaehlt = z;
+                return;
+            }
+    }
+
+    private void BeiMarkierung(ProjektKopfZeile? z)
+    {
+        _gewaehlt = z;
+        _markiert = z?.Id ?? 0;
+        if (z is not null) _meldung = "";
+    }
+
+    /// <summary>
+    /// Doppelklick = OK. So hielt es <c>Form_ProjektAuswahl.ucAuswahl_ProjektGewaehlt</c>;
+    /// im Loeschmodus fuehrt er ueber dieselbe Sicherheitsabfrage wie der Knopf.
+    /// </summary>
+    private Task BeiDoppelklick(ProjektKopfZeile z)
+    {
+        BeiMarkierung(z);
+        return BeiErgebnis(true);
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        // btn_OK_Click: ohne Auswahl bleibt der Dialog offen und sagt, warum.
+        if (_gewaehlt is null || _gewaehlt.Id <= 0)
+        {
+            _meldung = MeldungKeineWahl;
+            return;
+        }
+
+        if (Zweck == ProjektZweck.Loeschen && !string.IsNullOrEmpty(FrageFormat))
+        {
+            _frageOffen = true;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(_gewaehlt);
+    }
+
+    private async Task BeiFrage(bool? antwort)
+    {
+        _frageOffen = false;
+        if (antwort != true) return;          // "Nein" laesst den Dialog stehen
+        await Geschlossen.InvokeAsync(_gewaehlt);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (_frageOffen) return Task.CompletedTask;   // die Rueckfrage beantwortet Esc selbst
+        return e.Key switch
+        {
+            "Enter" => BeiErgebnis(true),
+            "Escape" => BeiErgebnis(false),
+            _ => Task.CompletedTask
+        };
+    }
+}
