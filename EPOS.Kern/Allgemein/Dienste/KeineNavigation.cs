@@ -12,11 +12,6 @@
     public sealed class KeineNavigation : INavigation
     {
         /// <inheritdoc/>
-        public void OeffneGewerk(string gewerk, int idProjekt, string projektname)
-        {
-        }
-
-        /// <inheritdoc/>
         public bool OeffneMaske(string maske, params object[] argumente)
         {
             return false;

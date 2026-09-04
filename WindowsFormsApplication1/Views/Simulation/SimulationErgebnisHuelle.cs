@@ -728,20 +728,11 @@ namespace WindowsFormsApplication1
             bool ok = SimulationLaufCtrl.ErgebnisSpeichern(
                 m_ID_Projekt, _waermebedarf, _strombedarf, sim);
 
-            if (ok)
-            {
-                // Die Kacheln der Startmaske auffrischen - wörtlich :3748-3749, in
-                // try/catch, weil die Startmaske geschlossen sein kann.
-                try
-                {
-                    projektCtrl.ReadSingle(m_ID_Projekt);
-                    Program.mainfrm.SetSPControl(projektCtrl.m_szProjektname);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Die Startmaske konnte nicht aufgefrischt werden: " + ex.Message);
-                }
-            }
+            // iU9-W16b.1 (E-7, K6-a): Hier stand ein Auffrischen der
+            // Stromspeicherliste im Detailformular (Program.mainfrm.SetSPControl,
+            // wörtlich :3748-3749, in try/catch, weil das Fenster geschlossen sein
+            // konnte). FormMain ist gelöscht; die Startseite liest ihren Bestand beim
+            // nächsten Zeichnen ohnehin neu.
 
             return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
                 ok,

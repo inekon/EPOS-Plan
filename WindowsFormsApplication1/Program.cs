@@ -13,7 +13,11 @@ namespace WindowsFormsApplication1
     static class Program
     {
         public static MDIMainForm mdifrm = null;
-        public static FormMain mainfrm = null;
+
+        // iU9-W16b.1 (Anwenderentscheid E-7, K6-a): Das Feld "mainfrm" ist ersatzlos
+        // entfallen - das Detailformular FormMain ("Konfiguration Projekt") mit seinen
+        // zwoelf Gewerkslisten und elf Kontextmenues ist geloescht. Was es zeigte, fuehrt
+        // die Startseite als Kacheln.
         public static Form_Start startfrm = null;
         public static MenueCtrl menuectrl = null;
         public static WizardCtrl wizardctrl = null;

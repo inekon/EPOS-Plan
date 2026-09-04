@@ -87,10 +87,5 @@
         /// </summary>
         public const string Assistent = "ASSISTENT";
 
-        /// <summary>
-        /// Das Detailformular „Konfiguration Projekt" mit allen Gewerkslisten und
-        /// Kontextmenüs. Argumente: Projektname und Projekt-ID.
-        /// </summary>
-        public const string ProjektDetail = "PROJEKT_DETAIL";
     }
 }
