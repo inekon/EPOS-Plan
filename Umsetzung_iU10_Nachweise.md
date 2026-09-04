@@ -302,6 +302,21 @@ den festen Pfaden des Einstellungsdialogs ohne Ordnerwähler (E‑5). Bau, Simul
 Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Achtzehnter Lauf 33876284942 (`ios.yml`, `macos-26`, 04.09.2026, 13:07–13:09 UTC, 2 min 26 s)** auf
+`f71853b` — der Stand **nach der Welle 15b**: **rot**, Bau der iOS-Hülle mit CS0103: `IosHilfeDienst.cs(67)` schrieb
+`MyResource.Resource.HILFE_IOS_BESCHREIBUNG` (Auflage H‑2 aus W15b.0g — der einzige deutsche Satz der iOS-Hülle wurde in
+die Ressourcen gehoben), aber die Ressourcenklasse liegt in `WindowsFormsApplication1.MyResource`, und das `using` auf
+`WindowsFormsApplication1` macht den Unter-Namensraum in `EPOS.iOS` nicht sichtbar. Im Kern löst sich derselbe Ausdruck
+relativ zum umgebenden Namensraum auf, deshalb fiel es auf Linux und Windows nicht auf — **die iOS-Hülle wird nur vom
+macOS-Läufer übersetzt**, das ist der Sinn des Laufs. Behoben mit `f0e23a4` (voll qualifiziert; kein weiterer Treffer in
+`EPOS.iOS`).
+
+**Neunzehnter Lauf 33878903371 (`ios.yml`, `macos-26`, 04.09.2026, 13:35–13:41 UTC, 6 min 27 s)** auf `f0e23a4`: grün.
+Erstmals mit `KiChatService` im Kern hinter `IKiAusfuehrung` (auf iOS die stille Standardfassung `KeineAusfuehrung`),
+dem Baustein `Gespraechsverlauf`, den KI-Dialogen, `Seitenschluessel.KiAssistent` in der `AppWurzel`, dem Tooltip-Schlüssel
+und den Rückfragen bei mehrdeutigem Projekt- und Variantennamen (O‑3/O‑4). Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
