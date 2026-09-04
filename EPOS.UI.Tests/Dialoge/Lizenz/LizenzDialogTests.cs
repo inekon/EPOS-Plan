@@ -59,6 +59,34 @@ public class LizenzDialogTests : BunitContext
         new RechtsAbschnitt(false, "Microsoft .NET 10 mit Windows Forms."),
     };
 
+    /// <summary>
+    /// Der Textsatz des Prüfstands — seit W15c-O-2 EIN Parameter statt achtzehn.
+    /// Die Werte stehen hier weiterhin wörtlich, damit jede Zusage dieses Zeugen an
+    /// einem Literal hängt und nicht am Katalog; dass sich das Bündel OHNE Angabe
+    /// selbst aus <c>MyResource</c> füllt, prüft <see cref="LizenzTexteTests"/>.
+    /// </summary>
+    private static LizenzTexte Texte(string sprachHinweis = "") => new()
+    {
+        KopfTitel = "Lizenz und rechtliche Hinweise",
+        KopfUntertitel = "EPOS-Plan - Energieplanungs-Software - INEKON",
+        ReiterVertrag = "Lizenzvereinbarung",
+        ReiterHinweise = "Rechtliche Hinweise",
+        ReiterKomponenten = "Komponenten",
+        KnopfDatei = "Datei wählen...",
+        KnopfDrucken = "Drucken...",
+        KnopfSpeichern = "Speichern unter...",
+        KnopfAktivieren = "Lizenz aktivieren...",
+        KnopfSchliessen = "Schließen",
+        KnopfZustimmen = "Zustimmen",
+        KnopfAblehnen = "Ablehnen",
+        ZustimmungHinweis = "Bitte lesen Sie die Vereinbarung und bestätigen Sie sie, um das Programm zu nutzen.",
+        FussLizenz = "Lizenz: {0}",
+        FussQuelle = "Quelle: {0}",
+        FussStand = "   ·   Stand {0}",
+        MsgGespeichert = "Gespeichert:\n{0}",
+        SprachHinweis = sprachHinweis,
+    };
+
     private IRenderedComponent<LizenzDialog> Zeigen(
         bool zustimmungsmodus = false,
         LizenzTextGaben? text = null,
@@ -77,24 +105,7 @@ public class LizenzDialogTests : BunitContext
              .Add(x => x.Lizenzstatus, "Firmenlizenz · gültig bis 31.12.2026")
              .Add(x => x.Hinweise, HINWEISE)
              .Add(x => x.Komponenten, KOMPONENTEN)
-             .Add(x => x.SprachHinweis, sprachHinweis)
-             .Add(x => x.KopfTitel, "Lizenz und rechtliche Hinweise")
-             .Add(x => x.KopfUntertitel, "EPOS-Plan - Energieplanungs-Software - INEKON")
-             .Add(x => x.ReiterVertrag, "Lizenzvereinbarung")
-             .Add(x => x.ReiterHinweise, "Rechtliche Hinweise")
-             .Add(x => x.ReiterKomponenten, "Komponenten")
-             .Add(x => x.KnopfDatei, "Datei wählen...")
-             .Add(x => x.KnopfDrucken, "Drucken...")
-             .Add(x => x.KnopfSpeichern, "Speichern unter...")
-             .Add(x => x.KnopfAktivieren, "Lizenz aktivieren...")
-             .Add(x => x.KnopfSchliessen, "Schließen")
-             .Add(x => x.KnopfZustimmen, "Zustimmen")
-             .Add(x => x.KnopfAblehnen, "Ablehnen")
-             .Add(x => x.ZustimmungHinweis, "Bitte lesen Sie die Vereinbarung und bestätigen Sie sie, um das Programm zu nutzen.")
-             .Add(x => x.FussLizenz, "Lizenz: {0}")
-             .Add(x => x.FussQuelle, "Quelle: {0}")
-             .Add(x => x.FussStand, "   ·   Stand {0}")
-             .Add(x => x.MsgGespeichert, "Gespeichert:\n{0}");
+             .Add(x => x.Texte, Texte(sprachHinweis));
 
             if (dateiWaehlen is not null) p.Add(x => x.DateiWaehlen, dateiWaehlen);
             if (onlineNachladen is not null) p.Add(x => x.OnlineNachladen, onlineNachladen);
@@ -191,9 +202,7 @@ public class LizenzDialogTests : BunitContext
                   {
                       new RechtsAbschnitt(false, "<script>alert('x')</script> und <b>fett</b>")
                   })
-             .Add(x => x.ReiterHinweise, "Rechtliche Hinweise")
-             .Add(x => x.ReiterVertrag, "Lizenzvereinbarung")
-             .Add(x => x.ReiterKomponenten, "Komponenten");
+             .Add(x => x.Texte, Texte());
         });
 
         cut.FindAll("[role=tab]")[1].Click();
@@ -455,8 +464,14 @@ public class LizenzDialogTests : BunitContext
         var gaben = new Dictionary<string, object>
         {
             ["Lage"] = new LizenzGaben("GUELTIG", "Firmenlizenz", "Lizenz EPOS-2026-00001", true, ""),
-            ["GruppeStatus"] = "Lizenzstatus auf diesem Arbeitsplatz",
-            ["KnopfSchliessen"] = "Schließen",
+            ["Texte"] = new LizenzTexte
+            {
+                Verwaltung =
+                {
+                    GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
+                    KnopfSchliessen = "Schließen",
+                }
+            },
         };
         var cut = Zeigen(verwaltung: gaben);
 
