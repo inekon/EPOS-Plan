@@ -14664,11 +14664,92 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · gültig bis {1} ähnelt.
+        /// </summary>
+        public static string LIZ_ST_GUELTIG {
+            get {
+                return ResourceManager.GetString("LIZ_ST_GUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz am {0} abgelaufen — Kulanzfenster läuft, bitte ver [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZ_ST_KULANZ {
+            get {
+                return ResourceManager.GetString("LIZ_ST_KULANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz abgelaufen — Lesemodus (Projekte ansehen und expor [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZ_ST_LESEMODUS {
+            get {
+                return ResourceManager.GetString("LIZ_ST_LESEMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Online-Nachprüfung fällig — bitte einmal mit Internetverb [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZ_ST_NACHPRUEFUNG {
+            get {
+                return ResourceManager.GetString("LIZ_ST_NACHPRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aktiviert — Testversion oder Lizenzschlüssel unter  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZ_ST_NICHTAKTIVIERT {
+            get {
+                return ResourceManager.GetString("LIZ_ST_NICHTAKTIVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrig [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string LIZ_ST_UHR {
+            get {
+                return ResourceManager.GetString("LIZ_ST_UHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz ähnelt.
         /// </summary>
         public static string LIZ_TITEL {
             get {
                 return ResourceManager.GetString("LIZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Demoversion ähnelt.
+        /// </summary>
+        public static string LIZ_TYP_DEMO {
+            get {
+                return ResourceManager.GetString("LIZ_TYP_DEMO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firmenlizenz ähnelt.
+        /// </summary>
+        public static string LIZ_TYP_FIRMA {
+            get {
+                return ResourceManager.GetString("LIZ_TYP_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personenbezogene Lizenz ähnelt.
+        /// </summary>
+        public static string LIZ_TYP_PERSON {
+            get {
+                return ResourceManager.GetString("LIZ_TYP_PERSON", resourceCulture);
             }
         }
         
