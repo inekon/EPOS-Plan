@@ -588,5 +588,188 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(leer, KatalogBereinigung.Leerwert(wert));
         }
+
+        // ==================================================================
+        //  6 — Die Steuerwertlisten, die Anzeige und die Pruefung (W14c.0a-0c)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Der Klassenvorrat des Zeilendialogs: acht Klassen in dieser Reihenfolge.</b>
+        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5).
+        /// </summary>
+        [Fact]
+        public void DerKlassenvorratFuehrtAchtKlassenInFesterReihenfolge()
+        {
+            Assert.Equal(new[]
+            {
+                "KWKG", "STROMSTEUER", "ENERGIESTEUER", "CO2_PREIS",
+                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER"
+            }, GesetzKatalog.KlassenVorrat().ToArray());
+        }
+
+        /// <summary>
+        /// <b>Vorrat und Datenbank sind gewollt verschieden</b> (Befund W14c-B5): In der
+        /// Datenbank steht <c>EEG</c>, im Vorrat des Zeilendialogs nicht. Die Vermessung
+        /// hat das als Fehlerbild gemeldet; die Welle uebernimmt es woertlich und macht
+        /// den Unterschied hier sichtbar, statt ihn beilaeufig zu heilen.
+        /// </summary>
+        [Fact]
+        public void DerVorratEnthaeltEegNichtObwohlDieDatenbankEsFuehrt()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_EEG, GesetzKatalog.KlassenVorrat());
+            Assert.Contains(DbWerte.GESETZ_KLASSE_EEG, new GesetzKatalog().Klassen());
+        }
+
+        /// <summary>Die fuenfzehn Einheiten und die drei Statuswerte, eingefroren samt
+        /// ihren DB-Schreibweisen.</summary>
+        [Fact]
+        public void EinheitenUndStatuswerteSindEingefroren()
+        {
+            Assert.Equal(new[]
+            {
+                "EUR/MWh", "EUR/1000l", "EUR/1000kg", "EUR/GJ", "EUR/t", "EUR/a",
+                "ct/kWh", "g/kWh", "GJ/MWh", "h", "kW", "km", "Prozent", "Jahr", "-"
+            }, GesetzKatalog.Einheiten().ToArray());
+
+            Assert.Equal(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE" },
+                         GesetzKatalog.Statuswerte().ToArray());
+        }
+
+        /// <summary>
+        /// <c>KlasseAnzeige</c> uebersetzt die acht Klassen und gibt eine unbekannte
+        /// unveraendert zurueck. Die Sprache wird hier gepinnt — der Test prueft deutsche
+        /// Texte (Regel seit W8).
+        /// </summary>
+        [Fact]
+        public void KlasseAnzeigeUebersetztDieAchtUndLaesstFremdeStehen()
+        {
+            CultureInfo vorherUi = System.Threading.Thread.CurrentThread.CurrentUICulture;
+            CultureInfo vorher = System.Threading.Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                var de = new CultureInfo("de-DE");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = de;
+                System.Threading.Thread.CurrentThread.CurrentCulture = de;
+
+                Assert.Equal("KWK-Gesetz", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_KWKG));
+                Assert.Equal("Stromsteuer", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_STROMSTEUER));
+                Assert.Equal("EEG", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_EEG));   // unbekannt = Rohwert
+                Assert.Equal("", GesetzKatalog.KlasseAnzeige(null));
+
+                foreach (string k in GesetzKatalog.KlassenVorrat())
+                    Assert.NotEqual(k, GesetzKatalog.KlasseAnzeige(k));   // jede der acht ist uebersetzt
+            }
+            finally
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = vorherUi;
+                System.Threading.Thread.CurrentThread.CurrentCulture = vorher;
+            }
+        }
+
+        /// <summary>
+        /// <b><c>WertText</c>: das Format <c>"0.####"</c>, und leer heisst „entfallen".</b>
+        /// Gepinnt auf de-DE, weil das Dezimaltrennzeichen die Anzeige ist.
+        /// </summary>
+        [Fact]
+        public void WertTextFormatiertMitVierNachkommastellenUndLeerFuerNull()
+        {
+            CultureInfo vorher = System.Threading.Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+
+                Assert.Equal("", GesetzKatalog.WertText(null));
+                Assert.Equal("0", GesetzKatalog.WertText(0.0));            // 0 ist NICHT leer
+                Assert.Equal("1,25", GesetzKatalog.WertText(1.25));
+                Assert.Equal("0,1235", GesetzKatalog.WertText(0.12345));   // vier Stellen, gerundet
+                Assert.Equal("55", GesetzKatalog.WertText(55.0));
+            }
+            finally { System.Threading.Thread.CurrentThread.CurrentCulture = vorher; }
+        }
+
+        /// <summary>
+        /// <c>Zeilen</c> liefert dieselbe Menge und Reihenfolge wie <c>AlleDerKlasse</c> —
+        /// nur fertig formatiert. Die Komponente rechnet nichts mehr um.
+        /// </summary>
+        [Fact]
+        public void ZeilenLiefertDieselbeMengeWieAlleDerKlasse()
+        {
+            if (!_db.Vorhanden) return;
+
+            var kat = new GesetzKatalog();
+            IList<GesetzParameter> roh = kat.AlleDerKlasse(DbWerte.GESETZ_KLASSE_CO2_PREIS);
+            IReadOnlyList<GesetzZeile> zeilen = kat.Zeilen(DbWerte.GESETZ_KLASSE_CO2_PREIS);
+
+            Assert.Equal(roh.Count, zeilen.Count);
+            for (int i = 0; i < roh.Count; i++)
+            {
+                Assert.Equal(roh[i].Id, zeilen[i].Id);
+                Assert.Equal(roh[i].Schluessel, zeilen[i].Schluessel);
+                Assert.Equal(roh[i].JahrVon, zeilen[i].JahrVon);
+                Assert.Equal(GesetzKatalog.WertText(roh[i].Wert), zeilen[i].WertText);
+                Assert.Equal(roh[i].Einheit, zeilen[i].Einheit);
+                Assert.Equal(roh[i].Status, zeilen[i].Status);
+                Assert.Equal(roh[i].Quelle, zeilen[i].Quelle);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die drei Pruefregeln, eingefroren</b> — Schlüssel leer, Jahr ausserhalb
+        /// 1990…2100, Schluessel plus Jahr doppelt. Sie standen bisher ZWEIMAL im Bestand
+        /// (Befund W14c-B7).
+        /// </summary>
+        [Fact]
+        public void PruefeMeldetDieDreiRegelnInIhrerReihenfolge()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(GesetzPruefung.SchluesselFehlt,
+                GesetzKatalog.Pruefe(Zeile("   ", DbWerte.GESETZ_KLASSE_KWKG, 2026), 0).Ausgang);
+            Assert.Equal(GesetzPruefung.SchluesselFehlt, GesetzKatalog.Pruefe(null, 0).Ausgang);
+
+            Assert.Equal(GesetzPruefung.JahrUngueltig,
+                GesetzKatalog.Pruefe(Zeile("W14C_X", DbWerte.GESETZ_KLASSE_KWKG, 1989), 0).Ausgang);
+            Assert.Equal(GesetzPruefung.JahrUngueltig,
+                GesetzKatalog.Pruefe(Zeile("W14C_X", DbWerte.GESETZ_KLASSE_KWKG, 2101), 0).Ausgang);
+
+            Assert.True(GesetzKatalog.Pruefe(Zeile("W14C_X", DbWerte.GESETZ_KLASSE_KWKG, 1990), 0).Ok);
+            Assert.True(GesetzKatalog.Pruefe(Zeile("W14C_X", DbWerte.GESETZ_KLASSE_KWKG, 2100), 0).Ok);
+        }
+
+        /// <summary>
+        /// <b><c>Existiert</c> ist die Dublettenregel: Schlüssel plus Jahr, je Klasse.</b>
+        /// Dieselbe Kennung in einer ANDEREN Klasse ist keine Dublette; die eigene Zeile
+        /// zaehlt nicht mit.
+        /// </summary>
+        [Fact]
+        public void ExistiertPruefSchluesselUndJahrJeKlasse()
+        {
+            if (!_db.Vorhanden) return;
+
+            GesetzParameter vorhanden = new GesetzKatalog()
+                .AlleDerKlasse(DbWerte.GESETZ_KLASSE_CO2_PREIS).First();
+
+            Assert.True(GesetzKatalog.Existiert(vorhanden.Klasse, vorhanden.Schluessel,
+                                                vorhanden.JahrVon, 0));
+            Assert.False(GesetzKatalog.Existiert(vorhanden.Klasse, vorhanden.Schluessel,
+                                                 vorhanden.JahrVon, vorhanden.Id));   // die eigene Zeile
+            Assert.False(GesetzKatalog.Existiert(DbWerte.GESETZ_KLASSE_UMSATZSTEUER,
+                                                 vorhanden.Schluessel, vorhanden.JahrVon, 0));
+            Assert.False(GesetzKatalog.Existiert(vorhanden.Klasse, vorhanden.Schluessel,
+                                                 vorhanden.JahrVon + 1000, 0));
+
+            GesetzPruefBefund befund = GesetzKatalog.Pruefe(
+                Zeile(vorhanden.Schluessel, vorhanden.Klasse, vorhanden.JahrVon), 0);
+            Assert.Equal(GesetzPruefung.Doppelt, befund.Ausgang);
+            Assert.Contains(vorhanden.Schluessel, befund.Meldung);
+        }
+
+        private static GesetzParameter Zeile(string schluessel, string klasse, int jahr)
+        {
+            return new GesetzParameter(0, schluessel, klasse, jahr, null,
+                                       DbWerte.GESETZ_EINHEIT_OHNE, DbWerte.GESETZ_STATUS_GESICHERT, "");
+        }
     }
 }
