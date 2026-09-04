@@ -118,13 +118,14 @@ namespace WindowsFormsApplication1
             { "Form_Kosten_Auswahl",         B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
-            { "Form_CECImport",              B_PHOTOVOLTAIK },
 
-            // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE
-            // aber Main_PV_Test - nachgeschlagen wird der Typname, der Eintrag
-            // darueber griff also nie. Er bleibt stehen, falls die Klasse einmal
-            // wie ihre Datei heisst.
-            { "Main_PV_Test",                B_PHOTOVOLTAIK },
+            // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
+            // PvModulImportDialog. Damit fallen ZWEI Eintraege weg: der tote
+            // "Form_CECImport" (der Dateiname, nachgeschlagen wird der TYPNAME -
+            // Befund W13-B37) und der wirksame "Main_PV_Test". Der Bereich bleibt
+            // derselbe; die Zeile in help_mapping.txt heisst weiter nach der
+            // Maske, denn sie ist die Adresse des HILFETEXTES (Praxis seit W12).
+            { "PvModulImportDialog",         B_PHOTOVOLTAIK },
 
             // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
             // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das

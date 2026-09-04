@@ -2501,3 +2501,37 @@ body {
     gap: 4px 16px;
     margin-top: 4px;
 }
+
+/* ------------------------------------------------------------------ */
+/* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
+/*                                                                     */
+/* Der Vorlaeufer baute sein Kopfband als HeaderGradientPanel mit      */
+/* LinearGradientBrush von (30,87,153) nach (16,52,110), seine Knoepfe */
+/* mit MakeSmoothButton ueber GraphicsPath und seinen Gitterkopf mit   */
+/* einer eigenen Faerbung. Alle vier waren WinForms-Ersatz fuer das,   */
+/* was CSS ohnehin kann - hier bleibt die Filterzeile, die umbricht,   */
+/* und der Detailblock, der bei schmalem Fenster auf eine Spalte       */
+/* faellt. Der Farbverlauf entfaellt ersatzlos: Die Hausfarben sind    */
+/* die des uebrigen Programms.                                         */
+/* ------------------------------------------------------------------ */
+.epos-pvimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-pvimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 4px 16px;
+}
+
+/* Die Statuszeile des Vorlaeufers (statusStrip1) - jetzt rechts in der
+   Quellenleiste, leise. */
+.epos-pvimport-status {
+    color: var(--epos-text-leise);
+    font-size: 12px;
+    align-self: center;
+}

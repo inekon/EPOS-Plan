@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -42,8 +44,7 @@ namespace EPOS.UI.Dialoge.Import
         /// <summary>Ein Detailtext, leer wenn die Zeile ihn nicht fuehrt.</summary>
         public string Wert(string schluessel)
         {
-            string wert;
-            return Werte.TryGetValue(schluessel, out wert) ? (wert ?? "") : "";
+            return Werte.TryGetValue(schluessel, out string? wert) ? (wert ?? "") : "";
         }
     }
 
@@ -167,7 +168,7 @@ namespace EPOS.UI.Dialoge.Import
         public static string Zu(PruefMeldung meldung)
         {
             if (meldung == null) return "";
-            string vorlage = Zu(meldung.Schluessel);
+            string vorlage = Zu(meldung.Schluessel) ?? meldung.Schluessel;
             return meldung.Werte.Length == 0
                 ? vorlage
                 : string.Format(System.Globalization.CultureInfo.CurrentCulture, vorlage, meldung.Werte);
