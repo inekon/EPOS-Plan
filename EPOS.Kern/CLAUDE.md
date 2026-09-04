@@ -73,7 +73,7 @@ Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie ü
 | `KlimaregionStammCtrl` | `ComboBox`/`ListBox` in `FillComboBox`/`FillListBox` |
 | `WizardCtrl`, `MenueCtrl` | `WizardParent` aus `Views/Wizard/` |
 | `EnergietraegerKatalogCtrl` | `EnergyCarrier`, deklariert in `Views/Kosten/Form_Kosten.cs` |
-| `PeakShavingCtrl`, `ProjektExportImportCtrl` | `OleDbException` bzw. `SchemaMigration` |
+| ~~`PeakShavingCtrl`~~, ~~`ProjektExportImportCtrl`~~ | **beide sind inzwischen HIER**: `PeakShavingCtrl` mit iU9‑W12 (sein `catch (OleDbException)` lief seit der SQLite-Umstellung ins Leere), `ProjektExportImportCtrl` mit **iU9‑W15a** — seine einzige Kante war die Zahl `SchemaMigration.ZIEL_VERSION`, und die steht seither als `SchemaStand.Zielversion` im Kern (Befund W15a‑B30). Damit ist der **Projekttransfer auf iOS** ueberhaupt erst moeglich |
 
 Ebenfalls dort, aber keine Quelldatei: `Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx`. Sie
 wird über `<None Update … CopyToOutputDirectory>` neben die EXE gelegt, und genau dort sucht sie
