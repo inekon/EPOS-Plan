@@ -415,6 +415,82 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  3b — BedarfsVorschauCtrl: dieselben Zahlen aus dem Kern
+        // ==================================================================
+
+        /// <summary>
+        /// <see cref="BedarfsVorschauCtrl.Rechnen"/> (W14b.0b) liefert je Art GENAU das,
+        /// was die Maske gerechnet hat — die Zahlen oben, hier ein zweites Mal aus dem
+        /// Kern.
+        /// </summary>
+        [Fact]
+        public void Vorschau_Brauchwasser_ist_bitgleich_zur_Maske()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau v = BedarfsVorschauCtrl.Rechnen(BedarfsArt.Brauchwasser, 0,
+                                                            "EFH Wohnen, 1 Person");
+            Assert.True(v.Erfolgreich);
+            Assert.NotNull(v.Waerme);
+            Assert.Null(v.Strom);
+
+            // OHNE Teiler - der Wert liegt in kWh (Befund W14-B49 / Entscheid W8-O-5).
+            Assert.Equal(v.Waerme.brauchwasserwerte.Sum(), v.Waerme.Waermebedarf_Brauchwasser, 6);
+            Assert.Equal(742.9008, v.Waerme.Waermebedarf_Brauchwasser, 3);
+            Assert.Equal(0.0706, v.Waerme.Waermebedarf_Brauchwasser_Monat[0], 5);
+            Assert.Equal(0.0683, v.Waerme.Waermebedarf_Brauchwasser_Monat[11], 5);
+        }
+
+        [Fact]
+        public void Vorschau_Prozesswaerme_ist_bitgleich_zur_Maske()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau v = BedarfsVorschauCtrl.Rechnen(BedarfsArt.Prozesswaerme, 0, "CONT");
+            Assert.True(v.Erfolgreich);
+            Assert.NotNull(v.Waerme);
+
+            // MIT Teiler.
+            Assert.Equal(v.Waerme.prozesswerte.Sum() / 1000, v.Waerme.Waermebedarf_Prozess, 6);
+            Assert.Equal(365.0, v.Waerme.Waermebedarf_Prozess, 4);
+            Assert.Equal(31.0, v.Waerme.Waermebedarf_Prozess_Monat[0], 3);
+            Assert.Equal(28.0, v.Waerme.Waermebedarf_Prozess_Monat[1], 3);
+        }
+
+        [Fact]
+        public void Vorschau_Stromverbraucher_ist_bitgleich_zur_Maske()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau v = BedarfsVorschauCtrl.Rechnen(BedarfsArt.Stromverbraucher, 0,
+                                                            "Büro_Konst");
+            Assert.True(v.Erfolgreich);
+            Assert.NotNull(v.Strom);
+            Assert.Null(v.Waerme);
+
+            Assert.Equal(365.0, v.Strom.Strombedarf_Gebaeude_gesamt, 4);
+            Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt, v.Strom.Strombedarf_gesamt, 6);
+            Assert.Equal(35040, v.Strom.Strombedarf_viertelStundenwerte.Length);
+            Assert.Equal(31.0, v.Strom.Strombedarf_monat[0], 3);
+            Assert.Equal(31.0, v.Strom.Strombedarf_monat[11], 3);
+            Assert.Equal(41.666668, v.Strom.Strombedarf_Max, 5);
+        }
+
+        /// <summary>Ohne Bezeichner wird gar nicht gerechnet — der Dialog bleibt dann zu.</summary>
+        [Fact]
+        public void Vorschau_ohne_Bezeichner_rechnet_nicht()
+        {
+            foreach (BedarfsArt art in ALLE)
+            {
+                BedarfsVorschau v = BedarfsVorschauCtrl.Rechnen(art, 0, "");
+                Assert.False(v.Erfolgreich);
+                Assert.Null(v.Waerme);
+                Assert.Null(v.Strom);
+                Assert.Equal(art, v.Art);
+            }
+        }
+
+        // ==================================================================
         //  4 — Der Solarganglinien-Katalog
         // ==================================================================
 
