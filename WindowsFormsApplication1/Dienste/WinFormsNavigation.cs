@@ -123,8 +123,14 @@ namespace WindowsFormsApplication1
                         return MitOk(frm);
                     }
 
+                // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
+                // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
+                // ueber KatalogImportArt. Der Rueckgabewert sagt jetzt, ob etwas
+                // geschrieben wurde - beim Vorlaeufer Form_WP_einlesen war er
+                // IMMER false, weil die Maske ihr DialogResult nie setzte
+                // (Befund W13-B4b).
                 case Masken.WpImport:
-                    using (Form_WP_einlesen frm = new Form_WP_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Waermepumpe);
 
                 case Masken.HeizkesselAdmin:
                     using (Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin()) return MitOk(frm);
@@ -139,16 +145,16 @@ namespace WindowsFormsApplication1
                     using (Form_AdminPV frm = new Form_AdminPV()) return MitOk(frm);
 
                 case Masken.HeizkesselImport:
-                    using (Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Heizkessel);
 
                 case Masken.PufferSpImport:
-                    using (Form_PufferSp_einlesen frm = new Form_PufferSp_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Pufferspeicher);
 
                 case Masken.PufferSpAdmin:
                     using (Form_PufferSp_Admin frm = new Form_PufferSp_Admin()) return MitOk(frm);
 
                 case Masken.SolarkollektorenImport:
-                    using (Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen()) return MitOk(frm);
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);
 
                 // --- Masken mit Argument ---------------------------------------------
                 // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
