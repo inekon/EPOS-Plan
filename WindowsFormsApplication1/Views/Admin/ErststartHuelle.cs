@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Sie ist die erste BESITZERLOSE Blazor-Hülle des Bestands.</b>
     /// <c>Program.Main</c> zeigt den Assistenten aus <c>ErststartAnbieten</c> — vor der
-    /// Lizenzzustimmung, vor der Schema-Migration, vor <c>MDIMainForm</c>. Es gibt kein
+    /// Lizenzzustimmung, vor der Schema-Migration, vor <c>Hauptfensterrahmen</c>. Es gibt kein
     /// Elternfenster, weil es noch keines gibt. Drei der vier Zusätze aus W15c.6 sind
     /// deshalb gesetzt: <c>ImTaskbar</c> (ein minutenlanger Lauf ohne
     /// Taskleisteneintrag wäre nicht wiederzufinden), <c>AufBildschirmMittig</c> und

@@ -156,11 +156,11 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void MaskenAusserhalbEinesFachordnersLandenInAllgemein()
     {
-        // MDIMainForm lag in der PROJEKTWURZEL; hiesse der Namensraum
+        // Hauptfensterrahmen lag in der PROJEKTWURZEL; hiesse der Namensraum
         // "EPOS.UI.Dialoge.WindowsFormsApplication1", verdeckte er das
         // @using WindowsFormsApplication1.MyResource aus _Imports.razor.
         //
-        // iU9-W16c.5: MDIMainForm ist mit dem Rueckbau der Huelle ohne Designer
+        // iU9-W16c.5: Hauptfensterrahmen ist mit dem Rueckbau der Huelle ohne Designer
         // (er steht eingefroren unter Pruefmuster/Hauptformular/, Entscheid E-9),
         // und im PROJEKTORDNER selbst liegt danach keine Designer-Datei mehr. Der
         // Zeuge wandert deshalb auf den ZWEITEN Zweig derselben Regel

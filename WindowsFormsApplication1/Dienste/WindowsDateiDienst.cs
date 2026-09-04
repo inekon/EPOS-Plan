@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Öffnet eine Adresse im Standardbrowser (iU9-W16c.3).
         ///
-        /// <para>Wörtlich der Rumpf von <c>MDIMainForm.MenuItem_Dokumentation_Click</c>
+        /// <para>Wörtlich der Rumpf von <c>Hauptfensterrahmen.MenuItem_Dokumentation_Click</c>
         /// (<c>:826</c>) — bis dahin die letzte unmittelbare
         /// <c>Process.Start</c>-Zeile des Hauptfensters. Ein Fehlschlag bleibt
         /// folgenlos: Der Vorläufer schrieb ihn nach <c>Debug.WriteLine</c> und
