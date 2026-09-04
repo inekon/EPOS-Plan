@@ -29,14 +29,27 @@ namespace WindowsFormsApplication1
     /// Oberfläche und bleibt es: Die Razor-Startseite hängt sich an
     /// <see cref="Gewechselt"/> und zieht es dort nach.</para>
     ///
-    /// <para><b>Die Klimazone ist die PROJEKTKOPIE, nicht der Stammsatz.</b>
-    /// <c>Form_Start</c> füllte das Auswahlfeld über <c>GetProjektKlimaregion</c>
-    /// (<c>Tab_Projekt.ID_Klimaregion</c> → <c>Tab_Klimaregion.Bezeichner</c>), und
-    /// <c>IProjektKontext.Klimazone</c> gab genau diesen Text heraus. Der Weg steht als
-    /// <see cref="StartseiteCtrl.ProjektKlimaregion"/> im Kern; hier wird er nur
-    /// gerufen. <b>Achtung:</b> <c>EPOS.iOS/Dienste/IosProjektKontext</c> liest an
-    /// derselben Stelle den STAMMNAMEN (<c>Tab_Klimaregion_STAMM.Name</c>) — die beiden
-    /// Fassungen sind darin bis heute verschieden (Befund W16b-B3).</para>
+    /// <para><b>Die Klimazone ist die PROJEKTKOPIE — seit dem 04.09.2026 auf BEIDEN
+    /// Plattformen</b> (Anwenderentscheid W16b‑O‑3). Bis dahin las Windows die
+    /// Projektkopie (<c>Tab_Projekt.ID_Klimaregion</c> →
+    /// <c>Tab_Klimaregion.Bezeichner</c>) und <c>EPOS.iOS/Dienste/IosProjektKontext</c>
+    /// den Stammnamen (<c>Tab_Klimaregion_STAMM.Name</c> über dieselbe Id) — zwei
+    /// Wahrheiten für denselben Wert (Befund W16b‑B2). Der Entscheid lautete „nehme
+    /// iOS-Lösung"; die Messung dazu (W16b-Protokoll § 6) hat gezeigt, dass die
+    /// iOS-Abfrage <b>den falschen Schlüsselraum las</b>: An
+    /// <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der PROJEKTKOPIE
+    /// (<c>Tab_Klimaregion.ID</c>, Ids ab 1 006 017), die Abfrage hielt sie gegen
+    /// <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c> (Ids 1…50) — Überschneidung
+    /// <b>0</b>, Antwort für jedes Projekt des Bestands leer. Es war kein zweiter Weg,
+    /// sondern ein Fehler.</para>
+    ///
+    /// <para><b>Also EINE Wahrheit, und zwar die Projektkopie:</b>
+    /// <see cref="StartseiteCtrl.ProjektKlimazone"/> — ohne Stammabfrage, ohne
+    /// Rückfall; hier wird sie nur gerufen. <c>IosProjektKontext</c> ruft seit
+    /// derselben Änderung DIESE Klasse und hat keine eigene Abfrage mehr. Die
+    /// gemeldete Klimazone ist Wort für Wort dieselbe wie vor dem Entscheid — genau
+    /// das, was Risiko R‑W16‑4 verlangt; verschwunden ist nur die zweite
+    /// Fassung.</para>
     ///
     /// <para><b>Risiko R-W16-4.</b> Ein falsch umgehängter Projektkontext schreibt in
     /// das falsche Projekt. Deshalb steht diese Klasse am ANFANG der Teilwelle, mit
@@ -133,7 +146,7 @@ namespace WindowsFormsApplication1
 
             _name = ctrl_projekt.m_szProjektname ?? "";
             _id = ctrl_projekt.m_ID;
-            _klimazone = StartseiteCtrl.ProjektKlimaregion(_id);
+            _klimazone = StartseiteCtrl.ProjektKlimazone(_id);
 
             Action h = Gewechselt;
             if (h != null) h();
