@@ -389,13 +389,34 @@ namespace WindowsFormsApplication1
                 if (_art == BedarfsArt.Prozesswaerme)
                 {
                     _waerme.Prozesswaerme_berechnen(liste);
-                    _waerme.Waermebedarf_Prozess = _waerme.prozesswerte.Sum();
+
+                    // W9-O-3, Entscheid des Anwenders vom 04.09.2026: Die Prozesssumme
+                    // geht ueber die EINHEITENKLASSE in die Einheit, die der Kern fuer
+                    // Waermebedarf_Prozess fuehrt - MWh. Hier stand bis hierher die
+                    // blanke Summe der Stundenwerte, also kWh, woertlich aus
+                    // Form_Prozesswaerme uebernommen; die Ergebnishuelle liest das Feld
+                    // aber als MWh (BedarfErgebnisHuelle: Energieeinheit.MWh), und
+                    // "Waermebedarf Prozess" stand in diesem Weg um Faktor 1000 zu gross.
+                    // Der Kern (SimulationWaermebedarf.Waermebedarf_berechnen) und die
+                    // Prozesswaerme-Verwaltung setzten das Feld schon immer in MWh.
+                    _waerme.ProzesssummeUebernehmen();
+
                     WPPlan.Core.BhkwPlan.MonatsSumme(_waerme.prozesswerte,
                         _waerme.Waermebedarf_Prozess_Monat, _waerme.mo_anfang, _waerme.mo_ende);
                 }
                 else
                 {
                     _waerme.Brauchwasserwaerme_berechnen(liste);
+
+                    // BEWUSST unveraendert - und damit NICHT symmetrisch zum Zweig
+                    // darueber: Waermebedarf_Brauchwasser liegt hier in kWh, und genau so
+                    // nimmt die Ergebnishuelle es an (Energieeinheit.KWh, Entscheid
+                    // W8-O-5). Der Weg zeigt heute die richtige Zahl; ihn auf MWh zu
+                    // heben hiesse, die Annahme der Huelle mitzudrehen - und die gilt
+                    // auch fuer den Simulationsweg, der das Feld aus dem Kern schon in
+                    // MWh bekommt und es deshalb ein zweites Mal teilt. Diese
+                    // Unstimmigkeit ist als W8-O-5b notiert; sie braucht einen eigenen
+                    // Anwenderentscheid und wird hier nicht nebenbei mitentschieden.
                     _waerme.Waermebedarf_Brauchwasser = _waerme.brauchwasserwerte.Sum();
                     WPPlan.Core.BhkwPlan.MonatsSumme(_waerme.brauchwasserwerte,
                         _waerme.Waermebedarf_Brauchwasser_Monat, _waerme.mo_anfang, _waerme.mo_ende);
