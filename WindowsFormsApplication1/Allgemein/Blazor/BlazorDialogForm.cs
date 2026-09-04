@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Web.WebView2.WinForms;
@@ -268,43 +267,19 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        /// <summary>
-        /// Zeigt den Dialog modal - mit der DPI-Insel aus <see cref="DpiInsel"/>.
-        /// </summary>
-        /// <remarks>
-        /// Die Methode VERDECKT <see cref="Form.ShowDialog()"/> bewusst (<c>new</c>).
-        /// <see cref="Form.ShowDialog()"/> ist nicht ueberschreibbar, die Insel muss
-        /// aber den gesamten modalen Lauf umschliessen: Nur dann entstehen sowohl das
-        /// Fenster als auch das Fenster der WebView2 im gewuenschten DPI-Kontext.
-        /// Aufrufer halten die Huelle immer unter ihrem eigenen Typ; der Weg ueber
-        /// eine <see cref="Form"/>-Variable kommt nicht vor.
-        /// </remarks>
-        public new DialogResult ShowDialog()
-        {
-            IntPtr vorher = DpiInsel.Betreten();
-            try
-            {
-                return base.ShowDialog();
-            }
-            finally
-            {
-                DpiInsel.Verlassen(vorher);
-            }
-        }
-
-        /// <summary>Wie <see cref="ShowDialog()"/>, mit ausdruecklichem Besitzerfenster.</summary>
-        public new DialogResult ShowDialog(IWin32Window eltern)
-        {
-            IntPtr vorher = DpiInsel.Betreten();
-            try
-            {
-                return base.ShowDialog(eltern);
-            }
-            finally
-            {
-                DpiInsel.Verlassen(vorher);
-            }
-        }
+        // iU9-W16c.4 (Anwenderentscheid E-6 / iF21): DIE DPI-INSEL IST WEG.
+        //
+        // Bis hierher verdeckten zwei ShowDialog-Ueberladungen die von Form
+        // (new), um den Faden fuer die Dauer des modalen Laufs auf
+        // "Per Monitor V2" zu stellen und danach zurueck. Der Grund war, dass die
+        // ANWENDUNG DpiUnaware lief: Ein bitmapskalierter WebView2-Inhalt ist bei
+        // 125-200 % sichtbar unscharf, und die Insel war der einzige Weg, einzelne
+        // Fenster davon auszunehmen.
+        //
+        // Seit W16c.4 laeuft die ganze Anwendung Per Monitor V2 (app.manifest und
+        // Program.Main); der Sonderweg hat keinen Gegenstand mehr. Aufrufer
+        // brauchen nichts zu aendern - sie riefen ShowDialog() und rufen weiter
+        // ShowDialog(), jetzt das der Basisklasse.
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
@@ -314,73 +289,13 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>
-    /// DPI-INSEL fuer die Blazor-Huelle (Risiko G1 der iU8-Vermessung).
-    ///
-    /// <para><b>Der Befund.</b> EPOS-Plan laeuft insgesamt DPI-unbewusst:
-    /// <c>app.manifest</c> setzt <c>dpiAware=false</c>, <c>Program.Main</c>
-    /// <c>HighDpiMode.DpiUnaware</c>. Windows skaliert die Fenster deshalb als
-    /// Bitmap. Fuer die gewachsenen WinForms-Masken mit ihren festen
-    /// Pixelkoordinaten ist das die einzige Fassung, die ueberall gleich aussieht -
-    /// eine Umstellung der ganzen Anwendung ist ein eigenes Paket.</para>
-    ///
-    /// <para><b>Warum die Insel.</b> Ein bitmapskalierter WebView2-Inhalt ist bei
-    /// 125-200 % sichtbar unscharf, und ausgerechnet der erste Blazor-Dialog waere
-    /// davon betroffen. Windows 10 ab 1803 erlaubt es, EINZELNE Fenster in einem
-    /// anderen DPI-Kontext zu erzeugen als den Rest des Prozesses. Genau das
-    /// geschieht hier: Der Faden wird fuer die Dauer des modalen Laufs auf
-    /// "Per Monitor V2" gestellt und danach exakt zurueckgesetzt. Die WinForms-Masken
-    /// dahinter bleiben unberuehrt.</para>
-    ///
-    /// <para><b>Wenn es nicht geht, geht es ohne.</b> Auf einem aelteren Windows
-    /// liefert der Aufruf <c>IntPtr.Zero</c>; dann laeuft der Dialog wie bisher
-    /// bitmapskaliert. Das ist ein Schoenheitsfehler, kein Fehlschlag - deshalb wird
-    /// hier nichts gemeldet und nichts geworfen. Ob die Insel wirklich greift, ist
-    /// ein Windows-Pruefpunkt (Umsetzung_iU8_Nachweise.md, 125 % und 150 %).</para>
-    /// </summary>
-    internal static class DpiInsel
-    {
-        /// <summary>
-        /// <c>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</c> - als Pseudo-Handle
-        /// definiert (winuser.h: <c>((DPI_AWARENESS_CONTEXT)-4)</c>).
-        /// </summary>
-        private static readonly IntPtr PerMonitorV2 = new IntPtr(-4);
-
-        [DllImport("user32.dll", SetLastError = false)]
-        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
-
-        /// <summary>
-        /// Stellt den Faden auf "Per Monitor V2" und liefert den vorherigen Kontext
-        /// zurueck. <c>IntPtr.Zero</c> heisst: nicht moeglich - dann ist auch nichts
-        /// zurueckzusetzen.
-        /// </summary>
-        internal static IntPtr Betreten()
-        {
-            try
-            {
-                return SetThreadDpiAwarenessContext(PerMonitorV2);
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return IntPtr.Zero;   // Windows aelter als 10 (1803)
-            }
-            catch (DllNotFoundException)
-            {
-                return IntPtr.Zero;
-            }
-        }
-
-        /// <summary>Setzt den Kontext aus <see cref="Betreten"/> wieder ein.</summary>
-        internal static void Verlassen(IntPtr vorher)
-        {
-            if (vorher == IntPtr.Zero) return;
-
-            try
-            {
-                SetThreadDpiAwarenessContext(vorher);
-            }
-            catch (EntryPointNotFoundException) { /* nach einem erfolgreichen Betreten() unmoeglich */ }
-            catch (DllNotFoundException) { }
-        }
-    }
+    // iU9-W16c.4: Hier stand die Klasse DpiInsel (Risiko G1 der iU8-Vermessung) -
+    // ein P/Invoke auf SetThreadDpiAwarenessContext samt Betreten/Verlassen. Sie
+    // war die Antwort auf einen Befund, den es nicht mehr gibt: "EPOS-Plan laeuft
+    // insgesamt DPI-unbewusst". Seit W16c.4 laeuft es Per Monitor V2, und ein
+    // Fenster, das ohnehin im richtigen Kontext entsteht, braucht keine Insel.
+    //
+    // Der Weg zurueck steht in der Versionsgeschichte: Wer die Anwendung je
+    // wieder DpiUnaware machen muesste, holt die Klasse aus dem Stand vor diesem
+    // Commit.
 }

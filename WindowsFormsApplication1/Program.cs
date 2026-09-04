@@ -144,12 +144,23 @@ namespace WindowsFormsApplication1
             // wie bisher verwirft.
             WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
 
-            // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
+            // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
+            //
+            // Bis hierher stand hier HighDpiMode.DpiUnaware, passend zum
+            // app.manifest: Windows skalierte jedes Fenster als Bitmap, und bei
+            // 125-200 % war die Oberflaeche sichtbar unscharf. Der Grund dafuer
+            // waren die fest gerechneten Pixelkoordinaten der gewachsenen
+            // WinForms-Masken - und die gibt es seit Welle 16 nicht mehr: Die
+            // Oberflaeche ist eine Razor-Seite in einer WebView, es bleibt genau
+            // eine Designer-Maske (Form_HelpPopup) und die DPI-freie Huelle.
+            //
+            // Fuehrend ist das MANIFEST (dpiAware true/pm + dpiAwareness
+            // PerMonitorV2); dieser Aufruf haelt den verwalteten Zustand
+            // deckungsgleich - stuende hier weiter DpiUnaware, waeren es zwei
+            // Wahrheiten.
             if (Environment.OSVersion.Version.Major >= 10)
             {
-                Application.SetHighDpiMode(HighDpiMode.DpiUnaware); // Für .NET Core / .NET 5+
-                                                                     // Für älteres .NET Framework 4.7+ nutzt man stattdessen oft:
-                                                                     // Application.EnableVisualStyles();
+                Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
             }
 
             Application.EnableVisualStyles();
