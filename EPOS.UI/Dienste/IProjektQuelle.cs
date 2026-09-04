@@ -101,6 +101,23 @@ public interface IProjektQuelle
     /// Datenbank). Die Seite bleibt dann in der Liste stehen.
     /// </summary>
     BhkwDialogDaten? BhkwDaten(int idProjekt);
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Simulationskonfiguration zu einem Projekt
+    /// (iU9-W10b.1); <c>null</c> = geht gerade nicht. Die Seite bleibt dann in der
+    /// Liste stehen.
+    ///
+    /// <para><b>Warum ein Woerterbuch und kein Datensatz.</b> Die Seite traegt ueber
+    /// vierzig Parameter — Delegatensatz, Zustand und die Anzeigetexte. Sie als
+    /// Woerterbuch zu liefern und mit <c>@@attributes</c> hineinzuschuetten, ist
+    /// dasselbe Muster, mit dem jede Huelle ihre Unterdialoge fuellt (<c>Gaben</c>);
+    /// eine eigene Klasse dafuer waere eine zweite Wahrheit ueber dieselbe Liste.</para>
+    ///
+    /// <para><b>Mit Standardumsetzung</b>, damit eine vorhandene Quelle
+    /// (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die Erweiterung nicht bricht:
+    /// Wer sie nicht umsetzt, kennt die Seite eben nicht.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? SimulationKonfigGaben(int idProjekt) => null;
 }
 
 /// <summary>

@@ -153,7 +153,9 @@ namespace WindowsFormsApplication1
             // danach mit Zuruecksetzen wieder weg.
             // iU9-W10a.5: Form_QuellePufferspeicher ist geloescht (Razor-Komponente).
             // iU9-W10a.6: Form_Quellprofil ist geloescht (Razor-Komponente).
-            { "Form_Simulation_Config",      B_SIM_KONFIG },
+            // iU9-W10b.1: Form_Simulation_Config ist geloescht (Razor-Seite). Den
+            // Bereich meldet jetzt SimulationKonfigHuelle beim Aktivieren des
+            // Fensters - derselbe Text, nur ohne Formularklasse dahinter.
             { "Form_Simulation_Detail",      B_SIM_DETAIL },
             // iU9-W10a.7: Form_Waermesenke ist geloescht (Razor-Komponente).
 

@@ -31,38 +31,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class BetriebsmodusHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 520 × 300).</summary>
-        private static readonly Size MASS = new Size(560, 460);
-
-        /// <summary>
-        /// Zeigt den Dialog und liefert den gewählten <c>BM_Typ</c>;
-        /// <c>null</c>, wenn abgebrochen wurde.
-        /// </summary>
-        internal static string Oeffnen(IWin32Window besitzer, string bezeichner,
-                                       string aktuellerModus)
-        {
-            string ergebnis = null;
-            bool bestaetigt = false;
-            BlazorDialogForm<BetriebsmodusDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(bezeichner, aktuellerModus))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<string>(
-                    new object(), m =>
-                    {
-                        ergebnis = m;
-                        bestaetigt = m != null;
-                        if (dlg != null) dlg.Schliessen(bestaetigt);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<BetriebsmodusDialog>(Titel(bezeichner), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return bestaetigt ? ergebnis : null;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn ab W10b
@@ -93,12 +67,6 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 ["HilfeSchluessel"] = "Form_Betriebsmodus.btn_Help"
             };
-        }
-
-        private static string Titel(string bezeichner)
-        {
-            return string.Format(MyResource.Resource.SIM_BETRIEBSMODUS_FENSTERTITEL,
-                                 bezeichner ?? "");
         }
     }
 }

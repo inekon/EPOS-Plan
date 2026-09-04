@@ -35,55 +35,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class QuelleErdreichHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 700 × 748).</summary>
-        private static readonly Size MASS = new Size(940, 820);
-
-        /// <summary>
-        /// Der Bereich, den der KI-Assistent nennt, solange dieser Dialog steht. Er
-        /// stand im Vorläufer als <c>HilfeKontext.SetzeBereich</c>-Aufruf (:238); die
-        /// Positivliste von <c>HilfeKontext</c> führt genau diesen Wortlaut.
-        /// </summary>
-        private const string HILFEBEREICH =
-            "Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)";
-
-        /// <summary>
-        /// Zeigt den Dialog. Rückgabe <c>null</c>, wenn abgebrochen wurde; sonst der
-        /// Satz mit den zurückgeschriebenen Werten.
-        /// </summary>
-        internal static QuelleErdreichDaten Oeffnen(IWin32Window besitzer,
-                                                    QuelleErdreichDaten daten)
-        {
-            QuelleErdreichDaten ergebnis = null;
-            BlazorDialogForm<QuelleErdreichDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(daten))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<QuelleErdreichDaten>(
-                    new object(), d =>
-                    {
-                        ergebnis = d;
-                        if (dlg != null) dlg.Schliessen(d != null);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<QuelleErdreichDialog>(Titel(daten), MASS, werte);
-
-            HilfeKontext.SetzeBereich(HILFEBEREICH);
-            try
-            {
-                using (dlg)
-                {
-                    if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-                }
-            }
-            finally
-            {
-                // Zuruecksetzen statt "den vorherigen Bereich merken": Danach greift
-                // wieder AktivesFenster(), und das ist die Maske dahinter.
-                HilfeKontext.Zuruecksetzen();
-            }
-            return ergebnis;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn ab W10b
@@ -245,13 +202,6 @@ namespace WindowsFormsApplication1
             }
 
             return anzahl == 1 ? einziges : null;
-        }
-
-        private static string Titel(QuelleErdreichDaten daten)
-        {
-            return string.IsNullOrEmpty(daten?.WPName)
-                ? MyResource.Resource.SIMQ_ERDREICH_TITEL
-                : string.Format(MyResource.Resource.SIMQ_ERDREICH_TITEL_MIT_WP, daten.WPName);
         }
     }
 }

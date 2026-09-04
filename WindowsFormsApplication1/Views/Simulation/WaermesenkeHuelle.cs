@@ -23,35 +23,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class WaermesenkeHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 620 × 618).</summary>
-        private static readonly Size MASS = new Size(940, 860);
-
-        /// <summary>
-        /// Zeigt den Dialog. Rückgabe <c>null</c>, wenn abgebrochen wurde — dann ist
-        /// NICHTS geschrieben worden.
-        /// </summary>
-        internal static WaermesenkeErgebnis Oeffnen(IWin32Window besitzer, WaermesenkeDaten daten)
-        {
-            WaermesenkeErgebnis ergebnis = null;
-            BlazorDialogForm<WaermesenkeDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(daten))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<WaermesenkeErgebnis>(
-                    new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<WaermesenkeDialog>(Titel(daten), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(WaermesenkeDaten daten)
@@ -361,13 +338,6 @@ namespace WindowsFormsApplication1
             if (string.Equals(ziel, DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                 return WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
             return WaermesenkeClass.VERWENDUNG_HEIZUNG;
-        }
-
-        private static string Titel(WaermesenkeDaten daten)
-        {
-            return string.IsNullOrEmpty(daten?.AnlagenName)
-                ? MyResource.Resource.SIM_SENKE_TITEL
-                : string.Format(MyResource.Resource.SIM_SENKE_TITEL_ANLAGE, daten.AnlagenName);
         }
     }
 }

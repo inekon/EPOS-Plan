@@ -4104,17 +4104,15 @@ namespace WindowsFormsApplication1
 
         private void btn_Konfiguration_Click(object sender, EventArgs e)
         {
-            Form_Simulation_Config frm = new Form_Simulation_Config();
-            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+            // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem
+            // Konfigurationsfenster dorthin zurueckspringen koennen.
+            mainTabPageIndex = tabControl_Simulation.SelectedIndex;
 
-            mainTabPageIndex = tabControl_Simulation.SelectedIndex; // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem Konfigurationsfenster dorthin zurückspringen können
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
-            frm.Konfiguration = ctrl.model;
-            frm.SetControls(m_ID_Projekt);
-            System.Drawing.Point p1 = btn_Konfiguration.Location;
-            p1 = this.PointToScreen(p1);
-            frm.Location = p1;
-            frm.ShowDialog();
+            // Die Maske ist seit iU9-W10b.1 eine Razor-SEITE; die Huelle zeigt sie bis
+            // W16 in einem modalen Fenster (Entscheid R-W10b-1) - genau deshalb, weil
+            // dieser Aufrufer die modale Rueckkehr braucht. Die Halbierung der
+            // Bildschirmkoordinaten (Befund W10-B37) entfaellt.
+            SimulationKonfigHuelle.Oeffnen(this, m_ID_Projekt);
 
             UpdateTabPages();
 

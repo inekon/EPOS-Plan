@@ -28,40 +28,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class PufferSpProjektHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 700 × 662).</summary>
-        private static readonly Size MASS = new Size(980, 860);
-
-        /// <summary>
-        /// Zeigt den Dialog. Rückgabe: der zuletzt angelegte bzw. gewählte Speicher;
-        /// <c>0</c>, wenn keiner (mehr) dasteht.
-        /// </summary>
-        internal static int Oeffnen(IWin32Window besitzer, int idProjekt, string verwendung,
-                                    int idPuffer)
-        {
-            int ergebnis = idPuffer;
-            BlazorDialogForm<PufferSpProjektDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(
-                Gaben(idProjekt, verwendung, idPuffer, Sprungbruecke.Fuer(null)))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<int>(
-                    new object(), id =>
-                    {
-                        ergebnis = id;
-                        if (dlg != null) dlg.Schliessen(true);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<PufferSpProjektDialog>(Titel(), MASS, werte);
-            using (dlg)
-            {
-                // Die Sprungbruecke braucht das Fenster, ueber dem der Katalog erscheinen
-                // soll - das ist der Dialog selbst und steht erst jetzt.
-                werte["Sprung"] = Sprungbruecke.Fuer(dlg);
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn die beiden
@@ -540,11 +512,6 @@ namespace WindowsFormsApplication1
             if (set.Brauchwasser) l.Add(1);
             if (set.Prozess) l.Add(2);
             return l;
-        }
-
-        private static string Titel()
-        {
-            return MyResource.Resource.PSP_PROJEKT_FENSTERTITEL;
         }
     }
 }
