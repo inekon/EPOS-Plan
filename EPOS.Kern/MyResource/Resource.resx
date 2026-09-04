@@ -13591,4 +13591,7 @@ Trotzdem importieren?</value>
   <data name="KI_CHAT_VERBRAUCH_LANG" xml:space="preserve">
     <value>Heute genutzt: {0} von {1} Anfragen.</value>
   </data>
+  <data name="KI_CHAT_KOPIEREN" xml:space="preserve">
+    <value>Verlauf kopieren</value>
+  </data>
 </root>

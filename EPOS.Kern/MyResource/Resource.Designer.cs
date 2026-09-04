@@ -37758,5 +37758,203 @@ namespace WindowsFormsApplication1.MyResource {
             }
         }
         
-    }
+            
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die ausführliche Beschreibung steht in der Dokumentation. ähnelt.
+        /// </summary>
+        public static string HILFE_IOS_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("HILFE_IOS_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gefundene Hilfeabschnitte: ähnelt.
+        /// </summary>
+        public static string KI_CHAT_ABSCHNITTE {
+            get {
+                return ResourceManager.GetString("KI_CHAT_ABSCHNITTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Passende Hilfeabschnitte: ähnelt.
+        /// </summary>
+        public static string KI_CHAT_ABSCHNITTE_ERSATZ {
+            get {
+                return ResourceManager.GetString("KI_CHAT_ABSCHNITTE_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (aus dem lokalen Zwischenspeicher - ohne erneute Anfrage) ähnelt.
+        /// </summary>
+        public static string KI_CHAT_AUS_CACHE {
+            get {
+                return ResourceManager.GetString("KI_CHAT_AUS_CACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stellen Sie Ihre Frage zur Bedienung oder zur Rechenlogik. Der Assistent kennt den Bereich, in dem Sie gerade arbeiten, und antwortet auf Basis der Hilfe-Dokume ähnelt.
+        /// </summary>
+        public static string KI_CHAT_BEGRUESSUNG {
+            get {
+                return ResourceManager.GetString("KI_CHAT_BEGRUESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es werden nur Hilfetexte, Ihre Frage und der Bereichsname übertragen - keine Projekt- oder Kundendaten. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_BEGRUESSUNG_DATEN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_BEGRUESSUNG_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen... ähnelt.
+        /// </summary>
+        public static string KI_CHAT_BTN_EINSTELLUNGEN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_BTN_EINSTELLUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fragen ähnelt.
+        /// </summary>
+        public static string KI_CHAT_BTN_FRAGEN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_BTN_FRAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur suchen ähnelt.
+        /// </summary>
+        public static string KI_CHAT_BTN_SUCHEN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_BTN_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Assistent denkt nach... ähnelt.
+        /// </summary>
+        public static string KI_CHAT_DENKT {
+            get {
+                return ResourceManager.GetString("KI_CHAT_DENKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: {0} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_CHAT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe: Keine passenden Abschnitte gefunden. Versuchen Sie es mit anderen Stichworten oder stellen Sie die Frage über die Schaltfläche 'Fragen'. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_KEINE_TREFFER {
+            get {
+                return ResourceManager.GetString("KI_CHAT_KEINE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: {0} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_KONTEXT {
+            get {
+                return ResourceManager.GetString("KI_CHAT_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: (nicht erkannt) ähnelt.
+        /// </summary>
+        public static string KI_CHAT_KONTEXT_LEER {
+            get {
+                return ResourceManager.GetString("KI_CHAT_KONTEXT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch kein API-Schlüssel hinterlegt. Die Schaltfläche 'Nur suchen' funktioniert bereits - sie durchsucht die Hilfe lokal und kostenlos. Für die KI-Antwort ähnelt.
+        /// </summary>
+        public static string KI_CHAT_OHNE_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KI_CHAT_OHNE_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellen: {0} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_QUELLEN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie:  ähnelt.
+        /// </summary>
+        public static string KI_CHAT_ROLLE_ANWENDER {
+            get {
+                return ResourceManager.GetString("KI_CHAT_ROLLE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Assistent: ähnelt.
+        /// </summary>
+        public static string KI_CHAT_ROLLE_ASSISTENT {
+            get {
+                return ResourceManager.GetString("KI_CHAT_ROLLE_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe-Assistent ähnelt.
+        /// </summary>
+        public static string KI_CHAT_TITEL {
+            get {
+                return ResourceManager.GetString("KI_CHAT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heute genutzt: {0} von {1} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("KI_CHAT_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heute genutzt: {0} von {1} Anfragen. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_VERBRAUCH_LANG {
+            get {
+                return ResourceManager.GetString("KI_CHAT_VERBRAUCH_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf kopieren ähnelt.
+        /// </summary>
+        public static string KI_CHAT_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_KOPIEREN", resourceCulture);
+            }
+        }
+}
 }
