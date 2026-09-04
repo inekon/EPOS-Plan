@@ -348,31 +348,31 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static bool ErststartAnbieten()
         {
-            string ordner = ErststartMigration.StandardOrdner();
+            string ordner = ErststartCtrl.StandardOrdner();
 
-            if (ErststartMigration.Pruefe(ordner) != ErststartLage.NurAccdbVorhanden)
+            if (!ErststartCtrl.UmstellungFaellig(ordner))
             {
                 // Unverändert der bisherige Fall: keine Datenbank, kein Altbestand.
                 MessageBox.Show(
-                    "Datenbankdatei nicht gefunden/lesbar: " + DataRepository.GetDBPath(),
-                    "Datenbank nicht verfügbar",
+                    string.Format(MyResource.Resource.START_DB_FEHLT, DataRepository.GetDBPath()),
+                    MyResource.Resource.START_DB_FEHLT_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
+            // iU9-W15c.7: Der Assistent ist eine Razor-Komponente; die Hülle zeigt sie
+            // BESITZERLOS, mit Taskleisteneintrag und mit gesperrtem Schließen während
+            // des Laufs (die drei Zusätze aus W15c.6).
             string berichtPfad;
-            bool umgestellt = Form_Erststart.Zeigen(ordner, true, out berichtPfad);
+            bool umgestellt = ErststartHuelle.Zeigen(ordner, out berichtPfad);
 
             if (!umgestellt)
             {
                 MessageBox.Show(
-                    "Die Datenbank wurde nicht umgestellt — das Programm kann nicht starten." +
+                    MyResource.Resource.START_UMSTELLUNG_ABGELEHNT +
                     Environment.NewLine + Environment.NewLine +
-                    ErststartMigration.LetzteMeldung +
-                    (string.IsNullOrEmpty(berichtPfad)
-                        ? ""
-                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
-                    "Datenbankumstellung",
+                    ErststartCtrl.LetzteMeldung + Bericht(berichtPfad),
+                    MyResource.Resource.START_UMSTELLUNG_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
@@ -380,17 +380,26 @@ namespace WindowsFormsApplication1
             if (!DataRepository.DatenbankVorhanden())
             {
                 MessageBox.Show(
-                    "Die Umstellung meldet Erfolg, die neue Datenbankdatei lässt sich aber nicht " +
-                    "öffnen: " + DataRepository.GetDBPath() +
-                    (string.IsNullOrEmpty(berichtPfad)
-                        ? ""
-                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
-                    "Datenbank nicht verfügbar",
+                    string.Format(MyResource.Resource.START_UMSTELLUNG_UNLESBAR,
+                                  DataRepository.GetDBPath()) + Bericht(berichtPfad),
+                    MyResource.Resource.START_DB_FEHLT_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Der Nachsatz „Bericht: &lt;Pfad&gt;" — zwei Leerzeilen davor, und nur, wenn
+        /// überhaupt ein Bericht entstanden ist (bitgleich zum Bestand).
+        /// </summary>
+        private static string Bericht(string berichtPfad)
+        {
+            return string.IsNullOrEmpty(berichtPfad)
+                ? ""
+                : Environment.NewLine + Environment.NewLine +
+                  string.Format(MyResource.Resource.START_BERICHT, berichtPfad);
         }
 
         /// <summary>

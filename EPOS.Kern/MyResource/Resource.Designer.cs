@@ -5115,6 +5115,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string ERST_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("ERST_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt umstellen ähnelt.
+        /// </summary>
+        public static string ERST_BTN_STARTEN {
+            get {
+                return ResourceManager.GetString("ERST_BTN_STARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank dieses Rechners liegt noch im alten Access- [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ERST_KOPF {
+            get {
+                return ResourceManager.GetString("ERST_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
+        /// </summary>
+        public static string ERST_LBL_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("ERST_LBL_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit. ähnelt.
+        /// </summary>
+        public static string ERST_STATUS_BEREIT {
+            get {
+                return ResourceManager.GetString("ERST_STATUS_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string ERST_STATUS_FEHLER {
+            get {
+                return ResourceManager.GetString("ERST_STATUS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung abgeschlossen. ähnelt.
+        /// </summary>
+        public static string ERST_STATUS_FERTIG {
+            get {
+                return ResourceManager.GetString("ERST_STATUS_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung läuft - bitte nicht abschalten. ähnelt.
+        /// </summary>
+        public static string ERST_STATUS_LAEUFT {
+            get {
+                return ResourceManager.GetString("ERST_STATUS_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankumstellung ähnelt.
+        /// </summary>
+        public static string ERST_TITEL {
+            get {
+                return ResourceManager.GetString("ERST_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
         /// </summary>
         public static string ETV_BTN_SPEICHERN {
@@ -27053,6 +27134,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_ACE_FEHLT_TITEL {
             get {
                 return ResourceManager.GetString("START_ACE_FEHLT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht: {0} ähnelt.
+        /// </summary>
+        public static string START_BERICHT {
+            get {
+                return ResourceManager.GetString("START_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankdatei nicht gefunden/lesbar: {0} ähnelt.
+        /// </summary>
+        public static string START_DB_FEHLT {
+            get {
+                return ResourceManager.GetString("START_DB_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank nicht verfügbar ähnelt.
+        /// </summary>
+        public static string START_DB_FEHLT_TITEL {
+            get {
+                return ResourceManager.GetString("START_DB_FEHLT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank wurde nicht umgestellt — das Programm kann  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string START_UMSTELLUNG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("START_UMSTELLUNG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankumstellung ähnelt.
+        /// </summary>
+        public static string START_UMSTELLUNG_TITEL {
+            get {
+                return ResourceManager.GetString("START_UMSTELLUNG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Umstellung meldet Erfolg, die neue Datenbankdatei läs [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string START_UMSTELLUNG_UNLESBAR {
+            get {
+                return ResourceManager.GetString("START_UMSTELLUNG_UNLESBAR", resourceCulture);
             }
         }
         

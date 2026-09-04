@@ -3463,3 +3463,40 @@ body {
     .epos-lizverw-status--schlecht { color: CanvasText; }
     .epos-lizverw-gruppe { border: 1px solid CanvasText; }
 }
+
+/* --------------------------------------------------------------------------
+   Der Erststart-Assistent (iU9-W15c.7).
+
+   Der Vorlaeufer war ein Sizable-Fenster mit fest angedockten Baendern
+   (Kopf 158 px, Status 24 px, Marquee 16 px, Protokoll Fill, Fuss 46 px). Hier
+   fliesst es: Der Kopftext behaelt seine Umbrueche, das Protokoll nimmt den
+   Platz, der Fuss bleibt unten.
+   -------------------------------------------------------------------------- */
+.epos-erststart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Der neunzeilige Ablauftext kommt als EIN Text mit Umbruechen - pre-line
+   haelt sie, ohne dass die Huelle neun Absaetze bauen muesste. */
+.epos-erststart-kopf {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-status {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
