@@ -40,7 +40,10 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<!-- KEINE ATS-Ausnahme. Alle bekannten Ziele des Programms sind HTTPS
-	     (Lizenzserver und Wiki unter epos-plan.de, PVGIS, CEC); ein
-	     NSAllowsArbitraryLoads waere eine Aufweichung ohne Anlass. -->
+	     (Lizenzserver und Wiki unter epos-plan.de, PVGIS, CEC sowie seit
+	     iU9-W15b die beiden Ziele des KI-Assistenten: Gemini unter
+	     generativelanguage.googleapis.com und der einmalige Modellabruf von
+	     huggingface.co); ein NSAllowsArbitraryLoads waere eine Aufweichung
+	     ohne Anlass. -->
 </dict>
 </plist>
