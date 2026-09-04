@@ -548,6 +548,130 @@ namespace EPOS.Kern.Tests
                 "SELECT COUNT(*) FROM Tab_Klimadaten_STAMM"), CultureInfo.InvariantCulture));
         }
 
+        // ==================================================================
+        //  4b — Die ALTBEREINIGUNG der Klimadaten-Waisen (Entscheid E-6)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Der Nachweis zu Schemaschritt 62</b> (Anwenderentscheid E-6 vom 04.09.2026:
+        /// „Altbereinigung ausfuehren").
+        ///
+        /// <para>Gefahren werden GENAU die zwei Anweisungen des Schrittes — sie stehen in
+        /// <see cref="KlimaWaisenBereinigung"/>, und <c>SchemaMigration.Schritt_62_KlimaWaisen</c>
+        /// liest sie von dort. Eine Abschrift hier waere eine zweite Wahrheit.</para>
+        ///
+        /// <para><b>Die Waisen muessen kuenstlich angelegt werden — und zwar an der
+        /// Zugriffsschicht vorbei.</b> Beide Datenblocktabellen tragen seit der
+        /// SQLite-Umstellung einen Fremdschluessel auf <c>Tab_Klimaregion_STAMM</c>
+        /// (<c>ON DELETE CASCADE</c>), und <c>DataRepository</c> setzt je Verbindung
+        /// <c>PRAGMA foreign_keys = ON</c>: Ueber den normalen Weg laesst sich eine Waise
+        /// gar nicht mehr erzeugen. Der Fall oeffnet die Arbeitskopie deshalb einmal
+        /// unmittelbar (Vorgabe <c>foreign_keys = OFF</c>) und legt dort je Tabelle eine
+        /// Zeile mit einer Regionsnummer an, die es nicht gibt — genau die Lage, die ein
+        /// Altbestand mitbringen kann.</para>
+        ///
+        /// <para>Geprueft wird: die zwei Anweisungen raeumen die Waisen ab, sie lassen den
+        /// Bestand (280 320 / 11 680) unangetastet, und ein zweiter Lauf aendert nichts
+        /// (Idempotenz).</para>
+        /// </summary>
+        [Fact]
+        public void DieAltbereinigungRaeumtWaisenAbUndLaesstDenBestandStehen()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                const int FREMD = 999999;
+                WaisenAnlegen(DataRepository.PfadUeberschreibung, FREMD);
+
+                // Vorher: je eine Waise, der Bestand um eine Zeile groesser.
+                Assert.Equal(1, Waisen(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(1, Waisen(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+                Assert.Equal(32 * 8760 + 1, Gesamt(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(32 * 365 + 1, Gesamt(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+
+                // Der Schritt: genau die zwei Anweisungen aus dem Kern.
+                foreach (string sql in KlimaWaisenBereinigung.Loeschungen())
+                    Assert.True(DataRepository.ExecuteSQL(sql), "Die Anweisung lief nicht: " + sql);
+
+                Assert.Equal(0, Waisen(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(0, Waisen(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+
+                // Der Bestand steht unveraendert - es ging NUR die Waise.
+                Assert.Equal(32, Gesamt(KlimaWaisenBereinigung.TABELLE_KOPFSATZ));
+                Assert.Equal(32 * 8760, Gesamt(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(32 * 365, Gesamt(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+
+                // Zweiter Lauf: nichts mehr zu tun, nichts aendert sich.
+                foreach (string sql in KlimaWaisenBereinigung.Loeschungen())
+                    Assert.True(DataRepository.ExecuteSQL(sql), "Der zweite Lauf lief nicht: " + sql);
+
+                Assert.Equal(0, Waisen(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(0, Waisen(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+                Assert.Equal(32 * 8760, Gesamt(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(32 * 365, Gesamt(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+            }
+        }
+
+        /// <summary>
+        /// <b>Auf dem Auslieferungsstand ist der Schritt ein No-op</b> — die Zaehlung zu
+        /// E-6 sagt das, dieser Fall haelt es fest: Die zwei Anweisungen laufen, und danach
+        /// steht jede Zahl noch genau so da wie vorher.
+        /// </summary>
+        [Fact]
+        public void DieAltbereinigungIstAufDemAuslieferungsstandEinNoOp()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                foreach (string sql in KlimaWaisenBereinigung.Loeschungen())
+                    Assert.True(DataRepository.ExecuteSQL(sql));
+
+                Assert.Equal(32, Gesamt(KlimaWaisenBereinigung.TABELLE_KOPFSATZ));
+                Assert.Equal(32 * 8760, Gesamt(KlimaWaisenBereinigung.TABELLE_STUNDENWERTE));
+                Assert.Equal(32 * 365, Gesamt(KlimaWaisenBereinigung.TABELLE_TAGESWERTE));
+            }
+        }
+
+        private static int Waisen(string tabelle)
+        {
+            return Convert.ToInt32(
+                DataRepository.ExecuteScalar(KlimaWaisenBereinigung.ZaehlungZu(tabelle)),
+                CultureInfo.InvariantCulture);
+        }
+
+        private static int Gesamt(string tabelle)
+        {
+            return Convert.ToInt32(
+                DataRepository.ExecuteScalar("SELECT COUNT(*) FROM " + tabelle),
+                CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Legt je Datenblocktabelle EINE Waise an — an der Zugriffsschicht vorbei, weil
+        /// deren <c>PRAGMA foreign_keys = ON</c> genau das verhindert (siehe oben).
+        /// </summary>
+        private static void WaisenAnlegen(string dbPfad, int fremdeRegion)
+        {
+            // "Foreign Keys=False" ist noetig: Microsoft.Data.Sqlite schaltet sie sonst von
+            // sich aus EIN, auch ohne Zutun der Zugriffsschicht.
+            using (var verb = new Microsoft.Data.Sqlite.SqliteConnection(
+                       "Data Source=" + dbPfad + ";Foreign Keys=False"))
+            {
+                verb.Open();
+                using (var cmd = verb.CreateCommand())
+                {
+                    cmd.CommandText =
+                        "INSERT INTO Tab_Solar_STAMM (ID_Klimaregion, Temperatur) VALUES (" +
+                        fremdeRegion.ToString(CultureInfo.InvariantCulture) + ", 0.0); " +
+                        "INSERT INTO Tab_Klimadaten_STAMM (ID_Klimaregion, WE) VALUES (" +
+                        fremdeRegion.ToString(CultureInfo.InvariantCulture) + ", 0);";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         /// <summary>
         /// <b>Die Leerkopien-Regel laesst einen dublettenfreien Katalog unberuehrt.</b> Der
         /// Auslieferungsstand hat keine Namensgruppen — also gibt es nichts zu bereinigen,

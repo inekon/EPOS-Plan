@@ -33,9 +33,18 @@
    kommentarlos weg (catch { chk_KiAus = null; }). Jetzt sagt ein Banner, dass
    er nicht gelesen werden konnte.
 
-   ENTSCHEID E-5 (iOS): Ohne OrdnerWaehler bleiben die fuenf
-   "Durchsuchen..."-Knoepfe weg (IosDateiDienst.OrdnerWaehlen liefert immer "");
-   die Pfadfelder bleiben von Hand beschreibbar.
+   ENTSCHEID E-5 (iOS, Anwender 04.09.2026 - "Empfehlung"): OHNE OrdnerWaehler
+   sind die Pfade FEST. Auf iOS gibt es keinen Ordnerwaehler
+   (IosDateiDienst.OrdnerWaehlen liefert immer ""), und die Ablage ist die
+   Sandbox - ein von Hand getippter Pfad waere dort eine Behauptung, die nicht
+   stimmt. Deshalb: kein "Durchsuchen..."-Knopf (das kann Dateiwahl schon von
+   selbst), die fuenf Pfadfelder NUR LESEND mit dem Wert aus EinstellungenCtrl,
+   und darueber ein Hinweis (ADM_SET_HINT_PFADE_FEST). Die uebrigen Rubriken
+   bleiben bedienbar - Web-Adressen, DB-Name und KI-Schalter kann man auf iOS
+   sinnvoll setzen. "Speichern" schreibt sie unveraendert; die fuenf Pfade
+   gehen als das zurueck, was der Kern vorgegeben hat, auch nach
+   "Standardwerte". MIT Waehler (Windows) bleibt alles wie bisher:
+   beschreibbar, mit Knopf.
 
    TASTATUR: Esc schliesst - erst die Rueckfrage, dann den Dialog. Enter ist
    nicht belegt. *@
@@ -55,6 +64,14 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* Entscheid E-5: Ohne Ordnerwaehler sind die fuenf Pfade fest. Der Hinweis
+       steht UEBER der Rubrikenleiste und gilt damit fuer alle drei Rubriken,
+       die Pfadfelder tragen. *@
+    @if (PfadeFest)
+    {
+        <Herleitungszeile Text="@PfadeFestText" />
+    }
+
     <div class="epos-reiter--senkrecht">
         <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
             <KindInhalt>
@@ -64,7 +81,7 @@
                         <Dateiwahl Bezeichnung="@LabelVdiPfad" Pfad="@_satz.VdiPfad"
                                    PfadChanged="@(p => _satz.VdiPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
-                                   NurLesen="false" />
+                                   NurLesen="@PfadeFest" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -73,15 +90,15 @@
                         <Dateiwahl Bezeichnung="@LabelDbExport" Pfad="@_satz.DbExportPfad"
                                    PfadChanged="@(p => _satz.DbExportPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
-                                   NurLesen="false" />
+                                   NurLesen="@PfadeFest" />
                         <Dateiwahl Bezeichnung="@LabelDbImport" Pfad="@_satz.DbImportPfad"
                                    PfadChanged="@(p => _satz.DbImportPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
-                                   NurLesen="false" />
+                                   NurLesen="@PfadeFest" />
                         <Dateiwahl Bezeichnung="@LabelDbPfad" Pfad="@_satz.DbPfad"
                                    PfadChanged="@(p => _satz.DbPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
-                                   NurLesen="false" />
+                                   NurLesen="@PfadeFest" />
                         <Textfeld Bezeichnung="@LabelDbName" Wert="@_satz.DbName"
                                   WertChanged="@(t => _satz.DbName = t)" />
                         <Herleitungszeile Text="@NeustartText" />
@@ -104,7 +121,7 @@
                         <Dateiwahl Bezeichnung="@LabelAllgemein" Pfad="@_satz.AllgemeinPfad"
                                    PfadChanged="@(p => _satz.AllgemeinPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
-                                   NurLesen="false" />
+                                   NurLesen="@PfadeFest" />
 
                         @* Die KI-Gruppe entstand im Vorlaeufer ZUR LAUFZEIT
                            (chk_KiAus, lbl_KiAus) - die Feldkarte sah sie nicht
@@ -164,10 +181,18 @@
 
     /// <summary>
     /// Der Ordnerwähler der Plattform (<c>Dienste.Datei.OrdnerWaehlen</c>). <b>Ohne
-    /// ihn bleiben die fünf „Durchsuchen…"-Knöpfe weg</b> — auf iOS liefert er immer
-    /// <c>""</c> (Entscheid E-5).
+    /// ihn sind die fünf Pfade FEST</b> — kein Knopf, nur lesende Felder und ein
+    /// Hinweis darüber (Entscheid E-5); auf iOS liefert er immer <c>""</c>.
     /// </summary>
     [Parameter] public Func<string, Task<string?>>? OrdnerWaehler { get; set; }
+
+    /// <summary>
+    /// <b>Sind die fünf Ordner fest vorgegeben?</b> Ohne Ordnerwähler gibt es keinen
+    /// Weg, einen Pfad zu wählen — auf iOS sind es die Sandbox-Pfade des Kerns, und
+    /// ein von Hand getippter Pfad wäre dort eine Behauptung, die nicht stimmt
+    /// (Entscheid E-5).
+    /// </summary>
+    public bool PfadeFest => OrdnerWaehler is null;
 
     /// <summary>Schreibt die neun Werte und legt die fünf Ordner an.</summary>
     [Parameter] public Func<Einstellungensatz, bool, Task<SpeicherBefund>>? Speichern { get; set; }
@@ -202,6 +227,7 @@
     [Parameter] public string StandardwerteText { get; set; } = Resource.ADM_SET_BTN_STANDARDWERTE;
     [Parameter] public string GespeichertText { get; set; } = Resource.ADM_SET_MSG_GESPEICHERT;
     [Parameter] public string NeustartText { get; set; } = Resource.ADM_SET_MSG_NEUSTART;
+    [Parameter] public string PfadeFestText { get; set; } = Resource.ADM_SET_HINT_PFADE_FEST;
     [Parameter] public string StandardwerteGeladenText { get; set; } = Resource.ADM_SET_MSG_STANDARDWERTE;
     [Parameter] public string FrageStandardwerteText { get; set; } = Resource.ADM_SET_FRAGE_STANDARDWERTE;
     [Parameter] public string TitelStandardwerteText { get; set; }
@@ -258,20 +284,27 @@
     /// <summary>
     /// Übernimmt einen Wertesatz in die Felder. <b>Der DB-Name landet im Namensfeld</b>
     /// (Befund W14c-B53, A-12).
+    ///
+    /// <para><b>Sind die Pfade fest</b> (Entscheid E-5), kommen die fünf Ordner aus
+    /// dem HEREINGEREICHTEN Satz und nicht aus <paramref name="s"/> — auch
+    /// „Standardwerte" ändert sie dann nicht, denn ohne Ordnerwähler gibt es keinen
+    /// Weg, eine andere Vorgabe als die des Kerns wirksam zu machen.</para>
     /// </summary>
     private void Uebernehmen(Einstellungensatz s)
     {
+        Einstellungensatz pfade = PfadeFest ? (Satz ?? new Einstellungensatz()) : s;
+
         _satz = new Einstellungensatz
         {
-            VdiPfad = s?.VdiPfad ?? "",
-            DbExportPfad = s?.DbExportPfad ?? "",
-            DbImportPfad = s?.DbImportPfad ?? "",
-            DbPfad = s?.DbPfad ?? "",
+            VdiPfad = pfade?.VdiPfad ?? "",
+            DbExportPfad = pfade?.DbExportPfad ?? "",
+            DbImportPfad = pfade?.DbImportPfad ?? "",
+            DbPfad = pfade?.DbPfad ?? "",
             DbName = s?.DbName ?? "",
             WikiUrl = s?.WikiUrl ?? "",
             PvgisUrl = s?.PvgisUrl ?? "",
             GeokodierungUrl = s?.GeokodierungUrl ?? "",
-            AllgemeinPfad = s?.AllgemeinPfad ?? ""
+            AllgemeinPfad = pfade?.AllgemeinPfad ?? ""
         };
     }
 
@@ -305,6 +338,10 @@
         if (!ok) { await Geschlossen.InvokeAsync(false); return; }
         if (Speichern is null) { await Geschlossen.InvokeAsync(false); return; }
 
+        // Entscheid E-5: Sind die Pfade fest, tragen die fuenf Felder von _satz
+        // ohnehin die Vorgaben des Kerns (Uebernehmen) - der Dialog schreibt sie
+        // damit unveraendert zurueck. Die uebrigen Werte gehen wie immer mit.
+        //
         // Der KI-Abschalter liegt in der Registry, nicht in den Settings - er geht
         // deshalb gesondert mit; bei maschinenweiter Sperre passiert nichts.
         SpeicherBefund befund = await Speichern(_satz, MaschinenRiegel ? KiAbgeschaltet : _kiAus);

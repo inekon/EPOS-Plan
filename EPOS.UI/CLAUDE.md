@@ -231,7 +231,7 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Wirtschaftlichkeit/GesetzeskatalogZeileDialog` | `Form_GesetzparameterZeile` (iU9‑W14c.1) | keine Hülle — eine Überlagerung im Katalog; Schlüssel und Klasse sind beim Ändern gesperrt, ein leeres Wertfeld ist NULL und nicht 0 |
 | `Admin/KatalogDublettenDialog` | `Form_KatalogDubletten` (iU9‑W14c.5, ohne Designer) | `Views/Admin/KatalogDublettenHuelle.cs` → `DublettenPruefung`, `DublettenBaum`, `DublettenBefundText`, `KatalogBereinigung`; der Scan läuft in `Task.Run` mit `Fortschritt`, das Umbenennen ist der `NamensDialog` **mit Prüfung** |
 | `Admin/EinstellungenDialog` | `Form_AdminSettings` (iU9‑W14c.6) | `Views/Admin/EinstellungenHuelle.cs` → `EinstellungenCtrl`; die Rubrikenliste ist ein SENKRECHTER `Reiter` mit vier Blättern, der KI-Abschalter läuft über `KiEinwilligung` |
-| `Klimadaten/KlimaregionDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimaregionHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
+| `Klimadaten/KlimadatenDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimadatenHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
 Aufbau — links „ausgewählt im Projekt", rechts „aus Datenbank", dazwischen ◀ und ▶,
