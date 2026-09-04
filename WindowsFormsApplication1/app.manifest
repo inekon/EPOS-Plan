@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" name="EPOS_Plan.app" />
 
@@ -19,9 +19,30 @@
     </application>
   </compatibility>
 
+  <!--
+    DPI-KONTEXT: Per Monitor V2 (iU9-W16c.4, Anwenderentscheid E-6 / offener
+    Punkt iF21).
+
+    Bis hierher stand hier dpiAware=false, und Program.Main setzte
+    HighDpiMode.DpiUnaware: Windows skalierte jedes Fenster als BITMAP. Fuer die
+    gewachsenen WinForms-Masken mit ihren fest gerechneten Pixelkoordinaten war
+    das die einzige Fassung, die ueberall gleich aussah - eine Umstellung haette
+    jede einzelne Maske betroffen.
+
+    MIT WELLE 16 GIBT ES DIESE MASKEN NICHT MEHR. Die Oberflaeche ist eine
+    Razor-Seite in einer WebView; sie rechnet in relativen Einheiten und kann
+    jede Skalierung. Es bleibt genau eine Designer-Maske (Form_HelpPopup, eine
+    Sprechblase ohne feste Groesse) und die DPI-freie Huelle. Damit faellt der
+    Grund fuer DpiUnaware - und mit ihm der Grund fuer die DpiInsel in
+    BlazorDialogForm, die den Faden bisher fuer jeden modalen Lauf einzeln
+    umstellte.
+
+    ABZUNEHMEN AM GERAET bei 100 / 125 / 150 % (Umsetzung_iU9_Nachweise.md).
+  -->
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
-      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">false</dpiAware>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
     </windowsSettings>
   </application>
 </assembly>
