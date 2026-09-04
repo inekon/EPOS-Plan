@@ -2481,6 +2481,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nur über Treffern, der gewählte Träger übersteht den Filterwechsel, Pfeiltasten wandern über die Treffer; der Baustein
 > `Zeilenwahl` um `Beschriftung`/`Zusatzklasse` erweitert, die 19 Bestandsaufrufe unverändert (`80e73c7`, neun bunit-Fälle,
 > Abnahmeprobe W4‑19).
+> **Windows-Abnahme 04.09.2026, Befund W4‑B‑1 (Preisbasis doppelt oder leer):** die Hülle baute die Preisbasen aus der
+> Zieleinheit jeder Umrechnungsregel ohne Dublettenprüfung (Nm³→Nm³ und m³→Nm³ ergaben Nm³ doppelt, 8 der 27 Träger),
+> ohne Regeln blieb das Feld leer (5 Träger), ohne Treffer fiel die Wahl still auf Index 0 — wortgleich vom Vorläufer
+> `ucFuelSettings` übernommen. Der Listenaufbau liegt jetzt datenbankfrei im Kern (`EnergietraegerPreisCtrl.Preisbasen`:
+> Abrechnungseinheit zuerst, Zieleinheiten in Regelreihenfolge, jede genau einmal, normalisiert verglichen; die Id
+> indiziert die bereinigte Liste); m³ ist bewusst keine Preisbasis (nur Quelle des z-Faktors, L4). 14 Kern-Fälle, ein
+> bunit-Fall, Referenzlauf byte-gleich, keine Datenzeile berührt (`cac4a1d`, W4-Protokoll § 9a).
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
