@@ -1433,8 +1433,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nicht für „Export"** — der Transferdialog behält sein Auswahlfeld (Platz unter der Variantenliste; W15a‑O‑2). **B56 widerlegt
 > B25:** „Projekt → Öffnen…" ist im MDI-Menü vorhanden und verdrahtet, E‑6 ist gegenstandslos. **Anwenderfragen
 > entschieden:** E‑1 nein, E‑2 ja, E‑3 nur markieren, E‑4 Programmsprache, E‑5 „Löschen" ja / „Export" nein. **Offen:**
-> W15a‑O‑1 (P6, Referenzlauf auf ein importiertes Projekt, nicht gelaufen — Ersatz Abnahmepunkt 4), W15a‑O‑2, W15a‑O‑3
-> (`ProjektCtrl.Delete` löscht über den Namen — zwei gleichnamige Projekte fielen beide; unverändert übernommen).
+> W15a‑O‑1 (P6, Referenzlauf auf ein importiertes Projekt, nicht gelaufen — Ersatz Abnahmepunkt 4). **Entschieden am
+> 04.09.2026:** W15a‑O‑2 (Empfehlung angenommen — der Transferdialog behält sein Auswahlfeld, keine volle Projektliste im
+> Export) und W15a‑O‑3 („Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall": Namen sind über den
+> eindeutigen Index `Projektname` eindeutig, das Löschen über den Namen bleibt; trifft ein Name mehrere Projekte, fragt das
+> Programm mit Vorgabe „Nein" nach statt still beide zu löschen — Umsetzung folgt als eigener Commit).
 > **Testanker:** der Maskenschlüssel-Zeuge steht jetzt auf `FormMain`/`Masken.ProjektDetail`, zwei W16-Aufträge (T1, T2)
 > stehen in den Tests und im Protokoll.
 >
