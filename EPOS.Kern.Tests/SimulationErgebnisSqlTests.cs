@@ -16,8 +16,16 @@ namespace EPOS.Kern.Tests
     /// <para>Ohne Testdatenbank schweigen die Faelle.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class SimulationErgebnisSqlTests
+    public class SimulationErgebnisSqlTests : IClassFixture<TestDatenbank>
     {
+        /// <summary>
+        /// EINE Arbeitskopie fuer die ganze Klasse (iU9-W11a.6). Die Faelle hier lesen
+        /// nur; eine Kopie je Testfall waere 77 MB Datei-Ein-/Ausgabe fuer nichts.
+        /// </summary>
+        private readonly TestDatenbank _db;
+
+        public SimulationErgebnisSqlTests(TestDatenbank db) { _db = db; }
+
         private const int PROJEKT = 1030;
 
         // ---------------------------------------------------------------- Konfiguration
@@ -29,8 +37,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void LiesProjekt_liefert_dieselbe_Zeile_wie_ReadSingle()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             KonfigurationCtrl alt = new KonfigurationCtrl();
             alt.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + PROJEKT);
@@ -65,8 +72,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void ProjektLesen_setzt_rows_und_model_wie_ReadSingle()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             KonfigurationCtrl a = new KonfigurationCtrl();
             a.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + PROJEKT);
@@ -90,8 +96,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void ProjektLesen_ohne_Zeile_meldet_rows_null()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             Assert.False(ctrl.ProjektLesen(999999));
@@ -108,8 +113,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void BrennstoffartenJeProjekt_liefert_nur_gueltige_Nummern()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             HashSet<int> arten = HeizkesselStammCtrl.BrennstoffartenJeProjekt(PROJEKT);
             Assert.NotNull(arten);
@@ -132,8 +136,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void AnlagenJeTyp_liefert_die_Zeilen_nach_Id_sortiert()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var zeilen = WErzeugerCtrl.AnlagenJeTyp(PROJEKT, WizardItemClass.WP_TYP);
             Assert.NotNull(zeilen);
@@ -156,8 +159,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void AnlagenJeTyp_Count_ersetzt_die_Zaehlabfrage()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             int ausListe = WErzeugerCtrl.AnlagenJeTyp(PROJEKT, WizardItemClass.SP_TYP).Count;
 
@@ -182,8 +184,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void ModelleJeTyp_liefert_dieselben_Zeilen_wie_ReadAllFilter()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             WErzeugerCtrl alt = new WErzeugerCtrl();
             alt.ReadAllFilter("ID_Projekt=" + PROJEKT + " and ID_Type=" + WizardItemClass.WP_TYP);
@@ -207,8 +208,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void AnlagenBezeichner_liefert_den_Namen_der_Zeile()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var zeilen = WErzeugerCtrl.AnlagenJeTyp(PROJEKT, WizardItemClass.WP_TYP);
             if (zeilen.Count == 0) return;
@@ -220,8 +220,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void AnlagenBezeichner_ohne_Zeile_liefert_null()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             Assert.Null(WErzeugerCtrl.AnlagenBezeichner(0));
             Assert.Null(WErzeugerCtrl.AnlagenBezeichner(999999));
@@ -237,8 +236,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KapazitaetUndLeistung_aggregiert_ueber_das_Projekt()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var w = StromspeicherStammCtrl.KapazitaetUndLeistung(PROJEKT);
             Assert.True(w.Kwh >= 0.0);
@@ -253,8 +251,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KapazitaetUndLeistung_faellt_auf_die_Aggregation_zurueck()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             var ohne = StromspeicherStammCtrl.KapazitaetUndLeistung(PROJEKT);
             var fremd = StromspeicherStammCtrl.KapazitaetUndLeistung(PROJEKT, 999999);
@@ -271,8 +268,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KapazitaetJeProjekt_faellt_ohne_Speicher_auf_fuenf_kWh()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             Assert.Equal(StromspeicherStammCtrl.KAPAZITAET_RUECKFALL_KWH,
                          StromspeicherStammCtrl.KapazitaetJeProjekt(999999));
@@ -292,8 +288,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KapazitaetJeProjekt_deckt_sich_mit_der_Aggregation()
         {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
+            if (!_db.Vorhanden) return;
 
             double summe = StromspeicherStammCtrl.KapazitaetJeProjekt(PROJEKT);
             double aggregat = StromspeicherStammCtrl.KapazitaetUndLeistung(PROJEKT).Kwh;
