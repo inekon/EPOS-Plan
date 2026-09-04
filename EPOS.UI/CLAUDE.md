@@ -118,8 +118,10 @@ einem zweiten Fenster geöffnet, sondern löst die Ansicht ab.
 |---|---|
 | `AppWurzel` | die Wurzelkomponente der iOS-Hülle: eine Zustandsmaschine über `Seitenschluessel` (Liste ↔ Dialog), Registrierung als `INavigationsZiel`, Statuszeile nach einem Dialog. **Noch kein Router** — der Wizard nach iL5 ist iU10-9 |
 | `Projektliste` | der Einstieg: Nr., Projekt, Klimaregion, Ausstattung im `Raster` und je Zeile zwei Knöpfe, die einen Maskenschlüssel melden |
-| `Seitenschluessel` | die vier sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`, `SIMULATION_KONFIGURATION`) |
+| `Seitenschluessel` | die fünf sprachneutralen ASCII-Schlüssel (`PROJEKTLISTE`, `ENERGIETRAEGER_VARIANTE`, `BHKW_WIRTSCHAFTLICHKEIT`, `SIMULATION_KONFIGURATION`, `SIMULATION_ERGEBNIS`) |
 | `Simulation/SimulationKonfigSeite` | die **Simulationskonfiguration** (iU9‑W10b.1) — die erste FACHSEITE, die iOS über `AppWurzel` erreicht. Unter Windows steht dieselbe Komponente bis W16 in einer modalen Dialoghülle (Entscheid R‑W10b‑1), weil ihre beiden Aufrufer die modale Rückkehr brauchen. Datenseite: `Views/Simulation/SimulationKonfigHuelle.cs` |
+| `Simulation/SimulationErgebnisSeite` | das **Simulationsergebnis** (iU9‑W11b.13) — die zweite Fachseite für `AppWurzel`, unter Windows ebenfalls bis W16 modal (Entscheid R‑W11‑1, 1 474 × 821). **Ein `Reiter` für zehn Blätter**: Parameter (mit fünf Unterblättern), Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis — dazu vier Überlagerungen. Datenseite: `Views/Simulation/SimulationErgebnisHuelle.cs` in vier Teildateien |
+| `Simulation/ParameterReiter` … `SpeicherVariantenVergleich` | die **zwölf Reiterkomponenten** der Ergebnisseite. Sie nehmen die DTO aus `EPOS.Kern/Controller/SimulationErgebnisCtrl` unmittelbar entgegen — die sind für genau diese Seite gebaut worden (iU9‑W11a.3) und wären als zweite Datenform eine zweite Wahrheit. Die Bilder kommen als PNG aus dem Kern-Renderer, **erst beim Betreten eines Reiters** und je Schalterstellung zwischengespeichert |
 
 **`Seiten/Berichte/` — der Reiter „Berichte & Kosten" (iU9‑W5).** Die erste Gruppe von
 Seiten, die unter **Windows** läuft: `Form_Start.tabPage6` trägt eine
@@ -262,6 +264,21 @@ führt selbst ZWEI Überlagerungsebenen — Editoren (Modus, Priorität, Quellen
 Senke, Pufferverwaltung) und darunter die drei Quellendialoge; die tieferen bringen
 die Dialoge der Welle 10a selbst mit. Damit steht die Kette Seite → Quelle →
 Pufferverwaltung → Klimazonenkarte in EINEM Fenster.
+
+**Sechs Masken, eine Seite** (iU9‑W11b): Die Ergebnisansicht der Simulation —
+`Form_Simulation_Detail` (7 629 Z. + 3 082 Designer) mit `DashboardForm`,
+`NavigatorUebersicht`, `NavigatorStrom`, `NavigatorWaerme` und
+`Form_SpeicherVariantenVergleich`, zusammen 11 031 Zeilen und 21 `MessageBox` — ist
+die Seite `Seiten/Simulation/SimulationErgebnisSeite` mit zwölf Reiterkomponenten.
+**Gelöscht wurde maskenweise, in EINEM Schritt** (Regel R‑W11‑2): reiterweise
+stünden zwei WebViews in einem Fenster. Der Vorläufer führte DREI Navigationen für
+dieselbe Sache — Reiterleiste, Menüliste mit Steuerelement-Ausleihe und
+`TabListMapper`, zusammen rund 700 Zeilen; hier ist es **ein** `Reiter`. Die
+17 Zeichenflächen bedienen **sieben** Renderer-Bilder aus W11a. Der SIMULATIONSLAUF
+läuft in `Task.Run` und meldet seine fünf Phasen an den Baustein `Fortschritt`;
+er startet beim Öffnen von selbst, wie eh und je. **Eine Komponente in zwei
+Rollen:** `UebersichtReiter` ist der Hauptreiter „Übersicht" UND — mit
+`NurNavigator` — das erste Blatt des Ergebnisreiters.
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
