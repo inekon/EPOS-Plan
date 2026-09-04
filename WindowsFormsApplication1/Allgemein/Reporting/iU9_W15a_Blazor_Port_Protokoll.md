@@ -194,9 +194,13 @@ werden neu gebaut.
 | **P9b** | ohne Namen wird nichts angefasst | grün |
 | **P9c** mehrdeutiger Name | Arbeitskopie OHNE den eindeutigen Index `Projektname`, ein zweites Projekt desselben Namens: `LoeschenMitVorarbeiten` meldet `Mehrdeutig` mit Anzahl 2, **beide Zeilen stehen noch**, keine Vorarbeit ist gelaufen (Entscheid W15a‑O‑3) | grün |
 | **P9d** mit Freigabe | derselbe Stand mit `mehrdeutigZugelassen: true`: **beide** Projekte fallen, alle Vorarbeiten sind gelaufen | grün |
+| **P9e** Variante, mehrdeutig | dieselbe Arbeitskopie ohne den Index, ein zweites Projekt mit dem Namen der Variante 1023 („Wöhler ‑ Test1"): `VariantenCtrl.LoescheVariante` meldet `Mehrdeutig` mit Anzahl 2, **beide Zeilen stehen noch**, die `Tab_Variante`-Verknüpfung auch (Entscheid W15a‑O‑4) | grün |
+| **P9f** mit Freigabe | derselbe Stand mit `mehrdeutigZugelassen: true`: **beide** Projekte fallen, dazu Verknüpfung und `Tab_Energieanlagen` der Variante | grün |
+| **P9g** Stammprojekt | ein Stamm fällt über diesen Weg nicht — `LoeschStand.KeineVariante`, nichts angefasst (unverändert, nur als Befund statt als `false` + `out`) | grün |
 | + 5 Fälle | `NamenListe` (Zahl, Sortierung, Kunde/Beschreibung/Datum), `IdVonName` (auch mit Apostroph), `AnzahlGleicherNamen` (Zählung, leerer Name, Apostroph), `ProjektCtrl.Kopf` (neun Felder, leerer Zweig, geratener Name), `KlimaregionStammCtrl` (Projektkopie und STAMM-Rückfall) | grün |
 
-**14 Fälle, 14 grün** (11 aus der Welle, 3 aus dem Entscheid W15a‑O‑3 vom 04.09.2026).
+**17 Fälle, 17 grün** (11 aus der Welle, 3 aus dem Entscheid W15a‑O‑3 und 3 aus dem Entscheid
+W15a‑O‑4, beide vom 04.09.2026).
 
 ### 3.3 P6 (optional) — Referenzlauf auf ein importiertes Projekt
 
@@ -219,6 +223,7 @@ ein Projekt exportieren, importieren und in beiden die Simulation rechnen.
 | `Seiten/ProjektKopfSeiteTests.cs` | 8 | neun Felder, gesperrte Datumsfelder, beide Betriebsarten, Schreiben AN ORT UND STELLE, Klimaregion über Id und über den Namen |
 | `Seiten/ProjektlisteTests.cs` | 5 | **unverändert** (R‑W15a‑13) |
 | `Seiten/AppWurzelTests.cs` | 7 | **unverändert** |
+| `Seiten/UebersichtSeiteTests.cs` | +3 | **aus dem Entscheid W15a‑O‑4**: die zweite Rückfrage der Variantenlöschung bei mehrdeutigem Projektnamen (Vorgabe „Nein" am betonten Knopf, Name und Anzahl im Text), „Nein" löscht nichts, „Ja" gibt alle Gleichnamigen frei, ein eindeutiger Name fragt nicht nach. Die Klasse pinnt dafür die Sprache selbst auf `de-DE` |
 
 ## 4 — Die zwölf Angleichungen (A‑1 … A‑12)
 
@@ -381,11 +386,11 @@ entsteht keine `CS0102`-Falle, wenn Visual Studio den Designer später selbst re
 | Prüfung | Sollwert | Ergebnis |
 |---|---|---|
 | `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** |
-| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue, dazu 7 aus dem Entscheid W15a‑O‑3 | **3 518** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 930, EPOS.Kern.Tests 801) |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue, dazu 7 aus dem Entscheid W15a‑O‑3 und 6 aus dem Entscheid W15a‑O‑4 | **3 524** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 933, EPOS.Kern.Tests 804) |
 | dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | grün |
 | `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 124 | **124** |
 | Stapellauf `--alle … --erreichbarkeit` | 13 Masken / 14 Designer, 13 / 0 / 0 / 0 | **13 / 14, 13 ja** |
-| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 235 Texte, 184 dynamisch, 1 051 in Ordnung — der eine neue Text ist die Zählung aus W15a‑O‑3) |
+| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 235 Texte, 184 dynamisch, 1 051 in Ordnung — der eine neue Text ist die Zählung aus W15a‑O‑3; W15a‑O‑4 bringt keinen weiteren, es ist dieselbe Zählung) |
 | `ChartProben` | 32 unverändert | **32** |
 | Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **PASS, 815 043 Werte; `diff -rq` byte-gleich in allen drei** |
 | Wächter `Program.*`/`MessageBox`/`Registry`/DPAPI/`SpecialFolder`/`System.Windows.Forms` im Kern | leer | **leer** |
@@ -428,4 +433,5 @@ dort vollständig zu sehen.
 | **W15a‑O‑1** | P6 (Referenzlauf auf ein importiertes Projekt) ist nicht gelaufen — der Referenzlauf kann eine geänderte Projekt-Id nicht gegen die Basis halten. Ersatz: Abnahmepunkt 4 |
 | **W15a‑O‑2** | E‑5 für den Transferdialog: Auswahlfeld statt Projektliste (Begründung § 4). **Entschieden 04.09.2026: Empfehlung angenommen, Auswahlfeld bleibt** — keine volle Projektliste im Export; die Datenquelle bleibt `ProjektCtrl.NamenListe` |
 | **W15a‑O‑3** | B49: `ProjektCtrl.Delete` löscht über den NAMEN; zwei Projekte gleichen Namens würden beide gelöscht. **Entschieden 04.09.2026** — der Anwender wörtlich: „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall." **Deutung:** Projektnamen SIND eindeutig — `Tab_Projekt` trägt seit der SQLite-Migration den eindeutigen Index `Projektname` (`CREATE UNIQUE INDEX "Projektname" ON "Tab_Projekt" ("Projektname")`, nachgesehen im `sqlite_master` von `Referenzlaeufe/Kenndaten_Test.sqlite`), und „Speichern unter" prüft über `ProjektDuplizierenCtrl.PruefeNamen`. **Das Löschen über den Namen bleibt deshalb bitgleich.** Für einen Altbestand OHNE diesen Index wird VOR dem Löschen nachgefragt, statt still beide Projekte mitzunehmen: `LoeschenMitVorarbeiten` zählt zuerst, meldet `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; der Löschdialog stellt die Rückfrage mit Vorgabe „Nein" hinter der unveränderten Sicherheitsabfrage (A‑7), und erst `mehrdeutigZugelassen: true` lässt alle fallen. Proben: P9c/P9d in `ProjektpflegeTests` (Arbeitskopie ohne Index) und vier bunit-Fälle in `ProjektWahlDialogTests` |
+| **W15a‑O‑4** | `VariantenCtrl.LoescheVariante` rief `new ProjektCtrl().Delete(projektname)` direkt und kannte die Vorprüfung aus O‑3 nicht — der letzte ihrer drei Schritte läuft damit über den NAMEN. **Entschieden 04.09.2026 (Empfehlung angenommen): Die Variantenlöschung geht über dieselbe Vorprüfung und dieselbe Rückfrage.** Umsetzung wie O‑3, nur an der zweiten Stelle: `LoescheVariante` zählt vor dem ersten Schritt über `ProjektCtrl.AnzahlGleicherNamen`, meldet bei mehr als einem Treffer `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; mit `mehrdeutigZugelassen: true` läuft sie bitgleich wie zuvor. Sie liefert dafür denselben `LoeschBefund` wie `LoeschenMitVorarbeiten` statt `bool` + `out fehler` (neu darin `KeineVariante` und `Loeschfehler`, die nur dieser Weg meldet). **Einziger Aufrufer** ist `UebersichtSeiteGaben` hinter der Razor-Seite `UebersichtSeite`; die stellt hinter der unveränderten Löschfrage die zweite Rückfrage mit Vorgabe „Nein" und **denselben Textschlüsseln** wie der `ProjektWahlDialog` (`PROJ_MSG_NAME_MEHRDEUTIG`, `PROJ_MSG_NAME_MEHRDEUTIG_TITEL`) — es ist dieselbe Frage, deshalb kein neuer Text. Proben: P9e/P9f/P9g in `ProjektpflegeTests` und drei bunit-Fälle in `UebersichtSeiteTests`. Commit `5104ea3` |
 | **W16** | `ProjektAuswahl` (uc) löschen (§ 7); T1 streichen oder auf ein Prüfmuster umziehen, T2 streichen (§ 8) |
