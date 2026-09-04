@@ -160,6 +160,12 @@ namespace EPOS.Kern.Tests
                 Masken.BhkwAdmin, Masken.SolarkollektorenAdmin, Masken.PvAdmin,
                 Masken.HeizkesselImport, Masken.PufferSpImport, Masken.PufferSpAdmin,
                 Masken.BrauchwasserAdmin, Masken.SolarkollektorenImport,
+                // iU9-W16c.0: PvImport fehlte in dieser Liste, seit er mit
+                // W13.0k angelegt wurde - der einzige Maskenschluessel ohne
+                // Zeugen. Die Zusammenlegung K7 zaehlt sie beide Seiten ab
+                // (EPOS.UI.Tests/Seiten/SeitenschluesselTests), und dabei ist
+                // die Luecke aufgefallen.
+                Masken.PvImport,
                 Masken.ProjektSpeichernUnter, Masken.ProjektAuswahl, Masken.ProjektDelete,
                 Masken.Assistent,
                 Ansichten.Varianten, Ansichten.BerichteKosten
