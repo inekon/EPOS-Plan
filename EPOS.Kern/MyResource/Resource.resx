@@ -11832,14 +11832,8 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
     <value>Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus.</value>
   </data>
-  <data name="BPF_MSG_WERT_BW" xml:space="preserve">
-    <value>Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.</value>
-  </data>
-  <data name="BPF_MSG_WERT_PROZ" xml:space="preserve">
-    <value>Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.</value>
-  </data>
-  <data name="BPF_MSG_WERT_STROM" xml:space="preserve">
-    <value>Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.</value>
+  <data name="BPF_MSG_WERT" xml:space="preserve">
+    <value>Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.</value>
   </data>
   <data name="BPF_SP_TYP" xml:space="preserve">
     <value>Typ</value>
@@ -12601,5 +12595,8 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Stromverbrauch:</value>
+  </data>
+  <data name="ALLG_LBL_EINHEIT" xml:space="preserve">
+    <value>Einheit:</value>
   </data>
 </root>

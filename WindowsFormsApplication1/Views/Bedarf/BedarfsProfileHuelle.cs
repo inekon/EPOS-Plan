@@ -279,7 +279,14 @@ namespace WindowsFormsApplication1
                     "Summe aller ausgewählten Strombedarfe:",
                     "Summe Brauchwasserprofile:"),
                 ["LabelNeuerWert"] = TextEinfach("BPF_LBL_NEUER_WERT", "neuer Wert"),
-                ["EinheitVerbrauch"] = "MWh",
+                ["LabelEinheit"] = TextEinfach("ALLG_LBL_EINHEIT", "Einheit:"),
+                // Die Anzeigeeinheit (Entscheid W9-O-3 vom 04.09.2026): MWh als Vorgabe,
+                // kWh waehlbar. Sie kommt aus derselben gemerkten Wahl wie die des
+                // Ergebnisdialogs - sonst stuende hier MWh und in der Ueberlagerung kWh.
+                // Die Summen der Projektzeilen und die Jahressummen des Katalogs liegen
+                // in MWh; die Komponente rechnet nur fuer Anzeige und Eingabe um.
+                ["Einheit"] = BedarfEinheitWahl.Lies(),
+                ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
                 ["SpalteWahl"] = TextEinfach("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = TextEinfach("BHKWV_SP_NAME", "Name"),
                 ["SpalteTyp"] = TextEinfach("BPF_SP_TYP", "Typ"),
@@ -308,12 +315,12 @@ namespace WindowsFormsApplication1
                     "Bitte einen Eintrag aus der Liste auswählen!"),
                 ["MeldungKeineZeile"] = TextEinfach("BPF_MSG_KEINE_ZEILE",
                     "Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!"),
-                // Befund W9-B7: kWh beim Stromverbraucher, MWh bei den beiden anderen -
-                // fuer DIESELBE Groesse. Woertlich uebernommen.
-                ["MeldungWertUngueltig"] = Text_(art, "BPF_MSG_WERT",
-                    "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
-                    "Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.",
-                    "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5."),
+                // W9-B7 ERLEDIGT (Entscheid des Anwenders vom 04.09.2026): Der Bestand
+                // nannte beim Stromverbraucher kWh, bei Prozess und Brauchwasser MWh -
+                // fuer DIESELBE Groesse. Es gibt jetzt EINEN Text mit einem Platzhalter
+                // fuer die Einheit; welche darin steht, entscheidet die Wahl im Dialog.
+                ["MeldungWertUngueltig"] = TextEinfach("BPF_MSG_WERT",
+                    "Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5."),
                 ["MeldungUebernommen"] =
                     TextEinfach("BPF_MSG_UEBERNOMMEN", "Jahresverbrauch übernommen."),
                 ["MeldungVorschau"] = TextEinfach("BPF_MSG_VORSCHAU",

@@ -11825,14 +11825,8 @@ Overwrite it anyway?</value>
   <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
     <value>The project has not been saved yet. The preview therefore uses the catalogue values; the annual consumption entered only affects the simulation after the project has been saved.</value>
   </data>
-  <data name="BPF_MSG_WERT_BW" xml:space="preserve">
-    <value>Please enter the annual consumption as a number in MWh, e.g. 12.5.</value>
-  </data>
-  <data name="BPF_MSG_WERT_PROZ" xml:space="preserve">
-    <value>Please enter the annual consumption as a number in MWh, e.g. 12.5.</value>
-  </data>
-  <data name="BPF_MSG_WERT_STROM" xml:space="preserve">
-    <value>Please enter the annual consumption as a number in kWh, e.g. 12.5.</value>
+  <data name="BPF_MSG_WERT" xml:space="preserve">
+    <value>Please enter the annual consumption as a number in {0}, e.g. 12.5.</value>
   </data>
   <data name="BPF_SP_TYP" xml:space="preserve">
     <value>Type</value>
@@ -12594,5 +12588,8 @@ The CHP unit never generates more electricity than the current own demand. The u
   </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH" xml:space="preserve">
     <value>Power consumption:</value>
+  </data>
+  <data name="ALLG_LBL_EINHEIT" xml:space="preserve">
+    <value>Unit:</value>
   </data>
 </root>
