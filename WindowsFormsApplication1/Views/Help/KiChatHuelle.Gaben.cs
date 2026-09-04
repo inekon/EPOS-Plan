@@ -336,6 +336,15 @@ namespace WindowsFormsApplication1
                 KontextLeer = MyResource.Resource.KI_CHAT_KONTEXT_LEER,
                 Denkt = MyResource.Resource.KI_CHAT_DENKT,
                 VerbrauchFormat = MyResource.Resource.KI_CHAT_VERBRAUCH,
+
+                // Der Tooltip der Semantikzeile - Modell, Lizenz und Herkunft, wortgleich
+                // wie im Vorlaeufer (Form_KiChat:935-938). Er kam mit dem Label abhanden
+                // (Anpassung A-10) und ist mit dem Entscheid W15b-O-2 vom 04.09.2026
+                // zurueck. Gefuellt wird er HIER, damit die Komponente SemantikModell
+                // nicht kennen muss; zeigen tut sie ihn nur, wenn die Zeile etwas sagt.
+                SemantikHerkunft = string.Format(MyResource.Resource.KI_SEMANTIK_HERKUNFT,
+                                                 SemantikModell.NAME, SemantikModell.LIZENZ,
+                                                 SemantikModell.QUELLE),
                 Eingabe = MyResource.Resource.KI_CHAT_TITEL,
                 Fragen = MyResource.Resource.KI_CHAT_BTN_FRAGEN,
                 Suchen = _hilfeBetrieb
