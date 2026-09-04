@@ -88,6 +88,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public BlazorSeite(IDictionary<string, object> parameter, IServiceProvider dienste)
         {
+            // WACHE (Befund W16c-B12, 04.09.2026): Diese Huelle traegt den
+            // Zustand IMMER nach - wer keinen mitgibt, bekommt einen frischen.
+            // Eine Komponente ohne den passenden [Parameter] bricht deshalb beim
+            // ERSTEN Zeichnen, und zwar im Blazor-Verteiler: Der Anwender sieht
+            // eine TargetInvocationException an Application.Run und nicht den
+            // Namen des fehlenden Parameters. Der Fehler ist beim Uebersetzen
+            // nicht zu sehen (das Woerterbuch kennt keine Typen), wohl aber
+            // hier - eine Zeile Reflexion beim Bauen der Huelle.
+            ZustandParameterPruefen();
+
             if (parameter == null) parameter = new Dictionary<string, object>();
 
             Zustand = parameter.ContainsKey(SeitenZustand.PARAMETER)
@@ -123,6 +133,37 @@ namespace WindowsFormsApplication1
 
             _web.RootComponents.Add<TKomponente>("#app", parameter);
             Controls.Add(_web);
+        }
+
+        /// <summary>
+        /// Prueft, ob <typeparamref name="TKomponente"/> einen oeffentlichen,
+        /// beschreibbaren <c>[Parameter]</c> namens
+        /// <see cref="SeitenZustand.PARAMETER"/> fuehrt, der einen
+        /// <see cref="SeitenZustand"/> aufnehmen kann.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Wenn er fehlt - mit dem Namen der Komponente, damit die Meldung ohne
+        /// Nachschlagen zu verstehen ist.
+        /// </exception>
+        private static void ZustandParameterPruefen()
+        {
+            System.Reflection.PropertyInfo eigenschaft = typeof(TKomponente).GetProperty(
+                SeitenZustand.PARAMETER,
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+            bool taugt = eigenschaft != null
+                      && eigenschaft.CanWrite
+                      && eigenschaft.IsDefined(
+                             typeof(Microsoft.AspNetCore.Components.ParameterAttribute), true)
+                      && eigenschaft.PropertyType.IsAssignableFrom(typeof(SeitenZustand));
+
+            if (taugt) return;
+
+            throw new InvalidOperationException(
+                "BlazorSeite verlangt einen Parameter " + SeitenZustand.PARAMETER +
+                ": Die Komponente " + typeof(TKomponente).FullName +
+                " braucht [Parameter] public SeitenZustand? " + SeitenZustand.PARAMETER +
+                " { get; set; }, weil die Huelle ihn jedem Parametersatz beilegt.");
         }
 
         /// <summary>
