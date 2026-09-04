@@ -79,7 +79,10 @@ namespace WindowsFormsApplication1
                 StromdeckungProzent = sbGesamt > 0 ? StromgedecktMwh() * 100.0 / sbGesamt : 0.0,
 
                 ReststromMwh = k.ReststromMwh,
-                RestwaermeMwh = k.RestwaermebedarfMwh,
+                // Anwenderentscheid 04.09.2026 (W11a-O-1): EINE Restwärmezahl.
+                // RestwaermebedarfMwh und RestwaermeMwh sind seither derselbe Wert -
+                // die Bilanzgröße des Laufs.
+                RestwaermeMwh = k.RestwaermeMwh,
 
                 EigenanteilSpalten = EigenanteilSpalten(),
                 Eigenanteil = Eigenanteil(k, p)
