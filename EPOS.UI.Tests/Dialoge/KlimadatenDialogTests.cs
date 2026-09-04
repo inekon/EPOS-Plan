@@ -346,8 +346,12 @@ public class KlimadatenDialogTests : BunitContext
         Assert.True(cut.Instance.Laeuft);
 
         // Progress<T> meldet ueber den Synchronisationskontext - der Text steht
-        // erst nach dem naechsten Zeichnen da.
-        cut.WaitForAssertion(() => Assert.Contains("Klimadaten abrufen", cut.Markup));
+        // erst nach dem naechsten Zeichnen da. Die bunit-Vorgabe von einer Sekunde
+        // reicht auf einem ausgelasteten CI-Laeufer nicht immer (Kern-Lauf
+        // 33866130448: "Check count: 0" bei 1 867 parallel laufenden Faellen);
+        // zehn Sekunden wie in KapitalwertVerlaufDialogTests.
+        cut.WaitForAssertion(() => Assert.Contains("Klimadaten abrufen", cut.Markup),
+                             TimeSpan.FromSeconds(10));
 
         cut.Find(".epos-fortschritt button").Click();
         Assert.Equal(1, abgebrochen);
@@ -357,7 +361,7 @@ public class KlimadatenDialogTests : BunitContext
             Ausgang = KlimaImportAusgang.Abgebrochen,
             Meldung = "Der Import wurde abgebrochen."
         });
-        cut.WaitForState(() => !cut.Instance.Laeuft);
+        cut.WaitForState(() => !cut.Instance.Laeuft, TimeSpan.FromSeconds(10));
         Assert.Contains("abgebrochen", cut.Instance.Meldung);
     }
 
