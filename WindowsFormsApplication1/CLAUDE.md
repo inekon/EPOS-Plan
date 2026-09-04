@@ -763,11 +763,21 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   125–200 % bitmapskaliert und sichtbar unscharf. Die WinForms-Masken dahinter bleiben
   unberührt. Auf einem Windows vor 10 (1803) greift die Insel nicht; das ist ein
   Schönheitsfehler, kein Fehlschlag.
-- **WebView2 ist ab iU8 eine Laufzeitvoraussetzung.** `dotnet publish` bringt nur das SDK
-  (`Microsoft.Web.WebView2.Core.dll`, `WebView2Loader.dll`); die Evergreen-Laufzeit installiert
-  das Setup nach (`../Setup/EPOS-Plan.iss`, `WebView2Vorhanden`). Fehlt sie, startet die
-  Anwendung — nur die Blazor-Dialoge bleiben leer. Der Profilordner der WebView2 liegt
-  ausdrücklich unter `%LOCALAPPDATA%\WP-Plan\WebView2`; die Vorgabe „neben der EXE" ist unter
+- **WebView2 ist ab iU8 eine Laufzeitvoraussetzung — und seit iU9‑W15c eine HARTE.**
+  `dotnet publish` bringt nur das SDK (`Microsoft.Web.WebView2.Core.dll`,
+  `WebView2Loader.dll`); die Evergreen-Laufzeit installiert das Setup nach
+  (`../Setup/EPOS-Plan.iss`, `WebView2Vorhanden`). **Bis W15b startete die Anwendung ohne
+  sie — nur die Blazor-Dialoge blieben leer. Seit W15c laufen ZWEI Startschritte über eine
+  Blazor-Hülle** (der Erststart der Datenbank und die Zustimmung zur Lizenzvereinbarung);
+  beide liefern „false", wenn ihr Fenster leer bleibt, und beenden dann das Programm
+  (Befund W15c‑B10). **`Program.Main` prüft die Laufzeit deshalb selbst** — nach der
+  Sprachwahl, vor dem ersten besitzerlosen Dialog:
+  `CoreWebView2Environment.GetAvailableBrowserVersionString()` in `try/catch`, und bei
+  Fehlschlag eine native `MessageBox` mit der Bezugsquelle
+  (`START_WEBVIEW2_FEHLT`/`…_TITEL`, zweisprachig) und Programmende. **Keine
+  WinForms-Rückfallmasken** — zwei Fassungen derselben Maske sind ausgeschlossen
+  (Regel M1, Entscheid W15c‑E‑8 Weg 2). Der Profilordner der WebView2 liegt ausdrücklich
+  unter `%LOCALAPPDATA%\WP-Plan\WebView2`; die Vorgabe „neben der EXE" ist unter
   `C:\Program Files` für Standardbenutzer nicht beschreibbar.
 - **`app.config`** enthält einen toten absoluten Beispielpfad zur `.accdb`; der echte Pfad wird zur
   Laufzeit über `DataRepository.GetDBPath()` gesetzt.

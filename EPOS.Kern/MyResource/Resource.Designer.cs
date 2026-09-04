@@ -27057,6 +27057,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Microsoft Edge WebView2 Runtime ist auf diesem Rechne [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string START_WEBVIEW2_FEHLT {
+            get {
+                return ResourceManager.GetString("START_WEBVIEW2_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Microsoft Edge WebView2 Runtime fehlt ähnelt.
+        /// </summary>
+        public static string START_WEBVIEW2_FEHLT_TITEL {
+            get {
+                return ResourceManager.GetString("START_WEBVIEW2_FEHLT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad {0} % unter der Schwelle von {1} %; Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD {

@@ -13620,4 +13620,14 @@ Import anyway?</value>
   <data name="LIZ_TYP_FIRMA" xml:space="preserve">
     <value>Company license</value>
   </data>
+  <data name="START_WEBVIEW2_FEHLT_TITEL" xml:space="preserve">
+    <value>Microsoft Edge WebView2 Runtime is missing</value>
+  </data>
+  <data name="START_WEBVIEW2_FEHLT" xml:space="preserve">
+    <value>The Microsoft Edge WebView2 Runtime is not installed on this computer.
+
+EPOS-Plan shows its dialogs with it and cannot start without it.
+
+It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages; the EPOS-Plan setup also installs it. The most common cause is a missing internet connection during installation. When in doubt, contact support.</value>
+  </data>
 </root>
