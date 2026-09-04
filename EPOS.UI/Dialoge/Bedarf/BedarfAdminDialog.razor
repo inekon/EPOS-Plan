@@ -1,0 +1,465 @@
+﻿@* Die VERWALTUNG der drei Bedarfskataloge (iU9-W14b.1) - DRILLINGE.
+
+   VORBILD. Drei Masken mit demselben Aufbau, Designer zeichengleich bis auf die
+   Bezeichner: Views/Stromverbraucher/Form_Stromverbraucher_Admin (177 Z., 219
+   Designer), Views/Prozesswärme/Form_Prozesswaerme_Admin (177 / 220) und
+   Views/Brauchwasser/Form_Brauchwasser_Admin (163 / 331). SetControls,
+   SetProzessInfo und Prozesssumme standen DREIMAL WORTGLEICH da. Was sie
+   trennt, sind vier Werte - BedarfsArt, Simulationsklasse, Engine-Methode und
+   Teiler -, und die drei letzten liegen ohnehin hinter BedarfsArt. Die
+   Ausprägung ist deshalb der Aufzählungstyp, den TypStammDialog,
+   TypProfilDialog und BedarfErgebnisDialog schon tragen; der
+   Feldkartenabgleich läuft je AUSPRÄGUNG (Risiko R-W14-1).
+
+   VIER UEBERLAGERUNGEN statt vier Fenstern (Risiko R2): der Stammkopf (W8.1)
+   in den Modi Bearbeiten und Neu, das Wochen-Stundenprofil (W8.3), der
+   Ergebnisdialog (W8.2) und die Namensabfrage vor "Neu".
+
+   BEFUND W14-B78: Der Handler btn_ErgebnisseVerbrauch_Click stand in ALLEN DREI
+   Masken - einen Knopf dazu gab es in KEINEM der drei Designer. Der
+   "Ergebnisse"-Knopf, den die Vermessung nennt, war seit jeher tot; die sieben
+   Knöpfe der Masken sind Grafik, Neu, Löschen, Typ ändern, Ändern, OK und
+   Abbrechen. Damit sind auch W14-B50 (E-7: zwei verschiedene Sichten) und
+   W14-B58 (E-8: "Ergebnisse" ohne vorheriges "Grafik" zeigt Nullen)
+   gegenstandslos - beide beschreiben Verhalten eines Knopfes, den niemand
+   drücken konnte. Der Dialog baut ihn nicht nach (A-4).
+
+   BEFUND W14-B51, ANGEGLICHEN: Das Brauchwasser löschte OHNE Leerprüfung und
+   fragte bei leerer Liste "Soll  wirklich gelöscht werden ?". Jetzt prüfen alle
+   drei (A-1).
+
+   BEFUND W14-B64, ANGEGLICHEN: Derselbe Löschsatz stand in drei Schreibweisen
+   da (zweimal Verkettung, einmal Interpolation). Es ist EIN Text mit Platzhalter
+   - PSP_MELDUNG_WIRKLICH_LOESCHEN (A-2).
+
+   BEFUND W14-B52, ERLEDIGT: Brauchwasser und Prozesswärme hatten Click UND
+   SelectedIndexChanged auf dieselbe Arbeit verdrahtet - je Mausklick zwei
+   ReadSingle-Paare. Eine Zeilenwahl ist hier EIN Ereignis.
+
+   BEFUND W14-B57, WOERTLICH: Die Jahressumme trägt drei Formate - "F3" beim
+   Brauchwasser, gar keins bei der Prozesswärme, "F2" beim Stromverbraucher. Das
+   Format kommt je Ausprägung von der Hülle; die Vereinheitlichung auf "F2" ist
+   eine Anwenderfrage (offener Punkt W14b-O-1).
+
+   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
+   Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-bedarf-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Gruppenkopf Titel="@LabelKatalog" />
+
+    <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
+        </KindInhalt>
+    </Raster>
+
+    @* --- Der Anzeigeblock: Jahressumme, Name, Beschreibung, Typ -----------
+       Die Einheit steht RECHTS neben dem Feld, wie Label11 im Designer. *@
+    <div class="epos-feldpaar">
+        <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
+        <span class="epos-einheit">@EinheitText</span>
+    </div>
+
+    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+              Mehrzeilig="true" Zeilen="3" />
+    <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
+                @onclick="BeiAendern">@BtnAendernText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiTypAendern">@BtnTypAendernText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
+                @onclick="BeiGrafik">@BtnGrafikText</button>
+    </div>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Ueberlagerung 1: der Stammkopf (W8.1), Modi Bearbeiten und Neu --- *@
+    <Ueberlagerung Offen="@(_typStammGaben is not null)" Schliessbar="false"
+                   Titel="@BtnAendernText" Geschlossen="TypStammFertig">
+        <KindInhalt>
+            @if (_typStammGaben is not null)
+            {
+                <TypStammDialog @attributes="_typStammGaben" Geschlossen="_ => TypStammFertig()" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: das Wochen-Stundenprofil (W8.3) ----------------- *@
+    <Ueberlagerung Offen="@_typProfilOffen" Schliessbar="false"
+                   Titel="@BtnTypAendernText" Geschlossen="() => _typProfilOffen = false">
+        <KindInhalt>
+            @if (_typProfilOffen && TypProfilGaben is not null)
+            {
+                <TypProfilDialog @attributes="TypProfilGaben()"
+                                 Geschlossen="_ => _typProfilOffen = false" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 3: der Ergebnisdialog (W8.2) ----------------------- *@
+    <Ueberlagerung Offen="@(_ergebnisGaben is not null)" Schliessbar="false"
+                   Titel="@BtnGrafikText" Geschlossen="() => _ergebnisGaben = null">
+        <KindInhalt>
+            @if (_ergebnisGaben is not null)
+            {
+                <BedarfErgebnisDialog @attributes="_ergebnisGaben"
+                                      Geschlossen="_ => _ergebnisGaben = null" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 4: die Namensabfrage vor "Neu" --------------------- *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnNeuText" FrageText="@LabelName"
+                          MeldungLeer="@MeldungNameFehlt" OkText="@OkText"
+                          AbbrechenText="@AbbrechenText" Geschlossen="NamensfrageFertig" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschfrageText"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Katalogs.</summary>
+    public sealed record Katalogzeile(string Bezeichner);
+
+    /// <summary>
+    /// Welcher der drei Bedarfskataloge. Sie bestimmt Beschriftungen UND Rechenweg —
+    /// beides liefert die Hülle, hier hängt nur die Hilfeadresse daran.
+    /// </summary>
+    [Parameter] public BedarfsArt Art { get; set; } = BedarfsArt.Prozesswaerme;
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Die Liste (<c>BedarfStammCtrl.Bezeichner</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Beschreibung und Typ eines Satzes (<c>BedarfStammCtrl.Kopf</c>); <c>null</c>,
+    /// wenn es ihn nicht gibt — dann bleiben die Felder stehen wie im Vorläufer.
+    /// </summary>
+    [Parameter] public Func<string, (string Beschreibung, string Typ)?>? Kopf { get; set; }
+
+    /// <summary>
+    /// Die Jahressumme als FERTIGER TEXT (<c>BedarfStammCtrl.Jahressumme</c> plus das
+    /// Format der Ausprägung — <c>"F3"</c>, keins, <c>"F2"</c>; Befund W14-B57).
+    /// </summary>
+    [Parameter] public Func<string, string>? Jahressumme { get; set; }
+
+    /// <summary>Löscht einen Satz (<c>BedarfStammCtrl.Loeschen</c>).</summary>
+    [Parameter] public Func<string, BedarfLoeschAusgang>? Loeschen { get; set; }
+
+    /// <summary>Gibt es den Namen schon? (<c>BedarfStammCtrl.Exists</c>)</summary>
+    [Parameter] public Func<string, bool>? Exists { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Stammkopfes (<c>TypStammHuelle.Gaben</c>) — Name,
+    /// Beschreibung, Typ und ob es der Modus „Neu" ist.
+    /// </summary>
+    [Parameter]
+    public Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? TypStammGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Wochen-Stundenprofils (<c>TypStammHuelle.ProfilGaben</c>).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? TypProfilGaben { get; set; }
+
+    /// <summary>
+    /// Rechnet die Vorschau für einen Satz und liefert den Parametersatz des
+    /// Ergebnisdialogs (<c>BedarfsVorschauCtrl.Rechnen</c> +
+    /// <c>BedarfErgebnisHuelle.Gaben</c>); <c>null</c> = es wurde nicht gerechnet.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>?>? Vorschau { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = mit OK.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = "";
+    [Parameter] public string LabelKatalog { get; set; } = "";
+    [Parameter] public string LabelJahressumme { get; set; } = "";
+    [Parameter] public string EinheitText { get; set; } = "";
+    [Parameter] public string LabelName { get; set; } = Resource.BADM_LBL_NAME;
+    [Parameter] public string LabelBeschreibung { get; set; } = Resource.BADM_LBL_BESCHREIBUNG;
+    [Parameter] public string LabelTyp { get; set; } = Resource.BADM_LBL_TYP;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteBezeichnerText { get; set; } = Resource.WBAD_SPALTE_BEZEICHNER;
+
+    [Parameter] public string BtnAendernText { get; set; } = "";
+    [Parameter] public string BtnNeuText { get; set; } = "";
+    [Parameter] public string BtnTypAendernText { get; set; } = "";
+    [Parameter] public string BtnLoeschenText { get; set; } = "";
+    [Parameter] public string BtnGrafikText { get; set; } = Resource.BADM_BTN_GRAFIK;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    [Parameter] public string TitelLoeschen { get; set; } = Resource.PSP_TITEL_LOESCHEN;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.PSP_MELDUNG_WIRKLICH_LOESCHEN;
+    [Parameter] public string MeldungKeineWahl { get; set; } = "";
+    [Parameter] public string MeldungGeloescht { get; set; } = Resource.BADM_MSG_GELOESCHT;
+    [Parameter] public string MeldungLoeschfehler { get; set; } = Resource.BADM_MSG_LOESCHEN_FEHLER;
+    [Parameter] public string MeldungSchreibgeschuetzt { get; set; } = Resource.BADM_MSG_SCHREIBGESCHUETZT;
+    [Parameter] public string MeldungNameBelegt { get; set; } = Resource.BTYP_MSG_NAME_BELEGT;
+    [Parameter] public string MeldungNameFehlt { get; set; } = Resource.BTYP_MSG_NAME_LEER;
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<Katalogzeile> _katalog = new();
+    private string _gewaehlt = "";
+    private string _beschreibung = "";
+    private string _typ = "";
+    private string _jahressumme = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _loeschfrage;
+    private string _loeschfrageText = "";
+    private bool _namensfrage;
+    private bool _typProfilOffen;
+    private IReadOnlyDictionary<string, object>? _typStammGaben;
+    private IReadOnlyDictionary<string, object>? _ergebnisGaben;
+
+    private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
+
+    private bool ZeileGewaehlt => _gewaehlt.Length > 0;
+
+    /// <summary>Der gewählte Satz (Prüfhilfe für Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die angezeigte Jahressumme (Prüfhilfe für Tests).</summary>
+    public string JahressummeText => _jahressumme;
+
+    /// <summary>Steht der Ergebnisdialog offen? (Prüfhilfe für Tests)</summary>
+    public bool ErgebnisOffen => _ergebnisGaben is not null;
+
+    /// <summary>Steht der Stammkopf offen? (Prüfhilfe für Tests)</summary>
+    public bool TypStammOffen => _typStammGaben is not null;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized() => KatalogLaden();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Lädt die Liste neu — <c>SetControls</c> des Vorläufers. Er wählte danach die
+    /// ERSTE Zeile (<c>SelectedIndex = 0</c>); das tut diese Fassung auch, solange die
+    /// bisherige Wahl nicht mehr in der Liste steht.
+    /// </summary>
+    public void KatalogLaden()
+    {
+        if (Katalog is null) return;
+
+        IReadOnlyList<string> namen = Katalog() ?? Array.Empty<string>();
+        _katalog = namen.Select(n => new Katalogzeile(n)).ToList();
+
+        if (_katalog.Count == 0) { Leeren(); return; }
+        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) Waehlen(_katalog[0]);
+        else Waehlen(new Katalogzeile(_gewaehlt));
+    }
+
+    /// <summary>
+    /// Eine Zeile wählen — <c>listBox_*_SelectedIndexChanged</c> des Vorläufers:
+    /// Jahressumme rechnen und den Kopf zeigen.
+    /// </summary>
+    private void Waehlen(Katalogzeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+
+        _jahressumme = Jahressumme is not null ? Jahressumme(_gewaehlt) ?? "" : "";
+
+        // Woertlich: Der Vorlaeufer prueft rows > 0 und laesst die drei Felder sonst
+        // UNVERAENDERT stehen.
+        (string Beschreibung, string Typ)? kopf = Kopf?.Invoke(_gewaehlt);
+        if (kopf is not null)
+        {
+            _beschreibung = kopf.Value.Beschreibung;
+            _typ = kopf.Value.Typ;
+        }
+    }
+
+    private void Leeren()
+    {
+        _gewaehlt = "";
+        _beschreibung = "";
+        _typ = "";
+        _jahressumme = "";
+    }
+
+    // =====================================================================
+    // "Profil ändern..." / "Neues Profil..." / "Profiltyp ändern..."
+    // =====================================================================
+
+    private void BeiAendern()
+    {
+        if (!ZeileGewaehlt || TypStammGaben is null) return;
+        _typStammGaben = TypStammGaben(_gewaehlt, _beschreibung, _typ, false);
+    }
+
+    private void BeiNeu()
+    {
+        if (TypStammGaben is null) return;
+        _meldung = "";
+        _namensfrage = true;
+    }
+
+    /// <summary>
+    /// Die Reihenfolge des Vorläufers, wörtlich: Namensabfrage → <c>Exists</c> →
+    /// <c>TypStammHuelle.Neu</c>.
+    /// </summary>
+    private void NamensfrageFertig(string? name)
+    {
+        _namensfrage = false;
+        if (string.IsNullOrEmpty(name) || TypStammGaben is null) return;
+
+        if (Exists is not null && Exists(name))
+        {
+            Melden(MeldungNameBelegt, WarnStufe.Warnung);
+            return;
+        }
+
+        _typStammGaben = TypStammGaben(name, "", "", true);
+    }
+
+    /// <summary>Der Stammkopf ist zu; der Vorläufer lud danach IMMER die Liste neu.</summary>
+    private void TypStammFertig()
+    {
+        _typStammGaben = null;
+        KatalogLaden();
+    }
+
+    private void BeiTypAendern()
+    {
+        if (TypProfilGaben is null) return;
+        _meldung = "";
+        _typProfilOffen = true;
+    }
+
+    // =====================================================================
+    // "Profil löschen"
+    // =====================================================================
+
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+
+        // A-1: Das Brauchwasser prüfte NICHT und fragte bei leerer Liste
+        // "Soll  wirklich gelöscht werden ?" (Befund W14-B51).
+        if (!ZeileGewaehlt)
+        {
+            Melden(MeldungKeineWahl, WarnStufe.Hinweis);
+            return;
+        }
+
+        // A-2: EIN Satz mit Platzhalter statt dreier Schreibweisen (Befund W14-B64).
+        _loeschfrageText = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschfrage = true;
+    }
+
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || Loeschen is null) return;
+
+        string name = _gewaehlt;
+        BedarfLoeschAusgang ausgang = Loeschen(name);
+
+        if (ausgang == BedarfLoeschAusgang.Geloescht)
+        {
+            KatalogLaden();
+            Melden(string.Format(MeldungGeloescht, name), WarnStufe.Erfolg);
+            return;
+        }
+
+        // A-3: Der Fehlschlag ist eine Meldung IM Dialog. Der Vorläufer liess den
+        // Stammcontroller die ReadOnly-Sperre selbst melden - ein modaler Kasten -,
+        // und die Prozesswaerme faerbte jede Ausnahme als "Fehler beim Löschvorgang!"
+        // ein (Befund W14-B59, fünf MessageBox in einem Handler).
+        Melden(ausgang == BedarfLoeschAusgang.Schreibgeschuetzt
+                   ? MeldungSchreibgeschuetzt : MeldungLoeschfehler,
+               WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // "Grafik"
+    // =====================================================================
+
+    private void BeiGrafik()
+    {
+        if (!ZeileGewaehlt || Vorschau is null) return;
+        _meldung = "";
+        _ergebnisGaben = Vorschau(_gewaehlt);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_loeschfrage || _namensfrage || _typProfilOffen
+            || _typStammGaben is not null || _ergebnisGaben is not null) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

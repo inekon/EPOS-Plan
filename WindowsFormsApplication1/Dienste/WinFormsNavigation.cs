@@ -91,19 +91,17 @@ namespace WindowsFormsApplication1
                 case Masken.WaermebedarfExternAdmin:
                     return WaermebedarfAdminHuelle.Oeffnen(null);
 
+                // iU9-W14b.1: Die drei Bedarfs-Katalogverwaltungen sind EINE
+                // Razor-Komponente mit drei Auspraegungen; die Huelle waehlt sie
+                // ueber BedarfsArt. Die drei WinForms-Masken sind im selben Schritt
+                // GELOESCHT (Regel M1). Der Aufruf frm.SetControls("") entfaellt: Die
+                // Komponente laedt ihre Liste selbst, und ein Projekt hatten die drei
+                // Verwaltungen ohnehin nie.
                 case Masken.ProzesswaermeAdmin:
-                    using (Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Prozesswaerme);
 
                 case Masken.StromverbraucherAdmin:
-                    using (Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Stromverbraucher);
 
                 // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
                 // StromganglinieAdminDialog; die Huelle zeigt sie modal.
@@ -118,11 +116,7 @@ namespace WindowsFormsApplication1
                     }
 
                 case Masken.BrauchwasserAdmin:
-                    using (Form_Brauchwasser_Admin frm = new Form_Brauchwasser_Admin())
-                    {
-                        frm.SetControls("");
-                        return MitOk(frm);
-                    }
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
 
                 // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
                 // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
