@@ -1,4 +1,4 @@
-﻿# Öffner erreichbar — Befund aller Masken (03.09.2026)
+﻿# Öffner erreichbar — Befund aller Masken (03.09.2026, Zahlen nachgezogen 04.09.2026)
 
 Die **K6-Liste** für iU9: Welche der WinForms-Masken sind vom Einstieg der Anwendung aus
 überhaupt noch zu erreichen — und welche nicht? Erzeugt mit
@@ -23,6 +23,13 @@ sowie `Dienste.Navigation.OeffneMaske(Masken.X)` — der Schlüssel wird über d
 Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fenster gibt).
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
+
+> **Nachgezogen mit iU9‑W13** (04.09.2026): Die Tabellen unten stammen aus einem frischen
+> Stapellauf. Der Befund zählt jetzt **32 Masken, davon 31 erreichbar** — Welle 12 nahm fünf
+> (38), Welle 13 sechs weitere: die vier VDI‑3805‑Einlesemasken (sie werden EINE Razor-Komponente
+> mit vier Ausprägungen), die Wärmebedarfsverwaltung und den CEC‑Modulimport. Die eine
+> „unklar"-Maske bleibt `Form_PufferSp_Bearbeiten` (Welle 14a). Der erklärende Teil oben ist
+> unverändert.
 
 ## Stand nach iU9-W0 (Anwenderentscheid iF29)
 
@@ -196,11 +203,11 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 37 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 31 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 1 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 38 | |
+| gesamt | 32 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -210,14 +217,11 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 | Form_AdminPV | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV | `WindowsFormsApplication1/Views/Photovoltaik/Form_AdminPV.designer.cs` |
 | Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
 | Form_AdminStromspeicher | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.StromspeicherBearbeiten → Masken.StromspeicherAdmin → Form_AdminStromspeicher | `WindowsFormsApplication1/Views/Stromspeicher/Form_AdminStromspeicher.designer.cs` |
-| Form_AdminWaermeeinlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WaermebedarfExtern → Masken.WaermebedarfExternAdmin → Form_AdminWaermeeinlesen | `WindowsFormsApplication1/Views/Wärmebedarf/Form_AdminWaermeeinlesen.designer.cs` |
 | Form_BHKWAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.BHKW → Masken.BhkwAdmin → Form_BHKWAdmin | `WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.designer.cs` |
 | Form_Brauchwasser_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Brauchwasser → Masken.BrauchwasserAdmin → Form_Brauchwasser_Admin | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser_Admin.designer.cs` |
-| Form_CECImport | ja | MDIMainForm → MenuItem_PV_Import_CEC → Main_PV_Test | `WindowsFormsApplication1/Views/Photovoltaik/Form_CECImport.Designer.cs` |
 | Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
 | Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
 | Form_Heizkessel_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Kessel → Masken.HeizkesselAdmin → Form_Heizkessel_Admin | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.Designer.cs` |
-| Form_Heizkessel_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SPKImport → Masken.HeizkesselImport → Form_Heizkessel_einlesen | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_einlesen.designer.cs` |
 | Form_HelpPopup | ja | Form_Start → pBox_Heizkessel → Program.FillRoundedRectangle → Program.Main → HilfeAutomatik.Starten → HelpExtender.PopupBereitstellen → Form_HelpPopup | `WindowsFormsApplication1/Views/Help/Form_HelpPopup.Designer.cs` |
 | Form_Hinweis | ja | Form_Start → HinweisProjektGeoeffnet → Form_Hinweis | `WindowsFormsApplication1/Allgemein/Form_Hinweis.Designer.cs` |
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
@@ -228,17 +232,15 @@ Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
 | Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
 | Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
 | Form_PufferSp_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Admin.Designer.cs` |
-| Form_PufferSp_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSPImport → Masken.PufferSpImport → Form_PufferSp_einlesen | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_einlesen.designer.cs` |
 | Form_SolarKollektorenAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarkollektoren → Masken.SolarkollektorenAdmin → Form_SolarKollektorenAdmin | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektorenAdmin.designer.cs` |
-| Form_SolarKollektoren_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SolarThermieImport → Masken.SolarkollektorenImport → Form_SolarKollektoren_einlesen | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektoren_einlesen.designer.cs` |
 | Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
 | Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
-| Form_WP_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WPImport → Masken.WpImport → Form_WP_einlesen | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP_einlesen.designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
 | ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
 | WizardParent | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent | `WindowsFormsApplication1/Views/Wizard/WizardParent.designer.cs` |
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |
 | Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |
+

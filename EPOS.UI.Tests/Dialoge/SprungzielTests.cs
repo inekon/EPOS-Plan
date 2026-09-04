@@ -85,10 +85,16 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_zehn_Ziele_sind_da()
+    public void Alle_neun_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
-        Assert.Equal(10, Schluessel().Length);
+        //
+        // iU9-W13.2: Es sind NEUN statt zehn. WaermebedarfExternAdmin ist weg,
+        // weil das Ziel selbst Blazor geworden ist: WaermebedarfExternDialog zeigt
+        // die Verwaltung als Ueberlagerung im selben Fenster statt in einem
+        // zweiten WinForms-Fenster (Risiko R2). Die Sprungbruecke ist fuer
+        // WinForms-Ziele da - fuer ein Blazor-Ziel braucht es sie nicht.
+        Assert.Equal(9, Schluessel().Length);
     }
 }
