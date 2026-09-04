@@ -70,11 +70,11 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>P3 (Projektdialoge vereinheitlichen): „Öffnen" öffnet jetzt wirklich.</b>
-        /// Bis dahin zeigte dieser Menüweg <see cref="Form_ProjektSpeichernUnter"/>,
+        /// Bis dahin zeigte dieser Menüweg <c>Form_ProjektSpeichernUnter</c>,
         /// verlangte einen NEUEN Projektnamen und DUPLIZIERTE das Projekt; erst danach
         /// wurde das Ausgangsprojekt geöffnet. Duplizieren heißt jetzt ausschließlich
-        /// „Speichern unter…"; hier steht die neue <see cref="Form_ProjektAuswahl"/>
-        /// (Liste, Suche, Sortierung).
+        /// „Speichern unter…"; hier steht die Projektauswahl (seit iU9-W15a die
+        /// Razor-Komponente <c>ProjektWahlDialog</c>) mit Liste, Suche und Sortierung.
         /// </para>
         /// <para>
         /// <b>Ein Ladeweg statt zwei.</b> Die rund 40 Zeilen Set*/Add_*-Aufrufe standen
