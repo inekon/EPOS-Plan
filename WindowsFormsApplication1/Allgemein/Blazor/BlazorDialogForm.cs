@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -118,6 +119,112 @@ namespace WindowsFormsApplication1
         /// <summary>Kleinste sinnvolle Aussenmasse: darunter passt kein Dialogkopf mehr.</summary>
         private const int MIN_BREITE = 520;
         private const int MIN_HOEHE = 360;
+
+        // ==================================================================
+        //  Die vier Zusaetze fuer den BESITZERLOSEN Lauf (iU9-W15c.6)
+        // ==================================================================
+        //
+        // Bis W15c wurde jeder Blazor-Dialog aus einem offenen Fenster heraus
+        // gezeigt. Der Erststart und die Lizenzzustimmung laufen dagegen in
+        // Program.Main, VOR Application.Run - es gibt kein Besitzerfenster, weil es
+        // noch keines gibt. Form_Erststart (die Maske, die dabei faellt) weicht in
+        // genau vier Punkten von dieser Huelle ab; die vier stehen hier als Schalter
+        // mit dem HEUTIGEN Vorgabewert. Fuer die vorhandenen Aufrufer aendert sich
+        // dadurch nichts (Befund W15c-B8).
+
+        /// <summary>
+        /// Eintrag in der Taskleiste. Vorgabe <c>false</c> wie bisher; der
+        /// besitzerlose Erststart braucht <c>true</c> — ein minutenlanger Lauf ohne
+        /// Elternfenster und ohne Taskleisteneintrag ist nicht wiederzufinden, sobald
+        /// er einmal hinter einem anderen Fenster liegt.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool ImTaskbar
+        {
+            get => ShowInTaskbar;
+            set => ShowInTaskbar = value;
+        }
+
+        /// <summary>
+        /// Zentriert auf dem BILDSCHIRM statt auf dem Besitzer. Vorgabe <c>false</c>
+        /// (also <see cref="FormStartPosition.CenterParent"/> wie bisher).
+        /// </summary>
+        /// <remarks>
+        /// Ohne Besitzer verhält sich <c>CenterParent</c> bereits wie
+        /// <c>CenterScreen</c>; der Schalter macht die Absicht sichtbar und wählt bei
+        /// mehreren Schirmen ausdrücklich den, auf dem das Fenster erscheint.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool AufBildschirmMittig
+        {
+            get => StartPosition == FormStartPosition.CenterScreen;
+            set => StartPosition = value ? FormStartPosition.CenterScreen
+                                         : FormStartPosition.CenterParent;
+        }
+
+        /// <summary>
+        /// Sperrt Kreuz, Alt+F4 und Esc, solange ein Lauf nicht zu Ende ist —
+        /// dieselbe Absicherung wie <c>Form_Erststart:195-200</c> und <c>:212/:263</c>:
+        /// <c>ControlBox</c> aus UND ein Riegel in <see cref="Form.OnFormClosing"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum beides.</b> <c>ControlBox = false</c> nimmt das Kreuz weg, nicht
+        /// aber Alt+F4 und nicht den Weg über <c>Schliessen()</c> aus der Komponente.
+        /// Der Riegel fängt nur <see cref="CloseReason.UserClosing"/> — ein
+        /// Herunterfahren des Rechners oder ein <c>Application.Exit</c> bleibt
+        /// möglich, genau wie im Vorläufer. <b>Der Schalter gehört der KOMPONENTE</b>:
+        /// Sie weiß, wann der Lauf beginnt und endet, und meldet es über einen
+        /// <c>EventCallback&lt;bool&gt;</c> an die Hülle.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool SchliessenGesperrt
+        {
+            get => _schliessenGesperrt;
+            set
+            {
+                if (InvokeRequired)
+                {
+                    // Der Rueckkanal kommt aus dem Blazor-Verteiler, nicht zwingend
+                    // vom Oberflaechenfaden - dieselbe Weiche wie in Schliessen().
+                    BeginInvoke(new Action<bool>(v => SchliessenGesperrt = v), value);
+                    return;
+                }
+                _schliessenGesperrt = value;
+                if (!IsDisposed) ControlBox = !value;
+            }
+        }
+
+        private bool _schliessenGesperrt;
+
+        /// <summary>
+        /// Das Kleinstmaß des Fensters. Vorgabe 520 × 360 wie bisher; der
+        /// Erststart braucht 600 × 400, sonst wird sein Protokollfenster unlesbar.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst KEIN <c>new MinimumSize</c>: Eine geerbte Eigenschaft zu verdecken
+        /// ist eine Falle — wer die Hülle je über eine <see cref="Form"/>-Variable
+        /// hielte, setzte die andere. Dieser Name sagt, was gemeint ist, und schreibt
+        /// dieselbe Eigenschaft.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Size Mindestmass
+        {
+            get => MinimumSize;
+            set => MinimumSize = value;
+        }
+
+        /// <inheritdoc />
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // Waehrend eines Laufs gibt es kein Zurueck - weder ueber das Kreuz noch
+            // ueber Alt+F4. Woertlich aus Form_Erststart:196-200.
+            if (_schliessenGesperrt && e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                return;
+            }
+            base.OnFormClosing(e);
+        }
 
         /// <summary>
         /// Klemmt das gewuenschte Innenmass auf 92 % des Arbeitsbereichs des Bildschirms,
