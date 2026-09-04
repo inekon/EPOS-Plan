@@ -83,12 +83,13 @@ namespace WindowsFormsApplication1
                 case Masken.GebaeudetypenAdmin:
                     return GebaeudetypHuelle.Oeffnen(null);
 
+                // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien
+                // ist die Razor-Komponente WaermebedarfAdminDialog. Der
+                // Rueckgabewert sagt jetzt etwas: Beim Vorlaeufer war er IMMER
+                // false, weil btn_OK_Click nur ein Feld "result" setzte und nie
+                // this.DialogResult (Befund W13-B4).
                 case Masken.WaermebedarfExternAdmin:
-                    using (Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return WaermebedarfAdminHuelle.Oeffnen(null);
 
                 case Masken.ProzesswaermeAdmin:
                     using (Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin())

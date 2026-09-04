@@ -5409,6 +5409,63 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
   </data>
+  <data name="WBAD_BTN_ANZEIGEN" xml:space="preserve">
+    <value>Inhalt anzeigen...</value>
+  </data>
+  <data name="WBAD_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="WBAD_BTN_DATEI" xml:space="preserve">
+    <value>Datei Auswählen...</value>
+  </data>
+  <data name="WBAD_BTN_EINLESEN" xml:space="preserve">
+    <value>Datei in DB Einlesen...</value>
+  </data>
+  <data name="WBAD_BTN_LOESCHEN" xml:space="preserve">
+    <value>DB Ganglinie Löschen</value>
+  </data>
+  <data name="WBAD_DATEIFILTER" xml:space="preserve">
+    <value>(*.txt)|*.txt</value>
+  </data>
+  <data name="WBAD_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Die Ganglinie "{0}" aus dem Katalog löschen?</value>
+  </data>
+  <data name="WBAD_GRP_EINLESEN" xml:space="preserve">
+    <value>Datei einlesen</value>
+  </data>
+  <data name="WBAD_LBL_KATALOG" xml:space="preserve">
+    <value>Ganglinien aus DB</value>
+  </data>
+  <data name="WBAD_LBL_ORDNER" xml:space="preserve">
+    <value>Datei Basis Ordner:</value>
+  </data>
+  <data name="WBAD_LBL_STUNDENWERTE" xml:space="preserve">
+    <value>Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen '.')</value>
+  </data>
+  <data name="WBAD_MSG_ABLAGE" xml:space="preserve">
+    <value>Die Originaldatei konnte nicht in den Anwenderordner kopiert werden: {0}</value>
+  </data>
+  <data name="WBAD_MSG_AUSGELASSEN" xml:space="preserve">
+    <value>Die Ganglinie wurde nicht eingelesen.</value>
+  </data>
+  <data name="WBAD_MSG_GELOESCHT" xml:space="preserve">
+    <value>Die Ganglinie "{0}" wurde gelöscht.</value>
+  </data>
+  <data name="WBAD_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die Ganglinie "{0}" wurde mit {1} Werten eingelesen.</value>
+  </data>
+  <data name="WBAD_MSG_PROJEKTZUORDNUNG" xml:space="preserve">
+    <value>Es existiert eine Projektzuordnung, Löschen nicht möglich!</value>
+  </data>
+  <data name="WBAD_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Die Ganglinie konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="WBAD_SPALTE_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="WBAD_TITEL" xml:space="preserve">
+    <value>Wärmebedarf Ganglinie</value>
+  </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>

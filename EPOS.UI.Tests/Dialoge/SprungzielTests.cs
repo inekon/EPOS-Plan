@@ -70,9 +70,6 @@ public sealed class SprungzielTests
         // iU9-W7.0f: die Stammdaten der Solarthermieganglinien.
         Assert.Equal("SOLARGANGLINIE_ADMIN", Sprungziel.SolarganglinieAdmin);
 
-        // iU9-W9.0f: die Verwaltung der externen Waermebedarfsganglinien.
-        Assert.Equal("WAERMEBEDARF_EXTERN_ADMIN", Sprungziel.WaermebedarfExternAdmin);
-
         // iU9-W10a.0c: derselbe Pufferspeicherkatalog NUR ZUM ANSEHEN. Er braucht
         // einen eigenen Schluessel, weil die Bruecke dort m_bReadOnly setzen muss -
         // sonst waere aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs

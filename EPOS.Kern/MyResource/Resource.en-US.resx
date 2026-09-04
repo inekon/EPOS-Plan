@@ -5393,6 +5393,63 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_VORSCHAU_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="WBAD_BTN_ANZEIGEN" xml:space="preserve">
+    <value>Show content...</value>
+  </data>
+  <data name="WBAD_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WBAD_BTN_DATEI" xml:space="preserve">
+    <value>Select file...</value>
+  </data>
+  <data name="WBAD_BTN_EINLESEN" xml:space="preserve">
+    <value>Read file into DB...</value>
+  </data>
+  <data name="WBAD_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete DB curve</value>
+  </data>
+  <data name="WBAD_DATEIFILTER" xml:space="preserve">
+    <value>(*.txt)|*.txt</value>
+  </data>
+  <data name="WBAD_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the curve "{0}" from the catalogue?</value>
+  </data>
+  <data name="WBAD_GRP_EINLESEN" xml:space="preserve">
+    <value>Read file</value>
+  </data>
+  <data name="WBAD_LBL_KATALOG" xml:space="preserve">
+    <value>Curves from DB</value>
+  </data>
+  <data name="WBAD_LBL_ORDNER" xml:space="preserve">
+    <value>File base folder:</value>
+  </data>
+  <data name="WBAD_LBL_STUNDENWERTE" xml:space="preserve">
+    <value>Hourly values over 1 year as a text file (decimal separator '.')</value>
+  </data>
+  <data name="WBAD_MSG_ABLAGE" xml:space="preserve">
+    <value>The original file could not be copied to the user folder: {0}</value>
+  </data>
+  <data name="WBAD_MSG_AUSGELASSEN" xml:space="preserve">
+    <value>The curve was not imported.</value>
+  </data>
+  <data name="WBAD_MSG_GELOESCHT" xml:space="preserve">
+    <value>The curve "{0}" was deleted.</value>
+  </data>
+  <data name="WBAD_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The curve "{0}" was imported with {1} values.</value>
+  </data>
+  <data name="WBAD_MSG_PROJEKTZUORDNUNG" xml:space="preserve">
+    <value>A project assignment exists, deletion is not possible!</value>
+  </data>
+  <data name="WBAD_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The curve could not be saved.</value>
+  </data>
+  <data name="WBAD_SPALTE_BEZEICHNER" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="WBAD_TITEL" xml:space="preserve">
+    <value>Heat requirement</value>
+  </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
   </data>
