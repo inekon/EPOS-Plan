@@ -289,6 +289,12 @@ Zusatzfrage: Braucht die Übersicht überhaupt zwei Restwärmezahlen — die
 Bilanzgröße `sim.Restwaerme` (Feld „Restwärmebedarf") **und** die Anzeigegröße
 des Ergebnisblocks? W11b könnte auf die erste allein zurückfallen.
 
+**Entscheid (Anwender, 04.09.2026):** Der Restwärmebedarf ist in **beiden** Ansichten derselbe
+Wert, das BHKW wird berücksichtigt. Eine negative Restwärme darf **rechnerisch nicht entstehen** —
+sie zeigt eine falsche Zuordnung zu den Erzeugern. Umsetzung in W11b: eine Restwärmezahl
+(`sim.Restwaerme`, die Bilanzgröße des Laufs), „Wärme gesamt“ als Summe der **Deckung** je
+Erzeuger statt der Produktion; Überschuss ist Überschuss, nicht negative Restwärme.
+
 > **Entscheid des Anwenders vom 04.09.2026, umgesetzt in iU9‑W11b:**
 > (1) Der Restwärmebedarf ist in **beiden** Ansichten derselbe Wert, und das BHKW
 > zählt mit. (2) Eine **negative Restwärme darf rechnerisch nicht entstehen** — sie
@@ -323,6 +329,10 @@ geführt werden (g/MWh je Brennstoffverbrauch). **Zu prüfen:** Gilt 0,42 kg/kWh
 noch für den deutschen Strommix, und ist 0,20 kg/kWh die richtige verdrängte
 Wärme (Erdgas Hu ≈ 0,20; Heizöl ≈ 0,27)? Beide sind jetzt an einer Stelle
 änderbar.
+
+**Entscheid (Anwender, 04.09.2026):** Die CO₂-Faktoren sollen aus einem **Katalog je
+Energieträger** wählbar, erweiterbar und änderbar sein; die heutigen Zahlenwerte sind nicht
+relevant. Eigener Folgeschritt (Emissionskatalog aus W3 als Quelle prüfen), nach W11b.
 
 ### W11a‑O‑3 — Zusammenführung der Berichtsbilder
 
