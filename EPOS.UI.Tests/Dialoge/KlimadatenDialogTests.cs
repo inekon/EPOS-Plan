@@ -10,7 +10,7 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Die Klimaregionen (iU9-W14c.7). Soll ist die Feldkarte der gelöschten Maske
+/// Die Klimadaten (iU9-W14c.7, Entscheid E-3). Soll ist die Feldkarte der gelöschten Maske
 /// <c>Form_Klimadaten</c> (27 Steuerelemente, drei Ebenen tief): Regionsliste,
 /// Löschknopf, Ortsfeld mit freier Eingabe, Longitude/Latitude/Bezeichnung, der
 /// Importknopf mit Fortschrittsbalken, zwei Reiter mit je einem Diagramm und das
@@ -18,18 +18,18 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
-public class KlimaregionDialogTests : BunitContext
+public class KlimadatenDialogTests : BunitContext
 {
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
 
-    private static List<KlimaregionDialog.Regionszeile> Regionen() => new()
+    private static List<KlimadatenDialog.Regionszeile> Regionen() => new()
     {
         new("Berlin", false),
         new("Stuttgart", false),
         new("Auslieferung Nord", true)
     };
 
-    public KlimaregionDialogTests()
+    public KlimadatenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         DeutscheOberflaeche();
@@ -45,20 +45,20 @@ public class KlimaregionDialogTests : BunitContext
         Thread.CurrentThread.CurrentUICulture = de;
     }
 
-    private IRenderedComponent<KlimaregionDialog> Zeige(
-        List<KlimaregionDialog.Regionszeile>? regionen = null,
-        Func<string, Task<KlimaregionDialog.Regionsansicht>>? ansicht = null,
+    private IRenderedComponent<KlimadatenDialog> Zeige(
+        List<KlimadatenDialog.Regionszeile>? regionen = null,
+        Func<string, Task<KlimadatenDialog.Regionsansicht>>? ansicht = null,
         Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? importieren = null,
         Action? abbrechen = null,
         Func<string, Task<bool>>? loeschen = null,
         IReadOnlyList<string>? orte = null,
         Action<bool>? geschlossen = null)
     {
-        List<KlimaregionDialog.Regionszeile> liste = regionen ?? Regionen();
-        return Render<KlimaregionDialog>(p => p
+        List<KlimadatenDialog.Regionszeile> liste = regionen ?? Regionen();
+        return Render<KlimadatenDialog>(p => p
             .Add(x => x.Regionen, () => Task.FromResult(liste))
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
-                new KlimaregionDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
+                new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
             .Add(x => x.Importieren, importieren ?? ((_, _) => Task.FromResult(
                 new KlimaImportErgebnis
                 {
@@ -137,7 +137,7 @@ public class KlimaregionDialogTests : BunitContext
         var cut = Zeige(ansicht: n =>
         {
             gefragt = n;
-            return Task.FromResult(new KlimaregionDialog.Regionsansicht(
+            return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                 "PVGIS-SARAH3", 13.4, 52.5, BILD, BILD, ""));
         });
 
@@ -166,7 +166,7 @@ public class KlimaregionDialogTests : BunitContext
     public void Eine_Region_ohne_Stundenwerte_meldet_sich_statt_abzubrechen()
     {
         var cut = Zeige(ansicht: _ => Task.FromResult(
-            new KlimaregionDialog.Regionsansicht("", null, null, null, null,
+            new KlimadatenDialog.Regionsansicht("", null, null, null, null,
                                                  "Für diese Region liegen keine Stundenwerte vor.")));
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();

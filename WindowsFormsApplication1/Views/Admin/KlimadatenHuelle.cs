@@ -13,7 +13,15 @@ using SkiaSharp;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Klimaregionen (iU9-W14c.7).
+    /// Die WINDOWS-HÜLLE der Klimadaten (iU9-W14c.7).
+    ///
+    /// <para><b>Sie heisst wieder KLIMADATEN</b> (Entscheid E-3, Anwender 04.09.2026:
+    /// „Klimaregion ist eigentlich für Deutschland gedacht, Klimadaten für den
+    /// Download weltweit mit TMY-Daten."). Der Menütext heisst „Klimadaten", die
+    /// Komponente ebenso. <b>KLIMAREGION</b> meint dagegen die DEUTSCHEN
+    /// Klimaregionen (Klimazonenkarte, Projektbezug über <c>ID_Klimaregion</c>) —
+    /// <see cref="KlimaregionStammCtrl"/>, <c>Tab_Klimaregion_STAMM</c> und
+    /// <c>KlimazonenkarteDialog</c> behalten ihren Namen.</para>
     ///
     /// <para><b>Die Datenbank-, Netz- und Rechenseite steht hier</b>, nicht in der
     /// Komponente: die Regionsliste aus <see cref="KlimaregionStammCtrl"/> (seit
@@ -38,7 +46,7 @@ namespace WindowsFormsApplication1
     /// einer frischen Installation öffnete die Maske deshalb NICHT. Fehlt sie, bleibt
     /// die Liste leer; das Feld erlaubt ohnehin freie Eingabe.</para>
     /// </summary>
-    internal static class KlimaregionHuelle
+    internal static class KlimadatenHuelle
     {
         /// <summary>Gewünschtes Innenmaß (Vorläufer: 757 × 641).</summary>
         private static readonly Size MASS = new Size(1180, 780);
@@ -53,7 +61,7 @@ namespace WindowsFormsApplication1
         private static CancellationTokenSource _abbruch;
 
         /// <summary>
-        /// Zeigt die Klimaregionen als eigenes Fenster — der Weg von
+        /// Zeigt die Klimadaten als eigenes Fenster — der Weg von
         /// <c>MDIMainForm.MenuItem_Klimadaten_Click</c>.
         ///
         /// <para><b>Mit Besitzer und in einem <c>using</c></b> (Befund W14c-B34).</para>
@@ -61,7 +69,7 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer)
         {
             bool ok = false;
-            BlazorDialogForm<KlimaregionDialog> dlg = null;
+            BlazorDialogForm<KlimadatenDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(Gaben())
             {
@@ -72,7 +80,7 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<KlimaregionDialog>(
+            dlg = new BlazorDialogForm<KlimadatenDialog>(
                 MyResource.Resource.KLIMA_TITEL, MASS, werte);
 
             using (dlg)
@@ -87,8 +95,8 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Regionen"] = new Func<Task<List<KlimaregionDialog.Regionszeile>>>(RegionenLesen),
-                ["Ansicht"] = new Func<string, Task<KlimaregionDialog.Regionsansicht>>(Ansicht),
+                ["Regionen"] = new Func<Task<List<KlimadatenDialog.Regionszeile>>>(RegionenLesen),
+                ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
@@ -101,14 +109,14 @@ namespace WindowsFormsApplication1
         // Liste und Ansicht
         // =====================================================================
 
-        private static Task<List<KlimaregionDialog.Regionszeile>> RegionenLesen()
+        private static Task<List<KlimadatenDialog.Regionszeile>> RegionenLesen()
         {
             var ctrl = new KlimaregionStammCtrl();
             ctrl.ReadAll();
 
-            var liste = new List<KlimaregionDialog.Regionszeile>(ctrl.rows);
+            var liste = new List<KlimadatenDialog.Regionszeile>(ctrl.rows);
             for (int i = 0; i < ctrl.rows; i++)
-                liste.Add(new KlimaregionDialog.Regionszeile(ctrl.items[i].m_szName,
+                liste.Add(new KlimadatenDialog.Regionszeile(ctrl.items[i].m_szName,
                                                              ctrl.items[i].m_bReadOnly));
             return Task.FromResult(liste);
         }
@@ -121,20 +129,20 @@ namespace WindowsFormsApplication1
         /// elements", sobald eine Region keine Zeilen in <c>Tab_Solar_STAMM</c> hatte —
         /// etwa nach einem abgebrochenen Import.</para>
         /// </summary>
-        private static Task<KlimaregionDialog.Regionsansicht> Ansicht(string name)
+        private static Task<KlimadatenDialog.Regionsansicht> Ansicht(string name)
         {
             var region = new KlimaregionStammCtrl();
             region.ReadByName(name ?? "");
 
             if (region.m_ID_Klimaregion <= 0)
-                return Task.FromResult(new KlimaregionDialog.Regionsansicht(
+                return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                     "", null, null, null, null, MyResource.Resource.KLIMA_MSG_KEINE_DATEN));
 
             var solar = new SolardatenCtrl();
             solar.ReadAllStamm(region.m_ID_Klimaregion);
 
             if (solar.list_Temperatur == null || solar.list_Temperatur.Count == 0)
-                return Task.FromResult(new KlimaregionDialog.Regionsansicht(
+                return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                     region.Details ?? "", region.Longitude, region.Latitude, null, null,
                     MyResource.Resource.KLIMA_MSG_KEINE_DATEN));
 
@@ -163,7 +171,7 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.KLIMA_ACHSE_SONNENWINKEL,
                 minimumNull: true);
 
-            return Task.FromResult(new KlimaregionDialog.Regionsansicht(
+            return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                 region.Details ?? "", region.Longitude, region.Latitude, temperatur, winkel, ""));
         }
 
