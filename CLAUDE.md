@@ -33,8 +33,14 @@ mit 21 Kacheln, Fußleiste; `MDIMainForm` hängt sie als `BlazorSeite<Startseite
 Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zwei
 Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
 Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
-`WindowsFormsApplication1` führt seither **zwei** Masken (`MDIMainForm`, `Form_HelpPopup`) und
-**null** Inline-SQL.
+**Seit iU9‑W16c ist auch das HAUPTFENSTER eine Razor-Seite**
+(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 54 Punkten aus der erzeugten
+`Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter `AppWurzel` — **die
+gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel, zwei Schalen).
+`MDIMainForm` ist seither die **Hülle ohne Designer** (129 Zeilen); die Anwendung läuft
+„Per Monitor V2" (E‑6 / iF21), die `DpiInsel` ist gefallen. `WindowsFormsApplication1` führt
+damit **eine** Maske (`Form_HelpPopup`, bleibt bis iU11), **keine Fachmaske** und **null**
+Inline-SQL — die Mischphase ist zu Ende (M9).
 **Arbeitsregel seit dem Stichtag iZ5: Jeder neue und jeder ohnehin anzufassende Dialog entsteht
 als Razor-Komponente in `EPOS.UI`, seine WinForms-Fassung wird im selben Schritt gelöscht** —
 nie zwei Fassungen derselben Maske. Die Datenbankseite gehört dabei in einen Controller im Kern,

@@ -401,6 +401,42 @@ Die Entscheidung wirkt weit: **Alles Nicht-Modale** der kommenden Wellen hängt
 daran — W10b und W11 (Simulationskonfiguration und Simulationsergebnis) ebenso
 wie W16 (Startmaske), mit der die Bitmapskalierung fällt.
 
+### 12.1 iF21 ist eingelöst — Per Monitor V2 seit iU9‑W16c.4 (04.09.2026)
+
+**Der Entscheid E‑6 der Welle 16 ist umgesetzt.** `app.manifest` trägt
+`dpiAware=true/pm` und `dpiAwareness=PerMonitorV2`, `Program.Main` setzt
+`HighDpiMode.PerMonitorV2`. Die `DpiInsel` in `BlazorDialogForm` ist im selben
+Schritt **gelöscht** — samt den zwei `ShowDialog`-Überladungen, die sie
+umschlossen: Ein Fenster, das ohnehin im richtigen Kontext entsteht, braucht
+keine Insel.
+
+**Warum es jetzt geht.** Der Grund für `DpiUnaware` waren die fest gerechneten
+Pixelkoordinaten der gewachsenen WinForms-Masken. Nach Welle 16 gibt es sie
+nicht mehr: Die Oberfläche ist eine Razor-Seite in einer WebView und rechnet in
+relativen Einheiten; es bleiben `Form_HelpPopup` (eine Sprechblase ohne feste
+Größe, bis iU11) und die DPI-freie Hülle `MDIMainForm` (129 Zeilen).
+
+**Der Gerätebefund steht aus** — auf Linux ist nur der Bau prüfbar. Abzunehmen
+bei **100 / 125 / 150 %**, jeweils nach einem Neustart:
+
+1. **Menüband und Kopfband** — erwartet: scharf, keine Bitmapskalierung.
+2. **Startseite mit ihren 21 Kacheln** und den sechs Reitern — erwartet:
+   scharf; die Kacheln brechen um, statt zu skalieren (das Raster ist
+   `auto-fit`/`minmax`, es gibt keine feste Fläche mehr).
+3. **Ein modaler Blazor-Dialog** (z. B. Menü → Administration → Kosten →
+   Kostenverwaltung…) — erwartet: scharf wie vorher; die Insel fehlt, der
+   Prozesskontext ersetzt sie.
+4. **`Form_HelpPopup`** (die letzte Designer-Maske: Hilfe-Sprechblase an einem
+   `InfoKnopf`) — erwartet: scharf und richtig platziert. **Das ist der
+   Punkt, an dem eine echte Abweichung auftreten könnte**: Sie ist die einzige
+   Maske, die von der Umstellung betroffen ist.
+5. **`Form_SpeicherOptimierung`** (iF22, ScottPlot, über die `Sprungbruecke`
+   aus der Ergebnisseite) — erwartet: scharf; die ScottPlot-Fläche rechnet in
+   Gerätepunkten.
+6. **Bildschirmwechsel im Betrieb** (zwei Monitore mit verschiedener
+   Skalierung, Fenster hinüberziehen) — das ist der eigentliche Gewinn von
+   „Per Monitor V2" und war unter `DpiUnaware` gar nicht möglich.
+
 ## 13. Offene Punkte aller zehn Wellen (Kurzfassung)
 
 | Welle | offen | Kurz |

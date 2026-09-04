@@ -48,7 +48,16 @@
                     <span class="epos-hauptfenster-name">@Produktname</span>
                     <span class="epos-hauptfenster-untertitel">@Gattung&nbsp; · &nbsp;@Claim</span>
                 </div>
-                <span class="epos-hauptfenster-version">@VersionText</span>
+                <div class="epos-hauptfenster-rechts">
+                    @* Die FENSTERHILFE (offener Punkt W16b-O-4). Im Bestand sass sie
+                       als Form_Start.btn_Help oberhalb des gesamten Reiterwerks und
+                       meinte den Ablauf des PROGRAMMS, nicht die Startseite (Befund
+                       W16b-B5); ihr Ziel in help_mapping.txt ist "Programmablauf".
+                       Hier steht sie im Kopfband des Fensters - an derselben Stelle
+                       im Aufbau, nur eine Ebene hoeher. *@
+                    <InfoKnopf Schluessel="@HilfeSchluessel" />
+                    <span class="epos-hauptfenster-version">@VersionText</span>
+                </div>
             </header>
         </Kopfleiste>
     </AppWurzel>
@@ -91,6 +100,13 @@
 
     /// <summary>Die fertige Versionszeile, z. B. „Version 1.0.0.0".</summary>
     [Parameter] public string VersionText { get; set; } = "";
+
+    /// <summary>
+    /// Der Hilfeschluessel der FENSTERHILFE — im Bestand
+    /// <c>Form_Start.btn_Help</c>, Ziel „Programmablauf" (offener Punkt
+    /// W16b-O-4).
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Hauptfenster.btn_Help";
 
     // =====================================================================
     //  Die Wurzel

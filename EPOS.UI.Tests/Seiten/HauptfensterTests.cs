@@ -105,6 +105,19 @@ public class HauptfensterTests : BunitContext
     }
 
     [Fact]
+    public void Das_Kopfband_traegt_die_Fensterhilfe()
+    {
+        // Offener Punkt W16b-O-4: Form_Start.btn_Help war der Knopf des
+        // FENSTERS (Befund W16b-B5) - er sass oberhalb des Reiterwerks und
+        // meinte den Ablauf des Programms. Sein Ziel in help_mapping.txt ist
+        // "Programmablauf"; hier traegt ihn das Kopfband.
+        var cut = Fenster();
+
+        Assert.Single(cut.FindAll(".epos-hauptfenster-marke .epos-infoknopf"));
+        Assert.Equal("Hauptfenster.btn_Help", cut.Instance.HilfeSchluessel);
+    }
+
+    [Fact]
     public void Das_Menueband_steht_ueber_jeder_Ansicht()
     {
         // Unter Windows verschwindet das Menue nie - auch nicht, wenn die
