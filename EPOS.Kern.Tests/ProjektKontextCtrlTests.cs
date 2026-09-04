@@ -267,6 +267,111 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Der Projektwechsel-Nachweis zu Risiko R-W16-4</b> (Vermessung § 16.3):
+        /// Ein Wechsel 1030 → 1007 → 1030 lässt BEIDE Projekte inhaltlich stehen.
+        ///
+        /// <para><b>Warum es ihn gibt.</b> Bis W16b hing „welches Projekt ist offen"
+        /// an einem Feld der Startmaske. Blieb es beim Wechsel auf dem vorherigen
+        /// Projekt stehen, schrieben die Kacheln anschließend in das FALSCHE Projekt —
+        /// das ist der historische „Befund 3" der Startmaske und das Risiko, das die
+        /// ganze Teilwelle trägt. Der Referenzlauf sieht davon nichts: Er RECHNET
+        /// einen bestehenden Stand nach, er wechselt kein Projekt.</para>
+        ///
+        /// <para>Verglichen wird der INHALT beider Projekte: Zählstand der sieben
+        /// Zuordnungstabellen, die Bitmaske des Kerns und die Anlagenbezeichner —
+        /// dieselben drei Maße wie im Speicherweg-Nachweis des Assistenten
+        /// (<c>AssistentCtrlTests</c>, R-W16-6).</para>
+        ///
+        /// <para>Auf einer EIGENEN Arbeitskopie: <c>Uebernehmen</c> schreibt
+        /// <c>Tab_Applikation</c> fort.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Projektwechsel_schreibt_in_kein_falsches_Projekt()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                IProjektKontext vorher = Dienste.Projekt;
+                try
+                {
+                    ProjektKontextCtrl k = new ProjektKontextCtrl();
+                    Dienste.Projekt = k;
+
+                    Dictionary<string, int> stand1030 = Zaehlstand(ID_1030);
+                    Dictionary<string, int> stand1007 = Zaehlstand(ID_1007);
+                    int maske1030 = KomponentenBestandCtrl.Lesen(ID_1030).Bitmaske;
+                    int maske1007 = KomponentenBestandCtrl.Lesen(ID_1007).Bitmaske;
+                    string[] anlagen1030 = Anlagen(ID_1030);
+                    string[] anlagen1007 = Anlagen(ID_1007);
+
+                    // 1030 oeffnen - rechnen wuerde die Startseite hier.
+                    Assert.True(k.Uebernehmen(0, NAME_1030));
+                    Assert.Equal(ID_1030, Dienste.Projekt.Id);
+                    Assert.Equal(KLIMA_1030, Dienste.Projekt.Klimazone);
+                    Assert.Equal((NAME_1030, ID_1030), ProjektKontextCtrl.ZuletztGeoeffnet());
+
+                    // Auf 1007 wechseln.
+                    Assert.True(k.Uebernehmen(0, NAME_1007));
+                    Assert.Equal(ID_1007, Dienste.Projekt.Id);
+                    Assert.Equal(KLIMA_1007, Dienste.Projekt.Klimazone);
+                    Assert.Equal((NAME_1007, ID_1007), ProjektKontextCtrl.ZuletztGeoeffnet());
+
+                    // Und zurueck.
+                    Assert.True(k.Uebernehmen(0, NAME_1030));
+                    Assert.Equal(ID_1030, Dienste.Projekt.Id);
+                    Assert.Equal(KLIMA_1030, Dienste.Projekt.Klimazone);
+
+                    // BEIDE Projekte stehen inhaltlich unveraendert.
+                    Assert.Equal(stand1030, Zaehlstand(ID_1030));
+                    Assert.Equal(stand1007, Zaehlstand(ID_1007));
+                    Assert.Equal(maske1030, KomponentenBestandCtrl.Lesen(ID_1030).Bitmaske);
+                    Assert.Equal(maske1007, KomponentenBestandCtrl.Lesen(ID_1007).Bitmaske);
+                    Assert.Equal(anlagen1030, Anlagen(ID_1030));
+                    Assert.Equal(anlagen1007, Anlagen(ID_1007));
+
+                    // Und die Bitmasken der beiden sind verschieden - sonst waere der
+                    // Vergleich oben wertlos.
+                    Assert.NotEqual(maske1030, maske1007);
+                }
+                finally { Dienste.Projekt = vorher; }
+            }
+        }
+
+        /// <summary>Die sieben Zuordnungstabellen eines Projekts, je Zählstand.</summary>
+        private static readonly string[] TABELLEN =
+        {
+            "Z_ProjektGebaeude", "Z_ProjektWaermebedarf", "Z_Projekt_Prozesswaerme",
+            "Z_Projekt_Brauchwasser", "Z_Projekt_Stromverbraucher",
+            "Z_ProjektStromganglinie", "Tab_Energieanlagen"
+        };
+
+        private static Dictionary<string, int> Zaehlstand(int idProjekt)
+        {
+            Dictionary<string, int> stand = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (string t in TABELLEN)
+            {
+                object v = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + t + " WHERE ID_Projekt = ?",
+                    new DbParam("@id", idProjekt));
+                stand[t] = v == null ? 0 : Convert.ToInt32(v);
+            }
+            return stand;
+        }
+
+        private static string[] Anlagen(int idProjekt)
+        {
+            WErzeugerCtrl ctrl = new WErzeugerCtrl();
+            ctrl.ReadAllFilter("ID_Projekt=" + idProjekt);
+
+            List<string> namen = new List<string>();
+            for (int i = 0; i < ctrl.rows; i++)
+                namen.Add(ctrl.items[i].ID_Type + ":" + (ctrl.items[i].Bezeichner ?? ""));
+            namen.Sort(StringComparer.Ordinal);
+            return namen.ToArray();
+        }
+
+        /// <summary>
         /// Ein gescheitertes <c>Uebernehmen</c> fasst <c>Tab_Applikation</c> nicht an —
         /// sonst zeigte die Kachel „Zuletzt geöffnet" auf ein Projekt, das nie geöffnet
         /// wurde.
