@@ -2051,3 +2051,135 @@ body {
 
     .epos-speicherkachel-marke { stroke: CanvasText; }
 }
+
+/* =====================================================================
+   Die Seite „Simulationskonfiguration" (iU9-W10b.1)
+
+   Der Vorlaeufer rechnete Kopfzeile, Spaltenverhaeltnis 61,5/38,5,
+   Fusszeilenhoehe 82 px und die Lage jedes Schalters von Hand aus. Hier
+   macht das ein Raster mit zwei Spalten und eine Flexbox darunter.
+   ===================================================================== */
+
+.epos-simkonfig {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.epos-simkonfig-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-simkonfig-titel { font-weight: 600; color: var(--epos-text); }
+
+.epos-simkonfig-ansicht {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-simkonfig-ansichtlabel { color: var(--epos-text-leise); }
+
+.epos-simkonfig-ansichtknopf {
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
+    padding: 5px 14px;
+    min-height: 32px;
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+}
+
+.epos-simkonfig-schalter--aktiv {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen);
+    color: var(--epos-text);
+    font-weight: 600;
+}
+
+/* Der Sperrzustand (ADR-001): alles gesperrt, die Seite bleibt schliessbar -
+   deshalb sitzt das fieldset UM den Inhalt und nicht um die Fusszeile. */
+.epos-simkonfig-bereich {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+/* Spaltenverhaeltnis 61,5 % / 38,5 % - dieselben Zahlen wie im
+   TableLayoutPanel des Vorlaeufers. Unter 900 px stehen die Spalten
+   untereinander; der Vorlaeufer konnte das nicht. */
+.epos-simkonfig-spalten {
+    display: grid;
+    grid-template-columns: 61.5fr 38.5fr;
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .epos-simkonfig-spalten { grid-template-columns: 1fr; }
+}
+
+.epos-simkonfig-erzeuger,
+.epos-simkonfig-speicher {
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-gruppe {
+    margin: 10px 0 4px 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-simkonfig-hinweis {
+    margin: 2px 0 6px 0;
+    color: var(--epos-text-leise);
+}
+
+/* Der Textschalter am Spaltenende (Abnahmebefund 1) - im Vorlaeufer ein
+   Label in der Quellfarbe mit Handzeiger. */
+.epos-simkonfig-verfuegbar {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    padding: 8px 0 4px 0;
+    font-size: var(--epos-schriftgroesse);
+    text-align: left;
+}
+
+.epos-simkonfig-fuss {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+.epos-simkonfig-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-karte-rand);
+}
+
+/* Die Auswahlueberlagerung der Waermequelle: ein Knopf je Zweig statt der
+   aufklappenden Liste des Vorlaeufers (die im Browser kein Gegenstueck hat). */
+.epos-simkonfig-quellenwahl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 280px;
+}
+
+.epos-simkonfig-quellenwahl .epos-knopf { text-align: left; }

@@ -312,9 +312,9 @@ Form_Emissionskatalog.btn_Help = Emissionen
 #    Eingabefeld selbst.
 #
 # 3. NUR SICHTBARE Steuerelemente. Stillgelegtes bleibt aussen vor -
-#    Form_Simulation_Config.groupBox_Tools/groupBox_PufferSp/label12/label21
-#    (AltSteuerelementeStilllegen), Wizard_WPItem.groupBox1 und die entfernten
-#    Modulkostenfelder.
+#    Wizard_WPItem.groupBox1 und die entfernten Modulkostenfelder. (Die vier
+#    stillgelegten Steuerelemente von Form_Simulation_Config sind mit der Maske
+#    selbst gefallen - iU9-W10b.1.)
 #
 # 4. EIN Anker darf mehrfach vorkommen. Drei Schwellenbeschriftungen zeigen
 #    bewusst auf denselben Stichpunkt; zwei Ferien-Gruppen ebenso.
@@ -330,19 +330,17 @@ Form_Emissionskatalog.btn_Help = Emissionen
 # ---------------------------------------------------------------------------
 
 # --- Simulation: Form_Simulation_Config -----------------------------------
-# label11 ist die einzige sichtbare Ueberschrift der Maske; die beiden
-# Kartenspalten flow_Erzeuger/flow_Speicher sind die eigentliche Bedienflaeche
-# (D2-Umbau). Quellprofil, Waermequelle und Betriebsmodus sitzen auf den
-# ErzeugerKarten - die sind UserControls OHNE Namen und damit heute nicht
-# ansprechbar (Befund, siehe H12-Protokoll).
-Form_Simulation_Config.label11        = Simulation#erzeuger-und-speicher
-Form_Simulation_Config.flow_Erzeuger  = Simulation#erzeugerliste
-Form_Simulation_Config.flow_Speicher  = Simulation#puffer-zuordnung
-Form_Simulation_Config.label_Ansicht  = Simulation#ansicht
-# panel_Schema (SchemaAnsicht) BEWUSST NICHT: die Zeichenflaeche ist bedienbar -
-# Klick waehlt einen Knoten, Ueberfahren zeigt einen eigenen Knotenhinweis und
-# wechselt den Zeiger (SchemaAnsicht.OnMouseDown/OnMouseMove). Ein angeheftetes
-# Hilfepopup laege der Bedienung im Weg. Regel 2 dieses Blocks.
+#
+# iU9-W10b.1: DIE VIER FELDZEILEN SIND ENTFALLEN. Sie sprachen label11,
+# flow_Erzeuger, flow_Speicher und label_Ansicht an - WinForms-Steuerelemente
+# einer Maske, die es nicht mehr gibt; der HelpExtender haengt sich an
+# Control.Name und findet in einer WebView keinen. Die Seite traegt ihren
+# Infoknopf im Fluss ihres Inhalts (Baustein InfoKnopf) und zeigt damit
+# dieselbe Wikiseite wie btn_Help oben.
+#
+# Die Zeile Form_Simulation_Config.btn_Help (oben) BLEIBT: Der Schluessel
+# benennt die Wikiseite, nicht die Formularklasse - dieselbe Regel wie bei den
+# sieben Dialogen der Welle 10a.
 
 # --- Simulation: Form_Waermesenke -----------------------------------------
 # Die Maske baut ihre Oberflaeche im Code auf und vergab bisher keine Namen;

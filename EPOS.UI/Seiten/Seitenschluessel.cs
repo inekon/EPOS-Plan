@@ -22,4 +22,12 @@ public static class Seitenschluessel
 
     /// <summary>Der Dialog „BHKW-Wirtschaftlichkeit" (<c>BhkwWirtschaftlichkeitDialog</c>).</summary>
     public const string BhkwWirtschaftlichkeit = "BHKW_WIRTSCHAFTLICHKEIT";
+
+    /// <summary>
+    /// Die Simulationskonfiguration (<c>Simulation.SimulationKonfigSeite</c>,
+    /// iU9-W10b.1) — die erste FACHSEITE, die iOS ueber <see cref="AppWurzel"/>
+    /// erreicht. Unter Windows steht dieselbe Komponente bis W16 in einem modalen
+    /// Fenster (Entscheid R-W10b-1); der Schluessel gilt fuer beide Wege.
+    /// </summary>
+    public const string SimulationKonfiguration = "SIMULATION_KONFIGURATION";
 }

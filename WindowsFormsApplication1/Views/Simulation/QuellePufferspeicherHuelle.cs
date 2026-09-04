@@ -25,36 +25,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class QuellePufferspeicherHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 620 × 508 plus zwei Anbauten).</summary>
-        private static readonly Size MASS = new Size(880, 800);
-
-        /// <summary>
-        /// Zeigt den Dialog. Rückgabe <c>null</c>, wenn abgebrochen wurde; sonst der
-        /// Satz mit den zurückgeschriebenen Werten.
-        /// </summary>
-        internal static QuellePufferspeicherDaten Oeffnen(IWin32Window besitzer,
-                                                          QuellePufferspeicherDaten daten)
-        {
-            QuellePufferspeicherDaten ergebnis = null;
-            BlazorDialogForm<QuellePufferspeicherDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(daten))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<QuellePufferspeicherDaten>(
-                    new object(), d =>
-                    {
-                        ergebnis = d;
-                        if (dlg != null) dlg.Schliessen(d != null);
-                    })
-            };
-
-            dlg = new BlazorDialogForm<QuellePufferspeicherDialog>(Titel(daten), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
-        }
+        // iU9-W10b.1: Der FENSTERWEG dieser Huelle ist entfallen. Ihr einziger
+        // Aufrufer war Form_Simulation_Config; seit die Simulationskonfiguration
+        // selbst eine Razor-Seite ist, erscheint der Dialog als UEBERLAGERUNG in
+        // ihrem Fenster (Risiko R2 - nie zwei WebViews uebereinander). Was bleibt,
+        // ist der PARAMETERSATZ unten: Er war von Anfang an fuer genau diesen Tag
+        // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(QuellePufferspeicherDaten daten)
@@ -156,13 +132,6 @@ namespace WindowsFormsApplication1
                 l.Add(new QuellPufferzeile(p.ID, p.Bezeichner, anzeige, daten, p.Gesamtvolumen));
             }
             return l;
-        }
-
-        private static string Titel(QuellePufferspeicherDaten daten)
-        {
-            return string.IsNullOrEmpty(daten?.WPName)
-                ? MyResource.Resource.SIMQ_PUFFER_TITEL
-                : string.Format(MyResource.Resource.SIMQ_PUFFER_TITEL_MIT_WP, daten.WPName);
         }
     }
 }
