@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -188,6 +189,28 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static Func<bool> ModalerDialog { get; set; } = ModalerDialogOffen;
 
+        /// <summary>
+        /// Zweiter Haken derselben Frage: Steht in einer Razor-Oberflaeche eine
+        /// UEBERLAGERUNG offen? (iU9-W15b.0d, Befund W15b-B17, Entscheid E-8.)
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// In Blazor gibt es keine Modalitaet im WinForms-Sinn - eine
+        /// <c>Ueberlagerung</c> ist ein <c>div</c>, und <c>Form.ActiveForm.Modal</c>
+        /// meldet fuer das Chatfenster weiterhin <c>false</c>. Die Zusage des
+        /// Fachkonzepts 3.4 (Pflicht 2) waere damit still verlorengegangen: Solange der
+        /// Anwender in der Werkzeugliste steht, darf keine Assistentenaktion
+        /// dazwischenfahren.
+        /// </para>
+        /// <para>
+        /// Deshalb meldet die Chatkomponente ihren eigenen Ueberlagerungszustand hierher.
+        /// Beide Haken werden ODER-verknuepft (<see cref="ModalitaetSperrt"/>) - der
+        /// WinForms-Weg bleibt woertlich, wie er war, und der Aktionsharnisch tauscht
+        /// weiterhin nur <see cref="ModalerDialog"/>.
+        /// </para>
+        /// </remarks>
+        public static Func<bool> Ueberlagerung { get; set; }
+
         /// <summary>Pfad des Sicherungspunkts dieser Sitzung; leer, solange keiner noetig war.</summary>
         public static string SicherungPfad => KiSicherungspunkt.Pfad;
 
@@ -198,14 +221,30 @@ namespace WindowsFormsApplication1
         public static void SicherungZuruecksetzen() => KiSicherungspunkt.Zuruecksetzen();
 
         /// <summary>
-        /// Steuerelement, ueber das auf den UI-Thread gewechselt wird.
+        /// Der Wechsel auf den Oberflaechenfaden - seit iU9-W15b.0c plattformfrei
+        /// (Befund W15b-B16, Entscheid E-8).
         /// </summary>
         /// <remarks>
-        /// Paket B5 setzt hier das Chatfenster. Bleibt der Anker leer, sucht
-        /// <see cref="UiAnker"/> das erste offene Formular; gibt es auch das nicht
-        /// (Aktionsharnisch), laeuft die Aktion auf dem rufenden Thread.
+        /// <para>
+        /// Bis W15b stand hier ein <c>Control</c>, das <c>Form_KiChat</c> im Konstruktor
+        /// auf sich selbst setzte. Ein Blazor-Chat hat kein Steuerelement - er hat
+        /// <c>ComponentBase.InvokeAsync</c>. Beide erfuellen dieselbe Zusage: "fuehre
+        /// diese Arbeit dort aus, wo die Oberflaeche lebt, und melde dich, wenn sie
+        /// fertig ist". Genau das ist die Form <c>Func&lt;Func&lt;Task&gt;, Task&gt;</c>.
+        /// </para>
+        /// <para>
+        /// Bleibt der Weg leer, gilt der alte Rueckfall unveraendert: <see cref="UiAnker"/>
+        /// sucht das erste offene Formular; gibt es auch das nicht (Aktionsharnisch,
+        /// Konsolenlauf, iOS-Pruefmodus), laeuft die Aktion auf dem rufenden Thread.
+        /// </para>
+        /// <para>
+        /// <b>Warum das noetig ist.</b> Die Bestandscontroller sind nicht threadsicher,
+        /// und <c>DataRepository</c> haelt seinen dialogfreien Modus PROZESSWEIT. Jeder
+        /// Datenbankzugriff einer Assistentenaktion muss deshalb auf denselben Faden
+        /// (Fachkonzept 3.4).
+        /// </para>
         /// </remarks>
-        public static Control Anker { get; set; }
+        public static Func<Func<Task>, Task> AufOberflaeche { get; set; }
 
         // ============================================================== Vorbereiten
 
@@ -683,12 +722,34 @@ namespace WindowsFormsApplication1
         /// Fuehrt <paramref name="arbeit"/> auf dem UI-Thread aus. Gibt es keine
         /// Oberflaeche (Aktionsharnisch), laeuft sie auf dem rufenden Thread.
         /// </summary>
-        private static Task<T> AufUiThread<T>(Func<T> arbeit)
+        private static async Task<T> AufUiThread<T>(Func<T> arbeit)
         {
+            Func<Func<Task>, Task> weg = AufOberflaeche;
+            if (weg != null)
+            {
+                T ergebnis = default(T);
+                Exception fehler = null;
+
+                // Die Ausnahme wird NICHT im Rueckruf weitergereicht: Ein Blazor-
+                // InvokeAsync, dem eine Ausnahme entkommt, reisst den Renderer mit. Sie
+                // wird hier gefangen und danach mit ihrem urspruenglichen Stapel wieder
+                // geworfen - der Aufrufer sieht denselben Fehler wie zuvor.
+                await weg(() =>
+                {
+                    try { ergebnis = arbeit(); }
+                    catch (Exception ex) { fehler = ex; }
+                    return Task.CompletedTask;
+                }).ConfigureAwait(true);
+
+                if (fehler != null) ExceptionDispatchInfo.Capture(fehler).Throw();
+                return ergebnis;
+            }
+
+            // Rueckfall ohne eingelegten Weg: das erste offene Formular.
             Control anker = UiAnker();
 
             if (anker == null || !anker.InvokeRequired)
-                return Task.FromResult(arbeit());
+                return arbeit();
 
             var quelle = new TaskCompletionSource<T>();
             anker.BeginInvoke((MethodInvoker)delegate
@@ -696,15 +757,12 @@ namespace WindowsFormsApplication1
                 try { quelle.SetResult(arbeit()); }
                 catch (Exception ex) { quelle.SetException(ex); }
             });
-            return quelle.Task;
+            return await quelle.Task.ConfigureAwait(true);
         }
 
         /// <summary>Das Steuerelement, ueber das der Wechsel auf den UI-Thread laeuft.</summary>
         private static Control UiAnker()
         {
-            Control anker = Anker;
-            if (anker != null && !anker.IsDisposed && anker.IsHandleCreated) return anker;
-
             // Hausmuster: ueber Application.OpenForms (u. a. Form_Stromspeicher.cs:103).
             try
             {
@@ -724,7 +782,14 @@ namespace WindowsFormsApplication1
             try
             {
                 Func<bool> frage = ModalerDialog;
-                return frage != null && frage();
+                if (frage != null && frage()) return true;
+            }
+            catch { /* im Zweifel frei - eine werfende Abfrage darf nicht sperren */ }
+
+            try
+            {
+                Func<bool> ueber = Ueberlagerung;
+                return ueber != null && ueber();
             }
             catch { return false; }
         }
