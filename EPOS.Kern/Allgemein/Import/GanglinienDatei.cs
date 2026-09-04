@@ -764,8 +764,13 @@ namespace WindowsFormsApplication1
             v.Blaetter.AddRange(blaetter);
             v.Vorschlag.Blattname = verwendet;
 
-            int zeilen = daten.GetLength(0);
-            int spalten = daten.GetLength(1);
+            // ExcelBulkRead legt das Feld EINS GROESSER an (new object[zeilen + 1,
+            // spalten + 1]), damit es sich wie Excel 1-basiert ansprechen laesst;
+            // Index 0 bleibt leer. Die Zahl der Zeilen und Spalten ist deshalb
+            // GetLength() MINUS EINS - ohne das Minus lief jede Schleife eine
+            // Stelle ueber das Feld hinaus (Befund W12-B27, iU9-W12.0i).
+            int zeilen = daten.GetLength(0) - 1;
+            int spalten = daten.GetLength(1) - 1;
             bool[] zeitspalte = ExcelZeitspalten(daten);
 
             List<string[]> liste = new List<string[]>();
@@ -801,8 +806,9 @@ namespace WindowsFormsApplication1
         /// <returns>Feld ueber die Spaltenindizes (1-basiert); <c>true</c> = Datumsspalte.</returns>
         private static bool[] ExcelZeitspalten(object[,] daten)
         {
-            int zeilen = daten.GetLength(0);
-            int spalten = daten.GetLength(1);
+            // 1-basiertes Feld aus ExcelBulkRead: GetLength() minus eins (W12-B27).
+            int zeilen = daten.GetLength(0) - 1;
+            int spalten = daten.GetLength(1) - 1;
             bool[] ergebnis = new bool[spalten + 1];
             double[] bekannteSchritte = { 1.0, 1.0 / 24.0, 1.0 / 96.0, 1.0 / 1440.0 };
 
@@ -865,8 +871,9 @@ namespace WindowsFormsApplication1
             string verwendet;
             if (!ExcelBulkRead(pfad, o.Blattname, out daten, out blaetter, out verwendet, r.Meldungen)) return;
 
-            int zeilen = daten.GetLength(0);
-            int spalten = daten.GetLength(1);
+            // 1-basiertes Feld aus ExcelBulkRead: GetLength() minus eins (W12-B27).
+            int zeilen = daten.GetLength(0) - 1;
+            int spalten = daten.GetLength(1) - 1;
             List<double> werte = new List<double>(35040);
             List<DateTime> zeiten = o.ZeitSpalte >= 0 ? new List<DateTime>(35040) : null;
             int fehler = 0;
