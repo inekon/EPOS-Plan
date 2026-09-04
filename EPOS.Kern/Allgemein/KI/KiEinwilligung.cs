@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
@@ -13,7 +14,8 @@ namespace WindowsFormsApplication1
     /// geht keine Anfrage hinaus" muss OHNE Fenster prüfbar sein - der Aktionsharnisch
     /// läuft ohne Netz, ohne Schlüssel und ohne Dialoge. Hier steht deshalb nur der
     /// Zustand und die Entscheidung; den Hinweistext zeigt
-    /// <c>Form_KiHinweis</c>, das sich beim Programmstart über
+    /// <c>KiHinweisHuelle</c> (seit iU9-W15b.3; davor <c>Form_KiHinweis</c>),
+    /// die sich beim Programmstart über
     /// <see cref="Nachfragen"/> einhängt. Ist kein Haken eingehängt (Harnisch, Tests,
     /// Konsolenlauf), kann keine Einwilligung entstehen - und damit auch keine
     /// Übertragung.
@@ -62,14 +64,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt den vollständigen Hinweis und liefert <c>true</c>, wenn der Anwender
-        /// zugestimmt hat. Wird beim Programmstart von <c>Form_KiHinweis</c> gesetzt.
+        /// zugestimmt hat. Wird beim Programmstart von der Hülle gesetzt
+        /// (Windows: <c>KiHinweisHuelle.Einholen</c>).
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Bleibt der Haken leer, gibt es keinen Weg zu einer Einwilligung. Das ist
         /// Absicht: ein Lauf ohne Oberfläche darf nichts an den Anbieter senden.
         /// Der Haken darf nicht werfen; tut er es doch, gilt das als Ablehnung.
+        /// </para>
+        /// <para>
+        /// <b>Seit iU9-W15b.0b asynchron</b> (Befund W15b-B12). Der Vorläufer war ein
+        /// <c>Func&lt;bool&gt;</c>, weil ein modales WinForms-Fenster synchron antwortet.
+        /// Eine Razor-Überlagerung kann das nicht: Sie zeichnet sich, wartet auf einen
+        /// Klick und meldet ihn über einen <c>EventCallback</c> - das ist ein
+        /// <c>Task</c>. Ein blockierendes Warten darauf verklemmt den Renderer.
+        /// </para>
         /// </remarks>
-        public static Func<bool> Nachfragen { get; set; }
+        public static Func<Task<bool>> Nachfragen { get; set; }
 
         // ------------------------------------------------------------------
         // Abschalter
@@ -154,22 +166,55 @@ namespace WindowsFormsApplication1
         /// eingeholt - ist kein Haken eingehängt oder lehnt der Anwender ab, bleibt es
         /// bei <c>false</c> und es geht nichts hinaus.
         /// </summary>
-        public static bool Sicherstellen()
+        /// <remarks>
+        /// Die Reihenfolge ist Teil der Zusage: Abschalter zuerst (er überstimmt eine
+        /// vorhandene Einwilligung), dann die vorhandene Fassung, erst danach die Frage.
+        /// Wer eine Fassung 1 bestätigt hat, wird bei FASSUNG 2 erneut gefragt.
+        /// </remarks>
+        public static async Task<bool> SicherstellenAsync()
         {
             if (Abgeschaltet) return false;
             if (BestaetigteFassung >= FASSUNG) return true;
 
-            Func<bool> frage = Nachfragen;
+            Func<Task<bool>> frage = Nachfragen;
             if (frage == null) return false;
 
             bool ja;
-            try { ja = frage(); }
+            try
+            {
+                Task<bool> lauf = frage();
+                ja = lauf != null && await lauf.ConfigureAwait(true);
+            }
             catch { return false; }
 
             if (!ja) return false;
 
             Erteilen();
             return true;
+        }
+
+        /// <summary>
+        /// Die synchrone Fassade: <c>true</c> nur, wenn die Einwilligung SCHON vorliegt.
+        /// Sie fragt nicht nach.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Sie bleibt für die Stellen, die keine Fortsetzung haben - eine Sichtbarkeit,
+        /// ein Menütext, eine Vorbelegung. Fehlt die Einwilligung, liefert sie
+        /// <c>false</c>, statt zu fragen: Ein blockierendes Warten auf
+        /// <see cref="Nachfragen"/> würde in einer WebView den Renderer verklemmen, der
+        /// die Überlagerung erst noch zeichnen müsste (R-W15b-5).
+        /// </para>
+        /// <para>
+        /// <b>Wer fragen will, ruft <see cref="SicherstellenAsync"/>.</b> Das sind die
+        /// drei Stellen des Bestands: der Einwilligungsriegel in
+        /// <c>KiChatService</c>, der Aktionsschalter des Chats und - über den Haken -
+        /// die Hülle beim Programmstart.
+        /// </para>
+        /// </remarks>
+        public static bool Sicherstellen()
+        {
+            return !Abgeschaltet && BestaetigteFassung >= FASSUNG;
         }
 
         // ------------------------------------------------------------------

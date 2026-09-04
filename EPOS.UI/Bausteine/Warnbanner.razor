@@ -6,12 +6,38 @@
    Meldung bisher nebenbei.
 
    Farben: KartenStil.WARN_* fuer die Warnung, der Korallenklang der Senke
-   fuer den Fehler, die Hinweisflaeche der Startmaske fuer den Hinweis. *@
+   fuer den Fehler, die Hinweisflaeche der Startmaske fuer den Hinweis.
 
-<div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
-    <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
-    <span class="epos-warnbanner-text">@Text</span>
-</div>
+   NACHTRAG iU9-W15b.1 - DER SELBSTVERFALL. Form_Hinweis (34 Z.) ist ein
+   Kurzhinweis, der sich nach drei Sekunden selbst schliesst: kein OK-Dialog,
+   sondern ein Fenster, das von selbst wieder verschwindet (Task.Delay(3000),
+   dann Close()). Genau das kann ein Banner besser - es steht IN der Seite und
+   braucht keinen Bildschirmpunkt (Entscheid E-1: die drei PointToScreen-
+   Rechnungen der Aufrufer entfallen ersatzlos).
+
+   Der Kommentar am Aufrufer (Form_Start.cs:830-832) nennt das Lebenszeitproblem,
+   das den Vorlaeufer plagte: "Bewusst OHNE using: Form_Hinweis schliesst sich per
+   await Task.Delay selbst; ein Dispose direkt nach ShowDialog liesse diese
+   Fortsetzung auf ein bereits entsorgtes Fenster laufen." Das Banner hat es
+   nicht - es gehoert der Seite und geht mit ihr; die Abbruchmarke haengt an
+   IDisposable.
+
+   Form_Hinweis selbst BLEIBT bis Welle 16 (Entscheid E-1b, bewusste Ausnahme von
+   der Arbeitsregel iZ5): Seine drei Aufrufer liegen saemtlich in Form_Start, und
+   die ist bis W16 WinForms. Ein modaler OK-Dialog statt eines 3-s-Hinweises
+   waere dort ein Rueckschritt - der Anwender muesste ihn wegklicken. Gebaut und
+   geprueft wird der Nachfolger trotzdem jetzt (T-6), damit W16 nur noch
+   umhaengt. *@
+
+@implements IDisposable
+
+@if (!_verfallen)
+{
+    <div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
+        <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
+        <span class="epos-warnbanner-text">@Text</span>
+    </div>
+}
 
 @code {
     /// <summary>Dringlichkeit - bestimmt Farbklang und Zeichen.</summary>
@@ -19,6 +45,81 @@
 
     /// <summary>Der Meldungstext.</summary>
     [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>
+    /// Lebensdauer des Banners; <c>null</c> = es bleibt stehen (Vorgabe).
+    /// <c>TimeSpan.FromSeconds(3)</c> ist der Wert des Vorlaeufers Form_Hinweis.
+    /// </summary>
+    [Parameter] public TimeSpan? Verfaellt { get; set; }
+
+    /// <summary>Das Banner ist verfallen - der Wirt darf seine Meldung vergessen.</summary>
+    [Parameter] public EventCallback Verfallen { get; set; }
+
+    /// <summary>
+    /// Die Uhr. Im Betrieb <c>Task.Delay</c>; ein Pruefstand legt eine gesteuerte
+    /// Fassung ein und muss dann keine drei Sekunden warten.
+    /// </summary>
+    /// <remarks>
+    /// Dieselbe Bauart wie <c>KiAusfuehrer.Uhr</c> und
+    /// <c>KiChatService.Modellkanal</c>: ein Prueffaden, kein Schalter fuer den
+    /// Betrieb. Ohne ihn liesse sich der Selbstverfall nur mit einer echten
+    /// Wartezeit nachweisen - und ein Test, der drei Sekunden schlaeft, wird
+    /// irgendwann uebersprungen.
+    /// </remarks>
+    [Parameter] public Func<TimeSpan, CancellationToken, Task>? Uhr { get; set; }
+
+    private bool _verfallen;
+    private CancellationTokenSource? _abbruch;
+    private string _gezeigt = "";
+    private TimeSpan? _frist;
+
+    /// <summary>
+    /// Ein NEUER Text oder eine neue Frist setzt den Verfall zurueck - sonst bliebe
+    /// das Banner nach der ersten Meldung fuer immer verschwunden.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        bool neu = !string.Equals(_gezeigt, Text, StringComparison.Ordinal) || _frist != Verfaellt;
+        if (!neu) return;
+
+        _gezeigt = Text;
+        _frist = Verfaellt;
+        _verfallen = false;
+
+        Abbrechen();
+        if (Verfaellt is null || Verfaellt.Value <= TimeSpan.Zero) return;
+
+        _abbruch = new CancellationTokenSource();
+        _ = Ablaufen(Verfaellt.Value, _abbruch.Token);
+    }
+
+    private async Task Ablaufen(TimeSpan frist, CancellationToken marke)
+    {
+        try
+        {
+            Func<TimeSpan, CancellationToken, Task> uhr = Uhr ?? Task.Delay;
+            await uhr(frist, marke);
+        }
+        catch (OperationCanceledException) { return; }
+
+        if (marke.IsCancellationRequested) return;
+
+        _verfallen = true;
+        await InvokeAsync(StateHasChanged);
+        await Verfallen.InvokeAsync();
+    }
+
+    private void Abbrechen()
+    {
+        CancellationTokenSource? alt = _abbruch;
+        _abbruch = null;
+        if (alt is null) return;
+        try { alt.Cancel(); } catch (ObjectDisposedException) { }
+        alt.Dispose();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => Abbrechen();
 
     private string Klasse => Stufe switch
     {

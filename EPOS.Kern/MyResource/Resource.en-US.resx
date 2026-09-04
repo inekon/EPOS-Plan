@@ -10944,7 +10944,7 @@ Overwrite it anyway?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>The record could not be transferred into the project.</value>
   </data>
-  <!-- ==================================================================
+  <!-- ===========================================================  </data>
        iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
        (Sammelnachtrag der Welle 5; Zugriff ueber
        ResourceManager.GetString mit deutschem Rueckfall im Code).
@@ -13520,6 +13520,72 @@ Import anyway?</value>
   </data>
   <data name="PRJ_MENUE_OEFFNEN" xml:space="preserve">
     <value>Open…</value>
+  </data>
+  <data name="HILFE_IOS_BESCHREIBUNG" xml:space="preserve">
+    <value>The full description is in the documentation.</value>
+  </data>
+  <data name="KI_CHAT_ABSCHNITTE" xml:space="preserve">
+    <value>Help sections found:</value>
+  </data>
+  <data name="KI_CHAT_ABSCHNITTE_ERSATZ" xml:space="preserve">
+    <value>Matching help sections:</value>
+  </data>
+  <data name="KI_CHAT_AUS_CACHE" xml:space="preserve">
+    <value>(from the local cache - no new request)</value>
+  </data>
+  <data name="KI_CHAT_BEGRUESSUNG" xml:space="preserve">
+    <value>Ask your question about operating the program or about the calculations. The assistant knows the area you are working in and answers on the basis of the help documentation.</value>
+  </data>
+  <data name="KI_CHAT_BEGRUESSUNG_DATEN" xml:space="preserve">
+    <value>Only help texts, your question and the name of the area are transmitted - no project or customer data.</value>
+  </data>
+  <data name="KI_CHAT_BTN_EINSTELLUNGEN" xml:space="preserve">
+    <value>Settings...</value>
+  </data>
+  <data name="KI_CHAT_BTN_FRAGEN" xml:space="preserve">
+    <value>Ask</value>
+  </data>
+  <data name="KI_CHAT_BTN_SUCHEN" xml:space="preserve">
+    <value>Search only</value>
+  </data>
+  <data name="KI_CHAT_DENKT" xml:space="preserve">
+    <value>The assistant is thinking...</value>
+  </data>
+  <data name="KI_CHAT_FEHLER" xml:space="preserve">
+    <value>Note: {0}</value>
+  </data>
+  <data name="KI_CHAT_KEINE_TREFFER" xml:space="preserve">
+    <value>Help: No matching sections found. Try other keywords or ask the question using the 'Ask' button.</value>
+  </data>
+  <data name="KI_CHAT_KONTEXT" xml:space="preserve">
+    <value>Context: {0}</value>
+  </data>
+  <data name="KI_CHAT_KONTEXT_LEER" xml:space="preserve">
+    <value>Context: (not detected)</value>
+  </data>
+  <data name="KI_CHAT_OHNE_SCHLUESSEL" xml:space="preserve">
+    <value>No API key has been stored yet. The 'Search only' button already works - it searches the help locally and free of charge. For AI answers please enter a Google AI Studio key under 'Settings...'.</value>
+  </data>
+  <data name="KI_CHAT_QUELLEN" xml:space="preserve">
+    <value>Sources: {0}</value>
+  </data>
+  <data name="KI_CHAT_ROLLE_ANWENDER" xml:space="preserve">
+    <value>You: </value>
+  </data>
+  <data name="KI_CHAT_ROLLE_ASSISTENT" xml:space="preserve">
+    <value>Assistant:</value>
+  </data>
+  <data name="KI_CHAT_TITEL" xml:space="preserve">
+    <value>Help assistant</value>
+  </data>
+  <data name="KI_CHAT_VERBRAUCH" xml:space="preserve">
+    <value>Used today: {0} of {1}</value>
+  </data>
+  <data name="KI_CHAT_VERBRAUCH_LANG" xml:space="preserve">
+    <value>Used today: {0} of {1} requests.</value>
+  </data>
+  <data name="KI_CHAT_KOPIEREN" xml:space="preserve">
+    <value>Copy conversation</value>
   </data>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
     <value>Project name used more than once</value>

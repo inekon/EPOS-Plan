@@ -40,6 +40,15 @@ public sealed class StapelTests
         // Erreichbarkeitsgraphen: Ein Lauf, der sie nicht findet, ist kaputt.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
+        //
+        // iU9-W15b (04.09.2026): Die Welle nimmt GENAU EINEN Designer mit -
+        // Form_KiEinstellungen (15). Ihre fuenf Geschwister zaehlten hier nie mit
+        // oder bleiben: Form_TextAnzeige, Form_KiHinweis und Form_KiChat haben
+        // keinen Designer (Befund W15b-B2), Form_HelpPopup BLEIBT (Entscheid E-2:
+        // sein Ersatz ist IHilfeDienst mit Windows- und iOS-Fassung, nicht eine
+        // Razor-Fassung; die Maske faellt mit HelpCatalog/HelpExtender in iU11),
+        // und Form_Hinweis bleibt bis Welle 16 (Entscheid E-1b): Seine drei
+        // Aufrufer liegen saemtlich in Form_Start, und die ist bis dahin WinForms.
         Assert.Contains(dateien, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
         Assert.Contains(dateien, d => d.EndsWith("WizardParent.designer.cs", StringComparison.Ordinal));
         // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
@@ -78,7 +87,7 @@ public sealed class StapelTests
         // ausdrueckliche Ausnahme von der Arbeitsregel iZ5).
         // Gezaehlt wird ueber die REPOWURZEL: 14 unter WindowsFormsApplication1
         // plus die zwei generierten des Kerns (Resource, Settings).
-        Assert.True(dateien.Count >= 16, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        Assert.True(dateien.Count >= 15, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -128,7 +137,7 @@ public sealed class StapelTests
         // und die erste Assistentenseite. Form_ProjektExportImport faellt in
         // derselben Welle, zaehlte hier aber nie mit - auch sie hatte keinen
         // Designer (Befund W15a-B24).
-        Assert.True(Lauf.Value.Masken >= 13, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        Assert.True(Lauf.Value.Masken >= 12, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -172,6 +181,11 @@ public sealed class StapelTests
         // Designer-Masken melden ALLE "lokalisiert: ja" - die umgekehrte Lage zu
         // Welle 14c und der eigentliche Aufwandstreiber dieser Welle (461
         // .resx-Eintraege, aber nur sechs MyResource-Zugriffe).
+        // Welle 15b nimmt KEINE lokalisierte mit - die einzige Welle des Pakets,
+        // in der der Zaehler stehen bleibt (Befund W15b-B13): Von ihren sechs
+        // Bauteilen meldet keines "lokalisiert: ja", es gibt in der ganzen Welle
+        // keine einzige de-DE.resx und keine einzige en-US.resx. Alle sichtbaren
+        // Texte werden im Code gesetzt, und zwar zu 93 % aus MyResource.Resource.KI_*.
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
         Assert.True(Lauf.Value.Lokalisierte >= 7,

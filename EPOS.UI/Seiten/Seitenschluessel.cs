@@ -6,11 +6,10 @@
 /// <c>WindowsFormsApplication1.Masken</c> und <c>…Gewerke</c>: ASCII,
 /// sprachneutral, nie ein Anzeigetext.
 ///
-/// <para>Zwei Schluessel tragen einen Dialog, einer die Liste. Mehr kennt iU10
-/// nicht; der Assistent (iL5) kommt mit iU10-9 und bringt seine eigenen
-/// Schluessel mit. Ein unbekannter Schluessel tut nichts und liefert
-/// <c>false</c> - derselbe Ausgang, den <c>KeineNavigation</c> im Kern
-/// liefert.</para>
+/// <para>Zwei Schluessel tragen einen Dialog, einer die Liste, zwei eine
+/// Fachseite - und seit iU9-W15b einer den KI-Assistenten. Ein unbekannter
+/// Schluessel tut nichts und liefert <c>false</c> - derselbe Ausgang, den
+/// <c>KeineNavigation</c> im Kern liefert.</para>
 /// </summary>
 public static class Seitenschluessel
 {
@@ -38,4 +37,30 @@ public static class Seitenschluessel
     /// Fenster (Entscheid R-W11-1); der Schluessel gilt fuer beide Wege.
     /// </summary>
     public const string SimulationErgebnis = "SIMULATION_ERGEBNIS";
+
+    /// <summary>
+    /// Der KI-Hilfe-Assistent (<c>Dialoge.Hilfe.KiChatDialog</c>, iU9-W15b.7,
+    /// Entscheid E-10).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Der Klassenkopf kuendigte ihn seit iU10-2 an ("der Assistent (iL5) kommt
+    /// mit iU10-9 und bringt seine eigenen Schluessel mit"). Er ist der erste
+    /// Schluessel, den KEINE Kachel der Projektliste oeffnet: Unter Windows steht
+    /// der Chat am Menue "Hilfe -&gt; Hilfe-Assistent (KI)…" und an F1, auf iOS am
+    /// Baustein <c>KiKnopf</c> jeder Maske.
+    /// </para>
+    /// <para>
+    /// <b>Er hat bewusst KEINEN <c>Masken.*</c>-Zwilling</b> (Befund W15b-B4): Der
+    /// Chat wurde nie ueber die Sprungtabelle geoeffnet, und die Tabelle faellt mit
+    /// Welle 16 ohnehin.
+    /// </para>
+    /// <para>
+    /// Der Kern kennt denselben Wert als Zeichenkette in
+    /// <c>KiChatKontext.BEREICH_JE_SEITE</c> - dort bildet er auf den Bereich
+    /// "Hilfe" ab, damit der Assistent auf iOS weiss, wovon der Anwender spricht
+    /// (Entscheid E-9).
+    /// </para>
+    /// </remarks>
+    public const string KiAssistent = "KI_ASSISTENT";
 }

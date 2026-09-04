@@ -185,10 +185,23 @@ namespace WindowsFormsApplication1
             // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).
             KiTextlieferant.Einrichten();
 
+            // Ausfuehrungsschicht des KI-Assistenten einlegen (iU9-W15b.0a). KiChatService
+            // liegt seit dieser Welle im Kern und kennt KiAusfuehrer nicht mehr - der
+            // Ausfuehrer haengt an Control, Application.OpenForms und Form.ActiveForm.Modal
+            // und bleibt deshalb in der Windows-Anwendung. Ohne diesen Aufruf antwortet die
+            // stille Fassung KeineAusfuehrung: leeres Register, jede Aktion abgelehnt.
+            KiAusfuehrungsweg.Aktuell = new KiAusfuehrungAdapter();
+
+            // Bedienkontext des Assistenten: Die ZUORDNUNG (Positivliste, Tabellen)
+            // liegt seit iU9-W15b.0f im Kern, die ERMITTLUNG des aktiven Fensters
+            // bleibt hier - Form.ActiveForm gibt es auf iOS nicht (Befund W15b-B19).
+            // Ohne diesen Aufruf bleibt der Bereich "Unbekannter Bereich".
+            HilfeKontext.Einhaengen();
+
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.
-            Form_KiHinweis.Einhaengen();
+            KiHinweisHuelle.Einhaengen();
 
             // -----------------------------------------------------------------------
             // Schema-Ausrollung (ADR-001): die versionierte Migration laeuft genau

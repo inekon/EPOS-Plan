@@ -89,6 +89,22 @@
 
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
+
+    /* ---- Gespraechsverlauf des KI-Assistenten (iU9-W15b.0h) ----------
+       Die acht Farben und zwei Schriftschnitte, die Form_KiChat.SchreibeZeile
+       je vergeben hat (Vermessung § 6.l) - sie werden im Baustein
+       Gespraechsverlauf zu zehn ROLLEN. Drei der acht gab es schon: die zwei
+       Ganglinienstufen aus W12 und die Warnschrift; sie werden hier nur unter
+       ihrem neuen Namen weitergereicht, damit der Baustein nicht wissen muss,
+       woher eine Farbe stammt. Fuenf sind neu. */
+    --epos-verlauf-anwender: #006400;       /* "Sie: ..." - gruen, fett     */
+    --epos-verlauf-assistent: var(--epos-text);  /* Antworttext - schwarz   */
+    --epos-verlauf-kopf: #005AA0;           /* "Assistent:", Zwischentitel  */
+    --epos-verlauf-leise: var(--epos-text-leise);   /* Quellen, Zaehler     */
+    --epos-verlauf-erfolg: #007800;         /* ausgefuehrt, erteilt         */
+    --epos-verlauf-warnung: var(--epos-stufe-warnung);  /* Hinweis, Verfall */
+    --epos-verlauf-fehler: var(--epos-stufe-fehler);    /* Fehler, abgelehnt*/
+    --epos-verlauf-bestaetigung: var(--epos-warn-text); /* Blocktitel, fett */
 }
 
 /* ==========================================================================
@@ -2796,4 +2812,557 @@ body {
     .epos-projektkopf-raster {
         grid-template-columns: 1fr;
     }
+}
+
+/* --------------------------------------------------------------------------
+   Gespraechsverlauf des KI-Assistenten (iU9-W15b.6, Bausteinluecke 17).
+
+   Vorbild ist Form_KiChat._verlaufAnzeige: eine RichTextBox, ReadOnly, weisser
+   Grund, beide Bildlaufleisten. Die acht Farben und zwei Schriftschnitte, die
+   SchreibeZeile je vergeben hat, stehen als Rollenklassen darunter.
+
+   pre-line statt pre: Die Umbrueche INNERHALB einer Zeile bleiben erhalten (der
+   Antworttext des Modells ist mehrzeilig), aber es entsteht kein Waagerecht-
+   Bildlauf - overflow-wrap: anywhere bricht auch ein ueberlanges Wort (G-10).
+   -------------------------------------------------------------------------- */
+.epos-verlauf {
+    flex: 1 1 auto;
+    min-height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen, #d1d5db);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px 16px 10px;
+}
+
+.epos-verlauf:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-verlauf-zeile {
+    margin: 0 0 2px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--epos-verlauf-assistent);
+}
+
+.epos-verlauf-zeile--anwender      { color: var(--epos-verlauf-anwender); font-weight: 600; }
+.epos-verlauf-zeile--assistent     { color: var(--epos-verlauf-assistent); }
+.epos-verlauf-zeile--assistentkopf { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--ueberschrift  { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--leise         { color: var(--epos-verlauf-leise); }
+.epos-verlauf-zeile--erfolg        { color: var(--epos-verlauf-erfolg); }
+.epos-verlauf-zeile--warnung       { color: var(--epos-verlauf-warnung); }
+.epos-verlauf-zeile--fehler        { color: var(--epos-verlauf-fehler); }
+.epos-verlauf-zeile--bestaetigung  { color: var(--epos-verlauf-bestaetigung); font-weight: 600; }
+
+/* Der Absatztrenner traegt keinen Text und braucht trotzdem Hoehe. */
+.epos-verlauf-zeile--leerzeile {
+    min-height: 0.6em;
+}
+
+/* Ein Verweis ist ein KNOPF, kein <a>: Die Komponente oeffnet nichts selbst,
+   sie meldet die Adresse (G-6). Damit gibt es auch kein href, das ein
+   Rechtsklick kopieren und ein Kontextmenue oeffnen koennte. 44 px
+   Beruehrungsziel (M2) ueber die Zeilenhoehe, nicht ueber Polsterung - sonst
+   risse jede Quellenzeile den Verlauf auseinander. */
+.epos-verlauf-verweis {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    text-align: left;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-verlauf-verweis:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* Die drei wandernden Punkte des Beschaeftigt-Zustands. Kein Bild, keine
+   Schriftart - drei Zeichen und eine Blende. */
+.epos-verlauf-punkte::after {
+    content: "\2022\2022\2022";
+    letter-spacing: 2px;
+    margin-right: 6px;
+    animation: epos-verlauf-blenden 1.2s ease-in-out infinite;
+}
+
+@keyframes epos-verlauf-blenden {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-verlauf-punkte::after { animation: none; opacity: 0.6; }
+}
+
+/* Der Fussbereich liegt IM Bildlauf, direkt nach der letzten Zeile (E-3). */
+.epos-verlauf-fuss {
+    margin-top: 8px;
+}
+
+.epos-verlauf-kopieren {
+    align-self: flex-start;
+    margin-top: 4px;
+    min-height: var(--epos-touchziel);
+}
+
+@media (forced-colors: active) {
+    /* Im Hochkontrastbetrieb traegt die FARBE keine Bedeutung mehr - das System
+       setzt sie. Was bleibt, ist der Schriftschnitt und der Rahmen. */
+    .epos-verlauf { border: 1px solid CanvasText; }
+    .epos-verlauf-verweis { color: LinkText; }
+}
+
+/* --------------------------------------------------------------------------
+   Nur-Lese-Textanzeige (iU9-W15b.2) - Aktionsprotokoll und Sendevorschau des
+   Assistenten. Der Vorlaeufer war ein zweites modales Fenster mit fest
+   gerechneten Massen (900 x 480 bzw. 720 x 520); hier zaehlt die Zeilenzahl des
+   Feldes, den Rest macht das Raster der Ueberlagerung.
+   -------------------------------------------------------------------------- */
+.epos-textanzeige {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Die graue Hinweiszeile der Vorschau - im Vorlaeufer ein 66 px hohes Label in
+   DimGray. Umbrueche im Text bleiben erhalten (sie nennt Modell und Endpunkt in
+   getrennten Zeilen). */
+.epos-textanzeige-kopf {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-textanzeige-fuss {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   Rechtshinweis zur Datenuebertragung (iU9-W15b.3).
+
+   Der Vorlaeufer setzte vier Schriftrollen in einer RichTextBox: Ueberschrift
+   12 pt bzw. 9,5 pt fett in #005AA0, Absatz 9,5 pt schwarz, Grau 8,5 pt
+   DimGray, Leerzeile 5 pt. Hier sind es Elemente und Klassen; die Leerzeile
+   ist der Abstand zwischen zwei Absaetzen.
+
+   pre-line bleibt WICHTIG: Die Ressourcen tragen ihre Zeilenumbrueche als \n
+   (der Vorlaeufer musste sie eigens in Environment.NewLine uebersetzen). Gehen
+   sie verloren, steht der Rechtshinweis als Textwurst da.
+   -------------------------------------------------------------------------- */
+.epos-kihinweis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kihinweis-text {
+    max-height: 62vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    padding: 4px 12px 4px 0;
+}
+
+.epos-kihinweis-text:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+.epos-kihinweis-titel {
+    margin: 0 0 2px 0;
+    font-size: 16px;                        /* 12 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-ueberschrift {
+    margin: 14px 0 2px 0;
+    font-size: var(--epos-schriftgroesse);  /* 9,5 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-fassung {
+    margin: 0 0 12px 0;
+    font-size: 11px;                        /* 8,5 pt */
+    color: var(--epos-text-leise);
+}
+
+.epos-kihinweis-absatz {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kihinweis-stand {
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-knoepfe {
+    display: flex;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Einstellungen des KI-Assistenten (iU9-W15b.4).
+
+   Der Vorlaeufer war ein FixedDialog mit fest gerechneten Pixelpositionen
+   (500 x 358, AutoScaleMode.None, weil die Anwendung DpiUnaware laeuft). Hier
+   fliesst das Ganze; das Schluesselfeld nimmt die Breite, der Knopf "Modell neu
+   erkennen" steht daneben und rutscht auf schmalen Flaechen darunter.
+   -------------------------------------------------------------------------- */
+.epos-kieinst {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.epos-kieinst-schluesselzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieinst-schluessel {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieinst-modellneu {
+    flex: 0 0 auto;
+}
+
+.epos-kieinst-limit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Der Limitwert ist ANZEIGE, kein Feld - er steht bewusst im Code und ist auf
+   keinem Weg zu aendern (Befund W15b-B26). Grau wie im Vorlaeufer (DimGray). */
+.epos-kieinst-limitwert {
+    color: var(--epos-text-leise);
+}
+
+/* Der dreiteilige Hinweis: Modellzeile, Datenschutz, Kontingent - drei
+   Absaetze, wie im Katalog. Im Vorlaeufer ein einziges Label 470 x 154. */
+.epos-kieinst-hinweis {
+    color: var(--epos-text-leise);
+}
+
+.epos-kieinst-hinweis p {
+    margin: 0 0 8px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kieinst-hinweis p:last-child {
+    margin-bottom: 0;
+}
+
+.epos-kieinst-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Das Chatfenster des KI-Assistenten (iU9-W15b.7).
+
+   Der Vorlaeufer dockte acht Bereiche in einem 720 x 580-Fenster (Docking, keine
+   absoluten Koordinaten). Hier ist es eine Spalte: Kontext, Feldsicherung,
+   Verlauf (der WAECHST), Schalterzeile, Eingabe, Hinweiszeile, Fussleiste.
+   -------------------------------------------------------------------------- */
+.epos-kichat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+}
+
+/* Die Kontextzeile - im Vorlaeufer ein 26 px hohes Label in #005AA0. */
+.epos-kichat-kontext {
+    margin: 0;
+    color: var(--epos-verlauf-kopf);
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-kichat-hinweiszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* Die Fussleiste: Links links, Status in der Mitte, Knoepfe rechts. */
+.epos-kichat-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kichat-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.epos-kichat-status {
+    flex: 1 1 auto;
+    text-align: center;
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-knoepfe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Ein Verweis ist ein KNOPF - die Komponente oeffnet nichts selbst, sie meldet.
+   Dieselbe Ueberlegung wie im Gespraechsverlauf (G-6). */
+.epos-kichat-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kichat-link:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Die Eingabezeile (Feld + zwei Knoepfe).
+   -------------------------------------------------------------------------- */
+.epos-kieingabe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieingabe-feld {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieingabe-knoepfe {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Der Bestaetigungsblock - gedaempftes Gelb wie im Vorlaeufer (255,249,226).
+   -------------------------------------------------------------------------- */
+.epos-kibest {
+    background: rgb(255, 249, 226);
+    border: 1px solid var(--epos-warn-text);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px;
+}
+
+.epos-kibest-titel {
+    margin: 0 0 6px 0;
+    color: var(--epos-verlauf-bestaetigung);
+    font-weight: 600;
+}
+
+.epos-kibest-text {
+    margin: 0 0 8px 0;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    padding: 6px 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kibest-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kibest-verfall {
+    color: var(--epos-verlauf-warnung);
+}
+
+@media (forced-colors: active) {
+    .epos-kibest { border: 2px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Die Werkzeugliste (Ueberlagerung): links die Aktionen, rechts Beschreibung
+   und Parameterfelder - im Vorlaeufer 240 px Liste in einem 780 x 520-Fenster.
+   -------------------------------------------------------------------------- */
+.epos-kiwerkzeuge {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-raster {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .epos-kiwerkzeuge-raster { grid-template-columns: 1fr; }
+}
+
+.epos-kiwerkzeuge-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 42vh;
+    overflow-y: auto;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche, #ffffff);
+}
+
+.epos-kiwerkzeuge-eintrag {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kiwerkzeuge-eintrag--gewaehlt {
+    background: var(--epos-karte-flaeche-hover);
+    font-weight: 600;
+}
+
+.epos-kiwerkzeuge-eintrag:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-kiwerkzeuge-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 30vh;
+    overflow-y: auto;
+}
+
+.epos-kiwerkzeuge-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-kiwerkzeuge-eintrag--gewaehlt {
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Der KI-Einstieg aus einer Maske (iU9-W15b.5).
+
+   Der Vorlaeufer KiAufrufKnopf war ein 24-40 px breiter Knopf oben rechts,
+   LINKS neben dem Infoknopf (Kollisionsregel InfoKnopf.cs:99). In einer
+   Knopfleiste genuegt die Reihenfolge; die Hoehe haelt er mit dem Infoknopf
+   gleich, damit beide auf einer Linie sitzen.
+   -------------------------------------------------------------------------- */
+.epos-kiknopf {
+    height: var(--epos-infoknopf);
+    min-width: var(--epos-infoknopf);
+    padding: 0 8px;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    background: transparent;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-kiknopf:hover {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+/* Er ist NICHT tabulierbar (tabindex="-1", wie TabStop = false im Vorlaeufer) -
+   ein Umrandungsring bei :focus-visible waere damit irrefuehrend. Ein
+   Mausklick zieht den Fokus ohnehin nicht aus dem bearbeiteten Feld. */
+.epos-kiknopf:focus {
+    outline: none;
+}
+
+@media (forced-colors: active) {
+    .epos-kiknopf { border: 1px solid CanvasText; }
 }

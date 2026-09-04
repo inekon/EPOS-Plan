@@ -53,6 +53,14 @@ else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not 
     <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_simErgebnis"
                                                        Geschlossen="ZurueckZurListe" />
 }
+else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
+{
+    @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
+       dieselbe Komponente NICHT-MODAL mit Besitzer (KiChatHuelle, E-6); hier
+       loest sie die Ansicht ab, weil es auf dem iPad kein zweites Fenster gibt. *@
+    <EPOS.UI.Dialoge.Hilfe.KiChatDialog @attributes="_kiAssistent"
+                                        Geschlossen="ZurueckZurListe" />
+}
 else
 {
     @if (!string.IsNullOrEmpty(_statuszeile))
@@ -74,6 +82,7 @@ else
     private BhkwDialogDaten? _bhkw;
     private IReadOnlyDictionary<string, object>? _simKonfig;
     private IReadOnlyDictionary<string, object>? _simErgebnis;
+    private IReadOnlyDictionary<string, object>? _kiAssistent;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -169,6 +178,21 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.KiAssistent)
+        {
+            _kiAssistent = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
+            if (_kiAssistent is null)
+            {
+                // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
+                // die Liste stehen und sagt warum - der Windows-Zustand "Fenster geht
+                // nicht auf".
+                _statuszeile = KeinAssistentText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Projektliste)
         {
             _ansicht = maske;
@@ -183,6 +207,7 @@ else
         _ansicht = Seitenschluessel.Projektliste;
         _bhkw = null;
         _simKonfig = null;
+        _kiAssistent = null;
         Laden();
     }
 
@@ -224,6 +249,7 @@ else
                     || maske == Seitenschluessel.BhkwWirtschaftlichkeit
                     || maske == Seitenschluessel.SimulationKonfiguration
                     || maske == Seitenschluessel.SimulationErgebnis
+                    || maske == Seitenschluessel.KiAssistent
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
@@ -270,4 +296,11 @@ else
     /// <summary>Meldung, wenn das Simulationsergebnis nicht zu laden ist.</summary>
     [Parameter] public string KeinSimErgebnisText { get; set; } =
         "Zu diesem Projekt lässt sich das Simulationsergebnis nicht öffnen.";
+
+    /// <summary>
+    /// Meldung, wenn der KI-Assistent nicht zu öffnen ist — der Zustand, solange die
+    /// iOS-Hülle ihn nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeinAssistentText { get; set; } =
+        "Der Hilfe-Assistent steht auf diesem Gerät noch nicht zur Verfügung.";
 }

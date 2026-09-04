@@ -309,11 +309,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 13 Masken** (17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 12 Masken** (13 nach iU9‑W15a, 17 nach iU9‑W14c, 21 nach iU9‑W14b, 25 nach iU9‑W14a, 32 nach iU9‑W13, 38 nach iU9‑W12, 43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
   iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **7** (11 nach W14b/W14c, 14 nach W14a, 21 nach W13, 25 nach W12, 27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15a **13 von 13 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
+  Erreichbarkeit steht seit iU9‑W14a auf 100 % — nach W15b **12 von 12 — 0 × „nein", 0 × „verwaist", 0 × „unklar"**;
   jede weitere Welle senkt die Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W14c an `MDIMainForm`** (der
   Wurzel selbst, Pfadlänge 1). **Der MASKENSCHLÜSSEL-Zeuge hängt seit iU9‑W15a.9 an
   `FormMain` / `Masken.ProjektDetail`** — nach dieser Welle gibt es nur noch zwei
@@ -538,6 +538,43 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/` VERSCHOBEN — sie war die einzige
   Maske, deren `btn_Help` im Designer stand, und trägt dort fünf Testanker. Protokoll:
   [`Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W15b sind vier weitere Masken verschwunden — die KI-Masken**,
+  zusammen 2 243 Zeilen `.cs`, 191 Zeilen Designer und die EINE `MessageBox` der
+  Welle: `Form_TextAnzeige` (110 Z., ohne Designer), `Form_KiHinweis` (280 Z.,
+  ohne Designer), `Form_KiEinstellungen` (149 Z. + 191 Designer) und
+  `Form_KiChat` (1 704 Z., ohne Designer, der Solitär). An ihrer Stelle stehen
+  **drei Hüllen** — `Views/Help/KiHinweisHuelle.cs`,
+  `Views/Help/KiEinstellungenHuelle.cs` und
+  `Views/Help/KiChatHuelle.{cs,Gaben.cs}` — und in `EPOS.UI` fünf Komponenten
+  (`TextAnzeige`, `KiHinweisDialog`, `KiEinstellungenDialog`, `KiChatDialog` in
+  vier Kindern) über zwei neuen Bausteinen (**`Gespraechsverlauf`**, **`KiKnopf`**)
+  und dem Nachtrag `Warnbanner.Verfaellt`.
+  **Der Befund der Welle: der Rechenkern des Assistenten war fertig portiert, nur
+  die Oberfläche nicht.** `KiChatService.cs` (1 751 Z.) lag noch hier, enthielt
+  aber keinen einzigen WinForms-, `Program.`-, `Registry`-, DPAPI- oder
+  `SpecialFolder`-Bezug (Befund W15b‑B1) und ist mit W15b.0a in den Kern gezogen;
+  die zehn Aufrufe an `KiAusfuehrer`, die der Übersetzer dabei meldete
+  (Befund W15b‑B31), laufen seither über die Schnittstelle `IKiAusfuehrung` mit
+  stiller Standardfassung — dieselbe Bauart wie `Dienste.*`.
+  **Zwei Signaturen im Kern sind gewechselt:** `KiEinwilligung.Nachfragen` ist
+  `Func<Task<bool>>` (B12 — eine Razor-Überlagerung kann nur asynchron antworten;
+  `Sicherstellen()` bleibt als synchrone Fassade und FRAGT NICHT MEHR NACH), und
+  `KiAusfuehrer.Anker` (`Control`) ist `Func<Func<Task>, Task> AufOberflaeche`
+  (B16, Entscheid E‑8). Dazu ein zweiter Modalitätshaken
+  `KiAusfuehrer.Ueberlagerung` (B17): In Blazor gibt es keine Modalität im
+  WinForms-Sinn, und die Chatkomponente meldet ihren Überlagerungszustand dorthin.
+  **`Form_HelpPopup` BLEIBT** (Entscheid E‑2) — die erste Maske des Pakets, die
+  weder umgestellt noch gelöscht wird: Ihr Ersatz ist `IHilfeDienst` mit Windows-
+  und iOS-Fassung, beide gebaut; sie fällt mit `HelpCatalog`/`HelpExtender` in
+  iU11. **`Form_Hinweis` bleibt bis Welle 16** (Entscheid E‑1b, bewusste
+  iZ5-Ausnahme nach dem Muster `ProjektAuswahl` aus W15a): Der Nachfolger
+  `Warnbanner.Verfaellt` ist gebaut und geprüft, aber seine drei Aufrufer liegen
+  sämtlich in `Form_Start`.
+  Neu im Kern sind `KiVerlaufstexte` (die ~150 Zeilen Anzeigelogik, die quer durch
+  `Form_KiChat` verstreut lagen), `KiWerkzeugWerte` (die Kulturgrenze der
+  Werkzeugliste), `KiChatKontext` (Positivliste und Bereichszuordnung, E‑9) und
+  `Allgemein/Hilfe/Kurzbeschreibung` (Auflage H‑1). Protokoll:
+  [`Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
   Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
   Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über
@@ -603,7 +640,7 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | `Wirtschaftlichkeit/` | **vollständig in `../EPOS.Kern/Allgemein/Wirtschaftlichkeit/`** (iU4): `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` und 16 weitere |
 | `Simulation/` | **vollständig in `../EPOS.Kern/Allgemein/Simulation/`** (iU4; `SchemaModell.cs` als letzte Datei mit iU9‑W10b). Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`). Seit der Konzeptumsetzung 27./28.08.2026 (**ein Rechenweg, dreikanalig** Heizung/Brauchwasser/Prozess): `Kaskadenschleife` (Stundenschleife Phasen A–G, Ladeaufträge je Rang), `SimulationKanaele` (`Kanal`/`Kanalsatz`/`Senkenliste`/`Ladeordnung`-Umfeld), `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien` (Katalog W1–W6 + harte Guards, eine Wahrheit für Dialog und Laufstart), `ProfilBedarf`, `SchemaModell` (Schema-Ansicht), `StilleDb`; Schichtspeichermodell (N = 1…10, SOC führend) vollständig in `SimulationPufferspeicher`; Booster-Quelltemperatur stundengekoppelt, Lesepunkt je Projekt wählbar (`Tab_Einstellungen.Booster_Lesepunkt`, Default „Davor" = Stundenanfang; Paket B2); Kessel-Temperaturbezug je Anlage `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Bezugskette Senkenspeicher→Katalog→70/50, Default, ohne Pflegezwang; „Fest" = Vorgabe, Warnung nur wenn Paar fehlt). Historie und Invarianten je Paket: `*_Protokoll.md` im selben Ordner |
 | ~~`Lizenz/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Lizenz/`**: `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, Zustände von `NichtAktiviert` bis `Lesemodus`. Die Ablage läuft über `Dienste.Lizenzablage`; **Geltungsbereich Gerät** (DPAPI `LocalMachine`) für Token und Zeitanker, **Benutzer** (`CurrentUser`) für den KI-Schlüssel — ein Wechsel entwertet jede installierte Lizenz |
-| `KI/` | **geteilt seit iU5-U2:** Was der Assistent **weiß** (`HilfeWissen`, `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiEinwilligung`, `KiSchreibschutz`, `KiSicherungspunkt`, die Textkataloge) liegt im Kern; was er **bedient**, bleibt hier — `KiChatService`, `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAufrufKnopf` und die `Aktionen/`. Inhaltlich unverändert: `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
+| `KI/` | **geteilt seit iU5-U2, mit iU9‑W15b neu geschnitten:** Was der Assistent **weiß** UND was er **spricht** liegt im Kern (`HilfeWissen`, `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiEinwilligung`, `KiSchreibschutz`, `KiSicherungspunkt`, die Textkataloge — und seit W15b.0a **`KiChatService`** samt `KiAusfuehrungsweg`, `KiChatKontext`, `KiVerlaufstexte`, `KiWerkzeugWerte`); was an lebenden `Control`/`Form` hängt, bleibt hier — `KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext`, `KiAusfuehrungAdapter` und die `Aktionen/`. `KiAufrufKnopf` ist mit W14a gefallen; sein Nachfolger ist der Baustein `KiKnopf` in `EPOS.UI`. Inhaltlich unverändert: `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`, seit 29.08.2026 `WikiWissen` (Wiki-Suche + Klartext-Auszüge + 24-h-Cache `%APPDATA%\wp-plan\wiki-wissen\`, speist die „Hilfeabschnitte" des Prompts; Chatfenster ohne KI = Online-Doku-Suche; Protokoll `H4H5_Umsetzung_Protokoll.md`); API-Key als DPAPI-Datei `%APPDATA%\wp-plan\ki-schluessel.dat` (Registry-Altwert wird einmalig migriert und gelöscht) |
 | ~~`Import/`~~ | **seit iU5-U1 in `../EPOS.Kern/Allgemein/Import/`**: `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `GanglinienDatei`, `AnsiEncoding`. Ebenso `Katalog/` und `Export/` |
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` (`KlimazonenKarte` ist mit iU9‑W10a.3 gelöscht — der Baustein `Bildkarte` in `EPOS.UI` tritt an seine Stelle) |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
