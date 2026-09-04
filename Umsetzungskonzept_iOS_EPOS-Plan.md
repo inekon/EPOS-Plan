@@ -1446,8 +1446,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bitgleich, mit Zeugen). **Anwenderfragen:** E‑8 Weg 2 (oben), E‑7 (oben — eine andere Entscheidung kostet 27 Werte im
 > englischen Zweig), **E‑9 → iF30** (Register: Lesemodus-Durchsetzung nach W16 — `DarfSchreiben()` hat genau einen Leser),
 > E‑2 (Druckknopf bleibt), E‑4 (kein iOS-Einstieg in die Lizenzverwaltung, iU11), E‑12 (Suchleiste entfallen), E‑17
-> (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Offen:** W15c‑O‑1 (Vertragsendpunkt), W15c‑O‑2 (ein
-> `LizenzTexte`-Bündel — die zwei großen Komponenten stehen bei 450/452 Zeilen mit 25 bzw. 20 Einzelparametern), W15c‑O‑3
+> (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Entschieden am 04.09.2026 (Empfehlungen angenommen):**
+> W15c‑O‑1 — der Vertragsendpunkt löst die AGB-Seite ab, sobald der Lizenzserver 1.4.0 im Betrieb ist (eine Zeile und ihr
+> Zeuge); W15c‑O‑2 — das `LizenzTexte`-Bündel für die zwei großen Komponenten (450/452 Zeilen, 25 bzw. 20 Einzelparameter)
+> kommt **nach W16** als eigener Commit. **Offen:** W15c‑O‑3
 > (Textsuche im Vertragstext), W15c‑O‑4 (Lizenzeinstieg auf iOS, iU11), W15c‑O‑5 (`Form_HelpPopup` fällt weder mit W15c
 > noch mit W16).
 >
@@ -1464,7 +1466,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > zwei Punkte sind nur dort führbar: **der Erststart auf einem echten `.accdb`-Bestand** mit Fehlschlag-Variante
 > (Rückfallstand `git show 3ae6847:WindowsFormsApplication1/Views/Admin/Form_Erststart.cs`) und **die Windows-Sandbox
 > ohne WebView2** (Meldung und Programmende statt leerer Dialoge); dazu Aktivieren/Lesen/Trial/Freigeben, die Zustimmung
-> beim Erststart, Drucken, Speichern unter, de/en, 125 %. Der zwanzigste iOS-Lauf folgt auf diesem Stand.
+> beim Erststart, Drucken, Speichern unter, de/en, 125 %. Der zwanzigste iOS-Lauf (33883210632) auf diesem Stand ist grün.
+>
+> **Rückweg-Anker für W16 (R‑W16‑12): `975ead5`** — der Statusblock-Commit dieser Welle, der letzte Stand vor W16a. Der
+> Git-Tag `vor-W16` ließ sich aus der CI-Umgebung nicht pushen (der Push-Zugang der Umgebung erlaubt nur den Zweig
+> `ios_migration`, Tag-Refs werden mit HTTP 403 abgewiesen); **der Anwender hat ihn am 04.09.2026 vom Arbeitsplatz aus
+> gesetzt** — `refs/tags/vor-W16` zeigt auf `975ead5`.
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
@@ -2445,7 +2452,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
