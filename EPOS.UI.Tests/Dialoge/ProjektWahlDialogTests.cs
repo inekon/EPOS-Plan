@@ -190,6 +190,142 @@ public class ProjektWahlDialogTests : BunitContext
         Assert.Equal(1007, ergebnis!.Id);
     }
 
+    // =========================================================================
+    //  Entscheid W15a-O-3 (04.09.2026) - ein Name, der MEHRERE Projekte trifft
+    // =========================================================================
+
+    /// <summary>
+    /// Der Loeschweg laeuft ueber den NAMEN. Regulaer trifft der genau ein Projekt
+    /// (<c>Tab_Projekt</c> traegt den eindeutigen Index <c>Projektname</c>); ein
+    /// Altbestand ohne ihn kann zwei fuehren, und dann wird gefragt statt still beide
+    /// zu loeschen. Die Zaehlung kommt als Rueckruf herein — dieselbe, mit der
+    /// <c>ProjektCtrl.LoeschenMitVorarbeiten</c> im Kern abbricht.
+    /// </summary>
+    private IRenderedComponent<ProjektWahlDialog> LoeschenMehrdeutig(
+        Func<string, int> anzahl,
+        Action<ComponentParameterCollectionBuilder<ProjektWahlDialog>>? mehr = null)
+        => Loeschen(p =>
+        {
+            p.Add(x => x.NamensAnzahl, anzahl);
+            p.Add(x => x.MehrdeutigTitel, "Projektname mehrfach vergeben");
+            p.Add(x => x.MehrdeutigFormat,
+                  "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                  + "gelöscht. Fortfahren?");
+            mehr?.Invoke(p);
+        });
+
+    [Fact]
+    public void Ein_mehrdeutiger_Name_bringt_nach_der_Sicherheitsabfrage_eine_zweite_Rueckfrage()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+
+        var cut = LoeschenMehrdeutig(
+            n => n == "Speicherhaus" ? 2 : 1,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // sortiert: Speicherhaus
+        Ok(cut).Click();
+
+        // A-7 bleibt unveraendert DAVOR und wird bejaht.
+        Assert.Contains("unwiderruflich", cut.Find(".epos-rueckfrage-text").TextContent);
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        // Jetzt steht die zweite Frage - gemeldet ist noch nichts.
+        Assert.Null(ergebnis);
+        Assert.False(alle);
+
+        var frage = cut.Find(".epos-rueckfrage-text");
+        Assert.Contains("Speicherhaus", frage.TextContent);
+        Assert.Contains("2-mal", frage.TextContent);
+
+        // Auch hier ist "Nein" die Vorgabe - der hervorgehobene Knopf ist der zweite.
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassList);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassList);
+    }
+
+    [Fact]
+    public void Nein_laesst_den_Dialog_stehen_Ja_meldet_die_Freigabe_mit()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+        bool gerufen = false;
+
+        var cut = LoeschenMehrdeutig(
+            _ => 2,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen,
+                     (ProjektKopfZeile? z) => { ergebnis = z; gerufen = true; }));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // Speicherhaus
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // mehrdeutig: Nein
+
+        // Nichts passiert, der Dialog bleibt offen.
+        Assert.False(gerufen);
+        Assert.False(alle);
+        Assert.Null(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        // Zweiter Anlauf, diesmal mit "Ja".
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // mehrdeutig: Ja
+
+        Assert.True(gerufen);
+        Assert.True(alle);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+    }
+
+    [Fact]
+    public void Ein_eindeutiger_Name_fragt_nicht_nach()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+
+        var cut = LoeschenMehrdeutig(
+            _ => 1,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();   // Laurentiuskirche
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+
+        // Kein zweiter Kasten - der Dialog ist zu, die Freigabe wurde nicht gemeldet.
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.False(alle);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1007, ergebnis!.Id);
+    }
+
+    /// <summary>
+    /// Ohne den Rueckruf bleibt der Loeschdialog, wie er war (die Sperre haelt der Kern).
+    /// </summary>
+    [Fact]
+    public void Ohne_Zaehlung_bleibt_es_bei_der_einen_Sicherheitsabfrage()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Loeschen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+    }
+
     [Fact]
     public void Ein_Doppelklick_uebernimmt_wie_OK()
     {

@@ -19,5 +19,18 @@
 
         /// <summary>Name des gewählten Projekts; <c>""</c> = keins.</summary>
         public string Name = "";
+
+        /// <summary>
+        /// Der Anwender hat dem Löschen ALLER Projekte dieses Namens ausdrücklich
+        /// zugestimmt (iU9-W15a, Entscheid O-3 vom 04.09.2026).
+        ///
+        /// <para>Regulär bleibt das Feld <c>false</c>: <c>Tab_Projekt</c> trägt den
+        /// eindeutigen Index <c>Projektname</c>, ein Name trifft also genau ein Projekt.
+        /// Führt ein Altbestand ohne diesen Index den Fall doch, fragt der Löschdialog
+        /// nach und setzt bei „Ja" dieses Feld; der Aufrufer reicht es als
+        /// <c>mehrdeutigZugelassen</c> an <c>ProjektCtrl.LoeschenMitVorarbeiten</c>
+        /// weiter. Id und Name bleiben davon unberührt (Befund W15a-B45).</para>
+        /// </summary>
+        public bool AlleGleichenNamens;
     }
 }
