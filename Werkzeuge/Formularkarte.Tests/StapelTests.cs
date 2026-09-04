@@ -87,7 +87,12 @@ public sealed class StapelTests
         // ausdrueckliche Ausnahme von der Arbeitsregel iZ5).
         // Gezaehlt wird ueber die REPOWURZEL: 14 unter WindowsFormsApplication1
         // plus die zwei generierten des Kerns (Resource, Settings).
-        Assert.True(dateien.Count >= 15, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        //
+        // iU9-W15c (04.09.2026): Die Welle nimmt GENAU EINEN Designer mit -
+        // Form_LizenzVerwaltung (14). Ihre zwei Geschwister zaehlten hier nie mit:
+        // Form_Lizenz und Form_Erststart bauen ihre Oberflaeche im Code auf und
+        // haben keinen Designer (Befund W15c-B2).
+        Assert.True(dateien.Count >= 14, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -137,7 +142,10 @@ public sealed class StapelTests
         // und die erste Assistentenseite. Form_ProjektExportImport faellt in
         // derselben Welle, zaehlte hier aber nie mit - auch sie hatte keinen
         // Designer (Befund W15a-B24).
-        Assert.True(Lauf.Value.Masken >= 12, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Welle 15c nimmt EINE mit (11): Form_LizenzVerwaltung. Form_Lizenz und
+        // Form_Erststart fallen in derselben Welle, zaehlten hier aber nie mit -
+        // beide bauen ihre Oberflaeche im Code auf (Befund W15c-B2).
+        Assert.True(Lauf.Value.Masken >= 11, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
