@@ -2475,6 +2475,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > fachlichen Proben und acht offenen Punkten:
 > `WindowsFormsApplication1/Allgemein/Reporting/iU9_W4_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+> **Windows-Abnahme 04.09.2026, Anwenderwunsch W4‑E‑1 (Energieträgerverwaltung):** Suche und Filter in der
+> Trägerauswahl wie in den Importdialogen — Filterfeld über der Liste mit demselben Kernbaustein `VdiAuswahlFilter`
+> (Teilzeichenkette, Groß-/Kleinschreibung egal, mehrere Begriffe UND-verknüpft, Bezeichnung und Gruppe), Gruppenköpfe
+> nur über Treffern, der gewählte Träger übersteht den Filterwechsel, Pfeiltasten wandern über die Treffer; der Baustein
+> `Zeilenwahl` um `Beschriftung`/`Zusatzklasse` erweitert, die 19 Bestandsaufrufe unverändert (`80e73c7`, neun bunit-Fälle,
+> Abnahmeprobe W4‑19).
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
