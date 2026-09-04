@@ -249,6 +249,15 @@ Gerät also noch nicht erreichbar (iU11). Bau, Simulatorstart, Erststart mit See
 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Zwölfter Lauf 33832613617 (`ios.yml`, `macos-26`, 04.09.2026, 03:16–03:25 UTC, 9 min 02 s)** auf
+`43fb9c3` — der Stand **nach den Wellen 11a und 11b**: grün. Erstmals mit der Ergebnisseite der
+Simulation als zweiter Razor-**Seite** in `Seitenschluessel`/`AppWurzel` (`SimulationErgebnisSeite`,
+zehn Blätter, sieben Renderer-Bilder aus W11a, Baustein `Fortschritt`) und ohne `Form_Simulation_Detail`;
+die `IosProjektQuelle` liefert den Parametersatz der Seite noch nicht (W11b‑O‑5, iU11), die Seite ist
+am Gerät also noch nicht erreichbar. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030
+und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
