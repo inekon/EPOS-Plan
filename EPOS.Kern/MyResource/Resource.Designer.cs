@@ -39803,6 +39803,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
 
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sprache ähnelt.
+        /// </summary>
+        public static string MENU_SPRACHE {
+            get {
+                return ResourceManager.GetString("MENU_SPRACHE", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinie ähnelt.
         /// </summary>
         public static string MENU_STROMGANGLINIE {

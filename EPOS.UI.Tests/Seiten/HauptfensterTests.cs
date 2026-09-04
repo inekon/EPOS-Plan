@@ -221,11 +221,30 @@ public class HauptfensterTests : BunitContext
     {
         var cut = Fenster();
 
-        // Fuenf Punkte der obersten Ebene, deutsche Beschriftung.
-        Assert.Contains("Projekt", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Administration", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Hilfe", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Deutsch", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Englisch", cut.Find(".epos-menueband").TextContent, StringComparison.Ordinal);
+        // VIER Punkte der obersten Ebene, deutsche Beschriftung. Bis zum
+        // Anwenderentscheid W16c-E-2 (04.09.2026) standen "Deutsch" und
+        // "Englisch" als eigene Koepfe daneben.
+        string band = cut.Find(".epos-menueband").TextContent;
+        Assert.Contains("Projekt", band, StringComparison.Ordinal);
+        Assert.Contains("Administration", band, StringComparison.Ordinal);
+        Assert.Contains("Hilfe", band, StringComparison.Ordinal);
+        Assert.Contains("Sprache", band, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Der_Sprachwechsel_geht_ueber_das_Untermenue_Sprache()
+    {
+        // W16c-E-2: Der Weg der Huelle bekommt denselben Seitenschluessel wie
+        // vorher (HauptfensterHuelle.SpracheSetzen + Application.Restart) - nur
+        // haengt der Punkt jetzt unter dem Kopf "Sprache".
+        string? gemeldet = null;
+        var cut = Fenster(weg: (ziel, _) => { gemeldet = ziel; return Task.FromResult(true); });
+
+        cut.Find("#menue-Sprache").Click();
+        cut.Find("#menue-Englisch").Click();
+
+        await Task.Yield();
+
+        Assert.Equal(Seitenschluessel.SpracheEnglisch, gemeldet);
     }
 }

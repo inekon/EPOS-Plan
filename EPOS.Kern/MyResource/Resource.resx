@@ -14350,6 +14350,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_SOL_THERM_GANGLINIE" xml:space="preserve">
     <value>Solarthermieganglinie</value>
   </data>
+  <data name="MENU_SPRACHE" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
   <data name="MENU_STROMGANGLINIE" xml:space="preserve">
     <value>Stromganglinie</value>
   </data>
