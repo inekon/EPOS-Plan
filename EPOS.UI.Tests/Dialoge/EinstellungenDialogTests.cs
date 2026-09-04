@@ -155,20 +155,151 @@ public class EinstellungenDialogTests : BunitContext
         Assert.Contains("nächsten Programmstart", cut.Markup);
     }
 
+    // =====================================================================
+    //  Entscheid E-5: ohne Ordnerwaehler sind die Pfade fest
+    // =====================================================================
+
     /// <summary>
-    /// Entscheid E-5: <b>Kein Wähler, kein Knopf.</b> Auf iOS liefert
-    /// <c>OrdnerWaehlen</c> immer <c>""</c> — die Pfadfelder bleiben beschreibbar.
+    /// Der Dialog OHNE Ordnerwähler — die iOS-Lage: <c>OrdnerWaehlen</c> liefert dort
+    /// immer <c>""</c>, es gibt also keinen Wähler.
+    /// </summary>
+    private IRenderedComponent<EinstellungenDialog> OhneWaehler(
+        Func<Einstellungensatz, bool, Task<SpeicherBefund>>? speichern = null,
+        Func<Task<Einstellungensatz>>? zuruecksetzen = null,
+        Action<bool>? geschlossen = null)
+    {
+        return Render<EinstellungenDialog>(p => p
+            .Add(x => x.Satz, Satz())
+            .Add(x => x.Speichern, speichern ??
+                ((_, _) => Task.FromResult(new SpeicherBefund(true, ""))))
+            .Add(x => x.Zuruecksetzen, zuruecksetzen ??
+                (() => Task.FromResult(new Einstellungensatz())))
+            .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
+    }
+
+    /// <summary>Zählt über alle vier Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
+    private static (int Felder, int NurLesend, int Knoepfe) Pfadfelder(
+        IRenderedComponent<EinstellungenDialog> cut)
+    {
+        int felder = 0, lesend = 0, knoepfe = 0;
+        for (int r = 0; r < 4; r++)
+        {
+            Reiter(cut, r);
+            var pfade = cut.FindAll(".epos-dateiwahl input");
+            felder += pfade.Count;
+            lesend += pfade.Count(e => e.HasAttribute("readonly"));
+            knoepfe += cut.FindAll(".epos-dateiwahl button").Count;
+        }
+        return (felder, lesend, knoepfe);
+    }
+
+    /// <summary>
+    /// Entscheid E-5, Windows-Seite: <b>Mit Wähler bleibt alles wie bisher</b> — fünf
+    /// beschreibbare Pfadfelder, fünf „Durchsuchen…"-Knöpfe, kein Hinweis.
     /// </summary>
     [Fact]
-    public void Ohne_Ordnerwaehler_bleiben_die_fuenf_Knoepfe_weg()
+    public void Mit_Ordnerwaehler_sind_die_fuenf_Pfade_beschreibbar()
     {
-        var cut = Render<EinstellungenDialog>(p => p
-            .Add(x => x.Satz, Satz())
-            .Add(x => x.Speichern, (_, _) => Task.FromResult(new SpeicherBefund(true, ""))));
+        var cut = Zeige();
 
-        Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
-        Assert.Single(cut.FindAll("input[type=text]"));       // das Feld bleibt
-        Assert.False(cut.Find("input[type=text]").HasAttribute("readonly"));
+        var (felder, lesend, knoepfe) = Pfadfelder(cut);
+
+        Assert.Equal(5, felder);
+        Assert.Equal(0, lesend);
+        Assert.Equal(5, knoepfe);
+        Assert.DoesNotContain("fest vorgegeben", cut.Markup);
+    }
+
+    /// <summary>
+    /// Entscheid E-5, iOS-Seite: <b>Kein Wähler, feste Pfade.</b> Die fünf Pfadfelder
+    /// sind nur lesend, es gibt keinen Knopf, und über der Rubrikenleiste steht,
+    /// warum das so ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ordnerwaehler_sind_die_fuenf_Pfade_fest_und_nur_lesend()
+    {
+        var cut = OhneWaehler();
+
+        var (felder, lesend, knoepfe) = Pfadfelder(cut);
+
+        Assert.Equal(5, felder);
+        Assert.Equal(5, lesend);          // alle fünf nur lesend
+        Assert.Equal(0, knoepfe);         // kein „Durchsuchen…"
+        Assert.Contains("Die Ordner sind auf dieser Plattform fest vorgegeben.", cut.Markup);
+    }
+
+    /// <summary>
+    /// Der sichtbare Wert ist der des Kerns (<c>EinstellungenCtrl</c>) — auf iOS die
+    /// Sandbox-Pfade. Nur lesend heißt nicht leer.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ordnerwaehler_zeigen_die_Felder_die_Vorgaben_des_Kerns()
+    {
+        var cut = OhneWaehler();
+
+        Assert.Equal(@"C:\Users\x\AppData\Local\WP-Plan",
+                     cut.Find(".epos-dateiwahl input").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Entscheid E-5: „Speichern" schreibt die übrigen Werte unverändert; <b>die fünf
+    /// Pfade gehen als das zurück, was der Kern vorgegeben hat</b> — der Dialog
+    /// überschreibt sie nicht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ordnerwaehler_speichert_der_Dialog_die_Nicht_Pfad_Werte()
+    {
+        Einstellungensatz? uebergeben = null;
+        bool? ergebnis = null;
+        var cut = OhneWaehler(
+            speichern: (s, _) =>
+            {
+                uebergeben = s;
+                return Task.FromResult(new SpeicherBefund(true, ""));
+            },
+            geschlossen: b => ergebnis = b);
+
+        // Eine Nicht-Pfad-Rubrik bearbeiten: die drei Web-Adressen.
+        Reiter(cut, 2);
+        cut.FindAll("input[type=text]")[0].Input("https://neu/api/tmy");
+
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Equal("https://neu/api/tmy", uebergeben!.PvgisUrl);          // geschrieben
+        Assert.Equal("https://wiki.epos-plan.de", uebergeben.WikiUrl);      // unverändert
+        Assert.Equal("Kenndaten.sqlite", uebergeben.DbName);                // kein Pfad, bleibt
+        Assert.Equal(@"C:\Users\x\AppData\Local\WP-Plan", uebergeben.VdiPfad);
+        Assert.Equal(@"C:\ProgramData\EPOS_PLAN", uebergeben.DbPfad);
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Auch „Standardwerte" ändert die festen Pfade nicht: Ohne Wähler gibt es keinen
+    /// Weg, eine andere Vorgabe als die des Kerns wirksam zu machen. Die übrigen
+    /// Werksstandards greifen wie sonst.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ordnerwaehler_laesst_Standardwerte_die_Pfade_stehen()
+    {
+        var cut = OhneWaehler(zuruecksetzen: () => Task.FromResult(new Einstellungensatz
+        {
+            VdiPfad = @"D:\Werk",
+            DbExportPfad = @"D:\Werk",
+            DbImportPfad = @"D:\Werk",
+            DbPfad = @"D:\Werk",
+            AllgemeinPfad = @"D:\Werk",
+            DbName = "Kenndaten.sqlite",
+            PvgisUrl = "https://re.jrc.ec.europa.eu/api/tmy"
+        }));
+
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Standardwerte").Click();
+        cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
+           .FindAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Assert.Equal(@"C:\Users\x\AppData\Local\WP-Plan", cut.Instance.Werte.VdiPfad);
+        Assert.Equal(@"C:\ProgramData\EPOS_PLAN", cut.Instance.Werte.DbPfad);
+        Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", cut.Instance.Werte.PvgisUrl);
     }
 
     [Fact]
