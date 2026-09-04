@@ -10951,7 +10951,7 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
   </data>
-  <!-- ==================================================================
+  <!-- ===========================================================  </data>
        iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
        (Sammelnachtrag der Welle 5; Zugriff ueber
        ResourceManager.GetString mit deutschem Rueckfall im Code).
@@ -13593,5 +13593,11 @@ Trotzdem importieren?</value>
   </data>
   <data name="KI_CHAT_KOPIEREN" xml:space="preserve">
     <value>Verlauf kopieren</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Projektname mehrfach vergeben</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren?</value>
   </data>
 </root>

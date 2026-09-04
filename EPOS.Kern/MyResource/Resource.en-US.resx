@@ -10944,7 +10944,7 @@ Overwrite it anyway?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>The record could not be transferred into the project.</value>
   </data>
-  <!-- ==================================================================
+  <!-- ===========================================================  </data>
        iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
        (Sammelnachtrag der Welle 5; Zugriff ueber
        ResourceManager.GetString mit deutschem Rueckfall im Code).
@@ -13586,5 +13586,11 @@ Import anyway?</value>
   </data>
   <data name="KI_CHAT_KOPIEREN" xml:space="preserve">
     <value>Copy conversation</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
+    <value>Project name used more than once</value>
+  </data>
+  <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>The project name "{0}" is used {1} times. All {1} projects will be deleted. Continue?</value>
   </data>
 </root>

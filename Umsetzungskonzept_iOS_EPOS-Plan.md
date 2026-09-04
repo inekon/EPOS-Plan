@@ -1433,8 +1433,14 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nicht für „Export"** — der Transferdialog behält sein Auswahlfeld (Platz unter der Variantenliste; W15a‑O‑2). **B56 widerlegt
 > B25:** „Projekt → Öffnen…" ist im MDI-Menü vorhanden und verdrahtet, E‑6 ist gegenstandslos. **Anwenderfragen
 > entschieden:** E‑1 nein, E‑2 ja, E‑3 nur markieren, E‑4 Programmsprache, E‑5 „Löschen" ja / „Export" nein. **Offen:**
-> W15a‑O‑1 (P6, Referenzlauf auf ein importiertes Projekt, nicht gelaufen — Ersatz Abnahmepunkt 4), W15a‑O‑2, W15a‑O‑3
-> (`ProjektCtrl.Delete` löscht über den Namen — zwei gleichnamige Projekte fielen beide; unverändert übernommen).
+> W15a‑O‑1 (P6, Referenzlauf auf ein importiertes Projekt, nicht gelaufen — Ersatz Abnahmepunkt 4). **Entschieden am
+> 04.09.2026:** W15a‑O‑2 (Empfehlung angenommen — der Transferdialog behält sein Auswahlfeld, keine volle Projektliste im
+> Export) und W15a‑O‑3 („Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall": Namen sind über den
+> eindeutigen Index `Projektname` eindeutig, das Löschen über den Namen bleibt; trifft ein Name mehrere Projekte, fragt das
+> Programm mit Vorgabe „Nein" nach statt still beide zu löschen — umgesetzt in `ba806b7`, gemerged als `fe07e82`:
+> `LoeschStand.Mehrdeutig` mit Anzahl in `ProjektCtrl.LoeschenMitVorarbeiten`, zweite `Rueckfrage` im `ProjektWahlDialog`,
+> sieben Tests, darunter zwei auf einer Arbeitskopie ohne den Index). **Neu offen W15a‑O‑4:** `VariantenCtrl.LoescheVariante`
+> ruft `ProjektCtrl.Delete(name)` direkt und kennt die Vorprüfung nicht — dieselbe Rückfrage auch dort?
 > **Testanker:** der Maskenschlüssel-Zeuge steht jetzt auf `FormMain`/`Masken.ProjektDetail`, zwei W16-Aufträge (T1, T2)
 > stehen in den Tests und im Protokoll.
 >
@@ -1450,7 +1456,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Windows-Abnahme steht aus**: Projektwechsel über alle vier Wege mit offenen Blazor-Seiten, Löschen mit Kaskade,
 > Speichern unter (Fortschritt, Abbrechen, Dublette „Muster" neben „Musterprojekt"), **Export→Import-Rundreise mit
 > Variantenpaket und Sicherung samt Kennzahlenvergleich** (der Import war bis hierher unbenutzbar), Assistent vor und
-> zurück, de/en, 125 %. Der siebzehnte iOS-Lauf folgt auf diesem Stand.
+> zurück, de/en, 125 %. Der siebzehnte iOS-Lauf (33867643966) auf diesem Stand ist grün.
 
 > **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
 >
@@ -2326,7 +2332,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):

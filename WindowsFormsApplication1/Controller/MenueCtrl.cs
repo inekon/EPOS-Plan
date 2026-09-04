@@ -188,6 +188,14 @@ namespace WindowsFormsApplication1
         /// 3 bis 5 (Tab_Applikation zuruecksetzen, Energieanlagen, Projekt) liegen seit
         /// iU9-W15a.0d als <see cref="ProjektCtrl.LoeschenMitVorarbeiten"/> im Kern.</para>
         ///
+        /// <para><b>Ein mehrdeutiger Projektname</b> (Entscheid W15a-O-3 vom 04.09.2026):
+        /// Der Loeschweg laeuft ueber den NAMEN. Traegt eine Datenbank zwei Projekte
+        /// desselben Namens — regulaer unmoeglich, <c>Tab_Projekt</c> hat den eindeutigen
+        /// Index <c>Projektname</c>, aber ein Altbestand ohne ihn kann es —, dann fragt
+        /// der DIALOG nach und meldet die Zustimmung ueber
+        /// <c>Projektwahl.AlleGleichenNamens</c>; ohne sie bricht der Kern ab und es wird
+        /// nichts geloescht.</para>
+        ///
         /// <para>Der Rueckgabewert bleibt der Projektname bei Erfolg und <c>""</c> sonst —
         /// beide Aufrufer werten genau das aus.</para>
         /// </summary>
@@ -201,7 +209,25 @@ namespace WindowsFormsApplication1
             if (!Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl) || wahl.Name == "")
                 return "";
 
-            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(wahl.Id, wahl.Name);
+            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(
+                wahl.Id, wahl.Name, wahl.AlleGleichenNamens);
+
+            // Der Kern hat abgebrochen, ohne etwas anzufassen: Der Name trifft mehrere
+            // Projekte, und die Zustimmung fehlt. Hier ist das das SICHERUNGSNETZ - die
+            // Rueckfrage steht im Dialog; ein "Nein" kommt gar nicht bis hierher.
+            if (befund.Stand == LoeschStand.Mehrdeutig)
+            {
+                if (!Dienste.Dialog.Frage(
+                        string.Format(Text_("PROJ_MSG_NAME_MEHRDEUTIG",
+                            "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                            + "gelöscht. Fortfahren?"), befund.Projektname, befund.Anzahl),
+                        Text_("PROJ_MSG_NAME_MEHRDEUTIG_TITEL", "Projektname mehrfach vergeben"),
+                        warnend: true, vorgabeNein: true))
+                    return "";
+
+                befund = ProjektCtrl.LoeschenMitVorarbeiten(wahl.Id, wahl.Name,
+                                                           mehrdeutigZugelassen: true);
+            }
 
             if (befund.Stand == LoeschStand.ApplikationsdatenFehler)
             {
