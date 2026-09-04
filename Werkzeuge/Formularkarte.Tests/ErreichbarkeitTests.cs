@@ -320,9 +320,12 @@ public sealed class ErreichbarkeitTests
         // Welle 12: 37 von 38, nach Welle 13: 31 von 32, nach Welle 14b: 27 von
         // 28. Mit Welle 14a faellt die letzte "unklar"-Maske: nach BEIDEN Wellen
         // sind es 21 von 21 - ALLE erreichbar. Nach Welle 14c: 17 von 17, nach
-        // Welle 15a: 13 von 13. Die Zahl sinkt mit jeder Welle, der Anteil steht
-        // seit W14a auf 100 %.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 13,
+        // Welle 15a: 13 von 13, nach Welle 15b: 12 von 12 - sie nimmt GENAU EINE
+        // Designer-Maske mit (Form_KiEinstellungen); ihre fuenf Geschwister haben
+        // keinen Designer, bleiben (Form_HelpPopup, Entscheid E-2) oder fallen erst
+        // mit Welle 16 (Form_Hinweis, Entscheid E-1b). Die Zahl sinkt mit jeder
+        // Welle, der Anteil steht seit W14a auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 12,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
