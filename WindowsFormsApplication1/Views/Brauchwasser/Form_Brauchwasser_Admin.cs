@@ -91,9 +91,15 @@ namespace WindowsFormsApplication1
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
             // BEFUND W8-B3, woertlich uebernommen: Dieser Knopf der BRAUCHWASSER-Verwaltung
-            // oeffnete den PROZESS-Ergebnisdialog - also die Waermeansicht OHNE
-            // Brauchwassersicht und ohne den Teiler 1000. Die Frage an den Anwender steht
-            // im Protokoll iU9_W8_Blazor_Port_Protokoll.md.
+            // oeffnet den PROZESS-Ergebnisdialog - also die Waermeansicht OHNE die dritte
+            // Sicht "Brauchwasser". Die Frage an den Anwender steht im Protokoll
+            // iU9_W8_Blazor_Port_Protokoll.md.
+            //
+            // Der ZWEITE Teil des Befundes ist mit dem Entscheid W8-O-5 (04.09.2026)
+            // erledigt: Der Kennzahlwert "davon Brauchwasser" wurde hier ohne den Teiler
+            // 1000 gezeigt und war damit um Faktor 1000 groesser als unter "Simulation".
+            // Die Einheit steht jetzt am Wert (kWh aus brauchwasserwerte.Sum()), beide
+            // Ansichten zeigen dieselbe Zahl.
             BedarfErgebnisHuelle.Zeigen(this, simulation, mitBrauchwasser: false, startReiter: 1);
         }
 

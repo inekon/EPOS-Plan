@@ -5,6 +5,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -28,9 +29,25 @@ public class BedarfErgebnisDialogTests : BunitContext
     public BedarfErgebnisDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
+        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit iU9‑W8, Muster
+    /// <c>DeutscheOberflaeche</c> aus <c>GebaeudeKatalogDialogTests</c>) — Kultur UND
+    /// Thread-Kultur, damit ein Lauf unter <c>LANG=en_US.UTF-8</c> dieselbe
+    /// Zahlenschreibweise sieht.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
@@ -95,12 +112,16 @@ public class BedarfErgebnisDialogTests : BunitContext
         string reiterKennzahlen = "Wärmebedarf Ergebnisse",
         string reiterMonate = "Übersicht monatlich",
         string reiterGrafik = "Grafik",
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Energieeinheit? einheit = null,
+        Action<Energieeinheit>? einheitGewaehlt = null)
         => Render<BedarfErgebnisDialog>(p => p
             .Add(x => x.Daten, daten)
             .Add(x => x.ReiterKennzahlen, reiterKennzahlen)
             .Add(x => x.ReiterMonate, reiterMonate)
             .Add(x => x.ReiterGrafik, reiterGrafik)
+            .Add(x => x.Einheit, einheit ?? Energieeinheit.MWh)
+            .Add(x => x.EinheitGewaehlt, einheitGewaehlt)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Reiterknopf(IRenderedComponent<BedarfErgebnisDialog> cut, string text)
@@ -303,5 +324,147 @@ public class BedarfErgebnisDialogTests : BunitContext
 
         cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
         Assert.True(gemeldet);
+    }
+
+    // =================================================================================
+    // Die Einheitenwahl (Anwenderentscheid W8-O-5 vom 04.09.2026)
+    // =================================================================================
+
+    private static readonly byte[] BILD_KWH = { 9, 9, 9, 9 };
+
+    /// <summary>
+    /// Ein Wärmedatensatz, wie ihn die Hülle seit dem Entscheid baut: jede
+    /// Energiekennzahl mit ihrer QUELLENEINHEIT. Der Brauchwasserwert kommt aus
+    /// <c>brauchwasserwerte.Sum()</c> und liegt deshalb in kWh, alle übrigen in MWh.
+    /// </summary>
+    private static BedarfErgebnisDaten WaermeMitEinheiten(bool mitBrauchwasser = true)
+    {
+        var zahlen = new double[12];
+        for (int m = 0; m < 12; m++) zahlen[m] = 20 + m;
+
+        var sicht = new Monatssicht("Prozesse", Reihe(20), BILD)
+        {
+            Zahlen = zahlen,
+            QuelleEinheit = Energieeinheit.MWh,
+            BildKWh = BILD_KWH
+        };
+
+        return new BedarfErgebnisDaten
+        {
+            Sicht = ErgebnisSicht.Waerme,
+            MitBrauchwasser = mitBrauchwasser,
+            Kennzahlen = new[]
+            {
+                new ErgebnisKennzahl("max. Wärmelast:", "180,00", "kW"),
+                new ErgebnisKennzahl("Gesamter Wärmebedarf:", "900,00", "MWh")
+                {
+                    Energie = 900, QuelleEinheit = Energieeinheit.MWh
+                },
+                new ErgebnisKennzahl("Wärmebedarf Brauchwasser:", "97,00", "MWh")
+                {
+                    Energie = 97000, QuelleEinheit = Energieeinheit.KWh
+                }
+            },
+            Sichten = new[] { sicht }
+        };
+    }
+
+    private static IElement Einheitenfeld(IRenderedComponent<BedarfErgebnisDialog> cut)
+        => cut.Find("select");
+
+    [Fact]
+    public void Die_Vorgabe_ist_MWh_und_zeigt_die_Zahlen_des_Bestands()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+
+        Assert.Same(Energieeinheit.MWh, cut.Instance.Anzeigeeinheit);
+
+        var zeilen = cut.FindAll(".epos-raster tbody tr");
+        Assert.Contains("180,00", zeilen[0].TextContent);   // Leistung, unveraendert
+        Assert.Contains("kW", zeilen[0].TextContent);
+        Assert.Contains("900,00", zeilen[1].TextContent);
+        Assert.Contains("MWh", zeilen[1].TextContent);
+        // 97 000 kWh sind die 97,00 MWh des Bestands - der frueher nur in EINER der
+        // beiden Ansichten gezogene Teiler 1000 steht jetzt als Einheit am Wert.
+        Assert.Contains("97,00", zeilen[2].TextContent);
+        Assert.Contains("MWh", zeilen[2].TextContent);
+    }
+
+    [Fact]
+    public void Umschalten_auf_kWh_aendert_Zahl_und_Einheitentext()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+
+        Einheitenfeld(cut).Change("1");
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+        var zeilen = cut.FindAll(".epos-raster tbody tr");
+        Assert.Contains("180,00", zeilen[0].TextContent);   // kW bleibt kW
+        Assert.Contains("kW", zeilen[0].TextContent);
+        Assert.Contains("900000", zeilen[1].TextContent);
+        Assert.Contains("kWh", zeilen[1].TextContent);
+        Assert.Contains("97000", zeilen[2].TextContent);
+    }
+
+    [Fact]
+    public void Die_Monatstabelle_folgt_der_Wahl()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+        Reiterknopf(cut, "Übersicht monatlich").Click();
+
+        var januar = cut.FindAll(".epos-raster tbody tr")[0];
+        Assert.Contains("20,00", januar.TextContent);
+        Assert.Contains("MWh", januar.TextContent);
+
+        Einheitenfeld(cut).Change("1");
+
+        januar = cut.FindAll(".epos-raster tbody tr")[0];
+        Assert.Contains("20000", januar.TextContent);
+        Assert.Contains("kWh", januar.TextContent);
+    }
+
+    [Fact]
+    public void Das_Saeulenbild_wechselt_mit_der_Einheit()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+        Reiterknopf(cut, "Grafik").Click();
+
+        string mwh = cut.Find("img.epos-chartbild").GetAttribute("src") ?? "";
+        Einheitenfeld(cut).Change("1");
+        string kwh = cut.Find("img.epos-chartbild").GetAttribute("src") ?? "";
+
+        Assert.NotEqual(mwh, kwh);
+        Assert.Contains(Convert.ToBase64String(BILD), mwh);
+        Assert.Contains(Convert.ToBase64String(BILD_KWH), kwh);
+    }
+
+    [Fact]
+    public void Die_Wahl_wird_beim_Aendern_gemeldet()
+    {
+        Energieeinheit? gemerkt = null;
+        var cut = Aufbauen(WaermeMitEinheiten(), einheitGewaehlt: e => gemerkt = e);
+
+        Einheitenfeld(cut).Change("1");
+        Assert.Same(Energieeinheit.KWh, gemerkt);
+    }
+
+    [Fact]
+    public void Der_Dialog_oeffnet_mit_der_gemerkten_Einheit()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten(), einheit: Energieeinheit.KWh);
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+        Assert.Contains("900000", cut.FindAll(".epos-raster tbody tr")[1].TextContent);
+    }
+
+    /// <summary>
+    /// Ein Datensatz aus fertigen Texten — ohne Zahl und Quelleneinheit — bleibt, wie er
+    /// ist: kein Wahlfeld, keine Umrechnung.
+    /// </summary>
+    [Fact]
+    public void Ohne_Zahlen_erscheint_kein_Wahlfeld()
+    {
+        var cut = Aufbauen(Waerme(false));
+        Assert.Empty(cut.FindAll("select"));
     }
 }
