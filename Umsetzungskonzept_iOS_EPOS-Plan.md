@@ -1433,9 +1433,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Maßparameter, Bestätigungsblock unten im Verlauf, keine Positionsrechnung, kein `DetectUrls`, Autoscroll nur unten, die
 > eine MessageBox wird ein Warnbanner, die 400‑ms-Sperruhr und der Flackerschutz entfallen. **Befunde** B1…B30 eingetreten,
 > vier neu (B31 Naht, B32 20 statt 17 Texte, B33, B34 `Schalter` hält seinen Zustand selbst — `@key` im Chat).
-> **Anwenderfragen:** E‑1b und E‑6 wie vorläufig entschieden, E‑8/E‑9/E‑10 umgesetzt; **offen:** W15b‑O‑1 (der Schnitt
-> der Naht `IKiAusfuehrung` — bestätigen?), W15b‑O‑2 (Tooltip der Semantikzeile Modell/Lizenz/Herkunft mit dem Label
-> entfallen — als `title` nachtragen?), W15b‑O‑3 (`Standards/Schalter`-Rücksetzer, 20 Nutzer, eigene Welle), W15b‑O‑4
+> **Anwenderfragen:** E‑1b und E‑6 wie vorläufig entschieden, E‑8/E‑9/E‑10 umgesetzt; **entschieden am 04.09.2026
+> (Empfehlungen angenommen, `13835f2`/`aaaacce`, gemerged als `4775213`):** W15b‑O‑1 — der Schnitt der Naht
+> `IKiAusfuehrung` ist bestätigt; die iOS-Hülle nutzt denselben Kern und läuft bis zu ihrer eigenen Fassung (O‑4) auf der
+> stillen Standardfassung `KeineAusfuehrung` (fragen und suchen ja, ausführen nein); W15b‑O‑2 — der Tooltip der
+> Semantikzeile ist als `title` zurück (wortgleich der alte Schlüssel `KI_SEMANTIK_HERKUNFT`, zwei Zeugen); **offen:** W15b‑O‑3 (`Standards/Schalter`-Rücksetzer, 20 Nutzer, eigene Welle), W15b‑O‑4
 > (iOS bedient `KiAssistentGaben` noch nicht, Handprobe in iU11), W15b‑O‑5 (`Form_HelpPopup` ist die einzige Maske, die
 > weder mit W15c noch mit W16 fällt).
 >
