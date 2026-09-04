@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Globalization;
 using SpeicherEngine;
 
@@ -10,6 +9,11 @@ namespace WindowsFormsApplication1
     /// (<see cref="PruefMeldung"/>) in Anzeigetexte. Drei-Schichten-Regel: die
     /// Engine liefert Schluessel und Werte, der Text kommt ausschliesslich aus
     /// <c>MyResource</c>.
+    ///
+    /// <para><b>Seit iU9-W12.0c im Kern.</b> Vier Aufrufstellen in zwei Masken
+    /// haengen daran, und beide werden in dieser Welle Razor-Komponenten; die
+    /// Uebersetzung ist ausserdem oberflaechenfrei — bis auf die eine Farbe, die
+    /// hier nicht mehr steht (siehe <see cref="StufeKlasse"/>).</para>
     /// </summary>
     public static class GanglinienProtokollText
     {
@@ -54,15 +58,27 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Farbe einer Pruefstufe in der Protokollliste.</summary>
+        /// <summary>
+        /// Die CSS-Klasse einer Protokollzeile — der Ersatz fuer die frueheren
+        /// <c>Color.FromArgb</c>-Werte (<c>176,0,32</c> fuer Fehler, <c>160,96,0</c>
+        /// fuer Warnung, sonst <c>SystemColors.WindowText</c>).
+        ///
+        /// <para><b>Warum keine Farbe mehr.</b> <c>System.Drawing</c> ist im Kern
+        /// verboten, und eine Farbe ist ohnehin eine Darstellungsentscheidung: Die
+        /// Stufe sagt, WAS gilt; welcher Farbklang, welches Symbol und welcher
+        /// Kontrastmodus daraus wird, entscheidet die Oberflaeche. Die beiden
+        /// Zahlenwerte stehen unveraendert in <c>epos-ui.css</c> als
+        /// <c>--epos-stufe-fehler</c> und <c>--epos-stufe-warnung</c>.</para>
+        /// </summary>
         /// <param name="stufe">Stufe.</param>
-        public static Color StufeFarbe(PruefStufe stufe)
+        /// <returns><c>epos-stufe--fehler</c>, <c>epos-stufe--warnung</c> oder <c>epos-stufe--info</c>.</returns>
+        public static string StufeKlasse(PruefStufe stufe)
         {
             switch (stufe)
             {
-                case PruefStufe.Fehler: return Color.FromArgb(176, 0, 32);
-                case PruefStufe.Warnung: return Color.FromArgb(160, 96, 0);
-                default: return SystemColors.WindowText;
+                case PruefStufe.Fehler: return "epos-stufe--fehler";
+                case PruefStufe.Warnung: return "epos-stufe--warnung";
+                default: return "epos-stufe--info";
             }
         }
     }

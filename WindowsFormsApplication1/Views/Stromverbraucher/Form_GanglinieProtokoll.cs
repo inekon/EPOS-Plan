@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
                 {
                     ListViewItem item = new ListViewItem(GanglinienProtokollText.StufeText(m.Stufe));
                     item.SubItems.Add(GanglinienProtokollText.Text(m));
-                    item.ForeColor = GanglinienProtokollText.StufeFarbe(m.Stufe);
+                    item.ForeColor = StufeFarbe(m.Stufe);
                     listView_Protokoll.Items.Add(item);
                 }
             }
@@ -62,6 +62,23 @@ namespace WindowsFormsApplication1
                 : MyResource.Resource.IMPORT_BTN_SCHLIESSEN;
 
             AcceptButton = importMoeglich ? btn_OK : btn_Abbrechen;
+        }
+
+        /// <summary>
+        /// Farbe einer Pruefstufe in der Protokollliste. Stand bis iU9-W12.0c in
+        /// <c>GanglinienProtokollText</c>; die Klasse ist in den Kern gezogen und
+        /// kennt <c>System.Drawing</c> dort nicht mehr. Die beiden Zahlenwerte
+        /// bleiben woertlich - die Blazor-Fassung (W12.1) traegt sie als CSS-Klassen
+        /// (<c>GanglinienProtokollText.StufeKlasse</c>).
+        /// </summary>
+        private static System.Drawing.Color StufeFarbe(PruefStufe stufe)
+        {
+            switch (stufe)
+            {
+                case PruefStufe.Fehler: return System.Drawing.Color.FromArgb(176, 0, 32);
+                case PruefStufe.Warnung: return System.Drawing.Color.FromArgb(160, 96, 0);
+                default: return System.Drawing.SystemColors.WindowText;
+            }
         }
 
         // ------------------------------------------------------------------- Texte

@@ -57,6 +57,12 @@
     /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
     --epos-fehleingabe: rgb(255, 235, 235);
 
+    /* Die zwei Farben des Ganglinien-Pruefprotokolls (iU9-W12.0c). Sie standen
+       woertlich in GanglinienProtokollText.StufeFarbe; im Kern gibt es
+       System.Drawing nicht mehr, dort heisst die Aussage jetzt StufeKlasse. */
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-stufe-warnung: rgb(160, 96, 0);
+
     /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
     --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
     --epos-karte-rahmen-hover: #3B82F6;     /* KARTE_RAHMEN_HOVER           */
@@ -2372,3 +2378,20 @@ body {
 .epos-simerg-vergleich tr.epos-simerg-beste { background: rgb(222, 241, 222); }
 .epos-simerg-vergleich tr.epos-simerg-aktiv { font-weight: 700; }
 .epos-simerg-vergleich tr.epos-simerg-fehler { color: firebrick; }
+
+/* ------------------------------------------------------------------ */
+/* Pruefprotokoll des Lastgangimports (iU9-W12.1)                      */
+/*                                                                     */
+/* Die Stufe faerbt den Text der Zeile, nicht ihre Flaeche - genau wie  */
+/* die ListView des Vorlaeufers (item.ForeColor). "Info" bleibt in der  */
+/* Vorgabefarbe; eine eigene Regel braucht sie nicht, sie steht nur     */
+/* damit jede Zeile eine Klasse traegt.                                */
+/* ------------------------------------------------------------------ */
+.epos-stufe--fehler { color: var(--epos-stufe-fehler); }
+.epos-stufe--warnung { color: var(--epos-stufe-warnung); }
+.epos-stufe--info { color: inherit; }
+
+@media (forced-colors: active) {
+    .epos-stufe--fehler,
+    .epos-stufe--warnung { color: LinkText; }
+}
