@@ -42,12 +42,20 @@ namespace EPOS.Kern.Tests
     /// <c>false</c>, und die Faelle ueberspringen still. Ein Testlauf in einer Umgebung
     /// ohne die 77-MB-Datei soll nicht rot werden, sondern schweigen.</para>
     /// </summary>
-    internal sealed class TestDatenbank : IDisposable
+    /// <remarks>
+    /// <para><b>Seit iU9-W11a.6 auch als KLASSENVORRICHTUNG verwendbar</b>
+    /// (<c>IClassFixture&lt;TestDatenbank&gt;</c>) — deshalb ist der Konstruktor
+    /// oeffentlich. Der Bestand legt die 77-MB-Kopie je TESTFALL an; das ist fuer
+    /// schreibende Faelle richtig (jeder bekommt einen unberuehrten Stand), fuer rein
+    /// lesende aber teuer. Die vier Klassen der Welle 11 lesen nur und teilen sich
+    /// deshalb EINE Kopie je Klasse.</para>
+    /// </remarks>
+    public sealed class TestDatenbank : IDisposable
     {
         private readonly string _vorher;
         private readonly string _ordner;
 
-        internal TestDatenbank()
+        public TestDatenbank()
         {
             _vorher = DataRepository.PfadUeberschreibung;
 
@@ -65,7 +73,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Steht eine beschreibbare Arbeitskopie? Sonst ueberspringt der Fall.</summary>
-        internal bool Vorhanden { get; }
+        public bool Vorhanden { get; }
 
         /// <summary>
         /// Sucht <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> aufwaerts vom Laufordner.

@@ -37,12 +37,19 @@ namespace WindowsFormsApplication1
     /// (<see cref="SimulationControl.AlleSpeicher"/>), weil die Füllstandsserien genau aus
     /// ihr entstehen.
     ///
+    /// <b>Seit iU9‑W11a liegt die Klasse im Kern</b> (vorher
+    /// <c>WindowsFormsApplication1/Views/Simulation/ErgebnisPraesenz.cs</c>, <c>internal</c>).
+    /// Sie hat keinen WinForms-Bezug, steuert aber fünf der sechs Ergebnismasken — und
+    /// weil sie <c>internal</c> war, trug <c>DashboardForm</c> zwei <c>bool</c>-Felder
+    /// (<c>HatPV</c>/<c>HatSolarthermie</c>) als Ersatz. Mit dem Umzug ist sie <c>public</c>
+    /// und wird selbst durchgereicht.
+    ///
     /// <b>Reine Anzeige.</b> Nichts hier schreibt; der Anlagenbestand wird dialogfrei über
     /// <see cref="StilleDb"/> gelesen (kein <c>DataRepository</c>: dessen MessageBox im
     /// Fehlerfall hätte in einem headless laufenden Prüfprogramm nichts zu suchen).
     /// Schlägt die Abfrage fehl, bleibt es bei den Punkten 1–3.
     /// </summary>
-    internal sealed class ErgebnisPraesenz
+    public sealed class ErgebnisPraesenz
     {
         /// <summary>Wärmepumpe vorhanden.</summary>
         public bool Waermepumpe;

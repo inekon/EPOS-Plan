@@ -305,6 +305,21 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   47 nach W7), und die
   Erreichbarkeit steht auf **48 von 49, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
   Zahl.
+  **Mit iU9‑W11a ist KEINE Maske verschwunden** — die Welle verlegt, was ohne
+  Oberfläche geht, in den Kern und hängt die sechs Ergebnismasken schon daran;
+  W11b baut danach die Ergebnisseite in EINEM Schritt und löscht sie (Empfehlung
+  der Vermessung § 11.5: maskenweise, nicht reiterweise — sonst zwei WebViews in
+  einem Fenster). Angefasst sind `Form_Simulation_Detail`, `DashboardForm`,
+  `NavigatorUebersicht`, `TabNavigationManager`, `Form_SpeicherVariantenVergleich`,
+  `Form_SpeicherOptimierung` und `Form_Start`: elf inline-SQL-Stellen, rund
+  600 Zeilen Fachrechnung, die 39 Kennzahlzeilen des Stromspeichers und die drei
+  dreifachen Anzeigetexte stehen jetzt im Kern
+  (`SimulationErgebnisCtrl`, `SimulationLaufCtrl`, `SpeicherKennzahlenBlock`,
+  `SpeicherAnzeigeCtrl`, `ErgebnisPraesenz`, `Ganglinie`).
+  **`Form_Simulation_Detail.btn_Simulation_Click` läuft seither NEBENLÄUFIG** —
+  siehe „Nebenläufigkeit" unten. `KonfigurationCtrl.LiesProjekt` haben W10b und
+  W11a gleichzeitig gebraucht; es gibt sie EINMAL (siehe dort). Protokoll:
+  [`Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md`](Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md).
 - **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
@@ -338,7 +353,7 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` (`KlimazonenKarte` ist mit iU9‑W10a.3 gelöscht — der Baustein `Bildkarte` in `EPOS.UI` tritt an seine Stelle) |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Blazor/` | **Die Hülle für Razor-Dialoge und -Seiten (iU8 / iU9-W5).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` für die fünf zeichengleichen Namensabfragen des Bestands (seit iU9-W2.1 alle fünf umgestellt: `Bezeichner`, `BezeichnerUndBeschreibung`, `FragenMitHinweis`); seit iU9-W2.2 `Sprungbruecke` — Schlüssel → `Form`, **modal aus dem Rückruf einer Razor-Komponente heraus** (nur WinForms-Ziele; seit iU9-W6.0d auch die vier Katalogverwaltungen der Erzeuger, seit iU9-W7.0f die Stammdaten der Solarthermieganglinien, seit iU9-W10a.0c die Pufferspeicher-Verwaltung NUR ZUM ANSEHEN — `PufferSpAdminNurLesen`, ein eigener Schlüssel, weil derselbe Sprung ohne das Kennzeichen aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs machte); seit iU9-W6.0e `BlazorAssistentSeite<T>` — dasselbe für eine ASSISTENTENSEITE: randlos, `TopLevel = false`-tauglich, die WebView verzögert in `Bestuecken` gebaut (Risiko R5), beim Wiederbesuch wird die Wurzelkomponente getauscht statt der WebView. Seit iU9-W4.0 gilt für Blazor-Ziele nicht mehr der nachgelagerte Sprung, sondern der Baustein `Ueberlagerung`: ein modaler Bereich IM selben Fenster, also ohne zweite WebView (Risiko R2). Die Hülle liefert dafür `Gaben()` statt `Oeffnen()`. **Seit iU9-W5.0 gibt es die zweite Hüllenform: `BlazorSeite<T> : UserControl`** — nicht-modal, für eine Seite, die in einer vorhandenen Maske sitzt und dort bleibt (`Form_Start.tabPage6`). Sie trägt dieselben `CreationProperties` wie die Dialoghülle, insbesondere denselben `UserDataFolder`: ein gemeinsamer Browserprozess für Dialoge und Seiten. **Eine WebView je Fenster** (Risiko R5) — umgeschaltet wird in der Komponente (Baustein `Reiter` bzw. die Navigation von `BerichteKostenSeite`), nicht durch eine zweite Hülle. Der Projektwechsel läuft über `EPOS.UI.Dienste.SeitenZustand`, ein Objekt mit Änderungsereignis, damit die WebView **nicht** neu gebaut wird. **DPI:** Die `DpiInsel` wirkt nur für den modalen Lauf; eine eingebettete Seite sitzt im Fenster der DpiUnaware-`Form_Start` und wird ab 125 % bitmapskaliert — `BlazorSeite` versucht es deshalb gar nicht erst und dokumentiert den Befund (offener Entscheid iF21). Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
-| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md` und `iU9_W9_Blazor_Port_Protokoll.md` `iU9_W10a_Blazor_Port_Protokoll.md` und `iU9_W10b_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md`, `iU9_W9_Blazor_Port_Protokoll.md`, `iU9_W10a_Blazor_Port_Protokoll.md`, `iU9_W10b_Blazor_Port_Protokoll.md` und `iU9_W11a_Kern_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
@@ -432,6 +447,20 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   455 von 573 Dateien eine BOM, 118 nicht — das ist unschädlich (UTF-8 ohne BOM ist eindeutig),
   beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
   (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
+- **Nebenläufigkeit: ZWEI Rechnungen laufen im Hintergrund, sonst keine.**
+  `Form_SpeicherOptimierung` seit iF22 (Rastersuche) und seit **iU9‑W11a.4** der
+  Simulationslauf der `Form_Simulation_Detail`. Beide folgen derselben Aufteilung
+  (Klassenkopf `Form_SpeicherOptimierung.cs:29–46`): **Der Bedienfaden liest die
+  Datenbank**, der Hintergrund rechnet, das Marshalling besorgt `Progress<T>` (auf
+  dem Bedienfaden erzeugt, übernimmt dessen `SynchronizationContext`). In der
+  Detailansicht heißt das: `SimulationLaufCtrl.Vorpruefen`/`Bedarf`/`Bestuecken`
+  auf dem Bedienfaden, `Laufen` in `Task.Run`, danach die Anzeige wieder auf dem
+  Bedienfaden. Ein `Entsorgt()`-Test steht in **jedem** Zweig nach dem `await` —
+  der häufigste Grund für einen Abbruch ist, dass der Anwender die Maske zumacht,
+  und ein Zugriff auf ein Steuerelement landete dann als
+  `ObjectDisposedException` in einer `async void`-Fortsetzung, also unbehandelt.
+  **`DataRepository.EngineModus` ist prozessweit** — zwei gleichzeitige Läufe sind
+  ausgeschlossen, der Startknopf ist für die Dauer gesperrt.
 - **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
   in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch. **Ausnahme seit iU8:**
   `BlazorDialogForm.ShowDialog()` stellt den Faden für die Dauer des modalen Laufs auf
