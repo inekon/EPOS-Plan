@@ -415,6 +415,15 @@ wie W16 (Startmaske), mit der die Bitmapskalierung fällt.
 | W8 | O‑1…O‑7 | **O‑1** Wortlaut der Prüfmeldungen je Ausprägung · **O‑2** „Speichern in DB" ohne `VerteilungUebernehmen` · **O‑3** (B3) Brauchwasser-Admin öffnet die Prozessansicht · **O‑4** `GetMaxID + 1` auf `Tab_DBTagV_STAMM` (**Schemafrage, eigenes Paket**) · **O‑5** Teiler 1000 nur im Brauchwasser · **O‑6** KI-Knopf (**W15b**) · **O‑7** die drei Bedarfsbilder nur von Hand vergleichbar |
 | W9 | O‑1…O‑7 | **O‑1** (B1) Filterzweig ohne Verwendung · **O‑2** (B6) Bauweise am Index der Gebäudeart · **O‑3** (B7) kWh gegen MWh in derselben Meldung · **O‑4** (B9) „Überschreiben" nach Umbenennen (**soweit ohne Fachentscheid behoben**) · **O‑5** (B10) Admin-Modus ohne Aufrufer · **O‑6** KI-Knopf (**W15b**) · **O‑7** Speicherbedarf von zehn WebViews im Assistenten |
 | W10a | O‑1…O‑8 | **O‑1** (B10) Prüfung gegen Anzeige, Lauf gegen Datenbankstand · **O‑2** (B25) Parallelverbund konstruktiv an Rang 1 (**Migrationsschritt**) · **O‑3** (B26) Speicherliste gegen Verbundliste · **O‑4** (B29) Pufferverwaltung ohne Abbrechen · **O‑5** (B39) fehlende `de-DE.resx` von `Form_Simulation_Config` (**erledigt sich mit W10b**) · **O‑6** KI-Knopf (**W15b**) · **O‑7** Kartengröße bei 150 % · **O‑8** **ein nicht reproduzierbarer Testausfall unter `en_US`** (einer von dreizehn Läufen; Vorschlag: ausdrückliche Frist für die drei `WaitForAssertion` aus Welle 1 statt der Vorgabefrist) |
+| W15c | O‑1…O‑5 | **iF30** Lesemodus-Durchsetzung (nach W16; heute genau EIN Leser, B7) · **O‑1** Vertragsendpunkt `epos/v1/vertrag` statt AGB-Seite (E‑17, B27 — die Quelle ist EINE Zeile) · **O‑2** ein `LizenzTexte`-Bündel für die zwei großen Komponenten · **O‑3** Textsuche im Vertragstext entfallen (E‑12) · **O‑4** Lizenzeinstieg auf iOS (E‑4, iU11) · **O‑5** `Form_HelpPopup` bleibt bis iU11 |
+
+**Die Windows-Abnahme der Welle 15c steht in ihrem Protokoll**
+([`WindowsFormsApplication1/Allgemein/Reporting/iU9_W15c_Blazor_Port_Protokoll.md`](WindowsFormsApplication1/Allgemein/Reporting/iU9_W15c_Blazor_Port_Protokoll.md),
+§ 11) und trägt **zwei Punkte, die es vorher nicht gab**: den Erststart auf einem
+echten `.accdb`-Bestand (mit und ohne Fehlschlag) und die **Wiederholung des
+Sandbox-Nachweises ohne WebView2** — seit W15c startet die Anwendung ohne die
+Laufzeit nicht mehr, sondern meldet und endet (Befund W15c‑B10,
+[`Umsetzung_iU8_Nachweise.md`](Umsetzung_iU8_Nachweise.md)).
 
 **Neu hergestellt statt nachgebaut:** Die WinForms-Klimazonenkarte konnte ihre
 ausgelieferte SVG **nie** lesen (W10a‑B41: der Parser erwartete den Pfadbefehl

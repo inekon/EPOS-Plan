@@ -230,8 +230,11 @@ beide Sprachen je `CustomMessage`, kein `}` in einem Pascal-Kommentar, kein `^` 
 - [ ] **Windows Sandbox ohne WebView2**: Setup installiert die Laufzeit still, die Anwendung
       startet, der Dialog öffnet
 - [ ] **Windows Sandbox ohne Internet**: Der Bootstrapper schlägt fehl, die Meldung
-      `WebView2Fehlt` erscheint, **die Installation läuft weiter**, die Anwendung startet, nur der
-      Blazor-Dialog bleibt leer
+      `WebView2Fehlt` erscheint, **die Installation läuft weiter** — die Anwendung startet
+      seit **iU9‑W15c** allerdings NICHT mehr: Erststart und Lizenzzustimmung laufen über eine
+      Blazor-Hülle (Befund W15c‑B10). Statt eines leeren Fensters erscheint seither die Meldung
+      `START_WEBVIEW2_FEHLT` mit der Bezugsquelle, dann endet das Programm (Entscheid
+      W15c‑E‑8, Weg 2). **Dieser Sandbox-Nachweis ist mit W15c zu wiederholen.**
 - [ ] Rechner **mit** vorhandener Laufzeit: Der Bootstrapper wird gar nicht erst mitgenommen
       (`Check: not WebView2Vorhanden`)
 - [x] ~~`.gitignore` um `/MicrosoftEdgeWebview2Setup.exe` ergänzen, bevor `GitHub_Sync.bat` das
