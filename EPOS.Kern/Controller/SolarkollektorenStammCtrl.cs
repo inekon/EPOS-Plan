@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace WindowsFormsApplication1
@@ -357,6 +358,108 @@ namespace WindowsFormsApplication1
             SolarkollektorenModel m = new SolarkollektorenModel();
             FillFromRow(m, row);
             return m;
+        }
+
+        // =================================================================================
+        // W14a.0c - Katalogliste und Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste — die fuenf Werte, aus denen
+        /// <c>Form_SolarKollektorenAdmin.SetDBList</c> (Z. 89-99) seine zweispaltige
+        /// Rasterzeile baut.
+        /// </summary>
+        /// <param name="Id">Primaerschluessel im Katalog.</param>
+        /// <param name="Bezeichner">Erste Spalte.</param>
+        /// <param name="Firma">Erste Zeile der Spalte „Eigenschaften".</param>
+        /// <param name="Kollektortyp">Zweite Zeile.</param>
+        /// <param name="Aperturflaeche">Dritte Zeile [m²].</param>
+        public sealed record KatalogZeile(int Id, string Bezeichner, string Firma,
+                                          string Kollektortyp, double Aperturflaeche);
+
+        /// <summary>
+        /// Der vollstaendige Kollektorkatalog, nach Bezeichner sortiert — die Liste des
+        /// Katalogbrowsers.
+        /// </summary>
+        /// <remarks>
+        /// <para>Der Vorlaeufer nahm <see cref="ReadAll"/> und baute die zweite Spalte in
+        /// der Maske zusammen (Z. 96), samt der beiden deutschen Literale
+        /// „Kollektortyp: " und „Aperturfläche: " IM DATENSTROM. Hier kommen die Werte,
+        /// die Beschriftungen stehen als <see cref="KatalogBrowserProfil.Zeilenbauplan"/>
+        /// im Profil und damit im Textkatalog.</para>
+        /// <para>Diese Auspraegung kennt KEINEN Filter — <c>SetDBList(szFilter)</c> wurde
+        /// von allen drei Aufrufern leer gelassen (Befund W14-B18); der Parameter faellt
+        /// deshalb ersatzlos weg.</para>
+        /// </remarks>
+        public static IReadOnlyList<KatalogZeile> KatalogZeilen()
+        {
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, Firma, Kollektortyp, Aperturflaeche FROM [" + TABLE +
+                "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(
+                    Convert.ToInt32(row["ID"]),
+                    Feld(row, "Bezeichner"),
+                    Feld(row, "Firma"),
+                    Feld(row, "Kollektortyp"),
+                    row["Aperturflaeche"] == DBNull.Value ? 0 : Convert.ToDouble(row["Aperturflaeche"])));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_SolarKollektorenAdmin.dataGridView1_Click</c> (Z. 101-123).
+        /// <c>null</c>, wenn es den Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// <para>Der Vorlaeufer baute sein SQL per Textverkettung (Z. 107, Befund
+        /// W14-B12); hier steht <see cref="DbParam"/>. Die Zahlen kommen ROH wie im
+        /// Bestand (<c>rs.Read(...).ToString()</c>), ohne Format.</para>
+        /// <para><b>Befund W14a-B78 (Feldkarte, 04.09.2026).</b> Die Maske hat ZWEI
+        /// Flaechenfelder: <c>textBox_Kollektor_A</c> („Kollektorfläche") und
+        /// <c>textBox_Modul_A</c> („Aperturfläche"). Das erste wird im ganzen Bestand nie
+        /// gefuellt; das zweite bekommt in Z. 117 die Modulflaeche und in Z. 118 sofort
+        /// danach die Aperturflaeche (Befund W14-B15). Woertlich uebernommen heisst das:
+        /// <see cref="KatalogBrowserProfil.FeldModulflaeche"/> („Kollektorfläche") bleibt
+        /// LEER, <see cref="KatalogBrowserProfil.FeldAperturflaeche"/> traegt die
+        /// Aperturflaeche. Entscheide E-2 und E-11.</para>
+        /// </remarks>
+        public static IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldKollektortyp] = Feld(r, "Kollektortyp");
+            werte[KatalogBrowserProfil.FeldFirma] = Feld(r, "Firma");
+            werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
+
+            // W14a-B78: bleibt leer, genau wie im Bestand.
+            werte[KatalogBrowserProfil.FeldModulflaeche] = "";
+            werte[KatalogBrowserProfil.FeldAperturflaeche] = Feld(r, "Aperturflaeche");
+            werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
+            werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
         }
     }
 }

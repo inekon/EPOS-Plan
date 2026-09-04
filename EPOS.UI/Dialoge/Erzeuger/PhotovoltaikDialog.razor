@@ -83,7 +83,7 @@
             </Raster>
 
             <div class="epos-leiste">
-                @if (Sprung is not null)
+                @if (VerwaltungGaben is not null)
                 {
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
                 }
@@ -129,6 +129,18 @@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 
+    @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
+    @* Der Knopf "Bearbeiten" oeffnete bis hierher Form_AdminPV ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <ModulKatalogDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
                 Frage="@FrageLoeschen" Beantwortet="BeiLoeschfrage" />
 </div>
@@ -167,8 +179,13 @@
     /// <summary>Löscht einen KATALOGsatz; <c>true</c> = gelöscht.</summary>
     [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
 
-    /// <summary>Weiterführung in die Modulverwaltung; ohne Delegat kein Knopf.</summary>
-    [Parameter] public Func<string, Task<bool>>? Sprung { get; set; }
+    /// <summary>
+    /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
+    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
+    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
@@ -365,12 +382,28 @@
     // =================================================================================
     // Katalogpflege
     // =================================================================================
+    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>
+    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
+    /// nach der Rückkehr aus dem zweiten Fenster.
+    /// </summary>
+    private void VerwaltungFertig(ModulErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
+        KatalogNeuLaden();
+    }
+
 
     private async Task BeiBearbeiten()
     {
-        if (Sprung is null) return;
-        await Sprung(Sprungziel.PvAdmin);
-        KatalogNeuLaden();
+        if (VerwaltungGaben is null) return;
+        _verwaltungGaben = VerwaltungGaben();
+        await Task.CompletedTask;
     }
 
     private void BeiLoeschfrage(bool? antwort)

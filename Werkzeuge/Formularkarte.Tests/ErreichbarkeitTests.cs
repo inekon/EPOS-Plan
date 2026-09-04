@@ -184,29 +184,77 @@ public sealed class ErreichbarkeitTests
     [Fact]
     public void DieSprungtabelleLoestDieMaskenschluesselAuf()
     {
-        // Der Zeuge stand bis iU9-W7.10 auf Form_WP (Masken.WpAdministration); die
-        // Maske ist mit W7.3 geloescht. Form_AdminStromspeicher wird ebenso NUR ueber
-        // die Sprungtabelle geoeffnet - Masken.StromspeicherAdmin, vom MDI-Menue ueber
-        // MenueCtrl und WinFormsNavigation - und kommt erst in Welle 14a an die Reihe.
-        var knoten = Knoten("Form_AdminStromspeicher");
+        // Die Kette der Zeugen: Bis iU9-W7.10 stand hier Form_WP
+        // (Masken.WpAdministration, mit W7.3 geloescht), danach bis iU9-W14a.7
+        // Form_AdminStromspeicher (Masken.StromspeicherAdmin, mit W14a.3 geloescht).
+        //
+        // Form_ProjektSpeichernUnter wird ebenso NUR ueber die Sprungtabelle
+        // geoeffnet - Masken.ProjektSpeichernUnter, vom MDI-Menue ueber MenueCtrl und
+        // WinFormsNavigation - und kommt erst in Welle 15a an die Reihe. Von den fuenf
+        // Maskenschluesseln, hinter denen nach W14 noch eine WinForms-Maske steht, ist
+        // sie der kuerzeste Weg (Vermessung W14 § 14.1).
+        var knoten = Knoten("Form_ProjektSpeichernUnter");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.Contains("Masken.StromspeicherAdmin", knoten.Pfad, StringComparison.Ordinal);
+        Assert.Contains("Masken.ProjektSpeichernUnter", knoten.Pfad, StringComparison.Ordinal);
     }
 
     // ==================================================================
     //  Unklar
     // ==================================================================
 
+    /// <summary>
+    /// Ein dauerhaft gesperrter Knopf macht den Weg dahinter „unklar", nicht „ja" —
+    /// gegen das eingefrorene PRUEFMUSTER.
+    /// </summary>
+    /// <remarks>
+    /// <para>Bis iU9-W14a.7 lief dieser Fall gegen den echten Bestand:
+    /// <c>Form_PufferSp_Admin</c> schaltete <c>btn_Neu</c> und <c>btn_Bearbeiten</c> in
+    /// einem Zweig ab und nie wieder ein, und ihr Kind <c>Form_PufferSp_Bearbeiten</c>
+    /// war deshalb die EINE „unklar"-Maske des Programms. Mit W14a sind beide Razor;
+    /// der Erreichbarkeitsbefund zaehlt seither 0 nein / 0 verwaist / 0 unklar.</para>
+    /// <para>Damit die REGEL prueffbar bleibt, liegen beide Masken eingefroren unter
+    /// <c>Pruefmuster/Pufferspeicher/</c> — samt einer Wurzel
+    /// (<c>MDIMainForm.Auszug.cs</c>), ohne die jede Maske dort „nein" waere. Dasselbe
+    /// Vorgehen wie bei den Ankern der Wellen 2, 4 und 7.</para>
+    /// </remarks>
     [Fact]
     public void EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa()
     {
-        // Form_PufferSp_Admin schaltet btn_Neu und btn_Bearbeiten in einem Zweig ab
-        // und nie wieder ein. Der Weg dahinter wird deshalb nicht behauptet.
-        var knoten = Knoten("Form_PufferSp_Bearbeiten");
+        Erreichbarkeit.Vergessen();
+        try
+        {
+            var graph = Erreichbarkeit.Bauen(Repowurzel.PruefmusterWurzel);
 
-        Assert.Equal(Erreichbar.Unklar, knoten.Status);
-        Assert.Contains(knoten.Oeffner, o => o.Contains("zweifelhaft", StringComparison.Ordinal));
+            var admin = graph.Fuer("Form_PufferSp_Admin");
+            Assert.True(admin is not null, "Das Pruefmuster kennt Form_PufferSp_Admin nicht.");
+            Assert.Equal(Erreichbar.Ja, admin!.Status);
+
+            var knoten = graph.Fuer("Form_PufferSp_Bearbeiten");
+            Assert.True(knoten is not null, "Das Pruefmuster kennt Form_PufferSp_Bearbeiten nicht.");
+
+            Assert.Equal(Erreichbar.Unklar, knoten!.Status);
+            Assert.Contains(knoten.Oeffner, o => o.Contains("zweifelhaft", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Erreichbarkeit.Vergessen();
+        }
+    }
+
+    /// <summary>
+    /// Im laufenden Bestand gibt es nach iU9-W14a KEINEN „unklar"-Zustand mehr — und
+    /// auch kein „nein" und kein „verwaist". Das ist der Meilenstein der Welle.
+    /// </summary>
+    [Fact]
+    public void DerBestandFuehrtKeineUngeklaerteMaskeMehr()
+    {
+        var ergebnis = Stapel.Laufen(Projekt, ziel: null);
+
+        Assert.Equal(0, ergebnis.Erreichbar(Erreichbar.Unklar));
+        Assert.Equal(0, ergebnis.Erreichbar(Erreichbar.Nein));
+        Assert.Equal(0, ergebnis.Erreichbar(Erreichbar.Verwaist));
+        Assert.Equal(ergebnis.Masken, ergebnis.Erreichbar(Erreichbar.Ja));
     }
 
     // ==================================================================
@@ -255,8 +303,10 @@ public sealed class ErreichbarkeitTests
         // 89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die eine uebrige ist
         // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43, nach
         // Welle 12: 37 von 38, nach Welle 13: 31 von 32, nach Welle 14b: 27 von
-        // 28. Die Zahl sinkt mit jeder Welle, der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 27,
+        // 28. Mit Welle 14a faellt die letzte "unklar"-Maske: nach BEIDEN Wellen
+        // sind es 21 von 21 - ALLE erreichbar. Die Zahl sinkt mit jeder Welle,
+        // der Anteil steht jetzt auf 100 %.
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 21,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -269,16 +319,13 @@ public sealed class ErreichbarkeitTests
 
         var befund = Stapel.Erreichbarkeitsbefund(ergebnis, Projekt);
         Assert.Contains("# Öffner erreichbar — Befund aller Masken", befund, StringComparison.Ordinal);
-        // iU9-W9: Form_GebWohnflaeche war die erste der beiden "unklar"-Masken und
-        // ist mit W9.3 geloescht; uebrig bleibt Form_PufferSp_Bearbeiten (Welle 14a).
-        Assert.Contains("| Form_PufferSp_Bearbeiten | unklar |", befund, StringComparison.Ordinal);
+        // iU9-W9: Form_GebWohnflaeche war die erste der beiden "unklar"-Masken und ist
+        // mit W9.3 geloescht; die zweite - Form_PufferSp_Bearbeiten - faellt mit
+        // W14a.1. Seither steht KEINE Maske mehr auf "unklar"; die Regel selbst prueft
+        // EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa am Pruefmuster.
+        Assert.Contains("| unklar | 0 |", befund, StringComparison.Ordinal);
+        Assert.Contains("| Form_AdminSettings | ja |", befund, StringComparison.Ordinal);
         Assert.Contains("| gesamt | " + ergebnis.Masken + " | |", befund, StringComparison.Ordinal);
-
-        // Das Ungeklaerte steht oben - die Liste wird von vorn abgearbeitet.
-        var kopf = befund.Substring(befund.IndexOf("| Maske |", StringComparison.Ordinal));
-        Assert.True(kopf.IndexOf("| Form_PufferSp_Bearbeiten | unklar |", StringComparison.Ordinal) <
-                    kopf.IndexOf("| Form_AdminSettings | ja |", StringComparison.Ordinal),
-                    "Die ungeklaerten Masken stehen nicht vorn.");
     }
 
     [Fact]

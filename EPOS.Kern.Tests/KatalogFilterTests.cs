@@ -101,15 +101,18 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Heizkessel_eine_unbekannte_Gruppe_hebt_die_Einengung_auf()
         {
-            // BEFUND W6-O-1: Die Kette kennt "Sonstige", der Katalog fuehrt aber
-            // "Sonstige Energieträger" - der Eintrag trifft nie. Bestandsverhalten,
-            // bewusst nicht repariert (Regel F3).
+            // BEFUND W6-O-1, GESCHLOSSEN mit iU9-W14a.0b (Befund W14-B2): Die Kette kannte
+            // "Sonstige", der Katalog fuehrt aber "Sonstige Energieträger" - der Eintrag traf
+            // nie, und die drei wirklich vorhandenen Gruppen 23/24/25 standen gar nicht in der
+            // Kette. Seither kennt die Kette sie; unbekannt ist jetzt, was auch der Katalog
+            // nicht fuehrt. Die Regel selbst - eine unbekannte Gruppe hebt die Einengung auf -
+            // ist unveraendert und wird hier weiter geprueft.
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
             var ctrl = new HeizkesselStammCtrl();
             Assert.Equal(ctrl.Filtern("Alle", 0).Count,
-                         ctrl.Filtern("Sonstige Energieträger", 0).Count);
+                         ctrl.Filtern("Sonstige", 0).Count);
         }
 
         [Fact]

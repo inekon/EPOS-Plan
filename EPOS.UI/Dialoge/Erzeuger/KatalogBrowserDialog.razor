@@ -1,0 +1,632 @@
+﻿@* Katalogbrowser der Erzeuger - EINE Komponente, VIER Auspraegungen (iU9-W14a.1).
+
+   Vorbilder: Views/Heizkessel/Form_Heizkessel_Admin.cs (365 Z.),
+   Views/BHKW/Form_BHKWAdmin.cs (465 Z.),
+   Views/Solarthermie/Form_SolarKollektorenAdmin.cs (188 Z.),
+   Views/Pufferspeicher/Form_PufferSp_Admin.cs (213 Z.).
+
+   WARUM EINE STATT VIER. Der Bauplan der vier Masken ist derselbe: Liste links,
+   0-2 Filterklapplisten, ein Detailblock rechts, "Neu..." / "Bearbeiten..." /
+   "Loeschen" / "OK". Was sie trennt, sind acht Werte; die stehen seit W14a.0a
+   als KatalogBrowserProfil im Kern. Der FELDKARTENABGLEICH laeuft deshalb je
+   AUSPRAEGUNG, nicht je Komponente (Muster W8/W13).
+
+   DER EDITOR IST EINE UEBERLAGERUNG, kein zweites Fenster (Risiko R2). Fuer drei
+   der vier Auspraegungen steht er seit W6/W7 bereit (HeizkesselKatalogDialog,
+   BhkwKatalogDialog, SolarkollektorKatalogDialog), fuer den Pufferspeicher seit
+   W14a.2. Welcher es ist, entscheidet der Wirt ueber EditorGaben; die Komponente
+   zeigt ihn nur an.
+
+   EINWERTIGE AUSWAHL. Alle vier Vorlaeufer arbeiten mit genau einer markierten
+   Zeile (ListBox ohne MultiExtended, DataGridView mit MultiSelect = false) - die
+   Mehrfachwahl aus W13 wird hier NICHT gebraucht.
+
+   NUR LESEN. Der Pufferspeicher-Browser kennt einen zweiten Zustand
+   (m_bReadOnly, gesetzt von Sprungziel.PufferSpAdminNurLesen): Neu, Bearbeiten
+   und Loeschen sind gesperrt, Liste und Detailblock bleiben sichtbar. Genau das
+   macht der Parameter NurLesen.
+
+   DIE 13 MessageBox DER VIER MASKEN WERDEN BANNER UND RUECKFRAGEN. Geloescht
+   wird ueber eine Rueckfrage mit EINEM Text fuer alle vier
+   (PSP_MELDUNG_WIRKLICH_LOESCHEN, Angleichung E-4); der Solarkollektor-Browser
+   hatte bis hierher einen eigenen Wortlaut OHNE Namen (Befund W14-B16).
+
+   TASTATUR. Esc schliesst die oberste Ebene. Enter ist NICHT belegt - "Loeschen"
+   und "Speichern" schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalogbrowser" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Profil.Titel</h1>
+        <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Filterleiste: 0 oder 2 Klapplisten ------------------------------ *@
+    @if (Profil.Filterart != KatalogFilterArt.Keiner)
+    {
+        <div class="epos-katalogbrowser-filter">
+            <Auswahlfeld Bezeichnung="@Profil.FilterEinsBezeichnung" Eintraege="@FilterEins"
+                         Auswahl="@_filterEins" AuswahlChanged="BeiFilterEins" />
+            <Auswahlfeld Bezeichnung="@Profil.FilterZweiBezeichnung" Eintraege="@FilterZwei"
+                         Auswahl="@_filterZwei" AuswahlChanged="BeiFilterZwei" />
+        </div>
+    }
+
+    @* --- Die Katalogliste ------------------------------------------------ *@
+    <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
+
+    <Raster TZeile="BrowserZeile" Zeilen="@_zeilen.AsQueryable()">
+        <KindInhalt>
+            <TemplateColumn TGridItem="BrowserZeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
+                            Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="@(() => BeiZeile(context))" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="BrowserZeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@Profil.SpalteName" />
+            @if (Profil.Zweispaltig)
+            {
+                <TemplateColumn TGridItem="BrowserZeile" Title="@Profil.SpalteEigenschaften">
+                    <span class="epos-katalogbrowser-eigenschaften @(context.Geschuetzt && Profil.ZeigtSchreibschutz ? "epos-katalogbrowser-geschuetzt" : "")">@context.Eigenschaften</span>
+                </TemplateColumn>
+            }
+        </KindInhalt>
+    </Raster>
+
+    @* --- Der Detailblock ------------------------------------------------- *@
+    <Gruppenkopf Titel="@Profil.Detailueberschrift">
+        <KindInhalt>
+            @foreach (BrowserFeldwert feld in _felder)
+            {
+                @if (feld.Art == BrowserFeldArt.Schalter)
+                {
+                    <Schalter Bezeichnung="@feld.Bezeichnung" Wert="@feld.Schalterwert"
+                              WertChanged="@(w => SchalterSetzen(feld, w))"
+                              Aktiv="@(feld.Editierbar && !NurLesen)" />
+                }
+                else if (feld.Art == BrowserFeldArt.Zahl && feld.Editierbar && !NurLesen)
+                {
+                    <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                                Feldname="@feld.Feldname" Wert="@Zahl(feld)"
+                                WertChanged="@(w => ZahlSetzen(feld, w))"
+                                FehlerZustand="BeiFehlerZustand" />
+                }
+                else if (feld.Art == BrowserFeldArt.Ganzzahl && feld.Editierbar && !NurLesen)
+                {
+                    <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                                  Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
+                                  WertChanged="@(w => GanzzahlSetzen(feld, w))"
+                                  FehlerZustand="BeiFehlerZustand" />
+                }
+                else
+                {
+                    <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
+                              WertChanged="@(w => TextSetzen(feld, w))"
+                              NurLesen="@(!feld.Editierbar || NurLesen)"
+                              Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
+                }
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <div class="epos-leiste">
+        @if (Profil.HatSpeicherweg)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!SpeichernErlaubt)"
+                    @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        }
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                @onclick="BeiLoeschen">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiOk">@OkText</button>
+    </div>
+
+    @* --- Rueckfragen ----------------------------------------------------- *@
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
+
+    <Rueckfrage Offen="@_schutzfrage" TitelText="@TitelSchutz" Frage="@_schutztext"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchutzAntwort" />
+
+    @* --- Namensabfrage von „Neu…" ---------------------------------------- *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnNeuText" FrageText="@Profil.SpalteName"
+                          MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiNamensfrage" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Der Katalogeditor als Ueberlagerung (Risiko R2) ----------------- *@
+    <Ueberlagerung Offen="@_editorOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_editorOffen && EditorInhalt is not null)
+            {
+                @EditorInhalt(_editorGaben!)
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Die Auspraegung
+    // =====================================================================
+
+    /// <summary>Welcher der vier Kataloge (Vorgabe: Heizkessel).</summary>
+    [Parameter] public KatalogBrowserArt Art { get; set; } = KatalogBrowserArt.Heizkessel;
+
+    /// <summary>
+    /// Das Profil zur <see cref="Art"/>. Die Huelle reicht es fertig uebersetzt herein;
+    /// ohne sie baut die Komponente es selbst (dann tragen die Texte die Schluessel).
+    /// </summary>
+    [Parameter] public KatalogBrowserProfil? ProfilVorgabe { get; set; }
+
+    private KatalogBrowserProfil Profil => ProfilVorgabe ?? _profil!;
+    private KatalogBrowserProfil? _profil;
+
+    /// <summary>
+    /// NUR LESEN: „Neu…", „Bearbeiten…" und „Löschen" sind gesperrt, Liste und
+    /// Detailblock bleiben sichtbar. Vorbild <c>Form_PufferSp_Admin.m_bReadOnly</c>.
+    /// </summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Die Datenwege der Huelle.</summary>
+    [Parameter] public KatalogBrowserWege Wege { get; set; } = new();
+
+    /// <summary>Die Eintraege der ersten Filterklappliste (Brennstoffgruppe / Hersteller).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> FilterEins { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Die Eintraege der zweiten Filterklappliste (Leistungs- / Volumenstufe).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> FilterZwei { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Der Katalogeditor als Inhaltsbaustein — der Wirt entscheidet, welche Komponente
+    /// erscheint, und splattet den Parametersatz. Ohne ihn bleiben „Neu…" und
+    /// „Bearbeiten…" wirkungslos.
+    /// </summary>
+    [Parameter] public RenderFragment<IReadOnlyDictionary<string, object>>? EditorInhalt { get; set; }
+
+    /// <summary>
+    /// Liefert den Parametersatz des Editors: Bezeichner und Modus „Neu" hinein, fertige
+    /// Gaben heraus. Die Huelle hängt <c>Geschlossen</c> selbst an.
+    /// </summary>
+    [Parameter] public Func<string, bool, Action<string?>, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
+
+    /// <summary>Der Browser ist zu — <c>Bestaetigt</c> sagt, ob über „OK".</summary>
+    [Parameter] public EventCallback<BrowserErgebnis> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------
+
+    [Parameter] public string BtnNeuText { get; set; } = "Neu...";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string SpalteWahlText { get; set; } = "Wahl";
+
+    /// <summary>Rückfrage vor dem Löschen; <c>{0}</c> nimmt den Bezeichner auf.</summary>
+    [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+    [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
+
+    /// <summary>Rückfrage vor dem Überschreiben eines geschützten Satzes (nur BHKW).</summary>
+    [Parameter] public string FrageSchutz { get; set; } =
+        "Der Datensatz \"{0}\" gehört zum Auslieferungskatalog. Trotzdem überschreiben?";
+    [Parameter] public string TitelSchutz { get; set; } = "Schreibgeschützt";
+
+    /// <summary>Meldung, wenn der Name schon vergeben ist.</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; } = "Name existiert bereits!";
+
+    /// <summary>Meldung, wenn die Namensabfrage ohne Namen bestätigt wird.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Bezeichner eingeben!";
+
+    /// <summary>Meldung bei ungültiger Zahl; <c>{0}</c> nimmt den Feldnamen auf.</summary>
+    [Parameter] public string MeldungZahlUngueltig { get; set; } =
+        "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<BrowserZeile> _zeilen = Array.Empty<BrowserZeile>();
+    private List<BrowserFeldwert> _felder = new();
+    private string _gewaehlt = "";
+
+    private int? _filterEins = 0;
+    private int? _filterZwei = 0;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _loeschfrage;
+    private string _loeschtext = "";
+    private bool _schutzfrage;
+    private string _schutztext = "";
+    private bool _namensfrage;
+
+    private bool _editorOffen;
+    private IReadOnlyDictionary<string, object>? _editorGaben;
+
+    private bool _geaendert;
+    private readonly List<string> _fehlerhaft = new();
+
+    /// <summary>Die Zeilen der Liste (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<BrowserZeile> Zeilen => _zeilen;
+
+    /// <summary>Der gewählte Bezeichner (Prüfhilfe für Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Die aktuelle Meldung (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool Loeschfrage => _loeschfrage;
+
+    /// <summary>Steht die Schreibschutzrückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool Schutzfrage => _schutzfrage;
+
+    /// <summary>Steht der Katalogeditor? (Prüfhilfe für Tests.)</summary>
+    public bool EditorOffen => _editorOffen;
+
+    /// <summary>Steht die Namensabfrage? (Prüfhilfe für Tests.)</summary>
+    public bool Namensfrage => _namensfrage;
+
+    private bool SpeichernErlaubt => !NurLesen && _geaendert && _gewaehlt.Length > 0;
+
+    protected override void OnParametersSet()
+    {
+        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
+            _profil = KatalogBrowserProfil.Finde(Art);
+    }
+
+    protected override void OnInitialized()
+    {
+        if (ProfilVorgabe is null) _profil = KatalogBrowserProfil.Finde(Art);
+        ListeAufbauen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Liste und Detailblock
+    // =====================================================================
+
+    /// <summary>
+    /// Baut die Liste neu und stellt die Markierung auf denselben Satz zurück. Fällt er
+    /// durch den Filter, bleibt keine Markierung übrig — dann sperrt sich der
+    /// Speichern-Knopf wieder (wortgleich <c>Form_BHKWAdmin.ListeAktualisieren</c>).
+    /// </summary>
+    private void ListeAufbauen()
+    {
+        _zeilen = Wege.Liste?.Invoke(_filterEins ?? 0, _filterZwei ?? 0)
+                  ?? Array.Empty<BrowserZeile>();
+
+        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
+
+        // Wie der Bestand: nach dem Aufbau steht die erste Zeile.
+        _gewaehlt = _zeilen.Count > 0 ? _zeilen[0].Bezeichner : "";
+        DetailLaden();
+    }
+
+    private void DetailLaden()
+    {
+        _fehlerhaft.Clear();
+        _geaendert = false;
+
+        if (_gewaehlt.Length == 0) { _felder = new List<BrowserFeldwert>(); return; }
+        _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
+    }
+
+    private void BeiZeile(BrowserZeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+        DetailLaden();
+    }
+
+    private void BeiFilterEins(int? wert)
+    {
+        _filterEins = wert ?? 0;
+        _gewaehlt = "";
+        ListeAufbauen();
+    }
+
+    private void BeiFilterZwei(int? wert)
+    {
+        _filterZwei = wert ?? 0;
+        _gewaehlt = "";
+        ListeAufbauen();
+    }
+
+    // =====================================================================
+    // Die Felder des Speicherwegs
+    // =====================================================================
+
+    private static double? Zahl(BrowserFeldwert feld) =>
+        Zahlen.ZahlParsen(feld.Wert, out double d) ? d : null;
+
+    private static int? Ganzzahl(BrowserFeldwert feld) =>
+        Zahlen.GanzzahlParsen(feld.Wert, out int i) ? i : null;
+
+    private void TextSetzen(BrowserFeldwert feld, string wert)
+    {
+        if (!feld.Editierbar || NurLesen) return;
+        feld.Wert = wert;
+        _geaendert = true;
+        _meldung = "";
+    }
+
+    private void ZahlSetzen(BrowserFeldwert feld, double? wert)
+    {
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        _geaendert = true;
+        _meldung = "";
+    }
+
+    private void GanzzahlSetzen(BrowserFeldwert feld, int? wert)
+    {
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        _geaendert = true;
+        _meldung = "";
+    }
+
+    private void SchalterSetzen(BrowserFeldwert feld, bool wert)
+    {
+        if (!feld.Editierbar || NurLesen) return;
+        feld.Schalterwert = wert;
+        _geaendert = true;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Sammelt, welche Zahlenfelder gerade keinen gueltigen Text tragen.
+    /// </summary>
+    /// <remarks>
+    /// Eine FEHLEINGABE gilt als Aenderung und gibt den Speichern-Knopf frei — sonst
+    /// bliebe er gesperrt, und der Anwender bekaeme die Pruefmeldung nie zu sehen. Der
+    /// Vorlaeufer setzte <c>m_bGeaendert</c> ebenso in <c>TextChanged</c>, ohne den
+    /// Text vorher anzusehen.
+    /// </remarks>
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft)
+        {
+            if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+            _geaendert = true;
+        }
+        else
+        {
+            _fehlerhaft.Remove(meldung.Feld);
+        }
+    }
+
+    private bool EingabenPruefen()
+    {
+        if (_fehlerhaft.Count == 0) return true;
+
+        _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
+    }
+
+    // =====================================================================
+    // Die fuenf Knoepfe
+    // =====================================================================
+
+    private void BeiSpeichern()
+    {
+        if (!SpeichernErlaubt || Wege.Speichern is null) return;
+        if (!EingabenPruefen()) return;
+
+        // Der BHKW-Browser fragt vor dem Ueberschreiben eines geschuetzten Satzes -
+        // in der Auslieferungsdatenbank ist das der Regelfall.
+        if (Profil.ZeigtSchreibschutz && Wege.IstGeschuetzt?.Invoke(_gewaehlt) == true)
+        {
+            _schutztext = string.Format(FrageSchutz, _gewaehlt);
+            _schutzfrage = true;
+            return;
+        }
+
+        Schreiben(false);
+    }
+
+    private void BeiSchutzAntwort(bool? antwort)
+    {
+        _schutzfrage = false;
+        if (antwort != true) return;
+        Schreiben(true);
+    }
+
+    private void Schreiben(bool schutzUebergehen)
+    {
+        KatalogSpeicherErgebnis ergebnis =
+            Wege.Speichern!(_gewaehlt, _felder, schutzUebergehen);
+
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = WarnStufe.Hinweis;
+        _geaendert = false;
+        ListeAufbauen();
+    }
+
+    private void BeiNeu()
+    {
+        if (NurLesen) return;
+        _meldung = "";
+        _namensfrage = true;
+    }
+
+    /// <summary>
+    /// „Neu…": Namensabfrage → <c>Exists</c>-Vorabtest → Editor im Modus „Neu".
+    /// <b>Angleichung:</b> Der Vorabtest gab es im Bestand nur bei Heizkessel und
+    /// Pufferspeicher (dort als inline-SQL, Befund W14-B27); BHKW und
+    /// Solarkollektoren legten ohne ihn an.
+    /// </summary>
+    private void BeiNamensfrage(string? name)
+    {
+        _namensfrage = false;
+        if (name is null) return;
+
+        if (Wege.Existiert?.Invoke(name) == true)
+        {
+            _meldung = MeldungNameBelegt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        EditorOeffnen(name, neu: true);
+    }
+
+    private void BeiBearbeiten()
+    {
+        if (NurLesen) return;
+        if (!Ausgewaehlt()) return;
+        EditorOeffnen(_gewaehlt, neu: false);
+    }
+
+    private void EditorOeffnen(string name, bool neu)
+    {
+        if (EditorGaben is null || EditorInhalt is null) return;
+
+        _editorGaben = EditorGaben(name, neu, EditorFertig);
+        _editorOffen = true;
+    }
+
+    /// <summary>
+    /// Nach dem Editor: Liste neu bauen und die Markierung auf den (ggf. neuen) Namen
+    /// stellen — die Reihenfolge aller vier Vorläufer.
+    /// </summary>
+    private void EditorFertig(string? name)
+    {
+        _editorOffen = false;
+        _editorGaben = null;
+
+        if (name is not null) _gewaehlt = name;
+        ListeAufbauen();
+        if (name is not null) DetailLaden();
+        StateHasChanged();
+    }
+
+    private void BeiLoeschen()
+    {
+        if (NurLesen) return;
+        if (!Ausgewaehlt()) return;
+
+        _loeschtext = string.Format(FrageLoeschen, _gewaehlt);
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschAntwort(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || Wege.Loeschen is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(_gewaehlt);
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _gewaehlt = "";
+        _meldung = "";
+        ListeAufbauen();
+    }
+
+    /// <summary>
+    /// „OK". <b>Angleichung E-1:</b> Drei der vier Vorläufer setzten kein
+    /// <c>DialogResult</c> und lieferten deshalb immer <c>false</c> (Befund W14-B4);
+    /// „OK" heißt jetzt OK. Beim Heizkessel und beim BHKW schreibt „OK" vorher offene
+    /// Änderungen zurück — genau wie ihr <c>btn_OK_Click</c>.
+    /// </summary>
+    private async Task BeiOk()
+    {
+        if (Profil.HatSpeicherweg && SpeichernErlaubt)
+        {
+            if (!EingabenPruefen()) return;
+
+            if (Profil.ZeigtSchreibschutz && Wege.IstGeschuetzt?.Invoke(_gewaehlt) == true)
+            {
+                _schutztext = string.Format(FrageSchutz, _gewaehlt);
+                _schutzfrage = true;
+                return;
+            }
+
+            KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
+            if (!ergebnis.Ok)
+            {
+                _meldung = ergebnis.Meldung;
+                _meldungStufe = WarnStufe.Warnung;
+                return;      // Dialog offen lassen
+            }
+            _geaendert = false;
+        }
+
+        await Geschlossen.InvokeAsync(new BrowserErgebnis(true, _gewaehlt));
+    }
+
+    /// <summary>
+    /// Die Leerprüfung der Knöpfe. BHKW und Solarkollektoren MELDEN, Heizkessel und
+    /// Pufferspeicher kehren still zurück — bitgleich zum Bestand, deshalb steht der
+    /// Text im Profil und ist dort für zwei der vier leer.
+    /// </summary>
+    private bool Ausgewaehlt()
+    {
+        if (_gewaehlt.Length > 0) return true;
+
+        if (Profil.MeldungOhneAuswahl.Length > 0)
+        {
+            _meldung = Profil.MeldungOhneAuswahl;
+            _meldungStufe = WarnStufe.Warnung;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Esc schließt die oberste Ebene. Enter bleibt unbelegt: „Löschen" und „Speichern"
+    /// schreiben sofort.
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_editorOffen || _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
+
+        return Geschlossen.InvokeAsync(new BrowserErgebnis(false, _gewaehlt));
+    }
+}

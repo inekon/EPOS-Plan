@@ -61,22 +61,10 @@ public sealed class SprungzielTests
         Assert.Equal("GESETZESPARAMETER", Sprungziel.Gesetzesparameter);
         Assert.Equal("GESETZESPARAMETER_CO2", Sprungziel.GesetzesparameterCo2);
 
-        // iU9-W6.0d: die vier Katalogverwaltungen der Erzeugerdialoge.
-        Assert.Equal("HEIZKESSEL_ADMIN", Sprungziel.HeizkesselAdmin);
-        Assert.Equal("STROMSPEICHER_ADMIN", Sprungziel.StromspeicherAdmin);
-        Assert.Equal("PV_ADMIN", Sprungziel.PvAdmin);
-        Assert.Equal("PUFFERSP_ADMIN", Sprungziel.PufferSpAdmin);
-
-        // iU9-W7.0f fuehrte SOLARGANGLINIE_ADMIN ein; mit iU9-W14b.2 ist es WEG -
-        // die Ganglinienverwaltung ist selbst Blazor und erscheint als
+        // iU9-W6.0d fuehrte die vier Katalogverwaltungen der Erzeugerdialoge ein,
+        // iU9-W7.0f SOLARGANGLINIE_ADMIN. Mit iU9-W14a und W14b sind alle fuenf
+        // bzw. sechs WEG - ihre Ziele sind selbst Blazor und erscheinen als
         // Ueberlagerung im Projektdialog (Risiko R2), wie der Waermebedarf seit W13.
-
-        // iU9-W10a.0c: derselbe Pufferspeicherkatalog NUR ZUM ANSEHEN. Er braucht
-        // einen eigenen Schluessel, weil die Bruecke dort m_bReadOnly setzen muss -
-        // sonst waere aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs
-        // geworden (Befund W10-B28).
-        Assert.Equal("PUFFERSP_ADMIN_NUR_LESEN", Sprungziel.PufferSpAdminNurLesen);
-        Assert.NotEqual(Sprungziel.PufferSpAdmin, Sprungziel.PufferSpAdminNurLesen);
 
         // iU9-W11b.0: die Auslegungsoptimierung des Stromspeichers. Sie ist das
         // erste Brueckenziel MIT Parameter (der gerechnete Lauf) und das erste,
@@ -86,7 +74,7 @@ public sealed class SprungzielTests
     }
 
     [Fact]
-    public void Alle_acht_Ziele_sind_da()
+    public void Alle_drei_Ziele_sind_da()
     {
         // Zaehlwert statt Aufzaehlung: Er faellt auf, sobald ein Ziel wegfaellt -
         // die Bruecke hat dann einen toten switch-Zweig.
@@ -97,8 +85,14 @@ public sealed class SprungzielTests
         // zweiten WinForms-Fenster (Risiko R2). Die Sprungbruecke ist fuer
         // WinForms-Ziele da - fuer ein Blazor-Ziel braucht es sie nicht.
         //
-        // iU9-W14b.2: Jetzt sind es ACHT. SolarganglinieAdmin faellt aus demselben
-        // Grund - SolarganglinieDialog zeigt die Verwaltung als Ueberlagerung.
-        Assert.Equal(8, Schluessel().Length);
+        // iU9-W14b.2: SolarganglinieAdmin faellt aus demselben Grund.
+        // iU9-W14a.4: HeizkesselAdmin, StromspeicherAdmin, PvAdmin, PufferSpAdmin
+        // und PufferSpAdminNurLesen ebenso - die vier Katalogbrowser sind EINE
+        // Razor-Komponente, die beiden Modulkataloge eine zweite.
+        //
+        // Nach BEIDEN Wellen bleiben DREI: die zwei Gesetzesparameter-Ziele und
+        // die Auslegungsoptimierung des Stromspeichers, die einzige Maske, die
+        // nach iF22 bewusst WinForms bleibt.
+        Assert.Equal(3, Schluessel().Length);
     }
 }

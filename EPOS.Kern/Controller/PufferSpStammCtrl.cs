@@ -542,5 +542,286 @@ namespace WindowsFormsApplication1
 
             return wert.ToString();
         }
+
+        // =================================================================================
+        // W14a.0c - der Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die sechs Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_PufferSp_Admin.listBox_PufferSp_DB_SelectedIndexChanged</c>
+        /// (Z. 116-131). <c>null</c>, wenn es den Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// <para>Der Vorlaeufer baute sein SQL per Textverkettung (Z. 120, Befund
+        /// W14-B12); hier steht <see cref="DbParam"/>.</para>
+        /// <para><b>Warum nicht <see cref="Detail(string)"/>.</b> Jene Methode gehoert
+        /// dem PROJEKTdialog und formatiert jede Zahl mit EINER Nachkommastelle
+        /// (<c>Form_PufferSp.FeldText</c>). Der Katalogbrowser zeigt die Werte ROH
+        /// (<c>rs.Read(...).ToString()</c>, Z. 126-128) — zwei Masken, zwei
+        /// Anzeigeregeln, und beide bleiben woertlich.</para>
+        /// </remarks>
+        public static IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = RohFeld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldFirma] = RohFeld(r, "Hersteller");
+            werte[KatalogBrowserProfil.FeldSpeichertyp] = RohFeld(r, "Speichertyp");
+            werte[KatalogBrowserProfil.FeldVerluste] = RohFeld(r, "Bereitschaftsverluste");
+            werte[KatalogBrowserProfil.FeldVolumen] = RohFeld(r, "Gesamtvolumen");
+            werte[KatalogBrowserProfil.FeldInvestitionskosten] = RohFeld(r, "Investitionskosten");
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text OHNE Format; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string RohFeld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        // =================================================================================
+        // W14a.0d - die Speichertyp-Abbildung des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// DB-Werte der drei Speichertypen, in der Reihenfolge der Auswahlliste
+        /// (Solarspeicher, Pufferspeicher, Kombispeicher).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Woertlich aus <c>Form_PufferSp_Bearbeiten</c> (Z. 31-36) in den Kern
+        /// gezogen (iU9-W14a.0d).</b> Sie sind PERSISTENZ und keine Oberflaeche — dieselbe
+        /// Begruendung, mit der <see cref="DbWerte"/> und <c>BedarfsArt</c> hier
+        /// liegen (Drei-Schichten-Regel).</para>
+        /// <para><b>Befund L0-1.</b> Bis Paket 9 stand im Vorlaeufer
+        /// <c>model.Speichertyp = comboBox_Speichertyp.Text</c>, also der LOKALISIERTE
+        /// Text. Auf englischer Oberflaeche landeten damit „Solar storage",
+        /// „Buffer storage", „Combination storage" in
+        /// <c>Tab_Pufferspeicher_STAMM.Speichertyp</c>, und beim naechsten Oeffnen traf
+        /// der Wert keinen Katalogeintrag mehr. Gespeichert wird ueber den AUSWAHLINDEX,
+        /// der sprachfrei ist.</para>
+        /// </remarks>
+        public static readonly string[] SPEICHERTYP_DB_WERTE =
+        {
+            DbWerte.PSP_SPEICHERTYP_SOLAR,
+            DbWerte.PSP_SPEICHERTYP_PUFFER,
+            DbWerte.PSP_SPEICHERTYP_KOMBI
+        };
+
+        /// <summary>
+        /// Bestandstoleranz zu Befund L0-1: Datensaetze, die vor der Behebung auf
+        /// englischer Oberflaeche gespeichert wurden, tragen diese Texte in der
+        /// Speichertyp-Spalte.
+        /// </summary>
+        /// <remarks>
+        /// Die Zeichenketten stammen aus <c>Form_PufferSp_Bearbeiten.en-US.resx</c> und
+        /// sind bewusst EINGEFROREN — sie beschreiben Altdaten, nicht die heutige
+        /// Oberflaeche, und duerfen sich mit einer Uebersetzungskorrektur NICHT
+        /// mitaendern. Beim naechsten Speichern steht wieder der deutsche Persistenzwert
+        /// in der Datenbank.
+        /// </remarks>
+        public static readonly string[] SPEICHERTYP_ALTWERTE_EN =
+        {
+            "Solar storage",
+            "Buffer storage",
+            "Combination storage"
+        };
+
+        /// <summary>
+        /// Auswahlindex zu einem Speichertyp-Text; <c>-1</c>, wenn keiner passt.
+        /// </summary>
+        /// <param name="text">Der gespeicherte oder eingegebene Wert.</param>
+        /// <param name="anzeigetexte">
+        /// Die aktuell angezeigten Eintraege der Auswahlliste — in der Oberflaechensprache.
+        /// <c>null</c> ueberspringt diese Stufe.
+        /// </param>
+        /// <remarks>
+        /// Geprueft wird in derselben Reihenfolge wie im Vorlaeufer (Z. 140-158): DB-Wert,
+        /// angezeigter Text der aktuellen Sprache, englischer Altwert.
+        /// </remarks>
+        public static int SpeichertypIndex(string text, IReadOnlyList<string> anzeigetexte = null)
+        {
+            if (string.IsNullOrEmpty(text)) return -1;
+
+            for (int i = 0; i < SPEICHERTYP_DB_WERTE.Length; i++)
+                if (string.Equals(text, SPEICHERTYP_DB_WERTE[i], StringComparison.OrdinalIgnoreCase))
+                    return i;
+
+            if (anzeigetexte != null)
+                for (int i = 0; i < anzeigetexte.Count && i < SPEICHERTYP_DB_WERTE.Length; i++)
+                    if (string.Equals(text, anzeigetexte[i], StringComparison.OrdinalIgnoreCase))
+                        return i;
+
+            for (int i = 0; i < SPEICHERTYP_ALTWERTE_EN.Length; i++)
+                if (string.Equals(text, SPEICHERTYP_ALTWERTE_EN[i], StringComparison.OrdinalIgnoreCase))
+                    return i;
+
+            return -1;
+        }
+
+        /// <summary>
+        /// SCHREIBWEG des Speichertyps: Auswahl → deutscher DB-Wert.
+        /// </summary>
+        /// <param name="index">Der Auswahlindex; <c>-1</c> heisst „nichts gewaehlt".</param>
+        /// <param name="freitext">
+        /// Der angezeigte Text, falls nichts gewaehlt ist (die Auswahlliste laesst
+        /// Freitext zu).
+        /// </param>
+        /// <param name="anzeigetexte">Die Eintraege der Auswahlliste, siehe
+        /// <see cref="SpeichertypIndex"/>.</param>
+        /// <remarks>
+        /// Massgeblich ist der INDEX — er ist sprachfrei (Z. 168-177). Nur wenn nichts
+        /// ausgewaehlt ist, wird der Text ausgewertet; passt auch der nicht, geht er
+        /// unveraendert durch, damit eine bewusste Freitexteingabe nicht stillschweigend
+        /// umgeschrieben wird.
+        /// </remarks>
+        public static string SpeichertypDbWert(int index, string freitext = "",
+                                               IReadOnlyList<string> anzeigetexte = null)
+        {
+            if (index >= 0 && index < SPEICHERTYP_DB_WERTE.Length)
+                return SPEICHERTYP_DB_WERTE[index];
+
+            string text = (freitext ?? "").Trim();
+            int ausText = SpeichertypIndex(text, anzeigetexte);
+            return ausText >= 0 ? SPEICHERTYP_DB_WERTE[ausText] : text;
+        }
+
+        // =================================================================================
+        // W14a.0e - der EINE Schreibeinstieg des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat — dieselbe Form wie
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c> (W6.0).
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an — der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter" (<c>Form_PufferSp_Bearbeiten</c> Z. 203-252 und 288-316).
+        /// </summary>
+        /// <remarks>
+        /// Der Ablauf ist woertlich: <see cref="Exists"/> als Vorabtest, dann
+        /// <see cref="InsertFrom"/>. Neu ist nur, dass der Grund ZURUECKKOMMT statt zu
+        /// erscheinen — eine Razor-Komponente hat keine <c>MessageBox</c>.
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(PufferSpModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PufferSpStammCtrl();
+                string bezeichner = name.Trim();
+
+                if (ctrl.Exists(bezeichner))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, "");
+
+                daten.Name = bezeichner;
+                if (!ctrl.InsertFrom(daten))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, bezeichner);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck — der Weg des Knopfes
+        /// „Überschreiben" (<c>Form_PufferSp_Bearbeiten</c> Z. 328-353).
+        /// </summary>
+        /// <remarks>
+        /// <b>Befund W14-B22 behoben.</b> Der Vorlaeufer setzte bei einem Fehlschlag
+        /// <c>DialogResult.Cancel</c> und schloss den Dialog OHNE Meldung — der Anwender
+        /// sah nur, dass sein Fenster verschwand. Der Grund kommt jetzt zurueck: entweder
+        /// der Schreibschutz oder der allgemeine Schreibfehler.
+        /// </remarks>
+        public static SpeicherErgebnis Ueberschreiben(PufferSpModel daten)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.Name))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                // Der Schutz wird VOR dem Schreiben gefragt, damit der Grund als Text
+                // zurueckkommt; Update() zeigt ihn sonst selbst ueber Meldung.Hinweis.
+                if (IsReadOnlyStatic(daten.Name))
+                    return new SpeicherErgebnis(false, Text("PSPK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+                var ctrl = new PufferSpStammCtrl();
+                if (!ctrl.UpdateFrom(daten))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.Name);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Loescht einen Katalogsatz und sagt, warum es nicht ging — der Weg des Knopfes
+        /// „Löschen" im Katalogbrowser.
+        /// </summary>
+        public static SpeicherErgebnis Loeschen(string szName)
+        {
+            if (string.IsNullOrWhiteSpace(szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                if (IsReadOnlyStatic(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_SCHUTZ_LOESCHEN",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden."), "");
+
+                var ctrl = new PufferSpStammCtrl();
+                if (!ctrl.Delete(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_LOESCHEN_FEHLER",
+                        "Der Datensatz konnte nicht gelöscht werden."), "");
+
+                return new SpeicherErgebnis(true, "", szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }

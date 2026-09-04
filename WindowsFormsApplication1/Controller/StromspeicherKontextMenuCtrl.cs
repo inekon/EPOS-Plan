@@ -226,45 +226,36 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// „Bearbeiten" im Kontextmenue der Speicherliste: Er oeffnet den MODULKATALOG,
+        /// wie jeder andere Weg dorthin.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Entscheid E-5 (Befund W14-B39), iU9-W14a.3.</b> Bis hierher fuellte
+        /// dieser Zweig <c>frm.list_spmodel</c> mit GENAU EINER Anlagenzeile, setzte
+        /// <c>m_bItemBearbeiten = true</c>, zeigte damit eine zweite Betriebsart der
+        /// Maske und schrieb die Liste nach OK ueber
+        /// <c>BearbeiteteAnlageZurueckschreiben</c> zurueck. Die Maske hat
+        /// <c>list_spmodel</c> allerdings NIE veraendert — zurueckgeschrieben wurde das
+        /// unveraenderte Modell, ein Leerlauf mit Datenbankzugriff. Beides faellt: die
+        /// zweite Betriebsart und das Zurueckschreiben.</para>
+        /// <para>Was bleibt: Nach dem Schliessen mit „Beenden" wird das
+        /// Aenderungsdatum des Projekts gesetzt und die Gewerksliste aufgefrischt — der
+        /// Anwender kann im Katalog etwas geaendert haben.</para>
+        /// </remarks>
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_SP.SelectedIndices;
-
-            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            WPCtrl wpctrl = new WPCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
-            Form_AdminStromspeicher frm = new Form_AdminStromspeicher();
-
             if (indexes.Count <= 0) return;
 
-            frm.list_spmodel.Clear();
-            ListViewItem item = listView_SP.Items[indexes[0]];
-            int idAnlage = AnlagenId(item);
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID=" + idAnlage);
-            if (werzctrl.rows <= 0) return;
+            if (!StromspeicherAdminHuelle.Oeffnen(listView_SP.FindForm())) return;
 
-            // Vollstaendig gelesenes Modell durchreichen - dieselbe Ursache wie im
-            // Hinzufuegen/Bearbeiten-Zweig oben: Add_WP_Waermeerzeuger schreibt alle Felder
-            // des Modells zurueck, eine Teilkopie nullt deshalb den Rest der Anlagenzeile.
-            WErzeugerModel model = werzctrl.items[0];
-            frm.list_spmodel.Add(model);
-            frm.m_bItemBearbeiten = true;
-            int id_type = model.ID_Type;
+            ProjektCtrl projctrl = new ProjektCtrl();
+            projctrl.ReadSingle(m_szProjektname);
+            projctrl.m_Aenderungsdatum = DateTime.Now;
+            projctrl.Update();
 
-            frm.SetControls(m_szProjektname);
-            frm.ShowDialog();
-
-            if (frm.DialogResult == DialogResult.OK)
-            {
-                // Datenbank aktualisieren
-                BearbeiteteAnlageZurueckschreiben(idAnlage, id_type, frm.list_spmodel);
-
-                projctrl.ReadSingle(m_szProjektname);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
-
-                Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
-            }
+            Dienste.Navigation.OeffneGewerk(Gewerke.Stromspeicher, m_ID_Projekt, m_szProjektname);
         }
 
         /// <summary>

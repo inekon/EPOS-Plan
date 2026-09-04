@@ -216,6 +216,9 @@
   <data name="BADM_TITEL_STROM" xml:space="preserve">
     <value>Electricity consumer management</value>
   </data>
+  <data name="BHKWK_MSG_SCHUTZ" xml:space="preserve">
+    <value>This master record is write-protected (read-only) and cannot be saved.</value>
+  </data>
   <data name="CEC_MSG_DATEI_FEHLT" xml:space="preserve">
     <value>File not found.</value>
   </data>
@@ -549,6 +552,156 @@
   <data name="IMP_TXT_TRENNZEICHEN" xml:space="preserve">
     <value>Format error in line {0}: the line ends with “{1}”. Values must be line oriented without a ',' or ';' separator at the end of the line.</value>
   </data>
+  <data name="KBROW_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit...</value>
+  </data>
+  <data name="KBROW_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KBROW_BTN_NEU" xml:space="preserve">
+    <value>New...</value>
+  </data>
+  <data name="KBROW_FILTER_BRENNSTOFF" xml:space="preserve">
+    <value>Filter by fuel type:</value>
+  </data>
+  <data name="KBROW_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filter by manufacturer:</value>
+  </data>
+  <data name="KBROW_FILTER_LEISTUNG" xml:space="preserve">
+    <value>Filter by performance:</value>
+  </data>
+  <data name="KBROW_FILTER_VOLUMEN" xml:space="preserve">
+    <value>Filter by volume:</value>
+  </data>
+  <data name="KBROW_GRUPPE_BHKW" xml:space="preserve">
+    <value>Info on selected CHP unit</value>
+  </data>
+  <data name="KBROW_GRUPPE_HEIZKESSEL" xml:space="preserve">
+    <value>Info on selected boiler</value>
+  </data>
+  <data name="KBROW_GRUPPE_PUFFERSP" xml:space="preserve">
+    <value>Info on selected buffer storage</value>
+  </data>
+  <data name="KBROW_GRUPPE_SOLAR" xml:space="preserve">
+    <value>Entering the solar panels</value>
+  </data>
+  <data name="KBROW_LBL_APERTURFLAECHE" xml:space="preserve">
+    <value>Aperture area:</value>
+  </data>
+  <data name="KBROW_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="KBROW_LBL_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel:</value>
+  </data>
+  <data name="KBROW_LBL_BRENNWERT" xml:space="preserve">
+    <value>Condensing boiler</value>
+  </data>
+  <data name="KBROW_LBL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Lower output limit of the selected module:</value>
+  </data>
+  <data name="KBROW_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="KBROW_LBL_INVEST" xml:space="preserve">
+    <value>Investment costs:</value>
+  </data>
+  <data name="KBROW_LBL_KOLLEKTOR" xml:space="preserve">
+    <value>Collector:</value>
+  </data>
+  <data name="KBROW_LBL_KOLLEKTORFLAECHE" xml:space="preserve">
+    <value>Collector area:</value>
+  </data>
+  <data name="KBROW_LBL_LEISTUNG" xml:space="preserve">
+    <value>Performance:</value>
+  </data>
+  <data name="KBROW_LBL_MODULNAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
+  <data name="KBROW_LBL_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="KBROW_LBL_PEL" xml:space="preserve">
+    <value>Electrical output:</value>
+  </data>
+  <data name="KBROW_LBL_PTHERM" xml:space="preserve">
+    <value>Thermal output:</value>
+  </data>
+  <data name="KBROW_LBL_RUECKLAUF" xml:space="preserve">
+    <value>Return:</value>
+  </data>
+  <data name="KBROW_LBL_SPEICHERTYP" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="KBROW_LBL_VERLUSTE" xml:space="preserve">
+    <value>Standby losses:</value>
+  </data>
+  <data name="KBROW_LBL_VOLUMEN" xml:space="preserve">
+    <value>Total volume:</value>
+  </data>
+  <data name="KBROW_LBL_VORLAUF" xml:space="preserve">
+    <value>Flow:</value>
+  </data>
+  <data name="KBROW_LISTE_BHKW" xml:space="preserve">
+    <value>Modules in database:</value>
+  </data>
+  <data name="KBROW_LISTE_HEIZKESSEL" xml:space="preserve">
+    <value>Boilers from database</value>
+  </data>
+  <data name="KBROW_LISTE_PUFFERSP" xml:space="preserve">
+    <value>Buffer storage from database</value>
+  </data>
+  <data name="KBROW_LISTE_SOLAR" xml:space="preserve">
+    <value>Selection in DB:</value>
+  </data>
+  <data name="KBROW_MSG_AUSWAHL_BHKW" xml:space="preserve">
+    <value>Please select a CHP unit!</value>
+  </data>
+  <data name="KBROW_MSG_AUSWAHL_KOLLEKTOR" xml:space="preserve">
+    <value>Please select a collector!</value>
+  </data>
+  <data name="KBROW_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>The record could not be deleted.</value>
+  </data>
+  <data name="KBROW_MSG_SCHUTZ_LOESCHEN" xml:space="preserve">
+    <value>This master record is write-protected (read-only) and cannot be deleted.</value>
+  </data>
+  <data name="KBROW_SPALTE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="KBROW_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KBROW_TITEL_BHKW" xml:space="preserve">
+    <value>CHP unit administration</value>
+  </data>
+  <data name="KBROW_TITEL_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler administration</value>
+  </data>
+  <data name="KBROW_TITEL_PUFFERSP" xml:space="preserve">
+    <value>Administration buffer storage</value>
+  </data>
+  <data name="KBROW_TITEL_SCHUTZ" xml:space="preserve">
+    <value>Write-protected</value>
+  </data>
+  <data name="KBROW_TITEL_SOLAR" xml:space="preserve">
+    <value>Administration Solar panels</value>
+  </data>
+  <data name="KBROW_ZEILE_APERTUR" xml:space="preserve">
+    <value>Aperture area: </value>
+  </data>
+  <data name="KBROW_ZEILE_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel: </value>
+  </data>
+  <data name="KBROW_ZEILE_KOLLEKTORTYP" xml:space="preserve">
+    <value>Collector type: </value>
+  </data>
+  <data name="KBROW_ZEILE_PEL" xml:space="preserve">
+    <value>Pel: </value>
+  </data>
+  <data name="KBROW_ZEILE_PTHERM" xml:space="preserve">
+    <value>Ptherm: </value>
+  </data>
   <data name="KDLG_ANLAGE_KEINE" xml:space="preserve">
     <value>{0} (no unit in the project)</value>
   </data>
@@ -630,6 +783,96 @@
   <data name="KKOMP_TT_ZEILE_LOESCHEN" xml:space="preserve">
     <value>Delete item</value>
   </data>
+  <data name="MODK_GRUPPE_PV" xml:space="preserve">
+    <value>Module data</value>
+  </data>
+  <data name="MODK_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Storage data</value>
+  </data>
+  <data name="MODK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="MODK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Identifier</value>
+  </data>
+  <data name="MODK_LBL_BEZEICHNER_PV" xml:space="preserve">
+    <value>Identifier:</value>
+  </data>
+  <data name="MODK_LBL_BREITE" xml:space="preserve">
+    <value>Width:</value>
+  </data>
+  <data name="MODK_LBL_DEGRADATION" xml:space="preserve">
+    <value>Degradation</value>
+  </data>
+  <data name="MODK_LBL_FIRMA" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="MODK_LBL_IKURZSCHLUSS" xml:space="preserve">
+    <value>Short-circuit current (Isc):</value>
+  </data>
+  <data name="MODK_LBL_IMPP" xml:space="preserve">
+    <value>Current at MPP (Impp):</value>
+  </data>
+  <data name="MODK_LBL_LADEZUSTAND" xml:space="preserve">
+    <value>Charging status</value>
+  </data>
+  <data name="MODK_LBL_LAENGE" xml:space="preserve">
+    <value>Length:</value>
+  </data>
+  <data name="MODK_LBL_LEISTUNG" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
+    <value>Module costs</value>
+  </data>
+  <data name="MODK_LBL_MODULKOSTEN_PV" xml:space="preserve">
+    <value>Module costs:</value>
+  </data>
+  <data name="MODK_LBL_PMAX" xml:space="preserve">
+    <value>Rated power (Pmax):</value>
+  </data>
+  <data name="MODK_LBL_TEMPKOEFF" xml:space="preserve">
+    <value>Temp. coefficient Pmax:</value>
+  </data>
+  <data name="MODK_LBL_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="MODK_LBL_ULEERLAUF" xml:space="preserve">
+    <value>Open-circuit voltage (Uoc):</value>
+  </data>
+  <data name="MODK_LBL_UMPP" xml:space="preserve">
+    <value>Voltage at MPP (Umpp):</value>
+  </data>
+  <data name="MODK_LBL_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Efficiency:</value>
+  </data>
+  <data name="MODK_LISTE_PV" xml:space="preserve">
+    <value>Modules in database</value>
+  </data>
+  <data name="MODK_LISTE_STROMSPEICHER" xml:space="preserve">
+    <value>Electricity storage in database</value>
+  </data>
+  <data name="MODK_MSG_AUSWAHL_MODUL" xml:space="preserve">
+    <value>Select a module in the list!</value>
+  </data>
+  <data name="MODK_MSG_AUSWAHL_SPEICHER" xml:space="preserve">
+    <value>Select an electricity storage unit in the list!</value>
+  </data>
+  <data name="MODK_MSG_FELD_LEER" xml:space="preserve">
+    <value>Please fill in "{0}".</value>
+  </data>
+  <data name="MODK_MSG_SCHUTZ" xml:space="preserve">
+    <value>This master record is write-protected (read-only) and cannot be saved.</value>
+  </data>
+  <data name="MODK_MSG_TYP_FEHLT" xml:space="preserve">
+    <value>Please check your entries!</value>
+  </data>
+  <data name="MODK_TITEL_PV" xml:space="preserve">
+    <value>Administration of photovoltaic modules</value>
+  </data>
+  <data name="MODK_TITEL_STROMSPEICHER" xml:space="preserve">
+    <value>Administration of electricity storage</value>
+  </data>
   <data name="PAN_MSG_GELESEN" xml:space="preserve">
     <value>{0} modules from PAN files.</value>
   </data>
@@ -641,6 +884,57 @@
   </data>
   <data name="PEAK_MSG_SUCHE" xml:space="preserve">
     <value>Searching for the smallest feasible target threshold …</value>
+  </data>
+  <data name="PSPK_FELD_INVEST" xml:space="preserve">
+    <value>Investment costs</value>
+  </data>
+  <data name="PSPK_FELD_VERLUSTE" xml:space="preserve">
+    <value>Operational readiness losses</value>
+  </data>
+  <data name="PSPK_FELD_VOLUMEN" xml:space="preserve">
+    <value>Total volume</value>
+  </data>
+  <data name="PSPK_GRP_BEZEICHNUNG" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="PSPK_GRP_KOSTEN" xml:space="preserve">
+    <value>Input data for calculating costs</value>
+  </data>
+  <data name="PSPK_GRP_TECHNIK" xml:space="preserve">
+    <value>Technical data</value>
+  </data>
+  <data name="PSPK_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="PSPK_LBL_INVEST" xml:space="preserve">
+    <value>Investment costs:</value>
+  </data>
+  <data name="PSPK_LBL_NAME" xml:space="preserve">
+    <value>Storage name:</value>
+  </data>
+  <data name="PSPK_LBL_SPEICHERTYP" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="PSPK_LBL_VERLUSTE" xml:space="preserve">
+    <value>Operational readiness losses:</value>
+  </data>
+  <data name="PSPK_LBL_VOLUMEN" xml:space="preserve">
+    <value>Total volume:</value>
+  </data>
+  <data name="PSPK_MSG_SCHUTZ" xml:space="preserve">
+    <value>This master record is write-protected (read-only) and cannot be saved.</value>
+  </data>
+  <data name="PSPK_TITEL" xml:space="preserve">
+    <value>Buffer storage edit</value>
+  </data>
+  <data name="PSPK_TYP_KOMBI" xml:space="preserve">
+    <value>Combination storage</value>
+  </data>
+  <data name="PSPK_TYP_PUFFER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="PSPK_TYP_SOLAR" xml:space="preserve">
+    <value>Solar storage</value>
   </data>
   <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
     <value>Storage in the project</value>
