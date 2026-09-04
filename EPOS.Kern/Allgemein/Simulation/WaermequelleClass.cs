@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
     /// liefert Quelltemperatur() das Jahresprofil der Quelltemperatur, das in
     /// der Simulation anstelle der Außentemperatur in die Kennlinien eingeht.
     /// </summary>
-    public static class WaermequelleClass
+    public static partial class WaermequelleClass
     {
         // Sämtliche Werte dieses Blocks sind Persistenzwerte. Sie werden seit Paket 9 / L0
         // zentral in DbWerte geführt; hier stehen nur noch Aliasse, damit die vorhandenen
