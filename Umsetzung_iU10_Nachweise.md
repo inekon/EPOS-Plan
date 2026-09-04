@@ -240,6 +240,15 @@ Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich
 war mit knapp fünf Minuten halb so lang wie der neunte, weil der Läufer den Workload aus dem
 Cache zog. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Elfter Lauf 33826084944 (`ios.yml`, `macos-26`, 04.09.2026, 01:31–01:40 UTC, 8 min 50 s)** auf
+`a398c9a` — der Stand **nach den Wellen 10a und 10b**: grün. Erstmals mit der Simulationskonfiguration
+als Razor-**Seite** (`SimulationKonfigSeite`, Eintrag in `Seitenschluessel`/`AppWurzel`), dem
+SVG-Schema, den drei neuen Bausteinen und dem Kartenbild (1,29 MiB) unter `wwwroot/bilder/`; die
+`IosProjektQuelle` trägt für `SimulationKonfigGaben` noch die Standardumsetzung, die Seite ist am
+Gerät also noch nicht erreichbar (iU11). Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
+1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
