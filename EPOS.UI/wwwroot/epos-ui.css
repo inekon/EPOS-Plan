@@ -3366,3 +3366,254 @@ body {
 @media (forced-colors: active) {
     .epos-kiknopf { border: 1px solid CanvasText; }
 }
+
+/* --------------------------------------------------------------------------
+   Lizenzverwaltung (iU9-W15c.5).
+
+   Der Vorlaeufer war ein FixedDialog mit drei GroupBox und fest gerechneten
+   Pixelpositionen (560 x 486, AutoScaleMode.None). Hier fliesst das Ganze; die
+   drei Gruppen sind <section> mit Ueberschrift, die Eingabefelder nehmen die
+   Breite, und der Knopf "Lizenzdatei (.lic)..." rutscht auf schmalen Flaechen
+   unter das Schluesselfeld.
+   -------------------------------------------------------------------------- */
+.epos-lizverw {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.epos-lizverw-gruppe {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    padding: 10px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-kopf {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+/* Die drei Statusfarben sind BITGLEICH aus Form_LizenzVerwaltung.cs:134-137
+   uebernommen: gruen 0/128/60 (Gueltig), orange 190/120/0 (Kulanz und
+   Nachpruefung), rot 190/40/40 (nicht aktiviert, Lesemodus, Uhr). Sie sind die
+   einzige Stelle des Bestands, die Lizenzzustaende sichtbar unterscheidet. */
+.epos-lizverw-status {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-lizverw-status--gut       { color: rgb(0, 128, 60); }
+.epos-lizverw-status--warn      { color: rgb(190, 120, 0); }
+.epos-lizverw-status--schlecht  { color: rgb(190, 40, 40); }
+
+.epos-lizverw-detail {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-portal {
+    margin: 0;
+}
+
+.epos-lizverw-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-schluessel { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-email      { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-lic        { flex: 0 0 auto; }
+
+/* CharacterCasing = Upper des Vorlaeufers (Designer:112). Die Anzeige macht
+   text-transform, den WERT macht ToUpperInvariant() beim Uebergeben - CSS
+   allein aendert ihn nicht. */
+.epos-lizverw-grossschrift {
+    text-transform: uppercase;
+}
+
+.epos-lizverw-hinweis {
+    margin: 0;
+    color: var(--epos-text-sehr-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-fuss {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-lizverw-status--gut,
+    .epos-lizverw-status--warn,
+    .epos-lizverw-status--schlecht { color: CanvasText; }
+    .epos-lizverw-gruppe { border: 1px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Der Erststart-Assistent (iU9-W15c.7).
+
+   Der Vorlaeufer war ein Sizable-Fenster mit fest angedockten Baendern
+   (Kopf 158 px, Status 24 px, Marquee 16 px, Protokoll Fill, Fuss 46 px). Hier
+   fliesst es: Der Kopftext behaelt seine Umbrueche, das Protokoll nimmt den
+   Platz, der Fuss bleibt unten.
+   -------------------------------------------------------------------------- */
+.epos-erststart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Der neunzeilige Ablauftext kommt als EIN Text mit Umbruechen - pre-line
+   haelt sie, ohne dass die Huelle neun Absaetze bauen muesste. */
+.epos-erststart-kopf {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-status {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Lizenz und rechtliche Hinweise (iU9-W15c.11).
+
+   Der Vorlaeufer war 920 x 700 mit einer weissen Kopfzeile (58 px), einem
+   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile behaelt
+   ihren Klang, der Rechtstext liest sich in einer angenehmen Zeilenlaenge.
+   -------------------------------------------------------------------------- */
+.epos-lizenz {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.epos-lizenz-kopf {
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    padding-bottom: 8px;
+}
+
+.epos-lizenz-titel {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-lizenz-untertitel {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-lizenz-werkzeuge {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+/* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in
+   German." - verbindlich ist allein die deutsche Fassung. */
+.epos-lizenz-sprachhinweis {
+    margin: 0 0 10px 0;
+    font-style: italic;
+    color: var(--epos-text-leise);
+}
+
+/* 13 Ueberschriften und 14 Absaetze. Im Vorlaeufer Segoe UI Semibold +1,5 pt in
+   #005AA0 bzw. Segoe UI in #282C30 - dieselbe Aussage, hier ueber die
+   Themafarben. */
+.epos-lizenz-ueberschrift {
+    margin: 14px 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-lizenz-ueberschrift:first-child {
+    margin-top: 0;
+}
+
+.epos-lizenz-absatz {
+    margin: 0 0 8px 0;
+    max-width: 78ch;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-lizenz-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-lizenz-herkunft {
+    display: flex;
+    flex-direction: column;
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
+   Markup-Reihenfolge steht deshalb [Aktivieren] [Speichern] [Drucken] ...
+   [Zustimmen] - von rechts gelesen ist es die Reihenfolge des Bestands
+   (Entscheid E-14). */
+.epos-lizenz-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Der Druck (Entscheid E-2): window.print() statt PrintDocument. Gedruckt wird
+   der Rechtstext, nicht die Bedienung; Kopf- und Fusszeile setzt der Browser
+   aus @page.
+   -------------------------------------------------------------------------- */
+@media print {
+    .epos-lizenz-werkzeuge,
+    .epos-lizenz-knoepfe,
+    .epos-reiter-leiste {
+        display: none !important;
+    }
+
+    .epos-lizenz-absatz {
+        max-width: none;
+    }
+
+    .epos-lizenz {
+        gap: 6px;
+    }
+}

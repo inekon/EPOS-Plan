@@ -147,6 +147,33 @@ namespace WindowsFormsApplication1
             // Weiterleitung auf Sprache.Nummer, damit die Masken unveraendert lesen.
             sprache.AusRegistryUebernehmen();
 
+            // WEBVIEW2-RIEGEL (iU9-W15c.6a, Entscheid E-8 Weg 2).
+            //
+            // Ab dieser Welle laufen ZWEI Startschritte über eine Blazor-Hülle: der
+            // Erststart der Datenbank und die Zustimmung zur Lizenzvereinbarung. Beide
+            // liefern "false", wenn ihr Fenster leer bleibt, und beide beenden dann das
+            // Programm. Ohne WebView2-Laufzeit wäre EPOS-Plan damit nicht mehr nur
+            // unbequem (leere Dialoge, iR12), sondern unstartbar — und der Anwender
+            // sähe kein Wort dazu (Befund W15c-B10).
+            //
+            // Deshalb: EINE Prüfung, EINE Meldung mit der Bezugsquelle, dann Ende.
+            // Keine WinForms-Rückfallmasken — zwei Fassungen derselben Maske sind
+            // ausgeschlossen (Regel M1). NACH der Sprachwahl, damit die Meldung in der
+            // eingestellten Sprache kommt; VOR dem ersten besitzerlosen Dialog.
+            //
+            // Die Meldung ist bewusst eine native MessageBox und kein Dienste.Dialog:
+            // Die Windows-Fassung von Dienste.Dialog zeigt zwar ebenfalls eine
+            // MessageBox, aber hier soll unmissverständlich sein, dass an dieser Stelle
+            // keine Oberfläche mehr angenommen wird.
+            if (!WebView2Vorhanden())
+            {
+                MessageBox.Show(
+                    MyResource.Resource.START_WEBVIEW2_FEHLT,
+                    MyResource.Resource.START_WEBVIEW2_FEHLT_TITEL,
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             // Startprüfung (vormals x64-Umstellung P1.3, jetzt DB-Migration SQLite 2.8):
             // Ohne lesbare Datenbankdatei ist jede DB-Operation unmöglich — sprechende
             // Meldung statt später einer nackten Ausnahme tief im Startpfad (erste
@@ -173,12 +200,15 @@ namespace WindowsFormsApplication1
             }
 
             // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
-            // Windows-Benutzer; Ablage HKCU\Software\wp-plan\LizenzZugestimmt mit
-            // Programmversion und Datum, siehe Form_Lizenz.ZustimmungMerken).
+            // Windows-Benutzer; Ablage ueber Dienste.Einstellungen und damit
+            // unveraendert HKCU\Software\wp-plan\LizenzZugestimmt mit
+            // Programmversion und Datum, siehe ZustimmungCtrl.Merken). Seit
+            // iU9-W15c.11 zeigt die Huelle dafuer den Razor-Dialog - BESITZERLOS,
+            // es gibt noch kein Fenster.
             // NACH der ACE-Prüfung - eine nicht startfähige Installation braucht
             // keine Zustimmung - und VOR der Schema-Migration: Wer ablehnt, dessen
             // Datenbank wird nicht angefasst.
-            if (!Form_Lizenz.ZustimmungSicherstellen()) return;
+            if (!LizenzHuelle.ZustimmungSicherstellen()) return;
 
             // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
             // KiKern seine Schluessel in der eingestellten Sprache beantwortet
@@ -269,6 +299,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Ist die Microsoft-Edge-WebView2-Laufzeit auf diesem Rechner installiert?
+        /// </summary>
+        /// <remarks>
+        /// <para>Gefragt wird die Laufzeit selbst, nicht die Registry:
+        /// <c>CoreWebView2Environment.GetAvailableBrowserVersionString()</c> liefert
+        /// die Fassung der Laufzeit, die eine <c>WebView2</c> in diesem Prozess
+        /// tatsächlich benutzen würde — einschließlich einer mitgelieferten
+        /// „Fixed Version". Das Setup prüft dieselbe Sache über zwei
+        /// Registry-Schlüssel (<c>WebView2Vorhanden</c>,
+        /// <c>Setup/EPOS-Plan.iss:444</c>); dort gibt es keinen Prozess, der fragen
+        /// könnte.</para>
+        /// <para>Fehlt die Laufzeit, wirft der Aufruf eine
+        /// <c>WebView2RuntimeNotFoundException</c>; jeder andere Fehlschlag (etwa eine
+        /// nicht ladbare <c>WebView2Loader.dll</c>) ist für den Anwender dieselbe Lage.
+        /// Deshalb wird breit gefangen — das Programm soll hier melden, nicht
+        /// abstürzen.</para>
+        /// </remarks>
+        private static bool WebView2Vorhanden()
+        {
+            try
+            {
+                string fassung = Microsoft.Web.WebView2.Core.CoreWebView2Environment
+                                          .GetAvailableBrowserVersionString();
+                return !string.IsNullOrEmpty(fassung);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Die Gabelung des Erststarts (Arbeitspaket S8): Es gibt keine lesbare
         /// SQLite-Datei — liegt daneben ein Access-Altbestand, wird er einmalig
         /// umgestellt; sonst bleibt es bei der bisherigen Meldung.
@@ -289,31 +351,31 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static bool ErststartAnbieten()
         {
-            string ordner = ErststartMigration.StandardOrdner();
+            string ordner = ErststartCtrl.StandardOrdner();
 
-            if (ErststartMigration.Pruefe(ordner) != ErststartLage.NurAccdbVorhanden)
+            if (!ErststartCtrl.UmstellungFaellig(ordner))
             {
                 // Unverändert der bisherige Fall: keine Datenbank, kein Altbestand.
                 MessageBox.Show(
-                    "Datenbankdatei nicht gefunden/lesbar: " + DataRepository.GetDBPath(),
-                    "Datenbank nicht verfügbar",
+                    string.Format(MyResource.Resource.START_DB_FEHLT, DataRepository.GetDBPath()),
+                    MyResource.Resource.START_DB_FEHLT_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
+            // iU9-W15c.7: Der Assistent ist eine Razor-Komponente; die Hülle zeigt sie
+            // BESITZERLOS, mit Taskleisteneintrag und mit gesperrtem Schließen während
+            // des Laufs (die drei Zusätze aus W15c.6).
             string berichtPfad;
-            bool umgestellt = Form_Erststart.Zeigen(ordner, true, out berichtPfad);
+            bool umgestellt = ErststartHuelle.Zeigen(ordner, out berichtPfad);
 
             if (!umgestellt)
             {
                 MessageBox.Show(
-                    "Die Datenbank wurde nicht umgestellt — das Programm kann nicht starten." +
+                    MyResource.Resource.START_UMSTELLUNG_ABGELEHNT +
                     Environment.NewLine + Environment.NewLine +
-                    ErststartMigration.LetzteMeldung +
-                    (string.IsNullOrEmpty(berichtPfad)
-                        ? ""
-                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
-                    "Datenbankumstellung",
+                    ErststartCtrl.LetzteMeldung + Bericht(berichtPfad),
+                    MyResource.Resource.START_UMSTELLUNG_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
@@ -321,17 +383,26 @@ namespace WindowsFormsApplication1
             if (!DataRepository.DatenbankVorhanden())
             {
                 MessageBox.Show(
-                    "Die Umstellung meldet Erfolg, die neue Datenbankdatei lässt sich aber nicht " +
-                    "öffnen: " + DataRepository.GetDBPath() +
-                    (string.IsNullOrEmpty(berichtPfad)
-                        ? ""
-                        : Environment.NewLine + Environment.NewLine + "Bericht: " + berichtPfad),
-                    "Datenbank nicht verfügbar",
+                    string.Format(MyResource.Resource.START_UMSTELLUNG_UNLESBAR,
+                                  DataRepository.GetDBPath()) + Bericht(berichtPfad),
+                    MyResource.Resource.START_DB_FEHLT_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Der Nachsatz „Bericht: &lt;Pfad&gt;" — zwei Leerzeilen davor, und nur, wenn
+        /// überhaupt ein Bericht entstanden ist (bitgleich zum Bestand).
+        /// </summary>
+        private static string Bericht(string berichtPfad)
+        {
+            return string.IsNullOrEmpty(berichtPfad)
+                ? ""
+                : Environment.NewLine + Environment.NewLine +
+                  string.Format(MyResource.Resource.START_BERICHT, berichtPfad);
         }
 
         /// <summary>

@@ -244,6 +244,9 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Hilfe/KiHinweisDialog` | `Form_KiHinweis` (iU9‑W15b.3) | `Views/Help/KiHinweisHuelle.cs`; sie hängt `KiEinwilligung.Nachfragen` in `Program.Main` ein — ohne diesen Aufruf gibt es keinen Weg zu einer Einwilligung und damit keine Übertragung |
 | `Hilfe/KiEinstellungenDialog` | `Form_KiEinstellungen` (iU9‑W15b.4) | `Views/Help/KiEinstellungenHuelle.cs`; der Schlüssel geht als Vorbelegung hinein und über `KiEinstellungenErgebnis` heraus (Regel S‑1), das Feld ist `type="password"` (S‑2), „Modell neu erkennen" trägt den Seiteneffekt der Vorlage (E‑5) |
 | `Hilfe/KiChatDialog` (+ `KiBestaetigungBlock`, `KiWerkzeugliste`, `KiEingabezeile`) | `Form_KiChat` (1 704 Z., iU9‑W15b.7) | `Views/Help/KiChatHuelle.{cs,Gaben.cs}` — **nicht-modal mit Besitzer** (E‑6); die Komponente kennt weder `KiChatService` noch `KiAusfuehrer` noch das Netz, sie bekommt Delegaten. Zwei getrennte Listen: die Anzeige (Klarnamen aufgelöst) und der Prompt-Verlauf (platzgehalten, H8) |
+| `Lizenz/LizenzVerwaltungDialog` | `Form_LizenzVerwaltung` (iU9‑W15c.5) | `Views/Admin/LizenzVerwaltungHuelle.cs` → `LizenzCtrl`; die einzige Maske des Bestands, die den Lizenzserver anspricht — die Komponente kennt ihn NICHT, sie bekommt fünf Anzeigewerte (`LizenzGaben`) und sechs Delegaten (Regel S‑2). Sie erscheint als eigenes Fenster UND als Überlagerung im Lizenzdialog |
+| `Lizenz/ErststartDialog` | `Form_Erststart` (iU9‑W15c.7) | `Views/Admin/ErststartHuelle.cs` → `ErststartCtrl` (der bleibt in der Windows-App: `ErststartMigration` bringt OleDb mit). **Die erste besitzerlose Hülle des Bestands** — sie läuft in `Program.Main`, vor jedem anderen Fenster |
+| `Lizenz/LizenzDialog` | `Form_Lizenz` (iU9‑W15c.11) | `Views/Help/LizenzHuelle.cs` → `LizenzTextCtrl`, `ZustimmungCtrl`; **zwei Gesichter, eine Komponente**: Menü „Hilfe → Lizenz" und die EULA-Abfrage beim ersten Start (besitzerlos). Die Verwaltung erscheint darin als Überlagerung (E‑11) |
 | `Klimadaten/KlimadatenDialog` | `Form_Klimadaten` (iU9‑W14c.7) | `Views/Admin/KlimadatenHuelle.cs` → `KlimaregionStammCtrl`, `SolardatenCtrl`, `KlimaImportAblauf`, `ChartRenderer.Jahresgang`; der Import läuft in `Task.Run` mit Fortschritt und Abbrechen |
 
 **Fünf Masken, ein Muster** (iU9‑W6): Die Projektdialoge der Erzeuger teilen einen
@@ -438,6 +441,24 @@ trugen benannte Platzhalter im SQL-Text, und die Zugriffsschicht bindet nach Pos
 `ProjektAuswahl` (das UserControl) BLEIBT bis Welle 16 im Bestand: Es lebt in zwei Wirten,
 und der zweite ist der Assistentenrahmen — für genau eine Welle gibt es zwei Fassungen
 derselben Liste (ausdrückliche Ausnahme von iZ5, Muster W4‑O1).
+
+**Drei Masken, drei Komponenten** (iU9‑W15c): Lizenz und Erststart. Der Befund der
+Welle ist eine Null: **es gab bis dahin keinen einzigen Lizenztest** — der Lizenzkern
+liegt seit iU5‑U1 plattformfrei im Kern (sechs Zustände, zwei Fristen, Kulanz, Karenz,
+Uhrschutz), geprüft hatte davon nichts. Der Wellennachweis ist deshalb eine
+**Erstanlage**: 14 Zustands- und 4 Tokenfälle in `EPOS.Kern.Tests`, angelegt VOR der
+ersten Maske. Die drei Komponenten kennen den Lizenzkern nicht (Regel S‑2): Auf iOS
+liest `LizenzManager.Pruefe()` den Schlüsselbund SYNCHRON, und eine Komponente ruft
+immer vom Zeichenfaden. **Kein Token, kein Zeitanker, kein Schlüssel als `[Parameter]`**
+(S‑3), und der eingetippte Lizenzschlüssel verlässt die Komponente nur Richtung
+„Aktivieren" (S‑4, Feld leer nach Erfolg). Zwei der drei Masken laufen **besitzerlos**
+in `Program.Main`, vor jedem anderen Fenster — dafür hat `BlazorDialogForm<T>` vier
+Zusätze bekommen (`ImTaskbar`, `AufBildschirmMittig`, `SchliessenGesperrt`,
+`Mindestmass`), alle mit dem heutigen Vorgabewert. **Damit hängt der Start an der
+WebView2-Laufzeit**: `Program.Main` prüft sie seit W15c.6a selbst und meldet ihr Fehlen
+mit der Bezugsquelle, statt den Anwender vor einem leeren Fenster stehen zu lassen.
+Die 27 Rechtstexte sind **maschinell** umgezogen und Zeichen für Zeichen
+zurückverglichen (26 zeichengleich, 1 sachlich berichtigt: .NET 10, SQLite, WebView2).
 
 **Vier Ebenen Überlagerung** (iU9‑W7.5): Verwaltung → Anlage → Stammdialog →
 Kennlinien-Editor, alles in EINEM Fenster. Jeder Wirt prüft seine eigenen
