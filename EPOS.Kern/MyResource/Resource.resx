@@ -11827,4 +11827,10 @@ Alle Eingaben überprüfen!</value>
   <data name="SIM_HERLEITUNG_VERBUNDLISTE" xml:space="preserve">
     <value>Für den Verbund kommen nur Speicher derselben Verwendung in Frage — er rechnet als EIN Wärmevorrat.</value>
   </data>
+  <data name="FORTSCHRITT_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="FORTSCHRITT_LAEUFT" xml:space="preserve">
+    <value>Die Rechnung läuft …</value>
+  </data>
 </root>

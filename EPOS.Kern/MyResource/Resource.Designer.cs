@@ -4593,6 +4593,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string FORTSCHRITT_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("FORTSCHRITT_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rechnung läuft … ähnelt.
+        /// </summary>
+        public static string FORTSCHRITT_LAEUFT {
+            get {
+                return ResourceManager.GetString("FORTSCHRITT_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten – Raumtemperaturen, Wärmebrücken und Ferienzeiten ähnelt.
         /// </summary>
         public static string GEB2_TITEL {

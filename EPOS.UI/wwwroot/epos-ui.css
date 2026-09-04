@@ -1671,3 +1671,58 @@ body {
     margin: 0;
     color: var(--epos-text-leise);
 }
+
+/* ===================================================================
+   Fortschritt (iU9-W11a.7) - Balken, Text und Abbrechen einer laufenden
+   Rechnung. Vorbild: Form_SpeicherOptimierung (bar_Fortschritt, lbl_Status,
+   btn_Abbruch), die einzige nebenlaeufige Rechnung des Bestands.
+   =================================================================== */
+.epos-fortschritt {
+    display: flex;
+    gap: var(--epos-rand);
+    align-items: center;
+}
+
+.epos-fortschritt-balken {
+    flex: 0 0 auto;
+    width: 280px;
+    height: 20px;
+}
+
+/* Unbestimmt: Ein <progress> ohne value laeuft in jedem heutigen Browser von
+   selbst. Die Ersatzanimation ist fuer Umgebungen, die das nicht tun - und sie
+   haelt sich an prefers-reduced-motion. */
+@keyframes epos-fortschritt-lauf {
+    from { background-position: 0 0; }
+    to   { background-position: 40px 0; }
+}
+
+.epos-fortschritt-balken--unbestimmt {
+    background-image: linear-gradient(
+        135deg,
+        var(--epos-karte-flaeche-hover) 25%, transparent 25%,
+        transparent 50%, var(--epos-karte-flaeche-hover) 50%,
+        var(--epos-karte-flaeche-hover) 75%, transparent 75%, transparent);
+    background-size: 40px 40px;
+    animation: epos-fortschritt-lauf 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-fortschritt-balken--unbestimmt { animation: none; }
+}
+
+.epos-fortschritt-text {
+    flex: 1 1 auto;
+    color: var(--epos-text-leise);
+}
+
+.epos-fortschritt-abbruch {
+    flex: 0 0 auto;
+}
+
+@media (forced-colors: active) {
+    .epos-fortschritt-balken--unbestimmt {
+        background-image: none;
+        border: 1px solid CanvasText;
+    }
+}
