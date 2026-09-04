@@ -2778,3 +2778,22 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Die erste Assistentenseite (iU9-W15a.6).
+
+   Zwei Spalten fuer die sechs kurzen Felder, die Beschreibung darunter ueber die
+   volle Breite - dieselbe Anordnung wie im Vorlaeufer (631 x 558), nur ohne feste
+   Pixelpositionen.
+   -------------------------------------------------------------------------- */
+.epos-projektkopf-raster {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+}
+
+@media (max-width: 700px) {
+    .epos-projektkopf-raster {
+        grid-template-columns: 1fr;
+    }
+}
