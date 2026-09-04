@@ -43,7 +43,8 @@ entgegen — sie ist damit austauschbar.
 | `Herleitungszeile` | Leise Erläuterung, optional mit Formel | Inline-Labels der Kostenmasken |
 | `Kohaerenzzeile` | Text mit Zustand „stimmig" / „abweichend" | Inline-Labels der Kostenmasken |
 | `Optionsgruppe` | Sich ausschließende Optionen (`fieldset role="radiogroup"`), einzeln sperrbar | die 45 `RadioButton` des Bestands |
-| `Zeilenwahl` | Der runde Wahlknopf einer Rasterzeile (`aria-pressed`, 44 px) | die Zeilenmarkierung von `ListView`/`DataGridView`, die ein `Raster` nicht kennt |
+| `Zeilenwahl` | Der runde Wahlknopf einer Rasterzeile (`aria-pressed`, 44 px); seit iU9‑W13.0l mit **Mehrfachmodus** — `Mehrfach` macht daraus ein Kontrollkästchen (`role="checkbox"`), und `Tastenwahl` meldet `Strg`/`Umschalt` mit | die Zeilenmarkierung von `ListView`/`DataGridView`, die ein `Raster` nicht kennt |
+| `Zeilenmarkierung` | **kein Markup, eine Regel**: die Markierung einer Rasterliste über Anzeigeindizes — Klick wählt eine, `Strg` nimmt dazu oder weg, `Umschalt` wählt den Bereich ab dem Anker; `AufAnzahlBegrenzen` wirft nach einem Filterwechsel hinaus, was hinter der neuen Liste liegt, `QuellIndizes` bildet auf die Importliste ab (Zwilling von `VdiAuswahlFilter.QuellIndizes`) | `ListBox.SelectionMode = MultiExtended` der vier Einlesemasken (iU9‑W13.0l) |
 | `Ueberlagerung` | Modaler Bereich **innerhalb** der Komponente — Abdunkelung, `role="dialog"`, Esc, Fokusfalle ohne JS | ein zweites modales `Form`, das es in der WebView nicht geben darf (R2) |
 | `Rueckfrage` | Ja / Nein / Abbrechen über der `Ueberlagerung` | die ≈ 500 `MessageBox`-Rückfragen des Bestands |
 | `Zeilenraster` | Spaltenkopf, Bearbeitungszeilen, Abschlusszeile, Summenfuß — CSS-Raster mit `display:contents` | `Views/Kosten/Form_KostenKomponente` (pnlRasterKopf + pnlZeilen + pnlFuss) |
@@ -62,6 +63,12 @@ entgegen — sie ist damit austauschbar.
 `Zahlenfeld`, `Ganzzahlfeld`, `Textfeld`, `Auswahlfeld`, `Datumsfeld`, `Schalter`,
 `Dateiwahl`, `Raster<TZeile>` (um `QuickGrid`), `ChartBild` (PNG aus dem Kern-Renderer als
 `data:`-URL).
+
+`Raster` führt seit iU9‑W13.0l `Virtualisiert` und `Zeilenhoehe`: Ein `IQueryable` allein
+virtualisiert **nichts** — QuickGrid zeichnet ohne `Virtualize` jede Zeile. Für die 20 746 Zeilen
+der CEC-Modulliste setzt der Wirt den Schalter; die Hülle bekommt damit die Klasse
+`epos-raster-huelle--hoch` (feste Höhe, stehender Spaltenkopf), ohne die es nichts zu rollen und
+also nichts zu virtualisieren gäbe.
 
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des

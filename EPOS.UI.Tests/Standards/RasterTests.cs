@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Linq;
+using Bunit;
 using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
@@ -106,4 +107,57 @@ public class RasterTests : BunitContext
         cut.Find("tbody td:last-child input").Input("55,5");
         Assert.Equal(55.5, satz.Wert);
     }
+
+    // =====================================================================
+    // Lange Listen (iU9-W13.0l)
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne <c>Virtualisiert</c> zeichnet QuickGrid JEDE Zeile - fuer die
+    /// 20 746 Zeilen der CEC-Modulliste zu viel. Mit dem Schalter haelt es nur
+    /// den sichtbaren Ausschnitt im Baum, und die Huelle bekommt die feste
+    /// Hoehe, ohne die es nichts zu rollen gaebe.
+    /// </summary>
+    [Fact]
+    public void Virtualisiert_zeichnet_nur_den_sichtbaren_Ausschnitt()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = Enumerable.Range(0, 2000)
+                               .Select(i => new Zeile(i, "Modul " + i))
+                               .AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Contains("epos-raster-huelle--hoch", cut.Find("div").ClassName);
+        Assert.True(cut.FindAll("tbody tr").Count < 2000,
+                    "Eine virtualisierte Liste darf nicht alle 2 000 Zeilen zeichnen.");
+    }
+
+    [Fact]
+    public void Ohne_den_Schalter_bleibt_die_Huelle_die_gewohnte()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = new[] { new Zeile(1, "Erdgas") }.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal("epos-raster-huelle", cut.Find("div").ClassName);
+        Assert.Single(cut.FindAll("tbody tr"));
+    }
+
+    private static RenderFragment Bezeichnerspalte() => bau =>
+    {
+        bau.OpenComponent<PropertyColumn<Zeile, string>>(0);
+        bau.AddComponentParameter(1, nameof(PropertyColumn<Zeile, string>.Property),
+                                  (System.Linq.Expressions.Expression<Func<Zeile, string>>)(z => z.Bezeichner));
+        bau.AddComponentParameter(2, nameof(PropertyColumn<Zeile, string>.Title), "Bezeichnung");
+        bau.CloseComponent();
+    };
 }
