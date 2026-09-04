@@ -212,6 +212,102 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+
+        // =====================================================================
+        //  Die vier EIGENANTEILE und die zwei Ableitungen daraus (iU9-W11a.3)
+        // =====================================================================
+        //
+        // WARUM SIE HIER STEHEN. Bis hierher standen dieselben Ausdruecke zweimal:
+        // einmal in BaueErgebnis (was in Tab_Ergebnis* landet) und einmal in
+        // Form_Simulation_Detail.Endergebniss_Simulation (was der Anwender sieht) - im
+        // Quelltext dort ausdruecklich als „wortgleich mit SimulationRunner:264-351"
+        // bezeichnet. Zwei Kopien einer Fachformel laufen beim ersten Fachwechsel
+        // auseinander; SimulationErgebnisCtrl ruft deshalb DIESE Methoden statt sie
+        // abzuschreiben.
+        //
+        // Sie rechnen nichts Neues. Jeder Rumpf ist der Ausdruck, der vorher an seiner
+        // Stelle stand - der Referenzlauf ist das Gate dafuer.
+
+        /// <summary>
+        /// EIGENANTEIL der Waermepumpe [MWh]: Direktdeckung (Phase B) plus der ihr
+        /// zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus Heizstab
+        /// (er gehoert zur WP, <c>Tab_WP.Heizung</c> je Modul).
+        /// </summary>
+        public static double EigenanteilWpMwh(SimulationWaermepumpe wp)
+        {
+            if (wp == null) return 0.0;
+            return (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
+                    wp.Heizstab_gesamt) / 1000.0;
+        }
+
+        /// <summary>
+        /// EIGENANTEIL des Heizkessels [MWh]. <c>S_Waerme_spk</c> ist seine gesamte
+        /// NUTZWAERME, seit Paket 5 also Direktdeckung PLUS Speicherladung - als
+        /// Produktion richtig, als Deckung nicht. Abgezogen wird deshalb die Ladung,
+        /// hinzu kommt der zugerechnete Anteil an der bedarfsdeckenden Entladung.
+        /// </summary>
+        public static double EigenanteilKesselMwh(SimulationSPK spk)
+        {
+            if (spk == null) return 0.0;
+
+            double direkt = spk.S_Waerme_spk - spk.Speicherladung_gesamt / 1000.0;
+            if (direkt < 0) direkt = 0;                      // Rundungsschutz
+            return direkt + spk.Speicherentladung_Anteil / 1000.0;
+        }
+
+        /// <summary>
+        /// EIGENANTEIL der Solarthermie [kWh] — als einzige der vier in kWh, weil das
+        /// Modul seine Groessen dort fuehrt. Produktion abzueglich Speicherladung (das
+        /// ist die Direktdeckung) plus der zugerechnete Anteil an der bedarfsdeckenden
+        /// Speicherentladung.
+        /// </summary>
+        public static double EigenanteilSolarKwh(SimulationSolarthermie st)
+        {
+            if (st == null) return 0.0;
+
+            double direkt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
+            if (direkt < 0) direkt = 0;                      // Rundungsschutz
+            return direkt + st.Speicherentladung_Anteil;
+        }
+
+        /// <summary>
+        /// EIGENANTEIL des BHKW [MWh]: unmittelbar abgegebene Waerme plus der ihm
+        /// zugerechnete Anteil an der bedarfsdeckenden Speicherentladung (Interimsregel
+        /// „Vermischung im Speicher", Kaskadenschleife).
+        /// </summary>
+        public static double EigenanteilBhkwMwh(SimulationBHKW bh)
+        {
+            if (bh == null) return 0.0;
+            return (bh.Direktdeckung_gesamt + bh.Speicherentladung_Anteil) / 1000.0;
+        }
+
+        /// <summary>
+        /// RESTWAERMEBEDARF einer Kaskadenstufe: Stufeneingang minus Eigenanteil,
+        /// geklemmt auf &gt;= 0 (Rundungsschutz). Einheitlich fuer alle vier Erzeuger
+        /// (Nutzerentscheidungen 6-4 und 6-5).
+        /// </summary>
+        public static double RestNachEigenanteil(double stufeneingang, double eigenanteil)
+        {
+            double rest = stufeneingang - eigenanteil;
+            return rest < 0 ? 0.0 : rest;
+        }
+
+        /// <summary>
+        /// DECKUNGSGRAD [%] eines Erzeugers: sein Eigenanteil bezogen auf den
+        /// PROJEKTwaermebedarf, geklemmt auf 0…100. Ohne Bedarf 0 — Bericht und
+        /// Wirtschaftlichkeit addieren die Erzeugeranteile, und ein Nenner 0 haette dort
+        /// keine Bedeutung.
+        /// </summary>
+        public static double DeckungProzent(double eigenanteilMwh, double projektbedarfMwh)
+        {
+            if (projektbedarfMwh <= 0) return 0.0;
+
+            double d = eigenanteilMwh * 100.0 / projektbedarfMwh;
+            if (d > 100) d = 100;
+            if (d < 0) d = 0;
+            return d;
+        }
+
         /// <summary>
         /// Baut aus den übergebenen Simulationsobjekten ein ErgebnisModel (eine Quelle der Wahrheit,
         /// wird auch von Form_Simulation_Detail.SpeichereErgebnis genutzt). Ohne UI/MessageBox.
@@ -300,8 +396,7 @@ namespace WindowsFormsApplication1
                 // EIGENANTEIL der Wärmepumpe [MWh] — Direktdeckung (Phase B) plus der ihr
                 // zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus
                 // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul).
-                double wpEigen = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
-                                  wp.Heizstab_gesamt) / 1000.0;
+                double wpEigen = EigenanteilWpMwh(wp);
 
                 // NUTZERENTSCHEIDUNG 6-5, entschieden am 15.08.2026 (Variante B):
                 // Der RESTWÄRMEBEDARF der Wärmepumpe folgt jetzt derselben Regel wie
@@ -470,8 +565,7 @@ namespace WindowsFormsApplication1
                 // Bedingung ist mit dem Altpfad entfallen; die Klammern bleiben und
                 // halten die drei Hilfsgrößen beisammen.
                 {
-                    double bhkwDirekt = bh.Direktdeckung_gesamt / 1000.0;
-                    double bhkwEigen = bhkwDirekt + bh.Speicherentladung_Anteil / 1000.0;
+                    double bhkwEigen = EigenanteilBhkwMwh(bh);
 
                     b.Restwaermebedarf = waermebedarfMWh - bhkwEigen;
                     if (b.Restwaermebedarf < 0) b.Restwaermebedarf = 0;   // Rundungsschutz
@@ -599,9 +693,7 @@ namespace WindowsFormsApplication1
                 // Kessel meldete seinen vollen Stufeneingang als Rest — bei gleichzeitig
                 // ausgewiesener Deckung. Restbedarf und Deckung folgen jetzt derselben
                 // Größe. Einheitlich mit Solarthermie und BHKW (Nutzerentscheidung 6-4).
-                double kesselDirekt = spk.S_Waerme_spk - spk.Speicherladung_gesamt / 1000.0;
-                if (kesselDirekt < 0) kesselDirekt = 0;                      // Rundungsschutz
-                double kesselEigen = kesselDirekt + spk.Speicherentladung_Anteil / 1000.0;
+                double kesselEigen = EigenanteilKesselMwh(spk);
 
                 h.Waermebedarf = spk.Waermebedarf_gesamt;
                 h.Waermeproduktion = spk.S_Waerme_spk;
@@ -690,13 +782,11 @@ namespace WindowsFormsApplication1
                 // OHNE PUFFER-SENKE IST DIE KORREKTUR WIRKUNGSLOS: Dann lädt die
                 // Solarthermie keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der
                 // Ausdruck damit bitgleich der bisherige.
-                double solarDirekt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
-                // Rundungsschutz: Beide Summen entstehen getrennt; geht die gesamte
-                // Produktion in den Speicher, kann die Differenz um wenige 1e-10 unter
-                // null liegen. Ohne Puffer-Senke ist Speicherladung_gesamt exakt 0,0 und
-                // Waermeproduktion_gesamt eine Summe nichtnegativer Werte — die Klemmung
-                // greift dann nachweislich nie.
-                if (solarDirekt < 0) solarDirekt = 0;
+                // Rundungsschutz in EigenanteilSolarKwh: Beide Summen entstehen
+                // getrennt; geht die gesamte Produktion in den Speicher, kann die
+                // Differenz um wenige 1e-10 unter null liegen. Ohne Puffer-Senke ist
+                // Speicherladung_gesamt exakt 0,0 und Waermeproduktion_gesamt eine Summe
+                // nichtnegativer Werte — die Klemmung greift dann nachweislich nie.
 
                 // BEFUND N2 (Nacharbeit): Der DECKUNGSGRAD ist der Eigenanteil dieses
                 // Erzeugers — Direktdeckung PLUS der Anteil an der Speicherentladung, die
@@ -713,7 +803,7 @@ namespace WindowsFormsApplication1
                 // zugerechnete Entladung zusammen aus demselben Stufeneingang stammen
                 // (Klemmung nur als Rundungsschutz). Ohne Puffer-Senke sind beide
                 // Zusatzgrößen exakt 0, der Ausdruck also bitgleich der bisherige.
-                double solarEigen = solarDirekt + st.Speicherentladung_Anteil;
+                double solarEigen = EigenanteilSolarKwh(st);
 
                 stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;
                 stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
