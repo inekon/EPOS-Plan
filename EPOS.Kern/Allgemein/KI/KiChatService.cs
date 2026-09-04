@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -603,7 +603,7 @@ namespace WindowsFormsApplication1
             // Mit Aktionen wird der VOLLSTÄNDIGE Anfragerumpf gezeigt, nicht nur der
             // Prompt: der Werkzeugkatalog ist der größte Teil dessen, was hinausgeht,
             // und gehört deshalb in die Selbstprüfung.
-            KiRegister reg = register ?? KiAusfuehrer.Register;
+            KiRegister reg = register ?? KiAusfuehrungsweg.Aktuell.Register;
             bool wegB = WegBErzwingen || WerkzeugModell().Length == 0;
 
             var gespraech = new List<JsonObject>
@@ -1092,7 +1092,7 @@ namespace WindowsFormsApplication1
                 return antwort;
             }
 
-            KiRegister reg = register ?? KiAusfuehrer.Register;
+            KiRegister reg = register ?? KiAusfuehrungsweg.Aktuell.Register;
             bool eingespeist = Modellkanal != null;
 
             if (!eingespeist && !IstEingerichtet)
@@ -1241,12 +1241,12 @@ namespace WindowsFormsApplication1
                         {
                             KiErgebnis ergebnis = schritt.Bestaetigungspflichtig
                                 ? await MitBestaetigungAsync(aufruf, schritt, abbruch).ConfigureAwait(true)
-                                : await KiAusfuehrer.AusfuehrenAsync(aufruf, abbruch).ConfigureAwait(true);
+                                : await KiAusfuehrungsweg.Aktuell.AusfuehrenAsync(aufruf, abbruch).ConfigureAwait(true);
 
                             schritt.Ergebnis = ergebnis;
                             schritt.Ausgefuehrt = ergebnis.Erfolg;
                             if (!ergebnis.Erfolg) schritt.Grund = ergebnis.Text;
-                            schritt.Protokollzeile = KiAusfuehrer.LetzteProtokollzeile;
+                            schritt.Protokollzeile = KiAusfuehrungsweg.Aktuell.LetzteProtokollzeile;
 
                             // Der Grund eines gescheiterten Laufs ist ein SATZ und kann
                             // Klarnamen führen, die noch in keiner Ergebniszeile standen -
@@ -1259,7 +1259,7 @@ namespace WindowsFormsApplication1
                             {
                                 var klartexte = new List<string> { ergebnis.Text };
                                 klartexte.AddRange(ergebnis.Meldungen);
-                                KiHilfe.KlarnamenAnmelden(platzhalter, klartexte.ToArray());
+                                KiAusfuehrungsweg.Aktuell.KlarnamenAnmelden(platzhalter, klartexte.ToArray());
                             }
 
                             rueckmeldung = KiRueckmeldung.Erzeuge(aufruf, ergebnis, platzhalter);
@@ -1346,22 +1346,22 @@ namespace WindowsFormsApplication1
                 // gar nicht erst angestoßen — so entsteht auch kein Sicherungspunkt für
                 // etwas, das ohnehin nicht laufen kann.
                 schritt.Entscheidung = KiEntscheidung.Abgelehnt;
-                return KiAusfuehrer.AbweisenUndVermerken(aufruf,
+                return KiAusfuehrungsweg.Aktuell.AbweisenUndVermerken(aufruf,
                     string.Format(MyResource.Resource.KI_AKT_OHNE_BESTAETIGUNGSWEG, aufruf.Name));
             }
 
-            KiVorbereitung vorbereitung = await KiAusfuehrer.VorbereitenAsync(aufruf, abbruch)
+            KiVorbereitung vorbereitung = await KiAusfuehrungsweg.Aktuell.VorbereitenAsync(aufruf, abbruch)
                                                             .ConfigureAwait(true);
             if (!vorbereitung.Bereit) return vorbereitung.Ablehnung;
 
             KiFreigabe freigabe = vorbereitung.Freigabe;
             schritt.Bestaetigung = freigabe.Text;
-            schritt.Sicherungspunkt = KiAusfuehrer.SicherungPfad;
+            schritt.Sicherungspunkt = KiSicherungspunkt.Pfad;
 
             schritt.Entscheidung = await EntscheidungAbwartenAsync(freigabe, weg, abbruch)
                                          .ConfigureAwait(true);
 
-            return await KiAusfuehrer.AusfuehrenAsync(aufruf, freigabe, abbruch).ConfigureAwait(true);
+            return await KiAusfuehrungsweg.Aktuell.AusfuehrenAsync(aufruf, freigabe, abbruch).ConfigureAwait(true);
         }
 
         /// <summary>
