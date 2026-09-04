@@ -1,8 +1,8 @@
-# iU9 Welle 11a — Simulationsergebnis I: Kern, Renderer, Fortschritt
+﻿# iU9 Welle 11a — Simulationsergebnis I: Kern, Renderer, Fortschritt
 
-> Umsetzung 04.09.2026 auf `ios_migration` (Basis `427fd59`, danach
-> `cd849f8` eingemergt). Vermessung: `iU9_W11_Vermessung.md` (Stand `b6a72b0`,
-> 50 Befunde). **Keine Maske gelöscht** — W11a verlegt, was ohne Oberfläche geht,
+> Umsetzung 04.09.2026 auf `ios_migration` (Basis `427fd59`, danach `cd849f8`
+> und **`a398c9a` mit der ganzen Welle 10b** eingemergt — siehe § 11).
+> Vermessung: `iU9_W11_Vermessung.md` (Stand `b6a72b0`, 50 Befunde). **Keine Maske gelöscht** — W11a verlegt, was ohne Oberfläche geht,
 > in den Kern und hängt die sechs WinForms-Masken schon daran; W11b baut danach
 > die Ergebnisseite und löscht die Masken.
 >
@@ -208,6 +208,8 @@ prüft sie weiter. Ihre Zusammenführung mit den neuen ist **W11a‑O‑3**.
 | **A‑9** | Die CO₂-Faktoren stehen im Kern statt in der Oberfläche — **Werte unverändert** | W11‑B31 |
 | **A‑10** | `AmortisationText` formatiert einheitlich mit `"N1"` (vorher zusätzlich `"0.0"`) | W11‑B42; beide Formate sind gleich, solange die Amortisationszeit unter 1 000 Jahren bleibt |
 | **A‑11** | `StromspeicherStammCtrl.KapazitaetJeProjekt` summiert über einen JOIN statt über eine Schleife mit Einzelabfragen | W11‑B45; gleiches Ergebnis, außer wenn `Tab_Stromspeicher.Energie` NULL ist — dann übergeht der JOIN die Zeile, während der Vorläufer mit einer Ausnahme abgebrochen wäre |
+| **A‑12** | Die Berechnungsart „Arbitrage" erscheint überall als **„Preissteuerung / Arbitrage"** statt als Persistenzwert „Arbitrage" — im Variantenvergleich, in der Auslegungsoptimierung und auf der Ergebnisseite | W11a‑O‑4, erledigt beim Merge mit W10b: Deren Fassung kannte die Preissteuerung und ist die maßgebliche geworden |
+| **A‑13** | Ein UNBEKANNTER Wert der Betriebs-/Berechnungsart erscheint auf den Kacheln der Simulationskonfiguration als Persistenzwert statt als „Grünstrom"/„Dauernutzung" | dieselbe Zusammenführung; unerreichbar, solange alle Schreiber `DbWerte.SP_*` setzen |
 
 ### Namensabweichungen zur Arbeitsanweisung
 
@@ -307,17 +309,23 @@ im Quelltext; die neuen nehmen freie Reihenlisten. Eine Zusammenführung spart r
 ChartProben byte-genau. Das gehört in einen eigenen Schritt mit eigenem Nachweis,
 nicht in eine Welle mit Referenzlauf-Gate.
 
-### W11a‑O‑4 — eine VIERTE Fassung der Anzeigetexte
+### W11a‑O‑4 — eine VIERTE Fassung der Anzeigetexte — **beim Merge erledigt**
 
-`Form_Simulation_Config.Karten.cs:1076–1091` führt `BetriebsartAnzeige` und
-`BerechnungsartAnzeige` — eine vierte Kopie, die die Vermessung nicht nennt, und
-sie **weicht ab**: Ihr `BerechnungsartAnzeige` kennt
-`SP_BERECHNUNG_ARBITRAGE` (die Preissteuerung), das der Variantenvergleich nicht
-kennt; ihr `BetriebsartAnzeige` fällt bei unbekanntem Wert auf „Grünstrom" zurück
-statt den Persistenzwert zu zeigen. **Nicht angefasst:**
-`Form_Simulation_Config` gehört zu **W10b**, das gleichzeitig läuft. Beim
-Zusammenführen ist die Arbitrage-Kenntnis die vollständigere Fassung und gehört
-nach `SpeicherAnzeigeCtrl.BerechnungsartText`.
+`Form_Simulation_Config.Karten.cs:1076–1091` führte `BetriebsartAnzeige` und
+`BerechnungsartAnzeige` — eine vierte Kopie, die die Vermessung nicht nennt. Mit
+W10b ist die Datei gelöscht und die beiden Methoden nach
+`Views/Simulation/SimulationKonfigHuelle.cs:1063–1077` gewandert.
+
+**Erledigt beim Zusammenführen** (§ 11): Die vierte Fassung war zugleich die
+**vollständigste** — nur sie kannte `SP_BERECHNUNG_ARBITRAGE`. Ihr Wissen steht
+jetzt in `SpeicherAnzeigeCtrl.BerechnungsartText`, und die Hülle ruft den Kern.
+Vier Kopien, eine Wahrheit.
+
+**Ein Unterschied bleibt bewusst:** Ein UNBEKANNTER Wert kam in der vierten
+Fassung als „Grünstrom" bzw. „Dauernutzung" zurück; der Kern gibt ihn unverändert
+weiter. Das ist eine Behauptung weniger über Daten, die man nicht kennt — und
+unerreichbar, solange alle Schreiber `DbWerte.SP_*` setzen. Zwei Testfälle halten
+beides fest.
 
 ### W11a‑O‑5 — `KonfigurationCtrl` liest zwei Modelle
 
@@ -333,6 +341,9 @@ Etappe mit neuem Referenzstand)?
 ---
 
 ## 8. Nachweis
+
+> **Die Zahlen unten sind der Stand VOR dem Merge mit Welle 10b.** Der Nachweis auf
+> dem zusammengeführten Stand steht in § 11.
 
 | Prüfung | Sollwert | Ist |
 |---|---|---|
@@ -416,3 +427,57 @@ Ungeprüft — alles hier ist ohne Windows entstanden. Die Liste:
 - `ErgebnisPraesenz` und `Ganglinie` liegen im Kern und sind `public`.
 - **Vor W11b:** je Chart ein Bildschirmfoto des Bestands ins Scratchpad (Risiko
   R‑W11a‑4 — die sieben neuen Bilder haben keinen Golden-Vergleich).
+
+---
+
+## 11. Nachtrag: der Merge mit Welle 10b (04.09.2026)
+
+W10b lief gleichzeitig in einem eigenen Arbeitsbaum und ist mit `a91ba2a` auf
+`ios_migration` gelandet (Statusblock `a398c9a`). Beide Wellen fassen dieselbe
+Ecke des Programms an: W10b macht aus der **Simulationskonfiguration** eine Seite,
+W11a bereitet die **Ergebnisseite** vor. Elf Dateien haben beide berührt, sieben
+davon in Konflikt.
+
+**Merge-Commit:** `origin/ios_migration` (`a398c9a`) in
+`worktree-agent-afd9c90f84878dc00`.
+
+### Die sieben Konflikte und wie sie gelöst sind
+
+| Datei | Konflikt | Lösung |
+|---|---|---|
+| `EPOS.Kern/Controller/KonfigurationCtrl.cs` | **beide Wellen haben `LiesProjekt(int)` gebaut** — W10b über eine neue `ReadSingle`-Überladung mit `DbParam`, W11a über `TabelleJeProjekt` + `ZeileUebernehmen` | **eine Fassung**, Signatur `KonfigurationModel LiesProjekt(int idProjekt)`. Der Rumpf ist der von W11a (er füllt ein FRISCHES Modell und braucht dafür ein parametrisierbares Ziel); W10b's Überladung `ReadSingle(string, params DbParam[])` bleibt, weil sie eigene Aufrufer hat. Dazu unverändert `ProjektLesen(int)` für Aufrufer, die ein STEUEROBJEKT füllen (`SimulationControl.ctrl_konfig` hält es während des Laufs). W10b's `ReadZeile(DataTable)` ruft jetzt W11a's `ZeileUebernehmen` — die Ordinalkette steht einmal |
+| `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.cs` | nur `btn_Konfiguration_Click`: W10b ersetzt den Block durch `SimulationKonfigHuelle.Oeffnen`, W11a hatte darin die Lesezeile parametrisiert | **W10b gewinnt in diesem Block** — die Lesestelle steckt jetzt in der Hülle und ruft dieselbe Kern-Methode. **Alle übrigen W11a-Änderungen der Datei sind unberührt** (sie lagen außerhalb des Konflikts) |
+| `WindowsFormsApplication1/Views/Hauptformular/Form_Start.cs` | `btn_SimKonfig_Click`: derselbe Fall | **W10b gewinnt** — mit dem ganzen Block entfällt auch die Stelle, die W11a.2 parametrisiert hatte |
+| `EPOS.UI/wwwroot/epos-ui.css` | beide haben am Dateiende angehängt | **beide Blöcke** (`epos-fortschritt` aus W11a.7, `epos-schema`/`epos-simkonfig` aus W10b) |
+| `EPOS.UI/CLAUDE.md` | beide haben Bausteinzeilen angehängt | **alle vier Zeilen** (`Fortschritt`, `Schema`, `ErzeugerKachel`, `SpeicherKachel`) |
+| `EPOS.Kern/CLAUDE.md` | dieselben zwei Tabellenzeilen (`Allgemein/Simulation/`, `Controller/`) von beiden erweitert | **beide Texte in je einer Zeile**, Zahlen nachgezählt: `Allgemein/` 21 · `Simulation/` 33 · `Controller/` 92 · `Model/` 51 |
+| `WindowsFormsApplication1/CLAUDE.md` | Wellenabsatz und Protokollliste | **beide** — der W11a-Absatz bleibt, die `Allgemein/`-Zeile nimmt W10b's Zahl (42), die Protokollliste beide neuen Protokolle |
+
+`ChartRenderer.cs` und `Proben/ChartProben/Program.cs` standen **nicht** in
+Konflikt — W10b hat sie nicht angefasst.
+
+### Was der Merge zusätzlich erledigt hat
+
+**W11a‑O‑4 ist geschlossen** (oben). Die vierte Fassung der Anzeigetexte lebte
+nach W10b in `SimulationKonfigHuelle`; ihr Wissen um die Preissteuerung ist nach
+`SpeicherAnzeigeCtrl.BerechnungsartText` gezogen, die Hülle ruft den Kern.
+Abweichungen **A‑12** und **A‑13**.
+
+**W10b bestätigt den Nebenbefund zu den Testdatenbank-Kopien** unabhängig:
+`d75908c` („Befund W10b‑B42 — `DatenzugriffTests` gehört in die
+Testdatenbank-Sammlung") beschreibt dieselbe Ursache aus einer anderen Richtung.
+
+### Gate auf dem zusammengeführten Stand
+
+| Prüfung | Ist |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler, 12 Warnungen** (17 vor dem Merge — W10b hat Masken mit WFO1000 gelöscht) |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | **2 502** grün (KiKern 450 · SpeicherEngine 337 · EPOS.Kern 375 · EPOS.UI 1 340) |
+| dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | **grün** |
+| `dotnet test Werkzeuge/Formularkarte.Tests` | **123**, auch unter `en_US` |
+| Formularkarte-Stapellauf | **49 Masken / 28 lokalisiert** — der W10b-Stand, W11a löscht keine |
+| `Werkzeuge/SqlDialektPruefer` | **0 Fundstellen** (1 233 SQL-Texte) |
+| `Proben/ChartProben` | **30 Bilder, 0 Verstöße** |
+| **Referenzlauf 1030/1007/1017** | **byte-gleich** gegen `Referenzlaeufe/2026-08-30_B3-Kaskade` (PASS: 324 219 · 254 154 · 236 670 Werte) |
+| iU5-Wächter (`Program.*`) | leer |
+| Plattform-Wächter (WinForms/Drawing/OleDb im Kern) | leer |

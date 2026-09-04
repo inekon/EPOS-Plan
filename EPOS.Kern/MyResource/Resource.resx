@@ -445,6 +445,27 @@ Bitte zuerst eine CSV-Datei einlesen oder alle Werte gleich setzen.</value>
   <data name="SIM_GRUPPE_SENKENZEILE" xml:space="preserve">
     <value>Gewählte Senke</value>
   </data>
+  <data name="SIM_KONFIG_TITEL" xml:space="preserve">
+    <value>Simulation Konfiguration</value>
+  </data>
+  <data name="SIM_KONFIG_KOPF" xml:space="preserve">
+    <value>Erzeuger definieren, Pufferspeicher zuordnen:</value>
+  </data>
+  <data name="SIM_KONFIG_BTN_SPEICHERN" xml:space="preserve">
+    <value>Konfiguration speichern</value>
+  </data>
+  <data name="SIM_KONFIG_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_WAERME" xml:space="preserve">
+    <value>Wärmeerzeuger</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_STROM" xml:space="preserve">
+    <value>Stromerzeuger</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Energiespeicher</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Komponenten der Simulation</value>
   </data>

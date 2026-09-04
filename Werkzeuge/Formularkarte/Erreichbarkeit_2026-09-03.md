@@ -131,15 +131,30 @@ hier also gar nicht erst auf.
 zur Seite. `Form_PufferSp_Admin` bleibt bis Welle 14a; der Projektdialog springt über
 `Sprungziel.PufferSpAdminNurLesen` dorthin.
 
+## Stand nach iU9-W10b (Simulationskonfiguration II: die Seite selbst)
+
+Welle 10b stellt den **Wirt** der sieben Dialoge um: `Form_Simulation_Config` mit ihren
+vier Teildateien, dem Designer und der einzigen `.resx` der ganzen Welle. Mit ihr fallen
+die drei Steuerelement-Klassen `ErzeugerKarte`, `SpeicherKarte` und `SchemaAnsicht` sowie
+`Eingabefrage` (letzter Nutzer) — keine davon hat einen eigenen Designer, sie tauchen in
+dieser Liste also nicht auf.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Simulation_Config` | ja | gelöscht; `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite` mit `SimulationKonfigHuelle`. Die Komponente ist eine **Seite** (Entscheid R‑W10b‑1) und erscheint unter Windows bis W16 in der modalen Dialoghülle. |
+
+Damit führt `Views/Simulation` keine Designer-Maske der Simulationskonfiguration mehr;
+übrig bleiben dort `Form_Simulation_Detail`, die drei `Navigator*` und `DashboardForm`.
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 49 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 48 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
 | unklar | 1 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 50 | |
+| gesamt | 49 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
@@ -172,7 +187,6 @@ zur Seite. `Form_PufferSp_Admin` bleibt bis Welle 14a; der Projektdialog springt
 | Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
 | Form_PufferSp_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Admin.Designer.cs` |
 | Form_PufferSp_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSPImport → Masken.PufferSpImport → Form_PufferSp_einlesen | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_einlesen.designer.cs` |
-| Form_Simulation_Config | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Config.Designer.cs` |
 | Form_Simulation_Detail | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.Designer.cs` |
 | Form_SolarKollektorenAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarkollektoren → Masken.SolarkollektorenAdmin → Form_SolarKollektorenAdmin | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektorenAdmin.designer.cs` |
 | Form_SolarKollektoren_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SolarThermieImport → Masken.SolarkollektorenImport → Form_SolarKollektoren_einlesen | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektoren_einlesen.designer.cs` |
@@ -193,3 +207,4 @@ zur Seite. `Form_PufferSp_Admin` bleibt bis Welle 14a; der Projektdialog springt
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |
 | Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |
+

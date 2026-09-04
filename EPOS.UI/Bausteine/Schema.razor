@@ -1,0 +1,414 @@
+﻿@* Das HYDRAULIKSCHEMA als SVG (iU9-W10b.0c).
+
+   VORBILD. WindowsFormsApplication1/Views/Simulation/SchemaAnsicht.cs (789 Z.) -
+   eine GDI+-Zeichnung mit eigenem OnPaint, Doppelpufferung, ToolTip und
+   Hit-Test ueber Rechtecke. Vier Spalten (Quelle -> Erzeuger -> Speicher ->
+   Abnehmer), Ladeleitungen koralle mit Prioritaetskreis, Versorgung gruen,
+   Prozess violett, Quellseite blau, Kaskade blau gestrichelt; darunter das
+   Pillen-Band der Kaskadenkette und die Legende.
+
+   WAS SICH AENDERT UND WAS NICHT. Die ANORDNUNG rechnet der Kern
+   (SchemaLayout, iU9-W10b.0a) - dieselben Regeln, dieselben Zahlen, nur ohne
+   GDI+. Hier steht ausschliesslich das Malen: ein <svg> mit der Modellgroesse
+   als viewBox, je Knoten ein <rect> mit abgerundeten Ecken, je Kante ein
+   <path> mit Bezierbogen und Pfeilspitze. Die FARBEN kommen aus
+   epos-ui.css (Herkunft KartenStil) - kein Farbwert steht in dieser Datei.
+
+   DER HIT-TEST ENTFAELLT. Der Vorlaeufer suchte zu jedem Mausklick das
+   getroffene Rechteck (Treffer:162-171) und rechnete den Bildlaufversatz
+   heraus (InModell:174-177). Im SVG traegt jedes Element seinen eigenen
+   Klick-Handler; beides ist damit gegenstandslos.
+
+   SICHTBAR MACHEN OHNE JS. SichtbarMachen:354-364 scrollte den gewaehlten
+   Knoten in den Sichtbereich. Hier bekommt der gewaehlte Kasten den Fokus
+   (FocusAsync) - der Browser scrollt ihn dabei selbst herbei, und die
+   Tastaturbedienung entsteht als Zugabe. EPOS.UI braucht so keine
+   JS-Schicht (dieselbe Ueberlegung wie bei der Fokusfalle der
+   Ueberlagerung).
+
+   TASTATUR. Jeder Kasten und jedes Bandglied ist ein Fokusziel: Eingabe waehlt,
+   Leertaste waehlt, Eingabe auf einem bereits gewaehlten Element oeffnet den
+   Editor - der Tastaturweg zum Doppelklick. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-schema">
+
+    @if (Bild.IstLeer)
+    {
+        <p class="epos-schema-leer" role="status">@LeerText</p>
+    }
+    else
+    {
+        <svg class="epos-schema-bild" viewBox="@($"0 0 {Bild.Breite} {Bild.Hoehe}")"
+             width="@Bild.Breite" height="@Bild.Hoehe"
+             role="group" aria-label="@Bezeichnung">
+
+            <defs>
+                @foreach (SchemaKantenart art in Pfeilarten)
+                {
+                    <marker id="@PfeilId(art)" markerWidth="9" markerHeight="7"
+                            refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L9,3.5 L0,7 z" class="@("epos-schema-pfeil " + Kantenklasse(art))" />
+                    </marker>
+                }
+            </defs>
+
+            @* --- Spaltenkoepfe ------------------------------------------------ *@
+            @for (int i = 0; i < Bild.Spaltenkoepfe.Count && i < Bild.SpaltenX.Count; i++)
+            {
+                <g><text class="epos-schema-spaltenkopf"
+                      x="@(Bild.SpaltenX[i] + Bild.SpaltenBreite[i] / 2)"
+                      y="@(Bild.Rand + Bild.KopfHoehe / 2)"
+                      text-anchor="middle" dominant-baseline="middle">@Bild.Spaltenkoepfe[i]</text></g>
+            }
+
+            @* --- Kanten (unter den Kaesten) ----------------------------------- *@
+            @foreach (SchemaKante k in Bild.Kanten)
+            {
+                <path class="@Kantenklasse(k)" d="@k.Pfad" fill="none"
+                      marker-end="@($"url(#{PfeilId(k.Art)})")" />
+
+                @if (k.Prioritaet > 0)
+                {
+                    <circle class="epos-schema-priokreis" cx="@k.MitteX" cy="@k.MitteY" r="9" />
+                    <g><text class="epos-schema-prioziffer" x="@k.MitteX" y="@k.MitteY"
+                          text-anchor="middle" dominant-baseline="central">@k.Prioritaet</text></g>
+                }
+            }
+
+            @* --- Knoten -------------------------------------------------------- *@
+            @foreach (SchemaKnoten n in Bild.Knoten)
+            {
+                SchemaKnoten knoten = n;
+                bool gewaehlt = knoten.Schluessel == Gewaehlt;
+
+                <g class="@Knotenklasse(knoten)" tabindex="0" role="button"
+                   aria-label="@knoten.Titel"
+                   aria-pressed="@(gewaehlt ? "true" : "false")"
+                   @ref="_kaesten[knoten.Schluessel]"
+                   @onclick="() => Waehlen(knoten.Schluessel)"
+                   @ondblclick="() => Bearbeiten(knoten.Schluessel)"
+                   @onkeydown="e => BeiTaste(e, knoten.Schluessel)">
+
+                    <title>@Kurzhinweis(knoten)</title>
+
+                    @if (gewaehlt)
+                    {
+                        <rect class="epos-schema-halo" x="@knoten.X" y="@knoten.Y"
+                              width="@knoten.Breite" height="@knoten.Hoehe"
+                              rx="@Ecke(knoten)" ry="@Ecke(knoten)" />
+                    }
+
+                    <rect class="epos-schema-kasten" x="@knoten.X" y="@knoten.Y"
+                          width="@knoten.Breite" height="@knoten.Hoehe"
+                          rx="@Ecke(knoten)" ry="@Ecke(knoten)" />
+
+                    @if (!string.IsNullOrEmpty(knoten.Rang))
+                    {
+                        <g><text class="epos-schema-rang" x="@(knoten.X + KNOTEN_RAND)"
+                              y="@(knoten.Y + KNOTEN_RAND + TITEL_HOEHE / 2)"
+                              dominant-baseline="central">@knoten.Rang</text></g>
+                    }
+
+                    <g><text class="epos-schema-titel"
+                          x="@(knoten.X + KNOTEN_RAND + (string.IsNullOrEmpty(knoten.Rang) ? 0 : 16))"
+                          y="@(knoten.Y + KNOTEN_RAND + TITEL_HOEHE / 2)"
+                          dominant-baseline="central">@knoten.Titel</text></g>
+
+                    @{ int y = knoten.Y + KNOTEN_RAND + TITEL_HOEHE; }
+                    @foreach (string zeile in knoten.Zeilen)
+                    {
+                        <g><text class="epos-schema-zeile" x="@(knoten.X + KNOTEN_RAND)"
+                              y="@(y + ZEILE_HOEHE / 2)" dominant-baseline="central">@zeile</text></g>
+                        y += ZEILE_HOEHE;
+                    }
+
+                    @if (knoten.Badges.Count > 0)
+                    {
+                        int bx = knoten.X + KNOTEN_RAND;
+                        foreach (string badge in knoten.Badges)
+                        {
+                            int bw = Textbreite(badge) + 12;
+                            if (bx + bw > knoten.X + knoten.Breite - KNOTEN_RAND) break;
+
+                            <rect class="epos-schema-badge" x="@bx" y="@y" width="@bw"
+                                  height="@BADGE_HOEHE" rx="@(BADGE_HOEHE / 2)" ry="@(BADGE_HOEHE / 2)" />
+                            <g><text class="epos-schema-badgetext" x="@(bx + bw / 2)"
+                                  y="@(y + BADGE_HOEHE / 2)" text-anchor="middle"
+                                  dominant-baseline="central">@badge</text></g>
+                            bx += bw + 4;
+                        }
+                        y += BADGE_HOEHE + 3;
+                    }
+
+                    @if (knoten.Warnung)
+                    {
+                        <rect class="epos-schema-warnflaeche" x="@(knoten.X + KNOTEN_RAND)"
+                              y="@y" width="@(knoten.Breite - 2 * KNOTEN_RAND)" height="@ZEILE_HOEHE" />
+                        <g><text class="epos-schema-warntext" x="@(knoten.X + KNOTEN_RAND + 2)"
+                              y="@(y + ZEILE_HOEHE / 2)" dominant-baseline="central">@WarnungText</text></g>
+                    }
+                </g>
+            }
+
+            @* --- Kaskadenband --------------------------------------------------- *@
+            <g><text class="epos-schema-bandkopf" x="@Bild.Rand" y="@(Bild.BandOben + 8)"
+                  dominant-baseline="central">@KetteKopfText</text></g>
+
+            @if (Bild.Band.Count == 0)
+            {
+                <g><text class="epos-schema-zeile" x="@Bild.Rand" y="@(Bild.BandOben + 24)"
+                      dominant-baseline="central">@KeineKetteText</text></g>
+            }
+            else
+            {
+                SchemaBandglied? vorher = null;
+                foreach (SchemaBandglied g in Bild.Band)
+                {
+                    SchemaBandglied glied = g;
+
+                    if (!glied.Kettenanfang && vorher is not null && vorher.Y == glied.Y)
+                    {
+                        <line class="@("epos-schema-bandpfeil " + Kantenklasse(glied.PfeilDavor))"
+                              x1="@(vorher.X + vorher.Breite + 3)" y1="@(glied.Y + glied.Hoehe / 2)"
+                              x2="@(glied.X - 3)" y2="@(glied.Y + glied.Hoehe / 2)"
+                              marker-end="@($"url(#{PfeilId(glied.PfeilDavor)})")" />
+                    }
+
+                    <g class="@Bandklasse(glied)" tabindex="0" role="button"
+                       aria-label="@glied.Text"
+                       @onclick="() => Waehlen(glied.Schluessel)"
+                       @ondblclick="() => Bearbeiten(glied.Schluessel)"
+                       @onkeydown="e => BeiTaste(e, glied.Schluessel)">
+                        <rect class="epos-schema-pille" x="@glied.X" y="@glied.Y"
+                              width="@glied.Breite" height="@glied.Hoehe"
+                              rx="@(glied.Hoehe / 2)" ry="@(glied.Hoehe / 2)" />
+                        <g><text class="epos-schema-pillentext" x="@(glied.X + glied.Breite / 2)"
+                              y="@(glied.Y + glied.Hoehe / 2)" text-anchor="middle"
+                              dominant-baseline="central">@glied.Text</text></g>
+                    </g>
+
+                    vorher = glied;
+                }
+            }
+
+            @* --- Legende --------------------------------------------------------- *@
+            @{
+                int lx = Bild.Rand;
+                int ly = Bild.LegendeOben;
+            }
+            @foreach (SchemaLegendeeintrag e in Bild.Legende)
+            {
+                int breite = Textbreite(e.Text);
+                if (lx + breite + 40 > Bild.Breite - Bild.Rand && lx > Bild.Rand)
+                {
+                    lx = Bild.Rand;
+                    ly += LEGENDE_ZEILE;
+                }
+
+                <line class="@Legendenklasse(e)" x1="@lx" y1="@(ly + LEGENDE_ZEILE / 2)"
+                      x2="@(lx + 26)" y2="@(ly + LEGENDE_ZEILE / 2)" />
+                <g><text class="epos-schema-legendetext" x="@(lx + 32)"
+                      y="@(ly + LEGENDE_ZEILE / 2)" dominant-baseline="central">@e.Text</text></g>
+
+                lx += breite + 52;
+            }
+        </svg>
+    }
+</div>
+
+@code {
+    // =====================================================================
+    // Masse - dieselben Zahlen wie SchemaLayout im Kern; hier gebraucht,
+    // weil der Kasteninhalt beim ZEICHNEN gesetzt wird und nicht beim
+    // Anordnen (SchemaAnsicht.KnotenZeichnen:613-669).
+    // =====================================================================
+
+    private const int KNOTEN_RAND = 8;
+    private const int TITEL_HOEHE = 19;
+    private const int ZEILE_HOEHE = 15;
+    private const int BADGE_HOEHE = 17;
+    private const int LEGENDE_ZEILE = 20;
+
+    /// <summary>Geschaetzte Zeichenbreite [px] — wie <c>SchemaLayout.ZEICHEN_BREITE</c>.</summary>
+    private const double ZEICHEN_BREITE = 6.0;
+
+    private static int Textbreite(string text)
+        => string.IsNullOrEmpty(text) ? 0 : (int)System.Math.Ceiling(text.Length * ZEICHEN_BREITE);
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    /// <summary>Das angeordnete Schema; <c>null</c> = Leerbild.</summary>
+    [Parameter] public SchemaBild? Layout { get; set; }
+
+    private SchemaBild Bild => Layout ?? SchemaBild.Leer;
+
+    /// <summary>Der ausgewaehlte Knotenschluessel; "" = keiner.</summary>
+    [Parameter] public string Gewaehlt { get; set; } = "";
+
+    /// <summary>Klick (oder Eingabetaste) auf ein Element — der Auswahlwunsch.</summary>
+    [Parameter] public EventCallback<string> Ausgewaehlt { get; set; }
+
+    /// <summary>Doppelklick auf ein Element — der Editorwunsch.</summary>
+    [Parameter] public EventCallback<string> BearbeitenGewuenscht { get; set; }
+
+    /// <summary>
+    /// Holt den gewaehlten Kasten in den Sichtbereich (ueber den Fokus).
+    /// <c>false</c> in Pruefprogrammen und ueberall dort, wo der Fokus woanders
+    /// gebraucht wird.
+    /// </summary>
+    [Parameter] public bool SichtbarMachen { get; set; } = true;
+
+    // ---- Texte (deutscher Rueckfall, die Huelle setzt die Ressourcen) ----
+
+    /// <summary>SIM_SCHEMA_LEER.</summary>
+    [Parameter] public string LeerText { get; set; }
+        = "Für dieses Projekt ist noch keine Hydraulik konfiguriert.";
+
+    /// <summary>SIM_SCHEMA_WARNUNG — die Warnzeile IM Kasten.</summary>
+    [Parameter] public string WarnungText { get; set; } = "Vorlauf unter dem Puffer-Sollwert";
+
+    /// <summary>SIM_SCHEMA_KETTE_KOPF.</summary>
+    [Parameter] public string KetteKopfText { get; set; } = "Kaskadenkette";
+
+    /// <summary>SIM_SCHEMA_KEINE_KETTE.</summary>
+    [Parameter] public string KeineKetteText { get; set; }
+        = "Dieses Projekt führt keine Kaskade.";
+
+    /// <summary>Beschriftung der Zeichenflaeche fuer die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "Hydraulikschema";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private readonly Dictionary<string, ElementReference> _kaesten = new();
+    private string _zuletztGezeigt = "";
+
+    /// <summary>Die Zahl der gezeichneten Kaesten (Pruefhilfe).</summary>
+    public int Knotenzahl => Bild.Knoten.Count;
+
+    /// <summary>Die Zahl der gezeichneten Leitungen (Pruefhilfe).</summary>
+    public int Kantenzahl => Bild.Kanten.Count;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!SichtbarMachen || string.IsNullOrEmpty(Gewaehlt)) return;
+        if (Gewaehlt == _zuletztGezeigt) return;
+
+        _zuletztGezeigt = Gewaehlt;
+
+        // Der Fokus scrollt den Kasten herbei - der Ersatz fuer
+        // SchemaAnsicht.SichtbarMachen, ohne JS-Schicht.
+        if (_kaesten.TryGetValue(Gewaehlt, out ElementReference r))
+        {
+            try { await r.FocusAsync(); } catch { /* das Element ist gerade weg */ }
+        }
+    }
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    private Task Waehlen(string schluessel)
+        => Ausgewaehlt.InvokeAsync(schluessel);
+
+    private Task Bearbeiten(string schluessel)
+        => BearbeitenGewuenscht.InvokeAsync(schluessel);
+
+    /// <summary>
+    /// Eingabe und Leertaste waehlen; Eingabe auf einem BEREITS gewaehlten Element
+    /// oeffnet den Editor — der Tastaturweg zum Doppelklick.
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e, string schluessel)
+    {
+        if (e.Key == " " || e.Key == "Spacebar") return Waehlen(schluessel);
+        if (e.Key != "Enter") return Task.CompletedTask;
+
+        return schluessel == Gewaehlt ? Bearbeiten(schluessel) : Waehlen(schluessel);
+    }
+
+    // =====================================================================
+    // Klassen — jede Farbe steht in epos-ui.css, keine hier
+    // =====================================================================
+
+    private static readonly SchemaKantenart[] Pfeilarten =
+    {
+        SchemaKantenart.Quelle, SchemaKantenart.Kaskade, SchemaKantenart.Ladung,
+        SchemaKantenart.Versorgung, SchemaKantenart.Prozess
+    };
+
+    /// <summary>
+    /// Eine je Bausteininstanz eindeutige Kennung — zwei Schemata auf einer Seite
+    /// duerfen sich ihre Pfeilspitzen nicht gegenseitig ueberschreiben.
+    /// </summary>
+    private readonly string _id = "s" + Guid.NewGuid().ToString("N").Substring(0, 8);
+
+    private string PfeilId(SchemaKantenart art) => _id + "-pfeil-" + art.ToString().ToLowerInvariant();
+
+    private static string Kantenklasse(SchemaKantenart art) => art switch
+    {
+        SchemaKantenart.Ladung => "epos-schema--ladung",
+        SchemaKantenart.Versorgung => "epos-schema--versorgung",
+        SchemaKantenart.Prozess => "epos-schema--prozess",
+        SchemaKantenart.Kaskade => "epos-schema--kaskade",
+        _ => "epos-schema--quelle"
+    };
+
+    private string Kantenklasse(SchemaKante k)
+    {
+        string s = "epos-schema-kante " + Kantenklasse(k.Art);
+        if (k.Von == Gewaehlt || k.Nach == Gewaehlt) s += " epos-schema-kante--hervor";
+        return s;
+    }
+
+    private static string Legendenklasse(SchemaLegendeeintrag e)
+    {
+        string s = "epos-schema-legendelinie " + Kantenklasse(e.Art);
+        if (e.Gestrichelt) s += " epos-schema-legendelinie--gestrichelt";
+        return s;
+    }
+
+    private string Knotenklasse(SchemaKnoten n)
+    {
+        string s = "epos-schema-knoten epos-schema-knoten--" + n.Art.ToString().ToLowerInvariant();
+
+        if (n.Art == SchemaKnotenart.Quelle && n.IstWaermepumpe) s += " epos-schema-knoten--quelle-wp";
+        if (n.Art == SchemaKnotenart.Erzeuger && n.Kaskade) s += " epos-schema-knoten--kaskade";
+        if (n.Art == SchemaKnotenart.Quelle && n.Kaskade) s += " epos-schema-knoten--gestrichelt";
+        if (n.Warnung) s += " epos-schema-knoten--warnung";
+        if (n.Schluessel == Gewaehlt) s += " epos-schema-knoten--gewaehlt";
+
+        return s;
+    }
+
+    private string Bandklasse(SchemaBandglied g)
+    {
+        string s = "epos-schema-band epos-schema-band--" + g.Art.ToString().ToLowerInvariant();
+        if (g.Schluessel == Gewaehlt) s += " epos-schema-band--gewaehlt";
+        return s;
+    }
+
+    /// <summary>Abnehmer sind PILLEN (Ecke = halbe Hoehe), Quellen haben Ecke 4.</summary>
+    private static int Ecke(SchemaKnoten n) => n.Art switch
+    {
+        SchemaKnotenart.Abnehmer => n.Hoehe / 2,
+        SchemaKnotenart.Quelle => 4,
+        _ => 6
+    };
+
+    /// <summary>
+    /// Der Kurzhinweis eines Kastens — Titel, Hinweis und (bei Warnung) der Warntext,
+    /// woertlich wie <c>SchemaAnsicht.OnMouseMove</c>:381-389.
+    /// </summary>
+    private static string Kurzhinweis(SchemaKnoten n)
+    {
+        string text = n.Titel;
+        if (!string.IsNullOrEmpty(n.Hinweis)) text += "\n" + n.Hinweis;
+        if (n.Warnung && !string.IsNullOrEmpty(n.Warntext)) text += "\n" + n.Warntext;
+        return text;
+    }
+}

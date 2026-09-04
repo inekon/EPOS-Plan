@@ -18127,6 +18127,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation Konfiguration ähnelt.
+        /// </summary>
+        public static string SIM_KONFIG_TITEL {
+            get {
+                return ResourceManager.GetString("SIM_KONFIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger definieren, Pufferspeicher zuordnen: ähnelt.
+        /// </summary>
+        public static string SIM_KONFIG_KOPF {
+            get {
+                return ResourceManager.GetString("SIM_KONFIG_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration speichern ähnelt.
+        /// </summary>
+        public static string SIM_KONFIG_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("SIM_KONFIG_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string SIM_KONFIG_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("SIM_KONFIG_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeerzeuger ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_GRUPPE_WAERME {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_GRUPPE_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromerzeuger ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_GRUPPE_STROM {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_GRUPPE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiespeicher ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_GRUPPE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_GRUPPE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten der Simulation ähnelt.
         /// </summary>
         public static string SIM_KARTEN_KOPF_ERZEUGER {

@@ -1,0 +1,181 @@
+﻿@* Eine KOMPAKTE Kachel je Projekt-Pufferspeicher (iU9-W10b.0d).
+
+   VORBILD. WindowsFormsApplication1/Views/Simulation/SpeicherKarte.cs (551 Z.)
+   samt dem Steuerelement SchwellenBand (:20-85).
+
+   WARUM KOMPAKT. Konzept 3a: „Bei mehreren Speichern passen die Vollkarten
+   nicht in die Spalte." Zugeklappt ist die Kachel EINE Zeile (Name,
+   Verwendungs-Badge, Schichtung, Volumen, Temperaturpaar, rechts die
+   Kurzbilanz „n Lader · m Abnehmer"); ein Klick klappt sie auf.
+
+   DASS HOECHSTENS EINE OFFEN IST, steuert die Konfigurationsseite - die Kachel
+   kennt ihre Nachbarn nicht. Genau wie im Vorlaeufer.
+
+   DAS SCHWELLENBAND ist ein Inline-SVG statt eines eigenen Controls: eine Bahn
+   0…100 %, die Reservezone der vorrangigen Anlage zwischen Nachrang- und
+   Abschaltschwelle, und drei Marken (Ein blau, Nachrang grau, Aus koralle) -
+   dieselben Farben und dieselbe Aussage wie in OnPaint:55-77.
+
+   DER MOUSEOVER DER ZUGEKLAPPTEN ZEILE zeigt dieselben Details wie der
+   Aufklappbereich (Konzept 3a, HinweisSetzen:427-436) - hier als title. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="@Kachelklasse" @onclick="KachelGeklickt" @ondblclick="KachelDoppelklick"
+     title="@Kurzhinweis">
+
+    <div class="epos-speicherkachel-kopf">
+
+        <button type="button" class="epos-speicherkachel-pfeil" title="@TipAufklappen"
+                aria-expanded="@(Aufgeklappt ? "true" : "false")"
+                @onclick="BeiUmschalten" @onclick:stopPropagation="true">
+            @(Aufgeklappt ? "▾" : "▸")
+        </button>
+
+        <span class="epos-speicherkachel-name">@Daten.Bezeichner</span>
+
+        @if (!string.IsNullOrEmpty(Daten.Verwendung))
+        {
+            <span class="epos-chip epos-chip--badge">@Daten.Verwendung</span>
+        }
+        @if (!string.IsNullOrEmpty(Daten.Schichtung))
+        {
+            <span class="epos-chip epos-chip--badge">@Daten.Schichtung</span>
+        }
+        @if (!string.IsNullOrEmpty(Daten.Volumen))
+        {
+            <span class="epos-chip epos-chip--flaeche">@Daten.Volumen</span>
+        }
+        @if (!string.IsNullOrEmpty(Daten.Temperaturpaar))
+        {
+            <span class="epos-chip epos-chip--flaeche">@Daten.Temperaturpaar</span>
+        }
+
+        <span class="epos-speicherkachel-bilanz">@Bilanz</span>
+
+        <button type="button" class="epos-speicherkachel-glyphe" title="@TipBearbeiten"
+                @onclick="() => Bearbeiten.InvokeAsync(Daten.IdPuffer)"
+                @onclick:stopPropagation="true">✎</button>
+    </div>
+
+    @if (Aufgeklappt)
+    {
+        <div class="epos-speicherkachel-detail">
+            @foreach (string zeile in Daten.Detailzeilen)
+            {
+                @if (!string.IsNullOrEmpty(zeile))
+                {
+                    <p class="epos-speicherkachel-zeile">@zeile</p>
+                }
+            }
+
+            <svg class="epos-speicherkachel-band" viewBox="0 0 100 12"
+                 preserveAspectRatio="none" role="img" aria-label="@Daten.Schwellentext">
+
+                <rect class="epos-speicherkachel-bahn" x="0" y="2" width="100" height="7" />
+
+                @if (XWert(Daten.SchwelleAus) > XWert(Daten.SchwelleAusNachrang))
+                {
+                    <rect class="epos-speicherkachel-reserve"
+                          x="@Zahl(XWert(Daten.SchwelleAusNachrang))" y="2"
+                          width="@Zahl(XWert(Daten.SchwelleAus) - XWert(Daten.SchwelleAusNachrang))"
+                          height="7" />
+                }
+
+                <rect class="epos-speicherkachel-bahnrand" x="0" y="2" width="100" height="7" />
+
+                <line class="epos-speicherkachel-marke epos-speicherkachel-marke--ein"
+                      x1="@Zahl(XWert(Daten.SchwelleEin))" y1="1"
+                      x2="@Zahl(XWert(Daten.SchwelleEin))" y2="10" />
+                <line class="epos-speicherkachel-marke epos-speicherkachel-marke--nachrang"
+                      x1="@Zahl(XWert(Daten.SchwelleAusNachrang))" y1="1"
+                      x2="@Zahl(XWert(Daten.SchwelleAusNachrang))" y2="10" />
+                <line class="epos-speicherkachel-marke epos-speicherkachel-marke--aus"
+                      x1="@Zahl(XWert(Daten.SchwelleAus))" y1="1"
+                      x2="@Zahl(XWert(Daten.SchwelleAus))" y2="10" />
+            </svg>
+
+            @if (!string.IsNullOrEmpty(Daten.Schwellentext))
+            {
+                <p class="epos-speicherkachel-zeile">@Daten.Schwellentext</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Der Inhalt der Kachel; nie <c>null</c>.</summary>
+    [Parameter] public SpeicherKachelDaten? Inhalt { get; set; }
+
+    private static readonly SpeicherKachelDaten LEER = new SpeicherKachelDaten();
+
+    private SpeicherKachelDaten Daten => Inhalt ?? LEER;
+
+    /// <summary>Steht der Detailbereich offen? Die Wahrheit darueber gehoert der Seite.</summary>
+    [Parameter] public bool Aufgeklappt { get; set; }
+
+    /// <summary>Klick auf die zugeklappte Zeile bzw. auf den Pfeil.</summary>
+    [Parameter] public EventCallback<int> Umschalten { get; set; }
+
+    /// <summary>Klick auf ✎ oder Doppelklick auf die Kachel.</summary>
+    [Parameter] public EventCallback<int> Bearbeiten { get; set; }
+
+    /// <summary>Der Klick ist zugleich die Auswahl (Schema-Synchronisation).</summary>
+    [Parameter] public EventCallback<int> Ausgewaehlt { get; set; }
+
+    // ---- Texte ----------------------------------------------------------
+
+    /// <summary>PSP_KARTE_BILANZ = „{0} Lader · {1} Abnehmer".</summary>
+    [Parameter] public string BilanzText { get; set; } = "{0} Lader · {1} Abnehmer";
+
+    [Parameter] public string TipBearbeiten { get; set; } = "Pufferspeicher bearbeiten";
+    [Parameter] public string TipAufklappen { get; set; } = "Einzelheiten anzeigen";
+
+    // =====================================================================
+    // Darstellung
+    // =====================================================================
+
+    private string Bilanz
+        => string.Format(BilanzText, Daten.LaderAnzahl, Daten.AbnehmerAnzahl);
+
+    private string Kachelklasse
+        => Daten.Hervorgehoben
+            ? "epos-speicherkachel epos-speicherkachel--hervor"
+            : "epos-speicherkachel";
+
+    /// <summary>
+    /// Der Kurzhinweis der zugeklappten Zeile: dieselben Detailzeilen wie im
+    /// Aufklappbereich, dahinter der Schwellentext (woertlich <c>Setzen</c>:389-395).
+    /// </summary>
+    private string Kurzhinweis
+    {
+        get
+        {
+            string text = string.Join("\n", Daten.Detailzeilen);
+            if (string.IsNullOrEmpty(Daten.Schwellentext)) return text;
+            return text.Length > 0 ? text + "\n" + Daten.Schwellentext : Daten.Schwellentext;
+        }
+    }
+
+    /// <summary>Prozent auf die Bahn 0…100 abgebildet (woertlich <c>X</c>:48-54).</summary>
+    private static double XWert(double prozent)
+        => prozent < 0 ? 0 : prozent > 100 ? 100 : prozent;
+
+    private static string Zahl(double d)
+        => d.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    /// <summary>Der Klick klappt auf UND waehlt aus (woertlich <c>SpeicherKarte_Umschalten</c>).</summary>
+    private async Task KachelGeklickt()
+    {
+        await Umschalten.InvokeAsync(Daten.IdPuffer);
+        await Ausgewaehlt.InvokeAsync(Daten.IdPuffer);
+    }
+
+    private Task KachelDoppelklick() => Bearbeiten.InvokeAsync(Daten.IdPuffer);
+
+    private Task BeiUmschalten() => Umschalten.InvokeAsync(Daten.IdPuffer);
+}

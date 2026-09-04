@@ -445,6 +445,27 @@ Please import a CSV file first or set all values alike.</value>
   <data name="SIM_GRUPPE_SENKENZEILE" xml:space="preserve">
     <value>Selected sink</value>
   </data>
+  <data name="SIM_KONFIG_TITEL" xml:space="preserve">
+    <value>Simulation configuration</value>
+  </data>
+  <data name="SIM_KONFIG_KOPF" xml:space="preserve">
+    <value>Define generator, assign buffer storage:</value>
+  </data>
+  <data name="SIM_KONFIG_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save configuration</value>
+  </data>
+  <data name="SIM_KONFIG_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_WAERME" xml:space="preserve">
+    <value>Heat generator</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_STROM" xml:space="preserve">
+    <value>Electricity generator</value>
+  </data>
+  <data name="SIM_KARTE_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Energy storage</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Simulation components</value>
   </data>

@@ -30,19 +30,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Konfiguration EINES Projekts — die eine Wahrheit dieser Abfrage
-        /// (iU9-W11a.2, Befund W11-B24).
+        /// Liest den Einstellungssatz EINES Projekts — die eine Wahrheit dieser
+        /// Abfrage (iU9-W10b.0b und iU9-W11a.2, Befund W11-B24).
         ///
-        /// <para><b>Warum es sie gibt.</b> Bis hierher stand die Zeile
-        /// <c>"select * from Tab_Einstellungen where ID_Projekt=" + id</c> ACHTMAL im
-        /// Bestand — sechsmal in <c>Form_Simulation_Detail</c>, einmal in
-        /// <c>Form_Start</c> und einmal im <see cref="SimulationRunner"/>: string-
-        /// konkateniert, also gegen die Hausregel „Datenzugriff ausschliesslich ueber
-        /// <c>DataRepository</c> mit <c>new DbParam(…)</c>".</para>
+        /// <para><b>Warum es diese Methode gibt.</b> Die Zeile
+        /// <c>"select * from Tab_Einstellungen where ID_Projekt=" + id</c> stand ACHTMAL
+        /// im Bestand — sechsmal in <c>Form_Simulation_Detail</c>, einmal in
+        /// <c>Form_Start</c> und einmal im <see cref="SimulationRunner"/>: die
+        /// Projektnummer als Zeichenkette in die Anweisung geklebt, also gegen die
+        /// Hausregel „Datenzugriff ausschliesslich ueber <c>DataRepository</c> mit
+        /// <c>new DbParam(…)</c>". Der Weg ueber einen <see cref="DbParam"/> steht jetzt
+        /// an EINER Stelle; an der Ordinalkette der Zeilenauswertung
+        /// (<see cref="ZeileUebernehmen"/>) aendert sich nichts.</para>
         ///
-        /// <para>Rueckgabe <c>null</c>, wenn das Projekt keine Konfigurationszeile
-        /// fuehrt — genau der Fall, den die Aufrufer bisher an <c>rows == 0</c>
-        /// erkannten.</para>
+        /// <para><b>Zwei Wellen, eine Methode.</b> W10b (Konfigurationsseite) und W11a
+        /// (Ergebnisseite) haben sie gleichzeitig gebraucht und unabhaengig gebaut. Beim
+        /// Zusammenfuehren ist die Signatur die des Kerns geblieben; wer ein
+        /// STEUEROBJEKT fuellen will statt ein frisches Modell zu bekommen, nimmt
+        /// <see cref="ProjektLesen"/>.</para>
+        ///
+        /// <para>Rueckgabe <c>null</c> = kein Satz zum Projekt (neues Projekt). Der
+        /// Aufrufer legt dann selbst einen leeren an — genau das taten die
+        /// Aufrufstellen bisher ueber <c>rows == 0</c>.</para>
         /// </summary>
         public static KonfigurationModel LiesProjekt(int idProjekt)
         {
@@ -58,8 +67,8 @@ namespace WindowsFormsApplication1
         /// <c>ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + id)</c>.
         ///
         /// <para>Bewusst AN ORT UND STELLE und nicht mit einem frischen Modell: Die
-        /// Aufrufer reichen <c>ctrl.model</c> weiter (der Konfigurationsdialog haelt es,
-        /// <c>SimulationControl.ctrl_konfig</c> haelt das Steuerobjekt). Und bewusst mit
+        /// Aufrufer reichen <c>ctrl.model</c> weiter (<c>SimulationControl.ctrl_konfig</c>
+        /// haelt das Steuerobjekt und liest es waehrend des Laufs). Und bewusst mit
         /// derselben Feldregel wie <see cref="ReadSingle"/>: Ein DBNull laesst den
         /// bisherigen Wert stehen.</para>
         /// </summary>
@@ -80,12 +89,23 @@ namespace WindowsFormsApplication1
                 new DbParam("?", idProjekt));
         }
 
+        /// <summary>
+        /// Wie <see cref="ReadSingle(string)"/>, aber mit Parametern statt zusammen-
+        /// gesetztem Text (iU9-W10b.0b).
+        /// </summary>
+        public void ReadSingle(string sql, params DbParam[] parameter)
+        {
+            ReadZeile(DataRepository.GetDataTable(sql, parameter));
+        }
+
         public void ReadSingle(string sql)
         {
-            rows = 0;
+            ReadZeile(DataRepository.GetDataTable(sql));
+        }
 
-            // Nutzt dein DataRepository (intern OLEDB) statt ODBC
-            DataTable dt = DataRepository.GetDataTable(sql);
+        private void ReadZeile(DataTable dt)
+        {
+            rows = 0;
 
             if (ZeileUebernehmen(dt, model)) rows = 1;
         }
