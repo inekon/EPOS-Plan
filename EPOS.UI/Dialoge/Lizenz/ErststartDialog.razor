@@ -1,0 +1,167 @@
+﻿@* Der Erststart-Assistent: das Fortschrittsfenster der einmaligen
+   Datenbankumstellung. iU9-W15c.7, Ersatz fuer Views/Admin/Form_Erststart.cs
+   (273 Z., ohne Designer, ohne .resx).
+
+   ER LAEUFT VOR ALLEM ANDEREN. Program.Main zeigt ihn aus ErststartAnbieten -
+   vor der Lizenzzustimmung, vor der Schema-Migration, vor MDIMainForm. Es gibt
+   kein Besitzerfenster, weil es noch keines gibt; die Huelle steht deshalb mit
+   ImTaskbar, AufBildschirmMittig und SchliessenGesperrt (iU9-W15c.6).
+
+   KEIN ABBRECHEN WAEHREND DES LAUFS - die erste der beiden bewussten
+   Auslassungen des Vorlaeufers (:15-19): "Ein Abbruch mitten in der Uebertragung
+   hinterliesse eine halbe Zieldatei. Der Kern raeumt bei jedem Fehler selbst
+   auf; ein Anwenderabbruch waere ein zweiter, deutlich schlechterer Weg
+   dorthin." Deshalb hat der Fortschritt hier KEINEN Abbrechen-Knopf, und die
+   Komponente meldet ueber LaufAktiv, dass das Fenster zu sperren ist.
+
+   DER BALKEN IST UNBESTIMMT. Der Vorlaeufer zeigt eine Marquee-ProgressBar; der
+   Baustein Fortschritt kennt genau dafuer Anteil = null. Eine Prozentzahl gibt
+   der Ablauf nicht her - er meldet Zeilen, keine Anteile.
+
+   VOR DEM START LAESST SICH DAS FENSTER JEDERZEIT BEENDEN - dann bleibt der
+   Access-Bestand unangetastet liegen (Klassenkopf des Vorlaeufers, :18-19). *@
+
+@namespace EPOS.UI.Dialoge.Lizenz
+
+<div class="epos-erststart">
+
+    @* Der neunzeilige Ablauftext. Er nennt den Ordner und die DREI Dateinamen;
+       gebaut wird er in der Huelle aus ErststartMigration, damit kein Name ein
+       zweites Mal dasteht. *@
+    <p class="epos-erststart-kopf">@Kopftext</p>
+
+    <p class="epos-erststart-status" role="status">@_status</p>
+
+    @if (_laeuft)
+    {
+        @* Ohne Abbrechen-Rueckruf zeigt der Baustein keinen Knopf - genau das
+           ist hier gewollt. *@
+        <Fortschritt Anteil="null" Text="@_status" />
+    }
+
+    <Textfeld Bezeichnung="@ProtokollText"
+              Wert="@_protokoll"
+              Mehrzeilig="true"
+              NurLesen="true"
+              Festbreite="true"
+              Zeilen="14" />
+
+    <div class="epos-erststart-fuss">
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@_laeuft" @onclick="Starten">@KnopfStarten</button>
+        <button type="button" class="epos-knopf"
+                disabled="@_laeuft" @onclick="Beenden">@KnopfBeenden</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Der Kopftext mit Ordner und den drei Dateinamen (<c>ERST_KOPF</c>).</summary>
+    [Parameter] public string Kopftext { get; set; } = "";
+
+    /// <summary>
+    /// Der Lauf selbst. Er bekommt den Meldeweg je Zeile und liefert Erfolg und
+    /// Schlussmeldung zurück. <b>Die Komponente startet keinen Faden</b> — das
+    /// besorgt die Hülle, weil nur sie weiß, was auf ihrer Plattform ein
+    /// Hintergrundfaden ist.
+    /// </summary>
+    [Parameter] public Func<Action<string>, Task<(bool Ok, string Schlussmeldung)>>? Lauf { get; set; }
+
+    /// <summary>
+    /// <b>Der Rückkanal zur Hülle</b> (iU9-W15c.6): <c>true</c> = ein Lauf hat
+    /// begonnen, das Fenster ist zu sperren; <c>false</c> = er ist zu Ende. Die
+    /// Windows-Hülle legt darauf <c>BlazorDialogForm.SchliessenGesperrt</c>.
+    /// </summary>
+    [Parameter] public EventCallback<bool> LaufAktiv { get; set; }
+
+    /// <summary>
+    /// Der Assistent ist zu. <c>true</c> = die Umstellung ist gelungen,
+    /// <c>false</c> = abgelehnt oder fehlgeschlagen. <b>Bei Erfolg schließt die
+    /// Komponente von selbst</b> — bitgleich zum Vorläufer (<c>Fertig</c>,
+    /// <c>:271</c>: „Bei Erfolg geht es ohne weiteren Klick weiter"); ein Fehlschlag
+    /// wird vom Aufrufer gemeldet, mit Berichtspfad.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Fertig { get; set; }
+
+    // ---- Texte (die Huelle setzt sie aus MyResource.ERST_*) ----------------
+
+    /// <summary>Beschriftung des Protokollfeldes (<c>ERST_LBL_PROTOKOLL</c>).</summary>
+    [Parameter] public string ProtokollText { get; set; } = "Protokoll";
+
+    /// <summary>Knopf „Jetzt umstellen" (<c>ERST_BTN_STARTEN</c>).</summary>
+    [Parameter] public string KnopfStarten { get; set; } = "Jetzt umstellen";
+
+    /// <summary>Knopf „Beenden" (<c>ERST_BTN_BEENDEN</c>).</summary>
+    [Parameter] public string KnopfBeenden { get; set; } = "Beenden";
+
+    /// <summary>Statuszeile vor dem Start (<c>ERST_STATUS_BEREIT</c>).</summary>
+    [Parameter] public string StatusBereit { get; set; } = "Bereit.";
+
+    /// <summary>Statuszeile während des Laufs (<c>ERST_STATUS_LAEUFT</c>).</summary>
+    [Parameter] public string StatusLaeuft { get; set; } = "";
+
+    /// <summary>Statuszeile nach Erfolg (<c>ERST_STATUS_FERTIG</c>).</summary>
+    [Parameter] public string StatusFertig { get; set; } = "";
+
+    /// <summary>Statuszeile nach Fehlschlag (<c>ERST_STATUS_FEHLER</c>).</summary>
+    [Parameter] public string StatusFehler { get; set; } = "";
+
+    private string _status = "";
+    private string _protokoll = "";
+    private bool _laeuft;
+    private bool _statusGesetzt;
+
+    protected override void OnParametersSet()
+    {
+        if (!_statusGesetzt) { _status = StatusBereit; _statusGesetzt = true; }
+    }
+
+    /// <summary>
+    /// „Jetzt umstellen": sperrt die Bedienung, meldet den Lauf an die Hülle und
+    /// wartet auf das Ergebnis. Danach steht die Schlussmeldung im Protokoll, und
+    /// der Assistent schließt sich — bei Erfolg wie bei Fehlschlag, genau wie der
+    /// Vorläufer (<c>Close()</c> steht dort unbedingt).
+    /// </summary>
+    private async Task Starten()
+    {
+        if (Lauf is null || _laeuft) return;
+
+        _laeuft = true;
+        _status = StatusLaeuft;
+        await LaufAktiv.InvokeAsync(true);
+        StateHasChanged();
+
+        (bool ok, string schluss) = await Lauf(ZeileAnhaengen);
+
+        _laeuft = false;
+        _status = ok ? StatusFertig : StatusFehler;
+        ZeileAnhaengen(schluss);
+
+        // Erst die Sperre loesen, dann schliessen - sonst faengt der Riegel der
+        // Huelle den eigenen Schliessbefehl (Form_Erststart setzt _laufend
+        // ebenfalls VOR dem Close, :258/:271).
+        await LaufAktiv.InvokeAsync(false);
+        await Fertig.InvokeAsync(ok);
+    }
+
+    /// <summary>„Beenden" vor dem Start: nichts ist geschehen, der Altbestand bleibt liegen.</summary>
+    private Task Beenden() => Fertig.InvokeAsync(false);
+
+    /// <summary>
+    /// Eine Protokollzeile. <b>Die getrimmte Zeile wird zugleich die Statuszeile</b> —
+    /// „die Statuszeile trägt immer den zuletzt gemeldeten Schritt"
+    /// (<c>ZeileAnhaengen</c>, <c>:251-253</c>).
+    /// </summary>
+    private void ZeileAnhaengen(string zeile)
+    {
+        if (string.IsNullOrEmpty(zeile)) return;
+
+        _protokoll += zeile + "\n";
+
+        string kurz = zeile.Trim();
+        if (kurz.Length > 0) _status = kurz;
+
+        // Der Lauf meldet aus einem fremden Faden; gezeichnet wird ueber den
+        // Verteiler.
+        InvokeAsync(StateHasChanged);
+    }
+}

@@ -13637,4 +13637,58 @@ EPOS-Plan zeigt seine Dialoge damit an und kann ohne sie nicht starten.
 
 Sie lässt sich jederzeit nachträglich installieren — Bezugsquelle „Microsoft Edge WebView2" auf den Microsoft-Seiten; das Setup von EPOS-Plan installiert sie ebenfalls nach. Häufigste Ursache ist eine fehlende Internetverbindung während der Installation. Im Zweifel hilft der Support weiter.</value>
   </data>
+  <data name="ERST_TITEL" xml:space="preserve">
+    <value>Datenbankumstellung</value>
+  </data>
+  <data name="ERST_KOPF" xml:space="preserve">
+    <value>Die Datenbank dieses Rechners liegt noch im alten Access-Format vor und wird jetzt einmalig auf das neue Format umgestellt.
+
+Ordner: {0}
+
+Ablauf:
+   1. {1} wird auf den letzten Access-Stand gebracht.
+   2. Alle Daten werden nach {2} übertragen und Tabelle für Tabelle nachgezählt und geprüft.
+   3. Die Altdatei bleibt als {3} liegen.
+
+Das dauert je nach Bestand einige Minuten. Bei einem Fehler wird die neue Datei wieder entfernt und die Altdatei bleibt unverändert gültig.</value>
+  </data>
+  <data name="ERST_STATUS_BEREIT" xml:space="preserve">
+    <value>Bereit.</value>
+  </data>
+  <data name="ERST_STATUS_LAEUFT" xml:space="preserve">
+    <value>Umstellung läuft - bitte nicht abschalten.</value>
+  </data>
+  <data name="ERST_STATUS_FERTIG" xml:space="preserve">
+    <value>Umstellung abgeschlossen.</value>
+  </data>
+  <data name="ERST_STATUS_FEHLER" xml:space="preserve">
+    <value>Umstellung fehlgeschlagen.</value>
+  </data>
+  <data name="ERST_BTN_STARTEN" xml:space="preserve">
+    <value>Jetzt umstellen</value>
+  </data>
+  <data name="ERST_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ERST_LBL_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="START_DB_FEHLT_TITEL" xml:space="preserve">
+    <value>Datenbank nicht verfügbar</value>
+  </data>
+  <data name="START_DB_FEHLT" xml:space="preserve">
+    <value>Datenbankdatei nicht gefunden/lesbar: {0}</value>
+  </data>
+  <data name="START_UMSTELLUNG_TITEL" xml:space="preserve">
+    <value>Datenbankumstellung</value>
+  </data>
+  <data name="START_UMSTELLUNG_ABGELEHNT" xml:space="preserve">
+    <value>Die Datenbank wurde nicht umgestellt — das Programm kann nicht starten.</value>
+  </data>
+  <data name="START_UMSTELLUNG_UNLESBAR" xml:space="preserve">
+    <value>Die Umstellung meldet Erfolg, die neue Datenbankdatei lässt sich aber nicht öffnen: {0}</value>
+  </data>
+  <data name="START_BERICHT" xml:space="preserve">
+    <value>Bericht: {0}</value>
+  </data>
 </root>

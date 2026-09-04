@@ -13630,4 +13630,58 @@ EPOS-Plan shows its dialogs with it and cannot start without it.
 
 It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages; the EPOS-Plan setup also installs it. The most common cause is a missing internet connection during installation. When in doubt, contact support.</value>
   </data>
+  <data name="ERST_TITEL" xml:space="preserve">
+    <value>Database conversion</value>
+  </data>
+  <data name="ERST_KOPF" xml:space="preserve">
+    <value>The database on this computer is still in the old Access format and will now be converted once to the new format.
+
+Folder: {0}
+
+Steps:
+   1. {1} is brought to the final Access state.
+   2. All data is transferred to {2} and counted and checked table by table.
+   3. The old file remains as {3}.
+
+Depending on the amount of data this takes a few minutes. On failure the new file is removed again and the old file stays valid unchanged.</value>
+  </data>
+  <data name="ERST_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready.</value>
+  </data>
+  <data name="ERST_STATUS_LAEUFT" xml:space="preserve">
+    <value>Conversion is running - please do not switch off.</value>
+  </data>
+  <data name="ERST_STATUS_FERTIG" xml:space="preserve">
+    <value>Conversion completed.</value>
+  </data>
+  <data name="ERST_STATUS_FEHLER" xml:space="preserve">
+    <value>Conversion failed.</value>
+  </data>
+  <data name="ERST_BTN_STARTEN" xml:space="preserve">
+    <value>Convert now</value>
+  </data>
+  <data name="ERST_BTN_BEENDEN" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="ERST_LBL_PROTOKOLL" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="START_DB_FEHLT_TITEL" xml:space="preserve">
+    <value>Database not available</value>
+  </data>
+  <data name="START_DB_FEHLT" xml:space="preserve">
+    <value>Database file not found or not readable: {0}</value>
+  </data>
+  <data name="START_UMSTELLUNG_TITEL" xml:space="preserve">
+    <value>Database conversion</value>
+  </data>
+  <data name="START_UMSTELLUNG_ABGELEHNT" xml:space="preserve">
+    <value>The database was not converted — the program cannot start.</value>
+  </data>
+  <data name="START_UMSTELLUNG_UNLESBAR" xml:space="preserve">
+    <value>The conversion reports success, but the new database file cannot be opened: {0}</value>
+  </data>
+  <data name="START_BERICHT" xml:space="preserve">
+    <value>Report: {0}</value>
+  </data>
 </root>
