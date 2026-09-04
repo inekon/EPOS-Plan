@@ -136,11 +136,7 @@ namespace WindowsFormsApplication1
                 ToolStripMenuItem eintrag = new ToolStripMenuItem(
                     MyResource.Resource.ADM_DUBLETTEN_MENUE);
                 eintrag.Name = "MenuItem_KatalogDubletten";
-                eintrag.Click += (s, e) =>
-                {
-                    using (Form_KatalogDubletten frm = new Form_KatalogDubletten())
-                        frm.ShowDialog(this);
-                };
+                eintrag.Click += (s, e) => KatalogDublettenHuelle.Oeffnen(this);
 
                 // Unterhalb von "Einstellungen" einordnen; hängt dort bereits der
                 // Gesetze-Eintrag (InitGesetzeMenue läuft davor), rückt dieser Eintrag

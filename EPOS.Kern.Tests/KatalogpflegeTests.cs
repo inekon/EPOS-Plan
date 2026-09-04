@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -770,6 +770,228 @@ namespace EPOS.Kern.Tests
         {
             return new GesetzParameter(0, schluessel, klasse, jahr, null,
                                        DbWerte.GESETZ_EINHEIT_OHNE, DbWerte.GESETZ_STATUS_GESICHERT, "");
+        }
+
+        // ==================================================================
+        //  7 — Der Dublettenbaum, der Befundtext und die zwei Schreibwege
+        //      (W14c.0f / 0g / 0h)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die neunzehn Anzeigenamen stehen jetzt EINMAL da</b> (Befund W14c-B40):
+        /// in der Registry, nicht noch einmal als neunzehn <c>case</c> in der Maske.
+        /// Sprache gepinnt - der Fall prueft deutsche Texte.
+        /// </summary>
+        [Fact]
+        public void DieRegistryUebersetztJedenIhrerNeunzehnSchluessel()
+        {
+            CultureInfo vorherUi = System.Threading.Thread.CurrentThread.CurrentUICulture;
+            try
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+
+                // Jeder Schluessel wird beantwortet - "BHKW" heisst auch auf Deutsch
+                // "BHKW", deshalb wird auf NICHT LEER geprueft, nicht auf ungleich.
+                foreach (KatalogDefinition k in KatalogRegistry.Alle)
+                    Assert.False(string.IsNullOrEmpty(KatalogRegistry.Anzeige(k.Schluessel)));
+
+                Assert.Equal("Klimaregionen", KatalogRegistry.Anzeige("KLIMAREGION"));
+                Assert.Equal("GIBTESNICHT", KatalogRegistry.Anzeige("GIBTESNICHT"));
+                Assert.Equal("", KatalogRegistry.Anzeige(null));
+            }
+            finally { System.Threading.Thread.CurrentThread.CurrentUICulture = vorherUi; }
+        }
+
+        /// <summary>
+        /// <b>Der Baum, wie der Vorlaeufer ihn baut</b>: Reihenfolge der Registry, nur
+        /// GESCANNTE Kataloge, eine Wurzel auch ohne Dubletten - und <b>Wurzel und Ast
+        /// von vorn offen, die Gruppe zu</b>.
+        /// </summary>
+        [Fact]
+        public void DerDublettenbaumFolgtDerRegistryreihenfolge()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ergebnisse = new Dictionary<string, ScanErgebnis>(StringComparer.Ordinal);
+            foreach (string schluessel in new[] { "PV", "HEIZKESSEL" })
+                ergebnisse[schluessel] = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde(schluessel));
+
+            IReadOnlyList<DublettenKnoten> baum = DublettenBaum.Bauen(ergebnisse);
+
+            // Registry-Reihenfolge: HEIZKESSEL steht VOR PV, obwohl PV zuerst gescannt wurde.
+            Assert.Equal(2, baum.Count);
+            Assert.Equal("K:HEIZKESSEL", baum[0].Schluessel);
+            Assert.Equal("K:PV", baum[1].Schluessel);
+            Assert.All(baum, w => Assert.Equal(DublettenKnotenArt.Wurzel, w.Art));
+            Assert.All(baum, w => Assert.True(w.VonVornOffen));
+
+            // PV hat keine Dubletten - die Wurzel steht trotzdem, ohne Kinder.
+            Assert.Empty(baum[1].Kinder);
+
+            // Heizkessel: drei Inhaltsgruppen, keine Namensgruppe -> EIN Ast.
+            DublettenKnoten kessel = baum[0];
+            Assert.Single(kessel.Kinder);
+            DublettenKnoten ast = kessel.Kinder[0];
+            Assert.Equal(DublettenKnotenArt.Ast, ast.Art);
+            Assert.Equal("K:HEIZKESSEL/I", ast.Schluessel);
+            Assert.True(ast.VonVornOffen);
+            Assert.Equal(3, ast.Kinder.Count);
+
+            // Die Gruppen sind ZU, ihre Blaetter tragen Id und Kennzeichen getrennt.
+            DublettenKnoten gruppe = ast.Kinder[0];
+            Assert.Equal(DublettenKnotenArt.Gruppe, gruppe.Art);
+            Assert.False(gruppe.VonVornOffen);
+            Assert.True(gruppe.Kinder.Count >= 2);
+            Assert.All(gruppe.Kinder, b => Assert.Equal(DublettenKnotenArt.Blatt, b.Art));
+            Assert.All(gruppe.Kinder, b => Assert.True(b.SatzId > 0));
+            Assert.All(gruppe.Kinder, b => Assert.StartsWith("ID " + b.SatzId + " — ", b.Text));
+        }
+
+        /// <summary>
+        /// Ein Katalog OHNE Scanergebnis erscheint gar nicht — dieselbe Regel wie
+        /// <c>BaumFuellen</c> („nur gescannte Kataloge").
+        /// </summary>
+        [Fact]
+        public void EinUngescannterKatalogStehtNichtImBaum()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ergebnisse = new Dictionary<string, ScanErgebnis>(StringComparer.Ordinal)
+            {
+                ["PV"] = DublettenPruefung.ScanKatalog(KatalogRegistry.Finde("PV"))
+            };
+
+            IReadOnlyList<DublettenKnoten> baum = DublettenBaum.Bauen(ergebnisse);
+            Assert.Single(baum);
+            Assert.Equal("K:PV", baum[0].Schluessel);
+            Assert.Empty(DublettenBaum.Bauen(new Dictionary<string, ScanErgebnis>()));
+        }
+
+        /// <summary>
+        /// <b>Inhaltsgruppen, deren Saetze denselben normalisierten Namen tragen, stehen
+        /// NICHT zweimal im Baum</b> - sie sind bereits Namensgruppe
+        /// (<c>AnzuzeigendeInhaltsgruppen</c>).
+        /// </summary>
+        [Fact]
+        public void EineInhaltsgruppeOhneVerschiedeneNamenWirdNichtWiederholt()
+        {
+            if (!_db.Vorhanden) return;
+
+            foreach (KatalogDefinition k in KatalogRegistry.Alle)
+            {
+                ScanErgebnis erg = DublettenPruefung.ScanKatalog(k);
+                IReadOnlyList<DublettenGruppe> gezeigt = DublettenBaum.AnzuzeigendeInhaltsgruppen(erg);
+                Assert.All(gezeigt, g => Assert.True(g.VerschiedeneNamen));
+                Assert.True(gezeigt.Count <= erg.Inhaltsgruppen.Count);
+            }
+        }
+
+        /// <summary>
+        /// <b><c>DublettenBefundText.Blatt</c> liefert Spalten und Werte statt einer
+        /// <c>DataRow</c></b> (Befund W14c-B42): die Namensspalte zuerst, dann die
+        /// Vergleichsspalten des Katalogs.
+        /// </summary>
+        [Fact]
+        public void DerBefundtextEinesSatzesBeginntMitDerNamensspalte()
+        {
+            if (!_db.Vorhanden) return;
+
+            KatalogDefinition k = KatalogRegistry.Finde("HEIZKESSEL");
+            ScanErgebnis erg = DublettenPruefung.ScanKatalog(k);
+            KatalogSatz satz = erg.Saetze[0];
+
+            IReadOnlyList<(string Spalte, string Wert)> zeilen = DublettenBefundText.Blatt(k, satz);
+
+            Assert.NotEmpty(zeilen);
+            Assert.Equal(k.NamensSpalte, zeilen[0].Spalte);
+            Assert.Equal(satz.Name, zeilen[0].Wert);
+            Assert.Equal(DublettenPruefung.VergleichsSpalten(k, satz.Zeile.Table).Count,
+                         zeilen.Count - 1);
+
+            // Ohne Satz eine LEERE Liste, keine Ausnahme.
+            Assert.Empty(DublettenBefundText.Blatt(k, null));
+            Assert.Empty(DublettenBefundText.Blatt(null, satz));
+        }
+
+        /// <summary>
+        /// <c>DublettenBefundText.Gruppe</c> stellt den ERSTEN Satz jedem weiteren
+        /// gegenüber und listet nur die ABWEICHENDEN Spalten.
+        /// </summary>
+        [Fact]
+        public void DerBefundtextEinerGruppeStelltDenErstenSatzGegenJedenWeiteren()
+        {
+            if (!_db.Vorhanden) return;
+
+            KatalogDefinition k = KatalogRegistry.Finde("HEIZKESSEL");
+            ScanErgebnis erg = DublettenPruefung.ScanKatalog(k);
+            DublettenGruppe g = erg.Inhaltsgruppen[0];
+
+            IReadOnlyList<Gegenueberstellung> paare = DublettenBefundText.Gruppe(k, g);
+
+            Assert.Equal(g.Saetze.Count - 1, paare.Count);
+            Assert.All(paare, p => Assert.Equal(g.Saetze[0].Id, p.IdA));
+            for (int i = 0; i < paare.Count; i++)
+            {
+                Assert.Equal(g.Saetze[i + 1].Id, paare[i].IdB);
+                Assert.Equal(DublettenPruefung.AbweichendeSpalten(k, g.Saetze[0], g.Saetze[i + 1]).Count,
+                             paare[i].Zeilen.Count);
+            }
+
+            // Eine Gruppe mit weniger als zwei Saetzen liefert nichts.
+            Assert.Empty(DublettenBefundText.Gruppe(k, new DublettenGruppe()));
+            Assert.Empty(DublettenBefundText.Gruppe(k, null));
+        }
+
+        /// <summary>
+        /// <b><c>SatzUmbenennen</c> schreibt den Namen</b> (W14c.0g) — der letzte
+        /// Schreibzugriff der Welle, der als verketteter SQL-Text in einer Maske stand.
+        /// </summary>
+        [Fact]
+        public void SatzUmbenennenSchreibtDenNeuenNamen()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                KatalogDefinition k = KatalogRegistry.Finde("KLIMAREGION");
+                int id = Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Klimaregion_STAMM ORDER BY ID_Klimaregion"),
+                    CultureInfo.InvariantCulture);
+
+                Assert.True(KatalogBereinigung.SatzUmbenennen(k, id, "W14c Probe"));
+                Assert.Equal("W14c Probe", Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT Name FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                    new DbParam("@id", id))));
+
+                // Ungueltige Kennungen werden abgelehnt, ohne zu schreiben.
+                Assert.False(KatalogBereinigung.SatzUmbenennen(k, 0, "x"));
+                Assert.False(KatalogBereinigung.SatzUmbenennen(null, id, "x"));
+            }
+        }
+
+        /// <summary>
+        /// <b><c>VerwendungZaehlen</c> meldet einen Fehlschlag, statt ihn als „nicht
+        /// verwendet" auszugeben</b> (Befund W14c-B44).
+        /// </summary>
+        [Fact]
+        public void VerwendungZaehlenMeldetEinenFehlschlagStattNull()
+        {
+            if (!_db.Vorhanden) return;
+
+            KatalogDefinition k = KatalogRegistry.Finde("GEBAEUDETYP");
+            ScanErgebnis erg = DublettenPruefung.ScanKatalog(k);
+            KatalogSatz satz = erg.Saetze[0];
+            string fehler;
+
+            // Die echte Pruefung des Katalogs laeuft und zaehlt.
+            int anzahl = KatalogBereinigung.VerwendungZaehlen(k.VerwendungsPruefungen[0], satz, out fehler);
+            Assert.Null(fehler);
+            Assert.True(anzahl >= 0);
+
+            // Eine Pruefung auf eine Tabelle, die es nicht gibt: -1 UND ein Grund.
+            var kaputt = new VerwendungsPruefung { Tabelle = "Tab_GibtEsNicht", Spalte = "X" };
+            Assert.Equal(-1, KatalogBereinigung.VerwendungZaehlen(kaputt, satz, out fehler));
+            Assert.False(string.IsNullOrEmpty(fehler));
         }
     }
 }

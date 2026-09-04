@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -135,6 +135,81 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
                 new DbParam("@id", id));
+        }
+
+        /// <summary>
+        /// Benennt einen Satz um (iU9-W14c.0g, Befund W14c-B45).
+        ///
+        /// <para><b>Warum das hier steht.</b> Es war der EINZIGE Schreibzugriff der
+        /// Dublettenmaske ohne Controller: ein verketteter <c>UPDATE</c>-Text
+        /// unmittelbar im Formular. Tabellen- und Spaltenname kommen aus der Registry
+        /// (nicht vom Anwender), der Name selbst geht als <see cref="DbParam"/>.</para>
+        ///
+        /// <para>Die Namenspruefung - nicht leer, normalisiert nicht anderweitig
+        /// vergeben - bleibt beim Aufrufer: Sie ist eine Bedienregel, keine
+        /// Datenbankregel (<c>DublettenPruefung.VergebeneNamen</c>).</para>
+        /// </summary>
+        public static bool SatzUmbenennen(KatalogDefinition k, int id, string neu)
+        {
+            if (k == null || id <= 0) return false;
+            try
+            {
+                return DataRepository.ExecuteSQL(
+                    "UPDATE [" + k.Tabelle + "] SET [" + k.NamensSpalte + "] = ? " +
+                    "WHERE [" + k.IdSpalte + "] = ?",
+                    new DbParam("@name", (object)(neu ?? "")),
+                    new DbParam("@id", id));
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Zaehlt die Verwendungen eines Satzes nach einer Registry-Pruefung
+        /// (iU9-W14c.0f, Befund W14c-B44).
+        ///
+        /// <para><b>Ein Fehlschlag ist NICHT "nicht verwendet".</b> Der Vorlaeufer fing
+        /// jede Ausnahme ab und lieferte 0 - eine fehlende Tabelle sah damit aus wie
+        /// ein freier Satz, und die Loeschsperre griff nicht. Hier kommt der Fehler
+        /// als <paramref name="fehler"/> zurueck, und der Aufrufer meldet ihn.</para>
+        /// </summary>
+        /// <returns>Die Trefferzahl; -1, wenn die Pruefung nicht laufen konnte.</returns>
+        public static int VerwendungZaehlen(VerwendungsPruefung vp, KatalogSatz satz, out string fehler)
+        {
+            fehler = null;
+            if (vp == null || satz == null) return 0;
+
+            object anz;
+            string[] still;
+
+            // Der Zugriff meldet einen Fehler NICHT als Ausnahme, sondern ueber
+            // DataRepository.FehlerMelden, und liefert null - deshalb der dialogfreie
+            // Modus samt Abholen der Sammlung. Ein SELECT COUNT(*) liefert IMMER eine
+            // Zeile; null heisst also: die Abfrage ist gescheitert.
+            using (DataRepository.EngineModus())
+            {
+                try
+                {
+                    anz = DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM [" + vp.Tabelle + "] WHERE [" + vp.Spalte + "] = ?",
+                        new DbParam("@wert", vp.UeberName ? (object)(satz.Name ?? "") : (object)satz.Id));
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    fehler = ex.Message;
+                    return -1;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (anz == null || anz is DBNull)
+            {
+                fehler = still.Length > 0 ? still[0] : ("Tabelle " + vp.Tabelle + " nicht lesbar.");
+                return -1;
+            }
+
+            try { return Convert.ToInt32(anz, CultureInfo.InvariantCulture); }
+            catch (Exception ex) { fehler = ex.Message; return -1; }
         }
 
         /// <summary>
