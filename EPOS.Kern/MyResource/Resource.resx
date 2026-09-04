@@ -759,6 +759,9 @@
   <data name="MODK_MSG_AUSWAHL_SPEICHER" xml:space="preserve">
     <value>Stromspeicher in Liste auswählen!</value>
   </data>
+  <data name="MODK_MSG_FELD_LEER" xml:space="preserve">
+    <value>Bitte "{0}" ausfüllen.</value>
+  </data>
   <data name="MODK_MSG_SCHUTZ" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.</value>
   </data>

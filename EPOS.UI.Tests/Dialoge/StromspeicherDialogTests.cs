@@ -44,7 +44,7 @@ public class StromspeicherDialogTests : BunitContext
         List<ErzeugerZeile>? zeilen = null,
         Func<int, AufnahmeErgebnis>? aufnehmen = null,
         Action<ErzeugerZeile>? entfernen = null,
-        Func<string, Task<bool>>? sprung = null,
+        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         bool wizard = false,
         Action<bool>? geschlossen = null)
     {
@@ -54,7 +54,7 @@ public class StromspeicherDialogTests : BunitContext
             .Add(x => x.Detail, n => Detail(n))
             .Add(x => x.Aufnehmen, aufnehmen ?? (_ => new AufnahmeErgebnis(Zeile(9, "Speicher 20", 42))))
             .Add(x => x.Entfernen, entfernen)
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
@@ -105,13 +105,17 @@ public class StromspeicherDialogTests : BunitContext
         Assert.Contains("10 kW", cut.FindAll(".epos-mehrzeilig")[0].TextContent);
     }
 
+    /// <summary>
+    /// Ohne Parametersatz der Speicherverwaltung kein Knopf — Hausregel. Seit
+    /// iU9-W14a.3 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster.
+    /// </summary>
     [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Sprung()
+    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltungsgaben()
     {
         var ohne = Aufbauen();
         Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent), t => t == "Bearbeiten...");
 
-        var mit = Aufbauen(sprung: _ => Task.FromResult(true));
+        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
         Assert.Contains(mit.FindAll("button").Select(b => b.TextContent), t => t == "Bearbeiten...");
     }
 
@@ -195,16 +199,30 @@ public class StromspeicherDialogTests : BunitContext
         Assert.Equal(new[] { "Speicher 10", "Speicher 20" }, gefragt);
     }
 
+    /// <summary>
+    /// „Bearbeiten" öffnet den Modulkatalog als ÜBERLAGERUNG im selben Fenster — bis
+    /// iU9-W14a war es ein Sprung in ein zweites Fenster
+    /// (<c>Sprungziel.StromspeicherAdmin</c>).
+    /// </summary>
     [Fact]
-    public void Bearbeiten_springt_in_die_Speicherverwaltung()
+    public void Bearbeiten_oeffnet_die_Speicherverwaltung_als_Ueberlagerung()
     {
-        string? ziel = null;
-        var cut = Aufbauen(sprung: s => { ziel = s; return Task.FromResult(true); });
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
+        Assert.False(cut.Instance.VerwaltungOffen);
         cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
-        Assert.Equal(Sprungziel.StromspeicherAdmin, ziel);
+        Assert.True(cut.Instance.VerwaltungOffen);
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
     }
+
+    /// <summary>Ein Mindestsatz für die Überlagerung — der Katalog braucht sein Profil.</summary>
+    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Art"] = WindowsFormsApplication1.ModulKatalogArt.Stromspeicher,
+            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.ModulKatalogWege()
+        };
 
     [Fact]
     public void Esc_bricht_ab_und_Enter_ist_nicht_belegt()

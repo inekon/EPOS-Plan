@@ -68,8 +68,10 @@ namespace WindowsFormsApplication1
                 case Masken.WpAdministration:
                     return WaermepumpeStammHuelle.Oeffnen(null);
 
+                // iU9-W14a.3: Die beiden Modulkataloge sind EINE Razor-Komponente
+                // mit zwei Auspraegungen (ModulKatalogProfil im Kern).
                 case Masken.StromspeicherAdmin:
-                    using (Form_AdminStromspeicher frm = new Form_AdminStromspeicher()) return MitOk(frm);
+                    return StromspeicherAdminHuelle.Oeffnen(null);
 
                 // iU9-W9.2: Die Gebaeudeverwaltung ist die Razor-Komponente GebaeudeDialog
                 // im Modus Admin; Form_Gebaeude ist im selben Schritt GELOESCHT (Regel M1).
@@ -149,7 +151,7 @@ namespace WindowsFormsApplication1
                     return SolarkollektorAdminHuelle.Oeffnen(null);
 
                 case Masken.PvAdmin:
-                    using (Form_AdminPV frm = new Form_AdminPV()) return MitOk(frm);
+                    return PvAdminHuelle.Oeffnen(null);
 
                 case Masken.HeizkesselImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Heizkessel);

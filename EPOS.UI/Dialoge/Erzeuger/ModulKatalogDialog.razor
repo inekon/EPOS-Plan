@@ -1,0 +1,483 @@
+﻿@* Modulkatalog der Erzeuger - EINE Komponente, ZWEI Auspraegungen (iU9-W14a.3).
+
+   Vorbilder: Views/Stromspeicher/Form_AdminStromspeicher.cs (505 Z., die
+   zweitgroesste der Welle) und Views/Photovoltaik/Form_AdminPV.cs (297 Z.).
+
+   FAMILIE C DER VERMESSUNG: Browser UND Editor in einem. Liste links,
+   editierbare Felder rechts, "Speichern" schreibt unmittelbar in die
+   Stammtabelle - kein zweiter Dialog, kein Katalogeditor. Dieselbe Bauart, zwei
+   sehr verschiedene Pflegezustaende: Der Stromspeicher ist die gepflegte
+   Fassung (AP3-Gerätetechnik, MyResource, Rueckfrage beim Loeschen, zwei
+   fachliche Vorgaben), die Photovoltaik die liegengebliebene. Eine Komponente
+   mit zwei Auspraegungen bringt die PV auf den Stand des Stromspeichers - das
+   ist der eigentliche Gewinn des Paars.
+
+   FORMVORBILD ist WaermepumpeStammDialog (W7.3), der naechste Verwandte im
+   Bestand.
+
+   DER AP3-LAYOUTBLOCK ENTFAELLT ERSATZLOS. Der Vorlaeufer baute sechs
+   Steuerelemente ZUR LAUFZEIT mit gerechneten Koordinaten (Z. 391-461) und
+   vergroesserte dabei das Fenster von 614 auf 1 036 px (Befund W14-B43); in
+   Razor ist eine zweite Feldgruppe CSS. Sie steht als Gruppe 1 im Profil.
+
+   FUENFZEHN MessageBox WERDEN BANNER UND EINE RUECKFRAGE. Geloescht wird in
+   BEIDEN Auspraegungen mit Rueckfrage (Angleichung E-3); die Photovoltaik war
+   die EINZIGE der elf Masken, die kommentarlos loeschte (Befund W14-B35).
+
+   TASTATUR. Esc schliesst die oberste Ebene. Enter ist NICHT belegt -
+   "Speichern" und "Loeschen" schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-modulkatalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Profil.Titel</h1>
+        <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die Modulliste -------------------------------------------------- *@
+    <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
+
+    <Raster TZeile="ModulZeile" Zeilen="@_zeilen.AsQueryable()">
+        <KindInhalt>
+            <TemplateColumn TGridItem="ModulZeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
+                            Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="@(() => BeiZeile(context))" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="ModulZeile" TProp="string"
+                            Property="@(z => z.Bezeichner)" Title="@Profil.Listenbeschriftung" />
+        </KindInhalt>
+    </Raster>
+
+    @* --- Die Felder, Gruppe 0 -------------------------------------------- *@
+    <Gruppenkopf Titel="@Profil.GruppeBestand">
+        <KindInhalt>
+            @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
+            {
+                @Feldmarkup(feld)
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Die Felder, Gruppe 1 (AP3-Gerätetechnik, nur Stromspeicher) ----- *@
+    @if (_felder.Any(f => f.Gruppe == 1))
+    {
+        <Gruppenkopf Titel="@Profil.GruppeZwei">
+            <KindInhalt>
+                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
+                {
+                    @Feldmarkup(feld)
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(_gewaehlt.Length == 0 && !_neu)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiBeenden">@BtnBeendenText</button>
+    </div>
+
+    @* --- Rueckfrage vor dem Loeschen (Angleichung E-3) -------------------- *@
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
+
+    @* --- Namensabfrage von „Neu…" ---------------------------------------- *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnNeuText" FrageText="@Profil.Listenbeschriftung"
+                          MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiNamensfrage" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Die Auspraegung
+    // =====================================================================
+
+    /// <summary>Welcher der beiden Kataloge (Vorgabe: Stromspeicher).</summary>
+    [Parameter] public ModulKatalogArt Art { get; set; } = ModulKatalogArt.Stromspeicher;
+
+    /// <summary>
+    /// Das Profil zur <see cref="Art"/>. Die Huelle reicht es fertig uebersetzt herein;
+    /// ohne sie baut die Komponente es selbst (dann tragen die Texte die Schluessel).
+    /// </summary>
+    [Parameter] public ModulKatalogProfil? ProfilVorgabe { get; set; }
+
+    private ModulKatalogProfil Profil => ProfilVorgabe ?? _profil!;
+    private ModulKatalogProfil? _profil;
+
+    /// <summary>Die Datenwege der Huelle.</summary>
+    [Parameter] public ModulKatalogWege Wege { get; set; } = new();
+
+    /// <summary>Der Katalog ist zu — <c>Bestaetigt</c> sagt, ob über „Beenden".</summary>
+    [Parameter] public EventCallback<ModulErgebnis> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------
+
+    [Parameter] public string BtnNeuText { get; set; } = "Neu...";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string SpalteWahlText { get; set; } = "Wahl";
+
+    /// <summary>Rückfrage vor dem Löschen; <c>{0}</c> nimmt den Bezeichner auf.</summary>
+    [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+    [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
+
+    /// <summary>Meldung, wenn die Namensabfrage ohne Namen bestätigt wird.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Bezeichner eingeben!";
+
+    /// <summary>Meldung bei ungültiger oder fehlender Zahl; <c>{0}</c> = Feldname.</summary>
+    [Parameter] public string MeldungZahlUngueltig { get; set; } =
+        "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
+
+    /// <summary>
+    /// Meldung, wenn ein PFLICHTfeld leer ist. Der Vorläufer meldete beim Stromspeicher
+    /// „Eingaben überprüfen!" für den Typ und den Feldnamen für die fünf Zahlen.
+    /// </summary>
+    [Parameter] public string MeldungFeldLeer { get; set; } = "Bitte \"{0}\" ausfüllen.";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<ModulZeile> _zeilen = Array.Empty<ModulZeile>();
+    private List<ModulFeldwert> _felder = new();
+    private string _gewaehlt = "";
+
+    /// <summary>Der Bezeichner, unter dem der Satz zuletzt geladen wurde — WHERE-Schlüssel.</summary>
+    private string _schluessel = "";
+
+    /// <summary><c>true</c> nach „Neu…" (Bestandsfeld <c>m_Neu</c>).</summary>
+    private bool _neu;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _loeschfrage;
+    private string _loeschtext = "";
+    private bool _namensfrage;
+
+    private readonly List<string> _fehlerhaft = new();
+
+    /// <summary>Die Zeilen der Liste (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<ModulZeile> Zeilen => _zeilen;
+
+    /// <summary>Der gewählte Bezeichner (Prüfhilfe für Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Die aktuelle Meldung (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool Loeschfrage => _loeschfrage;
+
+    /// <summary>Steht die Namensabfrage? (Prüfhilfe für Tests.)</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Ist ein neuer, noch nicht geschriebener Satz in Arbeit? (Prüfhilfe.)</summary>
+    public bool IstNeu => _neu;
+
+    protected override void OnParametersSet()
+    {
+        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
+            _profil = ModulKatalogProfil.Finde(Art);
+    }
+
+    protected override void OnInitialized()
+    {
+        if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
+        ListeAufbauen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Liste und Felder
+    // =====================================================================
+
+    /// <summary>
+    /// Baut die Liste neu. Beim Öffnen steht die erste Zeile — wortgleich
+    /// <c>Form_Stromspeicher_Load</c> (Z. 86-89) und <c>Form_AdminPV_Load</c> (Z. 55).
+    /// </summary>
+    private void ListeAufbauen()
+    {
+        _zeilen = Wege.Liste?.Invoke() ?? Array.Empty<ModulZeile>();
+
+        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
+
+        _gewaehlt = _zeilen.Count > 0 ? _zeilen[0].Bezeichner : "";
+        DetailLaden();
+    }
+
+    private void DetailLaden()
+    {
+        _fehlerhaft.Clear();
+        _neu = false;
+        _schluessel = _gewaehlt;
+
+        if (_gewaehlt.Length == 0) { _felder = new List<ModulFeldwert>(); return; }
+        _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<ModulFeldwert>()).ToList();
+    }
+
+    private void BeiZeile(ModulZeile zeile)
+    {
+        _gewaehlt = zeile.Bezeichner;
+        _meldung = "";
+        DetailLaden();
+    }
+
+    private static double? Zahl(ModulFeldwert feld) =>
+        Zahlen.ZahlParsen(feld.Wert, out double d) ? d : null;
+
+    private static int? Ganzzahl(ModulFeldwert feld) =>
+        Zahlen.GanzzahlParsen(feld.Wert, out int i) ? i : null;
+
+    private void TextSetzen(ModulFeldwert feld, string wert)
+    {
+        if (feld.Gesperrt) return;
+        feld.Wert = wert;
+        _meldung = "";
+    }
+
+    private void ZahlSetzen(ModulFeldwert feld, double? wert)
+    {
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        _meldung = "";
+    }
+
+    private void GanzzahlSetzen(ModulFeldwert feld, int? wert)
+    {
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        _meldung = "";
+    }
+
+    private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
+    {
+        if (meldung.Fehlerhaft)
+        {
+            if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+        }
+        else
+        {
+            _fehlerhaft.Remove(meldung.Feld);
+        }
+    }
+
+    /// <summary>
+    /// Die Prüfkette der beiden Speicherknöpfe: erst die ungültigen Texte, dann die
+    /// PFLICHTfelder. Die <c>leerErlaubt</c>-Regel steht je Feld im Profil und ist
+    /// bitgleich aus dem Bestand übernommen — beim Stromspeicher darf KEINES der fünf
+    /// Bestandsfelder leer sein, bei der Photovoltaik nur die Nennleistung nicht.
+    /// </summary>
+    private bool EingabenPruefen()
+    {
+        if (_fehlerhaft.Count > 0)
+        {
+            _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+            _meldungStufe = WarnStufe.Warnung;
+            return false;
+        }
+
+        foreach (ModulFeldwert feld in _felder)
+        {
+            if (feld.LeerErlaubt || feld.Gesperrt) continue;
+            if (feld.Wert.Trim().Length > 0) continue;
+
+            _meldung = string.Format(MeldungFeldLeer, feld.Feldname);
+            _meldungStufe = WarnStufe.Warnung;
+            return false;
+        }
+        return true;
+    }
+
+    // =====================================================================
+    // Die vier Knoepfe
+    // =====================================================================
+
+    private void BeiSpeichern()
+    {
+        if (Wege.Speichern is null) return;
+        if (_gewaehlt.Length == 0 && !_neu) return;
+        if (!EingabenPruefen()) return;
+
+        KatalogSpeicherErgebnis ergebnis = Wege.Speichern(_felder, _neu, _schluessel);
+
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = WarnStufe.Hinweis;
+        _neu = false;
+        _gewaehlt = ergebnis.Name;
+        _schluessel = ergebnis.Name;
+        ListeAufbauen();
+    }
+
+    private void BeiNeu()
+    {
+        _meldung = "";
+        _namensfrage = true;
+    }
+
+    /// <summary>
+    /// „Neu…": Namensabfrage, dann die Vorbelegungen aus dem Profil. Beim
+    /// Stromspeicher sind darunter die zwei fachlichen Vorgaben
+    /// (<c>eta_RT = 0,90</c>, <c>c_ver = 0,025</c>) und die Zelltechnologie aus
+    /// <c>DbWerte.SP_TYP_LITHIUM_IONEN</c>.
+    /// </summary>
+    private void BeiNamensfrage(string? name)
+    {
+        _namensfrage = false;
+        if (name is null) return;
+
+        _neu = true;
+        _gewaehlt = "";
+        _schluessel = "";
+        _fehlerhaft.Clear();
+
+        var liste = new List<ModulFeldwert>();
+        foreach (ModulKatalogFeld feld in Profil.Felder)
+        {
+            liste.Add(new ModulFeldwert
+            {
+                Schluessel = feld.Schluessel,
+                Bezeichnung = feld.Bezeichnung,
+                Einheit = feld.Einheit,
+                Art = feld.Art,
+                LeerErlaubt = feld.LeerErlaubt,
+                Gesperrt = feld.Gesperrt,
+                Gruppe = feld.Gruppe,
+                Wert = feld.Schluessel == ModulKatalogProfil.FeldBezeichner ? name : feld.Vorgabe
+            });
+        }
+        _felder = liste;
+    }
+
+    /// <summary>
+    /// „Löschen" fragt zurück — <b>Angleichung E-3</b>: Die Photovoltaik war die
+    /// EINZIGE der elf Masken, die kommentarlos löschte (Befund W14-B35).
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (_gewaehlt.Length == 0)
+        {
+            _meldung = Profil.MeldungOhneAuswahl;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _loeschtext = string.Format(FrageLoeschen, _gewaehlt);
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschAntwort(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || Wege.Loeschen is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(_gewaehlt);
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _gewaehlt = "";
+        _meldung = "";
+        ListeAufbauen();
+    }
+
+    private Task BeiBeenden() =>
+        Geschlossen.InvokeAsync(new ModulErgebnis(true, _gewaehlt));
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_namensfrage || _loeschfrage) return Task.CompletedTask;
+
+        return Geschlossen.InvokeAsync(new ModulErgebnis(false, _gewaehlt));
+    }
+
+    // =====================================================================
+    // Das Markup eines Feldes
+    // =====================================================================
+
+    private RenderFragment Feldmarkup(ModulFeldwert feld) => builder =>
+    {
+        if (feld.Art == BrowserFeldArt.Zahl && !feld.Gesperrt)
+        {
+            builder.OpenComponent<Zahlenfeld>(0);
+            builder.AddAttribute(1, "Bezeichnung", feld.Bezeichnung);
+            builder.AddAttribute(2, "Einheit", feld.Einheit);
+            builder.AddAttribute(3, "Feldname", feld.Feldname);
+            builder.AddAttribute(4, "Wert", Zahl(feld));
+            builder.AddAttribute(5, "WertChanged",
+                EventCallback.Factory.Create<double?>(this, w => ZahlSetzen(feld, w)));
+            builder.AddAttribute(6, "FehlerZustand",
+                EventCallback.Factory.Create<(string, bool)>(this, BeiFehlerZustand));
+            builder.CloseComponent();
+            return;
+        }
+
+        if (feld.Art == BrowserFeldArt.Ganzzahl && !feld.Gesperrt)
+        {
+            builder.OpenComponent<Ganzzahlfeld>(10);
+            builder.AddAttribute(11, "Bezeichnung", feld.Bezeichnung);
+            builder.AddAttribute(12, "Einheit", feld.Einheit);
+            builder.AddAttribute(13, "Feldname", feld.Feldname);
+            builder.AddAttribute(14, "Wert", Ganzzahl(feld));
+            builder.AddAttribute(15, "WertChanged",
+                EventCallback.Factory.Create<int?>(this, w => GanzzahlSetzen(feld, w)));
+            builder.AddAttribute(16, "FehlerZustand",
+                EventCallback.Factory.Create<(string, bool)>(this, BeiFehlerZustand));
+            builder.CloseComponent();
+            return;
+        }
+
+        builder.OpenComponent<Textfeld>(20);
+        builder.AddAttribute(21, "Bezeichnung", feld.Bezeichnung);
+        builder.AddAttribute(22, "Wert", feld.Wert);
+        builder.AddAttribute(23, "WertChanged",
+            EventCallback.Factory.Create<string>(this, w => TextSetzen(feld, w)));
+        builder.AddAttribute(24, "NurLesen", feld.Gesperrt);
+        builder.AddAttribute(25, "Mehrzeilig", feld.Art == BrowserFeldArt.Mehrzeilig);
+        builder.AddAttribute(26, "Zeilen", 2);
+        builder.CloseComponent();
+    };
+}

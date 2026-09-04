@@ -47,7 +47,7 @@ public class PhotovoltaikDialogTests : BunitContext
         Action<ErzeugerZeile>? uebernehmen = null,
         Func<string>? gesamt = null,
         Func<int, bool>? katalogLoeschen = null,
-        Func<string, Task<bool>>? sprung = null,
+        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         bool wizard = false,
         Action<bool>? geschlossen = null)
     {
@@ -61,7 +61,7 @@ public class PhotovoltaikDialogTests : BunitContext
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.Gesamtleistung, gesamt ?? (() => "8"))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
-            .Add(x => x.Sprung, sprung)
+            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
@@ -120,17 +120,29 @@ public class PhotovoltaikDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-anlagenblock"));
     }
 
+    /// <summary>
+    /// Ohne Parametersatz der Modulverwaltung kein Knopf — Hausregel. Seit
+    /// iU9-W14a.3 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster.
+    /// </summary>
     [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Sprung()
+    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltungsgaben()
     {
         var ohne = Aufbauen();
         Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent),
                               t => t == "Modul Bearbeiten...");
 
-        var mit = Aufbauen(sprung: _ => Task.FromResult(true));
+        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
         Assert.Contains(mit.FindAll("button").Select(b => b.TextContent),
                         t => t == "Modul Bearbeiten...");
     }
+
+    /// <summary>Ein Mindestsatz für die Überlagerung — der Katalog braucht sein Profil.</summary>
+    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Art"] = WindowsFormsApplication1.ModulKatalogArt.Photovoltaik,
+            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.ModulKatalogWege()
+        };
 
     [Fact]
     public void Im_Assistenten_fehlt_die_OK_Leiste()
@@ -240,15 +252,21 @@ public class PhotovoltaikDialogTests : BunitContext
         Assert.Equal(new[] { 31 }, geloescht);
     }
 
+    /// <summary>
+    /// „Modul Bearbeiten…" öffnet den Modulkatalog als ÜBERLAGERUNG im selben Fenster —
+    /// bis iU9-W14a war es ein Sprung in ein zweites Fenster
+    /// (<c>Sprungziel.PvAdmin</c>).
+    /// </summary>
     [Fact]
-    public void Bearbeiten_springt_in_die_Modulverwaltung()
+    public void Bearbeiten_oeffnet_die_Modulverwaltung_als_Ueberlagerung()
     {
-        string? ziel = null;
-        var cut = Aufbauen(sprung: s => { ziel = s; return Task.FromResult(true); });
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
+        Assert.False(cut.Instance.VerwaltungOffen);
         cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
-        Assert.Equal(Sprungziel.PvAdmin, ziel);
+        Assert.True(cut.Instance.VerwaltungOffen);
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
     }
 
     [Fact]

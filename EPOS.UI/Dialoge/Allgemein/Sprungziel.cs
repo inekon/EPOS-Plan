@@ -50,24 +50,8 @@ public static class Sprungziel
     /// </summary>
     public const string Gesetzesparameter = "GESETZESPARAMETER";
 
-    /// <summary>
-    /// Katalog „Administration Stromspeicher" — der Knopf „Bearbeiten" des
-    /// Stromspeicher-Projektdialogs (Vorläufer:
-    /// <c>Form_Stromspeicher.btn_Bearbeiten_Click</c>, iU9-W6.6).
-    /// </summary>
-    /// <remarks>Fällt mit iU9-W14a.4, sobald der Modulkatalog Blazor ist.</remarks>
-    public const string StromspeicherAdmin = "STROMSPEICHER_ADMIN";
-
-    /// <summary>
-    /// Katalog „Administration Photovoltaik" — der Knopf „Bearbeiten" des
-    /// PV-Projektdialogs (Vorläufer: <c>Form_PV.btn_Bearbeiten_Click</c> über
-    /// <c>MenueCtrl.PV()</c>, iU9-W6.5).
-    /// </summary>
-    /// <remarks>Fällt mit iU9-W14a.4, sobald der Modulkatalog Blazor ist.</remarks>
-    public const string PvAdmin = "PV_ADMIN";
-
-    // iU9-W14a.4: DREI Katalogverwaltungen der Erzeuger sind hier weg -
-    // HeizkesselAdmin, PufferSpAdmin und
+    // iU9-W14a.4: Die FUENF Katalogverwaltungen der Erzeuger sind hier weg -
+    // HeizkesselAdmin, StromspeicherAdmin, PvAdmin, PufferSpAdmin und
     // PufferSpAdminNurLesen. Ihre Ziele sind selbst Blazor geworden; aus jedem
     // Sprung ist eine UEBERLAGERUNG im selben Fenster geworden (Muster W4/W10a,
     // Risiko R2), und der Aufrufer bekommt den Parametersatz der Verwaltung

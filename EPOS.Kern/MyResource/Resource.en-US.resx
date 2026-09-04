@@ -759,6 +759,9 @@
   <data name="MODK_MSG_AUSWAHL_SPEICHER" xml:space="preserve">
     <value>Select an electricity storage unit in the list!</value>
   </data>
+  <data name="MODK_MSG_FELD_LEER" xml:space="preserve">
+    <value>Please fill in "{0}".</value>
+  </data>
   <data name="MODK_MSG_SCHUTZ" xml:space="preserve">
     <value>This master record is write-protected (read-only) and cannot be saved.</value>
   </data>
