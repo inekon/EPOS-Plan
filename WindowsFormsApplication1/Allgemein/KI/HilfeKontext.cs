@@ -109,7 +109,6 @@ namespace WindowsFormsApplication1
 
 
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
-            { "Form_Heizkessel_einlesen",    B_HEIZKESSEL },
 
             { "Form_HelpPopup",              B_HILFE },
             { "Form_KiChat",                 B_HILFE },
@@ -139,7 +138,6 @@ namespace WindowsFormsApplication1
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
             // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
-            { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
 
             { "ErzeugerKarte",               B_SIMULATION },
             { "SpeicherKarte",               B_SIMULATION },
@@ -162,7 +160,6 @@ namespace WindowsFormsApplication1
             // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },
             { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
@@ -193,10 +190,14 @@ namespace WindowsFormsApplication1
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
 
-            // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
-            // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der
-            // Klassenname sagt das nicht, deshalb der Eintrag (H7).
-            { "Form_WP_einlesen",            B_WAERMEPUMPE },
+            // iU9-W13.1: Die VIER VDI-3805-Einlesemasken sind EINE Razor-Komponente
+            // mit vier Auspraegungen (KatalogImportDialog). Der Bereich haengt
+            // damit nicht mehr am Klassennamen - er kaeme fuer alle vier gleich
+            // heraus. Nachgeschlagen wird deshalb der Bereich des WIRTES; die
+            // Schluessel des InfoKnopfes in help_mapping.txt heissen weiter nach
+            // den vier Masken, denn sie sind die Adresse des HILFETEXTES und
+            // nicht der Klasse (Praxis seit W12).
+            { "KatalogImportDialog",         B_HEIZKESSEL },
 
 
             { "WizardParent",                B_ASSISTENT },

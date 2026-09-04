@@ -133,10 +133,19 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void UmlauteImOrdnernamenWerdenUmschrieben()
     {
-        // Der Zeuge stand bis iU9-W7.10 auf Form_WPFilterAuswahl; die Maske ist mit
-        // W7.5 geloescht. Form_WP_einlesen liegt im selben Ordner mit Umlaut und
-        // kommt erst mit den Importmasken an die Reihe.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wärmepumpe/Form_WP_einlesen.designer.cs"));
+        // Der Zeuge stand bis iU9-W7.10 auf Form_WPFilterAuswahl, danach auf
+        // Form_WP_einlesen im selben Ordner mit Umlaut.
+        //
+        // iU9-W13.6: Auch Form_WP_einlesen ist umgestellt und geloescht (Regel M1).
+        // Ihr Designer bleibt der Zeuge - als eingefrorenes PRUEFMUSTER im Ordner
+        // Pruefmuster/Wärmepumpe/, genau wie W7 es mit Wizard_WPItem und W4 mit
+        // ucVorlagenZeile gemacht hat. Das ist die stabile Loesung: Der
+        // Umlaut-Ordner IST die Pruefsache, nicht die Maske - ein eingefrorenes
+        // Muster kann keine Welle mehr wegnehmen. Die Umschreibregel (ä -> ae)
+        // bleibt in Kraft, solange EPOS.UI/Dialoge/Waermepumpe/ so heisst.
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Wärmepumpe/Form_WP_einlesen.designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
 
         Assert.Equal("EPOS.UI.Dialoge.Waermepumpe", RazorSchreiber.Namensraum(maske));
     }

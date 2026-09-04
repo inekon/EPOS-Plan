@@ -2475,3 +2475,29 @@ body {
 @media (forced-colors: active) {
     .epos-wert--negativ { color: LinkText; }
 }
+
+/* ------------------------------------------------------------------ */
+/* KATALOGIMPORT VDI 3805 (iU9-W13.1)                                  */
+/*                                                                     */
+/* Die vier Vorlaeufer legten Filterzeile und Detailblock mit festen   */
+/* Location/Size-Werten aus; ihre en-US.resx trug dafuer eine ZWEITE   */
+/* Geometrie (Form_WP_einlesen: 13 Size, 14 Location, eigene           */
+/* ClientSize - Befund W13-B36). Hier fliesst beides: Die Filterzeile  */
+/* ist eine Reihe, die umbricht, der Detailblock ein Raster aus zwei   */
+/* Spalten, das bei schmalem Fenster auf eine faellt. Damit entfaellt  */
+/* die zweite Geometrie ersatzlos.                                     */
+/* ------------------------------------------------------------------ */
+.epos-katalogimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-katalogimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 4px 16px;
+    margin-top: 4px;
+}
