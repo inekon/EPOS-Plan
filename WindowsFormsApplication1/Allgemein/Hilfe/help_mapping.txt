@@ -90,8 +90,15 @@
 # iU9-W16b.3: Die Startmaske ist die Razor-Seite EPOS.UI/Seiten/Start/Startseite.
 # Ihre fuenf Infoknoepfe tragen die Schluessel des Vorlaeufers WOERTLICH weiter
 # (InfoKnopf Schluessel="Form_Start.btn_Help_*"), damit die Hilfeziele stehen
-# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS; er gehoert seither
-# zum Hauptfenster und wird mit W16c umgehaengt.
+# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS.
+#
+# iU9-W16c.6 (offener Punkt W16b-O-4): Er ist umgehaengt. Die Fensterhilfe sitzt
+# jetzt im Kopfband von EPOS.UI/Seiten/Hauptfenster.razor und heisst
+# "Hauptfenster.btn_Help"; das ZIEL ist unveraendert "Programmablauf". Die alte
+# Zeile bleibt daneben stehen: Ein Anwender, der eine aeltere help_cache.json
+# mitbringt, findet damit weiterhin dieselbe Seite, und der Schluessel kostet
+# nichts.
+Hauptfenster.btn_Help             = Programmablauf
 Form_Start.btn_Help               = Programmablauf
 
 # Reiter "Projekt": Einstieg in die Bedienung.

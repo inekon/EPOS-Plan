@@ -81,7 +81,8 @@ umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
 Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
 - **`Program.cs`** — `Main` startet die Oberfläche. Hält `mdifrm`, `projektkontext`,
-  `menuectrl`, `wizardctrl`. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
+  `menuectrl`, `wizardctrl` — mit iU9‑W16c ist keines davon verwaist: `menuectrl` liest
+  `AssistentHuelle`, `wizardctrl` die Startseiten- und die Hauptfensterhülle. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
   das Detailformular `FormMain` ist gelöscht (E‑7), und die Startseite ist eine
   Razor-Seite — wer sie erreichen will, geht über `StartseiteHuelle.Aktuelle`, wer das
   offene Projekt braucht, über `Dienste.Projekt` (`ProjektKontextCtrl`, K2). Globaler veränderlicher Zustand — Seiteneffekte bei Änderungen
@@ -111,7 +112,10 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**3** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: `MenueCtrl`,
+- **`Controller/`** (**3** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: `MenueCtrl`
+  (seit iU9‑W16c.3 nur noch die SECHS zusammengesetzten Abläufe — die 21 Einzeiler
+  `Dienste.Navigation.OeffneMaske(Masken.X)` hatten als einzigen Aufrufer das Menü des
+  Hauptfensters, und dort steht der Schlüssel jetzt in der Menütabelle),
   `EnergietraegerKatalogCtrl` und `ErststartCtrl`. **Die zwölf `*KontextMenuCtrl` sind
   mit iU9‑W16b.1 gelöscht** (Anwenderentscheid E‑7, K6‑a): Ihr einziger Erzeuger war
   `FormMain` (Befund W16‑B28), und mit ihnen fallen `Gewerke`,
@@ -356,7 +360,9 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   KEINE kleingeschriebene Designer-Datei mehr — die letzten beiden waren `WizardParent`
   und `Wizard_Komponenten`. Letztere ist eingefroren nach
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wizard/` gewandert und trägt den Zeugen
-  weiter; der Großschreibungs-Zeuge bleibt bis W16c an `MDIMainForm.Designer.cs`.
+  weiter; **der Großschreibungs-Zeuge steht seit iU9‑W16c.3 ebenfalls im Prüfmuster**
+  (`Pruefmuster/Hauptformular/MDIMainForm.Designer.cs`), und der Bestandslauf prüft nur
+  noch an `Form_HelpPopup.Designer.cs`, dass er überhaupt liest.
   **Mit iU9‑W11b sind sechs weitere Masken verschwunden — die letzten des
   Simulationsbereichs**, zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer,
   21 MessageBox und 17 Zeichenflächen: `Form_Simulation_Detail` (7 629 Z. +
@@ -662,6 +668,33 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   108 Kartenzeilen die größte Maske, die der Bestand je hatte, und seither der Zeuge
   für die fünf letzten Steuerelementtypen des Stapellaufs (Entscheid E‑9). Protokoll:
   [`Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md).
+  **Mit iU9‑W16c ist die MISCHPHASE ZU ENDE — das Hauptfenster ist Razor.**
+  `MDIMainForm.Designer.cs` (493 Z., 45 `ToolStripMenuItem`, 6
+  `ToolStripSeparator`) und die drei `.resx` (1 729 / 1 086 / 1 185 Z.) sind
+  gelöscht; `MDIMainForm.cs` fällt von **873 auf 129 Zeilen** und ist nur noch
+  die **Hülle**: Fenstergeometrie und Titel, EINE `BlazorSeite<Hauptfenster>`,
+  der Besitzer für jede `BlazorDialogForm`, `KeyPreview` + F1, der Ladeanstoß
+  des Hilfekatalogs und die stille Lizenz-Nachprüfung. Gefallen sind die 34
+  Ereignishandler, die acht `Init*`-Methoden (Kopfband, KI-Hilfe, Lizenz,
+  Peak-Shaving, Gesetze, Dubletten, Kostenvorlagen, Variantenmenü), die
+  Ladeanzeige `label_OnlineDoku`, die Menüsuche über den **Anzeigetext**
+  (Befund W16‑B23 — die einzige solche Stelle des Bestands) und die sieben
+  stillen `Console.WriteLine` (W16‑B33). An ihrer Stelle stehen **eine Hülle**
+  — `Views/Hauptformular/HauptfensterHuelle.cs` (die Datenseite mit dem EINEN
+  `Weg`) — und in `EPOS.UI` die Seite `Seiten/Hauptfenster.razor` samt dem
+  Baustein `Bausteine/Menueband.razor` und der **erzeugten** `Menuetabelle.cs`
+  (54 Punkte, aus dem Designer und den drei `.resx` per Skript, Auflage
+  R‑W16‑8). **`MenueCtrl` schrumpft von 347 auf 258 Zeilen** — die 21
+  Einzeiler `Dienste.Navigation.OeffneMaske(Masken.X)` hatten als einzigen
+  Aufrufer das Menü; es bleiben die sechs zusammengesetzten Abläufe.
+  **`WinFormsNavigation` verliert `MitOk` und `WahlUebernehmen`**, die letzten
+  Reste der Zeit, als die Tabelle Formulare baute. **`Dienste.Datei` bekommt
+  `AdresseOeffnen(string)`** — die letzte unmittelbare `Process.Start`-Zeile
+  des Hauptfensters (`MitSystemOeffnen` prüft `File.Exists` und taugt für eine
+  Adresse nicht, Befund W16c‑B8). **Die Anwendung läuft seither „Per Monitor
+  V2"** (Anwenderentscheid E‑6 / iF21) und die `DpiInsel` ist gelöscht — siehe
+  „Fallstricke". Protokoll:
+  [`Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
   Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
   Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über
@@ -843,13 +876,17 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   `ObjectDisposedException` in einer `async void`-Fortsetzung, also unbehandelt.
   **`DataRepository.EngineModus` ist prozessweit** — zwei gleichzeitige Läufe sind
   ausgeschlossen, der Startknopf ist für die Dauer gesperrt.
-- **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
-  in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch. **Ausnahme seit iU8:**
-  `BlazorDialogForm.ShowDialog()` stellt den Faden für die Dauer des modalen Laufs auf
-  `PER_MONITOR_AWARE_V2` und danach zurück (`DpiInsel`) — sonst wäre der WebView2-Inhalt bei
-  125–200 % bitmapskaliert und sichtbar unscharf. Die WinForms-Masken dahinter bleiben
-  unberührt. Auf einem Windows vor 10 (1803) greift die Insel nicht; das ist ein
-  Schönheitsfehler, kein Fehlschlag.
+- **DPI: „Per Monitor V2" seit iU9‑W16c.4** (Anwenderentscheid E‑6, offener Punkt iF21
+  eingelöst). `app.manifest` trägt `dpiAware=true/pm` und `dpiAwareness=PerMonitorV2`,
+  `Program.Main` setzt `HighDpiMode.PerMonitorV2`; führend ist das Manifest, der Aufruf hält
+  den verwalteten Zustand deckungsgleich. **Die `DpiInsel` ist gelöscht** — samt den zwei
+  `ShowDialog`-Überladungen in `BlazorDialogForm`, die sie umschlossen: Ein Fenster, das
+  ohnehin im richtigen Kontext entsteht, braucht keine Insel. Bis dahin lief die Anwendung
+  DpiUnaware, weil die gewachsenen WinForms-Masken fest gerechnete Pixelkoordinaten hatten;
+  nach Welle 16 gibt es sie nicht mehr. **Abnahmepunkt am Gerät** bei 100 / 125 / 150 %,
+  besonders `Form_HelpPopup` und `Form_SpeicherOptimierung` — die zwei letzten
+  WinForms-Fenster (`Umsetzung_iU9_Nachweise.md` § 12.1). Der `PerMonitorV2`-Kommentar im
+  `.csproj` stimmt seither.
 - **WebView2 ist ab iU8 eine Laufzeitvoraussetzung — und seit iU9‑W15c eine HARTE.**
   `dotnet publish` bringt nur das SDK (`Microsoft.Web.WebView2.Core.dll`,
   `WebView2Loader.dll`); die Evergreen-Laufzeit installiert das Setup nach
