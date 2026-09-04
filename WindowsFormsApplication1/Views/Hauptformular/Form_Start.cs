@@ -1234,7 +1234,9 @@ namespace WindowsFormsApplication1
             //
             // ENTFALLEN (Befund W10-B37): das Lesen des Einstellungssatzes hier (das
             // macht KonfigurationCtrl.LiesProjekt in der Huelle) und die Halbierung der
-            // Bildschirmkoordinaten fuer frm.Location.
+            // Bildschirmkoordinaten fuer frm.Location. Damit entfaellt auch die Stelle,
+            // die iU9-W11a.2 hier parametrisiert hatte (Befund W11-B24) - dieselbe
+            // Abfrage, ein Aufrufer weniger.
             SimulationKonfigHuelle.Oeffnen(this, m_ID_Projekt);
         }
 

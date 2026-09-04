@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows.Forms.DataVisualization.Charting;
+﻿using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
@@ -14,6 +13,13 @@ namespace WindowsFormsApplication1
     /// Stapelserien. Beide lagen bis hierher als Kopie in jeder Ansicht; ein Fix an
     /// einer Stelle wirkte in den übrigen nicht (Muster N6 aus Paket 5: keine
     /// Logik-Kopien).
+    ///
+    /// <b>Seit iU9‑W11a stehen <c>Dauerlinie</c> und <c>Anzeigewerte</c> im Kern</b>
+    /// (<see cref="Ganglinie"/>) — sie rechnen nur auf <c>float[]</c> und werden dort auch
+    /// vom Renderer und der Razor-Ergebnisseite gebraucht. Was hier bleibt, ist die
+    /// WinForms-Hälfte: <see cref="Stapeltyp"/> und <see cref="StapelEinstellen"/> arbeiten
+    /// auf einer <c>Series</c>. Die beiden Weiterleitungen unten bleiben stehen, damit die
+    /// 24 Aufrufstellen der Masken unverändert bleiben, bis W11b sie löscht.
     ///
     /// Reine Darstellung: hier wird nichts gerechnet, was in ein Ergebnis einginge, und
     /// keine Quellganglinie verändert — <see cref="Dauerlinie"/> arbeitet auf einer Kopie.
@@ -30,12 +36,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static float[] Dauerlinie(float[] werte)
         {
-            if (werte == null) return null;
-
-            float[] kopie = (float[])werte.Clone();
-            Array.Sort(kopie);
-            Array.Reverse(kopie);
-            return kopie;
+            return Ganglinie.Dauerlinie(werte);
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static float[] Anzeigewerte(float[] werte, bool sortiert)
         {
-            return sortiert ? Dauerlinie(werte) : werte;
+            return Ganglinie.Anzeigewerte(werte, sortiert);
         }
 
         /// <summary>

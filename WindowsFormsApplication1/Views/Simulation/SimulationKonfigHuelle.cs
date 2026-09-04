@@ -1060,20 +1060,26 @@ namespace WindowsFormsApplication1
             return chips;
         }
 
+        // iU9-W11a (Befund W11-B42, offener Punkt W11a-O-4): Diese beiden Methoden
+        // waren die VIERTE Fassung derselben Uebersetzung - neben
+        // Form_SpeicherVariantenVergleich, Form_SpeicherOptimierung und der
+        // Ergebnisseite. Sie war zugleich die vollstaendigste: nur sie kannte die
+        // Preissteuerung. Ihr Wissen steht jetzt in SpeicherAnzeigeCtrl (Kern), und
+        // alle vier Aufrufer bekommen denselben Text.
+        //
+        // EIN UNTERSCHIED, bewusst: Ein unbekannter Wert kam hier als "Gruenstrom" bzw.
+        // "Dauernutzung" zurueck; der Kern gibt ihn unveraendert weiter. Das ist eine
+        // Behauptung weniger ueber Daten, die man nicht kennt - und unerreichbar,
+        // solange alle Schreiber DbWerte.SP_* setzen.
+
         private static string BetriebsartAnzeige(string dbWert)
         {
-            return dbWert == DbWerte.SP_BETRIEBSART_GRAUSTROM
-                ? MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRAUSTROM
-                : MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRUENSTROM;
+            return SpeicherAnzeigeCtrl.BetriebsartText(dbWert);
         }
 
         private static string BerechnungsartAnzeige(string dbWert)
         {
-            if (dbWert == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
-            if (dbWert == DbWerte.SP_BERECHNUNG_ARBITRAGE)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE;
-            return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
+            return SpeicherAnzeigeCtrl.BerechnungsartText(dbWert);
         }
 
         private static void Chip(List<ChipDaten> chips, string text,

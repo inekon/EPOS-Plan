@@ -19,13 +19,13 @@ namespace WindowsFormsApplication1
         //
         // Das Formular ist kein UserControl mit SimulationControl, sondern wird von
         // TabNavigationManager mit fertigen Vektoren versorgt. Die Präsenz kommt deshalb
-        // von dort — als zwei einfache Schalter statt als ErgebnisPraesenz-Objekt: die
-        // Klasse ist internal, ein öffentliches Feld dieses Typs in einer öffentlichen
-        // Klasse wäre nicht übersetzbar.
+        // von dort - seit iU9-W11a als ErgebnisPraesenz-Objekt. Bis dahin standen hier
+        // zwei bool-Felder (HatPV/HatSolarthermie), weil ErgebnisPraesenz internal war
+        // und ein öffentliches Feld dieses Typs in einer öffentlichen Klasse nicht
+        // übersetzbar gewesen wäre. Mit dem Umzug in den Kern ist die Klasse public.
         //
-        // Vorbelegt mit true, damit ein Aufrufer, der sie nicht setzt, alles sieht.
-        public bool HatPV = true;
-        public bool HatSolarthermie = true;
+        // Vorbelegt mit Alles(), damit ein Aufrufer, der sie nicht setzt, alles sieht.
+        public ErgebnisPraesenz Praesenz = ErgebnisPraesenz.Alles();
 
         private bool isUpdatingUI = false; // Event Sperre
 
@@ -284,17 +284,20 @@ namespace WindowsFormsApplication1
         {
             this.SuspendLayout();
 
-            groupPV.Visible = HatPV;
-            lblSpeicherInfo.Visible = HatPV;
-            numSpeicherKWh.Visible = HatPV;
-            lblTest.Visible = HatPV;
+            bool hatPV = Praesenz != null && Praesenz.Photovoltaik;
+            bool hatSolarthermie = Praesenz != null && Praesenz.Solarthermie;
 
-            groupST.Visible = HatSolarthermie;
-            lblNutzungsgradST.Visible = HatSolarthermie;
+            groupPV.Visible = hatPV;
+            lblSpeicherInfo.Visible = hatPV;
+            numSpeicherKWh.Visible = hatPV;
+            lblTest.Visible = hatPV;
+
+            groupST.Visible = hatSolarthermie;
+            lblNutzungsgradST.Visible = hatSolarthermie;
 
             // Zielspalte der Solarthermie-Kachel: eigener Platz, oder der der PV-Kachel,
             // wenn es die nicht gibt.
-            int zielLinks = HatPV ? _stLinksOriginal : groupPV.Left;
+            int zielLinks = hatPV ? _stLinksOriginal : groupPV.Left;
             int versatz = zielLinks - groupST.Left;
             if (versatz != 0)
             {
@@ -351,8 +354,11 @@ namespace WindowsFormsApplication1
 
             double nutzungsgradST = stPotenzialGesamt > 0 ? (stGenutztSumme / stPotenzialGesamt) * 100 : 0;
 
-            // CO2 Ersparnis (PV-Deckung + ST-Nutzung)
-            double co2Saved = ((pvDirektSumme + pvAusSpeicherSumme) * 0.42) + (stGenutztSumme * 0.20);
+            // CO2 Ersparnis (PV-Deckung + ST-Nutzung). iU9-W11a.5 (Befund W11-B31):
+            // Die beiden Substitutionsfaktoren standen als Literale in dieser Zeile;
+            // sie stehen jetzt in EmissionsVorgaben - woertlich, samt Formel.
+            double co2Saved = EmissionsVorgaben.Co2ErsparnisKg(
+                                  pvDirektSumme + pvAusSpeicherSumme, stGenutztSumme);
 
             // UI Updates
             lblPVAutarkie.Text = $"{autarkiePV:F1} %";  

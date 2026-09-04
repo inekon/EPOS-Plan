@@ -1115,18 +1115,15 @@ namespace WindowsFormsApplication1
             list_Kennzahlen.Items.Add(eintrag);
         }
 
-        /// <summary>Amortisation als Text — die beiden Sonderfaelle der Engine im Klartext.</summary>
+        /// <summary>
+        /// Amortisation als Text — seit iU9-W11a.5 im Kern
+        /// (<see cref="SpeicherAnzeigeCtrl.AmortisationText"/>, Befund W11-B42). Diese
+        /// Maske bleibt WinForms (iF22); die Weiterleitung haelt ihre sechs
+        /// Aufrufstellen unveraendert.
+        /// </summary>
         private static string AmortisationText(Amortisation a)
         {
-            switch (a.Status)
-            {
-                case AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.OPT_AMORT_NIE;
-                case AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.OPT_AMORT_UEBER;
-                default:
-                    return a.Jahre.ToString("0.0", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
         // ==================================================================

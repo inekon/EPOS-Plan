@@ -1,0 +1,120 @@
+@* Fortschritt einer laufenden Rechnung - Balken, Text und Abbrechen (iU9-W11a.7).
+
+   WOZU. Der Bestand rechnet SYNCHRON im Bedienfaden: Der Simulationslauf der
+   Detailansicht friert das Fenster fuer seine Dauer ein, und er startet beim
+   Oeffnen von selbst (Befund W11-B48). In einer WebView waere das schlimmer -
+   Blazor zeichnet auf demselben Faden. Der Lauf gehoert deshalb in einen
+   Hintergrund-Task, und dieser Baustein ist, was der Anwender waehrenddessen
+   sieht.
+
+   UNBESTIMMT IST EIN ZUSTAND, KEIN MANGEL. Anteil = null heisst "ich weiss
+   nicht, wie weit es ist" - dann laeuft der Balken. Das ist ehrlicher als eine
+   erfundene Prozentzahl, und es ist der Regelfall beim Gesamtlauf: Die Kaskade
+   rechnet stundenweise ueber das Jahr und bedient in jeder Stunde alle Erzeuger
+   nacheinander; es gibt keinen Zeitpunkt, ab dem "die Waermepumpe fertig" waere.
+   Wo der Fortschritt echt ist - der Variantenvergleich kennt die Zahl seiner
+   Laeufe -, steht die Zahl.
+
+   OHNE RUECKRUF KEIN KNOPF. Dieselbe Regel wie bei Dateiwahl und Sprung: Ein
+   Abbrechen-Knopf, der nichts abbricht, ist schlimmer als keiner. Der Kern muss
+   den Abbruch entgegennehmen koennen (SimulationControl.Do_Simulation seit
+   iU9-W11a.4), sonst bleibt der Knopf weg.
+
+   Vorbild: Form_SpeicherOptimierung (bar_Fortschritt, btn_Abbruch, lbl_Status) -
+   die einzige nebenlaeufige Rechnung des Bestands. *@
+
+@if (Sichtbar)
+{
+    <div class="epos-fortschritt" role="group" aria-label="@Text">
+        @if (Anteil.HasValue)
+        {
+            <progress class="epos-fortschritt-balken"
+                      max="100"
+                      value="@Prozent"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="@Prozent"
+                      aria-label="@Beschriftung"></progress>
+        }
+        else
+        {
+            @* Unbestimmt: ein <progress> OHNE value ist genau das - der Browser
+               zeichnet den laufenden Balken selbst. Die eigene Klasse traegt die
+               Ersatzanimation fuer Umgebungen, die das nicht tun. *@
+            <progress class="epos-fortschritt-balken epos-fortschritt-balken--unbestimmt"
+                      max="100"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-label="@Beschriftung"></progress>
+        }
+
+        <span class="epos-fortschritt-text">@Beschriftung</span>
+
+        @if (Abbrechen.HasValue)
+        {
+            <button type="button" class="epos-knopf epos-fortschritt-abbruch"
+                    disabled="@Abgebrochen"
+                    @onclick="AbbruchGeklickt">@AbbruchText</button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Fortschritt 0…1; <c>null</c> = unbestimmt (der Balken laeuft).
+    /// Werte ausserhalb 0…1 werden geklemmt - eine Meldung "110 %" waere Unfug.
+    /// </summary>
+    [Parameter] public double? Anteil { get; set; }
+
+    /// <summary>
+    /// Was gerade laeuft, z. B. „Variante 3 von 7". Leer = der Vorgabetext
+    /// <c>FORTSCHRITT_LAEUFT</c>.
+    /// </summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>
+    /// Der Abbruch. OHNE Rueckruf gibt es KEINEN Knopf - ein Abbrechen, das nicht
+    /// abbricht, waere eine Zusage, die niemand einloest.
+    /// </summary>
+    [Parameter] public EventCallback? Abbrechen { get; set; }
+
+    /// <summary>Ob der Baustein ueberhaupt erscheint. Vorgabe: ja.</summary>
+    [Parameter] public bool Sichtbar { get; set; } = true;
+
+    /// <summary>Beschriftung des Abbrechen-Knopfs; leer = <c>FORTSCHRITT_ABBRECHEN</c>.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "";
+
+    /// <summary>
+    /// true, sobald der Knopf einmal gedrueckt wurde. Er bleibt danach stehen, aber
+    /// gesperrt: Der Abbruch wirkt erst an der naechsten Phasengrenze, und ein
+    /// zweiter Klick beschleunigt ihn nicht.
+    /// </summary>
+    private bool Abgebrochen;
+
+    private int Prozent => (int)Math.Round(Math.Clamp(Anteil ?? 0.0, 0.0, 1.0) * 100.0);
+
+    private string Beschriftung =>
+        string.IsNullOrWhiteSpace(Text) ? Resource.FORTSCHRITT_LAEUFT : Text;
+
+    private string AbbruchText =>
+        string.IsNullOrWhiteSpace(AbbrechenText) ? Resource.FORTSCHRITT_ABBRECHEN : AbbrechenText;
+
+    private async Task AbbruchGeklickt()
+    {
+        if (Abgebrochen || !Abbrechen.HasValue) return;
+
+        Abgebrochen = true;
+        await Abbrechen.Value.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Ein neuer Lauf entsperrt den Knopf wieder: Sobald der Baustein erneut
+    /// eingeblendet wird, gilt der vorige Abbruch nicht mehr.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (!Sichtbar) Abgebrochen = false;
+    }
+}

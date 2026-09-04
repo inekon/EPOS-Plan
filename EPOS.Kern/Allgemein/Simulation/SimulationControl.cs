@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -298,13 +299,52 @@ namespace WindowsFormsApplication1
         /// <c>DataRepository</c> ändert sich nichts (der Modus zählt und wird hier
         /// zuverlässig wieder freigegeben).
         /// </summary>
-        public void Do_Simulation(int ID_Projekt)
+        /// <summary>
+        /// Der vollstaendige Simulationslauf eines Projekts.
+        ///
+        /// <para><b>Seit iU9-W11a.4 mit Fortschritt und Abbruch</b> (Befund W11-B48).
+        /// Ohne die beiden Zusatzangaben verhaelt sich der Lauf wie bisher — dieselbe
+        /// Rechnung, dieselbe Reihenfolge, dasselbe Ergebnis; der Referenzlauf ist das
+        /// Gate dafuer. Mit ihnen meldet er seine Phasen und laesst sich ZWISCHEN den
+        /// Phasen abbrechen.</para>
+        ///
+        /// <para><b>Abbruch nur zwischen den Phasen.</b> Mitten in der Kaskade
+        /// abzubrechen hiesse, mit halb gefuellten Kanaelen zurueckzubleiben; der Lauf
+        /// haette dann ein Ergebnis, das keines ist. Ein <c>ThrowIfCancellationRequested</c>
+        /// an einer Phasengrenze laesst dagegen nichts Halbes stehen — der Aufrufer
+        /// faengt <see cref="System.OperationCanceledException"/> und verwirft den Lauf.
+        /// Die Kaskade selbst ist damit die groebste Koernung: Sie ist der laengste
+        /// Abschnitt, und wer waehrend ihrer Laufzeit abbricht, wartet bis zu ihrem
+        /// Ende.</para>
+        ///
+        /// <para><b>Fadenfrage.</b> Der Lauf laeuft nachweislich in einem fremden Faden
+        /// (Probe R-W10a-2, <c>EPOS.Kern.Tests/SimulationslaufAusFremdemFadenTests</c>):
+        /// <c>SqliteDatenzugriff</c> oeffnet je Aufruf eine eigene Verbindung und haelt
+        /// nichts <c>[ThreadStatic]</c>. <c>DataRepository.EngineModus</c> ist ein
+        /// prozessweiter Zaehler — zwei GLEICHZEITIGE Laeufe waeren deshalb keine gute
+        /// Idee; ein Lauf im Hintergrund, waehrend die Oberflaeche nur wartet, ist es.
+        /// </para>
+        /// </summary>
+        /// <param name="ID_Projekt">Das zu rechnende Projekt.</param>
+        /// <param name="fortschritt">Empfaenger der Phasenmeldungen; <c>null</c> = keine.</param>
+        /// <param name="abbruch">Abbruchmarke; wird zwischen den Phasen geprueft.</param>
+        public void Do_Simulation(int ID_Projekt,
+                                  IProgress<LaufFortschritt> fortschritt = null,
+                                  CancellationToken abbruch = default)
         {
             using (DataRepository.EngineModus())
             {
-                Do_Simulation_Intern(ID_Projekt);
+                Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
                 DbFehlerUebernehmen();
             }
+        }
+
+        /// <summary>Eine Phasenmeldung absetzen und die Abbruchmarke pruefen.</summary>
+        private static void Phase(IProgress<LaufFortschritt> fortschritt, CancellationToken abbruch,
+                                  Laufphase phase, double anteil)
+        {
+            abbruch.ThrowIfCancellationRequested();
+            if (fortschritt != null) fortschritt.Report(new LaufFortschritt(phase, anteil));
         }
 
         /// <summary>Holt die im dialogfreien Modus aufgelaufenen DB-Meldungen ins Protokoll.</summary>
@@ -314,8 +354,12 @@ namespace WindowsFormsApplication1
                 Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_DB_ZUGRIFF_WAEHREND_LAUF, meldung));
         }
 
-        private void Do_Simulation_Intern(int ID_Projekt)
+        private void Do_Simulation_Intern(int ID_Projekt,
+                                          IProgress<LaufFortschritt> fortschritt = null,
+                                          CancellationToken abbruch = default)
         {
+            Phase(fortschritt, abbruch, Laufphase.Start, 0.0);
+
             // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
             // (ADR-001, Aufgabe 6). Bewusst ohne MessageBox - die Engine bleibt
             // dialogfrei (Konzept 13.4); der Grund steht in Sperrgrund.
@@ -455,9 +499,11 @@ namespace WindowsFormsApplication1
             EnergietraegerZuordnungLesen(WizardItemClass.KESSEL_TYP, "Heizkessel", simulation_spk.spk_carrier);
 
 
+            Phase(fortschritt, abbruch, Laufphase.Kaskade, 0.10);
             Kaskade_Zweikanalig();
 
             // Photovoltaik abziehen
+            Phase(fortschritt, abbruch, Laufphase.Photovoltaik, 0.60);
             if (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK)
             {
                 var x = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
@@ -495,6 +541,7 @@ namespace WindowsFormsApplication1
             // BHKW-Erzeugung) und setzt die Modulflags, die der Controller beim
             // Beschaffen der Lastreihe auswertet.
             // ***********************************************************************
+            Phase(fortschritt, abbruch, Laufphase.Stromspeicher, 0.75);
             if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER)
             {
                 temp = Simulation_Stromspeicher_Ctrl(m_ID_Projekt);
@@ -504,6 +551,8 @@ namespace WindowsFormsApplication1
                     bSimulationSSP = true;
                 }
             }
+
+            Phase(fortschritt, abbruch, Laufphase.Abschluss, 0.90);
 
             // Wärmebedarf von kWh in MWh umrechnen
             Restwaerme /= 1000f;

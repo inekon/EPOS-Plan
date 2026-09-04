@@ -252,9 +252,9 @@ namespace WindowsFormsApplication1
             List<string> protokoll = new List<string>();
 
             Dictionary<int, StromspeicherVarianteModel> varianten = VariantenLesen();
-            DataTable anlagen = AnlagenLesen();
+            List<WErzeugerCtrl.AnlagenZeile> anlagen = AnlagenLesen();
 
-            if (anlagen == null || anlagen.Rows.Count == 0)
+            if (anlagen == null || anlagen.Count == 0)
             {
                 lbl_Status.Text = MyResource.Resource.VAR_VGL_STATUS_LEER;
                 lbl_Status.ForeColor = Color.Firebrick;
@@ -265,7 +265,7 @@ namespace WindowsFormsApplication1
             Cursor.Current = Cursors.WaitCursor;
             try
             {
-                foreach (DataRow r in anlagen.Rows)
+                foreach (WErzeugerCtrl.AnlagenZeile r in anlagen)
                 {
                     Vergleichszeile z = ZeileRechnen(r, varianten, protokoll);
                     m_Zeilen.Add(z);
@@ -282,12 +282,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Lauf. Wirft nicht — ein Fehlschlag wird zur Fehlerzeile mit Protokolleintrag.</summary>
-        private Vergleichszeile ZeileRechnen(DataRow r,
+        private Vergleichszeile ZeileRechnen(WErzeugerCtrl.AnlagenZeile r,
                                              Dictionary<int, StromspeicherVarianteModel> varianten,
                                              List<string> protokoll)
         {
-            int idAnlage = Convert.ToInt32(r["ID"]);
-            string name = r["Bezeichner"] != DBNull.Value ? r["Bezeichner"].ToString() : "";
+            int idAnlage = r.Id;
+            string name = r.Bezeichner ?? "";
 
             Vergleichszeile z = new Vergleichszeile
             {
@@ -359,22 +359,14 @@ namespace WindowsFormsApplication1
             return z;
         }
 
-        /// <summary>Alle <c>SP_TYP</c>-Anlagenzeilen des Projekts in Anlagenreihenfolge.</summary>
-        private DataTable AnlagenLesen()
+        /// <summary>
+        /// Alle <c>SP_TYP</c>-Anlagenzeilen des Projekts in Anlagenreihenfolge.
+        /// Seit iU9-W11a.2 im Kern (<c>WErzeugerCtrl.AnlagenJeTyp</c>) — dieselbe
+        /// Abfrage bediente auch <c>Form_Simulation_Detail.SpVariantenzahl</c>.
+        /// </summary>
+        private List<WErzeugerCtrl.AnlagenZeile> AnlagenLesen()
         {
-            try
-            {
-                return DataRepository.GetDataTable(
-                    "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
-                    "WHERE ID_Projekt = ? AND ID_Type = ? ORDER BY ID",
-                    new DbParam("@proj", m_ID_Projekt),
-                    new DbParam("@typ", WizardItemClass.SP_TYP));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Speicheranlagen des Projekts konnten nicht gelesen werden: " + ex.Message);
-                return null;
-            }
+            return WErzeugerCtrl.AnlagenJeTyp(m_ID_Projekt, WizardItemClass.SP_TYP);
         }
 
         private Dictionary<int, StromspeicherVarianteModel> VariantenLesen()
@@ -526,39 +518,24 @@ namespace WindowsFormsApplication1
             lbl_Status.ForeColor = Color.Black;
         }
 
+        // iU9-W11a.5 (Befund W11-B42): BetriebsartText, BerechnungsartText und
+        // AmortisationText standen hier, in Form_SpeicherOptimierung und in
+        // Form_Simulation_Detail. Sie stehen jetzt EINMAL als SpeicherAnzeigeCtrl im
+        // Kern; die drei Weiterleitungen halten die Aufrufstellen dieser Maske kurz.
+
         private static string BetriebsartText(string wert)
         {
-            if (wert == DbWerte.SP_BETRIEBSART_GRAUSTROM)
-                return MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRAUSTROM;
-            if (wert == DbWerte.SP_BETRIEBSART_GRUENSTROM)
-                return MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRUENSTROM;
-            return wert ?? "";
+            return SpeicherAnzeigeCtrl.BetriebsartText(wert);
         }
 
         private static string BerechnungsartText(string wert)
         {
-            if (wert == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
-            if (wert == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
-            return wert ?? "";
+            return SpeicherAnzeigeCtrl.BerechnungsartText(wert);
         }
 
-        /// <summary>
-        /// Amortisation als Text — die beiden Sonderfaelle der Engine im Klartext,
-        /// wortgleich mit Ergebnisseite und Auslegungsoptimierung.
-        /// </summary>
         private static string AmortisationText(Amortisation a)
         {
-            switch (a.Status)
-            {
-                case AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.OPT_AMORT_NIE;
-                case AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.OPT_AMORT_UEBER;
-                default:
-                    return a.Jahre.ToString("0.0", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
         // ==================================================================

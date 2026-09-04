@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -1193,25 +1195,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static System.Collections.Generic.HashSet<int> KesselBrennstoffartenLesen(int idProjekt)
         {
-            System.Collections.Generic.HashSet<int> arten = new System.Collections.Generic.HashSet<int>();
-            if (idProjekt <= 0) return arten;
-
-            System.Data.DataTable dt = StilleDb.Tabelle(
-                "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
-                "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
-                "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
-                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
-                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
-                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
-
-            if (dt == null) return arten;
-
-            foreach (System.Data.DataRow r in dt.Rows)
-            {
-                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
-                if (a >= 0) arten.Add(a);
-            }
-            return arten;
+            // iU9-W11a.2: Die Abfrage steht als
+            // HeizkesselStammCtrl.BrennstoffartenJeProjekt im Kern (SQL woertlich
+            // uebernommen). Hier bleibt nur der Aufruf.
+            return HeizkesselStammCtrl.BrennstoffartenJeProjekt(idProjekt);
         }
 
         /// <summary>
@@ -1547,7 +1534,8 @@ namespace WindowsFormsApplication1
         {
             if (tb_BedarfKanal == null) return;
 
-            double[] mwh = SimulationRunner.BedarfJeKanal(simulation_Waermebedarf);
+            // iU9-W11a.3: die drei Kanalsummen aus dem Kern.
+            var mwh = SimulationErgebnisCtrl.Bedarf(simulation_Waermebedarf, null).KanalMwh;
 
             BedarfKanalBeschriftungEinpassen();
 
@@ -2394,19 +2382,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void PufferspeicherErgebnisAnzeigen()
         {
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            // iU9-W11a.3: Die Zeilen kommen aus dem Kern
+            // (SimulationErgebnisCtrl.Pufferzeilen) - dieselben Speicherobjekte, die
+            // auch Tab_ErgebnisPufferspeicher speisen.
+            var speicher = SimulationErgebnisCtrl.Pufferzeilen(sim);
 
             if (listView_SimPuffer != null)
             {
                 listView_SimPuffer.Items.Clear();
-                foreach (SimulationPufferspeicher sp in speicher)
+                foreach (var sp in speicher)
                 {
-                    ListViewItem li = new ListViewItem(sp.BezeichnerAnzeige());
-                    li.SubItems.Add(sp.RolleAnzeige());
-                    li.SubItems.Add(sp.Q_max.ToString("F1"));
-                    li.SubItems.Add(sp.Ladung_gesamt.ToString("F0"));
-                    li.SubItems.Add(sp.Entladung_gesamt.ToString("F0"));
-                    li.SubItems.Add(sp.Verluste_gesamt.ToString("F0"));
+                    ListViewItem li = new ListViewItem(sp.Bezeichner);
+                    li.SubItems.Add(sp.Rolle);
+                    li.SubItems.Add(sp.KapazitaetKwh.ToString("F1"));
+                    li.SubItems.Add(sp.LadungKwh.ToString("F0"));
+                    li.SubItems.Add(sp.EntladungKwh.ToString("F0"));
+                    li.SubItems.Add(sp.VerlusteKwh.ToString("F0"));
 
                     // ETAPPE D4 (D5b-Restpunkt 4): Beim KOMBISPEICHER laufen beide Kanäle
                     // über EINEN Vorrat; die Kennzahl wird dann groß und misst den
@@ -2419,7 +2410,7 @@ namespace WindowsFormsApplication1
                     // gehörte in eine Etappe mit eigenem Referenznachweis. Die Anzeige
                     // markiert den Wert und erklärt ihn im Hinweisfenster.
                     li.SubItems.Add(sp.Vollzyklen.ToString("F1") + (sp.IstKombi ? " *" : ""));
-                    li.SubItems.Add(sp.SOC.ToString("F1"));
+                    li.SubItems.Add(sp.FuellstandEndeProzent.ToString("F1"));
 
                     if (sp.IstKombi)
                         li.ToolTipText = Zeilenumbruch.Normalisieren(
@@ -2444,7 +2435,7 @@ namespace WindowsFormsApplication1
 
             if (!mitSpeicher)
                 textBox_Pufferspeicher.Text = (sim.simulation_wp != null)
-                    ? (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString()
+                    ? SimulationErgebnisCtrl.PufferVolumenKwh(sim).ToString()
                     : "";
         }
 
@@ -2789,7 +2780,7 @@ namespace WindowsFormsApplication1
         public void UpdateTabPages()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
 
             // Alle 6 Tools lückenlos von Index 0 bis 5 auslesen
             string[] tool = new string[6];
@@ -3328,9 +3319,20 @@ namespace WindowsFormsApplication1
 
             // Beim Öffnen automatisch simulieren (wie btn_Simulation der Kurzansicht)
             // und anschließend den Übersicht-Tab in den Vordergrund holen.
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows > 0)
             {
+                // iU9-W11a.4: Der Aufruf bleibt WOERTLICH stehen - er ist jetzt nur
+                // asynchron: btn_Simulation_Click kehrt am ersten "await" zurueck, der
+                // Lauf laeuft im Hintergrund weiter, und diese Methode kommt sofort bis
+                // zur Zeile darunter. Genau das ist der Gewinn (Befund W11-B48).
+                //
+                // DER MERKER haelt die sichtbare Endlage: Bis hierher lief der Lauf
+                // SYNCHRON, setzte an seinem Ende den Reiter "Simulation" - und danach
+                // holte die Zeile darunter die "Uebersicht" in den Vordergrund. Ohne den
+                // Merker kaeme der Lauf jetzt NACH ihr an und der Anwender landete nach
+                // dem Oeffnen auf einem anderen Reiter als bisher.
+                _laufAusLoad = true;
                 btn_Simulation_Click(this, EventArgs.Empty);
             }
             tabControl_Simulation.SelectedTab = tabPage_Uebersicht;
@@ -3416,7 +3418,135 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private void btn_Simulation_Click(object sender, EventArgs e)
+        // ==================================================================
+        //  Der Lauf: nebenlaeufig seit iU9-W11a.4 (Befund W11-B48)
+        // ==================================================================
+        //
+        // AUSGANGSLAGE. Der Lauf stand SYNCHRON im Bedienfaden - kein Task, kein
+        // await, keine ProgressBar, kein WaitCursor, kein Abbruch (nachgezaehlt in der
+        // Vermessung: null Treffer). Bei einem grossen Projekt fror das Fenster fuer
+        // seine Dauer ein und die Titelzeile meldete "Keine Rueckmeldung" - und der
+        // Lauf startet beim OEFFNEN von selbst.
+        //
+        // AUFTEILUNG wie in Form_SpeicherOptimierung (Klassenkopf dort :29-46), der
+        // bisher einzigen nebenlaeufigen Rechnung des Programms:
+        //   UI-Faden:      Felder lesen, Vorpruefen, Bedarf, Bestuecken (Datenbank!),
+        //                  danach die Anzeige.
+        //   Hintergrund:   ausschliesslich SimulationLaufCtrl.Laufen.
+        //   Marshalling:   Progress<T>, auf dem UI-Faden erzeugt - es uebernimmt dessen
+        //                  SynchronizationContext und ruft den Fortschrittshandler von
+        //                  selbst wieder dort auf. Kein Invoke von Hand.
+        //
+        // DASS DER LAUF IM FREMDEN FADEN GEHT, ist gemessen (Probe R-W10a-2,
+        // EPOS.Kern.Tests/SimulationslaufAusFremdemFadenTests): SqliteDatenzugriff
+        // oeffnet je Aufruf eine eigene Verbindung und haelt nichts [ThreadStatic].
+        // Vorgezogen werden musste deshalb KEIN Lesevorgang.
+
+        /// <summary>Abbruchmarke des laufenden Simulationslaufs; <c>null</c> = kein Lauf.</summary>
+        private CancellationTokenSource m_LaufAbbruch;
+
+        /// <summary>Fortschrittsbalken und Abbrechen-Knopf der Fusszeile (programmatisch).</summary>
+        private ProgressBar bar_Lauf;
+        private Button btn_LaufAbbrechen;
+
+        /// <summary>
+        /// true, solange der Lauf aus <see cref="Form_Simulation_Detail_Load"/> stammt —
+        /// dann bleibt die Reiterwahl am Ende des Laufs aus (Begruendung dort).
+        /// </summary>
+        private bool _laufAusLoad;
+
+        /// <summary>Ob die Maske schon zu ist — dann darf kein Steuerelement mehr angefasst werden.</summary>
+        private bool Entsorgt()
+        {
+            return IsDisposed || Disposing;
+        }
+
+        /// <summary>
+        /// Legt Fortschrittsbalken und Abbrechen-Knopf an — an derselben gemessenen
+        /// Stelle der Fusszeile wie die Meldungszeile
+        /// (<see cref="LaufmeldungenLabelSicherstellen"/>). Beide koennen dort stehen,
+        /// weil sie sich zeitlich ausschliessen: waehrend des Laufs der Balken, danach
+        /// die Meldungen.
+        /// </summary>
+        private void LaufanzeigeSicherstellen()
+        {
+            if (bar_Lauf != null) return;
+
+            LaufmeldungenLabelSicherstellen();
+            int links = label_Laufmeldungen.Left;
+            int oben = label_Laufmeldungen.Top;
+
+            bar_Lauf = new ProgressBar();
+            bar_Lauf.Name = "bar_Lauf";
+            bar_Lauf.Location = new Point(links, oben);
+            bar_Lauf.Size = new Size(280, 20);
+            bar_Lauf.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            bar_Lauf.Minimum = 0;
+            bar_Lauf.Maximum = 100;
+            // Bis die erste Phase gemeldet ist, ist jede Prozentzahl erfunden - solange
+            // laeuft der Balken unbestimmt (Marquee).
+            bar_Lauf.Style = ProgressBarStyle.Marquee;
+            bar_Lauf.Visible = false;
+            this.Controls.Add(bar_Lauf);
+            bar_Lauf.BringToFront();
+
+            btn_LaufAbbrechen = new Button();
+            btn_LaufAbbrechen.Name = "btn_LaufAbbrechen";
+            btn_LaufAbbrechen.Text = MyResource.Resource.OPT_BTN_ABBRUCH;
+            btn_LaufAbbrechen.Location = new Point(links + 292, oben - 3);
+            btn_LaufAbbrechen.Size = new Size(120, 26);
+            btn_LaufAbbrechen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btn_LaufAbbrechen.Visible = false;
+            btn_LaufAbbrechen.Click += btn_LaufAbbrechen_Click;
+            this.Controls.Add(btn_LaufAbbrechen);
+            btn_LaufAbbrechen.BringToFront();
+        }
+
+        private void btn_LaufAbbrechen_Click(object sender, EventArgs e)
+        {
+            CancellationTokenSource quelle = m_LaufAbbruch;
+            if (quelle != null && !quelle.IsCancellationRequested) quelle.Cancel();
+            if (btn_LaufAbbrechen != null) btn_LaufAbbrechen.Enabled = false;
+        }
+
+        /// <summary>Sperrt bzw. entsperrt die Bedienung fuer die Dauer des Laufs.</summary>
+        private void LaufZustandSetzen(bool laeuft)
+        {
+            if (Entsorgt()) return;
+
+            btn_Simulation.Enabled = !laeuft;
+            btn_Konfiguration.Enabled = !laeuft;
+            btn_ErgebnisSpeichern.Enabled = !laeuft && _ergebnisGueltig;
+
+            if (bar_Lauf != null)
+            {
+                bar_Lauf.Visible = laeuft;
+                if (laeuft) bar_Lauf.Style = ProgressBarStyle.Marquee;
+            }
+            if (btn_LaufAbbrechen != null)
+            {
+                btn_LaufAbbrechen.Visible = laeuft;
+                btn_LaufAbbrechen.Enabled = laeuft;
+            }
+            if (label_Laufmeldungen != null && laeuft) label_Laufmeldungen.Visible = false;
+
+            Cursor = laeuft ? Cursors.WaitCursor : Cursors.Default;
+        }
+
+        /// <summary>
+        /// Zeigt eine Phasenmeldung des Kerns. Laeuft auf dem UI-Faden — <c>Progress&lt;T&gt;</c>
+        /// besorgt das Marshalling.
+        /// </summary>
+        private void LaufFortschrittAnzeigen(LaufFortschritt f)
+        {
+            if (Entsorgt() || bar_Lauf == null || f == null) return;
+
+            bar_Lauf.Style = ProgressBarStyle.Continuous;
+            int wert = (int)Math.Round(f.Anteil * 100.0);
+            bar_Lauf.Value = Math.Max(bar_Lauf.Minimum, Math.Min(bar_Lauf.Maximum, wert));
+        }
+
+        private async void btn_Simulation_Click(object sender, EventArgs e)
         {
             // NACHARBEIT PAKET 8, BEFUND N1 — Zustandsmaschine „Ergebnis speichern".
             //
@@ -3450,7 +3580,7 @@ namespace WindowsFormsApplication1
             textBox_gesWaermebedarf.Text = m_Waermebedarf_Gesamt.ToString("F2");
 
             // Konfiguration auslesen
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows == 0)
             {
                 MessageBox.Show(MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT, MyResource.Resource.SIM_TITEL_FEHLER, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -3474,26 +3604,63 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Wärmebedarf und Strombedarf Simulation durchführen
-            sim.tool = tool;
-            sim.Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
-            sim.simulation_Waermebedarf = simulation_Waermebedarf;
-            sim.simulation_Strombedarf = simulation_Strombedarf;
-            sim.ctrl_konfig = ctrl;
-
             textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
             textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
-            sim.GrenzleistungBHKW = (int)numericUpDown_UnteresteLG.Value;
-            // Etappe 3: Das Pendelspeichervolumen kommt aus dem Projekt-Puffer
-            // "BHKW-Pendelspeicher" in LITERN - dieselbe Quelle wie im SimulationRunner.
-            // Das Eingabefeld schreibt beim Verlassen dorthin, gerechnet wird also mit
-            // dem gespeicherten Stand (Tab_Einstellungen.Pendelspeicher ist tot).
-            sim.VolumenPendelspeicherBHKW = PufferSpCtrl.PendelspeicherVolumenLiter(m_ID_Projekt);
-            sim.modeBHKW = bhkwSimulationsArt;
+            // Bestuecken (Schritt 8) - der LETZTE Datenbankzugriff vor dem Lauf, deshalb
+            // noch auf dem UI-Faden. Grenzleistung und Betriebsart kommen aus den
+            // Bedienelementen und nicht aus der gespeicherten Konfiguration: Der Anwender
+            // hat sie eben eingestellt (der headless SimulationRunner nimmt dort die
+            // gespeicherten Werte - das ist der einzige Unterschied der beiden Wege).
+            SimulationLaufCtrl.Bestuecken(sim, m_ID_Projekt, tool,
+                                          simulation_Waermebedarf, simulation_Strombedarf, ctrl,
+                                          (int)numericUpDown_UnteresteLG.Value, bhkwSimulationsArt);
 
-            // Tool Simulation WP, SPK usw. durchführen
-            sim.Do_Simulation(m_ID_Projekt);
+            // ---- Der Lauf: Hintergrund-Task (iU9-W11a.4) ----------------------
+            bool ausLoad = _laufAusLoad;
+            _laufAusLoad = false;
+
+            LaufanzeigeSicherstellen();
+            m_LaufAbbruch = new CancellationTokenSource();
+            CancellationToken marke = m_LaufAbbruch.Token;
+            IProgress<LaufFortschritt> melder = new Progress<LaufFortschritt>(LaufFortschrittAnzeigen);
+            LaufZustandSetzen(true);
+
+            try
+            {
+                await Task.Run(() => SimulationLaufCtrl.Laufen(sim, m_ID_Projekt, melder, marke), marke);
+            }
+            catch (OperationCanceledException)
+            {
+                // Der haeufigste Grund fuer einen Abbruch ist, dass der Anwender die
+                // Maske zumacht. Dann ist sie nach dem await bereits entsorgt, und jeder
+                // Zugriff auf ein Steuerelement landete als ObjectDisposedException in
+                // einer async-void-Fortsetzung - also unbehandelt. Deshalb steht die
+                // Pruefung in JEDEM Zweig.
+                if (Entsorgt()) return;
+
+                // Ein abgebrochener Lauf hat kein Ergebnis - der Knopf bleibt gesperrt
+                // (er ist es seit dem Kopf dieser Methode, Befund N1).
+                LaufmeldungenAnzeigen();
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (Entsorgt()) return;
+                MessageBox.Show(ex.Message, MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            finally
+            {
+                CancellationTokenSource quelle = m_LaufAbbruch;
+                m_LaufAbbruch = null;
+                if (quelle != null) quelle.Dispose();
+
+                if (!Entsorgt()) LaufZustandSetzen(false);
+            }
+
+            if (Entsorgt()) return;
 
             // PAKET 8 (Konzept 13.4) — Auswertung der beiden Kanäle NACH dem Lauf.
             //
@@ -3522,12 +3689,18 @@ namespace WindowsFormsApplication1
             // Konsole, die im Programm niemand sieht).
             LaufmeldungenAnzeigen();
 
-            tabControl_Simulation.SelectedTab = tabPage_Simulation;
-            if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+            // Beim AUTOMATIKSTART aus dem Laden bleibt die Reiterwahl aus: Dort holt der
+            // Aufrufer unmittelbar danach die "Uebersicht" nach vorn, und bis iU9-W11a.4
+            // lief dieser Block SYNCHRON davor. Ohne die Ausnahme laege die sichtbare
+            // Endlage jetzt auf einem anderen Reiter als bisher.
+            if (!ausLoad)
             {
-                listViewQuellen.SelectedIndices.Add(0);
+                tabControl_Simulation.SelectedTab = tabPage_Simulation;
+                if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+                {
+                    listViewQuellen.SelectedIndices.Add(0);
+                }
             }
-
         }
 
         /// <summary>
@@ -3550,26 +3723,18 @@ namespace WindowsFormsApplication1
         /// <returns>true, wenn der Lauf abgebrochen ist.</returns>
         private bool LaufAbgebrochen()
         {
-            string grund = !string.IsNullOrEmpty(sim.Sperrgrund) ? sim.Sperrgrund : sim.Fehlertext;
-            if (string.IsNullOrEmpty(grund)) return false;
+            // iU9-W11a.4: Beide Quellen und der Anhang aus dem Fehlerkanal stehen als
+            // SimulationLaufCtrl.Abbruchgrund im Kern.
+            //
+            // NACHARBEIT PAKET 8, BEFUNDE N6 und N12b — was im Dialog steht und was nicht.
+            // In den Dialog gehören der Abbruchgrund und die FEHLER des Kanals. Die
+            // WARNUNGEN gehören NICHT in denselben Dialog: Sie standen bis zur Nacharbeit
+            // doppelt da - einmal hier und einmal in der Fußzeile. Sie bleiben in der
+            // Fußzeile, wo sie den Anwender nicht aufhalten.
+            string text = SimulationLaufCtrl.Abbruchgrund(sim);
+            if (text == null) return false;
 
             ErgebnisUngueltig();
-
-            // NACHARBEIT PAKET 8, BEFUNDE N6 und N12b — was im Dialog steht und was nicht.
-            //
-            // In den Dialog gehören der Abbruchgrund und die FEHLER des Kanals. Die
-            // Module legen in ihren Fehlertext einen kurzen, allgemeinen Satz; die
-            // sprechende Diagnose (Ausnahmetext, betroffenes Stromprofil, betroffene
-            // Anlage) steht nur im Fehlerkanal und erreichte die Oberfläche bisher nie.
-            //
-            // Die WARNUNGEN gehören NICHT in denselben Dialog: Sie standen bis zur
-            // Nacharbeit doppelt da - einmal hier und einmal in der Fußzeile. Sie bleiben
-            // in der Fußzeile, wo sie den Anwender nicht aufhalten.
-            string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
-            string text = string.IsNullOrEmpty(fehlerZusatz)
-                ? grund
-                : grund + Environment.NewLine + Environment.NewLine + MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN +
-                  Environment.NewLine + fehlerZusatz;
 
             MessageBox.Show(text, MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -3733,12 +3898,12 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Ergebnismodell zentral über den SimulationRunner aufbauen (eine Quelle der Wahrheit).
-            ErgebnisModel m = SimulationRunner.BaueErgebnis(m_ID_Projekt,
-                simulation_Waermebedarf, simulation_Strombedarf, sim);
-
-            int id = new ErgebnisCtrl().Save(m);
-            if (id > 0)
+            // Ergebnismodell zentral über den SimulationRunner aufbauen (eine Quelle der
+            // Wahrheit) - seit iU9-W11a.4 über SimulationLaufCtrl.ErgebnisSpeichern.
+            // Das Auffrischen der Startmaske bleibt hier: Program.* ist im Kern verboten,
+            // und eine Oberflächenauffrischung ist auch keine Aufgabe des Speicherns.
+            if (SimulationLaufCtrl.ErgebnisSpeichern(m_ID_Projekt,
+                    simulation_Waermebedarf, simulation_Strombedarf, sim))
             {
                 // AP3b: Die Speicherübersicht in FormMain zeigt Ertrag und Amortisation
                 // der ZULETZT GESPEICHERTEN Rechnung - ohne diese Auffrischung stünden
@@ -3763,25 +3928,29 @@ namespace WindowsFormsApplication1
         // (entspricht der Ergebnisdarstellung der Kurzansicht).
         private void FuelleUebersicht()
         {
-            ueb_textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
-            ueb_textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
+            // iU9-W11a.3: Die dreizehn Zahlen kommen aus dem Kern
+            // (SimulationErgebnisCtrl.Uebersicht); hier steht nur noch die Anzeige.
+            var u = SimulationErgebnisCtrl.Uebersicht(sim, simulation_Waermebedarf, simulation_Strombedarf);
 
-            ueb_textBox_Restwaermebedarf.Text = sim.Restwaerme.ToString("F2");
-            ueb_textBox_Reststrombedarf.Text = sim.Reststrom.ToString("F2");
-            ueb_textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
-            ueb_textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
-            ueb_textBox_SPKWaermeproduktion.Text = sim.simulation_spk.S_Waerme_spk.ToString("F2");
-            ueb_textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
-            ueb_textBox_SPKStromverbrauch.Text = sim.simulation_spk.Stromverbrauch_Spk.ToString("F2");
-            ueb_textBox_BHKWWaermeproduktion.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
-            ueb_textBox_BHKWStromproduktion.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
+            ueb_textBox_gesStrombedarf.Text = u.StrombedarfGesamtMwh.ToString("F2");
+            ueb_textBox_gesWaermebedarf.Text = u.WaermebedarfGesamtMwh.ToString("F2");
+
+            ueb_textBox_Restwaermebedarf.Text = u.RestwaermeMwh.ToString("F2");
+            ueb_textBox_Reststrombedarf.Text = u.ReststromMwh.ToString("F2");
+            ueb_textBox_WPWaermeproduktion.Text = u.WpWaermeproduktionMwh.ToString("F2");
+            ueb_textBox_WPStromverbrauch.Text = u.WpStromverbrauchMwh.ToString("F2");
+            ueb_textBox_SPKWaermeproduktion.Text = u.KesselWaermeproduktionMwh.ToString("F2");
+            ueb_textBox_HeizstabStromverbrauch.Text = u.HeizstabStromverbrauchMwh.ToString("F2");
+            ueb_textBox_SPKStromverbrauch.Text = u.KesselStromverbrauchMwh.ToString("F2");
+            ueb_textBox_BHKWWaermeproduktion.Text = u.BhkwWaermeproduktionMwh.ToString("F2");
+            ueb_textBox_BHKWStromproduktion.Text = u.BhkwStromproduktionMwh.ToString("F2");
 
             // Diese beiden Felder blieben bisher LEER: sie standen im Designer, wurden aber
             // nie beschrieben. In einem Projekt mit Solarthermie bzw. PV zeigte die
             // Übersicht deshalb eine leere Zeile statt des Ergebnisses. Umrechnung wie in
             // NavigatorUebersicht.SetControl (kWh -> MWh/a).
-            ueb_textBox_SWWaermeproduktion.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
-            ueb_textBox_PVStromproduktion.Text = (sim.simulation_pv.Stromproduktion_gesamt / 1000).ToString("F2");
+            ueb_textBox_SWWaermeproduktion.Text = u.SolarWaermeproduktionMwh.ToString("F2");
+            ueb_textBox_PVStromproduktion.Text = u.PvStromproduktionMwh.ToString("F2");
 
             // Zeilen nicht vorhandener Komponenten ausblenden und die übrigen nachrücken
             // lassen (siehe UebersichtZeilenAnpassen).
@@ -3947,42 +4116,39 @@ namespace WindowsFormsApplication1
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
         {
-            int netzverluste = (int)ctrl.m_Netzverluste;
-            if (ctrl.m_szNetzverlusteEinheit == "%" && netzverluste > 100)
-            {
-                MessageBox.Show(MyResource.Resource.SIM_MSG_NETZVERLUSTE_ZU_GROSS);
-                return false;
-            }
-
             projektCtrl.ReadSingle(m_ID_Projekt);
             int nKlimaregion = projektCtrl.m_ID_Klimaregion;
-            if (nKlimaregion == 0)
+
+            // iU9-W11a.4: Die beiden Vorpruefungen stehen als
+            // SimulationLaufCtrl.Vorpruefen im Kern und liefern einen Text statt eines
+            // Dialogs. Der Dialog steht hier, wo er hingehoert.
+            //
+            // UEBERGEBEN WIRD "ctrl" SELBST, nicht "ctrl.model": KonfigurationCtrl ERBT
+            // von KonfigurationModel, und ReadSingle fuellt ausschliesslich das Feld
+            // "model" - die geerbten Felder bleiben auf ihrer Vorbelegung. Der Bestand
+            // liest hier (und im SimulationRunner) genau diese geerbten Felder; die
+            // Netzverluste sind damit faktisch immer 0. Das WOERTLICH zu uebernehmen ist
+            // Bedingung des Referenzlaufs - der Befund selbst ist im W11a-Protokoll als
+            // offener Punkt vermerkt.
+            string fehler = SimulationLaufCtrl.Vorpruefen(m_ID_Projekt, ctrl, nKlimaregion);
+            if (fehler != null)
             {
-                MessageBox.Show(MyResource.Resource.SIM_MSG_KLIMAREGION_WAEHLEN);
+                MessageBox.Show(fehler);
                 return false;
             }
 
-            // Parameter für die Wärmebedarf Simulation durchführen 
-            simulation_Waermebedarf.Netzverluste = netzverluste;
-            simulation_Waermebedarf.Netzverluste_Einheit = ctrl.m_szNetzverlusteEinheit;
-
-            // Wärmebedarf Simulation
-            simulation_Waermebedarf.Waermebedarf_berechnen(m_ID_Projekt, nKlimaregion);
-            simulation_Strombedarf.m_ID_Projekt = m_ID_Projekt;
-
-            // K1 (F3): denselben Klimadaten-Kalender wie die Wärmerechnung verwenden -
-            // erspart der Stromrechnung die eigene Klimadaten-Lesung und schließt aus,
-            // dass beide Bedarfsarten je einen anderen Wochentag ermitteln.
-            simulation_Strombedarf.WochentagJan1 = simulation_Waermebedarf.WochentagJan1;
-
-            // Strombedarf Simulation
-            simulation_Strombedarf.Berechnung(m_ID_Projekt);
+            // Bedarfsrechnung (Waerme, dann Strom mit demselben Wochentagskalender) -
+            // seit iU9-W11a.4 SimulationLaufCtrl.Bedarf.
+            string bedarfsfehler = SimulationLaufCtrl.Bedarf(
+                m_ID_Projekt, nKlimaregion,
+                ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
+                simulation_Waermebedarf, simulation_Strombedarf);
 
             // PAKET 8 (Konzept 13.4): Der Abbruch der Strombedarfsrechnung kam bisher als
             // MessageBox aus der Engine; das Formular rechnete danach mit einem leeren
             // Stromprofil weiter. Jetzt meldet die Engine über den Fehlerkanal, und der
             // Dialog steht hier - in der Oberfläche, wo er hingehört.
-            if (!string.IsNullOrEmpty(simulation_Strombedarf.Fehlertext))
+            if (bedarfsfehler != null)
             {
                 // NACHARBEIT PAKET 8, BEFUND N6: mit den FEHLERN des Kanals. Der
                 // Fehlertext des Moduls ist bewusst allgemein ("Die Stromprofile des
@@ -3990,20 +4156,21 @@ namespace WindowsFormsApplication1
                 // Ausnahmetext und betroffenes Stromprofil - steht im Fehlerkanal und
                 // erreichte die Oberfläche vorher nicht. Ohne sie hat der Anwender keinen
                 // Ansatzpunkt.
-                string grund = simulation_Strombedarf.Fehlertext;
-                string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
+                string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(bedarfsfehler);
                 MessageBox.Show(
                     string.IsNullOrEmpty(fehlerZusatz)
-                        ? grund
-                        : grund + Environment.NewLine + Environment.NewLine +
+                        ? bedarfsfehler
+                        : bedarfsfehler + Environment.NewLine + Environment.NewLine +
                           MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN + Environment.NewLine + fehlerZusatz,
                     MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
             // chart Wärmebedarf füllen
-            textBox_MaxWaermelast.Text = simulation_Waermebedarf.Waermebedarf_Max.ToString("F2");
-            textBox_Gesamt_Waermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
+            // iU9-W11a.3: aus dem Kern (SimulationErgebnisCtrl.Bedarf).
+            var bedErg = SimulationErgebnisCtrl.Bedarf(simulation_Waermebedarf, simulation_Strombedarf);
+            textBox_MaxWaermelast.Text = bedErg.WaermelastMaxKw.ToString("F2");
+            textBox_Gesamt_Waermebedarf.Text = bedErg.WaermebedarfGesamtMwh.ToString("F2");
 
             // PAKET E1 (Konzept 4.4): die drei Bedarfskanäle unter der Summe.
             BedarfKanalzeilenFuellen();
@@ -4031,8 +4198,8 @@ namespace WindowsFormsApplication1
             BedarfKanalserienFuellen();
 
             // chart Strombedarf füllen
-            textBox_MaxStrombedarf.Text = simulation_Strombedarf.Strombedarf_Max.ToString("F2");
-            textBox_Gesamt_Strombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
+            textBox_MaxStrombedarf.Text = bedErg.StrombedarfMaxKw.ToString("F2");
+            textBox_Gesamt_Strombedarf.Text = bedErg.StrombedarfGesamtMwh.ToString("F2");
 
             chart2.Annotations.Clear();
             chart2.Series[0].Points.Clear();
@@ -4111,7 +4278,9 @@ namespace WindowsFormsApplication1
             // Die Maske ist seit iU9-W10b.1 eine Razor-SEITE; die Huelle zeigt sie bis
             // W16 in einem modalen Fenster (Entscheid R-W10b-1) - genau deshalb, weil
             // dieser Aufrufer die modale Rueckkehr braucht. Die Halbierung der
-            // Bildschirmkoordinaten (Befund W10-B37) entfaellt.
+            // Bildschirmkoordinaten (Befund W10-B37) entfaellt. Damit entfaellt auch die
+            // Lesestelle, die iU9-W11a.2 hier parametrisiert hatte (Befund W11-B24) -
+            // sie steckt jetzt in der Huelle, und zwar in derselben Kern-Methode.
             SimulationKonfigHuelle.Oeffnen(this, m_ID_Projekt);
 
             UpdateTabPages();
@@ -4133,19 +4302,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private float[] WarmwasserAnteil(float[] bedarf)
         {
-            float[] ww = new float[8760];
-            if (simulation_Waermebedarf == null || simulation_Waermebedarf.brauchwasserwerte == null)
-                return ww;
-
-            float[] quelle = simulation_Waermebedarf.brauchwasserwerte;
-            for (int i = 0; i < 8760 && i < quelle.Length; i++)
-            {
-                float wert = quelle[i];
-                if (bedarf != null && i < bedarf.Length && wert > bedarf[i]) wert = bedarf[i];
-                if (wert < 0) wert = 0;
-                ww[i] = wert;
-            }
-            return ww;
+            // iU9-W11a.3: Die Rechnung steht als
+            // SimulationErgebnisCtrl.WarmwasserAnteil im Kern.
+            return SimulationErgebnisCtrl.WarmwasserAnteil(simulation_Waermebedarf, bedarf);
         }
 
         private void Endergebniss_Simulation()
@@ -4201,67 +4360,37 @@ namespace WindowsFormsApplication1
                 _chartManager[6].Init();
                 SerieAnlegen(_chartManager[6], S_STROMBEDARF, MyResource.Resource.CHART_ACHSE_STROMBEDARF, Color.Red, temp);
 
-                textBox_WB_Deckung.Text = "";
-                double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
+                // iU9-W11a.3: Eigenanteil, Restbedarf und Deckungsgrad stehen als
+                // SimulationErgebnisCtrl.Waermepumpe im Kern und rufen dort die
+                // GETEILTEN Methoden des SimulationRunner - nicht mehr eine zweite
+                // Abschrift derselben Formel. Zwei Befunde sind damit behoben:
+                // W11-B15 (Vollbenutzungsstunden ohne Nullprüfung) und W11-B16
+                // (Mindest-Spitzenkesselleistung nur über 8 750 Stunden).
+                var wpErg = SimulationErgebnisCtrl.Waermepumpe(sim, simulation_Waermebedarf);
 
-                // EIGENANTEIL der Wärmepumpe an der Bedarfsdeckung: unmittelbar abgegebene
-                // Wärme, der ihr zugerechnete Anteil an der bedarfsdeckenden
-                // Speicherentladung und der Heizstab (er gehört zur WP). Er ist die
-                // Bezugsgröße von Restbedarf UND Deckungsgrad - beides zwei Seiten
-                // derselben Rechnung, wortgleich mit SimulationRunner:264-351. Vorher stand
-                // hier der Rest der GANZEN Speicherstufe: Ab zwei Erzeugern in der Stufe
-                // enthielt der auch die Lieferung von Kessel und BHKW, die ihre Deckung
-                // zusätzlich selbst melden.
-                double wpStufeneingangMWh = sim.simulation_wp.Waermebedarf_gesamt / 1000.0;
-                double wpEigenMWh = (sim.simulation_wp.Direktdeckung_gesamt +
-                                     sim.simulation_wp.Speicherentladung_Anteil +
-                                     sim.simulation_wp.Heizstab_gesamt) / 1000.0;
+                textBox_WB_Deckung.Text = wpErg.DeckungProzent.ToString("F2");
 
-                // PAKET L: Hier stand die Fallunterscheidung „Speicherstufe oder Altpfad"
-                // (sim.KaskadeZweikanalig). Der Altpfad ist mit Paket A1 ersatzlos
-                // entfallen, das Feld war seither konstant true - es bleibt der EINE
-                // Rechenweg: Rest = Stufeneingang − Eigenanteil, Deckung aus demselben
-                // Eigenanteil. Der Altpfad-Zweig hätte die Jahressumme der
-                // Restwärmeganglinie (waermerestbedarf_gesamt) genommen; sie ist im
-                // heutigen Rechenweg keine Bilanz mehr.
-                double wpRestMWh = wpStufeneingangMWh - wpEigenMWh;
-                if (wpRestMWh < 0) wpRestMWh = 0;   // Rundungsschutz
+                textBox_Bivalenzpunkt.Text = wpErg.BivalenzpunktVorhanden
+                    ? wpErg.Bivalenzpunkt.ToString("F2")
+                    : "-";
 
-                double deckung = 0;
-                if (a > 0)
-                {
-                    deckung = wpEigenMWh / a * 100.0;   // dieselbe Größe wie im Restbedarf
-                    if (deckung > 100) deckung = 100;
-                    if (deckung < 0) deckung = 0;
-                }
-                textBox_WB_Deckung.Text = deckung.ToString("F2");
-
-
-                if (sim.simulation_wp.Bivalenzpunkt != -100)
-                    textBox_Bivalenzpunkt.Text = sim.simulation_wp.Bivalenzpunkt.ToString("F2");
-                else
-                    textBox_Bivalenzpunkt.Text = "-";
-
-                textBox_WPWaermebedarf.Text = wpStufeneingangMWh.ToString("F2");
-                textBox_WPRestwermebedarf.Text = wpRestMWh.ToString("F2");
-                textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
-                textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
-                textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
+                textBox_WPWaermebedarf.Text = wpErg.StufeneingangMwh.ToString("F2");
+                textBox_WPRestwermebedarf.Text = wpErg.RestwaermeMwh.ToString("F2");
+                textBox_WPStromverbrauch.Text = wpErg.StromverbrauchMwh.ToString("F2");
+                textBox_HeizstabStromverbrauch.Text = wpErg.HeizstabStromverbrauchMwh.ToString("F2");
+                textBox_WPWaermeproduktion.Text = wpErg.WaermeproduktionMwh.ToString("F2");
                 // Speicher-Ergebnisse als kleine Tabelle statt als eine Textzeile
                 // (Konzept 13.3) und die Warnungen der VDI-4640-Auslegungsprüfung
                 // werden weiter unten für JEDEN Lauf gefüllt - auch für einen ohne
                 // Wärmepumpe, damit die Rubrik dann geleert wird.
-                textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
+                textBox_WPVollbenutzungsstunden.Text = wpErg.Vollbenutzungsstunden.ToString("F0");
 
-                // BEWUSST weiter aus der Ganglinie und damit NICHT aus wpRestMWh: Sie führt
-                // den PROJEKTrest der Stunde, und genau der ist die Bezugsgröße für die
-                // Auslegung eines Spitzenkessels (siehe SimulationRunner:295-307).
-                double Max_Spk = 0;
-                for (int i = 0; i < 8750; i++)
-                {
-                    if (sim.simulation_wp.waermerestbedarf_stuendlich[i] > Max_Spk) Max_Spk = sim.simulation_wp.waermerestbedarf_stuendlich[i];
-                }
-                textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
+                // BEWUSST weiter aus der Ganglinie und damit NICHT aus dem Restbedarf der
+                // Stufe: Sie führt den PROJEKTrest der Stunde, und genau der ist die
+                // Bezugsgröße für die Auslegung eines Spitzenkessels (siehe
+                // SimulationRunner:295-307). Neu über die GANZE Ganglinie statt bis
+                // Stunde 8 750 (Befund W11-B16).
+                textBox_MinSPKLeistung.Text = wpErg.MinSpkLeistungKw.ToString("F2");
 
                 // Ansicht & Verhalten der WP-Liste (ListView, gleiches Steuerelement wie Heizkessel/BHKW/Solar)
                 if (listView_SimWP.Columns.Count == 0)
@@ -4281,14 +4410,14 @@ namespace WindowsFormsApplication1
 
                 // Daten zeilenweise eintragen
                 listView_SimWP.Items.Clear();
-                for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
+                foreach (var m in wpErg.Module)
                 {
-                    ListViewItem lvitem = new ListViewItem(sim.simulation_wp.WP_Modul[i]);
-                    lvitem.SubItems.Add(sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000.0).ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000.0).ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000.0).ToString("F2"));
-                    lvitem.SubItems.Add(sim.simulation_wp.Modul_WP_Laufzeit[i].ToString("F2"));
+                    ListViewItem lvitem = new ListViewItem(m.Name);
+                    lvitem.SubItems.Add(m.GrenzleistungKw.ToString("F2"));
+                    lvitem.SubItems.Add(m.WaermeproduktionMwh.ToString("F2"));
+                    lvitem.SubItems.Add(m.StrombedarfMwh.ToString("F2"));
+                    lvitem.SubItems.Add(m.HeizstabMwh.ToString("F2"));
+                    lvitem.SubItems.Add(m.LaufzeitStunden.ToString("F2"));
                     listView_SimWP.Items.Add(lvitem);
                 }
                 listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -4387,63 +4516,51 @@ namespace WindowsFormsApplication1
                 // konnte vorher NEGATIV werden. Im Altpfad und ohne Puffer-Senke sind beide
                 // Speichergrößen exakt 0, der Ausdruck ist dann bitgleich dem bisherigen -
                 // eine Fallunterscheidung wie beim BHKW braucht der Kessel nicht.
-                double kesselDirektMWh = sim.simulation_spk.S_Waerme_spk -
-                                         sim.simulation_spk.Speicherladung_gesamt / 1000.0;
-                if (kesselDirektMWh < 0) kesselDirektMWh = 0;   // Rundungsschutz
-                double kesselEigenMWh = kesselDirektMWh +
-                                        sim.simulation_spk.Speicherentladung_Anteil / 1000.0;
+                // iU9-W11a.3: Eigenanteil, Restbedarf und Deckungsgrad stehen als
+                // SimulationErgebnisCtrl.Heizkessel im Kern (geteilte Runner-Methode).
+                // Befund W11-B19 (tb_Koks zweimal gesetzt) entfällt mit dem DTO.
+                var hkErg = SimulationErgebnisCtrl.Heizkessel(sim, simulation_Waermebedarf);
 
-                double kesselRestMWh = sim.simulation_spk.Waermebedarf_gesamt - kesselEigenMWh;
-                if (kesselRestMWh < 0) kesselRestMWh = 0;       // Rundungsschutz
+                textBox_SPKWaermebedarfsdeckung.Text =
+                    simulation_Waermebedarf.Waermebedarf_Gesamt > 0
+                        ? hkErg.DeckungProzent.ToString("F2")
+                        : "0";
+                textBox_Waermebedarf_Heizkessel.Text = hkErg.StufeneingangMwh.ToString("F2");
+                textBox_Restwermebedarf_Heizkessel.Text = hkErg.RestwaermeMwh.ToString("F2");
+                tb_WaermeprSpk.Text = hkErg.WaermeproduktionMwh.ToString("F2");
+                textBox_Strombedarf_Heizkessel.Text = hkErg.StrombedarfMwh.ToString("F2");
+                textBox_Reststrombedarf_Heizkessel.Text = hkErg.ReststrombedarfMwh.ToString("F2");
 
-                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                {
-                    double kesselDeckung = kesselEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
-                    if (kesselDeckung > 100) kesselDeckung = 100;
-                    if (kesselDeckung < 0) kesselDeckung = 0;
-                    textBox_SPKWaermebedarfsdeckung.Text = kesselDeckung.ToString("F2");
-                }
-                else
-                    textBox_SPKWaermebedarfsdeckung.Text = "0";
-                textBox_Waermebedarf_Heizkessel.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
-                textBox_Restwermebedarf_Heizkessel.Text = kesselRestMWh.ToString("F2");
-                tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
-                textBox_Strombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000).ToString("F2");
-                textBox_Reststrombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000 + sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
+                tb_Gasverbrauch.Text = hkErg.GasMwh.ToString("F2");
+                tb_Oelverbrauch.Text = hkErg.OelMwh.ToString("F2");
+                tb_Koks.Text = hkErg.KoksMwh.ToString("F2");
+                tb_Rapsoelverbrauch.Text = hkErg.RapsoelMwh.ToString("F2");
+                tb_Holzverbrauch.Text = hkErg.HolzMwh.ToString("F2");
+                tb_Kohle.Text = hkErg.KohleMwh.ToString("F2");
+                tb_Stromverbrauch.Text = hkErg.StromMwh.ToString("F2");
+                tb_Sonstigverbrauch.Text = hkErg.SonstigeMwh.ToString("F2");
+                tb_Pellets.Text = hkErg.PelletsMwh.ToString("F2");
+                tb_TierischeFette.Text = hkErg.TierischeFetteMwh.ToString("F2");
 
-                tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
-                tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
-                tb_Koks.Text = (sim.simulation_spk.Koks_SPK).ToString("F2");
-                tb_Rapsoelverbrauch.Text = (sim.simulation_spk.Rapsoelverbrauch_SPK).ToString("F2");
-                tb_Holzverbrauch.Text = (sim.simulation_spk.Holzverbrauch_SPK).ToString("F2");
-                tb_Kohle.Text = (sim.simulation_spk.Kohle_SPK).ToString("F2");
-                tb_Stromverbrauch.Text = (sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
-                tb_Sonstigverbrauch.Text = (sim.simulation_spk.Sonstigverbrauch_SPK).ToString("F2");
-                tb_Pellets.Text = (sim.simulation_spk.Pellets_SPK).ToString("F2");
-                tb_Koks.Text = (sim.simulation_spk.Koks_SPK).ToString("F2");
-                tb_TierischeFette.Text = (sim.simulation_spk.TierischeFette_SPK).ToString("F2");
-
-                tb_Max_Kesselleistung.Text = (sim.simulation_spk.Maximale_Kesselleistung_Spk).ToString("F2");
-                tb_Gasspitze.Text = sim.simulation_spk.Gasspitze_Spk.ToString("F2");
+                tb_Max_Kesselleistung.Text = hkErg.MaxKesselleistungKw.ToString("F2");
+                tb_Gasspitze.Text = hkErg.GasspitzeKw.ToString("F2");
 
                 // ETAPPE D4: Quellwärme der Kaskade. Der Rechenkern führt sie in kWh, die
                 // Seite zeigt MWh wie die übrigen Wärmegrößen daneben. Ohne Quellbezug
                 // steht dort 0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht
                 // nichts aus einem Puffer" ist die Antwort auf genau diese Frage.
                 if (tb_KesselQuellwaerme != null)
-                    tb_KesselQuellwaerme.Text =
-                        (sim.simulation_spk.Quellwaerme_gesamt / 1000.0).ToString("F2");
+                    tb_KesselQuellwaerme.Text = hkErg.QuellwaermeMwh.ToString("F2");
 
                 listView_SimSPK.Items.Clear();
-                for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
+                for (int i = 0; i < hkErg.Module.Count; i++)
                 {
-
                     ListViewItem lvitem = new ListViewItem();
                     lvitem.Text = (i + 1).ToString();
-                    lvitem.SubItems.Add(sim.simulation_spk.spk_list[i]);
-                    lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Gas_Spk[i]).ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Oel_Spk[i]).ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_spk.Kessel_Jahresnutzungsgrad_Spk[i]).ToString("F1"));
+                    lvitem.SubItems.Add(hkErg.Module[i].Name);
+                    lvitem.SubItems.Add(hkErg.Module[i].GasMwh.ToString("F2"));
+                    lvitem.SubItems.Add(hkErg.Module[i].OelMwh.ToString("F2"));
+                    lvitem.SubItems.Add(hkErg.Module[i].JahresnutzungsgradProzent.ToString("F1"));
 
                     listView_SimSPK.Items.Add(lvitem);
                 }
@@ -4478,30 +4595,17 @@ namespace WindowsFormsApplication1
                 // (V0-7: der Dialog zeigt, was in Tab_Ergebnis steht). Der RESTBEDARF
                 // darunter bleibt auf dem Stufeneingang: Er beantwortet „was bleibt nach
                 // diesem Erzeuger offen" und ist damit eine Stufengröße.
-                double solarDirektKWh = sim.simulation_solarthermie.Waermeproduktion_gesamt -
-                                        sim.simulation_solarthermie.Speicherladung_gesamt;
-                if (solarDirektKWh < 0) solarDirektKWh = 0;   // Rundungsschutz
-                double solarEigenKWh = solarDirektKWh +
-                                       sim.simulation_solarthermie.Speicherentladung_Anteil;
+                // iU9-W11a.3: Eigenanteil, Restbedarf und Deckungsgrad stehen als
+                // SimulationErgebnisCtrl.Solarthermie im Kern (geteilte Runner-Methode).
+                var stErg = SimulationErgebnisCtrl.Solarthermie(sim, simulation_Waermebedarf);
 
-                double solarRestMWh =
-                    (sim.simulation_solarthermie.Waermebedarf_gesamt - solarEigenKWh) / 1000.0;
-                if (solarRestMWh < 0) solarRestMWh = 0;       // Rundungsschutz
-
-                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                {
-                    double solarDeckung = solarEigenKWh / 1000.0 * 100.0
-                                          / simulation_Waermebedarf.Waermebedarf_Gesamt;
-                    if (solarDeckung > 100) solarDeckung = 100;
-                    if (solarDeckung < 0) solarDeckung = 0;
-                    textBox_STWaermebedarfsdeckung.Text = solarDeckung.ToString("F2");
-                }
-                else
-                    textBox_STWaermebedarfsdeckung.Text = "";
-                textBox_STWaermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt / 1000).ToString("F2");
-                textBox_STRestwermebedarf.Text = solarRestMWh.ToString("F2");
-                tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
-                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.Ueberschuss_summe / 1000).ToString("F2");
+                textBox_STWaermebedarfsdeckung.Text = stErg.DeckungBekannt
+                    ? stErg.DeckungProzent.ToString("F2")
+                    : "";
+                textBox_STWaermebedarf.Text = stErg.StufeneingangMwh.ToString("F2");
+                textBox_STRestwermebedarf.Text = stErg.RestwaermeMwh.ToString("F2");
+                tb_WaermeprST.Text = stErg.WaermeproduktionMwh.ToString("F2");
+                textBox_Ueberschuss.Text = stErg.UeberschussMwh.ToString("F2");
 
                 // Chart Solarthermie Wärmerbedarf und Produktion
                 _chartManager[8] = new ChartManager(chart8);
@@ -4521,19 +4625,16 @@ namespace WindowsFormsApplication1
 
                 // Auflistung der einzelnen Solarkollektoren (analog listView_SimSPK beim Heizkessel).
                 listView_SimSolar.Items.Clear();
-                if (sim.simulation_solarthermie.Kollektor_Ergebnisse != null)
+                for (int i = 0; i < stErg.Module.Count; i++)
                 {
-                    for (int i = 0; i < sim.simulation_solarthermie.Kollektor_Ergebnisse.Count; i++)
-                    {
-                        var k = sim.simulation_solarthermie.Kollektor_Ergebnisse[i];
-                        ListViewItem lvitem = new ListViewItem((i + 1).ToString());
-                        lvitem.SubItems.Add(k.Name);
-                        lvitem.SubItems.Add(k.Flaeche.ToString("F2"));
-                        lvitem.SubItems.Add(k.Anzahl.ToString());
-                        lvitem.SubItems.Add((k.Waermeproduktion / 1000.0).ToString("F2"));
-                        lvitem.SubItems.Add((k.Ueberschuss / 1000.0).ToString("F2"));
-                        listView_SimSolar.Items.Add(lvitem);
-                    }
+                    var k = stErg.Module[i];
+                    ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                    lvitem.SubItems.Add(k.Name);
+                    lvitem.SubItems.Add(k.FlaecheM2.ToString("F2"));
+                    lvitem.SubItems.Add(k.Anzahl.ToString());
+                    lvitem.SubItems.Add(k.WaermeproduktionMwh.ToString("F2"));
+                    lvitem.SubItems.Add(k.UeberschussMwh.ToString("F2"));
+                    listView_SimSolar.Items.Add(lvitem);
                 }
                 listView_SimSolar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
                 listView_SimSolar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -4542,11 +4643,16 @@ namespace WindowsFormsApplication1
             // ********************************************************************************************/
             // PV
             // ********************************************************************************************/
-            textBox_PVStrom.Text = (sim.simulation_pv.Stromproduktion.Sum() / 1000.0).ToString("F2");
-            textBox_PVUeberschuss.Text = (sim.simulation_pv.Ueberschuss.Sum() / 1000.0).ToString("F2");
-            textBox_PVStrombedarfsdeckung.Text = (sim.simulation_pv.Stromproduktion.Sum() * 100 / sim.simulation_pv.Strombedarf_stuendlich.Sum()).ToString("F2");
-            textBox_PVStrombedarf.Text = (sim.simulation_pv.Strombedarf.Sum() / 4000.0).ToString("F2");
-            textBox_PVReststrombedarf.Text = (sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0).ToString("F2");
+            // iU9-W11a.3: aus dem Kern (SimulationErgebnisCtrl.Photovoltaik). Der
+            // Deckungsgrad prüft dort auf einen Strombedarf > 0 (Befund W11-B22):
+            // Projekt 1030 zeigte hier bisher "NaN".
+            var pvErg = SimulationErgebnisCtrl.Photovoltaik(sim);
+
+            textBox_PVStrom.Text = pvErg.StromproduktionMwh.ToString("F2");
+            textBox_PVUeberschuss.Text = pvErg.UeberschussMwh.ToString("F2");
+            textBox_PVStrombedarfsdeckung.Text = pvErg.DeckungProzent.ToString("F2");
+            textBox_PVStrombedarf.Text = pvErg.StrombedarfMwh.ToString("F2");
+            textBox_PVReststrombedarf.Text = pvErg.ReststrombedarfMwh.ToString("F2");
 
             _chartManager[9] = new ChartManager(chart_PV);
             _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max();
@@ -4571,22 +4677,19 @@ namespace WindowsFormsApplication1
             _chartManager[9]._chart.Series[S_SPEICHERFUELLSTAND].Enabled = false;
             checkBox_Ueberschuss.Checked = false;
             checkBox_Speicherzustand.Checked = false;
-            textBox_MaxPSolar.Text = sim.simulation_pv.MaxPSolar.ToString("F2");
+            textBox_MaxPSolar.Text = pvErg.MaxLeistungKw.ToString("F2");
 
             // Auflistung der einzelnen PV-Module (ListView, analog Heizkessel/Solarthermie).
             listView_SimPV.Items.Clear();
-            if (sim.simulation_pv.Modul_Ergebnisse != null)
+            for (int i = 0; i < pvErg.Module.Count; i++)
             {
-                for (int i = 0; i < sim.simulation_pv.Modul_Ergebnisse.Count; i++)
-                {
-                    var p = sim.simulation_pv.Modul_Ergebnisse[i];
-                    ListViewItem lvitem = new ListViewItem((i + 1).ToString());
-                    lvitem.SubItems.Add(p.Name);
-                    lvitem.SubItems.Add(p.Flaeche.ToString("F2"));
-                    lvitem.SubItems.Add(p.Anzahl.ToString());
-                    lvitem.SubItems.Add((p.Stromproduktion / 1000.0).ToString("F2"));
-                    listView_SimPV.Items.Add(lvitem);
-                }
+                var p = pvErg.Module[i];
+                ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                lvitem.SubItems.Add(p.Name);
+                lvitem.SubItems.Add(p.FlaecheM2.ToString("F2"));
+                lvitem.SubItems.Add(p.Anzahl.ToString());
+                lvitem.SubItems.Add(p.StromproduktionMwh.ToString("F2"));
+                listView_SimPV.Items.Add(lvitem);
             }
             listView_SimPV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimPV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -4614,11 +4717,15 @@ namespace WindowsFormsApplication1
             // InitBhkwVbhZeile) — beide Felder führen THERMISCHE Vollbenutzungsstunden,
             // keine Betriebsstunden. Darunter neu die elektrischen Vbh: die Größe, an der
             // der KWK-Zuschlag hängt und die 8.760 h nicht überschreiten kann.
-            textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
-            textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
+            // iU9-W11a.3: Eigenanteil, Restbedarf und Deckungsgrad stehen als
+            // SimulationErgebnisCtrl.Bhkw im Kern (geteilte Runner-Methode).
+            var bhErg = SimulationErgebnisCtrl.Bhkw(sim, simulation_Waermebedarf, simulation_Strombedarf);
+
+            textBox_Betriebsstunden.Text = bhErg.BetriebsstundenThermisch.ToString("F0");
+            textBox_Betriebsstunden_Durchschnitt.Text = bhErg.BetriebsstundenDurchschnitt.ToString("F0");
             if (tb_BhkwVbhElektrisch != null)
-                tb_BhkwVbhElektrisch.Text = sim.simulation_bhkw.VbhElektrischGesamt > 0
-                    ? sim.simulation_bhkw.VbhElektrischGesamt.ToString("F0")
+                tb_BhkwVbhElektrisch.Text = bhErg.VbhElektrischBekannt
+                    ? bhErg.VbhElektrisch.ToString("F0")
                     : "—";   // keine elektrische Nennleistung gepflegt — keine Zahl erfinden
 
             AktualisiereBrennstoffAnzeige(sim.simulation_bhkw);
@@ -4630,21 +4737,18 @@ namespace WindowsFormsApplication1
             // PAKET L: Der Altpfad-Zweig (Ganglinien-Summe waermebedarf.Sum(), weil das
             // Modul dort keine Jahressumme führte) ist entfallen - mit Paket A1 gibt es
             // nur EINEN Rechenweg, und der füllt Waermebedarf_gesamt.
-            double bhkwWaermebedarfMWh = sim.simulation_bhkw.Waermebedarf_gesamt / 1000.0;
-
-            textBox_Waermebedarf_BHKW.Text = bhkwWaermebedarfMWh.ToString("F2");
-            textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");
-            textBox_Waermeproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
-            textBox_Stromproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
+            textBox_Waermebedarf_BHKW.Text = bhErg.StufeneingangMwh.ToString("F2");
+            textBox_Strombedarf_BHKW.Text = bhErg.StrombedarfMwh.ToString("F2");
+            textBox_Waermeproduktion_gesamt_BHKW.Text = bhErg.WaermeproduktionMwh.ToString("F2");
+            textBox_Stromproduktion_gesamt_BHKW.Text = bhErg.StromproduktionMwh.ToString("F2");
 
             // EIGENANTEIL des BHKW an der Bedarfsdeckung: unmittelbar abgegebene Wärme plus
             // der ihm zugerechnete Anteil an der bedarfsdeckenden Speicherentladung
             // (Interimsregel „Vermischung im Speicher", Kaskadenschleife). Er ist die
             // Bezugsgröße von Restbedarf UND Deckungsgrad - beides zwei Seiten derselben
             // Rechnung, genau wie in SimulationRunner:434-449.
-            double bhkwDirektMWh = sim.simulation_bhkw.Direktdeckung_gesamt / 1000.0;
-            double bhkwEntladungMWh = sim.simulation_bhkw.Speicherentladung_Anteil / 1000.0;
-            double bhkwEigenMWh = bhkwDirektMWh + bhkwEntladungMWh;
+            // Die drei Hilfsgrößen stehen jetzt im DTO (Eigenanteil über
+            // SimulationRunner.EigenanteilBhkwMwh).
 
             // RESTWÄRME: Vorher die Vektordifferenz „Bedarf − Produktion" - der
             // Bilanzfehler aus Konzept 6.5. Sobald das BHKW einen Speicher lädt, gilt sie
@@ -4655,38 +4759,27 @@ namespace WindowsFormsApplication1
             // Direktdeckung und Entladungsanteil exakt 0 waren) ist mit dem Feld
             // sim.KaskadeZweikanalig entfallen - seit Paket A1 gibt es nur EINEN
             // Rechenweg, und der führt beide Größen.
-            double bhkwRestwaermeMWh = bhkwWaermebedarfMWh - bhkwEigenMWh;
-            if (bhkwRestwaermeMWh < 0) bhkwRestwaermeMWh = 0;   // Rundungsschutz
-            textBox_Restwaermebedarf_BHKW.Text = bhkwRestwaermeMWh.ToString("F2");
+            textBox_Restwaermebedarf_BHKW.Text = bhErg.RestwaermeMwh.ToString("F2");
 
-            textBox_Reststrombedarf_BHKW.Text = ((sim.simulation_bhkw.strombedarf.Sum() / 1000) - sim.simulation_bhkw.Stromproduktion_BHKW_MWh).ToString("F2");
-            textBox_Waermeueberschuss_BHKW.Text = (sim.simulation_bhkw.Waermeueberschuss / 1000).ToString("F2");
+            textBox_Reststrombedarf_BHKW.Text = bhErg.ReststrombedarfMwh.ToString("F2");
+            textBox_Waermeueberschuss_BHKW.Text = bhErg.WaermeueberschussMwh.ToString("F2");
 
             // DER SPEICHERBEITRAG, bisher nirgends sichtbar (Live-Test-Meldung 1):
             // wohin die Produktion geht und woher die Deckung kommt.
             if (tb_BhkwSpeicherladung != null)
-                tb_BhkwSpeicherladung.Text =
-                    (sim.simulation_bhkw.Speicherladung_gesamt / 1000.0).ToString("F2");
+                tb_BhkwSpeicherladung.Text = bhErg.SpeicherladungMwh.ToString("F2");
             if (tb_BhkwSpeicherdeckung != null)
-                tb_BhkwSpeicherdeckung.Text = bhkwEntladungMWh.ToString("F2");
+                tb_BhkwSpeicherdeckung.Text = bhErg.SpeicherdeckungMwh.ToString("F2");
 
             // DECKUNGSGRAD: Vorher die PRODUKTION im Zähler - damit wies die Seite Wärme
             // als Deckung aus, die noch im Speicher lag. Jetzt der Eigenanteil, auf 0..100
             // geklemmt wie im Runner. Bezugsgröße bleibt der PROJEKTwärmebedarf.
-            if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-            {
-                double bhkwDeckung =
-                    bhkwEigenMWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
-                if (bhkwDeckung > 100) bhkwDeckung = 100;
-                if (bhkwDeckung < 0) bhkwDeckung = 0;
-                textBox_Waermedeckung.Text = bhkwDeckung.ToString("F2");
-            }
-            else
-                textBox_Waermedeckung.Text = "0";
-            if (simulation_Strombedarf.Strombedarf_gesamt > 0)
-                textBox_Stromdeckung.Text = (sim.simulation_bhkw.Stromproduktion_BHKW_MWh * 100 / simulation_Strombedarf.Strombedarf_gesamt).ToString("F2");
-            else
-                textBox_Stromdeckung.Text = "0";
+            textBox_Waermedeckung.Text = simulation_Waermebedarf.Waermebedarf_Gesamt > 0
+                ? bhErg.WaermedeckungProzent.ToString("F2")
+                : "0";
+            textBox_Stromdeckung.Text = simulation_Strombedarf.Strombedarf_gesamt > 0
+                ? bhErg.StromdeckungProzent.ToString("F2")
+                : "0";
 
             // Auflistung der BHKW-Module (ListView, analog Heizkessel/Solarthermie).
             //
@@ -4696,17 +4789,16 @@ namespace WindowsFormsApplication1
             // sich damit ohne Eingriff mit dem Kern; die Modulwärme ist - wie die
             // Gesamtproduktion daneben - die BRUTTOerzeugung inklusive Speicherladung.
             dataGridView_BHKW.Items.Clear();
-            if (sim != null && sim.simulation_bhkw != null)
+            for (int i = 0; i < bhErg.Module.Count; i++)
             {
-                for (int i = 0; i < sim.simulation_bhkw.bhkw_list.Count; i++)
-                {
-                    string name = sim.simulation_bhkw.bhkw_list_Namen[i] ?? MyResource.Resource.SIM_BHKW_MODUL_STANDARD;
-                    ListViewItem lvitem = new ListViewItem((i + 1).ToString());
-                    lvitem.SubItems.Add(name);
-                    lvitem.SubItems.Add(sim.simulation_bhkw.s_waerme_MWh[i].ToString("F2"));
-                    lvitem.SubItems.Add(sim.simulation_bhkw.s_strom_MWh[i].ToString("F2"));
-                    dataGridView_BHKW.Items.Add(lvitem);
-                }
+                // Der Ersatztext bleibt in der Oberfläche - das DTO führt den Namen des
+                // Laufs und erfindet keinen.
+                string name = bhErg.Module[i].Name ?? MyResource.Resource.SIM_BHKW_MODUL_STANDARD;
+                ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                lvitem.SubItems.Add(name);
+                lvitem.SubItems.Add(bhErg.Module[i].WaermeMwh.ToString("F2"));
+                lvitem.SubItems.Add(bhErg.Module[i].StromMwh.ToString("F2"));
+                dataGridView_BHKW.Items.Add(lvitem);
             }
             dataGridView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             dataGridView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -4715,21 +4807,20 @@ namespace WindowsFormsApplication1
             // Ergebnisübersicht
             // ********************************************************************************************/
 
-            // Heizkessel
-            waerme_spk = 0;
-            for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
-            {
-                waerme_spk += sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
-            }
-
-            // Wärmepumpe
-            waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
-
-            // Solarthermie
-            waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-            gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
-            restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
+            // iU9-W11a.3 (Befund W11-B35): Die sechs Summen standen ZWEIMAL - hier und
+            // in NavigatorUebersicht.SetControl - und wichen um den BHKW-Term
+            // voneinander ab. Beide Stellen fragen jetzt dieselbe Kernrechnung; die
+            // Fassung MIT BHKW hat gewonnen, weil SimulationControl.Restwaerme (die
+            // Wahrheit des Referenzlaufs) die BHKW-Lieferung ebenfalls abzieht.
+            // Zahlenwirkung an Projekt 1017: 54,02 -> 0,00 MWh (der Lauf meldet 0,00);
+            // an 1030: 734,46 -> -1,76 MWh (der Lauf meldet 0,00).
+            var summen = SimulationErgebnisCtrl.Uebersicht(sim, simulation_Waermebedarf, simulation_Strombedarf);
+            waerme_spk = summen.WaermeKesselMwh;
+            waerme_wp = summen.WaermeWpMwh;
+            waerme_heizstab = summen.WaermeHeizstabMwh;
+            waerme_solar = summen.WaermeSolarMwh;
+            gesamt_waerme = summen.WaermeGesamtMwh;
+            restwaermebedarf = summen.RestwaermebedarfMwh;
 
             // ********************************************************************************************/
             // Stromspeicher (AP3b) - außerhalb jeder Bedingung, damit die Seite nach
@@ -5044,15 +5135,12 @@ namespace WindowsFormsApplication1
                 // WaermepumpenDialog; Form_WPAuswahl ist im selben Schritt GELOESCHT
                 // (Regel M1). Diese Datei wird bis Welle 11 sonst nicht angefasst
                 // (Wachstumsstopp iR10) - geaendert ist genau dieser Aufruf.
-                WErzeugerCtrl werzctrl = new WErzeugerCtrl();
                 int id_type = WizardItemClass.WP_TYP;
 
-                List<WErzeugerModel> liste = new List<WErzeugerModel>();
-                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
-                for (int i = 0; i < werzctrl.rows; i++)
-                {
-                    liste.Add(werzctrl.items[i]);
-                }
+                // iU9-W11a.2: parametrisiert ueber den Kern statt
+                // ReadAllFilter("ID_Projekt=" + … + " and ID_Type=" + …).
+                List<WErzeugerModel> liste =
+                    WErzeugerCtrl.ModelleJeTyp(m_ID_Projekt, WizardItemClass.WP_TYP);
 
                 if (WaermepumpenHuelle.Oeffnen(this, m_ID_Projekt, liste))
                 {
@@ -5309,7 +5397,7 @@ namespace WindowsFormsApplication1
             {
                 // Controller instanziieren und aktuellen DB-Stand laden
                 KonfigurationCtrl ctrl = new KonfigurationCtrl();
-                ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+                ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
 
                 if (ctrl.rows > 0)
                 {
@@ -5353,7 +5441,7 @@ namespace WindowsFormsApplication1
         private void LeseKonfiguration()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            ctrl.ProjektLesen(m_ID_Projekt);   // iU9-W11a.2: parametrisiert (Befund W11-B24)
             if (ctrl.rows > 0)
             {
                 checkBox_Heizstab.Checked = ctrl.model.m_WP_Heizstab;
@@ -6407,15 +6495,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string SpVariantenname(StromspeicherVarianteModel v)
         {
-            try
-            {
-                object wert = DataRepository.ExecuteScalar(
-                    "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
-                    new DbParam("@id", v.ID_Energieanlage));
-                if (wert != null && wert != DBNull.Value && wert.ToString().Length > 0)
-                    return wert.ToString();
-            }
-            catch { /* Anzeigename ist Beiwerk - der Status erscheint auch ohne ihn */ }
+            // iU9-W11a.2: Die Abfrage steht als WErzeugerCtrl.Bezeichner im Kern.
+            string name = WErzeugerCtrl.AnlagenBezeichner(v.ID_Energieanlage);
+            if (!string.IsNullOrEmpty(name)) return name;
 
             return v.ID_Energieanlage.ToString(CultureInfo.CurrentCulture);
         }
@@ -6443,62 +6525,14 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private void SpGeraetedaten(out double kapazitaetKwh, out double leistungKw)
         {
-            kapazitaetKwh = 0.0;
-            leistungKw = 0.0;
-
-            try
-            {
-                string sql =
-                    "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
-                    "FROM Tab_Energieanlagen AS a " +
-                    "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
-                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
-
-                var parameter = new System.Collections.Generic.List<DbParam>
-                {
-                    new DbParam("@proj", m_ID_Projekt),
-                    new DbParam("@typ", WizardItemClass.SP_TYP)
-                };
-
-                // Die Anlage der aktiven Variante, sofern sie eine Speicheranlage dieses
-                // Projekts ist - die WHERE-Bedingung oben prüft das gleich mit.
-                if (_speicherVariante != null && _speicherVariante.ID_Energieanlage > 0)
-                {
-                    sql += " AND a.ID = ?";
-                    parameter.Add(new DbParam(
-                                      "@anlage", _speicherVariante.ID_Energieanlage));
-                }
-
-                System.Data.DataTable dt = DataRepository.GetDataTable(sql, parameter.ToArray());
-                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
-                {
-                    kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
-                    if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
-                    return;
-                }
-
-                // Rückfall: Die aktive Variante zeigt ins Leere - dann gilt wieder die
-                // Aggregation über alle Speicheranlagen (Verhalten bis AP9a).
-                if (parameter.Count > 2)
-                {
-                    dt = DataRepository.GetDataTable(
-                        "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
-                        "FROM Tab_Energieanlagen AS a " +
-                        "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
-                        "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
-                        parameter[0], parameter[1]);
-
-                    if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
-                    {
-                        kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
-                        if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Gerätedaten des Speichers konnten nicht gelesen werden: " + ex.Message);
-            }
+            // iU9-W11a.2: Abfrage UND Rueckfall stehen als
+            // StromspeicherStammCtrl.KapazitaetUndLeistung im Kern. Die beiden
+            // Fassungen der Vermessung sind nicht zwei Meinungen, sondern erste Wahl
+            // (aktive Variante) und Rueckfall (Aggregation) - beide bleiben.
+            int idAnlage = _speicherVariante != null ? _speicherVariante.ID_Energieanlage : 0;
+            var werte = StromspeicherStammCtrl.KapazitaetUndLeistung(m_ID_Projekt, idAnlage);
+            kapazitaetKwh = werte.Kwh;
+            leistungKw = werte.Kw;
         }
 
         // ====================================================================
@@ -6961,7 +6995,7 @@ namespace WindowsFormsApplication1
 
             Label wert = new Label();
             wert.Name = "label_SpKernWert_" + schluessel;
-            wert.Text = SP_ERG_UNBESTIMMT;
+            wert.Text = SpeicherKennzahlenBlock.UNBESTIMMT;
             wert.AutoSize = false;
             wert.Bounds = new Rectangle(0, SP_ERG_KACHEL_TITEL,
                                         SP_ERG_KACHEL_BREITE, SP_ERG_KACHEL_HOEHE - SP_ERG_KACHEL_TITEL);
@@ -7010,18 +7044,18 @@ namespace WindowsFormsApplication1
                                                               (p.SoCMinKwh / p.CNomKwh * 100.0).ToString("N0", CultureInfo.CurrentCulture),
                                                               (p.SoCMaxKwh / p.CNomKwh * 100.0).ToString("N0", CultureInfo.CurrentCulture)));
                 else
-                    SpKernwert(SPK_SOC_PROZENT, SP_ERG_UNBESTIMMT);
+                    SpKernwert(SPK_SOC_PROZENT, SpeicherKennzahlenBlock.UNBESTIMMT);
             }
             else
             {
-                SpKernwert(SPK_KAPAZITAET, SP_ERG_UNBESTIMMT);
-                SpKernwert(SPK_LEISTUNG, SP_ERG_UNBESTIMMT);
-                SpKernwert(SPK_SOC_KWH, SP_ERG_UNBESTIMMT);
-                SpKernwert(SPK_SOC_PROZENT, SP_ERG_UNBESTIMMT);
+                SpKernwert(SPK_KAPAZITAET, SpeicherKennzahlenBlock.UNBESTIMMT);
+                SpKernwert(SPK_LEISTUNG, SpeicherKennzahlenBlock.UNBESTIMMT);
+                SpKernwert(SPK_SOC_KWH, SpeicherKennzahlenBlock.UNBESTIMMT);
+                SpKernwert(SPK_SOC_PROZENT, SpeicherKennzahlenBlock.UNBESTIMMT);
             }
 
-            SpKernwert(SPK_BETRIEBSART, string.IsNullOrEmpty(k.Betriebsart) ? SP_ERG_UNBESTIMMT : k.Betriebsart);
-            SpKernwert(SPK_BERECHNUNGSART, string.IsNullOrEmpty(k.Berechnungsart) ? SP_ERG_UNBESTIMMT : k.Berechnungsart);
+            SpKernwert(SPK_BETRIEBSART, string.IsNullOrEmpty(k.Betriebsart) ? SpeicherKennzahlenBlock.UNBESTIMMT : k.Betriebsart);
+            SpKernwert(SPK_BERECHNUNGSART, string.IsNullOrEmpty(k.Berechnungsart) ? SpeicherKennzahlenBlock.UNBESTIMMT : k.Berechnungsart);
 
             SpKernwert(SPK_ERTRAG, k.Ertrag_Aequivalent, "N2");
             SpKernwert(SPK_UEBERSCHUSS, k.Jahresueberschuss, "N2");
@@ -7035,7 +7069,7 @@ namespace WindowsFormsApplication1
             if (erg.Kennzahlen.ErzeugungKwh > 0.0)
                 SpKernwert(SPK_EIGENVERBRAUCH, k.Eigenverbrauchsquote, "N1");
             else
-                SpKernwert(SPK_EIGENVERBRAUCH, SP_ERG_UNBESTIMMT);
+                SpKernwert(SPK_EIGENVERBRAUCH, SpeicherKennzahlenBlock.UNBESTIMMT);
 
             SpKernwert(SPK_AUTARKIE, k.Autarkiegrad, "N1");
         }
@@ -7043,7 +7077,7 @@ namespace WindowsFormsApplication1
         /// <summary>Räumt den Kernblock ab - Zustand „noch kein Lauf".</summary>
         private void SpKernblockLeeren()
         {
-            foreach (Label l in _spKernwerte.Values) l.Text = SP_ERG_UNBESTIMMT;
+            foreach (Label l in _spKernwerte.Values) l.Text = SpeicherKennzahlenBlock.UNBESTIMMT;
         }
 
         /// <summary>
@@ -7216,21 +7250,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private int SpVariantenzahl()
         {
-            try
-            {
-                object wert = DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                    new DbParam("@proj", m_ID_Projekt),
-                    new DbParam("@typ", WizardItemClass.SP_TYP));
-
-                if (wert != null && wert != DBNull.Value) return Convert.ToInt32(wert);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Die Zahl der Speichervarianten konnte nicht gelesen werden: " + ex.Message);
-            }
-
-            return 0;
+            // iU9-W11a.2: EINE Abfrage fuer Liste und Zaehlung
+            // (WErzeugerCtrl.AnlagenJeTyp); die Zahl ist ihr Count.
+            return WErzeugerCtrl.AnlagenJeTyp(m_ID_Projekt, WizardItemClass.SP_TYP).Count;
         }
 
         /// <summary>
@@ -7288,103 +7310,41 @@ namespace WindowsFormsApplication1
                                          ErgebnisStromspeicherModel kv,
                                          SpeicherEngine.SpeicherErgebnis vergleich)
         {
-            const string KWH = "kWh/a";
-            const string EUR_A = "€/a";
+            // iU9-W11a.3: Die 40 Zeilen stehen als SpeicherKennzahlenBlock.Zeilen im
+            // Kern - samt Reihenfolge, Formatangaben, Einheiten und der Warnstufe, die
+            // die vier Color.FromArgb-Werte abgeloest hat. Hier bleibt die Anzeige.
+            foreach (SpeicherKennzahlenBlock.Zeile z in
+                     SpeicherKennzahlenBlock.Zeilen(k, erg, kontext, kv, vergleich))
+            {
+                ListViewItem item = new ListViewItem(z.Bezeichnung);
+                item.SubItems.Add(z.Wert);
+                item.SubItems.Add(z.Vergleich);
+                item.SubItems.Add(z.Einheit);
+                item.BackColor = SpWarnfarbe(z.Stufe);
 
-            // ABNAHMEBEFUND 2: Zuerst die EINGANGSGRÖSSEN des Laufs. Bis hierher zeigte
-            // die Seite ausschließlich Ergebnisse; ob der Speicher überhaupt eine Last
-            // und eine Erzeugung vor sich hatte, war ihr nicht zu entnehmen - und genau
-            // das war die Frage des Anwenders („die Kopplung an PV und Strombedarf
-            // scheint nicht zu passen"). Die vier Zeilen stehen bereits in
-            // SpeicherKennzahlen und kosten keine zweite Rechnung.
-            SpeicherEngine.SpeicherKennzahlen ein = erg.Kennzahlen;
-            SpeicherEngine.SpeicherKennzahlen einVgl = vergleich != null ? vergleich.Kennzahlen : null;
+                foreach (ListViewGroup g in listView_SpeicherKennzahlen.Groups)
+                    if (g.Name == z.Gruppe) { item.Group = g; break; }
 
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LAST, ein.LastKwh,
-                    einVgl != null ? einVgl.LastKwh : (double?)null, "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ERZEUGUNG_PV, ein.ErzeugungPvKwh,
-                    einVgl != null ? einVgl.ErzeugungPvKwh : (double?)null, "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ERZEUGUNG_BHKW, ein.ErzeugungBhkwKwh,
-                    einVgl != null ? einVgl.ErzeugungBhkwKwh : (double?)null, "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_DIREKTVERBRAUCH, ein.DirektverbrauchKwh,
-                    einVgl != null ? einVgl.DirektverbrauchKwh : (double?)null, "N0", KWH);
-
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_PV, k.Ladung_PV, Vgl(kv, x => x.Ladung_PV), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_BHKW, k.Ladung_BHKW, Vgl(kv, x => x.Ladung_BHKW), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_NETZ, k.Ladung_Netz, Vgl(kv, x => x.Ladung_Netz), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_GESAMT, k.Ladung_Gesamt, Vgl(kv, x => x.Ladung_Gesamt), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ENTLADUNG, k.Entladung_Gesamt, Vgl(kv, x => x.Entladung_Gesamt), "N0", KWH);
-            // Netzverkauf (AP10): Die Größe steht nicht im Ergebnismodell - sie ist dort
-            // im Entladungssummenwert enthalten und wird hier eigens ausgewiesen.
-            SpZeile("ENERGIE", MyResource.Resource.ARB_ERG_VERKAUF, SpVerkaufKwh(kontext), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_VERLUSTE, k.Verluste_Gesamt, Vgl(kv, x => x.Verluste_Gesamt), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_NETZBEZUG_OHNE, k.Netzbezug_Ohne, Vgl(kv, x => x.Netzbezug_Ohne), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_NETZBEZUG_MIT, k.Netzbezug_Mit, Vgl(kv, x => x.Netzbezug_Mit), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EINSPEISUNG_OHNE, k.Einspeisung_Ohne, Vgl(kv, x => x.Einspeisung_Ohne), "N0", KWH);
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EINSPEISUNG_MIT, k.Einspeisung_Mit, Vgl(kv, x => x.Einspeisung_Mit), "N0", KWH);
-            // ABNAHMEBEFUND 2: Ohne Erzeugung ist die Eigenverbrauchsquote NICHT NULL,
-            // sondern unbestimmt (0/0). Die Engine muss dafür 0 führen - das Feld geht so
-            // in Tab_ErgebnisStromspeicher, und Access nimmt kein NaN entgegen. Auf dem
-            // Bildschirm steht deshalb der Gedankenstrich; die Warnzeile unter den
-            // Ausgabeknöpfen sagt, warum.
-            bool mitErzeugung = ein.ErzeugungKwh > 0.0;
-            if (mitErzeugung)
-                SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EIGENVERBRAUCH, k.Eigenverbrauchsquote, Vgl(kv, x => x.Eigenverbrauchsquote), "N1", "%");
-            else
-                SpZeileText("ENERGIE", MyResource.Resource.SP_ERG_EIGENVERBRAUCH, SP_ERG_UNBESTIMMT, "", "%");
-
-            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_AUTARKIE, k.Autarkiegrad, Vgl(kv, x => x.Autarkiegrad), "N1", "%");
-
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_VOLLZYKLEN, k.Vollzyklen, Vgl(kv, x => x.Vollzyklen), "N1", "1/a");
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MIN, k.SoC_Min, Vgl(kv, x => x.SoC_Min), "N1", "kWh");
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MITTEL, k.SoC_Mittel, Vgl(kv, x => x.SoC_Mittel), "N1", "kWh");
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MAX, k.SoC_Max, Vgl(kv, x => x.SoC_Max), "N1", "kWh");
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZEITANTEIL_UNTEN, k.Zeitanteil_Untergrenze, Vgl(kv, x => x.Zeitanteil_Untergrenze), "N1", "%");
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZEITANTEIL_OBEN, k.Zeitanteil_Obergrenze, Vgl(kv, x => x.Zeitanteil_Obergrenze), "N1", "%");
-            ListViewItem zyklen = SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZYKLEN_HOCHRECHNUNG,
-                                          k.Zyklen_Hochrechnung, Vgl(kv, x => x.Zyklen_Hochrechnung), "N0", "-");
-            zyklen.BackColor = SpAmpelfarbe(k, kontext);
-            // Zugesicherte Zyklen sind ein Gerätedatum, kein Ergebnis - hier gibt es
-            // nichts zu vergleichen.
-            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZYKLEN_ZUGESICHERT,
-                    kontext != null ? kontext.ZyklenZugesichert : 0.0, "N0", "-");
-
-            SpBudgetzeilen(kontext);
-
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_BEZUG, k.Ertrag_Bezugsersparnis, Vgl(kv, x => x.Ertrag_Bezugsersparnis), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_VERGUETUNG, -k.Ertrag_Verguetung_Entgangen, Vgl(kv, x => -x.Ertrag_Verguetung_Entgangen), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_NETZ, k.Ertrag_Netzerloes, Vgl(kv, x => x.Ertrag_Netzerloes), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_KOSTEN_LADUNG, k.Kosten_Ladung, Vgl(kv, x => x.Kosten_Ladung), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_LEISTUNGSPREIS, k.Ertrag_Leistungspreis, Vgl(kv, x => x.Ertrag_Leistungspreis), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_VERSCHLEISS, k.Verschleisskosten, Vgl(kv, x => x.Verschleisskosten), "N2", EUR_A);
-            // Investition und Annuität hängen allein an den Parametern, nicht an der
-            // Betriebsstrategie - sie stehen in beiden Spalten gleich und bekommen
-            // deshalb keinen Vergleichswert.
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_INVESTITION, k.Investition, "N2", "€");
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ANNUITAET, k.Annuitaet, "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_JAHRESUEBERSCHUSS, k.Jahresueberschuss, Vgl(kv, x => x.Jahresueberschuss), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_JAHR1, k.Ertrag_Jahr1, Vgl(kv, x => x.Ertrag_Jahr1), "N2", EUR_A);
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_AEQUIVALENT, k.Ertrag_Aequivalent, Vgl(kv, x => x.Ertrag_Aequivalent), "N2", EUR_A);
-
-            // Amortisation direkt aus dem Engine-Ergebnis: Es kennt die beiden Fälle
-            // "nicht amortisierbar" und "> Nutzungsdauer", die der gespeicherte Satz als
-            // 0 führen muss (Access nimmt kein Infinity entgegen).
-            SpZeileText("WIRTSCHAFT", MyResource.Resource.SP_ERG_AMORT_STATISCH,
-                        SpAmortisationstext(erg.Wirtschaftlichkeit.StatischeAmortisation),
-                        vergleich != null ? SpAmortisationstext(vergleich.Wirtschaftlichkeit.StatischeAmortisation) : "",
-                        "a");
-            SpZeileText("WIRTSCHAFT", MyResource.Resource.SP_ERG_AMORT_DYNAMISCH,
-                        SpAmortisationstext(erg.Wirtschaftlichkeit.DynamischeAmortisation),
-                        vergleich != null ? SpAmortisationstext(vergleich.Wirtschaftlichkeit.DynamischeAmortisation) : "",
-                        "a");
-            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_KAPITALWERT, k.Kapitalwert, Vgl(kv, x => x.Kapitalwert), "N2", "€");
+                listView_SpeicherKennzahlen.Items.Add(item);
+            }
         }
 
         /// <summary>
-        /// Anzeige einer Kennzahl, die in DIESEM Lauf keinen Bezug hat (Abnahmebefund 2).
-        /// Ein Symbol, kein Text — sprachneutral wie die Einheitenspalte.
+        /// Die Warnstufe einer Kennzahlzeile als Hintergrundfarbe — die
+        /// Darstellungsentscheidung, die im Kern nichts zu suchen hat
+        /// (dort steht <see cref="KennzahlStufe"/>). Farbwerte woertlich aus
+        /// <c>SpAmpelfarbe</c>/<c>SpBudgetfarbe</c>.
         /// </summary>
-        private const string SP_ERG_UNBESTIMMT = "–";
+        private static Color SpWarnfarbe(KennzahlStufe stufe)
+        {
+            switch (stufe)
+            {
+                case KennzahlStufe.Ueberschritten: return Color.FromArgb(255, 205, 205);
+                case KennzahlStufe.Knapp: return Color.FromArgb(255, 240, 190);
+                case KennzahlStufe.Ok: return Color.FromArgb(215, 245, 215);
+                default: return Color.FromArgb(240, 240, 240);
+            }
+        }
 
         /// <summary>
         /// Setzt die Warnzeile für einen Lauf ohne jede Erzeugung (Abnahmebefund 2).
@@ -7405,123 +7365,28 @@ namespace WindowsFormsApplication1
                 : MyResource.Resource.SP_ERG_OHNE_ERZEUGUNG;
         }
 
-        /// <summary>
-        /// Wert des Vergleichslaufs, oder <c>null</c>, wenn es keinen gibt — damit
-        /// steht die Fallunterscheidung genau einmal statt in jeder Zeile.
-        /// </summary>
-        private static double? Vgl(ErgebnisStromspeicherModel kv, Func<ErgebnisStromspeicherModel, double> auswahl)
-        {
-            return kv != null ? auswahl(kv) : (double?)null;
-        }
-
-        /// <summary>Ins Netz verkaufte Energie des Laufs [kWh/a]; 0 ohne Preissteuerung.</summary>
-        private static double SpVerkaufKwh(StromspeicherLaufKontext kontext)
-        {
-            return kontext != null && kontext.Arbitrageergebnis != null
-                ? kontext.Arbitrageergebnis.Kennzahlen.VerkaufKwh
-                : 0.0;
-        }
+        // ==================================================================
+        //  iU9-W11a.3: HIER STANDEN Vgl, SpVerkaufKwh, SpBudgetzeilen,
+        //  SpBudgetfarbe, SpZeile (zwei Ueberladungen) und SpZeileText.
+        //
+        //  Sie bauten die 40 Kennzahlzeilen unmittelbar als ListViewItem. Die
+        //  Zeilenliste ist eine Fachaussage ueber den Lauf und keine Eigenschaft
+        //  eines Steuerelements; sie steht jetzt als SpeicherKennzahlenBlock.Zeilen
+        //  im Kern, samt Reihenfolge, Formatangaben, Einheiten und Warnstufe.
+        //  SpKennzahlenFuellen ruft sie und zeichnet nur noch.
+        // ==================================================================
 
         /// <summary>
-        /// Zeilen der Preissteuerung im Speicherblock (AP10, Fachkonzept 6.5): das
-        /// Jahres-Zyklenbudget, seine Auslastung mit Warnfärbung analog zur
-        /// Zyklen-Ampel, der Verschleiß je ausgespeicherter kWh und die Zahl der
-        /// angenommenen Paarungen.
-        /// </summary>
-        /// <remarks>
-        /// Sie erscheinen nur, wenn wirklich mit der Preissteuerung gerechnet wurde —
-        /// ohne sie ist das Budget keine Schranke, sondern nur eine zweite Schreibweise
-        /// der Zyklenhochrechnung, die eine Zeile weiter oben bereits steht.
-        /// </remarks>
-        private void SpBudgetzeilen(StromspeicherLaufKontext kontext)
-        {
-            SpeicherEngine.ArbitrageErgebnis arb = kontext != null ? kontext.Arbitrageergebnis : null;
-            if (arb == null) return;
-
-            SpeicherEngine.ArbitrageKennzahlen a = arb.Kennzahlen;
-
-            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_BUDGET, a.ZyklenbudgetDcKwhProA, "N0", "kWh/a");
-
-            ListViewItem auslastung = SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_BUDGET_AUSLASTUNG,
-                                              a.BudgetauslastungProzent, "N1", "%");
-            auslastung.BackColor = SpBudgetfarbe(a);
-
-            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_KVER, a.VerschleissCtKwh, "N3", "ct/kWh");
-            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_PAARE,
-                    a.PaareAngenommen + a.VerkaufsslotsAngenommen, "N0", "-");
-        }
-
-        /// <summary>
-        /// Warnfärbung der Budgetzeile — dieselbe Staffelung wie
-        /// <see cref="SpAmpelfarbe"/>: grün bis 90 %, gelb darüber, rot bei
-        /// Überschreitung, neutral ohne gepflegtes Budget.
-        /// </summary>
-        private static Color SpBudgetfarbe(SpeicherEngine.ArbitrageKennzahlen a)
-        {
-            if (a.ZyklenbudgetDcKwhProA <= 0.0) return Color.FromArgb(240, 240, 240);
-            if (a.BudgetauslastungProzent > 100.0) return Color.FromArgb(255, 205, 205);
-            if (a.BudgetauslastungProzent > 90.0) return Color.FromArgb(255, 240, 190);
-            return Color.FromArgb(215, 245, 215);
-        }
-
-        private ListViewItem SpZeile(string gruppe, string bezeichnung, double wert, string format, string einheit)
-        {
-            return SpZeileText(gruppe, bezeichnung, wert.ToString(format, CultureInfo.CurrentCulture), "", einheit);
-        }
-
-        private ListViewItem SpZeile(string gruppe, string bezeichnung, double wert, double? vergleich,
-                                     string format, string einheit)
-        {
-            return SpZeileText(gruppe, bezeichnung,
-                               wert.ToString(format, CultureInfo.CurrentCulture),
-                               vergleich.HasValue ? vergleich.Value.ToString(format, CultureInfo.CurrentCulture) : "",
-                               einheit);
-        }
-
-        private ListViewItem SpZeileText(string gruppe, string bezeichnung, string wert, string vergleich, string einheit)
-        {
-            ListViewItem item = new ListViewItem(bezeichnung);
-            item.SubItems.Add(wert);
-            item.SubItems.Add(vergleich);
-            item.SubItems.Add(einheit);
-
-            foreach (ListViewGroup g in listView_SpeicherKennzahlen.Groups)
-                if (g.Name == gruppe) { item.Group = g; break; }
-
-            listView_SpeicherKennzahlen.Items.Add(item);
-            return item;
-        }
-
-        /// <summary>
-        /// Amortisationszeit als Text: die Jahre, oder der Klartext des Sonderfalls
-        /// (Fachkonzept 7.1 — die V7-Mappe schrieb beides in dieselbe Zelle, die Engine
-        /// trennt Zustand und Zahl).
+        /// Amortisationszeit als Text — seit iU9-W11a.5 im Kern
+        /// (<see cref="SpeicherAnzeigeCtrl.AmortisationText"/>, Befund W11-B42).
         /// </summary>
         private static string SpAmortisationstext(SpeicherEngine.Amortisation a)
         {
-            switch (a.Status)
-            {
-                case SpeicherEngine.AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.SP_ERG_NICHT_AMORTISIERBAR;
-                case SpeicherEngine.AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.SP_ERG_UEBER_NUTZUNGSDAUER;
-                default:
-                    return a.Jahre.ToString("N1", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
-        /// <summary>
-        /// Ampelfarbe der Zyklenzeile (Fachkonzept 5.4/7.1): grün bis 90 % des Budgets,
-        /// gelb darüber, rot bei Überschreitung, neutral ohne gepflegte N_zyk.
-        /// </summary>
-        private static Color SpAmpelfarbe(ErgebnisStromspeicherModel k, StromspeicherLaufKontext kontext)
-        {
-            double budget = kontext != null ? kontext.ZyklenZugesichert : 0.0;
-            if (budget <= 0.0) return Color.FromArgb(240, 240, 240);
-            if (k.Zyklen_Hochrechnung > budget) return Color.FromArgb(255, 205, 205);
-            if (k.Zyklen_Hochrechnung > budget * 0.9) return Color.FromArgb(255, 240, 190);
-            return Color.FromArgb(215, 245, 215);
-        }
+        // iU9-W11a.3: SpAmpelfarbe ist entfallen - die Staffelung steht als
+        // SpeicherKennzahlenBlock.Zyklenstufe im Kern, die Farbe dazu in SpWarnfarbe.
 
         private void SpZyklenampelSetzen(ErgebnisStromspeicherModel k, StromspeicherLaufKontext kontext)
         {
