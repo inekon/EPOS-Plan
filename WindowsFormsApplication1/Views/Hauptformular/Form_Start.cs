@@ -729,7 +729,8 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Applikation</c>) — der P3-Zwischenstand zeigte hier die
         /// Projektliste und verfehlte damit den Ein-Klick-Zweck der Kachel
         /// („es wird der Dialog Öffnen gezeigt und nicht das zuletzt geöffnete
-        /// Projekt"). Die Liste <see cref="Form_ProjektAuswahl"/> bleibt nur
+        /// Projekt"). Die Liste (seit iU9-W15a die Razor-Komponente
+        /// <c>ProjektWahlDialog</c>, davor <c>Form_ProjektAuswahl</c>) bleibt nur
         /// als Rückfall, wenn noch kein Projekt gemerkt ist oder das gemerkte
         /// inzwischen gelöscht wurde — vorsortiert nach „Geändert". Wer die
         /// Liste bewusst will, nimmt die Kachel „Projekt öffnen/bearbeiten"

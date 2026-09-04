@@ -28,7 +28,17 @@ namespace WindowsFormsApplication1
     /// <b>Warum ein UserControl und kein Dialog.</b> Dieselbe Liste wird an mehreren
     /// Stellen gebraucht: Menü „Projekt → Öffnen…", Kachel „Zuletzt geöffnet" und
     /// (Paket P4) die linke Spalte des Assistenten im Bearbeiten-Modus. Die schlanke
-    /// Hüllform <see cref="Form_ProjektAuswahl"/> bettet sie nur ein.
+    /// Hüllform <c>Form_ProjektAuswahl</c> bettet sie nur ein.
+    /// </para>
+    /// <para>
+    /// <b>Stand seit iU9-W15a (Entscheid R-W15a-1, Ausnahme von der Arbeitsregel
+    /// iZ5).</b> Die Hüllform ist gefallen — „Projekt öffnen" und „Projekt löschen"
+    /// sind seither die Razor-Komponente <c>EPOS.UI/Dialoge/Projekt/ProjektWahlDialog</c>
+    /// über dem Baustein <c>ProjektListe</c>. Dieses Steuerelement BLEIBT, weil es einen
+    /// ZWEITEN Wirt hat: die linke Spalte des Assistenten (<c>WizardParent.pnlLeft</c>),
+    /// und der fällt erst mit Welle 16. Für genau eine Welle gibt es damit zwei
+    /// Fassungen derselben Liste; das ist bewusst und im Wellenprotokoll begründet.
+    /// <b>Welle 16 löscht diese Datei samt Designer und drei <c>.resx</c>.</b>
     /// </para>
     /// </summary>
     [ToolboxItem(true)]
