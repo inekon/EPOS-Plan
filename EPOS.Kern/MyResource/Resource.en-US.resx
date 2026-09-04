@@ -13892,4 +13892,81 @@ Use 'Save as...' to store the document and open it.</value>
   <data name="LIZR_HINWEIS_SPRACHE" xml:space="preserve">
     <value>Binding version in German.</value>
   </data>
+  <data name="KOMPAUSW_TITEL" xml:space="preserve">
+    <value>Select components</value>
+  </data>
+  <data name="KOMPAUSW_KOPF" xml:space="preserve">
+    <value>Project creation configuration</value>
+  </data>
+  <data name="KOMPAUSW_HINWEIS" xml:space="preserve">
+    <value>The project assistant guides you through all the necessary steps. This means that all entries required for a project are made completely. Navigate with Next and Back to make the next entries or to adjust entries later.</value>
+  </data>
+  <data name="KOMPAUSW_AUSWAHL" xml:space="preserve">
+    <value>Select heat generator or energy generator components:</value>
+  </data>
+  <data name="KOMPAUSW_ENTHALTEN" xml:space="preserve">
+    <value>{0} in project</value>
+  </data>
+  <data name="KOMPAUSW_OHNE" xml:space="preserve">
+    <value>not in project</value>
+  </data>
+  <data name="KOMPAUSW_NURANZEIGE" xml:space="preserve">
+    <value>display only</value>
+  </data>
+  <data name="KOMPAUSW_FRAGE" xml:space="preserve">
+    <value>"{0}" will be removed from the project.
+
+Saving will delete {1} entries:
+{2}
+
+Really remove?</value>
+  </data>
+  <data name="KOMPAUSW_FRAGE_TITEL" xml:space="preserve">
+    <value>Remove component</value>
+  </data>
+  <data name="KOMPAUSW_BTN_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="KOMPAUSW_BTN_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="KOMPAUSW_K_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="KOMPAUSW_K_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand data</value>
+  </data>
+  <data name="KOMPAUSW_K_PROZESS" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="KOMPAUSW_K_BRAUCHWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="KOMPAUSW_K_STROMSTD" xml:space="preserve">
+    <value>Standard load profile</value>
+  </data>
+  <data name="KOMPAUSW_K_STROMLASTGANG" xml:space="preserve">
+    <value>Electrical load curve</value>
+  </data>
+  <data name="KOMPAUSW_K_WP" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="KOMPAUSW_K_BHKW" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="KOMPAUSW_K_KESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="KOMPAUSW_K_SOLAR" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="KOMPAUSW_K_PV" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="KOMPAUSW_K_SP" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="KOMPAUSW_K_PUFFER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
 </root>

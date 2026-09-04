@@ -1,4 +1,4 @@
-﻿﻿﻿using Xunit;
+﻿using Xunit;
 
 namespace Formularkarte.Tests;
 
@@ -96,8 +96,8 @@ public sealed class StapelTests
         // iU9-W16a.1 (04.09.2026): Die Teilwelle nimmt GENAU EINEN Designer mit -
         // Wizard_Stromlastgang (13). Die Assistentenseite 6 ist seither DIESELBE
         // Razor-Komponente wie der Dialog der Startkachel (StromganglinieDialog aus
-        // W12, Befund W12-O-3).
-        Assert.True(dateien.Count >= 13, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        // W12, Befund W12-O-3). W16a.3 nimmt Wizard_Komponenten mit (12).
+        Assert.True(dateien.Count >= 12, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -152,8 +152,9 @@ public sealed class StapelTests
         // beide bauen ihre Oberflaeche im Code auf (Befund W15c-B2).
         // Welle 16a.1 nimmt EINE mit (10): Wizard_Stromlastgang, die
         // Assistentenseite 6 - sie ist seither DIESELBE Razor-Komponente wie der
-        // Dialog der Startkachel (StromganglinieDialog aus W12).
-        Assert.True(Lauf.Value.Masken >= 10, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Dialog der Startkachel (StromganglinieDialog aus W12). Welle 16a.3 nimmt
+        // Wizard_Komponenten mit (9), die Assistentenseite 0.
+        Assert.True(Lauf.Value.Masken >= 9, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -205,8 +206,9 @@ public sealed class StapelTests
         // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
         // beide Wege koennen, nicht nur den Designer.
         // Welle 16a.1 nimmt EINE lokalisierte mit (6): Wizard_Stromlastgang war in
-        // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache).
-        Assert.True(Lauf.Value.Lokalisierte >= 6,
+        // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache). W16a.3 nimmt
+        // Wizard_Komponenten mit (5) - 11 .Text und 13 .Titel je Sprache.
+        Assert.True(Lauf.Value.Lokalisierte >= 5,
                     "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
     }
 
