@@ -317,7 +317,127 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
-        // 6 - Die Satzzahlen der sechs Kataloge
+        // 6 - KatalogBrowserProfil (W14a.0a) - ohne Datenbank
+        // =================================================================================
+
+        /// <summary>
+        /// Die vier Auspraegungen sind vollstaendig und tragen die gemessene Feldzahl
+        /// (8 / 8 / 8 / 6 aus der Vermessung § 1-3 und § 5).
+        /// </summary>
+        [Fact]
+        public void Browserprofil_kennt_die_vier_Auspraegungen_mit_ihrer_Feldzahl()
+        {
+            var erwartet = new Dictionary<KatalogBrowserArt, int>
+            {
+                [KatalogBrowserArt.Heizkessel] = 8,
+                [KatalogBrowserArt.Bhkw] = 8,
+                [KatalogBrowserArt.Solarkollektoren] = 8,
+                [KatalogBrowserArt.Pufferspeicher] = 6
+            };
+
+            Assert.Equal(4, KatalogBrowserProfil.AlleArten.Count());
+            foreach (var art in KatalogBrowserProfil.AlleArten)
+            {
+                var profil = KatalogBrowserProfil.Finde(art);
+                Assert.Equal(erwartet[art], profil.Detailfelder.Count);
+                Assert.False(string.IsNullOrEmpty(profil.Stammtabelle));
+                Assert.False(string.IsNullOrEmpty(profil.HilfeSchluessel));
+
+                // Der Bezeichner steht in jeder Auspraegung an erster Stelle und ist nie
+                // editierbar - er ist der Schluessel des UPDATE.
+                Assert.Equal(KatalogBrowserProfil.FeldBezeichner, profil.Detailfelder[0].Schluessel);
+                Assert.False(profil.Detailfelder[0].Editierbar);
+            }
+        }
+
+        /// <summary>
+        /// Der Speicherweg gibt es nur bei Heizkessel und BHKW, dort mit je SECHS
+        /// editierbaren Feldern (Vermessung § 1 b und § 2 b).
+        /// </summary>
+        [Fact]
+        public void Browserprofil_traegt_den_Speicherweg_nur_wo_es_ihn_gibt()
+        {
+            var heiz = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel);
+            var bhkw = KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw);
+            var solar = KatalogBrowserProfil.Finde(KatalogBrowserArt.Solarkollektoren);
+            var puffer = KatalogBrowserProfil.Finde(KatalogBrowserArt.Pufferspeicher);
+
+            Assert.True(heiz.HatSpeicherweg);
+            Assert.True(bhkw.HatSpeicherweg);
+            Assert.False(solar.HatSpeicherweg);
+            Assert.False(puffer.HatSpeicherweg);
+
+            Assert.Equal(6, heiz.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(6, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(0, solar.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(0, puffer.Detailfelder.Count(f => f.Editierbar));
+        }
+
+        /// <summary>
+        /// Filterart, Listendarstellung und Schreibschutzanzeige je Auspraegung —
+        /// die Ausprägungstabelle der Vermessung § 12.1 als Probe.
+        /// </summary>
+        [Fact]
+        public void Browserprofil_bildet_die_Auspraegungstabelle_ab()
+        {
+            var heiz = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel);
+            var bhkw = KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw);
+            var solar = KatalogBrowserProfil.Finde(KatalogBrowserArt.Solarkollektoren);
+            var puffer = KatalogBrowserProfil.Finde(KatalogBrowserArt.Pufferspeicher);
+
+            Assert.Equal(KatalogFilterArt.BrennstoffUndLeistung, heiz.Filterart);
+            Assert.Equal(KatalogFilterArt.BrennstoffUndLeistung, bhkw.Filterart);
+            Assert.Equal(KatalogFilterArt.Keiner, solar.Filterart);
+            Assert.Equal(KatalogFilterArt.HerstellerUndVolumen, puffer.Filterart);
+
+            Assert.False(heiz.Zweispaltig);
+            Assert.True(bhkw.Zweispaltig);
+            Assert.True(solar.Zweispaltig);
+            Assert.False(puffer.Zweispaltig);
+
+            // Nur das BHKW faerbt geschuetzte Saetze grau und fragt beim Ueberschreiben.
+            Assert.True(bhkw.ZeigtSchreibschutz);
+            Assert.False(heiz.ZeigtSchreibschutz);
+            Assert.False(solar.ZeigtSchreibschutz);
+            Assert.False(puffer.ZeigtSchreibschutz);
+
+            // Der Zeilenbauplan gehoert zur zweiten Spalte - drei Teile beim BHKW,
+            // zwei bei den Kollektoren, keiner bei den einspaltigen Listen.
+            Assert.Equal(3, bhkw.Zeilenbauplan.Count);
+            Assert.Equal(2, solar.Zeilenbauplan.Count);
+            Assert.Empty(heiz.Zeilenbauplan);
+            Assert.Empty(puffer.Zeilenbauplan);
+        }
+
+        /// <summary>
+        /// Ohne Uebersetzer liefert das Profil die Schluessel selbst — so laesst es sich
+        /// ohne Ressourcenkatalog pruefen (Muster <see cref="KatalogImportProfil"/>).
+        /// </summary>
+        [Fact]
+        public void Browserprofil_ohne_Uebersetzer_liefert_die_Schluessel()
+        {
+            var profil = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel);
+            Assert.Equal("KBROW_TITEL_HEIZKESSEL", profil.Titel);
+            Assert.Equal("KBROW_LBL_NAME", profil.Detailfelder[0].Bezeichnung);
+
+            var uebersetzt = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel,
+                                                        s => s == "KBROW_TITEL_HEIZKESSEL" ? "Kessel" : s);
+            Assert.Equal("Kessel", uebersetzt.Titel);
+        }
+
+        /// <summary>
+        /// Der Feldname einer Pruefmeldung ist die Beschriftung ohne Doppelpunkt —
+        /// genau die Regel <c>label.Text.TrimEnd(' ', ':')</c> der beiden Vorlaeufer.
+        /// </summary>
+        [Fact]
+        public void Browserprofil_Feldname_ist_die_Beschriftung_ohne_Doppelpunkt()
+        {
+            var feld = new BrowserDetailfeld("X", "Thermische Leistung:", "kW", BrowserFeldArt.Zahl, true);
+            Assert.Equal("Thermische Leistung", feld.Feldname);
+        }
+
+        // =================================================================================
+        // 7 - Die Satzzahlen der sechs Kataloge
         //
         // Der Anker, an dem jede spaetere Zeilenzaehlung haengt.
         // =================================================================================
