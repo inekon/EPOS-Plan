@@ -1235,7 +1235,7 @@ namespace WindowsFormsApplication1
         /// Beziehungs-Rowset — <c>pragma_foreign_key_list</c> antwortet je Tabelle, also
         /// wird über die Tabellenliste gelaufen. Ergebnis und Aufbau sind identisch.
         ///
-        /// ARBEITSPAKET S4e: Die frühere Überladung mit <see cref="OleDbConnection"/>
+        /// ARBEITSPAKET S4e: Die frühere Überladung mit <c>OleDbConnection</c>
         /// (Rückfall über <c>GetOleDbSchemaTable</c> auf der Transaktionsverbindung) ist
         /// ersatzlos entfallen — auf SQLite lieferte sie nie ein Rowset. Es gilt allein
         /// diese verbindungsfreie Fassung.

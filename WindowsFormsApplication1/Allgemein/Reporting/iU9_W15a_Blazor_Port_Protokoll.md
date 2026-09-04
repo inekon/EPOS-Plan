@@ -374,16 +374,21 @@ entsteht keine `CS0102`-Falle, wenn Visual Studio den Designer später selbst re
 | Prüfung | Sollwert | Ergebnis |
 |---|---|---|
 | `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** |
-| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + die neuen | siehe Abschlusszeile |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue | **3 511** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 926, EPOS.Kern.Tests 798) |
 | dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | grün |
 | `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 124 | **124** |
 | Stapellauf `--alle … --erreichbarkeit` | 13 Masken / 14 Designer, 13 / 0 / 0 / 0 | **13 / 14, 13 ja** |
-| `SqlDialektPruefer` | 0 Fundstellen | **0** |
+| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 234 Texte, 184 dynamisch, 1 050 in Ordnung) |
 | `ChartProben` | 32 unverändert | **32** |
-| Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **byte-gleich** |
+| Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **PASS, 815 043 Werte; `diff -rq` byte-gleich in allen drei** |
 | Wächter `Program.*`/`MessageBox`/`Registry`/DPAPI/`SpecialFolder`/`System.Windows.Forms` im Kern | leer | **leer** |
 | `git grep` auf die fünf gefallenen Klassen | nur Kommentare, Protokolle und die drei `Masken.*`-Werte | erfüllt |
 | `ProjektAuswahl` (uc) | genau **ein** Wirt (`WizardParent`) | erfüllt |
+
+**Der Referenzlauf sieht diese Welle nicht** — keine der sechs Masken ist
+Simulationseingang; der Lauf rechnet einen bestehenden Projektstand nach. Dass er trotzdem
+byte-gleich ist, ist der Beweis, dass nichts danebengegriffen hat. Der eine Weg der Welle, der
+den Rechenweg BERÜHRT, ist der Import (er legt Projektzeilen an) — dafür stehen P2 und P3.
 
 ## 11 — Windows-Abnahme
 
