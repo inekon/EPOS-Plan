@@ -142,7 +142,18 @@ namespace WindowsFormsApplication1
         Fehler
     }
 
-    /// <summary>Wie weit der Loeschweg gekommen ist (iU9-W15a.0d).</summary>
+    /// <summary>
+    /// Wie weit ein Loeschweg gekommen ist (iU9-W15a.0d).
+    ///
+    /// <para>Er traegt BEIDE Loeschwege: <c>ProjektCtrl.LoeschenMitVorarbeiten</c>
+    /// (Projekt samt Vorarbeiten) und <c>VariantenCtrl.LoescheVariante</c> (Variante samt
+    /// Verknuepfung und Energieanlagen). Seit dem Entscheid O-4 vom 04.09.2026 laufen
+    /// beide durch dieselbe Vorpruefung auf einen mehrdeutigen Namen und melden denselben
+    /// Befund; zwei getrennte Ergebnistypen fuer denselben Zweck gaebe es sonst ohne
+    /// Not. <see cref="KeineVariante"/> und <see cref="Loeschfehler"/> kann nur der
+    /// Variantenweg melden, <see cref="NameLeer"/> und
+    /// <see cref="ApplikationsdatenFehler"/> nur der Projektweg.</para>
+    /// </summary>
     public enum LoeschStand
     {
         /// <summary>Alle sechs Schritte gelaufen, das Projekt ist weg.</summary>
@@ -169,11 +180,27 @@ namespace WindowsFormsApplication1
         /// den Fall aber fuehren — und dann darf der Loeschweg, der ueber den NAMEN
         /// laeuft, nicht still zwei Projekte mitnehmen.</para>
         /// </summary>
-        Mehrdeutig
+        Mehrdeutig,
+
+        /// <summary>
+        /// Nur <c>VariantenCtrl.LoescheVariante</c>: Das Projekt ist gar keine Variante —
+        /// es haengt keine Zeile in <c>Tab_Variante</c> daran. Stammprojekte werden ueber
+        /// diesen Weg nicht geloescht; es wurde nichts angefasst, der Grund steht im
+        /// <c>Fehlertext</c>.
+        /// </summary>
+        KeineVariante,
+
+        /// <summary>
+        /// Nur <c>VariantenCtrl.LoescheVariante</c>: Einer der drei Schritte ist mit einer
+        /// Ausnahme abgebrochen; ihr Text steht im <c>Fehlertext</c>. Wie im Vorlaeufer
+        /// wird NICHT zurueckgerollt — was bis dahin lief, bleibt gelaufen.
+        /// </summary>
+        Loeschfehler
     }
 
     /// <summary>
-    /// Ergebnis von <c>ProjektCtrl.LoeschenMitVorarbeiten</c> (iU9-W15a.0d).
+    /// Ergebnis von <c>ProjektCtrl.LoeschenMitVorarbeiten</c> (iU9-W15a.0d) und — seit dem
+    /// Entscheid O-4 vom 04.09.2026 — von <c>VariantenCtrl.LoescheVariante</c>.
     /// </summary>
     /// <param name="Stand">Wie weit der Weg gekommen ist.</param>
     /// <param name="Projektname">Der Name des geloeschten Projekts (fuer die Erfolgsmeldung).</param>
