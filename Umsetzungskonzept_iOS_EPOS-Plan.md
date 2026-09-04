@@ -723,7 +723,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
 | **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 bis W9 umgesetzt, W10a in Arbeit | `04fc474` | **55** Designer-Masken offen (63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern |
+| **iU9** Masken in Wellen | 🔄 W0 bis W10a umgesetzt, W10b und W11a in Arbeit | `427fd59` | **50** Designer-Masken offen (55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang` |
 | **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
@@ -1405,6 +1405,49 @@ steht aus und ist die eigentliche Aufgabe von
 Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- und Katalogdialoge.
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
+
+> **Statusblock iU9 — Welle 10a umgesetzt (03.09.2026, Basis `04fc474` nach W9, zusammengeführt mit `b6a72b0`)**
+>
+> Die Welle 10 des Wellenplans (Simulationskonfiguration, 12 361 Zeilen) ist die größte des Pakets
+> und läuft deshalb in zwei Läufen. **W10a** portiert die **sieben Dialoge**, die aus
+> `Form_Simulation_Config` heraus geöffnet werden: Betriebsmodus, Klimazonenkarte, Quelle Erdreich,
+> Pufferverwaltung, Quelle Pufferspeicher, Quellprofil und Wärmesenke → **sieben Razor-Komponenten**
+> in `EPOS.UI/Dialoge/Simulation/`, jede WinForms-Fassung gelöscht (Regel M1), 7 803 Zeilen
+> Oberflächencode, 30 `MessageBox`. `Form_Simulation_Config` bleibt bis W10b WinForms und ruft die
+> Dialoge über Hüllen. Arbeitsanweisung `iU9_W10a_Arbeitsanweisung.md`, Vermessung
+> `iU9_W10_Vermessung.md` (1 887 Zeilen, 40 Befunde). Fünfzehn Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `352f349` `cbfccb1` `7aae643` | **W10a.0a–c** `SenkeAnzeige`/`IstPufferZiel` in den Kern (sonst bräche der Bau beim Löschen der Senkenmaske); Kapazitätsformel, Katalog-SQL, Sondenmeter, Ergebniszuordnung und Profilparser im Kern; Sprungziel `PufferSpAdminNurLesen` |
+> | `ef513e6` `53240c4` `6fe8656` | **W10a.0d–f** `ChartRenderer.Jahresgang` (zweireihig, Monatsachse) mit Probe; Baustein **`Bildkarte`** (PNG mit SVG-Klickflächen) samt `KlimazonenPfade` (15 Zonen, zur Bauzeit erzeugt) und dem Kartenbild unter `EPOS.UI/wwwroot/bilder/`; `WertAbfrage` |
+> | `18ac6e1` `b34a6d3` `033d0b9` | **W10a.1–3** `BetriebsmodusDialog`, `KlimazonenkarteDialog` (Überlagerung), `QuelleErdreichDialog` (Kollektor/Sonde, VDI-4640-Prüfung, **asynchroner** Simulationslauf aus dem Dialog) |
+> | `781e463` `a6d15e5` `82aad99` `97ff674` | **W10a.4–7** `PufferSpProjektDialog` (Klassen-Set, Schwellen, Schichtung, Ladereihenfolge — das Blatt aller drei Absprünge), `QuellePufferspeicherDialog`, `QuellprofilDialog` (virtualisiertes 8 760-Zeilen-Raster), `WaermesenkeDialog` (Senkenliste mit Rang, Parallelverbund, Ladeverhalten) |
+> | `630a56b` `e69df40` `427fd59` | **W10a.8–11** Ressourcen, Formularkarte, Protokoll, drei CLAUDE.md, Nachweise auf dem gemergten Stand |
+>
+> **Der Ertrag ist die Klickkarte, die zum ersten Mal funktioniert.** Die WinForms-Klimazonenkarte
+> konnte ihre ausgelieferte SVG **nie** lesen (W10a‑B41: der Parser erwartete den Pfadbefehl getrennt
+> von der ersten Koordinate, `float.Parse("M315.30")` warf, ein leerer `catch` verschluckte es) — die
+> Maske zeigte immer nur ihre Ladefehlerzeile. Die Blazor-Fassung stellt die Zonenwahl per Klick her.
+> Zwei Proben haben die Bauweise bestimmt: `SimulationRunner.Simuliere` läuft in `Task.Run` fehlerfrei
+> gegen die Testdatenbank (R‑W10a‑2, deshalb rechnet der Erdreichdialog asynchron mit Wartezustand),
+> und das Kartenbild misst 1,29 MiB (R‑W10a‑3, nicht verkleinert). 18 Befunde behoben, 8 wörtlich
+> übernommen und als Entscheid für den Anwender notiert (W10a‑O‑1…O‑7), dazu ein nicht
+> reproduzierter Einzelausfall der Testsuite unter `en_US` (W10a‑O‑8, Frist der `WaitForAssertion`).
+>
+> **Nachweise** (auf dem gemergten Stand `427fd59`, Linux): Build → 0 Fehler, **17** Warnungen
+> (20 nach W9; drei WFO1000 gingen mit den Designern) · `dotnet test WP-Plan.Kern.slnf` → **2 284**
+> grün (2 066 nach W9), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün ·
+> Stapellauf **50** Masken (55 − 5; Quellprofil und Wärmesenke hatten keinen Designer), 49 erreichbar,
+> 0 × „nein“ · SQL-Prüfer 1 240 Texte, 0 Fundstellen · **ChartProben 16 Bilder**, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit `wwwroot`
+> samt Kartenbild.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken), 17 Abweichungen (A‑1…A‑17), 20 Windows-Abnahmewegen
+> und acht offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W10a_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: das Kartenbild in der veröffentlichten `wwwroot`, der asynchrone
+> Simulationslauf bei einem großen Projekt, die Pufferverwaltung ohne Abbrechen, der Kesselzweig, der
+> die WP-Vorgaben unberührt lässt, die englische Oberfläche mit unübersetzten Steuerwerten.
 
 > **Statusblock iU9 — Welle 9 umgesetzt (03.09.2026, Basis `8995d3e` nach W8, zusammengeführt mit `1cf3dbf`)**
 >
