@@ -49,6 +49,12 @@
     --epos-warn-flaeche: rgb(255, 246, 224);/* WARN_FLAECHE                 */
     --epos-warn-text: rgb(138, 91, 0);      /* WARN_TEXT                    */
 
+    /* Die beiden Kantenfarben des Hydraulikschemas (SchemaAnsicht:481/495).
+       Blau, Koralle und Amber stehen schon oben; Gruen und Violett gab es nur
+       dort. */
+    --epos-schema-versorgung: #1D9E75;      /* FARBE_VERSORGUNG             */
+    --epos-schema-prozess: #7E57A6;         /* FARBE_PROZESS (Paket E1)     */
+
     /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
     --epos-fehleingabe: rgb(255, 235, 235);
 
@@ -1670,4 +1676,186 @@ body {
 .epos-kartenauswahl {
     margin: 0;
     color: var(--epos-text-leise);
+}
+
+/* =====================================================================
+   Das Hydraulikschema als SVG (Baustein Schema, iU9-W10b.0c)
+
+   Herkunft jeder Farbe: Views/Simulation/SchemaAnsicht.cs (GDI+) ueber
+   Allgemein/GrafikTools/KartenStil.cs. Hier steht KEIN neuer Farbwert -
+   nur die beiden Kantenfarben oben, die es im Kartenstil nicht gab.
+   ===================================================================== */
+
+.epos-schema {
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-schema-bild {
+    display: block;
+    max-width: none;                 /* das Bild scrollt, es schrumpft nicht */
+}
+
+.epos-schema-leer {
+    margin: 0;
+    padding: 44px var(--epos-rand);
+    color: var(--epos-text-leise);
+}
+
+/* ---- Spaltenkoepfe und Texte --------------------------------------- */
+
+.epos-schema-spaltenkopf,
+.epos-schema-zeile,
+.epos-schema-legendetext {
+    font-size: 11px;
+    fill: var(--epos-text-leise);
+}
+
+.epos-schema-titel,
+.epos-schema-bandkopf {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--epos-text);
+}
+
+.epos-schema-rang {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--epos-text-leise);
+}
+
+.epos-schema-prioziffer,
+.epos-schema-pillentext {
+    font-size: 11px;
+    fill: var(--epos-text);
+}
+
+/* ---- Kaesten -------------------------------------------------------- */
+
+.epos-schema-knoten { cursor: pointer; }
+
+.epos-schema-kasten {
+    fill: #ffffff;
+    stroke: var(--epos-rahmen);
+    stroke-width: 1;
+}
+
+/* Quelle: Flaeche wie die Karten, Rahmen leise - blau nur bei der Waermepumpe. */
+.epos-schema-knoten--quelle .epos-schema-kasten {
+    fill: var(--epos-flaeche);
+    stroke: var(--epos-rahmen-leise);
+}
+
+.epos-schema-knoten--quelle-wp .epos-schema-kasten { stroke: var(--epos-quelle-rahmen); }
+
+.epos-schema-knoten--speicher .epos-schema-kasten { stroke: var(--epos-rahmen-speicher); }
+
+.epos-schema-knoten--abnehmer .epos-schema-kasten { fill: var(--epos-flaeche); }
+
+/* Ein Erzeuger MIT Kaskadenbezug traegt den blauen Rahmen (Mockup „Spitzenkessel"). */
+.epos-schema-knoten--kaskade .epos-schema-kasten { stroke: var(--epos-quelle-rahmen); }
+
+/* Eine Kaskaden-QUELLE ist zusaetzlich gestrichelt. */
+.epos-schema-knoten--gestrichelt .epos-schema-kasten { stroke-dasharray: 4 3; }
+
+/* Die Warnung ueberschreibt jede Rahmenfarbe (SchemaAnsicht:595). */
+.epos-schema-knoten--warnung .epos-schema-kasten { stroke: var(--epos-warn-rahmen); }
+
+/* Auswahl: Halo in der Quellfarbe (Deckung 70/255 = 0,27) plus staerkerer Rahmen. */
+.epos-schema-halo {
+    fill: none;
+    stroke: rgba(55, 138, 221, .27);
+    stroke-width: 5;
+}
+
+.epos-schema-knoten--gewaehlt .epos-schema-kasten { stroke-width: 2; }
+
+.epos-schema-knoten:focus-visible { outline: none; }
+.epos-schema-knoten:focus-visible .epos-schema-kasten {
+    stroke: var(--epos-quelle-rahmen);
+    stroke-width: 2;
+}
+
+/* ---- Badges und Warnzeile im Kasten --------------------------------- */
+
+.epos-schema-badge { fill: var(--epos-badge-flaeche); }
+.epos-schema-badgetext { font-size: 11px; fill: var(--epos-badge-text); }
+
+.epos-schema-warnflaeche { fill: var(--epos-warn-flaeche); }
+.epos-schema-warntext { font-size: 11px; fill: var(--epos-warn-text); }
+
+/* ---- Leitungen ------------------------------------------------------ */
+
+.epos-schema-kante {
+    stroke-width: 1.8;
+    fill: none;
+}
+
+.epos-schema-kante--hervor { stroke-width: 2.6; }
+
+.epos-schema--quelle { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
+.epos-schema--kaskade { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
+.epos-schema--ladung { stroke: var(--epos-senke-rahmen); fill: var(--epos-senke-rahmen); }
+.epos-schema--versorgung { stroke: var(--epos-schema-versorgung); fill: var(--epos-schema-versorgung); }
+.epos-schema--prozess { stroke: var(--epos-schema-prozess); fill: var(--epos-schema-prozess); }
+
+/* Die Kaskadenkante ist gestrichelt - dieselbe Aussage wie beim Quellchip. */
+.epos-schema-kante.epos-schema--kaskade { stroke-dasharray: 6 4; }
+
+.epos-schema-pfeil { stroke: none; }
+
+/* Der Prioritaetskreis auf der Kurvenmitte: weiss gefuellt, Rand in der
+   Senkenfarbe (SchemaAnsicht:544-545). */
+.epos-schema-priokreis {
+    fill: #ffffff;
+    stroke: var(--epos-senke-rahmen);
+    stroke-width: 1;
+}
+
+/* ---- Kaskadenband --------------------------------------------------- */
+
+.epos-schema-band { cursor: pointer; }
+
+.epos-schema-pille {
+    fill: #ffffff;
+    stroke: var(--epos-rahmen);
+    stroke-width: 1;
+}
+
+.epos-schema-band--speicher .epos-schema-pille { stroke: var(--epos-rahmen-speicher); }
+.epos-schema-band--quelle .epos-schema-pille { stroke: var(--epos-quelle-rahmen); }
+.epos-schema-band--gewaehlt .epos-schema-pille { stroke-width: 2; }
+
+.epos-schema-band:focus-visible { outline: none; }
+.epos-schema-band:focus-visible .epos-schema-pille {
+    stroke: var(--epos-quelle-rahmen);
+    stroke-width: 2;
+}
+
+.epos-schema-bandpfeil { stroke-width: 1.8; }
+
+/* ---- Legende -------------------------------------------------------- */
+
+.epos-schema-legendelinie { stroke-width: 2; }
+.epos-schema-legendelinie--gestrichelt { stroke-dasharray: 6 4; }
+
+/* Hochkontrast: Farbe allein traegt dort nicht - Rahmen und Linien nehmen die
+   Systemfarben, die Auswahl bleibt ueber die Strichstaerke erkennbar. */
+@media (forced-colors: active) {
+    .epos-schema-kasten,
+    .epos-schema-pille {
+        fill: Canvas;
+        stroke: CanvasText;
+    }
+
+    .epos-schema-knoten--gewaehlt .epos-schema-kasten,
+    .epos-schema-band--gewaehlt .epos-schema-pille { stroke: Highlight; }
+
+    .epos-schema-kante,
+    .epos-schema-legendelinie,
+    .epos-schema-bandpfeil { stroke: CanvasText; }
+
+    .epos-schema-halo { stroke: Highlight; }
 }
