@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
@@ -32,9 +33,25 @@ public class GebaeudeKatalogDialogTests : BunitContext
     public GebaeudeKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
+        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
+    /// <c>DeutscheOberflaeche</c> aus <c>EPOS.Kern.Tests</c>) — Kultur UND
+    /// Thread-Kultur, damit ein Lauf unter <c>LANG=en_US.UTF-8</c> dieselben deutschen
+    /// Beschriftungen und dieselbe Zahlenschreibweise sieht.
+    /// </summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     /// <summary>Ein vollständig belegter Satz — alle 17 Pflichtzahlen stehen.</summary>
@@ -248,6 +265,97 @@ public class GebaeudeKatalogDialogTests : BunitContext
         Assert.Contains("Leichte Bauart", cut.Markup);
         Assert.Contains("Schwere Bauart", cut.Markup);
         Assert.Contains("Sehr schwere Bauart", cut.Markup);
+    }
+
+    // =================================================================================
+    // W9-O-2 (Anwender, 04.09.2026): Die BAUART bestimmt die BAUWEISE
+    // =================================================================================
+
+    /// <summary>
+    /// Die Klapplisten des ersten Reiters im Modus „Bearbeiten“: 0 Gebäudetyp,
+    /// 1 Gebäudeart, 2 Baujahr, 3 Verwendung, 4 Bauart.
+    /// </summary>
+    private const int BAUART = 4;
+
+    private const int GEBAEUDEART = 1;
+
+    [Fact]
+    public void Die_Bauartwahl_bildet_die_Bauweise_aus_der_Wohnflaeche()
+    {
+        GebaeudeKatalogDaten daten = Satz();          // Wohnfläche 150 m²
+        var cut = Aufbauen(daten: daten);
+
+        cut.FindAll("select")[BAUART].Change("2");    // Sehr schwere Bauart
+
+        Assert.Equal(2, daten.Bauart);
+        Assert.Equal(15000, daten.Bauweise);          // 150 × 100
+
+        cut.FindAll("select")[BAUART].Change("0");    // Leichte Bauart
+        Assert.Equal(3000, daten.Bauweise);           // 150 × 20
+    }
+
+    /// <summary>
+    /// Der Kern des Entscheids: Die Gebäudeart trägt NICHT mehr zur Bauweise bei — sie
+    /// behält nur ihre eigene Bedeutung (Befund W9‑B6).
+    /// </summary>
+    [Fact]
+    public void Die_Gebaeudeartwahl_laesst_die_Bauweise_stehen()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        var cut = Aufbauen(daten: daten);
+        cut.FindAll("select")[BAUART].Change("1");    // Schwere Bauart -> 150 × 50
+        double vorher = daten.Bauweise;
+
+        cut.FindAll("select")[GEBAEUDEART].Change("2");   // Kaufhaus
+
+        Assert.Equal("Kaufhaus", daten.Gebaeudeart);
+        Assert.Equal(7500, vorher);
+        Assert.Equal(vorher, daten.Bauweise);
+    }
+
+    /// <summary>
+    /// Geschrieben wird der Stand von Bauart UND Wohnfläche — auch wenn die Wohnfläche
+    /// nach der Bauartwahl noch geändert wurde.
+    /// </summary>
+    [Fact]
+    public void Beim_Schreiben_kommt_die_Bauweise_aus_Bauart_und_Wohnflaeche()
+    {
+        double geschrieben = -1;
+        GebaeudeKatalogDaten daten = Satz();
+        var cut = Aufbauen(daten: daten, speichern: (d, _, _) =>
+        {
+            geschrieben = d.Bauweise;
+            return new GebaeudeKatalogErgebnis(true, "");
+        });
+
+        cut.FindAll("select")[BAUART].Change("1");                 // Schwere Bauart
+        cut.FindAll("input[inputmode=decimal]")[0].Input("200");   // Wohnfläche danach
+
+        Knopf(cut, "Überschreiben").Click();
+
+        Assert.Equal(200, daten.WohnflaecheGesamt);
+        Assert.Equal(10000, geschrieben);            // 200 × 50, nicht 150 × 50
+    }
+
+    /// <summary>
+    /// Der Rundweg: Beim Laden eines Satzes kommt die BAUART aus der gespeicherten
+    /// Bauweise — auch dann, wenn der gelieferte Satz einen anderen Index mitbringt.
+    /// </summary>
+    [Fact]
+    public void Das_Laden_leitet_die_Bauart_aus_der_gespeicherten_Bauweise_ab()
+    {
+        GebaeudeKatalogDaten geladen = Satz("Hotel C");
+        geladen.WohnflaecheGesamt = 100;
+        geladen.Bauweise = 10000;      // spez. 100 -> sehr schwer
+        geladen.Bauart = 0;            // absichtlich unpassend
+
+        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin, lies: _ => geladen);
+
+        cut.Find("select").Change("2");     // Namensklappliste: Hotel C
+
+        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
+        Assert.Equal(2, cut.Instance.Daten.Bauart);
+        Assert.Equal(10000, cut.Instance.Daten.Bauweise);
     }
 
     // =================================================================================
