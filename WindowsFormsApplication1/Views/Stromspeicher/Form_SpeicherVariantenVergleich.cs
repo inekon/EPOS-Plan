@@ -518,39 +518,24 @@ namespace WindowsFormsApplication1
             lbl_Status.ForeColor = Color.Black;
         }
 
+        // iU9-W11a.5 (Befund W11-B42): BetriebsartText, BerechnungsartText und
+        // AmortisationText standen hier, in Form_SpeicherOptimierung und in
+        // Form_Simulation_Detail. Sie stehen jetzt EINMAL als SpeicherAnzeigeCtrl im
+        // Kern; die drei Weiterleitungen halten die Aufrufstellen dieser Maske kurz.
+
         private static string BetriebsartText(string wert)
         {
-            if (wert == DbWerte.SP_BETRIEBSART_GRAUSTROM)
-                return MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRAUSTROM;
-            if (wert == DbWerte.SP_BETRIEBSART_GRUENSTROM)
-                return MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRUENSTROM;
-            return wert ?? "";
+            return SpeicherAnzeigeCtrl.BetriebsartText(wert);
         }
 
         private static string BerechnungsartText(string wert)
         {
-            if (wert == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
-            if (wert == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
-            return wert ?? "";
+            return SpeicherAnzeigeCtrl.BerechnungsartText(wert);
         }
 
-        /// <summary>
-        /// Amortisation als Text — die beiden Sonderfaelle der Engine im Klartext,
-        /// wortgleich mit Ergebnisseite und Auslegungsoptimierung.
-        /// </summary>
         private static string AmortisationText(Amortisation a)
         {
-            switch (a.Status)
-            {
-                case AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.OPT_AMORT_NIE;
-                case AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.OPT_AMORT_UEBER;
-                default:
-                    return a.Jahre.ToString("0.0", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
         // ==================================================================

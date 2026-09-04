@@ -7205,21 +7205,12 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>
-        /// Amortisationszeit als Text: die Jahre, oder der Klartext des Sonderfalls
-        /// (Fachkonzept 7.1 — die V7-Mappe schrieb beides in dieselbe Zelle, die Engine
-        /// trennt Zustand und Zahl).
+        /// Amortisationszeit als Text — seit iU9-W11a.5 im Kern
+        /// (<see cref="SpeicherAnzeigeCtrl.AmortisationText"/>, Befund W11-B42).
         /// </summary>
         private static string SpAmortisationstext(SpeicherEngine.Amortisation a)
         {
-            switch (a.Status)
-            {
-                case SpeicherEngine.AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.SP_ERG_NICHT_AMORTISIERBAR;
-                case SpeicherEngine.AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.SP_ERG_UEBER_NUTZUNGSDAUER;
-                default:
-                    return a.Jahre.ToString("N1", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
         // iU9-W11a.3: SpAmpelfarbe ist entfallen - die Staffelung steht als

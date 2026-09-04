@@ -246,18 +246,13 @@ namespace WindowsFormsApplication1
         /// (Fachkonzept 7.1 — die V7-Mappe schrieb beides in dieselbe Zelle, die Engine
         /// trennt Zustand und Zahl).
         ///
+        /// <para>Seit iU9-W11a.5 steht sie in <see cref="SpeicherAnzeigeCtrl"/> — sie
+        /// gehoerte zu dritt in den Bestand (Befund W11-B42). Hier bleibt die
+        /// Weiterleitung, damit der Kennzahlenblock in einer Datei lesbar bleibt.</para>
         /// </summary>
         public static string AmortisationText(Amortisation a)
         {
-            switch (a.Status)
-            {
-                case AmortisationStatus.NichtAmortisierbar:
-                    return MyResource.Resource.SP_ERG_NICHT_AMORTISIERBAR;
-                case AmortisationStatus.UeberNutzungsdauer:
-                    return MyResource.Resource.SP_ERG_UEBER_NUTZUNGSDAUER;
-                default:
-                    return a.Jahre.ToString("N1", CultureInfo.CurrentCulture);
-            }
+            return SpeicherAnzeigeCtrl.AmortisationText(a);
         }
 
         /// <summary>Wert des Vergleichslaufs, oder <c>null</c>, wenn es keinen gibt.</summary>

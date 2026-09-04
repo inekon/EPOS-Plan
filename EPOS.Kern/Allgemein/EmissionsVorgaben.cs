@@ -30,6 +30,46 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class EmissionsVorgaben
     {
+        // =====================================================================
+        //  SUBSTITUTIONSFAKTOREN der Autarkie-Kachel (iU9-W11a.5, Befund W11-B31)
+        // =====================================================================
+        //
+        // WOHER SIE KOMMEN. DashboardForm.cs:355 rechnete
+        //
+        //     co2Saved = (pvDirekt + pvSpeicher) * 0.42 + stGenutzt * 0.20
+        //
+        // mit zwei Faktoren als LITERALE in der Oberflaeche. Sie stehen jetzt hier.
+        //
+        // SIE HABEN IN DIESER KLASSE KEIN GEGENSTUECK. Die drei Zahlen darunter sind
+        // CO2-Frachten je BRENNSTOFFVERBRAUCH in g/MWh (290 880 / 201 600 / 238 680) und
+        // damit eine andere Groesse; ein Substitutionsfaktor fuer verdraengten Netzstrom
+        // bzw. verdraengte Waerme gab es im Kern bisher nicht. Uebernommen sind deshalb
+        // WOERTLICH die Werte des Dashboards - der Abgleich mit den BEHG-Faktoren und
+        // dem jeweils geltenden Strommix ist eine Fachfrage (offener Punkt W11a-O-2).
+
+        /// <summary>
+        /// Verdraengter NETZSTROM: 0,42 kg CO2 je kWh. Woertlich aus
+        /// <c>DashboardForm.cs:355</c>.
+        /// </summary>
+        public const double CO2_NETZSTROM_KG_JE_KWH = 0.42;
+
+        /// <summary>
+        /// Verdraengte WAERME: 0,20 kg CO2 je kWh. Woertlich aus
+        /// <c>DashboardForm.cs:355</c>.
+        /// </summary>
+        public const double CO2_WAERME_KG_JE_KWH = 0.20;
+
+        /// <summary>
+        /// Die CO2-Ersparnis der Autarkie-Kachel [kg/a] aus verdraengtem Netzstrom und
+        /// verdraengter Waerme — dieselbe Formel wie bisher, nur an einer Stelle.
+        /// </summary>
+        /// <param name="stromKwh">Eigenverbrauchter PV-Strom (direkt + aus dem Speicher).</param>
+        /// <param name="waermeKwh">Genutzte Solarwaerme.</param>
+        public static double Co2ErsparnisKg(double stromKwh, double waermeKwh)
+        {
+            return stromKwh * CO2_NETZSTROM_KG_JE_KWH + waermeKwh * CO2_WAERME_KG_JE_KWH;
+        }
+
         /// <summary>
         /// CO2-Vorgabe des HEIZKESSEL-Editors [g/MWh] nach dem Anzeigenamen des
         /// Brennstoffs. Wortgleich <c>Form_Heizkessel_Bearbeiten.btn_CO2_Click</c>.
