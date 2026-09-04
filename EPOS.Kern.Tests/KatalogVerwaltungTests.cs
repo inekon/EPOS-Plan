@@ -23,12 +23,12 @@ namespace EPOS.Kern.Tests
     /// sondern eine Verhaltensaenderung der Katalogverwaltung — und dann gehoert sie als
     /// Abweichung ins Portprotokoll.</para>
     ///
-    /// <para><b>Die Heizkesselzahlen stehen bewusst VOR W14a.0b.</b> Der Kern bildet heute
+    /// <para><b>Die Heizkesselzahlen standen bewusst zuerst VOR W14a.0b.</b> Der Kern bildete
     /// „Sonstige" auf <c>Brennstoff=23</c> ab, die Admin-Maske dagegen
     /// <c>Fernwärme=23</c>, <c>Sonstige Energieträger=24</c>, <c>Wasserstoff=25</c>
-    /// (Befund W14-B2). <see cref="Heizkessel_Brennstoffgruppen_vor_der_Berichtigung"/>
-    /// haelt den Zustand VORHER fest, damit die Berichtigung in W14a.0b messbar ist; sie
-    /// wird dort auf die neuen Zahlen umgestellt und der Vorher-Stand steht im Protokoll.</para>
+    /// (Befund W14-B2). <see cref="Heizkessel_Brennstoffgruppen_nach_der_Berichtigung"/>
+    /// hielt zuerst den Zustand VORHER fest (drei Gruppen je 62) und steht seit W14a.0b auf
+    /// den berichtigten Zahlen (je 0); die Gegenueberstellung steht im Portprotokoll.</para>
     ///
     /// <para><b>Nur lesend, eine Arbeitskopie je Klasse</b> (Regel seit iU9-W11a):
     /// <see cref="TestDatenbank"/> als <c>IClassFixture</c>. Fehlt die Datei, schweigen
@@ -64,15 +64,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die dreizehn Brennstoffgruppen VOR der Berichtigung aus W14a.0b.
+        /// Die dreizehn Brennstoffgruppen NACH der Berichtigung aus W14a.0b (Befund W14-B2).
         ///
-        /// <para>Drei Gruppen — Fernwärme, Sonstige Energieträger, Wasserstoff — stehen in
-        /// der Kern-Kette gar nicht und heben die Einengung deshalb auf: Sie liefern heute
-        /// den ganzen Katalog (62), obwohl sie eine Teilmenge meinen. Genau das ist
-        /// Befund W14-B2.</para>
+        /// <para><b>Vorher / nachher</b>, auf <c>Kenndaten_Test.sqlite</c> gemessen: Zehn
+        /// Gruppen sind unveraendert (Alle 62, Gas 52, Öl 3, Strom 8, die uebrigen sechs 0).
+        /// DREI Gruppen aendern sich, weil sie in der alten Kette gar nicht standen und die
+        /// Einengung deshalb aufhoben — <c>Fernwärme 62 → 0</c>,
+        /// <c>Sonstige Energieträger 62 → 0</c>, <c>Wasserstoff 62 → 0</c>. Der Testkatalog
+        /// fuehrt keinen Kessel mit Brennstoff 23, 24 oder 25; die Null ist also richtig und
+        /// nicht etwa ein leerer Filter.</para>
         /// </summary>
         [Fact]
-        public void Heizkessel_Brennstoffgruppen_vor_der_Berichtigung()
+        public void Heizkessel_Brennstoffgruppen_nach_der_Berichtigung()
         {
             if (!_db.Vorhanden) return;
 
@@ -90,11 +93,11 @@ namespace EPOS.Kern.Tests
                 ["Rapsöl"] = 0,
                 ["Tierische Fette"] = 0,
 
-                // Die drei Ungenauigkeiten (W14-B2): keine Einengung, also der ganze
-                // Katalog. Nach W14a.0b sind es 0 / 0 / 0.
-                ["Fernwärme"] = 62,
-                ["Sonstige Energieträger"] = 62,
-                ["Wasserstoff"] = 62
+                // W14a.0b: bis dahin je 62 (keine Einengung - der ganze Katalog), jetzt
+                // die richtigen Brennstoffnummern 23 / 24 / 25. Befund W14-B2.
+                ["Fernwärme"] = 0,
+                ["Sonstige Energieträger"] = 0,
+                ["Wasserstoff"] = 0
             };
 
             foreach (var paar in erwartet)
