@@ -697,21 +697,32 @@ namespace WindowsFormsApplication1
         /// ausserhalb gilt als 0 („Alle").</param>
         /// <remarks>
         /// <para>
-        /// Die Gruppenkette ist WORTGLEICH aus <c>Form_Heizkessel.SetFilter</c> (Z. 665-676)
-        /// uebernommen, samt ihrer beiden Ungenauigkeiten (Regel F3 - eine stille Reparatur
-        /// waere eine Fachaenderung; Befund W6-O-1 des Protokolls):
+        /// <b>Berichtigt mit iU9-W14a.0b (Befund W14-B2, Abweichung A-1).</b> Bis dahin
+        /// stammte die Kette wortgleich aus dem mit W6.3 geloeschten
+        /// <c>Form_Heizkessel.SetFilter</c> und trug dessen zwei Ungenauigkeiten: Sie kannte
+        /// „Sonstige" (<c>Brennstoff=23</c>), waehrend <c>Tab_BrennstoffKategorien</c>
+        /// „Sonstige Energieträger" fuehrt - der Eintrag traf nie -, und die drei
+        /// wirklich vorhandenen Gruppen „Fernwärme", „Sonstige Energieträger" und
+        /// „Wasserstoff" standen gar nicht in der Kette und hoben die Einengung auf: Wer
+        /// sie waehlte, sah den GANZEN Katalog.
         /// </para>
-        /// <list type="bullet">
-        /// <item>Die Kette kennt „Sonstige", <c>Tab_BrennstoffKategorien</c> fuehrt aber
-        /// „Sonstige Energieträger" - der Eintrag trifft nie, und die Liste zeigt dann
-        /// alle Brennstoffe der gewaehlten Leistungsstufe.</item>
-        /// <item>„Sonstige" ist auf <c>Brennstoff=23</c> abgebildet; 23 ist im Katalog
-        /// aber Fernwaerme. <c>Form_BHKWEing.BuildFilter</c> bildet dieselben drei Gruppen
-        /// auf 23/24/25 ab und liegt damit richtig.</item>
-        /// </list>
         /// <para>
-        /// Ebenfalls Bestand: Die Gruppen „Fernwärme" und „Wasserstoff" stehen in der
-        /// Kette gar nicht und heben die Einengung deshalb auf.
+        /// Die richtige Kette stand in <c>Form_Heizkessel_Admin.SetFilter</c> (Z. 118-120) und
+        /// steht so auch in <see cref="BHKWStammCtrl.Filtern"/>: <c>Fernwärme=23</c>,
+        /// <c>Sonstige Energieträger=24</c>, <c>Wasserstoff=25</c>. Sie ist jetzt die
+        /// einzige; der Kern-Kommentar „W6-O-1" ist damit geschlossen.
+        /// </para>
+        /// <para>
+        /// <b>Das aendert die angezeigte Liste</b> - in der KATALOGVERWALTUNG (W14a.1,
+        /// Auspraegung Heizkessel) und ebenso im schon portierten Projektdialog
+        /// <c>HeizkesselDialog</c> (W6.3), der dieselbe Methode benutzt. Auf
+        /// <c>Kenndaten_Test.sqlite</c> gemessen: die drei Gruppen liefern statt je 62
+        /// Saetzen (dem ganzen Katalog) je 0; alle uebrigen zehn Gruppen sind unveraendert.
+        /// Die Zahlen stehen in <c>KatalogVerwaltungTests</c>.
+        /// </para>
+        /// <para>
+        /// Die doppelte Zeile fuer „Tierische Fette" des Vorlaeufers (die zweite war schon
+        /// dort unerreichbar) ist beim Umzug in den Kern entfallen und bleibt entfallen.
         /// </para>
         /// </remarks>
         public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
@@ -730,7 +741,9 @@ namespace WindowsFormsApplication1
             else if (g == "Strom") szFilter = "Brennstoff=13";
             else if (g == "Pellets") szFilter = "Brennstoff=15";
             else if (g == "Rapsöl") szFilter = "Brennstoff=16";
-            else if (g == "Sonstige") szFilter = "Brennstoff=23";
+            else if (g == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (g == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (g == "Wasserstoff") szFilter = "Brennstoff=25";
             else if (g == "Alle") szFilter = "Brennstoff Like '%'";
 
             string sql = szFilter == ""
