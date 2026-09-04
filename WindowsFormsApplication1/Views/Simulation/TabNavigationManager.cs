@@ -168,12 +168,10 @@ public class TabNavigationManager
                 dashForm.stProd = tempST;
                 dashForm.waermeBedarf = Array.ConvertAll<double, float>(simctrl.simulation_solarthermie.Waermebedarf, x => (float)x);
 
-                // Nur vorhandene Komponenten zeigen (Regel siehe ErgebnisPraesenz). Das
-                // Formular bekommt zwei Schalter statt des Präsenzobjekts - die Klasse ist
-                // internal und DashboardForm public.
-                ErgebnisPraesenz praesenz = ErgebnisPraesenz.Ermitteln(simctrl);
-                dashForm.HatPV = praesenz.Photovoltaik;
-                dashForm.HatSolarthermie = praesenz.Solarthermie;
+                // Nur vorhandene Komponenten zeigen (Regel siehe ErgebnisPraesenz).
+                // Seit iU9-W11a liegt die Klasse im Kern und ist public - das Formular
+                // bekommt sie ganz statt der zwei Ersatzschalter.
+                dashForm.Praesenz = ErgebnisPraesenz.Ermitteln(simctrl);
 
                 dashForm.UpdateSimulationData();
                 // WICHTIG: Das Formular explizit sichtbar machen
