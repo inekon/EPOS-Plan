@@ -3,62 +3,57 @@
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die Windows-Fassung von <see cref="IProjektKontext"/>: Sie reicht an die
-    /// Startmaske <c>Form_Start</c> durch, die das offene Projekt bis Paket iU9 führt.
+    /// Die Windows-Fassung von <see cref="IProjektKontext"/> — seit iU9-W16b.0 eine
+    /// <b>dünne Weiterleitung</b> auf <see cref="ProjektKontextCtrl"/> im Kern (K2).
     ///
-    /// <para><b>Nichts wird nachgebaut.</b> <see cref="Uebernehmen"/> ruft genau die
-    /// beiden Methoden, die der Bestand ruft:
-    /// <c>Form_Start.ProjektKontextUebernehmen</c> zieht Kopfband, Klimaregion,
-    /// Statuszeichen, Reiterfreigaben, Kachelstatus und Variantenanzeige nach,
-    /// <c>Form_Start.ZuletztGeoeffnetMerken</c> schreibt <c>Tab_Applikation</c> fort.
-    /// Es gibt damit weiterhin genau EINE Wahrheit für den Projektwechsel.</para>
+    /// <para><b>Was sich geändert hat.</b> Bis hierher war diese Klasse eine Fassade auf
+    /// <c>Program.startfrm</c>: Sie las Id, Name und Klimaregion als FELDER der
+    /// Startmaske. Jetzt führt der Kern-Controller diese drei Werte, und die Startmaske
+    /// bekommt sie von dort — <c>Form_Start.ProjektKontextUebernehmen</c> ruft
+    /// <see cref="Kontext"/> und spiegelt anschließend nur noch Kopfband, Klimaregion,
+    /// Statuszeichen, Reiterfreigaben, Kachelbitmaske und Variantenanzeige. Es gibt
+    /// damit weiterhin genau EINE Wahrheit für den Projektwechsel; sie liegt nur nicht
+    /// mehr in einem Fenster.</para>
     ///
-    /// <para><b>Ohne Startmaske ist kein Projekt offen.</b> Im Prüfharnisch und in
-    /// Konsolenläufen ist <c>Program.startfrm</c> <c>null</c>; dann gilt „keins" — genau
-    /// die Fallunterscheidung, die <c>KiAktionenProjekt.AktivesProjektErmitteln</c>
-    /// schon vorher traf, bevor es ersatzweise <c>Tab_Applikation</c> liest.</para>
+    /// <para><b>Warum die Klasse noch steht.</b> Solange <c>Form_Start</c> existiert,
+    /// muss ein Projektwechsel über <c>Dienste.Projekt</c> ihre Anzeige mitziehen —
+    /// genau das macht <see cref="Uebernehmen"/> zusätzlich zum Kern-Aufruf. Mit
+    /// W16b.3 (Razor-Startseite) tritt <see cref="ProjektKontextCtrl"/> unmittelbar an
+    /// <c>Dienste.Projekt</c>, und diese Datei fällt (Risiko R-W16-4: ein falsch
+    /// umgehängter Kontext schreibt in das falsche Projekt — deshalb in ZWEI
+    /// Schritten).</para>
     /// </summary>
     public sealed class FormStartProjektKontext : IProjektKontext
     {
+        /// <summary>
+        /// Der EINE Projektkontext des Programms. Statisch, weil ihn außer dieser
+        /// Weiterleitung auch <c>Form_Start</c> ruft — beide müssen denselben Stand
+        /// sehen, sonst gäbe es zwei Wahrheiten.
+        /// </summary>
+        public static ProjektKontextCtrl Kontext { get; } = new ProjektKontextCtrl();
+
         /// <inheritdoc/>
         public bool Vorhanden
         {
             get
             {
+                // Unveraendert die Frage nach der OBERFLAECHE: Im Pruefharnisch und in
+                // Konsolenlaeufen gibt es keine Startmaske; dann gilt "keins" und nicht
+                // "das zuletzt geoeffnete" - genau die Fallunterscheidung, die
+                // KiAktionenProjekt.AktivesProjektErmitteln trifft.
                 try { return Program.startfrm != null; }
                 catch { return false; }
             }
         }
 
         /// <inheritdoc/>
-        public int Id
-        {
-            get
-            {
-                try { return Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0; }
-                catch { return 0; }
-            }
-        }
+        public int Id { get { return Kontext.Id; } }
 
         /// <inheritdoc/>
-        public string Name
-        {
-            get
-            {
-                try { return Program.startfrm != null ? (Program.startfrm.m_szProjektname ?? "") : ""; }
-                catch { return ""; }
-            }
-        }
+        public string Name { get { return Kontext.Name; } }
 
         /// <inheritdoc/>
-        public string Klimazone
-        {
-            get
-            {
-                try { return Program.startfrm != null ? (Program.startfrm.Klimaregion ?? "") : ""; }
-                catch { return ""; }
-            }
-        }
+        public string Klimazone { get { return Kontext.Klimazone; } }
 
         /// <inheritdoc/>
         public bool Uebernehmen(int id, string name)
@@ -66,20 +61,11 @@ namespace WindowsFormsApplication1
             Form_Start start = Program.startfrm;
             if (start == null) return false;
 
-            string szProjekt = name ?? "";
+            // Der Kern setzt den Kontext und schreibt "zuletzt geoeffnet" fort; die
+            // Startmaske zieht danach ihre Anzeige nach.
+            if (!Kontext.Uebernehmen(id, name)) return false;
 
-            // Ohne Namen, aber mit ID: den Namen nachschlagen. Der Name ist der
-            // fuehrende Schluessel des Bestands, die ID nur der Rueckfall.
-            if (string.IsNullOrWhiteSpace(szProjekt) && id > 0)
-            {
-                ProjektCtrl ctrlproj = new ProjektCtrl();
-                ctrlproj.ReadSingle(id);
-                szProjekt = ctrlproj.rows > 0 ? ctrlproj.m_szProjektname : "";
-            }
-
-            if (!start.ProjektKontextUebernehmen(szProjekt)) return false;
-
-            start.ZuletztGeoeffnetMerken();
+            start.AnzeigeNachziehen();
 
             Action h = Gewechselt;
             if (h != null) h();

@@ -312,6 +312,11 @@ namespace WindowsFormsApplication1
 
             frmmain.ShowDialog();
 
+            // iU9-W16b.0 (K2): Den Kontext des KERNS mitziehen - er ist seit dieser
+            // Teilwelle die Wahrheit hinter Dienste.Projekt. Die drei Zeilen darunter
+            // spiegeln ihn nur noch in die Startmaske; beides faellt mit K6-a (W16b.1).
+            FormStartProjektKontext.Kontext.Setzen(szProjekt);
+
             Program.startfrm.m_szProjektname = szProjekt;
             Program.startfrm.m_ID_Projekt = idProjekt;
             Program.startfrm.SetTextProjekt(szProjekt);

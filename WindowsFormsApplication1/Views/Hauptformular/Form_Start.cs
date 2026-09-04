@@ -171,18 +171,34 @@ namespace WindowsFormsApplication1
         /// </returns>
         public bool ProjektKontextUebernehmen(string szProjektname)
         {
-            if (string.IsNullOrEmpty(szProjektname)) return false;
+            // iU9-W16b.0 (K2): Die DATENSEITE liegt im Kern - ProjektKontextCtrl.Setzen
+            // liest das Projekt ueber den Namen, bricht bei m_ID <= 0 ab und fuehrt
+            // Id, Name und Klimaregion. Hier bleibt, was Oberflaeche ist.
+            if (!FormStartProjektKontext.Kontext.Setzen(szProjektname)) return false;
 
-            ProjektCtrl ctrl_projekt = new ProjektCtrl();
-            ctrl_projekt.ReadSingle(szProjektname);
-            if (ctrl_projekt.m_ID <= 0) return false;
+            AnzeigeNachziehen();
+            return true;
+        }
 
-            m_szProjektname = ctrl_projekt.m_szProjektname;
-            m_ID_Projekt = ctrl_projekt.m_ID;
+        /// <summary>
+        /// Zieht die ANZEIGE dem Projektkontext des Kerns nach — Kopfband,
+        /// Klimaregion, Statuszeichen, Freischaltung der Reiter, Kachelsymbole und
+        /// Variantenanzeige (iU9-W16b.0).
+        ///
+        /// <para>Das ist der zweite Teil des bisherigen
+        /// <see cref="ProjektKontextUebernehmen"/>; der erste liegt seither als
+        /// <c>ProjektKontextCtrl.Setzen</c> im Kern. Öffentlich, weil
+        /// <see cref="FormStartProjektKontext"/> ihn nach einem Wechsel über
+        /// <c>Dienste.Projekt</c> ruft.</para>
+        /// </summary>
+        public void AnzeigeNachziehen()
+        {
+            m_szProjektname = FormStartProjektKontext.Kontext.Name;
+            m_ID_Projekt = FormStartProjektKontext.Kontext.Id;
 
             SetTextProjekt(m_szProjektname);
             comboBox_Varianten.Text = m_szProjektname;
-            comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
+            comboBox_Klima.Text = FormStartProjektKontext.Kontext.Klimazone;
 
             label_ProjektStatus.Text = "✔";
             label_ProjektStatus.ForeColor = Color.Green;
@@ -207,7 +223,6 @@ namespace WindowsFormsApplication1
             // derselben falschen ID. VariantenAnzeigeAktualisieren() macht beides an einer Stelle und
             // ist genau dafuer schon da (Menueweg "Als Variante speichern...").
             VariantenAnzeigeAktualisieren();
-            return true;
         }
 
         private void pBox_Prozess_Click(object sender, EventArgs e)
@@ -792,10 +807,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void ZuletztGeoeffnetMerken()
         {
-            ApplikationCtrl ctrl_app = new ApplikationCtrl();
-            ctrl_app.m_ID_Projekt = m_ID_Projekt;
-            ctrl_app.m_szProjektname = m_szProjektname;
-            ctrl_app.Update();
+            // iU9-W16b.0 (K2): Die vier Zeilen stehen jetzt im Kern
+            // (ProjektKontextCtrl.ZuletztGeoeffnetMerken) - dieselbe Schreiblogik,
+            // aber ohne Oberflaeche.
+            FormStartProjektKontext.Kontext.ZuletztGeoeffnetMerken();
         }
 
         /// <summary>
