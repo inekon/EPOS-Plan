@@ -60,17 +60,17 @@ Pakete (P3–P5) in
 Rückweg: Git-Tag `letzter-x86-stand`.
 
 **WFO1000 ist in .NET 10 standardmäßig ein *Fehler*** (WinForms-Designer-Serialisierung). Die
-`..\.editorconfig` stuft ihn auf `warning` herab, damit der Bestand baut, lässt ihn aber sichtbar:
-nach iU9-W8 unverändert **14 Fundstellen** (dieselben wie nach iU9-W5, W6 und W7 — weder
-die acht Masken der Welle 7 noch die zehn der Welle 8 trugen eine; 16 nach iU9-W4, 20 nach
-iU9-W3, 22 nach iU9-W2, 24 nach iU9-W1, 30 davor — die sieben Masken der Welle 6 trugen
-keine. Die Warnzahl der ganzen Mappe steht bei **20**: 14 WFO1000, 2 CS0108, 2 CS0109,
-1 WFO0003, 1 CA2255), Schwerpunkt
-`Form_Gesetzesparameter` (5) und die Karten-Controls des Kosten- und
-Simulationsmoduls (`SpeicherKarte`, `ErzeugerKarte`; `EinstiegsKarte` ist mit iU9-W4
-gelöscht). Die
-Annotation je Property ist eine Fachentscheidung und gehört zu Paket iU9 — nicht nebenbei
-miterledigen; **mit jeder umgestellten Maske fällt die Zahl von selbst.**
+`..\.editorconfig` stuft ihn auf `warning` herab, damit der Bestand baut, lässt ihn aber sichtbar.
+**Seit iU9‑W14c steht er bei NULL** (14 nach W8, 6 nach W10b): Die letzten fünf trug
+`Form_Gesetzesparameter` — drei Testdelegaten und zwei Prüfhilfen für einen
+„Reflection-Harness", den es nie gab (Befund W14c‑B14); die sechste `RoundedPanel`, das
+schon vorher keinen Nutzer mehr hatte. **Die Warnzahl der ganzen Mappe steht damit bei 6**
+(2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255) — sie war 12 nach W10b und 20 nach W8.
+Die `.editorconfig`-Herabstufung (`dotnet_diagnostic.WFO1000.severity = warning`) kann
+entfallen, sobald keine WinForms-Maske mehr steht; bis dahin bleibt sie stehen, weil eine neue
+Maske sie sofort wieder bräuchte. Die Annotation je Property ist eine Fachentscheidung und
+gehört zu Paket iU9 — nicht nebenbei miterledigen; **mit jeder umgestellten Maske fiel die Zahl
+von selbst.**
 
 Das Setup (`..\Setup\build-setup.ps1`) wird derzeit von VS-MSBuild auf `dotnet publish`
 umgestellt (Paket iU1-P1.10, erledigt 02.09.2026, `ce2dc9e`).
@@ -106,9 +106,13 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**17** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
-  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `KlimaregionStammCtrl`,
-  `EnergietraegerKatalogCtrl` und `ProjektExportImportCtrl`.
+- **`Controller/`** (**16** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
+  `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `EnergietraegerKatalogCtrl` und
+  `ProjektExportImportCtrl`.
+  **`KlimaregionStammCtrl` ist mit iU9‑W14c.0d in den Kern gezogen** — er zog über
+  `FillComboBox(ComboBox)`/`FillListBox(ListBox)` `System.Windows.Forms` in die
+  Controllerschicht (Befund W14c‑B33). An ihre Stelle tritt `Bezeichner()`; sein `Delete`
+  löscht seither MIT Kaskade über `KatalogBereinigung.SatzLoeschen` (Befund W14c‑B23).
   **`PeakShavingCtrl` ist mit iU9‑W12.0a in den Kern gezogen** — er war
   vollständig oberflächenfrei, und die Peak-Shaving-Komponente in `EPOS.UI`
   erreichte ihn hier nicht (Befund W12‑B23).
@@ -120,7 +124,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   iU9-W0.1 (`KostenSummenCtrl`), dazu `WPCtrl` und `WaermepumpeGeraeteCtrl` aus iU9-W7.
 - **`Model/`** — **keine `.cs` mehr**; alle 47 Modelle liegen in `../EPOS.Kern/Model/`
   (`EnergietraegerModel.cs` mit `EnergyCarrier`/`EnergyConversion` seit iU9-W0.1).
-- **`Views/`** (**121 `.cs`**; **166 Dateien** mit `.resx`) —
+- **`Views/`** (**116 `.cs`**; **157 Dateien** mit `.resx`) —
   `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik, Wärmepumpe, Simulation, Wizard,
   Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …). **Mit iU9-W1 sind sieben Masken
   verschwunden** (Kostenvorlagen-Kleindialoge und der Kapitalwert-Verlauf); an ihrer Stelle
@@ -495,7 +499,39 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   nach `Werkzeuge/Formularkarte.Tests/Pruefmuster/` VERSCHOBEN — sie sind der
   „unklar"-Anker und der `DataGridView`-Typzeuge. Protokoll:
   [`Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md).
-- **`Allgemein/`** (**40** `.cs`; 42 vor iU9‑W14a — `SpeichernLeiste.cs` und `KI/KiAufrufKnopf.cs` haben ihre letzten Nutzer verloren; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
+  **Mit iU9‑W14c sind fünf weitere Masken verschwunden — der Gesetzeskatalog, die
+  Klimaregionen, die Einstellungen und die Dublettensuche**, zusammen 2 198 Zeilen `.cs`,
+  1 425 Zeilen Designer und 26 `MessageBox` (plus 2 indirekte):
+  `Form_Gesetzesparameter` (403 Z.), `Form_GesetzparameterZeile` (258 Z.),
+  `Form_KatalogDubletten` (800 Z., ohne Designer), `Form_AdminSettings` (320 Z.) und
+  `Form_Klimadaten` (417 Z.). **Fünf Masken werden FÜNF Komponenten in VIER Fenstern** — hier
+  wiederholt sich kein Muster, jede Maske ist ein eigener Gegenstand. An ihrer Stelle stehen
+  **vier Hüllen** — `Views/Admin/GesetzeskatalogHuelle.cs`,
+  `Views/Admin/KatalogDublettenHuelle.cs`, `Views/Admin/EinstellungenHuelle.cs` und
+  `Views/Admin/KlimaregionHuelle.cs`.
+  **Der Befund der Welle: vier der fünf Fachteile lagen schon im Kern** (`GesetzKatalog`
+  mit 1 123 Zeilen, `DublettenPruefung`/`KatalogBereinigung`/`KatalogRegistry`,
+  `SolarPVGISCalculator`) — die Kern-Vorarbeit war Zuschnitt, kein neuer Rechenweg. Neu im
+  Kern sind `Allgemein/Katalog/DublettenBefundText.cs`, `Allgemein/Katalog/DublettenBaum.cs`,
+  `Allgemein/Import/KlimaImportAblauf.cs` und `Controller/EinstellungenCtrl.cs` — der ERSTE
+  schreibende Weg zu `Properties.Settings` außerhalb einer Maske (Befund W14c‑B57).
+  **Die Sprungbrücke verliert ihre letzten zwei ablösbaren Ziele** (`Gesetzesparameter`,
+  `GesetzesparameterCo2`): Beide Aufrufer waren schon Razor, aus jedem Sprung wird eine
+  Überlagerung im selben Fenster (Risiko R2). **`Sprungziel` führt danach EINE Konstante und
+  `Sprungbruecke` EINEN Zweig — `SpeicherOptimierung`, und das ist ein ENTSCHEID, kein Rest
+  (iF22): Wer sie „aufräumt", bricht die letzte WinForms-Maske hinter einem Blazor-Dialog.**
+  Der Nachweis der Welle entsteht ZUERST (`EPOS.Kern.Tests/KatalogpflegeTests.cs`, 104 Fälle):
+  Für die acht berührten Kerntypen gab es bis dahin keinen einzigen Test (Befund W14c‑B62);
+  die TMY-Antwort des einzigen Netzzugriffs kommt darin aus einer eingefrorenen Datei.
+  **`Views/Klimadaten` gibt es nicht mehr, `Views/Admin` führt nur noch
+  `Form_LizenzVerwaltung`** (Welle 15c); `Form_Klimadaten` ist nicht gelöscht, sondern nach
+  `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/` VERSCHOBEN — sie war die einzige
+  Maske, deren `btn_Help` im Designer stand, und trägt dort fünf Testanker. Protokoll:
+  [`Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
+- **`Allgemein/`** (**38** `.cs`; 40 vor iU9‑W14c — `GrafikTools/ChartManager.cs` (560 Z. samt
+  `ChartMouseWheel2`) und `GrafikTools/RoundedPanel.cs` sind mit ihrer letzten bzw. ohne
+  Nutzerin gefallen; **die MS-Chart-Bindung der Anwendung endet damit außerhalb der
+  Designer**; 42 vor iU9‑W14a — `SpeichernLeiste.cs` und `KI/KiAufrufKnopf.cs` haben ihre letzten Nutzer verloren; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
   `HelpExtender` in `Hilfe/HelpCatalog.cs`) sind im iU5-Statusblock des Umsetzungskonzepts

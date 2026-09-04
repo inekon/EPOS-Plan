@@ -93,10 +93,13 @@ public sealed class RazorSchreiberTests
     public void OhneHilfeknopfImDesignerKeinInfoKnopf()
     {
         Assert.DoesNotContain("<InfoKnopf", Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs"), StringComparison.Ordinal);
+
+        // iU9-W14c.9: Form_Klimadaten ist mit Welle 14c gefallen und liegt als
+        // PRUEFMUSTER - sie war die einzige Maske, deren btn_Help im Designer stand.
         Assert.Contains("<InfoKnopf Schluessel=\"@HilfeSchluessel\" />",
-                        Skelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
+                        Musterskelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
         Assert.Contains("HilfeSchluessel { get; set; } = \"Form_Klimadaten.btn_Help\"",
-                        Skelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
+                        Musterskelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
     }
 
     [Fact]
