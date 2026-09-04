@@ -43,7 +43,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", StartseiteCtrl.ProjektKlimazone(0));
             Assert.Equal("", StartseiteCtrl.ProjektKlimazone(-1));
             Assert.Equal("", StartseiteCtrl.Projektname(0));
-            Assert.Equal("", StartseiteCtrl.KlimaregionName(0));
             Assert.Equal(0, StartseiteCtrl.KlimaregionStammId(""));
             Assert.Equal(0, StartseiteCtrl.KlimaregionIdVonProjekt(""));
         }
@@ -90,18 +89,25 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Name und Stamm-Id einer Region sind zueinander umkehrbar — die beiden
-        /// Abfragen bei <c>Form_Start:356</c> und <c>:369</c>.
+        /// Zu einem Regionsnamen gibt es eine Stamm-Id — <c>Form_Start:369</c>, seit
+        /// iU9-W15a.0f parametriert über <c>KlimaregionStammCtrl.IdVonName</c>.
+        ///
+        /// <para><b>Die Gegenrichtung wird hier nicht mehr geprüft.</b> Sie war
+        /// <c>Form_Start:356</c> und stand zuletzt als <c>KlimaregionName(int)</c> im
+        /// Kern — ohne Aufrufer, nur für die Angleichung der iOS-Fassung aufbewahrt
+        /// (Befund W16b‑B3). Mit dem Anwenderentscheid W16b‑O‑3 vom 04.09.2026 ist
+        /// sie gefallen: Die Messung zeigte, dass die iOS-Abfrage den falschen
+        /// Schlüsselraum las, und damit auch den letzten Grund, sie zu führen.</para>
         /// </summary>
         [Fact]
-        public void Regionsname_und_Stamm_Id_gehoeren_zusammen()
+        public void Zu_einem_Regionsnamen_gibt_es_eine_Stamm_Id()
         {
             if (!_db.Vorhanden) return;
 
             int id = StartseiteCtrl.KlimaregionStammId("München");
 
             Assert.True(id > 0);
-            Assert.Equal("München", StartseiteCtrl.KlimaregionName(id));
+            Assert.Equal(id, StartseiteCtrl.KlimaregionStammId("München"));
         }
 
         /// <summary>
@@ -117,15 +123,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Klimazone eines Projekts ist seit dem <b>Anwenderentscheid W16b‑O‑3</b>
-        /// (04.09.2026, „nehme iOS-Lösung") der STAMMNAME und erst im Rückfall der
-        /// Bezeichner der Projektkopie. Der ANGEZEIGTE Text ändert sich dadurch nicht:
-        /// An <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der KOPIE, zu der es
-        /// keinen Stammsatz gibt — der Rückfall trägt jedes Projekt des Bestands
-        /// (Messung im W16b-Protokoll § 6).
+        /// Die Klimazone eines Projekts kommt aus der PROJEKTKOPIE
+        /// (<c>Tab_Klimaregion.Bezeichner</c>), nicht aus dem Stammsatz — genau das
+        /// zeigte das Auswahlfeld der Startmaske an, und genau das gibt
+        /// <c>IProjektKontext.Klimazone</c> heraus.
+        ///
+        /// <para><b>Seit dem Anwenderentscheid W16b‑O‑3 (04.09.2026) gilt das auch für
+        /// iOS</b>, und die Methode heißt deshalb <c>ProjektKlimazone</c> statt
+        /// <c>ProjektKlimaregion</c>: Sie ist die EINE Wahrheit beider Plattformen.
+        /// Der gelesene Wert ist unverändert.</para>
         /// </summary>
         [Fact]
-        public void Die_Klimazone_des_Projekts_faellt_auf_die_Projektkopie_zurueck()
+        public void Die_Klimazone_des_Projekts_ist_die_Projektkopie()
         {
             if (!_db.Vorhanden) return;
 
@@ -136,10 +145,6 @@ namespace EPOS.Kern.Tests
             int idKopie = StartseiteCtrl.KlimaregionIdVonProjekt(NAME_1030);
             Assert.True(idKopie > 0);
             Assert.NotEqual(StartseiteCtrl.KlimaregionStammId("München"), idKopie);
-
-            // Und genau deshalb greift der Stammzweig hier nicht: Zu der Kopie-Id gibt
-            // es keinen Stammsatz.
-            Assert.Equal("", StartseiteCtrl.KlimaregionName(idKopie));
         }
 
         /// <summary>Der Projektname zu einer Id — und nichts zu einer unbekannten.</summary>

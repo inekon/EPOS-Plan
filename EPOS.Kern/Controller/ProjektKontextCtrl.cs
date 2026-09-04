@@ -29,24 +29,27 @@ namespace WindowsFormsApplication1
     /// Oberfläche und bleibt es: Die Razor-Startseite hängt sich an
     /// <see cref="Gewechselt"/> und zieht es dort nach.</para>
     ///
-    /// <para><b>Die Klimazone ist seit dem 04.09.2026 der STAMMNAME</b>
-    /// (Anwenderentscheid W16b‑O‑3: „nehme iOS-Lösung"). Bis dahin las Windows die
-    /// PROJEKTKOPIE (<c>Tab_Projekt.ID_Klimaregion</c> →
+    /// <para><b>Die Klimazone ist die PROJEKTKOPIE — seit dem 04.09.2026 auf BEIDEN
+    /// Plattformen</b> (Anwenderentscheid W16b‑O‑3). Bis dahin las Windows die
+    /// Projektkopie (<c>Tab_Projekt.ID_Klimaregion</c> →
     /// <c>Tab_Klimaregion.Bezeichner</c>) und <c>EPOS.iOS/Dienste/IosProjektKontext</c>
     /// den Stammnamen (<c>Tab_Klimaregion_STAMM.Name</c> über dieselbe Id) — zwei
-    /// Wahrheiten für denselben Wert (Befund W16b‑B2). Jetzt gibt es EINEN Weg:
-    /// <see cref="StartseiteCtrl.ProjektKlimazone"/> nimmt den Stammnamen und fällt auf
-    /// den Bezeichner der Projektkopie zurück, wenn es zu der Id keinen Stammsatz gibt;
-    /// hier wird er nur gerufen, und <c>IosProjektKontext</c> ruft seit derselben
-    /// Änderung DIESE Klasse.</para>
+    /// Wahrheiten für denselben Wert (Befund W16b‑B2). Der Entscheid lautete „nehme
+    /// iOS-Lösung"; die Messung dazu (W16b-Protokoll § 6) hat gezeigt, dass die
+    /// iOS-Abfrage <b>den falschen Schlüsselraum las</b>: An
+    /// <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der PROJEKTKOPIE
+    /// (<c>Tab_Klimaregion.ID</c>, Ids ab 1 006 017), die Abfrage hielt sie gegen
+    /// <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c> (Ids 1…50) — Überschneidung
+    /// <b>0</b>, Antwort für jedes Projekt des Bestands leer. Es war kein zweiter Weg,
+    /// sondern ein Fehler.</para>
     ///
-    /// <para><b>Der Rückfall trägt den ganzen Bestand.</b> Die Messung vom 04.09.2026
-    /// (W16b-Protokoll § 6) zeigt: An <c>Tab_Projekt.ID_Klimaregion</c> steht die Id der
-    /// PROJEKTKOPIE, nicht die des Stammsatzes — zwei Schlüsselräume ohne
-    /// Überschneidung. <b>Alle dreizehn</b> Referenzprojekte laufen deshalb in den
-    /// Rückfall, und die gemeldete Klimazone ist Wort für Wort dieselbe wie vorher. Der
-    /// Entscheid ändert damit die QUELLE, nicht den Text — genau das, was Risiko
-    /// R-W16-4 verlangt.</para>
+    /// <para><b>Also EINE Wahrheit, und zwar die Projektkopie:</b>
+    /// <see cref="StartseiteCtrl.ProjektKlimazone"/> — ohne Stammabfrage, ohne
+    /// Rückfall; hier wird sie nur gerufen. <c>IosProjektKontext</c> ruft seit
+    /// derselben Änderung DIESE Klasse und hat keine eigene Abfrage mehr. Die
+    /// gemeldete Klimazone ist Wort für Wort dieselbe wie vor dem Entscheid — genau
+    /// das, was Risiko R‑W16‑4 verlangt; verschwunden ist nur die zweite
+    /// Fassung.</para>
     ///
     /// <para><b>Risiko R-W16-4.</b> Ein falsch umgehängter Projektkontext schreibt in
     /// das falsche Projekt. Deshalb steht diese Klasse am ANFANG der Teilwelle, mit
