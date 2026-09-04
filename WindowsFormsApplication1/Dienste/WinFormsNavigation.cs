@@ -254,9 +254,10 @@ namespace WindowsFormsApplication1
         {
             WizardParent wizparent = new WizardParent(AssistentSeiten.Erzeugen());
 
-            WizardCtrl ctrl = WizardCtrl.Aktueller;
-            if (ctrl != null) ctrl.parentform = wizparent;
-
+            // iU9-W16a.4: Die Anmeldung "ctrl.parentform = wizparent" ist entfallen -
+            // das Feld hatte im ganzen Bestand keinen Leser (Befund W16a-B2) und war
+            // die einzige WinForms-Kante von WizardCtrl. Ohne sie zieht der
+            // Schreibweg des Assistenten in den Kern.
             wizparent.SetWizardMode(betriebsart);
             wizparent.ShowDialog();
 

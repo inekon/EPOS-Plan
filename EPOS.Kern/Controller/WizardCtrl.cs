@@ -5,6 +5,21 @@ using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Der SCHREIBWEG des Projektassistenten - 21 Add/Del/Update-Methoden ueber die
+    /// Projekt-, Anlagen- und Zuordnungstabellen.
+    ///
+    /// <para><b>Seit iU9-W16a.4 im Kern.</b> Die Klasse enthielt keine einzige Zeile
+    /// Oberflaeche; ihre einzige WinForms-Kante war das Feld
+    /// <c>public WizardParent parentform</c> mit genau einem Schreiber und keinem
+    /// Leser (Befund W16a-B2). Ohne sie ist die Datei plattformfrei - und
+    /// <see cref="AssistentCtrl"/> (K3) kann sie ueberhaupt erst rufen.</para>
+    ///
+    /// <para><b>Der Aufraeumlauf laeuft ueber den Haken.</b>
+    /// <c>GeraeteWaisen.Aufraeumen</c> zieht die Oberflaeche mit und bleibt in der
+    /// Anwendung; <see cref="WErzeugerCtrl.GeraetewaisenAufraeumen"/> ist die
+    /// Bruecke, die iU4-2 fuer denselben Zweck angelegt hat.</para>
+    /// </summary>
     class WizardCtrl
     {
         /// <summary>
@@ -20,7 +35,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static WizardCtrl Aktueller { get; set; }
 
-        public WizardParent parentform;
+        // iU9-W16a.4: Das Feld "public WizardParent parentform" ist ERSATZLOS
+        // entfallen. Es hatte genau einen Schreiber (WinFormsNavigation :258) und
+        // KEINEN Leser im ganzen Bestand - und es war die einzige WinForms-Kante
+        // dieser Klasse. Ohne sie zieht der Schreibweg des Assistenten in den Kern,
+        // wo ihn AssistentCtrl (K3) braucht.
         public bool speichern;
         public string Projektname;
         public string Klimazone;
@@ -1158,7 +1177,12 @@ namespace WindowsFormsApplication1
                 try { KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen(projektID); }
                 catch { }
 
-                GeraeteWaisen.Aufraeumen(projektID);
+                // iU9-W16a.4: ueber den HAKEN, weil GeraeteWaisen die Oberflaeche
+                // mitzieht und in der Anwendung bleibt (dieselbe Bauart wie
+                // WErzeugerCtrl.Delete seit iU4-2). Program.Main belegt ihn;
+                // nicht belegt = kein Aufraeumlauf.
+                var aufraeumen = WErzeugerCtrl.GeraetewaisenAufraeumen;
+                if (aufraeumen != null) aufraeumen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
                 return true;

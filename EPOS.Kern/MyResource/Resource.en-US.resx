@@ -13969,4 +13969,24 @@ Really remove?</value>
   <data name="KOMPAUSW_K_PUFFER" xml:space="preserve">
     <value>Buffer storage</value>
   </data>
+  <data name="WIZ_KLIMA_FEHLT" xml:space="preserve">
+    <value>Please select a climate zone!</value>
+  </data>
+  <data name="WIZ_KLIMA_FEHLT_TITEL" xml:space="preserve">
+    <value>Climate zone missing</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT" xml:space="preserve">
+    <value>Please enter a project name!</value>
+  </data>
+  <data name="WIZ_NAME_FEHLT_TITEL" xml:space="preserve">
+    <value>Project name missing</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The project could not be saved completely.
+
+The step "{0}" failed; the entries already written remain in place.</value>
+  </data>
+  <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
+    <value>Saving failed</value>
+  </data>
 </root>
