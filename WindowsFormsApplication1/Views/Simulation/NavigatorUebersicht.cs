@@ -265,14 +265,19 @@ namespace WindowsFormsApplication1
             // richten sich danach (siehe ErgebnisPraesenz).
             _praesenz = ErgebnisPraesenz.Ermitteln(sim);
 
-            // Berechnung Wärme
-            waerme_spk = sim.simulation_spk.S_Waerme_spk;
-            waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
-            waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-            waerme_bhkw = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh;
-            gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar + waerme_bhkw;
-            restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
+            // Berechnung Wärme - seit iU9-W11a.3 aus dem Kern
+            // (SimulationErgebnisCtrl.Uebersicht, Befund W11-B35). Dieselben sechs
+            // Summen standen wortgleich in Form_Simulation_Detail :4720-4734, dort aber
+            // OHNE den BHKW-Term. Jetzt fragen beide Stellen dieselbe Rechnung.
+            var summen = SimulationErgebnisCtrl.Uebersicht(
+                sim, sim.simulation_Waermebedarf, sim.simulation_Strombedarf);
+            waerme_spk = summen.WaermeKesselMwh;
+            waerme_wp = summen.WaermeWpMwh;
+            waerme_heizstab = summen.WaermeHeizstabMwh;
+            waerme_solar = summen.WaermeSolarMwh;
+            waerme_bhkw = summen.WaermeBhkwMwh;
+            gesamt_waerme = summen.WaermeGesamtMwh;
+            restwaermebedarf = summen.RestwaermebedarfMwh;
 
             FillTableWithData(dataGridView1);
         }
