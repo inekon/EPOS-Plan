@@ -106,6 +106,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dublettenbefund ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BAUM {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leere Kopien bereinigen ähnelt.
         /// </summary>
         public static string ADM_DUBLETTEN_BTN_BEREINIGEN {
@@ -129,6 +138,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_DUBLETTEN_BTN_PROTOKOLL {
             get {
                 return ResourceManager.GetString("ADM_DUBLETTEN_BTN_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_BTN_SCHLIESSEN", resourceCulture);
             }
         }
         
@@ -196,11 +214,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Protokoll wurde gespeichert. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt noch nichts zu speichern – das Protokoll ist leer. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_MSG_PROTOKOLL_LEER {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_MSG_PROTOKOLL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendungsprüfung ist fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_MSG_VERWENDUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_MSG_VERWENDUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Name: ähnelt.
         /// </summary>
         public static string ADM_DUBLETTEN_NAME_NEU {
             get {
                 return ResourceManager.GetString("ADM_DUBLETTEN_NAME_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gelöscht. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_PROT_GELOESCHT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_PROT_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen fehlgeschlagen – die Zeile bleibt stehen. ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_PROT_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_PROT_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Umbenennen fehlgeschlagen) ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_PROT_UMBENENNEN_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_PROT_UMBENENNEN_FEHLER", resourceCulture);
             }
         }
         
@@ -219,6 +291,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_DUBLETTEN_READONLY_GESPERRT {
             get {
                 return ResourceManager.GetString("ADM_DUBLETTEN_READONLY_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dublettensuche läuft… ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_SCAN_LAEUFT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_SCAN_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_SP_SPALTE {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_SP_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ADM_DUBLETTEN_SP_WERT {
+            get {
+                return ResourceManager.GetString("ADM_DUBLETTEN_SP_WERT", resourceCulture);
             }
         }
         
@@ -466,6 +565,213 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SCHUTZ_TITEL {
             get {
                 return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen… ähnelt.
+        /// </summary>
+        public static string ADM_SET_BTN_DURCHSUCHEN {
+            get {
+                return ResourceManager.GetString("ADM_SET_BTN_DURCHSUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwerte ähnelt.
+        /// </summary>
+        public static string ADM_SET_BTN_STANDARDWERTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_BTN_STANDARDWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirklich alle Einstellungen auf die Werksstandards zurück... ähnelt.
+        /// </summary>
+        public static string ADM_SET_FRAGE_STANDARDWERTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_FRAGE_STANDARDWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwerte wiederherstellen ähnelt.
+        /// </summary>
+        public static string ADM_SET_FRAGE_STANDARDWERTE_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SET_FRAGE_STANDARDWERTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Allgemeiner Anwendungsordner: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ALLGEMEIN {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ALLGEMEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner für Datenbank-Sicherungen: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_DB_EXPORT {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_DB_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner für Datenbank-Importe: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_DB_IMPORT {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_DB_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Datenbankdatei: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_DB_NAME {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_DB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner der Datenbank: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_DB_PFAD {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_DB_PFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adresse der Geokodierung (Nominatim): ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_GEOKODIERUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_GEOKODIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adresse der PVGIS-Schnittstelle: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_PVGIS {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner der VDI-3805-Datensätze: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_VDI_PFAD {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_VDI_PFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adresse des Wiki (WordPress): ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_WORDPRESS {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_WORDPRESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einstellungen wurden gespeichert. ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der KI-Schalter konnte nicht gelesen werden. ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_KI_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_KI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner und Name der Datenbank wirken erst beim nächsten P... ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_NEUSTART {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_NEUSTART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordner konnten nicht erstellt werden. Bitte die Pfada... ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_ORDNER_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_ORDNER_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardwerte wurden geladen. Mit „Speichern" werden ... ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_STANDARDWERTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_STANDARDWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anwendung ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_ANWENDUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_ANWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_DATENBANK {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI Datensätze ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_VDI {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_VDI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Web-Schnittstellen (API) ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_WEB {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_WEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration – Globale Anwendungseinstellungen ähnelt.
+        /// </summary>
+        public static string ADM_SET_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SET_TITEL", resourceCulture);
             }
         }
         
@@ -5075,15 +5381,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GESETZ_BTN_SCHLIESSEN {
             get {
                 return ResourceManager.GetString("GESETZ_BTN_SCHLIESSEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
-        /// </summary>
-        public static string GESETZ_BTN_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("GESETZ_BTN_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -12856,6 +13153,420 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KKOMP_TT_ZEILE_LOESCHEN {
             get {
                 return ResourceManager.GetString("KKOMP_TT_ZEILE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel [°] ähnelt.
+        /// </summary>
+        public static string KLIMA_ACHSE_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("KLIMA_ACHSE_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur [°C] ähnelt.
+        /// </summary>
+        public static string KLIMA_ACHSE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_ACHSE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string KLIMA_ACHSE_X {
+            get {
+                return ResourceManager.GetString("KLIMA_ACHSE_X", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string KLIMA_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("KLIMA_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten einlesen ähnelt.
+        /// </summary>
+        public static string KLIMA_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("KLIMA_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KLIMA_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KLIMA_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel Verlauf ähnelt.
+        /// </summary>
+        public static string KLIMA_DIA_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("KLIMA_DIA_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahrestemperatur Verlauf ähnelt.
+        /// </summary>
+        public static string KLIMA_DIA_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_DIA_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
+        /// </summary>
+        public static string KLIMA_FELD_LATITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_FELD_LATITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude ähnelt.
+        /// </summary>
+        public static string KLIMA_FELD_LONGITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_FELD_LONGITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion „{0}" wirklich löschen?  Ihre Stunden- un... ähnelt.
+        /// </summary>
+        public static string KLIMA_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KLIMA_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion löschen ähnelt.
+        /// </summary>
+        public static string KLIMA_FRAGE_LOESCHEN_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_FRAGE_LOESCHEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste der importierten Regionen ähnelt.
+        /// </summary>
+        public static string KLIMA_GRP_LISTE {
+            get {
+                return ResourceManager.GetString("KLIMA_GRP_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ort auswählen oder Longitude und Latitude eingeben ähnelt.
+        /// </summary>
+        public static string KLIMA_GRP_STANDORT {
+            get {
+                return ResourceManager.GetString("KLIMA_GRP_STANDORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Details zur Region: ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_DETAILS {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_DETAILS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importieren Sie hier die meteorologischen Datensätze (TMY... ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_IMPORT_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_IMPORT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude: ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_LATITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_LATITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude: ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_LONGITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_LONGITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die oder ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_ODER {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_ODER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region auswählen oder eingeben (z. B. Berlin): ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_ORT {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Import wurde abgebrochen. ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Klimaregion auswählen. ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_AUSWAEHLEN {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_AUSWAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Klimadaten-Download: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_DOWNLOAD_FEHLER {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_DOWNLOAD_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben überprüfen: Longitude, Latitude und Bezeichnung ... ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_EINGABEN_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_EINGABEN_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die ID der neu angelegten Klimaregion konnte nicht ermitt... ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_ID_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_ID_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Import wurde abgebrochen. Alle Änderungen wurden rück... ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_IMPORT_FEHLER {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_IMPORT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion „{0}" ist angelegt: {1} Stundenwerte und ... ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_IMPORT_FERTIG {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_IMPORT_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Region liegen keine Stundenwerte vor. ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_KEINE_DATEN {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_KEINE_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ort „{0}" konnte nicht ermittelt werden. {1} ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_ORT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_ORT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabefehler (PVGIS): {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_PVGIS_EINGABE {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_PVGIS_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Klimaregion ist schreibgeschützt (ReadOnly) und kan... ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_READONLY {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion „{0}" gibt es bereits. ähnelt.
+        /// </summary>
+        public static string KLIMA_MSG_SCHON_VORHANDEN {
+            get {
+                return ResourceManager.GetString("KLIMA_MSG_SCHON_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
+        /// </summary>
+        public static string KLIMA_REIHE_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("KLIMA_REIHE_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_REIHE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_REIHE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
+        /// </summary>
+        public static string KLIMA_REITER_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("KLIMA_REITER_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_REITER_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_REITER_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten abrufen… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_ABRUF {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_ABRUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fertig. ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_FERTIG {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Koordinaten ermitteln… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_KOORDINATEN {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_KOORDINATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenstände rechnen… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_RECHNEN {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion anlegen… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte schreiben… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_STUNDEN {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tageswerte schreiben… ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_TAGE {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string KLIMA_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_TITEL", resourceCulture);
             }
         }
         
