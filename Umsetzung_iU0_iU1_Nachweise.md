@@ -1,4 +1,4 @@
-# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
+﻿# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
 
 **Stand 03.09.2026 · Branch `ios_migration` · Kopfstand `f95fc34`**
 
@@ -133,7 +133,13 @@ ist nicht mehr nötig.
 
 **Nachweis Windows:**
 
-- [ ] Ganglinien-Import in `Form_PeakShaving` mit **`.xlsx`**
+- [x] Ganglinien-Import mit **`.xlsx`** — abgehakt mit iU9‑W12.0i: Probe
+      `EPOS.Kern.Tests/Proben/Ganglinien/p11_stunden_excel.xlsx` faehrt den Weg
+      `Erkenne → Lies → Pruefe` ohne Oberflaeche und mit eingefrorenen
+      Erwartungswerten. Dabei fiel Befund W12‑B27: Der Excelzweig war ueberhaupt
+      nicht benutzbar (drei Leseschleifen liefen um eine Zeile ueber das Feld
+      hinaus, jeder `.xlsx`-Import endete in `IMPORT_PROT_LESEFEHLER`). Die Maske
+      heisst seit iU9‑W12.6 `PeakShavingDialog`.
 - [ ] dasselbe mit **`.xlsm`**
 - [ ] dasselbe mit **`.xls`** — muss die neue Meldung bringen
 - [ ] dasselbe mit einer **parallel in Excel geöffneten Mappe**

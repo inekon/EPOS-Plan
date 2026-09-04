@@ -444,47 +444,31 @@ namespace WindowsFormsApplication1
 
         private void pBox_StromMessdaten_Click(object sender, EventArgs e)
         {
-            Form_Stromganglinie frm = new Form_Stromganglinie();
+            // iU9-W12.5: Die Zuordnung ist die Razor-Komponente StromganglinieDialog;
+            // Form_Stromganglinie ist im selben Schritt GELOESCHT (Regel M1). Am
+            // Ablauf aendert sich nichts: Die Liste wird an Ort und Stelle
+            // bearbeitet, geschrieben wird hier (Risiko R-W12-4).
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            RecordSet rs = new RecordSet();
 
-            frm.DateiListe.Clear();
+            // iU9-W12.0g: Der konkatenierte INNER JOIN stand dreimal im Bestand und
+            // liegt jetzt als Z_ProjektStromganglinieCtrl.LiesProjekt im Kern.
+            List<Z_ProjektStromganglinieModel> liste =
+                Z_ProjektStromganglinieCtrl.LiesProjekt(m_ID_Projekt);
 
-            string sql = "SELECT Z_ProjektStromganglinie.ID, Z_ProjektStromganglinie.ID_Projekt, " +
-                  "Z_ProjektStromganglinie.ID_Ganglinie, Tab_Stromganglinie.Bezeichner " +
-                  "FROM Z_ProjektStromganglinie INNER JOIN Tab_Stromganglinie ON " +
-                  "Z_ProjektStromganglinie.ID_Ganglinie = Tab_Stromganglinie.ID " +
-                  " where Z_ProjektStromganglinie.ID_Projekt=" + m_ID_Projekt;
-
-            rs.Open(sql);
-            while (rs.Next())
-            {
-                Z_ProjektStromganglinieCtrl item = new Z_ProjektStromganglinieCtrl();
-                item.m_ID_Z = (int)rs.Read("ID");
-                item.m_ID_Projekt = m_ID_Projekt;
-                item.m_ID_Stromganglinie = (int)rs.Read("ID_Ganglinie");
-                item.m_szStromganglinie = (string)rs.Read("Bezeichner");//item.Text;
-                frm.DateiListe.Add(item);
-            }
-            rs.Close();
-
-            frm.m_ID_Projekt = m_ID_Projekt;
-            frm.SetControls(m_szProjektname);
-
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            if (StromganglinieHuelle.Oeffnen(this, m_ID_Projekt, liste))
             {
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
-                wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
+                wizctrl.Add_Stromganglinie(m_ID_Projekt, liste);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
 
-            if (frm.DateiListe.Count > 0)
+            // Der Kachelstatus haengt UNABHAENGIG vom Ergebnis an der Liste -
+            // woertlich wie im Vorlaeufer (:487-490).
+            if (liste.Count > 0)
                 status |= 128;
             else status &= ~128;
             pBox_StromMessdaten.Invalidate();

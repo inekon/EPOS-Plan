@@ -166,17 +166,29 @@ namespace WindowsFormsApplication1
             { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
-            { "Form_PeakShaving",            B_STROMSPEICHER },
+            // iU9-W12.6: Form_PeakShaving ist die Razor-Komponente
+            // PeakShavingDialog; der Bereich bleibt derselbe.
+            { "PeakShavingDialog",           B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
 
             // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
             // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
             { "Form_StromTest",              B_STROMSPEICHER },
 
-            { "Form_GanglinieImportOptionen",B_STROMVERBRAUCHER },
-            { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
-            { "Form_Stromganglinie",         B_STROMVERBRAUCHER },
-            { "Form_Stromganglinie_Admin",   B_STROMVERBRAUCHER },
+            // BEFUND W12-B20, nachgetragen (iU9-W12.3): Der Konfliktdialog hatte als
+            // einzige der sechs Masken der Welle 12 KEINEN Bereich, obwohl
+            // help_mapping.txt seit H1/H2 eine Zeile fuer ihn fuehrt. Er gehoert zum
+            // Uebernehmen fremder Projekte - dasselbe Ziel wie dort.
+            { "ImportKonflikteDialog",       B_PROJEKT },
+
+            // iU9-W12.1/W12.2/W12.4/W12.5: Die vier Ganglinienmasken sind
+            // Razor-Komponenten; der Bereich bleibt derselbe. Die Schluessel des
+            // InfoKnopfes in help_mapping.txt heissen weiter nach den Masken -
+            // sie sind die Adresse des HILFETEXTES, nicht der Klasse.
+            { "GanglinieImportOptionenDialog", B_STROMVERBRAUCHER },
+            { "GanglinieProtokollDialog",    B_STROMVERBRAUCHER },
+            { "StromganglinieDialog",        B_STROMVERBRAUCHER },
+            { "StromganglinieAdminDialog",   B_STROMVERBRAUCHER },
             { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
 
             { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen

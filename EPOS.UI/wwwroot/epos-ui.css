@@ -57,6 +57,12 @@
     /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
     --epos-fehleingabe: rgb(255, 235, 235);
 
+    /* Die zwei Farben des Ganglinien-Pruefprotokolls (iU9-W12.0c). Sie standen
+       woertlich in GanglinienProtokollText.StufeFarbe; im Kern gibt es
+       System.Drawing nicht mehr, dort heisst die Aussage jetzt StufeKlasse. */
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-stufe-warnung: rgb(160, 96, 0);
+
     /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
     --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
     --epos-karte-rahmen-hover: #3B82F6;     /* KARTE_RAHMEN_HOVER           */
@@ -2372,3 +2378,83 @@ body {
 .epos-simerg-vergleich tr.epos-simerg-beste { background: rgb(222, 241, 222); }
 .epos-simerg-vergleich tr.epos-simerg-aktiv { font-weight: 700; }
 .epos-simerg-vergleich tr.epos-simerg-fehler { color: firebrick; }
+
+/* ------------------------------------------------------------------ */
+/* Pruefprotokoll des Lastgangimports (iU9-W12.1)                      */
+/*                                                                     */
+/* Die Stufe faerbt den Text der Zeile, nicht ihre Flaeche - genau wie  */
+/* die ListView des Vorlaeufers (item.ForeColor). "Info" bleibt in der  */
+/* Vorgabefarbe; eine eigene Regel braucht sie nicht, sie steht nur     */
+/* damit jede Zeile eine Klasse traegt.                                */
+/* ------------------------------------------------------------------ */
+.epos-protokoll-kopf { margin: 0 0 8px; }
+.epos-protokoll-stufe { white-space: nowrap; }
+
+.epos-stufe--fehler { color: var(--epos-stufe-fehler); }
+.epos-stufe--warnung { color: var(--epos-stufe-warnung); }
+.epos-stufe--info { color: inherit; }
+
+@media (forced-colors: active) {
+    .epos-stufe--fehler,
+    .epos-stufe--warnung { color: LinkText; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Format und Vorschau des Lastgangimports (iU9-W12.2)                 */
+/*                                                                     */
+/* Die acht Auswahllisten standen im Vorlaeufer in einer GroupBox mit   */
+/* fester Pixelgeometrie; hier ist es ein Raster, das umbricht, sobald  */
+/* das Fenster schmal wird. Die graue erste Vorschauzeile ist der       */
+/* SystemColors.GrayText des Vorlaeufers.                              */
+/* ------------------------------------------------------------------ */
+.epos-importoptionen-datei { margin: 0 0 8px; font-weight: 600; }
+
+.epos-importoptionen-raster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 4px 16px;
+}
+
+.epos-vorschau-kopf { color: var(--epos-text-leise, GrayText); }
+
+/* ------------------------------------------------------------------ */
+/* Konfliktdialog des Imports (iU9-W12.3)                              */
+/*                                                                     */
+/* Die Befundspalte umbricht - sie kann bis zu drei Zusatzzeilen        */
+/* tragen (WrapMode der DataGridView-Spalte des Vorlaeufers). Die       */
+/* beanstandete Zeile wird hervorgehoben, statt wie frueher den Fokus   */
+/* in eine Zelle zu setzen.                                            */
+/* ------------------------------------------------------------------ */
+.epos-konflikt-kopf { margin: 0 0 8px; }
+.epos-konflikt-befund { white-space: normal; }
+.epos-konflikt-beanstandet { color: var(--epos-stufe-fehler); font-weight: 600; }
+.epos-leiste-fueller { flex: 1 1 auto; }
+
+/* ------------------------------------------------------------------ */
+/* Lastspitzenkappung (iU9-W12.6)                                      */
+/*                                                                     */
+/* Der Rechenknopf steht fuer sich zwischen Parametern und Ergebnis -  */
+/* im Vorlaeufer ein einzelner Knopf ueber dem Reiterblock.            */
+/*                                                                     */
+/* Negative Betraege stehen rot: "Hausmuster ZahlFaerben: negative     */
+/* Betraege rot, damit der Blick sie findet" (Form_PeakShaving         */
+/* :617-619, Color.FromArgb(176, 0, 0)). Der Kern liefert dafuer das   */
+/* Kennzeichen Zeile.Negativ, nicht die Farbe.                         */
+/*                                                                     */
+/* Die Trennzeile zwischen zwei Kennzahlgruppen war im Vorlaeufer ein  */
+/* leeres ListViewItem; hier ist sie eine flache Zeile mit einer       */
+/* Trennlinie - sichtbar auch ohne Zeilenhoehe.                        */
+/* ------------------------------------------------------------------ */
+.epos-peakshaving-rechnen { justify-content: flex-end; }
+
+.epos-wert--negativ { color: var(--epos-stufe-fehler); }
+
+.epos-zeile--trenner > td {
+    height: 8px;
+    padding: 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-wert--negativ { color: LinkText; }
+}

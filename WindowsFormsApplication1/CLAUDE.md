@@ -106,9 +106,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`, die absichtlich neben dem Hilfekatalog
   liegt, den sie bedient). Sie stehen nicht unter `Dienste/`, weil sie keine Kern-Schnittstelle
   bedienen, sondern die Oberfläche selbst.
-- **`Controller/`** (**18** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
+- **`Controller/`** (**17** Dateien, `*Ctrl.cs`) — was Oberfläche braucht: die zwölf
   `*KontextMenuCtrl`, `MenueCtrl`, `WizardCtrl`, `KlimaregionStammCtrl`,
-  `EnergietraegerKatalogCtrl`, `PeakShavingCtrl` und `ProjektExportImportCtrl`.
+  `EnergietraegerKatalogCtrl` und `ProjektExportImportCtrl`.
+  **`PeakShavingCtrl` ist mit iU9‑W12.0a in den Kern gezogen** — er war
+  vollständig oberflächenfrei, und die Peak-Shaving-Komponente in `EPOS.UI`
+  erreichte ihn hier nicht (Befund W12‑B23).
   **`WPCtrl` ist mit iU9-W7.0a in den Kern gezogen**, samt der Streichung seiner
   WinForms-Hälfte `WPCtrl.WinForms.cs` — `FillListBox(ListBox)` hatte im ganzen Bestand
   keinen Aufrufer, und ein partieller Typ geht nicht über die Assemblygrenze.
@@ -299,12 +302,16 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Controller-Wege, Befund W10‑B35). Die sechs Hüllen der Welle 10a
   verlieren ihren FENSTERweg und behalten ihren Parametersatz — die sieben
   Dialoge sind jetzt Überlagerungen der Seite (Risiko R2).
-  Der **Stapellauf der Formularkarte zählt seither 43 Masken** (49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
+  Der **Stapellauf der Formularkarte zählt seither 38 Masken** (43 nach iU9‑W11b, 49 nach iU9‑W10b, 50 nach iU9‑W10a, 55 nach iU9‑W9, 63 nach iU9‑W8, 73 nach iU9‑W7, 81 nach
   iU9‑W6, 88 nach iU9‑W5, 91 nach iU9‑W4, 98 nach iU9‑W3, 102 nach iU9-W2, 105 nach
-  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **27** (28 nach W10b, 29 nach W10a, 37 nach W8,
+  iU9-W0, 111 nach iU9-W1, 118 davor), lokalisiert sind noch **25** (27 nach W11b, 28 nach W10b, 29 nach W10a, 37 nach W8,
   47 nach W7), und die
-  Erreichbarkeit steht auf **42 von 43, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
-  Zahl.
+  Erreichbarkeit steht auf **37 von 38, 0 × „nein", 0 × „verwaist"**; jede weitere Welle senkt die
+  Zahl. **Der Anker des Erreichbarkeitstests hängt seit iU9‑W12 an
+  `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`): Von den zwölf
+  Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13 oder W14
+  (Befund W12‑B26), der Test kann seine Form „über die Startseite" also nicht
+  behalten.
   **Mit iU9‑W11b sind sechs weitere Masken verschwunden — die letzten des
   Simulationsbereichs**, zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer,
   21 MessageBox und 17 Zeichenflächen: `Form_Simulation_Detail` (7 629 Z. +
@@ -355,6 +362,41 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   siehe „Nebenläufigkeit" unten. `KonfigurationCtrl.LiesProjekt` haben W10b und
   W11a gleichzeitig gebraucht; es gibt sie EINMAL (siehe dort). Protokoll:
   [`Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md`](Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md).
+  **Mit iU9‑W12 sind sechs weitere Masken verschwunden — die Stromganglinien,
+  die Lastspitzenkappung und der gemeinsame Konfliktdialog des Imports**,
+  zusammen 2 134 Zeilen `.cs`, 1 409 Zeilen Designer, 10 `MessageBox` und
+  13 indirekte über `Program.ZahlPruefen`: `Form_GanglinieProtokoll` (148 Z.),
+  `Form_GanglinieImportOptionen` (383 Z.), `Form_ImportKonflikte` (441 Z., ohne
+  Designer), `Form_Stromganglinie_Admin` (276 Z.), `Form_Stromganglinie`
+  (125 Z.) und `Form_PeakShaving` (761 Z.). An ihrer Stelle stehen **vier
+  Hüllen** — `Views/Import/ImportKonflikteHuelle.cs`,
+  `Views/Stromverbraucher/StromganglinieAdminHuelle.cs`,
+  `Views/Stromverbraucher/StromganglinieHuelle.cs`,
+  `Views/Stromspeicher/PeakShavingHuelle.cs`.
+  **Der rote Faden ist die AP5-Importkette**, die zweimal wörtlich im Bestand
+  stand (mit Ablage in der Verwaltung, ohne in der Lastspitzenkappung); sie ist
+  jetzt EIN Kern-Ablauf `GanglinienImportAblauf` mit drei Rückrufen, und die
+  drei Zwischenmasken erscheinen als **Überlagerung** desselben Fensters.
+  `ImportKonflikteHuelle` ist **Zwischenstand**: Sie bedient die vier
+  Importmasken der Welle 13 (je eine geänderte Zeile) und wird dort gelöscht.
+  Neu im Kern sind `Allgemein/Import/GanglinienImportAblauf.cs`,
+  `Allgemein/Import/GanglinienOptionenModell.cs`,
+  `Allgemein/Import/GanglinienProtokollText.cs` (verschoben),
+  `Allgemein/Katalog/ImportKonfliktModell.cs`,
+  `Allgemein/Bericht/PeakShavingBild.cs`,
+  `Controller/PeakShavingKennzahlenBlock.cs`,
+  `Controller/PeakShavingEingaben.cs` und `Controller/PeakShavingCtrl.cs`
+  (verschoben) — **`Controller/` führt damit noch 17 Dateien**.
+  **Der Rechenlauf der Lastspitzenkappung läuft seither NEBENLÄUFIG** (siehe
+  „Nebenläufigkeit"), und das Vorher/Nachher-Bild kommt als PNG aus
+  `ChartRenderer.ErzeugerStapel` — kein neuer Renderer, die ChartProben bleiben
+  bei 30. Der **Nachweis der Welle ist der bitgleiche Ganglinien-Import**:
+  zwölf Proben unter `EPOS.Kern.Tests/Proben/Ganglinien/` mit eingefrorenen
+  Erwartungswerten, angelegt VOR dem Umbau (dabei fiel Befund W12‑B27 — der
+  Excel-Zweig war überhaupt nicht benutzbar). **`Views/Import` führt seither
+  keine Maske mehr**, `Views/Stromverbraucher` und `Views/Stromspeicher` je
+  eine. Protokoll:
+  [`Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md).
 - **`Allgemein/`** (**42** `.cs`; 43 vor iU9‑W10b — `Simulation/SchemaModell.cs` ist in den Kern gezogen; 44 vor iU9‑W10a — `GrafikTools/KlimazonenKarte.cs` ist mit seiner einzigen Maske gefallen) — geteilte Infrastruktur, siehe unten. Seit iU5 frei von
   `Program.*`, `MessageBox`, Registry, DPAPI und `SpecialFolder`; die Ausnahmen
   (`Update/ErststartMigration.cs`, `Update/SchemaMigration.cs`, der Oberflächenbaustein
@@ -388,7 +430,7 @@ Kopfkommentar von [`../EPOS.Kern/EPOS.Kern.csproj`](../EPOS.Kern/EPOS.Kern.cspro
 | `GrafikTools/` | `ChartManager`, `RoundedPanel` (`KlimazonenKarte` ist mit iU9‑W10a.3 gelöscht — der Baustein `Bildkarte` in `EPOS.UI` tritt an seine Stelle) |
 | `Hilfe/` | `WikiHelpCatalog` (in `HelpCatalog.cs`) — lädt die Rubrik `Programm Dokumentation/` von `wiki.epos-plan.de` (Action-API `allpages`+`apprefix`, Basis-URL aus `Settings.WordPressUrl`, Not-Rückfall `Program.WIKI_STANDARD`); `HilfeAutomatik`, `help_mapping.txt`/`help_cache.json` (Ziele = Kurznamen der Rubrik-Unterseiten, optional `#anker`), `DokuUebersetzung` (EN über translate.goog). Umsetzung 29.08.2026, Protokoll `H1H2_Umsetzung_Protokoll.md` im selben Ordner |
 | `Blazor/` | **Die Hülle für Razor-Dialoge und -Seiten (iU8 / iU9-W5).** `BlazorDialogForm<T>` — ein modales `Form` mit `BlazorWebView`, das eine Komponente aus `EPOS.UI` zeigt und ihr Ergebnis als `DialogResult` zurückgibt; `DpiInsel` (P/Invoke `SetThreadDpiAwarenessContext`); `BlazorDienste` — das Dienstverzeichnis der WebView, einmal gebaut; seit iU9-W1.2 `NamensDialogHuelle` für die fünf zeichengleichen Namensabfragen des Bestands (seit iU9-W2.1 alle fünf umgestellt: `Bezeichner`, `BezeichnerUndBeschreibung`, `FragenMitHinweis`); seit iU9-W2.2 `Sprungbruecke` — Schlüssel → `Form`, **modal aus dem Rückruf einer Razor-Komponente heraus** (nur WinForms-Ziele; seit iU9-W6.0d auch die vier Katalogverwaltungen der Erzeuger, seit iU9-W7.0f die Stammdaten der Solarthermieganglinien, seit iU9-W10a.0c die Pufferspeicher-Verwaltung NUR ZUM ANSEHEN — `PufferSpAdminNurLesen`, ein eigener Schlüssel, weil derselbe Sprung ohne das Kennzeichen aus dem Nachschlagen das Bearbeiten des Auslieferungskatalogs machte); seit iU9-W6.0e `BlazorAssistentSeite<T>` — dasselbe für eine ASSISTENTENSEITE: randlos, `TopLevel = false`-tauglich, die WebView verzögert in `Bestuecken` gebaut (Risiko R5), beim Wiederbesuch wird die Wurzelkomponente getauscht statt der WebView. Seit iU9-W4.0 gilt für Blazor-Ziele nicht mehr der nachgelagerte Sprung, sondern der Baustein `Ueberlagerung`: ein modaler Bereich IM selben Fenster, also ohne zweite WebView (Risiko R2). Die Hülle liefert dafür `Gaben()` statt `Oeffnen()`. **Seit iU9-W5.0 gibt es die zweite Hüllenform: `BlazorSeite<T> : UserControl`** — nicht-modal, für eine Seite, die in einer vorhandenen Maske sitzt und dort bleibt (`Form_Start.tabPage6`). Sie trägt dieselben `CreationProperties` wie die Dialoghülle, insbesondere denselben `UserDataFolder`: ein gemeinsamer Browserprozess für Dialoge und Seiten. **Eine WebView je Fenster** (Risiko R5) — umgeschaltet wird in der Komponente (Baustein `Reiter` bzw. die Navigation von `BerichteKostenSeite`), nicht durch eine zweite Hülle. Der Projektwechsel läuft über `EPOS.UI.Dienste.SeitenZustand`, ein Objekt mit Änderungsereignis, damit die WebView **nicht** neu gebaut wird. **DPI:** Die `DpiInsel` wirkt nur für den modalen Lauf; eine eingebettete Seite sitzt im Fenster der DpiUnaware-`Form_Start` und wird ab 125 % bitmapskaliert — `BlazorSeite` versucht es deshalb gar nicht erst und dokumentiert den Befund (offener Entscheid iF21). Die **einzige** Stelle, an der WinForms und Blazor aufeinandertreffen |
-| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md`, `iU9_W9_Blazor_Port_Protokoll.md`, `iU9_W10a_Blazor_Port_Protokoll.md`, `iU9_W10b_Blazor_Port_Protokoll.md`, `iU9_W11a_Kern_Protokoll.md` und `iU9_W11b_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code — darunter die Portprotokolle `B5b_Blazor_Port_Protokoll.md`, `iU9_W1_Blazor_Port_Protokoll.md`, `iU9_W2_Blazor_Port_Protokoll.md`, `iU9_W3_Blazor_Port_Protokoll.md`, `iU9_W4_Blazor_Port_Protokoll.md`, `iU9_W5_Blazor_Port_Protokoll.md`, `iU9_W6_Blazor_Port_Protokoll.md`, `iU9_W7_Blazor_Port_Protokoll.md`, `iU9_W8_Blazor_Port_Protokoll.md`, `iU9_W9_Blazor_Port_Protokoll.md`, `iU9_W10a_Blazor_Port_Protokoll.md`, `iU9_W10b_Blazor_Port_Protokoll.md`, `iU9_W11a_Kern_Protokoll.md`, `iU9_W11b_Blazor_Port_Protokoll.md` und `iU9_W12_Blazor_Port_Protokoll.md` (Feldkartenabgleich, Abweichungen A-n, Windows-Abnahme je Welle) |
 
 **Datenzugriff:** `DataRepository.cs` — Standard, in ~160 Dateien; die Datei liegt seit iU4 in `../EPOS.Kern/Allgemein/`. Seit 02.09.2026 (`6486c36`)
 spricht sie **SQLite** über `Microsoft.Data.Sqlite` (`Data Source=<Pfad>\Kenndaten.sqlite`,
@@ -482,9 +524,12 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   455 von 573 Dateien eine BOM, 118 nicht — das ist unschädlich (UTF-8 ohne BOM ist eindeutig),
   beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
   (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
-- **Nebenläufigkeit: ZWEI Rechnungen laufen im Hintergrund, sonst keine.**
-  `Form_SpeicherOptimierung` seit iF22 (Rastersuche) und seit **iU9‑W11a.4** der
-  Simulationslauf der `Form_Simulation_Detail`. Beide folgen derselben Aufteilung
+- **Nebenläufigkeit: DREI Rechnungen laufen im Hintergrund, sonst keine.**
+  `Form_SpeicherOptimierung` seit iF22 (Rastersuche), seit **iU9‑W11a.4** der
+  Simulationslauf der Ergebnisseite und seit **iU9‑W12.6** die
+  Lastspitzenkappung (`PeakShavingHuelle`: Kappungslauf, Schwellensuche, das
+  Lesen der Ganglinienwerte und das Zeichnen — Befund W12‑B22; in einer WebView
+  ist der Renderfaden derselbe Faden). Beide folgen derselben Aufteilung
   (Klassenkopf `Form_SpeicherOptimierung.cs:29–46`): **Der Bedienfaden liest die
   Datenbank**, der Hintergrund rechnet, das Marshalling besorgt `Progress<T>` (auf
   dem Bedienfaden erzeugt, übernimmt dessen `SynchronizationContext`). In der

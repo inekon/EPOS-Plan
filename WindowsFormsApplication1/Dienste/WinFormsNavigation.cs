@@ -104,12 +104,10 @@ namespace WindowsFormsApplication1
                         return MitOk(frm);
                     }
 
+                // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
+                // StromganglinieAdminDialog; die Huelle zeigt sie modal.
                 case Masken.StromganglinieAdmin:
-                    using (Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return StromganglinieAdminHuelle.Oeffnen(null);
 
                 case Masken.SolarganglinieAdmin:
                     using (Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin())
@@ -153,9 +151,12 @@ namespace WindowsFormsApplication1
                     using (Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen()) return MitOk(frm);
 
                 // --- Masken mit Argument ---------------------------------------------
+                // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
+                // PeakShavingDialog; die Huelle zeigt sie modal. Der Rueckgabewert
+                // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
+                // einziger Fussknopf trug DialogResult.Cancel.
                 case Masken.PeakShaving:
-                    using (Form_PeakShaving frm = new Form_PeakShaving(Ganzzahl(argumente, 0)))
-                        return MitOk(frm);
+                    return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
 
                 case Masken.ProjektSpeichernUnter:
                     using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())

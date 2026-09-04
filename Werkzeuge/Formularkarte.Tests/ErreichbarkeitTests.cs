@@ -150,17 +150,24 @@ public sealed class ErreichbarkeitTests
     }
 
     [Fact]
-    public void FormStromganglinieIstUeberDieStartseiteZuErreichen()
+    public void FormAdminSettingsIstUeberDasHauptfensterZuErreichen()
     {
-        // iU9-W9: Bis dahin stand hier Form_Gebaeude (davor Form_Heizkessel); beide
-        // sind mit ihrer Welle geloescht (Regel M1). Form_Stromganglinie haengt
-        // genauso an einer Kachel der Startseite (pBox_StromMessdaten_Click) und
-        // bleibt bis Welle 12 im Bestand.
-        var knoten = Knoten("Form_Stromganglinie");
+        // iU9-W12: Bis dahin stand hier Form_Stromganglinie (davor Form_Gebaeude,
+        // davor Form_Heizkessel); alle drei sind mit ihrer Welle geloescht
+        // (Regel M1). Der Anker kann seine Form ("ueber die STARTSEITE") nicht
+        // behalten: Von den zwoelf Masken, deren Pfad mit Form_Start beginnt,
+        // faellt keine erst in W13 oder W14 - alle W13/W14-Masken haengen am Menue
+        // des MDIMainForm (Befund W12-B26).
+        //
+        // Nachfolger ist Form_AdminSettings ueber MDIMainForm ->
+        // MenuItem_Einstellungen: der kuerzeste und stabilste Weg im Bestand, und
+        // W14c ist die LETZTE der W13/W14-Wellen - der Anker haelt damit am
+        // laengsten.
+        var knoten = Knoten("Form_AdminSettings");
 
         Assert.Equal(Erreichbar.Ja, knoten.Status);
-        Assert.StartsWith("Form_Start", knoten.Pfad, StringComparison.Ordinal);
-        Assert.EndsWith("Form_Stromganglinie", knoten.Pfad, StringComparison.Ordinal);
+        Assert.StartsWith("MDIMainForm", knoten.Pfad, StringComparison.Ordinal);
+        Assert.EndsWith("Form_AdminSettings", knoten.Pfad, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -246,10 +253,10 @@ public sealed class ErreichbarkeitTests
         // Gemessener Stand nach Welle 10a: 49 von 50 (54 von 55 nach W9, 61 von
         // 63 nach W8, 71 von 73 nach W7, 79 von 81 nach W6, 86 von 88 nach W5,
         // 89 von 91 nach iU9-W4, 96 von 98 nach iU9-W3) - die eine uebrige ist
-        // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43. Die Zahl
-        // sinkt mit jeder Welle,
+        // "unklar". Nach Welle 10b: 48 von 49, nach Welle 11b: 42 von 43, nach
+        // Welle 12: 37 von 38. Die Zahl sinkt mit jeder Welle,
         // der Anteil bleibt.
-        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 42,
+        Assert.True(ergebnis.Erreichbar(Erreichbar.Ja) >= 37,
                     "Nur " + ergebnis.Erreichbar(Erreichbar.Ja) + " Masken gelten als erreichbar.");
 
         var uebersicht = Stapel.Uebersicht(ergebnis, Projekt);
@@ -270,7 +277,7 @@ public sealed class ErreichbarkeitTests
         // Das Ungeklaerte steht oben - die Liste wird von vorn abgearbeitet.
         var kopf = befund.Substring(befund.IndexOf("| Maske |", StringComparison.Ordinal));
         Assert.True(kopf.IndexOf("| Form_PufferSp_Bearbeiten | unklar |", StringComparison.Ordinal) <
-                    kopf.IndexOf("| Form_Stromganglinie | ja |", StringComparison.Ordinal),
+                    kopf.IndexOf("| Form_AdminSettings | ja |", StringComparison.Ordinal),
                     "Die ungeklaerten Masken stehen nicht vorn.");
     }
 
