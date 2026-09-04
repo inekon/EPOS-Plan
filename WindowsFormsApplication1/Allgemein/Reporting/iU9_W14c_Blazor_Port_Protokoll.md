@@ -390,6 +390,11 @@ Die Zeugenkette ist damit vollständig dokumentiert:
 | Wächter Plattform (`System.Windows.Forms` …) | leer | **leer** |
 | `git grep` auf die fünf Klassennamen, `ChartManager`, `RoundedPanel`, `Sprungziel.Gesetzesparameter` | 0 außerhalb Protokoll/Prüfmuster | **0** — es bleiben Kommentare, `HilfeKontext`-Schlüssel und `help_mapping`-Adressen (dieselbe Praxis wie seit W12) |
 
+**Nach dem Abschluss-Merge von `origin/ios_migration`** (`809fe41`, der iOS-Statusblock und
+die Nachweisliste — nur zwei Dokumente, keine Quelldatei) ist das Gate unverändert:
+0 Fehler / 6 Warnungen, 3 430 Tests, 124 Formularkarte-Fälle, 32 ChartProben, Referenzlauf
+byte-gleich, Stapellauf 17/18/11 und 17/0/0/0.
+
 **Der Referenzlauf sieht diese Welle nicht** — keine der fünf Masken ist Simulationseingang;
 `Tab_Gesetzesparameter` liest die Wirtschaftlichkeit, `Tab_Solar_STAMM` wird beim Projektanlegen
 kopiert, und der Lauf rechnet auf den PROJEKTtabellen. Dass er trotzdem byte-gleich ist, ist der
