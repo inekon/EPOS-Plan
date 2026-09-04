@@ -1052,6 +1052,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_SCHUTZ {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: abgeleitet aus Summe / Pel ähnelt.
         /// </summary>
         public static string BHKW_INVEST_HINWEIS_ABGELEITET {
@@ -6872,6 +6881,456 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KAUSW_TITEL {
             get {
                 return ResourceManager.GetString("KAUSW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten... ähnelt.
+        /// </summary>
+        public static string KBROW_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("KBROW_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KBROW_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KBROW_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu... ähnelt.
+        /// </summary>
+        public static string KBROW_BTN_NEU {
+            get {
+                return ResourceManager.GetString("KBROW_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Brennstoffart: ähnelt.
+        /// </summary>
+        public static string KBROW_FILTER_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KBROW_FILTER_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Hersteller: ähnelt.
+        /// </summary>
+        public static string KBROW_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("KBROW_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Leistung: ähnelt.
+        /// </summary>
+        public static string KBROW_FILTER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KBROW_FILTER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Volumen: ähnelt.
+        /// </summary>
+        public static string KBROW_FILTER_VOLUMEN {
+            get {
+                return ResourceManager.GetString("KBROW_FILTER_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Info markiertes BHKW ähnelt.
+        /// </summary>
+        public static string KBROW_GRUPPE_BHKW {
+            get {
+                return ResourceManager.GetString("KBROW_GRUPPE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Info markierter Kessel ähnelt.
+        /// </summary>
+        public static string KBROW_GRUPPE_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("KBROW_GRUPPE_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Info markierter Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KBROW_GRUPPE_PUFFERSP {
+            get {
+                return ResourceManager.GetString("KBROW_GRUPPE_PUFFERSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Solarkollektoren ähnelt.
+        /// </summary>
+        public static string KBROW_GRUPPE_SOLAR {
+            get {
+                return ResourceManager.GetString("KBROW_GRUPPE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_APERTURFLAECHE {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_APERTURFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkessel ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenzleistung des ausgewählten Moduls: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektor: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_KOLLEKTOR {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_KOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektorfläche: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_KOLLEKTORFLAECHE {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_KOLLEKTORFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul-Name: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_MODULNAME {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_MODULNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_NAME {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Leistung: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_PEL {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermische Leistung: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_PTHERM {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverluste: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_VERLUSTE {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_VOLUMEN {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_VORLAUF {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Datenbank: ähnelt.
+        /// </summary>
+        public static string KBROW_LISTE_BHKW {
+            get {
+                return ResourceManager.GetString("KBROW_LISTE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel aus Datenbank ähnelt.
+        /// </summary>
+        public static string KBROW_LISTE_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("KBROW_LISTE_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher aus Datenbank ähnelt.
+        /// </summary>
+        public static string KBROW_LISTE_PUFFERSP {
+            get {
+                return ResourceManager.GetString("KBROW_LISTE_PUFFERSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auswahl in DB: ähnelt.
+        /// </summary>
+        public static string KBROW_LISTE_SOLAR {
+            get {
+                return ResourceManager.GetString("KBROW_LISTE_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein BHKW auswählen! ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_AUSWAHL_BHKW {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_AUSWAHL_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Kollektor auswählen! ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_AUSWAHL_KOLLEKTOR {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_AUSWAHL_KOLLEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_SCHUTZ_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_SCHUTZ_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenschaften ähnelt.
+        /// </summary>
+        public static string KBROW_SPALTE_EIGENSCHAFTEN {
+            get {
+                return ResourceManager.GetString("KBROW_SPALTE_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KBROW_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KBROW_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW Verwaltung ähnelt.
+        /// </summary>
+        public static string KBROW_TITEL_BHKW {
+            get {
+                return ResourceManager.GetString("KBROW_TITEL_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Heizkessel ähnelt.
+        /// </summary>
+        public static string KBROW_TITEL_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("KBROW_TITEL_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KBROW_TITEL_PUFFERSP {
+            get {
+                return ResourceManager.GetString("KBROW_TITEL_PUFFERSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützt ähnelt.
+        /// </summary>
+        public static string KBROW_TITEL_SCHUTZ {
+            get {
+                return ResourceManager.GetString("KBROW_TITEL_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Solarkollektoren ähnelt.
+        /// </summary>
+        public static string KBROW_TITEL_SOLAR {
+            get {
+                return ResourceManager.GetString("KBROW_TITEL_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche:  ähnelt.
+        /// </summary>
+        public static string KBROW_ZEILE_APERTUR {
+            get {
+                return ResourceManager.GetString("KBROW_ZEILE_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff:  ähnelt.
+        /// </summary>
+        public static string KBROW_ZEILE_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KBROW_ZEILE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortyp:  ähnelt.
+        /// </summary>
+        public static string KBROW_ZEILE_KOLLEKTORTYP {
+            get {
+                return ResourceManager.GetString("KBROW_ZEILE_KOLLEKTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pel:  ähnelt.
+        /// </summary>
+        public static string KBROW_ZEILE_PEL {
+            get {
+                return ResourceManager.GetString("KBROW_ZEILE_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ptherm:  ähnelt.
+        /// </summary>
+        public static string KBROW_ZEILE_PTHERM {
+            get {
+                return ResourceManager.GetString("KBROW_ZEILE_PTHERM", resourceCulture);
             }
         }
         
@@ -13242,6 +13701,267 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Moduldaten ähnelt.
+        /// </summary>
+        public static string MODK_GRUPPE_PV {
+            get {
+                return ResourceManager.GetString("MODK_GRUPPE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherdaten ähnelt.
+        /// </summary>
+        public static string MODK_GRUPPE_SPEICHER {
+            get {
+                return ResourceManager.GetString("MODK_GRUPPE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("MODK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string MODK_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("MODK_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_BEZEICHNER_PV {
+            get {
+                return ResourceManager.GetString("MODK_LBL_BEZEICHNER_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Breite: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_BREITE {
+            get {
+                return ResourceManager.GetString("MODK_LBL_BREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Degradation ähnelt.
+        /// </summary>
+        public static string MODK_LBL_DEGRADATION {
+            get {
+                return ResourceManager.GetString("MODK_LBL_DEGRADATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_FIRMA {
+            get {
+                return ResourceManager.GetString("MODK_LBL_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzschlussstrom (Isc): ähnelt.
+        /// </summary>
+        public static string MODK_LBL_IKURZSCHLUSS {
+            get {
+                return ResourceManager.GetString("MODK_LBL_IKURZSCHLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom im MPP (Impp): ähnelt.
+        /// </summary>
+        public static string MODK_LBL_IMPP {
+            get {
+                return ResourceManager.GetString("MODK_LBL_IMPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand ähnelt.
+        /// </summary>
+        public static string MODK_LBL_LADEZUSTAND {
+            get {
+                return ResourceManager.GetString("MODK_LBL_LADEZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Länge: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_LAENGE {
+            get {
+                return ResourceManager.GetString("MODK_LBL_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string MODK_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("MODK_LBL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
+        /// </summary>
+        public static string MODK_LBL_MODULKOSTEN {
+            get {
+                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_MODULKOSTEN_PV {
+            get {
+                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung (Pmax): ähnelt.
+        /// </summary>
+        public static string MODK_LBL_PMAX {
+            get {
+                return ResourceManager.GetString("MODK_LBL_PMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temp.-Koeffizient Pmax: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_TEMPKOEFF {
+            get {
+                return ResourceManager.GetString("MODK_LBL_TEMPKOEFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string MODK_LBL_TYP {
+            get {
+                return ResourceManager.GetString("MODK_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leerlaufspannung (Uoc): ähnelt.
+        /// </summary>
+        public static string MODK_LBL_ULEERLAUF {
+            get {
+                return ResourceManager.GetString("MODK_LBL_ULEERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannung im MPP (Umpp): ähnelt.
+        /// </summary>
+        public static string MODK_LBL_UMPP {
+            get {
+                return ResourceManager.GetString("MODK_LBL_UMPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string MODK_LBL_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("MODK_LBL_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Datenbank ähnelt.
+        /// </summary>
+        public static string MODK_LISTE_PV {
+            get {
+                return ResourceManager.GetString("MODK_LISTE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher in Datenbank ähnelt.
+        /// </summary>
+        public static string MODK_LISTE_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("MODK_LISTE_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul in Liste auswählen! ähnelt.
+        /// </summary>
+        public static string MODK_MSG_AUSWAHL_MODUL {
+            get {
+                return ResourceManager.GetString("MODK_MSG_AUSWAHL_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher in Liste auswählen! ähnelt.
+        /// </summary>
+        public static string MODK_MSG_AUSWAHL_SPEICHER {
+            get {
+                return ResourceManager.GetString("MODK_MSG_AUSWAHL_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string MODK_MSG_SCHUTZ {
+            get {
+                return ResourceManager.GetString("MODK_MSG_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben überprüfen! ähnelt.
+        /// </summary>
+        public static string MODK_MSG_TYP_FEHLT {
+            get {
+                return ResourceManager.GetString("MODK_MSG_TYP_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Photovoltaik Module ähnelt.
+        /// </summary>
+        public static string MODK_TITEL_PV {
+            get {
+                return ResourceManager.GetString("MODK_TITEL_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Administration Stromspeicher ähnelt.
+        /// </summary>
+        public static string MODK_TITEL_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("MODK_TITEL_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dauernutzung (Vergleich) ähnelt.
         /// </summary>
         public static string NACHT_ERG_SPALTE_VERGLEICH {
@@ -15915,6 +16635,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_VERSION_PROJEKTEINSTELLUNG {
             get {
                 return ResourceManager.GetString("PREIS_VERSION_PROJEKTEINSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string PSPK_FELD_INVEST {
+            get {
+                return ResourceManager.GetString("PSPK_FELD_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
+        /// </summary>
+        public static string PSPK_FELD_VERLUSTE {
+            get {
+                return ResourceManager.GetString("PSPK_FELD_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen ähnelt.
+        /// </summary>
+        public static string PSPK_FELD_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSPK_FELD_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string PSPK_GRP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("PSPK_GRP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
+        /// </summary>
+        public static string PSPK_GRP_KOSTEN {
+            get {
+                return ResourceManager.GetString("PSPK_GRP_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technische Daten ähnelt.
+        /// </summary>
+        public static string PSPK_GRP_TECHNIK {
+            get {
+                return ResourceManager.GetString("PSPK_GRP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_INVEST {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_NAME {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_VERLUSTE {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen: ähnelt.
+        /// </summary>
+        public static string PSPK_LBL_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSPK_LBL_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string PSPK_MSG_SCHUTZ {
+            get {
+                return ResourceManager.GetString("PSPK_MSG_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher bearbeiten ähnelt.
+        /// </summary>
+        public static string PSPK_TITEL {
+            get {
+                return ResourceManager.GetString("PSPK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kombispeicher ähnelt.
+        /// </summary>
+        public static string PSPK_TYP_KOMBI {
+            get {
+                return ResourceManager.GetString("PSPK_TYP_KOMBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string PSPK_TYP_PUFFER {
+            get {
+                return ResourceManager.GetString("PSPK_TYP_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarspeicher ähnelt.
+        /// </summary>
+        public static string PSPK_TYP_SOLAR {
+            get {
+                return ResourceManager.GetString("PSPK_TYP_SOLAR", resourceCulture);
             }
         }
         
