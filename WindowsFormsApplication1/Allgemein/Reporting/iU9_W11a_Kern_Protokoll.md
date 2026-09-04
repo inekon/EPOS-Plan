@@ -273,7 +273,7 @@ bekommt deshalb `ctrl` selbst und nicht `ctrl.model` → **W11a‑O‑5**.
 
 ## 7. Offene Punkte
 
-### W11a‑O‑1 — Restwärme mit oder ohne BHKW (Anwenderfrage)
+### W11a‑O‑1 — Restwärme mit oder ohne BHKW — **ENTSCHIEDEN am 04.09.2026**
 
 Der Ergebnisblock zeigt seit W11a.3 `Projektwärmebedarf − Summe der
 Erzeugerproduktion` **mit** dem BHKW-Term (§ 2). Für 1017 trifft das den Lauf
@@ -288,6 +288,31 @@ Klemmung wäre eine **dritte** Fassung und ist deshalb nicht eingebaut worden.
 Zusatzfrage: Braucht die Übersicht überhaupt zwei Restwärmezahlen — die
 Bilanzgröße `sim.Restwaerme` (Feld „Restwärmebedarf") **und** die Anzeigegröße
 des Ergebnisblocks? W11b könnte auf die erste allein zurückfallen.
+
+> **Entscheid des Anwenders vom 04.09.2026, umgesetzt in iU9‑W11b:**
+> (1) Der Restwärmebedarf ist in **beiden** Ansichten derselbe Wert, und das BHKW
+> zählt mit. (2) Eine **negative Restwärme darf rechnerisch nicht entstehen** — sie
+> zeigt eine falsche Zuordnung zu den Erzeugern. Also nicht klemmen, sondern richtig
+> rechnen: Die Übersicht führt **eine** Restwärmezahl `= sim.Restwaerme`, und
+> „Wärme gesamt" ist die Summe der **DECKUNG** je Erzeuger (Direktdeckung +
+> Speicherentladung je Kanal, wie `NavigatorUebersicht.FillTableWithData` sie über
+> `SimulationRunner.Summiere` bildete) — nicht der Produktion. Damit gilt
+> `Bedarf − Summe Deckung = Restwärme ≥ 0` per Konstruktion. Übersteigt die
+> Produktion eines Erzeugers seine Deckung, ist das ein **Überschuss** (Feld
+> `Wärmeüberschuss`, wie beim BHKW) und keine Restwärme.
+>
+> Gemessen nach der Umstellung (`EPOS.Kern.Tests/W11bZahlenabzug.cs`):
+>
+> | Projekt | Wärmebedarf | Summe Deckung | Restwärme |
+> |---|---:|---:|---:|
+> | 1030 | 6 137,56 | 6 137,56 | **0,00** (vorher −1,76) |
+> | 1007 | 56,90 | 50,85 | **6,04** (unverändert) |
+> | 1017 | 62,91 | 62,91 | **0,00** (unverändert) |
+>
+> Die Abweichung **A‑1** dieses Protokolls ist damit überholt: Nicht mehr die
+> Produktion mit BHKW-Term, sondern die Deckung. **A‑2** (PV-Deckungsgrad) bleibt.
+> Der Referenzlauf ist unberührt — `Tab_Ergebnis.Waermerestbedarf` schreibt
+> unverändert `sim.Restwaerme`.
 
 ### W11a‑O‑2 — die zwei CO₂-Faktoren (Fachprüfung)
 

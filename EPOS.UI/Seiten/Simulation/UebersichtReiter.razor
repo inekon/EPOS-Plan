@@ -1,4 +1,4 @@
-@* Der UEBERSICHTS-Reiter der Ergebnisseite (R2 + NavigatorUebersicht, iU9-W11b.2).
+﻿@* Der UEBERSICHTS-Reiter der Ergebnisseite (R2 + NavigatorUebersicht, iU9-W11b.2).
 
    ZWEI ROLLEN, EINE KOMPONENTE. Sie erscheint als Hauptreiter „Uebersicht"
    (voll: Energiebedarf, Ergebnisblock, Kuchen UND der Navigatorteil) und als
@@ -81,7 +81,14 @@
                     }
 
                     @* Die beiden Restzeilen beschreiben das PROJEKT und nicht eine
-                       Komponente - sie bleiben immer stehen. *@
+                       Komponente - sie bleiben immer stehen.
+
+                       ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Es gibt nur noch EINE
+                       Restwaermezahl. Der Vorlaeufer fuehrte zwei - das Feld
+                       „Restwaermebedarf" (sim.Restwaerme) und den Ergebnisblock
+                       (Bedarf minus PRODUKTION), und die zweite konnte negativ werden.
+                       Beide Felder des DTO tragen jetzt denselben Wert; die Kachel
+                       unten zeigt dieselbe Zahl. *@
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, K.RestwaermeMwh, MWH)
                     @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH)
                 </dl>
