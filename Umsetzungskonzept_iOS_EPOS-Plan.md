@@ -1473,7 +1473,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 >
 > **Protokoll** mit der Feldkarte (eine Kartenzeile), der erzeugten Menütabelle (§ 4), den neun Angleichungen, den
 > Befunden, den Zeugen der Formularkarte (§ 8), der Löschliste mit `git grep`-Nachweis und der **Vollabnahme N1–N10 in
-> sechzehn Punkten**: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`. **Windows-Abnahme
+> sechzehn Punkten**: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme 04.09.2026, erster Befund W16c‑B12 (Startabsturz):** `BlazorSeite<T>` gibt jedem Parametersatz
+> einen `SeitenZustand` unter dem Schlüssel `Zustand` mit; seit W16c ist die Wurzel `BlazorSeite<Hauptfenster>`, und
+> `Hauptfenster.razor` führte den Parameter nicht — Blazor warf beim ersten Rendern, verpackt als
+> `TargetInvocationException` bei `Application.Run`. Behoben in `1429712`: `Hauptfenster` und `AppWurzel` nehmen den
+> Zustand (die Hüllen der Startseite und der Berichte behalten ihre eigenen), `BlazorSeite` prüft per Reflexion und
+> meldet lesbar, `HauptfensterTests` rendern über `AddMultipleAttributes` wie die Hülle (Gegenprobe mit unbekanntem
+> Schlüssel rot); die bunit-Tests sahen es nicht, weil sie mit getippten Parametern rendern (B12a, Parallele zu B11).
+> Abnahmepunkt 0 „Start" bleibt bis zum Gerät offen (W16c‑O‑7). **Windows-Abnahme
 > steht aus** — Erststart mit Lizenz, 54 Menüpunkte in drei Ebenen mit Tastatur und F1, Kopfband, 21 Kacheln, Assistent,
 > Simulation, Bericht, Sprachwechsel, **DPI 100/125/150 %** mit `Form_HelpPopup` und `Form_SpeicherOptimierung` als
 > Kandidaten für eine echte Abweichung, Monitorwechsel, Setup mit WebView2. Der vierundzwanzigste iOS-Lauf
