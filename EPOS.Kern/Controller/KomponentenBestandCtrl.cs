@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
@@ -37,8 +37,18 @@ namespace WindowsFormsApplication1
     /// <c>SetKompCheckBoxes</c>, die Brauchwasser-Abfrage aus
     /// <c>Form_Start.UpdateWizardSymbole</c>).
     /// </para>
+    /// <para>
+    /// <b>Seit iU9-W16a.0 im Kern</b> (K1, Entscheid E-3 der Vermessung). Die Klasse
+    /// lag bis dahin als <c>Views\Wizard\KomponentenBestand.cs</c> in der
+    /// Windows-Anwendung, obwohl sie keine einzige Zeile Oberflaeche enthielt.
+    /// <b>Verschoben, nicht umgeschrieben</b> - dieselben dreizehn Bitwerte, dieselben
+    /// Abfragen, dieselbe Reihenfolge; geaendert ist nur der Name (Hauskonvention
+    /// <c>*Ctrl</c> fuer Kern-Controller). Der Bitgleichheitsnachweis dazu ist
+    /// <c>EPOS.Kern.Tests/KomponentenBestandTests.cs</c> (Nachweis N6): dreizehn
+    /// Referenzprojekte, je ein eingefrorener <c>Form_Start.status</c>-Wert.
+    /// </para>
     /// </summary>
-    public class KomponentenBestand
+    public class KomponentenBestandCtrl
     {
         // Kennungen der dreizehn Komponenten. Die Reihenfolge ist die Lesereihenfolge
         // der Kacheln (Bedarf -> Strom -> Erzeuger -> Speicher), NICHT die der
@@ -95,7 +105,7 @@ namespace WindowsFormsApplication1
         /// <summary>Tab_Projekt.ID, zu der dieser Bestand gelesen wurde.</summary>
         public int ProjektID { get; private set; }
 
-        private KomponentenBestand()
+        private KomponentenBestandCtrl()
         {
             int[] bits = { 8, 16, 32, 4096, 64, 128, 2, 256, 1, 512, 1024, 4, 2048 };
             int[] seiten =
@@ -149,9 +159,9 @@ namespace WindowsFormsApplication1
         /// (neues Projekt) bleibt jeder Eintrag leer — genau das, was der Neu-Modus
         /// braucht.
         /// </summary>
-        public static KomponentenBestand Lesen(int idProjekt)
+        public static KomponentenBestandCtrl Lesen(int idProjekt)
         {
-            KomponentenBestand bestand = new KomponentenBestand();
+            KomponentenBestandCtrl bestand = new KomponentenBestandCtrl();
             bestand.ProjektID = idProjekt;
             if (idProjekt <= 0) return bestand;
 

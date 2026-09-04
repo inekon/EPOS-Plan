@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     /// </para>
     /// <para>
     /// <b>Jetzt (E1(b), E3).</b> Dreizehn <see cref="AktionsKarte"/>n im Kachelstil der
-    /// Startmaske. Ihr Zustand kommt aus <see cref="KomponentenBestand"/> — derselben
+    /// Startmaske. Ihr Zustand kommt aus <see cref="KomponentenBestandCtrl"/> — derselben
     /// Quelle und denselben Kriterien wie die Bitmaske der Startmaske; es gibt keine
     /// parallele Merkliste mehr. Das Abwählen einer belegten Komponente fragt im
     /// Bearbeiten-Modus mit Klartext nach („entfernt N Einträge: …", Vorbelegung
@@ -42,9 +42,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     public partial class Wizard_Komponenten : Form
     {
-        private readonly AktionsKarte[] _karten = new AktionsKarte[KomponentenBestand.ANZAHL];
-        private readonly bool[] _an = new bool[KomponentenBestand.ANZAHL];
-        private KomponentenBestand _bestand;
+        private readonly AktionsKarte[] _karten = new AktionsKarte[KomponentenBestandCtrl.ANZAHL];
+        private readonly bool[] _an = new bool[KomponentenBestandCtrl.ANZAHL];
+        private KomponentenBestandCtrl _bestand;
 
         // Satzbausteine, einmal aus den Vorlage-Label geholt.
         private readonly string _textEnthalten;
@@ -57,19 +57,19 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
 
-            _karten[KomponentenBestand.GEBAEUDE] = karte_Gebaeude;
-            _karten[KomponentenBestand.WAERMEBEDARF] = karte_WBedarfDaten;
-            _karten[KomponentenBestand.PROZESS] = karte_Prozess;
-            _karten[KomponentenBestand.BRAUCHWASSER] = karte_Brauchwasser;
-            _karten[KomponentenBestand.STROMSTD] = karte_StdStromprofil;
-            _karten[KomponentenBestand.STROMLASTGANG] = karte_Stromlastgang;
-            _karten[KomponentenBestand.WP] = karte_WP;
-            _karten[KomponentenBestand.BHKW] = karte_BHKW;
-            _karten[KomponentenBestand.KESSEL] = karte_Kessel;
-            _karten[KomponentenBestand.SOLAR] = karte_Solar;
-            _karten[KomponentenBestand.PV] = karte_PV;
-            _karten[KomponentenBestand.SP] = karte_StromSp;
-            _karten[KomponentenBestand.PUFFER] = karte_Puffer;
+            _karten[KomponentenBestandCtrl.GEBAEUDE] = karte_Gebaeude;
+            _karten[KomponentenBestandCtrl.WAERMEBEDARF] = karte_WBedarfDaten;
+            _karten[KomponentenBestandCtrl.PROZESS] = karte_Prozess;
+            _karten[KomponentenBestandCtrl.BRAUCHWASSER] = karte_Brauchwasser;
+            _karten[KomponentenBestandCtrl.STROMSTD] = karte_StdStromprofil;
+            _karten[KomponentenBestandCtrl.STROMLASTGANG] = karte_Stromlastgang;
+            _karten[KomponentenBestandCtrl.WP] = karte_WP;
+            _karten[KomponentenBestandCtrl.BHKW] = karte_BHKW;
+            _karten[KomponentenBestandCtrl.KESSEL] = karte_Kessel;
+            _karten[KomponentenBestandCtrl.SOLAR] = karte_Solar;
+            _karten[KomponentenBestandCtrl.PV] = karte_PV;
+            _karten[KomponentenBestandCtrl.SP] = karte_StromSp;
+            _karten[KomponentenBestandCtrl.PUFFER] = karte_Puffer;
 
             _textEnthalten = Vorlage(label_TextEnthalten, "{0} im Projekt");
             _textOhne = Vorlage(label_TextOhne, "nicht im Projekt");
@@ -79,8 +79,8 @@ namespace WindowsFormsApplication1
 
             // Leerer Anfangszustand: keine Datenbank, kein Rahmen noetig - die Seiten
             // werden erst gestellt, wenn der Rahmen den Bestand liefert.
-            _bestand = KomponentenBestand.Lesen(0);
-            for (int k = 0; k < KomponentenBestand.ANZAHL; k++) KachelZeichnen(k);
+            _bestand = KomponentenBestandCtrl.Lesen(0);
+            for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++) KachelZeichnen(k);
         }
 
         /// <summary>
@@ -115,12 +115,12 @@ namespace WindowsFormsApplication1
         /// Assistentenseiten entsprechend frei- oder abschalten. Ersetzt die elf
         /// <c>Set*CheckBox</c>-Aufrufe des Rahmens.
         /// </summary>
-        public void BestandAnzeigen(KomponentenBestand bestand)
+        public void BestandAnzeigen(KomponentenBestandCtrl bestand)
         {
-            _bestand = bestand ?? KomponentenBestand.Lesen(0);
+            _bestand = bestand ?? KomponentenBestandCtrl.Lesen(0);
             IAssistentRahmen rahmen = WizardParent.Aktiver;
 
-            for (int k = 0; k < KomponentenBestand.ANZAHL; k++)
+            for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
             {
                 _an[k] = _bestand[k].Vorhanden;
                 if (rahmen != null) SeiteSchalten(rahmen, _bestand[k].SeitenIndex, _an[k]);
@@ -131,18 +131,18 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn die Komponente derzeit als „im Projekt" angezeigt wird.</summary>
         public bool IstAn(int kennung)
         {
-            return kennung >= 0 && kennung < KomponentenBestand.ANZAHL && _an[kennung];
+            return kennung >= 0 && kennung < KomponentenBestandCtrl.ANZAHL && _an[kennung];
         }
 
         /// <summary>Der Bestand, aus dem die Kacheln zuletzt gefüllt wurden.</summary>
-        public KomponentenBestand Bestand
+        public KomponentenBestandCtrl Bestand
         {
             get { return _bestand; }
         }
 
         private static void SeiteSchalten(IAssistentRahmen rahmen, int seitenIndex, bool aktiv)
         {
-            if (seitenIndex == KomponentenBestand.OHNE_SEITE) return;
+            if (seitenIndex == KomponentenBestandCtrl.OHNE_SEITE) return;
             if (rahmen.Seiten == null || seitenIndex >= rahmen.Seiten.Count) return;
 
             WizardSeite seite = rahmen.Seiten[seitenIndex];
@@ -153,14 +153,14 @@ namespace WindowsFormsApplication1
         private void KachelZeichnen(int kennung)
         {
             AktionsKarte karte = _karten[kennung];
-            KomponentenBestand.Eintrag eintrag = _bestand[kennung];
+            KomponentenBestandCtrl.Eintrag eintrag = _bestand[kennung];
             bool an = _an[kennung];
 
             karte.StatusSichtbar = true;
             karte.StatusFarbe = an ? KartenStil.KARTE_STATUS : KartenStil.KARTE_RAHMEN;
 
             string text = an ? string.Format(_textEnthalten, eintrag.Anzahl) : _textOhne;
-            if (eintrag.SeitenIndex == KomponentenBestand.OHNE_SEITE)
+            if (eintrag.SeitenIndex == KomponentenBestandCtrl.OHNE_SEITE)
             {
                 text = text + " · " + _textNurAnzeige;
                 // Anzeigekachel: keine Hand-Optik. AktionsKarte setzt Cursors.Hand auf
@@ -174,7 +174,7 @@ namespace WindowsFormsApplication1
 
         private int KennungVon(object sender)
         {
-            for (int k = 0; k < KomponentenBestand.ANZAHL; k++)
+            for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
                 if (ReferenceEquals(_karten[k], sender)) return k;
             return -1;
         }
@@ -188,10 +188,10 @@ namespace WindowsFormsApplication1
             int kennung = KennungVon(sender);
             if (kennung < 0) return;
 
-            KomponentenBestand.Eintrag eintrag = _bestand[kennung];
+            KomponentenBestandCtrl.Eintrag eintrag = _bestand[kennung];
 
             // Brauchwasser und Pufferspeicher: keine Assistentenseite, also nur Anzeige.
-            if (eintrag.SeitenIndex == KomponentenBestand.OHNE_SEITE) return;
+            if (eintrag.SeitenIndex == KomponentenBestandCtrl.OHNE_SEITE) return;
 
             IAssistentRahmen rahmen = WizardParent.Aktiver;
             if (rahmen == null) return;

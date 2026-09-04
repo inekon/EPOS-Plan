@@ -468,7 +468,7 @@ namespace WindowsFormsApplication1
         /// Häkchen: erst alle auf <c>false</c>, dann je Fundstelle wieder auf
         /// <c>true</c> — mit eigenen Kriterien, die von der Bitmaske der Startmaske
         /// abwichen (<c>ID_WP &gt; 0</c> &amp; Co.) und ohne Brauchwasser und
-        /// Pufferspeicher. <b>Jetzt</b> liest <see cref="KomponentenBestand"/> den
+        /// Pufferspeicher. <b>Jetzt</b> liest <see cref="KomponentenBestandCtrl"/> den
         /// Bestand nach den Kriterien der Startmaske, und die Seite zeigt ihn als
         /// Kachelfeld — eine Quelle, eine Optik, eine Wahrheit.
         /// </para>
@@ -480,7 +480,7 @@ namespace WindowsFormsApplication1
             projektID = projctrl.m_ID;
 
             Form page = listPages.ElementAt(top).wizardform;
-            ((Wizard_Komponenten)page).BestandAnzeigen(KomponentenBestand.Lesen(projektID));
+            ((Wizard_Komponenten)page).BestandAnzeigen(KomponentenBestandCtrl.Lesen(projektID));
         }
 
         /// <summary>
