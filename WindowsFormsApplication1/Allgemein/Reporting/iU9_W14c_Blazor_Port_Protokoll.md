@@ -430,12 +430,34 @@ Am Windows-Gerät zu prüfen — was kein automatisches Netz sieht.
 |---|---|---|
 | **E‑1** | **Der Gesetzeskatalog erscheint künftig als Bereich IM Dialog** statt als eigenes Fenster — aus dem Kostendialog und aus dem Wirtschaftlichkeits-Parameterdialog. Ist das recht? | umgesetzt (Risiko R2 lässt keine zweite Wahl); der Weg über das Menü bleibt ein eigenes Fenster |
 | **E‑2** | **Die x-Achse der beiden Klimadiagramme heißt künftig „Monat"** — heute steht „Jahresstunden" über einer Monatsachse | umgesetzt (A‑6) |
-| **E‑3** | Die Komponente heißt **`KlimaregionDialog`**, nicht `KlimadatenDialog`. Betrifft auch den Menüpunkt: „Klimadaten" oder „Klimaregionen"? | Komponente umbenannt, **Menütext unverändert „Klimadaten"** — offen |
+| **E‑3** | Die Komponente heißt **`KlimaregionDialog`**, nicht `KlimadatenDialog`. Betrifft auch den Menüpunkt: „Klimadaten" oder „Klimaregionen"? | **entschieden** (Anwender, 04.09.2026): „Klimaregion ist eigentlich für Deutschland gedacht, Klimadaten für den Download weltweit mit TMY-Daten." Der **Menütext bleibt „Klimadaten"**, die Komponente heißt **wieder `KlimadatenDialog`** — siehe den Nachtrag unten |
 | **E‑4** | **Die y-Achse des Sonnenwinkels** — am kleinsten Wert oder bei 0? | **bei 0**, über `MinimumNull` (W14c.0j); das Bild bleibt wie im Bestand |
 | **E‑5** | **Auf iOS gibt es die fünf „Durchsuchen…"-Knöpfe der Einstellungen nicht** (`OrdnerWaehlen` liefert dort immer `""`). Reicht das — oder braucht iOS gar keine Pfadeinstellungen? | umgesetzt: kein Delegat = kein Knopf; die Pfadfelder bleiben beschreibbar — offen |
 | **E‑6** | **Löschen einer Klimaregion räumt künftig die 8 760 + 365 Datenzeilen ab.** Sollen vorhandene Altwaisen mit einer einmaligen Bereinigung mitgehen? | **Die Zählung ist gelaufen** (siehe unten) — auf `Kenndaten_Test.sqlite` gibt es KEINE Waisen; eine Altbereinigung ist dort gegenstandslos. Für die Anwenderdatenbank offen |
 | **E‑7** | **`Ortsnamen.txt` fehlt in Auslieferung und Repo.** Was soll die Ortsauswahl anbieten? | **(c) umgesetzt**: vorhanden → Vorschlagsliste, fehlt → leere Liste, nie ein Absturz; das Feld erlaubt immer freie Eingabe. Ob die Datei künftig ausgeliefert oder aus `Tab_Klimaregion_STAMM` gefüllt wird — offen |
 | **E‑8** | **WebView2-Bezug**: Mit dieser Welle sind die letzten vier Admin-Masken Blazor. Ohne die WebView2-Laufzeit bleiben Gesetzeskatalog, Dublettensuche, Einstellungen und Klimadaten LEER — die Anwendung startet, aber die Verwaltung ist unbedienbar. Das Setup installiert die Laufzeit nach (`Setup/EPOS-Plan.iss`, `WebView2Vorhanden`); auf einem Rechner ohne Internet muss sie vorher da sein | Hinweis, keine Änderung |
+
+### Nachtrag zu E‑3: die zwei Begriffe (04.09.2026)
+
+Der Anwender trennt sie fachlich, nicht technisch:
+
+| Begriff | Was gemeint ist | Was den Namen trägt |
+|---|---|---|
+| **Klimaregion** | die **deutschen** Klimaregionen — die Klimazonenkarte und der Projektbezug über `ID_Klimaregion` | `KlimazonenkarteDialog` (W10a), `KlimaregionStammCtrl`, `KlimaregionCtrl`, `Tab_Klimaregion_STAMM` — **alle unverändert** |
+| **Klimadaten** | der **weltweite** Download von TMY-Daten (PVGIS) in den Stammkatalog | der Menüpunkt „Klimadaten", `KlimadatenDialog`, `KlimadatenHuelle`, `KlimadatenDialogTests` |
+
+Umbenannt sind deshalb genau drei Dateien samt ihren Klassen —
+`EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor` (Ordner und `@namespace`
+`EPOS.UI.Dialoge.Klimadaten` bleiben), `WindowsFormsApplication1/Views/Admin/KlimadatenHuelle.cs`
+und `EPOS.UI.Tests/Dialoge/KlimadatenDialogTests.cs` — dazu der Aufruf in `MDIMainForm`
+und die Nennungen in `EPOS.UI/CLAUDE.md` und `WindowsFormsApplication1/CLAUDE.md`.
+**Nicht angefasst:** `KlimaregionStammCtrl`, `KlimaImportAblauf`, `Tab_Klimaregion_STAMM`,
+`KlimazonenkarteDialog`, der `HilfeKontext`-Schlüssel `Form_Klimadaten.btn_Help` (er trug nie
+den Klassennamen) und die CSS-Klassen `epos-klimaregion*` (sie haben keine Regel im
+Stilblatt und dienen nur als Prüfanker).
+Die Abschnitte § 1, § 3.5 und § 12 dieses Protokolls nennen die Komponente weiter
+`KlimaregionDialog` — sie sind der **datierte Bericht des Portstands**, nicht der aktuelle
+Namensstand.
 
 ### Die Zählung zu E‑6 (verlangt in § 11.6)
 
