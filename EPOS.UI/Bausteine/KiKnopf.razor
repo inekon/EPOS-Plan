@@ -1,0 +1,61 @@
+@* Der Einstieg in den KI-Assistenten aus einer Maske heraus
+   (iU9-W15b.5, Ersatz fuer Allgemein/KI/KiAufrufKnopf.cs, 270 Z.).
+
+   ER LOEST ZWEI PROTOKOLLIERTE ABWEICHUNGEN EIN. Die Wellen 6 und 7 haben den
+   fehlenden KI-Einstieg je als bewusste Abweichung vermerkt
+   (iU9_W6_Blazor_Port_Protokoll.md:168 A-2, iU9_W7_...:202 A-1), beide mit
+   derselben Begruendung: "Der KI-Einstieg hat in EPOS.UI noch keinen Baustein
+   (Gespraechsverlauf kommt in W15b)." Er ist jetzt da.
+
+   ER OEFFNET NICHTS. Der WinForms-Vorlaeufer suchte selbst ueber
+   Application.OpenForms nach einem offenen Chatfenster und legte sonst eines an
+   (:223-247). Diese 25 Zeilen liegen seit W15b.7 in KiChatHuelle, wo sie
+   hingehoeren; der Baustein meldet nur "der Anwender moechte den Assistenten".
+   Unter Windows fuehrt das nach KiChatHuelle.Oeffnen, auf iOS ueber
+   Dienste.Navigation zu Seitenschluessel.KiAssistent (Entscheid E-10).
+
+   LINKS NEBEN DEM INFOKNOPF. Die Kollisionsregel des Bestands steht in
+   InfoKnopf.cs:99: "Traegt die Maske oben rechts bereits den KI-Knopf (Breite
+   bis 40 plus 8 Rand), gehoert der Infoknopf LINKS daneben - also rund 60." In
+   Pixeln gerechnet war das noetig; in einer Knopfleiste genuegt die
+   Reihenfolge - der Wirt setzt <KiKnopf /> vor den <InfoKnopf />.
+
+   ER ZIEHT DEN FOKUS NICHT AN SICH. Der Vorlaeufer war ein Knopf mit
+   TabStop = false UND einem ueberschriebenen OnMouseDown, damit ein Klick den
+   Fokus nicht aus dem gerade bearbeiteten Feld holt. In HTML genuegt
+   tabindex="-1" und ein preventDefault auf mousedown - dieselbe Zusage. *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (Sichtbar)
+{
+    <button type="button" class="epos-kiknopf" tabindex="-1"
+            title="@Kurztext" aria-label="@Kurztext"
+            @onmousedown:preventDefault="true" @onclick="Klick">@Beschriftung</button>
+}
+
+@code {
+    /// <summary>Beschriftung des Knopfes (<c>KI_KNOPF_HILFE</c>, de „Hilfe").</summary>
+    [Parameter] public string Beschriftung { get; set; } = "";
+
+    /// <summary>Kurztext und Sprachausgabe (<c>KI_KNOPF_TOOLTIP</c>, de „KI-Assistent").</summary>
+    [Parameter] public string Kurztext { get; set; } = "";
+
+    /// <summary>
+    /// Steht der Knopf? <c>false</c>, wenn die KI abgeschaltet ist
+    /// (<c>KiEinwilligung.Abgeschaltet</c>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Abschalter blendet den Knopf aus, er sperrt ihn nicht.</b> Ein grauer
+    /// Knopf waere ein Versprechen, das die Installation nicht einloest — und der
+    /// Chat selbst geht bei abgeschalteter KI weiterhin auf, nur als reine
+    /// Hilfesuche (Hilfe-Betrieb, Fachkonzept 11.9). Wer ihn dort haben will, setzt
+    /// <c>Sichtbar</c> trotzdem auf <c>true</c>; das entscheidet der Wirt.
+    /// </remarks>
+    [Parameter] public bool Sichtbar { get; set; } = true;
+
+    /// <summary>Der Anwender möchte den Assistenten.</summary>
+    [Parameter] public EventCallback Gewaehlt { get; set; }
+
+    private Task Klick() => Gewaehlt.InvokeAsync();
+}
