@@ -318,6 +318,9 @@
   <data name="ETV_SP_LEISTUNGSPREIS" xml:space="preserve">
     <value>Leistungspreis</value>
   </data>
+  <data name="ETV_SUCHE_LEER" xml:space="preserve">
+    <value>Kein Treffer.</value>
+  </data>
   <data name="ETV_TITEL_HISTORIE" xml:space="preserve">
     <value>Preishistorie</value>
   </data>

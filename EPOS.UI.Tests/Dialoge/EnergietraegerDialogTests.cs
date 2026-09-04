@@ -164,6 +164,153 @@ public class EnergietraegerDialogTests : BunitContext
         Assert.Equal(21, cut.Instance.Traeger);
     }
 
+    // =====================================================================
+    // Suche und Filter der Traegerliste (Anwenderwunsch 04.09.2026,
+    // Windows-Abnahme; Vorbild KatalogImportDialog, W13)
+    // =====================================================================
+
+    /// <summary>Tippt in das Filterfeld über der Trägerliste.</summary>
+    private static void Suchen(IRenderedComponent<EnergietraegerDialog> cut, string text)
+        => cut.Find(".epos-traeger-liste input[type=text]").Input(text);
+
+    /// <summary>
+    /// Die Beschriftungen der sichtbaren Trägerzeilen — ohne das Wahlzeichen,
+    /// das der Baustein <c>Zeilenwahl</c> voranstellt.
+    /// </summary>
+    private static string[] Eintraege(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-traeger-eintrag")
+              .Select(e => e.TextContent.Trim().TrimStart('●', '○').Trim()).ToArray();
+
+    /// <summary>Die Beschriftungen der sichtbaren Gruppenköpfe.</summary>
+    private static string[] Gruppenkoepfe(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-traeger-gruppenkopf")
+              .Select(e => e.TextContent.Trim().TrimStart('▪').Trim()).ToArray();
+
+    [Fact]
+    public void Ueber_der_Liste_steht_ein_Filterfeld()
+    {
+        var cut = Zeige(p => p.Add(x => x.SucheText, "Filter:"));
+
+        Assert.Contains("Filter:", cut.Find(".epos-traeger-liste").TextContent);
+        Assert.Single(cut.FindAll(".epos-traeger-liste input[type=text]"));
+    }
+
+    [Fact]
+    public void Die_Suche_filtert_die_Traegerliste_und_blendet_leere_Gruppen_aus()
+    {
+        var cut = Zeige();
+
+        Suchen(cut, "erd");
+
+        // Nur „Erdgas H" trifft — die Gruppe „Strom" hat keinen Treffer und
+        // faellt samt ihrem Kopf weg, „Gas" bleibt ueber ihrem einen Treffer.
+        Assert.Equal(new[] { "Erdgas H" }, Eintraege(cut));
+        Assert.Equal(new[] { "Gas" }, Gruppenkoepfe(cut));
+    }
+
+    [Fact]
+    public void Die_Suche_trifft_auch_ueber_den_Gruppennamen()
+    {
+        var cut = Zeige();
+
+        // „Gas" steht als Gruppe ueber beiden Traegern — wie im Importdialog
+        // Bezeichner UND Firma geprueft werden.
+        Suchen(cut, "Gas");
+
+        Assert.Equal(new[] { "Erdgas H", "Flüssiggas" }, Eintraege(cut));
+        Assert.Equal(new[] { "Gas" }, Gruppenkoepfe(cut));
+    }
+
+    [Fact]
+    public void Eine_leere_Suche_zeigt_alle()
+    {
+        var cut = Zeige();
+
+        Suchen(cut, "erd");
+        Assert.Single(Eintraege(cut));
+
+        Suchen(cut, "");
+        Assert.Equal(3, Eintraege(cut).Length);
+        Assert.Equal(2, Gruppenkoepfe(cut).Length);
+    }
+
+    [Fact]
+    public void Gross_und_Kleinschreibung_ist_egal()
+    {
+        var cut = Zeige();
+
+        Suchen(cut, "ERDGAS");
+        Assert.Equal(new[] { "Erdgas H" }, Eintraege(cut));
+
+        Suchen(cut, "erdgas");
+        Assert.Equal(new[] { "Erdgas H" }, Eintraege(cut));
+    }
+
+    [Fact]
+    public void Der_gewaehlte_Traeger_bleibt_ueber_einen_Filterwechsel_gewaehlt()
+    {
+        var cut = Zeige(p => p.Add(x => x.TraegerVorwahl, 21));
+        Assert.Equal(21, cut.Instance.Traeger);
+
+        // Der Filter blendet den Stromtraeger aus — gewaehlt bleibt er trotzdem,
+        // die Karte rechts gehoert weiter ihm.
+        Suchen(cut, "erd");
+        Assert.Equal(21, cut.Instance.Traeger);
+        Assert.DoesNotContain("Elektrische Energie", Eintraege(cut));
+
+        // Und beim Leeren steht er wieder da — markiert.
+        Suchen(cut, "");
+        Assert.Equal(21, cut.Instance.Traeger);
+        Assert.Equal("true", cut.FindAll(".epos-traeger-eintrag")[2].GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void Ohne_Treffer_sagt_die_Liste_es_statt_leer_zu_bleiben()
+    {
+        var cut = Zeige(p => p.Add(x => x.SucheLeerText, "Kein Treffer."));
+
+        Suchen(cut, "Holzhackschnitzel");
+
+        Assert.Empty(Eintraege(cut));
+        Assert.Equal("Kein Treffer.", cut.Find(".epos-traeger-leer").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Die_Pfeiltasten_wandern_ueber_die_Treffer()
+    {
+        var cut = Zeige();
+        Assert.Equal(11, cut.Instance.Traeger);
+
+        // Ohne Filter laeuft ↓ ueber alle drei Traeger und ueberspringt die
+        // Gruppenkoepfe — wie die ListBox des Vorlaeufers.
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "ArrowDown");
+        Assert.Equal(12, cut.Instance.Traeger);
+
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "ArrowDown");
+        Assert.Equal(21, cut.Instance.Traeger);
+        Assert.Equal(21, _geladen);
+
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "ArrowUp");
+        Assert.Equal(12, cut.Instance.Traeger);
+
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "End");
+        Assert.Equal(21, cut.Instance.Traeger);
+
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "Home");
+        Assert.Equal(11, cut.Instance.Traeger);
+    }
+
+    [Fact]
+    public void Unter_dem_Filter_wandert_die_Tastatur_nur_ueber_die_Treffer()
+    {
+        var cut = Zeige();
+
+        Suchen(cut, "gas");     // Erdgas H, Flüssiggas — der Stromtraeger faellt weg
+        cut.Find(".epos-traeger-eintraege").KeyDown(key: "End");
+
+        Assert.Equal(12, cut.Instance.Traeger);
+    }
+
     [Fact]
     public void Der_Katalogkontext_zeigt_drei_Knoepfe_der_Projektkontext_zwei()
     {
