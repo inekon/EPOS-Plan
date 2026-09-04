@@ -54,12 +54,26 @@ public class HauptfensterTests : BunitContext
         base.Dispose(disposing);
     }
 
-    /// <summary>Der kleinste Parametersatz, mit dem die Startseite steht.</summary>
-    private static IReadOnlyDictionary<string, object> Startgaben() =>
-        new Dictionary<string, object>
+    /// <summary>
+    /// Der kleinste Parametersatz, mit dem die Startseite steht.
+    ///
+    /// <para>Mit <paramref name="eigener"/> traegt er — wie
+    /// <c>StartseiteHuelle.Gaben()</c> — einen EIGENEN <see cref="SeitenZustand"/>;
+    /// ohne ihn ist es der iOS-Fall, in dem die Wurzel ihren beilegt
+    /// (Befund W16c‑B12).</para>
+    /// </summary>
+    private static IReadOnlyDictionary<string, object> Startgaben(
+        SeitenZustand? eigener = null,
+        Func<IReadOnlyList<(int Id, string Name)>>? varianten = null)
+    {
+        var gaben = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             ["ProjektId"] = new Func<int>(() => 1030),
         };
+        if (eigener is not null) gaben[SeitenZustand.PARAMETER] = eigener;
+        if (varianten is not null) gaben["Varianten"] = varianten;
+        return gaben;
+    }
 
     /// <summary>
     /// Der kleinste Parametersatz von „Berichte &amp; Kosten". Ohne
@@ -295,6 +309,146 @@ public class HauptfensterTests : BunitContext
 
         Assert.Single(cut.FindAll(".epos-startseite"));
         Assert.Empty(cut.FindAll(".epos-navigation"));
+    }
+
+    // =====================================================================
+    //  Der Weg der WINDOWS-HUELLE (Befund W16c-B12)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz, den <c>BlazorSeite&lt;Hauptfenster&gt;</c> unter
+    /// Windows wirklich baut: die acht Gaben von
+    /// <c>HauptfensterHuelle.Gaben()</c> PLUS den <see cref="SeitenZustand"/>,
+    /// den die Huelle JEDEM Satz beilegt (<c>BlazorSeite.cs:93-96</c>).
+    /// </summary>
+    private static Dictionary<string, object> Huellengaben(
+        SeitenZustand zustand,
+        IReadOnlyDictionary<string, object>? startgaben = null) =>
+        new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            [SeitenZustand.PARAMETER] = zustand,
+            ["Weg"] = new Func<string, string, Task<bool>>((_, _) => Task.FromResult(false)),
+            ["Startansicht"] = Seitenschluessel.Startseite,
+            ["StartseiteGaben"] = startgaben ?? Startgaben(),
+            ["BerichteKostenGaben"] = Berichtegaben(),
+            ["Produktname"] = "EPOS-Plan",
+            ["Gattung"] = "Energieplanungs-Software",
+            ["Claim"] = "Energie · Planung · Optimierung · Simulation",
+            ["VersionText"] = "Version 1.0.0.0",
+        };
+
+    /// <summary>
+    /// Rendert so, wie die Huelle es tut: EIN Woerterbuch auf die
+    /// Wurzelkomponente — <c>RootComponents.Add&lt;T&gt;("#app", parameter)</c>
+    /// entspricht <c>AddMultipleAttributes</c>. Der Unterschied zu
+    /// <see cref="Fenster"/> (getippte Parameter) ist genau der, der den
+    /// Startabsturz vom 04.09.2026 verdeckt hat: Ein Schluessel ohne
+    /// <c>[Parameter]</c> faellt nur auf diesem Weg auf.
+    /// </summary>
+    private IRenderedComponent<Hauptfenster> AusHuelle(IDictionary<string, object> gaben)
+    {
+        return Render<Hauptfenster>(b =>
+        {
+            b.OpenComponent<Hauptfenster>(0);
+            b.AddMultipleAttributes(1, gaben);
+            b.CloseComponent();
+        });
+    }
+
+    [Fact]
+    public void Der_Parametersatz_der_Huelle_zeichnet_das_Fenster()
+    {
+        // BEFUND W16c-B12 (04.09.2026): BlazorSeite<T> traegt den Zustand IMMER
+        // nach. Bis W16b war die Wurzel BlazorSeite<Startseite> und die
+        // Startseite trug den Parameter; seit W16c ist es
+        // BlazorSeite<Hauptfenster> — und Hauptfenster hatte ihn nicht. Blazor
+        // warf beim ERSTEN Zeichnen "does not have a property matching the name
+        // 'Zustand'", der Verteiler verpackte es, und der Anwender sah eine
+        // TargetInvocationException an Application.Run.
+        var zustand = new SeitenZustand();
+
+        var cut = AusHuelle(Huellengaben(zustand));
+
+        Assert.Single(cut.FindAll(".epos-menueband"));
+        Assert.Single(cut.FindAll(".epos-hauptfenster-marke"));
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Same(zustand, cut.Instance.Zustand);
+    }
+
+    [Fact]
+    public void Der_Zustand_der_Startseitenhuelle_hat_Vorrang()
+    {
+        // Unter Windows fuehrt StartseiteHuelle ihren EIGENEN Zustand und meldet
+        // darueber den Projektwechsel (ProjektKontextCtrl.Gewechselt). Der
+        // Zustand der Seitenhuelle darf ihn nicht verdraengen - sonst gaebe es
+        // zwei Zustaende fuer dieselbe Ansicht, und der Menueweg "Projekt
+        // oeffnen" bliebe ohne Wirkung.
+        var eigener = new SeitenZustand();
+        var wurzel = new SeitenZustand();
+
+        var cut = AusHuelle(Huellengaben(wurzel, Startgaben(eigener)));
+
+        Assert.Same(eigener,
+            cut.FindComponent<EPOS.UI.Seiten.Start.Startseite>().Instance.Zustand);
+    }
+
+    [Fact]
+    public void Ohne_eigenen_Zustand_bekommt_die_Startseite_den_der_Huelle()
+    {
+        // Der iOS-Fall: IProjektQuelle.StartseiteGaben fuehrt keinen Zustand.
+        // Dann legt AppWurzel den der Seitenhuelle bei, statt die Seite ohne
+        // jeden Zustand zu lassen.
+        var wurzel = new SeitenZustand();
+
+        var cut = AusHuelle(Huellengaben(wurzel, Startgaben()));
+
+        Assert.Same(wurzel,
+            cut.FindComponent<EPOS.UI.Seiten.Start.Startseite>().Instance.Zustand);
+    }
+
+    [Fact]
+    public void Ein_Projektwechsel_der_Huelle_erreicht_die_Startseite()
+    {
+        // Abnahmepunkt 9 der W16c-Liste: Nach einem Projektwechsel zeigt das
+        // Kopfband der Startseite das neue Projekt. Der Weg ist
+        // SeitenZustand.ProjektSetzen -> Startseite.BeiZustand -> Laden().
+        var wurzel = new SeitenZustand();
+        var namen = new List<(int Id, string Name)>();
+
+        var cut = AusHuelle(Huellengaben(
+            wurzel,
+            Startgaben(varianten: () => namen)));
+
+        Assert.DoesNotContain("Heizzentrale Nord",
+            cut.Find(".epos-startseite-projekt").TextContent, StringComparison.Ordinal);
+
+        namen.Add((1030, "Heizzentrale Nord"));
+        wurzel.ProjektSetzen(1030, "Heizzentrale Nord");
+
+        // BeiZustand zeichnet ueber InvokeAsync - also warten, nicht raten.
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Heizzentrale Nord",
+                cut.Find(".epos-startseite-projekt").TextContent, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(typeof(Hauptfenster))]
+    [InlineData(typeof(EPOS.UI.Seiten.Start.Startseite))]
+    [InlineData(typeof(EPOS.UI.Seiten.Berichte.BerichteKostenSeite))]
+    public void Jede_Seite_einer_Seitenhuelle_traegt_den_Parameter_Zustand(Type seite)
+    {
+        // Dieselbe Bedingung, die BlazorSeite<T> beim Bauen prueft
+        // (ZustandParameterPruefen) - hier auf der Linux-Seite festgehalten,
+        // weil es fuer die Windows-Huelle kein Pruefprojekt gibt.
+        System.Reflection.PropertyInfo? eigenschaft = seite.GetProperty(
+            SeitenZustand.PARAMETER,
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+        Assert.NotNull(eigenschaft);
+        Assert.True(eigenschaft!.CanWrite);
+        Assert.True(eigenschaft.IsDefined(
+            typeof(Microsoft.AspNetCore.Components.ParameterAttribute), true));
+        Assert.True(eigenschaft.PropertyType.IsAssignableFrom(typeof(SeitenZustand)));
     }
 
     [Fact]
