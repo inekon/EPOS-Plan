@@ -108,12 +108,13 @@ namespace WindowsFormsApplication1
                 case Masken.StromganglinieAdmin:
                     return StromganglinieAdminHuelle.Oeffnen(null);
 
+                // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
+                // Razor-Komponente SolarganglinieAdminDialog; die Huelle zeigt sie
+                // modal. Der Rueckgabewert sagt jetzt etwas: Beim Vorlaeufer war er
+                // IMMER false, weil btn_OK_Click nur ein Feld "result" setzte und nie
+                // this.DialogResult (Befund W14-B4).
                 case Masken.SolarganglinieAdmin:
-                    using (Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin())
-                    {
-                        frm.SetControls();
-                        return MitOk(frm);
-                    }
+                    return SolarganglinieAdminHuelle.Oeffnen(null);
 
                 case Masken.BrauchwasserAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
