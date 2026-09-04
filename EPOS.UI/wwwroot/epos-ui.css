@@ -675,6 +675,27 @@ body {
     line-height: 1;
 }
 
+/* Dieselbe Wahl als BREITE ZEILE (iU9-W4): kein Rasterfeld, sondern eine
+   Listenzeile, die ihren Namen selbst traegt. Das Zeichen bleibt vorn, der
+   Text steht linksbuendig daneben und bricht nicht (die Spalte ist 260 px
+   breit und blaettert notfalls). Die Hoehe kommt weiter aus .epos-knopf und
+   ist damit >= --epos-touchziel. */
+.epos-zeilenwahl--breit {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.epos-zeilenwahl--breit > .epos-zeilenwahl-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .epos-raster th {
     background: var(--epos-flaeche);
     color: var(--epos-text);
@@ -1209,8 +1230,17 @@ body {
     flex: 0 0 260px;
     display: flex;
     flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+/* Seit iU9-W4 (Anwenderwunsch 04.09.2026) stehen ueber der Liste ein Suchfeld
+   und unter ihr die Knopfleiste; gerollt wird deshalb NUR der Eintragsblock -
+   sonst wandert das Suchfeld beim Blaettern aus dem Bild. */
+.epos-traeger-eintraege {
+    display: flex;
+    flex-direction: column;
     gap: 2px;
-    max-height: 60vh;
+    max-height: 50vh;
     overflow: auto;
 }
 
@@ -1228,11 +1258,16 @@ body {
 }
 
 /* Die Traegereintraege stehen linksbuendig und fuellen die Spalte - eine
-   Liste, kein Knopfraster. */
+   Liste, kein Knopfraster. Die Einrueckung stellt sie unter ihren Gruppenkopf. */
 .epos-traeger-eintrag {
-    min-width: 0;
-    text-align: left;
     padding-left: 20px;
+}
+
+/* Filtert die Suche alles weg, sagt die Liste das - eine leere Flaeche liest
+   sich wie ein Fehler. */
+.epos-traeger-leer {
+    margin: 4px 0;
+    color: var(--epos-text-leise);
 }
 
 .epos-traegerkarte {
