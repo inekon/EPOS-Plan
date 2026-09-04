@@ -50,6 +50,9 @@ die Hülle `MDIMainForm` **ohne Designer**. Der einzige bewusst gebliebene
 | W16c.3/.5 | `3409c80` | **Der Rückbau** auf die Hülle; die Zeugen und Schwellen (N1/N2), der zurückgeholte Maskenschlüssel-Zeuge |
 | W16c.4 | `ddfab40` | **E‑6 / iF21**: Per Monitor V2, die `DpiInsel` fällt |
 | W16c.6 | `52e1e46` | Die Fensterhilfe (W16b‑O‑4), `HilfeKontext`, `help_mapping.txt`, vier `CLAUDE.md`, Nachweise, M9 |
+| W16c.7 | `03c5947` | **W16c‑E‑2**: Die zwei Sprachpunkte wandern in ein Untermenü „Sprache" |
+| W16c.8 | `74e0cc1` | **W16c‑E‑3**: „Varianten und Bericht…" wechselt die ANSICHT |
+| **E‑10** | `7ed320b` | **Nach dem Merge:** `MDIMainForm` → `Hauptfensterrahmen` (Klasse, Datei, `Program.rahmen`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext`, die zwei Prüfmuster-Auszüge, die Kommentare) |
 
 > **W16c.3 und W16c.5 sind EIN Commit** — dieselbe Begründung wie bei
 > W16b.3/.5 im Protokoll der Vorwelle: Der Rückbau löscht
@@ -164,8 +167,13 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 > **Nachtrag 04.09.2026.** Der Anwender hat entschieden: **E‑1, E‑2, E‑6,
 > E‑8a und E‑9 sind bestätigt**, **W16c‑E‑1 ist ok**, und **W16c‑E‑2** und
 > **W16c‑E‑3** sind zugunsten der jeweils anderen Form entschieden und
-> umgesetzt (Commits `03c5947` und `74e0cc1`). Offen bleiben **E‑10** (die
-> Umbenennung, ausdrücklich nach dem Merge) und **W16a‑E‑1 / W16b‑O‑5**.
+> umgesetzt (Commits `03c5947` und `74e0cc1`). Offen bleibt **W16a‑E‑1 /
+> W16b‑O‑5**.
+>
+> **Nachtrag 04.09.2026, zweiter Durchgang.** **E‑10 ist entschieden und
+> umgesetzt** (Commit `7ed320b`): Die Hülle heißt **`Hauptfensterrahmen`** —
+> nicht `Hauptfenster` (die Razor-Seite) und nicht `HauptfensterHuelle` (deren
+> Blazor-Hülle). Damit ist **W16c‑O‑1 erledigt**.
 
 | # | Frage | Stand |
 |---|---|---|
@@ -174,7 +182,7 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 | **E‑6** | iF21 (Per Monitor V2, `DpiInsel` weg) in W16c? | **Vorläufig ja, umgesetzt.** `app.manifest` `dpiAware=true/pm` + `dpiAwareness=PerMonitorV2`, `Program.Main` `HighDpiMode.PerMonitorV2`, die `DpiInsel` und die zwei `ShowDialog`-Überladungen gelöscht. **Auf Linux ist nur der Bau prüfbar** — die Abnahme bei 100/125/150 % steht in § 9 und in `Umsetzung_iU9_Nachweise.md` § 12.1. **Bestätigt** (Anwender, 04.09.2026) |
 | **E‑8a** | Formularkarte behalten, Bestandstests aufs Prüfmuster? | **Umgesetzt.** Sechs Anker sind umgehängt, einer ist **zurückgeholt** (§ 8). **Bestätigt** (Anwender, 04.09.2026) |
 | **E‑9** | Wohin mit den Zeugen? | **Umgesetzt.** `MDIMainForm.Designer.cs` und seine drei `.resx` (3 493 Z.) sind **vor** dem Rückbau eingefroren; der Großschreibungs-Zeuge und der Wurzelnamensraum-Zeuge hängen seither dort, und der Prüfmusterbaum trägt jetzt auch einen **Sprungtabellen-Auszug**. **Bestätigt** (Anwender, 04.09.2026) |
-| **E‑10** | `MDIMainForm` → `Hauptfenster` umbenennen? | **NICHT getan** — ausdrücklich außerhalb dieser Teilwelle. Sie kommt nach dem Merge als eigener Commit der Orchestrierung. Betroffen wären: die Klasse und ihre Datei, `Program.Main`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP`, `help_mapping.txt`, die Prüfmuster-Auszüge und die Kommentare in rund einem Dutzend Hüllen |
+| **E‑10** | `MDIMainForm` umbenennen? | **Anwenderentscheid 04.09.2026: `Hauptfensterrahmen` — umgesetzt** (Commit `7ed320b`). **Nicht `Hauptfenster`** (so heißt die Razor-SEITE in `EPOS.UI.Seiten`) und **nicht `HauptfensterHuelle`** (so heißt die Blazor-Hülle dieser Seite): Der RAHMEN ist das Fenster mit `Application.Run`, dem `BlazorWebView`, F1 und dem Sprachwechsel. Angefasst: die Klasse und ihre Datei (`WindowsFormsApplication1/MDIMainForm.cs` → `Views/Hauptformular/Hauptfensterrahmen.cs`, `git mv`, neben `HauptfensterHuelle.cs`; Namensraum unverändert), `Program.mdifrm` → `Program.rahmen` (kein Aufrufer außerhalb von `Program`), `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP` (der Schlüssel ist der Typname des offenen Fensters und zieht mit um, das Ziel `B_HAUPTFENSTER` bleibt), die **zwei** Prüfmuster-Auszüge (beide `git mv`), `Stapel.Uebersicht`, `DesignerLeser`, `Formularkarte/LIESMICH.md` und die Kommentare in den Hüllen, in `EPOS.UI` und in `EPOS.UI.Tests`. **`help_mapping.txt` war nicht zu ändern**: Es führt seit W16c.6 keinen Schlüssel dieses Fensters mehr — die Fensterhilfe heißt `Hauptfenster.btn_Help` und sitzt im Kopfband der Razor-Seite. **Belassen** (Geschichte, kein lebender Bezeichner): die eingefrorenen `MDIMainForm.Designer.cs` und die drei `.resx` im Prüfmuster und jedes Zitat, das eine gelöschte DATEI oder Quellzeile nennt |
 | **W16a‑E‑1 / W16b‑O‑5** | Wird der Assistent eine freie Ansicht? | **W16c hat es nicht getan** (Auflage der Anweisung). Er bleibt eine modale `BlazorDialogForm`; `Seitenschluessel.ProjektNeu`/`…Bearbeiten` gehen über `HauptfensterHuelle.Weg` in dieselbe Hülle wie bisher — samt dem Nachzug des Projektkontexts („Befund 3"). **Entschieden 04.09.2026: ja — in iU11 zusammen mit der Transaktion W16a‑O‑1.** |
 | **W16b‑E‑1 / W16b‑E‑2** | (aus W16b) | **Nicht angefasst** |
 | **W16c‑E‑1 (neu)** | **Das Menü klappt beim KLICK auf, nicht beim Überfahren** (A‑1) | Der `MenuStrip` öffnete ein Untermenü, sobald die Maus darüber stand — und schloss das vorige. Wer das Menü mit der Maus „durchfährt", muss jetzt jeden Kopf anklicken. Die Tastaturbedienung ist dieselbe geblieben (← → ↓ Pos1 Ende Esc). **ok** (Anwender, 04.09.2026) |
@@ -226,11 +234,18 @@ es gab keinen Schlüssel mehr mit einer WinForms-Maske dahinter. Das Prüfmuster
 führt jetzt einen Auszug:
 
 ```
-Pruefmuster/Hauptformular/WinFormsNavigation.Auszug.cs        (ein case Masken.PufferSpAdmin)
-Pruefmuster/Hauptformular/MDIMainForm.Sprungtabelle.Auszug.cs (die Wurzel, die den Schluessel nennt)
+Pruefmuster/Hauptformular/WinFormsNavigation.Auszug.cs                (ein case Masken.PufferSpAdmin)
+Pruefmuster/Hauptformular/Hauptfensterrahmen.Sprungtabelle.Auszug.cs  (die Wurzel, die den Schluessel nennt)
         ↓
-Pruefmuster/Pufferspeicher/Form_PufferSp_Admin                („ja")
+Pruefmuster/Pufferspeicher/Form_PufferSp_Admin                        („ja")
 ```
+
+> Die zwei Wurzeldateien des Prüfmusters hießen bis zum 04.09.2026
+> `MDIMainForm.Sprungtabelle.Auszug.cs` bzw.
+> `Pruefmuster/Pufferspeicher/MDIMainForm.Auszug.cs`; sie sind mit **E‑10**
+> umbenannt, weil `Erreichbarkeit.Wurzelmasken` den KLASSENnamen führt. Die
+> eingefrorenen **Designer- und `.resx`-Zeugen behalten ihren alten Namen** —
+> sie sind das Abbild des Bestands, nicht lebender Quelltext.
 
 Der Fall prüft die **Öffnerliste**, nicht den Pfad: Die Maske hat im Muster zwei
 Öffner — den unmittelbaren Weg (der Anker des „unklar"-Falls) und den Weg über
@@ -327,10 +342,10 @@ Ende von `BeimLaden`).
 |---|---|
 | **`Form_HelpPopup`** | die **letzte** Designer-Maske (Entscheid W15b‑E‑2). Sie fällt mit `HelpCatalog`/`HelpExtender`; ihr Ersatz `IHilfeDienst` steht mit Windows- und iOS-Fassung |
 | **`Sprungbruecke`** | **ein** Zweig: `Sprungziel.SpeicherOptimierung` → `Form_SpeicherOptimierung` (iF22, der einzige Ort mit ScottPlot). Sie ist der Beweis, dass die Mischphase EINEN Übergang behält |
-| **`MDIMainForm`** | die Hülle, 129 Zeilen, ohne Designer. **Die Umbenennung in `Hauptfenster` (E‑10) ist der erste Commit nach dem Merge** |
+| **`Hauptfensterrahmen`** | die Hülle, 129 Zeilen, ohne Designer, seit dem 04.09.2026 unter diesem Namen in `Views/Hauptformular/` (E‑10, Commit `7ed320b`; vorher `MDIMainForm` in der Projektwurzel). Der Rahmen trägt `Application.Run`, den `BlazorWebView`, F1 und den Sprachwechsel — **er bleibt Windows**, auch wenn alles darin Razor ist |
 | **W16b‑O‑3** | `IosProjektKontext` liest die Klimazone anders als der Kern (Befund W16b‑B2) — auf `ProjektKontextCtrl` zu ziehen |
 | **`IProjektQuelle` auf iOS** | drei Glieder laufen dort in die Standardumsetzung: `StartseiteGaben`, `BerichteKostenGaben` (beide `null`) und `IDateiDienst.AdresseOeffnen` (`false`). `AppWurzel` sagt es im Banner, statt leer zu bleiben |
-| **`Erreichbarkeit`** | `Wurzelmasken` führt `MDIMainForm` (die Hülle, keine Maske), `Wurzelklasse` `Program`. Fällt `Form_HelpPopup`, ist der Graph leer — dann verliert auch `DerBestandFuehrtKeineUngeklaerteMaskeMehr` seinen Gegenstand |
+| **`Erreichbarkeit`** | `Wurzelmasken` führt `Hauptfensterrahmen` (die Hülle, keine Maske; seit E‑10, vorher `MDIMainForm`), `Wurzelklasse` `Program`. Fällt `Form_HelpPopup`, ist der Graph leer — dann verliert auch `DerBestandFuehrtKeineUngeklaerteMaskeMehr` seinen Gegenstand |
 | **`WFO1000`** | steht bei 0; die Herabstufung in der `.editorconfig` kann mit `Form_HelpPopup` entfallen |
 | **W16b‑O‑2** | `ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist` ist flatterhaft — in dieser Teilwelle **nicht** aufgetreten (vier Gesamtläufe, davon einer unter `en_US`) |
 
@@ -340,7 +355,7 @@ Ende von `BeimLaden`).
 
 | # | Punkt |
 |---|---|
-| **W16c‑O‑1** | **Die Umbenennung `MDIMainForm` → `Hauptfenster` (E‑10) steht aus** — ausdrücklich nicht Teil dieser Teilwelle. Betroffen: Klasse und Datei, `Program.Main`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP`, `help_mapping.txt`, die zwei Prüfmuster-Auszüge und die Kommentare in rund einem Dutzend Hüllen |
+| ~~**W16c‑O‑1**~~ | ~~Die Umbenennung `MDIMainForm` (E‑10) steht aus~~ — **erledigt** (04.09.2026, Commit `7ed320b`): Die Klasse heißt `Hauptfensterrahmen` und liegt in `Views/Hauptformular/`, `Program.mdifrm` heißt `rahmen`, `Erreichbarkeit.Wurzelmasken`, `HilfeKontext.BEREICH_JE_TYP` und die zwei Prüfmuster-Auszüge sind nachgezogen. `help_mapping.txt` war nicht betroffen (kein Schlüssel dieses Fensters mehr, seit W16c.6 heißt die Fensterhilfe `Hauptfenster.btn_Help`). Gate: 0 Fehler / 6 Warnungen, 122 Formularkarte-Fälle, 1 ja / 0 nein / 0 verwaist / 0 unklar |
 | **W16c‑O‑2** | **Die DPI-Abnahme steht aus.** Auf Linux ist nur der Bau prüfbar; die 16 Punkte in § 10 (besonders 13–15) brauchen ein Windows-Gerät. `Form_HelpPopup` und `Form_SpeicherOptimierung` sind die zwei Kandidaten für eine echte Abweichung |
 | ~~**W16c‑O‑3**~~ | ~~Der Menüpunkt „Deutsch"/„Englisch" bleibt ein Kopf erster Ebene~~ — **erledigt** (04.09.2026, Commit `03c5947`): Der Anwender hat **W16c‑E‑2** zugunsten des Untermenüs entschieden. „Sprache" ist ein Kopf, die zwei Punkte hängen darunter; N4 führt seither 55 Punkte in vier Köpfen |
 | **W16c‑O‑6** (neu) | **Die Windows-Abnahme der zwei Entscheide steht aus.** Auf Linux ist beides nur als bunit-Fall geprüft: dass „Sprache" aufklappt und der Klick meldet (W16c‑E‑2), und dass „Varianten und Bericht…" die Ansicht wechselt und „◀ Zurück" zurückführt (W16c‑E‑3). Was ein Windows-Gerät zeigen muss, steht als Punkt 3, 5, 11 und 12 in § 10 — dazu **Befund W16c‑B11**: dass die Anwendung überhaupt startet, ist auf Linux nicht nachweisbar |

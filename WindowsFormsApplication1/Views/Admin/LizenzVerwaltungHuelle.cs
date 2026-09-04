@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
         /// wie im Vorläufer (<c>TexteSetzen</c>, <c>:101</c>).
         /// </summary>
         internal static string Titel()
-            => MyResource.Resource.LIZ_TITEL + " — " + MDIMainForm.PRODUKTNAME;
+            => MyResource.Resource.LIZ_TITEL + " — " + Hauptfensterrahmen.PRODUKTNAME;
 
         /// <summary>
         /// Der PARAMETERSATZ ohne <c>Geschlossen</c> — für das eigene Fenster wie für

@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl der bekannten Hilfeseiten.</summary>
         public int SeitenAnzahl => _nachPfad.Count;
 
-        // Meldet, wann der Ladelauf durch ist. MDIMainForm_Load ruft LoadAllAsync
+        // Meldet, wann der Ladelauf durch ist. Hauptfensterrahmen.BeimLaden ruft LoadAllAsync
         // bewusst ohne await auf; Formulare, die frueher oeffnen, saehen sonst einen
         // leeren Katalog und wuerden ihre Infobuttons voreilig abschalten (F3).
         private readonly TaskCompletionSource<bool> _geladen =
@@ -871,7 +871,7 @@ namespace WindowsFormsApplication1
     /// Belegt den Katalog VOR dem Onlineabruf, damit er nie leer ist.
     /// </summary>
     /// <remarks>
-    /// Entschaerft den Startwettlauf: <c>MDIMainForm_Load</c> stoesst
+    /// Entschaerft den Startwettlauf: <c>Hauptfensterrahmen.BeimLaden</c> stoesst
     /// <see cref="LoadAllAsync"/> bewusst ohne <c>await</c> an, damit der Start
     /// nicht blockiert. Formulare, die frueher oeffnen, sahen bisher einen
     /// leeren Katalog. Nach diesem Aufruf sehen sie den Startbestand; der
@@ -1102,7 +1102,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// Der Unterschied zu <see cref="RegisterControl"/>: Neben dem Praefix der
         /// Wurzel werden auch die Praefixe aller eingebetteten Formulare und
-        /// UserControls angewandt. <c>MDIMainForm</c> traegt <c>Form_Start</c> als
+        /// UserControls angewandt. <c>Hauptfensterrahmen</c> traegt <c>Form_Start</c> als
         /// eingebettetes Formular (<c>TopLevel=false</c>), und <c>Form_KostenKomponente</c>
         /// haengt <c>ucFuelSettings</c> zur Laufzeit ein - beide sollen ihre eigenen
         /// Zeilen aus <c>help_mapping.txt</c> bekommen, ohne dass jemand dafuer Code
@@ -1111,7 +1111,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Reihenfolge ist hier entscheidend.</b> Erst werden ALLE Praefixe des
         /// Baumes angewandt, danach erst wird abgeschaltet. Andernfalls loeschte der
-        /// Durchgang fuer <c>MDIMainForm</c> die Infobuttons von <c>Form_Start</c>,
+        /// Durchgang fuer <c>Hauptfensterrahmen</c> die Infobuttons von <c>Form_Start</c>,
         /// bevor deren eigene Zeilen ueberhaupt an der Reihe waeren.
         /// </para>
         /// <para>
@@ -1402,7 +1402,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wertet die Katalogtreffer aus - aber erst, wenn der Katalog fertig ist.
-        /// MDIMainForm_Load startet LoadAllAsync bewusst ohne await; wer vorher
+        /// Hauptfensterrahmen.BeimLaden startet LoadAllAsync bewusst ohne await; wer vorher
         /// urteilt, faerbt nach dem Start saemtliche Infobuttons grau.
         /// </summary>
         private void NachKatalogAuswerten(Control rootContainer, List<Control> registrierte)

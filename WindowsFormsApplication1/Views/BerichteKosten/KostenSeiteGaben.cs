@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1
 
                 ["LabelKomponenten"] = MyResource.Resource.BK_KOSTEN_LBL_KOMPONENTEN,
                 ["LabelTraeger"] = MyResource.Resource.BK_KOSTEN_LBL_TRAEGER,
+                ["SpalteAktionen"] = T("BK_KOSTEN_SP_AKTIONEN", "Aktionen"),
                 ["SpalteAnlage"] = T("BK_KOSTEN_SP_ANLAGE", "Anlage / Komponente"),
                 ["SpalteSumme"] = MyResource.Resource.BK_KOSTEN_SP_SUMME,
                 ["SpalteBetrieb"] = T("BK_KOSTEN_SP_BETRIEB", "Betrieb [€/a]"),
