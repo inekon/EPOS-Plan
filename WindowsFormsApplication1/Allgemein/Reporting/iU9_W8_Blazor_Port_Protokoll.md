@@ -530,3 +530,155 @@ Renderer wurde **nichts geändert**.
 **Was in Welle 8 unverändert bleibt:** die Einheitenwahl MWh/kWh, das doppelt
 gerenderte Säulenbild (eine Fassung je Einheit), die Einheit am Wert und die
 Sonderstellung des Brauchwassers in kWh (offener Punkt W8‑O‑5b).
+
+## Windows-Abnahme 05.09.2026 — Ergebnisdialog Strom (W8‑E‑2, W8‑B‑3)
+
+Weg des Befunds: Kachel „Standardlastprofil" → Dialog **„Standard Stromprofil"**
+(`BedarfsProfileDialog`, Ausprägung Strom) → Knopf **„Simulation"** →
+Überlagerung **„Simulation Ergebnisse"** (`BedarfErgebnisDialog`). Das
+Bildschirmfoto zeigt bei Einheit kWh, Profil `EFH_3_Pers`, Typ `REH_1` und
+8 000 kWh Jahresbedarf:
+
+```
+max. Strombedarf      3,72   kW
+Gesamter Strombedarf  0      kWh
+Stromganglinie        0      kWh
+Strombedarf Gebäude   0      kWh
+```
+
+### W8‑B‑3 — „Strombedarf Gebäude" und „Gesamter Strombedarf" standen auf null
+
+**Die Ursache ist eine fehlende Zeile in einer ABSCHRIFT** — dieselbe Klasse
+Fehler wie W9‑B‑4/B‑5, nur eine Ebene weiter: nicht die Namensauflösung, sondern
+eine zweite Fassung derselben Rechnung.
+
+`BedarfsProfileHuelle.Rechenstand.Rechnen` trug die Vorschaurechnung des Stroms
+von Hand nachgezogen im Oberflächencode:
+
+```csharp
+_strom.Strombedarf_gesamt = ergebnis.Sum();          // kWh - und gleich wieder weg
+Array.Copy(ergebnis, _strom.Strombedarf_viertelStundenwerte, ergebnis.Length);
+BhkwPlan.MonatsSumme(...);
+_strom.Strombedarf_Max = _strom.Maximaler_Strombedarf(...);
+_strom.Strombedarf_gesamt = _strom.Strombedarf_Gebaeude_gesamt;   // ← 0
+```
+
+Es fehlte `Strombedarf_Gebaeude_gesamt = reihe.Sum() / 1000`. Das Feld blieb auf
+seinem Anfangswert 0, und die letzte Zeile überschrieb damit auch
+`Strombedarf_gesamt`. Der Spitzenwert stand daneben richtig da, weil er aus der
+REIHE kommt und nicht aus einer Summe — genau das machte den Befund so
+verwirrend: eine gerechnete Leistung neben drei Nullen.
+
+Die Zeile war nicht verloren, sie stand nur woanders: `BedarfsVorschauCtrl.Strom`
+(die KATALOGvorschau der drei Bedarfsverwaltungen, iU9‑W14b) hatte sie seit jeher.
+Zwei Vorschauwege, zwei Abschriften, eine davon unvollständig.
+
+**Behebung.** Die sechs Zuweisungen stehen jetzt einmal im Kern, an der Klasse,
+deren Felder sie belegen — `SimulationStrombedarf.ProfilbedarfUebernehmen(float[])`,
+Zwilling von `ProzesssummeUebernehmen()` aus W9‑O‑3. Katalogvorschau und
+Projektvorschau nehmen dieselbe Fassung, und die Projektvorschau selbst ist von
+der Hülle in den Kern gezogen: **`BedarfsVorschauCtrl.ProjektVorschau(art,
+idProjekt, namen)`** trägt alle drei Ausprägungen. `BedarfsProfileHuelle` hält
+den Stand nur noch, sie rechnet nicht mehr.
+
+Einheiten unverändert wie im Lauf: die drei Energiemengen in MWh,
+`Strombedarf_Max` als LEISTUNG in kW, `Strombedarf_monat` aus
+`BhkwPlan.MonatsSumme` ebenfalls in MWh. `Stromganglinie_gesamt` bleibt in der
+Vorschau 0 — eine Vorschau rechnet die AUSGEWÄHLTEN PROFILE, nicht das ganze
+Projekt —, und „Gesamter Strombedarf" ist die Summe beider Posten, nur mit einem
+Summanden 0. Es ist damit dieselbe Rechnung wie im Lauf, nicht eine zweite.
+
+**Wache.** `EPOS.Kern.Tests/BedarfsProfilVorschauTests`, Abschnitt 4: Projekt 1017
+liefert **672,000 MWh** aus dem Profil (eingefroren), Gesamtsumme = Profil +
+Ganglinie, Summe der zwölf Monatswerte = Gesamtsumme, `Stuetzstellen` = 8 760.
+Dazu die Wache, dass die zwei Wärmewege der Projektvorschau unverändert bleiben
+(Prozess 30,0 MWh, Brauchwasser 4 059,7 kWh — W9‑O‑3 und W8‑O‑5 gelten weiter).
+
+### W8‑E‑2 — Darstellung: drei Kategorien, Summe unten, Woche und Tag
+
+Vier Wünsche des Anwenders, alle umgesetzt:
+
+1. **Saubere Tabelle mit Beschriftung, Wert, Einheit.** Das Blatt trägt die
+   Hausklasse `epos-raster` plus `epos-kennzahlen`: Die Beschriftungsspalte
+   wächst, Zahl und Einheit bleiben schmal, die Einheit steht leise rechts.
+
+2. **„max. Strombedarf" → „max. Leistung", eigene Kategorie.** Der Wert ist eine
+   LEISTUNG in kW und war nie ein Strombedarf. Er steht jetzt in einem eigenen
+   Block mit der Zwischenüberschrift **„Leistung"**, getrennt von den
+   Energieposten unter **„Energie"** — und **nicht** in der Summe. Getragen wird
+   das von `Kennzahlart` (`Leistung` / `Energie` / `Summe`) an
+   `ErgebnisKennzahl`; Vorgabe ist `Energie`, ein Datensatz ohne Kategorien
+   rendert deshalb unverändert als schlichte Liste.
+
+3. **„Strombedarf Gebäude" → „Strombedarf aus Profil"** — die Zeile trägt seit
+   W8‑B‑3 den aus den Profilen gerechneten Bedarf und heißt jetzt nach dem, was
+   sie zeigt. **„Gesamter Strombedarf"** ist die abgesetzte Summenzeile am Fuß
+   (`tfoot`, Rechenstrich darüber, halbfett); ihr Wert ist der des KERNS, keine
+   in der Oberfläche addierte Zahl — die Anzeige rechnet nicht, sie zeigt.
+
+4. **Grafik Strombedarf: Jahr | Woche | Tag.** Neuer Baustein
+   `EPOS.UI/Dialoge/Bedarf/BedarfGangGrafik.razor`. **Jahr** ist wörtlich die
+   Sicht des Bestands (Monatssäulen, beim Brauchwasser samt Schalter
+   „Jahresverlauf") — sie geht unverändert als `JahresInhalt` hinein. **Woche**
+   (168 h) und **Tag** (24 h) kommen mit einem Navigator ◀ ▶, der als **Ring**
+   läuft: hinter Woche 52 steht Woche 1. Die Stelle wird JE STUFE gemerkt.
+
+   **Kein neues Renderer-Bild.** Gezeichnet wird mit
+   `ChartRenderer.Jahresverlauf` und einem `Achsenfenster` — dem Zuschnitt, den
+   die Ergebnisseite (W11b) für ihren Datenzoom schon benutzt. Der Renderer hat
+   dafür einen optionalen Fensterparameter bekommen: zugeschnitten wird ZUERST,
+   Höchstwert und Skala beziehen sich danach auf den Ausschnitt (dieselbe Regel
+   wie bei `ErzeugerStapel`), und die x‑Achse wechselt von den Monatsgrenzen auf
+   die wirklichen Jahresstunden (`XAchseFenster`) — in einer Julinacht sagt
+   „Jan" nichts mehr. **Ohne Fenster ist das Bild byte‑gleich zum Bestand**
+   (`jahresverlauf_bedarf`, 45 100 Bytes, unverändert).
+
+   Die 52 + 365 Bilder entstehen **auf Zuruf**, nicht auf Vorrat: Die Hülle gibt
+   einen Delegaten `Func<Gangstufe,int,byte[]>` hinein — dasselbe Muster wie beim
+   Stromgang-Reiter der Ergebnisseite. Die Komponente ruft weiterhin keinen
+   Renderer, sie ruft die Hülle. Das Raster (Stunden oder Viertelstunden) sagt
+   das neue Kernfeld `SimulationStrombedarf.Stuetzstellen`; ohne es träfe
+   „Woche 12" nach einem vollen Lauf die falschen Stunden.
+
+**Die Wärmeausprägung ist konsistent mitgezogen** und verschlechtert sich nicht:
+`max. Wärmelast` steht ebenfalls im Leistungsblock, `Gesamter Wärmebedarf` als
+Summe am Fuß statt als zweite Zeile mitten unter seinen eigenen Bestandteilen.
+Eine Ganglinienquelle bekommt sie **nicht** — Umschalter und Navigator erscheinen
+dort gar nicht, Sichtwahl und Schalter „Jahresverlauf" bleiben, wie sie waren
+(eigene Wache in `BedarfErgebnisDialogTests`). W9‑B‑4/B‑5 und W8‑O‑5 sind
+unberührt; die Sonderstellung des Brauchwassers in kWh (W8‑O‑5b) bleibt offen.
+
+**Neue Ressourcenschlüssel** (beide Sprachen): `BERG_LBL_MAX_LEISTUNG`,
+`BERG_LBL_STROM_PROFIL`, `BERG_GRP_LEISTUNG`, `BERG_GRP_ENERGIE`,
+`BERG_STUFE_JAHR`, `BERG_STUFE_WOCHE`, `BERG_STUFE_TAG`, `BERG_GANG_MARKE`,
+`BERG_BILD_STROM_GANG`, `BERG_ACHSE_STROMBEDARF`.
+
+### Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 077** grün (de‑DE und `LANG=en_US.UTF-8`) |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 491** grün (de‑DE und `LANG=en_US.UTF-8`) |
+| `Proben/ChartProben -c Release` | **40** Prüfungen grün — 36 Bilder + **4** Gegenproben (neu: `jahresverlauf_woche`, `jahresverlauf_tag`, `jahresverlauf_woche_fenster`, `jahresverlauf_tag_fenster`) |
+| `EPOS.Referenzlauf … lauf/vergleich` (1030, 1007, 1017) | **PASS**, `diff -r` byte‑gleich zu `Referenzlaeufe/2026-08-30_B3-Kaskade` |
+| `SqlDialektPruefer` | 1 201 SQL-Texte, **0 Fundstellen** (keine neue SQL in dieser Änderung) |
+| iU5‑Wächter / Plattform‑Wächter | beide **leer** |
+
+### Abnahmepunkte für den Anwender
+
+1. „Standard Stromprofil" → Profil wählen → **„Simulation"**: Der Reiter
+   „Strombedarf Ergebnisse" zeigt **„Leistung"** mit „max. Leistung … kW",
+   darunter **„Energie"** mit „Stromganglinie" und „Strombedarf aus Profil", und
+   ganz unten abgesetzt **„Gesamter Strombedarf"**.
+2. „Strombedarf aus Profil" trägt den Jahresbedarf des Profils (bei 8 000 kWh/a
+   und Einheit kWh also 8 000, bei MWh 8,00) — **nicht mehr 0**.
+3. „Gesamter Strombedarf" = „Stromganglinie" + „Strombedarf aus Profil".
+4. Einheit auf kWh und zurück auf MWh umschalten: Leistung bleibt in kW, die
+   Energiezeilen und die Summe folgen der Wahl.
+5. Reiter **„Grafik Strombedarf"**: Umschalter **Jahr | Woche | Tag**. „Jahr"
+   zeigt das gewohnte Säulenbild. „Woche" und „Tag" zeigen die Ganglinie mit
+   ◀ ▶ und der Marke „Woche 1 von 52" bzw. „Tag 1 von 365"; über den ersten
+   Schritt zurück landet man beim letzten.
+6. Prozesswärme und Brauchwasser: dieselbe Gliederung (max. Wärmelast oben,
+   Gesamter Wärmebedarf unten), Grafikreiter **unverändert** — kein Umschalter,
+   Sichtwahl und „Jahresverlauf" wie bisher.

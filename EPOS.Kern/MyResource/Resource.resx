@@ -11904,6 +11904,36 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BERG_LBL_STROM_GEBAEUDE" xml:space="preserve">
     <value>Strombedarf Gebäude:</value>
   </data>
+  <data name="BERG_LBL_MAX_LEISTUNG" xml:space="preserve">
+    <value>max. Leistung:</value>
+  </data>
+  <data name="BERG_LBL_STROM_PROFIL" xml:space="preserve">
+    <value>Strombedarf aus Profil:</value>
+  </data>
+  <data name="BERG_GRP_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="BERG_GRP_ENERGIE" xml:space="preserve">
+    <value>Energie</value>
+  </data>
+  <data name="BERG_STUFE_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BERG_STUFE_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="BERG_STUFE_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BERG_GANG_MARKE" xml:space="preserve">
+    <value>{2} {0} von {1}</value>
+  </data>
+  <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
+    <value>Strombedarf Ganglinie</value>
+  </data>
+  <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf [kW]</value>
+  </data>
   <data name="BERG_LBL_NETZVERLUSTE" xml:space="preserve">
     <value>Netzverluste:</value>
   </data>
