@@ -129,7 +129,12 @@
       <KindInhalt>
         <Reiterblatt Schluessel="UEBERSICHT" Titel="@ReiterUebersichtText">
           <KindInhalt>
-            <div class="epos-pvimport-details">
+            @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Kasten
+               epos-pvimport-details entfaellt - der Hausraster stellt dieselben
+               Spalten und rueckt die Beschriftung neben das Feld. Dieselbe
+               Anordnung wie im Modulkatalog, in den die Zeile uebernommen wird. *@
+            <Formularraster>
+                <KindInhalt>
                 <Textfeld Bezeichnung="@LabelModulname" Wert="@Wert(d => d.Name)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelHersteller" Wert="@Wert(d => d.Manufacturer)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelTechnologie" Wert="@Wert(d => d.Technology)" NurLesen="true" />
@@ -140,13 +145,16 @@
                 <Textfeld Bezeichnung="@LabelLaenge" Wert="@Zahl(d => d.Laenge, 2)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelBreite" Wert="@Zahl(d => d.Breite, 2)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Wert(d => d.Date.ToString(Invariant))" NurLesen="true" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
           </KindInhalt>
         </Reiterblatt>
 
         <Reiterblatt Schluessel="ELEKTRISCH" Titel="@ReiterElektrischText">
           <KindInhalt>
-            <div class="epos-pvimport-details">
+            @* Formularraster (iU8-E-2, Paket P3) - wie im Reiter davor. *@
+            <Formularraster>
+                <KindInhalt>
                 <Textfeld Bezeichnung="@LabelIsc" Wert="@Zahl(d => d.Isc, 3)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelVoc" Wert="@Zahl(d => d.Voc, 3)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelImp" Wert="@Zahl(d => d.Imp, 3)" NurLesen="true" />
@@ -157,15 +165,19 @@
                 <Textfeld Bezeichnung="@LabelGammaPmp" Wert="@Zahl(d => d.GammaPmp, 4)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelStc" Wert="@Zahl(d => d.Stc, 2)" NurLesen="true" />
                 <Textfeld Bezeichnung="@LabelPtc" Wert="@Zahl(d => d.Ptc, 2)" NurLesen="true" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
           </KindInhalt>
         </Reiterblatt>
 
         <Reiterblatt Schluessel="THERMISCH" Titel="@ReiterThermischText">
           <KindInhalt>
-            <div class="epos-pvimport-details">
+            @* Formularraster (iU8-E-2, Paket P3) - wie im Reiter davor. *@
+            <Formularraster>
+                <KindInhalt>
                 <Textfeld Bezeichnung="@LabelTNoct" Wert="@ZahlOderStrich(d => d.TNoct, 1)" NurLesen="true" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
             <Herleitungszeile Text="@HinweisPanKoeffizienten" />
           </KindInhalt>
         </Reiterblatt>

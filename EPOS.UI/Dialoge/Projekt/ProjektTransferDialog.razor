@@ -52,6 +52,11 @@
             <Reiterblatt Schluessel="EXPORT" Titel="@ReiterExport">
                 <KindInhalt>
 
+                    @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Erst das Projekt,
+                       dann seine Varianten - eine Reihenfolge, und die Variantenliste
+                       braucht die ganze Breite. *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
                     <Auswahlfeld Bezeichnung="@LabelProjekt" Eintraege="@Projektnamen"
                                  Auswahl="@_projektIndex" AuswahlChanged="ProjektGewaehlt"
                                  Aktiv="@(!_laeuft)" />
@@ -60,6 +65,8 @@
                                      Eintraege="@_variantenEintraege" Gewaehlt="@_variantenGewaehlt"
                                      GewaehltChanged="@(w => _variantenGewaehlt = w)"
                                      Aktiv="@(!_laeuft)" LeerText="@LeerVarianten" />
+                        </KindInhalt>
+                    </Formularraster>
 
                     <div class="epos-leiste">
                         <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-export"
@@ -72,9 +79,15 @@
             <Reiterblatt Schluessel="IMPORT" Titel="@ReiterImport">
                 <KindInhalt>
 
+                    @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: ein Pfadfeld -
+                       es braucht die Breite. *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
                     <Dateiwahl Bezeichnung="@LabelDatei" Pfad="@_paketpfad" PfadChanged="PaketGewaehlt"
                                Filter="@Dateifilter" KnopfText="@BtnDatei" Aktiv="@(!_laeuft)"
                                Waehlen="@PaketWaehlen" />
+                        </KindInhalt>
+                    </Formularraster>
 
                     @if (_vorschau is not null)
                     {
@@ -82,6 +95,11 @@
                                     Text="@Vorschautext" />
                     }
 
+                    @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Zielname, Umgang
+                       mit dem Konflikt, Sicherung - der Weg des Imports von oben nach
+                       unten. *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
                     <Textfeld Bezeichnung="@LabelZielname" Wert="@_zielname"
                               WertChanged="@(w => _zielname = w)" NurLesen="@_laeuft" />
 
@@ -94,6 +112,8 @@
                         <Schalter Bezeichnung="@LabelSicherung" Wert="@_sicherung"
                                   WertChanged="@(w => _sicherung = w)" Aktiv="@(!_laeuft)" />
                     }
+                        </KindInhalt>
+                    </Formularraster>
 
                     <div class="epos-leiste">
                         <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-import"

@@ -413,3 +413,27 @@ vollständig lesbar (er bricht um, die Liste rollt nicht waagerecht). Jede Varia
 steht unmittelbar unter ihrem Stamm, ist eingerückt und trägt darunter leise
 „Variante von &lt;Stamm&gt;". Die drei „Booster-Kette mit Kombi-Speicher"-Zeilen
 sind damit auseinanderzuhalten. Dasselbe auf dem iPad hochkant.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Seiten/Assistent/ProjektKopfSeite.razor` | 6 im Raster (7 auf der Seite) | 1 | nein | Klasse A. Der handgebaute Zweispalter `epos-projektkopf-raster` **entfällt** — samt seinem eigenen Umbruch bei 700 px; der Hausraster stellt dieselben zwei Spalten aus `auto-fill`, rückt zusätzlich die Beschriftung neben das Feld und bricht bei 900 px wie das ganze Haus. Die **Beschreibung** bleibt bewusst UNTER dem Raster: Zwischen ihr und den sechs kurzen Feldern steht seit Merge 5 (02.09.2026) der Pflichtfeldhinweis, und der gehört zu den Feldern darüber. Die Hinweiszeile und die Pflichtlegende über dem Block bleiben ebenfalls außerhalb. |
+
+**Probe.** `Die_Projektkopffelder_stehen_im_Formularraster`: kein
+`epos-projektkopf-raster` mehr, **sechs** Felder in **einem** Raster, und das
+breite Feld (die mehrzeilige Beschreibung) steht **außerhalb**.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

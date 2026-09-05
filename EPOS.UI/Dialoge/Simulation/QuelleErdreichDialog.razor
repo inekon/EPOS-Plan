@@ -71,29 +71,38 @@
     @* --- Quellsystem ------------------------------------------------------- *@
     <Gruppenkopf Titel="@GbQuellsystem">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+               Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
             <Optionsgruppe Eintraege="@Quellsysteme" Auswahl="@(_sonde ? SONDE : KOLLEKTOR)"
                            AuswahlChanged="SystemUmschalten" />
 
-            <div class="epos-erdreich-zweig">
-                <Zahlenfeld Bezeichnung="@LblVerlegetiefe" Einheit="m" Aktiv="@(!_sonde)"
-                            Feldname="@LblVerlegetiefe" Wert="@_tiefe"
-                            WertChanged="w => Setzen(() => _tiefe = w)" />
-                <Zahlenfeld Bezeichnung="@LblFlaeche" Einheit="m²" Aktiv="@(!_sonde)"
-                            Feldname="@LblFlaeche" Wert="@_flaeche"
-                            WertChanged="w => Setzen(() => _flaeche = w)" />
-                <Zahlenfeld Bezeichnung="@LblLaengeSonde" Einheit="m" Aktiv="@_sonde"
-                            Feldname="@LblLaengeSonde" Wert="@_laenge"
-                            WertChanged="w => Setzen(() => _laenge = w)" />
-                <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
-                              Feldname="@LblAnzahlSonden" Wert="@_anzahl"
-                              WertChanged="w => Setzen(() => _anzahl = w)" />
-            </div>
+            <Zahlenfeld Bezeichnung="@LblVerlegetiefe" Einheit="m" Aktiv="@(!_sonde)"
+                        Feldname="@LblVerlegetiefe" Wert="@_tiefe"
+                        WertChanged="w => Setzen(() => _tiefe = w)" />
+            <Zahlenfeld Bezeichnung="@LblFlaeche" Einheit="m²" Aktiv="@(!_sonde)"
+                        Feldname="@LblFlaeche" Wert="@_flaeche"
+                        WertChanged="w => Setzen(() => _flaeche = w)" />
+            <Zahlenfeld Bezeichnung="@LblLaengeSonde" Einheit="m" Aktiv="@_sonde"
+                        Feldname="@LblLaengeSonde" Wert="@_laenge"
+                        WertChanged="w => Setzen(() => _laenge = w)" />
+            <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
+                          Feldname="@LblAnzahlSonden" Wert="@_anzahl"
+                          WertChanged="w => Setzen(() => _anzahl = w)" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* --- Standort ---------------------------------------------------------- *@
     <Gruppenkopf Titel="@GbStandort">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Die drei Werte
+               tragen eine Reihenfolge, und unter jedem steht seine
+               Herleitungszeile - nebeneinander lasen sie sich falsch. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Auswahlfeld Bezeichnung="@LblBodentyp" Eintraege="@Bodentypen"
                          Auswahl="@_bodenIndex" AuswahlChanged="BodentypWaehlen" />
             <Herleitungszeile Text="@LblBodentypHinweis" />
@@ -112,6 +121,8 @@
             <Herleitungszeile Text="@LblSpreizungHinweis" />
 
             <Herleitungszeile Text="@_bodenkennwerte" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

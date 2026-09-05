@@ -47,6 +47,11 @@
     <Gruppenkopf Titel="@GruppeFormat" />
 
     <div class="epos-importoptionen-raster">
+        @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Kasten bleibt
+           als Anker fuer die Proben, das Ordnen macht jetzt der Raster - acht
+           Auswahlfelder mit der Beschriftung daneben statt darueber. *@
+        <Formularraster>
+            <KindInhalt>
         <Auswahlfeld Bezeichnung="@LabelTrennzeichen" Eintraege="@_trennzeichen"
                      Auswahl="@_iTrennzeichen" AuswahlChanged="@(i => _iTrennzeichen = i ?? 0)" />
         <Auswahlfeld Bezeichnung="@LabelDezimal" Eintraege="@_dezimal"
@@ -66,6 +71,8 @@
             <Auswahlfeld Bezeichnung="@LabelBlatt" Eintraege="@_blaetter"
                          Auswahl="@_iBlatt" AuswahlChanged="@(i => _iBlatt = i ?? 0)" />
         }
+            </KindInhalt>
+        </Formularraster>
     </div>
 
     <Schalter Bezeichnung="@LabelKopfzeile" Wert="@_kopfzeile"

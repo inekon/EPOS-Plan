@@ -3283,11 +3283,8 @@ body {
     margin: 8px 0;
 }
 
-.epos-pvimport-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 4px 16px;
-}
+/* Die drei Detailreiter stellen ihre Felder seit iU8-E-2 (Paket P3) in
+   den Hausraster (Formularraster) - der eigene Kasten dafuer ist fort. */
 
 /* Die Statuszeile des Vorlaeufers (statusStrip1) - jetzt rechts in der
    Quellenleiste, leise. */
@@ -3638,17 +3635,12 @@ body {
    volle Breite - dieselbe Anordnung wie im Vorlaeufer (631 x 558), nur ohne feste
    Pixelpositionen.
    -------------------------------------------------------------------------- */
-.epos-projektkopf-raster {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 16px;
-}
-
-@media (max-width: 700px) {
-    .epos-projektkopf-raster {
-        grid-template-columns: 1fr;
-    }
-}
+/* Seit iU8-E-2 (Paket P3) steht der Feldlauf im Hausraster
+   (Formularraster): zwei Spalten aus auto-fill statt zwei gerechneten,
+   die Beschriftung neben dem Feld und die Beschreibung als breites Feld
+   ueber beide Spalten. Der eigene Kasten und sein eigener Umbruch bei
+   700 px sind damit fort - der Raster bricht bei 900 px wie das ganze
+   Haus. */
 
 /* --------------------------------------------------------------------------
    Gespraechsverlauf des KI-Assistenten (iU9-W15b.6, Bausteinluecke 17).
@@ -6116,4 +6108,25 @@ body {
     .epos-formularraster .epos-schalter {
         padding-left: 0;
     }
+}
+
+/* ==================================================================== */
+/* FORMULARRASTER - PAKET P3 (iU8-E-2, 05.09.2026)                       */
+/*                                                                      */
+/* Eine einzige Zeile Zusatz, gefunden beim Umstellen von Bedarf,       */
+/* Simulation und Projekt: Eine HERLEITUNGSZEILE gehoert zu dem Feld    */
+/* UEBER ihr ("Fensterdurchlassgrad: Vorgabe 0,6", "Jahresnutzungsgrad  */
+/* aus dem Kesselwirkungsgrad"). Als gewoehnliches Rasterkind faellt    */
+/* sie in die naechste freie Zelle - im zweispaltigen Raster also NEBEN */
+/* ein fremdes Feld, wo sie wie dessen Erlaeuterung aussieht. Ueber die */
+/* volle Breite steht sie wieder da, wo der Vorlaeufer sie hatte: als   */
+/* eigene Zeile unter ihrem Feld.                                       */
+/*                                                                      */
+/* Die zweite Selektorzeile deckt die Gruppe ab: .epos-formulargruppe   */
+/* ist display: contents, ihre Kinder sind Rasterkinder - der           */
+/* Kindselektor sieht das nicht, der DOM-Vater bleibt die Gruppe.       */
+/* ==================================================================== */
+.epos-formularraster > .epos-herleitung,
+.epos-formularraster > .epos-formulargruppe > .epos-herleitung {
+    grid-column: 1 / -1;
 }

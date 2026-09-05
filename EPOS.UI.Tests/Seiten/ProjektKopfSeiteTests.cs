@@ -217,4 +217,37 @@ public class ProjektKopfSeiteTests : BunitContext
         Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
         Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die sechs kurzen Felder stehen im Formularraster; der handgebaute
+    /// Zweispalter <c>epos-projektkopf-raster</c> ist fort.
+    ///
+    /// <para>Die BESCHREIBUNG bleibt unter dem Raster: Zwischen ihr und den
+    /// Feldern steht der Pflichtfeldhinweis (Merge 5), und der gehört zu den
+    /// Feldern darüber.</para>
+    ///
+    /// <para>Geprüft wird das MARKUP: Der Block trägt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> — eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Projektkopffelder_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.Empty(cut.FindAll(".epos-projektkopf-raster"));
+        Assert.Single(cut.FindAll(".epos-formularraster"));
+        Assert.Equal(6, cut.FindAll(".epos-formularraster .epos-feld").Count);
+
+        // Die Beschreibung steht als mehrzeiliges - also BREITES - Feld
+        // ausserhalb des Rasters.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-feld--breit"));
+        Assert.Single(cut.FindAll(".epos-feld--breit"));
+    }
 }

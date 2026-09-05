@@ -68,6 +68,12 @@
         <section class="epos-projektkopie-felder">
             @* Waehrend des Laufs bleiben die Felder LESBAR, nur nicht mehr aenderbar -
                der Vorlaeufer sperrte sie (SetBusy), was den Text ausgraut. *@
+            @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Der Block steht in
+               der SCHMALEN rechten Spalte (2 von 5 Teilen) neben der Quellliste -
+               dort ist fuer zwei Feldpaare nebeneinander kein Platz. Der Kasten
+               epos-projektkopie-felder bleibt: Er ist die Rasterzelle. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelNeuerName" Wert="@_neuerName"
                       WertChanged="@(w => { _neuerName = w; _meldung = ""; })"
                       NurLesen="@_laeuft" />
@@ -77,6 +83,8 @@
                       WertChanged="@(w => _kunde = w)" NurLesen="@_laeuft" />
             <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@_bearbeiter"
                       WertChanged="@(w => _bearbeiter = w)" NurLesen="@_laeuft" />
+                </KindInhalt>
+            </Formularraster>
         </section>
     </div>
 

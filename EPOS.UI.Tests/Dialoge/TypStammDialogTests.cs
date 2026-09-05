@@ -337,4 +337,28 @@ public class TypStammDialogTests : BunitContext
 
         Assert.Equal(0, gemeldet);
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Kopf und die zwoelf Monatswerte stehen im Formularraster - im Vorbild (659 x 426) standen die Monate in zwei Spalten zu sechs.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Kopf_und_Monatswerte_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher));
+
+        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+
+        // Zwoelf kurze Felder - je ein Monat.
+        Assert.Equal(12, cut.FindAll(".epos-formularraster .epos-feld--kurz").Count);
+    }
 }
