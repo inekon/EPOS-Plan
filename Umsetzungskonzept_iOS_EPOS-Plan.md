@@ -2558,6 +2558,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > sind **entlastet** — die Nullreihe hinter „Prozesswärme/Standardlastprofil bringt 0, Grafik leer" entstand in der
 > Vorschau der Welle 9 (W9‑B‑4/B‑5, Namensauflösung der Projektkopien); die leeren Achsen 0–5 sind das korrekte
 > Bild einer Nullreihe (`MonatsSaeulen` mit `maxWert = 0`). Renderer unverändert, ChartProben 32/0.
+>
+> **Anwenderwunsch W8‑E‑1 und Befund W8‑B‑2 vom 05.09.2026 (Bildschirmfotos „Typ in DB ändern…" aus dem Standard-
+> Stromprofil, „eigenes Lastprofil" im Assistenten, WinForms-Vorbild „Stromverbrauchertyp Stundenverteilung"),
+> umgesetzt in `01dae1c`:** **W8‑E‑1 — Stundenverteilung in der Anordnung des Vorbilds.** Der Anwender wollte den Dialog
+> „so wie zuvor"; die Razor-Fassung stapelte Typen, Wochentage und die 24 Stundenwerte untereinander und war dreimal
+> so hoch wie `Form_EingStromTyp` (607 × 544). Zurückgeholt ist die Anordnung des Designers — Typliste links,
+> Beschreibung rechts, Reiter darunter; im Wochenblatt drei Spalten zu acht Stundenwerten mit der Nummer vor dem
+> Feld, rechts die Wochentagsliste mit „Tag kopieren"/„Tag einfügen", unten „Änderungen Übernehmen" samt Diskette,
+> und die Fußleiste in der Reihenfolge Speichern unter | Speichern in DB | Löschen | Neu | Schließen. Übernommen ist
+> die Anordnung, nicht das Pixelmaß: `--epos-touchziel` gilt weiter (acht statt neun Typzeilen im Rahmen), die
+> Dreiteilung macht das Stilblatt (`grid-auto-flow: column`), im Markup laufen die Felder weiter 1…24, damit der
+> Tabulatorweg bleibt. **W8‑B‑2 — ein belegter Typname meldet sich, statt zu werfen.** „Neu" mit vorhandenem Namen
+> lief bis ins `INSERT` und endete in einem modalen „SQLite Error 19"-Kasten aus einem Blazor-Ereignis heraus
+> (`TypProfilCtrl.Anlegen` prüfte nicht, der Wurf lief über `SqliteDatenzugriff` → `DataRepository.FehlerMelden` →
+> `Dienste.Dialog`, Regel A‑8). `TypProfilCtrl.TypExists` prüft jetzt vorher, `Neu`/`SpeichernUnter` geben
+> `TypAnlageErgebnis` statt `bool`, die Namensabfrage bleibt offen mit dem Warnbanner „Ein Typ mit diesem Namen ist
+> schon vorhanden" (`BPRO_MSG_NAME_BELEGT`, de/en). Beide Aufrufwege — Überlagerung und Assistentenseite — zeigen
+> dieselbe Komponente aus einem Parametersatz, alle drei Ausprägungen (Strom, Prozesswärme, Brauchwasser). Zwei
+> Kern-Wachen, elf bunit-Fälle; Protokoll „Windows-Abnahme 05.09.2026 — Stundenverteilung".
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
