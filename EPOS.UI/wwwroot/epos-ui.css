@@ -1822,6 +1822,52 @@ body {
     gap: var(--epos-rand);
 }
 
+/* FESTES MASS STATT DEHNUNG (Kachelraster.Hoechstbreite) - Anwenderbefund
+   W16b-E-7 der Windows-Abnahme vom 05.09.2026: "Kacheln sollten aehnlich wie
+   zuvor angeordnet sein - sind jetzt zu gross."
+
+   WAS VORHER GESCHAH. Die Spalten waren 1fr, also "was uebrig bleibt, zu
+   gleichen Teilen". Passten nur zwei Spalten von 404 px in die Zeile - bei
+   150 % Bildschirmskalierung ist ein Full-HD-Schirm rund 1 280 CSS-px breit,
+   das Reiterblatt darin rund 1 200 -, blieb das Raster nicht bei 404 stehen,
+   sondern verteilte die ganze Breite auf die zwei: jede Kachel rund 590 px,
+   waehrend Sinnbild (84 px) und Titel (16 px) blieben, wo sie waren. Die
+   Kachel wuchs ins Leere, und genau das sah der Anwender.
+
+   WAS JETZT GILT - die Anordnung des Vorlaeufers. Form_Start stellte seine
+   Kacheln in DREI Spalten zu je 404 x 185 auf eine Reiterseite von 1 265 px:
+   karte_ProjektNeu/-Oeffnen/-Zuletzt bei x = 18 / 422 / 834, die Bildkacheln
+   der uebrigen Reiter bei 23 / 435 / 847 - also 8 px Fuge quer; die zweite
+   Zeile begann 191 px tiefer (y = 134 und 325), das sind 6 px hoch. Rechts
+   neben der dritten Spalte liess der Vorlaeufer Luft.
+
+   DREI FESTE SPALTEN, HOECHSTENS --epos-kachel-max breit, LINKSBUENDIG. Was
+   rechts uebrig bleibt, bleibt leer - auf einem breiten Schirm waechst die
+   Kachel nicht mit. minmax(0, ...) laesst die Spalte auf einem SCHMALEREN
+   Fenster mitgehen (aus 404 werden dort rund 396), damit die drei Kacheln
+   nicht ueber den Rand laufen; breiter als das Vorbild wird sie nie. */
+.epos-kachelraster--fest {
+    grid-template-columns: repeat(3, minmax(0, var(--epos-kachel-max, 404px)));
+    justify-content: start;
+    gap: 6px 8px;
+}
+
+/* ZWEI SPALTEN, sobald drei nur noch schmaler als rund 350 px nebeneinander
+   passten - iPad quer (1 024) und jedes Fenster darunter. Die Hoechstbreite
+   gilt weiter: Zwei Kacheln fuellen die Zeile nicht auf. */
+@media (max-width: 1150px) {
+    .epos-kachelraster--fest {
+        grid-template-columns: repeat(2, minmax(0, var(--epos-kachel-max, 404px)));
+    }
+}
+
+/* EINE SPALTE auf dem iPad hochkant (768) und auf dem Telefon. */
+@media (max-width: 720px) {
+    .epos-kachelraster--fest {
+        grid-template-columns: minmax(0, var(--epos-kachel-max, 404px));
+    }
+}
+
 .epos-kennzahlkachel {
     display: flex;
     flex-direction: column;
@@ -4502,6 +4548,24 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+/* ---- Die Kachelzeile der Startseite ------------------------------------
+
+   DIE ZEILENHOEHE DES VORLAEUFERS (Anwenderbefund W16b-E-7, 05.09.2026). Jede
+   Kachel von Form_Start war 185 px hoch (pBox_* und karte_*.Size = 404, 185;
+   Ausnahmen nur pBox_Heizkessel mit 156 und die zwei halbhohen Speicherkacheln
+   mit 112). Ohne Untergrenze richtet sich die Zeile allein nach dem laengsten
+   Erlaeuterungstext, und eine Kachel mit einer Zeile Text - der ganze Reiter
+   "Projekt" - saehe neben ihren Nachbarn wie ein Streifen aus.
+
+   Die Regel steht an der ZEILE und nicht an der Kachel: Die Solarthermiekachel
+   sitzt in einem Wirt (.epos-startkachel-mit-wahl), und eine Mindesthoehe an
+   der Kachel darin kaeme zur Weiche noch hinzu. minmax(185px, auto) heisst
+   "mindestens das Vorbildmass, mehr wenn der Text es braucht" - abgeschnitten
+   wird nie. Die BREITE steht beim Raster (.epos-kachelraster--fest). */
+.epos-startreiter .epos-kachelraster {
+    grid-auto-rows: minmax(185px, auto);
 }
 
 /* ---- Eine Kachel der Startseite ---------------------------------------

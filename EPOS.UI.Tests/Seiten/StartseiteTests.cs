@@ -271,6 +271,64 @@ public class StartseiteTests : BunitContext
     }
 
     /// <summary>
+    /// <b>Anwenderbefund W16b‑E‑7</b> (Windows-Abnahme 05.09.2026): „Kacheln
+    /// sollten ähnlich wie zuvor angeordnet sein – sind jetzt zu groß."
+    ///
+    /// <para>Auf dem Bildschirmfoto standen ZWEI Kacheln je Zeile, jede rund
+    /// die halbe Fensterbreite. Ursache waren die <c>1fr</c>-Spalten des
+    /// dehnenden Rasters: Passten nur zwei Spalten von 404 px in die Zeile,
+    /// blieb das Raster nicht bei 404 stehen, sondern verteilte die ganze
+    /// Breite auf die zwei. Alle fünf Reiter setzen deshalb
+    /// <c>Hoechstbreite</c> statt <c>Mindestbreite</c> — das schaltet auf das
+    /// feste Raster um.</para>
+    ///
+    /// <para>Geprüft wird hier das MARKUP (Klasse und Maßangabe je Reiter);
+    /// was die Klasse anordnet, prüft
+    /// <c>StartseiteAnmutungTests.Die_Startkacheln_stehen_in_drei_festen_Spalten</c>
+    /// am Stilblatt — eine bunit-Probe rechnet kein Stilblatt aus (Lehre
+    /// W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Jeder_Reiter_stellt_seine_Kacheln_im_Vorbildmass()
+    {
+        var cut = Zeige();
+
+        // Die fünf Reiter mit Kachelraster; der sechste ist die Kostenseite.
+        for (int i = 0; i < 5; i++)
+        {
+            cut.FindAll("[role='tab']")[i].Click();
+
+            IElement raster = cut.Find(".epos-kachelraster");
+            string klasse = raster.GetAttribute("class") ?? "";
+            string stil = raster.GetAttribute("style") ?? "";
+
+            Assert.Contains("epos-kachelraster--fest", klasse, StringComparison.Ordinal);
+
+            // 404 px ist das Mass des Vorlaeufers (karte_*.Size = 404, 185).
+            Assert.Contains("--epos-kachel-max: 404px", stil, StringComparison.Ordinal);
+
+            // Und NICHT mehr die Mindestbreite - die dehnte.
+            Assert.DoesNotContain("--epos-kachel-min", stil, StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>
+    /// Der Gegenbeweis: Die Kennzahlreihen der Kosten- und der
+    /// Wirtschaftlichkeitsseite dehnen weiter. Dort ist die volle Zeile
+    /// richtig, und der Umbau der Startseite darf sie nicht mitnehmen.
+    /// </summary>
+    [Fact]
+    public void Ein_Raster_ohne_Hoechstbreite_dehnt_weiter()
+    {
+        var cut = Render<Kachelraster>(p => p.Add(x => x.Mindestbreite, 240));
+
+        IElement raster = cut.Find("div");
+
+        Assert.Equal("epos-kachelraster", raster.GetAttribute("class"));
+        Assert.Equal("--epos-kachel-min: 240px", raster.GetAttribute("style"));
+    }
+
+    /// <summary>
     /// Ein Klick meldet den SCHLÜSSEL der Kachel — der Ersatz für die drei
     /// Bindemuster des Vorläufers (Befund W16-B19).
     /// </summary>
@@ -882,19 +940,10 @@ public class StartseiteTests : BunitContext
                         StringComparison.Ordinal);
     }
 
-    /// <summary>
-    /// Das Kachelraster verlangt die Kachelbreite des Vorlaeufers: 404 px, also
-    /// drei Spalten auf der Designerflaeche von 1 265 px.
-    /// </summary>
-    [Fact]
-    public void Das_Kachelraster_nimmt_die_Kachelbreite_des_Vorlaeufers()
-    {
-        var cut = Zeige();
-
-        Assert.Contains("--epos-kachel-min: 404px",
-                        cut.Find(".epos-kachelraster").GetAttribute("style")!,
-                        StringComparison.Ordinal);
-    }
+    // Der Fall „Das_Kachelraster_nimmt_die_Kachelbreite_des_Vorlaeufers" (W16b-E-3)
+    // stand hier: Er prueft dieselbe Sache nur am ERSTEN Reiter und nur als
+    // Mindestbreite - genau die Angabe, die den Befund W16b-E-7 verursacht hat.
+    // Sein Nachfolger ist „Jeder_Reiter_stellt_seine_Kacheln_im_Vorbildmass".
 
     // =====================================================================
     //  Befund W16b-B-2 (Windows-Abnahme 05.09.2026)

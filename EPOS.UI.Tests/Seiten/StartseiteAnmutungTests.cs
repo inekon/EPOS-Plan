@@ -217,6 +217,84 @@ public class StartseiteAnmutungTests : BunitContext
         Assert.Contains("font-weight: 600", kachel);
     }
 
+    /// <summary>
+    /// <b>Die Startkacheln stehen im Vorbildmaß</b> — Anwenderbefund
+    /// <b>W16b‑E‑7</b> vom 05.09.2026 („Kacheln sollten ähnlich wie zuvor
+    /// angeordnet sein – sind jetzt zu groß").
+    ///
+    /// <para>Der Vorläufer stellte drei Kacheln zu je 404 × 185 nebeneinander
+    /// (<c>karte_ProjektNeu/-Oeffnen/-Zuletzt</c> bei x = 18/422/834, die
+    /// Bildkacheln bei 23/435/847 — 8 px Fuge quer; die zweite Zeile 191 px
+    /// tiefer, also 6 px hoch) und ließ rechts daneben Luft. Genau das steht
+    /// als Regel im Stilblatt: drei FESTE Spalten, jede höchstens
+    /// <c>--epos-kachel-max</c> breit, linksbündig — <b>keine <c>1fr</c></b>,
+    /// denn die füllte die Zeile mit zwei Kacheln von je rund 590 px.</para>
+    ///
+    /// <para><c>minmax(0, …)</c> statt einer festen Spur: Auf einem schmaleren
+    /// Fenster geht die Spalte MIT (aus 404 werden dann rund 396), statt dass
+    /// die dritte Kachel aus der Zeile fällt; breiter als das Vorbild wird sie
+    /// nie.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Startkacheln_stehen_in_drei_festen_Spalten()
+    {
+        string fest = Stilblock(".epos-kachelraster--fest {");
+
+        // Drei Spalten, jede HOECHSTENS das Vorbildmass - und keine 1fr.
+        Assert.Contains("repeat(3, minmax(0, var(--epos-kachel-max, 404px)))", fest);
+        Assert.DoesNotContain("1fr", fest);
+
+        // Linksbuendig: Was rechts uebrig bleibt, bleibt leer.
+        Assert.Contains("justify-content: start", fest);
+
+        // 6 px hoch, 8 px quer - die Fugen des Designers.
+        Assert.Contains("gap: 6px 8px", fest);
+
+        // Das dehnende Raster bleibt, wie es war - die Kennzahlreihen der
+        // Kosten- und der Wirtschaftlichkeitsseite fuellen ihre Zeile weiter.
+        string dehnend = Stilblock(".epos-kachelraster {");
+        Assert.Contains("1fr", dehnend);
+    }
+
+    /// <summary>
+    /// Zwei Spalten ab 1 150 px und eine ab 720 px (W16b‑E‑7): iPad quer trägt
+    /// keine drei Kacheln von 350 px, iPad hochkant keine zwei. Die
+    /// Höchstbreite gilt in beiden Fällen weiter — eine einzelne Kachel wird
+    /// auf einem breiten Schirm nicht zur Bahn.
+    /// </summary>
+    [Fact]
+    public void Das_feste_Kachelraster_bricht_auf_schmalem_Schirm_um()
+    {
+        string css = Stilblatt().Replace("\r\n", "\n");
+
+        Assert.Contains("@media (max-width: 1150px) {\n    .epos-kachelraster--fest {\n"
+                        + "        grid-template-columns: repeat(2, minmax(0, var(--epos-kachel-max, 404px)));\n"
+                        + "    }\n}", css);
+
+        Assert.Contains("@media (max-width: 720px) {\n    .epos-kachelraster--fest {\n"
+                        + "        grid-template-columns: minmax(0, var(--epos-kachel-max, 404px));\n"
+                        + "    }\n}", css);
+    }
+
+    /// <summary>
+    /// <b>Die Zeilenhöhe ist die des Vorläufers</b> (W16b‑E‑7): 185 px als
+    /// UNTERgrenze. Jede Kachel von <c>Form_Start</c> war 404 × 185; ohne
+    /// Untergrenze richtete sich die Zeile allein nach dem längsten
+    /// Erläuterungstext, und der Reiter „Projekt" — eine Zeile Text je Kachel —
+    /// sähe wie eine Reihe Streifen aus.
+    ///
+    /// <para>Die Regel sitzt an der ZEILE, nicht an der Kachel: Die
+    /// Solarthermiekachel steht in einem Wirt
+    /// (<c>.epos-startkachel-mit-wahl</c>), und eine Mindesthöhe an der Kachel
+    /// darin käme zur Weiche noch hinzu.</para>
+    /// </summary>
+    [Fact]
+    public void Eine_Kachelzeile_der_Startseite_traegt_die_Vorbildhoehe()
+    {
+        string zeile = Stilblock(".epos-startreiter .epos-kachelraster {");
+        Assert.Contains("grid-auto-rows: minmax(185px, auto)", zeile);
+    }
+
     [Fact]
     public void Das_Kopfband_des_Hauptfensters_traegt_die_Masse_von_InitMarke()
     {
