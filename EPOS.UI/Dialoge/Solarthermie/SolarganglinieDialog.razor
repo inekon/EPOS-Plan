@@ -18,7 +18,13 @@
    zweiter WebView (Risiko R2). Ohne Parametersatz kein Knopf.
 
    TASTATUR: Esc schliesst, aber erst, wenn die Verwaltung zu ist. Enter ist
-   nicht belegt. *@
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
 
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
@@ -31,10 +37,13 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    <div class="epos-auswahlpaar">
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
 
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+        <Links>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -58,17 +67,9 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        </Links>
 
-        <div class="epos-auswahlpfeile">
-            <button type="button" class="epos-knopf" title="@LabelHinzu"
-                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">◀</button>
-            <button type="button" class="epos-knopf" title="@LabelEntfernen"
-                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">▶</button>
-        </div>
-
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
+        <Rechts>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -99,8 +100,9 @@
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
                 </div>
             }
-        </div>
-    </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
 
     <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
