@@ -109,6 +109,34 @@
     --epos-zweispalten-mitte: 10rem;
     --epos-zweispalten-umbruch: 900px;
 
+    /* Das FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026:
+       "Verbessere die Darstellung der Dialoge, insbesondere der Parameter
+       auf der rechten Seite: kompakter, uebersichtlicher").
+
+       Alle drei Masse sind an den Vorbildern GEMESSEN, nicht geschaetzt
+       (Form_AdminPV.resx, 607 x 489):
+         Beschriftung bei x = 253, Feld bei x = 431  -> Spalte 178 px
+         Zahlenfeld 62 px breit (Modulkosten 85 px)  -> hier 8em = 104 px
+                                                        bei 13 px Schrift, mit
+                                                        Polsterung und
+                                                        44-px-Touchziel
+         Textfeld 250 px, Beschreibung 250 x 48
+
+       --epos-formularspalte ist die MINDESTbreite eines Feldpaares
+       (Beschriftungsspalte 12rem + Feld). Ab zwei passenden Spalten legt
+       auto-fill zwei Paare nebeneinander - gemessen an der Breite des
+       RASTERS, nicht des Fensters; genau das braucht die rechte Spalte
+       eines Katalograhmens.
+
+       Die UMBRUCHBREITE, bei der die Beschriftung wieder ueber das Feld
+       faellt, steht in der Medienabfrage des Blocks "Formularraster" -
+       eine Medienabfrage kann kein Token lesen. Es ist dieselbe wie bei
+       Zweispaltenauswahl und Katalograhmen (900 px); FormularrasterTests
+       haelt die zwei Werte gegeneinander. */
+    --epos-beschriftung-breite: 12rem;
+    --epos-kurzfeld-breite: 8em;
+    --epos-formularspalte: 26rem;
+
     /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
        Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
        tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
@@ -5588,4 +5616,154 @@ body {
     min-width: 10rem;
     text-align: center;
     font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================== */
+/* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
+/*                                                                      */
+/* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
+/* auf der rechten Seite: kompakter, uebersichtlicher, ..."              */
+/*                                                                      */
+/* DER BEFUND (Bildschirmfoto "Administration Photovoltaik Module").     */
+/* Im Katalograhmen stand rechts der Block "Moduldaten"; jedes Feld nahm */
+/* die volle Breite, die Beschriftung stand DARUEBER, die Zahlenfelder   */
+/* waren so breit wie die Textfelder, und die Einheit stand am rechten   */
+/* Rand des Blocks statt hinter dem Wert. Der Block war doppelt so hoch  */
+/* wie der Dialog und rollte.                                           */
+/*                                                                      */
+/* DIE VORBILDER, GEMESSEN (Form_AdminPV.resx, 607 x 489):              */
+/*   Beschriftung x = 253, Feld x = 431   -> Beschriftungsspalte 178 px  */
+/*   Zahlenfeld 62 px breit, Einheit bei 497 -> 4 px hinter dem Feld     */
+/*   Textfeld 250 px, Beschreibung 250 x 48 (zwei Zeilen)                */
+/* Dieselbe Anordnung in Form_Heizkessel_Admin (726 x 383),             */
+/* Form_BHKWAdmin (856 x 517) und Form_AdminStromspeicher (614 x 367).   */
+/*                                                                      */
+/* EINE REGEL FUER DAS GANZE HAUS, kein CSS je Dialog. Wer die           */
+/* vorhandenen Feldbausteine benutzt, bekommt die kompakte Form allein   */
+/* dadurch, dass seine Felder in <Formularraster> stehen. Deshalb greift */
+/* hier NICHTS ausserhalb von .epos-formularraster: Ein Feld irgendwo    */
+/* sonst im Haus behaelt seine Form (Beschriftung darueber), und die     */
+/* Umstellung eines Dialogs bleibt eine Zeile.                           */
+/* ==================================================================== */
+
+/* Der Raster selbst. auto-fill/minmax statt gerechneter Prozentbreiten -
+   dieselbe Bauart wie beim Kachelraster. Die Spaltenzahl haengt an der
+   Breite des RASTERS: In der rechten Spalte eines Katalograhmens stehen
+   damit zwei Feldpaare nebeneinander, sobald sie hineinpassen, und eines,
+   wenn nicht. align-items: start, damit ein zweizeiliges Feld sein
+   Nachbarfeld nicht mit in die Hoehe zieht. */
+.epos-formularraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--epos-formularspalte), 1fr));
+    align-items: start;
+    column-gap: var(--epos-rand);
+    row-gap: 4px;
+}
+
+/* Fuer Bloecke, deren Felder eine Reihenfolge tragen oder die neben einem
+   Diagramm nur wenig Breite haben. Die Beschriftung steht auch dann noch
+   neben dem Feld. */
+.epos-formularraster--einspaltig {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Eine Gruppe ist DURCHSICHTIG: Ihre Felder bleiben direkte Rasterkinder.
+   Ein zwischengeschobener Kasten haette alle Felder der Gruppe in EINE
+   Rasterzelle gesetzt und die Beschriftungsspalten zweier Gruppen
+   auseinanderlaufen lassen. */
+.epos-formulargruppe {
+    display: contents;
+}
+
+/* Die leise Zwischenueberschrift - kein zweiter Gruppenkopf, kein Kasten
+   (dieselbe Begruendung wie bei .epos-untergruppe). Sie spannt ueber alle
+   Spalten, sonst stuende die naechste Gruppe neben ihr. */
+.epos-formulargruppe-titel {
+    grid-column: 1 / -1;
+    margin: 8px 0 0 0;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+/* Was ueber die volle Breite gehoert: eine Untergruppe, eine
+   Optionsgruppe und jedes Feld, das sich selbst als lang meldet
+   (mehrzeiliges Textfeld). */
+.epos-formularraster > .epos-untergruppe,
+.epos-formularraster > .epos-optionsgruppe,
+.epos-formularraster .epos-feld--breit {
+    grid-column: 1 / -1;
+}
+
+/* HIER faellt die Beschriftung neben das Feld. .epos-feld ist sonst eine
+   Spalte (Beschriftung ueber Feld); im Raster ist es ein zweispaltiges
+   Raster aus fester Beschriftungsspalte und Feldspalte. Linksbuendig wie
+   im Vorbild: Dort standen alle Beschriftungen auf derselben x-Kante. */
+.epos-formularraster .epos-feld {
+    display: grid;
+    grid-template-columns: var(--epos-beschriftung-breite) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-formularraster .epos-feld-text {
+    grid-column: 1;
+    text-align: left;
+    color: var(--epos-text);
+}
+
+/* Die zweite Spalte AUSDRUECKLICH: Ein Feld ohne Beschriftung zeichnet
+   seinen .epos-feld-text gar nicht, und ohne diese Zeile ruecke sein
+   Eingabeteil in die Beschriftungsspalte. Zwei Faelle - die Feldzeile
+   (Eingabe samt Einheit oder Knopf) und das mehrzeilige Textfeld, dessen
+   textarea direkt im Label haengt. */
+.epos-formularraster .epos-feld > .epos-feld-zeile,
+.epos-formularraster .epos-feld > .epos-eingabe {
+    grid-column: 2;
+}
+
+/* Das kurze Feld: Ein Zahlen-, Ganzzahl- oder Datumsfeld ist so breit, wie
+   sein Wertebereich braucht - im Vorbild 62 px -, und die EINHEIT steht
+   unmittelbar dahinter statt am rechten Rand des Blocks. Genau das war der
+   sichtbare Teil des Befunds. */
+.epos-formularraster .epos-feld--kurz .epos-eingabe {
+    flex: 0 0 auto;
+    width: var(--epos-kurzfeld-breite);
+}
+
+/* Ein Schalter ist kein .epos-feld (sein Kaestchen sitzt VOR dem Text).
+   Damit er nicht aus der Reihe faellt, beginnt er dort, wo die Felder
+   ihre Eingabe beginnen. */
+.epos-formularraster .epos-schalter {
+    padding-left: calc(var(--epos-beschriftung-breite) + 8px);
+}
+
+/* Unter 900 CSS-Pixeln faellt die Beschriftung wieder UEBER das Feld und
+   der Raster auf eine Spalte - dieselbe Umbruchbreite wie bei
+   Zweispaltenauswahl und Katalograhmen (--epos-zweispalten-umbruch).
+   Grund dort wie hier: Die WebView rechnet in CSS-Pixeln, das Fenstermass
+   in Geraetepixeln, und bei 150 % sind 1632 Geraetepixel nur 1088
+   CSS-Pixel. */
+@media (max-width: 900px) {
+
+    .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .epos-formularraster .epos-feld {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 4px;
+        min-height: 0;
+    }
+
+    .epos-formularraster .epos-feld > .epos-feld-zeile,
+    .epos-formularraster .epos-feld > .epos-eingabe {
+        grid-column: 1;
+    }
+
+    .epos-formularraster .epos-schalter {
+        padding-left: 0;
+    }
 }
