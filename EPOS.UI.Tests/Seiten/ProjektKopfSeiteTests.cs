@@ -172,4 +172,30 @@ public class ProjektKopfSeiteTests : BunitContext
                                  .Where(o => o.IsSelected),
                               o => o.Value == "12" || o.Value == "5");
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die sieben Felder stehen im Formularraster; der handgebaute Zweispalter <c>epos-projektkopf-raster</c> ist fort, und die Beschreibung meldet sich selbst als breites Feld ueber beide Spalten.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Projektkopffelder_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.Empty(cut.FindAll(".epos-projektkopf-raster"));
+        Assert.Single(cut.FindAll(".epos-formularraster"));
+        Assert.Equal(7, cut.FindAll(".epos-formularraster .epos-feld").Count);
+
+        // Die Beschreibung ist mehrzeilig und damit ein BREITES Feld.
+        Assert.Single(cut.FindAll(".epos-formularraster .epos-feld--breit"));
+    }
 }

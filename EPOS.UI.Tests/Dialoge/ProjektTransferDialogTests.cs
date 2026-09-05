@@ -360,4 +360,30 @@ public class ProjektTransferDialogTests : BunitContext
         cut.FindAll(".epos-dialog > .epos-leiste .epos-knopf--primaer")[0].Click();
         Assert.True(ergebnis);
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Export- und Importreiter stellen ihre Felder in den Formularraster, einspaltig: Der Export traegt eine Reihenfolge, der Import ein Pfadfeld.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Felder_stehen_im_einspaltigen_Formularraster()
+    {
+        var cut = Aufbauen(new Kern());
+
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster--einspaltig"));
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        ZumImport(cut);
+
+        Assert.Equal(2, cut.FindAll(".epos-formularraster--einspaltig").Count);
+    }
 }

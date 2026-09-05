@@ -661,4 +661,28 @@ public class BedarfsProfileDialogTests : BunitContext
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
 
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Infoblock und der Block "Jahresverbrauch" stehen im Formularraster. Der Uebernehmen-Knopf ist kein Feld und bleibt darunter.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Infoblock_und_Jahresverbrauch_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme);
+
+        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // Der neue Wert ist ein Zahlenfeld, also ein KURZES Feld.
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld--kurz"));
+    }
 }

@@ -585,4 +585,28 @@ public class QuelleErdreichDialogTests : BunitContext
         Assert.False(cut.Instance.KarteOffen);
         Assert.NotNull(ergebnis);          // der Dialog steht noch
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Quellsystem und Standort stehen im Formularraster - der Standort einspaltig, weil unter jedem Wert seine Herleitungszeile steht.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Quellsystem_und_Standort_stehen_im_Formularraster()
+    {
+        var cut = Zeige(Kollektor());
+
+        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+        Assert.Single(cut.FindAll(".epos-formularraster--einspaltig"));
+        Assert.NotEmpty(cut.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
 }

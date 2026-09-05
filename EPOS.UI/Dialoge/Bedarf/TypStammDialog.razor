@@ -45,16 +45,28 @@
 
     <Gruppenkopf Titel="@GruppeKopf">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+               Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name" NurLesen="true" />
             <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Typeintraege"
                          Auswahl="@Typindex" AuswahlChanged="TypWaehlen" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
                       WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeMonate">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3): Die zwoelf Monatswerte sind
+               kurze Felder mit der Einheit dahinter und stehen auf breitem
+               Schirm zu zweit in einer Zeile - im Vorbild (659 x 426) standen
+               sie in zwei Spalten zu sechs. *@
+            <Formularraster>
+                <KindInhalt>
             @for (int m = 0; m < 12; m++)
             {
                 int monat = m;
@@ -62,6 +74,8 @@
                             Feldname="@Feldname(monat)" Nachkommastellen="4"
                             Wert="@Daten.Monat[monat]" WertChanged="w => Daten.Monat[monat] = w" />
             }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

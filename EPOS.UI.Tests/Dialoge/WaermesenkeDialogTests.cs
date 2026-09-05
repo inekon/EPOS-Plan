@@ -543,4 +543,28 @@ public class WaermesenkeDialogTests : BunitContext
                 return l.QuerySelector("input")!;
         throw new InvalidOperationException("Kein Schalter mit der Beschriftung " + beschriftung);
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die gewaehlte Zeile und das Ladeverhalten stehen im Formularraster, und zwar EINSPALTIG: Jede Wahl schaltet das Feld unter sich frei. Die Senkenliste (ein Zeilenraster) und der Parallelverbund (eine Mehrfachauswahl) bleiben, wie sie sind - sie sind keine Formularbloecke.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Senkenzeile_und_Ladeverhalten_stehen_im_einspaltigen_Formularraster()
+    {
+        var cut = Zeige(MitPuffern());
+
+        var raster = cut.FindAll(".epos-formularraster");
+        Assert.NotEmpty(raster);
+        Assert.Equal(raster.Count, cut.FindAll(".epos-formularraster--einspaltig").Count);
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+    }
 }

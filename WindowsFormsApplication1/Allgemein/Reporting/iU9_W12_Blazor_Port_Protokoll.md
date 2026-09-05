@@ -858,3 +858,37 @@ Namensdialog stehen. Die Klasse pinnt die Kultur seither vollständig
 ```
 
 Dateiname `Werk-Nord-2024.csv` → Bezeichner der Ganglinie `Werk-Nord-2024`.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Strom/PeakShavingDialog.razor` | 19 | 4 | Quelle: **ja** | Klasse A. „Quelle des Lastgangs" **einspaltig** — der Block trägt ein Pfadfeld (`Dateiwahl`), das die Breite braucht. „Speicher‑ und Bewertungsparameter" in drei Rastern, unterbrochen von den zwei Schaltern, die dort schon immer eine eigene Zeile hatten: Die **sieben** handgebauten `epos-feldpaar`‑Kästen entfallen ersatzlos. Der Knopf „minimale Schwelle" steht als zweites Rasterkind **neben** der Zielschwelle — wie im Vorbild (`Form_PeakShaving`, zwei GroupBoxen). **Nicht** umgestellt: die drei Ergebnisreiter (zwei Tabellen, ein Diagramm). |
+| `Dialoge/Strom/GanglinieImportOptionenDialog.razor` | 9 | 1 | nein | **Klasse B, umgestellt.** Die acht Formatlisten sind ein Formularblock; der handgebaute Kasten `epos-importoptionen-raster` bleibt als Anker der Proben stehen, seine Regel im Stilblatt ist gefallen — das Ordnen macht jetzt der Raster. **Nicht** umgestellt: der Schalter „Kopfzeile", die Hinweiszeile und das Vorschaugitter (eine `TemplateColumn` je Spalte). |
+
+**Nicht angefasst** (heute mit W12‑E‑1 abgenommen): `StromganglinieDialog` und
+`StromganglinieAdminDialog`.
+
+**Eine bestehende Probe zog nach.**
+`PeakShavingDialogTests.Die_minimale_Schwelle_landet_im_Feld_und_schaltet_adaptiv_aus`
+griff den Knopf über `.epos-feldpaar button`. Er steht jetzt als **direktes**
+Rasterkind da: `.epos-formularraster > button` — das Kindzeichen grenzt ihn gegen
+den Knopf der `Dateiwahl` ab, der in seinem Feld steckt.
+
+**Probe.** `Die_Parameter_stehen_im_Formularraster` prüft zusätzlich, dass **kein**
+`epos-feldpaar` mehr im Dialog steht; dazu
+`Die_Formatlisten_stehen_im_Formularraster`.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
