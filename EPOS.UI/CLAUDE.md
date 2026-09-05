@@ -121,6 +121,43 @@ entgegen — sie ist damit austauschbar.
   **gleich aussehen**: Ein Anwender unterscheidet „geht nicht" nicht nach der Bauart,
   also stehen `:disabled` und `[aria-disabled="true"]` in EINER Stilregel und nicht in
   zwei mit denselben Werten.
+- **Ein Baustein hängt sein Schließen NICHT an `focusout`.** Befund **W16c‑B13** der
+  Windows-Abnahme vom 05.09.2026: Die Untermenüs des Menübands ließen sich nicht
+  aufklappen. Am `<nav>` hing `@onfocusout`, um beim Klick daneben zu schließen —
+  aber `focusout` **blast nach oben** und feuert AUCH, wenn der Fokus **innerhalb**
+  des Bausteins wandert. Der Zeigerdruck auf eine Untermenüzeile nimmt dem
+  Kopfknopf den Fokus, das Ereignis steigt zum Wirt auf, der räumt die Klappe weg —
+  und weil die gedrückte Zeile damit **aus dem DOM** ist, kommt beim Loslassen gar
+  kein `click` mehr an. Zu unterscheiden ist das nicht: `FocusEventArgs` kennt kein
+  `relatedTarget`, und **Berührung setzt überhaupt keinen Fokus** — auf dem iPad
+  schloss dasselbe Band nie. Wer beim Klick DANEBEN schließen will, nimmt eine
+  **Schließfläche**: einen durchsichtigen Deckel über der ganzen Ansicht
+  (`position: fixed; inset: 0`), der nur so lange steht, wie etwas offen ist. Er
+  arbeitet auf Maus, Finger und Stift gleich und braucht kein JavaScript. Dazu
+  gehören **drei z-Ebenen**, sonst finge der Deckel den Klick auf das Bedienelement
+  selbst ab: Wirt über Deckel, Klappe im Wirt (`41 / 40 / 39` beim Menüband).
+  Für die Tastatur bleibt `Esc` — und `Tab`, der ohnehin hinausführt. Wache:
+  `MenuebandTests.Ein_Fokuswechsel_im_Band_schliesst_nichts_mehr`.
+- **Jede Ebene einer verschachtelten Aufklapp-Struktur führt ihren EIGENEN
+  Offen-Zustand — am besten als PFAD.** Zweiter Teil von **W16c‑B13**: Das Menüband
+  führte ein Feld `_offen` für die oberste Ebene und daneben ein flaches `HashSet`
+  über **Namen** für alle tieferen. Damit gab es keine Ebene mehr, auf der ein
+  Geschwister das andere hätte schließen können — zwei Untermenüs standen
+  gleichzeitig offen —, und ein Name, den es zweimal gäbe, öffnete zwei Stellen.
+  Die tragfähige Form ist EINE Liste: `_pfad[0]` das offene Element der ersten
+  Ebene, `_pfad[1]` das der zweiten, und so fort. `Offen(p, ebene)` fragt, ob `p`
+  auf **seiner** Ebene im Pfad steht; Umschalten kürzt den Pfad auf diese Ebene und
+  hängt `p` an. Daraus folgt beides von selbst: **gegenseitiger Ausschluss** je
+  Ebene, und mit einem Kopf fällt sein ganzes Untermenü. Die Zeichenmethode
+  bekommt die Ebene als Parameter — ohne sie weiß eine Zeile nicht, welche Stelle
+  des Pfades sie meint.
+- **In einer Schleife mit veränderlicher Tiefe: `builder.OpenRegion(index)`.** Ein
+  durchlaufender Zähler als Folgenummer verschiebt beim Aufgehen eines
+  Unterbaums **alle** folgenden Nummern; Blazor baut den Rest der Liste dann neu
+  auf — samt Fokus. Und ein `AddElementReferenceCapture`, den es mal gibt und mal
+  nicht, ist eine Rahmenart, die der Abgleich gar nicht entfernen kann
+  (`NotImplementedException: Unexpected frame type during RemoveOldFrame`) — die
+  Verweise werden für ALLE Elemente gefangen, ausgewählt wird beim Benutzen.
 - **Jede Seite, die aus einer Kachel oder einem Menüpunkt aufgeht, muss AUCH OHNE GABEN
   zeichnen.** `StartkachelDialogeTests` rendert alle 21 Kachelziele mit einem LEEREN
   Wörterbuch — jeder Delegat `null`, jede Liste leer, jeder Text der deutsche Rückfall. Das ist
@@ -139,7 +176,7 @@ entgegen — sie ist damit austauschbar.
 | `SpeichernLeiste` | OK / Abbrechen und optional „Speichern" ohne Schließen samt Statuszeile | `Allgemein/SpeichernLeiste.cs` |
 | `InfoKnopf` | 28×28-Fragezeichen, ruft `IHilfeDienst.Oeffnen` | `Allgemein/Hilfe/InfoKnopf.cs` |
 | `Kachel` | Anklickbare Einstiegskarte mit Titel, Beschreibung, Status. Seit iU9‑W16a.2 mit **`Zustand`** (`Kachelstand.Aus`/`An` — grauer oder grüner Statuspunkt, der Punkt in beiden Fällen sichtbar) und **`Aktiv`** (`<button disabled>`, der Ersatz für die vierzehn Zeilen `Cursors.Default` in `AktionsKarte`). **Befund W16a‑B1:** „nur Anzeige" ist KEIN dritter Zustand — Farbe und Anklickbarkeit sind zwei unabhängige Achsen (Brauchwasser ist „nur Anzeige" UND grün oder grau). Seit dem Anwenderwunsch 05.09.2026 (**W16b‑E‑3**) dazu **`Bildklasse`** — eine Zusatzklasse am `<img>`, mit der die Startseite ihre Kachelbilder zuschneidet; die Kachel entscheidet das nicht, sie nimmt die Klasse entgegen | `Views/Kosten/EinstiegsKarte.cs`, `Views/GemeinsameBausteine/AktionsKarte.cs` |
-| `Menueband` + `Menuepunkt`/`Menuetabelle` | Die **Windows-Schale** des Hauptfensters (iU9‑W16c.1): eine Menüleiste mit **55 Punkten in drei Ebenen unter VIER Köpfen** und 8 Trennstrichen, `role="menubar"/"menuitem"/"menu"`, ← → ↓ Pos1/Ende/Esc, roving `tabindex`, 44 px je Zeile. Die Tabelle ist **Daten** — `Menuetabelle.cs` ist aus `MDIMainForm.Designer.cs` und den drei `.resx` **erzeugt** (Auflage R‑W16‑8, Skript `w16c_menue.py`), nicht abgetippt. **Eine Zeile ist es nicht:** der Kopf **„Sprache"** (`MENU_SPRACHE`, en „Language") ist der Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die zwei Sprachpunkte standen bis dahin als eigene Köpfe neben „Hilfe" und hängen seither unter ihm, mit unveränderten Namen, Bildern und Seitenschlüsseln. Das Erzeugerskript liegt nicht im Repository; die Tabelle sagt das im Kopfkommentar. Ein Punkt trägt den sprachneutralen Namen des Vorläufers (der Anker für `help_mapping.txt`), einen `MyResource`-Textschlüssel, ein **Ziel als `Seitenschluessel`**, ein Argument, ein Bild und ein Kürzel; das Band kennt weder Maske noch Delegat, es **meldet den Schlüssel**. Damit ersetzt ein Handler 34 Ereignishandler und neun `Init*`-Lambdas. Ein Kopf kann **rechtsbündig** stehen (`Menuepunkt.RechtsBuendig`, Anwenderwunsch 05.09.2026 / **W16c‑E‑4**): Das Band hängt daran `margin-left: auto`, der Punkt bleibt aber an SEINER Stelle im Markup — Tastaturweg, Sprachausgabe und N4 bleiben unberührt. Genau ein Kopf trägt es: „Sprache“, dort wo im Bestand die zwei Sprachpunkte sassen. Die elf Bildchen sind dieselben PNG (`wwwroot/bilder/menue/`) | `MDIMainForm.menuToolbar` (45 `ToolStripMenuItem` + 6 `ToolStripSeparator` im Designer, 9 Punkte und 2 Trenner aus den acht `Init*`-Methoden) |
+| `Menueband` + `Menuepunkt`/`Menuetabelle` | Die **Windows-Schale** des Hauptfensters (iU9‑W16c.1): eine Menüleiste mit **55 Punkten in drei Ebenen unter VIER Köpfen** und 8 Trennstrichen, `role="menubar"/"menuitem"/"menu"`, ← → ↑ ↓ Pos1/Ende/Esc/Tab, roving `tabindex`, 44 px je Zeile. Der Offen-Zustand ist **EIN Pfad** über alle drei Ebenen, geschlossen wird über eine **Schließfläche** und nicht über `focusout` — beides ist Befund **W16c‑B13** der Windows-Abnahme vom 05.09.2026 (die Untermenüs klappten nicht auf), und beides steht als Hausregel oben. Die Tabelle ist **Daten** — `Menuetabelle.cs` ist aus `MDIMainForm.Designer.cs` und den drei `.resx` **erzeugt** (Auflage R‑W16‑8, Skript `w16c_menue.py`), nicht abgetippt. **Eine Zeile ist es nicht:** der Kopf **„Sprache"** (`MENU_SPRACHE`, en „Language") ist der Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die zwei Sprachpunkte standen bis dahin als eigene Köpfe neben „Hilfe" und hängen seither unter ihm, mit unveränderten Namen, Bildern und Seitenschlüsseln. Das Erzeugerskript liegt nicht im Repository; die Tabelle sagt das im Kopfkommentar. Ein Punkt trägt den sprachneutralen Namen des Vorläufers (der Anker für `help_mapping.txt`), einen `MyResource`-Textschlüssel, ein **Ziel als `Seitenschluessel`**, ein Argument, ein Bild und ein Kürzel; das Band kennt weder Maske noch Delegat, es **meldet den Schlüssel**. Damit ersetzt ein Handler 34 Ereignishandler und neun `Init*`-Lambdas. Ein Kopf kann **rechtsbündig** stehen (`Menuepunkt.RechtsBuendig`, Anwenderwunsch 05.09.2026 / **W16c‑E‑4**): Das Band hängt daran `margin-left: auto`, der Punkt bleibt aber an SEINER Stelle im Markup — Tastaturweg, Sprachausgabe und N4 bleiben unberührt. Genau ein Kopf trägt es: „Sprache“, dort wo im Bestand die zwei Sprachpunkte sassen. Die elf Bildchen sind dieselben PNG (`wwwroot/bilder/menue/`) | `MDIMainForm.menuToolbar` (45 `ToolStripMenuItem` + 6 `ToolStripSeparator` im Designer, 9 Punkte und 2 Trenner aus den acht `Init*`-Methoden) |
 | `Assistent` | Der Rahmen eines mehrstufigen Ablaufs (iU9‑W16a.5): linkes Band, Inhaltsfläche, Fußleiste `[Abbrechen] [◀ Zurück] [Weiter ▶ / Speichern]`. `Seiten` ist eine Liste aus `AssistentSchritt` (Titel, Inhalt als `RenderFragment`, `Aktiv`); `NaechsteAktive(richtung)` ersetzt `Next`/`Back`/`GetNextUpIndex`/`GetNextDownIndex`/`lastIndex` (rund 190 Zeilen), und `LoadNewForm` (32 Zeilen gerechnete Fenstergröße) entfällt ersatzlos — CSS | `Views/Wizard/WizardParent.cs` |
 | `Herleitungszeile` | Leise Erläuterung, optional mit Formel | Inline-Labels der Kostenmasken |
 | `Kohaerenzzeile` | Text mit Zustand „stimmig" / „abweichend" | Inline-Labels der Kostenmasken |
