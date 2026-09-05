@@ -760,21 +760,21 @@ Eine Vorschau, die etwas anderes zeigt als der Lauf, ist keine.
 |---|---|---|
 | ohne Liste | `Projektrechnung` | unverändert — hier hängt der Referenzlauf |
 | mit Liste, **ohne** Projekt | `Katalogvorschau` | unverändert — die drei Katalogverwaltungen |
-| mit Liste **und** Projekt | `Projektvorschau` | **neu** — der Bedarfsprofil-Dialog |
+| mit Liste **und** Projekt | `Projektvorschau` | **neu** — der Bedarfsprofil-Dialog (Reihenfolge seit W9‑O‑3c: Kopie zuerst) |
 
-`Projektvorschau` liest den **Katalog zuerst** und fällt für einen Namen, den der
-Katalog nicht kennt, auf die **Projektkopie** zurück (`ProfilQuelle.Rueckfall`).
-Beide Quellen sind nötig, weil die Liste des Dialogs **gemischt** ist: Eine
-gespeicherte Zuordnung trägt den Namen ihrer Projektkopie, eine eben erst
-aufgenommene Zeile den ihres Katalogeintrags — deren Kopie entsteht erst beim
+`Projektvorschau` liest **beide** Quellen — die Liste des Dialogs ist **gemischt**:
+Eine gespeicherte Zuordnung trägt den Namen ihrer Projektkopie, eine eben erst
+aufgenommene Zeile den ihres Katalogeintrags; deren Kopie entsteht erst beim
 Speichern (`WizardCtrl.Add_Projekt_*` → `CopyFromStamm`).
 
-Der **Katalog kommt zuerst**, damit jede Zahl, die diese Vorschau heute zeigt,
-zeichengleich bleibt; der Rückfall greift nur dort, wo bisher eine Nullreihe
-stand. Wird er gezogen, liefert er **Kopf und Typprofil** — ihre Vermischung war
-der Befund V0‑4. Der Kalender bleibt bei der Altkonvention wie in der
-Katalogvorschau: `WochentagJan1` entsteht erst in `Waermebedarf_berechnen` aus
-den geladenen Klimadaten, die der Dialog nie lädt.
+Welche der beiden zuerst kommt, ist der **Anwenderentscheid W9‑O‑3c** (unten). Die
+erste Fassung las den Katalog zuerst und fiel auf die Projektkopie zurück, damit
+jede damals richtige Zahl zeichengleich blieb; **seit dem Entscheid vom 05.09.2026
+ist es umgekehrt** — Projektkopie zuerst, Katalog als Rückfall
+(`ProfilQuelle.Rueckfall`). Wird der Rückfall gezogen, liefert er **Kopf und
+Typprofil** — ihre Vermischung war der Befund V0‑4. Der Kalender bleibt bei der
+Altkonvention wie in der Katalogvorschau: `WochentagJan1` entsteht erst in
+`Waermebedarf_berechnen` aus den geladenen Klimadaten, die der Dialog nie lädt.
 
 **Die Grafik war nur die Folge.** `ChartRenderer.MonatsSaeulen` nimmt bei einer
 reinen Nullreihe `maxWert = 0`, bekommt daraus die Vorgabeskala 0–5 und zeichnet
@@ -789,7 +789,7 @@ zwei als eingefrorene Wache: `Bekannte_Katalognamen_liefern_unveraenderte_Monats
 (Prozesswärme 1041, Brauchwasser 1007, Stromverbraucher 1024) und
 `Die_Katalogverwaltung_rechnet_unveraendert_ohne_Projekt`. Der schreibende Fall
 steht in einer eigenen Klasse — `TestDatenbank` gibt jeder Klasse ihre eigene
-Arbeitskopie.
+Arbeitskopie. **Mit W9‑O‑3c sind es sieben** (siehe dort).
 
 **Referenzlauf byte-gleich.** `EPOS.Referenzlauf lauf` + `vergleich` gegen
 `Referenzlaeufe/2026-08-30_B3-Kaskade`: **alle elf rechenbaren Projekte der Basis
@@ -805,22 +805,66 @@ PASS** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042), dazu
 | 1 | Projekt öffnen → Kachel **„Prozesswärme"** → Eintrag wählen → „Simulation…" | Reiter „Übersicht monatlich" zeigt **Werte ≠ 0**, Reiter „Grafik" zeigt eine **Säulenkurve** (W9‑B‑4) |
 | 2 | dort auf **kWh** umschalten und zurück auf **MWh** | Zahlen und Bild folgen der Wahl; MWh bleibt die Vorgabe |
 | 3 | Kachel **„Standardlastprofil"** → „Simulation…" | dito für den Strombedarf (W9‑B‑5) |
-| 4 | Kachel **„Brauchwasser"** → „Simulation…" | Zahlen **unverändert** gegenüber dem Stand vor der Behebung |
+| 4 | Kachel **„Brauchwasser"** → „Simulation…" | Zahlen **unverändert** gegenüber dem Stand vor der Behebung — **überholt durch W9‑O‑3c**, siehe A‑W9‑O‑3c unten |
 | 5 | Menü **Administration** → die drei Katalogverwaltungen → „Grafik" | Zahlen **unverändert** — sie öffnen ohne Projekt |
 | 6 | einen Katalogeintrag neu aufnehmen und **vor** dem Speichern „Simulation…" | rechnet wie bisher aus dem Katalog |
 
-### Offener Punkt W9‑O‑3c (Anwenderentscheid)
+### W9‑O‑3c — Anwenderentscheid „Empfehlung" (05.09.2026): die Projektkopie zuerst
 
-Eine im Projekt **geänderte** Kopie wird in dieser Vorschau weiterhin mit der
-**Katalogverteilung** angezeigt, weil der Katalog zuerst gelesen wird. Beispiel
+**Entschieden am 05.09.2026: „Empfehlung"** — die Vorschau des
+Bedarfsprofil-Dialogs bevorzugt die **Projektkopie**; der Katalog bleibt der
+Rückfall. **Umgesetzt im Kern** (`ProfilBedarf`/`ProfilQuelle`).
+
+**Die Frage.** Eine im Projekt **geänderte** Kopie wurde in dieser Vorschau mit der
+**Katalogverteilung** angezeigt, weil der Katalog zuerst gelesen wurde. Beispiel
 Brauchwasser, Projekt 1007 („Haushalt-3"): Katalog 1,900 MWh im Januar,
 Projektkopie 0,552 MWh — die Jahressumme ist in beiden Fällen dieselbe (4 059,7),
 nur die Verteilung über die Monate nicht. Der **Projektlauf** rechnet mit der
-Projektkopie.
+Projektkopie. Die Reihenfolge umzudrehen bringt die Vorschau überall mit dem Lauf
+zur Deckung, **ändert aber angezeigte Zahlen** in jedem Projekt mit bearbeiteter
+Kopie — kein Fehlerfall, sondern eine Entscheidung, deshalb vorgelegt statt
+nebenbei getroffen.
 
-Die Reihenfolge umzudrehen (Projektkopie zuerst) würde die Vorschau überall mit
-dem Lauf zur Deckung bringen, **ändert aber angezeigte Zahlen** in jedem Projekt
-mit bearbeiteter Kopie. Das ist kein Fehlerfall, sondern eine Entscheidung —
-deshalb hier notiert und nicht nebenbei mitgetroffen. **Frage an den Anwender:**
-Soll die Vorschau des Bedarfsprofil-Dialogs die Projektkopie bevorzugen (dann
-zeigt sie immer, was der Lauf rechnet), oder soll sie beim Katalog bleiben?
+**Die neue Regel.** Der Modus `Projektvorschau` liest **zuerst die PROJEKTKOPIE**
+(dieselben Tabellen und denselben Projektfilter wie der Lauf) und fällt für einen
+Namen, den das Projekt nicht kennt, auf den **`_STAMM`-Katalog** zurück. Der
+Rückfall trägt damit genau den Fall, für den es ihn braucht: die eben aufgenommene,
+noch nicht gespeicherte Zeile, die den Namen ihres Katalogeintrags führt (ihre
+Kopie entsteht erst beim Speichern). Kopf **und** Typprofil kommen weiterhin aus
+derselben Quelle (V0‑4), der Kalender bleibt die Altkonvention. Die Modi
+`Projektrechnung` und `Katalogvorschau` sind unberührt.
+
+**Vorher / nachher** — Brauchwasser, Projekt 1007 („Haushalt-3"):
+
+| | Januar | Februar | Jahr |
+|---|---|---|---|
+| vorher (Katalog zuerst) | 1,900 MWh | 0,340 MWh | 4 059,7 kWh |
+| **nachher (Kopie zuerst)** | **0,552 MWh** | **0,553 MWh** | 4 059,7 kWh |
+
+Die Jahressumme ist unverändert: Sie kommt aus `Z_Projekt_Brauchwasser` und wird
+auf beide Verteilungen gleich aufskaliert. Prozesswärme 1041 und
+Stromverbraucher 1024 bleiben **zeichengleich** — dort tragen Kopie und Katalog
+dieselben zwölf Monatswerte.
+
+**Wache.** `EPOS.Kern.Tests/BedarfsProfilVorschauTests.cs` führt jetzt **sieben**
+Fälle. Neu sind `Brauchwasser_Vorschau_zeigt_die_Verteilung_der_Projektkopie`
+(auf dem Bestand **rot**: Januar 0,552 statt 1,900 MWh bei gleicher Jahressumme)
+und `Ein_nur_im_Katalog_bekannter_Name_kommt_aus_dem_Katalog` („Haushalt-3 neu"
+steht im Katalog und in keiner Projektkopie von 1007 — Januar 0,400 MWh, Jahr
+2,5597 MWh, ohne Skalierung). Nachgezogen ist
+`Bekannte_Katalognamen_liefern_unveraenderte_Monatswerte`: Ihr Satz „der Katalog
+bleibt die erste Quelle" ist mit dem Entscheid Geschichte; sie führt nur noch die
+zwei Proben, in denen Kopie und Katalog übereinstimmen.
+
+**Referenzlauf byte-gleich.** `EPOS.Referenzlauf lauf` + `vergleich` gegen
+`Referenzlaeufe/2026-08-30_B3-Kaskade`: **alle elf rechenbaren Projekte PASS**
+(1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042), dazu `diff -r`
+über die CSV-Ordner ohne Unterschied. Die Vorschau ist nicht Teil des Laufs — genau
+das zeigt der Vergleich.
+
+**Abnahmepunkt A‑W9‑O‑3c (Windows).**
+
+| # | Weg | Erwartung |
+|---|---|---|
+| 1 | Projekt **1007** öffnen → Kachel **„Brauchwasser"** → „Simulation…" → Reiter „Übersicht monatlich" | **Januar 0,552 MWh** (vorher 1,900), Jahressumme unverändert; dieselbe Zahl wie im Simulationslauf |
+| 2 | im selben Dialog eine Zeile **neu aufnehmen** und **vor** dem Speichern „Simulation…" | rechnet aus dem Katalog wie bisher |
