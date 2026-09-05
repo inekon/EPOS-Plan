@@ -1,0 +1,195 @@
+@* Der Rahmen, in dem JEDES Renderer-Bild steht (Windows-Abnahme 05.09.2026,
+   Befund A-1: „Allgemein bei Charts: das Zoomen funktioniert nicht").
+
+   WAS ER IST. Ein Rahmen mit Zoom. Im WinForms-Vorbild waren die Diagramme
+   Chart-Steuerelemente mit Achsenzoom (Rad, aufgezogenes Rechteck, Rollbalken,
+   Zuruecksetzen); seit iU7 zeichnet der Kern ein PNG, und W11b hat den Zoom
+   ausdruecklich als Verlust festgehalten (A-7, Risiko R-W11-5). Dieser Baustein
+   gibt ihn zurueck, in zwei Stufen:
+
+     BILDZOOM   Rad, Kneifgeste, Ziehen, Doppelklick, + - 0. Er vergroessert das
+                fertige Bild (CSS-Transform, kein Neuzeichnen) und gilt fuer
+                JEDES Renderer-Bild - auch fuer Kuchen, Ringe und Kennlinien.
+
+     DATENZOOM  Ein aufgezogenes Rechteck meldet seinen Ausschnitt nach oben;
+                wer BereichGewaehlt bedient, laesst den Kern das Bild mit
+                diesem Achsenbereich NEU zeichnen. Erst das macht 8 760 Stunden
+                wirklich lesbar - vergroesserte Bildpunkte bleiben grob.
+                Ohne Delegat gibt es den Knopf „Bereich" gar nicht.
+
+   WARUM DER ZUSTAND IM BROWSER LIEGT. Verschieben und Vergroessern sind
+   Bildpunktrechnungen, die zwanzigmal je Radbewegung anfallen. Sie durch die
+   Interop-Bruecke zu schicken hiesse, fuer jede Rast einen Zeichenlauf der
+   Komponente zu starten. Das Modul epos-diagramm.js haelt sie deshalb selbst
+   und meldet nur die ANGEZEIGTE Stufe - und die nur, wenn sie sich aendert.
+
+   WARUM ES OHNE JAVASCRIPT NICHT BRICHT. Laedt das Modul nicht (alte WebView,
+   Pruefumgebung), steht das Bild da wie bisher. Die Anzeige „x1" und der Knopf
+   „1:1" bleiben stehen und tun nichts - kein Fehlschlag, ein Schoenheitsfehler.
+
+   DIE TEXTE STEHEN ALS PARAMETER mit deutschem Standardwert, nicht als
+   Ressourcenschluessel: Der Baustein ist neu, und die Hausregel erlaubt den
+   Literaltext so lange, bis die Huelle ihn auf einen Schluessel umstellt. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+<div class="epos-diagramm">
+
+    <div class="epos-diagramm-leiste">
+        <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
+
+        @if (BereichGewaehlt.HasDelegate)
+        {
+            <button type="button" class="epos-diagramm-knopf" aria-pressed="@Bereichsmodus.ToString().ToLowerInvariant()"
+                    title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
+        }
+
+        <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
+                @onclick="ZurueckGewaehlt">@ZurueckText</button>
+    </div>
+
+    @* tabindex macht die Flaeche tastaturerreichbar (+ - 0); role="img" mit
+       aria-label sagt der Sprachausgabe, was hier zu sehen ist. *@
+    <div class="epos-diagramm-flaeche" @ref="_flaeche" tabindex="0"
+         role="img" aria-label="@Bezeichnung">
+        <div class="epos-diagramm-inhalt">@ChildContent</div>
+        <div class="epos-diagramm-gummi" hidden></div>
+    </div>
+
+</div>
+
+@code {
+    /// <summary>Das Bild - ueblich ein <c>ChartBild</c>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Was das Diagramm zeigt (<c>aria-label</c> der Flaeche).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Der Anwender hat einen Bereich aufgezogen. OHNE Delegat bleibt es beim
+    /// Bildzoom, und der Knopf „Bereich" erscheint nicht.
+    /// </summary>
+    [Parameter] public EventCallback<Diagrammbereich> BereichGewaehlt { get; set; }
+
+    /// <summary>
+    /// Der Knopf „1:1" wurde gedrueckt. Wer einen DATENZOOM fuehrt, verwirft hier
+    /// seinen Achsenbereich - der eine Knopf stellt beides zurueck, den Bildzoom
+    /// und den Ausschnitt. Doppelklick und Taste 0 stellen nur den Bildzoom
+    /// zurueck; sie laufen im Browser und sollen ohne Zeichenlauf auskommen.
+    /// </summary>
+    [Parameter] public EventCallback Zurueckgesetzt { get; set; }
+
+    /// <summary>Beschriftung des Knopfs, der auf 1:1 zurueckstellt.</summary>
+    [Parameter] public string ZurueckText { get; set; } = "1:1";
+
+    /// <summary>Sein Mouseover-Text.</summary>
+    [Parameter] public string ZurueckHilfe { get; set; }
+        = "Zurück zur vollen Ansicht (Doppelklick oder Taste 0)";
+
+    /// <summary>Beschriftung des Umschalters „Bereich aufziehen".</summary>
+    [Parameter] public string BereichText { get; set; } = "Bereich";
+
+    /// <summary>Sein Mouseover-Text.</summary>
+    [Parameter] public string BereichHilfe { get; set; }
+        = "Einen Achsenbereich aufziehen (mit der Maus auch Umschalt + Ziehen)";
+
+    /// <summary>Steht der Umschalter „Bereich" an? (Pruefhilfe)</summary>
+    public bool Bereichsmodus => _bereich;
+
+    /// <summary>Die angezeigte Zoomstufe (Pruefhilfe).</summary>
+    public double Stufe => _stufe;
+
+    /// <summary>Die Zoomstufe als Text, z. B. „×2,5".</summary>
+    private string Stufentext => "×" + _stufe.ToString("0.#", CultureInfo.CurrentCulture);
+
+    private ElementReference _flaeche;
+    private IJSObjectReference? _modul;
+    private DotNetObjectReference<Diagramm>? _hilfe;
+    private double _stufe = 1;
+    private bool _bereich;
+
+    /// <inheritdoc/>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            _modul = await Js.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/EPOS.UI/epos-diagramm.js");
+            _hilfe = DotNetObjectReference.Create(this);
+            await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul bleibt das Bild starr - so wie vor dieser Welle.
+            _modul = null;
+        }
+    }
+
+    /// <summary>Das Modul meldet eine neue Zoomstufe (nur bei Aenderung).</summary>
+    [JSInvokable]
+    public Task ZoomGemeldet(double stufe)
+    {
+        _stufe = stufe;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Das Modul meldet ein aufgezogenes Rechteck. Danach steht das Bild wieder
+    /// auf 1:1 - der Kern zeichnet es ja mit dem neuen Achsenbereich, ein
+    /// zusaetzlicher Bildzoom waere doppelt.
+    /// </summary>
+    [JSInvokable]
+    public async Task BereichGemeldet(double xVon, double xBis, double yVon, double yBis)
+    {
+        if (!BereichGewaehlt.HasDelegate) return;
+        await BereichGewaehlt.InvokeAsync(new Diagrammbereich(xVon, xBis, yVon, yBis));
+        await Zuruecksetzen();
+    }
+
+    /// <summary>Der Knopf „1:1": Bildzoom UND Achsenbereich zurueck.</summary>
+    private async Task ZurueckGewaehlt()
+    {
+        await Zuruecksetzen();
+        if (Zurueckgesetzt.HasDelegate) await Zurueckgesetzt.InvokeAsync();
+    }
+
+    /// <summary>Zurueck auf 1:1 - nur das Bild.</summary>
+    private async Task Zuruecksetzen()
+    {
+        _stufe = 1;
+        if (_modul is null) return;
+        try { await _modul.InvokeVoidAsync("zuruecksetzen", _flaeche); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
+
+    /// <summary>Schaltet das Aufziehen eines Rechtecks ein und aus.</summary>
+    private async Task BereichUmschalten()
+    {
+        _bereich = !_bereich;
+        if (_modul is null) return;
+        try { await _modul.InvokeVoidAsync("bereichsmodus", _flaeche, _bereich); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is not null)
+        {
+            try
+            {
+                await _modul.InvokeVoidAsync("loesen", _flaeche);
+                await _modul.DisposeAsync();
+            }
+            catch (Exception) { /* Die WebView ist schon weg. */ }
+        }
+        _hilfe?.Dispose();
+    }
+}
