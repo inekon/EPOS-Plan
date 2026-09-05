@@ -1383,6 +1383,7 @@ body {
    Regel schluckt HTML sie, und aus vier Zeilen wird eine lange. */
 .epos-mehrzeilig {
     white-space: pre-line;
+}
 /* --------------------------------------------------------------------------
    Reiterleiste (iU9-W5.0) - der Ersatz fuer TabControl/TabPage. Die Knoepfe
    sind Beruehrungsziele (44 px) und tragen ihren Zustand ueber die Farbe UND
