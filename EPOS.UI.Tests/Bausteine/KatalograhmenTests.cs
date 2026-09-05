@@ -103,6 +103,11 @@ public class KatalograhmenTests : BunitContext
     /// <summary>
     /// Die Wurzel eines Katalogdialogs nimmt <c>.epos-dialog</c> die
     /// Breitenbremse (1160 px) und gibt ihm die volle Höhe des Fensters.
+    ///
+    /// <para><c>overflow: auto</c> und nicht <c>hidden</c>: Im Normalfall rollt
+    /// dort nichts — die Abschnitte darin schrumpfen. Wird das Fenster aber bis
+    /// auf das Kleinstmaß zusammengezogen, ist ein Rollbalken die ehrliche
+    /// Antwort; <c>hidden</c> schnitte die Schlussleiste ab.</para>
     /// </summary>
     [Fact]
     public void Die_Dialogwurzel_nimmt_Breite_und_Hoehe()
@@ -111,7 +116,7 @@ public class KatalograhmenTests : BunitContext
 
         Assert.Contains("max-width: none", block);
         Assert.Contains("height: 100dvh", block);
-        Assert.Contains("overflow: hidden", block);
+        Assert.Contains("overflow: auto", block);
     }
 
     /// <summary>

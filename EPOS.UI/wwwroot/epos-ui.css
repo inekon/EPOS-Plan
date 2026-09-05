@@ -4908,12 +4908,19 @@ body {
 /* Die Wurzel eines Katalogdialogs. Sie nimmt .epos-dialog zwei Dinge:
    die Breitenbremse (max-width 1160px - eine Liste neben einem
    Eingabeblock ist keine Bandwurmzeile) und die freie Hoehe. Statt der
-   Seite rollen die Abschnitte darin. */
+   Seite rollen die Abschnitte darin.
+
+   overflow: auto und nicht hidden: Im Normalfall rollt hier nichts -
+   die Abschnitte darin schrumpfen. Wird das Fenster aber bis auf das
+   Kleinstmass zusammengezogen (520 x 360 Geraetepixel, bei 150 % rund
+   347 x 240 CSS-Pixel), reicht die Hoehe irgendwann nicht einmal mehr
+   fuer Kopf, Mindestliste und Schlussleiste. Dann ist ein Rollbalken
+   die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
 .epos-katalog-dialog {
     max-width: none;
     height: 100vh;
     height: 100dvh;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* Der Abschnitt, der die uebrige Hoehe nimmt - genau EINER je Dialog.
