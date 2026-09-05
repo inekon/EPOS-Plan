@@ -518,3 +518,73 @@ vier Kontextmenü-Controller.
 `EPOS.Kern.Tests/FerienzeitTests.cs`,
 `EPOS.Kern.Tests/GebaeudeKatalogTests.cs`,
 `EPOS.Kern.Tests/ProjektlistenTests.cs`.
+
+---
+
+## 12. Windows-Abnahme 05.09.2026 (Befunde W9‑B‑1 bis W9‑B‑3)
+
+Der Anwender hat den Stand `d3abd94` am Gerät gefahren und drei Dinge zum
+Gebäudedialog gemeldet. Alle drei sind Oberflächenbefunde; der Rechenweg ist
+unberührt (Referenzlauf nicht angefasst).
+
+### 12.1 Befund W9‑B‑1 — „Im Projekt gespeichertes Gebäude wird nicht angezeigt bzw. in der Liste selektiert"
+
+**Beobachtung.** Ein bestehendes Projekt im Assistenten öffnen
+(`AssistentHuelle.Oeffnen(…, BETRIEBSART_BEARBEITEN)`), im linken Band das Projekt
+markieren, zweimal „Weiter ▶" bis Seite 2 „Gebäude". Die Liste „ausgewählte Gebäude
+im Projekt" zeigt das gespeicherte Gebäude **nicht markiert**; der Detailblock
+„Gebäude: Verbrauch" steht auf einem Satz, der zu keiner sichtbaren Zeile gehört.
+
+**Ursache — zwei Hälften, die zusammen den Befund ergeben.**
+
+1. **`AssistentSeite.SchritteBauen` zog den Parametersatz der STEHENDEN Seite bei
+   jedem `OnParametersSet` neu**, also bei jedem Neuzeichnen des Wirtes (Statuszeile,
+   Sprachwechsel, der `AppWurzel`-Zweig auf iOS). Der Kopfkommentar der Seite sagt
+   „bei JEDEM Betreten neu erfragt" — gemeint war das Betreten, gebaut war jedes
+   Zeichnen. Die Hüllen bauen in `Gaben` aber jedesmal eine **neue** Anzeigeliste aus
+   ihrer Fachliste auf (`GebaeudeHuelle.Gaben` :113‑114, und ebenso die zehn
+   Geschwister). Der lebenden Komponente wurde die Liste damit unter den Füßen
+   ausgetauscht.
+2. **`GebaeudeDialog` machte seine Markierung an der OBJEKTGLEICHHEIT fest**
+   (`z == _gewaehlt`) und stellte sie **nur in `OnInitialized`** her. Nach einem
+   Austausch zeigte `_gewaehlt` auf ein Objekt, das in der neuen Liste nicht mehr
+   steht — keine Zeile trug `epos-zeile--markiert`, und `_gewaehlt` war trotzdem
+   nicht `null`: der Detailblock, „Ändern" und „▶" hingen an einer toten Zeile.
+   Dieselbe Stelle trägt die zweite Hälfte des Befundes: Kommt die Projektliste erst
+   **nach** dem ersten Zeichnen (der Ladeweg `AssistentCtrl.Laden` läuft im
+   `SeiteVerlassen` der Projektkopfseite), blieb der Dialog für immer ohne
+   Markierung.
+
+**Nachgestellt.** Ein bunit-Lauf über `AssistentSeite` mit den Seitengaben eines
+Projekts mit einem gespeicherten Gebäude: markieren, zweimal „Weiter", dann den Wirt
+neu zeichnen lassen. Vorher: `SeiteGaben(2)` zweimal gerufen, `epos-zeile--markiert`
+weg. Nachher: einmal gerufen, Markierung steht.
+
+**Behebung.**
+
+* `EPOS.UI/Seiten/Assistent/AssistentSeite.razor` merkt sich den Seiteninhalt
+  (`_inhalt` / `_inhaltSchritt` / `_inhaltQuelle`) und erfragt ihn nur noch, wenn der
+  **Schritt wechselt** (`BeiSchritt`), ein **anderes Projekt markiert** wird
+  (`BeiMarkierung`) oder der Wirt einen **anderen Gabendelegaten** hereinreicht. Das
+  ist genau das, was der Kopfkommentar seit W16a.5 behauptet — und was
+  `WizardParent.Next` tat, während `WizardParent.Back` die Seite gar nicht neu
+  bestückte.
+* `EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor` vergleicht über die **`IdZ`**
+  (`Z_ProjektGebaeude.ID` — derselbe Schlüssel, an dem „▶" hängt, siehe § 4) und
+  zieht die Markierung in `OnParametersSet` nach: dieselbe Zuordnung, sonst die erste
+  Zeile, sonst keine. Steht der Anwender im **Katalog**, bleibt seine Wahl unberührt.
+
+**Wachen.**
+`EPOS.UI.Tests/Seiten/AssistentTests`:
+`Der_Parametersatz_einer_Seite_wird_beim_Betreten_geholt_und_nicht_beim_Neuzeichnen`,
+`Beim_Betreten_und_beim_Wiederbesuch_wird_der_Parametersatz_neu_geholt`,
+`Ein_Projektwechsel_erfragt_den_Parametersatz_neu`.
+`EPOS.UI.Tests/Dialoge/GebaeudeDialogTests`:
+`Die_Markierung_ueberlebt_einen_Austausch_der_Zeilenliste`,
+`Eine_spaeter_gefuellte_Projektliste_wird_markiert`,
+`Eine_Katalogwahl_wird_vom_Nachziehen_nicht_ueberschrieben`.
+
+**Abnahmepunkt A‑W9‑B‑1.** Bestehendes Projekt im Assistenten öffnen, Seite 2
+„Gebäude": Das gespeicherte Gebäude steht in der linken Liste **und ist markiert**,
+der Detailblock zeigt seine Werte. „▶" entfernt genau diese Zeile. Vor und zurück
+über die Seiten behält Liste und Markierung.

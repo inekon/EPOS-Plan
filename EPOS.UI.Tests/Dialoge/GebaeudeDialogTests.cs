@@ -420,4 +420,79 @@ public class GebaeudeDialogTests : BunitContext
 
         Assert.True(ergebnis);
     }
+
+    // =================================================================================
+    // Die Markierung der Projektliste - Windows-Abnahme 05.09.2026, Befund W9-B-1
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Befund W9‑B‑1:</b> „Im Projekt gespeichertes Gebäude wird nicht angezeigt
+    /// bzw. in der Liste selektiert."
+    ///
+    /// <para>Der Wirt baut seine Anzeigeliste bei JEDEM <c>Gaben</c>-Aufruf neu aus
+    /// der Fachliste auf (<c>GebaeudeHuelle.Gaben</c> :113‑114) — die Zeilenobjekte
+    /// sind danach andere. Eine Markierung über die Objektgleichheit war damit beim
+    /// ersten Neuzeichnen des Wirtes weg: Das gespeicherte Gebäude stand in der Liste,
+    /// aber unmarkiert. Verglichen wird deshalb über die <c>IdZ</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Markierung_ueberlebt_einen_Austausch_der_Zeilenliste()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(11, "Haus A"),
+                                                                    Zeile(12, "Haus B") });
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
+
+        // Derselbe Bestand, NEUE Objekte - genau das, was die Huelle liefert.
+        cut.Render(p => p.Add(x => x.Zeilen, new List<GebaeudeProjektZeile>
+        {
+            Zeile(11, "Haus A"), Zeile(12, "Haus B")
+        }));
+
+        Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
+        Assert.Equal("Haus B",
+                     cut.Find(".epos-zeile--markiert td:last-child").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Die zweite Hälfte desselben Befundes: Kommt die Projektliste erst NACH dem
+    /// ersten Zeichnen (der Ladeweg des Assistenten läuft beim Verlassen der
+    /// Projektkopfseite), stand bis hierher für immer keine Markierung.
+    /// </summary>
+    [Fact]
+    public void Eine_spaeter_gefuellte_Projektliste_wird_markiert()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile>());
+
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.Empty(cut.FindAll(".epos-zeile--markiert"));
+
+        cut.Render(p => p.Add(x => x.Zeilen,
+                              new List<GebaeudeProjektZeile> { Zeile(11, "Musterhaus") }));
+
+        Assert.Equal(11, cut.Instance.Gewaehlt?.IdZ);
+        Assert.Contains("Musterhaus", cut.Find(".epos-zeile--markiert").TextContent);
+    }
+
+    /// <summary>
+    /// Steht der Anwender im KATALOG, bleibt seine Wahl stehen — das Nachziehen
+    /// überschreibt sie nicht.
+    /// </summary>
+    [Fact]
+    public void Eine_Katalogwahl_wird_vom_Nachziehen_nicht_ueberschrieben()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(11, "Haus A") });
+
+        // Die erste Katalogzeile waehlen - das nimmt die Projektmarkierung weg.
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.NotNull(cut.Instance.Katalogzeile);
+
+        cut.Render(p => p.Add(x => x.Zeilen,
+                              new List<GebaeudeProjektZeile> { Zeile(11, "Haus A") }));
+
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.NotNull(cut.Instance.Katalogzeile);
+    }
 }
