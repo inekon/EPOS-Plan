@@ -1498,6 +1498,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rückfall in der Regel standen (`--epos-marke`, `--epos-marke-untertitel`, `--epos-marke-trennlinie`,
 > `--epos-menue-flaeche`, `--epos-flaeche-hell`), sind jetzt Token in `:root`; die Menühöhe bleibt beim
 > Berührungsziel 44 px, die Versionsfarbe des Bestands ist wegen 2,77:1 nicht übernommen. Abnahmepunkt 7a.
+> **Windows-Abnahme 05.09.2026 (PDF des Anwenders, S. 3), Befund W16c‑B13 (`78f32a7`):** die verschachtelten
+> Untermenüs des Menübands („Administration → Wärmebedarf & Heizung ▸ …") ließen sich nicht aufklappen. Drei
+> Ursachen: `@onfocusout` am `<nav>` schloss die Klappe schon beim Zeigerdruck, weil `focusout` auch bei einem
+> Fokuswechsel **im Band selbst** feuert und die gedrückte Zeile beim Loslassen aus dem DOM war (kein `click` mehr;
+> `FocusEventArgs` kennt kein `relatedTarget`, auf dem iPad setzt eine Berührung gar keinen Fokus); die zweite
+> Ebene führte keinen eigenen Offen-Zustand (ein Feld für oben, ein flaches Namens-Set darunter, kein Ausschluss
+> unter Geschwistern); und die Tastatur kannte weder → noch ← noch ein Wandern in der offenen Klappe. Behoben: der
+> Offen-Zustand ist ein **Pfad über alle drei Ebenen**, eine Schließfläche (`position: fixed; inset: 0`) ersetzt
+> `focusout`, `→ ← ↑ ↓` wandern in der Klappe mit rovendem `tabindex`, `OpenRegion` je Kind und Verweisfang je
+> Zeile (ein bedingter `AddElementReferenceCapture` brach Blazors Abgleich). 14 hüllengleiche Wachen mit der
+> echten `Menuetabelle`, darunter die Gegenprobe zur Ursache; Abnahmepunkte 4a (Maus/Berührung) und 5a
+> (Tastatur); drei Hausregeln in `EPOS.UI/CLAUDE.md`.
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
