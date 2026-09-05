@@ -93,7 +93,10 @@ export function binden(flaeche, hilfe) {
     // --- Zeiger nieder: entweder ein Rechteck aufziehen oder verschieben. ---
     an(flaeche, "pointerdown", e => {
         if (e.button !== 0 && e.pointerType === "mouse") return;
-        flaeche.setPointerCapture(e.pointerId);
+        // Der Fang haelt die Bewegung bei uns, auch wenn der Zeiger den Rahmen
+        // verlaesst. Er kann fehlschlagen, wenn der Zeiger schon wieder weg ist -
+        // dann geht es ohne ihn weiter.
+        try { flaeche.setPointerCapture(e.pointerId); } catch (fehler) { /* ohne Fang */ }
         z.zeiger.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
         // Zwei Finger: Kneifen. Der Abstand beim Aufsetzen ist der Bezug.
