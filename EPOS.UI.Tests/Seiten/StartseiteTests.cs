@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
@@ -730,5 +731,161 @@ public class StartseiteTests : BunitContext
         Assert.Contains("--epos-kachel-min: 404px",
                         cut.Find(".epos-kachelraster").GetAttribute("style")!,
                         StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  Befund W16b-B-2 (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Aufbau, wie ihn <c>StartseiteHuelle.Gaben()</c> liefert: Die
+    /// Variantenliste hängt an der Projekt-Id, weil
+    /// <c>StartseiteCtrl.Varianten(0)</c> leer antwortet. <see cref="Zeige"/>
+    /// füllt sie unabhängig davon — für die Kopplung wäre das der falsche
+    /// Prüfstand.
+    /// </summary>
+    private IRenderedComponent<Startseite> WieDieHuelle(int idProjekt)
+        => Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln())
+            .Add(x => x.ProjektId, () => idProjekt)
+            .Add(x => x.Varianten, () => idProjekt > 0
+                ? new[] { (1030, "Referenzprojekt") }
+                : Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Bericht, Bereitschaft));
+
+
+    /// <summary>
+    /// <b>Der Projektname im Kopfband und gesperrte Reiter schliessen einander
+    /// AUS.</b>
+    ///
+    /// <para>Der Anwender meldete am 05.09.2026 beides zugleich: im Feld rechts
+    /// oben stand ein Projektname, die Reiter „Wärmebedarf", „Strombedarf" usw.
+    /// waren gesperrt. Das kann die Seite nicht: Beides hängt an DERSELBEN
+    /// Quelle — <c>ProjektId()</c> speist über <c>Laden()</c> die Variantenliste
+    /// UND über <c>ProjektOffen</c> die Reitersperre. Ohne Projekt gibt es keine
+    /// Variantenliste, also auch keinen Namen zum Anzeigen.</para>
+    ///
+    /// <para>Im Vorläufer war es EIN Schritt:
+    /// <c>Form_Start.ProjektKontextUebernehmen</c> (:182-190) setzte
+    /// <c>comboBox_Varianten.Text</c> und gab in derselben Methode die Reiter
+    /// frei. Der Fall hält diese Kopplung in beide Richtungen fest.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Projektname_im_Kopfband_und_gesperrte_Reiter_schliessen_einander_aus()
+    {
+        // Mit Projekt: Name im Feld UND alle Reiter frei.
+        var mit = WieDieHuelle(1030);
+
+        Assert.Contains("Referenzprojekt", mit.Find("#epos-start-variante").TextContent,
+                        StringComparison.Ordinal);
+        foreach (IElement knopf in mit.FindAll("[role='tab']"))
+            Assert.False(knopf.HasAttribute("disabled"),
+                         "Reiter gesperrt, obwohl ein Projektname im Kopfband steht.");
+
+        // Ohne Projekt: KEIN Name im Feld, nur der Platzhalter - und die Sperre.
+        var ohne = WieDieHuelle(0);
+
+        var eintraege = ohne.FindAll("#epos-start-variante option");
+        Assert.Single(eintraege);
+        Assert.Equal("Bitte auswählen!", eintraege[0].TextContent.Trim());
+
+        var knoepfe = ohne.FindAll("[role='tab']");
+        for (int i = 1; i < knoepfe.Count; i++)
+            Assert.True(knoepfe[i].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Die Reitersperre fällt, sobald die Hülle den Projektwechsel meldet — ohne
+    /// dass die WebView neu gebaut würde.
+    ///
+    /// <para>Das ist der Weg, den „Projekt öffnen", „Zuletzt geöffnet" und der
+    /// Variantenwechsel im Kopfband gehen:
+    /// <c>ProjektKontextCtrl.Setzen</c> → <c>Gewechselt</c> →
+    /// <c>StartseiteHuelle.ProjektGewechselt</c> →
+    /// <c>SeitenZustand.Auffrischen</c> → <c>Startseite.Laden</c>. Bliebe die
+    /// Sperre dabei stehen, sähe der Anwender genau das gemeldete Bild.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Projektwechsel_gibt_die_Reiter_frei()
+    {
+        int id = 0;
+        var zustand = new SeitenZustand();
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Kacheln, () => Kacheln())
+            .Add(x => x.ProjektId, () => id)
+            .Add(x => x.Varianten, () => id > 0
+                ? new[] { (1030, "Referenzprojekt") }
+                : Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Bericht, Bereitschaft));
+
+        Assert.True(cut.FindAll("[role='tab']")[1].HasAttribute("disabled"));
+
+        // Die Huelle meldet das nun offene Projekt.
+        id = 1030;
+        zustand.ProjektSetzen(1030, "Referenzprojekt");
+        zustand.Auffrischen();
+        cut.Render();
+
+        foreach (IElement knopf in cut.FindAll("[role='tab']"))
+            Assert.False(knopf.HasAttribute("disabled"));
+
+        Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
+                              cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ein freier Reiter ist nicht grau</b> — Befund W16b‑B‑2b.
+    ///
+    /// <para><c>tabControl_Wizard_DrawItem</c> zeichnete einen bedienbaren,
+    /// nicht gewählten Reiter SCHWARZ (<c>Color.FromArgb(0x000000)</c>,
+    /// <c>Form_Start.cs</c> :129‑141). Der Hausknopf trägt
+    /// <c>--epos-text-leise</c>, der gesperrte <c>--epos-text-sehr-leise</c> —
+    /// bei 16 px halbfett sieht beides gleich grau aus, und der Anwender liest
+    /// einen freien Reiter als gesperrten. Die Startseite setzt deshalb dort,
+    /// wo sie ohnehin ihre Schriftgröße setzt, die Textfarbe.</para>
+    ///
+    /// <para>Eine bunit-Probe sieht kein Stilblatt (Lehre W6‑B‑1) — geprüft
+    /// wird deshalb die REGEL, wie in
+    /// <c>KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe()
+    {
+        string block = Stilblock(
+            ".epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf {");
+
+        Assert.Contains("color: var(--epos-text)", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("--epos-text-leise", block, StringComparison.Ordinal);
+
+        // Der gesperrte Knopf bleibt sehr leise - sonst waere der Unterschied
+        // wieder weg, nur andersherum.
+        Assert.Contains("var(--epos-text-sehr-leise)",
+                        Stilblock(".epos-startseite > .epos-reiter > .epos-reiter-leiste "
+                                  + "> .epos-reiter-knopf:disabled {"),
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null &&
+               !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Regel " + selektor + " steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
 }

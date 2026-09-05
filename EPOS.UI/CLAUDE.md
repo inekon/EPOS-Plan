@@ -81,6 +81,31 @@ entgegen — sie ist damit austauschbar.
   die Gattungszeile — 26 px fett ist GROSSE Schrift und braucht nur 3:1.
   `StartseiteAnmutungTests.Jede_neue_Paarung_haelt_den_Hauskontrast` rechnet die Werte aus
   dem Stilblatt nach und fällt rot aus, sobald jemand ein Token aufhellt.
+- **Zwei Zustände desselben Bedienelements müssen SICHTBAR verschieden sein.** Befund
+  **W16b‑B‑2b** der Windows-Abnahme vom 05.09.2026: Der Anwender meldete die Reiter der
+  Startseite als „ausgegraut", obwohl ein Projekt offen und die Leiste frei war. Gemessen:
+  `.epos-reiter-knopf` trägt `--epos-text-leise` (#5f5e5a), gesperrt
+  `--epos-text-sehr-leise` (#888780) — 0x29 Unterschied je Kanal, bei 16 px halbfett nicht
+  zu unterscheiden; das Vorbild zeichnete den freien Reiter **schwarz**
+  (`tabControl_Wizard_DrawItem`, `Form_Start.cs` :129‑141). Wer einen Zustand allein über
+  zwei benachbarte Grautöne trägt, hat ihn nicht getragen. Und: **eine bunit-Probe sieht das
+  nicht** (Lehre W6‑B‑1) — geprüft wird die REGEL, so wie in
+  `StartseiteTests.Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe` und
+  `KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex`.
+- **Ein Parametersatz aus einer Hülle trifft nur `[Parameter]`.** Ein Schlüssel ohne
+  Entsprechung bricht beim ERSTEN Zeichnen — im Blazor-Verteiler, also ohne Namen und ohne
+  Ort (Befund **W16c‑B12**, der Startabsturz). Zwei Wachen halten das fern:
+  `EPOS.UI.Tests/ParametersatzTests` liest den Quelltext aller `Views/**/*Huelle.cs` und hält
+  jede Stelle `new BlazorDialogForm<T>`/`BlazorSeite<T>` samt der gerufenen
+  `*Gaben*`-Methoden gegen die `[Parameter]` von `T` (61 Stellen, dazu die 13
+  Assistentenseiten), und `WindowsFormsApplication1/Allgemein/Blazor/Parametersatzwache`
+  dasselbe am Gerät. **Wer eine Komponente umbenennt oder einen Parameter streicht, prüft die
+  Hülle mit.**
+- **Jede Seite, die aus einer Kachel oder einem Menüpunkt aufgeht, muss AUCH OHNE GABEN
+  zeichnen.** `StartkachelDialogeTests` rendert alle 21 Kachelziele mit einem LEEREN
+  Wörterbuch — jeder Delegat `null`, jede Liste leer, jeder Text der deutsche Rückfall. Das ist
+  der härtere Fall und der Zeuge dafür, dass eine leere Fläche beim Anwender **nicht** aus
+  dieser Bibliothek kommt (Befund **W16b‑B‑1**).
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
