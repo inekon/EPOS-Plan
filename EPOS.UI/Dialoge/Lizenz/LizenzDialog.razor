@@ -3,6 +3,28 @@
    (1 013 Z., ohne Designer, ohne .resx). Die Anzeigetexte stehen seit W15c-O-2
    (04.09.2026) gebuendelt in LizenzTexte statt als 18 Einzelparameter.
 
+   NEU GESETZT ZUR WINDOWS-ABNAHME 05.09.2026 (Befund W15c-E-1, "die Darstellung
+   kann verbessert werden"). Der Vertragstext stand in einem <textarea> - einem
+   FORMULARfeld mit Groessenanfasser, eigener Schriftflaeche und eigenem
+   Rollbalken fuer einen Text, den niemand bearbeitet; darueber schwebte rechts
+   "Datei waehlen...", und der Hilfeknopf stand als letztes Element hinter
+   "Schliessen". Jetzt ist es eine LESEANSICHT: Kopf mit Titel, Untertitel und
+   Hilfeknopf; die Reiterleiste; EIN gerollter Lesebereich je Karte mit
+   Absaetzen und den Paragrafenueberschriften als Ueberschriften; darunter leise
+   die Herkunft und rechts die Knopfleiste des Hauses (epos-leiste).
+
+   "DATEI WAEHLEN..." IST GEFALLEN (Anwender, 05.09.2026: "Wozu gibt es 'Datei
+   waehlen'? loeschen."). Der Knopf waehlte eine .rtf/.docx/.pdf und ersetzte
+   damit den LESBAREN Vertragstext durch den Zeiger "Die Lizenzvereinbarung
+   liegt als Datei vor: <Pfad>" (LIZR_TEXT_DATEI) - denn seit Entscheid E-1
+   zeigt die WebView solche Dokumente gar nicht mehr an. Er konnte also nur noch
+   WENIGER zeigen als der Text, der ohnehin dastand. Zusammenzufuehren ist
+   nichts: Der Weg zur LIZENZdatei ist allein "Lizenz aktivieren..." (.lic, im
+   LizenzVerwaltungDialog), und eine vorhandene VERTRAGSdatei findet
+   LizenzTextCtrl.DateiSuchen weiterhin von selbst - unter dem frueher gemerkten
+   Pfad, im Programmordner samt sechs Ebenen darueber, in ProgramData und im
+   Benutzerordner.
+
    ZWEI GESICHTER, EINE KOMPONENTE - wie im Vorlaeufer, dessen Konstruktor einen
    bool nahm: Zustimmungsmodus = false ist der Menuepunkt "Hilfe -> Lizenz",
    Zustimmungsmodus = true die EULA-Abfrage beim ersten Start. Der Unterschied
@@ -22,10 +44,11 @@
 
    VERWEISE WERDEN NICHT GERATEN. Der Vorlaeufer liess die RichTextBox Adressen
    ERKENNEN (DetectUrls); hier werden nur "https://"-Laeufe im ERZEUGTEN Rechtstext
-   zu Verweisen - unser eigener Ressourcentext, keine Fremdeingabe -, und der
-   Vertragstext der ersten Karte steht als reiner Text in einem Nur-Lese-Feld.
-   Gebaut werden die Verweise als Elemente, NICHT als MarkupString: Aus Text darf
-   nie Auszeichnung werden. *@
+   zu Verweisen - unser eigener Ressourcentext, keine Fremdeingabe. Fuer den
+   VERTRAGSTEXT gilt das weiterhin NICHT, auch ohne das Nur-Lese-Feld: Er kommt
+   von epos-plan.de oder aus einer Datei, also von auswaerts, und dort wird nichts
+   erkannt. Gebaut werden die Verweise als Elemente, NICHT als MarkupString: Aus
+   Text darf nie Auszeichnung werden. *@
 
 @namespace EPOS.UI.Dialoge.Lizenz
 @using Microsoft.JSInterop
@@ -33,9 +56,16 @@
 
 <div class="epos-lizenz">
 
+    @* Der Hilfeknopf gehoert an den KOPF - dieselbe Lage wie epos-dialog-kopf
+       und wie InfoKnopf.Anbringen sie in WinForms erzeugt (oben rechts, 28x28).
+       Bis zur Abnahme stand er hinter "Schliessen" in der Knopfleiste. *@
     <header class="epos-lizenz-kopf">
-        <h1 class="epos-lizenz-titel">@Texte.KopfTitel</h1>
-        <p class="epos-lizenz-untertitel">@Texte.KopfUntertitel</p>
+        <div class="epos-lizenz-kopftext">
+            <h1 class="epos-lizenz-titel">@Texte.KopfTitel</h1>
+            <p class="epos-lizenz-untertitel">@Texte.KopfUntertitel</p>
+        </div>
+
+        <InfoKnopf Schluessel="Form_Lizenz.btn_Help" />
     </header>
 
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@Texte.KopfTitel">
@@ -44,31 +74,30 @@
             @* ============================================ Lizenzvereinbarung *@
             <Reiterblatt Schluessel="VERTRAG" Titel="@Texte.ReiterVertrag">
                 <KindInhalt>
-                    @if (DateiWaehlen is not null)
-                    {
-                        <div class="epos-lizenz-werkzeuge">
-                            <button type="button" class="epos-knopf" @onclick="DateiWaehlenKlick">
-                                @Texte.KnopfDatei
-                            </button>
-                        </div>
-                    }
-
-                    <Textfeld Bezeichnung="@Texte.ReiterVertrag" Wert="@Text.Text"
-                              Mehrzeilig="true" NurLesen="true" Zeilen="20" />
+                    <div class="epos-lizenz-lesebereich" role="region"
+                         aria-label="@Texte.ReiterVertrag" tabindex="0">
+                        @Abschnitte(Vertragsabschnitte(Text.Text), false, false)
+                    </div>
                 </KindInhalt>
             </Reiterblatt>
 
             @* ========================================== Rechtliche Hinweise *@
             <Reiterblatt Schluessel="HINWEISE" Titel="@Texte.ReiterHinweise">
                 <KindInhalt>
-                    @Rechtstext(Hinweise)
+                    <div class="epos-lizenz-lesebereich" role="region"
+                         aria-label="@Texte.ReiterHinweise" tabindex="0">
+                        @Abschnitte(Hinweise, true, true)
+                    </div>
                 </KindInhalt>
             </Reiterblatt>
 
             @* ================================================== Komponenten *@
             <Reiterblatt Schluessel="KOMPONENTEN" Titel="@Texte.ReiterKomponenten">
                 <KindInhalt>
-                    @Rechtstext(Komponenten)
+                    <div class="epos-lizenz-lesebereich" role="region"
+                         aria-label="@Texte.ReiterKomponenten" tabindex="0">
+                        @Abschnitte(Komponenten, true, true)
+                    </div>
                 </KindInhalt>
             </Reiterblatt>
 
@@ -80,16 +109,18 @@
         <Warnbanner Stufe="@_meldungsstufe" Text="@_meldung" />
     }
 
-    @* ---- Fusszeile: links die Herkunft, rechts die Knoepfe. Die Reihenfolge von
-       RECHTS nach links ist bitgleich (Entscheid E-14): [Zustimmen] [Ablehnen]
-       [Drucken] [Speichern] [Aktivieren] bzw. ohne die ersten beiden. *@
+    @* ---- Fusszeile: links LEISE die Herkunft, rechts die Knopfleiste des
+       Hauses (epos-leiste - sie bricht um und jeder Knopf bemisst sich an
+       seiner Beschriftung, W12-B-1). Die Reihenfolge von RECHTS nach links ist
+       bitgleich (Entscheid E-14): [Zustimmen] [Ablehnen] [Drucken] [Speichern]
+       [Aktivieren] bzw. ohne die ersten beiden. *@
     <footer class="epos-lizenz-fuss">
         <div class="epos-lizenz-herkunft">
             <span>@Zeile1</span>
             <span>@Zeile2</span>
         </div>
 
-        <div class="epos-lizenz-knoepfe">
+        <div class="epos-leiste epos-lizenz-knoepfe">
             @if (VerwaltungGaben is not null)
             {
                 <button type="button" class="epos-knopf" @onclick="VerwaltungOeffnen">@Texte.KnopfAktivieren</button>
@@ -109,8 +140,6 @@
             {
                 <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Schliessen">@Texte.KnopfSchliessen</button>
             }
-
-            <InfoKnopf Schluessel="Form_Lizenz.btn_Help" />
         </div>
     </footer>
 </div>
@@ -151,10 +180,6 @@
     [Parameter] public LizenzTexte Texte { get; set; } = new();
 
     // ---- Wege nach draussen ------------------------------------------------
-
-    /// <summary>„Datei wählen…": Die Hülle zeigt den Dateiwähler, merkt den Pfad und
-    /// liefert den neuen Zustand der ersten Karte. <c>null</c> = abgebrochen.</summary>
-    [Parameter] public Func<Task<LizenzTextGaben?>>? DateiWaehlen { get; set; }
 
     /// <summary>
     /// Die Online-Fassung nachliefern — EINMAL beim Öffnen und nur, wenn keine
@@ -209,15 +234,62 @@
         StateHasChanged();
     }
 
-    // ---- Der erzeugte Rechtstext -------------------------------------------
+    // ---- Der Lesesatz ------------------------------------------------------
 
-    /// <summary>Zeichnet eine Abschnittsliste: Überschriften als <c>h3</c>, Absätze
-    /// als <c>p</c>, und <c>https://</c>-Läufe als echte Verweise.</summary>
-    private RenderFragment Rechtstext(IReadOnlyList<RechtsAbschnitt> abschnitte) => bau =>
+    /// <summary>
+    /// Zerlegt den VERTRAGSTEXT in Abschnitte (Befund W15c-E-1). Eine Zeile, die
+    /// mit „§" beginnt, ist eine Überschrift; alles andere sammelt sich zu
+    /// Absätzen, die eine Leerzeile trennt. <b>Am Wortlaut ändert sich nichts</b> —
+    /// gesetzt wird nur, was der Text ohnehin sagt; die Zeilenumbrüche innerhalb
+    /// eines Absatzes bleiben erhalten (<c>white-space: pre-line</c>).
+    /// <c>public</c>, damit der Prüfstand die REGEL ohne den Dialog prüfen kann.
+    /// </summary>
+    public static IReadOnlyList<RechtsAbschnitt> Vertragsabschnitte(string text)
+    {
+        var liste = new List<RechtsAbschnitt>();
+        if (string.IsNullOrWhiteSpace(text)) return liste;
+
+        var absatz = new List<string>();
+
+        void Abschliessen()
+        {
+            if (absatz.Count == 0) return;
+            liste.Add(new RechtsAbschnitt(false, string.Join("\n", absatz)));
+            absatz.Clear();
+        }
+
+        foreach (string roh in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+        {
+            string zeile = roh.TrimEnd();
+
+            if (zeile.Trim().Length == 0) { Abschliessen(); continue; }
+
+            if (zeile.TrimStart().StartsWith("§", StringComparison.Ordinal))
+            {
+                Abschliessen();
+                liste.Add(new RechtsAbschnitt(true, zeile.Trim()));
+                continue;
+            }
+
+            absatz.Add(zeile);
+        }
+
+        Abschliessen();
+        return liste;
+    }
+
+    /// <summary>
+    /// Zeichnet eine Abschnittsliste: Überschriften als <c>h3</c>, Absätze als
+    /// <c>p</c>. <paramref name="mitVerweisen"/> entscheidet, ob aus einem
+    /// <c>https://</c>-Lauf ein Verweis wird — im ERZEUGTEN Rechtstext ja, im
+    /// Vertragstext von auswärts nein.
+    /// </summary>
+    private RenderFragment Abschnitte(IReadOnlyList<RechtsAbschnitt> abschnitte,
+                                      bool mitSprachhinweis, bool mitVerweisen) => bau =>
     {
         int folge = 0;
 
-        if (!string.IsNullOrEmpty(Texte.SprachHinweis))
+        if (mitSprachhinweis && !string.IsNullOrEmpty(Texte.SprachHinweis))
         {
             bau.OpenElement(folge++, "p");
             bau.AddAttribute(folge++, "class", "epos-lizenz-sprachhinweis");
@@ -229,6 +301,13 @@
         {
             bau.OpenElement(folge++, a.IstUeberschrift ? "h3" : "p");
             bau.AddAttribute(folge++, "class", a.IstUeberschrift ? "epos-lizenz-ueberschrift" : "epos-lizenz-absatz");
+
+            if (!mitVerweisen)
+            {
+                bau.AddContent(folge++, a.Text);
+                bau.CloseElement();
+                continue;
+            }
 
             foreach ((string stueck, bool verweis) in Zerlegen(a.Text))
             {
@@ -284,15 +363,6 @@
     }
 
     // ---- Die Knöpfe --------------------------------------------------------
-
-    private async Task DateiWaehlenKlick()
-    {
-        if (DateiWaehlen is null) return;
-
-        LizenzTextGaben? neu = await DateiWaehlen();
-        if (neu is null) return;      // abgebrochen - alles bleibt
-        Text = neu;
-    }
 
     /// <summary>„Speichern unter…": gespeichert wird der Inhalt der AKTIVEN
     /// Registerkarte — wie im Vorläufer, der dafür <c>AktiveAnzeige()</c> fragte.</summary>

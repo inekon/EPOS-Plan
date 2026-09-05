@@ -345,3 +345,156 @@ Abnahmepunkt der Welle.**
 | **W15c‑O‑3** | **Die Textsuche im Vertragstext** (E‑12). Entfallen; wenn sie zurück soll, ist sie als Markierung im HTML neu zu bauen. |
 | **W15c‑O‑4** | **Der Lizenzeinstieg auf iOS** (E‑4, B11). `AppWurzel` kennt keinen; die Komponenten sind gebaut und würden dort unverändert laufen. Gehört zu iU11. |
 | **W15c‑O‑5** | **`Form_HelpPopup` ist damit die letzte WinForms-Maske**, die weder mit W15c noch mit W16 fällt (Entscheid W15b‑E‑2); sie geht mit `HelpCatalog`/`HelpExtender` in iU11. |
+
+## Windows-Abnahme 05.09.2026 — Lizenzdialog (W15c‑B‑1, W15c‑E‑1)
+
+Gemeldet zum Menüpunkt **Hilfe → Lizenz** (Bildschirmfoto „EPOS-Plan – Lizenz und
+rechtliche Hinweise", rund 1 290 px breit auf Full-HD bei 125–150 %):
+
+> „1. Die Darstellung kann verbessert werden. 2. Wozu gibt es ‚Datei wählen'? löschen."
+
+### W15c‑B‑1 — jede Zeile links angeschnitten
+
+**Was zu sehen war.** Überschrift („izenz und rechtliche Hinweise"), Untertitel
+(„POS-Plan – Energieplanungs-Software …"), Reiterleiste, Feldbeschriftung
+(„izenzvereinbarung") und beide Fußzeilen („izenz: Firmenlizenz …", „uelle:
+https://epos-plan.de/agb/ …") begannen links vom sichtbaren Rand — durchgehend
+etwa ein Zeichen fehlte.
+
+**Ursache — `EPOS.UI/wwwroot/epos-ui.css`, Regel `.epos-lizenz`.** Zweiundsiebzig
+der Dialoge des Hauses hängen unter `.epos-dialog` und bekommen von dort
+`padding: var(--epos-karte-rand)` samt `max-width: 1160px` und `margin: 0 auto`.
+Die **drei Wurzeln der Welle 15c** — `.epos-lizenz`, `.epos-lizverw`,
+`.epos-erststart` — tun das nicht: Sie trugen ausschließlich
+`display/flex-direction/gap/min-width`. `body` trägt `margin: 0`
+(`epos-ui.css`:188) und `#app` (`WindowsFormsApplication1/wwwroot/index.html`)
+trägt gar nichts — **das erste Zeichen jeder Zeile stand also bei x = 0 hart an
+der Kante der WebView**, und bei 125–150 % schneidet die Fensterkante es weg. Der
+zweite Teil derselben Lücke: Weder die Wurzel noch `body` führten ein
+`overflow-x`, also hätte **jeder** Waagerecht-Überlauf die ganze Seite verschoben,
+statt in seinem eigenen Rahmen zu rollen.
+
+**Behoben** an EINER Stelle für alle drei Wurzeln — sie tragen jetzt
+`box-sizing: border-box`, `max-width: 100%`, `padding: var(--epos-karte-rand)`
+und `overflow-x: clip`. **`clip` und nicht `hidden`:** Ein nicht sichtbarer Wert
+auf einer Achse macht den anderen zu `auto` (CSS Overflow 3), `hidden` machte die
+Wurzel also zusätzlich zum senkrechten Rollrahmen; `clip` lässt die senkrechte
+Achse sichtbar. Weil die Verwaltung **auch** als Überlagerung im Lizenzdialog
+erscheint (E‑11) und die ihren Rand schon mitbringt, nimmt
+`.epos-ueberlagerung-inhalt > .epos-lizverw` ihn dort wieder heraus — dieselbe
+Angleichung, die `.epos-ueberlagerung-inhalt > .epos-dialog` seit W4 bekommt.
+
+**`ErststartDialog` und `LizenzVerwaltungDialog` sind mitbehandelt** (derselbe
+Befund, dieselbe Stelle). Der **verwaiste Wähler** kommt bei beiden nicht vor:
+Der Knopf „Lizenzdatei (.lic)…" der Verwaltung ist der einzige und richtige Weg
+zur Lizenzdatei und bleibt, der Erststartdialog hat keinen Dateiwähler.
+
+### W15c‑E‑1 — Leseansicht statt Formularfeld
+
+**Was zu sehen war.** Der AGB-Text stand in einem `<textarea>` — ein
+FORMULARfeld mit Größenanfasser, eigener Schriftfläche und eigenem Rollbalken für
+einen Text, den niemand bearbeitet; oben rechts im Reiterinhalt schwebte „Datei
+wählen…", und der `InfoKnopf` stand als letztes Element der Knopfleiste hinter
+„Schließen".
+
+**Was jetzt steht** (`EPOS.UI/Dialoge/Lizenz/LizenzDialog.razor`, Stilblock
+„Lizenz" in `epos-ui.css`):
+
+| Teil | vorher | jetzt |
+|---|---|---|
+| Kopf | Titel 17 px, Untertitel 11 px in `--epos-text-sehr-leise` | Titel `--epos-schriftgroesse-kartentitel`, Untertitel `--epos-schriftgroesse` in `--epos-text-leise` (#888780 auf Weiß hält nur 3,3:1, die Hausregel verlangt 4,5:1), rechts der `InfoKnopf` |
+| Vertragstext | `<textarea rows="20" readonly>` mit `resize: vertical` | `div.epos-lizenz-lesebereich` (`role="region"`, `aria-label`, `tabindex="0"`) mit Absätzen und den „§ …"-Zeilen als `h3` |
+| Rechtstexte / Komponenten | frei im Reiterblatt | derselbe Lesebereich — der Reiterwechsel lässt das Bild nicht springen |
+| Fußzeile | Herkunft links, Knöpfe + `InfoKnopf` rechts | Herkunft leise links (`--epos-text-leise`), rechts die Knopfleiste des Hauses `epos-leiste` (bricht um, jeder Knopf bemisst sich an seiner Beschriftung — W12‑B‑1) |
+| Höhe | wuchs mit dem Text, die Seite rollte | `min-height: 100vh` an der Wurzel, der Lesebereich nimmt den Rest und rollt für sich |
+
+**Am Wortlaut ändert sich nichts.** Die Texte kommen unverändert aus
+`LizenzTexte`/`MyResource`; neu ist allein `LizenzDialog.Vertragsabschnitte` —
+sie trennt den Fließtext an Leerzeilen in Absätze und erhebt eine Zeile, die mit
+„§" beginnt, zur Überschrift. Die Zeilenumbrüche **innerhalb** eines Absatzes
+bleiben erhalten (`white-space: pre-line`), die Zeilenlänge bleibt bei `78ch`.
+
+**Im Vertragstext wird weiterhin nichts verlinkt** — der Klassenkopf begründete
+das mit dem Nur-Lese-Feld, der Grund ist aber ein anderer und gilt weiter: Der
+Text kommt von `epos-plan.de` oder aus einer Datei, also von auswärts, und dort
+wird nichts geraten (Linie `Gespraechsverlauf`, W15b‑A‑4). Im **erzeugten**
+Rechtstext — unserem eigenen Ressourcentext — entstehen die `https://`-Verweise
+wie bisher.
+
+### „Datei wählen…" — wozu es den Knopf gab, und warum er fällt
+
+Der Knopf rief `LizenzHuelle.DateiWaehlen`: ein `OpenFileDialog` über
+`Dienste.Datei.DateiOeffnenAsync` mit dem Filter `*.rtf;*.docx;*.pdf`
+(`LIZR_DLG_WAEHLEN_*`), merkte den Pfad in `LizenzTextCtrl.GewaehltenPfadSpeichern`
+und lieferte als neuen Kartentext `LIZR_TEXT_DATEI` zurück — **„Die
+Lizenzvereinbarung liegt als Datei vor: ‹Pfad›. Über ‚Speichern unter…' können
+Sie das Dokument ablegen und öffnen."** Er ist der Rest der RichTextBox des
+Vorläufers, die eine `.rtf` wirklich ANZEIGTE; seit Entscheid **E‑1** zeigt die
+WebView solche Dokumente nicht mehr, der Knopf ersetzte den lesbaren Vertragstext
+also durch einen bloßen Zeiger — er konnte **nur noch weniger zeigen**.
+
+**Zusammenzuführen war nichts.** Der Weg zur LIZENZdatei ist allein „Lizenz
+aktivieren…" → „Lizenzdatei (.lic)…" im `LizenzVerwaltungDialog`. Eine vorhandene
+VERTRAGSdatei findet `LizenzTextCtrl.DateiSuchen` weiterhin von selbst — unter
+dem früher gemerkten Einstellungspfad, im Programmordner samt sechs Ebenen
+darüber, in `ProgramData` und im Benutzerordner. Gestrichen sind damit der
+`[Parameter] DateiWaehlen`, `LizenzTexte.KnopfDatei` und
+`LizenzHuelle.DateiWaehlen`; ohne Leser, aber im Sprachkatalog stehen geblieben
+sind `LIZR_BTN_DATEI`, `LIZR_DLG_WAEHLEN_TITEL` und `LIZR_DLG_WAEHLEN_FILTER`.
+**`LizenzTextCtrl` ist unberührt** — die Lizenztests des Kerns (14 + 4) mussten
+nicht angefasst werden.
+
+### Wachen
+
+`EPOS.UI.Tests/Dialoge/Lizenz/LizenzDialogTests` — zwei Fälle des gefallenen
+Wählers gestrichen, **fünfzehn** neu (acht `[Fact]`, ein `[Theory]` mit sieben
+Zeilen):
+
+* `Der_Vertragstext_steht_in_einem_Lesebereich_und_nicht_im_Formularfeld` — kein
+  `<textarea>`, genau ein `div.epos-lizenz-lesebereich` je Karte, mit `role`,
+  `aria-label` und `tabindex`.
+* `Der_Vertragstext_wird_in_Absaetze_und_Paragrafen_gesetzt` und
+  `Vertragsabschnitte_trennt_Paragrafen_von_Absaetzen` (7 Zeilen) — die Regel
+  auch ohne den Dialog.
+* `Der_Vertragstext_bekommt_keine_Verweise` — von auswärts wird nichts geraten,
+  im erzeugten Rechtstext schon.
+* `Es_gibt_keinen_Knopf_Datei_waehlen_mehr` — weder im Markup noch als
+  `[Parameter]`.
+* `Der_Infoknopf_steht_im_Kopf_und_nicht_in_der_Knopfleiste`,
+  `Die_Knopfleiste_ist_die_des_Hauses` (`epos-leiste`) und
+  `Die_Knopfreihenfolge_ist_bitgleich` (jetzt **genau** vier Knöpfe, weil der
+  Infoknopf nicht mehr herausgefiltert werden muss).
+* **Stilblatt-Fälle** (eine bunit-Probe sieht kein Blatt — Lehre W6‑B‑1):
+  `Die_Wurzeln_der_Welle_tragen_Rand_und_rollen_nicht_waagerecht` prüft
+  `box-sizing`, `padding`, `max-width: 100%`, `overflow-x: clip`, das Fehlen
+  einer festen Breite und die Nullstellung in der Überlagerung;
+  `Der_Lesebereich_rollt_senkrecht_und_nie_waagerecht` prüft `overflow-y: auto`,
+  `overflow-x: hidden`, das Fehlen von `resize` sowie die Schriftstufen aus den
+  Token. Der Helfer `Stilblock` gleicht die Zeilenenden an (CRLF-fest, wie in
+  `StartseiteTests`).
+
+**Gate:** `dotnet test EPOS.UI.Tests -c Release` **2 497 grün** (vorher 2 484),
+auch unter `LANG=en_US.UTF-8`. `StilblattTests` und `ParametersatzTests` grün —
+letztere ist die Wache dafür, dass `LizenzHuelle.Gaben` und die `[Parameter]` des
+Dialogs nach dem Streichen wieder deckungsgleich sind.
+
+### Abnahme am Gerät
+
+| # | Was | Erwartung |
+|---|---|---|
+| **A1** | Menü Hilfe → Lizenz bei **100 / 125 / 150 %** | Überschrift, Untertitel, Reiterleiste und beide Fußzeilen stehen **vollständig** und mit sichtbarem Rand; **kein waagerechter Rollbalken**, auf keinem Reiter |
+| **A2** | Fenster schmal ziehen (bis `MINDEST` 660 × 480) | Die Knopfleiste bricht um, die Herkunftszeilen brechen mit; die Seite rollt weiterhin **nicht** waagerecht |
+| **A3** | Reiter „Lizenzvereinbarung" | Der Vertragstext steht als Absätze mit „§ …"-Überschriften in einem gerollten Rahmen — **kein Formularfeld, kein Größenanfasser** |
+| **A4** | Reiterwechsel Hinweise ↔ Komponenten | Derselbe Rahmen an derselben Stelle, das Bild springt nicht |
+| **A5** | Nach „Datei wählen…" suchen | **Den Knopf gibt es nicht mehr.** Der bisherige Abnahmepunkt **4a** entfällt ersatzlos |
+| **A6** | Liegt eine `LIZENZ-INEKON.rtf` neben der EXE bzw. in `ProgramData` | Die erste Karte nennt sie weiterhin von selbst, die Fußzeile zeigt sie als Quelle (Punkt 4b/4c unverändert) |
+| **A7** | „Drucken…" | Im Druckbild **ohne** Reiterleiste, **ohne** Knopfleiste und **ohne** Hilfeknopf; der Lesebereich druckt seinen **ganzen** Text, nicht den sichtbaren Ausschnitt |
+| **A8** | „Lizenz aktivieren…" | Die Verwaltung erscheint als Abdunkelung im selben Fenster und hat **einen** Rand, keinen doppelten |
+| **A9** | Sprache Englisch | Bedienungstexte englisch, Rechtstexte deutsch mit „Binding version in German." darüber |
+| **A10** | Erstzustimmung (Registry-Wert löschen) und Erststart-Migration | Beide Fenster haben jetzt ebenfalls einen Seitenrand; Ablauf unverändert |
+
+### Neuer offener Punkt
+
+| Nr | Punkt |
+|---|---|
+| **W15c‑O‑6** | **Dieselbe Wurzelform bei den vier KI-Masken der Welle 15b** — `.epos-kichat`, `.epos-kihinweis`, `.epos-kieinst` und `.epos-textanzeige` tragen ebenfalls nur `display/flex-direction/gap/min-width` und hängen nicht unter `.epos-dialog`; sie sind derselbe Fall wie W15c‑B‑1. Hier **nicht** mitgeändert, weil eine andere Welle sie verantwortet und `.epos-kichat` mit `height: 100%` eine eigene Höhenrechnung führt. Eine Zeile im Stilblatt, sobald jemand sie anfasst. |
