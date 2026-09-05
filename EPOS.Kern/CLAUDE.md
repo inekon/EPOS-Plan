@@ -358,6 +358,37 @@ Anzeige rechnet um.
 `BedarfEinheit` (ohne Eintrag MWh), damit der Bedarfsprofildialog (W9) und der daraus geöffnete
 Ergebnisdialog (W8) dieselbe Einheit zeigen.
 
+**Hausregel: eine Energiemenge wird GENAU EINMAL umgerechnet, an der Anzeigekante.** Im Kern und
+in den Hüllen bleibt die Zahl in ihrer Quelleneinheit stehen; erst die Anzeige rechnet um, und sie
+tut es über `Energieeinheit`, nie über einen nackten Teiler. Eine Hülle, die eine Zahl weitergibt,
+nennt deshalb die **Einheit am Wert** (`ErgebnisKennzahl.QuelleEinheit`, `Monatssicht.QuelleEinheit`)
+statt sie vorher passend zu machen. Wer einen zweiten Teiler einbaut, verschiebt eine bereits
+umgerechnete Zahl um Faktor 1 000 — das war Befund W8‑B4 und der Nachtrag W9‑O‑3.
+
+## Vorschau und Lauf lesen dieselben Tabellen
+
+**Hausregel (seit Befund W9‑B‑4/B‑5 der Windows-Abnahme vom 05.09.2026): Ob eine Profilrechnung
+den KATALOG oder die PROJEKTKOPIEN liest, hängt am PROJEKT — nicht daran, ob eine Namensliste
+mitkommt.** Die Regel steht einmal in `ProfilBedarf.Vorschaumodus(namen, idProjekt)`:
+
+| Aufruf | Modus | wer |
+|---|---|---|
+| ohne Namensliste | `Projektrechnung` | der Simulationslauf (Referenzlauf) |
+| mit Liste, **ohne** Projekt | `Katalogvorschau` | die drei Katalogverwaltungen |
+| mit Liste **und** Projekt | `Projektvorschau` | der Bedarfsprofil-Dialog |
+
+`Projektvorschau` liest den Katalog zuerst und fällt für einen Namen, den der Katalog nicht kennt,
+auf die Projektkopie zurück (`ProfilQuelle.Rueckfall`) — beide Quellen sind nötig, weil die Liste
+des Dialogs gemischt ist: eine gespeicherte Zuordnung trägt den Namen ihrer Projektkopie
+(`Z_Projekt*Ctrl.LiesProjekt` liest `Tab_*.Bezeichner`, und eine Kopie heißt vielfach
+„‹Name› (P‹Projekt›)"), eine eben aufgenommene Zeile den ihres Katalogeintrags. Wird der Rückfall
+gezogen, liefert er **Kopf UND Typprofil** — ihre Vermischung war Befund V0‑4.
+
+Die alte Ableitung `list == null ? Projektrechnung : Katalogvorschau` stand in allen drei
+Bedarfszweigen und ließ den Dialog Projektnamen im `_STAMM`-Katalog suchen; er fand nichts, übersprang
+still und zeigte zwölf Nullmonate samt leerem Bild. **Wer eine vierte Bedarfsart anlegt, nimmt
+`Vorschaumodus` — nicht `list == null`.**
+
 ## Nachweis
 
 Jede Änderung hier wird gegen die eingefrorene Windows-Basis geprüft:
