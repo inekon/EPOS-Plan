@@ -21,9 +21,10 @@
    der Verwendung (Befund W9-B1). Woertlich uebernommen; die Komponente sagt
    dem Kern ueber "ausBaujahrwahl", welches Feld die Auswahl ausgeloest hat.
 
-   DREI UEBERLAGERUNGEN statt dreier Fenster (Risiko R2): der Katalogeditor
-   (W9.1), die Wohnflaechenangabe (W9.3) und die Gebaeudetypen-Verwaltung
-   (W8.4).
+   VIER UEBERLAGERUNGEN statt vierer Fenster (Risiko R2): der Katalogeditor
+   (W9.1), die Wohnflaechenangabe (W9.3), die Gebaeudetypen-Verwaltung (W8.4)
+   und seit dem Anwenderwunsch W9-E-2 (05.09.2026) der WAERMEBEDARF des
+   markierten Gebaeudes (Knopf "Simulation..." im Detailblock, W9.8).
 
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
@@ -160,8 +161,21 @@
 
             @if (!Admin)
             {
-                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                        @onclick="BeiAendern">@BtnAendernText</button>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                            @onclick="BeiAendern">@BtnAendernText</button>
+
+                    @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
+                       Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
+                       Delegat kein Knopf - in der Katalogverwaltung gibt es kein
+                       Projekt und damit auch nichts zu rechnen. *@
+                    @if (BedarfGaben is not null)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                                title="@BtnSimulationHinweis"
+                                @onclick="BeiSimulation">@BtnSimulationText</button>
+                    }
+                </div>
             }
         </KindInhalt>
     </Gruppenkopf>
@@ -203,6 +217,18 @@
             {
                 <GebaeudetypDialog @attributes="GebaeudetypGaben()"
                                    Geschlossen="_ => _gebaeudetypOffen = false" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 4: der Waermebedarf des Gebaeudes (W9-E-2) ---------- *@
+    <Ueberlagerung Offen="@(_bedarfGaben is not null)" Schliessbar="false"
+                   Titel="@BtnSimulationText" Geschlossen="BedarfFertig">
+        <KindInhalt>
+            @if (_bedarfGaben is not null)
+            {
+                <GebaeudeBedarfDialog @attributes="_bedarfGaben"
+                                      Geschlossen="_ => BedarfFertig()" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -272,6 +298,19 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz des WÄRMEBEDARFS einer Projektzeile (Anwenderwunsch
+    /// <b>W9‑E‑2</b> vom 05.09.2026). Kein Delegat = kein Knopf „Simulation…"; in der
+    /// Katalogverwaltung gibt es kein Projekt und damit nichts zu rechnen.
+    ///
+    /// <para><c>null</c> als Rückgabe heißt „für diese Zeile gibt es keine Zahl" —
+    /// eine noch nicht gespeicherte Aufnahme (sie hat noch keine Projektkopie) oder
+    /// ein Projekt ohne Klimaregion. Der Dialog meldet das, statt einen leeren
+    /// Kasten aufzumachen.</para>
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -335,6 +374,14 @@
     [Parameter] public string BtnEntfernenHinweis { get; set; } =
         "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
     [Parameter] public string BtnAendernText { get; set; } = "Ändern";
+
+    /// <summary>Beschriftung des Bedarfsknopfes — <c>GEB_BTN_SIMULATION</c> (W9‑E‑2).</summary>
+    [Parameter] public string BtnSimulationText { get; set; } = "Simulation...";
+
+    /// <summary>Kurztext des Bedarfsknopfes — <c>GEB_BTN_SIMULATION_HINWEIS</c>.</summary>
+    [Parameter] public string BtnSimulationHinweis { get; set; } =
+        "Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen";
+
     [Parameter] public string BtnDbAendernText { get; set; } = "Gebäude in DB ändern...";
     [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
     [Parameter] public string BtnDbLoeschenText { get; set; } = "Gebäude in DB löschen";
@@ -352,6 +399,14 @@
 
     /// <summary>„Gebäude in DB auswählen!" — ohne markierten Katalogsatz.</summary>
     [Parameter] public string MeldungKeineWahl { get; set; } = "Gebäude in DB auswählen!";
+
+    /// <summary>
+    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen…" — die Zeile ist noch
+    /// nicht gespeichert, oder das Projekt führt keine Klimaregion (W9‑E‑2).
+    /// </summary>
+    [Parameter] public string MeldungKeinBedarf { get; set; } =
+        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. " +
+        "Bitte das Projekt speichern und eine Klimaregion auswählen.";
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude.btn_Help";
@@ -381,6 +436,7 @@
 
     private IReadOnlyDictionary<string, object>? _katalogGaben;
     private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
+    private IReadOnlyDictionary<string, object>? _bedarfGaben;
     private bool _gebaeudetypOffen;
     private bool _loeschfrage;
     private string _meldung = "";
@@ -403,6 +459,9 @@
 
     /// <summary>Steht die Gebäudetypen-Verwaltung? Prüfhilfe für die Tests.</summary>
     public bool GebaeudetypOffen => _gebaeudetypOffen;
+
+    /// <summary>Steht der Wärmebedarf des Gebäudes? Prüfhilfe für die Tests.</summary>
+    public bool BedarfOffen => _bedarfGaben is not null;
 
     private string Loeschfrage
         => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
@@ -688,6 +747,28 @@
     }
 
     /// <summary>
+    /// „Simulation…" — der Wärmebedarf GENAU DIESES Gebäudes (Anwenderwunsch
+    /// <b>W9‑E‑2</b> vom 05.09.2026).
+    ///
+    /// <para>Die Rechnung macht der Kern; die Hülle reicht ihr Ergebnis als
+    /// Parametersatz herein. Kommt <c>null</c> zurück — die Zeile ist noch nicht
+    /// gespeichert, oder das Projekt führt keine Klimaregion —, MELDET der Dialog das,
+    /// statt eine leere Überlagerung aufzumachen.</para>
+    /// </summary>
+    private void BeiSimulation()
+    {
+        if (_gewaehlt is null || BedarfGaben is null) return;
+
+        _meldung = "";
+        IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
+        if (gaben is null) { Melden(MeldungKeinBedarf, WarnStufe.Warnung); return; }
+
+        _bedarfGaben = gaben;
+    }
+
+    private void BedarfFertig() => _bedarfGaben = null;
+
+    /// <summary>
     /// „Gebäude in DB löschen" — der Vorläufer fragte nach und meldete danach
     /// „Gebäude gelöscht!" (<c>btn_GebLoeschen_DB_Click</c>:548-566).
     /// </summary>
@@ -715,7 +796,7 @@
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _wohnflaecheGaben is not null ||
-            _gebaeudetypOffen || _loeschfrage) return Task.CompletedTask;
+            _bedarfGaben is not null || _gebaeudetypOffen || _loeschfrage) return Task.CompletedTask;
         return Geschlossen.InvokeAsync(false);
     }
 }
