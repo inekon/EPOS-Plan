@@ -2317,6 +2317,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Schwelle ermitteln" steht neben der Zielschwelle, Ergebnisreiter bleibt Tabelle) und
 > `GanglinieImportOptionenDialog` (Klasse B: die acht Formatlisten im Raster, das Vorschaugitter nicht).
 > `StromganglinieDialog`/`StromganglinieAdminDialog` unangetastet (W12‑E‑1/E‑2).
+>
+> **Anwenderwunsch W12‑E‑2 vom 05.09.2026 („stelle die importierte Stromganglinie als Grafik dar (wie bisher, zoombar,
+> umschaltbar auf sortiert)"), umgesetzt in `dbdcdf1`:** Ein „bisher" gab es nicht: Weder `Form_Stromganglinie_Admin`
+> noch `Form_Stromganglinie` noch `Wizard_Stromlastgang` trug je ein Chart, und das einzige Chart der
+> Stromverbrauchermasken (`Form_ErgStromverbraucher`) zeichnete Monatssäulen. Übernommen ist deshalb das einzige
+> Vorbild, das der Bestand kennt — das Bild B1 des Bedarfsreiters (`ChartRenderer.GanglinieNormiert`) — in der
+> Anordnung des `GebaeudeBedarfDialog` (W9.8). Sobald links oder rechts eine Zeile markiert ist, steht unter den zwei
+> Spalten der neue Baustein `GanglinienGrafik`: drei Kennzahlen (Jahresarbeit, Spitze als 100‑%-Linie,
+> Vollbenutzungsstunden), der Schalter „sortiert", die Einheitenwahl MWh/kWh (W8‑O‑5) und das Bild im Baustein
+> `Diagramm` mit Bild- und Datenzoom. Die Zahlen liefert `StromganglinieAuswertungCtrl` im Kern aus derselben Wertspalte
+> wie der Lauf (Katalog und Projektkopie); 35 040 Viertelstundenwerte gehen durch
+> `SimulationControl.Viertelstunden_zu_Stundenwerte_Mittelwert` — kein zweiter Rechenweg, kein neues Renderer-Bild.
+> Den Platz gibt der Formathinweis her: sichtbar ist eine Zeile (`STROMGL_HINWEIS_FORMAT_KURZ`), der volle Wortlaut
+> hängt am Infoknopf. Eingefroren gegen die Testdatenbank: `Lastgang_Strom_NestleLB` 4 790,086 MWh / 2 070,00 kW /
+> 2 314,05 h/a; `test` (35 040 → 8 760) 4 788,929 MWh / 1 310,75 kW / 3 653,58 h/a. Tests: `StromganglinieDialogTests`
+> 30 → 41, `StromganglinieAuswertungTests` 7 neu; ChartProben und SQL-Prüfer unverändert grün. Zehn Abnahmepunkte
+> A‑W12‑E‑2 im W12-Protokoll.
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
