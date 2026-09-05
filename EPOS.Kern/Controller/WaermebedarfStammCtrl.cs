@@ -56,6 +56,22 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
+        /// <summary>
+        /// Gibt es diesen Bezeichner schon im Katalog? (iU9-W9-E-3.)
+        ///
+        /// <para>Die Dublettenpruefung des Weges „Speichern unter" — sie laeuft VOR dem
+        /// Einfuegen, damit der Anwender ein Warnbanner sieht und nicht den
+        /// UNIQUE-Fehler von SQLite. Zwilling von
+        /// <c>StromganglinieStammCtrl.Exists</c> (W12-E-1) und
+        /// <c>SolarganglinieStammCtrl.Exists</c> (W14b.0d); geprueft wird der GANZE
+        /// Name und nicht sein Anfang — das war Befund W14-B70.</para>
+        /// </summary>
+        public bool Exists(string szName)
+        {
+            if (string.IsNullOrEmpty(szName)) return false;
+            return GetStammId(szName) > 0;
+        }
+
         // Loescht eine Stamm-Ganglinie samt Daten, sofern nicht schreibgeschuetzt.
         /// <summary>
         /// Gibt es zu dieser Ganglinie eine PROJEKTZUORDNUNG? (iU9-W9.0d) — die Sperre vor
@@ -90,29 +106,122 @@ namespace WindowsFormsApplication1
                 new DbParam("@id", id));
         }
 
-        // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
-        // Kopf-ID und Daten-IDs explizit (MAX+1), ID_Ganglinie = Kopf-ID, ReadOnly=false. Alles in einer Transaktion.
-        public bool ImportGanglinie(string szBezeichner, List<string> roheWerte)
+        /// <summary>
+        /// Import einer neuen Ganglinie in die STAMM-Tabellen. Kopf-ID und Daten-IDs
+        /// explizit (MAX+1), <c>ID_Ganglinie</c> = Kopf-ID, <c>ReadOnly = false</c>;
+        /// alles in EINER Transaktion.
+        ///
+        /// <para><b>Der Parameter ist die bereits geprueffte und normalisierte
+        /// Zahlenreihe</b> (8 760 oder 35 040 Werte in kW) aus
+        /// <c>GanglinienPruefung</c> — seit dem Anwenderwunsch <b>W9‑E‑3</b>
+        /// (05.09.2026) laeuft der Waermebedarf durch dieselbe Kette wie der
+        /// Stromlastgang (<c>GanglinienImportAblauf</c> mit
+        /// <c>GanglinienZiel.Waermebedarf</c>). Bis dahin nahm diese Methode eine
+        /// rohe Zeilenliste entgegen und parste sie selbst; das Parsen liegt jetzt
+        /// in der Leseschicht (<c>Allgemein\Import\GanglinienDatei</c>), das
+        /// Transaktionsmuster ist unveraendert.</para>
+        ///
+        /// <para><b>Ein Zeitinterval traegt der Waermebedarf nicht</b> —
+        /// <c>Tab_Waermebedarf_STAMM</c> hat die Spalte gar nicht, und
+        /// <c>SimulationWaermebedarf</c> leitet das Raster seit jeher aus der
+        /// WERTZAHL ab (8 760 oder 35 040). Deshalb fehlt der Parameter hier, und
+        /// deshalb ist keine Schemaaenderung noetig.</para>
+        /// </summary>
+        public bool ImportGanglinie(string szBezeichner, IList<double> werte)
         {
-            if (roheWerte == null || roheWerte.Count == 0) return false;
+            if (werte == null || werte.Count == 0) return false;
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
-                    int neueId;
-                    {
-                        object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
-                        neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                    }
+                    EinfuegenStamm(v, szBezeichner, werte);
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Meldung.Zeigen("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
+                    return false;
+                }
+            }
+        }
 
-                    {
-                        List<DbParam> p = new List<DbParam>();
-                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
-                        p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
-                        p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
-                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, ReadOnly) VALUES (?, ?, ?)", p.ToArray());
-                    }
+        /// <summary>
+        /// Der EINE Schreibweg eines neuen Katalogsatzes: Kopf mit gerechneter Id
+        /// (<c>MAX(ID)+1</c>) und <c>ReadOnly = false</c>, danach die Werte in
+        /// Reihenfolge. Laeuft IM Vorgang des Aufrufers — er entscheidet ueber
+        /// Commit und Rollback.
+        /// </summary>
+        /// <remarks>
+        /// Herausgezogen mit iU9-W9-E-3, damit „CSV-Datei importieren…" und
+        /// „Speichern unter…" denselben Satz Anweisungen benutzen; Zwilling von
+        /// <c>StromganglinieStammCtrl.EinfuegenStamm</c>. Zwei Fassungen dieses
+        /// INSERT liefen beim ersten Schemawechsel auseinander.
+        /// </remarks>
+        /// <returns>Die vergebene Kopf-Id.</returns>
+        private static int EinfuegenStamm(DbVorgang v, string szBezeichner, IList<double> werte)
+        {
+            int neueId;
+            {
+                object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
+                neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+            }
+
+            {
+                List<DbParam> p = new List<DbParam>();
+                p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
+                p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
+                p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
+                v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, ReadOnly) VALUES (?, ?, ?)", p.ToArray());
+            }
+
+            int neueDatenId;
+            {
+                object m = v.Skalar("SELECT MAX(ID) FROM " + DATA_STAMM);
+                neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+            }
+
+            foreach (double w in werte)
+            {
+                v.Ausfuehren(
+                    "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
+                    new DbParam("@did", DbParamTyp.Integer) { Wert = neueDatenId++ },
+                    new DbParam("@dg", DbParamTyp.Integer) { Wert = neueId },
+                    new DbParam("@dw", DbParamTyp.Double) { Wert = w },
+                    new DbParam("@dr", DbParamTyp.Boolean) { Wert = false });
+            }
+
+            return neueId;
+        }
+
+        /// <summary>
+        /// Ersetzt beim Import-Ueberschreiben die Werte einer vorhandenen Ganglinie:
+        /// Kopfsatz und ID bleiben stehen, die Datenzeilen werden in einer
+        /// Transaktion getauscht (Dublettenkonzept 4.4).
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 —
+        /// erlauben mit Hinweis). Bis W9-E-3 loeschte die Waermebedarfsverwaltung an
+        /// dieser Stelle den ganzen Satz und legte ihn neu an — die Kopf-Id wechselte
+        /// dabei, und eine Projektkopie verlor ihren Bezug. Transaktionsmuster wie
+        /// <see cref="ImportGanglinie"/>.
+        /// </remarks>
+        public bool ErsetzeGanglinie(string szBezeichner, IList<double> werte)
+        {
+            if (werte == null || werte.Count == 0) return false;
+
+            int id = GetStammId(szBezeichner);
+            if (id <= 0) return false;
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren("DELETE FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ?",
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = id });
 
                     int neueDatenId;
                     {
@@ -120,14 +229,13 @@ namespace WindowsFormsApplication1
                         neueDatenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
-                    foreach (string s in roheWerte)
+                    foreach (double w in werte)
                     {
                         v.Ausfuehren(
                             "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
                             new DbParam("@did", DbParamTyp.Integer) { Wert = neueDatenId++ },
-                            new DbParam("@dg", DbParamTyp.Integer) { Wert = neueId },
-                            new DbParam("@dw", DbParamTyp.Double)
-                            { Wert = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
+                            new DbParam("@dg", DbParamTyp.Integer) { Wert = id },
+                            new DbParam("@dw", DbParamTyp.Double) { Wert = w },
                             new DbParam("@dr", DbParamTyp.Boolean) { Wert = false });
                     }
 
@@ -137,8 +245,70 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    Meldung.Zeigen("Fehler beim Speichern der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
+                    Meldung.Zeigen("Fehler beim Ersetzen der Waermebedarf-Ganglinie (Stammdaten): " + ex.Message);
                     return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>„Speichern unter" — eine Katalogganglinie unter neuem Namen</b>
+        /// (iU9-W9-E-3, Anwenderwunsch der Windows-Abnahme vom 05.09.2026).
+        ///
+        /// <para>Kopf UND Werte werden kopiert; die Kopie traegt immer
+        /// <c>ReadOnly = false</c>, auch wenn die Quelle zur Auslieferung gehoert —
+        /// eine Kopie ist Anwenderbestand. Die Werte gehen in Stamm-Reihenfolge
+        /// (<c>ORDER BY ID</c>) hinueber, damit die Zeitreihe erhalten bleibt;
+        /// dieselbe Regel wie in <see cref="CopyGanglinieToProjekt"/>.</para>
+        ///
+        /// <para><b>Die Dublettenpruefung steht VOR dem Einfuegen:</b> Ein Name, den es
+        /// schon gibt, ergibt <c>0</c> und keine Zeile — nicht einen UNIQUE-Fehler,
+        /// den der Anwender als Ausnahmetext saehe.</para>
+        /// </summary>
+        /// <param name="szQuelle">Bezeichner des zu kopierenden Katalogsatzes.</param>
+        /// <param name="szZiel">Name der Kopie; wird getrimmt.</param>
+        /// <returns>Die Kopf-Id der Kopie, oder <c>0</c>: Quelle fehlt, Name leer,
+        /// Name vergeben, Quelle ohne Werte oder Schreibfehler.</returns>
+        public int KopiereStamm(string szQuelle, string szZiel)
+        {
+            if (string.IsNullOrEmpty(szQuelle) || string.IsNullOrWhiteSpace(szZiel)) return 0;
+
+            string ziel = szZiel.Trim();
+            if (Exists(ziel)) return 0;      // Dublette: der Aufrufer meldet, wir werfen nicht
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int quellId;
+                    {
+                        DataTable dtKopf = v.Lese(
+                            "SELECT ID FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                            new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szQuelle });
+                        if (dtKopf.Rows.Count == 0) { v.Rollback(); return 0; }
+                        quellId = Convert.ToInt32(dtKopf.Rows[0]["ID"]);
+                    }
+
+                    List<double> werte = new List<double>();
+                    {
+                        DataTable dtWerte = v.Lese(
+                            "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID",
+                            new DbParam("@g", DbParamTyp.Integer) { Wert = quellId });
+                        foreach (DataRow r in dtWerte.Rows)
+                            werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
+                    }
+
+                    if (werte.Count == 0) { v.Rollback(); return 0; }
+
+                    int neueId = EinfuegenStamm(v, ziel, werte);
+                    v.Commit();
+                    return neueId;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Meldung.Zeigen("Fehler beim Kopieren der Waermebedarf-Ganglinie: " + ex.Message);
+                    return 0;
                 }
             }
         }

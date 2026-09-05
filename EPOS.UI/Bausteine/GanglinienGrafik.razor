@@ -22,8 +22,18 @@
    herauszuziehen haelt StromganglinieDialog lesbar und macht sie fuer die
    Verwaltungsmaske nachnutzbar.
 
+   SEIT W9-E-3 TRAEGT SIE AUCH DIE WAERME. Der Anwenderwunsch vom 05.09.2026
+   ("Gestalte den Dialog bei Waermebedarf -> Daten importieren analog zum Import
+   des Strombedarf") verlangt dieselbe Grafik im Dialog "Waermebedarf Extern".
+   Sie ist deshalb aus Dialoge/Strom nach Bausteine gezogen und traegt KEINEN
+   Fachbezug mehr: Was auf der Achse steht, sagt der Wirt (Bildtext,
+   LabelJahresarbeit, LabelSpitze), welche Farbe die Linie hat, entscheidet der
+   Bildauftrag in der Huelle. Eine zweite, wortgleiche Fassung fuer die Waerme
+   waere beim ersten Fachwechsel auseinandergelaufen.
+
    SIE RECHNET NICHTS UND ZEICHNET NICHTS. Die Kennzahlen kommen fertig herein
-   (StromganglinieAuswertungCtrl), das Bild holt ein Delegat aus dem Kern
+   (GanglinienAuswertungCtrl mit der Ausprägung GanglinienQuelle.Strom bzw.
+   .Waermebedarf), das Bild holt ein Delegat aus dem Kern
    (ChartRenderer.GanglinieNormiert) - Regel R-W8-2: keine Zeichenbibliothek in
    dieser Bibliothek.
 
@@ -33,7 +43,7 @@
    Vollbenutzungsstunden sind Stunden, und das Bild zeigt Prozent des
    Jahreshoechstwertes. *@
 
-@namespace EPOS.UI.Dialoge.Strom
+@namespace EPOS.UI.Bausteine
 @using WindowsFormsApplication1
 
 <section class="epos-ganglinie-grafik" aria-label="@Bildtext">
