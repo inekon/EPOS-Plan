@@ -12685,6 +12685,30 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_DB_NEU" xml:space="preserve">
     <value>Gebäude in DB neu...</value>
   </data>
+  <data name="GEB_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation...</value>
+  </data>
+  <data name="GEB_BTN_SIMULATION_HINWEIS" xml:space="preserve">
+    <value>Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen</value>
+  </data>
+  <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
+    <value>Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen.</value>
+  </data>
+  <data name="GEBB_TITEL" xml:space="preserve">
+    <value>Wärmebedarf Gebäude</value>
+  </data>
+  <data name="GEBB_GRP_KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
+    <value>Wärmebedarf Heizung:</value>
+  </data>
+  <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
+    <value>Vollbenutzungsstunden:</value>
+  </data>
+  <data name="GEBB_EINHEIT_STUNDEN" xml:space="preserve">
+    <value>h/a</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Aus dem Projekt entfernen</value>
   </data>

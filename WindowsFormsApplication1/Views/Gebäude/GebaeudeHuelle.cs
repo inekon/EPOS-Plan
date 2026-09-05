@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using Microsoft.AspNetCore.Components;
 
@@ -153,6 +154,13 @@ namespace WindowsFormsApplication1
                 ["GebaeudetypGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     () => GebaeudetypHuelle.Gaben()),
 
+                // Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
+                // Gebaeudes. In der Katalogverwaltung gibt es kein Projekt; dort zeigt
+                // die Komponente den Knopf ohnehin nicht (Admin), und der Delegat
+                // antwortet mit null.
+                ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
+                    z => Bedarfsgaben(z, projektId)),
+
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("GEB_KOPFBAND", "Eingabe der Energiedaten"),
                 ["LabelProjektliste"] =
@@ -188,6 +196,10 @@ namespace WindowsFormsApplication1
                 ["BtnEntfernenHinweis"] = Text_("GEB_BTN_ENTFERNEN_HINWEIS",
                     "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen"),
                 ["BtnAendernText"] = Text_("GEB_BTN_AENDERN", "Ändern"),
+                ["BtnSimulationText"] = Text_("GEB_BTN_SIMULATION", "Simulation..."),
+                ["BtnSimulationHinweis"] = Text_("GEB_BTN_SIMULATION_HINWEIS",
+                    "Den Wärmebedarf des in der Projektliste markierten Gebäudes "
+                    + "berechnen und anzeigen"),
                 ["BtnDbAendernText"] = Text_("GEB_BTN_DB_AENDERN", "Gebäude in DB ändern..."),
                 ["BtnDbNeuText"] = Text_("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),
                 ["BtnDbLoeschenText"] = Text_("GEB_BTN_DB_LOESCHEN", "Gebäude in DB löschen"),
@@ -201,6 +213,9 @@ namespace WindowsFormsApplication1
                     Text_("GEB_MSG_LOESCHFRAGE", "Soll {0} wirklich gelöscht werden ?"),
                 ["MeldungGeloescht"] = Text_("GEB_MSG_GELOESCHT", "Gebäude gelöscht!"),
                 ["MeldungKeineWahl"] = Text_("GEB_MSG_KEINE_WAHL", "Gebäude in DB auswählen!"),
+                ["MeldungKeinBedarf"] = Text_("GEB_MSG_KEIN_BEDARF",
+                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. "
+                    + "Bitte das Projekt speichern und eine Klimaregion auswählen."),
 
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
@@ -288,6 +303,130 @@ namespace WindowsFormsApplication1
 
             return GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr);
         }
+
+        // =================================================================================
+        // Der Wärmebedarf EINES Gebäudes (Anwenderwunsch W9-E-2, 05.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Parametersatz des Bedarfsdialogs zu EINER Projektzeile — <c>null</c>, wenn
+        /// es dafür keine Zahl gibt.
+        ///
+        /// <para><b>Drei Gründe für <c>null</c>:</b> kein Projekt (Katalogverwaltung), das
+        /// Projekt führt keine Klimaregion (dieselbe Sperre wie im Lauf,
+        /// <c>SimulationLaufCtrl.Vorpruefen</c>) oder die Zeile ist eben erst aufgenommen
+        /// und hat noch keine Projektkopie (<c>IdZ</c> ab 100000, siehe
+        /// <see cref="STARTINDEX"/>). Der Dialog MELDET das, statt eine leere
+        /// Überlagerung aufzumachen.</para>
+        ///
+        /// <para><b>Gerechnet wird im Kern</b> (<c>GebaeudeBedarfCtrl</c>), gezeichnet
+        /// auch (<c>ChartRenderer.GanglinieNormiert</c>) — die Komponente bekommt Zahlen
+        /// und ein PNG.</para>
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> Bedarfsgaben(
+            GebaeudeProjektZeile zeile, int projektId)
+        {
+            if (zeile == null || projektId <= 0) return null;
+
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(projektId);
+
+            GebaeudeBedarfErgebnis ergebnis =
+                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
+            if (!ergebnis.Erfolgreich) return null;
+
+            var monate = new double[12];
+            for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
+                monate[m] = ergebnis.MonatswerteMwh[m];
+
+            var daten = new GebaeudeBedarfDaten
+            {
+                Name = ergebnis.Name,
+                HeizwaermeMwh = ergebnis.HeizwaermeMwh,
+                MaxLastKw = ergebnis.MaxLastKw,
+                VollbenutzungsstundenH = ergebnis.VollbenutzungsstundenH,
+                MonatswerteMwh = monate
+            };
+
+            return new Dictionary<string, object>
+            {
+                ["Daten"] = daten,
+                ["Bildauftrag"] = new Func<bool, Diagrammbereich, byte[]>(
+                    (sortiert, bereich) => Bedarfsbild(ergebnis, sortiert, bereich)),
+
+                // Die Anzeigeeinheit (Entscheid W8-O-5): dieselbe gemerkte Wahl wie im
+                // Bedarfsprofil- und im Bedarfsergebnisdialog.
+                ["Einheit"] = BedarfEinheitWahl.Lies(),
+                ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
+
+                ["TitelText"] = Text_("GEBB_TITEL", "Wärmebedarf Gebäude"),
+                ["GruppeKennzahlen"] = Text_("GEBB_GRP_KENNZAHLEN", "Kennzahlen"),
+                ["GruppeMonate"] = Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
+                ["LabelHeizwaerme"] = Text_("GEBB_LBL_HEIZWAERME", "Wärmebedarf Heizung:"),
+                ["LabelMaxLast"] = Text_("SIMERG_LBL_MAX_WAERMELAST", "max. Wärmelast"),
+                ["LabelVollbenutzung"] =
+                    Text_("GEBB_LBL_VOLLBENUTZUNG", "Vollbenutzungsstunden:"),
+                ["LabelSortiert"] = Text_("SIM_CHK_SORTIERT", "sortiert"),
+                ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
+                ["EinheitStunden"] = Text_("GEBB_EINHEIT_STUNDEN", "h/a"),
+                ["Bildtext"] = Text_("CHART_TITEL_WAERMELAST_JAHRESGANGLINIE",
+                                     "Wärmelast Jahresganglinie"),
+                ["Monatsnamen"] = Monatsnamen(),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
+            };
+        }
+
+        /// <summary>
+        /// Die Jahresganglinie des Gebäudes — <b>dasselbe Bild wie B1 der Ergebnisseite</b>
+        /// (<c>SimulationErgebnisHuelle.BildBedarfWaerme</c>): normiert auf den
+        /// Jahreshöchstwert, x wahlweise Monatsgrenzen oder die vier Stundenmarken,
+        /// Farbe <c>F_BEDARF</c> = Rot. Nur die Reihe ist eine andere — hier steht
+        /// GENAU EINE, die Heizwärme dieses Gebäudes.
+        /// </summary>
+        /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
+        /// <param name="bereich">Der aufgezogene Bildausschnitt (Datenzoom, Befund A-1);
+        /// <c>null</c> = das ganze Jahr. Was an dieser Stelle des Bildes steht, weiß nur
+        /// der Renderer — deshalb rechnet <c>ChartRenderer.FensterAusBild</c>.</param>
+        private static byte[] Bedarfsbild(GebaeudeBedarfErgebnis ergebnis, bool sortiert,
+                                          Diagrammbereich bereich)
+        {
+            float[] werte = ergebnis.Stundenwerte;
+
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe(Text_("CHART_ACHSE_WAERMELAST", "Wärmelast"),
+                                        Array.ConvertAll(werte, x => (double)x),
+                                        SkiaSharp.SKColors.Red)
+            };
+
+            ChartRenderer.Achsenfenster fenster = bereich == null
+                ? null
+                : ChartRenderer.FensterAusBild(
+                    new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
+                                                     bereich.YVon, bereich.YBis),
+                    werte.Length);
+
+            return ChartRenderer.GanglinieNormiert(
+                Text_("CHART_TITEL_WAERMELAST_JAHRESGANGLINIE", "Wärmelast Jahresganglinie"),
+                reihen,
+                Text_("CHART_ACHSE_WAERMELAST", "Wärmelast"),
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert, fenster);
+        }
+
+        /// <summary>Die zwölf Zeilenbeschriftungen der Monatstabelle (mit Doppelpunkt).</summary>
+        private static string[] Monatsnamen()
+        {
+            var namen = new string[12];
+            for (int m = 0; m < 12; m++)
+                namen[m] = Text_("ALLG_MONAT_" + (m + 1), MONATE_DE[m]) + ":";
+            return namen;
+        }
+
+        private static readonly string[] MONATE_DE =
+        { "Januar", "Februar", "März", "April", "Mai", "Juni",
+          "Juli", "August", "September", "Oktober", "November", "Dezember" };
 
         // =================================================================================
         // Abbildung Zeile <-> Modell
